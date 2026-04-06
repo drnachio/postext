@@ -1,42 +1,39 @@
-export function AboutSection() {
+import { getTranslations } from "next-intl/server";
+
+export async function AboutSection() {
+  const t = await getTranslations("About");
+
   return (
     <section aria-labelledby="about-heading" className="mx-auto w-full max-w-5xl px-6 py-24 2xl:max-w-6xl 2xl:px-8 2xl:py-32 4xl:max-w-7xl 4xl:px-12 4xl:py-40">
       <div className="grid grid-cols-1 gap-16 md:grid-cols-12 2xl:gap-20 4xl:gap-24">
         {/* Left — explanation */}
         <div className="md:col-span-5">
           <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
-            What Is Postext
+            {t("eyebrow")}
           </p>
           <h2
             id="about-heading"
             className="mt-4 font-display text-3xl font-bold italic leading-tight tracking-tight 2xl:text-4xl 4xl:text-5xl"
             style={{ textWrap: "balance" }}
           >
-            Editorial Layout,
+            {t("titleLine1")}
             <br />
-            Computed for the Web
+            {t("titleLine2")}
           </h2>
           <p className="mt-6 leading-[1.8] text-slate 2xl:text-lg 4xl:text-xl">
-            CSS gives you responsive layout — flexbox, grid, columns. But it
-            cannot balance columns, prevent orphans, flow text around figures, or
-            place footnotes at the bottom of a column. These are editorial
-            decisions that have been refined over centuries of print
-            typesetting.
+            {t("paragraph1")}
           </p>
           <p className="mt-4 leading-[1.8] text-slate 2xl:text-lg 4xl:text-xl">
-            Postext bridges that gap. Feed it semantic markdown and a
-            configuration object. It measures text 300&ndash;600&times; faster
-            than the DOM using{" "}
+            {t("paragraph2prefix")}
             <a
               href="https://github.com/chenglou/pretext"
               target="_blank"
               rel="noopener noreferrer"
               className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-foreground"
             >
-              @chenglou/pretext
+              {t("pretextLink")}
             </a>
-            , then returns React components laid out to professional
-            typographic standards.
+            {t("paragraph2suffix")}
           </p>
         </div>
 
@@ -49,10 +46,10 @@ export function AboutSection() {
         <div className="md:col-span-6">
           <div className="space-y-6 2xl:space-y-8 4xl:space-y-10">
             <div>
-              <p className="mb-2 font-mono text-xs text-slate 2xl:text-sm 4xl:text-base">Input</p>
+              <p className="mb-2 font-mono text-xs text-slate 2xl:text-sm 4xl:text-base">{t("inputLabel")}</p>
               <pre
                 className="overflow-x-auto border border-rule bg-surface p-5 font-mono text-sm leading-7 text-slate 2xl:p-6 2xl:text-base 2xl:leading-8 4xl:p-8 4xl:text-lg 4xl:leading-9"
-                aria-label="Example markdown input"
+                aria-label={t("inputAriaLabel")}
               >
 {`# Chapter One
 
@@ -66,11 +63,11 @@ at column bottom automatically.`}
               </pre>
             </div>
             <div>
-              <p className="mb-2 font-mono text-xs text-slate 2xl:text-sm 4xl:text-base">Output</p>
+              <p className="mb-2 font-mono text-xs text-slate 2xl:text-sm 4xl:text-base">{t("outputLabel")}</p>
               <div
                 className="flex gap-4 border border-rule bg-surface p-5 2xl:gap-6 2xl:p-6 4xl:gap-8 4xl:p-8"
                 role="img"
-                aria-label="Visual representation of typeset output with balanced columns, figure placement, and footnotes"
+                aria-label={t("outputAriaLabel")}
               >
                 <div className="flex-1 space-y-2 2xl:space-y-3 4xl:space-y-4">
                   <div className="h-3 w-3/4 bg-rule 2xl:h-4 4xl:h-5" />

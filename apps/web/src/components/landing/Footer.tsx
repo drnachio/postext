@@ -1,4 +1,8 @@
-export function Footer() {
+import { getTranslations } from "next-intl/server";
+
+export async function Footer() {
+  const t = await getTranslations("Footer");
+
   return (
     <footer role="contentinfo" className="border-t border-rule bg-background">
       <div className="mx-auto max-w-5xl px-6 py-16 2xl:max-w-6xl 2xl:px-8 2xl:py-20 4xl:max-w-7xl 4xl:px-12 4xl:py-24">
@@ -9,9 +13,9 @@ export function Footer() {
               <span className="-ml-1 font-display text-lg text-foreground 2xl:text-xl 4xl:text-2xl">ostext</span>
             </p>
             <p className="mt-2 text-sm leading-relaxed text-slate 2xl:text-base 4xl:text-lg">
-              Programmable typesetter for the web.
+              {t("tagline")}
               <br />
-              Built with{" "}
+              {t("builtWith")}{" "}
               <a
                 href="https://github.com/chenglou/pretext"
                 target="_blank"
@@ -28,7 +32,7 @@ export function Footer() {
           <nav aria-label="Footer navigation" className="flex gap-16 2xl:gap-20 4xl:gap-24">
             <div>
               <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
-                Resources
+                {t("resources")}
               </p>
               <ul className="mt-4 space-y-3 2xl:mt-5 2xl:space-y-4 4xl:mt-6 4xl:space-y-5">
                 <li>
@@ -55,11 +59,27 @@ export function Footer() {
             </div>
             <div>
               <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
-                Legal
+                {t("legal")}
               </p>
               <ul className="mt-4 space-y-3 2xl:mt-5 2xl:space-y-4 4xl:mt-6 4xl:space-y-5">
                 <li>
-                  <span className="text-sm text-slate 2xl:text-base 4xl:text-lg">MIT License</span>
+                  <span className="text-sm text-slate 2xl:text-base 4xl:text-lg">{t("mitLicense")}</span>
+                </li>
+                <li>
+                  <a
+                    href="/privacy-policy"
+                    className="text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
+                  >
+                    {t("privacyPolicy")}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/cookie-policy"
+                    className="text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
+                  >
+                    {t("cookiePolicy")}
+                  </a>
                 </li>
               </ul>
             </div>
@@ -68,7 +88,7 @@ export function Footer() {
 
         <div className="mt-16 border-t border-rule pt-6 2xl:mt-20 2xl:pt-8 4xl:mt-24 4xl:pt-10">
           <p className="text-xs text-slate 2xl:text-sm 4xl:text-base">
-            &copy; {new Date().getFullYear()} Postext Contributors
+            {t("copyright", { year: new Date().getFullYear() })}
           </p>
         </div>
       </div>

@@ -1,0 +1,168 @@
+{
+  "Metadata": {
+    "title": "Postext — Tipógrafo Programable para la Web",
+    "description": "Un motor de maquetación que une siglos de tradición tipográfica con la tecnología web moderna. Markdown semántico como entrada, componentes React de calidad editorial como salida.",
+    "ogTitle": "Postext — Tipógrafo Programable para la Web",
+    "ogDescription": "Markdown semántico como entrada, componentes React de calidad editorial como salida."
+  },
+  "Navbar": {
+    "home": "Inicio de Postext",
+    "getStarted": "Empezar",
+    "github": "GitHub",
+    "githubAriaLabel": "Postext en GitHub (abre en nueva pestaña)"
+  },
+  "Hero": {
+    "version": "v0.0.2",
+    "title": "El Tipógrafo Programable para la Web",
+    "subtitle": "Postext toma markdown semántico y aplica reglas de maquetación editorial centenarias — prevención de huérfanas, balanceo de columnas, colocación de figuras — produciendo componentes React de calidad editorial.",
+    "getStarted": "Empezar",
+    "viewOnGitHub": "Ver en GitHub"
+  },
+  "About": {
+    "eyebrow": "Qué Es Postext",
+    "titleLine1": "Maquetación Editorial,",
+    "titleLine2": "Computada para la Web",
+    "paragraph1": "CSS te da maquetación responsiva — flexbox, grid, columnas. Pero no puede balancear columnas, prevenir huérfanas, fluir texto alrededor de figuras, ni colocar notas al pie en la parte inferior de una columna. Estas son decisiones editoriales refinadas durante siglos de tipografía impresa.",
+    "paragraph2prefix": "Postext cierra esa brecha. Dale markdown semántico y un objeto de configuración. Mide texto 300–600× más rápido que el DOM usando ",
+    "pretextLink": "@chenglou/pretext",
+    "paragraph2suffix": ", y devuelve componentes React maquetados según estándares tipográficos profesionales.",
+    "inputLabel": "Entrada",
+    "outputLabel": "Salida",
+    "inputAriaLabel": "Ejemplo de entrada markdown",
+    "outputAriaLabel": "Representación visual de salida tipográfica con columnas balanceadas, colocación de figuras y notas al pie"
+  },
+  "Features": {
+    "eyebrow": "Capacidades",
+    "title": "Lo que los Tipógrafos Siempre Supieron",
+    "orphanTitle": "Prevención de Huérfanas y Viudas",
+    "orphanDescription": "Ninguna línea solitaria varada en la parte superior o inferior de una columna. Postext aplica reglas tipográficas que CSS no puede expresar.",
+    "columnTitle": "Balanceo de Columnas",
+    "columnDescription": "Contenido distribuido uniformemente entre columnas para que terminen a la misma altura — como lo haría un tipógrafo profesional.",
+    "flowTitle": "Flujo de Texto Alrededor de Figuras",
+    "flowDescription": "Imágenes, citas destacadas y tablas colocadas en línea, flotantes o en márgenes con texto fluyendo naturalmente a su alrededor.",
+    "footnotesTitle": "Notas al Pie y Notas Marginales",
+    "footnotesDescription": "Notas al pie ancladas al fondo de columna. Notas marginales alineadas con el párrafo que las referencia. Notas finales recopiladas al final de sección.",
+    "hyphenationTitle": "Separación Silábica y Optimización de Bordes",
+    "hyphenationDescription": "División inteligente de palabras y suavizado del borde derecho que previene ríos de espacio en blanco y produce bloques de texto uniformes.",
+    "outputTitle": "Salida Web y PDF",
+    "outputDescription": "Un motor de maquetación, dos renderizadores. Genera componentes React para la web o salida PDF para impresión — desde la misma fuente."
+  },
+  "ApiPreview": {
+    "eyebrow": "API",
+    "title": "Una Función, Control Total",
+    "description": "Llama a <code>createLayout</code> con tu contenido y un objeto de configuración. Obtén un componente React maquetado según tus especificaciones."
+  },
+  "HowItWorks": {
+    "eyebrow": "Flujo de Trabajo",
+    "title": "Tres Pasos hacia una Maquetación de Calidad Editorial",
+    "step1Title": "Escribe Markdown Semántico",
+    "step1Description": "Crea tu contenido en markdown enriquecido con referencias a recursos y marcadores de notas al pie. Sin preocupaciones de maquetación — solo contenido.",
+    "step2Title": "Configura las Reglas de Maquetación",
+    "step2Description": "Define columnas, reglas tipográficas, estrategias de colocación de recursos y sobrecargas de sección en un objeto PostextConfig.",
+    "step3Title": "Renderiza Componentes React",
+    "step3Description": "Llama a createLayout y recibe un componente React con maquetación editorial pixel-perfect — listo para la web o PDF."
+  },
+  "Install": {
+    "eyebrow": "Instalación",
+    "title": "Empieza en Menos de un Minuto",
+    "commentInstall": "# Instala con tu gestor de paquetes",
+    "commentQuickStart": "// Inicio rápido"
+  },
+  "CodeBlock": {
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "copyAriaLabel": "Copiar código al portapapeles",
+    "copiedAriaLabel": "Código copiado al portapapeles",
+    "codeAriaLabel": "Ejemplo de código"
+  },
+  "Footer": {
+    "tagline": "Tipógrafo programable para la web.",
+    "builtWith": "Hecho con",
+    "resources": "Recursos",
+    "legal": "Legal",
+    "mitLicense": "Licencia MIT",
+    "privacyPolicy": "Política de Privacidad",
+    "cookiePolicy": "Política de Cookies",
+    "copyright": "© {year} Colaboradores de Postext"
+  },
+  "Theme": {
+    "toggleLight": "Cambiar a modo claro",
+    "toggleDark": "Cambiar a modo oscuro"
+  },
+  "Language": {
+    "switchTo": "Switch to English",
+    "current": "ES"
+  },
+  "CookieBanner": {
+    "ariaLabel": "Consentimiento de cookies",
+    "message": "Usamos cookies para mejorar tu experiencia. Lee nuestra <privacyLink>Política de Privacidad</privacyLink> y <cookieLink>Política de Cookies</cookieLink> para más información.",
+    "acceptAll": "Aceptar Todas",
+    "rejectAll": "Rechazar Todas",
+    "customize": "Personalizar",
+    "customizeTitle": "Gestionar Preferencias de Cookies",
+    "necessary": "Estrictamente Necesarias",
+    "necessaryDescription": "Necesarias para el funcionamiento del sitio. No se pueden desactivar.",
+    "analytics": "Analíticas",
+    "analyticsDescription": "Nos ayudan a entender cómo los visitantes interactúan con el sitio.",
+    "marketing": "Marketing",
+    "marketingDescription": "Se usan para mostrar anuncios relevantes.",
+    "savePreferences": "Guardar Preferencias"
+  },
+  "PrivacyPolicy": {
+    "metaTitle": "Política de Privacidad — Postext",
+    "metaDescription": "Política de privacidad del sitio web de Postext.",
+    "title": "Política de Privacidad",
+    "lastUpdated": "Última actualización: abril de 2026",
+    "controllerTitle": "Responsable del Tratamiento",
+    "controllerText": "Postext es un proyecto de código abierto. Para consultas sobre privacidad, contáctanos a través del repositorio de GitHub del proyecto.",
+    "dataCollectedTitle": "Datos que Recopilamos",
+    "dataCollectedText": "Este sitio web no recopila datos personales por defecto. Solo almacenamos una cookie de preferencia de consentimiento en tu dispositivo. Si consientes cookies analíticas o de marketing en el futuro, se podrán recopilar datos adicionales según se describe en nuestra Política de Cookies.",
+    "legalBasisTitle": "Base Legal del Tratamiento",
+    "legalBasisText": "Tratamos datos en base a tu consentimiento (Artículo 6(1)(a) RGPD). Las cookies estrictamente necesarias se procesan en base a nuestro interés legítimo en proporcionar un sitio web funcional (Artículo 6(1)(f) RGPD).",
+    "cookiesTitle": "Cookies",
+    "cookiesText": "Para información detallada sobre las cookies que usamos, consulta nuestra <cookieLink>Política de Cookies</cookieLink>.",
+    "rightsTitle": "Tus Derechos",
+    "rightsText": "Bajo el RGPD, tienes los siguientes derechos respecto a tus datos personales:",
+    "rightAccess": "Derecho de acceso — solicitar una copia de tus datos",
+    "rightRectification": "Derecho de rectificación — solicitar la corrección de datos inexactos",
+    "rightErasure": "Derecho de supresión — solicitar la eliminación de tus datos",
+    "rightPortability": "Derecho a la portabilidad — solicitar tus datos en un formato portable",
+    "rightObjection": "Derecho de oposición — oponerte al tratamiento de tus datos",
+    "rightWithdraw": "Derecho a retirar el consentimiento — retirar el consentimiento en cualquier momento a través de los ajustes de cookies",
+    "childrenTitle": "Privacidad de Menores",
+    "childrenText": "Este sitio web es una herramienta para desarrolladores y no está dirigido a menores de 16 años. No recopilamos conscientemente datos personales de menores.",
+    "contactTitle": "Contacto",
+    "contactText": "Para cualquier consulta relacionada con la privacidad, abre un issue en el repositorio de GitHub de Postext o contacta con los mantenedores del proyecto."
+  },
+  "CookiePolicy": {
+    "metaTitle": "Política de Cookies — Postext",
+    "metaDescription": "Política de cookies del sitio web de Postext.",
+    "title": "Política de Cookies",
+    "lastUpdated": "Última actualización: abril de 2026",
+    "whatAreCookiesTitle": "Qué Son las Cookies",
+    "whatAreCookiesText": "Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas un sitio web. Se usan para recordar tus preferencias y mejorar tu experiencia.",
+    "cookiesWeUseTitle": "Cookies que Usamos",
+    "cookiesWeUseText": "Actualmente, este sitio web utiliza una única cookie:",
+    "tableName": "Nombre",
+    "tableCategory": "Categoría",
+    "tableDuration": "Duración",
+    "tablePurpose": "Propósito",
+    "categoryNecessary": "Necesaria",
+    "duration365": "1 año",
+    "purposeConsent": "Almacena tus preferencias de consentimiento de cookies",
+    "categoriesTitle": "Categorías de Cookies",
+    "categoryNecessaryLabel": "Estrictamente Necesarias",
+    "categoryNecessaryDesc": "Esenciales para el funcionamiento correcto del sitio web. No se pueden desactivar.",
+    "categoryAnalyticsLabel": "Analíticas",
+    "categoryAnalyticsDesc": "Nos ayudan a entender cómo los visitantes usan el sitio web para poder mejorarlo. Actualmente no están en uso.",
+    "categoryMarketingLabel": "Marketing",
+    "categoryMarketingDesc": "Se usan para mostrar anuncios relevantes para ti. Actualmente no están en uso.",
+    "manageCookiesTitle": "Cómo Gestionar las Cookies",
+    "manageCookiesText": "Puedes cambiar tus preferencias de cookies en cualquier momento usando el banner de cookies en nuestro sitio web. También puedes eliminar cookies a través de la configuración de tu navegador.",
+    "moreInfoTitle": "Más Información",
+    "moreInfoText": "Para más detalles sobre cómo tratamos tus datos, consulta nuestra <privacyLink>Política de Privacidad</privacyLink>."
+  },
+  "Accessibility": {
+    "skipToContent": "Saltar al contenido principal"
+  }
+}
