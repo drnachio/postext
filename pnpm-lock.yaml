@@ -60,6 +60,12 @@ importers:
       '@postext/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/react':
+        specifier: ^19
+        version: 19.2.14
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
       typescript:
         specifier: latest
         version: 6.0.2
