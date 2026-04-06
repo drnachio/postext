@@ -1,0 +1,22 @@
+{
+  "name": "postext",
+  "version": "0.0.1",
+  "description": "Postext - the core library",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@postext/typescript-config": "workspace:*",
+    "typescript": "latest"
+  }
+}
