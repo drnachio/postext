@@ -1,28 +1,29 @@
 export function AboutSection() {
   return (
-    <section className="mx-auto w-full max-w-5xl px-6 py-24">
-      <div className="grid grid-cols-1 gap-16 md:grid-cols-12">
+    <section aria-labelledby="about-heading" className="mx-auto w-full max-w-5xl px-6 py-24 2xl:max-w-6xl 2xl:px-8 2xl:py-32 4xl:max-w-7xl 4xl:px-12 4xl:py-40">
+      <div className="grid grid-cols-1 gap-16 md:grid-cols-12 2xl:gap-20 4xl:gap-24">
         {/* Left — explanation */}
         <div className="md:col-span-5">
-          <p className="font-mono text-xs uppercase tracking-widest text-slate">
+          <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
             What Is Postext
           </p>
           <h2
-            className="mt-4 font-display text-3xl font-bold italic leading-tight tracking-tight"
+            id="about-heading"
+            className="mt-4 font-display text-3xl font-bold italic leading-tight tracking-tight 2xl:text-4xl 4xl:text-5xl"
             style={{ textWrap: "balance" }}
           >
             Editorial Layout,
             <br />
             Computed for the Web
           </h2>
-          <p className="mt-6 leading-[1.8] text-slate">
+          <p className="mt-6 leading-[1.8] text-slate 2xl:text-lg 4xl:text-xl">
             CSS gives you responsive layout — flexbox, grid, columns. But it
             cannot balance columns, prevent orphans, flow text around figures, or
             place footnotes at the bottom of a column. These are editorial
             decisions that have been refined over centuries of print
             typesetting.
           </p>
-          <p className="mt-4 leading-[1.8] text-slate">
+          <p className="mt-4 leading-[1.8] text-slate 2xl:text-lg 4xl:text-xl">
             Postext bridges that gap. Feed it semantic markdown and a
             configuration object. It measures text 300&ndash;600&times; faster
             than the DOM using{" "}
@@ -30,7 +31,7 @@ export function AboutSection() {
               href="https://github.com/chenglou/pretext"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink-red"
+              className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-foreground"
             >
               @chenglou/pretext
             </a>
@@ -40,16 +41,19 @@ export function AboutSection() {
         </div>
 
         {/* Divider */}
-        <div className="hidden md:col-span-1 md:flex md:justify-center">
+        <div className="hidden md:col-span-1 md:flex md:justify-center" aria-hidden="true">
           <div className="column-rule" />
         </div>
 
         {/* Right — visual: markdown → typeset output */}
         <div className="md:col-span-6">
-          <div className="space-y-6">
+          <div className="space-y-6 2xl:space-y-8 4xl:space-y-10">
             <div>
-              <p className="mb-2 font-mono text-xs text-slate">Input</p>
-              <pre className="overflow-x-auto border border-rule bg-surface p-5 font-mono text-sm leading-7 text-slate">
+              <p className="mb-2 font-mono text-xs text-slate 2xl:text-sm 4xl:text-base">Input</p>
+              <pre
+                className="overflow-x-auto border border-rule bg-surface p-5 font-mono text-sm leading-7 text-slate 2xl:p-6 2xl:text-base 2xl:leading-8 4xl:p-8 4xl:text-lg 4xl:leading-9"
+                aria-label="Example markdown input"
+              >
 {`# Chapter One
 
 The quick brown fox jumps over
@@ -62,28 +66,32 @@ at column bottom automatically.`}
               </pre>
             </div>
             <div>
-              <p className="mb-2 font-mono text-xs text-slate">Output</p>
-              <div className="flex gap-4 border border-rule bg-surface p-5">
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 w-3/4 bg-rule" />
-                  <div className="h-2 w-full bg-rule/50" />
-                  <div className="h-2 w-full bg-rule/50" />
-                  <div className="h-2 w-5/6 bg-rule/50" />
-                  <div className="mt-3 h-12 w-full border border-rule bg-background" />
-                  <div className="h-2 w-full bg-rule/50" />
-                  <div className="h-2 w-4/5 bg-rule/50" />
+              <p className="mb-2 font-mono text-xs text-slate 2xl:text-sm 4xl:text-base">Output</p>
+              <div
+                className="flex gap-4 border border-rule bg-surface p-5 2xl:gap-6 2xl:p-6 4xl:gap-8 4xl:p-8"
+                role="img"
+                aria-label="Visual representation of typeset output with balanced columns, figure placement, and footnotes"
+              >
+                <div className="flex-1 space-y-2 2xl:space-y-3 4xl:space-y-4">
+                  <div className="h-3 w-3/4 bg-rule 2xl:h-4 4xl:h-5" />
+                  <div className="h-2 w-full bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-full bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-5/6 bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="mt-3 h-12 w-full border border-rule bg-background 2xl:mt-4 2xl:h-16 4xl:mt-5 4xl:h-20" />
+                  <div className="h-2 w-full bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-4/5 bg-rule/50 2xl:h-3 4xl:h-4" />
                 </div>
                 <div className="column-rule" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-2 w-full bg-rule/50" />
-                  <div className="h-2 w-full bg-rule/50" />
-                  <div className="h-2 w-full bg-rule/50" />
-                  <div className="h-2 w-3/4 bg-rule/50" />
-                  <div className="h-2 w-full bg-rule/50" />
-                  <div className="h-2 w-full bg-rule/50" />
-                  <div className="h-2 w-2/3 bg-rule/50" />
-                  <div className="mt-4 border-t border-rule pt-2">
-                    <div className="h-1.5 w-3/4 bg-rule/30" />
+                <div className="flex-1 space-y-2 2xl:space-y-3 4xl:space-y-4">
+                  <div className="h-2 w-full bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-full bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-full bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-3/4 bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-full bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-full bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="h-2 w-2/3 bg-rule/50 2xl:h-3 4xl:h-4" />
+                  <div className="mt-4 border-t border-rule pt-2 2xl:mt-5 2xl:pt-3 4xl:mt-6 4xl:pt-4">
+                    <div className="h-1.5 w-3/4 bg-rule/30 2xl:h-2 4xl:h-3" />
                   </div>
                 </div>
               </div>
