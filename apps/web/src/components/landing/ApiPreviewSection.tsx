@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { CodeBlock } from "./CodeBlock";
 
 const codeRaw = `import { createLayout } from "postext";
@@ -26,23 +27,25 @@ const Article = createLayout(
   }
 );`;
 
-export function ApiPreviewSection() {
+export async function ApiPreviewSection() {
+  const t = await getTranslations("ApiPreview");
+
   return (
     <section aria-labelledby="api-heading" className="mx-auto w-full max-w-5xl px-6 py-24 2xl:max-w-6xl 2xl:px-8 2xl:py-32 4xl:max-w-7xl 4xl:px-12 4xl:py-40">
       <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
-        API
+        {t("eyebrow")}
       </p>
       <h2
         id="api-heading"
         className="mt-4 font-display text-3xl font-bold italic tracking-tight 2xl:text-4xl 4xl:text-5xl"
         style={{ textWrap: "balance" }}
       >
-        One Function, Full Control
+        {t("title")}
       </h2>
       <p className="mt-4 max-w-2xl leading-[1.8] text-slate 2xl:max-w-3xl 2xl:text-lg 4xl:max-w-4xl 4xl:text-xl">
-        Call <code className="font-mono text-foreground">createLayout</code>{" "}
-        with your content and a configuration object. Get back a React component
-        laid out to your specifications.
+        {t.rich("description", {
+          code: (chunks) => <code className="font-mono text-foreground">{chunks}</code>,
+        })}
       </p>
 
       <div className="mt-10 2xl:mt-12 4xl:mt-16">

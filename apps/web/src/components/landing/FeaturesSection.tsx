@@ -1,51 +1,31 @@
-const features = [
-  {
-    title: "Orphan & Widow Prevention",
-    description:
-      "No single lines stranded at the top or bottom of a column. Postext enforces typographic rules that CSS cannot express.",
-  },
-  {
-    title: "Column Balancing",
-    description:
-      "Content distributed evenly across columns so they end at the same height — the way a professional typesetter would set them.",
-  },
-  {
-    title: "Text Flow Around Figures",
-    description:
-      "Images, pull quotes, and tables placed inline, floated, or in margins with text flowing naturally around them.",
-  },
-  {
-    title: "Footnotes & Margin Notes",
-    description:
-      "Footnotes anchored to column bottoms. Margin notes aligned with the paragraph that references them. Endnotes collected at section end.",
-  },
-  {
-    title: "Hyphenation & Rag Optimization",
-    description:
-      "Intelligent word breaking and right-edge smoothing that prevents rivers of whitespace and produces even text blocks.",
-  },
-  {
-    title: "Web & PDF Output",
-    description:
-      "One layout engine, two renderers. Generate React components for the web or PDF output for print — from the same source.",
-  },
-];
+import { getTranslations } from "next-intl/server";
 
-export function FeaturesSection() {
+export async function FeaturesSection() {
+  const t = await getTranslations("Features");
+
+  const features = [
+    { title: t("orphanTitle"), description: t("orphanDescription") },
+    { title: t("columnTitle"), description: t("columnDescription") },
+    { title: t("flowTitle"), description: t("flowDescription") },
+    { title: t("footnotesTitle"), description: t("footnotesDescription") },
+    { title: t("hyphenationTitle"), description: t("hyphenationDescription") },
+    { title: t("outputTitle"), description: t("outputDescription") },
+  ];
+
   const leftColumn = features.slice(0, 3);
   const rightColumn = features.slice(3, 6);
 
   return (
     <section aria-labelledby="features-heading" className="mx-auto w-full max-w-5xl px-6 py-24 2xl:max-w-6xl 2xl:px-8 2xl:py-32 4xl:max-w-7xl 4xl:px-12 4xl:py-40">
       <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
-        Capabilities
+        {t("eyebrow")}
       </p>
       <h2
         id="features-heading"
         className="mt-4 font-display text-3xl font-bold italic tracking-tight 2xl:text-4xl 4xl:text-5xl"
         style={{ textWrap: "balance" }}
       >
-        What Print Typesetters Knew All Along
+        {t("title")}
       </h2>
 
       <div className="mt-16 grid grid-cols-1 gap-0 md:grid-cols-[1fr_1px_1fr] 2xl:mt-20 4xl:mt-24">

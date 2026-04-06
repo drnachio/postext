@@ -1,0 +1,168 @@
+{
+  "Metadata": {
+    "title": "Postext — Programmable Typesetter for the Web",
+    "description": "A layout engine that bridges centuries-old print typesetting craft with modern web technology. Semantic markdown in, publication-grade React components out.",
+    "ogTitle": "Postext — Programmable Typesetter for the Web",
+    "ogDescription": "Semantic markdown in, publication-grade React components out."
+  },
+  "Navbar": {
+    "home": "Postext home",
+    "getStarted": "Get Started",
+    "github": "GitHub",
+    "githubAriaLabel": "Postext on GitHub (opens in new tab)"
+  },
+  "Hero": {
+    "version": "v0.0.2",
+    "title": "The Programmable Typesetter for the Web",
+    "subtitle": "Postext takes semantic markdown and applies centuries-old editorial layout rules — orphan prevention, column balancing, figure placement — producing publication-grade React components.",
+    "getStarted": "Get Started",
+    "viewOnGitHub": "View on GitHub"
+  },
+  "About": {
+    "eyebrow": "What Is Postext",
+    "titleLine1": "Editorial Layout,",
+    "titleLine2": "Computed for the Web",
+    "paragraph1": "CSS gives you responsive layout — flexbox, grid, columns. But it cannot balance columns, prevent orphans, flow text around figures, or place footnotes at the bottom of a column. These are editorial decisions that have been refined over centuries of print typesetting.",
+    "paragraph2prefix": "Postext bridges that gap. Feed it semantic markdown and a configuration object. It measures text 300–600× faster than the DOM using ",
+    "pretextLink": "@chenglou/pretext",
+    "paragraph2suffix": ", then returns React components laid out to professional typographic standards.",
+    "inputLabel": "Input",
+    "outputLabel": "Output",
+    "inputAriaLabel": "Example markdown input",
+    "outputAriaLabel": "Visual representation of typeset output with balanced columns, figure placement, and footnotes"
+  },
+  "Features": {
+    "eyebrow": "Capabilities",
+    "title": "What Print Typesetters Knew All Along",
+    "orphanTitle": "Orphan & Widow Prevention",
+    "orphanDescription": "No single lines stranded at the top or bottom of a column. Postext enforces typographic rules that CSS cannot express.",
+    "columnTitle": "Column Balancing",
+    "columnDescription": "Content distributed evenly across columns so they end at the same height — the way a professional typesetter would set them.",
+    "flowTitle": "Text Flow Around Figures",
+    "flowDescription": "Images, pull quotes, and tables placed inline, floated, or in margins with text flowing naturally around them.",
+    "footnotesTitle": "Footnotes & Margin Notes",
+    "footnotesDescription": "Footnotes anchored to column bottoms. Margin notes aligned with the paragraph that references them. Endnotes collected at section end.",
+    "hyphenationTitle": "Hyphenation & Rag Optimization",
+    "hyphenationDescription": "Intelligent word breaking and right-edge smoothing that prevents rivers of whitespace and produces even text blocks.",
+    "outputTitle": "Web & PDF Output",
+    "outputDescription": "One layout engine, two renderers. Generate React components for the web or PDF output for print — from the same source."
+  },
+  "ApiPreview": {
+    "eyebrow": "API",
+    "title": "One Function, Full Control",
+    "description": "Call <code>createLayout</code> with your content and a configuration object. Get back a React component laid out to your specifications."
+  },
+  "HowItWorks": {
+    "eyebrow": "Workflow",
+    "title": "Three Steps to Publication-Grade Layout",
+    "step1Title": "Write Semantic Markdown",
+    "step1Description": "Author your content in enriched markdown with resource references and footnote markers. No layout concerns — just content.",
+    "step2Title": "Configure Layout Rules",
+    "step2Description": "Define columns, typography rules, resource placement strategies, and section overrides in a PostextConfig object.",
+    "step3Title": "Render React Components",
+    "step3Description": "Call createLayout and receive a React component with pixel-perfect editorial layout — ready for the web or PDF."
+  },
+  "Install": {
+    "eyebrow": "Installation",
+    "title": "Start in Under a Minute",
+    "commentInstall": "# Install with your package manager",
+    "commentQuickStart": "// Quick start"
+  },
+  "CodeBlock": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyAriaLabel": "Copy code to clipboard",
+    "copiedAriaLabel": "Code copied to clipboard",
+    "codeAriaLabel": "Code example"
+  },
+  "Footer": {
+    "tagline": "Programmable typesetter for the web.",
+    "builtWith": "Built with",
+    "resources": "Resources",
+    "legal": "Legal",
+    "mitLicense": "MIT License",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "copyright": "© {year} Postext Contributors"
+  },
+  "Theme": {
+    "toggleLight": "Switch to light mode",
+    "toggleDark": "Switch to dark mode"
+  },
+  "Language": {
+    "switchTo": "Cambiar a español",
+    "current": "EN"
+  },
+  "CookieBanner": {
+    "ariaLabel": "Cookie consent",
+    "message": "We use cookies to improve your experience. Read our <privacyLink>Privacy Policy</privacyLink> and <cookieLink>Cookie Policy</cookieLink> for more information.",
+    "acceptAll": "Accept All",
+    "rejectAll": "Reject All",
+    "customize": "Customize",
+    "customizeTitle": "Manage Cookie Preferences",
+    "necessary": "Strictly Necessary",
+    "necessaryDescription": "Required for the website to function. Cannot be disabled.",
+    "analytics": "Analytics",
+    "analyticsDescription": "Help us understand how visitors interact with the website.",
+    "marketing": "Marketing",
+    "marketingDescription": "Used to deliver relevant advertisements.",
+    "savePreferences": "Save Preferences"
+  },
+  "PrivacyPolicy": {
+    "metaTitle": "Privacy Policy — Postext",
+    "metaDescription": "Privacy policy for the Postext website.",
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: April 2026",
+    "controllerTitle": "Data Controller",
+    "controllerText": "Postext is an open-source project. For privacy inquiries, please contact us via the project's GitHub repository.",
+    "dataCollectedTitle": "Data We Collect",
+    "dataCollectedText": "This website does not collect personal data by default. We only store a cookie consent preference cookie on your device. If you consent to analytics or marketing cookies in the future, additional data may be collected as described in our Cookie Policy.",
+    "legalBasisTitle": "Legal Basis for Processing",
+    "legalBasisText": "We process data based on your consent (Article 6(1)(a) GDPR). Strictly necessary cookies are processed based on our legitimate interest in providing a functional website (Article 6(1)(f) GDPR).",
+    "cookiesTitle": "Cookies",
+    "cookiesText": "For detailed information about the cookies we use, please see our <cookieLink>Cookie Policy</cookieLink>.",
+    "rightsTitle": "Your Rights",
+    "rightsText": "Under the GDPR, you have the following rights regarding your personal data:",
+    "rightAccess": "Right of access — request a copy of your data",
+    "rightRectification": "Right to rectification — request correction of inaccurate data",
+    "rightErasure": "Right to erasure — request deletion of your data",
+    "rightPortability": "Right to data portability — request your data in a portable format",
+    "rightObjection": "Right to object — object to processing of your data",
+    "rightWithdraw": "Right to withdraw consent — withdraw consent at any time via the cookie settings",
+    "childrenTitle": "Children's Privacy",
+    "childrenText": "This website is a developer tool and is not directed at children under 16. We do not knowingly collect personal data from children.",
+    "contactTitle": "Contact",
+    "contactText": "For any privacy-related questions, please open an issue on the Postext GitHub repository or contact the project maintainers."
+  },
+  "CookiePolicy": {
+    "metaTitle": "Cookie Policy — Postext",
+    "metaDescription": "Cookie policy for the Postext website.",
+    "title": "Cookie Policy",
+    "lastUpdated": "Last updated: April 2026",
+    "whatAreCookiesTitle": "What Are Cookies",
+    "whatAreCookiesText": "Cookies are small text files stored on your device when you visit a website. They are used to remember your preferences and improve your experience.",
+    "cookiesWeUseTitle": "Cookies We Use",
+    "cookiesWeUseText": "Currently, this website uses only one cookie:",
+    "tableName": "Name",
+    "tableCategory": "Category",
+    "tableDuration": "Duration",
+    "tablePurpose": "Purpose",
+    "categoryNecessary": "Necessary",
+    "duration365": "1 year",
+    "purposeConsent": "Stores your cookie consent preferences",
+    "categoriesTitle": "Cookie Categories",
+    "categoryNecessaryLabel": "Strictly Necessary",
+    "categoryNecessaryDesc": "Essential for the website to function properly. These cookies cannot be disabled.",
+    "categoryAnalyticsLabel": "Analytics",
+    "categoryAnalyticsDesc": "Help us understand how visitors use the website so we can improve it. Currently not in use.",
+    "categoryMarketingLabel": "Marketing",
+    "categoryMarketingDesc": "Used to deliver advertisements relevant to you. Currently not in use.",
+    "manageCookiesTitle": "How to Manage Cookies",
+    "manageCookiesText": "You can change your cookie preferences at any time using the cookie banner on our website. You can also delete cookies through your browser settings.",
+    "moreInfoTitle": "More Information",
+    "moreInfoText": "For more details about how we handle your data, please see our <privacyLink>Privacy Policy</privacyLink>."
+  },
+  "Accessibility": {
+    "skipToContent": "Skip to main content"
+  }
+}

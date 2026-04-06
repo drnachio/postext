@@ -1,36 +1,25 @@
-const steps = [
-  {
-    number: "01",
-    title: "Write Semantic Markdown",
-    description:
-      "Author your content in enriched markdown with resource references and footnote markers. No layout concerns — just content.",
-  },
-  {
-    number: "02",
-    title: "Configure Layout Rules",
-    description:
-      "Define columns, typography rules, resource placement strategies, and section overrides in a PostextConfig object.",
-  },
-  {
-    number: "03",
-    title: "Render React Components",
-    description:
-      "Call createLayout and receive a React component with pixel-perfect editorial layout — ready for the web or PDF.",
-  },
-];
+import { getTranslations } from "next-intl/server";
 
-export function HowItWorksSection() {
+export async function HowItWorksSection() {
+  const t = await getTranslations("HowItWorks");
+
+  const steps = [
+    { number: "01", title: t("step1Title"), description: t("step1Description") },
+    { number: "02", title: t("step2Title"), description: t("step2Description") },
+    { number: "03", title: t("step3Title"), description: t("step3Description") },
+  ];
+
   return (
     <section aria-labelledby="how-heading" className="mx-auto w-full max-w-5xl px-6 py-24 2xl:max-w-6xl 2xl:px-8 2xl:py-32 4xl:max-w-7xl 4xl:px-12 4xl:py-40">
       <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
-        Workflow
+        {t("eyebrow")}
       </p>
       <h2
         id="how-heading"
         className="mt-4 font-display text-3xl font-bold italic tracking-tight 2xl:text-4xl 4xl:text-5xl"
         style={{ textWrap: "balance" }}
       >
-        Three Steps to Publication-Grade Layout
+        {t("title")}
       </h2>
 
       <ol className="mt-16 space-y-0 2xl:mt-20 4xl:mt-24" aria-label="Workflow steps">

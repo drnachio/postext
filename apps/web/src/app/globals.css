@@ -4,7 +4,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
+:root,
+:root.dark {
   --background: #09090B;
   --foreground: #EDEDED;
   --surface: #18181B;
@@ -103,6 +104,47 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+:root.light {
+  --background: #FFFFFF;
+  --foreground: #1A1A1A;
+  --surface: #F5F5F5;
+  --gilt: #B8860B;
+  --gilt-hover: #9A7209;
+  --accent-blue: #2B4ACB;
+  --slate: #525252;
+  --rule: #D4D4D8;
+  --paper: #FFFFFF;
+  --card: oklch(0.97 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(0.97 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.93 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.93 0 0);
+  --muted-foreground: oklch(0.445 0 0);
+  --accent: oklch(0.93 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0 0 0 / 12%);
+  --input: oklch(0 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.205 0 0);
+  --chart-2: oklch(0.445 0 0);
+  --chart-3: oklch(0.556 0 0);
+  --chart-4: oklch(0.637 0 0);
+  --chart-5: oklch(0.708 0 0);
+  --sidebar: oklch(0.97 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.93 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0 0 0 / 12%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
 /* Baseline grid pattern for hero background */
 .bg-baseline-grid {
   background-image: repeating-linear-gradient(
@@ -128,6 +170,26 @@
 .syntax-punctuation { color: #9E9EA8; }
 .syntax-property { color: #EDEDED; }
 .syntax-value { color: #6B8AED; }
+
+/* Syntax highlighting — light mode (AA contrast ≥ 4.5:1 on #FFFFFF) */
+:root.light .syntax-keyword { color: #B8860B; }
+:root.light .syntax-string { color: #9A7209; }
+:root.light .syntax-comment { color: #6B7280; font-style: italic; }
+:root.light .syntax-type { color: #525252; }
+:root.light .syntax-punctuation { color: #6B7280; }
+:root.light .syntax-property { color: #1A1A1A; }
+:root.light .syntax-value { color: #2B4ACB; }
+
+/* Light mode baseline grid adjustment */
+:root.light .bg-baseline-grid {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    rgba(0, 0, 0, 0.04) 31px,
+    rgba(0, 0, 0, 0.04) 32px
+  );
+}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
