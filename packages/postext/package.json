@@ -1,6 +1,6 @@
 {
   "name": "postext",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A programmable typesetter for the web",
   "type": "module",
   "license": "MIT",
