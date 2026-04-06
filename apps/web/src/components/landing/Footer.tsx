@@ -5,7 +5,7 @@ export function Footer() {
         <div className="flex flex-col gap-10 sm:flex-row sm:gap-0">
           <div className="flex-1">
             <p className="flex items-baseline text-xl tracking-tight">
-              <span className="font-logo text-3xl font-black text-ink-red 2xl:text-4xl 4xl:text-5xl">P</span>
+              <span className="font-logo text-3xl font-black text-gilt 2xl:text-4xl 4xl:text-5xl">P</span>
               <span className="-ml-1 font-display text-lg text-foreground 2xl:text-xl 4xl:text-2xl">ostext</span>
             </p>
             <p className="mt-2 text-sm leading-relaxed text-slate 2xl:text-base 4xl:text-lg">

@@ -8,8 +8,8 @@
   --background: #09090B;
   --foreground: #EDEDED;
   --surface: #18181B;
-  --ink-red: #FF4D56;
-  --ink-red-hover: #E5434B;
+  --gilt: #E0A816;
+  --gilt-hover: #C4930F;
   --accent-blue: #6B8AED;
   --slate: #B4B4BC;
   --rule: #27272A;
@@ -54,8 +54,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
-  --color-ink-red: var(--ink-red);
-  --color-ink-red-hover: var(--ink-red-hover);
+  --color-gilt: var(--gilt);
+  --color-gilt-hover: var(--gilt-hover);
   --color-accent-blue: var(--accent-blue);
   --color-slate: var(--slate);
   --color-rule: var(--rule);
@@ -121,8 +121,8 @@
 }
 
 /* Syntax highlighting — minimal, editorial (AAA contrast ≥ 7:1 on #09090B) */
-.syntax-keyword { color: #FF4D56; }
-.syntax-string { color: #FF8A8F; }
+.syntax-keyword { color: #E0A816; }
+.syntax-string { color: #F0C94E; }
 .syntax-comment { color: #8B8B95; font-style: italic; }
 .syntax-type { color: #B4B4BC; }
 .syntax-punctuation { color: #9E9EA8; }
@@ -147,18 +147,19 @@
   }
 }
 
-/* Responsive font-size scaling for large displays */
+/* Responsive font-size scaling for all displays */
+html { font-size: 18px; }
 @media (min-width: 1536px) {
-  html { font-size: 18px; }
-}
-@media (min-width: 1920px) {
   html { font-size: 20px; }
 }
+@media (min-width: 1920px) {
+  html { font-size: 22px; }
+}
 @media (min-width: 2560px) {
-  html { font-size: 24px; }
+  html { font-size: 26px; }
 }
 @media (min-width: 3840px) {
-  html { font-size: 28px; }
+  html { font-size: 30px; }
 }
 
 /* Enhanced focus-visible for accessibility */

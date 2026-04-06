@@ -40,7 +40,7 @@ export function HowItWorksSection() {
               <div className="mx-0 border-t border-rule" aria-hidden="true" />
             )}
             <div className="flex gap-8 py-10 2xl:gap-10 2xl:py-12 4xl:gap-14 4xl:py-16">
-              <span className="font-display text-5xl font-bold italic leading-none text-rule 2xl:text-6xl 4xl:text-7xl" aria-hidden="true">
+              <span className="font-display text-5xl font-bold italic leading-none text-gilt 2xl:text-6xl 4xl:text-7xl" aria-hidden="true">
                 {step.number}
               </span>
               <div>

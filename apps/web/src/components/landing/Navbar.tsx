@@ -6,7 +6,7 @@ export function Navbar() {
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-2 2xl:max-w-6xl 2xl:px-8 4xl:max-w-7xl 4xl:px-12">
         <a href="/" aria-label="Postext home" className="flex items-baseline gap-0 text-xl tracking-tight">
-          <span className="font-logo text-5xl font-black text-ink-red 2xl:text-6xl 4xl:text-7xl">P</span>
+          <span className="font-logo text-5xl font-black text-gilt 2xl:text-6xl 4xl:text-7xl">P</span>
           <span className="-ml-2 font-display text-2xl text-foreground 2xl:text-3xl 4xl:text-4xl">ostext</span>
         </a>
         <div className="flex items-center gap-8 2xl:gap-10 4xl:gap-12">
