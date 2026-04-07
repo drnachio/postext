@@ -15,6 +15,7 @@ import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CookieConsentProvider } from "@/components/gdpr/CookieConsentProvider";
 import { CookieBanner } from "@/components/gdpr/CookieBanner";
+import { Analytics } from "@vercel/analytics/next";
 import { cn } from "@/lib/utils";
 import "../globals.css";
 
@@ -111,6 +112,7 @@ export default async function LocaleLayout({
             </CookieConsentProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );

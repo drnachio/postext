@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useCookieConsent, type ConsentState } from "./CookieConsentProvider";
+import { Link } from "@/i18n/navigation";
+import { useCookieConsent } from "./CookieConsentProvider";
 
 export function CookieBanner() {
   const t = useTranslations("CookieBanner");
@@ -40,20 +41,20 @@ export function CookieBanner() {
             <p className="text-sm text-slate 2xl:text-base">
               {t.rich("message", {
                 privacyLink: (chunks) => (
-                  <a
+                  <Link
                     href="/privacy-policy"
                     className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-foreground"
                   >
                     {chunks}
-                  </a>
+                  </Link>
                 ),
                 cookieLink: (chunks) => (
-                  <a
+                  <Link
                     href="/cookie-policy"
                     className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-foreground"
                   >
                     {chunks}
-                  </a>
+                  </Link>
                 ),
               })}
             </p>

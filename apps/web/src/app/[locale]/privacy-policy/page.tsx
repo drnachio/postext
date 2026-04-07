@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import type { Metadata } from "next";
@@ -67,12 +68,12 @@ export default async function PrivacyPolicyPage({
               <p className="mt-2">
                 {t.rich("cookiesText", {
                   cookieLink: (chunks) => (
-                    <a
+                    <Link
                       href="/cookie-policy"
                       className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-foreground"
                     >
                       {chunks}
-                    </a>
+                    </Link>
                   ),
                 })}
               </p>

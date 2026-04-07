@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 
 export async function Footer() {
   const t = await getTranslations("Footer");
@@ -63,28 +64,28 @@ export async function Footer() {
               </p>
               <ul className="mt-4 space-y-3 2xl:mt-5 2xl:space-y-4 4xl:mt-6 4xl:space-y-5">
                 <li>
-                  <a
+                  <Link
                     href="/license"
                     className="text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
                   >
                     {t("mitLicense")}
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/privacy-policy"
                     className="text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
                   >
                     {t("privacyPolicy")}
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/cookie-policy"
                     className="text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
                   >
                     {t("cookiePolicy")}
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
