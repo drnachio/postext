@@ -21,39 +21,66 @@ export interface ConsentState {
 
 interface CookieConsentContextValue {
   consent: ConsentState | null;
+  hasLoaded: boolean;
   updateConsent: (consent: ConsentState) => void;
   resetConsent: () => void;
 }
 
 const CookieConsentContext = createContext<CookieConsentContextValue>({
   consent: null,
+  hasLoaded: false,
   updateConsent: () => {},
   resetConsent: () => {},
 });
 
-function readConsentCookie(): ConsentState | null {
+// Cached snapshot to satisfy useSyncExternalStore's reference-equality requirement
+let cachedRaw: string | null = null;
+let cachedResult: ConsentState | null = null;
+
+function getSnapshot(): ConsentState | null {
   const raw = getCookie(CONSENT_COOKIE);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as ConsentState;
-  } catch {
-    return null;
+  if (raw !== cachedRaw) {
+    cachedRaw = raw;
+    if (raw) {
+      try {
+        cachedResult = JSON.parse(raw) as ConsentState;
+      } catch {
+        cachedResult = null;
+      }
+    } else {
+      cachedResult = null;
+    }
   }
+  return cachedResult;
 }
 
-const subscribe = () => () => {};
-const getSnapshot = readConsentCookie;
-const getServerSnapshot = (): ConsentState | null => null;
+function getServerSnapshot(): ConsentState | null {
+  return null;
+}
+
+function subscribe(callback: () => void): () => void {
+  // Re-check when the document cookie might change (e.g. from another tab)
+  const onStorage = () => callback();
+  window.addEventListener("storage", onStorage);
+  return () => window.removeEventListener("storage", onStorage);
+}
+
+// Track client mount for hasLoaded
+function subscribeMount(callback: () => void): () => void {
+  callback();
+  return () => {};
+}
+function getMounted(): boolean {
+  return true;
+}
+function getServerMounted(): boolean {
+  return false;
+}
 
 export function CookieConsentProvider({ children }: { children: ReactNode }) {
   const initialConsent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const hasLoaded = useSyncExternalStore(subscribeMount, getMounted, getServerMounted);
   const [consent, setConsent] = useState<ConsentState | null>(initialConsent);
-  const [loaded, setLoaded] = useState(initialConsent !== null);
-
-  // Mark as loaded on the client after first render
-  if (!loaded && typeof window !== "undefined") {
-    setLoaded(true);
-  }
 
   const updateConsent = useCallback((newConsent: ConsentState) => {
     const value = JSON.stringify({
@@ -61,19 +88,22 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
       timestamp: new Date().toISOString(),
     });
     setCookie(CONSENT_COOKIE, value, CONSENT_EXPIRY_DAYS);
+    // Update cached values so getSnapshot stays in sync
+    cachedRaw = getCookie(CONSENT_COOKIE);
+    cachedResult = newConsent;
     setConsent(newConsent);
   }, []);
 
   const resetConsent = useCallback(() => {
     setCookie(CONSENT_COOKIE, "", 0);
+    cachedRaw = null;
+    cachedResult = null;
     setConsent(null);
   }, []);
 
-  if (!loaded) return <>{children}</>;
-
   return (
     <CookieConsentContext.Provider
-      value={{ consent, updateConsent, resetConsent }}
+      value={{ consent, hasLoaded, updateConsent, resetConsent }}
     >
       {children}
     </CookieConsentContext.Provider>
