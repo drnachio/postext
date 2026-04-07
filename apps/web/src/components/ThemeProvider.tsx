@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useCallback, useSyncExternalStore } from "react";
 
 type Theme = "dark" | "light";
 
@@ -18,33 +18,38 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
+function getStoredTheme(): Theme {
+  const stored = localStorage.getItem("postext-theme");
+  if (stored === "light" || stored === "dark") return stored;
+  if (window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
+  return "dark";
+}
+
+const subscribe = (callback: () => void) => {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+};
+
+function applyTheme(t: Theme) {
+  const root = document.documentElement;
+  root.classList.remove("dark", "light");
+  root.classList.add(t);
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const theme = useSyncExternalStore(subscribe, getStoredTheme, () => "dark" as Theme);
 
-  useEffect(() => {
-    const stored = localStorage.getItem("postext-theme") as Theme | null;
-    if (stored === "light" || stored === "dark") {
-      setTheme(stored);
-      applyTheme(stored);
-    } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-      setTheme("light");
-      applyTheme("light");
-    }
-  }, []);
-
-  const applyTheme = (t: Theme) => {
-    const root = document.documentElement;
-    root.classList.remove("dark", "light");
-    root.classList.add(t);
-  };
+  // Keep the DOM class in sync with the resolved theme
+  if (typeof window !== "undefined") {
+    applyTheme(theme);
+  }
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      localStorage.setItem("postext-theme", next);
-      applyTheme(next);
-      return next;
-    });
+    const next = getStoredTheme() === "dark" ? "light" : "dark";
+    localStorage.setItem("postext-theme", next);
+    applyTheme(next);
+    // Trigger re-render via storage event for useSyncExternalStore
+    window.dispatchEvent(new StorageEvent("storage"));
   }, []);
 
   return (

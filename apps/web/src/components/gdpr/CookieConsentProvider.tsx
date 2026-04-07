@@ -4,7 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
+  useSyncExternalStore,
   useState,
   type ReactNode,
 } from "react";
@@ -31,22 +31,29 @@ const CookieConsentContext = createContext<CookieConsentContextValue>({
   resetConsent: () => {},
 });
 
-export function CookieConsentProvider({ children }: { children: ReactNode }) {
-  const [consent, setConsent] = useState<ConsentState | null>(null);
-  const [loaded, setLoaded] = useState(false);
+function readConsentCookie(): ConsentState | null {
+  const raw = getCookie(CONSENT_COOKIE);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as ConsentState;
+  } catch {
+    return null;
+  }
+}
 
-  useEffect(() => {
-    const raw = getCookie(CONSENT_COOKIE);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as ConsentState;
-        setConsent(parsed);
-      } catch {
-        // Invalid cookie — treat as no consent
-      }
-    }
+const subscribe = () => () => {};
+const getSnapshot = readConsentCookie;
+const getServerSnapshot = (): ConsentState | null => null;
+
+export function CookieConsentProvider({ children }: { children: ReactNode }) {
+  const initialConsent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [consent, setConsent] = useState<ConsentState | null>(initialConsent);
+  const [loaded, setLoaded] = useState(initialConsent !== null);
+
+  // Mark as loaded on the client after first render
+  if (!loaded && typeof window !== "undefined") {
     setLoaded(true);
-  }, []);
+  }
 
   const updateConsent = useCallback((newConsent: ConsentState) => {
     const value = JSON.stringify({
