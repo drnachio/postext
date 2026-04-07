@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -20,29 +21,36 @@ export interface ConsentState {
 
 interface CookieConsentContextValue {
   consent: ConsentState | null;
+  hasLoaded: boolean;
   updateConsent: (consent: ConsentState) => void;
   resetConsent: () => void;
 }
 
 const CookieConsentContext = createContext<CookieConsentContextValue>({
   consent: null,
+  hasLoaded: false,
   updateConsent: () => {},
   resetConsent: () => {},
 });
 
-function readConsentCookie(): ConsentState | null {
-  if (typeof document === "undefined") return null;
-  const raw = getCookie(CONSENT_COOKIE);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as ConsentState;
-  } catch {
-    return null;
-  }
-}
-
 export function CookieConsentProvider({ children }: { children: ReactNode }) {
-  const [consent, setConsent] = useState<ConsentState | null>(readConsentCookie);
+  const [state, setState] = useState<{
+    consent: ConsentState | null;
+    hasLoaded: boolean;
+  }>({ consent: null, hasLoaded: false });
+
+  useEffect(() => {
+    let consent: ConsentState | null = null;
+    const raw = getCookie(CONSENT_COOKIE);
+    if (raw) {
+      try {
+        consent = JSON.parse(raw) as ConsentState;
+      } catch {
+        // Invalid cookie — treat as no consent
+      }
+    }
+    setState({ consent, hasLoaded: true });
+  }, []);
 
   const updateConsent = useCallback((newConsent: ConsentState) => {
     const value = JSON.stringify({
@@ -50,17 +58,22 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
       timestamp: new Date().toISOString(),
     });
     setCookie(CONSENT_COOKIE, value, CONSENT_EXPIRY_DAYS);
-    setConsent(newConsent);
+    setState(prev => ({ ...prev, consent: newConsent }));
   }, []);
 
   const resetConsent = useCallback(() => {
     setCookie(CONSENT_COOKIE, "", 0);
-    setConsent(null);
+    setState(prev => ({ ...prev, consent: null }));
   }, []);
 
   return (
     <CookieConsentContext.Provider
-      value={{ consent, updateConsent, resetConsent }}
+      value={{
+        consent: state.consent,
+        hasLoaded: state.hasLoaded,
+        updateConsent,
+        resetConsent,
+      }}
     >
       {children}
     </CookieConsentContext.Provider>

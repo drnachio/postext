@@ -61,9 +61,6 @@ export default async function CookiePolicyPage({
                         {t("tableName")}
                       </th>
                       <th className="py-3 pr-4 font-mono text-xs uppercase tracking-widest text-slate">
-                        {t("tableCategory")}
-                      </th>
-                      <th className="py-3 pr-4 font-mono text-xs uppercase tracking-widest text-slate">
                         {t("tableDuration")}
                       </th>
                       <th className="py-3 font-mono text-xs uppercase tracking-widest text-slate">
@@ -76,7 +73,6 @@ export default async function CookiePolicyPage({
                       <td className="py-3 pr-4 font-mono text-foreground">
                         postext_consent
                       </td>
-                      <td className="py-3 pr-4">{t("categoryNecessary")}</td>
                       <td className="py-3 pr-4">{t("duration365")}</td>
                       <td className="py-3">{t("purposeConsent")}</td>
                     </tr>

@@ -7,11 +7,14 @@ import { useCookieConsent } from "./CookieConsentProvider";
 
 export function CookieBanner() {
   const t = useTranslations("CookieBanner");
-  const { consent, updateConsent } = useCookieConsent();
+  const { consent, hasLoaded, updateConsent } = useCookieConsent();
   const [showCustomize, setShowCustomize] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const bannerRef = useRef<HTMLDivElement>(null);
+
+  // Don't render until we've read the cookie on the client
+  if (!hasLoaded) return null;
 
   // Already consented — don't show
   if (consent !== null) return null;
@@ -61,19 +64,19 @@ export function CookieBanner() {
             <div className="flex shrink-0 gap-3">
               <button
                 onClick={rejectAll}
-                className="rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="cursor-pointer rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("rejectAll")}
               </button>
               <button
                 onClick={() => setShowCustomize(true)}
-                className="rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="cursor-pointer rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("customize")}
               </button>
               <button
                 onClick={acceptAll}
-                className="rounded bg-gilt px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-gilt-hover 2xl:text-base"
+                className="cursor-pointer rounded bg-gilt px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-gilt-hover 2xl:text-base"
               >
                 {t("acceptAll")}
               </button>
@@ -133,13 +136,13 @@ export function CookieBanner() {
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={rejectAll}
-                className="rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="cursor-pointer rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("rejectAll")}
               </button>
               <button
                 onClick={savePreferences}
-                className="rounded bg-gilt px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-gilt-hover 2xl:text-base"
+                className="cursor-pointer rounded bg-gilt px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-gilt-hover 2xl:text-base"
               >
                 {t("savePreferences")}
               </button>
