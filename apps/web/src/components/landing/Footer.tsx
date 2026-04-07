@@ -63,7 +63,12 @@ export async function Footer() {
               </p>
               <ul className="mt-4 space-y-3 2xl:mt-5 2xl:space-y-4 4xl:mt-6 4xl:space-y-5">
                 <li>
-                  <span className="text-sm text-slate 2xl:text-base 4xl:text-lg">{t("mitLicense")}</span>
+                  <a
+                    href="/license"
+                    className="text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
+                  >
+                    {t("mitLicense")}
+                  </a>
                 </li>
                 <li>
                   <a

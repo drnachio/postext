@@ -30,7 +30,7 @@ export default async function PrivacyPolicyPage({
     <>
       <Navbar />
       <main id="main-content" role="main" className="flex-1">
-        <div className="mx-auto max-w-3xl px-6 py-16 2xl:max-w-4xl 2xl:px-8 2xl:py-20 4xl:max-w-5xl 4xl:px-12 4xl:py-24">
+        <div className="mx-auto max-w-5xl px-6 py-16 2xl:max-w-6xl 2xl:px-8 2xl:py-20 4xl:max-w-7xl 4xl:px-12 4xl:py-24">
           <h1 className="font-display text-3xl font-bold text-foreground 2xl:text-4xl 4xl:text-5xl">
             {t("title")}
           </h1>
@@ -38,29 +38,29 @@ export default async function PrivacyPolicyPage({
             {t("lastUpdated")}
           </p>
 
-          <div className="mt-10 space-y-8 text-sm leading-relaxed text-slate 2xl:text-base 4xl:text-lg">
-            <section>
+          <div lang={locale} className="mt-10 space-y-8 text-sm leading-relaxed text-slate 2xl:text-base 4xl:text-lg lg:columns-2 lg:gap-12 2xl:gap-16 text-justify [hyphens:auto]">
+            <section className="break-inside-avoid">
               <h2 className="text-lg font-semibold text-foreground 2xl:text-xl">
                 {t("controllerTitle")}
               </h2>
               <p className="mt-2">{t("controllerText")}</p>
             </section>
 
-            <section>
+            <section className="break-inside-avoid">
               <h2 className="text-lg font-semibold text-foreground 2xl:text-xl">
                 {t("dataCollectedTitle")}
               </h2>
               <p className="mt-2">{t("dataCollectedText")}</p>
             </section>
 
-            <section>
+            <section className="break-inside-avoid">
               <h2 className="text-lg font-semibold text-foreground 2xl:text-xl">
                 {t("legalBasisTitle")}
               </h2>
               <p className="mt-2">{t("legalBasisText")}</p>
             </section>
 
-            <section>
+            <section className="break-inside-avoid">
               <h2 className="text-lg font-semibold text-foreground 2xl:text-xl">
                 {t("cookiesTitle")}
               </h2>
@@ -78,7 +78,7 @@ export default async function PrivacyPolicyPage({
               </p>
             </section>
 
-            <section>
+            <section className="break-inside-avoid">
               <h2 className="text-lg font-semibold text-foreground 2xl:text-xl">
                 {t("rightsTitle")}
               </h2>
@@ -93,14 +93,14 @@ export default async function PrivacyPolicyPage({
               </ul>
             </section>
 
-            <section>
+            <section className="break-inside-avoid">
               <h2 className="text-lg font-semibold text-foreground 2xl:text-xl">
                 {t("childrenTitle")}
               </h2>
               <p className="mt-2">{t("childrenText")}</p>
             </section>
 
-            <section>
+            <section className="break-inside-avoid">
               <h2 className="text-lg font-semibold text-foreground 2xl:text-xl">
                 {t("contactTitle")}
               </h2>

@@ -1,9 +1,9 @@
 {
   "Metadata": {
     "title": "Postext — Tipógrafo Programable para la Web",
-    "description": "Un motor de maquetación que une siglos de tradición tipográfica con la tecnología web moderna. Markdown semántico como entrada, componentes React de calidad editorial como salida.",
+    "description": "Un motor de maquetación que conecta la tradición tipográfica con la web moderna. Recibe markdown semántico, devuelve componentes React con calidad editorial.",
     "ogTitle": "Postext — Tipógrafo Programable para la Web",
-    "ogDescription": "Markdown semántico como entrada, componentes React de calidad editorial como salida."
+    "ogDescription": "Recibe markdown semántico, devuelve componentes React con calidad editorial."
   },
   "Navbar": {
     "home": "Inicio de Postext",
@@ -14,7 +14,7 @@
   "Hero": {
     "version": "v0.0.2",
     "title": "El Tipógrafo Programable para la Web",
-    "subtitle": "Postext toma markdown semántico y aplica reglas de maquetación editorial centenarias — prevención de huérfanas, balanceo de columnas, colocación de figuras — produciendo componentes React de calidad editorial.",
+    "subtitle": "Postext parte de markdown semántico y aplica reglas de maquetación con siglos de historia — prevención de huérfanas, balanceo de columnas, colocación de figuras — para generar componentes React con calidad editorial.",
     "getStarted": "Empezar",
     "viewOnGitHub": "Ver en GitHub"
   },
@@ -22,10 +22,10 @@
     "eyebrow": "Qué Es Postext",
     "titleLine1": "Maquetación Editorial,",
     "titleLine2": "Computada para la Web",
-    "paragraph1": "CSS te da maquetación responsiva — flexbox, grid, columnas. Pero no puede balancear columnas, prevenir huérfanas, fluir texto alrededor de figuras, ni colocar notas al pie en la parte inferior de una columna. Estas son decisiones editoriales refinadas durante siglos de tipografía impresa.",
-    "paragraph2prefix": "Postext cierra esa brecha. Dale markdown semántico y un objeto de configuración. Mide texto 300–600× más rápido que el DOM usando ",
+    "paragraph1": "CSS ofrece maquetación responsiva — flexbox, grid, columnas. Pero no sabe balancear columnas, evitar huérfanas, ajustar texto alrededor de figuras ni colocar notas al pie en la base de una columna. Son decisiones editoriales depuradas durante siglos de tipografía impresa.",
+    "paragraph2prefix": "Postext cubre ese vacío. Pásale markdown semántico y un objeto de configuración. Mide texto entre 300 y 600 veces más rápido que el DOM gracias a ",
     "pretextLink": "@chenglou/pretext",
-    "paragraph2suffix": ", y devuelve componentes React maquetados según estándares tipográficos profesionales.",
+    "paragraph2suffix": ", y devuelve componentes React compuestos según estándares tipográficos profesionales.",
     "inputLabel": "Entrada",
     "outputLabel": "Salida",
     "inputAriaLabel": "Ejemplo de entrada markdown",
@@ -33,34 +33,34 @@
   },
   "Features": {
     "eyebrow": "Capacidades",
-    "title": "Lo que los Tipógrafos Siempre Supieron",
+    "title": "Lo que los Tipógrafos Siempre Han Sabido",
     "orphanTitle": "Prevención de Huérfanas y Viudas",
-    "orphanDescription": "Ninguna línea solitaria varada en la parte superior o inferior de una columna. Postext aplica reglas tipográficas que CSS no puede expresar.",
+    "orphanDescription": "Ni una sola línea suelta al inicio o al final de una columna. Postext aplica reglas tipográficas que CSS no puede expresar.",
     "columnTitle": "Balanceo de Columnas",
-    "columnDescription": "Contenido distribuido uniformemente entre columnas para que terminen a la misma altura — como lo haría un tipógrafo profesional.",
+    "columnDescription": "Contenido repartido entre columnas para que acaben a la misma altura, tal como lo haría un tipógrafo profesional.",
     "flowTitle": "Flujo de Texto Alrededor de Figuras",
-    "flowDescription": "Imágenes, citas destacadas y tablas colocadas en línea, flotantes o en márgenes con texto fluyendo naturalmente a su alrededor.",
+    "flowDescription": "Imágenes, citas destacadas y tablas en línea, flotantes o en márgenes, con el texto ajustándose a su alrededor de forma natural.",
     "footnotesTitle": "Notas al Pie y Notas Marginales",
     "footnotesDescription": "Notas al pie ancladas al fondo de columna. Notas marginales alineadas con el párrafo que las referencia. Notas finales recopiladas al final de sección.",
-    "hyphenationTitle": "Separación Silábica y Optimización de Bordes",
-    "hyphenationDescription": "División inteligente de palabras y suavizado del borde derecho que previene ríos de espacio en blanco y produce bloques de texto uniformes.",
+    "hyphenationTitle": "Separación Silábica y Ajuste de Bandera",
+    "hyphenationDescription": "División inteligente de palabras y control del margen derecho que evita ríos de blanco y produce bloques de texto homogéneos.",
     "outputTitle": "Salida Web y PDF",
     "outputDescription": "Un motor de maquetación, dos renderizadores. Genera componentes React para la web o salida PDF para impresión — desde la misma fuente."
   },
   "ApiPreview": {
     "eyebrow": "API",
     "title": "Una Función, Control Total",
-    "description": "Llama a <code>createLayout</code> con tu contenido y un objeto de configuración. Obtén un componente React maquetado según tus especificaciones."
+    "description": "Llama a <code>createLayout</code> con tu contenido y un objeto de configuración. Recibes un componente React compuesto a tu medida."
   },
   "HowItWorks": {
     "eyebrow": "Flujo de Trabajo",
-    "title": "Tres Pasos hacia una Maquetación de Calidad Editorial",
+    "title": "Maquetación Editorial en Tres Pasos",
     "step1Title": "Escribe Markdown Semántico",
-    "step1Description": "Crea tu contenido en markdown enriquecido con referencias a recursos y marcadores de notas al pie. Sin preocupaciones de maquetación — solo contenido.",
+    "step1Description": "Escribe tu contenido en markdown enriquecido con referencias a recursos y marcadores de notas al pie. Sin pensar en maquetación — solo contenido.",
     "step2Title": "Configura las Reglas de Maquetación",
-    "step2Description": "Define columnas, reglas tipográficas, estrategias de colocación de recursos y sobrecargas de sección en un objeto PostextConfig.",
+    "step2Description": "Define columnas, reglas tipográficas, estrategias de colocación de recursos y ajustes por sección en un objeto PostextConfig.",
     "step3Title": "Renderiza Componentes React",
-    "step3Description": "Llama a createLayout y recibe un componente React con maquetación editorial pixel-perfect — listo para la web o PDF."
+    "step3Description": "Llama a createLayout y obtén un componente React con maquetación editorial al píxel — listo para web o PDF."
   },
   "Install": {
     "eyebrow": "Instalación",
@@ -76,7 +76,7 @@
     "codeAriaLabel": "Ejemplo de código"
   },
   "Footer": {
-    "tagline": "Tipógrafo programable para la web.",
+    "tagline": "El tipógrafo programable para la web.",
     "builtWith": "Hecho con",
     "resources": "Recursos",
     "legal": "Legal",
@@ -161,6 +161,16 @@
     "manageCookiesText": "Puedes cambiar tus preferencias de cookies en cualquier momento usando el banner de cookies en nuestro sitio web. También puedes eliminar cookies a través de la configuración de tu navegador.",
     "moreInfoTitle": "Más Información",
     "moreInfoText": "Para más detalles sobre cómo tratamos tus datos, consulta nuestra <privacyLink>Política de Privacidad</privacyLink>."
+  },
+  "License": {
+    "metaTitle": "Licencia MIT — Postext",
+    "metaDescription": "Postext se distribuye bajo la Licencia MIT.",
+    "title": "Licencia MIT",
+    "copyright": "Copyright (c) 2026 Colaboradores de Postext",
+    "grant": "Por la presente se concede permiso, de forma gratuita, a cualquier persona que obtenga una copia de este software y de los archivos de documentación asociados (el «Software»), para utilizar el Software sin restricción alguna, incluyendo, entre otros, los derechos de usar, copiar, modificar, fusionar, publicar, distribuir, sublicenciar y/o vender copias del Software, y para permitir a las personas a las que se les proporcione el Software hacer lo mismo, sujeto a las siguientes condiciones:",
+    "condition": "El aviso de copyright anterior y este aviso de permiso se incluirán en todas las copias o partes sustanciales del Software.",
+    "disclaimer": "EL SOFTWARE SE PROPORCIONA «TAL CUAL», SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUYENDO, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN DETERMINADO Y NO INFRACCIÓN. EN NINGÚN CASO LOS AUTORES O TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGUNA RECLAMACIÓN, DAÑO U OTRA RESPONSABILIDAD, YA SEA EN UNA ACCIÓN CONTRACTUAL, EXTRACONTRACTUAL O DE OTRO TIPO, QUE SURJA DE O EN CONEXIÓN CON EL SOFTWARE O EL USO U OTRAS OPERACIONES CON EL SOFTWARE.",
+    "sourceText": "El código fuente completo está disponible en <repoLink>GitHub</repoLink>."
   },
   "Accessibility": {
     "skipToContent": "Saltar al contenido principal"

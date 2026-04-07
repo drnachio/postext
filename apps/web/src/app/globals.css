@@ -108,8 +108,8 @@
   --background: #FFFFFF;
   --foreground: #1A1A1A;
   --surface: #F5F5F5;
-  --gilt: #B8860B;
-  --gilt-hover: #9A7209;
+  --gilt: #8A6310;
+  --gilt-hover: #7A5509;
   --accent-blue: #2B4ACB;
   --slate: #525252;
   --rule: #D4D4D8;
@@ -171,10 +171,10 @@
 .syntax-property { color: #EDEDED; }
 .syntax-value { color: #6B8AED; }
 
-/* Syntax highlighting — light mode (AA contrast ≥ 4.5:1 on #FFFFFF) */
-:root.light .syntax-keyword { color: #B8860B; }
-:root.light .syntax-string { color: #9A7209; }
-:root.light .syntax-comment { color: #6B7280; font-style: italic; }
+/* Syntax highlighting — light mode (AA contrast ≥ 4.5:1 on #F5F5F5) */
+:root.light .syntax-keyword { color: #8A6310; }
+:root.light .syntax-string { color: #7E5D0B; }
+:root.light .syntax-comment { color: #5F6B78; font-style: italic; }
 :root.light .syntax-type { color: #525252; }
 :root.light .syntax-punctuation { color: #6B7280; }
 :root.light .syntax-property { color: #1A1A1A; }
