@@ -83,8 +83,9 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Bumped to v$VERSION (${{ steps.bump.outputs.type }})"
 
-      # Build the package
+      # Build & test the package
       - run: pnpm turbo run build --filter=postext
+      - run: pnpm turbo run test --filter=postext
 
       # Publish to npm
       - name: Publish to npm

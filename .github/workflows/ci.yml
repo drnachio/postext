@@ -23,6 +23,8 @@ jobs:
 
       - run: pnpm turbo run build
 
+      - run: pnpm turbo run test
+
       - run: pnpm turbo run check-types
 
       - run: pnpm turbo run lint
