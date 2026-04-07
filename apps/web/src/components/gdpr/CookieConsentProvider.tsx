@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useSyncExternalStore,
   useState,
   type ReactNode,
 } from "react";
@@ -32,6 +31,7 @@ const CookieConsentContext = createContext<CookieConsentContextValue>({
 });
 
 function readConsentCookie(): ConsentState | null {
+  if (typeof document === "undefined") return null;
   const raw = getCookie(CONSENT_COOKIE);
   if (!raw) return null;
   try {
@@ -41,19 +41,8 @@ function readConsentCookie(): ConsentState | null {
   }
 }
 
-const subscribe = () => () => {};
-const getSnapshot = readConsentCookie;
-const getServerSnapshot = (): ConsentState | null => null;
-
 export function CookieConsentProvider({ children }: { children: ReactNode }) {
-  const initialConsent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const [consent, setConsent] = useState<ConsentState | null>(initialConsent);
-  const [loaded, setLoaded] = useState(initialConsent !== null);
-
-  // Mark as loaded on the client after first render
-  if (!loaded && typeof window !== "undefined") {
-    setLoaded(true);
-  }
+  const [consent, setConsent] = useState<ConsentState | null>(readConsentCookie);
 
   const updateConsent = useCallback((newConsent: ConsentState) => {
     const value = JSON.stringify({
@@ -68,8 +57,6 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
     setCookie(CONSENT_COOKIE, "", 0);
     setConsent(null);
   }, []);
-
-  if (!loaded) return <>{children}</>;
 
   return (
     <CookieConsentContext.Provider
