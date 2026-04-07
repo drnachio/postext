@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { HeroAnimation } from "./HeroAnimation";
 
 export async function HeroSection() {
   const t = await getTranslations("Hero");
@@ -39,10 +40,7 @@ export async function HeroSection() {
           </div>
         </div>
 
-        <div className="flex items-baseline tracking-tight" aria-hidden="true">
-          <span className="font-logo text-8xl font-black text-gilt md:text-9xl 2xl:text-[10rem] 4xl:text-[12rem]">P</span>
-          <span className="-ml-4 font-display text-5xl text-foreground md:-ml-5 md:text-6xl 2xl:-ml-6 2xl:text-7xl 4xl:-ml-8 4xl:text-8xl">ostext</span>
-        </div>
+        <HeroAnimation />
       </div>
     </section>
   );
