@@ -12,7 +12,6 @@
     "githubAriaLabel": "Postext on GitHub (opens in new tab)"
   },
   "Hero": {
-    "version": "v0.0.2",
     "title": "The Programmable Typesetter for the Web",
     "subtitle": "Postext takes semantic markdown and applies centuries-old editorial layout rules — orphan prevention, column balancing, figure placement — producing publication-grade React components.",
     "getStarted": "Get Started",
