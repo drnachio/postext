@@ -12,7 +12,6 @@
     "githubAriaLabel": "Postext en GitHub (abre en nueva pestaña)"
   },
   "Hero": {
-    "version": "v0.0.2",
     "title": "El Tipógrafo Programable para la Web",
     "subtitle": "Postext parte de markdown semántico y aplica reglas de maquetación con siglos de historia — prevención de huérfanas, balanceo de columnas, colocación de figuras — para generar componentes React con calidad editorial.",
     "getStarted": "Empezar",

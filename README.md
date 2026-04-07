@@ -1,5 +1,8 @@
 # Postext
 
+[![npm version](https://img.shields.io/npm/v/postext)](https://www.npmjs.com/package/postext)
+[![CI](https://img.shields.io/github/actions/workflow/status/drnachio/postext/ci.yml?branch=develop&label=tests)](https://github.com/drnachio/postext/actions)
+
 **A programmable typesetter for the web.**
 
 Postext is a layout engine that bridges the centuries-old craft of print typesetting and the modern web. It takes semantic content — enriched markdown with referenced resources — and applies professional editorial layout rules to produce publication-grade output for both HTML and PDF.

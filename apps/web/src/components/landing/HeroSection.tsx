@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { version } from "postext/package.json";
 import { HeroAnimation } from "./HeroAnimation";
 
 export async function HeroSection() {
@@ -8,7 +9,7 @@ export async function HeroSection() {
     <section aria-labelledby="hero-heading" className="relative">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-12 px-6 pt-24 pb-16 md:flex-row md:items-center md:justify-between 2xl:max-w-6xl 2xl:gap-16 2xl:px-8 2xl:pt-32 2xl:pb-20 4xl:max-w-7xl 4xl:gap-20 4xl:px-12 4xl:pt-40 4xl:pb-24">
         <div className="text-left">
-          <p className="font-mono text-xs text-gilt 2xl:text-sm 4xl:text-base">{t("version")}</p>
+          <p className="font-mono text-xs text-gilt 2xl:text-sm 4xl:text-base">{`v${version}`}</p>
           <h1
             id="hero-heading"
             className="mt-4 max-w-md font-display text-2xl font-bold italic leading-[1.08] tracking-tight md:text-3xl 2xl:max-w-lg 2xl:text-4xl 4xl:max-w-xl 4xl:text-5xl"
