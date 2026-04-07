@@ -90,7 +90,7 @@ jobs:
       # Publish to npm
       - name: Publish to npm
         working-directory: packages/postext
-        run: pnpm publish --access public --no-git-tag-version
+        run: pnpm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
