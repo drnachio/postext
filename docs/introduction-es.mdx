@@ -1,0 +1,332 @@
+{/* docs/introduction-es.mdx */}
+
+export const metadata = {
+  title: 'Introducción a Postext',
+  sidebarTitle: 'Introducción',
+  description: 'Qué es Postext, por qué existe y el problema que resuelve',
+  lang: 'es',
+  lastUpdated: '2026-04-08',
+  readingTime: '12 min',
+  order: 1,
+};
+
+# Introducción a Postext
+
+**Un compositor tipográfico programable para la web.**
+
+Abre cualquier libro bien maquetado. Fíjate en cómo el texto descansa sobre la página: columnas
+perfectamente equilibradas, imágenes integradas en el flujo, sin huecos torpes, sin líneas
+huérfanas perdidas al inicio de una columna. Siglos de oficio están detrás de que eso parezca
+natural.
+
+Ahora abre una página web. Incluso las mejores se sienten distintas. El texto choca contra las
+imágenes. Las columnas se desbordan o quedan a medio llenar. Las notas al pie desaparecen al fondo
+de la página en vez de quedarse cerca de las palabras que las referencian. La web nos dio
+maquetación responsiva, sí — pero nunca nos dio maquetación *editorial*.
+
+Postext cierra esa brecha. Es un motor de composición que recibe tu contenido — markdown
+enriquecido con imágenes, notas al pie, citas destacadas y figuras — y aplica las mismas reglas
+que aplicaría un tipógrafo profesional: prevención de huérfanas y viudas, equilibrado de columnas,
+flujo de texto alrededor de obstáculos, espaciado deliberado. El resultado es geometría de
+composición con calidad editorial, tanto para HTML como para PDF.
+
+Construido sobre [`@chenglou/pretext`](https://github.com/chenglou/pretext) para medición de texto
+sin DOM, a velocidades que hacen todo esto posible.
+
+
+## La brecha entre la imprenta y la web
+
+Durante siglos, los tipógrafos han seguido reglas que hacen el texto agradable de leer. No son
+preferencias estéticas — son principios curtidos a lo largo de generaciones de libros impresos,
+periódicos y revistas:
+
+- Sin huérfanas (una sola línea de un párrafo varada al inicio de una columna).
+- Sin viudas (una sola línea de un párrafo abandonada al final de una columna).
+- Columnas equilibradas (altura aproximadamente igual entre columnas en una doble página).
+- Texto que fluye alrededor de figuras, citas destacadas e imágenes insertadas.
+- Notas al pie colocadas correctamente al final de la columna donde se referencian.
+- Notas al margen alineadas con el párrafo que las cita.
+- Espaciado consistente y deliberado alrededor de encabezados, citas y figuras.
+- Separación silábica que evita ríos de espacio en blanco y bordes irregulares.
+
+Dos de estas reglas son tan fundamentales que merecen atención especial — porque la web las viola
+en prácticamente todas las páginas.
+
+**El ancho de carro** (la medida tipográfica, el número de caracteres por línea) es quizá el factor
+más determinante para una lectura cómoda. Cuando una línea es demasiado larga, el ojo tiene
+dificultad para regresar al inicio de la siguiente y a menudo aterriza en la línea equivocada.
+Cuando es demasiado corta, el ojo regresa con demasiada frecuencia y se rompe el ritmo de lectura.
+Robert Bringhurst, en los *Elementos del estilo tipográfico*, establece que **entre 45 y 75
+caracteres por línea** es el rango aceptable para una página a una columna en texto con serifa,
+siendo **66 caracteres el ideal**. Para maquetaciones multicolumna, recomienda **entre 40 y 50
+caracteres**. La directriz de accesibilidad
+[WCAG 1.4.8](https://www.w3.org/WAI/WCAG21/Understanding/visual-presentation.html) fija el límite
+superior en 80 caracteres. Sin embargo, la mayoría de las webs dejan que sus párrafos se estiren a
+100, 120 o incluso más caracteres en una pantalla ancha — muy por encima del punto en el que el ojo
+puede seguir las líneas con fiabilidad.
+
+**El interlineado** (line-height, el espacio vertical entre líneas) trabaja en tándem con el ancho
+de carro. Las líneas más largas necesitan más espacio vertical para que el ojo encuentre el camino
+de vuelta. La tipografía tradicional recomienda un interlineado de **1,3 a 1,5 veces el tamaño de
+la fuente** para texto corrido, siendo 1,45–1,5 el punto óptimo para lectura prolongada. WCAG 1.4.8
+(Nivel AAA) exige al menos 1,5, y la más reciente
+[WCAG 1.4.12](https://www.w3.org/WAI/WCAG21/Understanding/text-spacing.html) (Nivel AA) requiere
+que el contenido siga siendo funcional cuando el interlineado se establece en al menos 1,5 veces el
+tamaño de la fuente. La relación no es lineal — una columna de 50 caracteres con
+`line-height: 1.4` se lee cómodamente, pero el mismo interlineado a 90 caracteres se convierte en
+un esfuerzo. Los tipógrafos profesionales ajustan el interlineado en función del ancho de carro.
+CSS no ofrece ningún mecanismo para hacer esto automáticamente.
+
+CSS no ofrece prácticamente nada de esto.
+
+Tienes `column-count`, y poco más — frágil, sin control sobre la colocación de recursos, sin
+consciencia del desbordamiento y sin prevención de huérfanas o viudas entre columnas. No existe
+un concepto nativo de "fluir texto alrededor de un obstáculo posicionado arbitrariamente." Las
+maquetaciones editoriales multicolumna en la web siguen siendo artesanales: diseños estáticos
+que se rompen en cuanto cambia el tamaño de pantalla.
+
+La web lleva más de una década con maquetación responsiva — flexbox, grid, contenedores que se
+adaptan a cualquier pantalla. Lo que nunca ha tenido es maquetación *editorial* responsiva: el tipo
+en el que el contenido refluye inteligentemente a través de columnas, alrededor de imágenes, más
+allá de notas al pie, obedeciendo las reglas que hacen que el texto sea *agradable de leer*.
+
+<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
+  <defs>
+    <filter id="shadow1" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
+    </filter>
+  </defs>
+  <rect width="760" height="280" fill="transparent" rx="8" />
+
+  {/* Left box: CSS limitations */}
+  <rect x="20" y="30" width="320" height="220" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#shadow1)" />
+  <text x="180" y="55" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-pink-text)">Lo que CSS ofrece</text>
+  <line x1="40" y1="65" x2="320" y2="65" stroke="#E91E63" strokeWidth="1" opacity="0.3" />
+
+  <text x="50" y="92" fontSize="10" fill="var(--svg-pink-text)">column-count</text>
+  <text x="50" y="112" fontSize="10" fill="var(--svg-pink-text)">...y poco más.</text>
+
+  <text x="50" y="142" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Sin control de huérfanas/viudas</text>
+  <text x="50" y="162" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Sin flujo alrededor de obstáculos</text>
+  <text x="50" y="182" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Sin equilibrado de columnas</text>
+  <text x="50" y="202" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Sin colocación de notas al pie</text>
+  <text x="50" y="222" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Sin convergencia/refinamiento</text>
+
+  {/* Gap arrow */}
+  <path d="M355 140 L395 140" stroke="var(--svg-stroke)" strokeWidth="2" strokeDasharray="6 3" fill="none" className="svg-flow" />
+  <path d="M393 135 L405 140 L393 145" stroke="var(--svg-stroke)" strokeWidth="2" fill="var(--svg-stroke)" />
+  <text x="380" y="162" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-stroke)">la brecha</text>
+
+  {/* Right box: Editorial layout needs */}
+  <rect x="420" y="30" width="320" height="220" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#shadow1)" />
+  <text x="580" y="55" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-green-text)">Lo que necesita una maquetación</text>
+  <text x="580" y="70" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-green-text)">editorial</text>
+  <line x1="440" y1="80" x2="720" y2="80" stroke="#4CAF50" strokeWidth="1" opacity="0.3" />
+
+  <text x="450" y="102" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Prevención de huérfanas y viudas</text>
+  <text x="450" y="124" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Flujo de texto alrededor de recursos</text>
+  <text x="450" y="146" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Columnas equilibradas</text>
+  <text x="450" y="168" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Colocación de notas al pie</text>
+  <text x="450" y="190" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Control de separación silábica</text>
+  <text x="450" y="212" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Refinamiento por convergencia</text>
+
+  <text x="450" y="238" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">= Postext</text>
+</svg>
+
+
+## Una década de intentos
+
+Llevamos mucho tiempo persiguiendo este problema.
+
+El proyecto
+[Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)
+arrancó alrededor de 2014 en BinPar como un intento temprano de llevar la calidad de la composición
+editorial a la web. Construimos maquetaciones basadas en columnas. Experimentamos con algoritmos de
+flujo de texto. Y nos topamos con el mismo muro, una y otra vez: **no puedes tomar buenas
+decisiones de composición sin saber exactamente cuánto espacio va a ocupar el texto.**
+
+Suena sencillo, pero ahí está todo el problema. Cada vez que le preguntas al navegador "¿cuánto
+mide este párrafo a este ancho?", provocas un reflow completo del layout. Hazlo unos cientos de
+veces en un documento multicolumna complejo y la página se congela. El navegador no fue diseñado
+para este tipo de medición especulativa — probar diez anchos de columna diferentes para encontrar
+el mejor, comprobar dónde romper un párrafo, verificar si una imagen cabe aquí o necesita moverse
+a la siguiente columna.
+
+Necesitábamos una forma de medir texto lo bastante rápida para experimentar libremente, sin
+bloquear el hilo principal. Durante una década, esa herramienta no existió.
+
+
+## La pieza que faltaba
+
+En 2025, Cheng Lou publicó [`Pretext`](https://github.com/chenglou/pretext).
+
+Es una librería de medición de texto sin DOM — entre 300 y 600 veces más rápida que preguntarle
+al navegador. Pixel-perfect en Chrome, Safari y Firefox. Usa métricas de fuente del canvas y
+aritmética pura para calcular la altura del texto y los saltos de línea sin tocar jamás el DOM.
+
+Con Pretext, el cuello de botella que nos bloqueó durante diez años simplemente desaparece. Puedes
+medir miles de bloques de texto en milisegundos. Puedes probar diez configuraciones de columna
+diferentes y elegir la mejor. Puedes ejecutar el algoritmo completo de composición en cada
+redimensionado de ventana, en tiempo real.
+
+Postext es lo que viene después.
+
+
+## Pretext + Postext
+
+La nomenclatura es intencionada — dos mitades de la misma operación.
+
+**Pretext** es lo que ocurre *antes* de colocar el texto: medir cuánto espacio va a necesitar.
+Sin DOM, basado en canvas, operando con números puros.
+
+**Postext** es lo que ocurre *después* de la medición: las decisiones editoriales. Dadas las
+dimensiones exactas de cada bloque de texto a cualquier ancho, el motor decide dónde va cada
+elemento — en qué columna, en qué posición, fluyendo alrededor de qué recursos, obedeciendo
+qué reglas tipográficas.
+
+```ts
+import { prepare, layout } from '@chenglou/pretext';
+import { createLayout } from 'postext';
+
+// pretext: measure (the "pre" work)
+const prepared = prepare(paragraphText, '16px/1.5 Inter');
+const { height } = layout(prepared, columnWidth, 24);
+// => "This paragraph is 144px tall at this column width."
+
+// postext: decide (the "post" work)
+const editorial = createLayout(content, config);
+// => "Put this paragraph in column 2, starting at y=320.
+//     Move the image to the top of column 3.
+//     Add a footnote at the bottom of column 2.
+//     Break here to avoid a widow."
+```
+
+Pretext proporciona las medidas. Postext proporciona la composición.
+
+<svg viewBox="0 0 760 160" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
+  {/* Arrow marker + shadow */}
+  <defs>
+    <marker id="relArrowEs" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="var(--svg-stroke)" />
+    </marker>
+    <filter id="shadow2" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
+    </filter>
+  </defs>
+  <rect width="760" height="160" fill="transparent" rx="8" />
+
+  {/* fase Pretext */}
+  <rect x="20" y="20" width="280" height="120" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" filter="url(#shadow2)" />
+  <text x="160" y="45" textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--svg-purple-text)">Pretext</text>
+  <text x="160" y="63" textAnchor="middle" fontSize="10" fill="var(--svg-purple-text)">medir</text>
+  <line x1="40" y1="72" x2="280" y2="72" stroke="#9C27B0" strokeWidth="1" opacity="0.3" />
+  <text x="40" y="92" fontSize="10" fill="var(--svg-purple-text)">Sin DOM, basado en canvas</text>
+  <text x="40" y="110" fontSize="10" fill="var(--svg-purple-text)">300-600x más rápido que reflow</text>
+  <text x="40" y="128" fontSize="10" fill="var(--svg-purple-text)">Saltos de línea pixel-perfect</text>
+
+  {/* Arrow */}
+  <line x1="300" y1="80" x2="400" y2="80" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#relArrowEs)" className="svg-flow" />
+  <text x="350" y="72" textAnchor="middle" fontSize="9" fill="var(--svg-light-text)" className="svg-pulse">dimensiones</text>
+  <text x="350" y="95" textAnchor="middle" fontSize="9" fill="var(--svg-light-text)" className="svg-pulse">exactas</text>
+
+  {/* fase Postext */}
+  <rect x="400" y="20" width="340" height="120" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="6" filter="url(#shadow2)" />
+  <text x="570" y="45" textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--svg-orange-text)">Postext</text>
+  <text x="570" y="63" textAnchor="middle" fontSize="10" fill="var(--svg-orange-text)">decidir</text>
+  <line x1="420" y1="72" x2="720" y2="72" stroke="#FF9800" strokeWidth="1" opacity="0.3" />
+  <text x="420" y="92" fontSize="10" fill="var(--svg-orange-text)">Qué columna, qué posición</text>
+  <text x="420" y="110" fontSize="10" fill="var(--svg-orange-text)">Flujo alrededor de recursos</text>
+  <text x="420" y="128" fontSize="10" fill="var(--svg-orange-text)">Huérfanas, viudas, equilibrado</text>
+</svg>
+
+*Pretext fue creado por [Cheng Lou](https://github.com/chenglou). Postext se construye sobre él.*
+
+
+## Cómo funciona
+
+El proceso tiene tres etapas:
+
+1. **Tú proporcionas el contenido.** Markdown enriquecido con recursos referenciados — imágenes,
+   tablas, figuras, notas al pie, citas destacadas. El contenido es puramente semántico: describe
+   *qué* presentar, no *cómo*. Las decisiones de composición nunca están escritas a fuego en el
+   código fuente.
+
+2. **El motor toma las decisiones.** Postext analiza el contenido, llama a Pretext para la
+   medición de texto pixel-perfect sin tocar el DOM, y después ejecuta siete pasadas de
+   composición: equilibrado de columnas, colocación de recursos, prevención de viudas y huérfanas,
+   alineación de líneas base, refinamiento del espaciado. Cada decisión la controla la
+   configuración — tú defines las reglas, el motor las aplica.
+
+3. **Obtienes una composición completa.** Coordenadas y dimensiones precisas para cada elemento en
+   cada página. Los renderizadores traducen esta geometría al formato de destino: HTML y CSS para la
+   web, PDF para impresión. El mismo contenido, las mismas reglas, dos salidas.
+
+<svg viewBox="0 0 760 120" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
+  {/* Arrow marker + shadow */}
+  <defs>
+    <marker id="pipeArrowEs" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="var(--svg-stroke)" />
+    </marker>
+    <filter id="shadow3" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
+    </filter>
+  </defs>
+  <rect width="760" height="120" fill="transparent" rx="8" />
+
+  {/* Entrada */}
+  <g className="svg-fade-1">
+    <rect x="20" y="25" width="170" height="70" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#shadow3)" />
+    <text x="105" y="52" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">Markdown</text>
+    <text x="105" y="67" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">enriquecido</text>
+    <text x="105" y="82" textAnchor="middle" fontSize="10" fill="var(--svg-blue-text)">+ configuración</text>
+  </g>
+
+  {/* Flecha 1 */}
+  <g className="svg-fade-2">
+    <line x1="190" y1="60" x2="270" y2="60" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#pipeArrowEs)" className="svg-flow" />
+    <text x="230" y="52" textAnchor="middle" fontSize="8" fill="var(--svg-light-text)">parsear</text>
+  </g>
+
+  {/* Motor */}
+  <g className="svg-fade-3">
+    <rect x="270" y="20" width="220" height="80" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="6" filter="url(#shadow3)" />
+    <text x="380" y="48" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-orange-text)">motor Postext</text>
+    <text x="380" y="66" textAnchor="middle" fontSize="10" fill="var(--svg-purple-text)">medición vía Pretext</text>
+    <text x="380" y="84" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">7 pasadas de composición</text>
+  </g>
+
+  {/* Flecha 2 */}
+  <g className="svg-fade-4">
+    <line x1="490" y1="60" x2="570" y2="60" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#pipeArrowEs)" className="svg-flow" />
+    <text x="530" y="52" textAnchor="middle" fontSize="8" fill="var(--svg-light-text)">renderizar</text>
+  </g>
+
+  {/* Salida */}
+  <g className="svg-fade-5">
+    <rect x="570" y="25" width="170" height="70" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="2" rx="6" filter="url(#shadow3)" />
+    <text x="655" y="55" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-teal-text)">HTML / PDF</text>
+    <text x="655" y="73" textAnchor="middle" fontSize="10" fill="var(--svg-teal-text)">salida renderizada</text>
+  </g>
+</svg>
+
+Para una mirada detallada a los mecanismos internos del motor — el Árbol Virtual del Documento,
+el pipeline de siete pasadas y el bucle de convergencia — consulta el documento de
+[Arquitectura](/es/docs/architecture).
+
+
+## Reconocimientos
+
+**[Pretext](https://github.com/chenglou/pretext)** de Cheng Lou — la librería fundacional de
+medición de texto que hace posible Postext. Sin medición pixel-perfect, sin DOM y a velocidad de
+submilisegundo, nada de esto sería práctico.
+
+**Content First** (BinPar, ~2014) — la exploración original de la composición editorial de alta
+calidad en la web. Una década chocando contra muros, aprendiendo qué no funciona, y construyendo
+la convicción de que este problema merece una solución de verdad.
+
+Postext se apoya en siglos de tradición tipográfica. Las reglas que implementa no son inventadas —
+son heredadas del trabajo de tipógrafos, diseñadores y compositores que refinaron el arte de hacer
+el texto legible mucho antes de que existieran las pantallas. Desde los tipos móviles de Gutenberg
+hasta la tipografía asimétrica de Tschichold, pasando por los *Elementos del estilo tipográfico*
+de Bringhurst, el oficio de disponer texto sobre una página lleva más de quinientos años
+evolucionando. Postext trae esa sabiduría acumulada a la web, donde ha brillado por su ausencia.

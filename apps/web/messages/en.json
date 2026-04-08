@@ -8,8 +8,17 @@
   "Navbar": {
     "home": "Postext home",
     "getStarted": "Get Started",
+    "docs": "Docs",
     "github": "GitHub",
     "githubAriaLabel": "Postext on GitHub (opens in new tab)"
+  },
+  "Docs": {
+    "sidebarTitle": "Documentation",
+    "onThisPage": "On this page",
+    "lastUpdated": "Updated",
+    "menu": "Menu",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu"
   },
   "Hero": {
     "title": "The Programmable Typesetter for the Web",
@@ -89,8 +98,7 @@
     "toggleDark": "Switch to dark mode"
   },
   "Language": {
-    "switchTo": "Cambiar a español",
-    "current": "EN"
+    "label": "Language"
   },
   "CookieBanner": {
     "ariaLabel": "Cookie consent",

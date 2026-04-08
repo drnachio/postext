@@ -8,8 +8,17 @@
   "Navbar": {
     "home": "Inicio de Postext",
     "getStarted": "Empezar",
+    "docs": "Docs",
     "github": "GitHub",
     "githubAriaLabel": "Postext en GitHub (abre en nueva pestaña)"
+  },
+  "Docs": {
+    "sidebarTitle": "Documentación",
+    "onThisPage": "En esta página",
+    "lastUpdated": "Actualizado",
+    "menu": "Menú",
+    "openMenu": "Abrir menú de navegación",
+    "closeMenu": "Cerrar menú de navegación"
   },
   "Hero": {
     "title": "El Tipógrafo Programable para la Web",
@@ -89,8 +98,7 @@
     "toggleDark": "Cambiar a modo oscuro"
   },
   "Language": {
-    "switchTo": "Switch to English",
-    "current": "ES"
+    "label": "Idioma"
   },
   "CookieBanner": {
     "ariaLabel": "Consentimiento de cookies",
