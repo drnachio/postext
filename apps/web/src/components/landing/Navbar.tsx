@@ -17,6 +17,12 @@ export async function Navbar() {
           <span className="-ml-2 font-display text-2xl text-foreground 2xl:text-3xl 4xl:text-4xl">ostext</span>
         </Link>
         <div className="flex items-center gap-4 2xl:gap-6 4xl:gap-8">
+          <Link
+            href="/docs"
+            className="font-body text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
+          >
+            {t("docs")}
+          </Link>
           <a
             href="#install"
             className="font-body text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"

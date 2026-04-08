@@ -1,0 +1,1173 @@
+{/* docs/architecture-es.mdx */}
+
+export const metadata = {
+  title: 'Arquitectura de Postext',
+  sidebarTitle: 'Arquitectura',
+  description: 'Arquitectura técnica del motor de composición tipográfica Postext',
+  lang: 'es',
+  lastUpdated: '2026-04-08',
+  readingTime: '35 min',
+  order: 2,
+};
+
+# Arquitectura de Postext
+
+Si has trabajado con React, ya conoces el truco fundamental. React construye un DOM virtual en memoria, lo compara con el anterior y solo entonces toca el DOM real del navegador. Postext hace exactamente lo mismo, pero en lugar de componentes de interfaz, construye un árbol de **páginas, columnas, bloques de texto y cajas delimitadoras**. Toda la geometría de un documento multipágina y multicolumna, calculada antes de renderizar un solo píxel. Cada párrafo, encabezado, imagen, nota al pie y cita destacada colocados en coordenadas exactas, respetando reglas tipográficas centenarias que CSS simplemente no puede expresar.
+
+Todo esto es posible gracias a [`@chenglou/pretext`](https://github.com/chenglou/pretext), una librería de medición de texto sin DOM entre 300 y 600 veces más rápida que el reflow del navegador. Si quieres conocer la historia detrás del proyecto (una década de intentos fallidos, el cuello de botella que los frenaba a todos y la librería que finalmente lo eliminó), consulta la [Introducción](/es/docs/introduction).
+
+## La idea central
+
+Imagina un documento de 74 páginas a dos columnas. Un informe anual, quizá, o un libro de texto densamente ilustrado. Se lo entregas a Postext y el motor construye toda la composición en memoria: cada página, cada columna, la posición exacta y las dimensiones en píxeles de cada párrafo. ¿Quieres saber qué hay en la página 72, columna 2? La respuesta ya está ahí. Sin renderizar nada. El motor ya ha decidido dónde partir cada párrafo, dónde colocar cada imagen, cómo evitar viudas y huérfanas, y cómo alinear las líneas base entre columnas adyacentes.
+
+Y aquí viene lo importante.
+
+Las reglas tipográficas son profunda y desesperantemente interdependientes. Corriges una viuda en la página 5 -- esa línea solitaria varada al final de una columna -- retrayéndola a la columna anterior. Perfecto. Pero ese cambio acorta la columna de la página 5, lo que desplaza contenido hacia adelante, lo que podría crear una huérfana en la página 6. Una primera línea empujada a una nueva columna, desconectada de su párrafo. Para siquiera *detectar* que has creado un nuevo problema, necesitas la composición completa del documento disponible para inspección. Y para *corregirlo* sin crear otro problema en otro sitio, necesitas poder ajustar, re-medir y re-verificar todo.
+
+Esa es la filosofía de "calcular todo primero, renderizar después". No es un truco de rendimiento. Es la única forma de aplicar las decenas de reglas tipográficas interconectadas que los tipógrafos profesionales llevan siglos usando.
+
+
+## Conceptos fundamentales
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Término</th>
+      <th>Definición</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>VDT</strong></td>
+      <td>Virtual Document Tree (Árbol Virtual del Documento). Estructura de datos mutable que representa el documento completo en memoria: páginas, columnas, bloques, segmentos en línea y cajas delimitadoras. Análogo al DOM virtual, pero aplicado a la geometría de composición del documento.</td>
+    </tr>
+    <tr>
+      <td><strong>Page</strong></td>
+      <td>Área rectangular de tamaño fijo. El motor trabaja con páginas desde el inicio. Un documento es una secuencia ordenada de páginas.</td>
+    </tr>
+    <tr>
+      <td><strong>Column</strong></td>
+      <td>Subdivisión vertical de una página. Las columnas tienen un ancho fijo y una altura máxima. El texto fluye de una columna a la siguiente, y luego a la página siguiente.</td>
+    </tr>
+    <tr>
+      <td><strong>Block</strong></td>
+      <td>Unidad de contenido que ocupa espacio vertical en una columna: párrafo, encabezado, imagen, tabla, cita, cita destacada o área de notas al pie.</td>
+    </tr>
+    <tr>
+      <td><strong>Line</strong></td>
+      <td>Línea de texto medida dentro de un bloque, generada por Pretext. Cada línea tiene una caja delimitadora y una posición de línea base.</td>
+    </tr>
+    <tr>
+      <td><strong>Bounding Box</strong></td>
+      <td>{'{'}  <code>x, y, width, height</code>  {'}'} en píxeles, relativo al origen de la página. Cada nodo del VDT contiene una.</td>
+    </tr>
+    <tr>
+      <td><strong>Resource</strong></td>
+      <td>Elemento no textual (imagen, tabla, figura, cita destacada) referenciado desde el markdown. Definido por <code>PostextResource</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Note</strong></td>
+      <td>Nota al pie, nota final o nota al margen. Definida por <code>PostextNote</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Backend</strong></td>
+      <td>Implementación unificada de medición de texto y renderizado de salida para un destino específico (canvas/navegador, PDF).</td>
+    </tr>
+    <tr>
+      <td><strong>Pass</strong></td>
+      <td>Una etapa del pipeline de composición. Cada pasada lee y modifica el VDT con una única responsabilidad.</td>
+    </tr>
+    <tr>
+      <td><strong>Convergence Loop</strong></td>
+      <td>El bucle externo que re-ejecuta las pasadas de composición cuando pasadas posteriores invalidan decisiones anteriores. Limitado a un máximo de 5 iteraciones.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Arquitectura del sistema
+
+<svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '900px', fontFamily: 'monospace' }}>
+  {/* Background */}
+  <rect width="900" height="420" fill="transparent" rx="8" />
+
+  {/* Input section */}
+  <rect x="20" y="40" width="150" height="60" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
+  <text x="95" y="65" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">Markdown</text>
+  <text x="95" y="80" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">enriquecido</text>
+
+  <rect x="20" y="120" width="150" height="60" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
+  <text x="95" y="145" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">PostextConfig</text>
+  <text x="95" y="162" textAnchor="middle" fontSize="10" fill="var(--svg-blue-text)">(columnas, reglas, espaciado)</text>
+
+  {/* Arrow: Input → Parser */}
+  <line x1="170" y1="70" x2="210" y2="70" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
+  <line x1="170" y1="150" x2="210" y2="150" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
+
+  {/* Engine box */}
+  <rect x="210" y="15" width="480" height="390" fill="none" stroke="var(--svg-dark-text)" strokeWidth="2" rx="8" strokeDasharray="8,4" />
+  <text x="450" y="35" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-dark-text)">Motor de composición</text>
+
+  {/* Parser */}
+  <rect x="230" y="55" width="110" height="50" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
+  <text x="285" y="78" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-orange-text)">Parser</text>
+  <text x="285" y="93" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">Pasada 1</text>
+
+  {/* Arrow: Parser → VDT */}
+  <line x1="340" y1="80" x2="380" y2="80" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
+
+  {/* VDT - central */}
+  <rect x="380" y="50" width="160" height="130" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
+  <text x="460" y="75" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Árbol Virtual del</text>
+  <text x="460" y="93" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Documento (VDT)</text>
+  <text x="460" y="115" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">mutable, in-place</text>
+  <text x="460" y="132" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">páginas &gt; columnas &gt; bloques</text>
+  <text x="460" y="149" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">cada nodo tiene un bbox</text>
+  <text x="460" y="166" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">seguimiento dirty flags</text>
+
+  {/* Pretext */}
+  <rect x="230" y="130" width="110" height="50" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
+  <text x="285" y="152" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">Pretext</text>
+  <text x="285" y="167" textAnchor="middle" fontSize="9" fill="var(--svg-purple-text)">medición de texto</text>
+
+  {/* Bidirectional arrow: Pretext ↔ VDT */}
+  <line x1="340" y1="145" x2="378" y2="120" stroke="#9C27B0" strokeWidth="2" markerEnd="url(#arrowPurple)" />
+  <line x1="378" y1="130" x2="340" y2="155" stroke="#9C27B0" strokeWidth="2" markerEnd="url(#arrowPurple)" />
+
+  {/* Layout passes */}
+  <rect x="230" y="210" width="420" height="170" fill="var(--svg-yellow-fill)" stroke="#FFC107" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
+  <text x="440" y="232" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-yellow-text)">Pasadas (leen y modifican el VDT)</text>
+
+  <text x="250" y="255" fontSize="10" fill="var(--svg-brown-text)">Pasada 2</text>
+  <text x="300" y="255" fontSize="10" fill="var(--svg-brown-text)">Medición de texto (vía Pretext)</text>
+  <text x="250" y="275" fontSize="10" fill="var(--svg-brown-text)">Pasada 3</text>
+  <text x="300" y="275" fontSize="10" fill="var(--svg-brown-text)">Colocación en páginas y columnas</text>
+  <text x="250" y="295" fontSize="10" fill="var(--svg-brown-text)">Pasada 4</text>
+  <text x="300" y="295" fontSize="10" fill="var(--svg-brown-text)">Colocación de recursos</text>
+  <text x="250" y="315" fontSize="10" fill="var(--svg-brown-text)">Pasada 5</text>
+  <text x="300" y="315" fontSize="10" fill="var(--svg-brown-text)">Refinamiento tipográfico</text>
+  <text x="250" y="335" fontSize="10" fill="var(--svg-brown-text)">Pasada 6</text>
+  <text x="300" y="335" fontSize="10" fill="var(--svg-brown-text)">Equilibrado de columnas</text>
+  <text x="250" y="355" fontSize="10" fill="var(--svg-brown-text)">Pasada 7</text>
+  <text x="300" y="355" fontSize="10" fill="var(--svg-brown-text)">Alineación del ritmo vertical</text>
+
+  {/* Convergence loop arrow */}
+  <path d="M 655 355 C 675 355, 675 250, 655 250" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#arrowYellow)" className="svg-loop-glow" />
+  <text x="693" y="305" fontSize="9" fill="var(--svg-yellow-text)" transform="rotate(90, 693, 305)" className="svg-pulse">convergencia (máx 5)</text>
+
+  {/* Arrow: VDT → Passes */}
+  <line x1="460" y1="182" x2="460" y2="208" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
+
+  {/* Arrow: Engine → Backend */}
+  <line x1="692" y1="115" x2="720" y2="115" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
+
+  {/* Backend */}
+  <rect x="720" y="55" width="150" height="130" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
+  <text x="795" y="80" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-pink-text)">Backend</text>
+  <text x="795" y="98" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">(interfaz unificada)</text>
+  <text x="795" y="125" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">Canvas / Navegador</text>
+  <text x="795" y="142" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">PDF</text>
+  <text x="795" y="159" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">Servidor (futuro)</text>
+
+  {/* Output arrows */}
+  <line x1="795" y1="187" x2="795" y2="220" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
+
+  {/* Output */}
+  <rect x="720" y="222" width="150" height="50" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
+  <text x="795" y="245" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-teal-text)">HTML / PDF</text>
+  <text x="795" y="260" textAnchor="middle" fontSize="10" fill="var(--svg-teal-text)">salida renderizada</text>
+
+  {/* Arrow markers */}
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="var(--svg-stroke)" />
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#9C27B0" />
+    </marker>
+    <marker id="arrowYellow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#F57F17" />
+    </marker>
+    <filter id="archShadowEs" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.18" />
+    </filter>
+  </defs>
+</svg>
+
+**Este es el recorrido de tu contenido a través del motor:**
+
+1. El **Parser** lee el markdown enriquecido y la configuración, construyendo el VDT inicial -- un árbol de bloques tipados sin posiciones todavía, solo contenido y estructura
+2. Las **pasadas de composición** toman el control, mutando el VDT en secuencia: midiendo texto vía Pretext, fluyendo bloques hacia páginas y columnas, refinando la tipografía hasta alcanzar estándares profesionales
+3. El **bucle de convergencia** vigila los problemas -- cuando una pasada posterior (digamos, corregir una viuda) invalida una decisión anterior (digamos, las alturas de columna), el motor vuelve atrás y re-ejecuta desde el punto afectado. Hasta 5 iteraciones, hasta que todo se estabiliza
+4. El **VDT final** es la geometría completa de la composición: cada elemento conoce su número de página, su columna asignada, su posición y su caja delimitadora. El documento está completamente "compuesto" antes de que ocurra ningún renderizado
+5. Un **backend** recorre el VDT terminado y lo renderiza al formato destino -- elementos HTML sobre un canvas, o eventualmente páginas PDF
+
+
+## Capa de entrada
+
+### Modelo de contenido
+
+El modelo de contenido es tanto una filosofía como una estructura de datos. Tú describes *qué* decir, no *cómo* componerlo. Las decisiones de composición las toma el motor.
+
+```typescript
+// packages/postext/src/types.ts
+
+interface PostextContent {
+  markdown: string;              // enriched markdown with reference markers
+  resources?: PostextResource[]; // images, tables, figures, pull quotes
+  notes?: PostextNote[];         // footnotes, endnotes, margin notes
+}
+```
+
+Los **recursos** llevan metadatos visuales (dimensiones, pies de foto, texto alternativo) y se referencian desde el markdown por ID.
+Las **notas** llevan contenido y un estilo de marcador, referenciados desde posiciones en línea dentro del markdown.
+
+Esta separación es una decisión de diseño deliberada, y tiene más importancia de lo que parece. El markdown es dueño del *orden de lectura* y la *estructura semántica* -- qué va primero, qué es un encabezado, dónde se referencia una nota al pie. Los arrays de recursos y notas son dueños de los *datos visuales* -- dimensiones de imagen, texto de pies de foto, contenido de notas. Al mantenerlos separados, el mismo markdown puede componerse de formas completamente distintas simplemente cambiando la configuración. Una maquetación académica a dos columnas y un artículo de blog a columna única pueden compartir el mismo contenido fuente. Y el motor puede tomar decisiones de colocación -- como diferir una imagen a la siguiente columna porque aquí no cabe -- sin tocar jamás tu contenido original.
+
+```typescript
+// Example: a simple article with an image and a footnote
+const content: PostextContent = {
+  markdown: `
+# The Art of Typography
+
+The history of typography begins with Gutenberg's
+movable type[^1]. His invention transformed the
+production of books.
+
+![fig:printing-press]
+
+The technique spread rapidly across Europe, reaching
+Italy by 1465 and France by 1470.
+  `,
+  resources: [
+    {
+      id: 'fig:printing-press',
+      type: 'figure',
+      src: '/images/gutenberg-press.jpg',
+      alt: 'Reconstruction of Gutenberg\'s printing press',
+      caption: 'Reconstrucción de la imprenta original.',
+      width: 600,
+      height: 400,
+    },
+  ],
+  notes: [
+    {
+      id: '1',
+      type: 'footnote',
+      content: 'Johannes Gutenberg, c. 1400–1468, Mainz, Germany.',
+    },
+  ],
+};
+```
+
+Fíjate en que `![fig:printing-press]` en el markdown es solo un marcador de referencia -- un nombre, nada más. El motor lo resuelve contra el array `resources` por ID, obtiene las dimensiones de la imagen y decide dónde colocarla según la `PlacementStrategy` configurada. Quizá aterriza justo ahí. Quizá el motor la difiere a la parte superior de la siguiente columna porque la actual está casi llena. Lo mismo ocurre con `[^1]` -- el motor lo resuelve contra el array `notes` y coloca la nota al pie en la parte inferior de la columna, o de la página, o al final de la sección, dependiendo de `ReferenceConfig`. El autor nunca tiene que pensar en la colocación. De eso se encarga el motor.
+
+### Configuración
+
+Cada aspecto del pipeline de composición está controlado por `PostextConfig`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Config</th>
+      <th>Controla</th>
+      <th style={{ width: '120px' }}>Usado en</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ColumnConfig</code></td>
+      <td>Número de columnas, ancho del medianil, filetes de columna, indicador de equilibrado</td>
+      <td>Pasada 3, Pasada 6</td>
+    </tr>
+    <tr>
+      <td><code>TypographyConfig</code></td>
+      <td>Viudas, huérfanas, separación silábica, optimización de bandera, reglas de espaciado, reglas de agrupación</td>
+      <td>Pasada 5, Pasada 7</td>
+    </tr>
+    <tr>
+      <td><code>ResourcePlacementConfig</code></td>
+      <td>Estrategia de colocación por defecto, colocación diferida, preservación de la relación de aspecto</td>
+      <td>Pasada 4</td>
+    </tr>
+    <tr>
+      <td><code>ReferenceConfig</code></td>
+      <td>Ubicación de notas al pie, estilo de marcador, numeración de figuras/tablas, notas al margen</td>
+      <td>Pasada 1, Pasada 3</td>
+    </tr>
+    <tr>
+      <td><code>PostextSectionOverride</code></td>
+      <td>Sobrecargas de reglas por sección mediante selectores</td>
+      <td>Pasada 1</td>
+    </tr>
+  </tbody>
+</table>
+
+### Estrategia de análisis
+
+El análisis es deliberadamente el paso más simple de todo el pipeline. El markdown entra, se parsea en un AST, y cada nodo se convierte en un `VDTBlock`. Las referencias a recursos y notas se resuelven contra los arrays `resources[]` y `notes[]` por ID. La salida es una lista plana de bloques tipados y con contenido, pero sin asignación de página, ni columna, ni posición.
+
+Piensa en ello como un manifiesto: "hay un encabezado, luego un párrafo de 200 palabras, luego una referencia a una figura, luego otro párrafo." Sin mediciones. Sin posicionamiento. Sin ninguna decisión de composición. El trabajo pesado empieza en la Pasada 2.
+
+
+## Árbol Virtual del Documento (VDT)
+
+Imagina que le pides a un tipógrafo profesional que componga un libro entero, pero en lugar de entregarte páginas impresas, te entrega una hoja de cálculo. Cada fila es un elemento. Cada celda es una medida precisa: "el encabezado está en (40, 30), el primer párrafo empieza en (40, 78) y mide 144px de alto, la imagen va en la parte superior de la columna 2 en la página 3..." Esa hoja de cálculo es el VDT.
+
+El Árbol Virtual del Documento es la estructura de datos central de Postext -- un árbol mutable, modificado in-place, que representa cada página, columna, bloque y línea, cada uno con una caja delimitadora precisa. Una vez que el pipeline de composición converge, el VDT *es* la respuesta. Puedes consultar "¿qué hay en la página 72, columna 2?" sin renderizar un solo píxel.
+
+### Por qué mutable
+
+Es el mismo enfoque que usan los pipelines de renderizado de motores de juegos, donde un estado mutable compartido del mundo es actualizado por sistemas sucesivos en un bucle cerrado. Y por la misma razón.
+
+Los árboles inmutables (como el DOM virtual de React) crean objetos nuevos con cada cambio. Eso está bien para una interfaz con unos cientos de componentes. Pero en un bucle de convergencia que puede ejecutarse hasta 5 iteraciones a lo largo de 7 pasadas, tocando potencialmente miles de bloques, la presión de asignación de memoria y las pausas del recolector de basura se convierten en un problema muy real. El VDT usa mutación in-place con un patrón de `dirty` flags: las pasadas marcan nodos como sucios, y las pasadas posteriores saben exactamente qué nodos re-examinar. El motor recuerda qué cambió para no rehacer trabajo válido.
+
+### Estructura
+
+<svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '700px', fontFamily: 'monospace' }}>
+  <defs>
+    <filter id="vdtShadowEs" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.18" />
+    </filter>
+  </defs>
+  <rect width="700" height="320" fill="transparent" rx="8" />
+
+  {/* Document */}
+  <g className="svg-fade-1">
+    <rect x="270" y="15" width="160" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#vdtShadowEs)" />
+    <text x="350" y="40" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">VDTDocument</text>
+  </g>
+
+  {/* Pages */}
+  <g className="svg-fade-2">
+    <line x1="310" y1="55" x2="200" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
+    <line x1="350" y1="55" x2="350" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
+    <line x1="390" y1="55" x2="500" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
+
+    <rect x="130" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" />
+    <text x="200" y="107" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">VDTPage [0]</text>
+
+    <rect x="280" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" />
+    <text x="350" y="107" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">VDTPage [1]</text>
+
+    <rect x="430" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1.5" rx="6" strokeDasharray="4,3" />
+    <text x="500" y="107" textAnchor="middle" fontSize="11" fill="var(--svg-blue-text)">VDTPage [n]</text>
+  </g>
+
+  {/* Columns from Page 0 */}
+  <g className="svg-fade-3">
+    <line x1="170" y1="120" x2="100" y2="155" stroke="var(--svg-stroke)" strokeWidth="1.5" />
+    <line x1="230" y1="120" x2="250" y2="155" stroke="var(--svg-stroke)" strokeWidth="1.5" />
+
+    <rect x="30" y="155" width="140" height="35" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" />
+    <text x="100" y="177" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">VDTColumn [0]</text>
+
+    <rect x="180" y="155" width="140" height="35" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" />
+    <text x="250" y="177" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">VDTColumn [1]</text>
+  </g>
+
+  {/* Blocks from Column 0 */}
+  <g className="svg-fade-4">
+    <line x1="70" y1="190" x2="40" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
+    <line x1="100" y1="190" x2="100" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
+    <line x1="130" y1="190" x2="160" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
+
+    <rect x="5" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
+    <text x="40" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">encabezado</text>
+
+    <rect x="80" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
+    <text x="115" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">párrafo</text>
+
+    <rect x="155" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
+    <text x="190" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">recurso</text>
+  </g>
+
+  {/* Lines from paragraph */}
+  <g className="svg-fade-5">
+    <line x1="105" y1="250" x2="80" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
+    <line x1="115" y1="250" x2="115" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
+    <line x1="125" y1="250" x2="150" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
+
+    <rect x="55" y="275" width="50" height="25" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="1.5" rx="4" />
+    <text x="80" y="292" textAnchor="middle" fontSize="9" fill="var(--svg-teal-text)">línea 0</text>
+
+    <rect x="110" y="275" width="50" height="25" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="1.5" rx="4" />
+    <text x="135" y="292" textAnchor="middle" fontSize="9" fill="var(--svg-teal-text)">línea 1</text>
+  </g>
+
+  {/* Legend */}
+  <g className="svg-fade-6">
+    <text x="420" y="160" fontSize="10" fill="var(--svg-mid-text)">Cada nodo contiene:</text>
+    <text x="420" y="178" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">bbox: {"{ x, y, w, h }"}</text>
+    <text x="420" y="196" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">dirty: boolean</text>
+    <text x="420" y="214" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">pageIndex: number</text>
+    <text x="420" y="232" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">columnIndex: number</text>
+    <text x="420" y="260" fontSize="10" fill="var(--svg-light-text)">Las líneas también:</text>
+    <text x="420" y="278" fontSize="10" fill="var(--svg-light-text)" fontFamily="monospace">baseline: number</text>
+    <text x="420" y="296" fontSize="10" fill="var(--svg-light-text)" fontFamily="monospace">hyphenated: boolean</text>
+  </g>
+</svg>
+
+### Definiciones de tipos
+
+```typescript
+// The root of the Virtual Document Tree
+interface VDTDocument {
+  pages: VDTPage[];
+  config: PostextConfig;
+  baselineGrid: number;       // baseline increment in px (e.g. 24 for 16px/1.5)
+  converged: boolean;
+  iterationCount: number;
+}
+
+// A physical page
+interface VDTPage {
+  index: number;
+  width: number;
+  height: number;
+  columns: VDTColumn[];
+  header?: VDTBlock;          // running header
+  footer?: VDTBlock;          // running footer / page number
+  marginNotes: VDTBlock[];
+  footnoteArea?: VDTFootnoteArea;
+}
+
+// A column within a page
+interface VDTColumn {
+  index: number;
+  bbox: BoundingBox;          // position within the page
+  blocks: VDTBlock[];
+  availableHeight: number;    // remaining vertical space
+  baselineOffset: number;     // current baseline y-position
+}
+
+// A content block (paragraph, heading, image, etc.)
+interface VDTBlock {
+  id: string;
+  type: 'paragraph' | 'heading' | 'resource' | 'blockquote'
+      | 'listItem' | 'footnoteRef';
+  bbox: BoundingBox;
+  lines?: VDTLine[];          // for text blocks (populated by Pass 2)
+  resource?: PostextResource; // for resource blocks
+  pageIndex: number;
+  columnIndex: number;
+  dirty: boolean;             // needs re-layout
+  snappedToGrid: boolean;     // baseline aligned to grid
+}
+
+// A measured line of text
+interface VDTLine {
+  text: string;
+  bbox: BoundingBox;
+  baseline: number;           // y-position of the text baseline
+  hyphenated: boolean;        // line ends with a hyphen
+}
+
+// Bounding box — all values in px, relative to page origin
+interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+// Footnote area at the bottom of a page
+interface VDTFootnoteArea {
+  bbox: BoundingBox;
+  notes: VDTBlock[];
+  separator: boolean;         // draw a rule above footnotes
+}
+```
+
+### Seguimiento de cambios (dirty flags)
+
+El seguimiento de cambios es la forma en que el motor evita rehacer trabajo que ya hizo correctamente. Cuando una pasada mueve o redimensiona un bloque, establece `dirty = true` en ese bloque y en todos los bloques posteriores de la misma columna -- porque las posiciones de todos dependen del bloque que cambió. El bucle de convergencia puede entonces saltarse los subárboles sin cambios por completo.
+
+Un ejemplo concreto. La Pasada 5 inserta un guión en un párrafo de la página 12, provocando que pierda una línea de altura. Ese párrafo se marca como sucio. También todos los bloques por debajo de él en la misma columna -- todos necesitan desplazarse hacia arriba una línea. ¿Pero los bloques de la página 11 y anteriores? Intactos. Las pasadas se los saltan completamente en la siguiente iteración.
+
+El `dirty` flag sirve también como señal de convergencia: si no hay bloques sucios después de las pasadas 5--7, la composición ha convergido y el motor deja de iterar. Listo.
+
+
+## Pipeline de composición
+
+Siete pasadas, cada una con un solo trabajo. Ese es todo el pipeline de composición.
+
+El diseño está tomado de los pipelines de renderizado de motores de juegos -- pasada de sombras, pasada de iluminación, pasada de post-procesado -- donde cada sistema lee y muta un estado del mundo compartido y confía en que los sistemas anteriores hicieron su parte. Esto hace que cada pasada individual sea fácil de entender, probar y optimizar de forma aislada. Puedes medir el rendimiento de la Pasada 5 sin pensar en la Pasada 3.
+
+La diferencia clave respecto a un motor de juegos es que un juego renderiza cada fotograma una vez y pasa al siguiente. Postext no puede permitirse eso. Las decisiones tipográficas son profundamente interdependientes -- corregir una viuda puede cambiar las alturas de las columnas, lo que afecta al equilibrado, lo que puede crear una nueva huérfana -- así que el pipeline puede necesitar iterar. Las pasadas 3--7 se ejecutan dentro de un bucle de convergencia, iterando hasta 5 veces hasta que la composición se estabiliza en un resultado final.
+
+### Pasada 1: Estructuración del contenido
+
+- **Entrada:** `PostextContent` sin procesar
+- **Acción:** Analizar el markdown en un AST, resolver las referencias a recursos y notas contra `resources[]` y `notes[]` por ID, crear los nodos `VDTBlock` iniciales
+- **Salida:** `VDTBlock[]` plano (tipado y con contenido, pero sin asignación de página ni columna)
+- **Se ejecuta una sola vez** (no forma parte del bucle de convergencia)
+
+### Pasada 2: Medición de texto
+
+- **Entrada:** `VDTBlock[]` con contenido de texto
+- **Acción:** Para cada bloque de texto, llamar a `prepare()` de Pretext para analizar el texto, y luego a `layout()` para calcular la altura al ancho de columna objetivo. Almacenar las `VDTLine[]` medidas y la altura total en cada bloque
+- **Detalle clave:** Usa `layoutNextLine()` de Pretext para el flujo de texto alrededor de obstáculos (cada línea puede tener un ancho disponible diferente cuando un recurso está flotado junto a ella)
+- **Salida:** Cada bloque de texto tiene dimensiones precisas en píxeles
+- **Se re-ejecuta cuando:** Cambian los anchos de columna o el contenido del texto (por ejemplo, al insertar separación silábica)
+
+Aquí es donde Pretext demuestra su valor. La llamada a `prepare()` es la parte costosa -- analiza el texto usando el motor de fuentes del canvas y cachea el resultado. ¿Pero la llamada a `layout()`? Aritmética pura, prácticamente gratis. Esa división lo cambia todo. Una vez que el texto está preparado, el motor puede re-componer a diferentes anchos -- probando configuraciones de columnas, fluyendo texto alrededor de un obstáculo, comprobando qué pasa si un párrafo gana un guión -- todo con un coste insignificante. Preparar una vez, componer tantas veces como haga falta.
+
+```typescript
+// Simplified: how Pass 2 uses pretext internally
+const prepared = prepare(paragraphText, '16px/1.5 Inter');
+const { height } = layout(prepared, columnWidth, 24); // 24px line-height
+// => "This paragraph is 168px tall at 320px column width — that's 7 lines."
+```
+
+### Pasada 3: Colocación en páginas y columnas
+
+- **Entrada:** Bloques medidos
+- **Acción:** Fluir bloques en páginas y columnas secuencialmente. Crear nodos `VDTPage` y `VDTColumn`. Registrar `availableHeight` por columna. Cuando un bloque no cabe, avanzar a la siguiente columna o página
+- **Estrategia:** Colocación greedy de primer ajuste. Los saltos de columna y página siguen la asignación válida más simple
+- **Salida:** Cada bloque tiene `pageIndex`, `columnIndex` y `bbox` asignados
+
+Este es el momento en que el VDT se convierte en un documento de verdad. Antes de esta pasada, los bloques son solo una lista plana con dimensiones pero sin dirección. La Pasada 3 los recorre y asigna cada uno a una página y columna, como verter agua en una cuadrícula de recipientes: llenar la columna 1 hasta que se desborde, pasar a la columna 2, y cuando la página esté llena empezar una nueva.
+
+Antes de que aterrice ningún bloque de contenido, la pasada reserva espacio para elementos estructurales -- áreas de notas al pie en la parte inferior de las páginas (según `ReferenceConfig.footnotes.placement`), cabeceras, pies de página y columnas de margen. Estas reservas reducen el `availableHeight` de cada columna, así que cuando los bloques de contenido empiezan a fluir, el motor ya sabe exactamente cuánto espacio hay disponible.
+
+### Pasada 4: Colocación de recursos
+
+- **Entrada:** VDT con bloques colocados en columnas
+- **Acción:** Colocar recursos según su `PlacementStrategy`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Estrategia</th>
+      <th>Comportamiento</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>topOfColumn</code></td>
+      <td>El recurso se coloca en la parte superior de la columna actual o siguiente</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td>El recurso aparece en el flujo de texto en el punto de referencia</td>
+    </tr>
+    <tr>
+      <td><code>floatLeft</code></td>
+      <td>El recurso flota a la izquierda; el texto lo envuelve usando <code>layoutNextLine()</code></td>
+    </tr>
+    <tr>
+      <td><code>floatRight</code></td>
+      <td>El recurso flota a la derecha; el texto lo envuelve usando <code>layoutNextLine()</code></td>
+    </tr>
+    <tr>
+      <td><code>fullWidthBreak</code></td>
+      <td>El recurso ocupa todo el ancho de la página, interrumpiendo el flujo de columnas</td>
+    </tr>
+    <tr>
+      <td><code>margin</code></td>
+      <td>El recurso se coloca en una columna de margen junto al párrafo que lo referencia</td>
+    </tr>
+  </tbody>
+</table>
+
+- **Colocación diferida:** Si un recurso no cabe en su punto de referencia, el motor busca la siguiente posición viable (controlado por `ResourcePlacementConfig.deferPlacement`)
+- **Complejidad clave:** Los recursos pueden desplazar bloques de texto, lo que puede requerir una nueva medición a anchos efectivos diferentes
+- **Salida:** Recursos posicionados, bloques de texto circundantes ajustados
+
+La colocación de recursos es donde las cosas se ponen interesantes, porque los recursos no solo ocupan espacio -- remodelan el espacio a su alrededor. Veamos la historia de una imagen con `floatRight` en una composición a dos columnas. El párrafo que referencia la imagen tiene ahora que envolverla. Algunas líneas son más cortas -- comparten espacio horizontal con la imagen. Otras son de ancho completo -- están por debajo de la imagen. La API `layoutNextLine()` de Pretext gestiona esto con elegancia, aceptando un ancho disponible diferente para cada línea. Pero la consecuencia se propaga hacia fuera: la altura total del párrafo cambia, lo que empuja los bloques posteriores hacia abajo, potencialmente derramándolos hacia la siguiente columna o incluso la siguiente página.
+
+Y luego está la colocación diferida. Imagina que una imagen se referencia en un punto donde solo quedan 50px de espacio en la columna, pero la imagen mide 300px de alto. No cabe ahí. Así que el motor la difiere a la parte superior de la siguiente columna (o la siguiente página), continúa colocando texto e inserta la imagen en la posición diferida. El lector ve la imagen cerca (pero no exactamente en) el punto donde se menciona en el texto. Esto es práctica estándar en la composición tipográfica profesional; los libros lo hacen constantemente.
+
+**Reglas de colocación.** Más allá del despacho de estrategias, la colocación de recursos sigue restricciones editoriales estrictas:
+
+- **Regla de post-referencia.** Una figura, imagen o tabla siempre debe aparecer *después* de su referencia en el texto, nunca antes. El lector encuentra la referencia primero y luego ve el recurso. Si no hay espacio suficiente en la columna actual, el recurso se difiere hacia adelante, nunca se trae hacia atrás.
+- **Regla de proximidad.** El recurso debe aparecer lo más cerca posible de su referencia. El motor minimiza la distancia entre el punto de referencia y la colocación real, dentro de las restricciones del espacio disponible y las demás reglas.
+- **Colocación superior e inferior.** Tanto en composiciones a una columna como a varias, las figuras, imágenes, ilustraciones y tablas se colocan en la parte superior o inferior de la página (nunca flotando en medio de un bloque de texto). Cada recurso aparece con su pie de figura y se numera dinámicamente durante la composición, no en el contenido fuente.
+- **Numeración dinámica.** Los recursos *no* se numeran en el markdown. La numeración (Figura 1, Figura 2, Tabla 1...) se asigna durante la composición, después de la colocación. Esto significa que insertar una nueva figura en medio del documento no requiere renumerar todas las referencias posteriores en el código fuente.
+- **Ancho completo en composiciones multicolumna.** En maquetaciones multicolumna, los recursos que requieren colocación a ancho completo (abarcando todas las columnas) se colocan en la parte superior o inferior de la página, empezando desde la primera columna. Interrumpen el flujo de columnas, ocupan todo el ancho de la página, y el texto se reanuda en la primera columna debajo (o encima) del recurso.
+
+### Pasada 5: Refinamiento tipográfico
+
+Esta es la pasada que separa un motor de composición de un volcador de texto. Aplica las reglas de calidad editorial que los tipógrafos profesionales han aplicado a mano durante siglos -- y que el renderizado de texto ingenuo ignora por completo.
+
+Las **viudas y huérfanas** son los signos más visibles de una composición amateur:
+
+- Una **viuda** es una sola línea de un párrafo que queda aislada al final de una columna. El párrafo
+  continúa en la columna siguiente, pero esa línea solitaria parece abandonada (como si la columna
+  terminara prematuramente).
+- Una **huérfana** es una sola línea de un párrafo que queda varada al inicio de una columna. El
+  grueso del párrafo está en la columna anterior, pero una línea se desbordó (parece desconectada
+  de su contexto).
+
+Ambas se consideran inaceptables en la edición profesional. El número mínimo de líneas que deben
+aparecer juntas se controla mediante `TypographyConfig.orphans` y `TypographyConfig.widows`
+(típicamente 2 o 3).
+
+- **Sub-pasadas** (el orden importa):
+  1. **Detección de viudas/huérfanas:** Comprobar la primera y última línea de cada párrafo contra los límites de columna
+  2. **Corrección de viudas/huérfanas:** Retraer o avanzar líneas ajustando el tracking (espaciado entre letras), insertando separación silábica o modificando el espaciado entre párrafos. Por ejemplo, para corregir una viuda, el motor podría comprimir ligeramente el tracking del párrafo anterior para que quepa en una línea menos, atrayendo la línea huérfana de vuelta a la columna anterior
+  3. **Separación silábica:** Para párrafos con mala bandera (un borde derecho muy irregular) o que necesitan ganar o perder una línea para corregir una viuda/huérfana, aplicar separación silábica en los puntos de corte legales y volver a medir mediante Pretext. La separación silábica puede convertir un párrafo de 7 líneas en uno de 6 al permitir que las palabras se dividan entre líneas de forma más eficiente
+  4. **Ajuste de tracking:** Expandir o comprimir ligeramente el espaciado entre letras (típicamente ±0,5px o menos, invisible para el lector pero suficiente para cambiar los saltos de línea) para mejorar los cortes y eliminar viudas/huérfanas
+- **Salida:** Algunos bloques pueden haber cambiado de dimensiones, marcados como `dirty`
+
+Estas correcciones son invisibles cuando se hacen bien (un lector nunca debería notarlas). Pero su *ausencia* salta a la vista de cualquiera que lea con atención: esa línea incómoda al inicio de una columna, esos huecos desiguales donde el motor renunció a intentar ajustar el texto. Las editoriales profesionales tienen guías de estilo enteras dedicadas a prevenir exactamente estos problemas. Postext los automatiza.
+
+**Reglas de agrupación (keep-together).** Más allá de viudas y huérfanas, hay agrupaciones estructurales que nunca deben separarse entre un salto de columna o de página:
+
+- **Título con su primer párrafo.** Un título nunca puede aparecer al final de una columna si el párrafo que introduce comienza en la siguiente columna. El título y las primeras líneas de su primer párrafo se mueven juntos. Si no hay espacio suficiente para ambos, el título se empuja a la siguiente columna y el motor utiliza ajustes de tracking o espaciado para rellenar el hueco resultante en la columna anterior.
+- **Títulos consecutivos.** Cuando aparecen varios títulos en secuencia (por ejemplo, un h2 seguido de un h3 seguido de un párrafo), todo el grupo debe permanecer junto. Ninguno de los títulos puede quedar suelto al final de una columna sin el contenido que introducen.
+- **Introducciones de listas.** Cuando un párrafo termina con dos puntos e introduce una enumeración o lista con viñetas, el final de ese párrafo debe permanecer junto al inicio de la lista. Los dos puntos nunca pueden ser el último elemento de una columna con la lista comenzando en la siguiente.
+- **Figura con su pie.** Una figura y su pie de figura son una unidad inseparable. Siempre se mueven juntos.
+
+Cuando se detecta una violación de agrupación, el motor empuja todo el grupo a la siguiente columna o página y rellena el espacio vacante mediante ajustes de tracking o distribución de espaciado vertical, igual que hace para las correcciones de viudas y huérfanas.
+
+### Pasada 6: Equilibrado de columnas
+
+- **Entrada:** VDT con tipografía refinada
+- **Acción:** Si `ColumnConfig.balancing` es `true`, igualar las alturas de las columnas en cada página moviendo bloques entre columnas para minimizar la diferencia de altura
+- **Restricción:** No debe violar las reglas de viudas/huérfanas establecidas en la Pasada 5
+- **Salida:** Los bloques pueden haberse movido entre columnas, marcados como `dirty`
+
+Las columnas desequilibradas se notan inmediatamente, sobre todo en la última página de un capítulo. Una columna izquierda llena y una derecha casi vacía parece inacabada -- como si la maquetación se hubiera rendido a mitad de camino. El equilibrado redistribuye el contenido para que ambas columnas queden aproximadamente a la misma altura, dando a la doble página un aspecto pulido e intencionado.
+
+El algoritmo calcula la altura total de contenido de todos los bloques en una página, divide por el número de columnas para encontrar la altura objetivo, y busca el mejor punto de corte de columna que acerque cada columna lo más posible a ese objetivo. Pero no es un simple corte por la mitad. Es un problema de satisfacción de restricciones: el algoritmo debe respetar las reglas `keepTogether` (un encabezado debe permanecer con su primer párrafo), honrar los conteos mínimos de líneas, y -- esto es crucial -- no deshacer las correcciones de viudas y huérfanas que la Pasada 5 tanto trabajó en establecer.
+
+### Pasada 7: Alineación del ritmo vertical
+
+- **Entrada:** VDT con columnas equilibradas
+- **Acción:** Ajustar las líneas base a la rejilla distribuyendo ajustes de espaciado alrededor de encabezados, imágenes y otros elementos que rompen la rejilla
+- **Salida:** Valores de espaciado ajustados; líneas base alineadas entre columnas
+- **Ver:** [Sistema de ritmo vertical](#sistema-de-ritmo-vertical) para el algoritmo completo
+
+### Bucle de convergencia
+
+<svg viewBox="0 0 760 140" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
+  <rect width="760" height="140" fill="transparent" rx="8" />
+
+  {/* Pass boxes */}
+  <g className="svg-fade-1">
+    <rect x="20" y="40" width="80" height="40" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
+    <text x="60" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-orange-text)">Pasada 1</text>
+    <text x="60" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-orange-text)">análisis</text>
+  </g>
+
+  <line x1="100" y1="60" x2="120" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
+
+  <g className="svg-fade-2">
+    <rect x="120" y="40" width="80" height="40" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
+    <text x="160" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-purple-text)">Pasada 2</text>
+    <text x="160" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-purple-text)">medir</text>
+  </g>
+
+  <line x1="200" y1="60" x2="220" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
+
+  {/* Convergence loop bracket */}
+  <rect x="218" y="25" width="530" height="70" fill="none" stroke="#F57F17" strokeWidth="2" rx="6" strokeDasharray="6,3" />
+  <text x="485" y="20" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-yellow-text)" className="svg-pulse">bucle de convergencia (máx 5 iteraciones)</text>
+
+  <g className="svg-fade-3">
+    <rect x="230" y="40" width="80" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
+    <text x="270" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Pasada 3</text>
+    <text x="270" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-blue-text)">colocar</text>
+  </g>
+
+  <line x1="310" y1="60" x2="330" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
+
+  <g className="svg-fade-4">
+    <rect x="330" y="40" width="80" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
+    <text x="370" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Pasada 4</text>
+    <text x="370" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-blue-text)">recursos</text>
+  </g>
+
+  <line x1="410" y1="60" x2="430" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
+
+  <g className="svg-fade-5">
+    <rect x="430" y="40" width="80" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
+    <text x="470" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pasada 5</text>
+    <text x="470" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">tipografía</text>
+  </g>
+
+  <line x1="510" y1="60" x2="530" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
+
+  <g className="svg-fade-6">
+    <rect x="530" y="40" width="80" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
+    <text x="570" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pasada 6</text>
+    <text x="570" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">equilibrar</text>
+  </g>
+
+  <line x1="610" y1="60" x2="630" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
+
+  <g className="svg-fade-7">
+    <rect x="630" y="40" width="100" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
+    <text x="680" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pasada 7</text>
+    <text x="680" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">ritmo</text>
+  </g>
+
+  {/* Loop-back arrow */}
+  <path d="M 680 82 L 680 115 L 270 115 L 270 82" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#a3)" className="svg-loop-glow" />
+  <text x="475" y="128" textAnchor="middle" fontSize="9" fill="var(--svg-yellow-text)">si hay bloques sucios &amp;&amp; iteraciones &lt; 5</text>
+
+  <defs>
+    <marker id="a2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="var(--svg-stroke)" />
+    </marker>
+    <marker id="a3" markerWidth="8" markerHeight="6" refX="4" refY="0" orient="auto">
+      <polygon points="0 6, 4 0, 8 6" fill="#F57F17" />
+    </marker>
+    <filter id="convShadowEs" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.18" />
+    </filter>
+  </defs>
+</svg>
+
+Piensa en el bucle de convergencia como el motor discutiendo consigo mismo. La Pasada 5 corrige una viuda, lo que cambia las alturas de columna. La Pasada 6 re-equilibra las columnas para compensar, lo que desplaza un límite de bloque. La Pasada 7 ajusta el ritmo vertical, lo que podría crear una nueva huérfana. Así que el motor vuelve a la Pasada 3, re-coloca los bloques con las medidas actualizadas, y recorre toda la secuencia otra vez. Cada iteración resuelve más problemas de los que crea -- hasta que, finalmente, nada queda sucio.
+
+Tras completarse las pasadas 5--7, el motor comprueba si hay bloques marcados como `dirty`. Si existen bloques sucios y el contador de iteraciones está por debajo de 5, el pipeline se re-ejecuta desde la **Pasada 3**.
+
+**Criterios de convergencia:**
+- No hay bloques sucios después de las pasadas 5--7, **o**
+- Se ha alcanzado el máximo de 5 iteraciones (se acepta el mejor resultado obtenido hasta ese momento)
+
+El motor registra una **puntuación de violaciones tipográficas** en cada iteración -- una suma ponderada de los problemas restantes: viudas, huérfanas, columnas desequilibradas, desalineación de la rejilla de líneas base. Cada tipo de violación tiene un peso que refleja su gravedad visual (una viuda es mucho más perceptible que 2px de desalineación en la rejilla). Si se alcanza el límite de 5 iteraciones sin convergencia completa, el motor elige la iteración que produjo la puntuación de violación más baja. No necesariamente la última -- las iteraciones posteriores a veces sobrecorrigen, arreglando un problema mientras crean otro.
+
+En la práctica, la mayoría de los documentos convergen en 2--3 iteraciones. El límite de 5 es una válvula de seguridad pragmática: lo perfecto es enemigo de lo terminado. Algunos casos patológicos -- una página donde cada párrafo tiene exactamente la longitud incorrecta para crear viudas independientemente de cómo equilibres las columnas -- nunca convergerán del todo. El motor acepta el "mejor esfuerzo" y sigue adelante.
+
+
+## Sistema de ritmo vertical
+
+Coge un libro bien compuesto y ponlo a contraluz. Las líneas de la página izquierda se alinean con las de la derecha. La línea base de la línea 5 en la columna 1 está exactamente en la misma posición vertical que la línea base de la línea 5 en la columna 2. Eso es el ritmo vertical, y es una de las primeras cosas que un ojo entrenado comprueba al evaluar la calidad tipográfica. También es uno de los diferenciadores clave de Postext.
+
+Cuando ambas columnas contienen solo texto de cuerpo al mismo tamaño, la alineación es trivial -- cada línea tiene la misma altura, así que las líneas base se alinean naturalmente. El desafío aparece en el momento en que una columna contiene un encabezado con un tamaño de fuente mayor, una imagen con una altura arbitraria en píxeles, o espaciado extra alrededor de una cita. Estos elementos "rompen" la rejilla: el contenido por debajo se desplaza una cantidad que no es múltiplo del incremento de línea base, y de repente las líneas base en esa columna se dessincronizan con la columna adyacente. La armonía visual desaparece.
+
+El objetivo es recuperarla: las líneas base del texto de cuerpo en columnas adyacentes deben alinearse horizontalmente, incluso cuando encabezados, imágenes u otros elementos con alturas no estándar aparezcan en una columna pero no en la otra.
+
+### Rejilla de líneas base
+
+Todo se ancla a un solo número. El documento define un valor `baselineGrid` derivado del line-height del texto de cuerpo -- por ejemplo, texto de cuerpo a `16px` con un `line-height` de `1.5` produce una rejilla de líneas base de `24px`. Cada línea base del texto de cuerpo debería caer en un múltiplo de este valor. Ese es el contrato.
+
+### Elementos que rompen la rejilla
+
+Algunos elementos rompen la rejilla porque su altura no es múltiplo de `baselineGrid`:
+
+- **Encabezados:** tamaño de fuente mayor, line-height diferente
+- **Imágenes:** altura arbitraria en píxeles
+- **Tablas:** altura variable
+- **Citas:** pueden usar tamaño de fuente o padding diferente
+- **Separadores de notas al pie:** filete de altura fija
+
+### Algoritmo de ajuste de espaciado
+
+<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '600px', fontFamily: 'monospace' }}>
+  <defs>
+    <filter id="rhythmShadowEs" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.18" />
+    </filter>
+  </defs>
+  <rect width="600" height="400" fill="transparent" rx="8" />
+
+  {/* Grid lines */}
+  {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map((i) => (
+    <line key={i} x1="20" y1={30 + i * 24} x2="580" y2={30 + i * 24} stroke="var(--svg-grid)" strokeWidth="1" strokeDasharray="4,4" />
+  ))}
+
+  {/* Column 1 label */}
+  <text x="145" y="22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Columna 1</text>
+
+  {/* Column 1 */}
+  <rect x="40" y="30" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="50" y="47" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo (línea base: 24px)</text>
+
+  <rect x="40" y="54" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="50" y="71" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  {/* Heading - breaks the grid */}
+  <rect x="40" y="78" width="210" height="36" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="3" />
+  <text x="50" y="100" fontSize="12" fontWeight="bold" fill="var(--svg-orange-text)">Encabezado (36px alto)</text>
+
+  {/* Adjustment gap */}
+  <rect x="40" y="114" width="210" height="12" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="1" strokeDasharray="3,2" className="svg-pulse" />
+  <text x="260" y="124" fontSize="9" fill="var(--svg-pink-text)" fontWeight="bold" className="svg-pulse">+12px ajuste de espaciado</text>
+
+  {/* Body text resumes on grid */}
+  <rect x="40" y="126" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="50" y="143" fontSize="10" fill="var(--svg-blue-text)">Cuerpo (de vuelta en la rejilla)</text>
+
+  <rect x="40" y="150" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="50" y="167" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  <rect x="40" y="174" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="50" y="191" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  {/* Column 2 label */}
+  <text x="445" y="22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Columna 2</text>
+
+  {/* Column 2 — all body text, aligned */}
+  <rect x="340" y="30" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="350" y="47" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  <rect x="340" y="54" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="350" y="71" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  <rect x="340" y="78" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="350" y="95" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  <rect x="340" y="102" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="350" y="119" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  {/* Alignment indicators */}
+  <line x1="252" y1="126" x2="338" y2="126" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
+  <text x="295" y="138" textAnchor="middle" fontSize="8" fill="var(--svg-green-check)" fontWeight="bold" className="svg-pulse">alineado</text>
+
+  <line x1="252" y1="150" x2="338" y2="150" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
+  <line x1="252" y1="174" x2="338" y2="174" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
+
+  <rect x="340" y="126" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="350" y="143" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  <rect x="340" y="150" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="350" y="167" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  <rect x="340" y="174" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
+  <text x="350" y="191" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
+
+  {/* Legend */}
+  <rect x="40" y="230" width="520" height="150" fill="var(--svg-legend-fill)" stroke="var(--svg-legend-stroke)" strokeWidth="1" rx="6" filter="url(#rhythmShadowEs)" />
+  <text x="60" y="252" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Algoritmo de ajuste de espaciado</text>
+  <text x="60" y="272" fontSize="10" fill="var(--svg-mid-text)">1. Recorrer cada columna de arriba a abajo</text>
+  <text x="60" y="290" fontSize="10" fill="var(--svg-mid-text)">2. Registrar gridDrift = actualY - nearestGridLine(actualY)</text>
+  <text x="60" y="308" fontSize="10" fill="var(--svg-mid-text)">3. En cada hueco ajustable (espacio de encabezado, figura):</text>
+  <text x="75" y="324" fontSize="10" fill="var(--svg-mid-text)">calcular la corrección necesaria para anular la desviación</text>
+  <text x="60" y="342" fontSize="10" fill="var(--svg-mid-text)">4. Distribuir la corrección (preferir expandir a comprimir)</text>
+  <text x="60" y="360" fontSize="10" fill="var(--svg-mid-text)">5. Limitar a valores mín/máx de TypographyConfig.spacing</text>
+
+  {/* Grid line labels */}
+  <text x="15" y="34" fontSize="8" fill="var(--svg-faint-text)">0</text>
+  <text x="15" y="58" fontSize="8" fill="var(--svg-faint-text)">24</text>
+  <text x="15" y="82" fontSize="8" fill="var(--svg-faint-text)">48</text>
+  <text x="15" y="106" fontSize="8" fill="var(--svg-faint-text)">72</text>
+  <text x="15" y="130" fontSize="8" fill="var(--svg-faint-text)">96</text>
+  <text x="10" y="154" fontSize="8" fill="var(--svg-faint-text)">120</text>
+  <text x="10" y="178" fontSize="8" fill="var(--svg-faint-text)">144</text>
+  <text x="10" y="202" fontSize="8" fill="var(--svg-faint-text)">168</text>
+</svg>
+
+Tras ajustar el espaciado en cada columna de forma independiente, el motor verifica la **alineación entre columnas**: las líneas base en la misma posición vertical en columnas adyacentes deben coincidir. Si divergen -- porque las distintas columnas tienen diferentes elementos que rompen la rejilla -- una segunda pasada de alineación ajusta los huecos en ambas columnas para encontrar un ritmo común.
+
+Un ejemplo concreto. La columna 1 tiene un encabezado de 36px (1,5 veces la rejilla de 24px). La columna 2 no tiene encabezado. Después del encabezado, la columna 1 se ha desviado 12px de la rejilla. El algoritmo añade 12px de espacio extra después del encabezado -- incrementando el "espacio después del encabezado" de 16px a 28px. Ahora la siguiente línea de texto de cuerpo en la columna 1 cae sobre una línea de la rejilla de nuevo, y su línea base coincide con la línea correspondiente de la columna 2. Armonía restaurada.
+
+**Casos límite:**
+- Una columna con más elementos que rompen la rejilla que huecos ajustables acepta una alineación
+  parcial (el algoritmo hace lo que puede pero no puede garantizar una alineación perfecta si hay
+  demasiadas disrupciones y pocos puntos para absorber el error)
+- Una imagen más alta que la columna abarca columnas o páginas (se gestiona por separado en la Pasada 4)
+- Cuando el ajuste necesario crearía un espaciado visualmente incómodo (por ejemplo, 40px de espacio
+  después de un encabezado cuando la norma es 16px), el algoritmo distribuye el error entre varios
+  huecos en lugar de concentrarlo en uno solo
+
+
+## Interfaz del backend
+
+El backend es una sola interfaz que gestiona tanto la medición de texto *como* el renderizado de salida para un destino específico. No dos interfaces. Una.
+
+Es una decisión deliberada, y existe por una razón crítica: **la forma en que mides el texto debe coincidir exactamente con la forma en que lo renderizas.** Imagina que el backend de medición usa métricas de fuente del canvas, pero el backend de renderizado usa una librería PDF con tablas de kerning ligeramente diferentes. La composición no coincidirá con la salida. Líneas que el motor midió como ajustadas en 320px podrían desbordarse o quedarse cortas al renderizar. Cada píxel de desviación es una mentira. Al integrar medición y renderizado en una sola interfaz, cada backend garantiza consistencia interna: las métricas de fuente que usa para medir son exactamente las mismas que usa para dibujar.
+
+### Interfaz
+
+```typescript
+interface PostextBackend {
+  // Lifecycle
+  initialize(config: PostextConfig): Promise<void>;
+  dispose(): void;
+
+  // Measurement
+  measureText(text: string, style: TextStyle): MeasuredText;
+  measureImage(resource: PostextResource): { width: number; height: number };
+
+  // Rendering
+  renderPage(page: VDTPage): void;
+  renderBlock(block: VDTBlock): void;
+  renderLine(line: VDTLine, style: TextStyle): void;
+}
+
+interface TextStyle {
+  font: string;       // CSS font shorthand (e.g. '16px/1.5 Inter')
+  tracking?: number;  // letter-spacing adjustment in px
+  hyphenate?: boolean;
+}
+
+interface MeasuredText {
+  lines: VDTLine[];
+  height: number;
+  width: number;
+}
+```
+
+### Backends planificados
+
+<table>
+  <thead>
+    <tr>
+      <th>Backend</th>
+      <th>Medición</th>
+      <th>Renderizado</th>
+      <th>Fase</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Canvas / Navegador</strong></td>
+      <td>Pretext (métricas de fuente del canvas)</td>
+      <td>Elementos HTML posicionados o dibujo en canvas</td>
+      <td><strong>Fase 1</strong></td>
+    </tr>
+    <tr>
+      <td><strong>PDF</strong></td>
+      <td>Pretext + métricas de fuente PDF</td>
+      <td>Construcción de páginas PDF (p. ej., pdf-lib)</td>
+      <td>Fase 4</td>
+    </tr>
+    <tr>
+      <td><strong>Server-side</strong></td>
+      <td>Pretext + node-canvas</td>
+      <td>Renderizado headless para SSR / generación por lotes</td>
+      <td>Futuro</td>
+    </tr>
+  </tbody>
+</table>
+
+**Restricción de solo navegador:** En la Fase 1, toda la computación de composición ocurre en el lado del cliente, en el navegador. El motor se ejecuta en el hilo principal, con soporte de Web Workers para documentos grandes planificado como optimización futura. Es una decisión de alcance deliberada -- clavar primero la experiencia en el navegador, expandir a otros destinos después.
+
+
+## Estrategia de rendimiento
+
+La diferencia entre una herramienta lenta y una que parece mágica es un factor de 10x. Una composición de 500ms significa que el usuario ve un tirón visible cada vez que redimensiona la ventana. Una composición de 50ms se siente instantánea -- como si el documento siempre hubiera estado ahí. Ese factor no se puede parchear después. Hay que diseñarlo desde el primer día.
+
+Piensa a qué se enfrenta el motor: miles de bloques de texto repartidos en cientos de páginas, con la composición completa potencialmente recalculada en cada redimensionado de ventana. Es la misma clase de problema que enfrentan los motores de juegos -- procesar miles de objetos (geometría, física, iluminación, IA) 60 veces por segundo. Lo resuelven con una arquitectura de pipeline (múltiples pasadas sobre estado mutable compartido, cada pasada haciendo una sola cosa rápido) y con la eliminación agresiva de trabajo innecesario (culling, dirty flags, particionado espacial). Postext toma prestada cada una de estas ideas.
+
+### Principios
+
+1. **Computación en memoria.** El VDT completo cabe en memoria. No se lee el DOM durante la
+   composición. El DOM solo se toca al final, durante el renderizado.
+
+2. **Seguimiento de cambios.** Los bloques llevan un dirty flag. Las pasadas saltan subárboles limpios.
+   El bucle de convergencia solo re-ejecuta desde el punto sucio más temprano.
+
+3. **Convergencia acotada.** El máximo de 5 iteraciones es una garantía firme. El peor caso de
+   rendimiento es predecible y medible.
+
+4. **Velocidad de Pretext.** La medición de texto a 300–600x la velocidad del DOM significa que el
+   motor puede permitirse re-medir texto de forma especulativa (probando diferentes anchos de columna,
+   puntos de separación silábica, ajustes de tracking) sin bloquear el hilo principal.
+
+5. **Campos numéricos planos.** Las cajas delimitadoras se almacenan como campos planos `x, y, width,
+   height` en cada nodo, no como objetos anidados. Esto evita perseguir punteros y es más amigable
+   con la caché.
+
+6. **VDT de doble acceso.** El árbol (`pages > columns > blocks`) proporciona acceso jerárquico para
+   pasadas que necesitan trabajar página por página o columna por columna (como la Pasada 6, equilibrado
+   de columnas). Un array plano paralelo `blocks[]` proporciona acceso indexado O(1) para pasadas que
+   necesitan iterar todos los bloques independientemente de su ubicación (como la Pasada 5, detección
+   de viudas/huérfanas). Ambas vistas referencian los mismos objetos bloque (no hay duplicación, solo
+   dos formas de recorrer los mismos datos).
+
+### Gestión del redimensionado
+
+Cuando el usuario redimensiona la ventana, el motor no reconstruye todo desde cero. Actualiza los anchos de columna en el VDT, marca todos los bloques de texto como sucios, y re-ejecuta el pipeline desde la Pasada 2. Las estructuras de páginas y columnas se reutilizan.
+
+Aquí es donde el VDT mutable paga dividendos. En lugar de descartar toda la composición y empezar de cero, el motor reutiliza todo el trabajo posible. Los resultados de `prepare()` de Pretext siguen siendo válidos -- dependen de la fuente y el contenido del texto, no del ancho -- así que solo las llamadas baratas a `layout()` necesitan re-ejecutarse. Un documento de 50 páginas puede re-componerse completamente re-midiendo todos los bloques de texto (rápido, porque `prepare()` está cacheado) y re-ejecutando las pasadas 3--7, sin re-analizar el markdown ni re-resolver referencias. El usuario arrastra el borde de la ventana y la composición le sigue en tiempo real.
+
+### Benchmarking desde el primer día
+
+Cada pasada se puede medir de forma independiente. Los tests incluyen aserciones de rendimiento, no solo de corrección:
+
+```typescript
+// Example benchmark test
+bench('layout 50-page document', () => {
+  const vdt = createVDT(fiftyPageContent, config);
+  runPipeline(vdt);
+}, { time: 100 }); // must complete in under 100ms
+```
+
+Los tests de rendimiento se ejecutan junto a los tests unitarios en vitest, y las regresiones se detectan en CI. Si un refactor hace que la Pasada 5 sea el doble de lenta, el build se rompe. El rendimiento es una funcionalidad, no una esperanza.
+
+
+## Flujo de datos
+
+<svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '780px', fontFamily: 'monospace' }}>
+  <rect width="780" height="310" fill="transparent" rx="8" />
+
+  <defs>
+    <marker id="a4es" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="var(--svg-stroke)" />
+    </marker>
+    <marker id="a5es" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#F57F17" />
+    </marker>
+    <filter id="flowShadowEs" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
+    </filter>
+  </defs>
+
+  {/* Row 1: Entrada → Pasada 1 → Pasada 2 → bucle de convergencia */}
+  <g className="svg-fade-1">
+    <rect x="15" y="30" width="140" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#flowShadowEs)" />
+    <text x="85" y="47" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Contenido +</text>
+    <text x="85" y="60" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Config</text>
+  </g>
+
+  <line x1="155" y1="50" x2="175" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <g className="svg-fade-2">
+    <rect x="177" y="35" width="100" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
+    <text x="227" y="55" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-orange-text)">1 Análisis</text>
+  </g>
+
+  <line x1="277" y1="50" x2="297" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <g className="svg-fade-3">
+    <rect x="299" y="35" width="100" height="30" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
+    <text x="349" y="55" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-purple-text)">2 Medir</text>
+  </g>
+
+  <line x1="399" y1="50" x2="419" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  {/* Convergence loop bracket */}
+  <rect x="421" y="20" width="345" height="80" fill="none" stroke="#F57F17" strokeWidth="2" rx="8" strokeDasharray="6,3" />
+  <text x="593" y="16" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-yellow-text)" className="svg-pulse">bucle de convergencia (máx 5)</text>
+
+  {/* Pasadas 3-7 inside loop */}
+  <g className="svg-fade-4">
+    <rect x="431" y="35" width="55" height="30" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
+    <text x="458" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-blue-text)">3</text>
+    <text x="458" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-blue-text)">colocar</text>
+  </g>
+
+  <line x1="486" y1="50" x2="498" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <g className="svg-fade-4">
+    <rect x="500" y="35" width="55" height="30" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
+    <text x="527" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-blue-text)">4</text>
+    <text x="527" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-blue-text)">recursos</text>
+  </g>
+
+  <line x1="555" y1="50" x2="567" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <g className="svg-fade-5">
+    <rect x="569" y="35" width="55" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
+    <text x="596" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">5</text>
+    <text x="596" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">tipo</text>
+  </g>
+
+  <line x1="624" y1="50" x2="636" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <g className="svg-fade-6">
+    <rect x="638" y="35" width="55" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
+    <text x="665" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">6</text>
+    <text x="665" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">equilibrar</text>
+  </g>
+
+  <line x1="693" y1="50" x2="705" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <g className="svg-fade-7">
+    <rect x="707" y="35" width="50" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
+    <text x="732" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">7</text>
+    <text x="732" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">ritmo</text>
+  </g>
+
+  {/* Loop-back arrow: from Pass 7 back to Pass 3 */}
+  <path d="M 732 67 L 732 90 L 458 90 L 458 67" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#a5es)" className="svg-loop-glow" />
+  <text x="595" y="87" textAnchor="middle" fontSize="8" fill="var(--svg-yellow-text)">si dirty &amp;&amp; iteraciones &lt; 5</text>
+
+  {/* Row 2: Convergido → Backend → Salida */}
+  <line x1="593" y1="102" x2="593" y2="130" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <text x="593" y="148" textAnchor="middle" fontSize="9" fill="var(--svg-light-text)">VDT (convergido)</text>
+
+  <line x1="593" y1="155" x2="593" y2="175" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <rect x="503" y="177" width="180" height="35" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#flowShadowEs)" />
+  <text x="593" y="199" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-pink-text)">Backend: Renderizar</text>
+
+  <line x1="593" y1="212" x2="593" y2="235" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
+
+  <rect x="503" y="237" width="180" height="35" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="2" rx="6" filter="url(#flowShadowEs)" />
+  <text x="593" y="259" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-teal-text)">HTML / PDF</text>
+</svg>
+
+
+## Fuera de alcance
+
+Decir que no es lo que permite entregar. El motor de composición es lo suficientemente complejo por sí solo -- asumir responsabilidades que pertenecen a otro lugar sería la forma más rápida de no terminar nunca. Cada uno de estos límites es una decisión consciente e intencionada.
+
+- **Renderizado en servidor.** Toda la composición se ejecuta en el navegador. El motor depende de métricas de fuente del canvas (vía Pretext), que requieren un entorno de navegador. Un backend de servidor usando `node-canvas` podría llegar más adelante, pero no forma parte del diseño inicial. Primero el navegador.
+- **Edición WYSIWYG.** Postext es un motor de composición, no un editor. Contenido entra, geometría sale. Construir una superficie de edición interactiva -- gestión de cursor, selección, deshacer/rehacer, manejo de entrada -- es un problema completamente diferente. Postext puede servir como backend de renderizado para un editor, pero no proporciona capacidades de edición por sí mismo.
+- **Wrapper de CSS column-count.** Postext reemplaza la composición multicolumna de CSS; no la envuelve. Calcula geometría posicionada precisa desde cero, porque el algoritmo de columnas del navegador carece de control sobre la colocación de recursos, la prevención de viudas/huérfanas y las reglas tipográficas entre columnas. Esas son precisamente la razón de ser de Postext.
+- **Gestión de breakpoints responsivos.** Postext calcula la composición a un tamaño de página dado. El consumidor decide cuándo re-componer (al redimensionar la ventana, al cambiar la orientación). Postext no gestiona breakpoints, media queries ni decisiones de diseño responsivo. Eso es cosa tuya.
+- **Edición colaborativa en tiempo real.** Postext es un cálculo de composición sin estado -- contenido entra, geometría sale -- no un sistema de documentos colaborativo con resolución de conflictos, transformaciones operacionales ni consciencia multiusuario.
+- **Carga o gestión de fuentes.** Postext asume que las fuentes ya están cargadas y disponibles para la medición. La carga de fuentes, las cadenas de fallback y el subsetting de fuentes son responsabilidad del consumidor. Si una fuente no está cargada cuando Postext mide el texto, las mediciones usarán la fuente de fallback del navegador, y la composición será incorrecta cuando la fuente real se cargue. Carga tus fuentes primero.
+
+
+## Apéndice: relación con los tipos existentes
+
+Así se relaciona cada tipo ya definido en `packages/postext/src/types.ts` con la arquitectura descrita arriba:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Tipo</th>
+      <th>Rol en la arquitectura</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>PostextContent</code></td>
+      <td>Punto de entrada: la entrada al motor (Pasada 1)</td>
+    </tr>
+    <tr>
+      <td><code>PostextConfig</code></td>
+      <td>Controla el comportamiento del pipeline en todas las pasadas</td>
+    </tr>
+    <tr>
+      <td><code>PostextResource</code></td>
+      <td>Se convierte en un <code>VDTBlock</code> de tipo <code>'resource'</code> en la Pasada 1</td>
+    </tr>
+    <tr>
+      <td><code>PostextNote</code></td>
+      <td>Se convierte en un bloque de nota al pie, nota final o nota al margen en la Pasada 1</td>
+    </tr>
+    <tr>
+      <td><code>PlacementStrategy</code></td>
+      <td>Determina el comportamiento de colocación de recursos en la Pasada 4</td>
+    </tr>
+    <tr>
+      <td><code>ColumnConfig</code></td>
+      <td>Controla la creación de páginas/columnas (Pasada 3) y el equilibrado (Pasada 6)</td>
+    </tr>
+    <tr>
+      <td><code>TypographyConfig</code></td>
+      <td>Controla el refinamiento tipográfico (Pasada 5) y el ritmo vertical (Pasada 7)</td>
+    </tr>
+    <tr>
+      <td><code>ResourcePlacementConfig</code></td>
+      <td>Controla la estrategia de colocación y el diferimiento de recursos en la Pasada 4</td>
+    </tr>
+    <tr>
+      <td><code>ReferenceConfig</code></td>
+      <td>Controla la resolución de referencias (Pasada 1) y la reserva del área de notas al pie (Pasada 3)</td>
+    </tr>
+    <tr>
+      <td><code>PostextSectionOverride</code></td>
+      <td>Crea sobrecargas de configuración por zona durante el análisis de la Pasada 1</td>
+    </tr>
+  </tbody>
+</table>
+
+### Nuevos tipos introducidos por esta arquitectura
+
+Los tipos del VDT (`VDTDocument`, `VDTPage`, `VDTColumn`, `VDTBlock`, `VDTLine`, `BoundingBox`, `VDTFootnoteArea`) y los tipos del backend (`PostextBackend`, `TextStyle`, `MeasuredText`) son nuevos en esta arquitectura. Se ubicarán en archivos dedicados junto al `types.ts` existente:
+
+- `packages/postext/src/vdt.ts` (tipos del Árbol Virtual del Documento)
+- `packages/postext/src/backend.ts` (tipos de la interfaz del backend)
+
+Estos extienden las definiciones de tipos existentes sin modificarlas -- los tipos actuales permanecen intactos.

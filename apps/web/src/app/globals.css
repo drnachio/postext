@@ -145,6 +145,65 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ── SVG diagram tokens (dark mode = default) ── */
+:root,
+:root.dark {
+  --svg-blue-fill: rgba(33, 150, 243, 0.12);
+  --svg-orange-fill: rgba(255, 152, 0, 0.12);
+  --svg-green-fill: rgba(76, 175, 80, 0.12);
+  --svg-purple-fill: rgba(156, 39, 176, 0.12);
+  --svg-yellow-fill: rgba(255, 193, 7, 0.10);
+  --svg-pink-fill: rgba(233, 30, 99, 0.12);
+  --svg-teal-fill: rgba(0, 150, 136, 0.12);
+  --svg-legend-fill: rgba(255, 255, 255, 0.04);
+  --svg-blue-text: #64B5F6;
+  --svg-orange-text: #FFB74D;
+  --svg-green-text: #81C784;
+  --svg-purple-text: #CE93D8;
+  --svg-yellow-text: #FFD54F;
+  --svg-pink-text: #F48FB1;
+  --svg-teal-text: #80CBC4;
+  --svg-brown-text: #BCAAA4;
+  --svg-dark-text: #EDEDED;
+  --svg-mid-text: #B4B4BC;
+  --svg-light-text: #9E9E9E;
+  --svg-faint-text: #808080;
+  --svg-stroke: #888;
+  --svg-grid: rgba(255, 255, 255, 0.08);
+  --svg-legend-stroke: #444;
+  --svg-green-check: #81C784;
+  --svg-blue-half: rgba(33, 150, 243, 0.25);
+  --svg-pink-half: rgba(233, 30, 99, 0.3);
+}
+:root.light {
+  --svg-blue-fill: #e8f4fd;
+  --svg-orange-fill: #fff3e0;
+  --svg-green-fill: #e8f5e9;
+  --svg-purple-fill: #f3e5f5;
+  --svg-yellow-fill: #fff8e1;
+  --svg-pink-fill: #fce4ec;
+  --svg-teal-fill: #e0f2f1;
+  --svg-legend-fill: #f5f5f5;
+  --svg-blue-text: #1565C0;
+  --svg-orange-text: #B34700;
+  --svg-green-text: #2E7D32;
+  --svg-purple-text: #6A1B9A;
+  --svg-yellow-text: #8C6900;
+  --svg-pink-text: #880E4F;
+  --svg-teal-text: #00695C;
+  --svg-brown-text: #5D4037;
+  --svg-dark-text: #333;
+  --svg-mid-text: #555;
+  --svg-light-text: #666;
+  --svg-faint-text: #767676;
+  --svg-stroke: #666;
+  --svg-grid: rgba(0, 0, 0, 0.08);
+  --svg-legend-stroke: #ccc;
+  --svg-green-check: #4CAF50;
+  --svg-blue-half: rgba(33, 150, 243, 0.3);
+  --svg-pink-half: rgba(233, 30, 99, 0.35);
+}
+
 /* Baseline grid pattern for hero background */
 .bg-baseline-grid {
   background-image: repeating-linear-gradient(
@@ -244,4 +303,281 @@ html { font-size: 18px; }
 }
 .skip-to-content:focus {
   left: 1rem;
+}
+
+/* ── Docs MDX content ── */
+.docs-content {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--foreground);
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+}
+@media (min-width: 768px) {
+  .docs-content {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+}
+.docs-content h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.025em;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: var(--foreground);
+}
+.docs-content h2 {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.025em;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--foreground);
+}
+.docs-content h3 {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: -0.025em;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+@media (min-width: 768px) {
+  .docs-content h1 { font-size: 2rem; margin-bottom: 1.5rem; }
+  .docs-content h2 { font-size: 1.5rem; margin-top: 3rem; margin-bottom: 1rem; }
+  .docs-content h3 { font-size: 1.2rem; margin-top: 2rem; margin-bottom: 0.75rem; }
+}
+.docs-heading-anchor {
+  display: none;
+  position: absolute;
+  right: 100%;
+  padding-right: 0.5rem;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.85em;
+  color: var(--rule);
+  text-decoration: none !important;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+@media (min-width: 1024px) {
+  .docs-heading-anchor {
+    display: inline;
+  }
+}
+.docs-heading:hover .docs-heading-anchor,
+.docs-heading-anchor:focus {
+  opacity: 1;
+  color: var(--gilt);
+}
+.docs-content p {
+  margin-bottom: 1rem;
+}
+.docs-content a {
+  color: var(--gilt);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.docs-content a:hover {
+  color: var(--gilt-hover);
+}
+.docs-content h2 a:not(.docs-heading-anchor),
+.docs-content h3 a:not(.docs-heading-anchor) {
+  color: inherit;
+  text-decoration: none;
+}
+.docs-content strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.docs-content em {
+  font-style: italic;
+}
+.docs-content code {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  background: var(--surface);
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  color: var(--gilt);
+  word-break: break-word;
+}
+@media (min-width: 768px) {
+  .docs-content code {
+    font-size: 0.85em;
+  }
+}
+.docs-content pre {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+@media (min-width: 768px) {
+  .docs-content pre {
+    font-size: 0.85rem;
+    padding: 1rem 1.25rem;
+  }
+}
+.docs-content pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  color: var(--foreground);
+  font-size: inherit;
+}
+/* rehype-pretty-code: use shiki dual-theme CSS variables */
+.docs-content pre code span {
+  color: var(--shiki-dark);
+}
+:root.light .docs-content pre code span {
+  color: var(--shiki-light);
+}
+.docs-content ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+.docs-content ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+@media (min-width: 768px) {
+  .docs-content ul,
+  .docs-content ol {
+    padding-left: 1.5rem;
+  }
+}
+.docs-content li {
+  margin-bottom: 0.35rem;
+}
+.docs-content li > ul,
+.docs-content li > ol {
+  margin-top: 0.35rem;
+  margin-bottom: 0;
+}
+.docs-content blockquote {
+  border-left: 3px solid var(--gilt);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-bottom: 1rem;
+  color: var(--slate);
+  font-style: italic;
+}
+.docs-content hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 2.5rem 0;
+}
+.docs-content .scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1.5rem;
+}
+.docs-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 28rem;
+}
+@media (min-width: 768px) {
+  .docs-content table {
+    font-size: 0.9rem;
+  }
+}
+.docs-content th {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 2px solid var(--rule);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+}
+.docs-content td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.docs-content tbody tr:hover {
+  background: var(--surface);
+}
+.docs-content svg {
+  height: auto;
+  min-width: 480px;
+}
+
+/* ── SVG diagram animations ── */
+@keyframes svg-dash-flow {
+  to { stroke-dashoffset: -14; }
+}
+@keyframes svg-dash-flow-slow {
+  to { stroke-dashoffset: -18; }
+}
+@keyframes svg-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+@keyframes svg-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes svg-loop-glow {
+  0%, 100% { stroke-opacity: 0.6; stroke-width: 2; }
+  50% { stroke-opacity: 1; stroke-width: 2.8; }
+}
+@keyframes svg-scan {
+  0% { transform: translateY(0); opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { transform: translateY(360px); opacity: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .docs-content .svg-flow {
+    stroke-dasharray: 8 6;
+    animation: svg-dash-flow 0.8s linear infinite;
+  }
+  .docs-content .svg-flow-slow {
+    stroke-dasharray: 10 8;
+    animation: svg-dash-flow-slow 1.5s linear infinite;
+  }
+  .docs-content .svg-pulse {
+    animation: svg-pulse 3s ease-in-out infinite;
+  }
+  .docs-content .svg-loop-glow {
+    animation: svg-loop-glow 2.5s ease-in-out infinite;
+  }
+  .docs-content .svg-fade-1 { animation: svg-fade-in 0.5s ease-out 0.1s both; }
+  .docs-content .svg-fade-2 { animation: svg-fade-in 0.5s ease-out 0.25s both; }
+  .docs-content .svg-fade-3 { animation: svg-fade-in 0.5s ease-out 0.4s both; }
+  .docs-content .svg-fade-4 { animation: svg-fade-in 0.5s ease-out 0.55s both; }
+  .docs-content .svg-fade-5 { animation: svg-fade-in 0.5s ease-out 0.7s both; }
+  .docs-content .svg-fade-6 { animation: svg-fade-in 0.5s ease-out 0.85s both; }
+  .docs-content .svg-fade-7 { animation: svg-fade-in 0.5s ease-out 1.0s both; }
+}
+.docs-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
 }
