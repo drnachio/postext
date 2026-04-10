@@ -1,6 +1,16 @@
 # Contributing to Postext
 
-Thanks for your interest in contributing to postext! Contributions of any kind — code, documentation, design feedback, bug reports, ideas, or questions — are welcome from everyone, regardless of experience level. This document explains how to get involved.
+Thanks for your interest in contributing to postext! Postext is a community-driven open-source project with an active and growing community of contributors. Contributions of any kind — code, documentation, design feedback, bug reports, ideas, or questions — are welcome from everyone, regardless of experience level. This document explains how to get involved.
+
+For the broader community vision, areas of contribution, and the project's goals, see the [Contributing guide](https://postext.dev/en/docs/contributing) in the documentation.
+
+## Community
+
+All coordination happens on GitHub — issues, pull requests, and discussions. Everything is public, searchable, and open to participation.
+
+- **[Issues](https://github.com/drnachio/postext/issues)** — bugs, feature requests, and tasks.
+- **[Pull Requests](https://github.com/drnachio/postext/pulls)** — code contributions.
+- **[Discussions](https://github.com/drnachio/postext/discussions)** — ideas, design conversations, and questions.
 
 ## Before You Start
 
@@ -72,14 +82,16 @@ Write clear, concise commit messages. Use the imperative mood in the subject lin
 - Link to the related issue.
 - All CI checks (build, test, type-check, lint) must pass before merging.
 
-## Areas We Need Help With
+## Areas Where You Can Help
 
-We are especially looking for contributors with experience in:
+The project especially welcomes contributors with experience in:
 
 - **Typographic layout algorithms** (Knuth-Plass, column balancing, optimal paragraph breaking)
 - **PDF generation** (low-level PDF construction, font embedding)
-- **Editorial design** (magazine/newspaper layout, book typesetting)
+- **Editorial design** (magazine/newspaper layout, book typesetting — you do not need to write code to contribute design knowledge)
 - **Text rendering** (canvas, SVG, font metrics)
+- **Documentation and translations** (the docs are bilingual EN/ES; more languages welcome)
+- **Testing** (cross-browser, cross-platform, and edge case testing)
 
 ## License
 

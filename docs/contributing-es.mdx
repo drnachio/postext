@@ -1,0 +1,158 @@
+{/* docs/contributing-es.mdx */}
+
+export const metadata = {
+  title: 'Contribuir a Postext',
+  sidebarTitle: 'Contribuir',
+  description: 'Cómo unirse a la comunidad Postext y contribuir al proyecto',
+  lang: 'es',
+  lastUpdated: '2026-04-10',
+  readingTime: '8 min',
+  order: 3,
+};
+
+# Contribuir a Postext
+
+**Construyendo juntos el motor de composición editorial que la web nunca ha tenido.**
+
+Postext es un proyecto de código abierto impulsado por su comunidad. Su objetivo es resolver un
+problema que lleva décadas ignorado: llevar la composición editorial profesional a la web. Es una
+ambición grande, y requiere más que una sola persona.
+
+El proyecto está en sus primeras etapas, y este es el mejor momento para sumarse. La arquitectura se
+está definiendo, las decisiones de diseño están abiertas, y los contribuidores que se incorporan
+ahora tienen influencia real sobre la dirección del proyecto. Si estabas esperando un buen momento
+para unirte — es este.
+
+No hace falta ser programador para contribuir. Ya escribas código, diseñes maquetaciones
+editoriales, entiendas de tipografía, pruebes en distintos navegadores, redactes documentación,
+traduzcas contenido o simplemente tengas ideas sobre cómo debería funcionar el contenido editorial
+en la web — aquí hay un sitio para ti.
+
+
+## Por qué contribuir
+
+Todas las empresas de desarrollo editorial del mundo se enfrentan al mismo problema: CSS no fue
+diseñado para maquetación editorial. No hay soporte nativo para equilibrado de columnas, prevención
+de huérfanas y viudas, flujo de texto alrededor de obstáculos ni colocación de notas al pie. Cada
+equipo resuelve estos problemas desde cero, construyendo soluciones frágiles y a medida que son
+caras de mantener e imposibles de compartir.
+
+Postext pretende cambiar eso. No como una herramienta propietaria, sino como un estándar abierto
+compartido — una base común que editoriales, revistas, periódicos, plataformas de libros y equipos
+de desarrollo de todo el mundo puedan adoptar y sobre la que construir. Un motor de composición
+único y de alta calidad que codifique siglos de conocimiento tipográfico y lo haga accesible para
+todos.
+
+Ese tipo de estándar no puede construirlo una sola persona ni una sola empresa. Necesita la
+perspectiva de tipógrafos de distintas tradiciones, especialistas en PDF, expertos en accesibilidad,
+desarrolladores que trabajen con escrituras de derecha a izquierda, diseñadores que maqueten
+revistas e ingenieros que optimicen el rendimiento del renderizado. La diversidad del mundo editorial
+exige una comunidad diversa detrás de la herramienta que lo sirve.
+
+
+## Cómo trabajamos
+
+Toda la coordinación ocurre en GitHub. No hay canales privados, ni listas de correo cerradas, ni
+decisiones tomadas a puerta cerrada. Todo es público, indexable y abierto a la participación.
+
+- **[Issues](https://github.com/drnachio/postext/issues)** — para reportes de errores, solicitudes
+  de funcionalidad y tareas concretas. Si quieres trabajar en algo, empieza aquí.
+- **[Pull Requests](https://github.com/drnachio/postext/pulls)** — para contribuciones de código.
+  Abre un issue primero para discutir el enfoque antes de escribir código.
+- **[Discussions](https://github.com/drnachio/postext/discussions)** — para ideas, conversaciones
+  de diseño, preguntas y cualquier cosa que no sea un error concreto o una tarea específica. Este
+  es el lugar para pensar en voz alta.
+
+Esto es deliberado. Cuando todo vive en un solo lugar, cualquiera puede encontrar el contexto detrás
+de cada decisión. Los nuevos contribuidores pueden leer el historial. Nadie se queda fuera de una
+conversación que ocurrió en un canal en el que no estaba.
+
+
+## Áreas donde puedes ayudar
+
+El proyecto necesita muchos tipos distintos de experiencia. Estas son algunas áreas donde las
+contribuciones son especialmente valiosas:
+
+### Código y algoritmos
+- **Algoritmos de composición tipográfica** — ruptura de línea Knuth-Plass, equilibrado de
+  columnas, ruptura óptima de párrafos, estrategias de colocación de recursos.
+- **Generación de PDF** — construcción de PDF a bajo nivel, incrustación de fuentes, gestión del
+  color.
+- **Renderizado de texto** — renderizado basado en canvas, salida SVG, métricas de fuente.
+- **Optimización de rendimiento** — hacer que el motor de composición sea lo bastante rápido para
+  uso en tiempo real en cada redimensionado.
+
+### Diseño y tipografía
+- **Experiencia en diseño editorial** — si tienes experiencia maquetando revistas, periódicos o
+  libros, tu conocimiento sobre qué hace que una maquetación funcione (o falle) es inestimable. No
+  necesitas escribir código para aportar conocimiento de diseño.
+- **Tradiciones tipográficas** — el proyecto debe respetar las convenciones tipográficas de
+  distintos idiomas y sistemas de escritura, no solo de escrituras latinas.
+
+### Documentación y comunidad
+- **Documentación** — mejorar, ampliar y mantener la documentación. Una documentación clara marca la
+  diferencia entre un proyecto que la gente puede adoptar y uno que abandona.
+- **Traducciones** — la documentación es actualmente bilingüe (inglés y español). Más idiomas son
+  bienvenidos.
+- **Testing** — probar en distintos navegadores, sistemas operativos y casos límite. Encontrar las
+  maquetaciones que se rompen es tan valioso como construir las que funcionan.
+
+### Diseño de formato y esquema
+- **Formato de markdown enriquecido** — definir cómo los autores expresan la intención editorial en
+  su contenido. Esto es tanto un problema de diseño como técnico.
+- **Esquema de configuración** — diseñar cómo los usuarios controlan las reglas de composición. El
+  sistema de configuración necesita ser lo bastante potente para profesionales y lo bastante sencillo
+  para recién llegados.
+
+
+## Primeros pasos
+
+La configuración práctica — clonar el repositorio, instalar dependencias, ejecutar tests — está
+documentada en
+[CONTRIBUTING.md](https://github.com/drnachio/postext/blob/develop/CONTRIBUTING.md). Empieza por
+ahí para los pasos mecánicos.
+
+Una vez tengas todo listo:
+
+1. **Revisa los issues abiertos.** Busca issues etiquetados con `good first issue` para un punto de
+   entrada guiado, o explora la lista general para encontrar algo que encaje con tus intereses.
+2. **Participa en una Discussion.** Si tienes una idea o quieres entender una decisión de diseño,
+   abre un hilo en [Discussions](https://github.com/drnachio/postext/discussions). Ninguna pregunta
+   es demasiado básica.
+3. **Abre un issue antes de escribir código.** Así se evita trabajo duplicado y se asegura que tu
+   enfoque esté alineado con la dirección del proyecto. Una conversación rápida al principio ahorra
+   tiempo a todos.
+
+
+## La comunidad
+
+Una comunidad activa de contribuidores está creciendo alrededor de Postext. Todavía es pronto — y
+eso es precisamente lo que hace este momento especial. Los contribuidores que se incorporan ahora no
+solo escriben código; están dando forma a la arquitectura, las convenciones y la cultura.
+
+El proyecto valora:
+
+- **Diseño reflexivo antes que velocidad.** Acertar con las abstracciones importa más que entregar
+  rápido. La tipografía se ha refinado durante siglos; podemos tomarnos el tiempo de hacerlo bien.
+- **Claridad antes que ingenio.** Código que es fácil de leer y razonar vale más que código
+  impresionante pero opaco.
+- **Colaboración antes que territorio.** Nadie es dueño de una parte del código. Las ideas se
+  evalúan por su mérito, no por quién las propuso.
+
+Todos los contribuidores son reconocidos. Este proyecto existe porque hay personas que eligen
+dedicar su tiempo a mejorarlo.
+
+
+## Visión
+
+Postext aspira a convertirse en el motor de composición estándar para contenido editorial en la
+web — la herramienta a la que recurran editoriales, revistas, periódicos y plataformas de libros
+cuando necesiten tipografía profesional.
+
+Ese nivel de ambición requiere una comunidad. Ninguna persona sola puede cubrir composición
+tipográfica, generación de PDF, accesibilidad, internacionalización, rendimiento y cada tradición
+editorial. Este proyecto está diseñado para construirse entre todos — por las personas que mejor
+entienden los problemas, estén donde estén en el mundo.
+
+Si trabajas en desarrollo editorial y llevas años resolviendo estos problemas de maquetación en
+solitario, esta es tu invitación a resolverlos una vez, bien, junto a otros.

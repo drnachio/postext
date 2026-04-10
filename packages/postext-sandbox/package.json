@@ -1,0 +1,51 @@
+{
+  "name": "postext-sandbox",
+  "version": "0.1.0",
+  "description": "Interactive sandbox UI for experimenting with the Postext layout engine. VS Code-like interface with markdown editor, configuration panel, and live preview.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drnachio/postext.git",
+    "directory": "packages/postext-sandbox"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "postext": ">=0.1.0"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.8",
+    "@lezer/highlight": "^1.2.1",
+    "lucide-react": "^0.513.0"
+  },
+  "devDependencies": {
+    "@postext/typescript-config": "workspace:*",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "postext": "workspace:*",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "latest"
+  }
+}

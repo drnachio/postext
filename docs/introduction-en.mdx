@@ -129,13 +129,13 @@ intelligently through columns, around images, past footnotes, obeying the rules 
 
 ## A Decade of Trying
 
-We have been chasing this problem for a long time.
+I have been chasing this problem for a long time.
 
 The [Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)
-project started around 2014 at BinPar as an early attempt to bring editorial layout quality to the
-web. We built column-based layouts. We experimented with text flow algorithms. And we ran into the
-same wall, again and again: **you cannot make good layout decisions without knowing exactly how much
-space text will occupy.**
+project started around 2014 as an early attempt to bring editorial layout quality to the web. I
+built column-based layouts. I experimented with text flow algorithms. And I ran into the same wall,
+again and again: **you cannot make good layout decisions without knowing exactly how much space text
+will occupy.**
 
 That sounds simple, but it is the whole problem. Every time you ask the browser "how tall is this
 paragraph at this width?", you trigger a full layout reflow. Do that a few hundred times for a
@@ -143,7 +143,7 @@ complex multi-column document and the page freezes. The browser was never design
 of speculative measurement — trying ten different column widths to find the best one, testing where
 to break a paragraph, checking if an image fits here or needs to move to the next column.
 
-We needed a way to measure text that was fast enough to experiment freely, without locking up
+I needed a way to measure text that was fast enough to experiment freely, without locking up
 the main thread. For a decade, that tool did not exist.
 
 
@@ -155,7 +155,7 @@ It is a DOM-free text measurement library — 300 to 600 times faster than askin
 Pixel-perfect across Chrome, Safari, and Firefox. It uses canvas font metrics and pure arithmetic to
 compute text height and line breaks without ever touching the DOM.
 
-With Pretext, the bottleneck that blocked us for ten years simply disappears. You can measure
+With Pretext, the bottleneck that blocked this work for ten years simply disappears. You can measure
 thousands of text blocks in milliseconds. You can try ten different column configurations and pick
 the best one. You can run the entire layout algorithm on every window resize, in real time.
 
@@ -305,9 +305,9 @@ and the convergence loop — see the [Architecture](/en/docs/architecture) docum
 library that makes Postext possible. Without DOM-free, pixel-perfect measurement at sub-millisecond
 speed, none of this would be practical.
 
-**Content First** (BinPar, ~2014) — the original exploration into high-quality editorial layout on
-the web. A decade of running into walls, learning what does not work, and building the conviction
-that this problem deserves a real solution.
+**Content First** (~2014) — the original exploration into high-quality editorial layout on the web.
+A decade of running into walls, learning what does not work, and building the conviction that this
+problem deserves a real solution.
 
 Postext stands on centuries of typographic tradition. The rules it implements are not invented — they
 are inherited from the work of typesetters, typographers, and designers who refined the art of

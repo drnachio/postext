@@ -1,0 +1,174 @@
+{/* docs/sandbox-en.mdx */}
+
+export const metadata = {
+  title: 'Sandbox',
+  sidebarTitle: 'Sandbox',
+  description: 'Interactive playground for experimenting with the Postext layout engine',
+  lang: 'en',
+  lastUpdated: '2026-04-10',
+  readingTime: '6 min',
+  order: 4,
+};
+
+# Sandbox
+
+**An interactive playground for the Postext layout engine.**
+
+The Sandbox provides a VS Code-like interface where you can write markdown, adjust layout configuration, and see the results rendered in real time. It is designed for experimentation: tweak typography settings, change column counts, test resource placement strategies, and watch how the engine responds.
+
+## Interface layout
+
+The Sandbox follows a familiar IDE paradigm with three main areas:
+
+### Activity bar
+
+A narrow strip on the left edge (48px wide) contains icon buttons for navigating between panels. The top section holds three panel toggles:
+
+- **Markdown Editor** (`FileCode` icon) — Opens the markdown editing panel
+- **Configuration** (`Settings2` icon) — Opens the layout configuration panel
+- **Resources** (`FolderOpen` icon) — Opens the resource management panel (coming soon)
+
+Clicking the active panel's icon collapses the sidebar. Clicking a different icon switches to that panel.
+
+The bottom section of the activity bar contains:
+
+- **Export** — Downloads the current sandbox state (markdown + config) as a JSON file
+- **Import** — Loads a previously exported JSON file
+- **Theme toggle** — Switches between dark and light mode
+- **Language switcher** — Changes the interface language
+
+### Sidebar panels
+
+The sidebar is resizable: drag the separator between the sidebar and the viewport to adjust its width (240px–480px range). The sidebar collapses entirely when no panel is active.
+
+#### Configuration panel
+
+A form-based editor for `PostextConfig`. Settings are grouped into sections:
+
+| Section | Settings |
+|---------|----------|
+| **Columns** | Column count, gutter width, column balancing |
+| **Typography** | Orphans, widows, hyphenation, rag optimization |
+| **References** | Footnote placement and markers, figure/table numbering, margin notes |
+| **Resource Placement** | Default strategy, defer placement, aspect ratio preservation |
+| **Renderer** | Web or PDF output target |
+
+Changes take effect immediately in the viewport preview.
+
+#### Markdown editor
+
+A CodeMirror 6-based editor with:
+
+- **Syntax highlighting** — Headings, emphasis, links, code blocks, and blockquotes are visually distinct
+- **Line numbers** and active line highlighting
+- **Line wrapping** for long paragraphs
+- **Toolbar** with buttons for common markdown actions:
+  - Bold, Italic
+  - Heading levels 1–3
+  - Link, Inline code
+  - Blockquote
+  - Ordered and unordered lists
+
+The toolbar is extensible: custom actions can be added for postext-specific micro-formats as the enriched markdown specification evolves.
+
+#### Resources panel
+
+*Coming in a future version.* This panel will manage the resources (images, tables, figures, pull quotes) referenced from the markdown content.
+
+### Main viewport
+
+The right side of the interface displays the rendered output. Three tabs are available:
+
+#### Canvas tab
+
+Renders a rasterized preview of the document on an HTML5 `<canvas>` element. This provides a pixel-accurate representation of how the final typeset document will look, including precise text positioning, column layout, and resource placement.
+
+#### HTML tab
+
+Renders the postext output inside a Shadow DOM container, ensuring complete style isolation from the host page. The editorial CSS (typography, spacing, column rules) is injected inside the shadow root so it cannot be affected by or leak into the surrounding application styles.
+
+#### PDF tab
+
+*Coming in a future version.* Will generate a downloadable PDF of the current document.
+
+## Persistence
+
+The Sandbox automatically saves your work to the browser's `localStorage`:
+
+- **Auto-save** — Markdown content and configuration are saved after 1 second of inactivity
+- **Auto-load** — On page load, the previous session's content is restored automatically
+
+### Export and import
+
+For transferring your work between devices or sharing configurations:
+
+- **Export** (`Download` icon in the activity bar) — Downloads a `postext-sandbox.json` file containing both the markdown content and the full configuration
+- **Import** (`Upload` icon in the activity bar) — Opens a file picker to load a previously exported `.json` file
+
+The export format is versioned for forward compatibility:
+
+```json
+{
+  "version": 1,
+  "config": { ... },
+  "markdown": "# Your content..."
+}
+```
+
+## Standalone usage
+
+The Sandbox is available as a standalone React package (`postext-sandbox`) that can be embedded in any React application:
+
+```bash
+npm install postext-sandbox postext
+```
+
+```tsx
+import { PostextSandbox } from 'postext-sandbox';
+
+function App() {
+  return (
+    <PostextSandbox
+      initialMarkdown="# Hello World"
+      initialConfig={{ columns: 2 }}
+      onMarkdownChange={(md) => console.log(md)}
+      onConfigChange={(cfg) => console.log(cfg)}
+    />
+  );
+}
+```
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `initialMarkdown` | `string` | Starting markdown content |
+| `initialConfig` | `PostextConfig` | Starting layout configuration |
+| `className` | `string` | CSS class for the root container |
+| `labels` | `Partial<SandboxLabels>` | i18n label overrides (defaults to English) |
+| `onConfigChange` | `(config) => void` | Callback when config changes |
+| `onMarkdownChange` | `(markdown) => void` | Callback when markdown changes |
+| `themeToggle` | `ReactNode` | Custom theme toggle component |
+| `languageSwitcher` | `ReactNode` | Custom language switcher component |
+
+### CSS requirements
+
+The package uses Tailwind CSS utility classes that reference CSS custom properties. Your host application must provide these variables:
+
+- `--background`, `--foreground` — Base colors
+- `--surface` — Elevated surface color
+- `--gilt` — Accent color (gold)
+- `--slate` — Muted text color
+- `--rule` — Border/divider color
+- `--accent-blue` — Link/accent color
+- `--font-mono` — Monospace font family (for the code editor)
+
+## Roadmap
+
+The following features are planned for future versions:
+
+- **Resource management** — Upload, manage, and reference images, tables, and figures from the markdown editor
+- **PDF export** — Generate downloadable PDFs directly from the sandbox
+- **Collaborative editing** — Share sandbox sessions via URL
+- **Preset configurations** — Quick-start templates for common layout scenarios (newspaper, academic paper, book chapter)
+- **Custom micro-format toolbar extensions** — Add buttons for postext-specific enriched markdown syntax as the specification evolves
