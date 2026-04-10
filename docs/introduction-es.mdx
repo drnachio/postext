@@ -136,14 +136,14 @@ allá de notas al pie, obedeciendo las reglas que hacen que el texto sea *agrada
 
 ## Una década de intentos
 
-Llevamos mucho tiempo persiguiendo este problema.
+Llevo mucho tiempo persiguiendo este problema.
 
 El proyecto
 [Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)
-arrancó alrededor de 2014 en BinPar como un intento temprano de llevar la calidad de la composición
-editorial a la web. Construimos maquetaciones basadas en columnas. Experimentamos con algoritmos de
-flujo de texto. Y nos topamos con el mismo muro, una y otra vez: **no puedes tomar buenas
-decisiones de composición sin saber exactamente cuánto espacio va a ocupar el texto.**
+arrancó alrededor de 2014 como un intento temprano de llevar la calidad de la composición editorial
+a la web. Construí maquetaciones basadas en columnas. Experimenté con algoritmos de flujo de texto.
+Y me topé con el mismo muro, una y otra vez: **no puedes tomar buenas decisiones de composición sin
+saber exactamente cuánto espacio va a ocupar el texto.**
 
 Suena sencillo, pero ahí está todo el problema. Cada vez que le preguntas al navegador "¿cuánto
 mide este párrafo a este ancho?", provocas un reflow completo del layout. Hazlo unos cientos de
@@ -152,8 +152,8 @@ para este tipo de medición especulativa — probar diez anchos de columna difer
 el mejor, comprobar dónde romper un párrafo, verificar si una imagen cabe aquí o necesita moverse
 a la siguiente columna.
 
-Necesitábamos una forma de medir texto lo bastante rápida para experimentar libremente, sin
-bloquear el hilo principal. Durante una década, esa herramienta no existió.
+Necesitaba una forma de medir texto lo bastante rápida para experimentar libremente, sin bloquear
+el hilo principal. Durante una década, esa herramienta no existió.
 
 
 ## La pieza que faltaba
@@ -164,7 +164,7 @@ Es una librería de medición de texto sin DOM — entre 300 y 600 veces más r�
 al navegador. Pixel-perfect en Chrome, Safari y Firefox. Usa métricas de fuente del canvas y
 aritmética pura para calcular la altura del texto y los saltos de línea sin tocar jamás el DOM.
 
-Con Pretext, el cuello de botella que nos bloqueó durante diez años simplemente desaparece. Puedes
+Con Pretext, el cuello de botella que bloqueó este trabajo durante diez años simplemente desaparece. Puedes
 medir miles de bloques de texto en milisegundos. Puedes probar diez configuraciones de columna
 diferentes y elegir la mejor. Puedes ejecutar el algoritmo completo de composición en cada
 redimensionado de ventana, en tiempo real.
@@ -320,9 +320,9 @@ el pipeline de siete pasadas y el bucle de convergencia — consulta el document
 medición de texto que hace posible Postext. Sin medición pixel-perfect, sin DOM y a velocidad de
 submilisegundo, nada de esto sería práctico.
 
-**Content First** (BinPar, ~2014) — la exploración original de la composición editorial de alta
-calidad en la web. Una década chocando contra muros, aprendiendo qué no funciona, y construyendo
-la convicción de que este problema merece una solución de verdad.
+**Content First** (~2014) — la exploración original de la composición editorial de alta calidad en
+la web. Una década chocando contra muros, aprendiendo qué no funciona, y construyendo la convicción
+de que este problema merece una solución de verdad.
 
 Postext se apoya en siglos de tradición tipográfica. Las reglas que implementa no son inventadas —
 son heredadas del trabajo de tipógrafos, diseñadores y compositores que refinaron el arte de hacer

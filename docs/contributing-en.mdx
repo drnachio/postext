@@ -1,0 +1,149 @@
+{/* docs/contributing-en.mdx */}
+
+export const metadata = {
+  title: 'Contributing to Postext',
+  sidebarTitle: 'Contributing',
+  description: 'How to join the Postext community and contribute to the project',
+  lang: 'en',
+  lastUpdated: '2026-04-10',
+  readingTime: '8 min',
+  order: 3,
+};
+
+# Contributing to Postext
+
+**Building the editorial layout engine the web has never had — together.**
+
+Postext is a community-driven open-source project. It aims to solve a problem that has been ignored
+for decades: bringing professional editorial layout to the web. That is a large ambition, and it
+requires more than one person.
+
+The project is in its early stages, and this is the best time to get involved. The architecture is
+being defined, design decisions are still open, and early contributors have genuine influence on the
+direction the project takes. If you have been waiting for a good moment to join — this is it.
+
+You do not need to be a programmer to contribute. Whether you write code, design editorial layouts,
+understand typography, test across browsers, write documentation, translate content, or simply have
+ideas about how editorial content should work on the web — there is a place for you here.
+
+
+## Why Contribute
+
+Every editorial development shop in the world faces the same problem: CSS was not built for
+editorial layout. There is no native support for column balancing, orphan and widow prevention, text
+flowing around obstacles, or footnote placement. Every team solves these problems from scratch,
+building fragile, one-off solutions that are expensive to maintain and impossible to share.
+
+Postext aims to change that. Not as a proprietary tool, but as a shared open standard — a common
+foundation that publishers, magazines, newspapers, book platforms, and development teams worldwide
+can adopt and build upon. A single, high-quality layout engine that encodes centuries of typographic
+knowledge and makes it accessible to everyone.
+
+That kind of standard cannot be built by one person or one company. It needs the perspective of
+typographers from different traditions, PDF specialists, accessibility experts, developers who work
+with right-to-left scripts, designers who lay out magazines, and engineers who optimize rendering
+performance. The diversity of the editorial world demands a diverse community behind the tool that
+serves it.
+
+
+## How We Work
+
+All coordination happens on GitHub. There are no private channels, no closed mailing lists, no
+decisions made behind closed doors. Everything is public, searchable, and open to participation.
+
+- **[Issues](https://github.com/drnachio/postext/issues)** — for bug reports, feature requests,
+  and specific tasks. If you want to work on something, start here.
+- **[Pull Requests](https://github.com/drnachio/postext/pulls)** — for code contributions. Open an
+  issue first to discuss the approach before writing code.
+- **[Discussions](https://github.com/drnachio/postext/discussions)** — for ideas, design
+  conversations, questions, and anything that is not a specific bug or task. This is the place to
+  think out loud.
+
+This is deliberate. When everything lives in one place, anyone can find the context behind any
+decision. New contributors can read the history. No one is left out of a conversation that happened
+in a channel they were not in.
+
+
+## Areas Where You Can Help
+
+The project needs many different kinds of expertise. Here are some areas where contributions are
+especially valuable:
+
+### Code and algorithms
+- **Typographic layout algorithms** — Knuth-Plass line breaking, column balancing, optimal paragraph
+  breaking, resource placement strategies.
+- **PDF generation** — low-level PDF construction, font embedding, color management.
+- **Text rendering** — canvas-based rendering, SVG output, font metrics.
+- **Performance optimization** — making the layout engine fast enough for real-time use on every
+  resize.
+
+### Design and typography
+- **Editorial design expertise** — if you have experience laying out magazines, newspapers, or
+  books, your knowledge of what makes a layout work (or fail) is invaluable. You do not need to
+  write code to contribute design knowledge.
+- **Typographic traditions** — the project should respect typographic conventions from different
+  languages and writing systems, not just Latin scripts.
+
+### Documentation and community
+- **Documentation** — improving, expanding, and maintaining the docs. Clear documentation is what
+  makes the difference between a project that people can adopt and one they abandon.
+- **Translations** — the documentation is currently bilingual (English and Spanish). More languages
+  are welcome.
+- **Testing** — testing across browsers, operating systems, and edge cases. Finding the layouts that
+  break is just as valuable as building the ones that work.
+
+### Format and schema design
+- **Enriched markdown format** — defining how authors express editorial intent in their content.
+  This is a design problem as much as a technical one.
+- **Configuration schema** — designing how users control layout rules. The configuration system
+  needs to be powerful enough for professionals and simple enough for newcomers.
+
+
+## Getting Started
+
+The practical setup — cloning the repo, installing dependencies, running tests — is documented in
+[CONTRIBUTING.md](https://github.com/drnachio/postext/blob/develop/CONTRIBUTING.md). Start there for
+the mechanical steps.
+
+Once you are set up:
+
+1. **Browse open issues.** Look for issues labeled `good first issue` for a guided entry point, or
+   explore the broader issue list for something that matches your interests.
+2. **Join a Discussion.** If you have an idea or want to understand a design decision, open a thread
+   in [Discussions](https://github.com/drnachio/postext/discussions). No question is too basic.
+3. **Open an issue before writing code.** This avoids duplicate work and ensures your approach
+   aligns with the project direction. A quick conversation upfront saves everyone time.
+
+
+## The Community
+
+An active community of contributors is growing around Postext. It is still early — and that is
+precisely what makes this moment special. Early contributors are not just writing code; they are
+shaping the architecture, the conventions, the culture.
+
+The project values:
+
+- **Thoughtful design over speed.** Getting the abstractions right matters more than shipping fast.
+  Typography has been refined over centuries; we can take the time to get it right.
+- **Clarity over cleverness.** Code that is easy to read and reason about is worth more than code
+  that is impressive but opaque.
+- **Collaboration over territory.** No one owns a part of the codebase. Ideas are evaluated on their
+  merit, not on who proposed them.
+
+All contributors are recognized. This project exists because people choose to spend their time
+making it better.
+
+
+## Vision
+
+Postext aims to become the standard layout engine for editorial content on the web — the tool that
+publishers, magazines, newspapers, and book platforms reach for when they need professional
+typography.
+
+That kind of ambition requires a community. No single person can cover typographic layout, PDF
+internals, accessibility, internationalization, performance, and every editorial tradition. This
+project is designed to be built together — by the people who understand the problems best, wherever
+they are in the world.
+
+If you work in editorial development and have been solving these layout problems alone, this is your
+invitation to solve them once, properly, with others.

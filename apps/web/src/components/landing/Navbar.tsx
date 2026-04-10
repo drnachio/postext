@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { MobileMenu } from "./MobileMenu";
 
 export async function Navbar() {
   const t = await getTranslations("Navbar");
@@ -16,12 +17,18 @@ export async function Navbar() {
           <span className="font-logo text-5xl font-black text-gilt 2xl:text-6xl 4xl:text-7xl">P</span>
           <span className="-ml-2 font-display text-2xl text-foreground 2xl:text-3xl 4xl:text-4xl">ostext</span>
         </Link>
-        <div className="flex items-center gap-4 2xl:gap-6 4xl:gap-8">
+        <div className="hidden items-center gap-4 md:flex 2xl:gap-6 4xl:gap-8">
           <Link
             href="/docs"
             className="font-body text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
           >
             {t("docs")}
+          </Link>
+          <Link
+            href="/sandbox"
+            className="font-body text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
+          >
+            {t("sandbox")}
           </Link>
           <a
             href="#install"
@@ -41,6 +48,7 @@ export async function Navbar() {
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
+        <MobileMenu />
       </div>
     </nav>
   );

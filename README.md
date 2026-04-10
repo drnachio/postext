@@ -60,9 +60,9 @@ The web has had responsive layout (flexbox, grid) for over a decade. What it has
 
 ### A decade of trying
 
-This problem is not new to us. The [Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293) project, started around 2014 at BinPar, was an early attempt to bring editorial layout quality to the web. We built column-based layouts, experimented with text flow algorithms, and ran into the same wall repeatedly: **you cannot make good layout decisions without knowing exactly how much space text will occupy.**
+This problem is not new. The [Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293) project, started around 2014, was an early attempt to bring editorial layout quality to the web. I built column-based layouts, experimented with text flow algorithms, and ran into the same wall repeatedly: **you cannot make good layout decisions without knowing exactly how much space text will occupy.**
 
-DOM-based measurement is expensive. Every time you ask the browser "how tall is this paragraph at this width?", you trigger a layout reflow. Do this hundreds of times for a complex layout and the page becomes unusable. We needed a way to measure text that was fast enough to run speculatively — trying different layouts, different column widths, different break points — without blocking the main thread.
+DOM-based measurement is expensive. Every time you ask the browser "how tall is this paragraph at this width?", you trigger a layout reflow. Do this hundreds of times for a complex layout and the page becomes unusable. I needed a way to measure text that was fast enough to run speculatively — trying different layouts, different column widths, different break points — without blocking the main thread.
 
 ### The missing piece
 
@@ -189,7 +189,7 @@ postext/
 ### Installation
 
 ```bash
-git clone https://github.com/AUsername/postext.git
+git clone https://github.com/drnachio/postext.git
 cd postext
 pnpm install
 ```
@@ -272,16 +272,19 @@ const layout = createLayout(content, {
 
 ## Contributing
 
-postext is in its early stages. Contributions, ideas, and discussions are welcome.
+Postext is a community-driven open-source project. An active community of contributors is growing around it, and new collaborators are always welcome. The goal is to build a shared standard that any editorial development team worldwide can adopt — a common foundation for professional web typography.
 
 If you want to contribute code, please open an issue first to discuss the approach. This helps avoid duplicate work and ensures alignment with the project direction. Follow existing code style and TypeScript strict mode.
 
-We are especially looking for people with experience in:
+The project especially welcomes people with experience in:
 
 - **Typographic layout algorithms** (Knuth-Plass, column balancing, optimal paragraph breaking)
 - **PDF generation** (low-level PDF construction, font embedding)
 - **Editorial design** (magazine/newspaper layout, book typesetting)
 - **Text rendering** (canvas, SVG, font metrics)
+- **Documentation, translations, and testing**
+
+For the full community vision and all the ways to get involved, see the [Contributing guide](https://postext.dev/en/docs/contributing).
 
 ---
 
@@ -289,7 +292,7 @@ We are especially looking for people with experience in:
 
 **[pretext](https://github.com/chenglou/pretext)** by Cheng Lou. The foundational text measurement library that makes postext possible. Without DOM-free, pixel-perfect text measurement at sub-millisecond speed, none of this would be practical.
 
-**Content First** (BinPar, ~2014). The original exploration into high-quality editorial layout on the web. A decade of running into walls, learning what doesn't work, and accumulating the conviction that this problem is worth solving properly.
+**Content First** (~2014). The original exploration into high-quality editorial layout on the web. A decade of running into walls, learning what doesn't work, and accumulating the conviction that this problem is worth solving properly.
 
 postext stands on centuries of typographic tradition. The rules it implements are not invented — they are inherited from the work of typesetters, typographers, and designers who refined the art of making text readable long before screens existed. From Gutenberg's movable type to Tschichold's asymmetric typography to Bringhurst's *Elements of Typographic Style* — postext aims to bring that accumulated craft to the web, where it has been conspicuously absent.
 

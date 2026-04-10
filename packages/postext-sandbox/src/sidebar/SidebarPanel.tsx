@@ -1,0 +1,29 @@
+'use client';
+
+import type { ReactNode } from 'react';
+import { useSandbox } from '../context/SandboxContext';
+
+interface SidebarPanelProps {
+  children: ReactNode;
+}
+
+export function SidebarPanel({ children }: SidebarPanelProps) {
+  const { state } = useSandbox();
+  const isOpen = state.activePanel !== null;
+  const widthValue = isOpen ? `${state.sidebarPercent}%` : '0%';
+
+  return (
+    <div
+      className="h-full shrink-0 overflow-hidden"
+      style={{
+        width: widthValue,
+        backgroundColor: 'var(--background)',
+        transition: state.sidebarDragging ? 'none' : 'width 200ms ease-in-out',
+      }}
+    >
+      <div className="h-full w-full overflow-y-auto overflow-x-hidden">
+        {children}
+      </div>
+    </div>
+  );
+}
