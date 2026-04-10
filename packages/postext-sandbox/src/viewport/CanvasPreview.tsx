@@ -130,7 +130,6 @@ export function CanvasPreview() {
         y += measureWrappedHeight(ctx, plain, maxWidth, lineHeight) + 2;
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deferredMarkdown, resizeKey]);
 
   // Resize observer — triggers repaint when container size changes
