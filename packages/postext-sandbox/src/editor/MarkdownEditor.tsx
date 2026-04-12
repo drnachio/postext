@@ -13,14 +13,17 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
 
   const { containerRef, viewRef } = useCodeMirror({
     initialValue: state.markdown,
+    externalValue: state.markdown,
     onChange: (value) => dispatch({ type: 'SET_MARKDOWN', payload: value }),
     isDark,
   });
 
   return (
-    <div className="flex h-full flex-col">
+    <div style={{ display: 'flex', flexDirection: 'column' as const, flex: '1 1 0%', minHeight: 0 }}>
       <EditorToolbar viewRef={viewRef} />
-      <div ref={containerRef} className="min-h-0 flex-1" />
+      <div style={{ flex: '1 1 0%', minHeight: 0, position: 'relative' }}>
+        <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} />
+      </div>
     </div>
   );
 }

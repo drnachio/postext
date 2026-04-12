@@ -21,8 +21,10 @@ export function SidebarPanel({ children }: SidebarPanelProps) {
         transition: state.sidebarDragging ? 'none' : 'width 200ms ease-in-out',
       }}
     >
-      <div className="h-full w-full overflow-y-auto overflow-x-hidden">
-        {children}
+      <div style={{ height: '100%', width: '100%', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { PostextSandbox } from "postext-sandbox";
-import { useTranslations } from "next-intl";
+import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from "postext-sandbox";
+import { useTranslations, useLocale } from "next-intl";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CompactLanguageSwitcher } from "@/components/sandbox/CompactLanguageSwitcher";
 import type { SandboxLabels } from "postext-sandbox";
 
 export function SandboxPage() {
   const t = useTranslations("Sandbox");
+  const locale = useLocale();
+  const initialMarkdown = locale === "es" ? DEFAULT_MARKDOWN_ES : DEFAULT_MARKDOWN_EN;
 
   const labels: SandboxLabels = {
     configuration: t("configuration"),
@@ -20,26 +22,29 @@ export function SandboxPage() {
     comingSoon: t("comingSoon"),
     resourcesComingSoonDescription: t("resourcesComingSoonDescription"),
     pdfComingSoonDescription: t("pdfComingSoonDescription"),
-    columns: t("columns"),
-    gutter: t("gutter"),
-    columnBalancing: t("columnBalancing"),
-    typography: t("typography"),
-    orphans: t("orphans"),
-    widows: t("widows"),
-    hyphenation: t("hyphenation"),
-    ragOptimization: t("ragOptimization"),
-    references: t("references"),
-    footnotes: t("footnotes"),
-    footnotePlacement: t("footnotePlacement"),
-    footnoteMarker: t("footnoteMarker"),
-    figureNumbering: t("figureNumbering"),
-    tableNumbering: t("tableNumbering"),
-    marginNotes: t("marginNotes"),
-    resourcePlacement: t("resourcePlacement"),
-    defaultStrategy: t("defaultStrategy"),
-    deferPlacement: t("deferPlacement"),
-    preserveAspectRatio: t("preserveAspectRatio"),
-    renderer: t("renderer"),
+    page: t("page"),
+    pageBackgroundColor: t("pageBackgroundColor"),
+    pageBackgroundColorTooltip: t("pageBackgroundColorTooltip"),
+    pageSize: t("pageSize"),
+    pageSizeTooltip: t("pageSizeTooltip"),
+    custom: t("custom"),
+    width: t("width"),
+    widthTooltip: t("widthTooltip"),
+    height: t("height"),
+    heightTooltip: t("heightTooltip"),
+    marginTop: t("marginTop"),
+    marginBottom: t("marginBottom"),
+    marginLeft: t("marginLeft"),
+    marginRight: t("marginRight"),
+    marginsTooltip: t("marginsTooltip"),
+    dpi: t("dpi"),
+    dpiTooltip: t("dpiTooltip"),
+    cutLines: t("cutLines"),
+    cutLinesTooltip: t("cutLinesTooltip"),
+    baselineGrid: t("baselineGrid"),
+    baselineGridTooltip: t("baselineGridTooltip"),
+    baselineGridColor: t("baselineGridColor"),
+    baselineGridColorTooltip: t("baselineGridColorTooltip"),
     bold: t("bold"),
     italic: t("italic"),
     heading: t("heading"),
@@ -53,10 +58,14 @@ export function SandboxPage() {
     exportFile: t("exportFile"),
     importFile: t("importFile"),
     reset: t("reset"),
+    resetConfigConfirm: t("resetConfigConfirm"),
+    resetSectionConfirm: t("resetSectionConfirm"),
+    resetMarkdownConfirm: t("resetMarkdownConfirm"),
   };
 
   return (
     <PostextSandbox
+      initialMarkdown={initialMarkdown}
       labels={labels}
       themeToggle={<ThemeToggle />}
       languageSwitcher={<CompactLanguageSwitcher />}

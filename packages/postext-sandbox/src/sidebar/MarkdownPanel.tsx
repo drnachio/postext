@@ -1,11 +1,12 @@
 'use client';
 
 import { useRef } from 'react';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, RotateCcw } from 'lucide-react';
 import { MarkdownEditor } from '../editor/MarkdownEditor';
 import { useSandbox } from '../context/SandboxContext';
 import { exportMarkdownToJson, importMarkdownFromJson } from '../storage/persistence';
 import { Tooltip } from '../panels/Tooltip';
+import { ConfirmPopover } from '../panels/ConfirmPopover';
 
 interface MarkdownPanelProps {
   isDark?: boolean;
@@ -27,8 +28,10 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
     e.target.value = '';
   };
 
+  const isDefault = state.markdown === state.defaultMarkdown;
+
   return (
-    <div className="flex h-full flex-col">
+    <div style={{ display: 'flex', flexDirection: 'column' as const, height: '100%', minHeight: 0, overflow: 'hidden' }}>
       <div
         className="flex items-center justify-between border-b px-3 py-2"
         style={{ borderColor: 'var(--rule)' }}
@@ -40,6 +43,28 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
           {state.labels.markdownEditor}
         </h2>
         <div className="flex items-center gap-1">
+          {!isDefault && (
+            <ConfirmPopover
+              message={state.labels.resetMarkdownConfirm}
+              onConfirm={() => dispatch({ type: 'SET_MARKDOWN', payload: state.defaultMarkdown })}
+            >
+              {({ open }) => (
+                <Tooltip content={state.labels.reset} side="bottom">
+                  <button
+                    type="button"
+                    onClick={open}
+                    aria-label={state.labels.reset}
+                    className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2"
+                    style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
+                  >
+                    <RotateCcw size={13} aria-hidden="true" />
+                  </button>
+                </Tooltip>
+              )}
+            </ConfirmPopover>
+          )}
           <Tooltip content={state.labels.exportFile} side="bottom">
             <button
               type="button"
@@ -76,7 +101,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
           />
         </div>
       </div>
-      <div className="min-h-0 flex-1">
+      <div style={{ flex: '1 1 0%', minHeight: 0, display: 'flex', flexDirection: 'column' as const }}>
         <MarkdownEditor isDark={isDark} />
       </div>
     </div>

@@ -1,9 +1,13 @@
 import type { PostextConfig } from 'postext';
+import { stripConfigDefaults } from 'postext';
 
 const CONFIG_KEY = 'postext-sandbox-config';
 const MARKDOWN_KEY = 'postext-sandbox-markdown';
 const VIEWPORT_KEY = 'postext-sandbox-viewport';
 const SIDEBAR_WIDTH_KEY = 'postext-sandbox-sidebar-width';
+const PANEL_KEY = 'postext-sandbox-panel';
+const SECTIONS_KEY = 'postext-sandbox-sections';
+const COLOR_MODES_KEY = 'postext-sandbox-color-modes';
 
 function getStorage(): Storage | null {
   if (typeof window === 'undefined') return null;
@@ -15,7 +19,8 @@ function getStorage(): Storage | null {
 }
 
 export function saveConfig(config: PostextConfig): void {
-  getStorage()?.setItem(CONFIG_KEY, JSON.stringify(config));
+  const stripped = stripConfigDefaults(config);
+  getStorage()?.setItem(CONFIG_KEY, JSON.stringify(stripped));
 }
 
 export function loadConfig(): PostextConfig | null {
@@ -44,6 +49,17 @@ export function loadViewport(): string | null {
   return getStorage()?.getItem(VIEWPORT_KEY) ?? null;
 }
 
+export function savePanel(panel: string | null): void {
+  getStorage()?.setItem(PANEL_KEY, panel ?? '__closed__');
+}
+
+export function loadPanel(): string | null | undefined {
+  const raw = getStorage()?.getItem(PANEL_KEY);
+  if (raw == null) return undefined;
+  if (raw === '__closed__') return null;
+  return raw;
+}
+
 export function saveSidebarPercent(percent: number): void {
   getStorage()?.setItem(SIDEBAR_WIDTH_KEY, String(percent));
 }
@@ -55,12 +71,61 @@ export function loadSidebarPercent(): number | null {
   return Number.isFinite(n) && n >= 5 && n <= 90 ? n : null;
 }
 
+export function saveSectionState(sectionId: string, open: boolean): void {
+  const storage = getStorage();
+  if (!storage) return;
+  const raw = storage.getItem(SECTIONS_KEY);
+  let sections: Record<string, boolean> = {};
+  if (raw) {
+    try { sections = JSON.parse(raw); } catch { /* ignore */ }
+  }
+  sections[sectionId] = open;
+  storage.setItem(SECTIONS_KEY, JSON.stringify(sections));
+}
+
+export function loadSectionState(sectionId: string): boolean | null {
+  const raw = getStorage()?.getItem(SECTIONS_KEY);
+  if (!raw) return null;
+  try {
+    const sections = JSON.parse(raw) as Record<string, boolean>;
+    return sectionId in sections ? sections[sectionId] : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveColorMode(fieldId: string, mode: string): void {
+  const storage = getStorage();
+  if (!storage) return;
+  const raw = storage.getItem(COLOR_MODES_KEY);
+  let modes: Record<string, string> = {};
+  if (raw) {
+    try { modes = JSON.parse(raw); } catch { /* ignore */ }
+  }
+  modes[fieldId] = mode;
+  storage.setItem(COLOR_MODES_KEY, JSON.stringify(modes));
+}
+
+export function loadColorMode(fieldId: string): string | null {
+  const raw = getStorage()?.getItem(COLOR_MODES_KEY);
+  if (!raw) return null;
+  try {
+    const modes = JSON.parse(raw) as Record<string, string>;
+    return fieldId in modes ? modes[fieldId] : null;
+  } catch {
+    return null;
+  }
+}
+
 export function clearStorage(): void {
   const storage = getStorage();
   storage?.removeItem(CONFIG_KEY);
   storage?.removeItem(MARKDOWN_KEY);
   storage?.removeItem(VIEWPORT_KEY);
   storage?.removeItem(SIDEBAR_WIDTH_KEY);
+  storage?.removeItem(PANEL_KEY);
+  storage?.removeItem(SECTIONS_KEY);
+  storage?.removeItem(COLOR_MODES_KEY);
 }
 
 function downloadJson(data: unknown, filename: string): void {

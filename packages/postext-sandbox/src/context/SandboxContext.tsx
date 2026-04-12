@@ -12,10 +12,12 @@ import {
 import type { PostextConfig } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
-import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent } from '../storage/persistence';
+import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
+import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
 
 export interface SandboxState {
   markdown: string;
+  defaultMarkdown: string;
   config: PostextConfig;
   activePanel: PanelId | null;
   sidebarPercent: number;
@@ -29,6 +31,7 @@ export type SandboxAction =
   | { type: 'SET_CONFIG'; payload: PostextConfig }
   | { type: 'UPDATE_CONFIG'; payload: Partial<PostextConfig> }
   | { type: 'TOGGLE_PANEL'; payload: PanelId }
+  | { type: 'SET_PANEL'; payload: PanelId | null }
   | { type: 'SET_SIDEBAR_PERCENT'; payload: number }
   | { type: 'SET_SIDEBAR_DRAGGING'; payload: boolean }
   | { type: 'SET_VIEWPORT'; payload: ViewportTab };
@@ -46,6 +49,8 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
         ...state,
         activePanel: state.activePanel === action.payload ? null : action.payload,
       };
+    case 'SET_PANEL':
+      return { ...state, activePanel: action.payload };
     case 'SET_SIDEBAR_PERCENT':
       return { ...state, sidebarPercent: action.payload };
     case 'SET_SIDEBAR_DRAGGING':
@@ -70,61 +75,9 @@ export function useSandbox(): SandboxContextValue {
   return ctx;
 }
 
-const DEFAULT_CONFIG: PostextConfig = {
-  columns: 1,
-  gutter: '24px',
-  typography: {
-    orphans: 2,
-    widows: 2,
-    hyphenation: true,
-    ragOptimization: false,
-  },
-  references: {
-    footnotes: { placement: 'columnBottom', marker: 'number' },
-    figureNumbering: true,
-    tableNumbering: true,
-    marginNotes: false,
-  },
-  resourcePlacement: {
-    defaultStrategy: 'inline',
-    deferPlacement: false,
-    preserveAspectRatio: true,
-  },
-  renderer: 'web',
-};
+const DEFAULT_CONFIG: PostextConfig = {};
 
-const DEFAULT_MARKDOWN = `# Welcome to the Postext Sandbox
-
-This is a live editor where you can experiment with the **Postext** layout engine.
-
-## Getting Started
-
-Write your markdown here and see the results in the viewport on the right. Use the configuration panel to adjust layout settings.
-
-### Features
-
-- **Multi-column layout** with configurable gutters
-- **Orphan and widow prevention** for professional typography
-- **Hyphenation** and rag optimization
-- **Resource placement** strategies (images, tables, figures)
-- **Footnotes, endnotes, and margin notes**
-
-> Typography is the craft of endowing human language with a durable visual form.
-> — Robert Bringhurst
-
-Here is a paragraph to demonstrate text flow. The layout engine processes your content through seven sequential passes, building a Virtual Document Tree (VDT) that represents every element's exact position on the page. This approach, inspired by how React's Virtual DOM works for UI components, allows interconnected typographic rules to be applied holistically rather than in isolation.
-
-### Code Example
-
-\`\`\`typescript
-import { createLayout } from 'postext';
-
-const Article = createLayout(
-  { markdown: content },
-  { columns: 2, typography: { orphans: 2, widows: 2 } }
-);
-\`\`\`
-`;
+export const DEFAULT_MARKDOWN = DEFAULT_MARKDOWN_EN;
 
 interface SandboxProviderProps {
   children: ReactNode;
@@ -145,8 +98,11 @@ export function SandboxProvider({
 }: SandboxProviderProps) {
   const mergedLabels: SandboxLabels = { ...DEFAULT_LABELS, ...labels };
 
+  const defaultMd = initialMarkdown ?? DEFAULT_MARKDOWN;
+
   const [state, dispatch] = useReducer(sandboxReducer, {
-    markdown: initialMarkdown ?? DEFAULT_MARKDOWN,
+    markdown: defaultMd,
+    defaultMarkdown: defaultMd,
     config: initialConfig ?? DEFAULT_CONFIG,
     activePanel: 'markdown' as PanelId,
     sidebarPercent: 25,
@@ -156,23 +112,28 @@ export function SandboxProvider({
   });
 
   // Hydrate from localStorage after mount
+  const hydratedRef = useRef(false);
+
   useEffect(() => {
-    const savedMarkdown = !initialMarkdown ? loadMarkdown() : null;
-    const savedConfig = !initialConfig ? loadConfig() : null;
+    const savedMarkdown = loadMarkdown();
+    const savedConfig = loadConfig();
     const savedViewport = loadViewport() as ViewportTab | null;
     const savedPercent = loadSidebarPercent();
+    const savedPanel = loadPanel() as PanelId | null | undefined;
 
     if (savedMarkdown) dispatch({ type: 'SET_MARKDOWN', payload: savedMarkdown });
     if (savedConfig) dispatch({ type: 'SET_CONFIG', payload: savedConfig });
     if (savedViewport) dispatch({ type: 'SET_VIEWPORT', payload: savedViewport });
     if (savedPercent !== null) dispatch({ type: 'SET_SIDEBAR_PERCENT', payload: savedPercent });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (savedPanel !== undefined) dispatch({ type: 'SET_PANEL', payload: savedPanel });
+    hydratedRef.current = true;
   }, []);
 
-  // Auto-save to localStorage (debounced)
+  // Auto-save to localStorage (debounced, skip until hydrated)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
+    if (!hydratedRef.current) return;
     clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       saveMarkdown(state.markdown);
@@ -181,13 +142,20 @@ export function SandboxProvider({
     return () => clearTimeout(saveTimerRef.current);
   }, [state.markdown, state.config]);
 
-  // Save viewport tab immediately (no debounce needed)
+  // Save viewport tab and active panel immediately (skip until hydrated)
   useEffect(() => {
+    if (!hydratedRef.current) return;
     saveViewport(state.activeViewport);
   }, [state.activeViewport]);
 
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    savePanel(state.activePanel);
+  }, [state.activePanel]);
+
   // Save sidebar percent when drag ends
   useEffect(() => {
+    if (!hydratedRef.current) return;
     if (!state.sidebarDragging) {
       saveSidebarPercent(state.sidebarPercent);
     }

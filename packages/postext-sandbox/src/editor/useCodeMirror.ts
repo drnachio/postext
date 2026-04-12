@@ -10,11 +10,12 @@ import { getEditorTheme } from './postextTheme';
 
 interface UseCodeMirrorOptions {
   initialValue: string;
+  externalValue?: string;
   onChange: (value: string) => void;
   isDark?: boolean;
 }
 
-export function useCodeMirror({ initialValue, onChange, isDark = true }: UseCodeMirrorOptions) {
+export function useCodeMirror({ initialValue, externalValue, onChange, isDark = true }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
@@ -68,6 +69,18 @@ export function useCodeMirror({ initialValue, onChange, isDark = true }: UseCode
       effects: themeCompartment.current.reconfigure(getEditorTheme(isDark ?? true)),
     });
   }, [isDark]);
+
+  // Sync external value (e.g. after hydration or reset)
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || externalValue === undefined) return;
+    const current = view.state.doc.toString();
+    if (current !== externalValue) {
+      view.dispatch({
+        changes: { from: 0, to: current.length, insert: externalValue },
+      });
+    }
+  }, [externalValue]);
 
   return { containerRef, viewRef };
 }
