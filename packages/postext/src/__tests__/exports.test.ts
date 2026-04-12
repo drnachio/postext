@@ -9,7 +9,14 @@ describe("package exports", () => {
 
   it("does not export unexpected values", () => {
     const exportedKeys = Object.keys(postext);
-    // Only createLayout should be a runtime export; types are compile-time only
-    expect(exportedKeys).toEqual(["createLayout"]);
+    expect(exportedKeys).toEqual([
+      "createLayout",
+      "DEFAULT_PAGE_CONFIG",
+      "PAGE_SIZE_PRESETS",
+      "resolvePageConfig",
+      "dimensionsEqual",
+      "stripPageDefaults",
+      "stripConfigDefaults",
+    ]);
   });
 });
