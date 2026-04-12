@@ -47,11 +47,11 @@ function SandboxLayout({
         // Available width = container width minus activity bar (w-14 = 56px) minus handle (6px)
         const activityBarWidth = 56;
         const handleWidth = 6;
-        const availableWidth = rect.width - activityBarWidth - handleWidth;
+        const minViewportWidth = 200;
+        const availableWidth = rect.width - activityBarWidth - handleWidth - minViewportWidth;
         if (availableWidth <= 0) return;
-
-        const sidebarPx = ev.clientX - rect.left - activityBarWidth;
-        const percent = Math.max(5, Math.min(90, (sidebarPx / availableWidth) * 100));
+        const sidebarPx = Math.max(0, Math.min(ev.clientX - rect.left - activityBarWidth, availableWidth));
+        const percent = Math.max(5, (sidebarPx / rect.width) * 100);
         dispatch({ type: 'SET_SIDEBAR_PERCENT', payload: Math.round(percent * 10) / 10 });
       };
 

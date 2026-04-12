@@ -76,6 +76,38 @@ export interface ReferenceConfig {
   marginNotes?: boolean;
 }
 
+export type DimensionUnit = 'cm' | 'mm' | 'in' | 'pt';
+
+export interface Dimension {
+  value: number;
+  unit: DimensionUnit;
+}
+
+export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'custom';
+
+export interface PageMargins {
+  top: Dimension;
+  bottom: Dimension;
+  left: Dimension;
+  right: Dimension;
+}
+
+export interface BaselineGridConfig {
+  enabled: boolean;
+  color?: string;
+}
+
+export interface PageConfig {
+  backgroundColor?: string;
+  sizePreset?: PageSizePreset;
+  width?: Dimension;
+  height?: Dimension;
+  margins?: PageMargins;
+  dpi?: number;
+  cutLines?: boolean;
+  baselineGrid?: BaselineGridConfig;
+}
+
 export interface PostextSectionOverride {
   selector: string;
   columns?: ColumnConfig;
@@ -84,6 +116,8 @@ export interface PostextSectionOverride {
 }
 
 export interface PostextConfig {
+  page?: PageConfig;
+
   columns?: number;
   gutter?: string;
 

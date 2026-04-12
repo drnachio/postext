@@ -38,8 +38,8 @@ function ToolbarButton({
         type="button"
         onClick={onClick}
         aria-label={label}
-        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2"
-        style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)' }}
+        className="flex shrink-0 items-center justify-center overflow-hidden rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2"
+        style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)', width: 24, height: 24 }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = 'var(--foreground)';
           e.currentTarget.style.backgroundColor = 'var(--surface)';
@@ -146,7 +146,7 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
 
   return (
     <div
-      className="flex flex-nowrap items-center gap-1.5 overflow-x-auto border-b px-3 py-2"
+      className="flex flex-nowrap items-center gap-0.5 overflow-x-auto border-b px-2 py-0.5"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
       role="toolbar"
       aria-label="Markdown formatting"

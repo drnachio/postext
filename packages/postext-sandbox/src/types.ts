@@ -17,27 +17,30 @@ export interface SandboxLabels {
   resourcesComingSoonDescription: string;
   pdfComingSoonDescription: string;
 
-  // Config panel sections
-  columns: string;
-  gutter: string;
-  columnBalancing: string;
-  typography: string;
-  orphans: string;
-  widows: string;
-  hyphenation: string;
-  ragOptimization: string;
-  references: string;
-  footnotes: string;
-  footnotePlacement: string;
-  footnoteMarker: string;
-  figureNumbering: string;
-  tableNumbering: string;
-  marginNotes: string;
-  resourcePlacement: string;
-  defaultStrategy: string;
-  deferPlacement: string;
-  preserveAspectRatio: string;
-  renderer: string;
+  // Page section
+  page: string;
+  pageBackgroundColor: string;
+  pageBackgroundColorTooltip: string;
+  pageSize: string;
+  pageSizeTooltip: string;
+  custom: string;
+  width: string;
+  widthTooltip: string;
+  height: string;
+  heightTooltip: string;
+  marginTop: string;
+  marginBottom: string;
+  marginLeft: string;
+  marginRight: string;
+  marginsTooltip: string;
+  dpi: string;
+  dpiTooltip: string;
+  cutLines: string;
+  cutLinesTooltip: string;
+  baselineGrid: string;
+  baselineGridTooltip: string;
+  baselineGridColor: string;
+  baselineGridColorTooltip: string;
 
   // Toolbar actions
   bold: string;
@@ -55,6 +58,9 @@ export interface SandboxLabels {
   exportFile: string;
   importFile: string;
   reset: string;
+  resetConfigConfirm: string;
+  resetSectionConfirm: string;
+  resetMarkdownConfirm: string;
 }
 
 export type PanelId = 'markdown' | 'config' | 'resources';
@@ -93,26 +99,29 @@ export const DEFAULT_LABELS: SandboxLabels = {
   comingSoon: 'Coming soon',
   resourcesComingSoonDescription: 'Resource management will be available in a future version.',
   pdfComingSoonDescription: 'PDF export will be available in a future version.',
-  columns: 'Columns',
-  gutter: 'Gutter',
-  columnBalancing: 'Column Balancing',
-  typography: 'Typography',
-  orphans: 'Orphans',
-  widows: 'Widows',
-  hyphenation: 'Hyphenation',
-  ragOptimization: 'Rag Optimization',
-  references: 'References',
-  footnotes: 'Footnotes',
-  footnotePlacement: 'Placement',
-  footnoteMarker: 'Marker',
-  figureNumbering: 'Figure Numbering',
-  tableNumbering: 'Table Numbering',
-  marginNotes: 'Margin Notes',
-  resourcePlacement: 'Resource Placement',
-  defaultStrategy: 'Default Strategy',
-  deferPlacement: 'Defer Placement',
-  preserveAspectRatio: 'Preserve Aspect Ratio',
-  renderer: 'Renderer',
+  page: 'Page',
+  pageBackgroundColor: 'Background Color',
+  pageBackgroundColorTooltip: 'Background color of the page',
+  pageSize: 'Page Size',
+  pageSizeTooltip: 'Standard page format or custom dimensions',
+  custom: 'Custom',
+  width: 'Width',
+  widthTooltip: 'Custom page width',
+  height: 'Height',
+  heightTooltip: 'Custom page height',
+  marginTop: 'Top Margin',
+  marginBottom: 'Bottom Margin',
+  marginLeft: 'Left Margin',
+  marginRight: 'Right Margin',
+  marginsTooltip: 'Space between the page edge and the content area',
+  dpi: 'DPI',
+  dpiTooltip: 'Dots per inch — controls the resolution of the page',
+  cutLines: 'Cut Lines',
+  cutLinesTooltip: 'Show trim marks at the page corners for print cutting',
+  baselineGrid: 'Baseline Grid',
+  baselineGridTooltip: 'Show horizontal lines to align text baselines',
+  baselineGridColor: 'Grid Color',
+  baselineGridColorTooltip: 'Color of the baseline grid lines',
   bold: 'Bold',
   italic: 'Italic',
   heading: 'Heading',
@@ -126,4 +135,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   exportFile: 'Export',
   importFile: 'Import',
   reset: 'Reset',
+  resetConfigConfirm: 'Reset all configuration to defaults?',
+  resetSectionConfirm: 'Reset this section to defaults?',
+  resetMarkdownConfirm: 'Replace content with the default example?',
 };
