@@ -1,6 +1,6 @@
 {
   "name": "postext",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A programmable typesetter for the web. Layout engine that applies professional editorial rules — columns, orphan/widow prevention, resource placement, footnotes — to semantic content. Built on @chenglou/pretext for DOM-free text measurement.",
   "type": "module",
   "license": "MIT",
