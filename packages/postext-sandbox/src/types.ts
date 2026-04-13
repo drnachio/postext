@@ -55,6 +55,28 @@ export interface SandboxLabels {
   bodyColor: string;
   bodyColorTooltip: string;
 
+  // Headings section
+  headings: string;
+  headingsFont: string;
+  headingsFontTooltip: string;
+  headingsFontSearch: string;
+  headingsFontNoResults: string;
+  headingsLineHeight: string;
+  headingsLineHeightTooltip: string;
+  headingsColor: string;
+  headingsColorTooltip: string;
+  headingLevel: string;
+  headingFontSize: string;
+  headingFontSizeTooltip: string;
+  headingLineHeight: string;
+  headingLineHeightTooltip: string;
+  headingFont: string;
+  headingFontTooltip: string;
+  headingFontSearch: string;
+  headingFontNoResults: string;
+  headingColor: string;
+  headingColorTooltip: string;
+
   // Layout section
   layout: string;
   layoutType: string;
@@ -158,6 +180,26 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyLineHeightTooltip: 'Vertical spacing between lines of text',
   bodyColor: 'Text Color',
   bodyColorTooltip: 'Color of the body text',
+  headings: 'Headings',
+  headingsFont: 'Font',
+  headingsFontTooltip: 'Default font family for all headings',
+  headingsFontSearch: 'Search fonts...',
+  headingsFontNoResults: 'No fonts found',
+  headingsLineHeight: 'Line Height',
+  headingsLineHeightTooltip: 'Default line height for all headings',
+  headingsColor: 'Color',
+  headingsColorTooltip: 'Default color for all headings',
+  headingLevel: 'H',
+  headingFontSize: 'Size',
+  headingFontSizeTooltip: 'Font size for this heading level',
+  headingLineHeight: 'Line Height',
+  headingLineHeightTooltip: 'Override line height for this heading level',
+  headingFont: 'Font',
+  headingFontTooltip: 'Override font for this heading level',
+  headingFontSearch: 'Search fonts...',
+  headingFontNoResults: 'No fonts found',
+  headingColor: 'Color',
+  headingColorTooltip: 'Override color for this heading level',
   layout: 'Layout',
   layoutType: 'Layout Type',
   layoutTypeTooltip: 'Column layout mode for the content area',

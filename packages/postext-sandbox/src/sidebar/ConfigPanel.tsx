@@ -9,6 +9,7 @@ import { ConfirmPopover } from '../panels/ConfirmPopover';
 import { PageSection } from './sections/PageSection';
 import { LayoutSection } from './sections/LayoutSection';
 import { BodyTextSection } from './sections/BodyTextSection';
+import { HeadingsSection } from './sections/HeadingsSection';
 
 export function ConfigPanel() {
   const { state, dispatch } = useSandbox();
@@ -104,6 +105,7 @@ export function ConfigPanel() {
         <PageSection />
         <LayoutSection />
         <BodyTextSection />
+        <HeadingsSection />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import type { PageConfig, ResolvedPageConfig, PageMargins, PageSizePreset, Dimension, PostextConfig, LayoutConfig, ResolvedLayoutConfig, BodyTextConfig, ResolvedBodyTextConfig, ColorValue } from './types';
+import type { PageConfig, ResolvedPageConfig, PageMargins, PageSizePreset, Dimension, PostextConfig, LayoutConfig, ResolvedLayoutConfig, BodyTextConfig, ResolvedBodyTextConfig, HeadingsConfig, HeadingLevelConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ColorValue } from './types';
 
 export const PAGE_SIZE_PRESETS: Record<
   Exclude<PageSizePreset, 'custom'>,
@@ -156,6 +156,78 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   return hasOverride ? result : undefined;
 }
 
+const DEFAULT_HEADING_FONT = 'EB Garamond';
+const DEFAULT_HEADING_LINE_HEIGHT: Dimension = { value: 1.2, unit: 'em' };
+const DEFAULT_HEADING_COLOR: ColorValue = { hex: '#000000', model: 'cmyk' };
+
+const DEFAULT_HEADING_LEVELS: ResolvedHeadingLevelConfig[] = [
+  { level: 1, fontSize: { value: 36, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR },
+  { level: 2, fontSize: { value: 30, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR },
+  { level: 3, fontSize: { value: 24, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR },
+  { level: 4, fontSize: { value: 20, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR },
+  { level: 5, fontSize: { value: 18, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR },
+  { level: 6, fontSize: { value: 16, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR },
+];
+
+export const DEFAULT_HEADINGS_CONFIG: ResolvedHeadingsConfig = {
+  fontFamily: DEFAULT_HEADING_FONT,
+  lineHeight: DEFAULT_HEADING_LINE_HEIGHT,
+  color: DEFAULT_HEADING_COLOR,
+  levels: DEFAULT_HEADING_LEVELS,
+};
+
+export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig | undefined {
+  if (!headings) return undefined;
+
+  const result: HeadingsConfig = {};
+  let hasOverride = false;
+
+  if (headings.fontFamily !== undefined && headings.fontFamily !== DEFAULT_HEADINGS_CONFIG.fontFamily) {
+    result.fontFamily = headings.fontFamily;
+    hasOverride = true;
+  }
+  if (headings.lineHeight !== undefined && !dimensionsEqual(headings.lineHeight, DEFAULT_HEADINGS_CONFIG.lineHeight)) {
+    result.lineHeight = headings.lineHeight;
+    hasOverride = true;
+  }
+  if (headings.color !== undefined && !colorsEqual(headings.color, DEFAULT_HEADINGS_CONFIG.color)) {
+    result.color = headings.color;
+    hasOverride = true;
+  }
+  if (headings.levels && headings.levels.length > 0) {
+    const strippedLevels: HeadingLevelConfig[] = [];
+    for (const level of headings.levels) {
+      const def = DEFAULT_HEADING_LEVELS.find((d) => d.level === level.level);
+      if (!def) { strippedLevels.push(level); continue; }
+      const entry: HeadingLevelConfig = { level: level.level };
+      let levelHasOverride = false;
+      if (level.fontSize !== undefined && !dimensionsEqual(level.fontSize, def.fontSize)) {
+        entry.fontSize = level.fontSize;
+        levelHasOverride = true;
+      }
+      if (level.lineHeight !== undefined && !dimensionsEqual(level.lineHeight, def.lineHeight)) {
+        entry.lineHeight = level.lineHeight;
+        levelHasOverride = true;
+      }
+      if (level.fontFamily !== undefined && level.fontFamily !== def.fontFamily) {
+        entry.fontFamily = level.fontFamily;
+        levelHasOverride = true;
+      }
+      if (level.color !== undefined && !colorsEqual(level.color, def.color)) {
+        entry.color = level.color;
+        levelHasOverride = true;
+      }
+      if (levelHasOverride) strippedLevels.push(entry);
+    }
+    if (strippedLevels.length > 0) {
+      result.levels = strippedLevels;
+      hasOverride = true;
+    }
+  }
+
+  return hasOverride ? result : undefined;
+}
+
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
   const strippedPage = stripPageDefaults(config.page);
@@ -175,6 +247,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.bodyText = strippedBodyText;
   } else {
     delete result.bodyText;
+  }
+  const strippedHeadings = stripHeadingsDefaults(config.headings);
+  if (strippedHeadings) {
+    result.headings = strippedHeadings;
+  } else {
+    delete result.headings;
   }
   return result;
 }
@@ -225,4 +303,25 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTex
     lineHeight: partial.lineHeight ?? DEFAULT_BODY_TEXT_CONFIG.lineHeight,
     color: partial.color ?? DEFAULT_BODY_TEXT_CONFIG.color,
   };
+}
+
+export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeadingsConfig {
+  if (!partial) return { ...DEFAULT_HEADINGS_CONFIG, levels: DEFAULT_HEADING_LEVELS.map((l) => ({ ...l })) };
+
+  const generalFont = partial.fontFamily ?? DEFAULT_HEADINGS_CONFIG.fontFamily;
+  const generalLineHeight = partial.lineHeight ?? DEFAULT_HEADINGS_CONFIG.lineHeight;
+  const generalColor = partial.color ?? DEFAULT_HEADINGS_CONFIG.color;
+
+  const levels: ResolvedHeadingLevelConfig[] = DEFAULT_HEADING_LEVELS.map((def) => {
+    const override = partial.levels?.find((l) => l.level === def.level);
+    return {
+      level: def.level,
+      fontSize: override?.fontSize ?? def.fontSize,
+      lineHeight: override?.lineHeight ?? generalLineHeight,
+      fontFamily: override?.fontFamily ?? generalFont,
+      color: override?.color ?? generalColor,
+    };
+  });
+
+  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, levels };
 }

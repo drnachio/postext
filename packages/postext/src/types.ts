@@ -154,6 +154,36 @@ export interface ResolvedBodyTextConfig {
   color: ColorValue;
 }
 
+export interface HeadingLevelConfig {
+  level: number;
+  fontSize?: Dimension;
+  lineHeight?: Dimension;
+  fontFamily?: string;
+  color?: ColorValue;
+}
+
+export interface ResolvedHeadingLevelConfig {
+  level: number;
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  fontFamily: string;
+  color: ColorValue;
+}
+
+export interface HeadingsConfig {
+  fontFamily?: string;
+  lineHeight?: Dimension;
+  color?: ColorValue;
+  levels?: HeadingLevelConfig[];
+}
+
+export interface ResolvedHeadingsConfig {
+  fontFamily: string;
+  lineHeight: Dimension;
+  color: ColorValue;
+  levels: ResolvedHeadingLevelConfig[];
+}
+
 export interface PostextSectionOverride {
   selector: string;
   columns?: ColumnConfig;
@@ -165,6 +195,7 @@ export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;
   bodyText?: BodyTextConfig;
+  headings?: HeadingsConfig;
 
   columns?: number;
   gutter?: string;
