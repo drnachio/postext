@@ -76,7 +76,14 @@ export interface ReferenceConfig {
   marginNotes?: boolean;
 }
 
-export type DimensionUnit = 'cm' | 'mm' | 'in' | 'pt';
+export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
+
+export interface ColorValue {
+  hex: string;
+  model: ColorModel;
+}
+
+export type DimensionUnit = 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem';
 
 export interface Dimension {
   value: number;
@@ -86,19 +93,19 @@ export interface Dimension {
 export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'custom';
 
 export interface PageMargins {
-  top: Dimension;
-  bottom: Dimension;
-  left: Dimension;
-  right: Dimension;
+  top?: Dimension;
+  bottom?: Dimension;
+  left?: Dimension;
+  right?: Dimension;
 }
 
 export interface BaselineGridConfig {
   enabled: boolean;
-  color?: string;
+  color?: ColorValue;
 }
 
 export interface PageConfig {
-  backgroundColor?: string;
+  backgroundColor?: ColorValue;
   sizePreset?: PageSizePreset;
   width?: Dimension;
   height?: Dimension;
@@ -106,6 +113,45 @@ export interface PageConfig {
   dpi?: number;
   cutLines?: boolean;
   baselineGrid?: BaselineGridConfig;
+}
+
+export interface ResolvedPageConfig {
+  backgroundColor: ColorValue;
+  sizePreset: PageSizePreset;
+  width: Dimension;
+  height: Dimension;
+  margins: Required<PageMargins>;
+  dpi: number;
+  cutLines: boolean;
+  baselineGrid: { enabled: boolean; color: ColorValue };
+}
+
+export type LayoutType = 'single' | 'double' | 'oneAndHalf';
+
+export interface LayoutConfig {
+  layoutType?: LayoutType;
+  gutterWidth?: Dimension;
+  sideColumnPercent?: number;
+}
+
+export interface ResolvedLayoutConfig {
+  layoutType: LayoutType;
+  gutterWidth: Dimension;
+  sideColumnPercent: number;
+}
+
+export interface BodyTextConfig {
+  fontFamily?: string;
+  fontSize?: Dimension;
+  lineHeight?: Dimension;
+  color?: ColorValue;
+}
+
+export interface ResolvedBodyTextConfig {
+  fontFamily: string;
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  color: ColorValue;
 }
 
 export interface PostextSectionOverride {
@@ -117,6 +163,8 @@ export interface PostextSectionOverride {
 
 export interface PostextConfig {
   page?: PageConfig;
+  layout?: LayoutConfig;
+  bodyText?: BodyTextConfig;
 
   columns?: number;
   gutter?: string;

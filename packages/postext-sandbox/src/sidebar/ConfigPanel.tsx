@@ -7,6 +7,8 @@ import { exportConfigToJson, importConfigFromJson } from '../storage/persistence
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
 import { PageSection } from './sections/PageSection';
+import { LayoutSection } from './sections/LayoutSection';
+import { BodyTextSection } from './sections/BodyTextSection';
 
 export function ConfigPanel() {
   const { state, dispatch } = useSandbox();
@@ -100,6 +102,8 @@ export function ConfigPanel() {
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <PageSection />
+        <LayoutSection />
+        <BodyTextSection />
       </div>
     </div>
   );

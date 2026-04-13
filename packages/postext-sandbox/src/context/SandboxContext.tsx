@@ -104,10 +104,10 @@ export function SandboxProvider({
     markdown: defaultMd,
     defaultMarkdown: defaultMd,
     config: initialConfig ?? DEFAULT_CONFIG,
-    activePanel: 'markdown' as PanelId,
-    sidebarPercent: 25,
+    activePanel: (loadPanel() as PanelId | null | undefined) ?? ('markdown' as PanelId),
+    sidebarPercent: loadSidebarPercent() ?? 25,
     sidebarDragging: false,
-    activeViewport: 'canvas' as ViewportTab,
+    activeViewport: (loadViewport() as ViewportTab | null) ?? ('canvas' as ViewportTab),
     labels: mergedLabels,
   });
 

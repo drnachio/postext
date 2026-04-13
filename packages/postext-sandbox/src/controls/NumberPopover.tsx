@@ -78,8 +78,12 @@ export function NumberPopover({ value, onChange, anchorRect, onClose, min, max, 
 
   const ratio = Math.min(1, Math.max(0, (localValue - min) / (max - min)));
 
-  // Position
-  const top = anchorRect.bottom + POPOVER_GAP;
+  // Position — flip above anchor if not enough space below
+  const estimatedHeight = 60;
+  const fitsBelow = anchorRect.bottom + POPOVER_GAP + estimatedHeight < window.innerHeight;
+  const top = fitsBelow
+    ? anchorRect.bottom + POPOVER_GAP
+    : anchorRect.top - POPOVER_GAP - estimatedHeight;
   const left = Math.max(8, anchorRect.right - POPOVER_WIDTH);
 
   return (

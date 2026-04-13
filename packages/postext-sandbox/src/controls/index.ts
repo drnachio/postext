@@ -6,3 +6,5 @@ export { SelectInput } from './SelectInput';
 export { NumberInput } from './NumberInput';
 export { InfoTip } from './InfoTip';
 export { ResetButton } from './ResetButton';
+export { NestedGroup } from './NestedGroup';
+export { FontPicker } from './FontPicker';

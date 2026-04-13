@@ -174,7 +174,8 @@ function isConfigExport(data: unknown): data is ConfigExport {
 }
 
 export function exportConfigToJson(config: PostextConfig): void {
-  downloadJson({ type: 'postext-config', version: 1, config }, 'postext-config.json');
+  const stripped = stripConfigDefaults(config);
+  downloadJson({ type: 'postext-config', version: 1, config: stripped }, 'postext-config.json');
 }
 
 export function importConfigFromJson(file: File): Promise<ConfigExport> {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useSandbox } from '../../context/SandboxContext';
-import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, dimensionsEqual } from 'postext';
-import type { PageConfig, PageSizePreset, Dimension } from 'postext';
+import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
+import type { PageConfig, PageSizePreset, Dimension, ColorValue } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -10,6 +10,7 @@ import {
   DimensionInput,
   NumberInput,
   ToggleSwitch,
+  NestedGroup,
 } from '../../controls';
 
 const PAGE_SIZE_OPTIONS = [
@@ -55,16 +56,15 @@ export function PageSection() {
 
   const resetMargin = (side: 'top' | 'bottom' | 'left' | 'right') => {
     if (!raw?.margins) return;
-    const next = { ...raw.margins, [side]: D.margins[side] };
-    const allDefault = (['top', 'bottom', 'left', 'right'] as const).every(
-      s => dimensionsEqual(s === side ? D.margins[side] : (raw.margins?.[s] ?? D.margins[s]), D.margins[s])
-    );
-    if (allDefault) {
+    const next = { ...raw.margins };
+    delete next[side];
+    const hasOverrides = Object.keys(next).length > 0;
+    if (hasOverrides) {
+      updatePage({ margins: next });
+    } else {
       const r = { ...raw };
       delete r.margins;
       dispatch({ type: 'UPDATE_CONFIG', payload: { page: Object.keys(r).length > 0 ? r : undefined } });
-    } else {
-      updatePage({ margins: next });
     }
   };
 
@@ -98,13 +98,13 @@ export function PageSection() {
 
   const handleMarginChange = (side: 'top' | 'bottom' | 'left' | 'right', dim: Dimension) => {
     updatePage({
-      margins: { ...page.margins, [side]: dim },
+      margins: { ...raw?.margins, [side]: dim },
     });
   };
 
   // Check which fields differ from defaults
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
-  const isBgDefault = page.backgroundColor === D.backgroundColor;
+  const isBgDefault = colorsEqual(page.backgroundColor, D.backgroundColor);
   const isPresetDefault = page.sizePreset === D.sizePreset;
   const isWidthDefault = dimensionsEqual(page.width, D.width);
   const isHeightDefault = dimensionsEqual(page.height, D.height);
@@ -115,7 +115,7 @@ export function PageSection() {
   const isDpiDefault = page.dpi === D.dpi;
   const isCutLinesDefault = page.cutLines === D.cutLines;
   const isGridEnabledDefault = page.baselineGrid.enabled === D.baselineGrid.enabled;
-  const isGridColorDefault = (page.baselineGrid.color ?? D.baselineGrid.color) === D.baselineGrid.color;
+  const isGridColorDefault = colorsEqual(page.baselineGrid.color, D.baselineGrid.color);
 
   return (
     <CollapsibleSection
@@ -158,7 +158,7 @@ export function PageSection() {
       />
 
       {page.sizePreset === 'custom' && (
-        <>
+        <NestedGroup>
           <DimensionInput
             label={labels.width}
             value={page.width}
@@ -177,7 +177,7 @@ export function PageSection() {
             isDefault={isHeightDefault}
             onReset={() => resetField('height')}
           />
-        </>
+        </NestedGroup>
       )}
 
       <DimensionInput
@@ -250,17 +250,19 @@ export function PageSection() {
       />
 
       {page.baselineGrid.enabled && (
-        <ColorPicker
-          label={labels.baselineGridColor}
-          value={page.baselineGrid.color ?? '#cccccc'}
-          onChange={(color) =>
-            updatePage({ baselineGrid: { ...page.baselineGrid, color } })
-          }
-          tooltip={labels.baselineGridColorTooltip}
-          isDefault={isGridColorDefault}
-          onReset={() => resetBaselineGridField('color')}
-          fieldId="page-baselineGridColor"
-        />
+        <NestedGroup>
+          <ColorPicker
+            label={labels.baselineGridColor}
+            value={page.baselineGrid.color}
+            onChange={(color) =>
+              updatePage({ baselineGrid: { ...page.baselineGrid, color } })
+            }
+            tooltip={labels.baselineGridColorTooltip}
+            isDefault={isGridColorDefault}
+            onReset={() => resetBaselineGridField('color')}
+            fieldId="page-baselineGridColor"
+          />
+        </NestedGroup>
       )}
     </CollapsibleSection>
   );

@@ -1,5 +1,5 @@
 export { createLayout } from './createLayout';
-export { DEFAULT_PAGE_CONFIG, PAGE_SIZE_PRESETS, resolvePageConfig, dimensionsEqual, stripPageDefaults, stripConfigDefaults } from './defaults';
+export { DEFAULT_PAGE_CONFIG, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults } from './defaults';
 export type {
   PostextContent,
   PostextResource,
@@ -11,10 +11,18 @@ export type {
   TypographyConfig,
   ReferenceConfig,
   PlacementStrategy,
+  ColorModel,
+  ColorValue,
   DimensionUnit,
   Dimension,
   PageSizePreset,
   PageMargins,
   BaselineGridConfig,
   PageConfig,
+  ResolvedPageConfig,
+  LayoutType,
+  LayoutConfig,
+  ResolvedLayoutConfig,
+  BodyTextConfig,
+  ResolvedBodyTextConfig,
 } from './types';

@@ -27,16 +27,28 @@ export function ResizableHandle({ onPointerDown }: ResizableHandleProps) {
       aria-label="Resize sidebar"
       tabIndex={0}
       style={{
-        width: '6px',
+        position: 'relative',
+        width: '1px',
         flexShrink: 0,
         cursor: 'col-resize',
         height: '100%',
         backgroundColor: active
           ? 'var(--gilt, #E0A816)'
-          : 'var(--slate, #B4B4BC)',
-        opacity: active ? 1 : 0.4,
-        transition: 'background-color 150ms, opacity 150ms',
+          : 'var(--rule, #27272A)',
+        transition: 'background-color 150ms',
       }}
-    />
+    >
+      {/* Invisible wider hit area */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: '-4px',
+          right: '-4px',
+          cursor: 'col-resize',
+        }}
+      />
+    </div>
   );
 }

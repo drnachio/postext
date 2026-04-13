@@ -1,4 +1,4 @@
-import type { PageConfig, PageMargins, PageSizePreset, Dimension, PostextConfig } from './types';
+import type { PageConfig, ResolvedPageConfig, PageMargins, PageSizePreset, Dimension, PostextConfig, LayoutConfig, ResolvedLayoutConfig, BodyTextConfig, ResolvedBodyTextConfig, ColorValue } from './types';
 
 export const PAGE_SIZE_PRESETS: Record<
   Exclude<PageSizePreset, 'custom'>,
@@ -10,26 +10,30 @@ export const PAGE_SIZE_PRESETS: Record<
   '21x28': { width: { value: 21, unit: 'cm' }, height: { value: 28, unit: 'cm' } },
 };
 
-const DEFAULT_PAGE_MARGINS: PageMargins = {
+const DEFAULT_PAGE_MARGINS: Required<PageMargins> = {
   top: { value: 2, unit: 'cm' },
   bottom: { value: 2, unit: 'cm' },
   left: { value: 2, unit: 'cm' },
   right: { value: 2, unit: 'cm' },
 };
 
-export const DEFAULT_PAGE_CONFIG: Required<PageConfig> = {
-  backgroundColor: 'transparent',
+export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
+  backgroundColor: { hex: 'transparent', model: 'hex' },
   sizePreset: '17x24',
   width: { value: 17, unit: 'cm' },
   height: { value: 24, unit: 'cm' },
   margins: DEFAULT_PAGE_MARGINS,
   dpi: 300,
   cutLines: false,
-  baselineGrid: { enabled: false, color: '#cccccc' },
+  baselineGrid: { enabled: false, color: { hex: '#cccccc', model: 'hex' } },
 };
 
 export function dimensionsEqual(a: Dimension, b: Dimension): boolean {
   return a.value === b.value && a.unit === b.unit;
+}
+
+export function colorsEqual(a: ColorValue, b: ColorValue): boolean {
+  return a.hex === b.hex && a.model === b.model;
 }
 
 export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
@@ -38,7 +42,7 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
   const result: PageConfig = {};
   let hasOverride = false;
 
-  if (page.backgroundColor !== undefined && page.backgroundColor !== DEFAULT_PAGE_CONFIG.backgroundColor) {
+  if (page.backgroundColor !== undefined && !colorsEqual(page.backgroundColor, DEFAULT_PAGE_CONFIG.backgroundColor)) {
     result.backgroundColor = page.backgroundColor;
     hasOverride = true;
   }
@@ -55,16 +59,16 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
     hasOverride = true;
   }
   if (page.margins) {
-    const m: Partial<PageMargins> = {};
+    const m: PageMargins = {};
     let hasMarginOverride = false;
     for (const side of ['top', 'bottom', 'left', 'right'] as const) {
-      if (page.margins[side] && !dimensionsEqual(page.margins[side], DEFAULT_PAGE_MARGINS[side])) {
+      if (page.margins[side] && !dimensionsEqual(page.margins[side], DEFAULT_PAGE_MARGINS[side]!)) {
         m[side] = page.margins[side];
         hasMarginOverride = true;
       }
     }
     if (hasMarginOverride) {
-      result.margins = { ...DEFAULT_PAGE_MARGINS, ...m };
+      result.margins = m;
       hasOverride = true;
     }
   }
@@ -78,7 +82,7 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
   }
   if (page.baselineGrid) {
     const enabledOverride = page.baselineGrid.enabled !== undefined && page.baselineGrid.enabled !== DEFAULT_PAGE_CONFIG.baselineGrid.enabled;
-    const colorOverride = page.baselineGrid.color !== undefined && page.baselineGrid.color !== DEFAULT_PAGE_CONFIG.baselineGrid.color;
+    const colorOverride = page.baselineGrid.color !== undefined && !colorsEqual(page.baselineGrid.color, DEFAULT_PAGE_CONFIG.baselineGrid.color);
     if (enabledOverride || colorOverride) {
       result.baselineGrid = {
         enabled: page.baselineGrid.enabled ?? DEFAULT_PAGE_CONFIG.baselineGrid.enabled,
@@ -86,6 +90,67 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
       };
       hasOverride = true;
     }
+  }
+
+  return hasOverride ? result : undefined;
+}
+
+export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
+  layoutType: 'single',
+  gutterWidth: { value: 0.5, unit: 'cm' },
+  sideColumnPercent: 33,
+};
+
+export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undefined {
+  if (!layout) return undefined;
+
+  const result: LayoutConfig = {};
+  let hasOverride = false;
+
+  if (layout.layoutType !== undefined && layout.layoutType !== DEFAULT_LAYOUT_CONFIG.layoutType) {
+    result.layoutType = layout.layoutType;
+    hasOverride = true;
+  }
+  if (layout.gutterWidth !== undefined && !dimensionsEqual(layout.gutterWidth, DEFAULT_LAYOUT_CONFIG.gutterWidth)) {
+    result.gutterWidth = layout.gutterWidth;
+    hasOverride = true;
+  }
+  if (layout.sideColumnPercent !== undefined && layout.sideColumnPercent !== DEFAULT_LAYOUT_CONFIG.sideColumnPercent) {
+    result.sideColumnPercent = layout.sideColumnPercent;
+    hasOverride = true;
+  }
+
+  return hasOverride ? result : undefined;
+}
+
+export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
+  fontFamily: 'EB Garamond',
+  fontSize: { value: 18, unit: 'pt' },
+  lineHeight: { value: 1.5, unit: 'em' },
+  color: { hex: '#000000', model: 'cmyk' },
+};
+
+export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig | undefined {
+  if (!bodyText) return undefined;
+
+  const result: BodyTextConfig = {};
+  let hasOverride = false;
+
+  if (bodyText.fontFamily !== undefined && bodyText.fontFamily !== DEFAULT_BODY_TEXT_CONFIG.fontFamily) {
+    result.fontFamily = bodyText.fontFamily;
+    hasOverride = true;
+  }
+  if (bodyText.fontSize !== undefined && !dimensionsEqual(bodyText.fontSize, DEFAULT_BODY_TEXT_CONFIG.fontSize)) {
+    result.fontSize = bodyText.fontSize;
+    hasOverride = true;
+  }
+  if (bodyText.lineHeight !== undefined && !dimensionsEqual(bodyText.lineHeight, DEFAULT_BODY_TEXT_CONFIG.lineHeight)) {
+    result.lineHeight = bodyText.lineHeight;
+    hasOverride = true;
+  }
+  if (bodyText.color !== undefined && !colorsEqual(bodyText.color, DEFAULT_BODY_TEXT_CONFIG.color)) {
+    result.color = bodyText.color;
+    hasOverride = true;
   }
 
   return hasOverride ? result : undefined;
@@ -99,10 +164,22 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.page;
   }
+  const strippedLayout = stripLayoutDefaults(config.layout);
+  if (strippedLayout) {
+    result.layout = strippedLayout;
+  } else {
+    delete result.layout;
+  }
+  const strippedBodyText = stripBodyTextDefaults(config.bodyText);
+  if (strippedBodyText) {
+    result.bodyText = strippedBodyText;
+  } else {
+    delete result.bodyText;
+  }
   return result;
 }
 
-export function resolvePageConfig(partial?: PageConfig): Required<PageConfig> {
+export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
   if (!partial) return { ...DEFAULT_PAGE_CONFIG };
 
   return {
@@ -126,5 +203,26 @@ export function resolvePageConfig(partial?: PageConfig): Required<PageConfig> {
           color: partial.baselineGrid.color ?? DEFAULT_PAGE_CONFIG.baselineGrid.color,
         }
       : { ...DEFAULT_PAGE_CONFIG.baselineGrid },
+  };
+}
+
+export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfig {
+  if (!partial) return { ...DEFAULT_LAYOUT_CONFIG };
+
+  return {
+    layoutType: partial.layoutType ?? DEFAULT_LAYOUT_CONFIG.layoutType,
+    gutterWidth: partial.gutterWidth ?? DEFAULT_LAYOUT_CONFIG.gutterWidth,
+    sideColumnPercent: partial.sideColumnPercent ?? DEFAULT_LAYOUT_CONFIG.sideColumnPercent,
+  };
+}
+
+export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTextConfig {
+  if (!partial) return { ...DEFAULT_BODY_TEXT_CONFIG };
+
+  return {
+    fontFamily: partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily,
+    fontSize: partial.fontSize ?? DEFAULT_BODY_TEXT_CONFIG.fontSize,
+    lineHeight: partial.lineHeight ?? DEFAULT_BODY_TEXT_CONFIG.lineHeight,
+    color: partial.color ?? DEFAULT_BODY_TEXT_CONFIG.color,
   };
 }

@@ -16,15 +16,19 @@ interface DimensionInputProps {
   tooltip?: string;
   isDefault?: boolean;
   onReset?: () => void;
+  units?: DimensionUnit[];
 }
 
-const UNITS: DimensionUnit[] = ['cm', 'mm', 'in', 'pt'];
+const DEFAULT_UNITS: DimensionUnit[] = ['cm', 'mm', 'in', 'pt'];
 
 const TO_PT: Record<DimensionUnit, number> = {
   pt: 1,
   mm: 2.83465,
   cm: 28.3465,
   in: 72,
+  px: 0.75,
+  em: 12,
+  rem: 12,
 };
 
 function convert(val: number, from: DimensionUnit, to: DimensionUnit): number {
@@ -38,9 +42,12 @@ const MAX_BY_UNIT: Record<DimensionUnit, number> = {
   mm: 1000,
   in: 40,
   pt: 2880,
+  px: 3840,
+  em: 10,
+  rem: 10,
 };
 
-export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.1, tooltip, isDefault, onReset }: DimensionInputProps) {
+export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.1, tooltip, isDefault, onReset, units = DEFAULT_UNITS }: DimensionInputProps) {
   const handleValueChange = (v: number) => {
     onChange({ value: v, unit: value.unit });
   };
@@ -98,12 +105,13 @@ export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.
           onChange={(e) => handleUnitChange(e.target.value as DimensionUnit)}
           className="rounded border px-1 py-1 text-xs"
           style={{
+            width: '3rem',
             borderColor: 'var(--rule)',
             backgroundColor: 'var(--surface)',
             color: muted ? 'var(--slate)' : 'var(--foreground)',
           }}
         >
-          {UNITS.map((u) => (
+          {units.map((u) => (
             <option key={u} value={u}>{u}</option>
           ))}
         </select>

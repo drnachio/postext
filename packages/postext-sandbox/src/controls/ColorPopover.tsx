@@ -166,8 +166,12 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
     }
   };
 
-  // Position
-  const top = anchorRect.bottom + POPOVER_GAP;
+  // Position — flip above anchor if not enough space below
+  const estimatedHeight = 400;
+  const fitsBelow = anchorRect.bottom + POPOVER_GAP + estimatedHeight < window.innerHeight;
+  const top = fitsBelow
+    ? anchorRect.bottom + POPOVER_GAP
+    : Math.max(8, anchorRect.top - POPOVER_GAP - estimatedHeight);
   const left = Math.max(8, anchorRect.right - POPOVER_WIDTH);
 
   const previousHex6 = hexWithoutAlpha(previousHex);

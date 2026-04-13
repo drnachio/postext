@@ -15,9 +15,10 @@ interface NumberInputProps {
   tooltip?: string;
   isDefault?: boolean;
   onReset?: () => void;
+  suffix?: string;
 }
 
-export function NumberInput({ label, value, onChange, min = 0, max = 100, step = 1, tooltip, isDefault, onReset }: NumberInputProps) {
+export function NumberInput({ label, value, onChange, min = 0, max = 100, step = 1, tooltip, isDefault, onReset, suffix }: NumberInputProps) {
   const chars = Math.max(String(value).length, 2);
   const muted = isDefault ?? false;
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -59,6 +60,11 @@ export function NumberInput({ label, value, onChange, min = 0, max = 100, step =
             MozAppearance: 'textfield',
           }}
         />
+        {suffix && (
+          <span className="text-xs" style={{ color: muted ? 'var(--slate)' : 'var(--foreground)' }}>
+            {suffix}
+          </span>
+        )}
       </div>
       {popoverOpen && anchorRect && (
         <NumberPopover

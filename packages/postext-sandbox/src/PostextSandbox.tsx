@@ -44,13 +44,12 @@ function SandboxLayout({
         const container = containerRef.current;
         if (!container) return;
         const rect = container.getBoundingClientRect();
-        // Available width = container width minus activity bar (w-14 = 56px) minus handle (6px)
-        const activityBarWidth = 56;
-        const handleWidth = 6;
+        const sidebar = target.previousElementSibling as HTMLElement | null;
+        if (!sidebar) return;
+        const sidebarLeft = sidebar.getBoundingClientRect().left;
         const minViewportWidth = 200;
-        const availableWidth = rect.width - activityBarWidth - handleWidth - minViewportWidth;
-        if (availableWidth <= 0) return;
-        const sidebarPx = Math.max(0, Math.min(ev.clientX - rect.left - activityBarWidth, availableWidth));
+        const maxSidebarPx = rect.width - (sidebarLeft - rect.left) - minViewportWidth;
+        const sidebarPx = Math.max(0, Math.min(ev.clientX - sidebarLeft, maxSidebarPx));
         const percent = Math.max(5, (sidebarPx / rect.width) * 100);
         dispatch({ type: 'SET_SIDEBAR_PERCENT', payload: Math.round(percent * 10) / 10 });
       };
