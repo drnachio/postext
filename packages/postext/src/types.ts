@@ -129,16 +129,24 @@ export interface ResolvedPageConfig {
 
 export type LayoutType = 'single' | 'double' | 'oneAndHalf';
 
+export interface ColumnRuleConfig {
+  enabled?: boolean;
+  color?: ColorValue;
+  lineWidth?: Dimension;
+}
+
 export interface LayoutConfig {
   layoutType?: LayoutType;
   gutterWidth?: Dimension;
   sideColumnPercent?: number;
+  columnRule?: ColumnRuleConfig;
 }
 
 export interface ResolvedLayoutConfig {
   layoutType: LayoutType;
   gutterWidth: Dimension;
   sideColumnPercent: number;
+  columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
 }
 
 export type TextAlign = 'left' | 'justify';

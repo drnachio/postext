@@ -1,4 +1,4 @@
-import type { VDTDocument, VDTPage, VDTBlock, VDTLine, BoundingBox } from './vdt';
+import type { VDTDocument, VDTPage, VDTBlock, VDTLine, VDTColumn, BoundingBox } from './vdt';
 import { dimensionToPx } from './units';
 
 // ---------------------------------------------------------------------------
@@ -28,6 +28,38 @@ function renderBaselineGrid(
     ctx.lineTo(right, y);
     ctx.stroke();
     y += baselineIncrement;
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------------
+// Column rule (vertical line between columns)
+// ---------------------------------------------------------------------------
+
+function renderColumnRule(
+  ctx: CanvasRenderingContext2D,
+  columns: VDTColumn[],
+  color: string,
+  lineWidth: number,
+): void {
+  if (columns.length < 2) return;
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+
+  for (let i = 0; i < columns.length - 1; i++) {
+    const left = columns[i]!.bbox;
+    const right = columns[i + 1]!.bbox;
+    const x = (left.x + left.width + right.x) / 2;
+    const top = Math.min(left.y, right.y);
+    const bottom = Math.max(left.y + left.height, right.y + right.height);
+
+    ctx.beginPath();
+    ctx.moveTo(x, top);
+    ctx.lineTo(x, bottom);
+    ctx.stroke();
   }
 
   ctx.restore();
@@ -178,6 +210,12 @@ export function renderPageToCanvas(
       doc.config.page.baselineGrid.color.hex,
       gridLineWidthPx,
     );
+  }
+
+  // Column rule between columns
+  if (doc.config.layout.columnRule.enabled && page.columns.length > 1) {
+    const crLineWidthPx = dimensionToPx(doc.config.layout.columnRule.lineWidth, doc.config.page.dpi);
+    renderColumnRule(ctx, page.columns, doc.config.layout.columnRule.color.hex, crLineWidthPx);
   }
 
   // Render all blocks (clip to column bounds to prevent overflow)
