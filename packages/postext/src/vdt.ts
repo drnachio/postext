@@ -107,6 +107,8 @@ export interface VDTDocument {
   blocks: VDTBlock[];
   config: ResolvedConfig;
   baselineGrid: number;
+  /** Pixel offset from canvas edge to trim edge (0 when cutLines disabled) */
+  trimOffset: number;
   converged: boolean;
   iterationCount: number;
 }
@@ -133,6 +135,7 @@ export function createVDTDocument(
     blocks: [],
     config,
     baselineGrid,
+    trimOffset: 0,
     converged: false,
     iterationCount: 0,
   };

@@ -82,9 +82,9 @@ The `page` property controls the physical dimensions and appearance of the page.
     </tr>
     <tr>
       <td><code>cutLines</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Show trim marks at page corners for print cutting.</td>
+      <td><code>CutLinesConfig</code></td>
+      <td>disabled</td>
+      <td>Show trim marks at page corners for print cutting. When enabled, the canvas expands to include bleed area and crop marks. See below.</td>
     </tr>
     <tr>
       <td><code>baselineGrid</code></td>
@@ -261,6 +261,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>HyphenationConfig</code></td>
       <td>enabled, <code>'en-us'</code></td>
       <td>Automatic hyphenation settings. See below.</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>Indent applied to the first line of each paragraph (or to all lines except the first when hanging indent is enabled).</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When enabled, the indent is applied to all lines except the first (French/hanging indent).</td>
     </tr>
   </tbody>
 </table>
@@ -490,7 +502,7 @@ import { resolvePageConfig, resolveBodyTextConfig } from 'postext';
 
 const fullPage = resolvePageConfig({ sizePreset: '21x28' });
 // => { sizePreset: '21x28', width: { value: 21, unit: 'cm' }, height: { value: 28, unit: 'cm' },
-//      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: false, ... }
+//      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: { enabled: false, ... }, ... }
 
 const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }

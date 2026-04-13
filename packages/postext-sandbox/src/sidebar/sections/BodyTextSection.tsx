@@ -28,6 +28,7 @@ const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+const INDENT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -95,6 +96,8 @@ export function BodyTextSection() {
   const isBoldFontWeightDefault = bodyText.boldFontWeight === D.boldFontWeight;
   const isHyphenationEnabledDefault = bodyText.hyphenation.enabled === DEFAULT_HYPHENATION_CONFIG.enabled;
   const isHyphenationLocaleDefault = effectiveHyphenationLocale === defaultLocale;
+  const isFirstLineIndentDefault = dimensionsEqual(bodyText.firstLineIndent, D.firstLineIndent);
+  const isHangingIndentDefault = bodyText.hangingIndent === D.hangingIndent;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.bodyTextAlignLeft },
@@ -190,6 +193,27 @@ export function BodyTextSection() {
         tooltip={labels.bodyBoldFontWeightTooltip}
         isDefault={isBoldFontWeightDefault}
         onReset={() => resetField('boldFontWeight')}
+      />
+
+      <DimensionInput
+        label={labels.bodyFirstLineIndent}
+        value={bodyText.firstLineIndent}
+        onChange={(dim) => updateBodyText({ firstLineIndent: dim })}
+        min={0}
+        step={0.25}
+        tooltip={labels.bodyFirstLineIndentTooltip}
+        isDefault={isFirstLineIndentDefault}
+        onReset={() => resetField('firstLineIndent')}
+        units={INDENT_UNITS}
+      />
+
+      <ToggleSwitch
+        label={labels.bodyHangingIndent}
+        checked={bodyText.hangingIndent}
+        onChange={(checked) => updateBodyText({ hangingIndent: checked })}
+        tooltip={labels.bodyHangingIndentTooltip}
+        isDefault={isHangingIndentDefault}
+        onReset={() => resetField('hangingIndent')}
       />
 
       <SelectInput

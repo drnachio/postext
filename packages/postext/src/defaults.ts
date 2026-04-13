@@ -1,4 +1,4 @@
-import type { PageConfig, ResolvedPageConfig, PageMargins, PageSizePreset, Dimension, PostextConfig, LayoutConfig, ResolvedLayoutConfig, BodyTextConfig, ResolvedBodyTextConfig, HeadingsConfig, HeadingLevelConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ColorValue, HyphenationConfig } from './types';
+import type { PageConfig, ResolvedPageConfig, PageMargins, PageSizePreset, Dimension, PostextConfig, LayoutConfig, ResolvedLayoutConfig, BodyTextConfig, ResolvedBodyTextConfig, HeadingsConfig, HeadingLevelConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ColorValue, HyphenationConfig, CutLinesConfig } from './types';
 
 export const PAGE_SIZE_PRESETS: Record<
   Exclude<PageSizePreset, 'custom'>,
@@ -17,6 +17,15 @@ const DEFAULT_PAGE_MARGINS: Required<PageMargins> = {
   right: { value: 1.5, unit: 'cm' },
 };
 
+export const DEFAULT_CUT_LINES = {
+  enabled: false,
+  bleed: { value: 3, unit: 'mm' } as const,
+  markLength: { value: 5, unit: 'mm' } as const,
+  markOffset: { value: 3, unit: 'mm' } as const,
+  markWidth: { value: 0.25, unit: 'pt' } as const,
+  color: { hex: '#000000', model: 'hex' } as const,
+};
+
 export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
   backgroundColor: { hex: 'transparent', model: 'hex' },
   sizePreset: '17x24',
@@ -24,7 +33,7 @@ export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
   height: { value: 24, unit: 'cm' },
   margins: DEFAULT_PAGE_MARGINS,
   dpi: 300,
-  cutLines: false,
+  cutLines: { ...DEFAULT_CUT_LINES },
   baselineGrid: { enabled: false, color: { hex: '#cccccc', model: 'hex' }, lineWidth: { value: 0.5, unit: 'pt' } },
 };
 
@@ -76,9 +85,24 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
     result.dpi = page.dpi;
     hasOverride = true;
   }
-  if (page.cutLines !== undefined && page.cutLines !== DEFAULT_PAGE_CONFIG.cutLines) {
-    result.cutLines = page.cutLines;
-    hasOverride = true;
+  if (page.cutLines) {
+    const enabledOverride = page.cutLines.enabled !== undefined && page.cutLines.enabled !== DEFAULT_CUT_LINES.enabled;
+    const bleedOverride = page.cutLines.bleed !== undefined && !dimensionsEqual(page.cutLines.bleed, DEFAULT_CUT_LINES.bleed);
+    const markLengthOverride = page.cutLines.markLength !== undefined && !dimensionsEqual(page.cutLines.markLength, DEFAULT_CUT_LINES.markLength);
+    const markOffsetOverride = page.cutLines.markOffset !== undefined && !dimensionsEqual(page.cutLines.markOffset, DEFAULT_CUT_LINES.markOffset);
+    const markWidthOverride = page.cutLines.markWidth !== undefined && !dimensionsEqual(page.cutLines.markWidth, DEFAULT_CUT_LINES.markWidth);
+    const colorOverride = page.cutLines.color !== undefined && !colorsEqual(page.cutLines.color, DEFAULT_CUT_LINES.color);
+    if (enabledOverride || bleedOverride || markLengthOverride || markOffsetOverride || markWidthOverride || colorOverride) {
+      result.cutLines = {
+        enabled: page.cutLines.enabled ?? DEFAULT_CUT_LINES.enabled,
+        ...(bleedOverride ? { bleed: page.cutLines.bleed } : {}),
+        ...(markLengthOverride ? { markLength: page.cutLines.markLength } : {}),
+        ...(markOffsetOverride ? { markOffset: page.cutLines.markOffset } : {}),
+        ...(markWidthOverride ? { markWidth: page.cutLines.markWidth } : {}),
+        ...(colorOverride ? { color: page.cutLines.color } : {}),
+      };
+      hasOverride = true;
+    }
   }
   if (page.baselineGrid) {
     const enabledOverride = page.baselineGrid.enabled !== undefined && page.baselineGrid.enabled !== DEFAULT_PAGE_CONFIG.baselineGrid.enabled;
@@ -166,6 +190,8 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   fontWeight: 400,
   boldFontWeight: 700,
   hyphenation: { ...DEFAULT_HYPHENATION_CONFIG },
+  firstLineIndent: { value: 1.5, unit: 'em' },
+  hangingIndent: false,
 };
 
 export function hyphenationEqual(a: HyphenationConfig | undefined, b: HyphenationConfig | undefined): boolean {
@@ -211,6 +237,14 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.hyphenation && !hyphenationEqual(bodyText.hyphenation, DEFAULT_BODY_TEXT_CONFIG.hyphenation)) {
     result.hyphenation = bodyText.hyphenation;
+    hasOverride = true;
+  }
+  if (bodyText.firstLineIndent !== undefined && !dimensionsEqual(bodyText.firstLineIndent, DEFAULT_BODY_TEXT_CONFIG.firstLineIndent)) {
+    result.firstLineIndent = bodyText.firstLineIndent;
+    hasOverride = true;
+  }
+  if (bodyText.hangingIndent !== undefined && bodyText.hangingIndent !== DEFAULT_BODY_TEXT_CONFIG.hangingIndent) {
+    result.hangingIndent = bodyText.hangingIndent;
     hasOverride = true;
   }
 
@@ -353,6 +387,20 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   return result;
 }
 
+function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cutLines'] {
+  if (!raw) return { ...DEFAULT_CUT_LINES };
+  // Backward compat: old saved configs may have cutLines as a plain boolean
+  if (typeof raw === 'boolean') return { ...DEFAULT_CUT_LINES, enabled: raw };
+  return {
+    enabled: raw.enabled ?? DEFAULT_CUT_LINES.enabled,
+    bleed: raw.bleed ?? DEFAULT_CUT_LINES.bleed,
+    markLength: raw.markLength ?? DEFAULT_CUT_LINES.markLength,
+    markOffset: raw.markOffset ?? DEFAULT_CUT_LINES.markOffset,
+    markWidth: raw.markWidth ?? DEFAULT_CUT_LINES.markWidth,
+    color: raw.color ?? DEFAULT_CUT_LINES.color,
+  };
+}
+
 export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
   if (!partial) return { ...DEFAULT_PAGE_CONFIG };
 
@@ -370,7 +418,7 @@ export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
         }
       : { ...DEFAULT_PAGE_MARGINS },
     dpi: partial.dpi ?? DEFAULT_PAGE_CONFIG.dpi,
-    cutLines: partial.cutLines ?? DEFAULT_PAGE_CONFIG.cutLines,
+    cutLines: resolveCutLines(partial.cutLines as CutLinesConfig | boolean | undefined),
     baselineGrid: partial.baselineGrid
       ? {
           enabled: partial.baselineGrid.enabled ?? DEFAULT_PAGE_CONFIG.baselineGrid.enabled,
@@ -413,6 +461,8 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTex
       enabled: partial.hyphenation?.enabled ?? DEFAULT_HYPHENATION_CONFIG.enabled,
       locale: partial.hyphenation?.locale ?? DEFAULT_HYPHENATION_CONFIG.locale,
     },
+    firstLineIndent: partial.firstLineIndent ?? DEFAULT_BODY_TEXT_CONFIG.firstLineIndent,
+    hangingIndent: partial.hangingIndent ?? DEFAULT_BODY_TEXT_CONFIG.hangingIndent,
   };
 }
 

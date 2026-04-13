@@ -202,7 +202,7 @@ type PlacementStrategy =
 
 ## Full Documentation
 
-Visit [postext.dev](https://postext.dev/) for the full documentation, project vision, architecture, and roadmap. For contributing guidelines, see the [GitHub repository](https://github.com/AUsername/postext).
+Visit [postext.dev](https://postext.dev/) for the full documentation, project vision, architecture, and roadmap. For contributing guidelines, see the [GitHub repository](https://github.com/drnachio/postext).
 
 ## License
 

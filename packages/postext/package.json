@@ -7,7 +7,7 @@
   "homepage": "https://postext.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AUsername/postext.git",
+    "url": "https://github.com/drnachio/postext.git",
     "directory": "packages/postext"
   },
   "files": [

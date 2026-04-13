@@ -100,6 +100,8 @@ interface BlockStyle {
   hyphenate: boolean;
   marginTopPx: number;
   marginBottomPx: number;
+  firstLineIndentPx: number;
+  hangingIndent: boolean;
 }
 
 function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
@@ -112,7 +114,9 @@ function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const boldFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight);
   const textAlign = resolved.bodyText.textAlign;
   const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
-  return { fontString, boldFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0 };
+  const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
+  const hangingIndent = resolved.bodyText.hangingIndent;
+  return { fontString, boldFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
 }
 
 function resolveHeadingStyle(
@@ -137,7 +141,7 @@ function resolveHeadingStyle(
   const textAlign = resolved.headings.textAlign;
   const marginTopPx = dimensionToPx(headingConfig.marginTop, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(headingConfig.marginBottom, dpi, fontSizePx);
-  return { fontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx };
+  return { fontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false };
 }
 
 function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
@@ -150,7 +154,9 @@ function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
   const boldFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'italic');
   const textAlign = resolved.bodyText.textAlign;
   const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
-  return { fontString, boldFontString, fontSizePx, lineHeightPx, color: '#666666', textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0 };
+  const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
+  const hangingIndent = resolved.bodyText.hangingIndent;
+  return { fontString, boldFontString, fontSizePx, lineHeightPx, color: '#666666', textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
 }
 
 // ---------------------------------------------------------------------------
@@ -163,7 +169,7 @@ function resetLinePositions(
 ): VDTLine[] {
   return lines.map((line, i) => ({
     ...line,
-    bbox: createBoundingBox(0, i * lineHeightPx, line.bbox.width, lineHeightPx),
+    bbox: createBoundingBox(line.bbox.x, i * lineHeightPx, line.bbox.width, lineHeightPx),
     baseline: i * lineHeightPx + lineHeightPx * 0.8,
   }));
 }
@@ -270,9 +276,21 @@ export function buildDocument(
   // Create document
   const doc = createVDTDocument(resolved, baselineGrid);
 
-  // Page dimensions in px
-  const pageWidthPx = dimensionToPx(resolved.page.width, dpi);
-  const pageHeightPx = dimensionToPx(resolved.page.height, dpi);
+  // Page dimensions in px (trim size)
+  const trimWidthPx = dimensionToPx(resolved.page.width, dpi);
+  const trimHeightPx = dimensionToPx(resolved.page.height, dpi);
+
+  // Cut lines expansion: canvas grows to fit bleed + mark offset + mark length
+  let trimOffset = 0;
+  if (resolved.page.cutLines.enabled) {
+    const bleedPx = dimensionToPx(resolved.page.cutLines.bleed, dpi);
+    const markOffsetPx = dimensionToPx(resolved.page.cutLines.markOffset, dpi);
+    const markLengthPx = dimensionToPx(resolved.page.cutLines.markLength, dpi);
+    trimOffset = bleedPx + markOffsetPx + markLengthPx;
+  }
+
+  const pageWidthPx = trimWidthPx + trimOffset * 2;
+  const pageHeightPx = trimHeightPx + trimOffset * 2;
 
   // Margins in px
   const marginTop = dimensionToPx(resolved.page.margins.top, dpi);
@@ -280,13 +298,15 @@ export function buildDocument(
   const marginLeft = dimensionToPx(resolved.page.margins.left, dpi);
   const marginRight = dimensionToPx(resolved.page.margins.right, dpi);
 
-  // Content area
+  // Content area (offset by trimOffset so content sits inside the trim area)
   const contentArea = createBoundingBox(
-    marginLeft,
-    marginTop,
-    pageWidthPx - marginLeft - marginRight,
-    pageHeightPx - marginTop - marginBottom,
+    marginLeft + trimOffset,
+    marginTop + trimOffset,
+    trimWidthPx - marginLeft - marginRight,
+    trimHeightPx - marginTop - marginBottom,
   );
+
+  doc.trimOffset = trimOffset;
 
   // Create first page
   const firstPage = createPageWithColumns(0, resolved, contentArea, pageWidthPx, pageHeightPx);
@@ -332,6 +352,12 @@ export function buildDocument(
     // Measure text — use rich measurement for blocks with bold spans
     const col = currentColumn(doc, cursor);
     const hasRichSpans = contentBlock.spans.some((s) => s.bold);
+    const measureOptions = {
+      textAlign: style.textAlign,
+      hyphenate: style.hyphenate,
+      firstLineIndentPx: style.firstLineIndentPx,
+      hangingIndent: style.hangingIndent,
+    };
     const measured = hasRichSpans && style.boldFontString
       ? measureRichBlock(
           contentBlock.spans,
@@ -339,14 +365,14 @@ export function buildDocument(
           style.boldFontString,
           col.bbox.width,
           style.lineHeightPx,
-          { textAlign: style.textAlign, hyphenate: style.hyphenate },
+          measureOptions,
         )
       : measureBlock(
           contentBlock.text,
           style.fontString,
           col.bbox.width,
           style.lineHeightPx,
-          { textAlign: style.textAlign, hyphenate: style.hyphenate },
+          measureOptions,
         );
 
     if (measured.lines.length === 0) continue;

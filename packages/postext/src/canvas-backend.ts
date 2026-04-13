@@ -66,6 +66,69 @@ function renderColumnRule(
 }
 
 // ---------------------------------------------------------------------------
+// Crop marks (trim marks)
+// ---------------------------------------------------------------------------
+
+function renderCutLines(
+  ctx: CanvasRenderingContext2D,
+  page: VDTPage,
+  doc: VDTDocument,
+): void {
+  const { cutLines, dpi } = doc.config.page;
+  if (!cutLines.enabled) return;
+
+  const bleedPx = dimensionToPx(cutLines.bleed, dpi);
+  const markOffsetPx = dimensionToPx(cutLines.markOffset, dpi);
+  const markLengthPx = dimensionToPx(cutLines.markLength, dpi);
+  const markWidthPx = dimensionToPx(cutLines.markWidth, dpi);
+  const totalExpansion = bleedPx + markOffsetPx + markLengthPx;
+
+  // Trim rect (the final page after cutting)
+  const trimX = totalExpansion;
+  const trimY = totalExpansion;
+  const trimW = page.width - totalExpansion * 2;
+  const trimH = page.height - totalExpansion * 2;
+
+  ctx.save();
+  ctx.strokeStyle = cutLines.color.hex;
+  ctx.lineWidth = markWidthPx;
+
+  // Each corner has two perpendicular marks.
+  // Marks start at markOffset outside the trim edge and extend markLength further out.
+  const corners = [
+    { x: trimX, y: trimY },                    // top-left
+    { x: trimX + trimW, y: trimY },            // top-right
+    { x: trimX, y: trimY + trimH },            // bottom-left
+    { x: trimX + trimW, y: trimY + trimH },    // bottom-right
+  ];
+
+  for (const corner of corners) {
+    const isLeft = corner.x === trimX;
+    const isTop = corner.y === trimY;
+
+    // Horizontal mark
+    const hDir = isLeft ? -1 : 1;
+    const hStart = corner.x + hDir * markOffsetPx;
+    const hEnd = corner.x + hDir * (markOffsetPx + markLengthPx);
+    ctx.beginPath();
+    ctx.moveTo(hStart, corner.y);
+    ctx.lineTo(hEnd, corner.y);
+    ctx.stroke();
+
+    // Vertical mark
+    const vDir = isTop ? -1 : 1;
+    const vStart = corner.y + vDir * markOffsetPx;
+    const vEnd = corner.y + vDir * (markOffsetPx + markLengthPx);
+    ctx.beginPath();
+    ctx.moveTo(corner.x, vStart);
+    ctx.lineTo(corner.x, vEnd);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------------
 // Text rendering
 // ---------------------------------------------------------------------------
 
@@ -77,11 +140,16 @@ function renderLine(
   color: string,
   textAlign: 'left' | 'justify',
   columnWidth: number,
+  columnX: number,
 ): void {
   ctx.fillStyle = color;
   ctx.textBaseline = 'alphabetic';
 
   const hasBoldSegments = boldFont && line.segments && line.segments.some((s) => s.bold);
+
+  // Effective width accounts for line-level indent (e.g. first-line or hanging indent)
+  const lineIndent = line.bbox.x - columnX;
+  const effectiveWidth = columnWidth - lineIndent;
 
   // Justified rendering with per-segment spacing
   if (textAlign === 'justify' && !line.isLastLine && line.segments && line.segments.length > 0) {
@@ -93,7 +161,7 @@ function renderLine(
     }
 
     if (spaceCount > 0) {
-      const justifiedSpaceWidth = (columnWidth - wordWidth) / spaceCount;
+      const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
       let x = line.bbox.x;
       for (const seg of line.segments) {
         if (seg.kind === 'space') {
@@ -132,9 +200,10 @@ function renderBlock(
   ctx: CanvasRenderingContext2D,
   block: VDTBlock,
   columnWidth: number,
+  columnX: number,
 ): void {
   for (const line of block.lines) {
-    renderLine(ctx, line, block.fontString, block.boldFontString, block.color, block.textAlign, columnWidth);
+    renderLine(ctx, line, block.fontString, block.boldFontString, block.color, block.textAlign, columnWidth, columnX);
   }
 }
 
@@ -179,12 +248,22 @@ export function renderPageToCanvas(
 
   // Background
   const bgColor = doc.config.page.backgroundColor.hex;
+  const trimOff = doc.trimOffset;
+
+  // Always fill the full canvas white first (mark area stays white)
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Fill the trim+bleed area with the page background
   if (bgColor && bgColor !== 'transparent') {
+    const bleedPx = trimOff > 0 ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi) : 0;
     ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  } else {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(
+      trimOff - bleedPx,
+      trimOff - bleedPx,
+      canvas.width - (trimOff - bleedPx) * 2,
+      canvas.height - (trimOff - bleedPx) * 2,
+    );
   }
 
   // Baseline grid overlay
@@ -225,10 +304,13 @@ export function renderPageToCanvas(
     ctx.rect(col.bbox.x, col.bbox.y, col.bbox.width, col.bbox.height);
     ctx.clip();
     for (const block of col.blocks) {
-      renderBlock(ctx, block, col.bbox.width);
+      renderBlock(ctx, block, col.bbox.width, col.bbox.x);
     }
     ctx.restore();
   }
+
+  // Crop marks (drawn last, on top of everything)
+  renderCutLines(ctx, page, doc);
 }
 
 export function renderPage(

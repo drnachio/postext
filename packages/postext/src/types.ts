@@ -105,6 +105,15 @@ export interface BaselineGridConfig {
   lineWidth?: Dimension;
 }
 
+export interface CutLinesConfig {
+  enabled: boolean;
+  bleed?: Dimension;
+  markLength?: Dimension;
+  markOffset?: Dimension;
+  markWidth?: Dimension;
+  color?: ColorValue;
+}
+
 export interface PageConfig {
   backgroundColor?: ColorValue;
   sizePreset?: PageSizePreset;
@@ -112,7 +121,7 @@ export interface PageConfig {
   height?: Dimension;
   margins?: PageMargins;
   dpi?: number;
-  cutLines?: boolean;
+  cutLines?: CutLinesConfig;
   baselineGrid?: BaselineGridConfig;
 }
 
@@ -123,7 +132,7 @@ export interface ResolvedPageConfig {
   height: Dimension;
   margins: Required<PageMargins>;
   dpi: number;
-  cutLines: boolean;
+  cutLines: { enabled: boolean; bleed: Dimension; markLength: Dimension; markOffset: Dimension; markWidth: Dimension; color: ColorValue };
   baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
 }
 
@@ -180,6 +189,8 @@ export interface BodyTextConfig {
   fontWeight?: number;
   boldFontWeight?: number;
   hyphenation?: HyphenationConfig;
+  firstLineIndent?: Dimension;
+  hangingIndent?: boolean;
 }
 
 export interface ResolvedBodyTextConfig {
@@ -191,6 +202,8 @@ export interface ResolvedBodyTextConfig {
   fontWeight: number;
   boldFontWeight: number;
   hyphenation: ResolvedHyphenationConfig;
+  firstLineIndent: Dimension;
+  hangingIndent: boolean;
 }
 
 export interface HeadingLevelConfig {

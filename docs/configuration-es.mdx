@@ -82,9 +82,9 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
     </tr>
     <tr>
       <td><code>cutLines</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Mostrar marcas de corte en las esquinas de la página para impresión.</td>
+      <td><code>CutLinesConfig</code></td>
+      <td>desactivado</td>
+      <td>Mostrar marcas de corte en las esquinas de la página para impresión. Al activarlo, el lienzo se expande para incluir el área de sangrado y las marcas de corte. Ver más abajo.</td>
     </tr>
     <tr>
       <td><code>baselineGrid</code></td>
@@ -261,6 +261,18 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>HyphenationConfig</code></td>
       <td>activada, <code>'en-us'</code></td>
       <td>Configuración de separación silábica automática. Ver más abajo.</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>Sangría aplicada a la primera línea de cada párrafo (o a todas las líneas excepto la primera cuando la sangría francesa está activada).</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Cuando está activado, la sangría se aplica a todas las líneas excepto la primera (sangría francesa).</td>
     </tr>
   </tbody>
 </table>
@@ -490,7 +502,7 @@ import { resolvePageConfig, resolveBodyTextConfig } from 'postext';
 
 const fullPage = resolvePageConfig({ sizePreset: '21x28' });
 // => { sizePreset: '21x28', width: { value: 21, unit: 'cm' }, height: { value: 28, unit: 'cm' },
-//      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: false, ... }
+//      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: { enabled: false, ... }, ... }
 
 const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }

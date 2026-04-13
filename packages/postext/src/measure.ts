@@ -111,6 +111,8 @@ export interface MeasuredBlock {
 export interface MeasureBlockOptions {
   textAlign?: TextAlign;
   hyphenate?: boolean;
+  firstLineIndentPx?: number;
+  hangingIndent?: boolean;
 }
 
 /**
@@ -133,19 +135,29 @@ export function measureBlock(
 
   const shouldHyphenate = options?.hyphenate ?? false;
   const textAlign = options?.textAlign ?? 'left';
+  const indentPx = options?.firstLineIndentPx ?? 0;
+  const hanging = options?.hangingIndent ?? false;
   const processedText = shouldHyphenate ? hyphenateText(text) : text;
 
   const prepared = prepareWithSegments(processedText, font);
   const lines: VDTLine[] = [];
   let cursor: LayoutCursor = { segmentIndex: 0, graphemeIndex: 0 };
   let y = 0;
+  let lineIndex = 0;
 
   while (true) {
-    const line = layoutNextLine(prepared, cursor, maxWidthPx);
+    // First line indent: indent line 0 only. Hanging indent: indent all lines except 0.
+    const isFirstLine = lineIndex === 0;
+    const lineIndent = indentPx > 0
+      ? (hanging ? (isFirstLine ? 0 : indentPx) : (isFirstLine ? indentPx : 0))
+      : 0;
+    const lineMaxWidth = maxWidthPx - lineIndent;
+
+    const line = layoutNextLine(prepared, cursor, lineMaxWidth);
     if (line === null) break;
 
     const nextCursor = line.end;
-    const isLastLine = layoutNextLine(prepared, nextCursor, maxWidthPx) === null;
+    const isLastLine = layoutNextLine(prepared, nextCursor, lineMaxWidth) === null;
 
     if (textAlign === 'justify') {
       const { segments, hyphenated } = extractSegments(prepared, cursor, nextCursor);
@@ -165,7 +177,7 @@ export function measureBlock(
 
       lines.push({
         text: hyphenated ? cleanSoftHyphens(line.text) + '-' : cleanSoftHyphens(line.text),
-        bbox: createBoundingBox(0, y, line.width, lineHeightPx),
+        bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
         baseline: y + lineHeightPx * 0.8,
         hyphenated,
         segments,
@@ -174,7 +186,7 @@ export function measureBlock(
     } else {
       lines.push({
         text: cleanSoftHyphens(line.text),
-        bbox: createBoundingBox(0, y, line.width, lineHeightPx),
+        bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
         baseline: y + lineHeightPx * 0.8,
         hyphenated: false,
       });
@@ -182,6 +194,7 @@ export function measureBlock(
 
     cursor = nextCursor;
     y += lineHeightPx;
+    lineIndex++;
   }
 
   return { lines, totalHeight: y };
@@ -292,6 +305,8 @@ export function measureRichBlock(
   }
 
   const shouldHyphenate = options?.hyphenate ?? false;
+  const indentPx = options?.firstLineIndentPx ?? 0;
+  const hanging = options?.hangingIndent ?? false;
   const tokens = tokenizeSpans(spans, normalFont, boldFont, shouldHyphenate);
 
   if (tokens.length === 0) {
@@ -301,8 +316,15 @@ export function measureRichBlock(
   const lines: VDTLine[] = [];
   let y = 0;
   let tokenIdx = 0;
+  let lineIndex = 0;
 
   while (tokenIdx < tokens.length) {
+    const isFirstLine = lineIndex === 0;
+    const lineIndent = indentPx > 0
+      ? (hanging ? (isFirstLine ? 0 : indentPx) : (isFirstLine ? indentPx : 0))
+      : 0;
+    const lineMaxWidth = maxWidthPx - lineIndent;
+
     const lineTokens: RichToken[] = [];
     let lineWidth = 0;
 
@@ -315,7 +337,7 @@ export function measureRichBlock(
     while (tokenIdx < tokens.length) {
       const token = tokens[tokenIdx]!;
 
-      if (lineWidth + token.width <= maxWidthPx || lineTokens.length === 0) {
+      if (lineWidth + token.width <= lineMaxWidth || lineTokens.length === 0) {
         lineTokens.push(token);
         lineWidth += token.width;
         tokenIdx++;
@@ -354,7 +376,7 @@ export function measureRichBlock(
 
     lines.push({
       text: lineText,
-      bbox: createBoundingBox(0, y, contentWidth, lineHeightPx),
+      bbox: createBoundingBox(lineIndent, y, contentWidth, lineHeightPx),
       baseline: y + lineHeightPx * 0.8,
       hyphenated: false,
       segments,
@@ -362,6 +384,7 @@ export function measureRichBlock(
     });
 
     y += lineHeightPx;
+    lineIndex++;
   }
 
   return { lines, totalHeight: y };
