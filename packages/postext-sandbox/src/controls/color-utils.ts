@@ -10,6 +10,33 @@ export function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
 }
 
+// --- Alpha helpers ---
+
+/** Extract alpha (0–100) from 8-digit hex or 'transparent'. 6-digit hex → 100 */
+export function hexAlpha(hex: string): number {
+  if (hex === 'transparent') return 0;
+  const clean = hex.replace('#', '');
+  if (clean.length === 8) {
+    return Math.round((parseInt(clean.slice(6, 8), 16) / 255) * 100);
+  }
+  return 100;
+}
+
+/** Strip alpha from hex, returning 6-digit hex. 'transparent' → '#000000' */
+export function hexWithoutAlpha(hex: string): string {
+  if (hex === 'transparent') return '#000000';
+  const clean = hex.replace('#', '');
+  return `#${clean.slice(0, 6)}`;
+}
+
+/** Combine 6-digit hex + alpha (0–100) into output. alpha=0 → 'transparent', alpha=100 → 6-digit hex */
+export function hexWithAlpha(hex6: string, alpha: number): string {
+  if (alpha <= 0) return 'transparent';
+  if (alpha >= 100) return hex6.slice(0, 7); // ensure 6-digit
+  const a = Math.round((alpha / 100) * 255).toString(16).padStart(2, '0');
+  return `${hex6.slice(0, 7)}${a}`;
+}
+
 // --- colorjs.io-based conversions ---
 
 export function hexToRgb(hex: string): RGB {
@@ -138,20 +165,24 @@ export function cmykToRgb(cmyk: CMYK): RGB {
 // --- Display formatting ---
 
 export function formatColor(hex: string, mode: ColorMode): string {
+  const alpha = hexAlpha(hex);
+  const hex6 = hexWithoutAlpha(hex);
+  const alphaStr = alpha < 100 ? ` ${alpha}%` : '';
+
   switch (mode) {
     case 'hex':
-      return hex;
+      return hex === 'transparent' ? 'transparent' : `${hex6}${alphaStr}`;
     case 'rgb': {
-      const { r, g, b } = hexToRgb(hex);
-      return `${r}, ${g}, ${b}`;
+      const { r, g, b } = hexToRgb(hex6);
+      return `${r}, ${g}, ${b}${alphaStr}`;
     }
     case 'cmyk': {
-      const { c, m, y, k } = rgbToCmyk(hexToRgb(hex));
-      return `${c}, ${m}, ${y}, ${k}`;
+      const { c, m, y, k } = rgbToCmyk(hexToRgb(hex6));
+      return `${c}, ${m}, ${y}, ${k}${alphaStr}`;
     }
     case 'hsl': {
-      const { h, s, l } = rgbToHsl(hexToRgb(hex));
-      return `${h}°, ${s}%, ${l}%`;
+      const { h, s, l } = rgbToHsl(hexToRgb(hex6));
+      return `${h}°, ${s}%, ${l}%${alphaStr}`;
     }
   }
 }

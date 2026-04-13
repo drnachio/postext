@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { InfoTip } from './InfoTip';
 import { ResetButton } from './ResetButton';
 import { ColorPopover } from './ColorPopover';
-import { formatColor, type ColorMode } from './color-utils';
+import { formatColor, hexAlpha, hexWithoutAlpha, type ColorMode } from './color-utils';
 import { saveColorMode, loadColorMode } from '../storage/persistence';
 
 interface ColorPickerProps {
@@ -16,6 +16,8 @@ interface ColorPickerProps {
   onReset?: () => void;
   fieldId?: string;
 }
+
+const CHECKER = `repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 0 0 / 6px 6px`;
 
 export function ColorPicker({ label, value, onChange, tooltip, isDefault, onReset, fieldId }: ColorPickerProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -46,6 +48,8 @@ export function ColorPicker({ label, value, onChange, tooltip, isDefault, onRese
 
   const displayText = formatColor(value, mode);
   const modeLabel = mode.toUpperCase();
+  const alpha = hexAlpha(value);
+  const hex6 = hexWithoutAlpha(value);
 
   return (
     <div className="mb-2 flex items-center justify-between gap-2">
@@ -56,6 +60,7 @@ export function ColorPicker({ label, value, onChange, tooltip, isDefault, onRese
         </label>
       </div>
       <div className="flex items-center gap-1.5">
+        {!muted && onReset && <ResetButton onClick={onReset} />}
         <button
           type="button"
           onClick={openPopover}
@@ -86,13 +91,21 @@ export function ColorPicker({ label, value, onChange, tooltip, isDefault, onRese
           style={{
             width: 24,
             height: 24,
-            backgroundColor: value,
+            background: CHECKER,
             borderColor: 'var(--rule)',
             cursor: 'pointer',
             opacity: muted ? 0.6 : 1,
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
-        {!muted && onReset && <ResetButton onClick={onReset} />}
+        >
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: hex6,
+            opacity: alpha / 100,
+          }} />
+        </button>
       </div>
       {popoverOpen && anchorRect && (
         <ColorPopover

@@ -38,8 +38,8 @@ function ToolbarButton({
         type="button"
         onClick={onClick}
         aria-label={label}
-        className="flex shrink-0 items-center justify-center overflow-hidden rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2"
-        style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)', width: 24, height: 24 }}
+        className="flex shrink-0 items-center justify-center overflow-hidden rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+        style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)', width: 24, height: 24 }}
         onMouseEnter={(e) => {
           e.currentTarget.style.color = 'var(--foreground)';
           e.currentTarget.style.backgroundColor = 'var(--surface)';

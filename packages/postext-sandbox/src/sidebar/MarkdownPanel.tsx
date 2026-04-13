@@ -54,8 +54,8 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
                     type="button"
                     onClick={open}
                     aria-label={state.labels.reset}
-                    className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2"
-                    style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)' }}
+                    className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+                    style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
                     onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
                   >
@@ -70,8 +70,8 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
               type="button"
               onClick={() => exportMarkdownToJson(state.markdown)}
               aria-label={state.labels.exportFile}
-              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2"
-              style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)' }}
+              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+              style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
               onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
               onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
             >
@@ -83,8 +83,8 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
               type="button"
               onClick={() => importRef.current?.click()}
               aria-label={state.labels.importFile}
-              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2"
-              style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)' }}
+              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+              style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
               onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
               onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
             >

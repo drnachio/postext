@@ -24,6 +24,7 @@ export function ToggleSwitch({ label, checked, onChange, tooltip, isDefault, onR
         </label>
       </div>
       <div className="flex items-center gap-1">
+        {!muted && onReset && <ResetButton onClick={onReset} />}
         <button
           type="button"
           role="switch"
@@ -36,28 +37,27 @@ export function ToggleSwitch({ label, checked, onChange, tooltip, isDefault, onR
             width: 36,
             flexShrink: 0,
             borderRadius: 9999,
-            border: 'none',
+            border: '1px solid var(--rule)',
             cursor: 'pointer',
-            backgroundColor: checked ? 'var(--gilt)' : 'var(--rule)',
+            backgroundColor: checked ? 'var(--gilt)' : 'var(--surface)',
             transition: 'background-color 200ms ease',
-            opacity: muted ? 0.5 : 1,
+            opacity: muted ? 0.7 : 1,
           }}
         >
           <span
             style={{
               position: 'absolute',
-              left: 2,
-              top: 2,
+              left: 1.5,
+              top: 1.5,
               height: 16,
               width: 16,
               borderRadius: 9999,
-              backgroundColor: 'var(--background)',
+              backgroundColor: checked ? 'var(--background)' : 'var(--slate)',
               transform: checked ? 'translateX(16px)' : 'translateX(0)',
               transition: 'transform 200ms ease',
             }}
           />
         </button>
-        {!muted && onReset && <ResetButton onClick={onReset} />}
       </div>
     </div>
   );

@@ -79,10 +79,10 @@ function PanelNav() {
               onClick={() => dispatch({ type: 'TOGGLE_PANEL', payload: id })}
               aria-label={label}
               aria-pressed={isActive}
-              className="flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2"
+              className="flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
               style={{
                 color: isActive ? 'var(--gilt)' : 'var(--slate)',
-                outlineColor: 'var(--accent-blue)',
+                outlineColor: 'var(--gilt-hover)',
               }}
               onMouseEnter={(e) => {
                 if (!isActive) e.currentTarget.style.color = 'var(--foreground)';
@@ -118,7 +118,7 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
         <Tooltip content="Postext" side="right">
           <a
             href={homeUrl}
-            className="mt-1 mb-2 flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2"
+            className="mt-1 mb-2 flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
             style={{ color: 'var(--gilt)', outlineColor: 'var(--accent-blue)' }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--surface)';

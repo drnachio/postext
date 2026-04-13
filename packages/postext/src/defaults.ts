@@ -18,7 +18,7 @@ const DEFAULT_PAGE_MARGINS: PageMargins = {
 };
 
 export const DEFAULT_PAGE_CONFIG: Required<PageConfig> = {
-  backgroundColor: '#ffffff',
+  backgroundColor: 'transparent',
   sizePreset: '17x24',
   width: { value: 17, unit: 'cm' },
   height: { value: 24, unit: 'cm' },
