@@ -1,14 +1,16 @@
 'use client';
 
 import { useSandbox } from '../../context/SandboxContext';
-import { resolveLayoutConfig, DEFAULT_LAYOUT_CONFIG, dimensionsEqual } from 'postext';
-import type { LayoutConfig, Dimension } from 'postext';
+import { resolveLayoutConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
+import type { LayoutConfig, Dimension, ColorValue } from 'postext';
 import {
   CollapsibleSection,
   SelectInput,
   DimensionInput,
   NumberInput,
   NestedGroup,
+  ToggleSwitch,
+  ColorPicker,
 } from '../../controls';
 
 const D = DEFAULT_LAYOUT_CONFIG;
@@ -44,6 +46,17 @@ export function LayoutSection() {
     });
   };
 
+  const resetColumnRuleField = (field: 'enabled' | 'color' | 'lineWidth') => {
+    if (!raw?.columnRule) return;
+    const next = { ...raw.columnRule };
+    delete next[field];
+    const hasKeys = Object.keys(next).length > 0;
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { layout: { ...raw, columnRule: hasKeys ? next : undefined } },
+    });
+  };
+
   const handleLayoutTypeChange = (value: string) => {
     const layoutType = value as LayoutConfig['layoutType'];
     if (layoutType === 'single') {
@@ -51,6 +64,7 @@ export function LayoutSection() {
       const next: LayoutConfig = { ...raw, layoutType };
       delete next.gutterWidth;
       delete next.sideColumnPercent;
+      delete next.columnRule;
       const hasKeys = Object.keys(next).length > 0;
       dispatch({
         type: 'UPDATE_CONFIG',
@@ -71,6 +85,9 @@ export function LayoutSection() {
   const isTypeDefault = layout.layoutType === D.layoutType;
   const isGutterDefault = dimensionsEqual(layout.gutterWidth, D.gutterWidth);
   const isSideColDefault = layout.sideColumnPercent === D.sideColumnPercent;
+  const isCrEnabledDefault = layout.columnRule.enabled === DEFAULT_COLUMN_RULE.enabled;
+  const isCrColorDefault = colorsEqual(layout.columnRule.color, DEFAULT_COLUMN_RULE.color);
+  const isCrLineWidthDefault = dimensionsEqual(layout.columnRule.lineWidth, DEFAULT_COLUMN_RULE.lineWidth);
 
   const showGutter = layout.layoutType === 'double' || layout.layoutType === 'oneAndHalf';
   const showSideCol = layout.layoutType === 'oneAndHalf';
@@ -98,6 +115,7 @@ export function LayoutSection() {
           delete next.layoutType;
           delete next.gutterWidth;
           delete next.sideColumnPercent;
+          delete next.columnRule;
           dispatch({ type: 'UPDATE_CONFIG', payload: { layout: Object.keys(next).length > 0 ? next : undefined } });
         }}
       />
@@ -129,6 +147,45 @@ export function LayoutSection() {
               onReset={() => resetField('sideColumnPercent')}
               suffix="%"
             />
+          )}
+
+          <ToggleSwitch
+            label={labels.columnRule}
+            checked={layout.columnRule.enabled}
+            onChange={(v) =>
+              updateLayout({ columnRule: { ...raw?.columnRule, enabled: v } })
+            }
+            tooltip={labels.columnRuleTooltip}
+            isDefault={isCrEnabledDefault}
+            onReset={() => resetColumnRuleField('enabled')}
+          />
+
+          {layout.columnRule.enabled && (
+            <NestedGroup>
+              <ColorPicker
+                label={labels.columnRuleColor}
+                value={layout.columnRule.color}
+                onChange={(color: ColorValue) =>
+                  updateLayout({ columnRule: { ...raw?.columnRule, color } })
+                }
+                tooltip={labels.columnRuleColorTooltip}
+                isDefault={isCrColorDefault}
+                onReset={() => resetColumnRuleField('color')}
+                fieldId="layout-columnRuleColor"
+              />
+              <DimensionInput
+                label={labels.columnRuleLineWidth}
+                value={layout.columnRule.lineWidth}
+                onChange={(dim: Dimension) =>
+                  updateLayout({ columnRule: { ...raw?.columnRule, lineWidth: dim } })
+                }
+                min={0.1}
+                step={0.1}
+                tooltip={labels.columnRuleLineWidthTooltip}
+                isDefault={isCrLineWidthDefault}
+                onReset={() => resetColumnRuleField('lineWidth')}
+              />
+            </NestedGroup>
           )}
         </NestedGroup>
       )}

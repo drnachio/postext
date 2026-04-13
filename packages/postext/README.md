@@ -4,7 +4,9 @@
 
 postext is a layout engine that takes semantic content — enriched markdown with referenced resources — and applies professional editorial layout rules to produce publication-grade output. Built on top of [`@chenglou/pretext`](https://github.com/chenglou/pretext) for DOM-free, pixel-perfect text measurement.
 
-> **Early stage** — postext is at v0.0.1. The API is under active design and not yet stable.
+> **Active development** — postext is under very active development and undergoing frequent changes. The team is working intensively on it. We will announce when a first stable version is available. In the meantime, the project is published so everyone can follow its evolution, but we do not recommend using it in production yet as configuration changes are frequent.
+
+**Website:** [postext.dev](https://postext.dev/)
 
 ## Install
 
@@ -127,6 +129,10 @@ Top-level layout configuration.
 
 | Field | Type | Description |
 |---|---|---|
+| `page?` | `PageConfig` | Page dimensions and margins |
+| `layout?` | `LayoutConfig` | General layout settings |
+| `bodyText?` | `BodyTextConfig` | Body text font, size, and line height |
+| `headings?` | `HeadingsConfig` | Heading styles configuration |
 | `columns?` | `number` | Number of columns |
 | `gutter?` | `string` | Space between columns (e.g., `'24px'`) |
 | `columnConfig?` | `ColumnConfig` | Detailed column settings |
@@ -196,7 +202,7 @@ type PlacementStrategy =
 
 ## Full Documentation
 
-For the project vision, architecture, roadmap, and contributing guidelines, see the [project README](https://github.com/AUsername/postext#readme).
+Visit [postext.dev](https://postext.dev/) for the full documentation, project vision, architecture, and roadmap. For contributing guidelines, see the [GitHub repository](https://github.com/AUsername/postext).
 
 ## License
 

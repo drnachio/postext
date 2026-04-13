@@ -6,7 +6,7 @@ export { buildFontString, measureBlock, measureRichBlock, initHyphenator, clearM
 export type { MeasuredBlock, MeasureBlockOptions } from './measure';
 export { hyphenateText, setHyphenationLocale } from './hyphenate';
 export { parseMarkdown } from './parse';
-export { DEFAULT_PAGE_CONFIG, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults } from './defaults';
+export { DEFAULT_PAGE_CONFIG, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults } from './defaults';
 export type {
   PostextContent,
   PostextResource,
@@ -28,6 +28,7 @@ export type {
   PageConfig,
   ResolvedPageConfig,
   LayoutType,
+  ColumnRuleConfig,
   LayoutConfig,
   ResolvedLayoutConfig,
   TextAlign,

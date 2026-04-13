@@ -118,6 +118,12 @@ export interface SandboxLabels {
   gutterWidthTooltip: string;
   sideColumnPercent: string;
   sideColumnPercentTooltip: string;
+  columnRule: string;
+  columnRuleTooltip: string;
+  columnRuleColor: string;
+  columnRuleColorTooltip: string;
+  columnRuleLineWidth: string;
+  columnRuleLineWidthTooltip: string;
 
   // Canvas viewport toolbar
   zoomIn: string;
@@ -280,6 +286,12 @@ export const DEFAULT_LABELS: SandboxLabels = {
   gutterWidthTooltip: 'Space between columns',
   sideColumnPercent: 'Side Column',
   sideColumnPercentTooltip: 'Width of the side column as a percentage of the content area',
+  columnRule: 'Column Rule',
+  columnRuleTooltip: 'Show a vertical line between columns',
+  columnRuleColor: 'Rule Color',
+  columnRuleColorTooltip: 'Color of the column rule line',
+  columnRuleLineWidth: 'Rule Width',
+  columnRuleLineWidthTooltip: 'Thickness of the column rule line',
   zoomIn: 'Zoom In',
   zoomOut: 'Zoom Out',
   fitWidth: 'Fit to Page Width',

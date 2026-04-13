@@ -28,6 +28,7 @@ describe("package exports", () => {
       "PAGE_SIZE_PRESETS",
       "resolvePageConfig",
       "DEFAULT_LAYOUT_CONFIG",
+      "DEFAULT_COLUMN_RULE",
       "resolveLayoutConfig",
       "stripLayoutDefaults",
       "DEFAULT_BODY_TEXT_CONFIG",
