@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introduction',
   description: 'What Postext is, why it exists, and the problem it solves',
   lang: 'en',
-  lastUpdated: '2026-04-08',
+  lastUpdated: '2026-04-13',
   readingTime: '12 min',
   order: 1,
 };
@@ -175,7 +175,7 @@ what position, flowing around which resources, obeying which typographic rules.
 
 ```ts
 import { prepare, layout } from '@chenglou/pretext';
-import { createLayout } from 'postext';
+import { buildDocument, renderToCanvas } from 'postext';
 
 // pretext: measure (the "pre" work)
 const prepared = prepare(paragraphText, '16px/1.5 Inter');
@@ -183,11 +183,12 @@ const { height } = layout(prepared, columnWidth, 24);
 // => "This paragraph is 144px tall at this column width."
 
 // postext: decide (the "post" work)
-const editorial = createLayout(content, config);
-// => "Put this paragraph in column 2, starting at y=320.
-//     Move the image to the top of column 3.
-//     Add a footnote at the bottom of column 2.
-//     Break here to avoid a widow."
+const vdt = buildDocument(content, config);
+// => A complete Virtual Document Tree with every paragraph,
+//     heading, and resource placed at exact coordinates.
+
+// render to canvas for pixel-accurate preview
+renderToCanvas(vdt, canvasElement);
 ```
 
 Pretext gives you the measurements. Postext gives you the layout.
@@ -245,8 +246,9 @@ The process has three stages:
    decision is driven by configuration — you control the rules, the engine applies them.
 
 3. **You get a complete layout.** Precise coordinates and dimensions for every element on every
-   page. Renderers translate this geometry to the target format: HTML and CSS for the web, PDF for
-   print. The same content, the same rules, two outputs.
+   page. Renderers translate this geometry to the target format: HTML canvas for pixel-accurate
+   preview, HTML and CSS for the web, PDF for print. The same content, the same rules, multiple
+   outputs.
 
 <svg viewBox="0 0 760 120" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
   {/* Arrow marker + shadow */}
@@ -296,7 +298,9 @@ The process has three stages:
 </svg>
 
 For a detailed look at the engine internals — the Virtual Document Tree, the seven-pass pipeline,
-and the convergence loop — see the [Architecture](/en/docs/architecture) document.
+and the convergence loop — see the [Architecture](/en/docs/architecture) document. For a complete
+reference of all configuration options and their defaults, see the
+[Configuration](/en/docs/configuration) page.
 
 
 ## Acknowledgments

@@ -8,11 +8,13 @@ import {
   ColorPicker,
   DimensionInput,
   FontPicker,
-  NestedGroup,
+  NumberInput,
+  SelectInput,
 } from '../../controls';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 const D = DEFAULT_HEADINGS_CONFIG;
 
@@ -23,16 +25,22 @@ function HeadingLevelSection({
   generalFont,
   generalLineHeight,
   generalColor,
+  generalFontWeight,
+  generalMarginTop,
+  generalMarginBottom,
   onUpdate,
   onReset,
   labels,
 }: {
   level: number;
-  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue };
+  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension };
   raw: HeadingLevelConfig | undefined;
   generalFont: string;
   generalLineHeight: Dimension;
   generalColor: ColorValue;
+  generalFontWeight: number;
+  generalMarginTop: Dimension;
+  generalMarginBottom: Dimension;
   onUpdate: (level: number, partial: Partial<HeadingLevelConfig>) => void;
   onReset: (level: number, field: keyof HeadingLevelConfig) => void;
   labels: ReturnType<typeof useSandbox>['state']['labels'];
@@ -43,6 +51,9 @@ function HeadingLevelSection({
   const isLhDefault = dimensionsEqual(resolved.lineHeight, generalLineHeight);
   const isFontDefault = resolved.fontFamily === generalFont;
   const isColorDefault = colorsEqual(resolved.color, generalColor);
+  const isFontWeightDefault = resolved.fontWeight === generalFontWeight;
+  const isMarginTopDefault = dimensionsEqual(resolved.marginTop, generalMarginTop);
+  const isMarginBottomDefault = dimensionsEqual(resolved.marginBottom, generalMarginBottom);
   const hasOverrides = raw !== undefined && Object.keys(raw).filter((k) => k !== 'level').length > 0;
 
   return (
@@ -87,6 +98,17 @@ function HeadingLevelSection({
         searchPlaceholder={labels.headingFontSearch}
         noResultsLabel={labels.headingFontNoResults}
       />
+      <NumberInput
+        label={labels.headingFontWeight}
+        value={resolved.fontWeight}
+        onChange={(w) => onUpdate(level, { fontWeight: w })}
+        min={100}
+        max={900}
+        step={100}
+        tooltip={labels.headingFontWeightTooltip}
+        isDefault={isFontWeightDefault}
+        onReset={() => onReset(level, 'fontWeight')}
+      />
       <ColorPicker
         label={labels.headingColor}
         value={resolved.color}
@@ -95,6 +117,28 @@ function HeadingLevelSection({
         isDefault={isColorDefault}
         onReset={() => onReset(level, 'color')}
         fieldId={`heading-h${level}-color`}
+      />
+      <DimensionInput
+        label={labels.headingMarginTop}
+        value={resolved.marginTop}
+        onChange={(dim) => onUpdate(level, { marginTop: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.headingMarginTopTooltip}
+        isDefault={isMarginTopDefault}
+        onReset={() => onReset(level, 'marginTop')}
+        units={MARGIN_UNITS}
+      />
+      <DimensionInput
+        label={labels.headingMarginBottom}
+        value={resolved.marginBottom}
+        onChange={(dim) => onUpdate(level, { marginBottom: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.headingMarginBottomTooltip}
+        isDefault={isMarginBottomDefault}
+        onReset={() => onReset(level, 'marginBottom')}
+        units={MARGIN_UNITS}
       />
     </CollapsibleSection>
   );
@@ -189,6 +233,15 @@ export function HeadingsSection() {
   const isFontDefault = headings.fontFamily === D.fontFamily;
   const isLhDefault = dimensionsEqual(headings.lineHeight, D.lineHeight);
   const isColorDefault = colorsEqual(headings.color, D.color);
+  const isFontWeightDefault = headings.fontWeight === D.fontWeight;
+  const isMarginTopDefault = dimensionsEqual(headings.marginTop, D.marginTop);
+  const isMarginBottomDefault = dimensionsEqual(headings.marginBottom, D.marginBottom);
+  const isTextAlignDefault = headings.textAlign === D.textAlign;
+
+  const ALIGN_OPTIONS = [
+    { value: 'left', label: labels.headingsTextAlignLeft },
+    { value: 'justify', label: labels.headingsTextAlignJustify },
+  ];
 
   return (
     <CollapsibleSection
@@ -234,6 +287,52 @@ export function HeadingsSection() {
         fieldId="headings-color"
       />
 
+      <NumberInput
+        label={labels.headingsFontWeight}
+        value={headings.fontWeight}
+        onChange={(w) => updateHeadings({ fontWeight: w })}
+        min={100}
+        max={900}
+        step={100}
+        tooltip={labels.headingsFontWeightTooltip}
+        isDefault={isFontWeightDefault}
+        onReset={() => resetField('fontWeight')}
+      />
+
+      <SelectInput
+        label={labels.headingsTextAlign}
+        value={headings.textAlign}
+        options={ALIGN_OPTIONS}
+        onChange={(value) => updateHeadings({ textAlign: value as HeadingsConfig['textAlign'] })}
+        tooltip={labels.headingsTextAlignTooltip}
+        isDefault={isTextAlignDefault}
+        onReset={() => resetField('textAlign')}
+      />
+
+      <DimensionInput
+        label={labels.headingsMarginTop}
+        value={headings.marginTop}
+        onChange={(dim) => updateHeadings({ marginTop: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.headingsMarginTopTooltip}
+        isDefault={isMarginTopDefault}
+        onReset={() => resetField('marginTop')}
+        units={MARGIN_UNITS}
+      />
+
+      <DimensionInput
+        label={labels.headingsMarginBottom}
+        value={headings.marginBottom}
+        onChange={(dim) => updateHeadings({ marginBottom: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.headingsMarginBottomTooltip}
+        isDefault={isMarginBottomDefault}
+        onReset={() => resetField('marginBottom')}
+        units={MARGIN_UNITS}
+      />
+
       {headings.levels.map((resolved) => (
         <HeadingLevelSection
           key={resolved.level}
@@ -243,6 +342,9 @@ export function HeadingsSection() {
           generalFont={headings.fontFamily}
           generalLineHeight={headings.lineHeight}
           generalColor={headings.color}
+          generalFontWeight={headings.fontWeight}
+          generalMarginTop={headings.marginTop}
+          generalMarginBottom={headings.marginBottom}
           onUpdate={updateLevel}
           onReset={resetLevelField}
           labels={labels}

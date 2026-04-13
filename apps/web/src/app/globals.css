@@ -530,6 +530,12 @@ html { font-size: 18px; }
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--rule);
   vertical-align: top;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+.docs-content td code,
+.docs-content th code {
+  white-space: nowrap;
 }
 .docs-content tbody tr:hover {
   background: var(--surface);

@@ -1,5 +1,12 @@
 export { createLayout } from './createLayout';
-export { DEFAULT_PAGE_CONFIG, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults } from './defaults';
+export { buildDocument } from './pipeline';
+export { renderToCanvas, renderPage, renderPageToCanvas } from './canvas-backend';
+export { dimensionToPx } from './units';
+export { buildFontString, measureBlock, measureRichBlock, initHyphenator, clearMeasurementCache } from './measure';
+export type { MeasuredBlock, MeasureBlockOptions } from './measure';
+export { hyphenateText, setHyphenationLocale } from './hyphenate';
+export { parseMarkdown } from './parse';
+export { DEFAULT_PAGE_CONFIG, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults } from './defaults';
 export type {
   PostextContent,
   PostextResource,
@@ -23,6 +30,10 @@ export type {
   LayoutType,
   LayoutConfig,
   ResolvedLayoutConfig,
+  TextAlign,
+  HyphenationLocale,
+  HyphenationConfig,
+  ResolvedHyphenationConfig,
   BodyTextConfig,
   ResolvedBodyTextConfig,
   HeadingLevelConfig,
@@ -30,3 +41,16 @@ export type {
   HeadingsConfig,
   ResolvedHeadingsConfig,
 } from './types';
+export type {
+  BoundingBox,
+  ResolvedConfig,
+  VDTBlockType,
+  VDTLineSegment,
+  VDTLine,
+  VDTBlock,
+  VDTColumn,
+  VDTFootnoteArea,
+  VDTPage,
+  VDTDocument,
+} from './vdt';
+export type { ContentBlock, ContentBlockType, InlineSpan } from './parse';

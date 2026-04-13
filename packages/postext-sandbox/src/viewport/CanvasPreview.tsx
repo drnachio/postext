@@ -2,135 +2,54 @@
 
 import { useEffect, useRef, useState, useDeferredValue } from 'react';
 import { useSandbox } from '../context/SandboxContext';
+import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'postext';
+import type { VDTDocument } from 'postext';
+
+type ViewMode = 'single' | 'spread';
+type FitMode = 'none' | 'width' | 'height';
+
+interface CanvasPreviewProps {
+  zoom: number;
+  viewMode: ViewMode;
+  fitMode: FitMode;
+}
 
 /**
- * Canvas preview that renders a rasterized version of the document.
- * For now, this renders a simple text-based preview onto a canvas.
- * When the postext engine is fully implemented, this will render the
- * actual laid-out document at pixel precision.
+ * Groups pages into rows for display.
+ * Single mode: one page per row.
+ * Spread mode: page 0 alone (on the right, like a book recto),
+ * then pairs [1,2], [3,4], ... Last unpaired page goes on the left.
  */
-export function CanvasPreview() {
-  const { state } = useSandbox();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const deferredMarkdown = useDeferredValue(state.markdown);
-  const [resizeKey, setResizeKey] = useState(0);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const rect = container.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.scale(dpr, dpr);
-
-    // Clear
-    ctx.fillStyle = '#fafaf9';
-    ctx.fillRect(0, 0, rect.width, rect.height);
-
-    // Draw a page-like area
-    const pageMargin = 40;
-    const pageWidth = Math.min(600, rect.width - pageMargin * 2);
-    const pageX = (rect.width - pageWidth) / 2;
-    const pageY = pageMargin;
-
-    // Page shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
-    ctx.fillRect(pageX + 3, pageY + 3, pageWidth, rect.height - pageMargin * 2);
-
-    // Page background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(pageX, pageY, pageWidth, rect.height - pageMargin * 2);
-
-    // Page border
-    ctx.strokeStyle = '#ddd';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(pageX, pageY, pageWidth, rect.height - pageMargin * 2);
-
-    // Render text lines
-    const contentMargin = 32;
-    const lineHeight = 20;
-    const maxWidth = pageWidth - contentMargin * 2;
-    let y = pageY + contentMargin;
-
-    ctx.textBaseline = 'top';
-
-    const lines = deferredMarkdown.split('\n');
-    for (const line of lines) {
-      if (y > rect.height - pageMargin - contentMargin) break;
-
-      const trimmed = line.trim();
-
-      if (trimmed.startsWith('# ')) {
-        ctx.font = 'bold 22px Georgia, serif';
-        ctx.fillStyle = '#1a1a1a';
-        y += 8;
-        wrapText(ctx, trimmed.slice(2), pageX + contentMargin, y, maxWidth, lineHeight + 6);
-        y += measureWrappedHeight(ctx, trimmed.slice(2), maxWidth, lineHeight + 6) + 12;
-      } else if (trimmed.startsWith('## ')) {
-        ctx.font = 'bold 18px Georgia, serif';
-        ctx.fillStyle = '#1a1a1a';
-        y += 12;
-        wrapText(ctx, trimmed.slice(3), pageX + contentMargin, y, maxWidth, lineHeight + 4);
-        y += measureWrappedHeight(ctx, trimmed.slice(3), maxWidth, lineHeight + 4) + 8;
-        // Underline
-        ctx.strokeStyle = '#ddd';
-        ctx.beginPath();
-        ctx.moveTo(pageX + contentMargin, y - 4);
-        ctx.lineTo(pageX + contentMargin + maxWidth, y - 4);
-        ctx.stroke();
-      } else if (trimmed.startsWith('### ')) {
-        ctx.font = 'bold 16px Georgia, serif';
-        ctx.fillStyle = '#1a1a1a';
-        y += 8;
-        wrapText(ctx, trimmed.slice(4), pageX + contentMargin, y, maxWidth, lineHeight + 2);
-        y += measureWrappedHeight(ctx, trimmed.slice(4), maxWidth, lineHeight + 2) + 6;
-      } else if (trimmed.startsWith('> ')) {
-        ctx.font = 'italic 14px Georgia, serif';
-        ctx.fillStyle = '#666';
-        // Draw quote bar
-        ctx.fillStyle = '#ccc';
-        ctx.fillRect(pageX + contentMargin, y, 3, lineHeight);
-        ctx.fillStyle = '#666';
-        wrapText(ctx, trimmed.slice(2), pageX + contentMargin + 12, y, maxWidth - 12, lineHeight);
-        y += measureWrappedHeight(ctx, trimmed.slice(2), maxWidth - 12, lineHeight) + 4;
-      } else if (trimmed.startsWith('```')) {
-        ctx.font = '12px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#f5f5f5';
-        ctx.fillRect(pageX + contentMargin, y, maxWidth, lineHeight);
-        y += lineHeight + 2;
-      } else if (trimmed === '') {
-        y += lineHeight / 2;
-      } else if (trimmed.startsWith('- ') || /^\d+\. /.test(trimmed)) {
-        ctx.font = '14px Georgia, serif';
-        ctx.fillStyle = '#333';
-        const bullet = trimmed.startsWith('- ') ? '\u2022 ' : trimmed.match(/^\d+\. /)?.[0] ?? '';
-        const text = trimmed.replace(/^(?:- |\d+\. )/, '');
-        wrapText(ctx, `${bullet}${text}`, pageX + contentMargin + 16, y, maxWidth - 16, lineHeight);
-        y += measureWrappedHeight(ctx, `${bullet}${text}`, maxWidth - 16, lineHeight) + 2;
-      } else {
-        ctx.font = '14px Georgia, serif';
-        ctx.fillStyle = '#333';
-        // Strip markdown formatting for plain render
-        const plain = trimmed
-          .replace(/\*\*(.+?)\*\*/g, '$1')
-          .replace(/_(.+?)_/g, '$1')
-          .replace(/`(.+?)`/g, '$1')
-          .replace(/\[(.+?)\]\(.+?\)/g, '$1');
-        wrapText(ctx, plain, pageX + contentMargin, y, maxWidth, lineHeight);
-        y += measureWrappedHeight(ctx, plain, maxWidth, lineHeight) + 2;
-      }
+function groupPagesIntoRows(pageCount: number, viewMode: ViewMode): number[][] {
+  if (viewMode === 'single') {
+    return Array.from({ length: pageCount }, (_, i) => [i]);
+  }
+  const rows: number[][] = [];
+  if (pageCount > 0) rows.push([0]);
+  for (let i = 1; i < pageCount; i += 2) {
+    if (i + 1 < pageCount) {
+      rows.push([i, i + 1]);
+    } else {
+      rows.push([i]);
     }
-  }, [deferredMarkdown, resizeKey]);
+  }
+  return rows;
+}
+
+/**
+ * Canvas preview that renders the document using the postext layout engine.
+ * Builds a VDT at the configured DPI (default 300), then lazily renders
+ * only the pages visible in the scroll viewport via IntersectionObserver.
+ */
+export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
+  const { state } = useSandbox();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const docRef = useRef<VDTDocument | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
+  const deferredMarkdown = useDeferredValue(state.markdown);
+  const deferredConfig = useDeferredValue(state.config);
+  const [resizeKey, setResizeKey] = useState(0);
 
   // Resize observer — triggers repaint when container size changes
   useEffect(() => {
@@ -145,61 +64,191 @@ export function CanvasPreview() {
     return () => observer.disconnect();
   }, []);
 
+  // Build document and set up lazy rendering via IntersectionObserver
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    if (rect.width === 0) return;
+
+    let cancelled = false;
+
+    document.fonts.ready.then(() => {
+      if (cancelled) return;
+      clearMeasurementCache();
+
+      try {
+        const doc = buildDocument(
+          { markdown: deferredMarkdown },
+          deferredConfig,
+        );
+        docRef.current = doc;
+
+        // Tear down previous state
+        observerRef.current?.disconnect();
+        canvasMapRef.current.clear();
+        while (container.firstChild) container.removeChild(container.firstChild);
+
+        if (doc.pages.length === 0) return;
+
+        // Compute uniform CSS display dimensions (all pages share the same size)
+        const padding = 32;
+        const gap = 24;
+        const firstPage = doc.pages[0]!;
+        const aspectRatio = firstPage.height / firstPage.width;
+
+        let displayWidth: number;
+        const isSpread = viewMode === 'spread';
+
+        if (fitMode === 'width') {
+          if (isSpread) {
+            displayWidth = (rect.width - padding * 2 - gap) / 2;
+          } else {
+            displayWidth = rect.width - padding * 2;
+          }
+        } else if (fitMode === 'height') {
+          const containerHeight = rect.height - padding * 2;
+          displayWidth = containerHeight / aspectRatio;
+          if (isSpread) {
+            const maxPerPage = (rect.width - padding * 2 - gap) / 2;
+            displayWidth = Math.min(displayWidth, maxPerPage);
+          }
+        } else {
+          const base = Math.min(rect.width - padding * 2, 800);
+          displayWidth = base * zoom;
+        }
+
+        displayWidth = Math.max(displayWidth, 50);
+        const displayHeight = displayWidth * aspectRatio;
+
+        // Inner wrapper centers content via auto margins, enabling full
+        // horizontal scroll in both directions when zoomed in
+        const pagesPerRow = isSpread ? 2 : 1;
+        const innerWidth = displayWidth * pagesPerRow + gap * (pagesPerRow - 1) + padding * 2;
+        const innerDiv = document.createElement('div');
+        innerDiv.style.width = `${innerWidth}px`;
+        innerDiv.style.margin = '0 auto';
+
+        const canvasMap = canvasMapRef.current;
+        const rows = groupPagesIntoRows(doc.pages.length, viewMode);
+        const allSlots: HTMLDivElement[] = [];
+
+        for (const row of rows) {
+          const rowDiv = document.createElement('div');
+          rowDiv.style.display = 'flex';
+          rowDiv.style.justifyContent = 'center';
+          rowDiv.style.alignItems = 'flex-start';
+          rowDiv.style.padding = `${padding}px`;
+          rowDiv.style.gap = `${gap}px`;
+          rowDiv.style.boxSizing = 'border-box';
+          rowDiv.style.minHeight = `${displayHeight + padding * 2}px`;
+
+          if (isSpread && row.length === 1) {
+            const pageIndex = row[0]!;
+            const isFirstPage = pageIndex === 0;
+
+            // First page (cover) goes on the RIGHT (recto in book terms)
+            // Trailing unpaired page goes on the LEFT (verso)
+            if (isFirstPage) {
+              // Spacer on the left
+              const spacer = document.createElement('div');
+              spacer.style.width = `${displayWidth}px`;
+              spacer.style.flexShrink = '0';
+              rowDiv.appendChild(spacer);
+            }
+
+            const slot = document.createElement('div');
+            slot.style.flexShrink = '0';
+            slot.dataset.pageIndex = String(pageIndex);
+
+            const canvas = createPageCanvas(displayWidth, displayHeight);
+            slot.appendChild(canvas);
+            canvasMap.set(pageIndex, canvas);
+            allSlots.push(slot);
+            rowDiv.appendChild(slot);
+
+            if (!isFirstPage) {
+              // Spacer on the right for trailing unpaired page
+              const spacer = document.createElement('div');
+              spacer.style.width = `${displayWidth}px`;
+              spacer.style.flexShrink = '0';
+              rowDiv.appendChild(spacer);
+            }
+          } else {
+            for (const pageIndex of row) {
+              const slot = document.createElement('div');
+              slot.style.flexShrink = '0';
+              slot.dataset.pageIndex = String(pageIndex);
+
+              const canvas = createPageCanvas(displayWidth, displayHeight);
+              slot.appendChild(canvas);
+              canvasMap.set(pageIndex, canvas);
+              allSlots.push(slot);
+              rowDiv.appendChild(slot);
+            }
+          }
+
+          innerDiv.appendChild(rowDiv);
+        }
+
+        container.appendChild(innerDiv);
+
+        // Lazy-render pages as they scroll into view
+        const renderedSet = new Set<number>();
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              const idx = Number((entry.target as HTMLElement).dataset.pageIndex);
+              const canvas = canvasMap.get(idx);
+              if (!canvas || !docRef.current) continue;
+
+              if (entry.isIntersecting && !renderedSet.has(idx)) {
+                renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas);
+                renderedSet.add(idx);
+              } else if (!entry.isIntersecting && renderedSet.has(idx)) {
+                // Release GPU memory for off-screen pages
+                canvas.width = 1;
+                canvas.height = 1;
+                renderedSet.delete(idx);
+              }
+            }
+          },
+          { root: container, rootMargin: '200px 0px 200px 0px' },
+        );
+        observerRef.current = observer;
+
+        for (const slot of allSlots) {
+          observer.observe(slot);
+        }
+      } catch (err) {
+        console.error('[CanvasPreview] Layout error:', err);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      observerRef.current?.disconnect();
+    };
+  }, [deferredMarkdown, deferredConfig, resizeKey, zoom, viewMode, fitMode]);
+
   return (
-    <div ref={containerRef} className="h-full w-full overflow-auto">
-      <canvas ref={canvasRef} className="block" />
-    </div>
+    <div
+      ref={containerRef}
+      className="h-full w-full"
+      style={{ backgroundColor: 'var(--surface)', overflow: 'auto' }}
+    />
   );
 }
 
-function wrapText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number,
-) {
-  const words = text.split(' ');
-  let line = '';
-  let currentY = y;
-
-  for (const word of words) {
-    const testLine = line ? `${line} ${word}` : word;
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && line) {
-      ctx.fillText(line, x, currentY);
-      line = word;
-      currentY += lineHeight;
-    } else {
-      line = testLine;
-    }
-  }
-  if (line) {
-    ctx.fillText(line, x, currentY);
-  }
-}
-
-function measureWrappedHeight(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  maxWidth: number,
-  lineHeight: number,
-): number {
-  const words = text.split(' ');
-  let line = '';
-  let lines = 1;
-
-  for (const word of words) {
-    const testLine = line ? `${line} ${word}` : word;
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && line) {
-      line = word;
-      lines++;
-    } else {
-      line = testLine;
-    }
-  }
-
-  return lines * lineHeight;
+function createPageCanvas(displayWidth: number, displayHeight: number): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  canvas.style.width = `${displayWidth}px`;
+  canvas.style.height = `${displayHeight}px`;
+  canvas.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)';
+  canvas.style.borderRadius = '2px';
+  canvas.style.backgroundColor = '#ffffff';
+  return canvas;
 }

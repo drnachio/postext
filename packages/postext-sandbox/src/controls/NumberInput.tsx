@@ -24,12 +24,19 @@ export function NumberInput({ label, value, onChange, min = 0, max = 100, step =
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   const openPopover = () => {
     if (inputRef.current) {
       setAnchorRect(inputRef.current.getBoundingClientRect());
     }
     setPopoverOpen(true);
+  };
+
+  const handleBlur = (e: React.FocusEvent) => {
+    const related = e.relatedTarget as Node | null;
+    if (related && popoverRef.current?.contains(related)) return;
+    setPopoverOpen(false);
   };
 
   return (
@@ -48,6 +55,7 @@ export function NumberInput({ label, value, onChange, min = 0, max = 100, step =
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           onFocus={openPopover}
+          onBlur={handleBlur}
           min={min}
           max={max}
           step={step}
@@ -68,6 +76,7 @@ export function NumberInput({ label, value, onChange, min = 0, max = 100, step =
       </div>
       {popoverOpen && anchorRect && (
         <NumberPopover
+          ref={popoverRef}
           value={value}
           onChange={onChange}
           anchorRect={anchorRect}

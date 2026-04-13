@@ -10,7 +10,7 @@ import { ResourcesPanel } from './sidebar/ResourcesPanel';
 import { MarkdownPanel } from './sidebar/MarkdownPanel';
 import { ResizableHandle } from './panels/ResizableHandle';
 import { ViewportTabs } from './viewport/ViewportTabs';
-import { CanvasPreview } from './viewport/CanvasPreview';
+import { CanvasViewport } from './viewport/CanvasViewport';
 import { HtmlPreview } from './viewport/HtmlPreview';
 import { PdfPreview } from './viewport/PdfPreview';
 
@@ -85,7 +85,7 @@ function SandboxLayout({
   const renderViewport = () => {
     switch (state.activeViewport) {
       case 'canvas':
-        return <CanvasPreview />;
+        return <CanvasViewport />;
       case 'html':
         return <HtmlPreview />;
       case 'pdf':
@@ -99,7 +99,7 @@ function SandboxLayout({
     <div
       ref={containerRef}
       className="flex h-full w-full overflow-hidden"
-      style={{ backgroundColor: 'var(--background)', fontFamily: 'var(--font-sans, ui-sans-serif, system-ui, sans-serif)' }}
+      style={{ backgroundColor: 'var(--background)', fontFamily: 'var(--font-sans, ui-sans-serif, system-ui, sans-serif)', overscrollBehavior: 'none' }}
     >
       <ActivityBar themeToggle={themeToggle} languageSwitcher={languageSwitcher} homeUrl={homeUrl} homeLink={homeLink} />
 
@@ -126,6 +126,7 @@ export function PostextSandbox({
   initialConfig,
   className,
   labels,
+  locale,
   onConfigChange,
   onMarkdownChange,
   themeToggle,
@@ -143,6 +144,7 @@ export function PostextSandbox({
         initialMarkdown={initialMarkdown}
         initialConfig={initialConfig}
         labels={labels}
+        locale={locale}
         onConfigChange={onConfigChange}
         onMarkdownChange={onMarkdownChange}
       >

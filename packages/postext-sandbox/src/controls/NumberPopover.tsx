@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 
 interface NumberPopoverProps {
   value: number;
@@ -16,10 +16,12 @@ interface NumberPopoverProps {
 const POPOVER_WIDTH = 200;
 const POPOVER_GAP = 6;
 
-export function NumberPopover({ value, onChange, anchorRect, onClose, min, max, step, label }: NumberPopoverProps) {
+export const NumberPopover = forwardRef<HTMLDivElement, NumberPopoverProps>(function NumberPopover({ value, onChange, anchorRect, onClose, min, max, step, label }, ref) {
   const [localValue, setLocalValue] = useState(value);
   const popoverRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(ref, () => popoverRef.current!, []);
 
   useEffect(() => {
     setLocalValue(value);
@@ -191,4 +193,4 @@ export function NumberPopover({ value, onChange, anchorRect, onClose, min, max, 
       </div>
     </div>
   );
-}
+});

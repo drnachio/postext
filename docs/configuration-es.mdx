@@ -1,0 +1,512 @@
+{/* docs/configuration-es.mdx */}
+
+export const metadata = {
+  title: 'Configuración de Postext',
+  sidebarTitle: 'Configuración',
+  description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
+  lang: 'es',
+  lastUpdated: '2026-04-13',
+  readingTime: '15 min',
+  order: 3,
+};
+
+# Configuración
+
+**Cada decisión de composición en Postext está controlada por un único objeto de configuración.**
+
+`PostextConfig` controla las dimensiones de página, la disposición de columnas, la tipografía del cuerpo de texto, los estilos de encabezado y más. Todas las propiedades son opcionales — Postext incluye valores por defecto sensatos, inspirados en la tipografía tradicional de libros. Solo necesitas especificar lo que quieras cambiar.
+
+```ts
+import { buildDocument } from 'postext';
+
+const document = buildDocument(content, {
+  page: { sizePreset: '21x28', dpi: 300 },
+  layout: { layoutType: 'double', gutterWidth: { value: 0.5, unit: 'cm' } },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  headings: { fontFamily: 'Open Sans' },
+});
+```
+
+Para una visión general de cómo el motor procesa esta configuración, consulta la página de [Arquitectura](/es/docs/architecture).
+
+
+## Página
+
+La propiedad `page` controla las dimensiones físicas y la apariencia de la página.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '180px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>sizePreset</code></td>
+      <td><code>PageSizePreset</code></td>
+      <td><code>'17x24'</code></td>
+      <td>Tamaño de página predefinido. Establece <code>'custom'</code> para usar ancho/alto explícitos.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>17 cm</code></td>
+      <td>Ancho de página. Solo se usa cuando <code>sizePreset</code> es <code>'custom'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>height</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>24 cm</code></td>
+      <td>Alto de página. Solo se usa cuando <code>sizePreset</code> es <code>'custom'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td><code>2 cm</code> todos los lados</td>
+      <td>Espacio entre el borde de la página y el área de contenido. Cada lado (superior, inferior, izquierdo, derecho) se configura independientemente.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Color de fondo de la página.</td>
+    </tr>
+    <tr>
+      <td><code>dpi</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>Puntos por pulgada. Afecta a cómo se convierten las unidades físicas (cm, mm, in) a píxeles.</td>
+    </tr>
+    <tr>
+      <td><code>cutLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Mostrar marcas de corte en las esquinas de la página para impresión.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>BaselineGridConfig</code></td>
+      <td>desactivado</td>
+      <td>Superponer una rejilla base horizontal para la alineación del ritmo vertical. Ver más abajo.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Tamaños de página predefinidos
+
+<table>
+  <thead>
+    <tr>
+      <th>Preset</th>
+      <th>Ancho</th>
+      <th>Alto</th>
+      <th>Uso habitual</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'11x17'</code></td><td>11 cm</td><td>17 cm</td><td>Libros de bolsillo</td></tr>
+    <tr><td><code>'12x19'</code></td><td>12 cm</td><td>19 cm</td><td>Formato rústica estándar</td></tr>
+    <tr><td><code>'17x24'</code></td><td>17 cm</td><td>24 cm</td><td>Libros técnicos, manuales</td></tr>
+    <tr><td><code>'21x28'</code></td><td>21 cm</td><td>28 cm</td><td>Revistas, informes (cercano a A4)</td></tr>
+  </tbody>
+</table>
+
+### Rejilla base
+
+La rejilla base dibuja líneas horizontales a intervalos que coinciden con la altura de línea del texto de cuerpo. Es una ayuda visual para asegurar el ritmo vertical — cuando está activada, el motor ajusta los bloques de encabezado a la rejilla para que el texto de cuerpo en columnas adyacentes se mantenga alineado.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Propiedad</th>
+      <th style={{ width: '150px' }}>Tipo</th>
+      <th style={{ width: '180px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Si se dibuja la rejilla base.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#cccccc</code></td>
+      <td>Color de las líneas de la rejilla.</td>
+    </tr>
+    <tr>
+      <td><code>lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>Grosor de las líneas de la rejilla.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+page: {
+  baselineGrid: { enabled: true, color: { hex: '#e0e0e0', model: 'hex' } }
+}
+```
+
+
+## Disposición
+
+La propiedad `layout` controla cómo se organizan las columnas dentro del área de contenido.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layoutType</code></td>
+      <td><code>'single' | 'double' | 'oneAndHalf'</code></td>
+      <td><code>'double'</code></td>
+      <td>Disposición de columnas. Ver más abajo para detalles de cada tipo.</td>
+    </tr>
+    <tr>
+      <td><code>gutterWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 cm</code></td>
+      <td>Espacio horizontal entre columnas. Solo aplica a disposiciones multicolumna.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnPercent</code></td>
+      <td><code>number</code></td>
+      <td><code>33</code></td>
+      <td>Ancho de la columna lateral como porcentaje del área de contenido. Solo aplica a la disposición <code>'oneAndHalf'</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Tipos de disposición
+
+- **`'single'`** — Una columna que ocupa todo el ancho del contenido. Ideal para páginas estrechas o contenido con párrafos largos.
+
+- **`'double'`** — Dos columnas de igual ancho. La disposición editorial clásica — mantiene el ancho de carro en el rango óptimo de 40–50 caracteres para una lectura cómoda.
+
+- **`'oneAndHalf'`** — Una disposición asimétrica con una columna principal y una columna lateral más estrecha. La columna lateral (controlada por `sideColumnPercent`) es ideal para notas al margen, figuras pequeñas o contenido complementario. Valores entre 25–40% funcionan bien.
+
+
+## Texto de cuerpo
+
+La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'EB Garamond'</code></td>
+      <td>Familia tipográfica para el cuerpo de texto. Cualquier fuente de Google Fonts o del sistema.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>9 pt</code></td>
+      <td>Tamaño de fuente base para el cuerpo de texto.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>Espaciado vertical entre líneas. Las unidades relativas (em, rem) escalan con el tamaño de fuente.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Color del texto.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify'</code></td>
+      <td><code>'justify'</code></td>
+      <td>Alineación del texto. El texto justificado distribuye el espaciado a lo largo de cada línea para bordes uniformes.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>Peso para el texto normal (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>Peso para texto en negrita/strong (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>HyphenationConfig</code></td>
+      <td>activada, <code>'en-us'</code></td>
+      <td>Configuración de separación silábica automática. Ver más abajo.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Separación silábica
+
+Cuando la alineación del texto está configurada como `'justify'`, la separación silábica evita el espaciado excesivo entre palabras al romper las palabras largas en los límites silábicos. El motor utiliza reglas según el idioma — patrones de vocales, prefijos y sufijos comunes — para encontrar puntos de ruptura naturales.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si se permite la separación silábica.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>HyphenationLocale</code></td>
+      <td><code>'en-us'</code></td>
+      <td>Reglas de idioma para los límites silábicos.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Idiomas soportados:** `'en-us'` (inglés), `'es'` (español), `'fr'` (francés), `'de'` (alemán), `'it'` (italiano), `'pt'` (portugués), `'ca'` (catalán), `'nl'` (neerlandés).
+
+Las palabras de menos de 5 caracteres nunca se separan. El motor requiere al menos 2 caracteres antes y 3 caracteres después de un punto de ruptura.
+
+
+## Encabezados
+
+La propiedad `headings` controla la tipografía de todos los niveles de encabezado (H1–H6). Puedes establecer valores generales por defecto que aplican a todos los niveles, y después sobrescribir propiedades específicas por nivel.
+
+### Valores generales por defecto
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Open Sans'</code></td>
+      <td>Familia tipográfica para todos los encabezados.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.2 em</code></td>
+      <td>Altura de línea para encabezados. Más ajustada que el cuerpo de texto.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Color del texto de encabezado.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left'</code></td>
+      <td>Alineación del texto de encabezado.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>Peso de fuente para encabezados (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>Espacio sobre los encabezados.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>Espacio bajo los encabezados.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Configuración por nivel
+
+Cada nivel de encabezado puede sobrescribir los valores generales a través del array `levels`. Solo el `fontSize` difiere por defecto — todas las demás propiedades se heredan de la configuración general de encabezados.
+
+<table>
+  <thead>
+    <tr>
+      <th>Nivel</th>
+      <th>Tamaño de fuente por defecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>H1</td><td><code>18 pt</code></td></tr>
+    <tr><td>H2</td><td><code>15 pt</code></td></tr>
+    <tr><td>H3</td><td><code>12 pt</code></td></tr>
+    <tr><td>H4</td><td><code>10 pt</code></td></tr>
+    <tr><td>H5</td><td><code>9 pt</code></td></tr>
+    <tr><td>H6</td><td><code>8 pt</code></td></tr>
+  </tbody>
+</table>
+
+Las configuraciones por nivel soportan las mismas propiedades que los valores generales: `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop` y `marginBottom`.
+
+```ts
+headings: {
+  fontFamily: 'Merriweather',
+  levels: [
+    { level: 1, fontSize: { value: 24, unit: 'pt' }, color: { hex: '#1a1a2e', model: 'hex' } },
+    { level: 2, fontSize: { value: 18, unit: 'pt' } },
+  ]
+}
+```
+
+
+## Unidades y colores
+
+### Dimensiones
+
+Todas las medidas físicas en Postext usan el tipo `Dimension` — un valor emparejado con una unidad:
+
+```ts
+interface Dimension {
+  value: number;
+  unit: DimensionUnit; // 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem'
+}
+```
+
+**Unidades absolutas** — `cm`, `mm`, `in`, `pt`, `px` — se convierten a píxeles usando los DPI configurados. A 300 DPI, `1 cm` equivale a aproximadamente 118 px.
+
+**Unidades relativas** — `em`, `rem` — escalan con el tamaño de fuente actual. Un `em` es relativo al tamaño de fuente del propio elemento; `rem` es relativo al tamaño de fuente del texto de cuerpo.
+
+### Colores
+
+Los colores se almacenan con una representación hexadecimal y un modelo de color objetivo:
+
+```ts
+interface ColorValue {
+  hex: string;        // '#ff0000', 'transparent', etc.
+  model: ColorModel;  // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+}
+```
+
+El campo `model` indica el espacio de color previsto. Para renderizado web, `'hex'` o `'rgb'` son los habituales. Para flujos de trabajo de impresión, `'cmyk'` preserva la intención de que el color debe especificarse en CMYK al exportar a PDF.
+
+
+## Configuración avanzada
+
+Las siguientes secciones de configuración están definidas en el sistema de tipos y serán soportadas por el motor de composición a medida que evolucione. Se incluyen aquí como referencia.
+
+### Configuración de columnas
+
+Control granular de columnas: número de columnas explícito, tamaño del medianil, filetes de columna (separadores visuales) y equilibrado de columnas.
+
+### Colocación de recursos
+
+Controla cómo se posicionan imágenes, tablas, figuras y citas destacadas: `'topOfColumn'`, `'inline'`, `'floatLeft'`, `'floatRight'`, `'fullWidthBreak'` o `'margin'`. Opciones para colocación diferida y preservación de la relación de aspecto.
+
+### Tipografía
+
+Controles tipográficos avanzados: mínimos de líneas para huérfanas/viudas, optimización de bordes irregulares, espaciado alrededor de encabezados y figuras, y reglas de agrupación para encabezados con párrafos y figuras con pies de foto.
+
+### Referencias
+
+Colocación de notas al pie (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), estilo de marcador (`'number'`, `'symbol'`, `'custom'`), numeración automática de figuras/tablas y notas al margen.
+
+### Configuraciones por sección
+
+Aplica diferentes ajustes de columnas, tipografía o colocación de recursos a secciones específicas del documento, identificadas mediante selectores tipo CSS.
+
+### Renderizador
+
+Formato de salida objetivo: `'web'` para renderizado HTML/canvas, `'pdf'` para salida de impresión.
+
+
+## Uso programático
+
+### Construir un documento
+
+La función `buildDocument` ejecuta el pipeline de composición completo y devuelve un Árbol Virtual del Documento (VDT) con coordenadas precisas para cada elemento:
+
+```ts
+import { buildDocument, renderToCanvas } from 'postext';
+
+const content = {
+  markdown: '# Capítulo uno\n\nLa historia comienza aquí...',
+};
+
+const config = {
+  page: { sizePreset: '17x24' },
+  layout: { layoutType: 'double' },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+};
+
+// Construir la composición
+const vdt = buildDocument(content, config);
+
+// Renderizar a un elemento canvas
+const canvas = document.createElement('canvas');
+renderToCanvas(vdt, canvas);
+```
+
+### Resolver valores por defecto
+
+Las funciones de resolución rellenan los valores por defecto para objetos de configuración parciales. Esto es útil cuando necesitas una configuración completa para inspección o comparación:
+
+```ts
+import { resolvePageConfig, resolveBodyTextConfig } from 'postext';
+
+const fullPage = resolvePageConfig({ sizePreset: '21x28' });
+// => { sizePreset: '21x28', width: { value: 21, unit: 'cm' }, height: { value: 28, unit: 'cm' },
+//      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: false, ... }
+
+const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
+// => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
+```
+
+Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`.
+
+### Eliminar valores por defecto
+
+Al persistir la configuración (por ejemplo, en localStorage o un archivo), usa `stripConfigDefaults` para eliminar los valores que coinciden con los valores por defecto. Esto mantiene las configuraciones almacenadas mínimas — solo se guardan las modificaciones intencionadas:
+
+```ts
+import { stripConfigDefaults } from 'postext';
+
+const minimal = stripConfigDefaults(fullConfig);
+// Solo permanecen las propiedades que difieren de los valores por defecto
+```
+
+También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`.

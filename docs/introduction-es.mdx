@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introducción',
   description: 'Qué es Postext, por qué existe y el problema que resuelve',
   lang: 'es',
-  lastUpdated: '2026-04-08',
+  lastUpdated: '2026-04-13',
   readingTime: '12 min',
   order: 1,
 };
@@ -186,19 +186,20 @@ qué reglas tipográficas.
 
 ```ts
 import { prepare, layout } from '@chenglou/pretext';
-import { createLayout } from 'postext';
+import { buildDocument, renderToCanvas } from 'postext';
 
-// pretext: measure (the "pre" work)
+// pretext: medir (el trabajo "pre")
 const prepared = prepare(paragraphText, '16px/1.5 Inter');
 const { height } = layout(prepared, columnWidth, 24);
-// => "This paragraph is 144px tall at this column width."
+// => "Este párrafo mide 144px de alto a este ancho de columna."
 
-// postext: decide (the "post" work)
-const editorial = createLayout(content, config);
-// => "Put this paragraph in column 2, starting at y=320.
-//     Move the image to the top of column 3.
-//     Add a footnote at the bottom of column 2.
-//     Break here to avoid a widow."
+// postext: decidir (el trabajo "post")
+const vdt = buildDocument(content, config);
+// => Un Árbol Virtual del Documento completo con cada párrafo,
+//     encabezado y recurso colocados en coordenadas exactas.
+
+// renderizar a canvas para una previsualización pixel-perfect
+renderToCanvas(vdt, canvasElement);
 ```
 
 Pretext proporciona las medidas. Postext proporciona la composición.
@@ -258,8 +259,9 @@ El proceso tiene tres etapas:
    configuración — tú defines las reglas, el motor las aplica.
 
 3. **Obtienes una composición completa.** Coordenadas y dimensiones precisas para cada elemento en
-   cada página. Los renderizadores traducen esta geometría al formato de destino: HTML y CSS para la
-   web, PDF para impresión. El mismo contenido, las mismas reglas, dos salidas.
+   cada página. Los renderizadores traducen esta geometría al formato de destino: canvas HTML para
+   una previsualización pixel-perfect, HTML y CSS para la web, PDF para impresión. El mismo
+   contenido, las mismas reglas, múltiples salidas.
 
 <svg viewBox="0 0 760 120" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
   {/* Arrow marker + shadow */}
@@ -311,7 +313,9 @@ El proceso tiene tres etapas:
 
 Para una mirada detallada a los mecanismos internos del motor — el Árbol Virtual del Documento,
 el pipeline de siete pasadas y el bucle de convergencia — consulta el documento de
-[Arquitectura](/es/docs/architecture).
+[Arquitectura](/es/docs/architecture). Para una referencia completa de todas las opciones de
+configuración y sus valores por defecto, consulta la página de
+[Configuración](/es/docs/configuration).
 
 
 ## Reconocimientos

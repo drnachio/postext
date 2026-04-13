@@ -63,11 +63,19 @@ export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const popoverRef = useRef<HTMLDivElement>(null);
+
   const openPopover = () => {
     if (inputRef.current) {
       setAnchorRect(inputRef.current.getBoundingClientRect());
     }
     setPopoverOpen(true);
+  };
+
+  const handleBlur = (e: React.FocusEvent) => {
+    const related = e.relatedTarget as Node | null;
+    if (related && popoverRef.current?.contains(related)) return;
+    setPopoverOpen(false);
   };
 
   const sliderMax = max ?? MAX_BY_UNIT[value.unit];
@@ -88,6 +96,7 @@ export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.
           value={value.value}
           onChange={(e) => handleValueChange(Number(e.target.value))}
           onFocus={openPopover}
+          onBlur={handleBlur}
           min={min}
           max={max}
           step={step}
@@ -118,6 +127,7 @@ export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.
       </div>
       {popoverOpen && anchorRect && (
         <NumberPopover
+          ref={popoverRef}
           value={value.value}
           onChange={handleValueChange}
           anchorRect={anchorRect}

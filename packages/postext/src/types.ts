@@ -102,6 +102,7 @@ export interface PageMargins {
 export interface BaselineGridConfig {
   enabled: boolean;
   color?: ColorValue;
+  lineWidth?: Dimension;
 }
 
 export interface PageConfig {
@@ -123,7 +124,7 @@ export interface ResolvedPageConfig {
   margins: Required<PageMargins>;
   dpi: number;
   cutLines: boolean;
-  baselineGrid: { enabled: boolean; color: ColorValue };
+  baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
 }
 
 export type LayoutType = 'single' | 'double' | 'oneAndHalf';
@@ -140,11 +141,37 @@ export interface ResolvedLayoutConfig {
   sideColumnPercent: number;
 }
 
+export type TextAlign = 'left' | 'justify';
+
+export type HyphenationLocale =
+  | 'en-us'
+  | 'es'
+  | 'fr'
+  | 'de'
+  | 'it'
+  | 'pt'
+  | 'ca'
+  | 'nl';
+
+export interface HyphenationConfig {
+  enabled?: boolean;
+  locale?: HyphenationLocale;
+}
+
+export interface ResolvedHyphenationConfig {
+  enabled: boolean;
+  locale: HyphenationLocale;
+}
+
 export interface BodyTextConfig {
   fontFamily?: string;
   fontSize?: Dimension;
   lineHeight?: Dimension;
   color?: ColorValue;
+  textAlign?: TextAlign;
+  fontWeight?: number;
+  boldFontWeight?: number;
+  hyphenation?: HyphenationConfig;
 }
 
 export interface ResolvedBodyTextConfig {
@@ -152,6 +179,10 @@ export interface ResolvedBodyTextConfig {
   fontSize: Dimension;
   lineHeight: Dimension;
   color: ColorValue;
+  textAlign: TextAlign;
+  fontWeight: number;
+  boldFontWeight: number;
+  hyphenation: ResolvedHyphenationConfig;
 }
 
 export interface HeadingLevelConfig {
@@ -160,6 +191,9 @@ export interface HeadingLevelConfig {
   lineHeight?: Dimension;
   fontFamily?: string;
   color?: ColorValue;
+  fontWeight?: number;
+  marginTop?: Dimension;
+  marginBottom?: Dimension;
 }
 
 export interface ResolvedHeadingLevelConfig {
@@ -168,12 +202,19 @@ export interface ResolvedHeadingLevelConfig {
   lineHeight: Dimension;
   fontFamily: string;
   color: ColorValue;
+  fontWeight: number;
+  marginTop: Dimension;
+  marginBottom: Dimension;
 }
 
 export interface HeadingsConfig {
   fontFamily?: string;
   lineHeight?: Dimension;
   color?: ColorValue;
+  textAlign?: TextAlign;
+  fontWeight?: number;
+  marginTop?: Dimension;
+  marginBottom?: Dimension;
   levels?: HeadingLevelConfig[];
 }
 
@@ -181,6 +222,10 @@ export interface ResolvedHeadingsConfig {
   fontFamily: string;
   lineHeight: Dimension;
   color: ColorValue;
+  textAlign: TextAlign;
+  fontWeight: number;
+  marginTop: Dimension;
+  marginBottom: Dimension;
   levels: ResolvedHeadingLevelConfig[];
 }
 

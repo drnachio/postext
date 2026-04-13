@@ -19,7 +19,7 @@ interface ColorPickerProps {
 
 const CHECKER = `repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 0 0 / 6px 6px`;
 
-export function ColorPicker({ label, value, onChange, tooltip, isDefault, onReset, fieldId }: ColorPickerProps) {
+export function ColorPicker({ label, value, onChange, tooltip, isDefault, onReset, fieldId: _fieldId }: ColorPickerProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const swatchRef = useRef<HTMLButtonElement>(null);

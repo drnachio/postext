@@ -2,7 +2,7 @@
 
 import { useSandbox } from '../../context/SandboxContext';
 import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
-import type { PageConfig, PageSizePreset, Dimension, ColorValue } from 'postext';
+import type { PageConfig, PageSizePreset, Dimension } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -68,7 +68,7 @@ export function PageSection() {
     }
   };
 
-  const resetBaselineGridField = (field: 'enabled' | 'color') => {
+  const resetBaselineGridField = (field: 'enabled' | 'color' | 'lineWidth') => {
     if (!raw?.baselineGrid) return;
     const next = { ...raw.baselineGrid };
     delete next[field];
@@ -116,6 +116,7 @@ export function PageSection() {
   const isCutLinesDefault = page.cutLines === D.cutLines;
   const isGridEnabledDefault = page.baselineGrid.enabled === D.baselineGrid.enabled;
   const isGridColorDefault = colorsEqual(page.baselineGrid.color, D.baselineGrid.color);
+  const isGridLineWidthDefault = dimensionsEqual(page.baselineGrid.lineWidth, D.baselineGrid.lineWidth);
 
   return (
     <CollapsibleSection
@@ -261,6 +262,18 @@ export function PageSection() {
             isDefault={isGridColorDefault}
             onReset={() => resetBaselineGridField('color')}
             fieldId="page-baselineGridColor"
+          />
+          <DimensionInput
+            label={labels.baselineGridLineWidth}
+            value={page.baselineGrid.lineWidth}
+            onChange={(dim) =>
+              updatePage({ baselineGrid: { ...page.baselineGrid, lineWidth: dim } })
+            }
+            min={0.1}
+            step={0.1}
+            tooltip={labels.baselineGridLineWidthTooltip}
+            isDefault={isGridLineWidthDefault}
+            onReset={() => resetBaselineGridField('lineWidth')}
           />
         </NestedGroup>
       )}

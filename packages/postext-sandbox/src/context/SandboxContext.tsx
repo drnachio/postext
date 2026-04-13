@@ -24,6 +24,7 @@ export interface SandboxState {
   sidebarDragging: boolean;
   activeViewport: ViewportTab;
   labels: SandboxLabels;
+  locale: string;
 }
 
 export type SandboxAction =
@@ -84,6 +85,7 @@ interface SandboxProviderProps {
   initialMarkdown?: string;
   initialConfig?: PostextConfig;
   labels?: Partial<SandboxLabels>;
+  locale?: string;
   onConfigChange?: (config: PostextConfig) => void;
   onMarkdownChange?: (markdown: string) => void;
 }
@@ -93,6 +95,7 @@ export function SandboxProvider({
   initialMarkdown,
   initialConfig,
   labels,
+  locale,
   onConfigChange,
   onMarkdownChange,
 }: SandboxProviderProps) {
@@ -104,11 +107,12 @@ export function SandboxProvider({
     markdown: defaultMd,
     defaultMarkdown: defaultMd,
     config: initialConfig ?? DEFAULT_CONFIG,
-    activePanel: (loadPanel() as PanelId | null | undefined) ?? ('markdown' as PanelId),
-    sidebarPercent: loadSidebarPercent() ?? 25,
+    activePanel: 'markdown' as PanelId,
+    sidebarPercent: 25,
     sidebarDragging: false,
-    activeViewport: (loadViewport() as ViewportTab | null) ?? ('canvas' as ViewportTab),
+    activeViewport: 'canvas' as ViewportTab,
     labels: mergedLabels,
+    locale: locale ?? 'en',
   });
 
   // Hydrate from localStorage after mount
