@@ -25,6 +25,7 @@ describe("package exports", () => {
       "setHyphenationLocale",
       "parseMarkdown",
       "DEFAULT_PAGE_CONFIG",
+      "DEFAULT_CUT_LINES",
       "PAGE_SIZE_PRESETS",
       "resolvePageConfig",
       "DEFAULT_LAYOUT_CONFIG",
