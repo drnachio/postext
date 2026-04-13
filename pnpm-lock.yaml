@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@chenglou/pretext':
+        specifier: ^0.0.5
+        version: 0.0.5
     devDependencies:
       turbo:
         specifier: latest
@@ -98,6 +102,10 @@ importers:
         version: 5.9.3
 
   packages/postext:
+    dependencies:
+      '@chenglou/pretext':
+        specifier: ^0.0.5
+        version: 0.0.5
     devDependencies:
       '@postext/typescript-config':
         specifier: workspace:*
@@ -343,6 +351,9 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  '@chenglou/pretext@0.0.5':
+    resolution: {integrity: sha512-A8GZN10REdFGsyuiUgLV8jjPDDFMg5GmgxGWV0I3igxBOnzj+jgz2VMmVD7g+SFyoctfeqHFxbNatKSzVRWtRg==}
 
   '@codemirror/autocomplete@6.20.1':
     resolution: {integrity: sha512-1cvg3Vz1dSSToCNlJfRA2WSI4ht3K+WplO0UMOgmUYPivCyy2oueZY6Lx7M9wThm7SDUBViRmuT+OG/i8+ON9A==}
@@ -4478,6 +4489,8 @@ snapshots:
       use-sync-external-store: 1.6.0(react@19.2.4)
     optionalDependencies:
       '@types/react': 19.2.14
+
+  '@chenglou/pretext@0.0.5': {}
 
   '@codemirror/autocomplete@6.20.1':
     dependencies:

@@ -1,0 +1,512 @@
+{/* docs/configuration-en.mdx */}
+
+export const metadata = {
+  title: 'Postext Configuration',
+  sidebarTitle: 'Configuration',
+  description: 'Complete reference for all Postext layout configuration options',
+  lang: 'en',
+  lastUpdated: '2026-04-13',
+  readingTime: '15 min',
+  order: 3,
+};
+
+# Configuration
+
+**Every layout decision in Postext is driven by a single configuration object.**
+
+`PostextConfig` controls page dimensions, column layout, body text typography, heading styles, and more. Every property is optional — Postext ships with sensible defaults inspired by traditional book typography. You only need to specify what you want to change.
+
+```ts
+import { buildDocument } from 'postext';
+
+const document = buildDocument(content, {
+  page: { sizePreset: '21x28', dpi: 300 },
+  layout: { layoutType: 'double', gutterWidth: { value: 0.5, unit: 'cm' } },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  headings: { fontFamily: 'Open Sans' },
+});
+```
+
+For an overview of how the engine processes this configuration, see the [Architecture](/en/docs/architecture) page.
+
+
+## Page
+
+The `page` property controls the physical dimensions and appearance of the page.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>sizePreset</code></td>
+      <td><code>PageSizePreset</code></td>
+      <td><code>'17x24'</code></td>
+      <td>Predefined page size. Set to <code>'custom'</code> to use explicit width/height.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>17 cm</code></td>
+      <td>Page width. Only used when <code>sizePreset</code> is <code>'custom'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>height</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>24 cm</code></td>
+      <td>Page height. Only used when <code>sizePreset</code> is <code>'custom'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td><code>2 cm</code> all sides</td>
+      <td>Space between the page edge and the content area. Each side (top, bottom, left, right) is set independently.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Page background color.</td>
+    </tr>
+    <tr>
+      <td><code>dpi</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>Dots per inch. Affects how physical units (cm, mm, in) are converted to pixels.</td>
+    </tr>
+    <tr>
+      <td><code>cutLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Show trim marks at page corners for print cutting.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>BaselineGridConfig</code></td>
+      <td>disabled</td>
+      <td>Overlay a horizontal baseline grid for vertical rhythm alignment. See below.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Page size presets
+
+<table>
+  <thead>
+    <tr>
+      <th>Preset</th>
+      <th>Width</th>
+      <th>Height</th>
+      <th>Common use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'11x17'</code></td><td>11 cm</td><td>17 cm</td><td>Pocket books</td></tr>
+    <tr><td><code>'12x19'</code></td><td>12 cm</td><td>19 cm</td><td>Standard paperback</td></tr>
+    <tr><td><code>'17x24'</code></td><td>17 cm</td><td>24 cm</td><td>Technical books, textbooks</td></tr>
+    <tr><td><code>'21x28'</code></td><td>21 cm</td><td>28 cm</td><td>Magazines, reports (near A4)</td></tr>
+  </tbody>
+</table>
+
+### Baseline grid
+
+The baseline grid draws horizontal lines at intervals matching the body text line height. It is a visual aid for ensuring vertical rhythm — when enabled, the engine snaps heading blocks to the grid so that body text in adjacent columns stays aligned.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Property</th>
+      <th style={{ width: '150px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to draw the baseline grid overlay.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#cccccc</code></td>
+      <td>Color of the grid lines.</td>
+    </tr>
+    <tr>
+      <td><code>lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>Thickness of the grid lines.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+page: {
+  baselineGrid: { enabled: true, color: { hex: '#e0e0e0', model: 'hex' } }
+}
+```
+
+
+## Layout
+
+The `layout` property controls how columns are arranged within the content area.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layoutType</code></td>
+      <td><code>'single' | 'double' | 'oneAndHalf'</code></td>
+      <td><code>'double'</code></td>
+      <td>Column arrangement. See below for details on each type.</td>
+    </tr>
+    <tr>
+      <td><code>gutterWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 cm</code></td>
+      <td>Horizontal space between columns. Only applies to multi-column layouts.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnPercent</code></td>
+      <td><code>number</code></td>
+      <td><code>33</code></td>
+      <td>Width of the side column as a percentage of the content area. Only applies to <code>'oneAndHalf'</code> layout.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Layout types
+
+- **`'single'`** — One column spanning the full content width. Best for narrow pages or text-heavy content with long paragraphs.
+
+- **`'double'`** — Two equal-width columns. The classic editorial layout — keeps line measure within the optimal 40–50 character range for comfortable reading.
+
+- **`'oneAndHalf'`** — An asymmetric layout with a main column and a narrower side column. The side column (controlled by `sideColumnPercent`) is ideal for margin notes, small figures, or supporting content. Values between 25–40% work well.
+
+
+## Body Text
+
+The `bodyText` property controls the typography of all paragraph text.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'EB Garamond'</code></td>
+      <td>Font family for body text. Any Google Font or system font.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>9 pt</code></td>
+      <td>Base font size for body text.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>Vertical spacing between lines. Relative units (em, rem) scale with font size.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Text color.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify'</code></td>
+      <td><code>'justify'</code></td>
+      <td>Text alignment. Justified text distributes spacing across each line for even edges.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>Weight for normal text (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>Weight for bold/strong text (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>HyphenationConfig</code></td>
+      <td>enabled, <code>'en-us'</code></td>
+      <td>Automatic hyphenation settings. See below.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Hyphenation
+
+When text alignment is set to `'justify'`, hyphenation prevents excessive word spacing by breaking long words at syllable boundaries. The engine uses locale-aware rules — vowel patterns, common prefixes, and suffixes — to find natural break points.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether to allow hyphenation.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>HyphenationLocale</code></td>
+      <td><code>'en-us'</code></td>
+      <td>Language rules for syllable boundaries.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Supported locales:** `'en-us'` (English), `'es'` (Spanish), `'fr'` (French), `'de'` (German), `'it'` (Italian), `'pt'` (Portuguese), `'ca'` (Catalan), `'nl'` (Dutch).
+
+Words shorter than 5 characters are never hyphenated. The engine requires at least 2 characters before and 3 characters after a break point.
+
+
+## Headings
+
+The `headings` property controls typography for all heading levels (H1–H6). You can set general defaults that apply to all levels, then override specific properties per level.
+
+### General defaults
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Open Sans'</code></td>
+      <td>Font family for all headings.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.2 em</code></td>
+      <td>Line height for headings. Tighter than body text.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Heading text color.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left'</code></td>
+      <td>Heading text alignment.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>Font weight for headings (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>Space above headings.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>Space below headings.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Per-level overrides
+
+Each heading level can override the general defaults via the `levels` array. Only the `fontSize` differs by default — all other properties inherit from the general heading settings.
+
+<table>
+  <thead>
+    <tr>
+      <th>Level</th>
+      <th>Default font size</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>H1</td><td><code>18 pt</code></td></tr>
+    <tr><td>H2</td><td><code>15 pt</code></td></tr>
+    <tr><td>H3</td><td><code>12 pt</code></td></tr>
+    <tr><td>H4</td><td><code>10 pt</code></td></tr>
+    <tr><td>H5</td><td><code>9 pt</code></td></tr>
+    <tr><td>H6</td><td><code>8 pt</code></td></tr>
+  </tbody>
+</table>
+
+Per-level overrides support the same properties as the general defaults: `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, and `marginBottom`.
+
+```ts
+headings: {
+  fontFamily: 'Merriweather',
+  levels: [
+    { level: 1, fontSize: { value: 24, unit: 'pt' }, color: { hex: '#1a1a2e', model: 'hex' } },
+    { level: 2, fontSize: { value: 18, unit: 'pt' } },
+  ]
+}
+```
+
+
+## Units and Colors
+
+### Dimensions
+
+All physical measurements in Postext use the `Dimension` type — a value paired with a unit:
+
+```ts
+interface Dimension {
+  value: number;
+  unit: DimensionUnit; // 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem'
+}
+```
+
+**Absolute units** — `cm`, `mm`, `in`, `pt`, `px` — are converted to pixels using the configured DPI. At 300 DPI, `1 cm` equals approximately 118 px.
+
+**Relative units** — `em`, `rem` — scale with the current font size. An `em` is relative to the element's own font size; `rem` is relative to the body text font size.
+
+### Colors
+
+Colors are stored with both a hex representation and a target color model:
+
+```ts
+interface ColorValue {
+  hex: string;        // '#ff0000', 'transparent', etc.
+  model: ColorModel;  // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+}
+```
+
+The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` preserves the intent that the color should be specified in CMYK when exported to PDF.
+
+
+## Advanced Configuration
+
+The following configuration sections are defined in the type system and will be supported by the layout engine as it evolves. They are included here for reference.
+
+### Column Config
+
+Fine-grained column control: explicit column count, gutter size, column rules (visual separators), and column balancing.
+
+### Resource Placement
+
+Controls how images, tables, figures, and pull quotes are positioned: `'topOfColumn'`, `'inline'`, `'floatLeft'`, `'floatRight'`, `'fullWidthBreak'`, or `'margin'`. Options for deferred placement and aspect ratio preservation.
+
+### Typography
+
+Advanced typographic controls: orphan/widow minimum line counts, rag optimization, spacing around headings and figures, and keep-together rules for headings with paragraphs and figures with captions.
+
+### References
+
+Footnote placement (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), marker style (`'number'`, `'symbol'`, `'custom'`), automatic figure/table numbering, and margin notes.
+
+### Section Overrides
+
+Apply different column, typography, or resource placement settings to specific sections of the document, matched by CSS-like selectors.
+
+### Renderer
+
+Target output format: `'web'` for HTML/canvas rendering, `'pdf'` for print output.
+
+
+## Programmatic Usage
+
+### Building a document
+
+The `buildDocument` function runs the full layout pipeline and returns a Virtual Document Tree (VDT) with precise coordinates for every element:
+
+```ts
+import { buildDocument, renderToCanvas } from 'postext';
+
+const content = {
+  markdown: '# Chapter One\n\nThe story begins here...',
+};
+
+const config = {
+  page: { sizePreset: '17x24' },
+  layout: { layoutType: 'double' },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+};
+
+// Build the layout
+const vdt = buildDocument(content, config);
+
+// Render to a canvas element
+const canvas = document.createElement('canvas');
+renderToCanvas(vdt, canvas);
+```
+
+### Resolving defaults
+
+Resolver functions fill in default values for partial configuration objects. This is useful when you need a complete configuration for inspection or comparison:
+
+```ts
+import { resolvePageConfig, resolveBodyTextConfig } from 'postext';
+
+const fullPage = resolvePageConfig({ sizePreset: '21x28' });
+// => { sizePreset: '21x28', width: { value: 21, unit: 'cm' }, height: { value: 28, unit: 'cm' },
+//      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: false, ... }
+
+const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
+// => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
+```
+
+Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`.
+
+### Stripping defaults
+
+When persisting configuration (e.g., to localStorage or a file), use `stripConfigDefaults` to remove values that match the defaults. This keeps stored configurations minimal — only the intentional overrides are saved:
+
+```ts
+import { stripConfigDefaults } from 'postext';
+
+const minimal = stripConfigDefaults(fullConfig);
+// Only properties that differ from defaults remain
+```
+
+Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`.

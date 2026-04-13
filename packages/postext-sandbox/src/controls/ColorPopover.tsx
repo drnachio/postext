@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { SaturationValueArea } from './SaturationValueArea';
 import { HueSlider } from './HueSlider';
+import { AlphaSlider } from './AlphaSlider';
 import {
   hexToHsv, hsvToHex, hsvToRgb, rgbToHsv,
   rgbToHsl, hslToRgb, rgbToCmyk, cmykToRgb,
-  clamp,
+  clamp, hexAlpha, hexWithoutAlpha, hexWithAlpha,
   type HSV, type RGB, type HSL, type CMYK, type ColorMode,
 } from './color-utils';
 
@@ -67,20 +68,25 @@ function SmallInput({
   );
 }
 
+const CHECKER = `repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 0 0 / 10px 10px`;
+
 export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode = 'hex', onModeChange }: ColorPopoverProps) {
-  const [hsv, setHsv] = useState<HSV>(() => hexToHsv(hex));
+  const [hsv, setHsv] = useState<HSV>(() => hexToHsv(hexWithoutAlpha(hex)));
+  const [alpha, setAlpha] = useState(() => hexAlpha(hex));
   const [activeTab, setActiveTab] = useState<ColorMode>(initialMode);
-  const [hexText, setHexText] = useState(hex);
+  const [hexText, setHexText] = useState(() => hexWithoutAlpha(hex));
   const [previousHex] = useState(hex);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Sync from external hex changes (e.g., reset)
   useEffect(() => {
+    const hex6 = hexWithoutAlpha(hex);
     const currentHex = hsvToHex(hsv);
-    if (hex.toLowerCase() !== currentHex.toLowerCase()) {
-      setHsv(hexToHsv(hex));
-      setHexText(hex);
+    if (hex6.toLowerCase() !== currentHex.toLowerCase()) {
+      setHsv(hexToHsv(hex6));
+      setHexText(hex6);
     }
+    setAlpha(hexAlpha(hex));
   }, [hex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update hex text when HSV changes internally
@@ -106,10 +112,20 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
     };
   }, [onClose]);
 
+  const emitColor = useCallback((nextHsv: HSV, nextAlpha: number) => {
+    const hex6 = hsvToHex(nextHsv);
+    onChange(hexWithAlpha(hex6, nextAlpha));
+  }, [onChange]);
+
   const updateHsv = useCallback((next: HSV) => {
     setHsv(next);
-    onChange(hsvToHex(next));
-  }, [onChange]);
+    emitColor(next, alpha);
+  }, [alpha, emitColor]);
+
+  const updateAlpha = useCallback((a: number) => {
+    setAlpha(a);
+    emitColor(hsv, a);
+  }, [hsv, emitColor]);
 
   const handleSvChange = useCallback((s: number, v: number) => {
     updateHsv({ ...hsv, s, v });
@@ -150,9 +166,16 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
     }
   };
 
-  // Position
-  const top = anchorRect.bottom + POPOVER_GAP;
+  // Position — flip above anchor if not enough space below
+  const estimatedHeight = 400;
+  const fitsBelow = anchorRect.bottom + POPOVER_GAP + estimatedHeight < window.innerHeight;
+  const top = fitsBelow
+    ? anchorRect.bottom + POPOVER_GAP
+    : Math.max(8, anchorRect.top - POPOVER_GAP - estimatedHeight);
   const left = Math.max(8, anchorRect.right - POPOVER_WIDTH);
+
+  const previousHex6 = hexWithoutAlpha(previousHex);
+  const previousAlpha = hexAlpha(previousHex);
 
   return (
     <div
@@ -183,27 +206,73 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
       {/* Hue Slider */}
       <HueSlider hue={hsv.h} onChange={handleHueChange} />
 
+      {/* Alpha Slider */}
+      <AlphaSlider alpha={alpha} color={currentHex} onChange={updateAlpha} />
+
       {/* Color preview */}
       <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-        <div
-          style={{
-            flex: 1,
-            height: 20,
-            borderRadius: 3,
+        <div style={{
+          flex: 1,
+          height: 20,
+          borderRadius: 3,
+          border: '1px solid var(--rule)',
+          background: CHECKER,
+          overflow: 'hidden',
+          position: 'relative',
+        }}>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
             backgroundColor: currentHex,
-            border: '1px solid var(--rule)',
-          }}
-        />
-        <div
+            opacity: alpha / 100,
+          }} />
+        </div>
+        <div style={{
+          flex: 1,
+          height: 20,
+          borderRadius: 3,
+          border: '1px solid var(--rule)',
+          background: CHECKER,
+          overflow: 'hidden',
+          position: 'relative',
+        }}>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: previousHex6,
+            opacity: previousAlpha / 100,
+          }} />
+        </div>
+      </div>
+
+      {/* Alpha value display */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: 4,
+        marginTop: 6,
+      }}>
+        <span style={{ fontSize: 9, color: 'var(--slate)' }}>Alpha</span>
+        <input
+          type="number"
+          value={alpha}
+          onChange={(e) => updateAlpha(clamp(Number(e.target.value), 0, 100))}
+          min={0}
+          max={100}
           style={{
-            flex: 1,
-            height: 20,
+            width: 42,
+            padding: '2px 4px',
+            fontSize: 10,
+            textAlign: 'center',
             borderRadius: 3,
-            backgroundColor: previousHex,
             border: '1px solid var(--rule)',
-            opacity: 0.6,
+            backgroundColor: 'var(--background)',
+            color: 'var(--foreground)',
+            outline: 'none',
           }}
         />
+        <span style={{ fontSize: 9, color: 'var(--slate)' }}>%</span>
       </div>
 
       {/* Tab bar */}

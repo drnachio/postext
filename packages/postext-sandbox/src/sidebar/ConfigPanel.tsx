@@ -7,6 +7,9 @@ import { exportConfigToJson, importConfigFromJson } from '../storage/persistence
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
 import { PageSection } from './sections/PageSection';
+import { LayoutSection } from './sections/LayoutSection';
+import { BodyTextSection } from './sections/BodyTextSection';
+import { HeadingsSection } from './sections/HeadingsSection';
 
 export function ConfigPanel() {
   const { state, dispatch } = useSandbox();
@@ -51,8 +54,8 @@ export function ConfigPanel() {
                     type="button"
                     onClick={open}
                     aria-label={labels.reset}
-                    className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2"
-                    style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)' }}
+                    className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+                    style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
                     onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
                   >
@@ -67,8 +70,8 @@ export function ConfigPanel() {
               type="button"
               onClick={() => exportConfigToJson(config)}
               aria-label={labels.exportFile}
-              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2"
-              style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)' }}
+              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+              style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
               onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
               onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
             >
@@ -80,8 +83,8 @@ export function ConfigPanel() {
               type="button"
               onClick={() => importRef.current?.click()}
               aria-label={labels.importFile}
-              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2"
-              style={{ color: 'var(--slate)', outlineColor: 'var(--accent-blue)' }}
+              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+              style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
               onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
               onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
             >
@@ -100,6 +103,9 @@ export function ConfigPanel() {
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <PageSection />
+        <LayoutSection />
+        <BodyTextSection />
+        <HeadingsSection />
       </div>
     </div>
   );

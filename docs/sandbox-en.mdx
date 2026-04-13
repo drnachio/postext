@@ -5,9 +5,9 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-04-10',
+  lastUpdated: '2026-04-13',
   readingTime: '6 min',
-  order: 4,
+  order: 5,
 };
 
 # Sandbox
@@ -43,17 +43,16 @@ The sidebar is resizable: drag the separator between the sidebar and the viewpor
 
 #### Configuration panel
 
-A form-based editor for `PostextConfig`. Settings are grouped into sections:
+A form-based editor for `PostextConfig`. Settings are grouped into collapsible sections, each with a reset button to restore defaults:
 
 | Section | Settings |
 |---------|----------|
-| **Columns** | Column count, gutter width, column balancing |
-| **Typography** | Orphans, widows, hyphenation, rag optimization |
-| **References** | Footnote placement and markers, figure/table numbering, margin notes |
-| **Resource Placement** | Default strategy, defer placement, aspect ratio preservation |
-| **Renderer** | Web or PDF output target |
+| **Page** | Background color, size preset (or custom width/height), margins (top, bottom, left, right), DPI, cut lines, baseline grid (with color and line width) |
+| **Layout** | Layout type (single, double, column-and-a-half), gutter width, side column percentage |
+| **Body Text** | Font family (with Google Fonts search), font size, line height, text color, text alignment, font weight, bold font weight, hyphenation (toggle + locale) |
+| **Headings** | General defaults (font family, line height, color, alignment, weight, margins) plus per-level overrides (H1–H6) for font size, line height, font family, weight, color, and margins |
 
-Changes take effect immediately in the viewport preview.
+Controls are context-aware: gutter width only appears for multi-column layouts, hyphenation settings only appear when text is justified, and side column percentage only shows for the column-and-a-half layout. Changes take effect immediately in the viewport preview. For a full reference of all configuration options and their defaults, see the [Configuration](/en/docs/configuration) page.
 
 #### Markdown editor
 
@@ -83,6 +82,14 @@ The right side of the interface displays the rendered output. Three tabs are ava
 
 Renders a rasterized preview of the document on an HTML5 `<canvas>` element. This provides a pixel-accurate representation of how the final typeset document will look, including precise text positioning, column layout, and resource placement.
 
+A toolbar at the top of the canvas viewport provides:
+
+- **Zoom controls** — Zoom in and out (1.25x per step, range 0.25x–4x). Manual zooming disables fit mode.
+- **Fit modes** — Fit to page width or fit to page height. Toggles on/off; fitting recalculates automatically on window resize.
+- **View modes** — Single page (one page per row) or double-page spread (book-like layout where the first page appears on the right as a recto, and subsequent pages are paired as spreads).
+
+Pages render lazily via `IntersectionObserver` — only visible pages (plus a 200px margin) are drawn to canvas, keeping GPU memory usage low for long documents.
+
 #### HTML tab
 
 Renders the postext output inside a Shadow DOM container, ensuring complete style isolation from the host page. The editorial CSS (typography, spacing, column rules) is injected inside the shadow root so it cannot be affected by or leak into the surrounding application styles.
@@ -97,6 +104,8 @@ The Sandbox automatically saves your work to the browser's `localStorage`:
 
 - **Auto-save** — Markdown content and configuration are saved after 1 second of inactivity
 - **Auto-load** — On page load, the previous session's content is restored automatically
+- **Viewport state** — Canvas view mode (single/spread) and fit mode (none/width/height) are persisted between sessions
+- **Section state** — Which configuration sections are expanded or collapsed is remembered
 
 ### Export and import
 

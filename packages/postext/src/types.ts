@@ -76,7 +76,14 @@ export interface ReferenceConfig {
   marginNotes?: boolean;
 }
 
-export type DimensionUnit = 'cm' | 'mm' | 'in' | 'pt';
+export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
+
+export interface ColorValue {
+  hex: string;
+  model: ColorModel;
+}
+
+export type DimensionUnit = 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem';
 
 export interface Dimension {
   value: number;
@@ -86,19 +93,20 @@ export interface Dimension {
 export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'custom';
 
 export interface PageMargins {
-  top: Dimension;
-  bottom: Dimension;
-  left: Dimension;
-  right: Dimension;
+  top?: Dimension;
+  bottom?: Dimension;
+  left?: Dimension;
+  right?: Dimension;
 }
 
 export interface BaselineGridConfig {
   enabled: boolean;
-  color?: string;
+  color?: ColorValue;
+  lineWidth?: Dimension;
 }
 
 export interface PageConfig {
-  backgroundColor?: string;
+  backgroundColor?: ColorValue;
   sizePreset?: PageSizePreset;
   width?: Dimension;
   height?: Dimension;
@@ -106,6 +114,119 @@ export interface PageConfig {
   dpi?: number;
   cutLines?: boolean;
   baselineGrid?: BaselineGridConfig;
+}
+
+export interface ResolvedPageConfig {
+  backgroundColor: ColorValue;
+  sizePreset: PageSizePreset;
+  width: Dimension;
+  height: Dimension;
+  margins: Required<PageMargins>;
+  dpi: number;
+  cutLines: boolean;
+  baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
+}
+
+export type LayoutType = 'single' | 'double' | 'oneAndHalf';
+
+export interface LayoutConfig {
+  layoutType?: LayoutType;
+  gutterWidth?: Dimension;
+  sideColumnPercent?: number;
+}
+
+export interface ResolvedLayoutConfig {
+  layoutType: LayoutType;
+  gutterWidth: Dimension;
+  sideColumnPercent: number;
+}
+
+export type TextAlign = 'left' | 'justify';
+
+export type HyphenationLocale =
+  | 'en-us'
+  | 'es'
+  | 'fr'
+  | 'de'
+  | 'it'
+  | 'pt'
+  | 'ca'
+  | 'nl';
+
+export interface HyphenationConfig {
+  enabled?: boolean;
+  locale?: HyphenationLocale;
+}
+
+export interface ResolvedHyphenationConfig {
+  enabled: boolean;
+  locale: HyphenationLocale;
+}
+
+export interface BodyTextConfig {
+  fontFamily?: string;
+  fontSize?: Dimension;
+  lineHeight?: Dimension;
+  color?: ColorValue;
+  textAlign?: TextAlign;
+  fontWeight?: number;
+  boldFontWeight?: number;
+  hyphenation?: HyphenationConfig;
+}
+
+export interface ResolvedBodyTextConfig {
+  fontFamily: string;
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  color: ColorValue;
+  textAlign: TextAlign;
+  fontWeight: number;
+  boldFontWeight: number;
+  hyphenation: ResolvedHyphenationConfig;
+}
+
+export interface HeadingLevelConfig {
+  level: number;
+  fontSize?: Dimension;
+  lineHeight?: Dimension;
+  fontFamily?: string;
+  color?: ColorValue;
+  fontWeight?: number;
+  marginTop?: Dimension;
+  marginBottom?: Dimension;
+}
+
+export interface ResolvedHeadingLevelConfig {
+  level: number;
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  fontFamily: string;
+  color: ColorValue;
+  fontWeight: number;
+  marginTop: Dimension;
+  marginBottom: Dimension;
+}
+
+export interface HeadingsConfig {
+  fontFamily?: string;
+  lineHeight?: Dimension;
+  color?: ColorValue;
+  textAlign?: TextAlign;
+  fontWeight?: number;
+  marginTop?: Dimension;
+  marginBottom?: Dimension;
+  levels?: HeadingLevelConfig[];
+}
+
+export interface ResolvedHeadingsConfig {
+  fontFamily: string;
+  lineHeight: Dimension;
+  color: ColorValue;
+  textAlign: TextAlign;
+  fontWeight: number;
+  marginTop: Dimension;
+  marginBottom: Dimension;
+  levels: ResolvedHeadingLevelConfig[];
 }
 
 export interface PostextSectionOverride {
@@ -117,6 +238,9 @@ export interface PostextSectionOverride {
 
 export interface PostextConfig {
   page?: PageConfig;
+  layout?: LayoutConfig;
+  bodyText?: BodyTextConfig;
+  headings?: HeadingsConfig;
 
   columns?: number;
   gutter?: string;

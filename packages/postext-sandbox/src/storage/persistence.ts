@@ -8,6 +8,8 @@ const SIDEBAR_WIDTH_KEY = 'postext-sandbox-sidebar-width';
 const PANEL_KEY = 'postext-sandbox-panel';
 const SECTIONS_KEY = 'postext-sandbox-sections';
 const COLOR_MODES_KEY = 'postext-sandbox-color-modes';
+const CANVAS_VIEW_MODE_KEY = 'postext-sandbox-canvas-view-mode';
+const CANVAS_FIT_MODE_KEY = 'postext-sandbox-canvas-fit-mode';
 
 function getStorage(): Storage | null {
   if (typeof window === 'undefined') return null;
@@ -117,6 +119,22 @@ export function loadColorMode(fieldId: string): string | null {
   }
 }
 
+export function saveCanvasViewMode(mode: string): void {
+  getStorage()?.setItem(CANVAS_VIEW_MODE_KEY, mode);
+}
+
+export function loadCanvasViewMode(): string | null {
+  return getStorage()?.getItem(CANVAS_VIEW_MODE_KEY) ?? null;
+}
+
+export function saveCanvasFitMode(mode: string): void {
+  getStorage()?.setItem(CANVAS_FIT_MODE_KEY, mode);
+}
+
+export function loadCanvasFitMode(): string | null {
+  return getStorage()?.getItem(CANVAS_FIT_MODE_KEY) ?? null;
+}
+
 export function clearStorage(): void {
   const storage = getStorage();
   storage?.removeItem(CONFIG_KEY);
@@ -126,6 +144,8 @@ export function clearStorage(): void {
   storage?.removeItem(PANEL_KEY);
   storage?.removeItem(SECTIONS_KEY);
   storage?.removeItem(COLOR_MODES_KEY);
+  storage?.removeItem(CANVAS_VIEW_MODE_KEY);
+  storage?.removeItem(CANVAS_FIT_MODE_KEY);
 }
 
 function downloadJson(data: unknown, filename: string): void {
@@ -174,7 +194,8 @@ function isConfigExport(data: unknown): data is ConfigExport {
 }
 
 export function exportConfigToJson(config: PostextConfig): void {
-  downloadJson({ type: 'postext-config', version: 1, config }, 'postext-config.json');
+  const stripped = stripConfigDefaults(config);
+  downloadJson({ type: 'postext-config', version: 1, config: stripped }, 'postext-config.json');
 }
 
 export function importConfigFromJson(file: File): Promise<ConfigExport> {

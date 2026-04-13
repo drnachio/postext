@@ -41,6 +41,92 @@ export interface SandboxLabels {
   baselineGridTooltip: string;
   baselineGridColor: string;
   baselineGridColorTooltip: string;
+  baselineGridLineWidth: string;
+  baselineGridLineWidthTooltip: string;
+
+  // Body text section
+  bodyText: string;
+  bodyFont: string;
+  bodyFontTooltip: string;
+  bodyFontSearch: string;
+  bodyFontNoResults: string;
+  bodyFontSize: string;
+  bodyFontSizeTooltip: string;
+  bodyLineHeight: string;
+  bodyLineHeightTooltip: string;
+  bodyColor: string;
+  bodyColorTooltip: string;
+  bodyTextAlign: string;
+  bodyTextAlignTooltip: string;
+  bodyTextAlignLeft: string;
+  bodyTextAlignJustify: string;
+  bodyHyphenation: string;
+  bodyHyphenationTooltip: string;
+  bodyFontWeight: string;
+  bodyFontWeightTooltip: string;
+  bodyBoldFontWeight: string;
+  bodyBoldFontWeightTooltip: string;
+  bodyHyphenationLocale: string;
+  bodyHyphenationLocaleTooltip: string;
+
+  // Headings section
+  headings: string;
+  headingsFont: string;
+  headingsFontTooltip: string;
+  headingsFontSearch: string;
+  headingsFontNoResults: string;
+  headingsLineHeight: string;
+  headingsLineHeightTooltip: string;
+  headingsColor: string;
+  headingsColorTooltip: string;
+  headingLevel: string;
+  headingFontSize: string;
+  headingFontSizeTooltip: string;
+  headingLineHeight: string;
+  headingLineHeightTooltip: string;
+  headingFont: string;
+  headingFontTooltip: string;
+  headingFontSearch: string;
+  headingFontNoResults: string;
+  headingColor: string;
+  headingColorTooltip: string;
+  headingsFontWeight: string;
+  headingsFontWeightTooltip: string;
+  headingsMarginTop: string;
+  headingsMarginTopTooltip: string;
+  headingsMarginBottom: string;
+  headingsMarginBottomTooltip: string;
+  headingsTextAlign: string;
+  headingsTextAlignTooltip: string;
+  headingsTextAlignLeft: string;
+  headingsTextAlignJustify: string;
+  headingFontWeight: string;
+  headingFontWeightTooltip: string;
+  headingMarginTop: string;
+  headingMarginTopTooltip: string;
+  headingMarginBottom: string;
+  headingMarginBottomTooltip: string;
+
+  // Layout section
+  layout: string;
+  layoutType: string;
+  layoutTypeTooltip: string;
+  layoutSingle: string;
+  layoutDouble: string;
+  layoutOneAndHalf: string;
+  gutterWidth: string;
+  gutterWidthTooltip: string;
+  sideColumnPercent: string;
+  sideColumnPercentTooltip: string;
+
+  // Canvas viewport toolbar
+  zoomIn: string;
+  zoomOut: string;
+  fitWidth: string;
+  fitHeight: string;
+  singlePage: string;
+  doublePageSpread: string;
+  canvasToolbar: string;
 
   // Toolbar actions
   bold: string;
@@ -71,6 +157,7 @@ export interface PostextSandboxProps {
   initialConfig?: PostextConfig;
   className?: string;
   labels?: Partial<SandboxLabels>;
+  locale?: string;
   onConfigChange?: (config: PostextConfig) => void;
   onMarkdownChange?: (markdown: string) => void;
   themeToggle?: ReactNode;
@@ -122,6 +209,84 @@ export const DEFAULT_LABELS: SandboxLabels = {
   baselineGridTooltip: 'Show horizontal lines to align text baselines',
   baselineGridColor: 'Grid Color',
   baselineGridColorTooltip: 'Color of the baseline grid lines',
+  baselineGridLineWidth: 'Line Width',
+  baselineGridLineWidthTooltip: 'Thickness of the baseline grid lines',
+  bodyText: 'Body Text',
+  bodyFont: 'Font',
+  bodyFontTooltip: 'Font family for the body text',
+  bodyFontSearch: 'Search fonts...',
+  bodyFontNoResults: 'No fonts found',
+  bodyFontSize: 'Text Size',
+  bodyFontSizeTooltip: 'Font size for the body text',
+  bodyLineHeight: 'Line Height',
+  bodyLineHeightTooltip: 'Vertical spacing between lines of text',
+  bodyColor: 'Text Color',
+  bodyColorTooltip: 'Color of the body text',
+  bodyTextAlign: 'Text Alignment',
+  bodyTextAlignTooltip: 'Horizontal alignment of body text paragraphs',
+  bodyTextAlignLeft: 'Ragged Right',
+  bodyTextAlignJustify: 'Justified',
+  bodyHyphenation: 'Hyphenation',
+  bodyHyphenationTooltip: 'Enable automatic hyphenation for justified text',
+  bodyFontWeight: 'Font Weight',
+  bodyFontWeightTooltip: 'Weight for normal body text (100-900)',
+  bodyBoldFontWeight: 'Bold Weight',
+  bodyBoldFontWeightTooltip: 'Weight for bold text in body paragraphs (100-900)',
+  bodyHyphenationLocale: 'Language',
+  bodyHyphenationLocaleTooltip: 'Language used for hyphenation rules',
+  headings: 'Headings',
+  headingsFont: 'Font',
+  headingsFontTooltip: 'Default font family for all headings',
+  headingsFontSearch: 'Search fonts...',
+  headingsFontNoResults: 'No fonts found',
+  headingsLineHeight: 'Line Height',
+  headingsLineHeightTooltip: 'Default line height for all headings',
+  headingsColor: 'Color',
+  headingsColorTooltip: 'Default color for all headings',
+  headingLevel: 'H',
+  headingFontSize: 'Size',
+  headingFontSizeTooltip: 'Font size for this heading level',
+  headingLineHeight: 'Line Height',
+  headingLineHeightTooltip: 'Override line height for this heading level',
+  headingFont: 'Font',
+  headingFontTooltip: 'Override font for this heading level',
+  headingFontSearch: 'Search fonts...',
+  headingFontNoResults: 'No fonts found',
+  headingColor: 'Color',
+  headingColorTooltip: 'Override color for this heading level',
+  headingsFontWeight: 'Font Weight',
+  headingsFontWeightTooltip: 'Default font weight for all headings (100-900)',
+  headingsMarginTop: 'Margin Top',
+  headingsMarginTopTooltip: 'Default space above headings (skipped at top of column)',
+  headingsMarginBottom: 'Margin Bottom',
+  headingsMarginBottomTooltip: 'Default minimum space below headings',
+  headingsTextAlign: 'Text Alignment',
+  headingsTextAlignTooltip: 'Horizontal alignment of headings',
+  headingsTextAlignLeft: 'Ragged Right',
+  headingsTextAlignJustify: 'Justified',
+  headingFontWeight: 'Weight',
+  headingFontWeightTooltip: 'Override font weight for this heading level',
+  headingMarginTop: 'Margin Top',
+  headingMarginTopTooltip: 'Space above this heading level (skipped at top of column)',
+  headingMarginBottom: 'Margin Bottom',
+  headingMarginBottomTooltip: 'Minimum space below this heading level',
+  layout: 'Layout',
+  layoutType: 'Layout Type',
+  layoutTypeTooltip: 'Column layout mode for the content area',
+  layoutSingle: 'Single Column',
+  layoutDouble: 'Double Column',
+  layoutOneAndHalf: 'Column and a Half',
+  gutterWidth: 'Gutter Width',
+  gutterWidthTooltip: 'Space between columns',
+  sideColumnPercent: 'Side Column',
+  sideColumnPercentTooltip: 'Width of the side column as a percentage of the content area',
+  zoomIn: 'Zoom In',
+  zoomOut: 'Zoom Out',
+  fitWidth: 'Fit to Page Width',
+  fitHeight: 'Fit to Page Height',
+  singlePage: 'Single Page',
+  doublePageSpread: 'Double-Page Spread',
+  canvasToolbar: 'Canvas toolbar',
   bold: 'Bold',
   italic: 'Italic',
   heading: 'Heading',

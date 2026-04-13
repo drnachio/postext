@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "turbo": "latest"
+  },
+  "dependencies": {
+    "@chenglou/pretext": "^0.0.5"
   }
 }
