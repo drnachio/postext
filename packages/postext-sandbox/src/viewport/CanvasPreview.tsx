@@ -134,15 +134,18 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         const rows = groupPagesIntoRows(doc.pages.length, viewMode);
         const allSlots: HTMLDivElement[] = [];
 
-        for (const row of rows) {
+        for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+          const row = rows[rowIdx]!;
           const rowDiv = document.createElement('div');
           rowDiv.style.display = 'flex';
           rowDiv.style.justifyContent = 'center';
           rowDiv.style.alignItems = 'flex-start';
-          rowDiv.style.padding = `${padding}px`;
+          const paddingTop = rowIdx === 0 ? padding : gap / 2;
+          const paddingBottom = rowIdx === rows.length - 1 ? padding : gap / 2;
+          rowDiv.style.padding = `${paddingTop}px ${padding}px ${paddingBottom}px`;
           rowDiv.style.gap = `${gap}px`;
           rowDiv.style.boxSizing = 'border-box';
-          rowDiv.style.minHeight = `${displayHeight + padding * 2}px`;
+          rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
 
           if (isSpread && row.length === 1) {
             const pageIndex = row[0]!;
