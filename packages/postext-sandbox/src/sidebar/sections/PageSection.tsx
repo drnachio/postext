@@ -1,7 +1,7 @@
 'use client';
 
 import { useSandbox } from '../../context/SandboxContext';
-import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
+import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, dimensionsEqual, colorsEqual } from 'postext';
 import type { PageConfig, PageSizePreset, Dimension } from 'postext';
 import {
   CollapsibleSection,
@@ -68,6 +68,20 @@ export function PageSection() {
     }
   };
 
+  const resetCutLinesField = (field: 'enabled' | 'bleed' | 'markLength' | 'markOffset' | 'markWidth' | 'color') => {
+    if (!raw?.cutLines || typeof raw.cutLines === 'boolean') return;
+    const next = { ...raw.cutLines };
+    delete next[field];
+    const hasKeys = Object.keys(next).length > 0;
+    if (hasKeys) {
+      updatePage({ cutLines: next });
+    } else {
+      const r = { ...raw };
+      delete r.cutLines;
+      dispatch({ type: 'UPDATE_CONFIG', payload: { page: Object.keys(r).length > 0 ? r : undefined } });
+    }
+  };
+
   const resetBaselineGridField = (field: 'enabled' | 'color' | 'lineWidth') => {
     if (!raw?.baselineGrid) return;
     const next = { ...raw.baselineGrid };
@@ -113,7 +127,12 @@ export function PageSection() {
   const isMarginLeftDefault = dimensionsEqual(page.margins.left, D.margins.left);
   const isMarginRightDefault = dimensionsEqual(page.margins.right, D.margins.right);
   const isDpiDefault = page.dpi === D.dpi;
-  const isCutLinesDefault = page.cutLines === D.cutLines;
+  const isCutLinesEnabledDefault = page.cutLines.enabled === D.cutLines.enabled;
+  const isCutLinesBleedDefault = dimensionsEqual(page.cutLines.bleed, DEFAULT_CUT_LINES.bleed);
+  const isCutLinesMarkLengthDefault = dimensionsEqual(page.cutLines.markLength, DEFAULT_CUT_LINES.markLength);
+  const isCutLinesMarkOffsetDefault = dimensionsEqual(page.cutLines.markOffset, DEFAULT_CUT_LINES.markOffset);
+  const isCutLinesMarkWidthDefault = dimensionsEqual(page.cutLines.markWidth, DEFAULT_CUT_LINES.markWidth);
+  const isCutLinesColorDefault = colorsEqual(page.cutLines.color, DEFAULT_CUT_LINES.color);
   const isGridEnabledDefault = page.baselineGrid.enabled === D.baselineGrid.enabled;
   const isGridColorDefault = colorsEqual(page.baselineGrid.color, D.baselineGrid.color);
   const isGridLineWidthDefault = dimensionsEqual(page.baselineGrid.lineWidth, D.baselineGrid.lineWidth);
@@ -232,12 +251,78 @@ export function PageSection() {
 
       <ToggleSwitch
         label={labels.cutLines}
-        checked={page.cutLines}
-        onChange={(v) => updatePage({ cutLines: v })}
+        checked={page.cutLines.enabled}
+        onChange={(v) =>
+          updatePage({ cutLines: { ...page.cutLines, enabled: v } })
+        }
         tooltip={labels.cutLinesTooltip}
-        isDefault={isCutLinesDefault}
-        onReset={() => resetField('cutLines')}
+        isDefault={isCutLinesEnabledDefault}
+        onReset={() => resetCutLinesField('enabled')}
       />
+
+      {page.cutLines.enabled && (
+        <NestedGroup>
+          <DimensionInput
+            label={labels.cutLinesBleed}
+            value={page.cutLines.bleed}
+            onChange={(dim) =>
+              updatePage({ cutLines: { ...page.cutLines, bleed: dim } })
+            }
+            min={0}
+            step={0.5}
+            tooltip={labels.cutLinesBleedTooltip}
+            isDefault={isCutLinesBleedDefault}
+            onReset={() => resetCutLinesField('bleed')}
+          />
+          <DimensionInput
+            label={labels.cutLinesMarkLength}
+            value={page.cutLines.markLength}
+            onChange={(dim) =>
+              updatePage({ cutLines: { ...page.cutLines, markLength: dim } })
+            }
+            min={0}
+            step={0.5}
+            tooltip={labels.cutLinesMarkLengthTooltip}
+            isDefault={isCutLinesMarkLengthDefault}
+            onReset={() => resetCutLinesField('markLength')}
+          />
+          <DimensionInput
+            label={labels.cutLinesMarkOffset}
+            value={page.cutLines.markOffset}
+            onChange={(dim) =>
+              updatePage({ cutLines: { ...page.cutLines, markOffset: dim } })
+            }
+            min={0}
+            step={0.5}
+            tooltip={labels.cutLinesMarkOffsetTooltip}
+            isDefault={isCutLinesMarkOffsetDefault}
+            onReset={() => resetCutLinesField('markOffset')}
+          />
+          <DimensionInput
+            label={labels.cutLinesMarkWidth}
+            value={page.cutLines.markWidth}
+            onChange={(dim) =>
+              updatePage({ cutLines: { ...page.cutLines, markWidth: dim } })
+            }
+            min={0.1}
+            step={0.05}
+            tooltip={labels.cutLinesMarkWidthTooltip}
+            isDefault={isCutLinesMarkWidthDefault}
+            onReset={() => resetCutLinesField('markWidth')}
+          />
+          <ColorPicker
+            label={labels.cutLinesColor}
+            value={page.cutLines.color}
+            onChange={(color) =>
+              updatePage({ cutLines: { ...page.cutLines, color } })
+            }
+            tooltip={labels.cutLinesColorTooltip}
+            isDefault={isCutLinesColorDefault}
+            onReset={() => resetCutLinesField('color')}
+            fieldId="page-cutLinesColor"
+          />
+        </NestedGroup>
+      )}
 
       <ToggleSwitch
         label={labels.baselineGrid}

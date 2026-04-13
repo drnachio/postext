@@ -37,6 +37,16 @@ export interface SandboxLabels {
   dpiTooltip: string;
   cutLines: string;
   cutLinesTooltip: string;
+  cutLinesBleed: string;
+  cutLinesBleedTooltip: string;
+  cutLinesMarkLength: string;
+  cutLinesMarkLengthTooltip: string;
+  cutLinesMarkOffset: string;
+  cutLinesMarkOffsetTooltip: string;
+  cutLinesMarkWidth: string;
+  cutLinesMarkWidthTooltip: string;
+  cutLinesColor: string;
+  cutLinesColorTooltip: string;
   baselineGrid: string;
   baselineGridTooltip: string;
   baselineGridColor: string;
@@ -68,6 +78,10 @@ export interface SandboxLabels {
   bodyBoldFontWeightTooltip: string;
   bodyHyphenationLocale: string;
   bodyHyphenationLocaleTooltip: string;
+  bodyFirstLineIndent: string;
+  bodyFirstLineIndentTooltip: string;
+  bodyHangingIndent: string;
+  bodyHangingIndentTooltip: string;
 
   // Headings section
   headings: string;
@@ -211,6 +225,16 @@ export const DEFAULT_LABELS: SandboxLabels = {
   dpiTooltip: 'Dots per inch — controls the resolution of the page',
   cutLines: 'Cut Lines',
   cutLinesTooltip: 'Show trim marks at the page corners for print cutting',
+  cutLinesBleed: 'Bleed',
+  cutLinesBleedTooltip: 'Extra area beyond the trim edge — backgrounds extend into this zone to prevent white edges after cutting',
+  cutLinesMarkLength: 'Mark Length',
+  cutLinesMarkLengthTooltip: 'Length of each crop mark line',
+  cutLinesMarkOffset: 'Mark Offset',
+  cutLinesMarkOffsetTooltip: 'Gap between the trim edge and the start of the crop mark',
+  cutLinesMarkWidth: 'Mark Width',
+  cutLinesMarkWidthTooltip: 'Stroke thickness of the crop mark lines',
+  cutLinesColor: 'Mark Color',
+  cutLinesColorTooltip: 'Color of the crop mark lines',
   baselineGrid: 'Baseline Grid',
   baselineGridTooltip: 'Show horizontal lines to align text baselines',
   baselineGridColor: 'Grid Color',
@@ -240,6 +264,10 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyBoldFontWeightTooltip: 'Weight for bold text in body paragraphs (100-900)',
   bodyHyphenationLocale: 'Language',
   bodyHyphenationLocaleTooltip: 'Language used for hyphenation rules',
+  bodyFirstLineIndent: 'First Line Indent',
+  bodyFirstLineIndentTooltip: 'Indent applied to the first line of each paragraph',
+  bodyHangingIndent: 'Hanging Indent',
+  bodyHangingIndentTooltip: 'When enabled, all lines except the first are indented (French indent)',
   headings: 'Headings',
   headingsFont: 'Font',
   headingsFontTooltip: 'Default font family for all headings',
