@@ -14,7 +14,7 @@ export function clamp(v: number, min: number, max: number): number {
 
 /** Extract alpha (0–100) from 8-digit hex or 'transparent'. 6-digit hex → 100 */
 export function hexAlpha(hex: string): number {
-  if (hex === 'transparent') return 0;
+  if (!hex || hex === 'transparent') return 0;
   const clean = hex.replace('#', '');
   if (clean.length === 8) {
     return Math.round((parseInt(clean.slice(6, 8), 16) / 255) * 100);
@@ -24,7 +24,7 @@ export function hexAlpha(hex: string): number {
 
 /** Strip alpha from hex, returning 6-digit hex. 'transparent' → '#000000' */
 export function hexWithoutAlpha(hex: string): string {
-  if (hex === 'transparent') return '#000000';
+  if (!hex || hex === 'transparent') return '#000000';
   const clean = hex.replace('#', '');
   return `#${clean.slice(0, 6)}`;
 }
@@ -165,6 +165,7 @@ export function cmykToRgb(cmyk: CMYK): RGB {
 // --- Display formatting ---
 
 export function formatColor(hex: string, mode: ColorMode): string {
+  if (!hex) return 'transparent';
   const alpha = hexAlpha(hex);
   const hex6 = hexWithoutAlpha(hex);
   const alphaStr = alpha < 100 ? ` ${alpha}%` : '';
