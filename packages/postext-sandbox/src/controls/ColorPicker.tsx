@@ -19,13 +19,16 @@ interface ColorPickerProps {
 
 const CHECKER = `repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 0 0 / 6px 6px`;
 
-export function ColorPicker({ label, value, onChange, tooltip, isDefault, onReset, fieldId: _fieldId }: ColorPickerProps) {
+const DEFAULT_COLOR: ColorValue = { hex: 'transparent', model: 'hex' };
+
+export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefault, onReset, fieldId: _fieldId }: ColorPickerProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const swatchRef = useRef<HTMLButtonElement>(null);
   const muted = isDefault ?? false;
 
-  const mode = value.model as ColorMode;
+  const value: ColorValue = rawValue?.hex ? rawValue : DEFAULT_COLOR;
+  const mode = (value.model ?? 'hex') as ColorMode;
 
   const openPopover = () => {
     if (swatchRef.current) {

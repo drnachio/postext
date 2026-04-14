@@ -14,7 +14,7 @@ const ZOOM_STEP = 1.25;
 
 export function CanvasViewport() {
   const [zoom, setZoom] = useState(1);
-  const [viewMode, setViewMode] = useState<ViewMode>('spread');
+  const [viewMode, setViewMode] = useState<ViewMode>('single');
   const [fitMode, setFitMode] = useState<FitMode>('width');
   const hydratedRef = useRef(false);
 

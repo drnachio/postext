@@ -34,7 +34,7 @@ export function ResizableHandle({ onPointerDown }: ResizableHandleProps) {
         height: '100%',
         backgroundColor: active
           ? 'var(--gilt, #E0A816)'
-          : 'var(--rule, #27272A)',
+          : 'var(--rule-visible, #52525B)',
         transition: 'background-color 150ms',
       }}
     >
