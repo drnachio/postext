@@ -21,6 +21,7 @@ import {
   type VDTColumn,
 } from './vdt';
 import { parseMarkdown } from './parse';
+import { computeHeadingNumbers, type HeadingTemplates } from './numbering';
 import { extractFrontmatter } from './frontmatter';
 import { buildFontString, measureBlock, measureRichBlock, initHyphenator } from './measure';
 
@@ -318,6 +319,14 @@ export function buildDocument(
   doc.metadata = { ...(content.metadata ?? {}), ...frontmatterMeta };
   const contentBlocks = parseMarkdown(markdownBody);
 
+  const headingTemplates: HeadingTemplates = {};
+  for (const lvl of resolved.headings.levels) {
+    if (lvl.numberingTemplate && lvl.numberingTemplate.length > 0) {
+      headingTemplates[lvl.level as 1 | 2 | 3 | 4 | 5 | 6] = lvl.numberingTemplate;
+    }
+  }
+  const headingPrefixes = computeHeadingNumbers(contentBlocks, headingTemplates);
+
   // Resolve styles
   const bodyStyle = resolveBodyStyle(resolved);
   const blockquoteStyle = resolveBlockquoteStyle(resolved);
@@ -329,19 +338,31 @@ export function buildDocument(
   let pendingSpacing = 0;
 
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
-    const contentBlock = contentBlocks[blockIdx]!;
+    const rawBlock = contentBlocks[blockIdx]!;
     const id = `block-${blockIdCounter++}`;
 
     let style: BlockStyle;
     let vdtType: VDTBlock['type'];
     let headingLevel: number | undefined;
+    let numberPrefix: string | undefined;
+    let contentBlock = rawBlock;
 
-    switch (contentBlock.type) {
-      case 'heading':
-        style = resolveHeadingStyle(contentBlock.level ?? 1, resolved);
+    switch (rawBlock.type) {
+      case 'heading': {
+        style = resolveHeadingStyle(rawBlock.level ?? 1, resolved);
         vdtType = 'heading';
-        headingLevel = contentBlock.level;
+        headingLevel = rawBlock.level;
+        numberPrefix = headingPrefixes[blockIdx];
+        if (numberPrefix) {
+          const sep = `${numberPrefix} `;
+          const firstSpan = rawBlock.spans[0];
+          const newSpans = firstSpan
+            ? [{ text: sep + firstSpan.text, bold: firstSpan.bold }, ...rawBlock.spans.slice(1)]
+            : [{ text: sep, bold: false }];
+          contentBlock = { ...rawBlock, text: sep + rawBlock.text, spans: newSpans };
+        }
         break;
+      }
       case 'blockquote':
         style = blockquoteStyle;
         vdtType = 'blockquote';
@@ -420,7 +441,7 @@ export function buildDocument(
         const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
         const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
         if (style.boldFontString) blk.boldFontString = style.boldFontString;
-        if (partIndex === 0) blk.headingLevel = headingLevel;
+        if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
         blk.dirty = false;
         blk.snappedToGrid = shouldSnapToGrid && partIndex === 0;
@@ -457,7 +478,7 @@ export function buildDocument(
 
         const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
         if (style.boldFontString) blk.boldFontString = style.boldFontString;
-        if (partIndex === 0) blk.headingLevel = headingLevel;
+        if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
         blk.dirty = false;
         blk.snappedToGrid = false;

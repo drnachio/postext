@@ -224,6 +224,7 @@ export interface HeadingLevelConfig {
   fontWeight?: number;
   marginTop?: Dimension;
   marginBottom?: Dimension;
+  numberingTemplate?: string;
 }
 
 export interface ResolvedHeadingLevelConfig {
@@ -235,6 +236,7 @@ export interface ResolvedHeadingLevelConfig {
   fontWeight: number;
   marginTop: Dimension;
   marginBottom: Dimension;
+  numberingTemplate: string;
 }
 
 export interface HeadingsConfig {

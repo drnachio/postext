@@ -72,6 +72,7 @@ export interface VDTBlock {
   dirty: boolean;
   snappedToGrid: boolean;
   headingLevel?: number;
+  numberPrefix?: string;
   fontString: string;
   boldFontString?: string;
   color: string;

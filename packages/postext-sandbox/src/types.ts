@@ -120,6 +120,9 @@ export interface SandboxLabels {
   headingMarginTopTooltip: string;
   headingMarginBottom: string;
   headingMarginBottomTooltip: string;
+  headingNumberingTemplate: string;
+  headingNumberingTemplateTooltip: string;
+  headingNumberingTemplatePlaceholder: string;
 
   // Layout section
   layout: string;
@@ -304,6 +307,9 @@ export const DEFAULT_LABELS: SandboxLabels = {
   headingMarginTopTooltip: 'Space above this heading level (skipped at top of column)',
   headingMarginBottom: 'Margin Bottom',
   headingMarginBottomTooltip: 'Minimum space below this heading level',
+  headingNumberingTemplate: 'Numbering',
+  headingNumberingTemplateTooltip: 'Template for this level\'s number prefix. Use {N} for the counter at level N, {N:style} to pick a numeral style (1, 01, A, a, I, i). Examples: "{1}.", "{1}.{2}", "{2:A}.{3}". Empty = no numbering.',
+  headingNumberingTemplatePlaceholder: 'e.g. {1}.{2}',
   layout: 'Layout',
   layoutType: 'Layout Type',
   layoutTypeTooltip: 'Column layout mode for the content area',

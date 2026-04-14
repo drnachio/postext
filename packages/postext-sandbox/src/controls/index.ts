@@ -4,6 +4,7 @@ export { ColorPicker } from './ColorPicker';
 export { DimensionInput } from './DimensionInput';
 export { SelectInput } from './SelectInput';
 export { NumberInput } from './NumberInput';
+export { TextInput } from './TextInput';
 export { InfoTip } from './InfoTip';
 export { ResetButton } from './ResetButton';
 export { NestedGroup } from './NestedGroup';

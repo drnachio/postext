@@ -10,6 +10,7 @@ import {
   FontPicker,
   NumberInput,
   SelectInput,
+  TextInput,
 } from '../../controls';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
@@ -33,7 +34,7 @@ function HeadingLevelSection({
   labels,
 }: {
   level: number;
-  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension };
+  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension; numberingTemplate: string };
   raw: HeadingLevelConfig | undefined;
   generalFont: string;
   generalLineHeight: Dimension;
@@ -54,6 +55,7 @@ function HeadingLevelSection({
   const isFontWeightDefault = resolved.fontWeight === generalFontWeight;
   const isMarginTopDefault = dimensionsEqual(resolved.marginTop, generalMarginTop);
   const isMarginBottomDefault = dimensionsEqual(resolved.marginBottom, generalMarginBottom);
+  const isNumberingDefault = (resolved.numberingTemplate ?? '') === '';
   const hasOverrides = raw !== undefined && Object.keys(raw).filter((k) => k !== 'level').length > 0;
 
   return (
@@ -139,6 +141,15 @@ function HeadingLevelSection({
         isDefault={isMarginBottomDefault}
         onReset={() => onReset(level, 'marginBottom')}
         units={MARGIN_UNITS}
+      />
+      <TextInput
+        label={labels.headingNumberingTemplate}
+        value={resolved.numberingTemplate ?? ''}
+        onChange={(v) => onUpdate(level, { numberingTemplate: v })}
+        placeholder={labels.headingNumberingTemplatePlaceholder}
+        tooltip={labels.headingNumberingTemplateTooltip}
+        isDefault={isNumberingDefault}
+        onReset={() => onReset(level, 'numberingTemplate')}
       />
     </CollapsibleSection>
   );
