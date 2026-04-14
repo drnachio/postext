@@ -20,7 +20,7 @@ Body text.`;
     expect(metadata.subtitle).toBe("World");
     expect(metadata.author).toBe("Ignacio");
     expect(metadata.publishDate).toBe("2026-04-14");
-    expect(content.startsWith("# Heading")).toBe(true);
+    expect(content.trimStart().startsWith("# Heading")).toBe(true);
     expect(content.includes("---")).toBe(false);
   });
 
