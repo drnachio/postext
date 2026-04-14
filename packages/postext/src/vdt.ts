@@ -1,4 +1,5 @@
 import type {
+  DocumentMetadata,
   PostextResource,
   ResolvedPageConfig,
   ResolvedLayoutConfig,
@@ -111,6 +112,7 @@ export interface VDTDocument {
   trimOffset: number;
   converged: boolean;
   iterationCount: number;
+  metadata: DocumentMetadata;
 }
 
 // ---------------------------------------------------------------------------
@@ -138,6 +140,7 @@ export function createVDTDocument(
     trimOffset: 0,
     converged: false,
     iterationCount: 0,
+    metadata: {},
   };
 }
 

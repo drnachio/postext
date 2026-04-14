@@ -16,8 +16,17 @@ export interface PostextNote {
   marker?: string;
 }
 
+export interface DocumentMetadata {
+  title?: string;
+  subtitle?: string;
+  author?: string;
+  publishDate?: string;
+  [key: string]: unknown;
+}
+
 export interface PostextContent {
   markdown: string;
+  metadata?: DocumentMetadata;
   resources?: PostextResource[];
   notes?: PostextNote[];
 }

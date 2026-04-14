@@ -24,6 +24,7 @@ describe("package exports", () => {
       "hyphenateText",
       "setHyphenationLocale",
       "parseMarkdown",
+      "extractFrontmatter",
       "DEFAULT_PAGE_CONFIG",
       "DEFAULT_CUT_LINES",
       "PAGE_SIZE_PRESETS",

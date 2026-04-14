@@ -1,4 +1,11 @@
-export const DEFAULT_MARKDOWN_EN = `# Postext: A Programmable Typesetter for the Web
+export const DEFAULT_MARKDOWN_EN = `---
+title: "Postext: A Programmable Typesetter for the Web"
+subtitle: "An open-source layout engine for editorial-grade typography"
+author: "Ignacio Ferro"
+publishDate: "2026-04-14"
+---
+
+# Postext: A Programmable Typesetter for the Web
 
 Postext is an **open-source layout engine** designed to bring the sophistication of professional print typography to modern web development. For centuries, the world of editorial design has refined techniques for placing text, images, and annotations on a page with extraordinary precision. These techniques encompass everything from careful column balancing to meticulous orphan and widow prevention, from intelligent hyphenation to elegant footnote placement. Until now, the web has lacked a tool capable of reproducing these standards in a programmable, declarative way.
 
@@ -413,7 +420,14 @@ Postext is an open-source project that welcomes contributions from developers, d
 The project is maintained with a commitment to quality, clarity, and respect for the long tradition of typographic craftsmanship that it seeks to bring to the web.
 `;
 
-export const DEFAULT_MARKDOWN_ES = `# Postext: Un Tipografo Programable para la Web
+export const DEFAULT_MARKDOWN_ES = `---
+title: "Postext: Un Tipografo Programable para la Web"
+subtitle: "Un motor de maquetacion de codigo abierto para tipografia editorial"
+author: "Ignacio Ferro"
+publishDate: "2026-04-14"
+---
+
+# Postext: Un Tipografo Programable para la Web
 
 Postext es un **motor de maquetacion de codigo abierto** disenado para llevar la sofisticacion de la tipografia profesional de imprenta al desarrollo web moderno. Durante siglos, el mundo del diseno editorial ha perfeccionado tecnicas para colocar texto, imagenes y anotaciones en una pagina con extraordinaria precision. Estas tecnicas abarcan desde el cuidadoso equilibrio de columnas hasta la meticulosa prevencion de huerfanas y viudas, desde la separacion silabica inteligente hasta la elegante colocacion de notas al pie. Hasta ahora, la web no ha contado con una herramienta capaz de reproducir estos estandares de manera programable y declarativa.
 

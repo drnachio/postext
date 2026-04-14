@@ -21,6 +21,7 @@ import {
   type VDTColumn,
 } from './vdt';
 import { parseMarkdown } from './parse';
+import { extractFrontmatter } from './frontmatter';
 import { buildFontString, measureBlock, measureRichBlock, initHyphenator } from './measure';
 
 // ---------------------------------------------------------------------------
@@ -312,8 +313,10 @@ export function buildDocument(
   const firstPage = createPageWithColumns(0, resolved, contentArea, pageWidthPx, pageHeightPx);
   doc.pages.push(firstPage);
 
-  // Parse markdown
-  const contentBlocks = parseMarkdown(content.markdown);
+  // Extract frontmatter, then parse the remaining markdown body
+  const { metadata: frontmatterMeta, content: markdownBody } = extractFrontmatter(content.markdown);
+  doc.metadata = { ...(content.metadata ?? {}), ...frontmatterMeta };
+  const contentBlocks = parseMarkdown(markdownBody);
 
   // Resolve styles
   const bodyStyle = resolveBodyStyle(resolved);
