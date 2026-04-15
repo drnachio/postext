@@ -614,7 +614,7 @@ Target output format: `'web'` for HTML/canvas rendering, `'pdf'` for print outpu
 The `buildDocument` function runs the full layout pipeline and returns a Virtual Document Tree (VDT) with precise coordinates for every element:
 
 ```ts
-import { buildDocument, renderToCanvas } from 'postext';
+import { buildDocument } from 'postext';
 
 const content = {
   markdown: '# Chapter One\n\nThe story begins here...',
@@ -626,12 +626,50 @@ const config = {
   bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
 };
 
-// Build the layout
+// Build the layout — produces a VDT with one entry per page in `vdt.pages`
+const vdt = buildDocument(content, config);
+console.log(`Document has ${vdt.pages.length} pages`);
+```
+
+### Rendering a page to a bitmap
+
+Each page can be rasterized independently. Use `renderPage(page, doc)` to obtain an `HTMLCanvasElement` for a given page number — the canvas is a bitmap sized exactly to the page dimensions in pixels (at the configured DPI), so you can display it, export it, or feed it into any image pipeline:
+
+```ts
+import { buildDocument, renderPage } from 'postext';
+
 const vdt = buildDocument(content, config);
 
-// Render to a canvas element
-const canvas = document.createElement('canvas');
-renderToCanvas(vdt, canvas);
+// Render page 3 (zero-indexed) to a bitmap canvas
+const pageNumber = 2;
+const page = vdt.pages[pageNumber];
+if (!page) throw new Error(`Page ${pageNumber} does not exist`);
+
+const canvas = renderPage(page, vdt);
+// canvas.width / canvas.height are the page bitmap size in pixels
+
+// Show it in the DOM
+document.body.appendChild(canvas);
+
+// …or export it as a PNG data URL
+const pngDataUrl = canvas.toDataURL('image/png');
+
+// …or get a Blob for download / upload
+canvas.toBlob((blob) => {
+  if (blob) saveAs(blob, `page-${pageNumber + 1}.png`);
+}, 'image/png');
+
+// …or grab raw RGBA pixels
+const ctx = canvas.getContext('2d')!;
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+```
+
+If you prefer to draw into a canvas you already own (for example one attached to the DOM with a specific layout), use `renderPageToCanvas(page, doc, canvas)` — it resizes and paints into the canvas you pass in, instead of creating a new one.
+
+To render every page, iterate over `vdt.pages`:
+
+```ts
+const bitmaps = vdt.pages.map((page) => renderPage(page, vdt));
 ```
 
 ### Resolving defaults
