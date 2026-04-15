@@ -10,6 +10,7 @@ const SECTIONS_KEY = 'postext-sandbox-sections';
 const COLOR_MODES_KEY = 'postext-sandbox-color-modes';
 const CANVAS_VIEW_MODE_KEY = 'postext-sandbox-canvas-view-mode';
 const CANVAS_FIT_MODE_KEY = 'postext-sandbox-canvas-fit-mode';
+const CANVAS_ZOOM_KEY = 'postext-sandbox-canvas-zoom';
 
 function getStorage(): Storage | null {
   if (typeof window === 'undefined') return null;
@@ -135,6 +136,17 @@ export function loadCanvasFitMode(): string | null {
   return getStorage()?.getItem(CANVAS_FIT_MODE_KEY) ?? null;
 }
 
+export function saveCanvasZoom(zoom: number): void {
+  getStorage()?.setItem(CANVAS_ZOOM_KEY, String(zoom));
+}
+
+export function loadCanvasZoom(): number | null {
+  const raw = getStorage()?.getItem(CANVAS_ZOOM_KEY);
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 export function clearStorage(): void {
   const storage = getStorage();
   storage?.removeItem(CONFIG_KEY);
@@ -146,6 +158,7 @@ export function clearStorage(): void {
   storage?.removeItem(COLOR_MODES_KEY);
   storage?.removeItem(CANVAS_VIEW_MODE_KEY);
   storage?.removeItem(CANVAS_FIT_MODE_KEY);
+  storage?.removeItem(CANVAS_ZOOM_KEY);
 }
 
 function downloadJson(data: unknown, filename: string): void {

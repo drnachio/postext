@@ -14,6 +14,16 @@ export interface ContentBlock {
   text: string;
   spans: InlineSpan[];
   level?: number; // heading level 1-6
+  /** Character offset of the first source character of this block in the original markdown */
+  sourceStart: number;
+  /** Character offset just past the last source character of this block */
+  sourceEnd: number;
+  /**
+   * Per-plain-character map: sourceMap[i] = absolute source offset (in the
+   * original markdown) of the i-th character of `text`. `sourceMap.length`
+   * equals `text.length`.
+   */
+  sourceMap: number[];
 }
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
@@ -109,12 +119,137 @@ function spansToText(spans: InlineSpan[]): string {
 }
 
 /**
+ * Build a per-character map from plain text to absolute source offsets.
+ * Greedy matches each plain char against the raw source (delimited by
+ * [blockSrcStart, blockSrcEnd)), skipping markdown markers and treating
+ * newlines/tabs as spaces for paragraph line joins.
+ */
+function computeSourceMap(
+  markdown: string,
+  blockSrcStart: number,
+  blockSrcEnd: number,
+  plainText: string,
+): number[] {
+  const map = new Array<number>(plainText.length);
+  let r = blockSrcStart;
+  for (let p = 0; p < plainText.length; p++) {
+    const ch = plainText[p]!;
+    const isSpace = ch === ' ';
+    while (r < blockSrcEnd) {
+      const rc = markdown[r]!;
+      if (rc === ch) break;
+      if (isSpace && (rc === '\n' || rc === '\t')) break;
+      r++;
+    }
+    if (r >= blockSrcEnd) {
+      map[p] = blockSrcEnd;
+    } else {
+      map[p] = r;
+      r++;
+    }
+  }
+  return map;
+}
+
+const COLLAPSIBLE_WS_RE = /[ \t\n\r\f]/;
+
+/**
+ * Collapse runs of `[ \t\n\r\f]` to a single space and strip leading/trailing
+ * whitespace across spans. Mirrors pretext's `normalizeWhitespaceNormal` so
+ * that `spans` and the block's plain text stay aligned with what the layout
+ * engine actually renders — otherwise cursor/selection mapping drifts by one
+ * character per collapsed whitespace character.
+ */
+function normalizeWhitespaceInSpans(spans: InlineSpan[]): InlineSpan[] {
+  const out: InlineSpan[] = [];
+  let inSpace = true; // start true to strip leading whitespace
+  for (const span of spans) {
+    let result = '';
+    for (const ch of span.text) {
+      if (COLLAPSIBLE_WS_RE.test(ch)) {
+        if (!inSpace) {
+          result += ' ';
+          inSpace = true;
+        }
+      } else {
+        result += ch;
+        inSpace = false;
+      }
+    }
+    out.push({ ...span, text: result });
+  }
+  // Strip trailing space from the last span that contributed content
+  for (let i = out.length - 1; i >= 0; i--) {
+    const text = out[i]!.text;
+    if (text.length === 0) continue;
+    if (text.endsWith(' ')) {
+      out[i] = { ...out[i]!, text: text.slice(0, -1) };
+    }
+    break;
+  }
+  return out.filter((s) => s.text.length > 0);
+}
+
+/**
+ * Build normalized text, spans, and sourceMap for a block. The plain text is
+ * whitespace-normalized to match pretext's internal normalization so that the
+ * per-character `sourceMap` aligns with rendered line segments.
+ */
+function buildBlockMapping(
+  markdown: string,
+  blockSrcStart: number,
+  blockSrcEnd: number,
+  rawSpans: InlineSpan[],
+): { text: string; spans: InlineSpan[]; sourceMap: number[] } {
+  const rawText = rawSpans.map((s) => s.text).join('');
+  const rawSourceMap = computeSourceMap(markdown, blockSrcStart, blockSrcEnd, rawText);
+
+  const spans = normalizeWhitespaceInSpans(rawSpans);
+  const text = spans.map((s) => s.text).join('');
+
+  // Walk the raw text building the same normalization, and project each kept
+  // normalized character onto the rawSourceMap to obtain the source offset.
+  const sourceMap: number[] = [];
+  let inSpace = true;
+  for (let i = 0; i < rawText.length; i++) {
+    const ch = rawText[i]!;
+    if (COLLAPSIBLE_WS_RE.test(ch)) {
+      if (!inSpace) {
+        sourceMap.push(rawSourceMap[i] ?? blockSrcEnd);
+        inSpace = true;
+      }
+    } else {
+      sourceMap.push(rawSourceMap[i] ?? blockSrcEnd);
+      inSpace = false;
+    }
+  }
+  if (sourceMap.length > text.length) sourceMap.length = text.length;
+
+  return { text, spans, sourceMap };
+}
+
+/**
  * Merge consecutive blockquote lines into a single block, and consecutive
  * non-blank, non-special lines into paragraphs.
  */
 export function parseMarkdown(markdown: string): ContentBlock[] {
   const blocks: ContentBlock[] = [];
   const rawLines = markdown.split('\n');
+
+  // Precompute starting offset of each raw line in the original markdown.
+  // lineOffsets[i] = offset of first char of rawLines[i]. Line terminator '\n'
+  // contributes exactly 1 character between consecutive lines.
+  const lineOffsets: number[] = new Array(rawLines.length);
+  {
+    let cur = 0;
+    for (let k = 0; k < rawLines.length; k++) {
+      lineOffsets[k] = cur;
+      cur += rawLines[k]!.length + 1; // +1 for the '\n' that was split away
+    }
+  }
+
+  const lineEndOffset = (k: number): number =>
+    lineOffsets[k]! + rawLines[k]!.length;
 
   let i = 0;
   while (i < rawLines.length) {
@@ -130,12 +265,20 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
     // Heading
     const headingMatch = trimmed.match(HEADING_RE);
     if (headingMatch) {
-      const text = stripInlineFormatting(headingMatch[2]!);
+      const rawText = stripInlineFormatting(headingMatch[2]!);
+      const srcStart = lineOffsets[i]!;
+      const srcEnd = lineEndOffset(i);
+      const mapping = buildBlockMapping(markdown, srcStart, srcEnd, [
+        { text: rawText, bold: false },
+      ]);
       blocks.push({
         type: 'heading',
-        text,
-        spans: [{ text, bold: false }],
+        text: mapping.text,
+        spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false }],
         level: headingMatch[1]!.length,
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: mapping.sourceMap,
       });
       i++;
       continue;
@@ -144,35 +287,53 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
     // Blockquote — collect consecutive > lines
     if (trimmed.startsWith('>')) {
       const quoteLines: string[] = [];
+      const startIdx = i;
+      let lastIdx = i;
       while (i < rawLines.length) {
         const ql = rawLines[i]!.trim();
         if (!ql.startsWith('>')) break;
         quoteLines.push(ql.replace(/^>\s?/, ''));
+        lastIdx = i;
         i++;
       }
-      const spans = parseInlineFormatting(quoteLines.join(' '));
+      const rawSpans = parseInlineFormatting(quoteLines.join(' '));
+      const srcStart = lineOffsets[startIdx]!;
+      const srcEnd = lineEndOffset(lastIdx);
+      const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       blocks.push({
         type: 'blockquote',
-        text: spansToText(spans),
-        spans,
+        text: mapping.text,
+        spans: mapping.spans,
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: mapping.sourceMap,
       });
       continue;
     }
 
     // Paragraph — collect consecutive non-blank, non-special lines
     const paraLines: string[] = [];
+    const startIdx = i;
+    let lastIdx = i;
     while (i < rawLines.length) {
       const pl = rawLines[i]!.trim();
       if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>')) break;
       paraLines.push(pl);
+      lastIdx = i;
       i++;
     }
     if (paraLines.length > 0) {
-      const spans = parseInlineFormatting(paraLines.join(' '));
+      const rawSpans = parseInlineFormatting(paraLines.join(' '));
+      const srcStart = lineOffsets[startIdx]!;
+      const srcEnd = lineEndOffset(lastIdx);
+      const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       blocks.push({
         type: 'paragraph',
-        text: spansToText(spans),
-        spans,
+        text: mapping.text,
+        spans: mapping.spans,
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: mapping.sourceMap,
       });
     }
   }

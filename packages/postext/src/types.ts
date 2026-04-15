@@ -225,6 +225,7 @@ export interface HeadingLevelConfig {
   marginTop?: Dimension;
   marginBottom?: Dimension;
   numberingTemplate?: string;
+  italic?: boolean;
 }
 
 export interface ResolvedHeadingLevelConfig {
@@ -237,6 +238,7 @@ export interface ResolvedHeadingLevelConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   numberingTemplate: string;
+  italic: boolean;
 }
 
 export interface HeadingsConfig {
@@ -259,6 +261,21 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   levels: ResolvedHeadingLevelConfig[];
+}
+
+export interface SyncIndicatorConfig {
+  enabled: boolean;
+  color?: ColorValue;
+}
+
+export interface DebugConfig {
+  cursorSync?: SyncIndicatorConfig;
+  selectionSync?: SyncIndicatorConfig;
+}
+
+export interface ResolvedDebugConfig {
+  cursorSync: { enabled: boolean; color: ColorValue };
+  selectionSync: { enabled: boolean; color: ColorValue };
 }
 
 export interface PostextSectionOverride {
@@ -285,4 +302,6 @@ export interface PostextConfig {
   sectionOverrides?: PostextSectionOverride[];
 
   renderer?: 'web' | 'pdf';
+
+  debug?: DebugConfig;
 }

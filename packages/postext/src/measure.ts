@@ -134,7 +134,6 @@ export function measureBlock(
   }
 
   const shouldHyphenate = options?.hyphenate ?? false;
-  const textAlign = options?.textAlign ?? 'left';
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
   const processedText = shouldHyphenate ? hyphenateText(text) : text;
@@ -159,38 +158,28 @@ export function measureBlock(
     const nextCursor = line.end;
     const isLastLine = layoutNextLine(prepared, nextCursor, lineMaxWidth) === null;
 
-    if (textAlign === 'justify') {
-      const { segments, hyphenated } = extractSegments(prepared, cursor, nextCursor);
+    const { segments, hyphenated } = extractSegments(prepared, cursor, nextCursor);
 
-      // If hyphenated, add the visible hyphen to the last text segment
-      if (hyphenated) {
-        const lastTextIdx = findLastTextSegmentIndex(segments);
-        if (lastTextIdx >= 0) {
-          const lastSeg = segments[lastTextIdx]!;
-          segments[lastTextIdx] = {
-            kind: 'text',
-            text: lastSeg.text + '-',
-            width: lastSeg.width + getHyphenWidth(prepared),
-          };
-        }
+    if (hyphenated) {
+      const lastTextIdx = findLastTextSegmentIndex(segments);
+      if (lastTextIdx >= 0) {
+        const lastSeg = segments[lastTextIdx]!;
+        segments[lastTextIdx] = {
+          kind: 'text',
+          text: lastSeg.text + '-',
+          width: lastSeg.width + getHyphenWidth(prepared),
+        };
       }
-
-      lines.push({
-        text: hyphenated ? cleanSoftHyphens(line.text) + '-' : cleanSoftHyphens(line.text),
-        bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
-        baseline: y + lineHeightPx * 0.8,
-        hyphenated,
-        segments,
-        isLastLine,
-      });
-    } else {
-      lines.push({
-        text: cleanSoftHyphens(line.text),
-        bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
-        baseline: y + lineHeightPx * 0.8,
-        hyphenated: false,
-      });
     }
+
+    lines.push({
+      text: hyphenated ? cleanSoftHyphens(line.text) + '-' : cleanSoftHyphens(line.text),
+      bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
+      baseline: y + lineHeightPx * 0.8,
+      hyphenated,
+      segments,
+      isLastLine,
+    });
 
     cursor = nextCursor;
     y += lineHeightPx;

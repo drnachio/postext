@@ -82,20 +82,6 @@ export function PageSection() {
     }
   };
 
-  const resetBaselineGridField = (field: 'enabled' | 'color' | 'lineWidth') => {
-    if (!raw?.baselineGrid) return;
-    const next = { ...raw.baselineGrid };
-    delete next[field];
-    const hasKeys = Object.keys(next).length > 0;
-    if (hasKeys) {
-      updatePage({ baselineGrid: next });
-    } else {
-      const r = { ...raw };
-      delete r.baselineGrid;
-      dispatch({ type: 'UPDATE_CONFIG', payload: { page: Object.keys(r).length > 0 ? r : undefined } });
-    }
-  };
-
   const handlePresetChange = (preset: string) => {
     if (preset === 'custom') {
       updatePage({ sizePreset: 'custom' });
@@ -133,15 +119,11 @@ export function PageSection() {
   const isCutLinesMarkOffsetDefault = dimensionsEqual(page.cutLines.markOffset, DEFAULT_CUT_LINES.markOffset);
   const isCutLinesMarkWidthDefault = dimensionsEqual(page.cutLines.markWidth, DEFAULT_CUT_LINES.markWidth);
   const isCutLinesColorDefault = colorsEqual(page.cutLines.color, DEFAULT_CUT_LINES.color);
-  const isGridEnabledDefault = page.baselineGrid.enabled === D.baselineGrid.enabled;
-  const isGridColorDefault = colorsEqual(page.baselineGrid.color, D.baselineGrid.color);
-  const isGridLineWidthDefault = dimensionsEqual(page.baselineGrid.lineWidth, D.baselineGrid.lineWidth);
 
   return (
     <CollapsibleSection
       title={labels.page}
       sectionId="page"
-      defaultOpen
       onReset={resetPage}
       hasOverrides={hasOverrides}
       resetLabel={labels.reset}
@@ -324,44 +306,6 @@ export function PageSection() {
         </NestedGroup>
       )}
 
-      <ToggleSwitch
-        label={labels.baselineGrid}
-        checked={page.baselineGrid.enabled}
-        onChange={(v) =>
-          updatePage({ baselineGrid: { ...page.baselineGrid, enabled: v } })
-        }
-        tooltip={labels.baselineGridTooltip}
-        isDefault={isGridEnabledDefault}
-        onReset={() => resetBaselineGridField('enabled')}
-      />
-
-      {page.baselineGrid.enabled && (
-        <NestedGroup>
-          <ColorPicker
-            label={labels.baselineGridColor}
-            value={page.baselineGrid.color}
-            onChange={(color) =>
-              updatePage({ baselineGrid: { ...page.baselineGrid, color } })
-            }
-            tooltip={labels.baselineGridColorTooltip}
-            isDefault={isGridColorDefault}
-            onReset={() => resetBaselineGridField('color')}
-            fieldId="page-baselineGridColor"
-          />
-          <DimensionInput
-            label={labels.baselineGridLineWidth}
-            value={page.baselineGrid.lineWidth}
-            onChange={(dim) =>
-              updatePage({ baselineGrid: { ...page.baselineGrid, lineWidth: dim } })
-            }
-            min={0.1}
-            step={0.1}
-            tooltip={labels.baselineGridLineWidthTooltip}
-            isDefault={isGridLineWidthDefault}
-            onReset={() => resetBaselineGridField('lineWidth')}
-          />
-        </NestedGroup>
-      )}
     </CollapsibleSection>
   );
 }

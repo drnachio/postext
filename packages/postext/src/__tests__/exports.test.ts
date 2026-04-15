@@ -45,6 +45,9 @@ describe("package exports", () => {
       "colorsEqual",
       "stripPageDefaults",
       "stripConfigDefaults",
+      "DEFAULT_DEBUG_CONFIG",
+      "resolveDebugConfig",
+      "stripDebugDefaults",
     ]);
   });
 });

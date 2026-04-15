@@ -7,20 +7,27 @@ import { markdown } from '@codemirror/lang-markdown';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching } from '@codemirror/language';
 import { getEditorTheme } from './postextTheme';
+import { frontmatterHighlight, frontmatterTheme } from './frontmatterHighlight';
 
 interface UseCodeMirrorOptions {
   initialValue: string;
   externalValue?: string;
   onChange: (value: string) => void;
+  onSelectionChange?: (selection: { from: number; to: number }) => void;
+  onFocusChange?: (focused: boolean) => void;
   isDark?: boolean;
 }
 
-export function useCodeMirror({ initialValue, externalValue, onChange, isDark = true }: UseCodeMirrorOptions) {
+export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  onSelectionChangeRef.current = onSelectionChange;
+  const onFocusChangeRef = useRef(onFocusChange);
+  onFocusChangeRef.current = onFocusChange;
 
   // Initialize editor
   useEffect(() => {
@@ -29,6 +36,13 @@ export function useCodeMirror({ initialValue, externalValue, onChange, isDark = 
     const updateListener = EditorView.updateListener.of((update) => {
       if (update.docChanged) {
         onChangeRef.current(update.state.doc.toString());
+      }
+      if (update.docChanged || update.selectionSet) {
+        const sel = update.state.selection.main;
+        onSelectionChangeRef.current?.({ from: sel.from, to: sel.to });
+      }
+      if (update.focusChanged) {
+        onFocusChangeRef.current?.(update.view.hasFocus);
       }
     });
 
@@ -40,6 +54,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, isDark = 
         history(),
         bracketMatching(),
         markdown(),
+        frontmatterTheme,
+        frontmatterHighlight,
         keymap.of([...defaultKeymap, ...historyKeymap]),
         themeCompartment.current.of(getEditorTheme(isDark)),
         updateListener,

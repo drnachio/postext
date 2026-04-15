@@ -57,10 +57,10 @@ describe('parseTemplate', () => {
 });
 
 function h(level: number): ContentBlock {
-  return { type: 'heading', level, text: 'h', spans: [{ text: 'h', bold: false }] };
+  return { type: 'heading', level, text: 'h', spans: [{ text: 'h', bold: false }], sourceStart: 0, sourceEnd: 0, sourceMap: [0] };
 }
 function p(): ContentBlock {
-  return { type: 'paragraph', text: 'p', spans: [{ text: 'p', bold: false }] };
+  return { type: 'paragraph', text: 'p', spans: [{ text: 'p', bold: false }], sourceStart: 0, sourceEnd: 0, sourceMap: [0] };
 }
 
 describe('computeHeadingNumbers', () => {

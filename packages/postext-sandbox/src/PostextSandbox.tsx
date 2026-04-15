@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PostextSandboxProps } from './types';
 import { SandboxProvider, useSandbox } from './context/SandboxContext';
+import { preloadConfigFonts } from './controls/fontLoader';
 import { ActivityBar } from './sidebar/ActivityBar';
 import { SidebarPanel } from './sidebar/SidebarPanel';
 import { ConfigPanel } from './sidebar/ConfigPanel';
@@ -29,6 +30,16 @@ function SandboxLayout({
 }) {
   const { state, dispatch } = useSandbox();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [fontsReady, setFontsReady] = useState(false);
+
+  useEffect(() => {
+    preloadConfigFonts(state.config);
+    let cancelled = false;
+    document.fonts.ready.then(() => {
+      if (!cancelled) setFontsReady(true);
+    });
+    return () => { cancelled = true; };
+  }, [state.config]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -94,6 +105,27 @@ function SandboxLayout({
         return null;
     }
   };
+
+  if (!fontsReady) {
+    return (
+      <div
+        className="flex h-full w-full items-center justify-center"
+        style={{ backgroundColor: 'var(--background)', color: 'var(--slate)' }}
+      >
+        <div
+          style={{
+            width: 24,
+            height: 24,
+            border: '2px solid var(--rule)',
+            borderTopColor: 'var(--gilt)',
+            borderRadius: '50%',
+            animation: 'postext-spin 0.8s linear infinite',
+          }}
+        />
+        <style>{`@keyframes postext-spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
     <div

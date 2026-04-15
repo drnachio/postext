@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState, useDeferredValue } from 'react';
 import { useSandbox } from '../context/SandboxContext';
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'postext';
-import type { VDTDocument } from 'postext';
+import { buildDocument, renderPageToCanvas, clearMeasurementCache, resolveDebugConfig } from 'postext';
+import type { VDTDocument, ResolvedDebugConfig } from 'postext';
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
@@ -47,9 +47,11 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
   const docRef = useRef<VDTDocument | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
+  const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
   const deferredMarkdown = useDeferredValue(state.markdown);
   const deferredConfig = useDeferredValue(state.config);
   const [resizeKey, setResizeKey] = useState(0);
+  const [docVersion, setDocVersion] = useState(0);
 
   // Resize observer — triggers repaint when container size changes
   useEffect(() => {
@@ -88,6 +90,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         // Tear down previous state
         observerRef.current?.disconnect();
         canvasMapRef.current.clear();
+        overlayMapRef.current.clear();
         while (container.firstChild) container.removeChild(container.firstChild);
 
         if (doc.pages.length === 0) return;
@@ -131,6 +134,9 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         innerDiv.style.margin = '0 auto';
 
         const canvasMap = canvasMapRef.current;
+        const overlayMap = overlayMapRef.current;
+        const pageWidthPx = firstPage.width;
+        const pageHeightPx = firstPage.height;
         const rows = groupPagesIntoRows(doc.pages.length, viewMode);
         const allSlots: HTMLDivElement[] = [];
 
@@ -163,11 +169,15 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
 
             const slot = document.createElement('div');
             slot.style.flexShrink = '0';
+            slot.style.position = 'relative';
             slot.dataset.pageIndex = String(pageIndex);
 
             const canvas = createPageCanvas(displayWidth, displayHeight);
             slot.appendChild(canvas);
             canvasMap.set(pageIndex, canvas);
+            const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
+            slot.appendChild(overlay);
+            overlayMap.set(pageIndex, overlay);
             allSlots.push(slot);
             rowDiv.appendChild(slot);
 
@@ -182,11 +192,15 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
             for (const pageIndex of row) {
               const slot = document.createElement('div');
               slot.style.flexShrink = '0';
+              slot.style.position = 'relative';
               slot.dataset.pageIndex = String(pageIndex);
 
               const canvas = createPageCanvas(displayWidth, displayHeight);
               slot.appendChild(canvas);
               canvasMap.set(pageIndex, canvas);
+              const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
+              slot.appendChild(overlay);
+              overlayMap.set(pageIndex, overlay);
               allSlots.push(slot);
               rowDiv.appendChild(slot);
             }
@@ -224,6 +238,8 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         for (const slot of allSlots) {
           observer.observe(slot);
         }
+
+        setDocVersion((v) => v + 1);
       } catch (err) {
         console.error('[CanvasPreview] Layout error:', err);
       }
@@ -234,6 +250,20 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       observerRef.current?.disconnect();
     };
   }, [deferredMarkdown, deferredConfig, resizeKey, zoom, viewMode, fitMode]);
+
+  // Draw cursor/selection overlays whenever selection or debug config changes
+  useEffect(() => {
+    const doc = docRef.current;
+    if (!doc) return;
+    const debug = resolveDebugConfig(state.config.debug);
+    const selection = state.selection;
+    const focused = state.editorFocused;
+    for (const [pageIndex, overlay] of overlayMapRef.current) {
+      const page = doc.pages[pageIndex];
+      if (!page) continue;
+      drawOverlay(overlay, doc, pageIndex, selection, debug, focused);
+    }
+  }, [state.selection, state.config.debug, state.editorFocused, docVersion]);
 
   return (
     <div
@@ -254,4 +284,201 @@ function createPageCanvas(displayWidth: number, displayHeight: number): HTMLCanv
   canvas.style.borderRadius = '2px';
   canvas.style.backgroundColor = '#ffffff';
   return canvas;
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function createOverlaySvg(
+  displayWidth: number,
+  displayHeight: number,
+  pageWidthPx: number,
+  pageHeightPx: number,
+): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${pageWidthPx} ${pageHeightPx}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.style.position = 'absolute';
+  svg.style.top = '0';
+  svg.style.left = '0';
+  svg.style.width = `${displayWidth}px`;
+  svg.style.height = `${displayHeight}px`;
+  svg.style.pointerEvents = 'none';
+  svg.style.mixBlendMode = 'multiply';
+
+  // Persistent groups: selection is redrawn each update; cursor is animated
+  // via CSS and updated in place so the blink animation stays in sync.
+  const selectionGroup = document.createElementNS(SVG_NS, 'g');
+  selectionGroup.dataset.role = 'selection';
+  svg.appendChild(selectionGroup);
+
+  const cursorGroup = document.createElementNS(SVG_NS, 'g');
+  cursorGroup.dataset.role = 'cursor';
+  cursorGroup.setAttribute('class', 'cursor-blink');
+  const cursorRect = document.createElementNS(SVG_NS, 'rect');
+  cursorRect.style.display = 'none';
+  cursorGroup.appendChild(cursorRect);
+  svg.appendChild(cursorGroup);
+
+  return svg;
+}
+
+/**
+ * Convert an absolute source offset (in the original markdown) to a plain-text
+ * character index within the given block's plain text. Returns null if the
+ * offset is outside the block. Uses the block's per-char sourceMap plus any
+ * numbering prefix length.
+ */
+function sourceToPlainIndex(
+  block: VDTDocument['blocks'][number],
+  srcOffset: number,
+): number | null {
+  if (!block.sourceMap || block.sourceStart === undefined || block.sourceEnd === undefined) return null;
+  const prefixLen = block.plainPrefixLen ?? 0;
+  if (srcOffset < block.sourceStart) return null;
+  if (srcOffset >= block.sourceEnd) return prefixLen + block.sourceMap.length;
+  // Binary search: smallest i with sourceMap[i] >= srcOffset
+  let lo = 0;
+  let hi = block.sourceMap.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (block.sourceMap[mid]! < srcOffset) lo = mid + 1;
+    else hi = mid;
+  }
+  return prefixLen + lo;
+}
+
+/**
+ * Given a line and an in-line plain-char offset, compute the exact x
+ * coordinate (in page-space px) using per-segment widths and, for justified
+ * non-last lines, distributing the slack over space segments.
+ */
+function xForPlainInLine(
+  block: VDTDocument['blocks'][number],
+  line: VDTDocument['blocks'][number]['lines'][number],
+  inLineOffset: number,
+): number {
+  const blockRight = block.bbox.x + block.bbox.width;
+  const lineLen = Math.max(0, (line.plainEnd ?? 0) - (line.plainStart ?? 0));
+  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false;
+  const segs = line.segments;
+
+  if (!segs || segs.length === 0) {
+    const renderedWidth = justifyFill
+      ? Math.max(line.bbox.width, blockRight - line.bbox.x)
+      : line.bbox.width;
+    const ratio = lineLen > 0 ? inLineOffset / lineLen : 0;
+    return line.bbox.x + ratio * renderedWidth;
+  }
+
+  let naturalWidth = 0;
+  let spaceCount = 0;
+  for (const seg of segs) {
+    naturalWidth += seg.width;
+    if (seg.kind === 'space') spaceCount++;
+  }
+  const renderedWidth = justifyFill
+    ? Math.max(naturalWidth, blockRight - line.bbox.x)
+    : naturalWidth;
+  const extraPerSpace = justifyFill && spaceCount > 0
+    ? Math.max(0, (renderedWidth - naturalWidth) / spaceCount)
+    : 0;
+
+  const lastIdx = segs.length - 1;
+  let x = line.bbox.x;
+  let cum = 0;
+  for (let i = 0; i < segs.length; i++) {
+    const seg = segs[i]!;
+    const isLastSeg = i === lastIdx;
+    const segPlainLen = (isLastSeg && line.hyphenated && seg.text.endsWith('-'))
+      ? Math.max(0, seg.text.length - 1)
+      : seg.text.length;
+    const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
+    if (inLineOffset <= cum + segPlainLen) {
+      const within = inLineOffset - cum;
+      const ratio = segPlainLen > 0 ? within / segPlainLen : 0;
+      return x + ratio * segRendered;
+    }
+    x += segRendered;
+    cum += segPlainLen;
+  }
+  return x;
+}
+
+function drawOverlay(
+  svg: SVGSVGElement,
+  doc: VDTDocument,
+  pageIndex: number,
+  selection: { from: number; to: number },
+  debug: ResolvedDebugConfig,
+  focused: boolean,
+): void {
+  const selectionGroup = svg.querySelector<SVGGElement>('g[data-role="selection"]');
+  const cursorGroup = svg.querySelector<SVGGElement>('g[data-role="cursor"]');
+  const cursorRect = cursorGroup?.firstElementChild as SVGRectElement | null;
+  if (!selectionGroup || !cursorGroup || !cursorRect) return;
+
+  while (selectionGroup.firstChild) selectionGroup.removeChild(selectionGroup.firstChild);
+  cursorRect.style.display = 'none';
+
+  const { from, to } = selection;
+  const isCollapsed = from === to;
+  const cursorActive = debug.cursorSync.enabled && isCollapsed;
+  const selectionActive = debug.selectionSync.enabled && !isCollapsed;
+
+  if (!focused) return;
+  if (!cursorActive && !selectionActive) return;
+
+  const blocks = doc.blocks.filter((b) => b.pageIndex === pageIndex);
+  let cursorDrawn = false;
+
+  for (const block of blocks) {
+    if (block.sourceStart === undefined || block.sourceEnd === undefined) continue;
+    if (!isCollapsed && block.sourceEnd <= from) continue;
+    if (block.sourceStart > to) continue;
+
+    const plainFrom = sourceToPlainIndex(block, from);
+    const plainTo = isCollapsed ? plainFrom : sourceToPlainIndex(block, to);
+
+    for (const line of block.lines) {
+      const lineStart = line.plainStart;
+      const lineEnd = line.plainEnd;
+      if (lineStart === undefined || lineEnd === undefined) continue;
+
+      if (cursorActive && !cursorDrawn) {
+        // Only the block that actually contains the caret draws it —
+        // otherwise sourceToPlainIndex's clamping lets every earlier block
+        // mis-claim the cursor at its own end-of-block position.
+        if (from < block.sourceStart || from >= block.sourceEnd) continue;
+        if (plainFrom === null) continue;
+        if (plainFrom < lineStart || plainFrom > lineEnd) continue;
+        const x = xForPlainInLine(block, line, plainFrom - lineStart);
+        cursorRect.setAttribute('x', String(x - 1));
+        cursorRect.setAttribute('y', String(line.bbox.y));
+        cursorRect.setAttribute('width', '2');
+        cursorRect.setAttribute('height', String(line.bbox.height));
+        cursorRect.setAttribute('fill', debug.cursorSync.color.hex);
+        cursorRect.style.display = '';
+        cursorDrawn = true;
+        if (!selectionActive) return;
+        continue;
+      }
+
+      if (selectionActive) {
+        if (plainFrom === null || plainTo === null) continue;
+        const lo = Math.max(plainFrom, lineStart);
+        const hi = Math.min(plainTo, lineEnd);
+        if (hi <= lo) continue;
+        const x1 = xForPlainInLine(block, line, lo - lineStart);
+        const x2 = xForPlainInLine(block, line, hi - lineStart);
+        const w = Math.max(1, x2 - x1);
+        const rect = document.createElementNS(SVG_NS, 'rect');
+        rect.setAttribute('x', String(x1));
+        rect.setAttribute('y', String(line.bbox.y));
+        rect.setAttribute('width', String(w));
+        rect.setAttribute('height', String(line.bbox.height));
+        rect.setAttribute('fill', debug.selectionSync.color.hex);
+        selectionGroup.appendChild(rect);
+      }
+    }
+  }
 }

@@ -10,6 +10,7 @@ import { PageSection } from './sections/PageSection';
 import { LayoutSection } from './sections/LayoutSection';
 import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
+import { DebugSection } from './sections/DebugSection';
 
 export function ConfigPanel() {
   const { state, dispatch } = useSandbox();
@@ -106,6 +107,7 @@ export function ConfigPanel() {
         <LayoutSection />
         <BodyTextSection />
         <HeadingsSection />
+        <DebugSection />
       </div>
     </div>
   );

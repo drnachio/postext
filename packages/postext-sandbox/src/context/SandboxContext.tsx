@@ -15,6 +15,11 @@ import { DEFAULT_LABELS } from '../types';
 import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
 import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
 
+export interface EditorSelection {
+  from: number;
+  to: number;
+}
+
 export interface SandboxState {
   markdown: string;
   defaultMarkdown: string;
@@ -25,6 +30,8 @@ export interface SandboxState {
   activeViewport: ViewportTab;
   labels: SandboxLabels;
   locale: string;
+  selection: EditorSelection;
+  editorFocused: boolean;
 }
 
 export type SandboxAction =
@@ -35,7 +42,9 @@ export type SandboxAction =
   | { type: 'SET_PANEL'; payload: PanelId | null }
   | { type: 'SET_SIDEBAR_PERCENT'; payload: number }
   | { type: 'SET_SIDEBAR_DRAGGING'; payload: boolean }
-  | { type: 'SET_VIEWPORT'; payload: ViewportTab };
+  | { type: 'SET_VIEWPORT'; payload: ViewportTab }
+  | { type: 'SET_SELECTION'; payload: EditorSelection }
+  | { type: 'SET_EDITOR_FOCUSED'; payload: boolean };
 
 function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
@@ -58,6 +67,14 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
       return { ...state, sidebarDragging: action.payload };
     case 'SET_VIEWPORT':
       return { ...state, activeViewport: action.payload };
+    case 'SET_SELECTION':
+      if (state.selection.from === action.payload.from && state.selection.to === action.payload.to) {
+        return state;
+      }
+      return { ...state, selection: action.payload };
+    case 'SET_EDITOR_FOCUSED':
+      if (state.editorFocused === action.payload) return state;
+      return { ...state, editorFocused: action.payload };
     default:
       return state;
   }
@@ -113,6 +130,8 @@ export function SandboxProvider({
     activeViewport: 'canvas' as ViewportTab,
     labels: mergedLabels,
     locale: locale ?? 'en',
+    selection: { from: 0, to: 0 },
+    editorFocused: false,
   });
 
   // Hydrate from localStorage after mount

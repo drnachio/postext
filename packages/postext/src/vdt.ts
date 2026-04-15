@@ -59,6 +59,14 @@ export interface VDTLine {
   segments?: VDTLineSegment[];
   /** Whether this is the last line of the paragraph (ragged even when justified) */
   isLastLine?: boolean;
+  /** Approximate character offset in the original markdown source where this line begins */
+  sourceStart?: number;
+  /** Approximate character offset just past the last source character contributing to this line */
+  sourceEnd?: number;
+  /** Plain-text start offset within the block's plain text (inclusive) */
+  plainStart?: number;
+  /** Plain-text end offset within the block's plain text (exclusive) */
+  plainEnd?: number;
 }
 
 export interface VDTBlock {
@@ -77,6 +85,14 @@ export interface VDTBlock {
   boldFontString?: string;
   color: string;
   textAlign: TextAlign;
+  /** Character offset in the original markdown where the source content for this block starts */
+  sourceStart?: number;
+  /** Character offset just past the last source character for this block */
+  sourceEnd?: number;
+  /** Absolute source offsets (in original markdown) per plain-text char of rawBlock.text */
+  sourceMap?: number[];
+  /** Length of any prepended numbering prefix in the block's plain text (0 if none) */
+  plainPrefixLen?: number;
 }
 
 export interface VDTColumn {

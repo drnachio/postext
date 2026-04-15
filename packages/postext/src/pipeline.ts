@@ -139,7 +139,7 @@ function resolveHeadingStyle(
   }
 
   const weight = headingConfig.fontWeight.toString();
-  const fontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight);
+  const fontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, headingConfig.italic ? 'italic' : 'normal');
   const textAlign = resolved.headings.textAlign;
   const marginTopPx = dimensionToPx(headingConfig.marginTop, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(headingConfig.marginBottom, dpi, fontSizePx);
@@ -315,7 +315,7 @@ export function buildDocument(
   doc.pages.push(firstPage);
 
   // Extract frontmatter, then parse the remaining markdown body
-  const { metadata: frontmatterMeta, content: markdownBody } = extractFrontmatter(content.markdown);
+  const { metadata: frontmatterMeta, content: markdownBody, contentOffset: bodyOffset } = extractFrontmatter(content.markdown);
   doc.metadata = { ...(content.metadata ?? {}), ...frontmatterMeta };
   const contentBlocks = parseMarkdown(markdownBody);
 
@@ -401,6 +401,46 @@ export function buildDocument(
 
     if (measured.lines.length === 0) continue;
 
+    // Per-line source-range mapping using the block's plain→source map.
+    // Accounts for heading numbering prefix which prepends chars with no source.
+    const blockSrcStart = rawBlock.sourceStart + bodyOffset;
+    const blockSrcEnd = rawBlock.sourceEnd + bodyOffset;
+    const srcMap = rawBlock.sourceMap;
+    const prefixLen = contentBlock.text.length - rawBlock.text.length;
+    const plainToSrc = (p: number): number => {
+      const idx = p - prefixLen;
+      if (idx <= 0) return blockSrcStart;
+      if (idx >= srcMap.length) return blockSrcEnd;
+      return srcMap[idx]! + bodyOffset;
+    };
+    let cumPlain = 0;
+    const lastLineIdx = measured.lines.length - 1;
+    for (let li = 0; li < measured.lines.length; li++) {
+      const line = measured.lines[li]!;
+      // If segments are present, prefer their aggregate text length for a more
+      // accurate plain-char count (excludes trailing hyphen for hyphenated lines).
+      let lineLen: number;
+      if (line.segments && line.segments.length > 0) {
+        lineLen = line.segments.reduce((s, seg) => s + seg.text.length, 0);
+        if (line.hyphenated) {
+          const last = line.segments[line.segments.length - 1]!;
+          if (last.text.endsWith('-')) lineLen -= 1;
+        }
+      } else {
+        lineLen = line.text.length - (line.hyphenated ? 1 : 0);
+      }
+      line.plainStart = cumPlain;
+      line.plainEnd = cumPlain + lineLen;
+      // Advance past the separator space that was consumed to break the line
+      // (skip when hyphenated — break was at a soft hyphen — or on the last line).
+      const skipSeparator = !line.hyphenated && li !== lastLineIdx ? 1 : 0;
+      cumPlain = line.plainEnd + skipSeparator;
+      line.sourceStart = plainToSrc(line.plainStart);
+      line.sourceEnd = plainToSrc(line.plainEnd);
+    }
+
+    const absoluteSourceMap = srcMap.map((o) => o + bodyOffset);
+
     // For headings, only snap to baseline grid if the next block is NOT a heading.
     // Consecutive headings flow without grid snapping; the last heading in the
     // group snaps so that the following body text realigns with the grid.
@@ -445,6 +485,12 @@ export function buildDocument(
         blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
         blk.dirty = false;
         blk.snappedToGrid = shouldSnapToGrid && partIndex === 0;
+        if (remainingLines.length > 0) {
+          blk.sourceStart = remainingLines[0]!.sourceStart;
+          blk.sourceEnd = remainingLines[remainingLines.length - 1]!.sourceEnd;
+        }
+        blk.sourceMap = absoluteSourceMap;
+        blk.plainPrefixLen = prefixLen;
 
         let h = totalRemainHeight;
         if (shouldSnapToGrid && partIndex === 0) {
@@ -482,6 +528,12 @@ export function buildDocument(
         blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
         blk.dirty = false;
         blk.snappedToGrid = false;
+        if (splitLines.length > 0) {
+          blk.sourceStart = splitLines[0]!.sourceStart;
+          blk.sourceEnd = splitLines[splitLines.length - 1]!.sourceEnd;
+        }
+        blk.sourceMap = absoluteSourceMap;
+        blk.plainPrefixLen = prefixLen;
 
         const splitHeight = linesPerAvailable * style.lineHeightPx;
         placeBlockInColumn(blk, splitHeight, curCol, cursor);
@@ -509,6 +561,12 @@ export function buildDocument(
       blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
       blk.dirty = false;
       blk.snappedToGrid = false;
+      if (remainingLines.length > 0) {
+        blk.sourceStart = remainingLines[0]!.sourceStart;
+        blk.sourceEnd = remainingLines[remainingLines.length - 1]!.sourceEnd;
+      }
+      blk.sourceMap = absoluteSourceMap;
+      blk.plainPrefixLen = prefixLen;
 
       placeBlockInColumn(blk, totalRemainHeight, curCol, cursor);
       doc.blocks.push(blk);
