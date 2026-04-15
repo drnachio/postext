@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link2Off } from 'lucide-react';
+import type { ColorPaletteEntry } from 'postext';
 import { SaturationValueArea } from './SaturationValueArea';
 import { HueSlider } from './HueSlider';
 import { AlphaSlider } from './AlphaSlider';
@@ -18,6 +20,11 @@ interface ColorPopoverProps {
   onClose: () => void;
   initialMode?: ColorMode;
   onModeChange?: (mode: ColorMode) => void;
+  palette?: ColorPaletteEntry[];
+  linkedPaletteId?: string;
+  onLinkPalette?: (entryId: string) => void;
+  onUnlinkPalette?: () => void;
+  unlinkLabel?: string;
 }
 
 const TABS: { id: ColorMode; label: string }[] = [
@@ -70,7 +77,7 @@ function SmallInput({
 
 const CHECKER = `repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 0 0 / 10px 10px`;
 
-export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode = 'hex', onModeChange }: ColorPopoverProps) {
+export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel }: ColorPopoverProps) {
   const [hsv, setHsv] = useState<HSV>(() => hexToHsv(hexWithoutAlpha(hex)));
   const [alpha, setAlpha] = useState(() => hexAlpha(hex));
   const [activeTab, setActiveTab] = useState<ColorMode>(initialMode);
@@ -195,6 +202,70 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
         boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
       }}
     >
+      {palette && palette.length > 0 && (
+        <div style={{ marginBottom: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {palette.map((entry) => {
+            const selected = entry.id === linkedPaletteId;
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => onLinkPalette?.(entry.id)}
+                title={entry.name}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '2px 6px 2px 2px',
+                  borderRadius: 10,
+                  border: '1px solid var(--rule)',
+                  backgroundColor: selected ? 'var(--surface)' : 'var(--background)',
+                  color: 'var(--foreground)',
+                  fontSize: 10,
+                  cursor: 'pointer',
+                  maxWidth: '100%',
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    display: 'inline-block',
+                    width: 12,
+                    height: 12,
+                    borderRadius: 6,
+                    border: '1px solid var(--rule)',
+                    backgroundColor: entry.value.hex,
+                  }}
+                />
+                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
+                  {entry.name}
+                </span>
+              </button>
+            );
+          })}
+          {linkedPaletteId && onUnlinkPalette && (
+            <button
+              type="button"
+              onClick={onUnlinkPalette}
+              title={unlinkLabel}
+              aria-label={unlinkLabel}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '2px 6px',
+                borderRadius: 10,
+                border: '1px solid var(--rule)',
+                backgroundColor: 'var(--background)',
+                color: 'var(--slate)',
+                cursor: 'pointer',
+              }}
+            >
+              <Link2Off size={11} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* SV Area */}
       <SaturationValueArea
         hue={hsv.h}

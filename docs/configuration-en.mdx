@@ -339,6 +339,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Text color.</td>
     </tr>
     <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits <code>color</code></td>
+      <td>Optional override for bold/strong spans. When unset, bold text uses <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>italicColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits <code>color</code></td>
+      <td>Optional override for italic/emphasis spans. When unset, italic text uses <code>color</code>.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
@@ -373,6 +385,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>When enabled, the indent is applied to all lines except the first (French/hanging indent).</td>
+    </tr>
+    <tr>
+      <td><code>maxWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>1.5</code></td>
+      <td>Upper bound for word spacing in justified text, expressed as a multiplier of the normal space width. Lines exceeding this ratio are considered "loose".</td>
+    </tr>
+    <tr>
+      <td><code>minWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>Lower bound for word spacing in justified text, as a multiplier of the normal space width.</td>
     </tr>
   </tbody>
 </table>
@@ -493,16 +517,349 @@ Each heading level can override the general defaults via the `levels` array. Onl
   </tbody>
 </table>
 
-Per-level overrides support the same properties as the general defaults: `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, and `marginBottom`.
+Per-level overrides support the same properties as the general defaults — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom` — plus two level-only fields:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render the heading in italic. Applied on top of <code>fontWeight</code>.</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Reserved for automatic heading numbering (e.g. <code>'Chapter {n}. '</code>). Currently stored on the resolved config and carried through the pipeline; rendering will honour it in an upcoming release.</td>
+    </tr>
+  </tbody>
+</table>
 
 ```ts
 headings: {
   fontFamily: 'Merriweather',
   levels: [
     { level: 1, fontSize: { value: 24, unit: 'pt' }, color: { hex: '#1a1a2e', model: 'hex' } },
-    { level: 2, fontSize: { value: 18, unit: 'pt' } },
+    { level: 2, fontSize: { value: 18, unit: 'pt' }, italic: true },
   ]
 }
+```
+
+
+## Unordered Lists
+
+The `unorderedLists` property controls how bullet lists (`-`, `*`, `+`) and GFM task lists (`- [ ]`, `- [x]`) are rendered. Up to five levels of nesting are supported.
+
+### Unordered list defaults
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>inherits <code>bodyText.fontFamily</code></td>
+      <td>Font used for the item text.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits <code>bodyText.color</code></td>
+      <td>Text color for items.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>Weight for item text (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render item text in italic.</td>
+    </tr>
+    <tr>
+      <td><code>bulletChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'•'</code></td>
+      <td>Glyph used as the bullet marker.</td>
+    </tr>
+    <tr>
+      <td><code>bulletFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1 em</code></td>
+      <td>Size of the bullet glyph. Relative units scale with the body font size.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>Horizontal space between the bullet and the item text.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Base indent for level 1. Deeper levels cascade from the parent's text-start unless overridden (see below).</td>
+    </tr>
+    <tr>
+      <td><code>bulletVerticalOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Fine-tune bullet vertical position. Negative values move the bullet up, positive values move it down.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>Space before and after the list as a whole.</td>
+    </tr>
+    <tr>
+      <td><code>itemSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Extra vertical space inserted between items on top of the line height.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When enabled, wrapped lines align with the first text character rather than under the bullet.</td>
+    </tr>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>UnorderedListLevelConfig[]</code></td>
+      <td>—</td>
+      <td>Per-depth overrides for levels 1–5. See below.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Task list extensions
+
+GFM task items (`- [ ] …`, `- [x] …`) are rendered as unordered items with a checkbox glyph replacing the bullet. The following fields only apply to task items:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>taskCheckboxChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'☐'</code></td>
+      <td>Glyph used for unchecked tasks.</td>
+    </tr>
+    <tr>
+      <td><code>taskCheckedChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'☑'</code></td>
+      <td>Glyph used for completed tasks.</td>
+    </tr>
+    <tr>
+      <td><code>taskCompletedStrikethrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Draw a strikethrough line across the text of completed tasks.</td>
+    </tr>
+    <tr>
+      <td><code>taskCompletedColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits item color</td>
+      <td>Optional color applied to completed task text. When omitted, the regular item color is used.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Unordered per-level overrides
+
+Each entry in `levels` targets one depth (1–5) and can override any of the following:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bulletChar</code></td><td><code>string</code></td><td>Bullet glyph for this depth.</td></tr>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td>Item font family for this depth.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td>Bullet glyph size for this depth.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>Item color.</td></tr>
+    <tr><td><code>fontWeight</code></td><td><code>number</code></td><td>Item weight.</td></tr>
+    <tr><td><code>italic</code></td><td><code>boolean</code></td><td>Italic toggle.</td></tr>
+    <tr><td><code>indent</code></td><td><code>Dimension</code></td><td>Explicit indent for the bullet at this depth. See the cascade rule below.</td></tr>
+    <tr><td><code>verticalOffset</code></td><td><code>Dimension</code></td><td>Vertical fine-tune for the bullet at this depth.</td></tr>
+  </tbody>
+</table>
+
+**Indent cascade.** Level 1 always starts at the general `indent` value (by default `0 em` — bullets are pinned to the column edge). For levels 2–5, if you leave `indent` undefined the engine places the bullet at the *previous* level's text-start (parent indent + bullet width + `gap`). Set an explicit `indent` on a level to break the cascade and pin that depth anywhere you like.
+
+```ts
+unorderedLists: {
+  bulletChar: '—',
+  gap: { value: 0.4, unit: 'em' },
+  hangingIndent: true,
+  levels: [
+    { level: 2, bulletChar: '·' },
+    { level: 3, bulletChar: '◦', color: { hex: '#666666', model: 'hex' } },
+  ],
+}
+```
+
+
+## Ordered Lists
+
+The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to five levels of nesting are supported and each depth can use a different number format.
+
+### Ordered list defaults
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>inherits <code>bodyText.fontFamily</code></td>
+      <td>Font used for the item text and the number marker.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits <code>bodyText.color</code></td>
+      <td>Text color for items and number markers.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>Weight for item text (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render item text in italic.</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>OrderedListNumberFormat</code></td>
+      <td><code>'arabic'</code></td>
+      <td>Number style: <code>'arabic'</code>, <code>'lower-alpha'</code>, <code>'upper-alpha'</code>, <code>'lower-roman'</code>, <code>'upper-roman'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>separator</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Character placed between the number and the text — typically <code>'.'</code> or <code>')'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>numberFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1 em</code></td>
+      <td>Size of the number marker.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>Horizontal space between the number and the item text.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Base indent for level 1; deeper levels cascade from the parent's text-start unless overridden.</td>
+    </tr>
+    <tr>
+      <td><code>numberVerticalOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Fine-tune the vertical position of the number marker.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>Space before and after the list as a whole.</td>
+    </tr>
+    <tr>
+      <td><code>itemSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Extra vertical space between items.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Wrapped lines align with the first text character rather than under the number.</td>
+    </tr>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>OrderedListLevelConfig[]</code></td>
+      <td>—</td>
+      <td>Per-depth overrides for levels 1–5.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Ordered per-level overrides
+
+Each entry in `levels` can override `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, and `verticalOffset` — the same indent cascade as unordered lists applies.
+
+**Right alignment.** The pipeline measures the widest formatted number within a run and indents all items in that run so the number markers line up on their right edge. A list of ten items rendered as `1.` – `10.` has the single-digit numbers right-padded so the separator stays in the same column.
+
+```ts
+orderedLists: {
+  numberFormat: 'arabic',
+  separator: '.',
+  levels: [
+    { level: 2, numberFormat: 'lower-alpha' },
+    { level: 3, numberFormat: 'lower-roman', separator: ')' },
+  ],
+}
+```
+
+This yields the classic nested mix:
+
+```
+1. First item
+   a. Sub-item
+      i) Deep note
+   b. Sub-item
+2. Second item
 ```
 
 
@@ -539,6 +896,53 @@ The `model` field indicates the intended color space. For web rendering, `'hex'`
 Because Postext targets publication-grade output, the default body text and heading colors ship with `model: 'cmyk'` (both values are `#000000`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
 
 
+## Color Palette
+
+The `colorPalette` property on `PostextConfig` lets you define a reusable set of named colors and reference them from any `ColorValue` in the configuration. It is the Postext equivalent of CSS custom properties or an InDesign swatches panel: change the palette entry once, and every color that points to it updates across the document.
+
+```ts
+interface ColorPaletteEntry {
+  id: string;       // stable identifier — referenced by ColorValue.paletteId
+  name: string;     // human label shown in sandbox UIs
+  value: ColorValue;
+}
+```
+
+A palette lives at the top level of the config:
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'ink',    name: 'Ink',    value: { hex: '#0a0a0a', model: 'cmyk' } },
+    { id: 'accent', name: 'Accent', value: { hex: '#b8860b', model: 'hex' } },
+  ],
+  bodyText: { color: { hex: '#000000', model: 'cmyk', paletteId: 'ink' } },
+  headings: { color: { hex: '#000000', model: 'hex', paletteId: 'accent' } },
+};
+```
+
+### Referencing a palette entry
+
+Any `ColorValue` in the configuration — page background, body text color, heading colors, column rules, list colors, task-completed color, cut-mark color, baseline-grid color, debug indicators — can carry an optional `paletteId` field pointing at an entry in `colorPalette`. When present, the palette entry's `hex` / `model` win over the fallback `hex` / `model` stored alongside. The inline fallback is only used if the palette is missing, empty, or doesn't contain that id — useful when shipping a config that will be read by a tool that doesn't understand palettes.
+
+### How palettes are applied
+
+`buildDocument` calls `applyPaletteToConfig` internally as the first step of the pipeline, before any defaults are resolved. You rarely need to call it yourself, but it is exported so you can inspect the flattened result:
+
+```ts
+import { applyPaletteToConfig, resolveColorValue } from 'postext';
+
+const flat = applyPaletteToConfig(config);
+// Every ColorValue with a paletteId has been replaced by the palette entry's hex/model.
+```
+
+`resolveColorValue(value, palette, fallback)` is the single-value variant, handy when you are composing configs imperatively and need to resolve one color at a time.
+
+### Editing the palette
+
+Removing a palette entry should go through `unlinkPaletteRefs` (exported from `postext-sandbox`) so that any `ColorValue` still pointing at the removed id gets rewritten with the plain `hex` / `model` fallback. The sandbox's "Color Palette" section does this automatically.
+
+
 ## Debug
 
 The `debug` property controls visual indicators the editor uses to keep the source text and the rendered layout in sync while editing. These are rendered only by the interactive editor — they have no effect on exported output.
@@ -565,15 +969,22 @@ The `debug` property controls visual indicators the editor uses to keep the sour
       <td>enabled, <code>#fde04780</code></td>
       <td>Highlights the rendered range matching the source selection.</td>
     </tr>
+    <tr>
+      <td><code>looseLineHighlight</code></td>
+      <td><code>LooseLineHighlightConfig</code></td>
+      <td>disabled, <code>#ff000040</code>, <code>3</code></td>
+      <td>Paints an overlay on justified lines whose word spacing exceeds the given multiplier of the normal space width.</td>
+    </tr>
   </tbody>
 </table>
 
-Each `SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`.
+Each `SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`. `LooseLineHighlightConfig` is `{ enabled: boolean; color?: ColorValue; threshold?: number }`.
 
 ```ts
 debug: {
   cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
   selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+  looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
 }
 ```
 
@@ -687,7 +1098,19 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveDebugConfig`.
+Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`. Color palettes are applied separately through `applyPaletteToConfig(config)` and `resolveColorValue(value, palette, fallback)` — see [Color Palette](#color-palette).
+
+`resolveUnorderedListsConfig` and `resolveOrderedListsConfig` are the only resolvers that take a second argument — the already-resolved `ResolvedBodyTextConfig` — because list defaults for `fontFamily` and `color` cascade from body text:
+
+```ts
+import { resolveBodyTextConfig, resolveUnorderedListsConfig } from 'postext';
+
+const body = resolveBodyTextConfig({ fontFamily: 'Inter' });
+const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
+// => lists.fontFamily === 'Inter' (inherited)
+```
+
+Static default bundles — the values used when no cascade is involved — are exported too: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_DEBUG_CONFIG`.
 
 ### Stripping defaults
 
@@ -700,4 +1123,23 @@ const minimal = stripConfigDefaults(fullConfig);
 // Only properties that differ from defaults remain
 ```
 
-Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripDebugDefaults`.
+Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripDebugDefaults`.
+
+### Parsing
+
+The engine exposes its markdown tokenizer and frontmatter reader. Use them to inspect a document before building it, or to feed other tooling with the same block structure Postext sees:
+
+```ts
+import { parseMarkdown, extractFrontmatter } from 'postext';
+
+const source = '---\ntitle: Chapter One\n---\n\n# Opening\n\nThe story begins here.';
+
+const { metadata, content } = extractFrontmatter(source);
+// metadata.title === 'Chapter One'
+
+const blocks = parseMarkdown(content);
+// => [ { type: 'heading', level: 1, text: 'Opening', … },
+//      { type: 'paragraph', text: 'The story begins here.', … } ]
+```
+
+See the [Document Format](/en/docs/document-format) page for the full list of markdown constructs Postext recognises.

@@ -90,6 +90,13 @@ export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
 export interface ColorValue {
   hex: string;
   model: ColorModel;
+  paletteId?: string;
+}
+
+export interface ColorPaletteEntry {
+  id: string;
+  name: string;
+  value: ColorValue;
 }
 
 export type DimensionUnit = 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem';
@@ -195,12 +202,19 @@ export interface BodyTextConfig {
   lineHeight?: Dimension;
   paragraphSpacing?: boolean;
   color?: ColorValue;
+  boldColor?: ColorValue;
+  italicColor?: ColorValue;
   textAlign?: TextAlign;
   fontWeight?: number;
   boldFontWeight?: number;
   hyphenation?: HyphenationConfig;
   firstLineIndent?: Dimension;
   hangingIndent?: boolean;
+  /** Max word-spacing when justifying, as a multiplier of the normal space width.
+   *  Lines that would exceed this trigger extra hyphenation/reflow attempts. */
+  maxWordSpacing?: number;
+  /** Min word-spacing when justifying, as a multiplier of the normal space width. */
+  minWordSpacing?: number;
 }
 
 export interface ResolvedBodyTextConfig {
@@ -209,12 +223,16 @@ export interface ResolvedBodyTextConfig {
   lineHeight: Dimension;
   paragraphSpacing: boolean;
   color: ColorValue;
+  boldColor?: ColorValue;
+  italicColor?: ColorValue;
   textAlign: TextAlign;
   fontWeight: number;
   boldFontWeight: number;
   hyphenation: ResolvedHyphenationConfig;
   firstLineIndent: Dimension;
   hangingIndent: boolean;
+  maxWordSpacing: number;
+  minWordSpacing: number;
 }
 
 export interface HeadingLevelConfig {
@@ -309,6 +327,12 @@ export interface UnorderedListsConfig {
   itemSpacing?: Dimension;
   hangingIndent?: boolean;
   levels?: UnorderedListLevelConfig[];
+  /** GFM task list rendering. The bullet glyph is replaced with a checkbox. */
+  taskCheckboxChar?: string;
+  taskCheckedChar?: string;
+  taskCompletedStrikethrough?: boolean;
+  /** Optional color for the text of completed tasks. When undefined, body color is used. */
+  taskCompletedColor?: ColorValue;
 }
 
 export interface ResolvedUnorderedListsConfig {
@@ -326,6 +350,81 @@ export interface ResolvedUnorderedListsConfig {
   itemSpacing: Dimension;
   hangingIndent: boolean;
   levels: ResolvedUnorderedListLevelConfig[];
+  taskCheckboxChar: string;
+  taskCheckedChar: string;
+  taskCompletedStrikethrough: boolean;
+  /** Undefined => inherit body text color at render time. */
+  taskCompletedColor?: ColorValue;
+}
+
+export type OrderedListNumberFormat =
+  | 'arabic'
+  | 'lower-alpha'
+  | 'upper-alpha'
+  | 'lower-roman'
+  | 'upper-roman';
+
+export interface OrderedListLevelConfig {
+  level: number;
+  numberFormat?: OrderedListNumberFormat;
+  separator?: string;
+  fontFamily?: string;
+  fontSize?: Dimension;
+  color?: ColorValue;
+  fontWeight?: number;
+  italic?: boolean;
+  indent?: Dimension;
+  verticalOffset?: Dimension;
+}
+
+export interface ResolvedOrderedListLevelConfig {
+  level: number;
+  numberFormat: OrderedListNumberFormat;
+  separator: string;
+  fontFamily: string;
+  fontSize: Dimension;
+  color: ColorValue;
+  fontWeight: number;
+  italic: boolean;
+  /** User-overridden indent for this level. Undefined => pipeline cascades. */
+  indent?: Dimension;
+  verticalOffset: Dimension;
+}
+
+export interface OrderedListsConfig {
+  fontFamily?: string;
+  color?: ColorValue;
+  fontWeight?: number;
+  italic?: boolean;
+  numberFormat?: OrderedListNumberFormat;
+  separator?: string;
+  numberFontSize?: Dimension;
+  gap?: Dimension;
+  indent?: Dimension;
+  numberVerticalOffset?: Dimension;
+  marginTop?: Dimension;
+  marginBottom?: Dimension;
+  itemSpacing?: Dimension;
+  hangingIndent?: boolean;
+  levels?: OrderedListLevelConfig[];
+}
+
+export interface ResolvedOrderedListsConfig {
+  fontFamily: string;
+  color: ColorValue;
+  fontWeight: number;
+  italic: boolean;
+  numberFormat: OrderedListNumberFormat;
+  separator: string;
+  numberFontSize: Dimension;
+  gap: Dimension;
+  indent: Dimension;
+  numberVerticalOffset: Dimension;
+  marginTop: Dimension;
+  marginBottom: Dimension;
+  itemSpacing: Dimension;
+  hangingIndent: boolean;
+  levels: ResolvedOrderedListLevelConfig[];
 }
 
 export interface SyncIndicatorConfig {
@@ -333,14 +432,24 @@ export interface SyncIndicatorConfig {
   color?: ColorValue;
 }
 
+export interface LooseLineHighlightConfig {
+  enabled: boolean;
+  color?: ColorValue;
+  /** Threshold as a multiplier of the normal space width. Lines whose
+   *  justified space ratio exceeds this are highlighted. */
+  threshold?: number;
+}
+
 export interface DebugConfig {
   cursorSync?: SyncIndicatorConfig;
   selectionSync?: SyncIndicatorConfig;
+  looseLineHighlight?: LooseLineHighlightConfig;
 }
 
 export interface ResolvedDebugConfig {
   cursorSync: { enabled: boolean; color: ColorValue };
   selectionSync: { enabled: boolean; color: ColorValue };
+  looseLineHighlight: { enabled: boolean; color: ColorValue; threshold: number };
 }
 
 export interface PostextSectionOverride {
@@ -356,6 +465,7 @@ export interface PostextConfig {
   bodyText?: BodyTextConfig;
   headings?: HeadingsConfig;
   unorderedLists?: UnorderedListsConfig;
+  orderedLists?: OrderedListsConfig;
 
   columns?: number;
   gutter?: string;
@@ -370,4 +480,6 @@ export interface PostextConfig {
   renderer?: 'web' | 'pdf';
 
   debug?: DebugConfig;
+
+  colorPalette?: ColorPaletteEntry[];
 }

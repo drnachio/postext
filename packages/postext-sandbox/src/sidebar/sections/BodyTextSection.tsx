@@ -92,6 +92,10 @@ export function BodyTextSection() {
   const isLineHeightDefault = dimensionsEqual(bodyText.lineHeight, D.lineHeight);
   const isParagraphSpacingDefault = bodyText.paragraphSpacing === D.paragraphSpacing;
   const isColorDefault = colorsEqual(bodyText.color, D.color);
+  const isBoldColorDefault = bodyText.boldColor === undefined;
+  const isItalicColorDefault = bodyText.italicColor === undefined;
+  const DEFAULT_BOLD_COLOR = bodyText.boldColor ?? bodyText.color;
+  const DEFAULT_ITALIC_COLOR = bodyText.italicColor ?? bodyText.color;
   const isTextAlignDefault = bodyText.textAlign === D.textAlign;
   const isFontWeightDefault = bodyText.fontWeight === D.fontWeight;
   const isBoldFontWeightDefault = bodyText.boldFontWeight === D.boldFontWeight;
@@ -99,6 +103,8 @@ export function BodyTextSection() {
   const isHyphenationLocaleDefault = effectiveHyphenationLocale === defaultLocale;
   const isFirstLineIndentDefault = dimensionsEqual(bodyText.firstLineIndent, D.firstLineIndent);
   const isHangingIndentDefault = bodyText.hangingIndent === D.hangingIndent;
+  const isMaxWordSpacingDefault = bodyText.maxWordSpacing === D.maxWordSpacing;
+  const isMinWordSpacingDefault = bodyText.minWordSpacing === D.minWordSpacing;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.bodyTextAlignLeft },
@@ -180,13 +186,33 @@ export function BodyTextSection() {
         fieldId="bodyText-color"
       />
 
+      <ColorPicker
+        label={labels.bodyBoldColor}
+        value={DEFAULT_BOLD_COLOR}
+        onChange={(color) => updateBodyText({ boldColor: color })}
+        tooltip={labels.bodyBoldColorTooltip}
+        isDefault={isBoldColorDefault}
+        onReset={() => resetField('boldColor')}
+        fieldId="bodyText-boldColor"
+      />
+
+      <ColorPicker
+        label={labels.bodyItalicColor}
+        value={DEFAULT_ITALIC_COLOR}
+        onChange={(color) => updateBodyText({ italicColor: color })}
+        tooltip={labels.bodyItalicColorTooltip}
+        isDefault={isItalicColorDefault}
+        onReset={() => resetField('italicColor')}
+        fieldId="bodyText-italicColor"
+      />
+
       <NumberInput
         label={labels.bodyFontWeight}
         value={bodyText.fontWeight}
         onChange={(w) => updateBodyText({ fontWeight: w })}
         min={100}
         max={900}
-        step={100}
+        step={10}
         tooltip={labels.bodyFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => resetField('fontWeight')}
@@ -198,7 +224,7 @@ export function BodyTextSection() {
         onChange={(w) => updateBodyText({ boldFontWeight: w })}
         min={100}
         max={900}
-        step={100}
+        step={10}
         tooltip={labels.bodyBoldFontWeightTooltip}
         isDefault={isBoldFontWeightDefault}
         onReset={() => resetField('boldFontWeight')}
@@ -273,6 +299,30 @@ export function BodyTextSection() {
               }}
             />
           )}
+
+          <NumberInput
+            label={labels.bodyMaxWordSpacing}
+            value={bodyText.maxWordSpacing}
+            onChange={(v) => updateBodyText({ maxWordSpacing: v })}
+            min={1}
+            max={3}
+            step={0.05}
+            tooltip={labels.bodyMaxWordSpacingTooltip}
+            isDefault={isMaxWordSpacingDefault}
+            onReset={() => resetField('maxWordSpacing')}
+          />
+
+          <NumberInput
+            label={labels.bodyMinWordSpacing}
+            value={bodyText.minWordSpacing}
+            onChange={(v) => updateBodyText({ minWordSpacing: v })}
+            min={0.5}
+            max={1}
+            step={0.05}
+            tooltip={labels.bodyMinWordSpacingTooltip}
+            isDefault={isMinWordSpacingDefault}
+            onReset={() => resetField('minWordSpacing')}
+          />
         </NestedGroup>
       )}
     </CollapsibleSection>

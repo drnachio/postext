@@ -10,6 +10,8 @@ export interface InlineSpan {
   italic: boolean;
 }
 
+export type ListKind = 'unordered' | 'ordered' | 'task';
+
 export interface ContentBlock {
   type: ContentBlockType;
   text: string;
@@ -17,6 +19,12 @@ export interface ContentBlock {
   level?: number; // heading level 1-6
   /** Depth (1-based) for listItem blocks. Level 1 = outermost. */
   depth?: number;
+  /** Discriminator for listItem blocks. Defaults to 'unordered' when absent. */
+  listKind?: ListKind;
+  /** First number literal from the source (ordered lists only). */
+  startNumber?: number;
+  /** Checkbox state for task list items. */
+  checked?: boolean;
   /** Character offset of the first source character of this block in the original markdown */
   sourceStart: number;
   /** Character offset just past the last source character of this block */
@@ -30,6 +38,8 @@ export interface ContentBlock {
 }
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
+const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
+const ORDERED_LIST_ITEM_RE = /^(\s*)(\d+)([.)])\s+(.*)$/;
 const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
 
 /**
@@ -291,41 +301,77 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
       continue;
     }
 
-    // Unordered list item — consumes consecutive list lines, including
-    // nested items and single blank-line separators between items.
-    const listMatch = line.match(LIST_ITEM_RE);
-    if (listMatch) {
-      // Consume contiguous list items (plus a single-blank-line gap followed
-      // by another list item).
+    // List items — unordered (`-`, `*`, `+`), ordered (`1.`, `1)`) and
+    // GFM task (`- [ ]`, `- [x]`). Consume consecutive list lines of any kind
+    // (nesting and mixed kinds are allowed); the pipeline segments ordered
+    // runs by kind and depth for numbering.
+    const isListStart =
+      TASK_ITEM_RE.test(line) || ORDERED_LIST_ITEM_RE.test(line) || LIST_ITEM_RE.test(line);
+    if (isListStart) {
       while (i < rawLines.length) {
         const curRaw = rawLines[i]!;
-        const curMatch = curRaw.match(LIST_ITEM_RE);
-        if (curMatch) {
-          const leading = curMatch[1]!.length;
+        const taskMatch = curRaw.match(TASK_ITEM_RE);
+        const orderedMatch = !taskMatch ? curRaw.match(ORDERED_LIST_ITEM_RE) : null;
+        const unorderedMatch = !taskMatch && !orderedMatch ? curRaw.match(LIST_ITEM_RE) : null;
+        const anyMatch = taskMatch ?? orderedMatch ?? unorderedMatch;
+        if (anyMatch) {
+          const leading = anyMatch[1]!.length;
           const depth = Math.max(1, Math.min(5, Math.floor(leading / 2) + 1));
-          const itemText = curMatch[3]!;
-          const rawSpans = parseInlineFormatting(itemText);
           const srcStart = lineOffsets[i]!;
           const srcEnd = lineEndOffset(i);
-          // Offset the sourceMap so characters land on the item's content,
-          // skipping the leading whitespace + bullet marker + space.
-          const contentOffset = leading + curMatch[2]!.length + 1;
+
+          let listKind: ListKind;
+          let itemText: string;
+          let markerLength: number;
+          let startNumber: number | undefined;
+          let checked: boolean | undefined;
+
+          if (taskMatch) {
+            listKind = 'task';
+            checked = taskMatch[3] !== ' ';
+            itemText = taskMatch[4]!;
+            // leading spaces + bullet (1) + space (1) + `[x]` (3) + space (1)
+            markerLength = taskMatch[2]!.length + 1 + 3 + 1;
+          } else if (orderedMatch) {
+            listKind = 'ordered';
+            startNumber = parseInt(orderedMatch[2]!, 10);
+            itemText = orderedMatch[4]!;
+            // number digits + separator (1) + space (1)
+            markerLength = orderedMatch[2]!.length + 1 + 1;
+          } else {
+            listKind = 'unordered';
+            itemText = unorderedMatch![3]!;
+            markerLength = unorderedMatch![2]!.length + 1;
+          }
+
+          const rawSpans = parseInlineFormatting(itemText);
+          const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
           const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
-          blocks.push({
+          const block: ContentBlock = {
             type: 'listItem',
             text: mapping.text,
             spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
             depth,
+            listKind,
             sourceStart: srcStart,
             sourceEnd: srcEnd,
             sourceMap: mapping.sourceMap,
-          });
+          };
+          if (startNumber !== undefined) block.startNumber = startNumber;
+          if (checked !== undefined) block.checked = checked;
+          blocks.push(block);
           i++;
           continue;
         }
         // Blank line: allow a single blank followed by another list item.
-        if (curRaw.trim() === '' && i + 1 < rawLines.length && rawLines[i + 1]!.match(LIST_ITEM_RE)) {
+        if (
+          curRaw.trim() === '' &&
+          i + 1 < rawLines.length &&
+          (TASK_ITEM_RE.test(rawLines[i + 1]!) ||
+            ORDERED_LIST_ITEM_RE.test(rawLines[i + 1]!) ||
+            LIST_ITEM_RE.test(rawLines[i + 1]!))
+        ) {
           i++;
           continue;
         }

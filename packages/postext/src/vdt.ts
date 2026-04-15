@@ -6,6 +6,7 @@ import type {
   ResolvedBodyTextConfig,
   ResolvedHeadingsConfig,
   ResolvedUnorderedListsConfig,
+  ResolvedOrderedListsConfig,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -29,6 +30,7 @@ export interface ResolvedConfig {
   bodyText: ResolvedBodyTextConfig;
   headings: ResolvedHeadingsConfig;
   unorderedLists: ResolvedUnorderedListsConfig;
+  orderedLists: ResolvedOrderedListsConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -70,6 +72,9 @@ export interface VDTLine {
   plainStart?: number;
   /** Plain-text end offset within the block's plain text (exclusive) */
   plainEnd?: number;
+  /** For justified (non-last) lines: ratio of the applied justified space width
+   *  to the normal space width of the block's font. 1.0 means natural spacing. */
+  justifiedSpaceRatio?: number;
 }
 
 export interface VDTBlock {
@@ -89,6 +94,8 @@ export interface VDTBlock {
   italicFontString?: string;
   boldItalicFontString?: string;
   color: string;
+  boldColor?: string;
+  italicColor?: string;
   textAlign: TextAlign;
   /** Character offset in the original markdown where the source content for this block starts */
   sourceStart?: number;
@@ -110,6 +117,10 @@ export interface VDTBlock {
   bulletOffsetX?: number;
   /** Absolute page Y coordinate for the bullet's vertical midpoint (paired with textBaseline='middle') */
   bulletY?: number;
+  /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
+  listKind?: 'unordered' | 'ordered' | 'task';
+  /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */
+  strikethroughText?: boolean;
 }
 
 export interface VDTColumn {

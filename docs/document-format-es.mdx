@@ -1,0 +1,213 @@
+{/* docs/document-format-es.mdx */}
+
+export const metadata = {
+  title: 'Formato del documento',
+  sidebarTitle: 'Formato del documento',
+  description: 'El subconjunto de markdown que parsea Postext y las normas para escribir los documentos fuente',
+  lang: 'es',
+  lastUpdated: '2026-04-15',
+  readingTime: '8 min',
+  order: 4,
+};
+
+# Formato del documento
+
+**Postext lee un dialecto de markdown deliberadamente reducido.**
+
+El parser es un tokenizador escrito a mano — no una implementación completa de CommonMark — por lo que el formato de entrada es estrecho y predecible. La intención es doble: mantener el motor pequeño y rápido, y hacer que los documentos sean trivialmente portables entre Postext y cualquier otro lector de CommonMark. Todo lo que no aparezca en esta página se trata como texto plano o se elimina del flujo en línea.
+
+Si construyes el documento por código, la función `parseMarkdown` (ver [Configuración › Parseo](/es/docs/configuration#parseo)) te devuelve exactamente la misma estructura de bloques que consume el motor de composición.
+
+
+## Frontmatter
+
+Un documento puede empezar con un bloque opcional de frontmatter YAML encerrado entre marcadores `---`:
+
+```md
+---
+title: Capítulo uno
+author: Jane Doe
+publishDate: 2026-04-15
+---
+
+# Capítulo uno
+
+La historia empieza aquí…
+```
+
+Llama a `extractFrontmatter(source)` para separar el frontmatter del cuerpo. El objeto de metadatos parseados se devuelve junto con el markdown restante y el desplazamiento (en caracteres) donde empieza el cuerpo — útil si necesitas mapear errores o posiciones de cursor al documento original.
+
+El frontmatter se parsea con [`gray-matter`](https://github.com/jonschlinkert/gray-matter), por lo que se acepta cualquier forma válida de YAML. Postext solo consulta `title`, `subtitle`, `author` y `publishDate`; las demás claves se conservan en `PostextContent.metadata` y quedan disponibles para tu uso.
+
+
+## Construcciones de bloque
+
+Postext reconoce seis tipos de bloque. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Construcción</th>
+      <th style={{ width: '220px' }}>Sintaxis</th>
+      <th>Notas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Encabezado</td>
+      <td><code># Título</code> … <code>###### H6</code></td>
+      <td>De uno a seis caracteres <code>#</code> seguidos de un espacio y del texto. Los niveles 1–6 se corresponden directamente con <code>headings.levels</code>.</td>
+    </tr>
+    <tr>
+      <td>Párrafo</td>
+      <td>Texto plano en una o más líneas</td>
+      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Los saltos de línea manuales dentro de un párrafo no se conservan — usa una línea en blanco para empezar un nuevo párrafo.</td>
+    </tr>
+    <tr>
+      <td>Cita (blockquote)</td>
+      <td><code>&gt; texto citado</code></td>
+      <td>Cada línea de la cita debe comenzar con <code>&gt;</code> (seguido de un espacio opcional). Las líneas consecutivas de cita se combinan en un único bloque.</td>
+    </tr>
+    <tr>
+      <td>Lista no ordenada</td>
+      <td><code>- item</code>, <code>* item</code>, <code>+ item</code></td>
+      <td>Se acepta cualquiera de las tres viñetas. El anidamiento usa <strong>exactamente dos espacios por nivel</strong>, hasta una profundidad máxima de 5.</td>
+    </tr>
+    <tr>
+      <td>Lista ordenada</td>
+      <td><code>1. item</code>, <code>2) item</code></td>
+      <td>Dígitos seguidos de <code>.</code> o <code>)</code>. El número inicial se conserva (una lista puede empezar en 5 o en 0). El separador renderizado en la salida procede de <code>orderedLists.separator</code>, no de la fuente.</td>
+    </tr>
+    <tr>
+      <td>Lista de tareas (GFM)</td>
+      <td><code>- [ ] pendiente</code>, <code>- [x] hecho</code></td>
+      <td>Un elemento de lista no ordenada con una casilla entre corchetes. Acepta <code>x</code> en minúscula o <code>X</code> en mayúscula. Se renderiza con los glifos <code>taskCheckboxChar</code> / <code>taskCheckedChar</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Se tolera una única línea en blanco entre dos elementos de lista — la lista se mantiene unida. Dos o más líneas en blanco consecutivas terminan la lista.
+
+Se aceptan listas de tipos mixtos a la misma profundidad (puedes pasar de no ordenada a ordenada a mitad de recorrido), pero el motor trata cada tramo por separado a efectos de numeración. En la práctica, conviene mantener un único tipo por profundidad salvo que haya un motivo claro para mezclarlos.
+
+
+## Formato en línea
+
+El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezados, párrafos, citas, elementos de lista).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Marcado</th>
+      <th style={{ width: '200px' }}>Sintaxis</th>
+      <th>Notas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Negrita</td>
+      <td><code>**negrita**</code> o <code>__negrita__</code></td>
+      <td>Se renderiza con <code>bodyText.boldFontWeight</code>. Un <code>bodyText.boldColor</code> opcional anula el color general del cuerpo para los tramos en negrita.</td>
+    </tr>
+    <tr>
+      <td>Cursiva</td>
+      <td><code>*cursiva*</code> o <code>_cursiva_</code></td>
+      <td>Se renderiza con la variante cursiva de la fuente actual. Un <code>bodyText.italicColor</code> opcional anula el color general del cuerpo para los tramos en cursiva.</td>
+    </tr>
+    <tr>
+      <td>Negrita cursiva</td>
+      <td><code>***ambas***</code> o <code>___ambas___</code></td>
+      <td>Se combinan ambos estilos.</td>
+    </tr>
+    <tr>
+      <td>Código en línea</td>
+      <td><code>`código`</code></td>
+      <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano. El estilo diferenciado para código está en el roadmap.</td>
+    </tr>
+    <tr>
+      <td>Enlace</td>
+      <td><code>[texto](https://…)</code></td>
+      <td>El texto visible permanece en el flujo; la URL se descarta en el renderizador actual. El soporte de enlaces está en el roadmap.</td>
+    </tr>
+    <tr>
+      <td>Imagen</td>
+      <td><code>![alt](src)</code></td>
+      <td>El markdown de imagen en línea se <strong>elimina</strong> del texto. Las imágenes deben declararse en <code>PostextContent.resources</code> para que el motor las coloque según las reglas de <code>resourcePlacement</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Qué NO se soporta
+
+Postext no reconoce las siguientes características de CommonMark. O se tratan como texto plano (y por tanto aparecerán literalmente en la salida) o se descartan silenciosamente:
+
+- **Encabezados tipo setext** — la forma con subrayado `===` / `---`. Usa encabezados ATX (`#`).
+- **Bloques de código con cercas o con indentación** — triple acento grave e indentación de 4 espacios. El código en línea funciona; el código multilínea se renderizará línea a línea como párrafos.
+- **HTML en crudo** — las etiquetas `<tag>` no se interpretan. Tampoco se admiten etiquetas estilo MDX; la fuente Postext es markdown puro.
+- **Líneas horizontales** — `---`, `***`, `___`.
+- **Tablas** — las tablas con pipes no se parsean. Las tablas se modelan como recursos estructurados en `PostextContent.resources`.
+- **Enlaces por referencia** — `[texto][id]` con su bloque de definición.
+- **Autolinks** — `<https://example.com>`.
+- **Tachado** — `~~texto~~`. El renderizador de tachado está reservado actualmente para tareas completadas.
+- **Marcas de nota al pie en markdown** — `[^1]`. Las notas al pie viajan en `PostextContent.notes` y se referencian por id, no con sintaxis en línea.
+
+Esta lista se irá reduciendo con el tiempo. Mientras tanto, cualquier cosa que no aparezca explícitamente arriba debe considerarse texto literal.
+
+
+## Normas de redacción
+
+Unas pocas normas marcan la diferencia entre un documento que se parsea limpiamente y uno que te sorprende:
+
+- **Deja una línea en blanco entre bloques.** Dos párrafos separados por una línea en blanco son dos párrafos. Dos párrafos en líneas consecutivas se convierten en uno — cada línea se añade al párrafo anterior.
+- **Anida las listas con exactamente dos espacios por nivel.** Un único espacio se parsea como un elemento de nivel 1. Tres o cuatro espacios se redondean hacia abajo al nivel 2 (el motor aplica `floor(leading / 2) + 1`, limitado a profundidad 5). Las tabulaciones no se reconocen — conviértelas a espacios.
+- **No indentes el primer elemento de la lista.** Los elementos de nivel 1 empiezan en la columna 0. Cualquier espacio en blanco inicial aumenta la profundidad de forma implícita.
+- **Las marcas de tarea van entre corchetes con un único espacio.** `[ ]`, `[x]`, `[X]` — sin variaciones. `[*]` o `[-]` no son marcas de tarea; se renderizan como texto literal.
+- **No se admiten citas dentro de listas.** Empieza la cita en la columna 0, fuera de la lista.
+- **Las imágenes y tablas viven en `resources`.** El `![alt](src)` en línea se elimina precisamente porque rompe la colocación consciente de columnas. Declara cada imagen como recurso y refiérela por id — el motor decide si flota, rompe la columna o se desplaza al inicio de la página siguiente.
+
+
+## Ejemplo completo
+
+Un documento breve que ejercita todas las construcciones admitidas:
+
+```md
+---
+title: El oficio del tipógrafo
+author: Anónimo
+---
+
+# Apertura
+
+Un buen libro se lee solo. El **lector** no debería percibir nunca el
+trabajo del tipógrafo — solo la voz del autor.
+
+## Qué hace legible al texto
+
+Tres propiedades son determinantes:
+
+1. El ancho de carro — entre 40 y 75 caracteres por línea.
+2. La interlínea — entre 1,3 y 1,5 veces el tamaño de fuente.
+   a. Más ajustada en anchos cortos.
+   b. Más holgada en anchos largos.
+3. El contraste entre cuerpo y encabezados.
+
+Entre los fallos habituales están:
+
+- Líneas que atraviesan toda la página.
+- Encabezados que flotan sin un párrafo detrás.
+- Huérfanas y viudas en los límites de columna.
+
+> La tipografía es el oficio de dotar al lenguaje humano de una forma
+> visual duradera.
+> — Robert Bringhurst
+
+### Lista de comprobación
+
+- [x] Ancho de columna por debajo de 75 caracteres
+- [x] Interlínea ajustada a 1,5
+- [ ] Paso de huérfanas y viudas
+- [ ] Corrección final
+```
+
+Ese mismo documento, procesado por el motor, produce un `VDTDocument` estructurado cuyas páginas contienen cada uno de estos bloques como entradas tipadas — consulta la página de [Arquitectura](/es/docs/architecture) para ver cómo los bloques se convierten en geometría.

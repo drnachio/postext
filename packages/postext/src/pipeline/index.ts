@@ -1,0 +1,1 @@
+export { buildDocument } from './build';

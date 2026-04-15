@@ -1,269 +1,4 @@
-import type { PostextConfig } from 'postext';
-import type { ReactNode } from 'react';
-
-export interface SandboxLabels {
-  // Panel names
-  configuration: string;
-  resources: string;
-  markdownEditor: string;
-
-  // Viewport tabs
-  canvas: string;
-  html: string;
-  pdf: string;
-
-  // Placeholders
-  comingSoon: string;
-  resourcesComingSoonDescription: string;
-  pdfComingSoonDescription: string;
-
-  // Page section
-  page: string;
-  pageBackgroundColor: string;
-  pageBackgroundColorTooltip: string;
-  pageSize: string;
-  pageSizeTooltip: string;
-  custom: string;
-  width: string;
-  widthTooltip: string;
-  height: string;
-  heightTooltip: string;
-  marginTop: string;
-  marginBottom: string;
-  marginLeft: string;
-  marginRight: string;
-  marginsTooltip: string;
-  dpi: string;
-  dpiTooltip: string;
-  cutLines: string;
-  cutLinesTooltip: string;
-  cutLinesBleed: string;
-  cutLinesBleedTooltip: string;
-  cutLinesMarkLength: string;
-  cutLinesMarkLengthTooltip: string;
-  cutLinesMarkOffset: string;
-  cutLinesMarkOffsetTooltip: string;
-  cutLinesMarkWidth: string;
-  cutLinesMarkWidthTooltip: string;
-  cutLinesColor: string;
-  cutLinesColorTooltip: string;
-  baselineGrid: string;
-  baselineGridTooltip: string;
-  baselineGridColor: string;
-  baselineGridColorTooltip: string;
-  baselineGridLineWidth: string;
-  baselineGridLineWidthTooltip: string;
-
-  // Debug section
-  debug: string;
-  debugCursorSync: string;
-  debugCursorSyncTooltip: string;
-  debugCursorSyncColor: string;
-  debugCursorSyncColorTooltip: string;
-  debugSelectionSync: string;
-  debugSelectionSyncTooltip: string;
-  debugSelectionSyncColor: string;
-  debugSelectionSyncColorTooltip: string;
-
-  // Body text section
-  bodyText: string;
-  bodyFont: string;
-  bodyFontTooltip: string;
-  bodyFontSearch: string;
-  bodyFontNoResults: string;
-  bodyFontSize: string;
-  bodyFontSizeTooltip: string;
-  bodyLineHeight: string;
-  bodyLineHeightTooltip: string;
-  bodyParagraphSpacing: string;
-  bodyParagraphSpacingTooltip: string;
-  bodyColor: string;
-  bodyColorTooltip: string;
-  bodyTextAlign: string;
-  bodyTextAlignTooltip: string;
-  bodyTextAlignLeft: string;
-  bodyTextAlignJustify: string;
-  bodyHyphenation: string;
-  bodyHyphenationTooltip: string;
-  bodyFontWeight: string;
-  bodyFontWeightTooltip: string;
-  bodyBoldFontWeight: string;
-  bodyBoldFontWeightTooltip: string;
-  bodyHyphenationLocale: string;
-  bodyHyphenationLocaleTooltip: string;
-  bodyFirstLineIndent: string;
-  bodyFirstLineIndentTooltip: string;
-  bodyHangingIndent: string;
-  bodyHangingIndentTooltip: string;
-
-  // Headings section
-  headings: string;
-  headingsFont: string;
-  headingsFontTooltip: string;
-  headingsFontSearch: string;
-  headingsFontNoResults: string;
-  headingsLineHeight: string;
-  headingsLineHeightTooltip: string;
-  headingsColor: string;
-  headingsColorTooltip: string;
-  headingLevel: string;
-  headingFontSize: string;
-  headingFontSizeTooltip: string;
-  headingLineHeight: string;
-  headingLineHeightTooltip: string;
-  headingFont: string;
-  headingFontTooltip: string;
-  headingFontSearch: string;
-  headingFontNoResults: string;
-  headingColor: string;
-  headingColorTooltip: string;
-  headingsFontWeight: string;
-  headingsFontWeightTooltip: string;
-  headingsMarginTop: string;
-  headingsMarginTopTooltip: string;
-  headingsMarginBottom: string;
-  headingsMarginBottomTooltip: string;
-  headingsTextAlign: string;
-  headingsTextAlignTooltip: string;
-  headingsTextAlignLeft: string;
-  headingsTextAlignJustify: string;
-  headingFontWeight: string;
-  headingFontWeightTooltip: string;
-  headingMarginTop: string;
-  headingMarginTopTooltip: string;
-  headingMarginBottom: string;
-  headingMarginBottomTooltip: string;
-  headingNumberingTemplate: string;
-  headingNumberingTemplateTooltip: string;
-  headingNumberingTemplatePlaceholder: string;
-  headingItalic: string;
-  headingItalicTooltip: string;
-
-  // Unordered lists section
-  unorderedLists: string;
-  unorderedListsFont: string;
-  unorderedListsFontTooltip: string;
-  unorderedListsFontSearch: string;
-  unorderedListsFontNoResults: string;
-  unorderedListsColor: string;
-  unorderedListsColorTooltip: string;
-  unorderedListsFontWeight: string;
-  unorderedListsFontWeightTooltip: string;
-  unorderedListsItalic: string;
-  unorderedListsItalicTooltip: string;
-  unorderedListsBulletChar: string;
-  unorderedListsBulletCharTooltip: string;
-  unorderedListsBulletCharPlaceholder: string;
-  unorderedListsBulletFontSize: string;
-  unorderedListsBulletFontSizeTooltip: string;
-  unorderedListsGap: string;
-  unorderedListsGapTooltip: string;
-  unorderedListsIndent: string;
-  unorderedListsIndentTooltip: string;
-  unorderedListsBulletVerticalOffset: string;
-  unorderedListsBulletVerticalOffsetTooltip: string;
-  unorderedListsMarginTop: string;
-  unorderedListsMarginTopTooltip: string;
-  unorderedListsMarginBottom: string;
-  unorderedListsMarginBottomTooltip: string;
-  unorderedListsItemSpacing: string;
-  unorderedListsItemSpacingTooltip: string;
-  unorderedListsHangingIndent: string;
-  unorderedListsHangingIndentTooltip: string;
-  unorderedListLevel: string;
-  unorderedListLevelBulletChar: string;
-  unorderedListLevelBulletCharTooltip: string;
-  unorderedListLevelFont: string;
-  unorderedListLevelFontTooltip: string;
-  unorderedListLevelFontSize: string;
-  unorderedListLevelFontSizeTooltip: string;
-  unorderedListLevelColor: string;
-  unorderedListLevelColorTooltip: string;
-  unorderedListLevelFontWeight: string;
-  unorderedListLevelFontWeightTooltip: string;
-  unorderedListLevelItalic: string;
-  unorderedListLevelItalicTooltip: string;
-  unorderedListLevelIndent: string;
-  unorderedListLevelIndentTooltip: string;
-  unorderedListLevelVerticalOffset: string;
-  unorderedListLevelVerticalOffsetTooltip: string;
-
-  // Layout section
-  layout: string;
-  layoutType: string;
-  layoutTypeTooltip: string;
-  layoutSingle: string;
-  layoutDouble: string;
-  layoutOneAndHalf: string;
-  gutterWidth: string;
-  gutterWidthTooltip: string;
-  sideColumnPercent: string;
-  sideColumnPercentTooltip: string;
-  columnRule: string;
-  columnRuleTooltip: string;
-  columnRuleColor: string;
-  columnRuleColorTooltip: string;
-  columnRuleLineWidth: string;
-  columnRuleLineWidthTooltip: string;
-
-  // Canvas viewport toolbar
-  zoomIn: string;
-  zoomOut: string;
-  fitWidth: string;
-  fitHeight: string;
-  singlePage: string;
-  doublePageSpread: string;
-  canvasToolbar: string;
-
-  // Toolbar actions
-  bold: string;
-  italic: string;
-  heading: string;
-  link: string;
-  code: string;
-  blockquote: string;
-  orderedList: string;
-  unorderedList: string;
-  undo: string;
-  redo: string;
-
-  // Persistence
-  save: string;
-  load: string;
-  exportFile: string;
-  importFile: string;
-  reset: string;
-  resetConfigConfirm: string;
-  resetSectionConfirm: string;
-  resetMarkdownConfirm: string;
-}
-
-export type PanelId = 'markdown' | 'config' | 'resources';
-export type ViewportTab = 'canvas' | 'html' | 'pdf';
-
-export interface PostextSandboxProps {
-  initialMarkdown?: string;
-  initialConfig?: PostextConfig;
-  className?: string;
-  labels?: Partial<SandboxLabels>;
-  locale?: string;
-  onConfigChange?: (config: PostextConfig) => void;
-  onMarkdownChange?: (markdown: string) => void;
-  themeToggle?: ReactNode;
-  languageSwitcher?: ReactNode;
-  homeUrl?: string;
-  homeLink?: ReactNode;
-}
-
-export interface ToolbarAction {
-  id: string;
-  icon: ReactNode;
-  label: string;
-  action: (params: {
-    insert: (before: string, after?: string) => void;
-    wrapSelection: (before: string, after: string) => void;
-  }) => void;
-}
+import type { SandboxLabels } from './labels';
 
 export const DEFAULT_LABELS: SandboxLabels = {
   configuration: 'Configuration',
@@ -319,6 +54,12 @@ export const DEFAULT_LABELS: SandboxLabels = {
   debugSelectionSyncTooltip: 'Highlight the editor text selection live on the canvas preview',
   debugSelectionSyncColor: 'Selection Color',
   debugSelectionSyncColorTooltip: 'Fill color of the selection highlight drawn over the canvas',
+  debugLooseLines: 'Loose Lines',
+  debugLooseLinesTooltip: 'Highlight justified lines where word spacing exceeds the threshold',
+  debugLooseLinesColor: 'Highlight Color',
+  debugLooseLinesColorTooltip: 'Fill color used to mark loose lines on the canvas',
+  debugLooseLinesThreshold: 'Threshold',
+  debugLooseLinesThresholdTooltip: 'Multiplier of the normal space width above which a justified line is considered loose',
   bodyText: 'Body Text',
   bodyFont: 'Font',
   bodyFontTooltip: 'Font family for the body text',
@@ -332,6 +73,10 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyParagraphSpacingTooltip: 'When enabled, insert a blank line (equal to line height) between consecutive paragraphs',
   bodyColor: 'Text Color',
   bodyColorTooltip: 'Color of the body text',
+  bodyBoldColor: 'Bold Color',
+  bodyBoldColorTooltip: 'Default color for bold text in body paragraphs. When unset, inherits the text color.',
+  bodyItalicColor: 'Italic Color',
+  bodyItalicColorTooltip: 'Default color for italic text in body paragraphs. When unset, inherits the text color.',
   bodyTextAlign: 'Text Alignment',
   bodyTextAlignTooltip: 'Horizontal alignment of body text paragraphs',
   bodyTextAlignLeft: 'Ragged Right',
@@ -348,6 +93,10 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyFirstLineIndentTooltip: 'Indent applied to the first line of each paragraph',
   bodyHangingIndent: 'Hanging Indent',
   bodyHangingIndentTooltip: 'When enabled, all lines except the first are indented (French indent)',
+  bodyMaxWordSpacing: 'Max Word Spacing',
+  bodyMaxWordSpacingTooltip: 'Maximum word spacing in justified text, as a multiplier of the normal space width',
+  bodyMinWordSpacing: 'Min Word Spacing',
+  bodyMinWordSpacingTooltip: 'Minimum word spacing in justified text, as a multiplier of the normal space width',
   headings: 'Headings',
   headingsFont: 'Font',
   headingsFontTooltip: 'Default font family for all headings',
@@ -436,6 +185,73 @@ export const DEFAULT_LABELS: SandboxLabels = {
   unorderedListLevelIndentTooltip: 'Horizontal indent from the column edge to the bullet for this depth level',
   unorderedListLevelVerticalOffset: 'Vertical Offset',
   unorderedListLevelVerticalOffsetTooltip: 'Override vertical nudge for this depth level. Negative = up, positive = down.',
+  taskLists: 'Task Lists',
+  taskCheckboxChar: 'Unchecked Character',
+  taskCheckboxCharTooltip: 'Glyph used as the checkbox for pending task items (`- [ ]`).',
+  taskCheckboxCharPlaceholder: 'e.g. ☐, ☒, [ ]',
+  taskCheckedChar: 'Checked Character',
+  taskCheckedCharTooltip: 'Glyph used as the checkbox for completed task items (`- [x]`).',
+  taskCheckedCharPlaceholder: 'e.g. ☑, ✓, [x]',
+  taskCompletedStrikethrough: 'Strikethrough Completed',
+  taskCompletedStrikethroughTooltip: 'Draw a line through the text of completed task items.',
+  taskCompletedColor: 'Completed Color',
+  taskCompletedColorTooltip: 'Text color for completed task items. When unset, the body color is used.',
+  orderedLists: 'Ordered Lists',
+  orderedListsFont: 'Number Font',
+  orderedListsFontTooltip: 'Default font family used to render ordered list numbers (inherits from body text when unset).',
+  orderedListsFontSearch: 'Search fonts...',
+  orderedListsFontNoResults: 'No fonts found',
+  orderedListsColor: 'Number Color',
+  orderedListsColorTooltip: 'Default color for ordered list numbers (inherits from body text when unset).',
+  orderedListsFontWeight: 'Number Weight',
+  orderedListsFontWeightTooltip: 'Default font weight for ordered list numbers (100-900).',
+  orderedListsItalic: 'Italic',
+  orderedListsItalicTooltip: 'Render ordered list numbers in italic.',
+  orderedListsNumberFormat: 'Number Format',
+  orderedListsNumberFormatTooltip: 'Default numbering format for every depth level.',
+  orderedListsNumberFormatArabic: 'Arabic (1, 2, 3)',
+  orderedListsNumberFormatLowerAlpha: 'Lower Alpha (a, b, c)',
+  orderedListsNumberFormatUpperAlpha: 'Upper Alpha (A, B, C)',
+  orderedListsNumberFormatLowerRoman: 'Lower Roman (i, ii, iii)',
+  orderedListsNumberFormatUpperRoman: 'Upper Roman (I, II, III)',
+  orderedListsSeparator: 'Separator',
+  orderedListsSeparatorTooltip: 'Character(s) appended after the number (e.g. `.`, `)`, `:`).',
+  orderedListsSeparatorPlaceholder: 'e.g. ., ), :',
+  orderedListsNumberFontSize: 'Number Size',
+  orderedListsNumberFontSizeTooltip: 'Font size for the numbers (em is relative to body text).',
+  orderedListsGap: 'Number Gap',
+  orderedListsGapTooltip: 'Horizontal distance between the number+separator and the start of the item text.',
+  orderedListsIndent: 'Base Indent',
+  orderedListsIndentTooltip: 'Base indent for level 1. Deeper levels cascade from their parent unless overridden.',
+  orderedListsNumberVerticalOffset: 'Vertical Offset',
+  orderedListsNumberVerticalOffsetTooltip: 'Fine-tune number vertical position. Negative values raise, positive values lower.',
+  orderedListsMarginTop: 'Margin Top',
+  orderedListsMarginTopTooltip: 'Space before the first item of a list.',
+  orderedListsMarginBottom: 'Margin Bottom',
+  orderedListsMarginBottomTooltip: 'Space after the last item of a list.',
+  orderedListsItemSpacing: 'Item Spacing',
+  orderedListsItemSpacingTooltip: 'Extra vertical space between consecutive list items.',
+  orderedListsHangingIndent: 'Hanging Indent',
+  orderedListsHangingIndentTooltip: 'When enabled, wrapped lines align to the text start instead of the number column.',
+  orderedListLevel: 'L',
+  orderedListLevelNumberFormat: 'Format',
+  orderedListLevelNumberFormatTooltip: 'Override the numbering format for this depth level.',
+  orderedListLevelSeparator: 'Separator',
+  orderedListLevelSeparatorTooltip: 'Override the separator for this depth level.',
+  orderedListLevelFont: 'Font',
+  orderedListLevelFontTooltip: 'Override the number font for this depth level.',
+  orderedListLevelFontSize: 'Size',
+  orderedListLevelFontSizeTooltip: 'Override the number font size for this depth level.',
+  orderedListLevelColor: 'Color',
+  orderedListLevelColorTooltip: 'Override the number color for this depth level.',
+  orderedListLevelFontWeight: 'Weight',
+  orderedListLevelFontWeightTooltip: 'Override the number font weight for this depth level.',
+  orderedListLevelItalic: 'Italic',
+  orderedListLevelItalicTooltip: 'Render this depth level number in italic.',
+  orderedListLevelIndent: 'Indent',
+  orderedListLevelIndentTooltip: 'Horizontal indent from the column edge to the number column for this depth level.',
+  orderedListLevelVerticalOffset: 'Vertical Offset',
+  orderedListLevelVerticalOffsetTooltip: 'Override vertical nudge for this depth level. Negative = up, positive = down.',
   layout: 'Layout',
   layoutType: 'Layout Type',
   layoutTypeTooltip: 'Column layout mode for the content area',
@@ -477,4 +293,17 @@ export const DEFAULT_LABELS: SandboxLabels = {
   resetConfigConfirm: 'Reset all configuration to defaults?',
   resetSectionConfirm: 'Reset this section to defaults?',
   resetMarkdownConfirm: 'Replace content with the default example?',
+  colorPalette: 'Color palette',
+  colorPaletteTooltip: 'Named colors reusable across all color fields. Changing an entry updates every reference.',
+  colorPaletteEntryName: 'Name',
+  colorPaletteAdd: 'Add color',
+  colorPaletteRemove: 'Remove',
+  colorPaletteNewEntry: 'New color',
+  colorPaletteLink: 'Link to palette',
+  colorPaletteUnlink: 'Unlink',
+  colorPaletteNone: 'No palette entries yet',
+  colorPaletteEditName: 'Edit name',
+  colorPaletteDeleteConfirm: 'Delete this color?',
+  colorPaletteDeleteInUse: 'Used by:',
+  colorPaletteDeleteInUseNote: 'These properties will keep the color but lose the link.',
 };

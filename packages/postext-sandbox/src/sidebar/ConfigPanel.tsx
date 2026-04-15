@@ -6,11 +6,13 @@ import { useSandbox } from '../context/SandboxContext';
 import { exportConfigToJson, importConfigFromJson } from '../storage/persistence';
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
+import { ColorPaletteSection } from './sections/ColorPaletteSection';
 import { PageSection } from './sections/PageSection';
 import { LayoutSection } from './sections/LayoutSection';
 import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
+import { OrderedListsSection } from './sections/OrderedListsSection';
 import { DebugSection } from './sections/DebugSection';
 
 export function ConfigPanel() {
@@ -104,11 +106,13 @@ export function ConfigPanel() {
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
+        <ColorPaletteSection />
         <PageSection />
         <LayoutSection />
         <BodyTextSection />
         <HeadingsSection />
         <UnorderedListsSection />
+        <OrderedListsSection />
         <DebugSection />
       </div>
     </div>

@@ -115,6 +115,12 @@ export interface MeasureBlockOptions {
   hangingIndent?: boolean;
 }
 
+/** Compute the normal space width for a given font, used to express justified
+ *  spacing as a multiplier of the natural space. */
+function normalSpaceWidthFor(font: string): number {
+  return measureTextWidth(' ', font);
+}
+
 /**
  * Measure a text block: break it into lines within maxWidthPx
  * and return VDTLine data with bounding boxes.
@@ -136,6 +142,7 @@ export function measureBlock(
   const shouldHyphenate = options?.hyphenate ?? false;
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
+  const textAlign = options?.textAlign ?? 'left';
   const processedText = shouldHyphenate ? hyphenateText(text) : text;
 
   const prepared = prepareWithSegments(processedText, font);
@@ -143,6 +150,7 @@ export function measureBlock(
   let cursor: LayoutCursor = { segmentIndex: 0, graphemeIndex: 0 };
   let y = 0;
   let lineIndex = 0;
+  const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(font) : 0;
 
   while (true) {
     // First line indent: indent line 0 only. Hanging indent: indent all lines except 0.
@@ -172,6 +180,14 @@ export function measureBlock(
       }
     }
 
+    const justifiedSpaceRatio = computeJustifiedSpaceRatio(
+      segments,
+      lineMaxWidth,
+      normalSpaceWidth,
+      textAlign,
+      isLastLine,
+    );
+
     lines.push({
       text: hyphenated ? cleanSoftHyphens(line.text) + '-' : cleanSoftHyphens(line.text),
       bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
@@ -179,6 +195,7 @@ export function measureBlock(
       hyphenated,
       segments,
       isLastLine,
+      ...(justifiedSpaceRatio !== undefined ? { justifiedSpaceRatio } : {}),
     });
 
     cursor = nextCursor;
@@ -187,6 +204,25 @@ export function measureBlock(
   }
 
   return { lines, totalHeight: y };
+}
+
+function computeJustifiedSpaceRatio(
+  segments: VDTLineSegment[],
+  lineMaxWidth: number,
+  normalSpaceWidth: number,
+  textAlign: TextAlign,
+  isLastLine: boolean,
+): number | undefined {
+  if (textAlign !== 'justify' || isLastLine || normalSpaceWidth <= 0) return undefined;
+  let wordWidth = 0;
+  let spaceCount = 0;
+  for (const s of segments) {
+    if (s.kind === 'space') spaceCount++;
+    else wordWidth += s.width;
+  }
+  if (spaceCount === 0) return undefined;
+  const justifiedSpaceWidth = (lineMaxWidth - wordWidth) / spaceCount;
+  return justifiedSpaceWidth / normalSpaceWidth;
 }
 
 // ---------------------------------------------------------------------------
@@ -217,12 +253,19 @@ function cleanSoftHyphens(text: string): string {
 // Rich text (mixed-weight) measurement
 // ---------------------------------------------------------------------------
 
+interface RichBreakPoint {
+  charIndex: number;
+  widthBefore: number;
+}
+
 interface RichToken {
   text: string;
   bold: boolean;
   italic: boolean;
   kind: 'text' | 'space';
   width: number;
+  breakPoints?: RichBreakPoint[];
+  hyphenWidth?: number;
 }
 
 let _measureCtx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null = null;
@@ -280,13 +323,39 @@ function tokenizeSpans(
 
     for (const part of parts) {
       const isSpace = part.trim().length === 0;
-      tokens.push({
-        text: part,
-        bold: span.bold,
-        italic: span.italic,
-        kind: isSpace ? 'space' : 'text',
-        width: measureTextWidth(part, font),
-      });
+      if (!isSpace && part.includes(SOFT_HYPHEN)) {
+        const clean = part.replace(/\u00AD/g, '');
+        const cleanWidth = measureTextWidth(clean, font);
+        const breakPoints: RichBreakPoint[] = [];
+        let priorSoft = 0;
+        for (let i = 0; i < part.length; i++) {
+          if (part[i] === SOFT_HYPHEN) {
+            const cleanIdx = i - priorSoft;
+            breakPoints.push({
+              charIndex: cleanIdx,
+              widthBefore: measureTextWidth(clean.slice(0, cleanIdx), font),
+            });
+            priorSoft++;
+          }
+        }
+        tokens.push({
+          text: clean,
+          bold: span.bold,
+          italic: span.italic,
+          kind: 'text',
+          width: cleanWidth,
+          breakPoints,
+          hyphenWidth: measureTextWidth('-', font),
+        });
+      } else {
+        tokens.push({
+          text: part,
+          bold: span.bold,
+          italic: span.italic,
+          kind: isSpace ? 'space' : 'text',
+          width: measureTextWidth(part, font),
+        });
+      }
     }
   }
 
@@ -315,7 +384,9 @@ export function measureRichBlock(
   const shouldHyphenate = options?.hyphenate ?? false;
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
+  const textAlign = options?.textAlign ?? 'left';
   const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate);
+  const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(normalFont) : 0;
 
   if (tokens.length === 0) {
     return { lines: [], totalHeight: 0 };
@@ -335,6 +406,7 @@ export function measureRichBlock(
 
     const lineTokens: RichToken[] = [];
     let lineWidth = 0;
+    let lineHyphenated = false;
 
     // Consume leading spaces at line start (skip them)
     while (tokenIdx < tokens.length && tokens[tokenIdx]!.kind === 'space') {
@@ -345,14 +417,59 @@ export function measureRichBlock(
     while (tokenIdx < tokens.length) {
       const token = tokens[tokenIdx]!;
 
-      if (lineWidth + token.width <= lineMaxWidth || lineTokens.length === 0) {
+      if (lineWidth + token.width <= lineMaxWidth) {
         lineTokens.push(token);
         lineWidth += token.width;
         tokenIdx++;
-      } else {
-        // Doesn't fit — break here (before this token)
-        break;
+        continue;
       }
+
+      // Doesn't fit. Try to split at a soft-hyphen.
+      if (token.kind === 'text' && token.breakPoints && token.breakPoints.length > 0) {
+        const remaining = lineMaxWidth - lineWidth;
+        const hyphenW = token.hyphenWidth ?? 0;
+        let chosen: RichBreakPoint | null = null;
+        for (const bp of token.breakPoints) {
+          if (bp.widthBefore + hyphenW <= remaining) chosen = bp;
+          else break;
+        }
+        if (chosen) {
+          lineTokens.push({
+            text: token.text.slice(0, chosen.charIndex) + '-',
+            bold: token.bold,
+            italic: token.italic,
+            kind: 'text',
+            width: chosen.widthBefore + hyphenW,
+          });
+          lineWidth += chosen.widthBefore + hyphenW;
+          lineHyphenated = true;
+
+          const chosenIdx = chosen.charIndex;
+          const chosenWidth = chosen.widthBefore;
+          const residualBreakPoints = token.breakPoints
+            .filter((bp) => bp.charIndex > chosenIdx)
+            .map((bp) => ({ charIndex: bp.charIndex - chosenIdx, widthBefore: bp.widthBefore - chosenWidth }));
+          tokens[tokenIdx] = {
+            text: token.text.slice(chosenIdx),
+            bold: token.bold,
+            italic: token.italic,
+            kind: 'text',
+            width: token.width - chosenWidth,
+            ...(residualBreakPoints.length > 0
+              ? { breakPoints: residualBreakPoints, hyphenWidth: token.hyphenWidth }
+              : {}),
+          };
+          break;
+        }
+      }
+
+      // No viable split. If line is empty, force-fit this token; else break to next line.
+      if (lineTokens.length === 0) {
+        lineTokens.push(token);
+        lineWidth += token.width;
+        tokenIdx++;
+      }
+      break;
     }
 
     if (lineTokens.length === 0) break;
@@ -383,13 +500,22 @@ export function measureRichBlock(
     const lineText = lineTokens.map((t) => cleanSoftHyphens(t.text)).join('');
     const contentWidth = lineTokens.reduce((sum, t) => sum + t.width, 0);
 
+    const justifiedSpaceRatio = computeJustifiedSpaceRatio(
+      segments,
+      lineMaxWidth,
+      normalSpaceWidth,
+      textAlign,
+      isLastLine,
+    );
+
     lines.push({
       text: lineText,
       bbox: createBoundingBox(lineIndent, y, contentWidth, lineHeightPx),
       baseline: y + lineHeightPx * 0.8,
-      hyphenated: false,
+      hyphenated: lineHyphenated,
       segments,
       isLastLine,
+      ...(justifiedSpaceRatio !== undefined ? { justifiedSpaceRatio } : {}),
     });
 
     y += lineHeightPx;

@@ -146,6 +146,18 @@ function pickSegmentFont(
   return font;
 }
 
+function pickSegmentColor(
+  bold: boolean,
+  italic: boolean,
+  color: string,
+  boldColor: string | undefined,
+  italicColor: string | undefined,
+): string {
+  if (bold && boldColor) return boldColor;
+  if (italic && italicColor) return italicColor;
+  return color;
+}
+
 function renderLine(
   ctx: CanvasRenderingContext2D,
   line: VDTLine,
@@ -154,6 +166,8 @@ function renderLine(
   italicFont: string | undefined,
   boldItalicFont: string | undefined,
   color: string,
+  boldColor: string | undefined,
+  italicColor: string | undefined,
   textAlign: 'left' | 'justify',
   columnWidth: number,
   columnX: number,
@@ -185,6 +199,7 @@ function renderLine(
           x += justifiedSpaceWidth;
         } else {
           ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
+          ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
           ctx.fillText(seg.text, x, line.baseline);
           x += seg.width;
         }
@@ -202,6 +217,7 @@ function renderLine(
         x += seg.width;
       } else {
         ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
+        ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
         ctx.fillText(seg.text, x, line.baseline);
         x += seg.width;
       }
@@ -226,6 +242,22 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   ctx.restore();
 }
 
+function renderStrikethrough(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
+  if (!block.strikethroughText) return;
+  ctx.save();
+  ctx.strokeStyle = block.color;
+  ctx.lineWidth = Math.max(1, block.lines[0]?.bbox.height ? block.lines[0].bbox.height * 0.05 : 1);
+  for (const line of block.lines) {
+    // Mid-height of the line box, close to x-height center.
+    const y = line.baseline - (line.bbox.height * 0.28);
+    ctx.beginPath();
+    ctx.moveTo(line.bbox.x, y);
+    ctx.lineTo(line.bbox.x + line.bbox.width, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function renderBlock(
   ctx: CanvasRenderingContext2D,
   block: VDTBlock,
@@ -244,10 +276,15 @@ function renderBlock(
       block.italicFontString,
       block.boldItalicFontString,
       block.color,
+      block.boldColor,
+      block.italicColor,
       block.textAlign,
       columnWidth,
       columnX,
     );
+  }
+  if (block.strikethroughText) {
+    renderStrikethrough(ctx, block);
   }
 }
 

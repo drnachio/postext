@@ -1,379 +1,36 @@
-import type { PostextContent, PostextConfig, ResolvedHeadingLevelConfig, ResolvedUnorderedListLevelConfig, TextAlign } from './types';
-import {
-  resolvePageConfig,
-  resolveLayoutConfig,
-  resolveBodyTextConfig,
-  resolveHeadingsConfig,
-  resolveUnorderedListsConfig,
-} from './defaults';
-import { dimensionToPx } from './units';
+import type { PostextContent, PostextConfig } from '../types';
+import type { ListKind } from '../parse';
+import { dimensionToPx } from '../units';
 import {
   createBoundingBox,
   createVDTDocument,
-  createVDTPage,
-  createVDTColumn,
   createVDTBlock,
-  type BoundingBox,
-  type ResolvedConfig,
   type VDTDocument,
   type VDTBlock,
-  type VDTLine,
-  type VDTPage,
-  type VDTColumn,
-} from './vdt';
-import { parseMarkdown } from './parse';
-import { computeHeadingNumbers, type HeadingTemplates } from './numbering';
-import { extractFrontmatter } from './frontmatter';
-import { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator } from './measure';
-
-// ---------------------------------------------------------------------------
-// Config resolution helpers
-// ---------------------------------------------------------------------------
-
-function resolveAllConfig(config?: PostextConfig): ResolvedConfig {
-  const bodyText = resolveBodyTextConfig(config?.bodyText);
-  return {
-    page: resolvePageConfig(config?.page),
-    layout: resolveLayoutConfig(config?.layout),
-    bodyText,
-    headings: resolveHeadingsConfig(config?.headings),
-    unorderedLists: resolveUnorderedListsConfig(config?.unorderedLists, bodyText),
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Baseline grid computation
-// ---------------------------------------------------------------------------
-
-function computeBaselineGrid(resolved: ResolvedConfig): number {
-  const dpi = resolved.page.dpi;
-  const bodyFontSizePx = dimensionToPx(resolved.bodyText.fontSize, dpi);
-  const lineHeightDim = resolved.bodyText.lineHeight;
-
-  // em/rem: multiplier of font size; pt/px/cm/etc: absolute
-  if (lineHeightDim.unit === 'em' || lineHeightDim.unit === 'rem') {
-    return bodyFontSizePx * lineHeightDim.value;
-  }
-  return dimensionToPx(lineHeightDim, dpi, bodyFontSizePx);
-}
-
-// ---------------------------------------------------------------------------
-// Column layout computation
-// ---------------------------------------------------------------------------
-
-function computeColumnBboxes(
-  contentArea: BoundingBox,
-  resolved: ResolvedConfig,
-): BoundingBox[] {
-  const { layoutType, gutterWidth, sideColumnPercent } = resolved.layout;
-  const dpi = resolved.page.dpi;
-
-  if (layoutType === 'single') {
-    return [createBoundingBox(contentArea.x, contentArea.y, contentArea.width, contentArea.height)];
-  }
-
-  const gutterPx = dimensionToPx(gutterWidth, dpi);
-
-  if (layoutType === 'double') {
-    const colWidth = (contentArea.width - gutterPx) / 2;
-    return [
-      createBoundingBox(contentArea.x, contentArea.y, colWidth, contentArea.height),
-      createBoundingBox(contentArea.x + colWidth + gutterPx, contentArea.y, colWidth, contentArea.height),
-    ];
-  }
-
-  // oneAndHalf
-  const sideWidth = contentArea.width * (sideColumnPercent / 100);
-  const mainWidth = contentArea.width - sideWidth - gutterPx;
-  return [
-    createBoundingBox(contentArea.x, contentArea.y, mainWidth, contentArea.height),
-    createBoundingBox(contentArea.x + mainWidth + gutterPx, contentArea.y, sideWidth, contentArea.height),
-  ];
-}
-
-// ---------------------------------------------------------------------------
-// Style resolution for blocks
-// ---------------------------------------------------------------------------
-
-interface BlockStyle {
-  fontString: string;
-  boldFontString?: string;
-  italicFontString?: string;
-  boldItalicFontString?: string;
-  fontSizePx: number;
-  lineHeightPx: number;
-  color: string;
-  textAlign: TextAlign;
-  hyphenate: boolean;
-  marginTopPx: number;
-  marginBottomPx: number;
-  firstLineIndentPx: number;
-  hangingIndent: boolean;
-}
-
-interface ListBulletStyle {
-  indentPx: number;
-  bulletText: string;
-  bulletFontString: string;
-  bulletColor: string;
-  bulletWidthPx: number;
-  gapPx: number;
-  hangingIndent: boolean;
-  itemSpacingPx: number;
-  textFontSizePx: number;
-  verticalOffsetPx: number;
-}
-
-function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
-  const dpi = resolved.page.dpi;
-  const fontSizePx = dimensionToPx(resolved.bodyText.fontSize, dpi);
-  const lineHeightPx = computeBaselineGrid(resolved);
-  const weight = resolved.bodyText.fontWeight.toString();
-  const fontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight);
-  const boldWeight = resolved.bodyText.boldFontWeight.toString();
-  const boldFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight);
-  const italicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'italic');
-  const boldItalicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'italic');
-  const textAlign = resolved.bodyText.textAlign;
-  const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
-  const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
-  const hangingIndent = resolved.bodyText.hangingIndent;
-  const marginBottomPx = resolved.bodyText.paragraphSpacing ? lineHeightPx : 0;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent };
-}
-
-function resolveHeadingStyle(
-  level: number,
-  resolved: ResolvedConfig,
-): BlockStyle {
-  const dpi = resolved.page.dpi;
-  const headingConfig: ResolvedHeadingLevelConfig =
-    resolved.headings.levels.find((l) => l.level === level) ?? resolved.headings.levels[0]!;
-
-  const fontSizePx = dimensionToPx(headingConfig.fontSize, dpi);
-  const lineHeightDim = headingConfig.lineHeight;
-  let lineHeightPx: number;
-  if (lineHeightDim.unit === 'em' || lineHeightDim.unit === 'rem') {
-    lineHeightPx = fontSizePx * lineHeightDim.value;
-  } else {
-    lineHeightPx = dimensionToPx(lineHeightDim, dpi, fontSizePx);
-  }
-
-  const weight = headingConfig.fontWeight.toString();
-  const baseItalic = headingConfig.italic ? 'italic' : 'normal';
-  const flipItalic = headingConfig.italic ? 'normal' : 'italic';
-  const fontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, baseItalic);
-  const boldFontString = fontString;
-  const italicFontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, flipItalic);
-  const boldItalicFontString = italicFontString;
-  const textAlign = resolved.headings.textAlign;
-  const marginTopPx = dimensionToPx(headingConfig.marginTop, dpi, fontSizePx);
-  const marginBottomPx = dimensionToPx(headingConfig.marginBottom, dpi, fontSizePx);
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false };
-}
-
-function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
-  const dpi = resolved.page.dpi;
-  const fontSizePx = dimensionToPx(resolved.bodyText.fontSize, dpi);
-  const lineHeightPx = computeBaselineGrid(resolved);
-  const weight = resolved.bodyText.fontWeight.toString();
-  const fontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'italic');
-  const boldWeight = resolved.bodyText.boldFontWeight.toString();
-  const boldFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'italic');
-  // Inside a blockquote (already italic), `*text*` flips back to upright.
-  const italicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'normal');
-  const boldItalicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'normal');
-  const textAlign = resolved.bodyText.textAlign;
-  const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
-  const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
-  const hangingIndent = resolved.bodyText.hangingIndent;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: '#666666', textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
-}
-
-/**
- * Compute the effective indent in px for each list level.
- * User-overridden `indent` is honored directly. Otherwise level 1 falls back to
- * the general indent, and deeper levels cascade from the previous level's
- * text-start position (prev indent + prev bullet width + gap).
- */
-function computeLevelIndentsPx(resolved: ResolvedConfig, bodyFontSizePx: number): number[] {
-  const dpi = resolved.page.dpi;
-  const lists = resolved.unorderedLists;
-  const gapPx = dimensionToPx(lists.gap, dpi, bodyFontSizePx);
-  const generalIndentPx = dimensionToPx(lists.indent, dpi, bodyFontSizePx);
-  const result: number[] = [];
-  for (let i = 0; i < lists.levels.length; i++) {
-    const level = lists.levels[i]!;
-    let indentPx: number;
-    if (level.indent !== undefined) {
-      indentPx = dimensionToPx(level.indent, dpi, bodyFontSizePx);
-    } else if (i === 0) {
-      indentPx = generalIndentPx;
-    } else {
-      const prev = lists.levels[i - 1]!;
-      const prevFontSizePx = dimensionToPx(prev.fontSize, dpi, bodyFontSizePx);
-      const prevFontString = buildFontString(
-        prev.fontFamily,
-        prevFontSizePx,
-        prev.fontWeight.toString(),
-        prev.italic ? 'italic' : 'normal',
-      );
-      const prevBulletWidthPx = measureGlyphWidth(prev.bulletChar, prevFontString);
-      indentPx = result[i - 1]! + prevBulletWidthPx + gapPx;
-    }
-    result.push(indentPx);
-  }
-  return result;
-}
-
-function resolveListItemStyle(
-  depth: number,
-  resolved: ResolvedConfig,
-  levelIndentsPx: number[],
-): { text: BlockStyle; bullet: ListBulletStyle } {
-  const dpi = resolved.page.dpi;
-  const bodyStyle = resolveBodyStyle(resolved);
-  const lists = resolved.unorderedLists;
-  const levelIdx = Math.max(0, Math.min(lists.levels.length - 1, depth - 1));
-  const levelConfig: ResolvedUnorderedListLevelConfig = lists.levels[levelIdx]!;
-
-  const bulletFontSizePx = dimensionToPx(levelConfig.fontSize, dpi, bodyStyle.fontSizePx);
-  const bulletWeight = levelConfig.fontWeight.toString();
-  const bulletStyle = levelConfig.italic ? 'italic' : 'normal';
-  const bulletFontString = buildFontString(levelConfig.fontFamily, bulletFontSizePx, bulletWeight, bulletStyle);
-
-  const indentPx = levelIndentsPx[levelIdx] ?? 0;
-  const gapPx = dimensionToPx(lists.gap, dpi, bodyStyle.fontSizePx);
-  const bulletWidthPx = measureGlyphWidth(levelConfig.bulletChar, bulletFontString);
-  const itemSpacingPx = dimensionToPx(lists.itemSpacing, dpi, bodyStyle.fontSizePx);
-  const verticalOffsetPx = dimensionToPx(levelConfig.verticalOffset, dpi, bodyStyle.fontSizePx);
-  const marginTopPx = dimensionToPx(lists.marginTop, dpi, bodyStyle.fontSizePx);
-  const marginBottomPx = dimensionToPx(lists.marginBottom, dpi, bodyStyle.fontSizePx);
-
-  const text: BlockStyle = {
-    ...bodyStyle,
-    marginTopPx,
-    marginBottomPx,
-    firstLineIndentPx: 0,
-    hangingIndent: false,
-    textAlign: 'left',
-    hyphenate: false,
-  };
-
-  const bullet: ListBulletStyle = {
-    indentPx,
-    bulletText: levelConfig.bulletChar,
-    bulletFontString,
-    bulletColor: levelConfig.color.hex,
-    bulletWidthPx,
-    gapPx,
-    hangingIndent: lists.hangingIndent,
-    itemSpacingPx,
-    textFontSizePx: bodyStyle.fontSizePx,
-    verticalOffsetPx,
-  };
-
-  return { text, bullet };
-}
-
-// ---------------------------------------------------------------------------
-// Line position reset (for split blocks)
-// ---------------------------------------------------------------------------
-
-function resetLinePositions(
-  lines: VDTLine[],
-  lineHeightPx: number,
-): VDTLine[] {
-  return lines.map((line, i) => ({
-    ...line,
-    bbox: createBoundingBox(line.bbox.x, i * lineHeightPx, line.bbox.width, lineHeightPx),
-    baseline: i * lineHeightPx + lineHeightPx * 0.8,
-  }));
-}
-
-// ---------------------------------------------------------------------------
-// Page creation with columns
-// ---------------------------------------------------------------------------
-
-function createPageWithColumns(
-  pageIndex: number,
-  resolved: ResolvedConfig,
-  contentArea: BoundingBox,
-  pageWidthPx: number,
-  pageHeightPx: number,
-): VDTPage {
-  const page = createVDTPage(pageIndex, pageWidthPx, pageHeightPx);
-  const colBboxes = computeColumnBboxes(contentArea, resolved);
-  for (let i = 0; i < colBboxes.length; i++) {
-    page.columns.push(createVDTColumn(i, colBboxes[i]!));
-  }
-  return page;
-}
-
-// ---------------------------------------------------------------------------
-// Block placement
-// ---------------------------------------------------------------------------
-
-interface PlacementCursor {
-  pageIndex: number;
-  columnIndex: number;
-}
-
-function currentColumn(doc: VDTDocument, cursor: PlacementCursor): VDTColumn {
-  return doc.pages[cursor.pageIndex]!.columns[cursor.columnIndex]!;
-}
-
-function advanceToNextColumn(
-  doc: VDTDocument,
-  cursor: PlacementCursor,
-  resolved: ResolvedConfig,
-  contentArea: BoundingBox,
-  pageWidthPx: number,
-  pageHeightPx: number,
-): void {
-  const page = doc.pages[cursor.pageIndex]!;
-  if (cursor.columnIndex < page.columns.length - 1) {
-    cursor.columnIndex++;
-  } else {
-    // New page
-    const newPage = createPageWithColumns(
-      doc.pages.length,
-      resolved,
-      contentArea,
-      pageWidthPx,
-      pageHeightPx,
-    );
-    doc.pages.push(newPage);
-    cursor.pageIndex = newPage.index;
-    cursor.columnIndex = 0;
-  }
-}
-
-function placeBlockInColumn(
-  block: VDTBlock,
-  blockHeight: number,
-  col: VDTColumn,
-  cursor: PlacementCursor,
-): void {
-  const y = col.bbox.y + (col.bbox.height - col.availableHeight);
-  block.bbox = createBoundingBox(col.bbox.x, y, col.bbox.width, blockHeight);
-  block.pageIndex = cursor.pageIndex;
-  block.columnIndex = cursor.columnIndex;
-
-  // Offset all line bboxes to absolute page coordinates
-  for (const line of block.lines) {
-    line.bbox.x += col.bbox.x;
-    line.bbox.y += y;
-    line.baseline += y;
-  }
-
-  col.blocks.push(block);
-  col.availableHeight -= blockHeight;
-}
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
+} from '../vdt';
+import { parseMarkdown } from '../parse';
+import { computeHeadingNumbers, type HeadingTemplates } from '../numbering';
+import { extractFrontmatter } from '../frontmatter';
+import { measureBlock, measureRichBlock, initHyphenator } from '../measure';
+import { resolveAllConfig, computeBaselineGrid } from './config';
+import type { BlockStyle } from './styles';
+import { resolveBodyStyle, resolveHeadingStyle, resolveBlockquoteStyle } from './styles';
+import type { ListBulletStyle, ListItemResolved } from './lists';
+import {
+  computeLevelIndentsPx,
+  computeOrderedLevelIndentsPx,
+  computeOrderedListRunMetrics,
+  resolveUnorderedListItemStyle,
+  resolveOrderedListItemStyle,
+} from './lists';
+import type { PlacementCursor } from './placement';
+import {
+  resetLinePositions,
+  createPageWithColumns,
+  currentColumn,
+  advanceToNextColumn,
+  placeBlockInColumn,
+} from './placement';
 
 export function buildDocument(
   content: PostextContent,
@@ -446,6 +103,12 @@ export function buildDocument(
   const bodyStyle = resolveBodyStyle(resolved);
   const blockquoteStyle = resolveBlockquoteStyle(resolved);
   const listLevelIndentsPx = computeLevelIndentsPx(resolved, bodyStyle.fontSizePx);
+  const orderedMetrics = computeOrderedListRunMetrics(contentBlocks, resolved, bodyStyle.fontSizePx);
+  const orderedLevelIndentsPx = computeOrderedLevelIndentsPx(
+    resolved,
+    bodyStyle.fontSizePx,
+    orderedMetrics.maxWidthByDepth,
+  );
 
   // Placement cursor
   const cursor: PlacementCursor = { pageIndex: 0, columnIndex: 0 };
@@ -464,6 +127,9 @@ export function buildDocument(
     let contentBlock = rawBlock;
     let listBullet: ListBulletStyle | undefined;
     let listDepth: number | undefined;
+    let listKind: ListKind | undefined;
+    let bulletXOffsetInColumn = 0;
+    let strikethroughText = false;
 
     switch (rawBlock.type) {
       case 'heading': {
@@ -487,10 +153,28 @@ export function buildDocument(
         break;
       case 'listItem': {
         const depth = rawBlock.depth ?? 1;
-        const resolvedList = resolveListItemStyle(depth, resolved, listLevelIndentsPx);
+        const kind: ListKind = rawBlock.listKind ?? 'unordered';
+        let resolvedList: ListItemResolved;
+        if (kind === 'ordered') {
+          const metric =
+            orderedMetrics.perBlock.get(blockIdx) ??
+            { numberText: '', numberWidthPx: 0, maxNumberWidthPx: 0 };
+          resolvedList = resolveOrderedListItemStyle(depth, resolved, orderedLevelIndentsPx, metric);
+        } else {
+          resolvedList = resolveUnorderedListItemStyle(
+            depth,
+            resolved,
+            listLevelIndentsPx,
+            rawBlock.checked ?? false,
+            kind === 'task',
+          );
+        }
         style = resolvedList.text;
         listBullet = resolvedList.bullet;
         listDepth = depth;
+        listKind = kind;
+        bulletXOffsetInColumn = resolvedList.bulletXOffsetInColumn;
+        strikethroughText = resolvedList.strikethroughText;
         vdtType = 'listItem';
         break;
       }
@@ -599,10 +283,15 @@ export function buildDocument(
     const finalizeListItem = (blk: VDTBlock) => {
       if (!listBullet) return;
       blk.listDepth = listDepth;
+      blk.listKind = listKind;
       blk.bulletText = listBullet.bulletText;
       blk.bulletFontString = listBullet.bulletFontString;
       blk.bulletColor = listBullet.bulletColor;
-      blk.bulletOffsetX = blk.bbox.x + listBullet.indentPx;
+      // `bulletXOffsetInColumn` is `indentPx` for unordered/task, and
+      // `indentPx + (maxNumberWidth - thisNumberWidth)` for ordered — giving
+      // the right-aligned separator.
+      blk.bulletOffsetX = blk.bbox.x + bulletXOffsetInColumn;
+      if (strikethroughText) blk.strikethroughText = true;
       // Bullet Y = x-height midpoint of the item's first text line.
       // Pairs with `textBaseline='middle'` at render so the bullet stays
       // visually centered on the text regardless of its own font size.
@@ -666,6 +355,8 @@ export function buildDocument(
         if (style.boldFontString) blk.boldFontString = style.boldFontString;
         if (style.italicFontString) blk.italicFontString = style.italicFontString;
         if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+        if (style.boldColor) blk.boldColor = style.boldColor;
+        if (style.italicColor) blk.italicColor = style.italicColor;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
         blk.dirty = false;
@@ -686,7 +377,10 @@ export function buildDocument(
           // below is guaranteed to be at least marginBottomPx.
           const usedHeight = curCol.bbox.height - curCol.availableHeight;
           const naturalBottom = usedHeight + totalRemainHeight + style.marginBottomPx;
-          const snappedBottom = Math.ceil(naturalBottom / baselineGrid) * baselineGrid;
+          // Tolerance guards against FP drift: if naturalBottom is already on
+          // the grid (e.g. marginBottom is an exact multiple of baselineGrid),
+          // don't round up to the next line.
+          const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
           h = snappedBottom - usedHeight;
         }
         placeBlockInColumn(blk, h, curCol, cursor);
@@ -716,6 +410,8 @@ export function buildDocument(
         if (style.boldFontString) blk.boldFontString = style.boldFontString;
         if (style.italicFontString) blk.italicFontString = style.italicFontString;
         if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+        if (style.boldColor) blk.boldColor = style.boldColor;
+        if (style.italicColor) blk.italicColor = style.italicColor;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
         blk.dirty = false;
@@ -751,6 +447,8 @@ export function buildDocument(
       if (style.boldFontString) blk.boldFontString = style.boldFontString;
       if (style.italicFontString) blk.italicFontString = style.italicFontString;
       if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+      if (style.boldColor) blk.boldColor = style.boldColor;
+      if (style.italicColor) blk.italicColor = style.italicColor;
       if (partIndex === 0) blk.headingLevel = headingLevel;
       blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
       blk.dirty = false;
