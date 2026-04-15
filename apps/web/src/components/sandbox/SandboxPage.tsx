@@ -75,6 +75,8 @@ export function SandboxPage() {
     bodyFontSizeTooltip: t("bodyFontSizeTooltip"),
     bodyLineHeight: t("bodyLineHeight"),
     bodyLineHeightTooltip: t("bodyLineHeightTooltip"),
+    bodyParagraphSpacing: t("bodyParagraphSpacing"),
+    bodyParagraphSpacingTooltip: t("bodyParagraphSpacingTooltip"),
     bodyColor: t("bodyColor"),
     bodyColorTooltip: t("bodyColorTooltip"),
     bodyTextAlign: t("bodyTextAlign"),

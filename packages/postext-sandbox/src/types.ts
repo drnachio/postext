@@ -75,6 +75,8 @@ export interface SandboxLabels {
   bodyFontSizeTooltip: string;
   bodyLineHeight: string;
   bodyLineHeightTooltip: string;
+  bodyParagraphSpacing: string;
+  bodyParagraphSpacingTooltip: string;
   bodyColor: string;
   bodyColorTooltip: string;
   bodyTextAlign: string;
@@ -277,6 +279,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyFontSizeTooltip: 'Font size for the body text',
   bodyLineHeight: 'Line Height',
   bodyLineHeightTooltip: 'Vertical spacing between lines of text',
+  bodyParagraphSpacing: 'Paragraph Spacing',
+  bodyParagraphSpacingTooltip: 'When enabled, insert a blank line (equal to line height) between consecutive paragraphs',
   bodyColor: 'Text Color',
   bodyColorTooltip: 'Color of the body text',
   bodyTextAlign: 'Text Alignment',

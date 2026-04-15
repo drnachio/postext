@@ -90,6 +90,7 @@ export function BodyTextSection() {
   const isFontDefault = bodyText.fontFamily === D.fontFamily;
   const isSizeDefault = dimensionsEqual(bodyText.fontSize, D.fontSize);
   const isLineHeightDefault = dimensionsEqual(bodyText.lineHeight, D.lineHeight);
+  const isParagraphSpacingDefault = bodyText.paragraphSpacing === D.paragraphSpacing;
   const isColorDefault = colorsEqual(bodyText.color, D.color);
   const isTextAlignDefault = bodyText.textAlign === D.textAlign;
   const isFontWeightDefault = bodyText.fontWeight === D.fontWeight;
@@ -158,6 +159,15 @@ export function BodyTextSection() {
         isDefault={isLineHeightDefault}
         onReset={() => resetField('lineHeight')}
         units={LINE_HEIGHT_UNITS}
+      />
+
+      <ToggleSwitch
+        label={labels.bodyParagraphSpacing}
+        checked={bodyText.paragraphSpacing}
+        onChange={(checked) => updateBodyText({ paragraphSpacing: checked })}
+        tooltip={labels.bodyParagraphSpacingTooltip}
+        isDefault={isParagraphSpacingDefault}
+        onReset={() => resetField('paragraphSpacing')}
       />
 
       <ColorPicker
