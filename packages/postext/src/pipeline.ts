@@ -1,9 +1,10 @@
-import type { PostextContent, PostextConfig, ResolvedHeadingLevelConfig, TextAlign } from './types';
+import type { PostextContent, PostextConfig, ResolvedHeadingLevelConfig, ResolvedUnorderedListLevelConfig, TextAlign } from './types';
 import {
   resolvePageConfig,
   resolveLayoutConfig,
   resolveBodyTextConfig,
   resolveHeadingsConfig,
+  resolveUnorderedListsConfig,
 } from './defaults';
 import { dimensionToPx } from './units';
 import {
@@ -23,18 +24,20 @@ import {
 import { parseMarkdown } from './parse';
 import { computeHeadingNumbers, type HeadingTemplates } from './numbering';
 import { extractFrontmatter } from './frontmatter';
-import { buildFontString, measureBlock, measureRichBlock, initHyphenator } from './measure';
+import { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator } from './measure';
 
 // ---------------------------------------------------------------------------
 // Config resolution helpers
 // ---------------------------------------------------------------------------
 
 function resolveAllConfig(config?: PostextConfig): ResolvedConfig {
+  const bodyText = resolveBodyTextConfig(config?.bodyText);
   return {
     page: resolvePageConfig(config?.page),
     layout: resolveLayoutConfig(config?.layout),
-    bodyText: resolveBodyTextConfig(config?.bodyText),
+    bodyText,
     headings: resolveHeadingsConfig(config?.headings),
+    unorderedLists: resolveUnorderedListsConfig(config?.unorderedLists, bodyText),
   };
 }
 
@@ -108,6 +111,19 @@ interface BlockStyle {
   hangingIndent: boolean;
 }
 
+interface ListBulletStyle {
+  indentPx: number;
+  bulletText: string;
+  bulletFontString: string;
+  bulletColor: string;
+  bulletWidthPx: number;
+  gapPx: number;
+  hangingIndent: boolean;
+  itemSpacingPx: number;
+  textFontSizePx: number;
+  verticalOffsetPx: number;
+}
+
 function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const dpi = resolved.page.dpi;
   const fontSizePx = dimensionToPx(resolved.bodyText.fontSize, dpi);
@@ -172,6 +188,92 @@ function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
   const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = resolved.bodyText.hangingIndent;
   return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: '#666666', textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
+}
+
+/**
+ * Compute the effective indent in px for each list level.
+ * User-overridden `indent` is honored directly. Otherwise level 1 falls back to
+ * the general indent, and deeper levels cascade from the previous level's
+ * text-start position (prev indent + prev bullet width + gap).
+ */
+function computeLevelIndentsPx(resolved: ResolvedConfig, bodyFontSizePx: number): number[] {
+  const dpi = resolved.page.dpi;
+  const lists = resolved.unorderedLists;
+  const gapPx = dimensionToPx(lists.gap, dpi, bodyFontSizePx);
+  const generalIndentPx = dimensionToPx(lists.indent, dpi, bodyFontSizePx);
+  const result: number[] = [];
+  for (let i = 0; i < lists.levels.length; i++) {
+    const level = lists.levels[i]!;
+    let indentPx: number;
+    if (level.indent !== undefined) {
+      indentPx = dimensionToPx(level.indent, dpi, bodyFontSizePx);
+    } else if (i === 0) {
+      indentPx = generalIndentPx;
+    } else {
+      const prev = lists.levels[i - 1]!;
+      const prevFontSizePx = dimensionToPx(prev.fontSize, dpi, bodyFontSizePx);
+      const prevFontString = buildFontString(
+        prev.fontFamily,
+        prevFontSizePx,
+        prev.fontWeight.toString(),
+        prev.italic ? 'italic' : 'normal',
+      );
+      const prevBulletWidthPx = measureGlyphWidth(prev.bulletChar, prevFontString);
+      indentPx = result[i - 1]! + prevBulletWidthPx + gapPx;
+    }
+    result.push(indentPx);
+  }
+  return result;
+}
+
+function resolveListItemStyle(
+  depth: number,
+  resolved: ResolvedConfig,
+  levelIndentsPx: number[],
+): { text: BlockStyle; bullet: ListBulletStyle } {
+  const dpi = resolved.page.dpi;
+  const bodyStyle = resolveBodyStyle(resolved);
+  const lists = resolved.unorderedLists;
+  const levelIdx = Math.max(0, Math.min(lists.levels.length - 1, depth - 1));
+  const levelConfig: ResolvedUnorderedListLevelConfig = lists.levels[levelIdx]!;
+
+  const bulletFontSizePx = dimensionToPx(levelConfig.fontSize, dpi, bodyStyle.fontSizePx);
+  const bulletWeight = levelConfig.fontWeight.toString();
+  const bulletStyle = levelConfig.italic ? 'italic' : 'normal';
+  const bulletFontString = buildFontString(levelConfig.fontFamily, bulletFontSizePx, bulletWeight, bulletStyle);
+
+  const indentPx = levelIndentsPx[levelIdx] ?? 0;
+  const gapPx = dimensionToPx(lists.gap, dpi, bodyStyle.fontSizePx);
+  const bulletWidthPx = measureGlyphWidth(levelConfig.bulletChar, bulletFontString);
+  const itemSpacingPx = dimensionToPx(lists.itemSpacing, dpi, bodyStyle.fontSizePx);
+  const verticalOffsetPx = dimensionToPx(levelConfig.verticalOffset, dpi, bodyStyle.fontSizePx);
+  const marginTopPx = dimensionToPx(lists.marginTop, dpi, bodyStyle.fontSizePx);
+  const marginBottomPx = dimensionToPx(lists.marginBottom, dpi, bodyStyle.fontSizePx);
+
+  const text: BlockStyle = {
+    ...bodyStyle,
+    marginTopPx,
+    marginBottomPx,
+    firstLineIndentPx: 0,
+    hangingIndent: false,
+    textAlign: 'left',
+    hyphenate: false,
+  };
+
+  const bullet: ListBulletStyle = {
+    indentPx,
+    bulletText: levelConfig.bulletChar,
+    bulletFontString,
+    bulletColor: levelConfig.color.hex,
+    bulletWidthPx,
+    gapPx,
+    hangingIndent: lists.hangingIndent,
+    itemSpacingPx,
+    textFontSizePx: bodyStyle.fontSizePx,
+    verticalOffsetPx,
+  };
+
+  return { text, bullet };
 }
 
 // ---------------------------------------------------------------------------
@@ -343,6 +445,7 @@ export function buildDocument(
   // Resolve styles
   const bodyStyle = resolveBodyStyle(resolved);
   const blockquoteStyle = resolveBlockquoteStyle(resolved);
+  const listLevelIndentsPx = computeLevelIndentsPx(resolved, bodyStyle.fontSizePx);
 
   // Placement cursor
   const cursor: PlacementCursor = { pageIndex: 0, columnIndex: 0 };
@@ -359,6 +462,8 @@ export function buildDocument(
     let headingLevel: number | undefined;
     let numberPrefix: string | undefined;
     let contentBlock = rawBlock;
+    let listBullet: ListBulletStyle | undefined;
+    let listDepth: number | undefined;
 
     switch (rawBlock.type) {
       case 'heading': {
@@ -380,6 +485,15 @@ export function buildDocument(
         style = blockquoteStyle;
         vdtType = 'blockquote';
         break;
+      case 'listItem': {
+        const depth = rawBlock.depth ?? 1;
+        const resolvedList = resolveListItemStyle(depth, resolved, listLevelIndentsPx);
+        style = resolvedList.text;
+        listBullet = resolvedList.bullet;
+        listDepth = depth;
+        vdtType = 'listItem';
+        break;
+      }
       default:
         style = bodyStyle;
         vdtType = 'paragraph';
@@ -389,11 +503,31 @@ export function buildDocument(
     // Measure text — use rich measurement for blocks with bold spans
     const col = currentColumn(doc, cursor);
     const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic);
+
+    // List items reserve horizontal space for indent + bullet + gap.
+    let measureMaxWidth = col.bbox.width;
+    let lineXShift = 0;
+    let measureFirstLineIndent = style.firstLineIndentPx;
+    let measureHangingIndent = style.hangingIndent;
+    if (listBullet) {
+      const textGap = listBullet.bulletWidthPx + listBullet.gapPx;
+      if (listBullet.hangingIndent) {
+        measureMaxWidth = Math.max(1, col.bbox.width - listBullet.indentPx - textGap);
+        lineXShift = listBullet.indentPx + textGap;
+        measureFirstLineIndent = 0;
+        measureHangingIndent = false;
+      } else {
+        measureMaxWidth = Math.max(1, col.bbox.width - listBullet.indentPx);
+        lineXShift = listBullet.indentPx;
+        measureFirstLineIndent = textGap;
+        measureHangingIndent = false;
+      }
+    }
     const measureOptions = {
       textAlign: style.textAlign,
       hyphenate: style.hyphenate,
-      firstLineIndentPx: style.firstLineIndentPx,
-      hangingIndent: style.hangingIndent,
+      firstLineIndentPx: measureFirstLineIndent,
+      hangingIndent: measureHangingIndent,
     };
     const measured = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString
       ? measureRichBlock(
@@ -402,19 +536,25 @@ export function buildDocument(
           style.boldFontString,
           style.italicFontString,
           style.boldItalicFontString,
-          col.bbox.width,
+          measureMaxWidth,
           style.lineHeightPx,
           measureOptions,
         )
       : measureBlock(
           contentBlock.text,
           style.fontString,
-          col.bbox.width,
+          measureMaxWidth,
           style.lineHeightPx,
           measureOptions,
         );
 
     if (measured.lines.length === 0) continue;
+
+    if (lineXShift > 0) {
+      for (const line of measured.lines) {
+        line.bbox.x += lineXShift;
+      }
+    }
 
     // Per-line source-range mapping using the block's plain→source map.
     // Accounts for heading numbering prefix which prepends chars with no source.
@@ -456,12 +596,35 @@ export function buildDocument(
 
     const absoluteSourceMap = srcMap.map((o) => o + bodyOffset);
 
+    const finalizeListItem = (blk: VDTBlock) => {
+      if (!listBullet) return;
+      blk.listDepth = listDepth;
+      blk.bulletText = listBullet.bulletText;
+      blk.bulletFontString = listBullet.bulletFontString;
+      blk.bulletColor = listBullet.bulletColor;
+      blk.bulletOffsetX = blk.bbox.x + listBullet.indentPx;
+      // Bullet Y = x-height midpoint of the item's first text line.
+      // Pairs with `textBaseline='middle'` at render so the bullet stays
+      // visually centered on the text regardless of its own font size.
+      const firstLine = blk.lines[0];
+      if (firstLine) {
+        blk.bulletY = firstLine.baseline - listBullet.textFontSizePx * 0.3 + listBullet.verticalOffsetPx;
+      }
+    };
+
+    const nextIsListItem = blockIdx + 1 < contentBlocks.length && contentBlocks[blockIdx + 1]!.type === 'listItem';
+
     // For headings, only snap to baseline grid if the next block is NOT a heading.
     // Consecutive headings flow without grid snapping; the last heading in the
     // group snaps so that the following body text realigns with the grid.
+    // Same rule for list items: the LAST item of a list snaps so that text
+    // after the list realigns with the baseline grid, even when non-grid
+    // spacings (itemSpacing, marginTop/Bottom) were chosen.
     const nextBlock = blockIdx + 1 < contentBlocks.length ? contentBlocks[blockIdx + 1] : null;
     const nextIsHeading = nextBlock?.type === 'heading';
-    const shouldSnapToGrid = vdtType === 'heading' && !nextIsHeading;
+    const shouldSnapToGrid =
+      (vdtType === 'heading' && !nextIsHeading) ||
+      (vdtType === 'listItem' && !nextIsListItem);
 
     // Place block, splitting across columns/pages if needed
     const canSplit = vdtType === 'paragraph' || vdtType === 'blockquote';
@@ -479,6 +642,11 @@ export function buildDocument(
         spacingBefore = pendingSpacing;
         if (vdtType === 'heading') {
           spacingBefore = Math.max(spacingBefore, style.marginTopPx);
+        } else if (vdtType === 'listItem') {
+          const prevWasList = blockIdx > 0 && contentBlocks[blockIdx - 1]!.type === 'listItem';
+          if (!prevWasList) {
+            spacingBefore = Math.max(spacingBefore, style.marginTopPx);
+          }
         }
       }
 
@@ -522,10 +690,15 @@ export function buildDocument(
           h = snappedBottom - usedHeight;
         }
         placeBlockInColumn(blk, h, curCol, cursor);
+        finalizeListItem(blk);
         doc.blocks.push(blk);
-        // For snapped headings the margin is baked into the snap;
-        // for unsnapped headings (consecutive) track it for collapsing
-        pendingSpacing = (shouldSnapToGrid && partIndex === 0) ? 0 : style.marginBottomPx;
+        // For snapped headings/list-tails the margin is baked into the snap;
+        // for unsnapped ones (consecutive) track it for collapsing
+        if (vdtType === 'listItem' && nextIsListItem) {
+          pendingSpacing = listBullet!.itemSpacingPx;
+        } else {
+          pendingSpacing = (shouldSnapToGrid && partIndex === 0) ? 0 : style.marginBottomPx;
+        }
         break;
       }
 
@@ -590,8 +763,13 @@ export function buildDocument(
       blk.plainPrefixLen = prefixLen;
 
       placeBlockInColumn(blk, totalRemainHeight, curCol, cursor);
+      finalizeListItem(blk);
       doc.blocks.push(blk);
-      pendingSpacing = style.marginBottomPx;
+      if (vdtType === 'listItem') {
+        pendingSpacing = nextIsListItem ? listBullet!.itemSpacingPx : style.marginBottomPx;
+      } else {
+        pendingSpacing = style.marginBottomPx;
+      }
       break;
     }
   }

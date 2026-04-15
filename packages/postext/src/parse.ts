@@ -2,7 +2,7 @@
 // Minimal block-level markdown tokenizer
 // ---------------------------------------------------------------------------
 
-export type ContentBlockType = 'heading' | 'paragraph' | 'blockquote';
+export type ContentBlockType = 'heading' | 'paragraph' | 'blockquote' | 'listItem';
 
 export interface InlineSpan {
   text: string;
@@ -15,6 +15,8 @@ export interface ContentBlock {
   text: string;
   spans: InlineSpan[];
   level?: number; // heading level 1-6
+  /** Depth (1-based) for listItem blocks. Level 1 = outermost. */
+  depth?: number;
   /** Character offset of the first source character of this block in the original markdown */
   sourceStart: number;
   /** Character offset just past the last source character of this block */
@@ -28,6 +30,7 @@ export interface ContentBlock {
 }
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
+const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
 
 /**
  * Strip inline markdown formatting for plain-text extraction.
@@ -288,6 +291,49 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
       continue;
     }
 
+    // Unordered list item — consumes consecutive list lines, including
+    // nested items and single blank-line separators between items.
+    const listMatch = line.match(LIST_ITEM_RE);
+    if (listMatch) {
+      // Consume contiguous list items (plus a single-blank-line gap followed
+      // by another list item).
+      while (i < rawLines.length) {
+        const curRaw = rawLines[i]!;
+        const curMatch = curRaw.match(LIST_ITEM_RE);
+        if (curMatch) {
+          const leading = curMatch[1]!.length;
+          const depth = Math.max(1, Math.min(5, Math.floor(leading / 2) + 1));
+          const itemText = curMatch[3]!;
+          const rawSpans = parseInlineFormatting(itemText);
+          const srcStart = lineOffsets[i]!;
+          const srcEnd = lineEndOffset(i);
+          // Offset the sourceMap so characters land on the item's content,
+          // skipping the leading whitespace + bullet marker + space.
+          const contentOffset = leading + curMatch[2]!.length + 1;
+          const itemSrcStart = srcStart + contentOffset;
+          const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
+          blocks.push({
+            type: 'listItem',
+            text: mapping.text,
+            spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
+            depth,
+            sourceStart: srcStart,
+            sourceEnd: srcEnd,
+            sourceMap: mapping.sourceMap,
+          });
+          i++;
+          continue;
+        }
+        // Blank line: allow a single blank followed by another list item.
+        if (curRaw.trim() === '' && i + 1 < rawLines.length && rawLines[i + 1]!.match(LIST_ITEM_RE)) {
+          i++;
+          continue;
+        }
+        break;
+      }
+      continue;
+    }
+
     // Blockquote — collect consecutive > lines
     if (trimmed.startsWith('>')) {
       const quoteLines: string[] = [];
@@ -320,8 +366,9 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
     const startIdx = i;
     let lastIdx = i;
     while (i < rawLines.length) {
-      const pl = rawLines[i]!.trim();
-      if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>')) break;
+      const rawLine = rawLines[i]!;
+      const pl = rawLine.trim();
+      if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>') || rawLine.match(LIST_ITEM_RE)) break;
       paraLines.push(pl);
       lastIdx = i;
       i++;

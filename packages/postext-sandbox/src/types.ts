@@ -139,6 +139,55 @@ export interface SandboxLabels {
   headingItalic: string;
   headingItalicTooltip: string;
 
+  // Unordered lists section
+  unorderedLists: string;
+  unorderedListsFont: string;
+  unorderedListsFontTooltip: string;
+  unorderedListsFontSearch: string;
+  unorderedListsFontNoResults: string;
+  unorderedListsColor: string;
+  unorderedListsColorTooltip: string;
+  unorderedListsFontWeight: string;
+  unorderedListsFontWeightTooltip: string;
+  unorderedListsItalic: string;
+  unorderedListsItalicTooltip: string;
+  unorderedListsBulletChar: string;
+  unorderedListsBulletCharTooltip: string;
+  unorderedListsBulletCharPlaceholder: string;
+  unorderedListsBulletFontSize: string;
+  unorderedListsBulletFontSizeTooltip: string;
+  unorderedListsGap: string;
+  unorderedListsGapTooltip: string;
+  unorderedListsIndent: string;
+  unorderedListsIndentTooltip: string;
+  unorderedListsBulletVerticalOffset: string;
+  unorderedListsBulletVerticalOffsetTooltip: string;
+  unorderedListsMarginTop: string;
+  unorderedListsMarginTopTooltip: string;
+  unorderedListsMarginBottom: string;
+  unorderedListsMarginBottomTooltip: string;
+  unorderedListsItemSpacing: string;
+  unorderedListsItemSpacingTooltip: string;
+  unorderedListsHangingIndent: string;
+  unorderedListsHangingIndentTooltip: string;
+  unorderedListLevel: string;
+  unorderedListLevelBulletChar: string;
+  unorderedListLevelBulletCharTooltip: string;
+  unorderedListLevelFont: string;
+  unorderedListLevelFontTooltip: string;
+  unorderedListLevelFontSize: string;
+  unorderedListLevelFontSizeTooltip: string;
+  unorderedListLevelColor: string;
+  unorderedListLevelColorTooltip: string;
+  unorderedListLevelFontWeight: string;
+  unorderedListLevelFontWeightTooltip: string;
+  unorderedListLevelItalic: string;
+  unorderedListLevelItalicTooltip: string;
+  unorderedListLevelIndent: string;
+  unorderedListLevelIndentTooltip: string;
+  unorderedListLevelVerticalOffset: string;
+  unorderedListLevelVerticalOffsetTooltip: string;
+
   // Layout section
   layout: string;
   layoutType: string;
@@ -340,6 +389,53 @@ export const DEFAULT_LABELS: SandboxLabels = {
   headingNumberingTemplatePlaceholder: 'e.g. {1}.{2}',
   headingItalic: 'Italic',
   headingItalicTooltip: 'Render this heading level in italic style',
+  unorderedLists: 'Unordered Lists',
+  unorderedListsFont: 'Bullet Font',
+  unorderedListsFontTooltip: 'Default font family used to render list bullets (inherits from body text when unset)',
+  unorderedListsFontSearch: 'Search fonts...',
+  unorderedListsFontNoResults: 'No fonts found',
+  unorderedListsColor: 'Bullet Color',
+  unorderedListsColorTooltip: 'Default color for list bullets (inherits from body text when unset)',
+  unorderedListsFontWeight: 'Bullet Weight',
+  unorderedListsFontWeightTooltip: 'Default font weight for list bullets (100-900)',
+  unorderedListsItalic: 'Italic',
+  unorderedListsItalicTooltip: 'Render list bullets in italic',
+  unorderedListsBulletChar: 'Bullet Character',
+  unorderedListsBulletCharTooltip: 'Glyph used as the default bullet for every depth level',
+  unorderedListsBulletCharPlaceholder: 'e.g. •, —, ✓',
+  unorderedListsBulletFontSize: 'Bullet Size',
+  unorderedListsBulletFontSizeTooltip: 'Font size for the bullet glyph (em is relative to body text)',
+  unorderedListsGap: 'Bullet Gap',
+  unorderedListsGapTooltip: 'Horizontal distance between the bullet and the start of the item text',
+  unorderedListsIndent: 'Base Indent',
+  unorderedListsIndentTooltip: 'Base indent per depth level — level N defaults to this value × N. Set to 0 to pin bullets to the column edge.',
+  unorderedListsBulletVerticalOffset: 'Vertical Offset',
+  unorderedListsBulletVerticalOffsetTooltip: 'Fine-tune bullet vertical position. Negative values raise the bullet, positive values lower it. Useful when a custom glyph does not sit exactly centered on the text.',
+  unorderedListsMarginTop: 'Margin Top',
+  unorderedListsMarginTopTooltip: 'Space before the first item of a list',
+  unorderedListsMarginBottom: 'Margin Bottom',
+  unorderedListsMarginBottomTooltip: 'Space after the last item of a list',
+  unorderedListsItemSpacing: 'Item Spacing',
+  unorderedListsItemSpacingTooltip: 'Extra vertical space between consecutive list items',
+  unorderedListsHangingIndent: 'Hanging Indent',
+  unorderedListsHangingIndentTooltip: 'When enabled, wrapped lines align to the text start instead of the bullet column',
+  unorderedListLevel: 'L',
+  unorderedListLevelBulletChar: 'Character',
+  unorderedListLevelBulletCharTooltip: 'Override the bullet character for this depth level',
+  unorderedListLevelFont: 'Font',
+  unorderedListLevelFontTooltip: 'Override the bullet font for this depth level',
+  unorderedListLevelFontSize: 'Size',
+  unorderedListLevelFontSizeTooltip: 'Override the bullet font size for this depth level',
+  unorderedListLevelColor: 'Color',
+  unorderedListLevelColorTooltip: 'Override the bullet color for this depth level',
+  unorderedListLevelFontWeight: 'Weight',
+  unorderedListLevelFontWeightTooltip: 'Override the bullet font weight for this depth level',
+  unorderedListLevelItalic: 'Italic',
+  unorderedListLevelItalicTooltip: 'Render this depth level bullet in italic',
+  unorderedListLevelIndent: 'Indent',
+  unorderedListLevelIndentTooltip: 'Horizontal indent from the column edge to the bullet for this depth level',
+  unorderedListLevelVerticalOffset: 'Vertical Offset',
+  unorderedListLevelVerticalOffsetTooltip: 'Override vertical nudge for this depth level. Negative = up, positive = down.',
   layout: 'Layout',
   layoutType: 'Layout Type',
   layoutTypeTooltip: 'Column layout mode for the content area',
