@@ -225,9 +225,10 @@ npm install postext
 import { createLayout } from 'postext';
 
 const layout = createLayout(content, {
-  columns: 3,
-  gutter: '24px',
-  // ...configuration
+  page: { sizePreset: '17x24' },
+  layout: { layoutType: 'double', gutterWidth: { value: 0.75, unit: 'cm' } },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  // ...see docs/configuration for the full reference
 });
 ```
 

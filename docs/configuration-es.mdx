@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-13',
+  lastUpdated: '2026-04-15',
   readingTime: '15 min',
   order: 3,
 };
@@ -155,6 +155,59 @@ page: {
 }
 ```
 
+### Marcas de corte
+
+Al activarse, el lienzo se expande para incluir una zona de sangrado y el motor dibuja marcas de corte en cada esquina para producción impresa.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Propiedad</th>
+      <th style={{ width: '150px' }}>Tipo</th>
+      <th style={{ width: '180px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Si se expande el lienzo con sangrado y se dibujan las marcas de corte.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3 mm</code></td>
+      <td>Área extra alrededor de la página usada como sangrado de impresión.</td>
+    </tr>
+    <tr>
+      <td><code>markLength</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>5 mm</code></td>
+      <td>Longitud de cada marca de corte.</td>
+    </tr>
+    <tr>
+      <td><code>markOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3 mm</code></td>
+      <td>Separación entre la esquina de la página y el inicio de la marca de corte.</td>
+    </tr>
+    <tr>
+      <td><code>markWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25 pt</code></td>
+      <td>Grosor de las marcas de corte.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Color de las marcas de corte.</td>
+    </tr>
+  </tbody>
+</table>
+
 
 ## Disposición
 
@@ -179,7 +232,7 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
     <tr>
       <td><code>gutterWidth</code></td>
       <td><code>Dimension</code></td>
-      <td><code>0.5 cm</code></td>
+      <td><code>0.75 cm</code></td>
       <td>Espacio horizontal entre columnas. Solo aplica a disposiciones multicolumna.</td>
     </tr>
     <tr>
@@ -187,6 +240,47 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td><code>number</code></td>
       <td><code>33</code></td>
       <td>Ancho de la columna lateral como porcentaje del área de contenido. Solo aplica a la disposición <code>'oneAndHalf'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>columnRule</code></td>
+      <td><code>ColumnRuleConfig</code></td>
+      <td>desactivado</td>
+      <td>Filete vertical opcional trazado entre columnas. Ver más abajo.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Filete de columna
+
+Dibuja una línea vertical fina en el medianil para separar visualmente las columnas.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Propiedad</th>
+      <th style={{ width: '150px' }}>Tipo</th>
+      <th style={{ width: '180px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Si se dibuja el filete de columna.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#cccccc</code></td>
+      <td>Color del filete.</td>
+    </tr>
+    <tr>
+      <td><code>lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>Grosor del filete.</td>
     </tr>
   </tbody>
 </table>
@@ -436,6 +530,47 @@ interface ColorValue {
 
 El campo `model` indica el espacio de color previsto. Para renderizado web, `'hex'` o `'rgb'` son los habituales. Para flujos de trabajo de impresión, `'cmyk'` preserva la intención de que el color debe especificarse en CMYK al exportar a PDF.
 
+Como Postext apunta a salida de calidad editorial, los colores por defecto del cuerpo de texto y de los encabezados se publican con `model: 'cmyk'` (ambos `#000000`). El fondo de página y los indicadores de interfaz (rejilla base, marcas de corte, indicadores de depuración) usan `model: 'hex'` por defecto. Sobrescribe `color.model` en cualquier campo si necesitas otra semántica de exportación.
+
+
+## Depuración
+
+La propiedad `debug` controla los indicadores visuales que el editor usa para mantener sincronizados el texto fuente y la composición renderizada mientras se edita. Solo los renderiza el editor interactivo — no tienen efecto en la salida exportada.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '200px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>activado, <code>#2563eb</code></td>
+      <td>Muestra un cursor en la composición renderizada que refleja la posición del cursor en la fuente.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>activado, <code>#fde04780</code></td>
+      <td>Resalta el rango renderizado que coincide con la selección en la fuente.</td>
+    </tr>
+  </tbody>
+</table>
+
+Cada `SyncIndicatorConfig` es `{ enabled: boolean; color?: ColorValue }`.
+
+```ts
+debug: {
+  cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
+  selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+}
+```
+
 
 ## Configuración avanzada
 
@@ -508,7 +643,7 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`.
+Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveDebugConfig`.
 
 ### Eliminar valores por defecto
 
@@ -521,4 +656,4 @@ const minimal = stripConfigDefaults(fullConfig);
 // Solo permanecen las propiedades que difieren de los valores por defecto
 ```
 
-También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`.
+También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripDebugDefaults`.

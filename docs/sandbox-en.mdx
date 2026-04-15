@@ -139,7 +139,7 @@ function App() {
   return (
     <PostextSandbox
       initialMarkdown="# Hello World"
-      initialConfig={{ columns: 2 }}
+      initialConfig={{ layout: { layoutType: 'double' } }}
       onMarkdownChange={(md) => console.log(md)}
       onConfigChange={(cfg) => console.log(cfg)}
     />
