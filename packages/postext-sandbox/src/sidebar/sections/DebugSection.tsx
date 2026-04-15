@@ -14,6 +14,7 @@ import {
   CollapsibleSection,
   ColorPicker,
   DimensionInput,
+  NumberInput,
   ToggleSwitch,
   NestedGroup,
 } from '../../controls';
@@ -74,6 +75,23 @@ export function DebugSection() {
     });
   };
 
+  const resetLooseLineField = (field: 'enabled' | 'color' | 'threshold') => {
+    if (!rawDebug?.looseLineHighlight) return;
+    const next = { ...rawDebug.looseLineHighlight };
+    delete next[field];
+    const hasKeys = Object.keys(next).length > 0;
+    const nextDebug: DebugConfig = { ...rawDebug };
+    if (hasKeys) {
+      nextDebug.looseLineHighlight = next as DebugConfig['looseLineHighlight'];
+    } else {
+      delete nextDebug.looseLineHighlight;
+    }
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { debug: Object.keys(nextDebug).length > 0 ? nextDebug : undefined },
+    });
+  };
+
   const resetSelectionSyncField = (field: 'enabled' | 'color') => {
     if (!rawDebug?.selectionSync) return;
     const next = { ...rawDebug.selectionSync };
@@ -111,6 +129,9 @@ export function DebugSection() {
   const isCursorSyncColorDefault = colorsEqual(debug.cursorSync.color, DD.cursorSync.color);
   const isSelectionSyncEnabledDefault = debug.selectionSync.enabled === DD.selectionSync.enabled;
   const isSelectionSyncColorDefault = colorsEqual(debug.selectionSync.color, DD.selectionSync.color);
+  const isLooseLineEnabledDefault = debug.looseLineHighlight.enabled === DD.looseLineHighlight.enabled;
+  const isLooseLineColorDefault = colorsEqual(debug.looseLineHighlight.color, DD.looseLineHighlight.color);
+  const isLooseLineThresholdDefault = debug.looseLineHighlight.threshold === DD.looseLineHighlight.threshold;
 
   const hasOverrides =
     (rawPage?.baselineGrid !== undefined && Object.keys(rawPage.baselineGrid).length > 0) ||
@@ -214,6 +235,46 @@ export function DebugSection() {
             isDefault={isSelectionSyncColorDefault}
             onReset={() => resetSelectionSyncField('color')}
             fieldId="debug-selectionSyncColor"
+          />
+        </NestedGroup>
+      )}
+
+      <ToggleSwitch
+        label={labels.debugLooseLines}
+        checked={debug.looseLineHighlight.enabled}
+        onChange={(v) =>
+          updateDebug({ looseLineHighlight: { ...debug.looseLineHighlight, enabled: v } })
+        }
+        tooltip={labels.debugLooseLinesTooltip}
+        isDefault={isLooseLineEnabledDefault}
+        onReset={() => resetLooseLineField('enabled')}
+      />
+
+      {debug.looseLineHighlight.enabled && (
+        <NestedGroup>
+          <ColorPicker
+            label={labels.debugLooseLinesColor}
+            value={debug.looseLineHighlight.color}
+            onChange={(color) =>
+              updateDebug({ looseLineHighlight: { ...debug.looseLineHighlight, color } })
+            }
+            tooltip={labels.debugLooseLinesColorTooltip}
+            isDefault={isLooseLineColorDefault}
+            onReset={() => resetLooseLineField('color')}
+            fieldId="debug-looseLinesColor"
+          />
+          <NumberInput
+            label={labels.debugLooseLinesThreshold}
+            value={debug.looseLineHighlight.threshold}
+            onChange={(v) =>
+              updateDebug({ looseLineHighlight: { ...debug.looseLineHighlight, threshold: v } })
+            }
+            min={1}
+            max={5}
+            step={0.05}
+            tooltip={labels.debugLooseLinesThresholdTooltip}
+            isDefault={isLooseLineThresholdDefault}
+            onReset={() => resetLooseLineField('threshold')}
           />
         </NestedGroup>
       )}

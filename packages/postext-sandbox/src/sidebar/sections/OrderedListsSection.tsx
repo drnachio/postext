@@ -154,7 +154,7 @@ function OrderedListLevelSection({
         onChange={(w) => onUpdate(level, { fontWeight: w })}
         min={100}
         max={900}
-        step={100}
+        step={10}
         tooltip={labels.orderedListLevelFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => onReset(level, 'fontWeight')}
@@ -344,7 +344,7 @@ export function OrderedListsSection() {
         onChange={(w) => updateLists({ fontWeight: w })}
         min={100}
         max={900}
-        step={100}
+        step={10}
         tooltip={labels.orderedListsFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => resetField('fontWeight')}

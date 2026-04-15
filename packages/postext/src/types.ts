@@ -210,6 +210,11 @@ export interface BodyTextConfig {
   hyphenation?: HyphenationConfig;
   firstLineIndent?: Dimension;
   hangingIndent?: boolean;
+  /** Max word-spacing when justifying, as a multiplier of the normal space width.
+   *  Lines that would exceed this trigger extra hyphenation/reflow attempts. */
+  maxWordSpacing?: number;
+  /** Min word-spacing when justifying, as a multiplier of the normal space width. */
+  minWordSpacing?: number;
 }
 
 export interface ResolvedBodyTextConfig {
@@ -226,6 +231,8 @@ export interface ResolvedBodyTextConfig {
   hyphenation: ResolvedHyphenationConfig;
   firstLineIndent: Dimension;
   hangingIndent: boolean;
+  maxWordSpacing: number;
+  minWordSpacing: number;
 }
 
 export interface HeadingLevelConfig {
@@ -425,14 +432,24 @@ export interface SyncIndicatorConfig {
   color?: ColorValue;
 }
 
+export interface LooseLineHighlightConfig {
+  enabled: boolean;
+  color?: ColorValue;
+  /** Threshold as a multiplier of the normal space width. Lines whose
+   *  justified space ratio exceeds this are highlighted. */
+  threshold?: number;
+}
+
 export interface DebugConfig {
   cursorSync?: SyncIndicatorConfig;
   selectionSync?: SyncIndicatorConfig;
+  looseLineHighlight?: LooseLineHighlightConfig;
 }
 
 export interface ResolvedDebugConfig {
   cursorSync: { enabled: boolean; color: ColorValue };
   selectionSync: { enabled: boolean; color: ColorValue };
+  looseLineHighlight: { enabled: boolean; color: ColorValue; threshold: number };
 }
 
 export interface PostextSectionOverride {

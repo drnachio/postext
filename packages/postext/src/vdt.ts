@@ -72,6 +72,9 @@ export interface VDTLine {
   plainStart?: number;
   /** Plain-text end offset within the block's plain text (exclusive) */
   plainEnd?: number;
+  /** For justified (non-last) lines: ratio of the applied justified space width
+   *  to the normal space width of the block's font. 1.0 means natural spacing. */
+  justifiedSpaceRatio?: number;
 }
 
 export interface VDTBlock {

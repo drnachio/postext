@@ -132,7 +132,7 @@ function UnorderedListLevelSection({
         onChange={(w) => onUpdate(level, { fontWeight: w })}
         min={100}
         max={900}
-        step={100}
+        step={10}
         tooltip={labels.unorderedListLevelFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => onReset(level, 'fontWeight')}
@@ -319,7 +319,7 @@ export function UnorderedListsSection() {
         onChange={(w) => updateLists({ fontWeight: w })}
         min={100}
         max={900}
-        step={100}
+        step={10}
         tooltip={labels.unorderedListsFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => resetField('fontWeight')}

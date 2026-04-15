@@ -386,6 +386,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>false</code></td>
       <td>When enabled, the indent is applied to all lines except the first (French/hanging indent).</td>
     </tr>
+    <tr>
+      <td><code>maxWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>1.5</code></td>
+      <td>Upper bound for word spacing in justified text, expressed as a multiplier of the normal space width. Lines exceeding this ratio are considered "loose".</td>
+    </tr>
+    <tr>
+      <td><code>minWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>Lower bound for word spacing in justified text, as a multiplier of the normal space width.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -957,15 +969,22 @@ The `debug` property controls visual indicators the editor uses to keep the sour
       <td>enabled, <code>#fde04780</code></td>
       <td>Highlights the rendered range matching the source selection.</td>
     </tr>
+    <tr>
+      <td><code>looseLineHighlight</code></td>
+      <td><code>LooseLineHighlightConfig</code></td>
+      <td>disabled, <code>#ff000040</code>, <code>3</code></td>
+      <td>Paints an overlay on justified lines whose word spacing exceeds the given multiplier of the normal space width.</td>
+    </tr>
   </tbody>
 </table>
 
-Each `SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`.
+Each `SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`. `LooseLineHighlightConfig` is `{ enabled: boolean; color?: ColorValue; threshold?: number }`.
 
 ```ts
 debug: {
   cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
   selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+  looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
 }
 ```
 

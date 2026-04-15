@@ -108,7 +108,7 @@ function HeadingLevelSection({
         onChange={(w) => onUpdate(level, { fontWeight: w })}
         min={100}
         max={900}
-        step={100}
+        step={10}
         tooltip={labels.headingFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => onReset(level, 'fontWeight')}
@@ -313,7 +313,7 @@ export function HeadingsSection() {
         onChange={(w) => updateHeadings({ fontWeight: w })}
         min={100}
         max={900}
-        step={100}
+        step={10}
         tooltip={labels.headingsFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => resetField('fontWeight')}

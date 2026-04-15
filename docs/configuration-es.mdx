@@ -386,6 +386,18 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>false</code></td>
       <td>Cuando está activado, la sangría se aplica a todas las líneas excepto la primera (sangría francesa).</td>
     </tr>
+    <tr>
+      <td><code>maxWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>1.5</code></td>
+      <td>Límite superior del espaciado entre palabras en texto justificado, expresado como multiplicador del ancho del espacio normal. Las líneas que superan esta proporción se consideran "flojas".</td>
+    </tr>
+    <tr>
+      <td><code>minWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>Límite inferior del espaciado entre palabras en texto justificado, como multiplicador del ancho del espacio normal.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -957,15 +969,22 @@ La propiedad `debug` controla los indicadores visuales que el editor usa para ma
       <td>activado, <code>#fde04780</code></td>
       <td>Resalta el rango renderizado que coincide con la selección en la fuente.</td>
     </tr>
+    <tr>
+      <td><code>looseLineHighlight</code></td>
+      <td><code>LooseLineHighlightConfig</code></td>
+      <td>desactivado, <code>#ff000040</code>, <code>3</code></td>
+      <td>Pinta una superposición sobre las líneas justificadas cuyo espaciado entre palabras supera el multiplicador indicado del ancho del espacio normal.</td>
+    </tr>
   </tbody>
 </table>
 
-Cada `SyncIndicatorConfig` es `{ enabled: boolean; color?: ColorValue }`.
+Cada `SyncIndicatorConfig` es `{ enabled: boolean; color?: ColorValue }`. `LooseLineHighlightConfig` es `{ enabled: boolean; color?: ColorValue; threshold?: number }`.
 
 ```ts
 debug: {
   cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
   selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+  looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
 }
 ```
 
