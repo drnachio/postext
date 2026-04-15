@@ -1,5 +1,5 @@
 import type { PostextConfig } from 'postext';
-import { resolveBodyTextConfig, resolveHeadingsConfig, resolveUnorderedListsConfig } from 'postext';
+import { resolveBodyTextConfig, resolveHeadingsConfig, resolveUnorderedListsConfig, resolveOrderedListsConfig } from 'postext';
 
 const loadedFonts = new Set<string>();
 
@@ -23,12 +23,15 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
   const body = resolveBodyTextConfig(config.bodyText);
   const headings = resolveHeadingsConfig(config.headings);
   const lists = resolveUnorderedListsConfig(config.unorderedLists, body);
+  const ordered = resolveOrderedListsConfig(config.orderedLists, body);
   const families = new Set<string>();
   families.add(body.fontFamily);
   families.add(headings.fontFamily);
   for (const level of headings.levels) families.add(level.fontFamily);
   families.add(lists.fontFamily);
   for (const level of lists.levels) families.add(level.fontFamily);
+  families.add(ordered.fontFamily);
+  for (const level of ordered.levels) families.add(level.fontFamily);
   return Array.from(families);
 }
 

@@ -226,6 +226,22 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   ctx.restore();
 }
 
+function renderStrikethrough(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
+  if (!block.strikethroughText) return;
+  ctx.save();
+  ctx.strokeStyle = block.color;
+  ctx.lineWidth = Math.max(1, block.lines[0]?.bbox.height ? block.lines[0].bbox.height * 0.05 : 1);
+  for (const line of block.lines) {
+    // Mid-height of the line box, close to x-height center.
+    const y = line.baseline - (line.bbox.height * 0.28);
+    ctx.beginPath();
+    ctx.moveTo(line.bbox.x, y);
+    ctx.lineTo(line.bbox.x + line.bbox.width, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function renderBlock(
   ctx: CanvasRenderingContext2D,
   block: VDTBlock,
@@ -248,6 +264,9 @@ function renderBlock(
       columnWidth,
       columnX,
     );
+  }
+  if (block.strikethroughText) {
+    renderStrikethrough(ctx, block);
   }
 }
 

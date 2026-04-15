@@ -90,6 +90,13 @@ export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
 export interface ColorValue {
   hex: string;
   model: ColorModel;
+  paletteId?: string;
+}
+
+export interface ColorPaletteEntry {
+  id: string;
+  name: string;
+  value: ColorValue;
 }
 
 export type DimensionUnit = 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem';
@@ -309,6 +316,12 @@ export interface UnorderedListsConfig {
   itemSpacing?: Dimension;
   hangingIndent?: boolean;
   levels?: UnorderedListLevelConfig[];
+  /** GFM task list rendering. The bullet glyph is replaced with a checkbox. */
+  taskCheckboxChar?: string;
+  taskCheckedChar?: string;
+  taskCompletedStrikethrough?: boolean;
+  /** Optional color for the text of completed tasks. When undefined, body color is used. */
+  taskCompletedColor?: ColorValue;
 }
 
 export interface ResolvedUnorderedListsConfig {
@@ -326,6 +339,81 @@ export interface ResolvedUnorderedListsConfig {
   itemSpacing: Dimension;
   hangingIndent: boolean;
   levels: ResolvedUnorderedListLevelConfig[];
+  taskCheckboxChar: string;
+  taskCheckedChar: string;
+  taskCompletedStrikethrough: boolean;
+  /** Undefined => inherit body text color at render time. */
+  taskCompletedColor?: ColorValue;
+}
+
+export type OrderedListNumberFormat =
+  | 'arabic'
+  | 'lower-alpha'
+  | 'upper-alpha'
+  | 'lower-roman'
+  | 'upper-roman';
+
+export interface OrderedListLevelConfig {
+  level: number;
+  numberFormat?: OrderedListNumberFormat;
+  separator?: string;
+  fontFamily?: string;
+  fontSize?: Dimension;
+  color?: ColorValue;
+  fontWeight?: number;
+  italic?: boolean;
+  indent?: Dimension;
+  verticalOffset?: Dimension;
+}
+
+export interface ResolvedOrderedListLevelConfig {
+  level: number;
+  numberFormat: OrderedListNumberFormat;
+  separator: string;
+  fontFamily: string;
+  fontSize: Dimension;
+  color: ColorValue;
+  fontWeight: number;
+  italic: boolean;
+  /** User-overridden indent for this level. Undefined => pipeline cascades. */
+  indent?: Dimension;
+  verticalOffset: Dimension;
+}
+
+export interface OrderedListsConfig {
+  fontFamily?: string;
+  color?: ColorValue;
+  fontWeight?: number;
+  italic?: boolean;
+  numberFormat?: OrderedListNumberFormat;
+  separator?: string;
+  numberFontSize?: Dimension;
+  gap?: Dimension;
+  indent?: Dimension;
+  numberVerticalOffset?: Dimension;
+  marginTop?: Dimension;
+  marginBottom?: Dimension;
+  itemSpacing?: Dimension;
+  hangingIndent?: boolean;
+  levels?: OrderedListLevelConfig[];
+}
+
+export interface ResolvedOrderedListsConfig {
+  fontFamily: string;
+  color: ColorValue;
+  fontWeight: number;
+  italic: boolean;
+  numberFormat: OrderedListNumberFormat;
+  separator: string;
+  numberFontSize: Dimension;
+  gap: Dimension;
+  indent: Dimension;
+  numberVerticalOffset: Dimension;
+  marginTop: Dimension;
+  marginBottom: Dimension;
+  itemSpacing: Dimension;
+  hangingIndent: boolean;
+  levels: ResolvedOrderedListLevelConfig[];
 }
 
 export interface SyncIndicatorConfig {
@@ -356,6 +444,7 @@ export interface PostextConfig {
   bodyText?: BodyTextConfig;
   headings?: HeadingsConfig;
   unorderedLists?: UnorderedListsConfig;
+  orderedLists?: OrderedListsConfig;
 
   columns?: number;
   gutter?: string;
@@ -370,4 +459,6 @@ export interface PostextConfig {
   renderer?: 'web' | 'pdf';
 
   debug?: DebugConfig;
+
+  colorPalette?: ColorPaletteEntry[];
 }

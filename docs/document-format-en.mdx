@@ -1,0 +1,213 @@
+{/* docs/document-format-en.mdx */}
+
+export const metadata = {
+  title: 'Document Format',
+  sidebarTitle: 'Document Format',
+  description: 'The markdown subset Postext parses, and the rules for authoring source documents',
+  lang: 'en',
+  lastUpdated: '2026-04-15',
+  readingTime: '8 min',
+  order: 4,
+};
+
+# Document Format
+
+**Postext reads a deliberately small markdown dialect.**
+
+The parser ships as a hand-written tokenizer — not a full CommonMark implementation — so the source format is narrow and predictable. The intent is twofold: keep the engine small and fast, and make documents trivially portable between Postext and any other CommonMark reader. Anything not listed on this page is either treated as plain text or removed from the inline stream.
+
+If you are building a document programmatically, the `parseMarkdown` function (see [Configuration › Parsing](/en/docs/configuration#parsing)) gives you the exact block structure the layout engine consumes.
+
+
+## Frontmatter
+
+A document may begin with an optional YAML frontmatter block fenced by `---` markers:
+
+```md
+---
+title: Chapter One
+author: Jane Doe
+publishDate: 2026-04-15
+---
+
+# Chapter One
+
+The story begins here…
+```
+
+Call `extractFrontmatter(source)` to split the frontmatter from the body. The parsed metadata object is returned alongside the remaining markdown and the character offset where the body begins — useful if you need to map errors or cursor positions back to the original source.
+
+Frontmatter is parsed with [`gray-matter`](https://github.com/jonschlinkert/gray-matter), so any shape of YAML is accepted. Postext itself only looks at `title`, `subtitle`, `author`, and `publishDate`; additional keys are preserved on `PostextContent.metadata` and are yours to use.
+
+
+## Block constructs
+
+Postext recognises six block types. Blocks are always terminated by a blank line or by the start of another block.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Construct</th>
+      <th style={{ width: '220px' }}>Syntax</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Heading</td>
+      <td><code># Title</code> … <code>###### H6</code></td>
+      <td>One to six <code>#</code> characters followed by a space and the heading text. Levels 1–6 map directly to the <code>headings.levels</code> config.</td>
+    </tr>
+    <tr>
+      <td>Paragraph</td>
+      <td>Plain text over one or more lines</td>
+      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Manual line breaks inside a paragraph are not preserved — use a blank line to start a new paragraph.</td>
+    </tr>
+    <tr>
+      <td>Blockquote</td>
+      <td><code>&gt; quoted text</code></td>
+      <td>Every line of the quote must start with <code>&gt;</code> (one optional space after). Consecutive quote lines merge into a single blockquote block.</td>
+    </tr>
+    <tr>
+      <td>Unordered list</td>
+      <td><code>- item</code>, <code>* item</code>, <code>+ item</code></td>
+      <td>Any of the three bullet markers is accepted. Nesting uses <strong>exactly two spaces per level</strong>, up to a maximum depth of 5.</td>
+    </tr>
+    <tr>
+      <td>Ordered list</td>
+      <td><code>1. item</code>, <code>2) item</code></td>
+      <td>Digits followed by <code>.</code> or <code>)</code>. The start number is preserved (so a list can begin at 5, or at 0). The separator rendered in the output comes from <code>orderedLists.separator</code>, not from the source.</td>
+    </tr>
+    <tr>
+      <td>Task list (GFM)</td>
+      <td><code>- [ ] todo</code>, <code>- [x] done</code></td>
+      <td>An unordered item with a bracketed checkbox. Accepts lowercase <code>x</code> or uppercase <code>X</code>. Rendered with the <code>taskCheckboxChar</code> / <code>taskCheckedChar</code> glyphs.</td>
+    </tr>
+  </tbody>
+</table>
+
+A single blank line between two list items is tolerated — the list stays together. Two or more blank lines terminate the list.
+
+Lists of mixed kinds at the same depth are accepted (you can switch from unordered to ordered mid-run), but the engine treats the runs as separate for numbering purposes. In practice, keep one kind per depth unless you have a reason to mix them.
+
+
+## Inline formatting
+
+Inline markup is recognised inside any text block (headings, paragraphs, blockquotes, list items).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Markup</th>
+      <th style={{ width: '200px' }}>Syntax</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bold</td>
+      <td><code>**bold**</code> or <code>__bold__</code></td>
+      <td>Rendered with <code>bodyText.boldFontWeight</code>.</td>
+    </tr>
+    <tr>
+      <td>Italic</td>
+      <td><code>*italic*</code> or <code>_italic_</code></td>
+      <td>Rendered with the italic variant of the current font family.</td>
+    </tr>
+    <tr>
+      <td>Bold italic</td>
+      <td><code>***both***</code> or <code>___both___</code></td>
+      <td>Both flags combine.</td>
+    </tr>
+    <tr>
+      <td>Inline code</td>
+      <td><code>`code`</code></td>
+      <td>Backticks are stripped; the span is rendered as plain text. Distinct code styling is on the roadmap.</td>
+    </tr>
+    <tr>
+      <td>Link</td>
+      <td><code>[text](https://…)</code></td>
+      <td>The visible text is kept in the flow; the URL is discarded by the current renderer. Link handling is on the roadmap.</td>
+    </tr>
+    <tr>
+      <td>Image</td>
+      <td><code>![alt](src)</code></td>
+      <td>Inline image markdown is <strong>removed</strong> from the text. Images must be declared on <code>PostextContent.resources</code> so the layout engine can place them according to <code>resourcePlacement</code> rules.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## What is NOT supported
+
+Postext does not recognise the following CommonMark features. They are either treated as plain text (and therefore will appear literally in the output) or silently dropped:
+
+- **Setext-style headings** — the `===` / `---` underline form. Use ATX (`#`) headings.
+- **Fenced or indented code blocks** — triple-backtick fences and 4-space indentation. Inline code works; multiline code will be rendered line-by-line as paragraphs.
+- **HTML passthrough** — raw `<tags>` are not interpreted. MDX-style tags are not supported either; Postext source is pure markdown.
+- **Horizontal rules** — `---`, `***`, `___`.
+- **Tables** — pipe tables are not parsed. Tables are modeled as structured resources on `PostextContent.resources`.
+- **Reference-style links** — `[text][id]` plus a definition block.
+- **Autolinks** — `<https://example.com>`.
+- **Strikethrough** — `~~text~~`. The strikethrough renderer is currently reserved for completed task items.
+- **Footnote markers in markdown** — `[^1]`. Footnotes ride on `PostextContent.notes` and are referenced by id, not by inline syntax.
+
+This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
+
+
+## Authoring conventions
+
+A few conventions make the difference between a document that parses cleanly and one that surprises you:
+
+- **Leave a blank line between blocks.** Two paragraphs separated by a blank line are two paragraphs. Two paragraphs on consecutive lines become one — every line collapses into the preceding paragraph.
+- **Nest lists with exactly two spaces per level.** One space is parsed as a level-1 item. Three or four spaces round down to level 2 (the engine uses `floor(leading / 2) + 1`, clamped to depth 5). Tab indentation is not recognised — convert tabs to spaces.
+- **Do not indent the first list item.** Level-1 items start at column 0. Leading whitespace on a bullet implicitly raises the depth.
+- **Task markers must be in square brackets with a single space.** `[ ]`, `[x]`, `[X]` — no variations. `[*]` or `[-]` are not task markers; they render as literal text.
+- **Blockquotes inside lists are not supported.** Start the blockquote at column 0, outside the list.
+- **Images and tables live in `resources`.** Inline `![alt](src)` is stripped precisely because inline images break column-aware placement. Declare each image as a resource and reference it by id — the engine then decides whether it floats, breaks the column, or moves to the top of the next page.
+
+
+## Worked example
+
+A short document that exercises every supported construct:
+
+```md
+---
+title: The Typesetter's Craft
+author: Anon
+---
+
+# Opening
+
+A good book reads itself. The **reader** should never notice the
+typesetter's work — only the author's voice.
+
+## What makes text readable
+
+Three properties matter most:
+
+1. Line measure — 40 to 75 characters per line.
+2. Leading — 1.3 to 1.5 times the font size.
+   a. Tighter at short measures.
+   b. Looser at long measures.
+3. Contrast between body and headings.
+
+Common failure modes include:
+
+- Lines that stretch across the whole page.
+- Headings that float without a following paragraph.
+- Orphans and widows at column boundaries.
+
+> Typography is the craft of endowing human language with a durable
+> visual form.
+> — Robert Bringhurst
+
+### Review checklist
+
+- [x] Column width under 75 characters
+- [x] Leading set to 1.5
+- [ ] Orphan and widow pass
+- [ ] Final proofread
+```
+
+The same document, rendered through the layout engine, produces a structured `VDTDocument` whose pages carry each of these blocks as typed entries — see the [Architecture](/en/docs/architecture) page for how blocks become geometry.

@@ -6,6 +6,7 @@ import type {
   ResolvedBodyTextConfig,
   ResolvedHeadingsConfig,
   ResolvedUnorderedListsConfig,
+  ResolvedOrderedListsConfig,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -29,6 +30,7 @@ export interface ResolvedConfig {
   bodyText: ResolvedBodyTextConfig;
   headings: ResolvedHeadingsConfig;
   unorderedLists: ResolvedUnorderedListsConfig;
+  orderedLists: ResolvedOrderedListsConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -110,6 +112,10 @@ export interface VDTBlock {
   bulletOffsetX?: number;
   /** Absolute page Y coordinate for the bullet's vertical midpoint (paired with textBaseline='middle') */
   bulletY?: number;
+  /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
+  listKind?: 'unordered' | 'ordered' | 'task';
+  /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */
+  strikethroughText?: boolean;
 }
 
 export interface VDTColumn {

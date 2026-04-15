@@ -8,7 +8,7 @@ export { hyphenateText, setHyphenationLocale } from './hyphenate';
 export { parseMarkdown } from './parse';
 export { extractFrontmatter } from './frontmatter';
 export type { ParsedFrontmatter } from './frontmatter';
-export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './defaults';
+export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults, DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults, dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './defaults';
 export type {
   PostextContent,
   DocumentMetadata,
@@ -23,6 +23,7 @@ export type {
   PlacementStrategy,
   ColorModel,
   ColorValue,
+  ColorPaletteEntry,
   DimensionUnit,
   Dimension,
   PageSizePreset,
@@ -49,6 +50,11 @@ export type {
   ResolvedUnorderedListLevelConfig,
   UnorderedListsConfig,
   ResolvedUnorderedListsConfig,
+  OrderedListLevelConfig,
+  ResolvedOrderedListLevelConfig,
+  OrderedListsConfig,
+  ResolvedOrderedListsConfig,
+  OrderedListNumberFormat,
   SyncIndicatorConfig,
   DebugConfig,
   ResolvedDebugConfig,
@@ -65,4 +71,4 @@ export type {
   VDTPage,
   VDTDocument,
 } from './vdt';
-export type { ContentBlock, ContentBlockType, InlineSpan } from './parse';
+export type { ContentBlock, ContentBlockType, InlineSpan, ListKind } from './parse';

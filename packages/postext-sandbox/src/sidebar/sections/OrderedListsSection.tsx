@@ -2,16 +2,17 @@
 
 import { useSandbox } from '../../context/SandboxContext';
 import {
-  resolveUnorderedListsConfig,
+  resolveOrderedListsConfig,
   resolveBodyTextConfig,
-  DEFAULT_UNORDERED_LISTS_STATIC,
+  DEFAULT_ORDERED_LISTS_STATIC,
   dimensionsEqual,
   colorsEqual,
 } from 'postext';
 import type {
-  UnorderedListsConfig,
-  UnorderedListLevelConfig,
-  ResolvedUnorderedListLevelConfig,
+  OrderedListsConfig,
+  OrderedListLevelConfig,
+  ResolvedOrderedListLevelConfig,
+  OrderedListNumberFormat,
   ColorValue,
   Dimension,
   DimensionUnit,
@@ -22,6 +23,7 @@ import {
   DimensionInput,
   FontPicker,
   NumberInput,
+  SelectInput,
   TextInput,
   ToggleSwitch,
 } from '../../controls';
@@ -31,13 +33,24 @@ const INDENT_UNITS: DimensionUnit[] = ['em', 'pt', 'px', 'cm', 'mm'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const OFFSET_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
-const D = DEFAULT_UNORDERED_LISTS_STATIC;
+const D = DEFAULT_ORDERED_LISTS_STATIC;
 
-function UnorderedListLevelSection({
+function numberFormatOptions(labels: ReturnType<typeof useSandbox>['state']['labels']) {
+  return [
+    { label: labels.orderedListsNumberFormatArabic, value: 'arabic' },
+    { label: labels.orderedListsNumberFormatLowerAlpha, value: 'lower-alpha' },
+    { label: labels.orderedListsNumberFormatUpperAlpha, value: 'upper-alpha' },
+    { label: labels.orderedListsNumberFormatLowerRoman, value: 'lower-roman' },
+    { label: labels.orderedListsNumberFormatUpperRoman, value: 'upper-roman' },
+  ];
+}
+
+function OrderedListLevelSection({
   level,
   resolved,
   raw,
-  generalBulletChar,
+  generalNumberFormat,
+  generalSeparator,
   generalFont,
   generalFontSize,
   generalColor,
@@ -50,9 +63,10 @@ function UnorderedListLevelSection({
   labels,
 }: {
   level: number;
-  resolved: ResolvedUnorderedListLevelConfig;
-  raw: UnorderedListLevelConfig | undefined;
-  generalBulletChar: string;
+  resolved: ResolvedOrderedListLevelConfig;
+  raw: OrderedListLevelConfig | undefined;
+  generalNumberFormat: OrderedListNumberFormat;
+  generalSeparator: string;
   generalFont: string;
   generalFontSize: Dimension;
   generalColor: ColorValue;
@@ -60,18 +74,17 @@ function UnorderedListLevelSection({
   generalItalic: boolean;
   generalIndent: Dimension;
   generalVerticalOffset: Dimension;
-  onUpdate: (level: number, partial: Partial<UnorderedListLevelConfig>) => void;
-  onReset: (level: number, field: keyof UnorderedListLevelConfig) => void;
+  onUpdate: (level: number, partial: Partial<OrderedListLevelConfig>) => void;
+  onReset: (level: number, field: keyof OrderedListLevelConfig) => void;
   labels: ReturnType<typeof useSandbox>['state']['labels'];
 }) {
-  const isBulletCharDefault = resolved.bulletChar === generalBulletChar;
+  const isNumberFormatDefault = resolved.numberFormat === generalNumberFormat;
+  const isSeparatorDefault = resolved.separator === generalSeparator;
   const isFontDefault = resolved.fontFamily === generalFont;
   const isFontSizeDefault = dimensionsEqual(resolved.fontSize, generalFontSize);
   const isColorDefault = colorsEqual(resolved.color, generalColor);
   const isFontWeightDefault = resolved.fontWeight === generalFontWeight;
   const isItalicDefault = resolved.italic === generalItalic;
-  // When `indent` is undefined, the renderer cascades from the previous level —
-  // the UI shows the general indent as a stand-in so the DimensionInput has a value.
   const isIndentDefault = resolved.indent === undefined;
   const indentDisplay: Dimension = resolved.indent ?? generalIndent;
   const isVerticalOffsetDefault = dimensionsEqual(resolved.verticalOffset, generalVerticalOffset);
@@ -79,90 +92,99 @@ function UnorderedListLevelSection({
 
   return (
     <CollapsibleSection
-      title={`${labels.unorderedListLevel}${level}`}
-      sectionId={`ul-l${level}`}
-      onReset={() => onReset(level, 'bulletChar')}
+      title={`${labels.orderedListLevel}${level}`}
+      sectionId={`ol-l${level}`}
+      onReset={() => onReset(level, 'numberFormat')}
       hasOverrides={hasOverrides}
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
+      <SelectInput
+        label={labels.orderedListLevelNumberFormat}
+        value={resolved.numberFormat}
+        options={numberFormatOptions(labels)}
+        onChange={(v) => onUpdate(level, { numberFormat: v as OrderedListNumberFormat })}
+        tooltip={labels.orderedListLevelNumberFormatTooltip}
+        isDefault={isNumberFormatDefault}
+        onReset={() => onReset(level, 'numberFormat')}
+      />
       <TextInput
-        label={labels.unorderedListLevelBulletChar}
-        value={resolved.bulletChar}
-        onChange={(v) => onUpdate(level, { bulletChar: v })}
-        placeholder={labels.unorderedListsBulletCharPlaceholder}
-        tooltip={labels.unorderedListLevelBulletCharTooltip}
-        isDefault={isBulletCharDefault}
-        onReset={() => onReset(level, 'bulletChar')}
+        label={labels.orderedListLevelSeparator}
+        value={resolved.separator}
+        onChange={(v) => onUpdate(level, { separator: v })}
+        placeholder={labels.orderedListsSeparatorPlaceholder}
+        tooltip={labels.orderedListLevelSeparatorTooltip}
+        isDefault={isSeparatorDefault}
+        onReset={() => onReset(level, 'separator')}
         widthCh={6}
       />
       <FontPicker
-        label={labels.unorderedListLevelFont}
+        label={labels.orderedListLevelFont}
         value={resolved.fontFamily}
         onChange={(f) => onUpdate(level, { fontFamily: f })}
-        tooltip={labels.unorderedListLevelFontTooltip}
+        tooltip={labels.orderedListLevelFontTooltip}
         isDefault={isFontDefault}
         onReset={() => onReset(level, 'fontFamily')}
-        searchPlaceholder={labels.unorderedListsFontSearch}
-        noResultsLabel={labels.unorderedListsFontNoResults}
+        searchPlaceholder={labels.orderedListsFontSearch}
+        noResultsLabel={labels.orderedListsFontNoResults}
       />
       <DimensionInput
-        label={labels.unorderedListLevelFontSize}
+        label={labels.orderedListLevelFontSize}
         value={resolved.fontSize}
         onChange={(dim) => onUpdate(level, { fontSize: dim })}
         min={0.1}
         step={0.1}
-        tooltip={labels.unorderedListLevelFontSizeTooltip}
+        tooltip={labels.orderedListLevelFontSizeTooltip}
         isDefault={isFontSizeDefault}
         onReset={() => onReset(level, 'fontSize')}
         units={TEXT_SIZE_UNITS}
       />
       <ColorPicker
-        label={labels.unorderedListLevelColor}
+        label={labels.orderedListLevelColor}
         value={resolved.color}
         onChange={(color) => onUpdate(level, { color })}
-        tooltip={labels.unorderedListLevelColorTooltip}
+        tooltip={labels.orderedListLevelColorTooltip}
         isDefault={isColorDefault}
         onReset={() => onReset(level, 'color')}
-        fieldId={`ul-l${level}-color`}
+        fieldId={`ol-l${level}-color`}
       />
       <NumberInput
-        label={labels.unorderedListLevelFontWeight}
+        label={labels.orderedListLevelFontWeight}
         value={resolved.fontWeight}
         onChange={(w) => onUpdate(level, { fontWeight: w })}
         min={100}
         max={900}
         step={100}
-        tooltip={labels.unorderedListLevelFontWeightTooltip}
+        tooltip={labels.orderedListLevelFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => onReset(level, 'fontWeight')}
       />
       <ToggleSwitch
-        label={labels.unorderedListLevelItalic}
+        label={labels.orderedListLevelItalic}
         checked={resolved.italic}
         onChange={(v) => onUpdate(level, { italic: v })}
-        tooltip={labels.unorderedListLevelItalicTooltip}
+        tooltip={labels.orderedListLevelItalicTooltip}
         isDefault={isItalicDefault}
         onReset={() => onReset(level, 'italic')}
       />
       <DimensionInput
-        label={labels.unorderedListLevelIndent}
+        label={labels.orderedListLevelIndent}
         value={indentDisplay}
         onChange={(dim) => onUpdate(level, { indent: dim })}
         min={0}
         step={0.1}
-        tooltip={labels.unorderedListLevelIndentTooltip}
+        tooltip={labels.orderedListLevelIndentTooltip}
         isDefault={isIndentDefault}
         onReset={() => onReset(level, 'indent')}
         units={INDENT_UNITS}
       />
       <DimensionInput
-        label={labels.unorderedListLevelVerticalOffset}
+        label={labels.orderedListLevelVerticalOffset}
         value={resolved.verticalOffset}
         onChange={(dim) => onUpdate(level, { verticalOffset: dim })}
         min={-5}
         step={0.05}
-        tooltip={labels.unorderedListLevelVerticalOffsetTooltip}
+        tooltip={labels.orderedListLevelVerticalOffsetTooltip}
         isDefault={isVerticalOffsetDefault}
         onReset={() => onReset(level, 'verticalOffset')}
         units={OFFSET_UNITS}
@@ -171,36 +193,36 @@ function UnorderedListLevelSection({
   );
 }
 
-export function UnorderedListsSection() {
+export function OrderedListsSection() {
   const { state, dispatch } = useSandbox();
-  const raw = state.config.unorderedLists;
+  const raw = state.config.orderedLists;
   const bodyText = resolveBodyTextConfig(state.config.bodyText);
-  const lists = resolveUnorderedListsConfig(raw, bodyText);
+  const lists = resolveOrderedListsConfig(raw, bodyText);
   const { labels } = state;
 
-  const updateLists = (partial: Partial<UnorderedListsConfig>) => {
+  const updateLists = (partial: Partial<OrderedListsConfig>) => {
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { unorderedLists: { ...raw, ...partial } },
+      payload: { orderedLists: { ...raw, ...partial } },
     });
   };
 
   const resetLists = () => {
-    dispatch({ type: 'UPDATE_CONFIG', payload: { unorderedLists: undefined } });
+    dispatch({ type: 'UPDATE_CONFIG', payload: { orderedLists: undefined } });
   };
 
-  const resetField = (field: keyof UnorderedListsConfig) => {
+  const resetField = (field: keyof OrderedListsConfig) => {
     if (!raw) return;
     const next = { ...raw };
     delete next[field];
     const hasKeys = Object.keys(next).length > 0;
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { unorderedLists: hasKeys ? next : undefined },
+      payload: { orderedLists: hasKeys ? next : undefined },
     });
   };
 
-  const updateLevel = (level: number, partial: Partial<UnorderedListLevelConfig>) => {
+  const updateLevel = (level: number, partial: Partial<OrderedListLevelConfig>) => {
     const currentLevels = raw?.levels ?? [];
     const existing = currentLevels.find((l) => l.level === level);
     const updated = existing
@@ -212,9 +234,9 @@ export function UnorderedListsSection() {
     updateLists({ levels: newLevels });
   };
 
-  const resetLevelField = (level: number, field: keyof UnorderedListLevelConfig) => {
+  const resetLevelField = (level: number, field: keyof OrderedListLevelConfig) => {
     if (!raw?.levels) return;
-    if (field === 'bulletChar') {
+    if (field === 'numberFormat') {
       const newLevels = raw.levels.filter((l) => l.level !== level);
       if (newLevels.length > 0) {
         updateLists({ levels: newLevels });
@@ -224,7 +246,7 @@ export function UnorderedListsSection() {
         const hasKeys = Object.keys(next).length > 0;
         dispatch({
           type: 'UPDATE_CONFIG',
-          payload: { unorderedLists: hasKeys ? next : undefined },
+          payload: { orderedLists: hasKeys ? next : undefined },
         });
       }
       return;
@@ -247,7 +269,7 @@ export function UnorderedListsSection() {
         const hasKeys = Object.keys(r).length > 0;
         dispatch({
           type: 'UPDATE_CONFIG',
-          payload: { unorderedLists: hasKeys ? r : undefined },
+          payload: { orderedLists: hasKeys ? r : undefined },
         });
       }
     }
@@ -258,251 +280,189 @@ export function UnorderedListsSection() {
   const isColorDefault = colorsEqual(lists.color, bodyText.color);
   const isFontWeightDefault = lists.fontWeight === D.fontWeight;
   const isItalicDefault = lists.italic === D.italic;
-  const isBulletCharDefault = lists.bulletChar === D.bulletChar;
-  const isBulletFontSizeDefault = dimensionsEqual(lists.bulletFontSize, D.bulletFontSize);
+  const isNumberFormatDefault = lists.numberFormat === D.numberFormat;
+  const isSeparatorDefault = lists.separator === D.separator;
+  const isNumberFontSizeDefault = dimensionsEqual(lists.numberFontSize, D.numberFontSize);
   const isGapDefault = dimensionsEqual(lists.gap, D.gap);
   const isIndentDefault = dimensionsEqual(lists.indent, D.indent);
-  const isVerticalOffsetDefault = dimensionsEqual(lists.bulletVerticalOffset, D.bulletVerticalOffset);
+  const isVerticalOffsetDefault = dimensionsEqual(lists.numberVerticalOffset, D.numberVerticalOffset);
   const isMarginTopDefault = dimensionsEqual(lists.marginTop, D.marginTop);
   const isMarginBottomDefault = dimensionsEqual(lists.marginBottom, D.marginBottom);
   const isItemSpacingDefault = dimensionsEqual(lists.itemSpacing, D.itemSpacing);
   const isHangingDefault = lists.hangingIndent === D.hangingIndent;
-  const isTaskCheckboxDefault = lists.taskCheckboxChar === D.taskCheckboxChar;
-  const isTaskCheckedDefault = lists.taskCheckedChar === D.taskCheckedChar;
-  const isTaskStrikeDefault = lists.taskCompletedStrikethrough === D.taskCompletedStrikethrough;
-  const isTaskCompletedColorDefault = lists.taskCompletedColor === undefined;
 
   return (
     <CollapsibleSection
-      title={labels.unorderedLists}
-      sectionId="unordered-lists"
+      title={labels.orderedLists}
+      sectionId="ordered-lists"
       onReset={resetLists}
       hasOverrides={hasOverrides}
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
+      <SelectInput
+        label={labels.orderedListsNumberFormat}
+        value={lists.numberFormat}
+        options={numberFormatOptions(labels)}
+        onChange={(v) => updateLists({ numberFormat: v as OrderedListNumberFormat })}
+        tooltip={labels.orderedListsNumberFormatTooltip}
+        isDefault={isNumberFormatDefault}
+        onReset={() => resetField('numberFormat')}
+      />
       <TextInput
-        label={labels.unorderedListsBulletChar}
-        value={lists.bulletChar}
-        onChange={(v) => updateLists({ bulletChar: v })}
-        placeholder={labels.unorderedListsBulletCharPlaceholder}
-        tooltip={labels.unorderedListsBulletCharTooltip}
-        isDefault={isBulletCharDefault}
-        onReset={() => resetField('bulletChar')}
+        label={labels.orderedListsSeparator}
+        value={lists.separator}
+        onChange={(v) => updateLists({ separator: v })}
+        placeholder={labels.orderedListsSeparatorPlaceholder}
+        tooltip={labels.orderedListsSeparatorTooltip}
+        isDefault={isSeparatorDefault}
+        onReset={() => resetField('separator')}
         widthCh={6}
       />
-
       <FontPicker
-        label={labels.unorderedListsFont}
+        label={labels.orderedListsFont}
         value={lists.fontFamily}
         onChange={(f) => updateLists({ fontFamily: f })}
-        tooltip={labels.unorderedListsFontTooltip}
+        tooltip={labels.orderedListsFontTooltip}
         isDefault={isFontDefault}
         onReset={() => resetField('fontFamily')}
-        searchPlaceholder={labels.unorderedListsFontSearch}
-        noResultsLabel={labels.unorderedListsFontNoResults}
+        searchPlaceholder={labels.orderedListsFontSearch}
+        noResultsLabel={labels.orderedListsFontNoResults}
       />
-
       <ColorPicker
-        label={labels.unorderedListsColor}
+        label={labels.orderedListsColor}
         value={lists.color}
         onChange={(color) => updateLists({ color })}
-        tooltip={labels.unorderedListsColorTooltip}
+        tooltip={labels.orderedListsColorTooltip}
         isDefault={isColorDefault}
         onReset={() => resetField('color')}
-        fieldId="unordered-lists-color"
+        fieldId="ordered-lists-color"
       />
-
       <NumberInput
-        label={labels.unorderedListsFontWeight}
+        label={labels.orderedListsFontWeight}
         value={lists.fontWeight}
         onChange={(w) => updateLists({ fontWeight: w })}
         min={100}
         max={900}
         step={100}
-        tooltip={labels.unorderedListsFontWeightTooltip}
+        tooltip={labels.orderedListsFontWeightTooltip}
         isDefault={isFontWeightDefault}
         onReset={() => resetField('fontWeight')}
       />
-
       <ToggleSwitch
-        label={labels.unorderedListsItalic}
+        label={labels.orderedListsItalic}
         checked={lists.italic}
         onChange={(v) => updateLists({ italic: v })}
-        tooltip={labels.unorderedListsItalicTooltip}
+        tooltip={labels.orderedListsItalicTooltip}
         isDefault={isItalicDefault}
         onReset={() => resetField('italic')}
       />
-
       <DimensionInput
-        label={labels.unorderedListsBulletFontSize}
-        value={lists.bulletFontSize}
-        onChange={(dim) => updateLists({ bulletFontSize: dim })}
+        label={labels.orderedListsNumberFontSize}
+        value={lists.numberFontSize}
+        onChange={(dim) => updateLists({ numberFontSize: dim })}
         min={0.1}
         step={0.1}
-        tooltip={labels.unorderedListsBulletFontSizeTooltip}
-        isDefault={isBulletFontSizeDefault}
-        onReset={() => resetField('bulletFontSize')}
+        tooltip={labels.orderedListsNumberFontSizeTooltip}
+        isDefault={isNumberFontSizeDefault}
+        onReset={() => resetField('numberFontSize')}
         units={TEXT_SIZE_UNITS}
       />
-
       <DimensionInput
-        label={labels.unorderedListsGap}
+        label={labels.orderedListsGap}
         value={lists.gap}
         onChange={(dim) => updateLists({ gap: dim })}
         min={0}
         step={0.1}
-        tooltip={labels.unorderedListsGapTooltip}
+        tooltip={labels.orderedListsGapTooltip}
         isDefault={isGapDefault}
         onReset={() => resetField('gap')}
         units={INDENT_UNITS}
       />
-
       <DimensionInput
-        label={labels.unorderedListsIndent}
+        label={labels.orderedListsIndent}
         value={lists.indent}
         onChange={(dim) => updateLists({ indent: dim })}
         min={0}
         step={0.1}
-        tooltip={labels.unorderedListsIndentTooltip}
+        tooltip={labels.orderedListsIndentTooltip}
         isDefault={isIndentDefault}
         onReset={() => resetField('indent')}
         units={INDENT_UNITS}
       />
-
       <DimensionInput
-        label={labels.unorderedListsBulletVerticalOffset}
-        value={lists.bulletVerticalOffset}
-        onChange={(dim) => updateLists({ bulletVerticalOffset: dim })}
+        label={labels.orderedListsNumberVerticalOffset}
+        value={lists.numberVerticalOffset}
+        onChange={(dim) => updateLists({ numberVerticalOffset: dim })}
         min={-5}
         step={0.05}
-        tooltip={labels.unorderedListsBulletVerticalOffsetTooltip}
+        tooltip={labels.orderedListsNumberVerticalOffsetTooltip}
         isDefault={isVerticalOffsetDefault}
-        onReset={() => resetField('bulletVerticalOffset')}
+        onReset={() => resetField('numberVerticalOffset')}
         units={OFFSET_UNITS}
       />
-
       <DimensionInput
-        label={labels.unorderedListsMarginTop}
+        label={labels.orderedListsMarginTop}
         value={lists.marginTop}
         onChange={(dim) => updateLists({ marginTop: dim })}
         min={0}
         step={0.1}
-        tooltip={labels.unorderedListsMarginTopTooltip}
+        tooltip={labels.orderedListsMarginTopTooltip}
         isDefault={isMarginTopDefault}
         onReset={() => resetField('marginTop')}
         units={MARGIN_UNITS}
       />
-
       <DimensionInput
-        label={labels.unorderedListsMarginBottom}
+        label={labels.orderedListsMarginBottom}
         value={lists.marginBottom}
         onChange={(dim) => updateLists({ marginBottom: dim })}
         min={0}
         step={0.1}
-        tooltip={labels.unorderedListsMarginBottomTooltip}
+        tooltip={labels.orderedListsMarginBottomTooltip}
         isDefault={isMarginBottomDefault}
         onReset={() => resetField('marginBottom')}
         units={MARGIN_UNITS}
       />
-
       <DimensionInput
-        label={labels.unorderedListsItemSpacing}
+        label={labels.orderedListsItemSpacing}
         value={lists.itemSpacing}
         onChange={(dim) => updateLists({ itemSpacing: dim })}
         min={0}
         step={0.1}
-        tooltip={labels.unorderedListsItemSpacingTooltip}
+        tooltip={labels.orderedListsItemSpacingTooltip}
         isDefault={isItemSpacingDefault}
         onReset={() => resetField('itemSpacing')}
         units={MARGIN_UNITS}
       />
-
       <ToggleSwitch
-        label={labels.unorderedListsHangingIndent}
+        label={labels.orderedListsHangingIndent}
         checked={lists.hangingIndent}
         onChange={(v) => updateLists({ hangingIndent: v })}
-        tooltip={labels.unorderedListsHangingIndentTooltip}
+        tooltip={labels.orderedListsHangingIndentTooltip}
         isDefault={isHangingDefault}
         onReset={() => resetField('hangingIndent')}
       />
 
       {lists.levels.map((resolved) => (
-        <UnorderedListLevelSection
+        <OrderedListLevelSection
           key={resolved.level}
           level={resolved.level}
           resolved={resolved}
           raw={raw?.levels?.find((l) => l.level === resolved.level)}
-          generalBulletChar={lists.bulletChar}
+          generalNumberFormat={lists.numberFormat}
+          generalSeparator={lists.separator}
           generalFont={lists.fontFamily}
-          generalFontSize={lists.bulletFontSize}
+          generalFontSize={lists.numberFontSize}
           generalColor={lists.color}
           generalFontWeight={lists.fontWeight}
           generalItalic={lists.italic}
           generalIndent={lists.indent}
-          generalVerticalOffset={lists.bulletVerticalOffset}
+          generalVerticalOffset={lists.numberVerticalOffset}
           onUpdate={updateLevel}
           onReset={resetLevelField}
           labels={labels}
         />
       ))}
-
-      <CollapsibleSection
-        title={labels.taskLists}
-        sectionId="unordered-lists-task"
-        onReset={() => {
-          resetField('taskCheckboxChar');
-          resetField('taskCheckedChar');
-          resetField('taskCompletedStrikethrough');
-          resetField('taskCompletedColor');
-        }}
-        hasOverrides={
-          !isTaskCheckboxDefault ||
-          !isTaskCheckedDefault ||
-          !isTaskStrikeDefault ||
-          !isTaskCompletedColorDefault
-        }
-        resetLabel={labels.reset}
-        resetConfirmMessage={labels.resetSectionConfirm}
-      >
-        <TextInput
-          label={labels.taskCheckboxChar}
-          value={lists.taskCheckboxChar}
-          onChange={(v) => updateLists({ taskCheckboxChar: v })}
-          placeholder={labels.taskCheckboxCharPlaceholder}
-          tooltip={labels.taskCheckboxCharTooltip}
-          isDefault={isTaskCheckboxDefault}
-          onReset={() => resetField('taskCheckboxChar')}
-          widthCh={6}
-        />
-        <TextInput
-          label={labels.taskCheckedChar}
-          value={lists.taskCheckedChar}
-          onChange={(v) => updateLists({ taskCheckedChar: v })}
-          placeholder={labels.taskCheckedCharPlaceholder}
-          tooltip={labels.taskCheckedCharTooltip}
-          isDefault={isTaskCheckedDefault}
-          onReset={() => resetField('taskCheckedChar')}
-          widthCh={6}
-        />
-        <ToggleSwitch
-          label={labels.taskCompletedStrikethrough}
-          checked={lists.taskCompletedStrikethrough}
-          onChange={(v) => updateLists({ taskCompletedStrikethrough: v })}
-          tooltip={labels.taskCompletedStrikethroughTooltip}
-          isDefault={isTaskStrikeDefault}
-          onReset={() => resetField('taskCompletedStrikethrough')}
-        />
-        <ColorPicker
-          label={labels.taskCompletedColor}
-          value={lists.taskCompletedColor ?? bodyText.color}
-          onChange={(color) => updateLists({ taskCompletedColor: color })}
-          tooltip={labels.taskCompletedColorTooltip}
-          isDefault={isTaskCompletedColorDefault}
-          onReset={() => resetField('taskCompletedColor')}
-          fieldId="task-completed-color"
-        />
-      </CollapsibleSection>
     </CollapsibleSection>
   );
 }

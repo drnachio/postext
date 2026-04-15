@@ -188,6 +188,77 @@ export interface SandboxLabels {
   unorderedListLevelVerticalOffset: string;
   unorderedListLevelVerticalOffsetTooltip: string;
 
+  // Task list extensions (inside Unordered Lists section)
+  taskLists: string;
+  taskCheckboxChar: string;
+  taskCheckboxCharTooltip: string;
+  taskCheckboxCharPlaceholder: string;
+  taskCheckedChar: string;
+  taskCheckedCharTooltip: string;
+  taskCheckedCharPlaceholder: string;
+  taskCompletedStrikethrough: string;
+  taskCompletedStrikethroughTooltip: string;
+  taskCompletedColor: string;
+  taskCompletedColorTooltip: string;
+
+  // Ordered Lists section
+  orderedLists: string;
+  orderedListsFont: string;
+  orderedListsFontTooltip: string;
+  orderedListsFontSearch: string;
+  orderedListsFontNoResults: string;
+  orderedListsColor: string;
+  orderedListsColorTooltip: string;
+  orderedListsFontWeight: string;
+  orderedListsFontWeightTooltip: string;
+  orderedListsItalic: string;
+  orderedListsItalicTooltip: string;
+  orderedListsNumberFormat: string;
+  orderedListsNumberFormatTooltip: string;
+  orderedListsNumberFormatArabic: string;
+  orderedListsNumberFormatLowerAlpha: string;
+  orderedListsNumberFormatUpperAlpha: string;
+  orderedListsNumberFormatLowerRoman: string;
+  orderedListsNumberFormatUpperRoman: string;
+  orderedListsSeparator: string;
+  orderedListsSeparatorTooltip: string;
+  orderedListsSeparatorPlaceholder: string;
+  orderedListsNumberFontSize: string;
+  orderedListsNumberFontSizeTooltip: string;
+  orderedListsGap: string;
+  orderedListsGapTooltip: string;
+  orderedListsIndent: string;
+  orderedListsIndentTooltip: string;
+  orderedListsNumberVerticalOffset: string;
+  orderedListsNumberVerticalOffsetTooltip: string;
+  orderedListsMarginTop: string;
+  orderedListsMarginTopTooltip: string;
+  orderedListsMarginBottom: string;
+  orderedListsMarginBottomTooltip: string;
+  orderedListsItemSpacing: string;
+  orderedListsItemSpacingTooltip: string;
+  orderedListsHangingIndent: string;
+  orderedListsHangingIndentTooltip: string;
+  orderedListLevel: string;
+  orderedListLevelNumberFormat: string;
+  orderedListLevelNumberFormatTooltip: string;
+  orderedListLevelSeparator: string;
+  orderedListLevelSeparatorTooltip: string;
+  orderedListLevelFont: string;
+  orderedListLevelFontTooltip: string;
+  orderedListLevelFontSize: string;
+  orderedListLevelFontSizeTooltip: string;
+  orderedListLevelColor: string;
+  orderedListLevelColorTooltip: string;
+  orderedListLevelFontWeight: string;
+  orderedListLevelFontWeightTooltip: string;
+  orderedListLevelItalic: string;
+  orderedListLevelItalicTooltip: string;
+  orderedListLevelIndent: string;
+  orderedListLevelIndentTooltip: string;
+  orderedListLevelVerticalOffset: string;
+  orderedListLevelVerticalOffsetTooltip: string;
+
   // Layout section
   layout: string;
   layoutType: string;
@@ -236,6 +307,17 @@ export interface SandboxLabels {
   resetConfigConfirm: string;
   resetSectionConfirm: string;
   resetMarkdownConfirm: string;
+
+  // Color palette section
+  colorPalette: string;
+  colorPaletteTooltip: string;
+  colorPaletteEntryName: string;
+  colorPaletteAdd: string;
+  colorPaletteRemove: string;
+  colorPaletteNewEntry: string;
+  colorPaletteLink: string;
+  colorPaletteUnlink: string;
+  colorPaletteNone: string;
 }
 
 export type PanelId = 'markdown' | 'config' | 'resources';
@@ -436,6 +518,73 @@ export const DEFAULT_LABELS: SandboxLabels = {
   unorderedListLevelIndentTooltip: 'Horizontal indent from the column edge to the bullet for this depth level',
   unorderedListLevelVerticalOffset: 'Vertical Offset',
   unorderedListLevelVerticalOffsetTooltip: 'Override vertical nudge for this depth level. Negative = up, positive = down.',
+  taskLists: 'Task Lists',
+  taskCheckboxChar: 'Unchecked Character',
+  taskCheckboxCharTooltip: 'Glyph used as the checkbox for pending task items (`- [ ]`).',
+  taskCheckboxCharPlaceholder: 'e.g. ☐, ☒, [ ]',
+  taskCheckedChar: 'Checked Character',
+  taskCheckedCharTooltip: 'Glyph used as the checkbox for completed task items (`- [x]`).',
+  taskCheckedCharPlaceholder: 'e.g. ☑, ✓, [x]',
+  taskCompletedStrikethrough: 'Strikethrough Completed',
+  taskCompletedStrikethroughTooltip: 'Draw a line through the text of completed task items.',
+  taskCompletedColor: 'Completed Color',
+  taskCompletedColorTooltip: 'Text color for completed task items. When unset, the body color is used.',
+  orderedLists: 'Ordered Lists',
+  orderedListsFont: 'Number Font',
+  orderedListsFontTooltip: 'Default font family used to render ordered list numbers (inherits from body text when unset).',
+  orderedListsFontSearch: 'Search fonts...',
+  orderedListsFontNoResults: 'No fonts found',
+  orderedListsColor: 'Number Color',
+  orderedListsColorTooltip: 'Default color for ordered list numbers (inherits from body text when unset).',
+  orderedListsFontWeight: 'Number Weight',
+  orderedListsFontWeightTooltip: 'Default font weight for ordered list numbers (100-900).',
+  orderedListsItalic: 'Italic',
+  orderedListsItalicTooltip: 'Render ordered list numbers in italic.',
+  orderedListsNumberFormat: 'Number Format',
+  orderedListsNumberFormatTooltip: 'Default numbering format for every depth level.',
+  orderedListsNumberFormatArabic: 'Arabic (1, 2, 3)',
+  orderedListsNumberFormatLowerAlpha: 'Lower Alpha (a, b, c)',
+  orderedListsNumberFormatUpperAlpha: 'Upper Alpha (A, B, C)',
+  orderedListsNumberFormatLowerRoman: 'Lower Roman (i, ii, iii)',
+  orderedListsNumberFormatUpperRoman: 'Upper Roman (I, II, III)',
+  orderedListsSeparator: 'Separator',
+  orderedListsSeparatorTooltip: 'Character(s) appended after the number (e.g. `.`, `)`, `:`).',
+  orderedListsSeparatorPlaceholder: 'e.g. ., ), :',
+  orderedListsNumberFontSize: 'Number Size',
+  orderedListsNumberFontSizeTooltip: 'Font size for the numbers (em is relative to body text).',
+  orderedListsGap: 'Number Gap',
+  orderedListsGapTooltip: 'Horizontal distance between the number+separator and the start of the item text.',
+  orderedListsIndent: 'Base Indent',
+  orderedListsIndentTooltip: 'Base indent for level 1. Deeper levels cascade from their parent unless overridden.',
+  orderedListsNumberVerticalOffset: 'Vertical Offset',
+  orderedListsNumberVerticalOffsetTooltip: 'Fine-tune number vertical position. Negative values raise, positive values lower.',
+  orderedListsMarginTop: 'Margin Top',
+  orderedListsMarginTopTooltip: 'Space before the first item of a list.',
+  orderedListsMarginBottom: 'Margin Bottom',
+  orderedListsMarginBottomTooltip: 'Space after the last item of a list.',
+  orderedListsItemSpacing: 'Item Spacing',
+  orderedListsItemSpacingTooltip: 'Extra vertical space between consecutive list items.',
+  orderedListsHangingIndent: 'Hanging Indent',
+  orderedListsHangingIndentTooltip: 'When enabled, wrapped lines align to the text start instead of the number column.',
+  orderedListLevel: 'L',
+  orderedListLevelNumberFormat: 'Format',
+  orderedListLevelNumberFormatTooltip: 'Override the numbering format for this depth level.',
+  orderedListLevelSeparator: 'Separator',
+  orderedListLevelSeparatorTooltip: 'Override the separator for this depth level.',
+  orderedListLevelFont: 'Font',
+  orderedListLevelFontTooltip: 'Override the number font for this depth level.',
+  orderedListLevelFontSize: 'Size',
+  orderedListLevelFontSizeTooltip: 'Override the number font size for this depth level.',
+  orderedListLevelColor: 'Color',
+  orderedListLevelColorTooltip: 'Override the number color for this depth level.',
+  orderedListLevelFontWeight: 'Weight',
+  orderedListLevelFontWeightTooltip: 'Override the number font weight for this depth level.',
+  orderedListLevelItalic: 'Italic',
+  orderedListLevelItalicTooltip: 'Render this depth level number in italic.',
+  orderedListLevelIndent: 'Indent',
+  orderedListLevelIndentTooltip: 'Horizontal indent from the column edge to the number column for this depth level.',
+  orderedListLevelVerticalOffset: 'Vertical Offset',
+  orderedListLevelVerticalOffsetTooltip: 'Override vertical nudge for this depth level. Negative = up, positive = down.',
   layout: 'Layout',
   layoutType: 'Layout Type',
   layoutTypeTooltip: 'Column layout mode for the content area',
@@ -477,4 +626,13 @@ export const DEFAULT_LABELS: SandboxLabels = {
   resetConfigConfirm: 'Reset all configuration to defaults?',
   resetSectionConfirm: 'Reset this section to defaults?',
   resetMarkdownConfirm: 'Replace content with the default example?',
+  colorPalette: 'Color palette',
+  colorPaletteTooltip: 'Named colors reusable across all color fields. Changing an entry updates every reference.',
+  colorPaletteEntryName: 'Name',
+  colorPaletteAdd: 'Add color',
+  colorPaletteRemove: 'Remove',
+  colorPaletteNewEntry: 'New color',
+  colorPaletteLink: 'Link to palette',
+  colorPaletteUnlink: 'Unlink',
+  colorPaletteNone: 'No palette entries yet',
 };

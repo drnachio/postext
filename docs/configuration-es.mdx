@@ -493,16 +493,349 @@ Cada nivel de encabezado puede sobrescribir los valores generales a través del 
   </tbody>
 </table>
 
-Las configuraciones por nivel soportan las mismas propiedades que los valores generales: `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop` y `marginBottom`.
+Las configuraciones por nivel soportan las mismas propiedades que los valores generales — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom` — más dos campos exclusivos de cada nivel:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderiza el encabezado en cursiva. Se combina con el <code>fontWeight</code>.</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Reservado para numeración automática de encabezados (por ejemplo, <code>'Capítulo {n}. '</code>). Actualmente se almacena en la configuración resuelta y se propaga a través del pipeline; el renderizado lo respetará en una próxima versión.</td>
+    </tr>
+  </tbody>
+</table>
 
 ```ts
 headings: {
   fontFamily: 'Merriweather',
   levels: [
     { level: 1, fontSize: { value: 24, unit: 'pt' }, color: { hex: '#1a1a2e', model: 'hex' } },
-    { level: 2, fontSize: { value: 18, unit: 'pt' } },
+    { level: 2, fontSize: { value: 18, unit: 'pt' }, italic: true },
   ]
 }
+```
+
+
+## Listas no ordenadas
+
+La propiedad `unorderedLists` controla cómo se renderizan las listas con viñetas (`-`, `*`, `+`) y las listas de tareas estilo GFM (`- [ ]`, `- [x]`). Se admiten hasta cinco niveles de anidamiento.
+
+### Valores por defecto de listas no ordenadas
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>hereda <code>bodyText.fontFamily</code></td>
+      <td>Fuente del texto de los elementos.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>hereda <code>bodyText.color</code></td>
+      <td>Color del texto de los elementos.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>Peso del texto de los elementos (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderiza el texto de los elementos en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>bulletChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'•'</code></td>
+      <td>Glifo utilizado como viñeta.</td>
+    </tr>
+    <tr>
+      <td><code>bulletFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1 em</code></td>
+      <td>Tamaño del glifo de la viñeta. Las unidades relativas escalan con el tamaño del cuerpo de texto.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>Espacio horizontal entre la viñeta y el texto del elemento.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Sangría base para el nivel 1. Los niveles más profundos se encadenan desde el inicio del texto del nivel anterior salvo que se especifique (ver más abajo).</td>
+    </tr>
+    <tr>
+      <td><code>bulletVerticalOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Ajuste fino vertical de la viñeta. Valores negativos la suben; positivos la bajan.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>Espacio antes y después del bloque de lista.</td>
+    </tr>
+    <tr>
+      <td><code>itemSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Espacio vertical extra entre elementos, añadido sobre la altura de línea.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Cuando está activo, las líneas envueltas se alinean con el primer carácter de texto en lugar de hacerlo bajo la viñeta (sangría francesa).</td>
+    </tr>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>UnorderedListLevelConfig[]</code></td>
+      <td>—</td>
+      <td>Sobrescrituras por profundidad para los niveles 1–5. Ver más abajo.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Extensiones para listas de tareas
+
+Los elementos de tarea GFM (`- [ ] …`, `- [x] …`) se renderizan como elementos de lista no ordenada reemplazando la viñeta por una casilla. Los siguientes campos solo aplican a las tareas:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '180px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>taskCheckboxChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'☐'</code></td>
+      <td>Glifo para tareas no marcadas.</td>
+    </tr>
+    <tr>
+      <td><code>taskCheckedChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'☑'</code></td>
+      <td>Glifo para tareas completadas.</td>
+    </tr>
+    <tr>
+      <td><code>taskCompletedStrikethrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibuja una línea tachando el texto de las tareas completadas.</td>
+    </tr>
+    <tr>
+      <td><code>taskCompletedColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>hereda el color del elemento</td>
+      <td>Color opcional aplicado al texto de las tareas completadas. Cuando se omite, se usa el color habitual del elemento.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Sobrescrituras por nivel (listas no ordenadas)
+
+Cada entrada de `levels` apunta a una profundidad (1–5) y puede sobrescribir cualquiera de las siguientes propiedades:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bulletChar</code></td><td><code>string</code></td><td>Glifo de viñeta para esta profundidad.</td></tr>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td>Fuente del texto en esta profundidad.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td>Tamaño del glifo de viñeta en esta profundidad.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>Color del texto del elemento.</td></tr>
+    <tr><td><code>fontWeight</code></td><td><code>number</code></td><td>Peso del texto del elemento.</td></tr>
+    <tr><td><code>italic</code></td><td><code>boolean</code></td><td>Activa la cursiva.</td></tr>
+    <tr><td><code>indent</code></td><td><code>Dimension</code></td><td>Sangría explícita de la viñeta en esta profundidad. Ver la regla de encadenamiento a continuación.</td></tr>
+    <tr><td><code>verticalOffset</code></td><td><code>Dimension</code></td><td>Ajuste fino vertical de la viñeta en esta profundidad.</td></tr>
+  </tbody>
+</table>
+
+**Encadenamiento de sangrías.** El nivel 1 arranca siempre con el `indent` general (por defecto `0 em` — las viñetas quedan pegadas al borde de la columna). Para los niveles 2–5, si dejas `indent` sin definir el motor coloca la viñeta en el inicio de texto del nivel anterior (sangría del padre + ancho de viñeta + `gap`). Define un `indent` explícito en un nivel para romper el encadenamiento y fijar esa profundidad donde prefieras.
+
+```ts
+unorderedLists: {
+  bulletChar: '—',
+  gap: { value: 0.4, unit: 'em' },
+  hangingIndent: true,
+  levels: [
+    { level: 2, bulletChar: '·' },
+    { level: 3, bulletChar: '◦', color: { hex: '#666666', model: 'hex' } },
+  ],
+}
+```
+
+
+## Listas ordenadas
+
+La propiedad `orderedLists` controla las listas numeradas (`1.`, `2)`, etc.). Se admiten hasta cinco niveles de anidamiento y cada profundidad puede usar un formato de numeración distinto.
+
+### Valores por defecto de listas ordenadas
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '220px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>hereda <code>bodyText.fontFamily</code></td>
+      <td>Fuente del texto y del marcador numérico.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>hereda <code>bodyText.color</code></td>
+      <td>Color del texto y del marcador numérico.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>Peso del texto (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderiza el texto en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>OrderedListNumberFormat</code></td>
+      <td><code>'arabic'</code></td>
+      <td>Estilo de numeración: <code>'arabic'</code>, <code>'lower-alpha'</code>, <code>'upper-alpha'</code>, <code>'lower-roman'</code>, <code>'upper-roman'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>separator</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Carácter situado entre el número y el texto — normalmente <code>'.'</code> o <code>')'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>numberFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1 em</code></td>
+      <td>Tamaño del marcador numérico.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>Espacio horizontal entre el número y el texto del elemento.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Sangría base para el nivel 1; los niveles más profundos se encadenan desde el inicio del texto del nivel anterior salvo que se especifique.</td>
+    </tr>
+    <tr>
+      <td><code>numberVerticalOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Ajuste fino vertical del marcador numérico.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>Espacio antes y después del bloque de lista.</td>
+    </tr>
+    <tr>
+      <td><code>itemSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Espacio vertical extra entre elementos.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Las líneas envueltas se alinean con el primer carácter de texto, no bajo el número.</td>
+    </tr>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>OrderedListLevelConfig[]</code></td>
+      <td>—</td>
+      <td>Sobrescrituras por profundidad para los niveles 1–5.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Sobrescrituras por nivel (listas ordenadas)
+
+Cada entrada de `levels` puede sobrescribir `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent` y `verticalOffset` — se aplica el mismo encadenamiento de sangrías que en las listas no ordenadas.
+
+**Alineación a la derecha.** El pipeline mide el número formateado más ancho dentro de cada recorrido e indenta todos los elementos de ese recorrido para que los marcadores queden alineados por su borde derecho. Una lista de diez elementos renderizada como `1.` – `10.` desplaza los números de un dígito a la derecha para que el separador caiga siempre en la misma columna.
+
+```ts
+orderedLists: {
+  numberFormat: 'arabic',
+  separator: '.',
+  levels: [
+    { level: 2, numberFormat: 'lower-alpha' },
+    { level: 3, numberFormat: 'lower-roman', separator: ')' },
+  ],
+}
+```
+
+Esto produce la clásica combinación anidada:
+
+```
+1. Primer elemento
+   a. Subelemento
+      i) Nota profunda
+   b. Subelemento
+2. Segundo elemento
 ```
 
 
@@ -687,7 +1020,19 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveDebugConfig`.
+Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`.
+
+`resolveUnorderedListsConfig` y `resolveOrderedListsConfig` son los únicos resolvers que aceptan un segundo argumento — el `ResolvedBodyTextConfig` ya resuelto — porque las listas heredan `fontFamily` y `color` del cuerpo de texto:
+
+```ts
+import { resolveBodyTextConfig, resolveUnorderedListsConfig } from 'postext';
+
+const body = resolveBodyTextConfig({ fontFamily: 'Inter' });
+const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
+// => lists.fontFamily === 'Inter' (heredado)
+```
+
+También se exportan los paquetes de valores por defecto estáticos — los que se usan cuando no hay herencia: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_DEBUG_CONFIG`.
 
 ### Eliminar valores por defecto
 
@@ -700,4 +1045,23 @@ const minimal = stripConfigDefaults(fullConfig);
 // Solo permanecen las propiedades que difieren de los valores por defecto
 ```
 
-También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripDebugDefaults`.
+También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripDebugDefaults`.
+
+### Parseo
+
+El motor expone su tokenizador de markdown y su lector de frontmatter. Úsalos para inspeccionar un documento antes de construirlo, o para alimentar a otras herramientas con la misma estructura de bloques que ve Postext:
+
+```ts
+import { parseMarkdown, extractFrontmatter } from 'postext';
+
+const source = '---\ntitle: Capítulo uno\n---\n\n# Apertura\n\nLa historia empieza aquí.';
+
+const { metadata, content } = extractFrontmatter(source);
+// metadata.title === 'Capítulo uno'
+
+const blocks = parseMarkdown(content);
+// => [ { type: 'heading', level: 1, text: 'Apertura', … },
+//      { type: 'paragraph', text: 'La historia empieza aquí.', … } ]
+```
+
+Consulta la página de [Formato del documento](/es/docs/document-format) para ver la lista completa de construcciones markdown que reconoce Postext.
