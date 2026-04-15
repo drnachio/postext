@@ -37,6 +37,7 @@
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.36.8",
     "@lezer/highlight": "^1.2.1",
+    "@lezer/markdown": "^1.6.3",
     "colorjs.io": "^0.6.1",
     "lucide-react": "^0.513.0"
   },

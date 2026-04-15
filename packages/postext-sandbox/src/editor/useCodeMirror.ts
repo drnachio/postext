@@ -7,7 +7,7 @@ import { markdown } from '@codemirror/lang-markdown';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching } from '@codemirror/language';
 import { getEditorTheme } from './postextTheme';
-import { frontmatterHighlight, frontmatterTheme } from './frontmatterHighlight';
+import { frontmatterHighlight, frontmatterParser, frontmatterTheme } from './frontmatterHighlight';
 
 interface UseCodeMirrorOptions {
   initialValue: string;
@@ -53,7 +53,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
         highlightActiveLine(),
         history(),
         bracketMatching(),
-        markdown(),
+        markdown({ extensions: [frontmatterParser] }),
         frontmatterTheme,
         frontmatterHighlight,
         keymap.of([...defaultKeymap, ...historyKeymap]),

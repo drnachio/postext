@@ -1,7 +1,8 @@
 'use client';
 
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
-import { RangeSetBuilder } from '@codemirror/state';
+import { Prec, RangeSetBuilder } from '@codemirror/state';
+import type { MarkdownConfig } from '@lezer/markdown';
 
 const delimMark = Decoration.mark({ class: 'cm-fm-delim' });
 const keyMark = Decoration.mark({ class: 'cm-fm-key' });
@@ -73,22 +74,51 @@ export const frontmatterHighlight = ViewPlugin.fromClass(
   { decorations: (v) => v.decorations },
 );
 
-export const frontmatterTheme = EditorView.baseTheme({
-  '.cm-fm-line': {
-    backgroundColor: 'rgba(224, 168, 22, 0.05)',
-  },
-  '.cm-fm-delim': {
-    color: 'var(--slate)',
-    fontWeight: 'bold',
-  },
-  '.cm-fm-key': {
-    color: 'var(--accent-blue)',
-    fontWeight: 'bold',
-  },
-  '.cm-fm-punct': {
-    color: 'var(--slate)',
-  },
-  '.cm-fm-value': {
-    color: 'var(--gilt)',
-  },
-});
+export const frontmatterTheme = Prec.highest(
+  EditorView.baseTheme({
+    '.cm-line.cm-fm-line': {
+      backgroundColor: 'rgba(224, 168, 22, 0.05)',
+    },
+    '.cm-line.cm-fm-line .cm-fm-delim': {
+      color: 'var(--slate)',
+      fontWeight: 'bold',
+    },
+    '.cm-line.cm-fm-line .cm-fm-key': {
+      color: 'var(--accent-blue)',
+      fontWeight: 'bold',
+    },
+    '.cm-line.cm-fm-line .cm-fm-punct': {
+      color: 'var(--slate)',
+      fontWeight: 'normal',
+    },
+    '.cm-line.cm-fm-line .cm-fm-value': {
+      color: 'var(--gilt)',
+      fontWeight: 'normal',
+    },
+  }),
+);
+
+export const frontmatterParser: MarkdownConfig = {
+  defineNodes: [{ name: 'Frontmatter', block: true }],
+  parseBlock: [
+    {
+      name: 'Frontmatter',
+      before: 'HorizontalRule',
+      parse(cx, line) {
+        if (cx.lineStart !== 0) return false;
+        if (line.text !== '---') return false;
+
+        const start = cx.lineStart;
+        while (cx.nextLine()) {
+          if (line.text === '---') {
+            const end = cx.lineStart + line.text.length;
+            cx.addElement(cx.elt('Frontmatter', start, end));
+            cx.nextLine();
+            return true;
+          }
+        }
+        return false;
+      },
+    },
+  ],
+};

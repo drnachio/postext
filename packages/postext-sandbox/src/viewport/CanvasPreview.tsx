@@ -279,10 +279,57 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     const debug = resolveDebugConfig(state.config.debug);
     const selection = state.selection;
     const focused = state.editorFocused;
+    // Find the block that should host the caret. Prefer the block that
+    // actually contains the source offset; otherwise fall back to the first
+    // block starting at or after the offset (cursor between paragraphs).
+    let caretBlockIdx = -1;
+    const { from } = selection;
+    for (let i = 0; i < doc.blocks.length; i++) {
+      const b = doc.blocks[i]!;
+      if (b.sourceStart === undefined || b.sourceEnd === undefined) continue;
+      if (from >= b.sourceStart && from < b.sourceEnd) { caretBlockIdx = i; break; }
+    }
+    if (caretBlockIdx === -1) {
+      for (let i = 0; i < doc.blocks.length; i++) {
+        const b = doc.blocks[i]!;
+        if (b.sourceStart === undefined) continue;
+        if (b.sourceStart >= from) { caretBlockIdx = i; break; }
+      }
+    }
+    if (caretBlockIdx === -1 && doc.blocks.length > 0) {
+      caretBlockIdx = doc.blocks.length - 1;
+    }
+
+    let activeCursorRect: SVGRectElement | null = null;
     for (const [pageIndex, overlay] of overlayMapRef.current) {
       const page = doc.pages[pageIndex];
       if (!page) continue;
-      drawOverlay(overlay, doc, pageIndex, selection, debug, focused);
+      const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx);
+      if (rect) activeCursorRect = rect;
+    }
+
+    const container = containerRef.current;
+    const isCollapsed = selection.from === selection.to;
+    if (
+      activeCursorRect &&
+      container &&
+      focused &&
+      isCollapsed &&
+      debug.cursorSync.enabled
+    ) {
+      const padding = 16;
+      const cr = activeCursorRect.getBoundingClientRect();
+      const cn = container.getBoundingClientRect();
+      if (cr.top < cn.top + padding) {
+        container.scrollTop += cr.top - cn.top - padding;
+      } else if (cr.bottom > cn.bottom - padding) {
+        container.scrollTop += cr.bottom - cn.bottom + padding;
+      }
+      if (cr.left < cn.left + padding) {
+        container.scrollLeft += cr.left - cn.left - padding;
+      } else if (cr.right > cn.right - padding) {
+        container.scrollLeft += cr.right - cn.right + padding;
+      }
     }
   }, [state.selection, state.config.debug, state.editorFocused, docVersion]);
 
@@ -432,11 +479,12 @@ function drawOverlay(
   selection: { from: number; to: number },
   debug: ResolvedDebugConfig,
   focused: boolean,
-): void {
+  caretBlockIdx: number,
+): SVGRectElement | null {
   const selectionGroup = svg.querySelector<SVGGElement>('g[data-role="selection"]');
   const cursorGroup = svg.querySelector<SVGGElement>('g[data-role="cursor"]');
   const cursorRect = cursorGroup?.firstElementChild as SVGRectElement | null;
-  if (!selectionGroup || !cursorGroup || !cursorRect) return;
+  if (!selectionGroup || !cursorGroup || !cursorRect) return null;
 
   while (selectionGroup.firstChild) selectionGroup.removeChild(selectionGroup.firstChild);
   cursorRect.style.display = 'none';
@@ -446,45 +494,59 @@ function drawOverlay(
   const cursorActive = debug.cursorSync.enabled && isCollapsed;
   const selectionActive = debug.selectionSync.enabled && !isCollapsed;
 
-  if (!focused) return;
-  if (!cursorActive && !selectionActive) return;
+  if (!focused) return null;
+  if (!cursorActive && !selectionActive) return null;
 
-  const blocks = doc.blocks.filter((b) => b.pageIndex === pageIndex);
+  const caretBlock = cursorActive ? doc.blocks[caretBlockIdx] : undefined;
   let cursorDrawn = false;
 
+  // Cursor: draw once on the pre-identified caret block if it lives on this page.
+  if (cursorActive && caretBlock && caretBlock.pageIndex === pageIndex) {
+    const prefixLen = caretBlock.plainPrefixLen ?? 0;
+    const plainLen = prefixLen + (caretBlock.sourceMap?.length ?? 0);
+    // Clamp: if `from` is before the block (cursor between paragraphs) snap to start.
+    let plainCaret: number;
+    if (caretBlock.sourceStart !== undefined && from < caretBlock.sourceStart) {
+      plainCaret = prefixLen;
+    } else {
+      const mapped = sourceToPlainIndex(caretBlock, from);
+      plainCaret = mapped === null ? prefixLen : Math.min(mapped, plainLen);
+    }
+    for (const line of caretBlock.lines) {
+      const lineStart = line.plainStart;
+      const lineEnd = line.plainEnd;
+      if (lineStart === undefined || lineEnd === undefined) continue;
+      if (plainCaret < lineStart || plainCaret > lineEnd) continue;
+      const x = xForPlainInLine(caretBlock, line, plainCaret - lineStart);
+      cursorRect.setAttribute('x', String(x - 1.5));
+      cursorRect.setAttribute('y', String(line.bbox.y));
+      cursorRect.setAttribute('width', '3');
+      cursorRect.setAttribute('height', String(line.bbox.height));
+      cursorRect.setAttribute('fill', debug.cursorSync.color.hex);
+      cursorRect.style.display = '';
+      cursorDrawn = true;
+      break;
+    }
+    if (!selectionActive) return cursorDrawn ? cursorRect : null;
+  }
+
+  if (!selectionActive) return cursorDrawn ? cursorRect : null;
+
+  const blocks = doc.blocks.filter((b) => b.pageIndex === pageIndex);
   for (const block of blocks) {
     if (block.sourceStart === undefined || block.sourceEnd === undefined) continue;
-    if (!isCollapsed && block.sourceEnd <= from) continue;
+    if (block.sourceEnd <= from) continue;
     if (block.sourceStart > to) continue;
 
     const plainFrom = sourceToPlainIndex(block, from);
-    const plainTo = isCollapsed ? plainFrom : sourceToPlainIndex(block, to);
+    const plainTo = sourceToPlainIndex(block, to);
 
     for (const line of block.lines) {
       const lineStart = line.plainStart;
       const lineEnd = line.plainEnd;
       if (lineStart === undefined || lineEnd === undefined) continue;
 
-      if (cursorActive && !cursorDrawn) {
-        // Only the block that actually contains the caret draws it —
-        // otherwise sourceToPlainIndex's clamping lets every earlier block
-        // mis-claim the cursor at its own end-of-block position.
-        if (from < block.sourceStart || from >= block.sourceEnd) continue;
-        if (plainFrom === null) continue;
-        if (plainFrom < lineStart || plainFrom > lineEnd) continue;
-        const x = xForPlainInLine(block, line, plainFrom - lineStart);
-        cursorRect.setAttribute('x', String(x - 1));
-        cursorRect.setAttribute('y', String(line.bbox.y));
-        cursorRect.setAttribute('width', '2');
-        cursorRect.setAttribute('height', String(line.bbox.height));
-        cursorRect.setAttribute('fill', debug.cursorSync.color.hex);
-        cursorRect.style.display = '';
-        cursorDrawn = true;
-        if (!selectionActive) return;
-        continue;
-      }
-
-      if (selectionActive) {
+      {
         if (plainFrom === null || plainTo === null) continue;
         const lo = Math.max(plainFrom, lineStart);
         const hi = Math.min(plainTo, lineEnd);
@@ -502,4 +564,5 @@ function drawOverlay(
       }
     }
   }
+  return cursorDrawn ? cursorRect : null;
 }
