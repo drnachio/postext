@@ -33,7 +33,7 @@ export interface SandboxState {
   locale: string;
   selection: EditorSelection;
   editorFocused: boolean;
-  pendingEditorFocus: { offset: number; selectWord: boolean } | null;
+  pendingEditorFocus: { anchor: number; head: number; selectWord: boolean } | null;
 }
 
 export type SandboxAction =
@@ -47,7 +47,7 @@ export type SandboxAction =
   | { type: 'SET_VIEWPORT'; payload: ViewportTab }
   | { type: 'SET_SELECTION'; payload: EditorSelection }
   | { type: 'SET_EDITOR_FOCUSED'; payload: boolean }
-  | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: { offset: number; selectWord: boolean } | null };
+  | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: { anchor: number; head: number; selectWord: boolean } | null };
 
 function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
@@ -83,7 +83,8 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
       if (
         state.pendingEditorFocus &&
         action.payload &&
-        state.pendingEditorFocus.offset === action.payload.offset &&
+        state.pendingEditorFocus.anchor === action.payload.anchor &&
+        state.pendingEditorFocus.head === action.payload.head &&
         state.pendingEditorFocus.selectWord === action.payload.selectWord
       ) return state;
       return { ...state, pendingEditorFocus: action.payload };

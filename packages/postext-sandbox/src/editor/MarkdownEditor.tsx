@@ -38,11 +38,11 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     const view = viewRef.current;
     if (!view) return;
     const docLen = view.state.doc.length;
-    const offset = Math.max(0, Math.min(pendingEditorFocus.offset, docLen));
-    let anchor = offset;
-    let head = offset;
-    if (pendingEditorFocus.selectWord) {
-      const word = view.state.wordAt(offset);
+    const clamp = (n: number): number => Math.max(0, Math.min(n, docLen));
+    let anchor = clamp(pendingEditorFocus.anchor);
+    let head = clamp(pendingEditorFocus.head);
+    if (pendingEditorFocus.selectWord && anchor === head) {
+      const word = view.state.wordAt(anchor);
       if (word) {
         anchor = word.from;
         head = word.to;
