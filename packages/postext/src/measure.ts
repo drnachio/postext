@@ -244,6 +244,11 @@ function measureTextWidth(text: string, font: string): number {
   return ctx.measureText(text).width;
 }
 
+/** Measure a short glyph (e.g. a list bullet) in the given font. */
+export function measureGlyphWidth(text: string, font: string): number {
+  return measureTextWidth(text, font);
+}
+
 /**
  * Tokenize inline spans into word/space tokens with bold/italic flags and measured widths.
  */

@@ -10,6 +10,7 @@ import { PageSection } from './sections/PageSection';
 import { LayoutSection } from './sections/LayoutSection';
 import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
+import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { DebugSection } from './sections/DebugSection';
 
 export function ConfigPanel() {
@@ -107,6 +108,7 @@ export function ConfigPanel() {
         <LayoutSection />
         <BodyTextSection />
         <HeadingsSection />
+        <UnorderedListsSection />
         <DebugSection />
       </div>
     </div>

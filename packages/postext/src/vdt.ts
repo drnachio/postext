@@ -5,6 +5,7 @@ import type {
   ResolvedLayoutConfig,
   ResolvedBodyTextConfig,
   ResolvedHeadingsConfig,
+  ResolvedUnorderedListsConfig,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -27,6 +28,7 @@ export interface ResolvedConfig {
   layout: ResolvedLayoutConfig;
   bodyText: ResolvedBodyTextConfig;
   headings: ResolvedHeadingsConfig;
+  unorderedLists: ResolvedUnorderedListsConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -96,6 +98,18 @@ export interface VDTBlock {
   sourceMap?: number[];
   /** Length of any prepended numbering prefix in the block's plain text (0 if none) */
   plainPrefixLen?: number;
+  /** List item nesting depth (1-based), only set for `listItem` blocks */
+  listDepth?: number;
+  /** Bullet character to render (only for `listItem`) */
+  bulletText?: string;
+  /** Font string used to render the bullet glyph */
+  bulletFontString?: string;
+  /** Bullet color (hex) */
+  bulletColor?: string;
+  /** Absolute page X coordinate where the bullet is drawn */
+  bulletOffsetX?: number;
+  /** Absolute page Y coordinate for the bullet's vertical midpoint (paired with textBaseline='middle') */
+  bulletY?: number;
 }
 
 export interface VDTColumn {

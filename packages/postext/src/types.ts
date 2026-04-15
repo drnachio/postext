@@ -265,6 +265,69 @@ export interface ResolvedHeadingsConfig {
   levels: ResolvedHeadingLevelConfig[];
 }
 
+export interface UnorderedListLevelConfig {
+  level: number;
+  bulletChar?: string;
+  fontFamily?: string;
+  fontSize?: Dimension;
+  color?: ColorValue;
+  fontWeight?: number;
+  italic?: boolean;
+  indent?: Dimension;
+  /** Fine-tune bullet vertical position. Negative = up, positive = down. Accepts negative values. */
+  verticalOffset?: Dimension;
+}
+
+export interface ResolvedUnorderedListLevelConfig {
+  level: number;
+  bulletChar: string;
+  fontFamily: string;
+  fontSize: Dimension;
+  color: ColorValue;
+  fontWeight: number;
+  italic: boolean;
+  /** User-overridden indent for this level. When undefined, the renderer cascades:
+   *  level 1 → general indent; level N>1 → previous level's text-start (indent + bullet width + gap). */
+  indent?: Dimension;
+  verticalOffset: Dimension;
+}
+
+export interface UnorderedListsConfig {
+  fontFamily?: string;
+  color?: ColorValue;
+  fontWeight?: number;
+  italic?: boolean;
+  bulletChar?: string;
+  bulletFontSize?: Dimension;
+  gap?: Dimension;
+  /** Base indent step — level N defaults to `indent * N` unless the level overrides `indent`. Use 0 to pin bullets to the column edge. */
+  indent?: Dimension;
+  /** Fine-tune bullet vertical position. Negative = up, positive = down. */
+  bulletVerticalOffset?: Dimension;
+  marginTop?: Dimension;
+  marginBottom?: Dimension;
+  itemSpacing?: Dimension;
+  hangingIndent?: boolean;
+  levels?: UnorderedListLevelConfig[];
+}
+
+export interface ResolvedUnorderedListsConfig {
+  fontFamily: string;
+  color: ColorValue;
+  fontWeight: number;
+  italic: boolean;
+  bulletChar: string;
+  bulletFontSize: Dimension;
+  gap: Dimension;
+  indent: Dimension;
+  bulletVerticalOffset: Dimension;
+  marginTop: Dimension;
+  marginBottom: Dimension;
+  itemSpacing: Dimension;
+  hangingIndent: boolean;
+  levels: ResolvedUnorderedListLevelConfig[];
+}
+
 export interface SyncIndicatorConfig {
   enabled: boolean;
   color?: ColorValue;
@@ -292,6 +355,7 @@ export interface PostextConfig {
   layout?: LayoutConfig;
   bodyText?: BodyTextConfig;
   headings?: HeadingsConfig;
+  unorderedLists?: UnorderedListsConfig;
 
   columns?: number;
   gutter?: string;

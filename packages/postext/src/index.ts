@@ -2,13 +2,13 @@ export { createLayout } from './createLayout';
 export { buildDocument } from './pipeline';
 export { renderToCanvas, renderPage, renderPageToCanvas } from './canvas-backend';
 export { dimensionToPx } from './units';
-export { buildFontString, measureBlock, measureRichBlock, initHyphenator, clearMeasurementCache } from './measure';
+export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache } from './measure';
 export type { MeasuredBlock, MeasureBlockOptions } from './measure';
 export { hyphenateText, setHyphenationLocale } from './hyphenate';
 export { parseMarkdown } from './parse';
 export { extractFrontmatter } from './frontmatter';
 export type { ParsedFrontmatter } from './frontmatter';
-export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './defaults';
+export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './defaults';
 export type {
   PostextContent,
   DocumentMetadata,
@@ -45,6 +45,10 @@ export type {
   ResolvedHeadingLevelConfig,
   HeadingsConfig,
   ResolvedHeadingsConfig,
+  UnorderedListLevelConfig,
+  ResolvedUnorderedListLevelConfig,
+  UnorderedListsConfig,
+  ResolvedUnorderedListsConfig,
   SyncIndicatorConfig,
   DebugConfig,
   ResolvedDebugConfig,

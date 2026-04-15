@@ -213,12 +213,28 @@ function renderLine(
   ctx.fillText(line.text, line.bbox.x, line.baseline);
 }
 
+function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
+  if (!block.bulletText || !block.bulletFontString || block.bulletOffsetX === undefined) return;
+  const firstLine = block.lines[0];
+  if (!firstLine) return;
+  ctx.save();
+  ctx.fillStyle = block.bulletColor ?? block.color;
+  ctx.textBaseline = 'middle';
+  ctx.font = block.bulletFontString;
+  const y = block.bulletY ?? firstLine.baseline;
+  ctx.fillText(block.bulletText, block.bulletOffsetX, y);
+  ctx.restore();
+}
+
 function renderBlock(
   ctx: CanvasRenderingContext2D,
   block: VDTBlock,
   columnWidth: number,
   columnX: number,
 ): void {
+  if (block.type === 'listItem') {
+    renderBullet(ctx, block);
+  }
   for (const line of block.lines) {
     renderLine(
       ctx,
