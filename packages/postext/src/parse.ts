@@ -123,13 +123,6 @@ function parseInlineFormatting(text: string): InlineSpan[] {
 }
 
 /**
- * Join spans into a single plain text string.
- */
-function spansToText(spans: InlineSpan[]): string {
-  return spans.map((s) => s.text).join('').trim();
-}
-
-/**
  * Build a per-character map from plain text to absolute source offsets.
  * Greedy matches each plain char against the raw source (delimited by
  * [blockSrcStart, blockSrcEnd)), skipping markdown markers and treating
