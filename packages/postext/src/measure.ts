@@ -220,6 +220,7 @@ function cleanSoftHyphens(text: string): string {
 interface RichToken {
   text: string;
   bold: boolean;
+  italic: boolean;
   kind: 'text' | 'space';
   width: number;
 }
@@ -244,19 +245,29 @@ function measureTextWidth(text: string, font: string): number {
 }
 
 /**
- * Tokenize inline spans into word/space tokens with bold flag and measured widths.
+ * Tokenize inline spans into word/space tokens with bold/italic flags and measured widths.
  */
 function tokenizeSpans(
   spans: InlineSpan[],
   normalFont: string,
   boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
   shouldHyphenate: boolean,
 ): RichToken[] {
   const tokens: RichToken[] = [];
 
   for (const span of spans) {
-    const text = shouldHyphenate && !span.bold ? hyphenateText(span.text) : span.text;
-    const font = span.bold ? boldFont : normalFont;
+    // Only hyphenate plain (non-bold, non-italic) spans to avoid mis-measuring emphasis.
+    const plain = !span.bold && !span.italic;
+    const text = shouldHyphenate && plain ? hyphenateText(span.text) : span.text;
+    const font = span.bold && span.italic
+      ? boldItalicFont
+      : span.bold
+        ? boldFont
+        : span.italic
+          ? italicFont
+          : normalFont;
 
     // Split on word boundaries while preserving spaces
     const parts = text.match(/\S+|\s+/g);
@@ -267,6 +278,7 @@ function tokenizeSpans(
       tokens.push({
         text: part,
         bold: span.bold,
+        italic: span.italic,
         kind: isSpace ? 'space' : 'text',
         width: measureTextWidth(part, font),
       });
@@ -284,6 +296,8 @@ export function measureRichBlock(
   spans: InlineSpan[],
   normalFont: string,
   boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
   maxWidthPx: number,
   lineHeightPx: number,
   options?: MeasureBlockOptions,
@@ -296,7 +310,7 @@ export function measureRichBlock(
   const shouldHyphenate = options?.hyphenate ?? false;
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
-  const tokens = tokenizeSpans(spans, normalFont, boldFont, shouldHyphenate);
+  const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate);
 
   if (tokens.length === 0) {
     return { lines: [], totalHeight: 0 };
@@ -358,6 +372,7 @@ export function measureRichBlock(
       text: cleanSoftHyphens(t.text),
       width: t.width,
       bold: t.bold || undefined,
+      italic: t.italic || undefined,
     }));
 
     const lineText = lineTokens.map((t) => cleanSoftHyphens(t.text)).join('');

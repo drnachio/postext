@@ -48,6 +48,7 @@ export interface VDTLineSegment {
   text: string;
   width: number;
   bold?: boolean;
+  italic?: boolean;
 }
 
 export interface VDTLine {
@@ -83,6 +84,8 @@ export interface VDTBlock {
   numberPrefix?: string;
   fontString: string;
   boldFontString?: string;
+  italicFontString?: string;
+  boldItalicFontString?: string;
   color: string;
   textAlign: TextAlign;
   /** Character offset in the original markdown where the source content for this block starts */

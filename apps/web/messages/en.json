@@ -332,6 +332,8 @@
     "blockquote": "Blockquote",
     "orderedList": "Ordered List",
     "unorderedList": "Unordered List",
+    "undo": "Undo",
+    "redo": "Redo",
     "save": "Save",
     "load": "Load",
     "exportFile": "Export",

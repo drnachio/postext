@@ -332,6 +332,8 @@
     "blockquote": "Cita",
     "orderedList": "Lista ordenada",
     "unorderedList": "Lista sin orden",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
     "save": "Guardar",
     "load": "Cargar",
     "exportFile": "Exportar",

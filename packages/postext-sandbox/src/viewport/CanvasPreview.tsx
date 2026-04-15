@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, useDeferredValue } from 'react';
+import { useEffect, useRef, useState, useDeferredValue, type Dispatch, type MutableRefObject } from 'react';
 import { useSandbox } from '../context/SandboxContext';
+import type { SandboxAction } from '../context/SandboxContext';
+import type { PanelId } from '../types';
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, resolveDebugConfig } from 'postext';
 import type { VDTDocument, ResolvedDebugConfig } from 'postext';
 
@@ -42,8 +44,14 @@ function groupPagesIntoRows(pageCount: number, viewMode: ViewMode): number[][] {
  * only the pages visible in the scroll viewport via IntersectionObserver.
  */
 export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
-  const { state } = useSandbox();
+  const { state, dispatch } = useSandbox();
   const containerRef = useRef<HTMLDivElement>(null);
+  // Refs used by click handlers so changing panel/dispatch identity doesn't
+  // force a full DOM rebuild of the page slots.
+  const dispatchRef = useRef(dispatch);
+  dispatchRef.current = dispatch;
+  const activePanelRef = useRef(state.activePanel);
+  activePanelRef.current = state.activePanel;
   const docRef = useRef<VDTDocument | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
@@ -185,6 +193,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
             const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
             slot.appendChild(overlay);
             overlayMap.set(pageIndex, overlay);
+            attachSlotClickHandler(slot, pageIndex, displayWidth, displayHeight, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
             allSlots.push(slot);
             rowDiv.appendChild(slot);
 
@@ -208,6 +217,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
               const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
               slot.appendChild(overlay);
               overlayMap.set(pageIndex, overlay);
+              attachSlotClickHandler(slot, pageIndex, displayWidth, displayHeight, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
               allSlots.push(slot);
               rowDiv.appendChild(slot);
             }
@@ -565,4 +575,169 @@ function drawOverlay(
     }
   }
   return cursorDrawn ? cursorRect : null;
+}
+
+/**
+ * Reverse hit-test: given page-space pixel coordinates, find the source offset
+ * in the markdown document that corresponds to the clicked glyph. Returns null
+ * when the click lands on page background (outside any block).
+ */
+function pixelToSourceOffset(
+  doc: VDTDocument,
+  pageIndex: number,
+  xPage: number,
+  yPage: number,
+): number | null {
+  // 1. Find a block on this page whose bbox contains the click.
+  let hitBlock: VDTDocument['blocks'][number] | undefined;
+  for (const b of doc.blocks) {
+    if (b.pageIndex !== pageIndex) continue;
+    const bx = b.bbox.x;
+    const by = b.bbox.y;
+    if (xPage < bx || xPage > bx + b.bbox.width) continue;
+    if (yPage < by || yPage > by + b.bbox.height) continue;
+    hitBlock = b;
+    break;
+  }
+  if (!hitBlock) return null;
+
+  // 2. Find the line whose vertical band contains yPage; snap to nearest if
+  //    click is in the gap between lines.
+  let hitLine: VDTDocument['blocks'][number]['lines'][number] | undefined;
+  let bestDy = Infinity;
+  for (const line of hitBlock.lines) {
+    const top = line.bbox.y;
+    const bot = top + line.bbox.height;
+    if (yPage >= top && yPage <= bot) {
+      hitLine = line;
+      break;
+    }
+    const dy = yPage < top ? top - yPage : yPage - bot;
+    if (dy < bestDy) {
+      bestDy = dy;
+      hitLine = line;
+    }
+  }
+  if (!hitLine || hitLine.plainStart === undefined || hitLine.plainEnd === undefined) {
+    return hitBlock.sourceStart ?? null;
+  }
+
+  // 3. Walk segments to find the plain-char offset within the line. Mirror the
+  //    justify-fill math from xForPlainInLine.
+  const blockRight = hitBlock.bbox.x + hitBlock.bbox.width;
+  const justifyFill = hitBlock.textAlign === 'justify' && hitLine.isLastLine === false;
+  const segs = hitLine.segments;
+  const lineLen = Math.max(0, hitLine.plainEnd - hitLine.plainStart);
+  let inLineOffset: number;
+
+  if (!segs || segs.length === 0) {
+    const renderedWidth = justifyFill
+      ? Math.max(hitLine.bbox.width, blockRight - hitLine.bbox.x)
+      : hitLine.bbox.width;
+    const rel = Math.max(0, Math.min(renderedWidth, xPage - hitLine.bbox.x));
+    const ratio = renderedWidth > 0 ? rel / renderedWidth : 0;
+    inLineOffset = Math.round(ratio * lineLen);
+  } else {
+    let naturalWidth = 0;
+    let spaceCount = 0;
+    for (const seg of segs) {
+      naturalWidth += seg.width;
+      if (seg.kind === 'space') spaceCount++;
+    }
+    const renderedWidth = justifyFill
+      ? Math.max(naturalWidth, blockRight - hitLine.bbox.x)
+      : naturalWidth;
+    const extraPerSpace = justifyFill && spaceCount > 0
+      ? Math.max(0, (renderedWidth - naturalWidth) / spaceCount)
+      : 0;
+
+    const lastIdx = segs.length - 1;
+    let x = hitLine.bbox.x;
+    let cum = 0;
+    // Clamp click to the line's rendered horizontal extent.
+    const clampedX = Math.max(hitLine.bbox.x, Math.min(xPage, hitLine.bbox.x + renderedWidth));
+    let resolved = false;
+    let result = 0;
+    for (let i = 0; i < segs.length; i++) {
+      const seg = segs[i]!;
+      const isLastSeg = i === lastIdx;
+      const segPlainLen = (isLastSeg && hitLine.hyphenated && seg.text.endsWith('-'))
+        ? Math.max(0, seg.text.length - 1)
+        : seg.text.length;
+      const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
+      if (clampedX <= x + segRendered) {
+        const within = clampedX - x;
+        const ratio = segRendered > 0 ? within / segRendered : 0;
+        result = cum + Math.round(ratio * segPlainLen);
+        resolved = true;
+        break;
+      }
+      x += segRendered;
+      cum += segPlainLen;
+    }
+    inLineOffset = resolved ? result : cum;
+  }
+
+  const plainCharIndex = hitLine.plainStart + inLineOffset;
+
+  // 4. Map plain-char back to source offset via the block's sourceMap.
+  const prefixLen = hitBlock.plainPrefixLen ?? 0;
+  const mapIdx = plainCharIndex - prefixLen;
+  if (!hitBlock.sourceMap) return hitBlock.sourceStart ?? null;
+  if (mapIdx < 0) return hitBlock.sourceStart ?? null;
+  if (mapIdx >= hitBlock.sourceMap.length) return hitBlock.sourceEnd ?? null;
+  return hitBlock.sourceMap[mapIdx] ?? null;
+}
+
+/**
+ * Wire a click listener on a page slot. Background clicks (outside any block)
+ * and active text-selection drags are ignored.
+ */
+function attachSlotClickHandler(
+  slot: HTMLDivElement,
+  pageIndex: number,
+  displayWidth: number,
+  displayHeight: number,
+  pageWidthPx: number,
+  pageHeightPx: number,
+  docRef: MutableRefObject<VDTDocument | null>,
+  dispatchRef: MutableRefObject<Dispatch<SandboxAction>>,
+  activePanelRef: MutableRefObject<PanelId | null>,
+): void {
+  slot.style.cursor = 'text';
+
+  const resolveOffset = (ev: MouseEvent): number | null => {
+    const doc = docRef.current;
+    if (!doc) return null;
+    const rect = slot.getBoundingClientRect();
+    const scaleX = pageWidthPx / displayWidth;
+    const scaleY = pageHeightPx / displayHeight;
+    const xPage = (ev.clientX - rect.left) * scaleX;
+    const yPage = (ev.clientY - rect.top) * scaleY;
+    return pixelToSourceOffset(doc, pageIndex, xPage, yPage);
+  };
+
+  const focusEditor = (offset: number, selectWord: boolean): void => {
+    const dispatch = dispatchRef.current;
+    if (activePanelRef.current !== 'markdown') {
+      dispatch({ type: 'SET_PANEL', payload: 'markdown' });
+    }
+    dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: { offset, selectWord } });
+  };
+
+  slot.addEventListener('click', (ev) => {
+    if (ev.detail === 0) return;
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed && sel.toString().length > 0) return;
+    const offset = resolveOffset(ev);
+    if (offset === null) return;
+    focusEditor(offset, false);
+  });
+
+  slot.addEventListener('dblclick', (ev) => {
+    const offset = resolveOffset(ev);
+    if (offset === null) return;
+    ev.preventDefault();
+    focusEditor(offset, true);
+  });
 }

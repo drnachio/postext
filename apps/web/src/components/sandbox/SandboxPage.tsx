@@ -160,6 +160,8 @@ export function SandboxPage() {
     blockquote: t("blockquote"),
     orderedList: t("orderedList"),
     unorderedList: t("unorderedList"),
+    undo: t("undo"),
+    redo: t("redo"),
     save: t("save"),
     load: t("load"),
     exportFile: t("exportFile"),

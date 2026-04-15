@@ -7,6 +7,7 @@ export type ContentBlockType = 'heading' | 'paragraph' | 'blockquote';
 export interface InlineSpan {
   text: string;
   bold: boolean;
+  italic: boolean;
 }
 
 export interface ContentBlock {
@@ -45,9 +46,9 @@ function stripInlineFormatting(text: string): string {
 }
 
 /**
- * Strip non-bold inline formatting (images, links, italic, code) but keep text.
+ * Strip non-emphasis inline formatting (images, links, code) but keep bold/italic markers.
  */
-function stripNonBoldFormatting(text: string): string {
+function stripNonEmphasisFormatting(text: string): string {
   return text
     .replace(/!\[.*?\]\(.*?\)/g, '')        // images
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links
@@ -55,60 +56,70 @@ function stripNonBoldFormatting(text: string): string {
 }
 
 /**
- * Parse inline formatting to produce spans with bold flag.
- * Strips non-bold formatting first, then extracts bold regions.
+ * Split a text region into italic/non-italic spans, carrying an ambient bold flag.
+ */
+function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, out: InlineSpan[]): void {
+  if (forcedItalic) {
+    if (text.length > 0) out.push({ text, bold, italic: true });
+    return;
+  }
+  const italicRe = /\*(.+?)\*|_(.+?)_/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = italicRe.exec(text)) !== null) {
+    if (m.index > last) {
+      const before = text.slice(last, m.index);
+      if (before.length > 0) out.push({ text: before, bold, italic: false });
+    }
+    const inner = m[1] ?? m[2]!;
+    if (inner.length > 0) out.push({ text: inner, bold, italic: true });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) {
+    const rest = text.slice(last);
+    if (rest.length > 0) out.push({ text: rest, bold, italic: false });
+  }
+}
+
+/**
+ * Parse inline formatting to produce spans with bold and italic flags.
+ * Recognizes ***bold italic***, **bold**, *italic* (and underscore equivalents).
  */
 function parseInlineFormatting(text: string): InlineSpan[] {
-  const cleaned = stripNonBoldFormatting(text);
+  const cleaned = stripNonEmphasisFormatting(text);
   const spans: InlineSpan[] = [];
 
-  // Match **bold** and __bold__ patterns
-  const boldRe = /\*\*(.+?)\*\*|__(.+?)__/g;
+  // Triple markers (bold+italic) first, then double (bold) — longest first.
+  const boldRe = /\*\*\*(.+?)\*\*\*|___(.+?)___|\*\*(.+?)\*\*|__(.+?)__/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
   while ((match = boldRe.exec(cleaned)) !== null) {
-    // Text before the bold marker
     if (match.index > lastIndex) {
-      const before = stripItalicFormatting(cleaned.slice(lastIndex, match.index));
-      if (before.length > 0) {
-        spans.push({ text: before, bold: false });
-      }
+      splitItalicSpans(cleaned.slice(lastIndex, match.index), false, false, spans);
     }
-    // The bold text itself
-    const boldText = stripItalicFormatting(match[1] ?? match[2]!);
-    if (boldText.length > 0) {
-      spans.push({ text: boldText, bold: true });
+    const triple = match[1] ?? match[2];
+    if (triple !== undefined) {
+      splitItalicSpans(triple, true, true, spans);
+    } else {
+      const inner = match[3] ?? match[4]!;
+      splitItalicSpans(inner, true, false, spans);
     }
     lastIndex = match.index + match[0].length;
   }
 
-  // Remaining text after last bold
   if (lastIndex < cleaned.length) {
-    const remaining = stripItalicFormatting(cleaned.slice(lastIndex));
-    if (remaining.length > 0) {
-      spans.push({ text: remaining, bold: false });
-    }
+    splitItalicSpans(cleaned.slice(lastIndex), false, false, spans);
   }
 
-  // If no spans were produced (empty text), return a single empty span
   if (spans.length === 0) {
-    const trimmed = stripItalicFormatting(cleaned).trim();
+    const trimmed = cleaned.trim();
     if (trimmed.length > 0) {
-      spans.push({ text: trimmed, bold: false });
+      splitItalicSpans(trimmed, false, false, spans);
     }
   }
 
   return spans;
-}
-
-/**
- * Strip italic markers (* and _) from text.
- */
-function stripItalicFormatting(text: string): string {
-  return text
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/_(.+?)_/g, '$1');
 }
 
 /**
@@ -269,12 +280,12 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
       const srcStart = lineOffsets[i]!;
       const srcEnd = lineEndOffset(i);
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, [
-        { text: rawText, bold: false },
+        { text: rawText, bold: false, italic: false },
       ]);
       blocks.push({
         type: 'heading',
         text: mapping.text,
-        spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false }],
+        spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
         level: headingMatch[1]!.length,
         sourceStart: srcStart,
         sourceEnd: srcEnd,

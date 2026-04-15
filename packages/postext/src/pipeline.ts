@@ -95,6 +95,8 @@ function computeColumnBboxes(
 interface BlockStyle {
   fontString: string;
   boldFontString?: string;
+  italicFontString?: string;
+  boldItalicFontString?: string;
   fontSizePx: number;
   lineHeightPx: number;
   color: string;
@@ -114,11 +116,13 @@ function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const fontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight);
   const boldWeight = resolved.bodyText.boldFontWeight.toString();
   const boldFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight);
+  const italicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'italic');
+  const boldItalicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'italic');
   const textAlign = resolved.bodyText.textAlign;
   const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
   const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = resolved.bodyText.hangingIndent;
-  return { fontString, boldFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
 }
 
 function resolveHeadingStyle(
@@ -139,11 +143,16 @@ function resolveHeadingStyle(
   }
 
   const weight = headingConfig.fontWeight.toString();
-  const fontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, headingConfig.italic ? 'italic' : 'normal');
+  const baseItalic = headingConfig.italic ? 'italic' : 'normal';
+  const flipItalic = headingConfig.italic ? 'normal' : 'italic';
+  const fontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, baseItalic);
+  const boldFontString = fontString;
+  const italicFontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, flipItalic);
+  const boldItalicFontString = italicFontString;
   const textAlign = resolved.headings.textAlign;
   const marginTopPx = dimensionToPx(headingConfig.marginTop, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(headingConfig.marginBottom, dpi, fontSizePx);
-  return { fontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false };
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false };
 }
 
 function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
@@ -154,11 +163,14 @@ function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
   const fontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'italic');
   const boldWeight = resolved.bodyText.boldFontWeight.toString();
   const boldFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'italic');
+  // Inside a blockquote (already italic), `*text*` flips back to upright.
+  const italicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight, 'normal');
+  const boldItalicFontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, boldWeight, 'normal');
   const textAlign = resolved.bodyText.textAlign;
   const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
   const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = resolved.bodyText.hangingIndent;
-  return { fontString, boldFontString, fontSizePx, lineHeightPx, color: '#666666', textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: '#666666', textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
 }
 
 // ---------------------------------------------------------------------------
@@ -357,8 +369,8 @@ export function buildDocument(
           const sep = `${numberPrefix} `;
           const firstSpan = rawBlock.spans[0];
           const newSpans = firstSpan
-            ? [{ text: sep + firstSpan.text, bold: firstSpan.bold }, ...rawBlock.spans.slice(1)]
-            : [{ text: sep, bold: false }];
+            ? [{ text: sep + firstSpan.text, bold: firstSpan.bold, italic: firstSpan.italic }, ...rawBlock.spans.slice(1)]
+            : [{ text: sep, bold: false, italic: false }];
           contentBlock = { ...rawBlock, text: sep + rawBlock.text, spans: newSpans };
         }
         break;
@@ -375,18 +387,20 @@ export function buildDocument(
 
     // Measure text — use rich measurement for blocks with bold spans
     const col = currentColumn(doc, cursor);
-    const hasRichSpans = contentBlock.spans.some((s) => s.bold);
+    const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic);
     const measureOptions = {
       textAlign: style.textAlign,
       hyphenate: style.hyphenate,
       firstLineIndentPx: style.firstLineIndentPx,
       hangingIndent: style.hangingIndent,
     };
-    const measured = hasRichSpans && style.boldFontString
+    const measured = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString
       ? measureRichBlock(
           contentBlock.spans,
           style.fontString,
           style.boldFontString,
+          style.italicFontString,
+          style.boldItalicFontString,
           col.bbox.width,
           style.lineHeightPx,
           measureOptions,
@@ -481,6 +495,8 @@ export function buildDocument(
         const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
         const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
         if (style.boldFontString) blk.boldFontString = style.boldFontString;
+        if (style.italicFontString) blk.italicFontString = style.italicFontString;
+        if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
         blk.dirty = false;
@@ -524,6 +540,8 @@ export function buildDocument(
 
         const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
         if (style.boldFontString) blk.boldFontString = style.boldFontString;
+        if (style.italicFontString) blk.italicFontString = style.italicFontString;
+        if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
         blk.dirty = false;
@@ -557,6 +575,8 @@ export function buildDocument(
       const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
       const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
       if (style.boldFontString) blk.boldFontString = style.boldFontString;
+      if (style.italicFontString) blk.italicFontString = style.italicFontString;
+      if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
       if (partIndex === 0) blk.headingLevel = headingLevel;
       blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
       blk.dirty = false;

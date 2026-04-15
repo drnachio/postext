@@ -173,6 +173,8 @@ export interface SandboxLabels {
   blockquote: string;
   orderedList: string;
   unorderedList: string;
+  undo: string;
+  redo: string;
 
   // Persistence
   save: string;
@@ -365,6 +367,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   blockquote: 'Blockquote',
   orderedList: 'Ordered List',
   unorderedList: 'Unordered List',
+  undo: 'Undo',
+  redo: 'Redo',
   save: 'Save',
   load: 'Load',
   exportFile: 'Export',

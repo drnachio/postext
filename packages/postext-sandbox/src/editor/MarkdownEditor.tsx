@@ -10,7 +10,7 @@ interface MarkdownEditorProps {
 }
 
 export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
-  const { state, dispatch } = useSandbox();
+  const { state, dispatch, editorStateRef } = useSandbox();
 
   const { containerRef, viewRef } = useCodeMirror({
     initialValue: state.markdown,
@@ -19,6 +19,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     onSelectionChange: (selection) => dispatch({ type: 'SET_SELECTION', payload: selection }),
     onFocusChange: (focused) => dispatch({ type: 'SET_EDITOR_FOCUSED', payload: focused }),
     isDark,
+    persistedStateRef: editorStateRef,
   });
 
   // If this editor unmounts (e.g. user switches to another viewport tab),
@@ -28,6 +29,32 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
       dispatch({ type: 'SET_EDITOR_FOCUSED', payload: false });
     };
   }, [dispatch]);
+
+  // Consume canvas-click caret requests: focus the editor and move the caret
+  // to the requested source offset, then clear the pending flag.
+  const pendingEditorFocus = state.pendingEditorFocus;
+  useEffect(() => {
+    if (pendingEditorFocus === null) return;
+    const view = viewRef.current;
+    if (!view) return;
+    const docLen = view.state.doc.length;
+    const offset = Math.max(0, Math.min(pendingEditorFocus.offset, docLen));
+    let anchor = offset;
+    let head = offset;
+    if (pendingEditorFocus.selectWord) {
+      const word = view.state.wordAt(offset);
+      if (word) {
+        anchor = word.from;
+        head = word.to;
+      }
+    }
+    view.focus();
+    view.dispatch({
+      selection: { anchor, head },
+      scrollIntoView: true,
+    });
+    dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: null });
+  }, [pendingEditorFocus, dispatch, viewRef]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' as const, flex: '1 1 0%', minHeight: 0 }}>
