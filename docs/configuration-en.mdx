@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-04-13',
+  lastUpdated: '2026-04-15',
   readingTime: '15 min',
   order: 3,
 };
@@ -155,6 +155,59 @@ page: {
 }
 ```
 
+### Cut lines
+
+When enabled, the canvas expands to include a bleed area and the engine draws crop marks at each corner for print production.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Property</th>
+      <th style={{ width: '150px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to expand the canvas with bleed and draw crop marks.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3 mm</code></td>
+      <td>Extra area around the page used for print bleed.</td>
+    </tr>
+    <tr>
+      <td><code>markLength</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>5 mm</code></td>
+      <td>Length of each crop mark.</td>
+    </tr>
+    <tr>
+      <td><code>markOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3 mm</code></td>
+      <td>Gap between the page corner and the start of the crop mark.</td>
+    </tr>
+    <tr>
+      <td><code>markWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25 pt</code></td>
+      <td>Thickness of the crop marks.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Color of the crop marks.</td>
+    </tr>
+  </tbody>
+</table>
+
 
 ## Layout
 
@@ -179,7 +232,7 @@ The `layout` property controls how columns are arranged within the content area.
     <tr>
       <td><code>gutterWidth</code></td>
       <td><code>Dimension</code></td>
-      <td><code>0.5 cm</code></td>
+      <td><code>0.75 cm</code></td>
       <td>Horizontal space between columns. Only applies to multi-column layouts.</td>
     </tr>
     <tr>
@@ -187,6 +240,47 @@ The `layout` property controls how columns are arranged within the content area.
       <td><code>number</code></td>
       <td><code>33</code></td>
       <td>Width of the side column as a percentage of the content area. Only applies to <code>'oneAndHalf'</code> layout.</td>
+    </tr>
+    <tr>
+      <td><code>columnRule</code></td>
+      <td><code>ColumnRuleConfig</code></td>
+      <td>disabled</td>
+      <td>Optional visual rule drawn between columns. See below.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Column rule
+
+Draws a thin vertical line in the gutter to visually separate columns.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Property</th>
+      <th style={{ width: '150px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to draw the column rule.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#cccccc</code></td>
+      <td>Color of the rule line.</td>
+    </tr>
+    <tr>
+      <td><code>lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>Thickness of the rule line.</td>
     </tr>
   </tbody>
 </table>
@@ -436,6 +530,47 @@ interface ColorValue {
 
 The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` preserves the intent that the color should be specified in CMYK when exported to PDF.
 
+Because Postext targets publication-grade output, the default body text and heading colors ship with `model: 'cmyk'` (both values are `#000000`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
+
+
+## Debug
+
+The `debug` property controls visual indicators the editor uses to keep the source text and the rendered layout in sync while editing. These are rendered only by the interactive editor — they have no effect on exported output.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '200px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>enabled, <code>#2563eb</code></td>
+      <td>Shows a caret in the rendered layout mirroring the source cursor position.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>enabled, <code>#fde04780</code></td>
+      <td>Highlights the rendered range matching the source selection.</td>
+    </tr>
+  </tbody>
+</table>
+
+Each `SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`.
+
+```ts
+debug: {
+  cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
+  selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+}
+```
+
 
 ## Advanced Configuration
 
@@ -508,7 +643,7 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`.
+Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveDebugConfig`.
 
 ### Stripping defaults
 
@@ -521,4 +656,4 @@ const minimal = stripConfigDefaults(fullConfig);
 // Only properties that differ from defaults remain
 ```
 
-Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`.
+Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripDebugDefaults`.

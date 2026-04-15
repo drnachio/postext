@@ -43,15 +43,21 @@ const content: PostextContent = {
 };
 
 const config: PostextConfig = {
-  columns: 3,
-  gutter: '24px',
-  typography: {
-    orphans: 2,
-    widows: 2,
-    hyphenation: true,
+  page: {
+    sizePreset: '17x24',
+    dpi: 300,
   },
-  references: {
-    footnotes: { placement: 'columnBottom', marker: 'number' },
+  layout: {
+    layoutType: 'double',
+    gutterWidth: { value: 0.75, unit: 'cm' },
+  },
+  bodyText: {
+    fontFamily: 'EB Garamond',
+    fontSize: { value: 9, unit: 'pt' },
+    hyphenation: { enabled: true, locale: 'en-us' },
+  },
+  headings: {
+    fontFamily: 'Open Sans',
   },
 };
 
@@ -125,22 +131,43 @@ A reference note attached to the content.
 
 #### `PostextConfig`
 
-Top-level layout configuration.
+Top-level layout configuration. All fields are optional — defaults are applied by the resolver functions.
 
 | Field | Type | Description |
 |---|---|---|
-| `page?` | `PageConfig` | Page dimensions and margins |
-| `layout?` | `LayoutConfig` | General layout settings |
-| `bodyText?` | `BodyTextConfig` | Body text font, size, and line height |
-| `headings?` | `HeadingsConfig` | Heading styles configuration |
-| `columns?` | `number` | Number of columns |
-| `gutter?` | `string` | Space between columns (e.g., `'24px'`) |
-| `columnConfig?` | `ColumnConfig` | Detailed column settings |
-| `resourcePlacement?` | `ResourcePlacementConfig` | Resource placement strategy |
-| `typography?` | `TypographyConfig` | Typographic quality rules |
-| `references?` | `ReferenceConfig` | Footnote/endnote/numbering settings |
-| `sectionOverrides?` | `PostextSectionOverride[]` | Per-section rule overrides |
-| `renderer?` | `'web' \| 'pdf'` | Output format |
+| `page?` | `PageConfig` | Page dimensions, margins, DPI, baseline grid, cut lines |
+| `layout?` | `LayoutConfig` | Column arrangement (`layoutType`, `gutterWidth`, `sideColumnPercent`, `columnRule`) |
+| `bodyText?` | `BodyTextConfig` | Body text typography (font, size, line height, hyphenation, indentation) |
+| `headings?` | `HeadingsConfig` | Heading typography with per-level overrides (H1–H6) |
+| `debug?` | `DebugConfig` | Editor-only sync indicators (`cursorSync`, `selectionSync`) |
+| `columnConfig?` | `ColumnConfig` | Reserved — advanced column control, not yet processed by the engine |
+| `resourcePlacement?` | `ResourcePlacementConfig` | Reserved — advanced resource placement |
+| `typography?` | `TypographyConfig` | Reserved — advanced typographic rules (orphans, widows, keep-together) |
+| `references?` | `ReferenceConfig` | Reserved — footnote/endnote/numbering settings |
+| `sectionOverrides?` | `PostextSectionOverride[]` | Reserved — per-section rule overrides |
+| `renderer?` | `'web' \| 'pdf'` | Reserved — output format selector |
+| `columns?` | `number` | Legacy — superseded by `layout.layoutType`. Kept in the type for backward compatibility |
+| `gutter?` | `string` | Legacy — superseded by `layout.gutterWidth`. Kept in the type for backward compatibility |
+
+For the full reference (all fields, defaults, resolver and stripper utilities) see the [Configuration docs](https://postext.dev/en/docs/configuration).
+
+#### `DebugConfig`
+
+Visual indicators rendered by the interactive editor to keep source text and layout in sync. Ignored by exported output.
+
+| Field | Type | Description |
+|---|---|---|
+| `cursorSync?` | `SyncIndicatorConfig` | Caret mirror in the rendered layout. Default: enabled, `#2563eb` |
+| `selectionSync?` | `SyncIndicatorConfig` | Highlighted range matching the source selection. Default: enabled, `#fde04780` |
+
+`SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`.
+
+#### `HyphenationConfig`
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled?` | `boolean` | Whether to allow hyphenation. Default `true` |
+| `locale?` | `HyphenationLocale` | `'en-us' \| 'es' \| 'fr' \| 'de' \| 'it' \| 'pt' \| 'ca' \| 'nl'`. Default `'en-us'` |
 
 #### `ColumnConfig`
 

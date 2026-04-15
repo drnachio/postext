@@ -1,26 +1,34 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type MutableRefObject } from 'react';
 import { EditorView, lineNumbers, highlightActiveLine, keymap } from '@codemirror/view';
 import { EditorState, Compartment } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyField, historyKeymap } from '@codemirror/commands';
 import { bracketMatching } from '@codemirror/language';
 import { getEditorTheme } from './postextTheme';
+import { frontmatterHighlight, frontmatterParser, frontmatterTheme } from './frontmatterHighlight';
 
 interface UseCodeMirrorOptions {
   initialValue: string;
   externalValue?: string;
   onChange: (value: string) => void;
+  onSelectionChange?: (selection: { from: number; to: number }) => void;
+  onFocusChange?: (focused: boolean) => void;
   isDark?: boolean;
+  persistedStateRef?: MutableRefObject<unknown | null>;
 }
 
-export function useCodeMirror({ initialValue, externalValue, onChange, isDark = true }: UseCodeMirrorOptions) {
+export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  onSelectionChangeRef.current = onSelectionChange;
+  const onFocusChangeRef = useRef(onFocusChange);
+  onFocusChangeRef.current = onFocusChange;
 
   // Initialize editor
   useEffect(() => {
@@ -30,22 +38,41 @@ export function useCodeMirror({ initialValue, externalValue, onChange, isDark = 
       if (update.docChanged) {
         onChangeRef.current(update.state.doc.toString());
       }
+      if (update.docChanged || update.selectionSet) {
+        const sel = update.state.selection.main;
+        onSelectionChangeRef.current?.({ from: sel.from, to: sel.to });
+      }
+      if (update.focusChanged) {
+        onFocusChangeRef.current?.(update.view.hasFocus);
+      }
     });
 
-    const state = EditorState.create({
-      doc: initialValue,
-      extensions: [
-        lineNumbers(),
-        highlightActiveLine(),
-        history(),
-        bracketMatching(),
-        markdown(),
-        keymap.of([...defaultKeymap, ...historyKeymap]),
-        themeCompartment.current.of(getEditorTheme(isDark)),
-        updateListener,
-        EditorView.lineWrapping,
-      ],
-    });
+    const extensions = [
+      lineNumbers(),
+      highlightActiveLine(),
+      history(),
+      bracketMatching(),
+      markdown({ extensions: [frontmatterParser] }),
+      frontmatterTheme,
+      frontmatterHighlight,
+      keymap.of([...defaultKeymap, ...historyKeymap]),
+      themeCompartment.current.of(getEditorTheme(isDark)),
+      updateListener,
+      EditorView.lineWrapping,
+    ];
+
+    const persisted = persistedStateRef?.current as
+      | { doc: string; selection: unknown; history: unknown }
+      | null
+      | undefined;
+
+    const state = persisted
+      ? EditorState.fromJSON(
+          persisted,
+          { extensions },
+          { history: historyField },
+        )
+      : EditorState.create({ doc: initialValue, extensions });
 
     const view = new EditorView({
       state,
@@ -55,6 +82,9 @@ export function useCodeMirror({ initialValue, externalValue, onChange, isDark = 
     viewRef.current = view;
 
     return () => {
+      if (persistedStateRef) {
+        persistedStateRef.current = view.state.toJSON({ history: historyField });
+      }
       view.destroy();
       viewRef.current = null;
     };

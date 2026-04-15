@@ -16,8 +16,17 @@ export interface PostextNote {
   marker?: string;
 }
 
+export interface DocumentMetadata {
+  title?: string;
+  subtitle?: string;
+  author?: string;
+  publishDate?: string;
+  [key: string]: unknown;
+}
+
 export interface PostextContent {
   markdown: string;
+  metadata?: DocumentMetadata;
   resources?: PostextResource[];
   notes?: PostextNote[];
 }
@@ -215,6 +224,8 @@ export interface HeadingLevelConfig {
   fontWeight?: number;
   marginTop?: Dimension;
   marginBottom?: Dimension;
+  numberingTemplate?: string;
+  italic?: boolean;
 }
 
 export interface ResolvedHeadingLevelConfig {
@@ -226,6 +237,8 @@ export interface ResolvedHeadingLevelConfig {
   fontWeight: number;
   marginTop: Dimension;
   marginBottom: Dimension;
+  numberingTemplate: string;
+  italic: boolean;
 }
 
 export interface HeadingsConfig {
@@ -248,6 +261,21 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   levels: ResolvedHeadingLevelConfig[];
+}
+
+export interface SyncIndicatorConfig {
+  enabled: boolean;
+  color?: ColorValue;
+}
+
+export interface DebugConfig {
+  cursorSync?: SyncIndicatorConfig;
+  selectionSync?: SyncIndicatorConfig;
+}
+
+export interface ResolvedDebugConfig {
+  cursorSync: { enabled: boolean; color: ColorValue };
+  selectionSync: { enabled: boolean; color: ColorValue };
 }
 
 export interface PostextSectionOverride {
@@ -274,4 +302,6 @@ export interface PostextConfig {
   sectionOverrides?: PostextSectionOverride[];
 
   renderer?: 'web' | 'pdf';
+
+  debug?: DebugConfig;
 }

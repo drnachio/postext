@@ -6,9 +6,12 @@ export { buildFontString, measureBlock, measureRichBlock, initHyphenator, clearM
 export type { MeasuredBlock, MeasureBlockOptions } from './measure';
 export { hyphenateText, setHyphenationLocale } from './hyphenate';
 export { parseMarkdown } from './parse';
-export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults } from './defaults';
+export { extractFrontmatter } from './frontmatter';
+export type { ParsedFrontmatter } from './frontmatter';
+export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, dimensionsEqual, colorsEqual, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './defaults';
 export type {
   PostextContent,
+  DocumentMetadata,
   PostextResource,
   PostextNote,
   PostextConfig,
@@ -42,6 +45,9 @@ export type {
   ResolvedHeadingLevelConfig,
   HeadingsConfig,
   ResolvedHeadingsConfig,
+  SyncIndicatorConfig,
+  DebugConfig,
+  ResolvedDebugConfig,
 } from './types';
 export type {
   BoundingBox,

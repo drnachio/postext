@@ -1,4 +1,4 @@
-import type { PageConfig, ResolvedPageConfig, PageMargins, PageSizePreset, Dimension, PostextConfig, LayoutConfig, ResolvedLayoutConfig, BodyTextConfig, ResolvedBodyTextConfig, HeadingsConfig, HeadingLevelConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ColorValue, HyphenationConfig, CutLinesConfig } from './types';
+import type { PageConfig, ResolvedPageConfig, PageMargins, PageSizePreset, Dimension, PostextConfig, LayoutConfig, ResolvedLayoutConfig, BodyTextConfig, ResolvedBodyTextConfig, HeadingsConfig, HeadingLevelConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ColorValue, HyphenationConfig, CutLinesConfig, DebugConfig, ResolvedDebugConfig } from './types';
 
 export const PAGE_SIZE_PRESETS: Record<
   Exclude<PageSizePreset, 'custom'>,
@@ -259,12 +259,12 @@ const DEFAULT_HEADING_MARGIN_TOP: Dimension = { value: 1.5, unit: 'em' };
 const DEFAULT_HEADING_MARGIN_BOTTOM: Dimension = { value: 0.5, unit: 'em' };
 
 const DEFAULT_HEADING_LEVELS: ResolvedHeadingLevelConfig[] = [
-  { level: 1, fontSize: { value: 18, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM },
-  { level: 2, fontSize: { value: 15, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM },
-  { level: 3, fontSize: { value: 12, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM },
-  { level: 4, fontSize: { value: 10, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM },
-  { level: 5, fontSize: { value: 9, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM },
-  { level: 6, fontSize: { value: 8, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM },
+  { level: 1, fontSize: { value: 18, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false },
+  { level: 2, fontSize: { value: 15, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false },
+  { level: 3, fontSize: { value: 12, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false },
+  { level: 4, fontSize: { value: 10, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false },
+  { level: 5, fontSize: { value: 9, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false },
+  { level: 6, fontSize: { value: 8, unit: 'pt' }, lineHeight: DEFAULT_HEADING_LINE_HEIGHT, fontFamily: DEFAULT_HEADING_FONT, color: DEFAULT_HEADING_COLOR, fontWeight: DEFAULT_HEADING_FONT_WEIGHT, marginTop: DEFAULT_HEADING_MARGIN_TOP, marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM, numberingTemplate: '', italic: false },
 ];
 
 export const DEFAULT_HEADINGS_CONFIG: ResolvedHeadingsConfig = {
@@ -347,10 +347,73 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
         entry.marginBottom = level.marginBottom;
         levelHasOverride = true;
       }
+      if (level.numberingTemplate !== undefined && level.numberingTemplate !== def.numberingTemplate) {
+        entry.numberingTemplate = level.numberingTemplate;
+        levelHasOverride = true;
+      }
+      if (level.italic !== undefined && level.italic !== def.italic) {
+        entry.italic = level.italic;
+        levelHasOverride = true;
+      }
       if (levelHasOverride) strippedLevels.push(entry);
     }
     if (strippedLevels.length > 0) {
       result.levels = strippedLevels;
+      hasOverride = true;
+    }
+  }
+
+  return hasOverride ? result : undefined;
+}
+
+export const DEFAULT_DEBUG_CONFIG: ResolvedDebugConfig = {
+  cursorSync: { enabled: true, color: { hex: '#2563eb', model: 'hex' } },
+  selectionSync: { enabled: true, color: { hex: '#fde04780', model: 'hex' } },
+};
+
+export function resolveDebugConfig(partial?: DebugConfig): ResolvedDebugConfig {
+  if (!partial) {
+    return {
+      cursorSync: { ...DEFAULT_DEBUG_CONFIG.cursorSync },
+      selectionSync: { ...DEFAULT_DEBUG_CONFIG.selectionSync },
+    };
+  }
+  return {
+    cursorSync: {
+      enabled: partial.cursorSync?.enabled ?? DEFAULT_DEBUG_CONFIG.cursorSync.enabled,
+      color: partial.cursorSync?.color ?? DEFAULT_DEBUG_CONFIG.cursorSync.color,
+    },
+    selectionSync: {
+      enabled: partial.selectionSync?.enabled ?? DEFAULT_DEBUG_CONFIG.selectionSync.enabled,
+      color: partial.selectionSync?.color ?? DEFAULT_DEBUG_CONFIG.selectionSync.color,
+    },
+  };
+}
+
+export function stripDebugDefaults(debug?: DebugConfig): DebugConfig | undefined {
+  if (!debug) return undefined;
+  const result: DebugConfig = {};
+  let hasOverride = false;
+
+  if (debug.cursorSync) {
+    const enabledOverride = debug.cursorSync.enabled !== undefined && debug.cursorSync.enabled !== DEFAULT_DEBUG_CONFIG.cursorSync.enabled;
+    const colorOverride = debug.cursorSync.color !== undefined && !colorsEqual(debug.cursorSync.color, DEFAULT_DEBUG_CONFIG.cursorSync.color);
+    if (enabledOverride || colorOverride) {
+      result.cursorSync = {
+        enabled: debug.cursorSync.enabled ?? DEFAULT_DEBUG_CONFIG.cursorSync.enabled,
+        ...(colorOverride ? { color: debug.cursorSync.color } : {}),
+      };
+      hasOverride = true;
+    }
+  }
+  if (debug.selectionSync) {
+    const enabledOverride = debug.selectionSync.enabled !== undefined && debug.selectionSync.enabled !== DEFAULT_DEBUG_CONFIG.selectionSync.enabled;
+    const colorOverride = debug.selectionSync.color !== undefined && !colorsEqual(debug.selectionSync.color, DEFAULT_DEBUG_CONFIG.selectionSync.color);
+    if (enabledOverride || colorOverride) {
+      result.selectionSync = {
+        enabled: debug.selectionSync.enabled ?? DEFAULT_DEBUG_CONFIG.selectionSync.enabled,
+        ...(colorOverride ? { color: debug.selectionSync.color } : {}),
+      };
       hasOverride = true;
     }
   }
@@ -383,6 +446,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.headings = strippedHeadings;
   } else {
     delete result.headings;
+  }
+  const strippedDebug = stripDebugDefaults(config.debug);
+  if (strippedDebug) {
+    result.debug = strippedDebug;
+  } else {
+    delete result.debug;
   }
   return result;
 }
@@ -488,6 +557,8 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       fontWeight: override?.fontWeight ?? generalFontWeight,
       marginTop: override?.marginTop ?? generalMarginTop,
       marginBottom: override?.marginBottom ?? generalMarginBottom,
+      numberingTemplate: override?.numberingTemplate ?? def.numberingTemplate,
+      italic: override?.italic ?? def.italic,
     };
   });
 

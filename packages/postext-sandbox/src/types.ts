@@ -54,6 +54,17 @@ export interface SandboxLabels {
   baselineGridLineWidth: string;
   baselineGridLineWidthTooltip: string;
 
+  // Debug section
+  debug: string;
+  debugCursorSync: string;
+  debugCursorSyncTooltip: string;
+  debugCursorSyncColor: string;
+  debugCursorSyncColorTooltip: string;
+  debugSelectionSync: string;
+  debugSelectionSyncTooltip: string;
+  debugSelectionSyncColor: string;
+  debugSelectionSyncColorTooltip: string;
+
   // Body text section
   bodyText: string;
   bodyFont: string;
@@ -120,6 +131,11 @@ export interface SandboxLabels {
   headingMarginTopTooltip: string;
   headingMarginBottom: string;
   headingMarginBottomTooltip: string;
+  headingNumberingTemplate: string;
+  headingNumberingTemplateTooltip: string;
+  headingNumberingTemplatePlaceholder: string;
+  headingItalic: string;
+  headingItalicTooltip: string;
 
   // Layout section
   layout: string;
@@ -157,6 +173,8 @@ export interface SandboxLabels {
   blockquote: string;
   orderedList: string;
   unorderedList: string;
+  undo: string;
+  redo: string;
 
   // Persistence
   save: string;
@@ -241,6 +259,15 @@ export const DEFAULT_LABELS: SandboxLabels = {
   baselineGridColorTooltip: 'Color of the baseline grid lines',
   baselineGridLineWidth: 'Line Width',
   baselineGridLineWidthTooltip: 'Thickness of the baseline grid lines',
+  debug: 'Debug',
+  debugCursorSync: 'Sync Cursor',
+  debugCursorSyncTooltip: 'Show the editor cursor position live on the canvas preview',
+  debugCursorSyncColor: 'Cursor Color',
+  debugCursorSyncColorTooltip: 'Color of the cursor indicator drawn over the canvas',
+  debugSelectionSync: 'Sync Selection',
+  debugSelectionSyncTooltip: 'Highlight the editor text selection live on the canvas preview',
+  debugSelectionSyncColor: 'Selection Color',
+  debugSelectionSyncColorTooltip: 'Fill color of the selection highlight drawn over the canvas',
   bodyText: 'Body Text',
   bodyFont: 'Font',
   bodyFontTooltip: 'Font family for the body text',
@@ -304,6 +331,11 @@ export const DEFAULT_LABELS: SandboxLabels = {
   headingMarginTopTooltip: 'Space above this heading level (skipped at top of column)',
   headingMarginBottom: 'Margin Bottom',
   headingMarginBottomTooltip: 'Minimum space below this heading level',
+  headingNumberingTemplate: 'Numbering',
+  headingNumberingTemplateTooltip: 'Template for this level\'s number prefix. Use {N} for the counter at level N, {N:style} to pick a numeral style (1, 01, A, a, I, i). Examples: "{1}.", "{1}.{2}", "{2:A}.{3}". Empty = no numbering.',
+  headingNumberingTemplatePlaceholder: 'e.g. {1}.{2}',
+  headingItalic: 'Italic',
+  headingItalicTooltip: 'Render this heading level in italic style',
   layout: 'Layout',
   layoutType: 'Layout Type',
   layoutTypeTooltip: 'Column layout mode for the content area',
@@ -335,6 +367,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   blockquote: 'Blockquote',
   orderedList: 'Ordered List',
   unorderedList: 'Unordered List',
+  undo: 'Undo',
+  redo: 'Redo',
   save: 'Save',
   load: 'Load',
   exportFile: 'Export',

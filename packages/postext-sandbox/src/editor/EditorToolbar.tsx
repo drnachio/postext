@@ -11,8 +11,11 @@ import {
   Quote,
   List,
   ListOrdered,
+  Undo2,
+  Redo2,
 } from 'lucide-react';
 import type { EditorView } from '@codemirror/view';
+import { undo, redo } from '@codemirror/commands';
 import type { ReactNode } from 'react';
 import { useSandbox } from '../context/SandboxContext';
 import type { ToolbarAction } from '../types';
@@ -90,6 +93,17 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
   const getView = () => viewRef.current;
 
   const actions: { icon: ReactNode; label: string; action: () => void; separator?: boolean }[] = [
+    {
+      icon: <Undo2 size={16} aria-hidden="true" />,
+      label: labels.undo,
+      action: () => { const v = getView(); if (v) { undo(v); v.focus(); } },
+    },
+    {
+      icon: <Redo2 size={16} aria-hidden="true" />,
+      label: labels.redo,
+      action: () => { const v = getView(); if (v) { redo(v); v.focus(); } },
+      separator: true,
+    },
     {
       icon: <Bold size={16} aria-hidden="true" />,
       label: labels.bold,

@@ -119,7 +119,6 @@ export function BodyTextSection() {
     <CollapsibleSection
       title={labels.bodyText}
       sectionId="bodyText"
-      defaultOpen
       onReset={resetBodyText}
       hasOverrides={hasOverrides}
       resetLabel={labels.reset}

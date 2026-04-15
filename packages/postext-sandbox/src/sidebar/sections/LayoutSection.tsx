@@ -96,7 +96,6 @@ export function LayoutSection() {
     <CollapsibleSection
       title={labels.layout}
       sectionId="layout"
-      defaultOpen
       onReset={resetLayout}
       hasOverrides={hasOverrides}
       resetLabel={labels.reset}

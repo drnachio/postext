@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { InfoTip } from './InfoTip';
 import { ResetButton } from './ResetButton';
+import { loadFont } from './fontLoader';
 
 interface FontPickerProps {
   label: string;
@@ -49,17 +50,6 @@ async function fetchGoogleFonts(): Promise<string[]> {
     });
 
   return fetchPromise;
-}
-
-const loadedFonts = new Set<string>();
-
-function loadFont(font: string): void {
-  if (loadedFonts.has(font)) return;
-  loadedFonts.add(font);
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}&display=swap`;
-  document.head.appendChild(link);
 }
 
 function FontListItem({

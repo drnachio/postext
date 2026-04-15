@@ -8,12 +8,18 @@ import {
   useRef,
   type ReactNode,
   type Dispatch,
+  type MutableRefObject,
 } from 'react';
 import type { PostextConfig } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
 import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
 import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
+
+export interface EditorSelection {
+  from: number;
+  to: number;
+}
 
 export interface SandboxState {
   markdown: string;
@@ -25,6 +31,9 @@ export interface SandboxState {
   activeViewport: ViewportTab;
   labels: SandboxLabels;
   locale: string;
+  selection: EditorSelection;
+  editorFocused: boolean;
+  pendingEditorFocus: { anchor: number; head: number; selectWord: boolean } | null;
 }
 
 export type SandboxAction =
@@ -35,7 +44,10 @@ export type SandboxAction =
   | { type: 'SET_PANEL'; payload: PanelId | null }
   | { type: 'SET_SIDEBAR_PERCENT'; payload: number }
   | { type: 'SET_SIDEBAR_DRAGGING'; payload: boolean }
-  | { type: 'SET_VIEWPORT'; payload: ViewportTab };
+  | { type: 'SET_VIEWPORT'; payload: ViewportTab }
+  | { type: 'SET_SELECTION'; payload: EditorSelection }
+  | { type: 'SET_EDITOR_FOCUSED'; payload: boolean }
+  | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: { anchor: number; head: number; selectWord: boolean } | null };
 
 function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
@@ -58,6 +70,24 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
       return { ...state, sidebarDragging: action.payload };
     case 'SET_VIEWPORT':
       return { ...state, activeViewport: action.payload };
+    case 'SET_SELECTION':
+      if (state.selection.from === action.payload.from && state.selection.to === action.payload.to) {
+        return state;
+      }
+      return { ...state, selection: action.payload };
+    case 'SET_EDITOR_FOCUSED':
+      if (state.editorFocused === action.payload) return state;
+      return { ...state, editorFocused: action.payload };
+    case 'SET_PENDING_EDITOR_FOCUS':
+      if (state.pendingEditorFocus === action.payload) return state;
+      if (
+        state.pendingEditorFocus &&
+        action.payload &&
+        state.pendingEditorFocus.anchor === action.payload.anchor &&
+        state.pendingEditorFocus.head === action.payload.head &&
+        state.pendingEditorFocus.selectWord === action.payload.selectWord
+      ) return state;
+      return { ...state, pendingEditorFocus: action.payload };
     default:
       return state;
   }
@@ -66,6 +96,7 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
 interface SandboxContextValue {
   state: SandboxState;
   dispatch: Dispatch<SandboxAction>;
+  editorStateRef: MutableRefObject<unknown | null>;
 }
 
 const SandboxContext = createContext<SandboxContextValue | null>(null);
@@ -113,6 +144,9 @@ export function SandboxProvider({
     activeViewport: 'canvas' as ViewportTab,
     labels: mergedLabels,
     locale: locale ?? 'en',
+    selection: { from: 0, to: 0 },
+    editorFocused: false,
+    pendingEditorFocus: null,
   });
 
   // Hydrate from localStorage after mount
@@ -174,8 +208,10 @@ export function SandboxProvider({
     onMarkdownChange?.(state.markdown);
   }, [state.markdown, onMarkdownChange]);
 
+  const editorStateRef = useRef<unknown | null>(null);
+
   return (
-    <SandboxContext.Provider value={{ state, dispatch }}>
+    <SandboxContext.Provider value={{ state, dispatch, editorStateRef }}>
       {children}
     </SandboxContext.Provider>
   );

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { CanvasPreview } from './CanvasPreview';
 import { CanvasToolbar } from './CanvasToolbar';
-import { loadCanvasViewMode, saveCanvasViewMode, loadCanvasFitMode, saveCanvasFitMode } from '../storage/persistence';
+import { loadCanvasViewMode, saveCanvasViewMode, loadCanvasFitMode, saveCanvasFitMode, loadCanvasZoom, saveCanvasZoom } from '../storage/persistence';
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
@@ -18,7 +18,10 @@ export function CanvasViewport() {
   const [fitMode, setFitMode] = useState<FitMode>('width');
   const hydratedRef = useRef(false);
 
-  // Hydrate from localStorage
+  // Hydrate from localStorage. The hydrated flag is flipped via rAF so the
+  // persist effects that run on the same initial commit (with the default
+  // closure values) skip — otherwise they'd overwrite localStorage with the
+  // defaults before React applies the loaded state.
   useEffect(() => {
     const savedViewMode = loadCanvasViewMode();
     if (savedViewMode === 'single' || savedViewMode === 'spread') {
@@ -28,7 +31,12 @@ export function CanvasViewport() {
     if (savedFitMode === 'none' || savedFitMode === 'width' || savedFitMode === 'height') {
       setFitMode(savedFitMode);
     }
-    hydratedRef.current = true;
+    const savedZoom = loadCanvasZoom();
+    if (savedZoom !== null) {
+      setZoom(Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, savedZoom)));
+    }
+    const id = requestAnimationFrame(() => { hydratedRef.current = true; });
+    return () => cancelAnimationFrame(id);
   }, []);
 
   // Persist changes
@@ -41,6 +49,11 @@ export function CanvasViewport() {
     if (!hydratedRef.current) return;
     saveCanvasFitMode(fitMode);
   }, [fitMode]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    saveCanvasZoom(zoom);
+  }, [zoom]);
 
   const handleZoomIn = () => {
     setZoom((z) => Math.min(z * ZOOM_STEP, MAX_ZOOM));

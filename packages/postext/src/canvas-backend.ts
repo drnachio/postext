@@ -132,11 +132,27 @@ function renderCutLines(
 // Text rendering
 // ---------------------------------------------------------------------------
 
+function pickSegmentFont(
+  bold: boolean,
+  italic: boolean,
+  font: string,
+  boldFont: string | undefined,
+  italicFont: string | undefined,
+  boldItalicFont: string | undefined,
+): string {
+  if (bold && italic && boldItalicFont) return boldItalicFont;
+  if (bold && boldFont) return boldFont;
+  if (italic && italicFont) return italicFont;
+  return font;
+}
+
 function renderLine(
   ctx: CanvasRenderingContext2D,
   line: VDTLine,
   font: string,
   boldFont: string | undefined,
+  italicFont: string | undefined,
+  boldItalicFont: string | undefined,
   color: string,
   textAlign: 'left' | 'justify',
   columnWidth: number,
@@ -145,7 +161,8 @@ function renderLine(
   ctx.fillStyle = color;
   ctx.textBaseline = 'alphabetic';
 
-  const hasBoldSegments = boldFont && line.segments && line.segments.some((s) => s.bold);
+  const hasRichSegments =
+    line.segments && line.segments.some((s) => s.bold || s.italic);
 
   // Effective width accounts for line-level indent (e.g. first-line or hanging indent)
   const lineIndent = line.bbox.x - columnX;
@@ -167,7 +184,7 @@ function renderLine(
         if (seg.kind === 'space') {
           x += justifiedSpaceWidth;
         } else {
-          ctx.font = seg.bold && boldFont ? boldFont : font;
+          ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
           ctx.fillText(seg.text, x, line.baseline);
           x += seg.width;
         }
@@ -177,14 +194,14 @@ function renderLine(
   }
 
   // Ragged (left-aligned) rendering — also used for last lines of justified blocks
-  // If there are bold segments, render per-segment to apply correct fonts
-  if (hasBoldSegments && line.segments) {
+  // If there are bold/italic segments, render per-segment to apply correct fonts
+  if (hasRichSegments && line.segments) {
     let x = line.bbox.x;
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
         x += seg.width;
       } else {
-        ctx.font = seg.bold && boldFont ? boldFont : font;
+        ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
         ctx.fillText(seg.text, x, line.baseline);
         x += seg.width;
       }
@@ -203,7 +220,18 @@ function renderBlock(
   columnX: number,
 ): void {
   for (const line of block.lines) {
-    renderLine(ctx, line, block.fontString, block.boldFontString, block.color, block.textAlign, columnWidth, columnX);
+    renderLine(
+      ctx,
+      line,
+      block.fontString,
+      block.boldFontString,
+      block.italicFontString,
+      block.boldItalicFontString,
+      block.color,
+      block.textAlign,
+      columnWidth,
+      columnX,
+    );
   }
 }
 

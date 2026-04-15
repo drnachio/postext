@@ -10,7 +10,7 @@
     "publish-postext": "pnpm --filter postext publish --access public"
   },
   "devDependencies": {
-    "turbo": "latest"
+    "turbo": "2.9.6"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.5"
