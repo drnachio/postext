@@ -48,6 +48,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
   const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
+  const renderedPagesRef = useRef<Set<number>>(new Set());
   const deferredMarkdown = useDeferredValue(state.markdown);
   const deferredConfig = useDeferredValue(state.config);
   const [resizeKey, setResizeKey] = useState(0);
@@ -87,13 +88,19 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         );
         docRef.current = doc;
 
-        // Tear down previous state
+        // Tear down previous observer + maps, but keep the old DOM in place
+        // until the new one is fully built and painted — this avoids a blank
+        // flash while the user is typing fast.
         observerRef.current?.disconnect();
         canvasMapRef.current.clear();
         overlayMapRef.current.clear();
-        while (container.firstChild) container.removeChild(container.firstChild);
+        const previouslyRendered = renderedPagesRef.current;
+        renderedPagesRef.current = new Set();
 
-        if (doc.pages.length === 0) return;
+        if (doc.pages.length === 0) {
+          while (container.firstChild) container.removeChild(container.firstChild);
+          return;
+        }
 
         // Compute uniform CSS display dimensions (all pages share the same size)
         const padding = 32;
@@ -209,10 +216,24 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
           innerDiv.appendChild(rowDiv);
         }
 
+        // Pre-render pages that were visible in the previous document so the
+        // swap from old DOM to new DOM shows already-painted pixels. Any page
+        // not in the new doc is simply skipped.
+        const renderedSet = new Set<number>();
+        for (const pageIndex of previouslyRendered) {
+          const canvas = canvasMap.get(pageIndex);
+          const page = doc.pages[pageIndex];
+          if (!canvas || !page) continue;
+          renderPageToCanvas(page, doc, canvas);
+          renderedSet.add(pageIndex);
+        }
+        renderedPagesRef.current = renderedSet;
+
+        // Atomic swap: remove old children and attach the new tree in one go.
+        while (container.firstChild) container.removeChild(container.firstChild);
         container.appendChild(innerDiv);
 
         // Lazy-render pages as they scroll into view
-        const renderedSet = new Set<number>();
         const observer = new IntersectionObserver(
           (entries) => {
             for (const entry of entries) {

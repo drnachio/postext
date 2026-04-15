@@ -488,7 +488,7 @@ El proceso comienza con la **capa de entrada**, donde el desarrollador proporcio
 2. **Configuración** que define las reglas de maquetación
    - Dimensiones de la página, márgenes y ajustes de DPI
    - Cantidad de columnas, ancho de medianil y preferencias de equilibrio
-   - Reglas tipográficas para prevención de huérfanas, prevención de viudas e hifenación
+   - Reglas tipográficas para prevención de huérfanas, prevención de viudas y separación silábica
    - Estrategias de colocación de recursos para imágenes, tablas y figuras
    - Configuración del sistema de referencias para notas al pie, notas finales y notas marginales
 
@@ -498,7 +498,7 @@ La separación entre contenido y configuración es deliberada e importante. El m
 
 Antes de que el motor pueda decidir dónde colocar cada elemento, debe saber cuánto espacio ocupa cada uno. Este es el papel de la **capa de medición**, que está construida sobre una biblioteca llamada _pretext_.
 
-El desafío de la medición es significativo. La renderización de texto es compleja porque el ancho y la altura de un párrafo dependen de la fuente, el tamaño de la fuente, la altura de línea, el ancho disponible, las reglas de hifenación y muchos otros factores. Tradicionalmente, la única forma de medir texto con precisión en un navegador es renderizarlo en el DOM y leer las dimensiones calculadas. Este enfoque es lento, ya que desencadena reflows de maquetación que pueden bloquear el hilo principal durante cientos de milisegundos.
+El desafío de la medición es significativo. La renderización de texto es compleja porque el ancho y la altura de un párrafo dependen de la fuente, el tamaño de la fuente, la altura de línea, el ancho disponible, las reglas de separación silábica y muchos otros factores. Tradicionalmente, la única forma de medir texto con precisión en un navegador es renderizarlo en el DOM y leer las dimensiones calculadas. Este enfoque es lento, ya que desencadena reflows de maquetación que pueden bloquear el hilo principal durante cientos de milisegundos.
 
 Postext adopta un enfoque fundamentalmente diferente. La biblioteca _pretext_ realiza **medición de texto sin DOM** utilizando métricas tipográficas del canvas y aritmética pura. Esta técnica es entre 300 y 600 veces más rápida que la medición basada en DOM. Funciona de la siguiente manera:
 
@@ -509,7 +509,7 @@ Postext adopta un enfoque fundamentalmente diferente. La biblioteca _pretext_ re
 2. Calculando los saltos de línea mediante el algoritmo de Knuth-Plass
    - Evaluando todos los posibles puntos de quiebre en un párrafo
    - Eligiendo el conjunto de quiebres que minimiza una función de penalización
-   - Teniendo en cuenta las oportunidades de hifenación
+   - Teniendo en cuenta las oportunidades de separación silábica
 3. Calculando las dimensiones del bloque resultante
    - Altura total incluyendo todas las líneas y el espaciado interlineal
    - Ancho máximo de línea para propósitos de alineación
@@ -557,23 +557,23 @@ Postext proporciona prevención configurable de huérfanas y viudas:
 - El motor ajustará los saltos de columna, moverá contenido entre columnas e incluso modificará los saltos de línea dentro de los párrafos para satisfacer estas restricciones
 - Cuando las restricciones entran en conflicto, el motor utiliza un sistema de prioridades para determinar qué regla tiene precedencia
 
-### Hifenación y Optimización del Margen
+### Separación silábica y optimización del margen
 
-La **hifenación** es la práctica de dividir palabras en los límites silábicos cuando caen al final de una línea. Una hifenación adecuada mejora la uniformidad de las longitudes de línea y reduce la perturbación visual causada por grandes espacios entre palabras en el texto justificado.
+La **separación silábica** es la práctica de dividir palabras en los límites silábicos cuando caen al final de una línea. Una separación silábica adecuada mejora la uniformidad de las longitudes de línea y reduce la perturbación visual causada por grandes espacios entre palabras en el texto justificado.
 
-Postext soporta la hifenación a través de diccionarios configurables:
+Postext soporta la separación silábica a través de diccionarios configurables:
 
-- Patrones de hifenación específicos por idioma que definen los puntos de quiebre válidos dentro de las palabras
+- Patrones de separación silábica específicos por idioma que definen los puntos de quiebre válidos dentro de las palabras
 - Conteos mínimos de caracteres antes y después del guion para prevenir quiebres inconvenientes
-- Máximo de líneas hifenadas consecutivas para evitar un efecto de escalera que distraiga en el margen derecho
-- Valores de penalización de hifenación que influyen en el algoritmo de Knuth-Plass al elegir entre un quiebre hifenado y una línea más holgada
+- Máximo de líneas consecutivas con separación silábica para evitar un efecto de escalera que distraiga en el margen derecho
+- Valores de penalización de separación silábica que influyen en el algoritmo de Knuth-Plass al elegir entre un quiebre por sílaba y una línea más holgada
 
 La **optimización del margen derecho** se refiere al suavizado del borde derecho del texto alineado a la izquierda, que se denomina _rag_. Un margen derecho sin optimizar puede parecer irregular, con líneas cortas seguidas de líneas largas en un patrón errático. Postext optimiza el margen derecho mediante:
 
 1. Evaluación de la calidad visual del margen derecho a lo largo de múltiples líneas
 2. Ajuste del espaciado entre palabras dentro de límites aceptables
 3. Elección de puntos de quiebre que produzcan un margen derecho que varíe gradualmente en lugar de uno abrupto
-4. Consideración de la hifenación como herramienta para suavizar el margen derecho, no solo para ajustar líneas
+4. Consideración de la separación silábica como herramienta para suavizar el margen derecho, no solo para ajustar líneas
 
 ### Espaciado y Ritmo
 
@@ -753,7 +753,7 @@ Cada aspecto de la maquetación de Postext puede controlarse a través de un ún
    - Comportamiento y tolerancia del equilibrio
 - **Configuración tipográfica**
    - Conteos mínimos de líneas para huérfanas y viudas
-   - Idioma de hifenación, caracteres mínimos y máximo de guiones consecutivos
+   - Idioma de separación silábica, caracteres mínimos y máximo de guiones consecutivos
    - Modo de espaciado de párrafos, ya sea sangría o espacios verticales
    - Espaciado de encabezados por encima y por debajo de cada nivel
    - Reglas de agrupación que previenen saltos de página entre elementos relacionados
@@ -817,7 +817,7 @@ El desarrollo de Postext está organizado en cuatro fases principales:
    - Colocación de recursos con todas las estrategias soportadas
    - Prevención de huérfanas y viudas entre columnas y páginas
 3. **Tipografía Profesional**
-   - Hifenación con diccionarios específicos por idioma
+   - Separación silábica con diccionarios específicos por idioma
    - Optimización del margen derecho para texto alineado a la izquierda
    - Sistemas de notas al pie, notas finales y notas marginales
    - Reglas avanzadas de espaciado y alineación a la cuadrícula de línea base
