@@ -548,8 +548,10 @@ function drawOverlay(
     if (block.sourceEnd <= from) continue;
     if (block.sourceStart > to) continue;
 
-    const plainFrom = sourceToPlainIndex(block, from);
-    const plainTo = sourceToPlainIndex(block, to);
+    const prefixLen = block.plainPrefixLen ?? 0;
+    const plainEnd = prefixLen + (block.sourceMap?.length ?? 0);
+    const plainFrom = from <= block.sourceStart ? prefixLen : (sourceToPlainIndex(block, from) ?? prefixLen);
+    const plainTo = to >= block.sourceEnd ? plainEnd : (sourceToPlainIndex(block, to) ?? plainEnd);
 
     for (const line of block.lines) {
       const lineStart = line.plainStart;
@@ -557,7 +559,6 @@ function drawOverlay(
       if (lineStart === undefined || lineEnd === undefined) continue;
 
       {
-        if (plainFrom === null || plainTo === null) continue;
         const lo = Math.max(plainFrom, lineStart);
         const hi = Math.min(plainTo, lineEnd);
         if (hi <= lo) continue;
