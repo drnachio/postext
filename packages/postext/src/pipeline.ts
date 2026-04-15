@@ -122,7 +122,8 @@ function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const hyphenate = resolved.bodyText.hyphenation.enabled && textAlign === 'justify';
   const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = resolved.bodyText.hangingIndent;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
+  const marginBottomPx = resolved.bodyText.paragraphSpacing ? lineHeightPx : 0;
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent };
 }
 
 function resolveHeadingStyle(

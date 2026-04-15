@@ -193,6 +193,7 @@ export interface BodyTextConfig {
   fontFamily?: string;
   fontSize?: Dimension;
   lineHeight?: Dimension;
+  paragraphSpacing?: boolean;
   color?: ColorValue;
   textAlign?: TextAlign;
   fontWeight?: number;
@@ -206,6 +207,7 @@ export interface ResolvedBodyTextConfig {
   fontFamily: string;
   fontSize: Dimension;
   lineHeight: Dimension;
+  paragraphSpacing: boolean;
   color: ColorValue;
   textAlign: TextAlign;
   fontWeight: number;

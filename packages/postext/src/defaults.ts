@@ -185,6 +185,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   fontFamily: 'EB Garamond',
   fontSize: { value: 9, unit: 'pt' },
   lineHeight: { value: 1.5, unit: 'em' },
+  paragraphSpacing: false,
   color: { hex: '#000000', model: 'cmyk' },
   textAlign: 'justify',
   fontWeight: 400,
@@ -217,6 +218,10 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.lineHeight !== undefined && !dimensionsEqual(bodyText.lineHeight, DEFAULT_BODY_TEXT_CONFIG.lineHeight)) {
     result.lineHeight = bodyText.lineHeight;
+    hasOverride = true;
+  }
+  if (bodyText.paragraphSpacing !== undefined && bodyText.paragraphSpacing !== DEFAULT_BODY_TEXT_CONFIG.paragraphSpacing) {
+    result.paragraphSpacing = bodyText.paragraphSpacing;
     hasOverride = true;
   }
   if (bodyText.color !== undefined && !colorsEqual(bodyText.color, DEFAULT_BODY_TEXT_CONFIG.color)) {
@@ -522,6 +527,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTex
     fontFamily: partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily,
     fontSize: partial.fontSize ?? DEFAULT_BODY_TEXT_CONFIG.fontSize,
     lineHeight: partial.lineHeight ?? DEFAULT_BODY_TEXT_CONFIG.lineHeight,
+    paragraphSpacing: partial.paragraphSpacing ?? DEFAULT_BODY_TEXT_CONFIG.paragraphSpacing,
     color: partial.color ?? DEFAULT_BODY_TEXT_CONFIG.color,
     textAlign: partial.textAlign ?? DEFAULT_BODY_TEXT_CONFIG.textAlign,
     fontWeight: partial.fontWeight ?? DEFAULT_BODY_TEXT_CONFIG.fontWeight,

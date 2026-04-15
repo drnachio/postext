@@ -327,6 +327,12 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td>Espaciado vertical entre líneas. Las unidades relativas (em, rem) escalan con el tamaño de fuente.</td>
     </tr>
     <tr>
+      <td><code>paragraphSpacing</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Cuando está activado, inserta una línea en blanco (igual al <code>lineHeight</code>) entre párrafos consecutivos, como hacen algunas editoriales.</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>
@@ -608,7 +614,7 @@ Formato de salida objetivo: `'web'` para renderizado HTML/canvas, `'pdf'` para s
 La función `buildDocument` ejecuta el pipeline de composición completo y devuelve un Árbol Virtual del Documento (VDT) con coordenadas precisas para cada elemento:
 
 ```ts
-import { buildDocument, renderToCanvas } from 'postext';
+import { buildDocument } from 'postext';
 
 const content = {
   markdown: '# Capítulo uno\n\nLa historia comienza aquí...',
@@ -620,12 +626,50 @@ const config = {
   bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
 };
 
-// Construir la composición
+// Construir la composición — produce un VDT con una entrada por página en `vdt.pages`
+const vdt = buildDocument(content, config);
+console.log(`El documento tiene ${vdt.pages.length} páginas`);
+```
+
+### Renderizar una página a un bitmap
+
+Cada página puede rasterizarse de forma independiente. Usa `renderPage(page, doc)` para obtener un `HTMLCanvasElement` a partir del número de página — el canvas es un bitmap dimensionado exactamente al tamaño de la página en píxeles (al DPI configurado), por lo que puedes mostrarlo, exportarlo o pasarlo a cualquier pipeline de imagen:
+
+```ts
+import { buildDocument, renderPage } from 'postext';
+
 const vdt = buildDocument(content, config);
 
-// Renderizar a un elemento canvas
-const canvas = document.createElement('canvas');
-renderToCanvas(vdt, canvas);
+// Renderizar la página 3 (índice base 0) como bitmap
+const pageNumber = 2;
+const page = vdt.pages[pageNumber];
+if (!page) throw new Error(`La página ${pageNumber} no existe`);
+
+const canvas = renderPage(page, vdt);
+// canvas.width / canvas.height son el tamaño del bitmap de la página en píxeles
+
+// Mostrarlo en el DOM
+document.body.appendChild(canvas);
+
+// …o exportarlo como PNG data URL
+const pngDataUrl = canvas.toDataURL('image/png');
+
+// …o obtener un Blob para descargar o subir
+canvas.toBlob((blob) => {
+  if (blob) saveAs(blob, `pagina-${pageNumber + 1}.png`);
+}, 'image/png');
+
+// …o acceder a los píxeles RGBA crudos
+const ctx = canvas.getContext('2d')!;
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+```
+
+Si prefieres pintar sobre un canvas que ya tienes (por ejemplo uno montado en el DOM con una disposición concreta), usa `renderPageToCanvas(page, doc, canvas)` — redimensiona y dibuja en el canvas que le pases en lugar de crear uno nuevo.
+
+Para renderizar todas las páginas, itera sobre `vdt.pages`:
+
+```ts
+const bitmaps = vdt.pages.map((page) => renderPage(page, vdt));
 ```
 
 ### Resolver valores por defecto
