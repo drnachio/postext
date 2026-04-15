@@ -339,6 +339,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Text color.</td>
     </tr>
     <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits <code>color</code></td>
+      <td>Optional override for bold/strong spans. When unset, bold text uses <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>italicColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits <code>color</code></td>
+      <td>Optional override for italic/emphasis spans. When unset, italic text uses <code>color</code>.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
@@ -872,6 +884,53 @@ The `model` field indicates the intended color space. For web rendering, `'hex'`
 Because Postext targets publication-grade output, the default body text and heading colors ship with `model: 'cmyk'` (both values are `#000000`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
 
 
+## Color Palette
+
+The `colorPalette` property on `PostextConfig` lets you define a reusable set of named colors and reference them from any `ColorValue` in the configuration. It is the Postext equivalent of CSS custom properties or an InDesign swatches panel: change the palette entry once, and every color that points to it updates across the document.
+
+```ts
+interface ColorPaletteEntry {
+  id: string;       // stable identifier — referenced by ColorValue.paletteId
+  name: string;     // human label shown in sandbox UIs
+  value: ColorValue;
+}
+```
+
+A palette lives at the top level of the config:
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'ink',    name: 'Ink',    value: { hex: '#0a0a0a', model: 'cmyk' } },
+    { id: 'accent', name: 'Accent', value: { hex: '#b8860b', model: 'hex' } },
+  ],
+  bodyText: { color: { hex: '#000000', model: 'cmyk', paletteId: 'ink' } },
+  headings: { color: { hex: '#000000', model: 'hex', paletteId: 'accent' } },
+};
+```
+
+### Referencing a palette entry
+
+Any `ColorValue` in the configuration — page background, body text color, heading colors, column rules, list colors, task-completed color, cut-mark color, baseline-grid color, debug indicators — can carry an optional `paletteId` field pointing at an entry in `colorPalette`. When present, the palette entry's `hex` / `model` win over the fallback `hex` / `model` stored alongside. The inline fallback is only used if the palette is missing, empty, or doesn't contain that id — useful when shipping a config that will be read by a tool that doesn't understand palettes.
+
+### How palettes are applied
+
+`buildDocument` calls `applyPaletteToConfig` internally as the first step of the pipeline, before any defaults are resolved. You rarely need to call it yourself, but it is exported so you can inspect the flattened result:
+
+```ts
+import { applyPaletteToConfig, resolveColorValue } from 'postext';
+
+const flat = applyPaletteToConfig(config);
+// Every ColorValue with a paletteId has been replaced by the palette entry's hex/model.
+```
+
+`resolveColorValue(value, palette, fallback)` is the single-value variant, handy when you are composing configs imperatively and need to resolve one color at a time.
+
+### Editing the palette
+
+Removing a palette entry should go through `unlinkPaletteRefs` (exported from `postext-sandbox`) so that any `ColorValue` still pointing at the removed id gets rewritten with the plain `hex` / `model` fallback. The sandbox's "Color Palette" section does this automatically.
+
+
 ## Debug
 
 The `debug` property controls visual indicators the editor uses to keep the source text and the rendered layout in sync while editing. These are rendered only by the interactive editor — they have no effect on exported output.
@@ -1020,7 +1079,7 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`.
+Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`. Color palettes are applied separately through `applyPaletteToConfig(config)` and `resolveColorValue(value, palette, fallback)` — see [Color Palette](#color-palette).
 
 `resolveUnorderedListsConfig` and `resolveOrderedListsConfig` are the only resolvers that take a second argument — the already-resolved `ResolvedBodyTextConfig` — because list defaults for `fontFamily` and `color` cascade from body text:
 

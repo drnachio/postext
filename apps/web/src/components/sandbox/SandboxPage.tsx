@@ -79,6 +79,10 @@ export function SandboxPage() {
     bodyParagraphSpacingTooltip: t("bodyParagraphSpacingTooltip"),
     bodyColor: t("bodyColor"),
     bodyColorTooltip: t("bodyColorTooltip"),
+    bodyBoldColor: t("bodyBoldColor"),
+    bodyBoldColorTooltip: t("bodyBoldColorTooltip"),
+    bodyItalicColor: t("bodyItalicColor"),
+    bodyItalicColorTooltip: t("bodyItalicColorTooltip"),
     bodyTextAlign: t("bodyTextAlign"),
     bodyTextAlignTooltip: t("bodyTextAlignTooltip"),
     bodyTextAlignLeft: t("bodyTextAlignLeft"),
@@ -300,6 +304,10 @@ export function SandboxPage() {
     colorPaletteLink: t("colorPaletteLink"),
     colorPaletteUnlink: t("colorPaletteUnlink"),
     colorPaletteNone: t("colorPaletteNone"),
+    colorPaletteEditName: t("colorPaletteEditName"),
+    colorPaletteDeleteConfirm: t("colorPaletteDeleteConfirm"),
+    colorPaletteDeleteInUse: t("colorPaletteDeleteInUse"),
+    colorPaletteDeleteInUseNote: t("colorPaletteDeleteInUseNote"),
   };
 
   return (

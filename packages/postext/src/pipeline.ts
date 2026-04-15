@@ -108,6 +108,8 @@ interface BlockStyle {
   fontSizePx: number;
   lineHeightPx: number;
   color: string;
+  boldColor?: string;
+  italicColor?: string;
   textAlign: TextAlign;
   hyphenate: boolean;
   marginTopPx: number;
@@ -144,7 +146,7 @@ function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = resolved.bodyText.hangingIndent;
   const marginBottomPx = resolved.bodyText.paragraphSpacing ? lineHeightPx : 0;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent };
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, boldColor: resolved.bodyText.boldColor?.hex, italicColor: resolved.bodyText.italicColor?.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent };
 }
 
 function resolveHeadingStyle(
@@ -476,12 +478,12 @@ function resolveUnorderedListItemStyle(
   const text: BlockStyle = {
     ...bodyStyle,
     color: textColor,
+    boldColor: completedMutedColor ? undefined : bodyStyle.boldColor,
+    italicColor: completedMutedColor ? undefined : bodyStyle.italicColor,
     marginTopPx,
     marginBottomPx,
     firstLineIndentPx: 0,
     hangingIndent: false,
-    textAlign: 'left',
-    hyphenate: false,
   };
 
   const bullet: ListBulletStyle = {
@@ -539,8 +541,6 @@ function resolveOrderedListItemStyle(
     marginBottomPx,
     firstLineIndentPx: 0,
     hangingIndent: false,
-    textAlign: 'left',
-    hyphenate: false,
   };
 
   const bullet: ListBulletStyle = {
@@ -988,6 +988,8 @@ export function buildDocument(
         if (style.boldFontString) blk.boldFontString = style.boldFontString;
         if (style.italicFontString) blk.italicFontString = style.italicFontString;
         if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+        if (style.boldColor) blk.boldColor = style.boldColor;
+        if (style.italicColor) blk.italicColor = style.italicColor;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
         blk.dirty = false;
@@ -1008,7 +1010,10 @@ export function buildDocument(
           // below is guaranteed to be at least marginBottomPx.
           const usedHeight = curCol.bbox.height - curCol.availableHeight;
           const naturalBottom = usedHeight + totalRemainHeight + style.marginBottomPx;
-          const snappedBottom = Math.ceil(naturalBottom / baselineGrid) * baselineGrid;
+          // Tolerance guards against FP drift: if naturalBottom is already on
+          // the grid (e.g. marginBottom is an exact multiple of baselineGrid),
+          // don't round up to the next line.
+          const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
           h = snappedBottom - usedHeight;
         }
         placeBlockInColumn(blk, h, curCol, cursor);
@@ -1038,6 +1043,8 @@ export function buildDocument(
         if (style.boldFontString) blk.boldFontString = style.boldFontString;
         if (style.italicFontString) blk.italicFontString = style.italicFontString;
         if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+        if (style.boldColor) blk.boldColor = style.boldColor;
+        if (style.italicColor) blk.italicColor = style.italicColor;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
         blk.dirty = false;
@@ -1073,6 +1080,8 @@ export function buildDocument(
       if (style.boldFontString) blk.boldFontString = style.boldFontString;
       if (style.italicFontString) blk.italicFontString = style.italicFontString;
       if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+      if (style.boldColor) blk.boldColor = style.boldColor;
+      if (style.italicColor) blk.italicColor = style.italicColor;
       if (partIndex === 0) blk.headingLevel = headingLevel;
       blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
       blk.dirty = false;

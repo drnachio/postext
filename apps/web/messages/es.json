@@ -251,6 +251,10 @@
     "bodyParagraphSpacingTooltip": "Cuando está activado, inserta una línea en blanco (igual al interlineado) entre párrafos consecutivos",
     "bodyColor": "Color del texto",
     "bodyColorTooltip": "Color del cuerpo de texto",
+    "bodyBoldColor": "Color de negritas",
+    "bodyBoldColorTooltip": "Color por defecto para el texto en negrita del cuerpo. Si no se define, hereda el color del texto.",
+    "bodyItalicColor": "Color de cursivas",
+    "bodyItalicColorTooltip": "Color por defecto para el texto en cursiva del cuerpo. Si no se define, hereda el color del texto.",
     "bodyTextAlign": "Alineación del texto",
     "bodyTextAlignTooltip": "Alineación horizontal de los párrafos del cuerpo de texto",
     "bodyTextAlignLeft": "En bandera",
@@ -471,7 +475,11 @@
     "colorPaletteNewEntry": "Nuevo color",
     "colorPaletteLink": "Vincular a paleta",
     "colorPaletteUnlink": "Desvincular",
-    "colorPaletteNone": "A\u00fan no hay colores en la paleta"
+    "colorPaletteNone": "A\u00fan no hay colores en la paleta",
+    "colorPaletteEditName": "Editar nombre",
+    "colorPaletteDeleteConfirm": "\u00bfEliminar este color?",
+    "colorPaletteDeleteInUse": "Usado por:",
+    "colorPaletteDeleteInUseNote": "Estas propiedades conservar\u00e1n el color pero perder\u00e1n el v\u00ednculo."
   },
   "Accessibility": {
     "skipToContent": "Saltar al contenido principal"

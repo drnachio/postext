@@ -1,10 +1,12 @@
 'use client';
 
-import { Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import type { ColorPaletteEntry } from 'postext';
 import { useSandbox } from '../../context/SandboxContext';
-import { unlinkPaletteRefs } from '../../context/paletteUtils';
+import { findPaletteUsages, unlinkPaletteRefs } from '../../context/paletteUtils';
 import { CollapsibleSection, ColorPicker } from '../../controls';
+import { ConfirmPopover } from '../../panels/ConfirmPopover';
 
 function newEntryId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -17,6 +19,9 @@ export function ColorPaletteSection() {
   const { state, dispatch } = useSandbox();
   const { config, labels } = state;
   const palette: ColorPaletteEntry[] = config.colorPalette ?? [];
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState('');
 
   const writePalette = (next: ColorPaletteEntry[]) => {
     dispatch({
@@ -32,6 +37,8 @@ export function ColorPaletteSection() {
       value: { hex: '#000000', model: 'hex' },
     };
     writePalette([...palette, entry]);
+    setDraftName(entry.name);
+    setEditingId(entry.id);
   };
 
   const updateEntry = (id: string, partial: Partial<ColorPaletteEntry>) => {
@@ -51,6 +58,23 @@ export function ColorPaletteSection() {
     });
   };
 
+  const beginEdit = (entry: ColorPaletteEntry) => {
+    setDraftName(entry.name);
+    setEditingId(entry.id);
+  };
+
+  const commitEdit = (id: string) => {
+    const trimmed = draftName.trim();
+    if (trimmed && trimmed !== palette.find((e) => e.id === id)?.name) {
+      updateEntry(id, { name: trimmed });
+    }
+    setEditingId(null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
   return (
     <CollapsibleSection
       title={labels.colorPalette}
@@ -65,42 +89,108 @@ export function ColorPaletteSection() {
           {labels.colorPaletteNone}
         </p>
       )}
-      {palette.map((entry) => (
-        <div
-          key={entry.id}
-          className="mb-2 rounded border p-2"
-          style={{ borderColor: 'var(--rule)' }}
-        >
-          <div className="mb-1 flex items-center gap-1">
-            <input
-              type="text"
-              value={entry.name}
-              onChange={(e) => updateEntry(entry.id, { name: e.target.value })}
-              placeholder={labels.colorPaletteEntryName}
-              aria-label={labels.colorPaletteEntryName}
-              className="flex-1 rounded border bg-transparent px-1.5 py-1 text-xs"
-              style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
+      {palette.map((entry) => {
+        const usages = findPaletteUsages(state.config, entry.id, labels);
+        const isEditing = editingId === entry.id;
+        const confirmMessage = (
+          <>
+            <div style={{ fontWeight: 500, marginBottom: usages.length > 0 ? 6 : 0 }}>
+              {labels.colorPaletteDeleteConfirm}
+            </div>
+            {usages.length > 0 && (
+              <>
+                <div style={{ color: 'var(--slate)', marginBottom: 4 }}>
+                  {labels.colorPaletteDeleteInUse}
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 16, marginBottom: 6 }}>
+                  {usages.map((u, i) => (
+                    <li key={i} style={{ fontSize: 11, lineHeight: '15px' }}>
+                      {u}
+                    </li>
+                  ))}
+                </ul>
+                <div style={{ color: 'var(--slate)', fontSize: 11, lineHeight: '14px' }}>
+                  {labels.colorPaletteDeleteInUseNote}
+                </div>
+              </>
+            )}
+          </>
+        );
+
+        return (
+          <div key={entry.id} className="mb-2 flex items-center gap-1">
+            {isEditing ? (
+              <input
+                type="text"
+                autoFocus
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    commitEdit(entry.id);
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelEdit();
+                  }
+                }}
+                onBlur={() => commitEdit(entry.id)}
+                placeholder={labels.colorPaletteEntryName}
+                aria-label={labels.colorPaletteEntryName}
+                className="min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs"
+                style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
+              />
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => beginEdit(entry)}
+                  aria-label={labels.colorPaletteEditName}
+                  title={labels.colorPaletteEditName}
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
+                  style={{ color: 'var(--slate)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
+                >
+                  <Pencil size={11} aria-hidden="true" />
+                </button>
+                <span
+                  className="min-w-0 flex-1 truncate text-xs"
+                  style={{ color: 'var(--foreground)' }}
+                  title={entry.name}
+                >
+                  {entry.name}
+                </span>
+              </>
+            )}
+            <ColorPicker
+              label=""
+              value={entry.value}
+              onChange={(value) => updateEntry(entry.id, { value })}
+              disablePalette
+              hideLabel
+              className="flex items-center gap-1.5"
+              fieldId={`palette-${entry.id}`}
             />
-            <button
-              type="button"
-              onClick={() => removeEntry(entry.id)}
-              aria-label={labels.colorPaletteRemove}
-              title={labels.colorPaletteRemove}
-              className="flex h-6 w-6 items-center justify-center rounded"
-              style={{ color: 'var(--slate)', cursor: 'pointer' }}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-            </button>
+            <ConfirmPopover message={confirmMessage} onConfirm={() => removeEntry(entry.id)}>
+              {({ open }) => (
+                <button
+                  type="button"
+                  onClick={open}
+                  aria-label={labels.colorPaletteRemove}
+                  title={labels.colorPaletteRemove}
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
+                  style={{ color: 'var(--destructive)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                >
+                  <Trash2 size={13} aria-hidden="true" />
+                </button>
+              )}
+            </ConfirmPopover>
           </div>
-          <ColorPicker
-            label=""
-            value={entry.value}
-            onChange={(value) => updateEntry(entry.id, { value })}
-            disablePalette
-            fieldId={`palette-${entry.id}`}
-          />
-        </div>
-      ))}
+        );
+      })}
       <button
         type="button"
         onClick={addEntry}
@@ -118,4 +208,3 @@ export function ColorPaletteSection() {
     </CollapsibleSection>
   );
 }
-

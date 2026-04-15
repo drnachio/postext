@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react'
 import { Check, X } from 'lucide-react';
 
 interface ConfirmPopoverProps {
-  message: string;
+  message: ReactNode;
   onConfirm: () => void;
   children: (props: { open: () => void }) => ReactNode;
 }
@@ -111,7 +111,7 @@ export function ConfirmPopover({ message, onConfirm, children }: ConfirmPopoverP
               maxWidth: 240,
             }}
           >
-            <p
+            <div
               style={{
                 color: 'var(--foreground)',
                 fontSize: 12,
@@ -121,7 +121,7 @@ export function ConfirmPopover({ message, onConfirm, children }: ConfirmPopoverP
               }}
             >
               {message}
-            </p>
+            </div>
             <div className="flex items-center justify-end gap-1.5">
               <button
                 type="button"

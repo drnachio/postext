@@ -339,6 +339,18 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td>Color del texto.</td>
     </tr>
     <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>hereda <code>color</code></td>
+      <td>Sobrescritura opcional para fragmentos en negrita. Si no se define, la negrita usa <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>italicColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>hereda <code>color</code></td>
+      <td>Sobrescritura opcional para fragmentos en cursiva. Si no se define, la cursiva usa <code>color</code>.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
@@ -872,6 +884,53 @@ El campo `model` indica el espacio de color previsto. Para renderizado web, `'he
 Como Postext apunta a salida de calidad editorial, los colores por defecto del cuerpo de texto y de los encabezados se publican con `model: 'cmyk'` (ambos `#000000`). El fondo de página y los indicadores de interfaz (rejilla base, marcas de corte, indicadores de depuración) usan `model: 'hex'` por defecto. Sobrescribe `color.model` en cualquier campo si necesitas otra semántica de exportación.
 
 
+## Paleta de colores
+
+La propiedad `colorPalette` de `PostextConfig` permite definir un conjunto reutilizable de colores con nombre y referenciarlos desde cualquier `ColorValue` de la configuración. Es el equivalente en Postext a las custom properties de CSS o al panel de muestras de InDesign: cambia la entrada una sola vez y todos los colores que apunten a ella se actualizan en el documento.
+
+```ts
+interface ColorPaletteEntry {
+  id: string;       // identificador estable — referenciado por ColorValue.paletteId
+  name: string;     // etiqueta legible que se muestra en las UIs del sandbox
+  value: ColorValue;
+}
+```
+
+La paleta vive en el nivel superior de la configuración:
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'tinta',  name: 'Tinta',  value: { hex: '#0a0a0a', model: 'cmyk' } },
+    { id: 'acento', name: 'Acento', value: { hex: '#b8860b', model: 'hex' } },
+  ],
+  bodyText: { color: { hex: '#000000', model: 'cmyk', paletteId: 'tinta' } },
+  headings: { color: { hex: '#000000', model: 'hex', paletteId: 'acento' } },
+};
+```
+
+### Referenciar una entrada de la paleta
+
+Cualquier `ColorValue` de la configuración — fondo de página, color del cuerpo de texto, colores de encabezados, filetes de columna, colores de listas, `taskCompletedColor`, color de las marcas de corte, color de la rejilla base, indicadores de depuración — puede llevar un campo opcional `paletteId` que apunta a una entrada de `colorPalette`. Cuando está presente, el `hex` / `model` de la entrada de la paleta ganan al `hex` / `model` almacenados como respaldo. El respaldo en línea solo se usa si la paleta falta, está vacía o no contiene ese id — útil al exportar una configuración que leerá una herramienta que no entienda paletas.
+
+### Cómo se aplican las paletas
+
+`buildDocument` llama internamente a `applyPaletteToConfig` como primer paso del pipeline, antes de resolver los valores por defecto. Raramente hace falta invocarlo directamente, pero está exportado para poder inspeccionar el resultado ya aplanado:
+
+```ts
+import { applyPaletteToConfig, resolveColorValue } from 'postext';
+
+const flat = applyPaletteToConfig(config);
+// Cada ColorValue con paletteId queda sustituido por el hex/model de la entrada de la paleta.
+```
+
+`resolveColorValue(value, palette, fallback)` es la variante para un único valor, útil cuando compones configuraciones de forma imperativa y necesitas resolver un color suelto.
+
+### Editar la paleta
+
+Para eliminar una entrada conviene usar `unlinkPaletteRefs` (exportado desde `postext-sandbox`) de modo que cualquier `ColorValue` que todavía apunte al id eliminado se reescriba con el `hex` / `model` de respaldo. La sección "Paleta de colores" del sandbox lo hace automáticamente.
+
+
 ## Depuración
 
 La propiedad `debug` controla los indicadores visuales que el editor usa para mantener sincronizados el texto fuente y la composición renderizada mientras se edita. Solo los renderiza el editor interactivo — no tienen efecto en la salida exportada.
@@ -1020,7 +1079,7 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`.
+Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`. Las paletas de color se aplican por separado con `applyPaletteToConfig(config)` y `resolveColorValue(value, palette, fallback)` — ver [Paleta de colores](#paleta-de-colores).
 
 `resolveUnorderedListsConfig` y `resolveOrderedListsConfig` son los únicos resolvers que aceptan un segundo argumento — el `ResolvedBodyTextConfig` ya resuelto — porque las listas heredan `fontFamily` y `color` del cuerpo de texto:
 

@@ -202,6 +202,8 @@ export interface BodyTextConfig {
   lineHeight?: Dimension;
   paragraphSpacing?: boolean;
   color?: ColorValue;
+  boldColor?: ColorValue;
+  italicColor?: ColorValue;
   textAlign?: TextAlign;
   fontWeight?: number;
   boldFontWeight?: number;
@@ -216,6 +218,8 @@ export interface ResolvedBodyTextConfig {
   lineHeight: Dimension;
   paragraphSpacing: boolean;
   color: ColorValue;
+  boldColor?: ColorValue;
+  italicColor?: ColorValue;
   textAlign: TextAlign;
   fontWeight: number;
   boldFontWeight: number;

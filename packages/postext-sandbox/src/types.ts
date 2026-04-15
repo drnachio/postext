@@ -79,6 +79,10 @@ export interface SandboxLabels {
   bodyParagraphSpacingTooltip: string;
   bodyColor: string;
   bodyColorTooltip: string;
+  bodyBoldColor: string;
+  bodyBoldColorTooltip: string;
+  bodyItalicColor: string;
+  bodyItalicColorTooltip: string;
   bodyTextAlign: string;
   bodyTextAlignTooltip: string;
   bodyTextAlignLeft: string;
@@ -318,6 +322,10 @@ export interface SandboxLabels {
   colorPaletteLink: string;
   colorPaletteUnlink: string;
   colorPaletteNone: string;
+  colorPaletteEditName: string;
+  colorPaletteDeleteConfirm: string;
+  colorPaletteDeleteInUse: string;
+  colorPaletteDeleteInUseNote: string;
 }
 
 export type PanelId = 'markdown' | 'config' | 'resources';
@@ -414,6 +422,10 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyParagraphSpacingTooltip: 'When enabled, insert a blank line (equal to line height) between consecutive paragraphs',
   bodyColor: 'Text Color',
   bodyColorTooltip: 'Color of the body text',
+  bodyBoldColor: 'Bold Color',
+  bodyBoldColorTooltip: 'Default color for bold text in body paragraphs. When unset, inherits the text color.',
+  bodyItalicColor: 'Italic Color',
+  bodyItalicColorTooltip: 'Default color for italic text in body paragraphs. When unset, inherits the text color.',
   bodyTextAlign: 'Text Alignment',
   bodyTextAlignTooltip: 'Horizontal alignment of body text paragraphs',
   bodyTextAlignLeft: 'Ragged Right',
@@ -635,4 +647,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   colorPaletteLink: 'Link to palette',
   colorPaletteUnlink: 'Unlink',
   colorPaletteNone: 'No palette entries yet',
+  colorPaletteEditName: 'Edit name',
+  colorPaletteDeleteConfirm: 'Delete this color?',
+  colorPaletteDeleteInUse: 'Used by:',
+  colorPaletteDeleteInUseNote: 'These properties will keep the color but lose the link.',
 };

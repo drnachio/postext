@@ -146,6 +146,18 @@ function pickSegmentFont(
   return font;
 }
 
+function pickSegmentColor(
+  bold: boolean,
+  italic: boolean,
+  color: string,
+  boldColor: string | undefined,
+  italicColor: string | undefined,
+): string {
+  if (bold && boldColor) return boldColor;
+  if (italic && italicColor) return italicColor;
+  return color;
+}
+
 function renderLine(
   ctx: CanvasRenderingContext2D,
   line: VDTLine,
@@ -154,6 +166,8 @@ function renderLine(
   italicFont: string | undefined,
   boldItalicFont: string | undefined,
   color: string,
+  boldColor: string | undefined,
+  italicColor: string | undefined,
   textAlign: 'left' | 'justify',
   columnWidth: number,
   columnX: number,
@@ -185,6 +199,7 @@ function renderLine(
           x += justifiedSpaceWidth;
         } else {
           ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
+          ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
           ctx.fillText(seg.text, x, line.baseline);
           x += seg.width;
         }
@@ -202,6 +217,7 @@ function renderLine(
         x += seg.width;
       } else {
         ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
+        ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
         ctx.fillText(seg.text, x, line.baseline);
         x += seg.width;
       }
@@ -260,6 +276,8 @@ function renderBlock(
       block.italicFontString,
       block.boldItalicFontString,
       block.color,
+      block.boldColor,
+      block.italicColor,
       block.textAlign,
       columnWidth,
       columnX,

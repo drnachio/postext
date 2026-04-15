@@ -94,7 +94,12 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
   }
 
   if (config.bodyText) {
-    next.bodyText = { ...config.bodyText, color: resolveColor(config.bodyText.color, palette) };
+    next.bodyText = {
+      ...config.bodyText,
+      color: resolveColor(config.bodyText.color, palette),
+      boldColor: resolveColor(config.bodyText.boldColor, palette),
+      italicColor: resolveColor(config.bodyText.italicColor, palette),
+    };
   }
 
   if (config.headings) {
@@ -318,6 +323,14 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.color !== undefined && !colorsEqual(bodyText.color, DEFAULT_BODY_TEXT_CONFIG.color)) {
     result.color = bodyText.color;
+    hasOverride = true;
+  }
+  if (bodyText.boldColor !== undefined) {
+    result.boldColor = bodyText.boldColor;
+    hasOverride = true;
+  }
+  if (bodyText.italicColor !== undefined) {
+    result.italicColor = bodyText.italicColor;
     hasOverride = true;
   }
   if (bodyText.textAlign !== undefined && bodyText.textAlign !== DEFAULT_BODY_TEXT_CONFIG.textAlign) {
@@ -1033,6 +1046,8 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTex
     lineHeight: partial.lineHeight ?? DEFAULT_BODY_TEXT_CONFIG.lineHeight,
     paragraphSpacing: partial.paragraphSpacing ?? DEFAULT_BODY_TEXT_CONFIG.paragraphSpacing,
     color: partial.color ?? DEFAULT_BODY_TEXT_CONFIG.color,
+    boldColor: partial.boldColor,
+    italicColor: partial.italicColor,
     textAlign: partial.textAlign ?? DEFAULT_BODY_TEXT_CONFIG.textAlign,
     fontWeight: partial.fontWeight ?? DEFAULT_BODY_TEXT_CONFIG.fontWeight,
     boldFontWeight: partial.boldFontWeight ?? DEFAULT_BODY_TEXT_CONFIG.boldFontWeight,

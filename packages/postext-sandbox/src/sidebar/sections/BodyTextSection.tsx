@@ -92,6 +92,10 @@ export function BodyTextSection() {
   const isLineHeightDefault = dimensionsEqual(bodyText.lineHeight, D.lineHeight);
   const isParagraphSpacingDefault = bodyText.paragraphSpacing === D.paragraphSpacing;
   const isColorDefault = colorsEqual(bodyText.color, D.color);
+  const isBoldColorDefault = bodyText.boldColor === undefined;
+  const isItalicColorDefault = bodyText.italicColor === undefined;
+  const DEFAULT_BOLD_COLOR = bodyText.boldColor ?? bodyText.color;
+  const DEFAULT_ITALIC_COLOR = bodyText.italicColor ?? bodyText.color;
   const isTextAlignDefault = bodyText.textAlign === D.textAlign;
   const isFontWeightDefault = bodyText.fontWeight === D.fontWeight;
   const isBoldFontWeightDefault = bodyText.boldFontWeight === D.boldFontWeight;
@@ -178,6 +182,26 @@ export function BodyTextSection() {
         isDefault={isColorDefault}
         onReset={() => resetField('color')}
         fieldId="bodyText-color"
+      />
+
+      <ColorPicker
+        label={labels.bodyBoldColor}
+        value={DEFAULT_BOLD_COLOR}
+        onChange={(color) => updateBodyText({ boldColor: color })}
+        tooltip={labels.bodyBoldColorTooltip}
+        isDefault={isBoldColorDefault}
+        onReset={() => resetField('boldColor')}
+        fieldId="bodyText-boldColor"
+      />
+
+      <ColorPicker
+        label={labels.bodyItalicColor}
+        value={DEFAULT_ITALIC_COLOR}
+        onChange={(color) => updateBodyText({ italicColor: color })}
+        tooltip={labels.bodyItalicColorTooltip}
+        isDefault={isItalicColorDefault}
+        onReset={() => resetField('italicColor')}
+        fieldId="bodyText-italicColor"
       />
 
       <NumberInput

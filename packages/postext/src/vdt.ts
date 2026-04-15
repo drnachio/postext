@@ -91,6 +91,8 @@ export interface VDTBlock {
   italicFontString?: string;
   boldItalicFontString?: string;
   color: string;
+  boldColor?: string;
+  italicColor?: string;
   textAlign: TextAlign;
   /** Character offset in the original markdown where the source content for this block starts */
   sourceStart?: number;
