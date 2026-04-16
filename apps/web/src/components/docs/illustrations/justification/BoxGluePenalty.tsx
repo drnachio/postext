@@ -33,7 +33,14 @@ const example: Item[] = [
 ];
 
 export function BoxGluePenalty({ labels }: { labels: BoxGluePenaltyLabels }) {
-  let x = 60;
+  const positions = example.reduce<{ cx: number[]; end: number }>(
+    (acc, it) => {
+      acc.cx.push(acc.end);
+      acc.end += it.width + 4;
+      return acc;
+    },
+    { cx: [], end: 60 },
+  );
   return (
     <Figure title={labels.title} desc={labels.desc} caption={labels.caption} viewBox="0 0 760 240" maxWidth={760}>
       <defs>
@@ -60,8 +67,7 @@ export function BoxGluePenalty({ labels }: { labels: BoxGluePenaltyLabels }) {
       {/* Example */}
       <g className="svg-fade-2">
         {example.map((it, i) => {
-          const cx = x;
-          x += it.width + 4;
+          const cx = positions.cx[i];
           const color = it.type === "box" ? "blue" : it.type === "glue" ? "yellow" : "pink";
           const t = colorTokens[color];
           return (
@@ -75,7 +81,7 @@ export function BoxGluePenalty({ labels }: { labels: BoxGluePenaltyLabels }) {
 
       {/* Break points hint */}
       <g className="svg-fade-3">
-        <line x1={60} y1={170} x2={x - 4} y2={170} stroke="var(--svg-stroke)" strokeWidth={1} strokeDasharray="2,3" />
+        <line x1={60} y1={170} x2={positions.end - 4} y2={170} stroke="var(--svg-stroke)" strokeWidth={1} strokeDasharray="2,3" />
         <Label x={60} y={190} size={9} color="light">breakpoints ⇄ glue and penalty positions</Label>
       </g>
     </Figure>

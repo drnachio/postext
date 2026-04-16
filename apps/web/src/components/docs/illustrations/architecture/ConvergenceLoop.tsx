@@ -1,5 +1,5 @@
 import { Figure } from "../Figure";
-import { ArrowMarker, Box, DropShadowDef, Label, colorTokens, type ColorKey } from "../primitives";
+import { ArrowMarker, DropShadowDef, Label, colorTokens, type ColorKey } from "../primitives";
 
 export interface ConvergenceLoopLabels {
   title: string;
