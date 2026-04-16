@@ -97,6 +97,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyMaxWordSpacingTooltip: 'Maximum word spacing in justified text, as a multiplier of the normal space width',
   bodyMinWordSpacing: 'Min Word Spacing',
   bodyMinWordSpacingTooltip: 'Minimum word spacing in justified text, as a multiplier of the normal space width',
+  bodyOptimalLineBreaking: 'Optimal Line Breaking',
+  bodyOptimalLineBreakingTooltip: 'Use the Knuth-Plass algorithm for globally optimal line breaks instead of greedy first-fit',
   headings: 'Headings',
   headingsFont: 'Font',
   headingsFontTooltip: 'Default font family for all headings',

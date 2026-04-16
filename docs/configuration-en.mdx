@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-04-15',
+  lastUpdated: '2026-04-16',
   readingTime: '15 min',
   order: 3,
 };
@@ -398,12 +398,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>0.8</code></td>
       <td>Lower bound for word spacing in justified text, as a multiplier of the normal space width.</td>
     </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Use Knuth-Plass optimal line breaking instead of greedy first-fit. Produces more even word spacing across the paragraph. See <a href="/en/docs/justification">Hyphenation &amp; Justification</a>.</td>
+    </tr>
   </tbody>
 </table>
 
 ### Hyphenation
 
-When text alignment is set to `'justify'`, hyphenation prevents excessive word spacing by breaking long words at syllable boundaries. The engine uses locale-aware rules — vowel patterns, common prefixes, and suffixes — to find natural break points.
+When text alignment is set to `'justify'`, hyphenation prevents excessive word spacing by breaking long words at syllable boundaries. The engine uses TeX/Liang patterns to find natural break points at syllable boundaries. See [Hyphenation & Justification](/en/docs/justification) for a detailed explanation.
 
 <table>
   <thead>

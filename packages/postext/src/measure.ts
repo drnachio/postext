@@ -10,6 +10,13 @@ import { createBoundingBox } from './vdt';
 import type { TextAlign, HyphenationLocale } from './types';
 import type { InlineSpan } from './parse';
 import { hyphenateText, setHyphenationLocale } from './hyphenate';
+import {
+  pretextSegmentsToItems,
+  richTokensToItems,
+  computeBreakpoints,
+  reconstructPretextLines,
+  reconstructRichLines,
+} from './knuthPlass';
 
 const SOFT_HYPHEN = '\u00AD';
 
@@ -113,6 +120,12 @@ export interface MeasureBlockOptions {
   hyphenate?: boolean;
   firstLineIndentPx?: number;
   hangingIndent?: boolean;
+  /** Use Knuth-Plass optimal line breaking instead of greedy. */
+  optimal?: boolean;
+  /** Max space stretch ratio (for K-P glue model). Default 1.5. */
+  maxStretchRatio?: number;
+  /** Min space shrink ratio (for K-P glue model). Default 0.8. */
+  minShrinkRatio?: number;
 }
 
 /** Compute the normal space width for a given font, used to express justified
@@ -146,11 +159,46 @@ export function measureBlock(
   const processedText = shouldHyphenate ? hyphenateText(text) : text;
 
   const prepared = prepareWithSegments(processedText, font);
+  const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(font) : 0;
+
+  // Knuth-Plass optimal line breaking path
+  if (options?.optimal && textAlign === 'justify') {
+    const maxStretchRatio = options.maxStretchRatio ?? 1.5;
+    const minShrinkRatio = options.minShrinkRatio ?? 0.8;
+    const items = pretextSegmentsToItems(prepared, normalSpaceWidth, maxStretchRatio, minShrinkRatio);
+    const lineWidthFn = (li: number) => {
+      const isFirst = li === 0;
+      const indent = indentPx > 0
+        ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
+        : 0;
+      return maxWidthPx - indent;
+    };
+    const lineIndentFn = (li: number) => {
+      const isFirst = li === 0;
+      return indentPx > 0
+        ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
+        : 0;
+    };
+    const breaks = computeBreakpoints(items, {
+      lineWidth: lineWidthFn,
+      normalSpaceWidth,
+      maxStretchRatio,
+      minShrinkRatio,
+    });
+    if (breaks.length > 0) {
+      const kpLines = reconstructPretextLines(
+        items, breaks, prepared, lineHeightPx,
+        lineWidthFn, lineIndentFn, normalSpaceWidth, textAlign,
+      );
+      return { lines: kpLines, totalHeight: kpLines.length * lineHeightPx };
+    }
+    // Fallback to greedy if K-P produced no breaks
+  }
+
   const lines: VDTLine[] = [];
   let cursor: LayoutCursor = { segmentIndex: 0, graphemeIndex: 0 };
   let y = 0;
   let lineIndex = 0;
-  const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(font) : 0;
 
   while (true) {
     // First line indent: indent line 0 only. Hanging indent: indent all lines except 0.
@@ -306,9 +354,7 @@ function tokenizeSpans(
   const tokens: RichToken[] = [];
 
   for (const span of spans) {
-    // Only hyphenate plain (non-bold, non-italic) spans to avoid mis-measuring emphasis.
-    const plain = !span.bold && !span.italic;
-    const text = shouldHyphenate && plain ? hyphenateText(span.text) : span.text;
+    const text = shouldHyphenate ? hyphenateText(span.text) : span.text;
     const font = span.bold && span.italic
       ? boldItalicFont
       : span.bold
@@ -390,6 +436,40 @@ export function measureRichBlock(
 
   if (tokens.length === 0) {
     return { lines: [], totalHeight: 0 };
+  }
+
+  // Knuth-Plass optimal line breaking path
+  if (options?.optimal && textAlign === 'justify') {
+    const maxStretchRatio = options.maxStretchRatio ?? 1.5;
+    const minShrinkRatio = options.minShrinkRatio ?? 0.8;
+    const items = richTokensToItems(tokens, normalSpaceWidth, maxStretchRatio, minShrinkRatio);
+    const lineWidthFn = (li: number) => {
+      const isFirst = li === 0;
+      const indent = indentPx > 0
+        ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
+        : 0;
+      return maxWidthPx - indent;
+    };
+    const lineIndentFn = (li: number) => {
+      const isFirst = li === 0;
+      return indentPx > 0
+        ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
+        : 0;
+    };
+    const breaks = computeBreakpoints(items, {
+      lineWidth: lineWidthFn,
+      normalSpaceWidth,
+      maxStretchRatio,
+      minShrinkRatio,
+    });
+    if (breaks.length > 0) {
+      const kpLines = reconstructRichLines(
+        items, breaks, tokens, lineHeightPx,
+        lineWidthFn, lineIndentFn, normalSpaceWidth, textAlign,
+      );
+      return { lines: kpLines, totalHeight: kpLines.length * lineHeightPx };
+    }
+    // Fallback to greedy if K-P produced no breaks
   }
 
   const lines: VDTLine[] = [];

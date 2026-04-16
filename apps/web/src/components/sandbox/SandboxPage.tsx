@@ -109,6 +109,8 @@ export function SandboxPage() {
     bodyMaxWordSpacingTooltip: t("bodyMaxWordSpacingTooltip"),
     bodyMinWordSpacing: t("bodyMinWordSpacing"),
     bodyMinWordSpacingTooltip: t("bodyMinWordSpacingTooltip"),
+    bodyOptimalLineBreaking: t("bodyOptimalLineBreaking"),
+    bodyOptimalLineBreakingTooltip: t("bodyOptimalLineBreakingTooltip"),
     headings: t("headings"),
     headingsFont: t("headingsFont"),
     headingsFontTooltip: t("headingsFontTooltip"),

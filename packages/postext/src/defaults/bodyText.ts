@@ -1,4 +1,4 @@
-import type { BodyTextConfig, ResolvedBodyTextConfig, HyphenationConfig } from '../types';
+import type { BodyTextConfig, ResolvedBodyTextConfig, HyphenationConfig, HyphenationLocale } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
@@ -20,6 +20,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   hangingIndent: false,
   maxWordSpacing: 1.5,
   minWordSpacing: 0.8,
+  optimalLineBreaking: true,
 };
 
 export function hyphenationEqual(a: HyphenationConfig | undefined, b: HyphenationConfig | undefined): boolean {
@@ -29,8 +30,8 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
     && (a.locale ?? DEFAULT_HYPHENATION_CONFIG.locale) === (b.locale ?? DEFAULT_HYPHENATION_CONFIG.locale);
 }
 
-export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTextConfig {
-  if (!partial) return { ...DEFAULT_BODY_TEXT_CONFIG, hyphenation: { ...DEFAULT_HYPHENATION_CONFIG } };
+export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?: HyphenationLocale): ResolvedBodyTextConfig {
+  if (!partial) return { ...DEFAULT_BODY_TEXT_CONFIG, hyphenation: { ...DEFAULT_HYPHENATION_CONFIG, locale: documentLocale ?? DEFAULT_HYPHENATION_CONFIG.locale } };
 
   return {
     fontFamily: partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily,
@@ -45,12 +46,13 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTex
     boldFontWeight: partial.boldFontWeight ?? DEFAULT_BODY_TEXT_CONFIG.boldFontWeight,
     hyphenation: {
       enabled: partial.hyphenation?.enabled ?? DEFAULT_HYPHENATION_CONFIG.enabled,
-      locale: partial.hyphenation?.locale ?? DEFAULT_HYPHENATION_CONFIG.locale,
+      locale: partial.hyphenation?.locale ?? documentLocale ?? DEFAULT_HYPHENATION_CONFIG.locale,
     },
     firstLineIndent: partial.firstLineIndent ?? DEFAULT_BODY_TEXT_CONFIG.firstLineIndent,
     hangingIndent: partial.hangingIndent ?? DEFAULT_BODY_TEXT_CONFIG.hangingIndent,
     maxWordSpacing: partial.maxWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing,
     minWordSpacing: partial.minWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.minWordSpacing,
+    optimalLineBreaking: partial.optimalLineBreaking ?? DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking,
   };
 }
 
@@ -118,6 +120,10 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.minWordSpacing !== undefined && bodyText.minWordSpacing !== DEFAULT_BODY_TEXT_CONFIG.minWordSpacing) {
     result.minWordSpacing = bodyText.minWordSpacing;
+    hasOverride = true;
+  }
+  if (bodyText.optimalLineBreaking !== undefined && bodyText.optimalLineBreaking !== DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking) {
+    result.optimalLineBreaking = bodyText.optimalLineBreaking;
     hasOverride = true;
   }
 

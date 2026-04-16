@@ -1,0 +1,424 @@
+{/* docs/justification-en.mdx */}
+
+export const metadata = {
+  title: 'Hyphenation & Justification',
+  sidebarTitle: 'Hyphenation & Justification',
+  description: 'How Postext breaks lines, justifies text, and controls word spacing using the Knuth-Plass algorithm',
+  lang: 'en',
+  lastUpdated: '2026-04-16',
+  readingTime: '20 min',
+  order: 4,
+};
+
+# Hyphenation & Justification
+
+**The difference between amateur and professional typesetting lives in the spaces between words.**
+
+Open any paperback novel. The text is justified — both edges of every paragraph are perfectly aligned. But look closer. The spaces between words are nearly uniform, line after line. No rivers of white space running down the page. No lines where two words sit marooned with a vast ocean between them. Achieving this is far harder than it looks, and it is the single problem that has consumed more typographic engineering effort than any other.
+
+Postext solves it with the same algorithm that TeX has used since 1981: **Knuth-Plass optimal line breaking**. Combined with TeX-quality hyphenation patterns, configurable word-spacing bounds, and a visual debug system for identifying problem lines, the engine produces justified text that meets publication standards.
+
+
+## The Problem
+
+When text is set with `textAlign: 'justify'`, every line (except the last) must be stretched or compressed to fill the exact column width. The engine distributes the difference between the natural content width and the column width across the inter-word spaces on that line.
+
+If a line has many words, each space absorbs a tiny adjustment — invisible to the reader. But if a line has few words (because one long word forced an early break), each space must stretch dramatically. The result is a **loose line**: a line where the word spacing is so wide that it disrupts reading rhythm and creates ugly visual gaps.
+
+The opposite problem exists too. If the engine packs too many words onto a line, the spaces shrink below their natural width, producing a **tight line** where words feel cramped together.
+
+A naive line-breaking algorithm — the kind CSS uses — makes decisions one line at a time. It fills the current line with as many words as possible, breaks, and moves on. This **greedy first-fit** approach has a fundamental weakness: it cannot see the future. A decision that looks optimal for line 5 might force line 6 into a terrible break. By the time the algorithm reaches line 6, it is too late — line 5 is already committed.
+
+
+## Knuth-Plass: Seeing the Whole Paragraph
+
+The Knuth-Plass algorithm, published by Donald Knuth and Michael Plass in 1981, takes a radically different approach. Instead of breaking one line at a time, it considers **every possible way to break the entire paragraph** and picks the combination that minimizes the total "badness" across all lines. It is the algorithm that powers TeX, and it is why TeX-typeset documents have been the gold standard for justified text for over four decades.
+
+### The Box-Glue-Penalty Model
+
+Knuth-Plass does not think in terms of words and spaces. It models text as a sequence of three primitives:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '100px' }}>Primitive</th>
+      <th style={{ width: '200px' }}>Represents</th>
+      <th>Behavior</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Box</strong></td>
+      <td>A word or text fragment</td>
+      <td>Has a fixed width. Cannot be stretched or compressed. Cannot be broken.</td>
+    </tr>
+    <tr>
+      <td><strong>Glue</strong></td>
+      <td>Inter-word space</td>
+      <td>Has a <em>natural</em> width, a <em>stretch</em> capacity, and a <em>shrink</em> capacity. The engine can adjust glue within these bounds to fill the line.</td>
+    </tr>
+    <tr>
+      <td><strong>Penalty</strong></td>
+      <td>A potential break point</td>
+      <td>Has a cost. Low penalty = cheap break. High penalty = expensive break. A <em>flagged</em> penalty means a hyphenation point (adds a visible hyphen if used).</td>
+    </tr>
+  </tbody>
+</table>
+
+A paragraph becomes a sequence like:
+
+```
+[box "The"] [glue] [box "quick"] [glue] [box "brown"] [glue] [box "fox"]
+[penalty -∞]  ← forced break at paragraph end
+```
+
+When hyphenation is active, long words are split into fragments separated by penalties:
+
+```
+[box "ty"] [penalty 50, flagged] [box "pog"] [penalty 50, flagged] [box "raphy"]
+```
+
+Each flagged penalty carries a cost of 50 — not free, but cheaper than producing a loose line.
+
+### How It Finds the Optimum
+
+The algorithm uses dynamic programming. It maintains a set of **active nodes** — potential breakpoints that could start new lines — and evaluates every feasible break from each active node. For each candidate break, it computes:
+
+1. **Adjustment ratio (r)**: how much the glue on this line needs to stretch or shrink. `r = 0` means the line fits perfectly. `r > 0` means stretching (loose). `r < 0` means shrinking (tight).
+
+2. **Badness**: a measure of how uneven the spacing is, computed as `100 × |r|³`. The cubic growth means that a slightly loose line is tolerable, but a very loose line is severely penalized. A line with `r = 2` has badness 800; a line with `r = 0.5` has badness 12.
+
+3. **Demerits**: the total cost of breaking here, combining badness, any penalty at the break point, and two additional penalties:
+   - **Consecutive hyphen demerit** (default 3000): penalizes two hyphenated lines in a row, because stacked hyphens are visually distracting.
+   - **Fitness class demerit** (default 100): penalizes adjacent lines of very different tightness. If a tight line sits next to a very loose line, the contrast is jarring.
+
+4. **Fitness class**: each line is classified as tight (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), loose (`0.5 ≤ r < 1.0`), or very loose (`r ≥ 1.0`). Adjacent lines with fitness classes more than one step apart incur the fitness demerit.
+
+The algorithm traces back through the active nodes to find the path with the lowest total demerits — the globally optimal set of breakpoints for the entire paragraph.
+
+### Why It Matters
+
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
+  <defs>
+    <filter id="justShadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
+    </filter>
+  </defs>
+  <rect width="760" height="220" fill="transparent" rx="8" />
+
+  {/* Greedy column */}
+  <rect x="20" y="30" width="340" height="170" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#justShadow)" />
+  <text x="190" y="55" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-pink-text)">Greedy first-fit</text>
+  <line x1="40" y1="65" x2="340" y2="65" stroke="#E91E63" strokeWidth="1" opacity="0.3" />
+
+  <text x="40" y="85" fontSize="10" fill="var(--svg-pink-text)">Decides line by line, no look-ahead</text>
+  <text x="40" y="105" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  One bad break poisons the next line</text>
+  <text x="40" y="125" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Uneven spacing across the paragraph</text>
+  <text x="40" y="145" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Rivers of white space</text>
+  <text x="40" y="165" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  No cost model for adjacent lines</text>
+  <text x="40" y="185" fontSize="10" fill="var(--svg-mid-text)">= What CSS does</text>
+
+  {/* Arrow */}
+  <path d="M380,115 L410,115" stroke="var(--svg-stroke)" strokeWidth="2" fill="none" />
+  <polygon points="410,110 420,115 410,120" fill="var(--svg-stroke)" />
+
+  {/* KP column */}
+  <rect x="420" y="30" width="320" height="170" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#justShadow)" />
+  <text x="580" y="55" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Knuth-Plass optimal</text>
+  <line x1="440" y1="65" x2="720" y2="65" stroke="#4CAF50" strokeWidth="1" opacity="0.3" />
+
+  <text x="440" y="85" fontSize="10" fill="var(--svg-green-text)">Evaluates every possible break set</text>
+  <text x="440" y="105" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Globally minimal demerits</text>
+  <text x="440" y="125" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Even spacing throughout</text>
+  <text x="440" y="145" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Consecutive-hyphen penalty</text>
+  <text x="440" y="165" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Fitness-class smoothness</text>
+  <text x="440" y="185" fontSize="10" fill="var(--svg-green-text)">= What Postext does</text>
+</svg>
+
+The practical difference is visible. In a greedy layout, you will find paragraphs where one line is noticeably looser than its neighbors — and if you look carefully, you will see it happened because the *previous* line grabbed one word too many. Knuth-Plass avoids this by trading a slightly worse current line for a much better next one, because it can see the consequences.
+
+### Postext's Implementation
+
+Postext implements the full Knuth-Plass algorithm in `knuthPlass.ts` (approximately 860 lines). Two adapter paths convert text into the box-glue-penalty model:
+
+- **Plain text path**: uses `@chenglou/pretext` for DOM-free text measurement. Pretext provides segment widths and discretionary-hyphen widths; Postext converts them to KP items.
+- **Rich text path**: handles bold and italic spans using Canvas-based measurement. Each styled token becomes one or more boxes, with hyphenation break points inserted as penalties.
+
+Both paths compute per-line `justifiedSpaceRatio` — the actual space width divided by the natural space width — which feeds into the loose-line debug system described below.
+
+**Fallback behavior**: if Knuth-Plass produces no valid breaks (which can happen with extremely narrow columns or very long words), the engine falls back to Pretext's greedy `layoutNextLine()`. This ensures the layout always completes.
+
+
+## Hyphenation
+
+Hyphenation and justification are inseparable. Without hyphenation, the engine's only way to avoid a loose line is to move a word to the next line — which often just shifts the problem. Hyphenation gives the engine a much larger set of break points to consider, dramatically improving the quality of justified text.
+
+### TeX-Quality Patterns
+
+Postext uses **Hypher** (`hypher` v0.2.5) for hyphenation, powered by **TeX/Liang hyphenation patterns**. These are the same patterns that TeX has used since 1983 — a compact representation of syllable-boundary rules derived by Frank Liang's pattern-generation algorithm from large word corpora.
+
+The patterns encode a set of numbered rules that, when overlaid on a word, indicate where breaks are allowed (odd numbers) and forbidden (even numbers). The `leftmin` and `rightmin` parameters in each language's pattern file ensure a minimum number of characters before and after any break point. For English (`en-us`), these are typically 2 and 3 respectively — so a word must have at least 2 characters before the hyphen and 3 after.
+
+### Supported Locales
+
+<table>
+  <thead>
+    <tr>
+      <th>Locale code</th>
+      <th>Language</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'en-us'</code></td><td>English (US)</td></tr>
+    <tr><td><code>'es'</code></td><td>Spanish</td></tr>
+    <tr><td><code>'fr'</code></td><td>French</td></tr>
+    <tr><td><code>'de'</code></td><td>German</td></tr>
+    <tr><td><code>'it'</code></td><td>Italian</td></tr>
+    <tr><td><code>'pt'</code></td><td>Portuguese</td></tr>
+    <tr><td><code>'ca'</code></td><td>Catalan</td></tr>
+    <tr><td><code>'nl'</code></td><td>Dutch</td></tr>
+  </tbody>
+</table>
+
+Each locale loads its own pattern set. Hypher instances are lazily created and cached — the first call for a given locale pays the initialization cost; subsequent calls are instant. If an unknown locale is passed, the engine falls back to `en-us`.
+
+### Why Hypher (and Not a Custom Algorithm)
+
+The original Postext hyphenation system used a **custom vowel-based heuristic**: it detected syllable boundaries by finding vowel clusters, common prefixes (`over-`, `under-`, `inter-`), and common suffixes (`-tion`, `-ment`, `-sion`). It was simple and fast, but fundamentally limited:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Aspect</th>
+      <th>Custom heuristic</th>
+      <th>Hypher (TeX patterns)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Accuracy</strong></td>
+      <td>Good for common words, unreliable for unusual ones. Vowel detection misses many valid break points and creates invalid ones.</td>
+      <td>Near-perfect. Patterns are generated from large corpora and have been refined for over 40 years.</td>
+    </tr>
+    <tr>
+      <td><strong>Language coverage</strong></td>
+      <td>Had to manually define vowel sets, prefixes, and suffixes for each language — tedious and error-prone.</td>
+      <td>Pattern files exist for 50+ languages, maintained by the TeX community. Adding a language means adding one import.</td>
+    </tr>
+    <tr>
+      <td><strong>Industry standard</strong></td>
+      <td>Not a recognized standard. No tooling or community support.</td>
+      <td>The same patterns used by TeX, LibreOffice, Firefox, Chrome, and virtually every professional typesetting system.</td>
+    </tr>
+    <tr>
+      <td><strong>Maintenance</strong></td>
+      <td>Every edge case is a bug to fix manually.</td>
+      <td>Community-maintained pattern files. Bug fixes come from upstream.</td>
+    </tr>
+    <tr>
+      <td><strong>Bundle size</strong></td>
+      <td>~170 lines, no dependencies.</td>
+      <td>Hypher core is ~3 KB. Each language pattern file adds 20–80 KB (gzipped: 5–20 KB). All eight bundled locales add roughly 300 KB (gzipped: ~80 KB).</td>
+    </tr>
+    <tr>
+      <td><strong>Performance</strong></td>
+      <td>Very fast (simple string scanning).</td>
+      <td>Fast (trie lookup per character). Negligible in practice — hyphenation is never the bottleneck.</td>
+    </tr>
+  </tbody>
+</table>
+
+The trade-off is clear: a larger bundle in exchange for dramatically better correctness and zero maintenance burden. For a layout engine targeting publication-grade output, correctness wins. A single bad hyphenation in a printed book is more expensive than a few extra kilobytes of patterns.
+
+### How Hyphenation Integrates with Knuth-Plass
+
+Before text enters the Knuth-Plass algorithm, the engine pre-processes it with Hypher, inserting **soft hyphens** (Unicode `\u00AD`) at every legal break point. These invisible characters are then mapped to KP **penalties** with a cost of 50 and `flagged: true`.
+
+The algorithm treats hyphenation breaks as just another option to evaluate alongside natural word boundaries (where glue allows a break). If using a hyphen produces a lower total demerits than leaving the line loose, the algorithm takes the hyphen. If not, it leaves the word intact.
+
+The consecutive-hyphen demerit (default 3000) ensures the algorithm strongly avoids placing hyphens on two adjacent lines — a typographic convention that virtually all style guides enforce.
+
+Hyphenation is only applied when both `bodyText.hyphenation.enabled` is `true` **and** `bodyText.textAlign` is `'justify'`. Left-aligned text does not benefit from hyphenation because the right edge is intentionally ragged.
+
+
+## Word Spacing Bounds
+
+The glue model gives the engine explicit bounds on how much inter-word spaces can stretch or shrink. These bounds are controlled by two configuration properties on `bodyText`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxWordSpacing</code></td>
+      <td><code>1.5</code></td>
+      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 150% of their natural width.</td>
+    </tr>
+    <tr>
+      <td><code>minWordSpacing</code></td>
+      <td><code>0.8</code></td>
+      <td>Lower bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can shrink down to 80% of their natural width.</td>
+    </tr>
+  </tbody>
+</table>
+
+These multipliers translate directly to the glue's `stretch` and `shrink` values in the Knuth-Plass model:
+
+```
+stretchPerSpace = normalSpaceWidth × (maxWordSpacing - 1)
+shrinkPerSpace  = normalSpaceWidth × (1 - minWordSpacing)
+```
+
+At the defaults (1.5 / 0.8), if the normal space width is 4 px:
+- Each space can stretch by 2 px (from 4 px to 6 px)
+- Each space can shrink by 0.8 px (from 4 px to 3.2 px)
+
+**Tighter bounds** (e.g., `maxWordSpacing: 1.2`) produce more uniform spacing but give the algorithm less room to maneuver, which may result in more hyphenation or, in extreme cases, overflow. **Looser bounds** (e.g., `maxWordSpacing: 2.0`) give the algorithm more flexibility but allow visibly uneven spacing on some lines.
+
+The defaults of 1.5 and 0.8 are a well-tested compromise — they match the range traditionally recommended in typographic literature and produce good results across most column widths and font sizes.
+
+### Optimal vs. Greedy Line Breaking
+
+The `bodyText.optimalLineBreaking` property (default: `true`) controls which line-breaking algorithm the engine uses:
+
+- **`true`**: Knuth-Plass dynamic-programming algorithm. Evaluates all possible break sets and picks the globally optimal one. This is the recommended setting for any justified text.
+- **`false`**: Greedy first-fit, powered by Pretext's `layoutNextLine()`. Faster but produces lower-quality results. Use this only when performance matters more than typographic quality (e.g., real-time preview at very high character counts).
+
+When Knuth-Plass is active and produces no valid breaks (which can happen with extremely narrow columns or words longer than the column width), the engine automatically falls back to greedy breaking for that paragraph.
+
+
+## Loose-Line Debugging
+
+Even with Knuth-Plass and hyphenation, some lines will be looser than ideal — especially in narrow columns with long words, or in languages with few hyphenation opportunities. The **loose-line highlight** debug feature helps you find these problem lines instantly.
+
+### How It Works
+
+Every line in the Virtual Document Tree carries a `justifiedSpaceRatio` — the ratio of the actual justified space width to the font's natural space width. A value of 1.0 means the spaces are at their natural width. A value of 2.5 means the spaces are 2.5 times wider than normal.
+
+When `debug.looseLineHighlight.enabled` is `true`, the renderer paints a semi-transparent overlay on every line whose `justifiedSpaceRatio` exceeds the configured `threshold`. The default threshold is 3.0 — meaning only lines with spaces three times wider than normal are highlighted. This is a deliberately high bar; lines this loose are genuine typographic problems.
+
+### Configuration
+
+The loose-line highlight is part of the `debug` section of `PostextConfig`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to highlight loose lines.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>Color of the highlight overlay. The default is a semi-transparent red.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Multiplier of the normal space width above which a line is considered loose. Lower values catch more lines; higher values highlight only the worst offenders.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  looseLineHighlight: {
+    enabled: true,
+    threshold: 2.5,
+    color: { hex: '#ff660040', model: 'hex' },
+  },
+}
+```
+
+### Interpreting the Results
+
+When you enable loose-line highlighting and see red bands across certain lines, it means the engine could not find a way to set those lines without excessive word spacing. Common causes and solutions:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Cause</th>
+      <th>Solution</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Column is too narrow for the font size</td>
+      <td>Increase column width, decrease font size, or switch to a single-column layout.</td>
+    </tr>
+    <tr>
+      <td>Long words with few hyphenation points</td>
+      <td>Verify hyphenation is enabled and the correct locale is set. Some technical terms or proper nouns have no valid break points.</td>
+    </tr>
+    <tr>
+      <td>Hyphenation is disabled</td>
+      <td>Enable <code>bodyText.hyphenation.enabled</code>. Justification without hyphenation is almost always worse.</td>
+    </tr>
+    <tr>
+      <td>Word spacing bounds are too tight</td>
+      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 1.5 to 1.8). This gives the algorithm more room.</td>
+    </tr>
+    <tr>
+      <td>Language has long compound words (e.g., German)</td>
+      <td>Ensure the correct locale is set. German hyphenation patterns handle compound words well, but only if the engine knows it is German.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Complete Example
+
+A full configuration showcasing all hyphenation and justification settings:
+
+```ts
+import { buildDocument } from 'postext';
+
+const vdt = buildDocument(content, {
+  bodyText: {
+    fontFamily: 'EB Garamond',
+    fontSize: { value: 9, unit: 'pt' },
+    textAlign: 'justify',
+
+    // Knuth-Plass optimal line breaking (default: true)
+    optimalLineBreaking: true,
+
+    // Hyphenation
+    hyphenation: {
+      enabled: true,
+      locale: 'es',
+    },
+
+    // Word spacing bounds (multipliers of normal space width)
+    maxWordSpacing: 1.5,   // spaces stretch up to 150%
+    minWordSpacing: 0.8,   // spaces shrink down to 80%
+  },
+
+  // Debug: highlight lines with excessive spacing
+  debug: {
+    looseLineHighlight: {
+      enabled: true,
+      threshold: 2.5,
+      color: { hex: '#ff000040', model: 'hex' },
+    },
+  },
+});
+```
+
+For the complete list of body text configuration options, see the [Configuration](/en/docs/configuration#body-text) page. For how the layout pipeline uses these settings during text measurement, see the [Architecture](/en/docs/architecture) page.
