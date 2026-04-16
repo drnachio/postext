@@ -103,105 +103,125 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     const rect = container.getBoundingClientRect();
     if (rect.width === 0) return;
 
-    let cancelled = false;
+    clearMeasurementCache();
 
-    document.fonts.ready.then(() => {
-      if (cancelled) return;
-      clearMeasurementCache();
+    try {
+      const doc = buildDocument(
+        { markdown: deferredMarkdown },
+        deferredConfig,
+      );
+      docRef.current = doc;
 
-      try {
-        const doc = buildDocument(
-          { markdown: deferredMarkdown },
-          deferredConfig,
-        );
-        docRef.current = doc;
+      // Tear down previous observer + maps, but keep the old DOM in place
+      // until the new one is fully built and painted — this avoids a blank
+      // flash while the user is typing fast.
+      observerRef.current?.disconnect();
+      canvasMapRef.current.clear();
+      overlayMapRef.current.clear();
+      const previouslyRendered = renderedPagesRef.current;
+      renderedPagesRef.current = new Set();
 
-        // Tear down previous observer + maps, but keep the old DOM in place
-        // until the new one is fully built and painted — this avoids a blank
-        // flash while the user is typing fast.
-        observerRef.current?.disconnect();
-        canvasMapRef.current.clear();
-        overlayMapRef.current.clear();
-        const previouslyRendered = renderedPagesRef.current;
-        renderedPagesRef.current = new Set();
+      if (doc.pages.length === 0) {
+        while (container.firstChild) container.removeChild(container.firstChild);
+        return;
+      }
 
-        if (doc.pages.length === 0) {
-          while (container.firstChild) container.removeChild(container.firstChild);
-          return;
+      // Compute uniform CSS display dimensions (all pages share the same size)
+      const padding = 32;
+      const gap = 24;
+      const firstPage = doc.pages[0]!;
+      const aspectRatio = firstPage.height / firstPage.width;
+
+      let displayWidth: number;
+      const isSpread = viewMode === 'spread';
+
+      if (fitMode === 'width') {
+        if (isSpread) {
+          displayWidth = (rect.width - padding * 2 - gap) / 2;
+        } else {
+          displayWidth = rect.width - padding * 2;
         }
+      } else if (fitMode === 'height') {
+        const containerHeight = rect.height - padding * 2;
+        displayWidth = containerHeight / aspectRatio;
+        if (isSpread) {
+          const maxPerPage = (rect.width - padding * 2 - gap) / 2;
+          displayWidth = Math.min(displayWidth, maxPerPage);
+        }
+      } else {
+        const base = Math.min(rect.width - padding * 2, 800);
+        displayWidth = base * zoom;
+      }
 
-        // Compute uniform CSS display dimensions (all pages share the same size)
-        const padding = 32;
-        const gap = 24;
-        const firstPage = doc.pages[0]!;
-        const aspectRatio = firstPage.height / firstPage.width;
+      displayWidth = Math.max(displayWidth, 50);
+      const displayHeight = displayWidth * aspectRatio;
 
-        let displayWidth: number;
-        const isSpread = viewMode === 'spread';
+      // Inner wrapper centers content via auto margins, enabling full
+      // horizontal scroll in both directions when zoomed in
+      const pagesPerRow = isSpread ? 2 : 1;
+      const innerWidth = displayWidth * pagesPerRow + gap * (pagesPerRow - 1) + padding * 2;
+      const innerDiv = document.createElement('div');
+      innerDiv.style.width = `${innerWidth}px`;
+      innerDiv.style.margin = '0 auto';
 
-        if (fitMode === 'width') {
-          if (isSpread) {
-            displayWidth = (rect.width - padding * 2 - gap) / 2;
-          } else {
-            displayWidth = rect.width - padding * 2;
+      const canvasMap = canvasMapRef.current;
+      const overlayMap = overlayMapRef.current;
+      const pageWidthPx = firstPage.width;
+      const pageHeightPx = firstPage.height;
+      const rows = groupPagesIntoRows(doc.pages.length, viewMode);
+      const allSlots: HTMLDivElement[] = [];
+
+      for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+        const row = rows[rowIdx]!;
+        const rowDiv = document.createElement('div');
+        rowDiv.style.display = 'flex';
+        rowDiv.style.justifyContent = 'center';
+        rowDiv.style.alignItems = 'flex-start';
+        const paddingTop = rowIdx === 0 ? padding : gap / 2;
+        const paddingBottom = rowIdx === rows.length - 1 ? padding : gap / 2;
+        rowDiv.style.padding = `${paddingTop}px ${padding}px ${paddingBottom}px`;
+        rowDiv.style.gap = `${gap}px`;
+        rowDiv.style.boxSizing = 'border-box';
+        rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
+
+        if (isSpread && row.length === 1) {
+          const pageIndex = row[0]!;
+          const isFirstPage = pageIndex === 0;
+
+          // First page (cover) goes on the RIGHT (recto in book terms)
+          // Trailing unpaired page goes on the LEFT (verso)
+          if (isFirstPage) {
+            // Spacer on the left
+            const spacer = document.createElement('div');
+            spacer.style.width = `${displayWidth}px`;
+            spacer.style.flexShrink = '0';
+            rowDiv.appendChild(spacer);
           }
-        } else if (fitMode === 'height') {
-          const containerHeight = rect.height - padding * 2;
-          displayWidth = containerHeight / aspectRatio;
-          if (isSpread) {
-            const maxPerPage = (rect.width - padding * 2 - gap) / 2;
-            displayWidth = Math.min(displayWidth, maxPerPage);
+
+          const slot = document.createElement('div');
+          slot.style.flexShrink = '0';
+          slot.style.position = 'relative';
+          slot.dataset.pageIndex = String(pageIndex);
+
+          const canvas = createPageCanvas(displayWidth, displayHeight);
+          slot.appendChild(canvas);
+          canvasMap.set(pageIndex, canvas);
+          const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
+          slot.appendChild(overlay);
+          overlayMap.set(pageIndex, overlay);
+          attachSlotClickHandler(slot, pageIndex, displayWidth, displayHeight, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
+          allSlots.push(slot);
+          rowDiv.appendChild(slot);
+
+          if (!isFirstPage) {
+            // Spacer on the right for trailing unpaired page
+            const spacer = document.createElement('div');
+            spacer.style.width = `${displayWidth}px`;
+            spacer.style.flexShrink = '0';
+            rowDiv.appendChild(spacer);
           }
         } else {
-          const base = Math.min(rect.width - padding * 2, 800);
-          displayWidth = base * zoom;
-        }
-
-        displayWidth = Math.max(displayWidth, 50);
-        const displayHeight = displayWidth * aspectRatio;
-
-        // Inner wrapper centers content via auto margins, enabling full
-        // horizontal scroll in both directions when zoomed in
-        const pagesPerRow = isSpread ? 2 : 1;
-        const innerWidth = displayWidth * pagesPerRow + gap * (pagesPerRow - 1) + padding * 2;
-        const innerDiv = document.createElement('div');
-        innerDiv.style.width = `${innerWidth}px`;
-        innerDiv.style.margin = '0 auto';
-
-        const canvasMap = canvasMapRef.current;
-        const overlayMap = overlayMapRef.current;
-        const pageWidthPx = firstPage.width;
-        const pageHeightPx = firstPage.height;
-        const rows = groupPagesIntoRows(doc.pages.length, viewMode);
-        const allSlots: HTMLDivElement[] = [];
-
-        for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
-          const row = rows[rowIdx]!;
-          const rowDiv = document.createElement('div');
-          rowDiv.style.display = 'flex';
-          rowDiv.style.justifyContent = 'center';
-          rowDiv.style.alignItems = 'flex-start';
-          const paddingTop = rowIdx === 0 ? padding : gap / 2;
-          const paddingBottom = rowIdx === rows.length - 1 ? padding : gap / 2;
-          rowDiv.style.padding = `${paddingTop}px ${padding}px ${paddingBottom}px`;
-          rowDiv.style.gap = `${gap}px`;
-          rowDiv.style.boxSizing = 'border-box';
-          rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
-
-          if (isSpread && row.length === 1) {
-            const pageIndex = row[0]!;
-            const isFirstPage = pageIndex === 0;
-
-            // First page (cover) goes on the RIGHT (recto in book terms)
-            // Trailing unpaired page goes on the LEFT (verso)
-            if (isFirstPage) {
-              // Spacer on the left
-              const spacer = document.createElement('div');
-              spacer.style.width = `${displayWidth}px`;
-              spacer.style.flexShrink = '0';
-              rowDiv.appendChild(spacer);
-            }
-
+          for (const pageIndex of row) {
             const slot = document.createElement('div');
             slot.style.flexShrink = '0';
             slot.style.position = 'relative';
@@ -216,90 +236,64 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
             attachSlotClickHandler(slot, pageIndex, displayWidth, displayHeight, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
             allSlots.push(slot);
             rowDiv.appendChild(slot);
+          }
+        }
 
-            if (!isFirstPage) {
-              // Spacer on the right for trailing unpaired page
-              const spacer = document.createElement('div');
-              spacer.style.width = `${displayWidth}px`;
-              spacer.style.flexShrink = '0';
-              rowDiv.appendChild(spacer);
-            }
-          } else {
-            for (const pageIndex of row) {
-              const slot = document.createElement('div');
-              slot.style.flexShrink = '0';
-              slot.style.position = 'relative';
-              slot.dataset.pageIndex = String(pageIndex);
+        innerDiv.appendChild(rowDiv);
+      }
 
-              const canvas = createPageCanvas(displayWidth, displayHeight);
-              slot.appendChild(canvas);
-              canvasMap.set(pageIndex, canvas);
-              const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
-              slot.appendChild(overlay);
-              overlayMap.set(pageIndex, overlay);
-              attachSlotClickHandler(slot, pageIndex, displayWidth, displayHeight, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
-              allSlots.push(slot);
-              rowDiv.appendChild(slot);
+      // Pre-render pages that were visible in the previous document so the
+      // swap from old DOM to new DOM shows already-painted pixels. Any page
+      // not in the new doc is simply skipped.
+      const debugConfig = resolveDebugConfig(deferredConfig.debug);
+      const renderOpts: RenderPageOptions = { pageNegative: debugConfig.pageNegative.enabled };
+      const renderedSet = new Set<number>();
+      for (const pageIndex of previouslyRendered) {
+        const canvas = canvasMap.get(pageIndex);
+        const page = doc.pages[pageIndex];
+        if (!canvas || !page) continue;
+        renderPageToCanvas(page, doc, canvas, renderOpts);
+        renderedSet.add(pageIndex);
+      }
+      renderedPagesRef.current = renderedSet;
+
+      // Atomic swap: remove old children and attach the new tree in one go.
+      while (container.firstChild) container.removeChild(container.firstChild);
+      container.appendChild(innerDiv);
+
+      // Lazy-render pages as they scroll into view
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            const idx = Number((entry.target as HTMLElement).dataset.pageIndex);
+            const canvas = canvasMap.get(idx);
+            if (!canvas || !docRef.current) continue;
+
+            if (entry.isIntersecting && !renderedSet.has(idx)) {
+              renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, renderOpts);
+              renderedSet.add(idx);
+            } else if (!entry.isIntersecting && renderedSet.has(idx)) {
+              // Release GPU memory for off-screen pages
+              canvas.width = 1;
+              canvas.height = 1;
+              renderedSet.delete(idx);
             }
           }
+        },
+        { root: container, rootMargin: '200px 0px 200px 0px' },
+      );
+      observerRef.current = observer;
 
-          innerDiv.appendChild(rowDiv);
-        }
-
-        // Pre-render pages that were visible in the previous document so the
-        // swap from old DOM to new DOM shows already-painted pixels. Any page
-        // not in the new doc is simply skipped.
-        const debugConfig = resolveDebugConfig(deferredConfig.debug);
-        const renderOpts: RenderPageOptions = { pageNegative: debugConfig.pageNegative.enabled };
-        const renderedSet = new Set<number>();
-        for (const pageIndex of previouslyRendered) {
-          const canvas = canvasMap.get(pageIndex);
-          const page = doc.pages[pageIndex];
-          if (!canvas || !page) continue;
-          renderPageToCanvas(page, doc, canvas, renderOpts);
-          renderedSet.add(pageIndex);
-        }
-        renderedPagesRef.current = renderedSet;
-
-        // Atomic swap: remove old children and attach the new tree in one go.
-        while (container.firstChild) container.removeChild(container.firstChild);
-        container.appendChild(innerDiv);
-
-        // Lazy-render pages as they scroll into view
-        const observer = new IntersectionObserver(
-          (entries) => {
-            for (const entry of entries) {
-              const idx = Number((entry.target as HTMLElement).dataset.pageIndex);
-              const canvas = canvasMap.get(idx);
-              if (!canvas || !docRef.current) continue;
-
-              if (entry.isIntersecting && !renderedSet.has(idx)) {
-                renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, renderOpts);
-                renderedSet.add(idx);
-              } else if (!entry.isIntersecting && renderedSet.has(idx)) {
-                // Release GPU memory for off-screen pages
-                canvas.width = 1;
-                canvas.height = 1;
-                renderedSet.delete(idx);
-              }
-            }
-          },
-          { root: container, rootMargin: '200px 0px 200px 0px' },
-        );
-        observerRef.current = observer;
-
-        for (const slot of allSlots) {
-          observer.observe(slot);
-        }
-
-        setDocVersion((v) => v + 1);
-      } catch (err) {
-        console.error('[CanvasPreview] Layout error:', err);
+      for (const slot of allSlots) {
+        observer.observe(slot);
       }
-    });
+
+      setDocVersion((v) => v + 1);
+    } catch (err) {
+      console.error('[CanvasPreview] Layout error:', err);
+    }
 
     return () => {
-      cancelled = true;
       observerRef.current?.disconnect();
     };
   }, [deferredMarkdown, deferredConfig, resizeKey, zoom, viewMode, fitMode]);

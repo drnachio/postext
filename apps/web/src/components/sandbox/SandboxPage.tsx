@@ -324,6 +324,9 @@ export function SandboxPage() {
     colorPaletteDeleteInUseNote: t("colorPaletteDeleteInUseNote"),
   };
 
+  // PostextSandbox automatically preloads all fonts referenced in the config
+  // (from localStorage or initialConfig) before rendering content — no FOUT.
+  // For custom integrations, use: await preloadConfigFonts(config)
   return (
     <PostextSandbox
       initialMarkdown={initialMarkdown}

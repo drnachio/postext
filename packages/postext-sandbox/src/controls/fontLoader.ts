@@ -1,7 +1,10 @@
 import type { PostextConfig } from 'postext';
 import { resolveBodyTextConfig, resolveHeadingsConfig, resolveUnorderedListsConfig, resolveOrderedListsConfig } from 'postext';
 
+const FONT_LOAD_TIMEOUT_MS = 3000;
+
 const loadedFonts = new Set<string>();
+const loadingPromises = new Map<string, Promise<void>>();
 
 interface FontMetadata {
   variable: boolean;
@@ -83,15 +86,31 @@ function buildFontUrl(family: string, meta: FontMetadata | null): string {
   return `https://fonts.googleapis.com/css2?family=${name}:wght@${parts}&display=swap`;
 }
 
-export function loadFont(font: string): void {
-  if (loadedFonts.has(font)) return;
-  loadedFonts.add(font);
-  fetchFontMetadata(font).then((meta) => {
+export function loadFont(font: string): Promise<void> {
+  if (loadedFonts.has(font)) return Promise.resolve();
+
+  const existing = loadingPromises.get(font);
+  if (existing) return existing;
+
+  const promise = (async () => {
+    const meta = await fetchFontMetadata(font);
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = buildFontUrl(font, meta);
     document.head.appendChild(link);
-  });
+
+    // Wait for the font to actually be usable, with a timeout
+    await Promise.race([
+      document.fonts.ready,
+      new Promise<void>((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
+    ]);
+
+    loadedFonts.add(font);
+    loadingPromises.delete(font);
+  })();
+
+  loadingPromises.set(font, promise);
+  return promise;
 }
 
 export function getConfigFontFamilies(config: PostextConfig): string[] {
@@ -110,6 +129,7 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
   return Array.from(families);
 }
 
-export function preloadConfigFonts(config: PostextConfig): void {
-  for (const family of getConfigFontFamilies(config)) loadFont(family);
+export function preloadConfigFonts(config: PostextConfig): Promise<void> {
+  const promises = getConfigFontFamilies(config).map((family) => loadFont(family));
+  return Promise.all(promises).then(() => {});
 }

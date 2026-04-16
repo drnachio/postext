@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PostextSandboxProps } from './types';
 import { SandboxProvider, useSandbox } from './context/SandboxContext';
-import { preloadConfigFonts } from './controls/fontLoader';
+import { preloadConfigFonts, getConfigFontFamilies } from './controls/fontLoader';
 import { ActivityBar } from './sidebar/ActivityBar';
 import { SidebarPanel } from './sidebar/SidebarPanel';
 import { ConfigPanel } from './sidebar/ConfigPanel';
@@ -31,15 +31,23 @@ function SandboxLayout({
   const { state, dispatch } = useSandbox();
   const containerRef = useRef<HTMLDivElement>(null);
   const [fontsReady, setFontsReady] = useState(false);
+  const configVersionRef = useRef(0);
+
+  // Stable key derived from the config's font families to avoid
+  // resetting fontsReady when non-font config fields change
+  const fontKey = useMemo(
+    () => getConfigFontFamilies(state.config).sort().join(','),
+    [state.config],
+  );
 
   useEffect(() => {
-    preloadConfigFonts(state.config);
-    let cancelled = false;
-    document.fonts.ready.then(() => {
-      if (!cancelled) setFontsReady(true);
+    const version = ++configVersionRef.current;
+    setFontsReady(false);
+
+    preloadConfigFonts(state.config).then(() => {
+      if (configVersionRef.current === version) setFontsReady(true);
     });
-    return () => { cancelled = true; };
-  }, [state.config]);
+  }, [fontKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {

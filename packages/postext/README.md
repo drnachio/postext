@@ -227,6 +227,24 @@ type PlacementStrategy =
 | `typography?` | `TypographyConfig` | Typography overrides |
 | `resourcePlacement?` | `ResourcePlacementConfig` | Placement overrides |
 
+## Font Loading
+
+When using custom fonts (e.g. `'EB Garamond'`, `'Open Sans'`), ensure they are loaded before rendering to avoid a flash of unstyled text. The `postext-sandbox` package provides an awaitable utility for this:
+
+```ts
+import { preloadConfigFonts } from 'postext-sandbox';
+
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond' },
+  headings: { fontFamily: 'Open Sans' },
+};
+
+await preloadConfigFonts(config);
+// Fonts are now loaded — safe to render
+```
+
+The `<PostextSandbox>` component handles this automatically, blocking rendering until all config fonts are ready.
+
 ## Full Documentation
 
 Visit [postext.dev](https://postext.dev/) for the full documentation, project vision, architecture, and roadmap. For contributing guidelines, see the [GitHub repository](https://github.com/drnachio/postext).
