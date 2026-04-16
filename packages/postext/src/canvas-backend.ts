@@ -388,11 +388,20 @@ export function renderPageToCanvas(
     renderColumnRule(ctx, page.columns, doc.config.layout.columnRule.color.hex, crLineWidthPx);
   }
 
-  // Render all blocks (clip to column bounds to prevent overflow)
+  // Render all blocks (clip to column bounds to prevent overflow).
+  // The clip is widened horizontally by a small buffer so that glyph ink
+  // extending past its advance width (e.g. the tail of an "s" at the column
+  // edge) is not chopped. Between-column gutters absorb the buffer.
+  const clipOverhang = dimensionToPx({ value: 2, unit: 'pt' }, doc.config.page.dpi);
   for (const col of page.columns) {
     ctx.save();
     ctx.beginPath();
-    ctx.rect(col.bbox.x, col.bbox.y, col.bbox.width, col.bbox.height);
+    ctx.rect(
+      col.bbox.x - clipOverhang,
+      col.bbox.y,
+      col.bbox.width + clipOverhang * 2,
+      col.bbox.height,
+    );
     ctx.clip();
     for (const block of col.blocks) {
       renderBlock(ctx, block, col.bbox.width, col.bbox.x);

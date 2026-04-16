@@ -114,6 +114,8 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
   </tbody>
 </table>
 
+<Illustration name="PageSizes" data='{"title": "Tamaños de página predefinidos", "desc": "Cuatro tamaños de página predefinidos dibujados a escala proporcional: bolsillo 11x17, rústica 12x19, técnico 17x24 y cercano a A4 21x28 cm.", "caption": "Presets dibujados a escala proporcional.", "sizes": [{"name": "11×17", "dims": "Bolsillo", "wmm": 110, "hmm": 170}, {"name": "12×19", "dims": "Rústica", "wmm": 120, "hmm": 190}, {"name": "17×24", "dims": "Técnico", "wmm": 170, "hmm": 240}, {"name": "21×28", "dims": "~A4", "wmm": 210, "hmm": 280}]}' />
+
 ### Rejilla base
 
 La rejilla base dibuja líneas horizontales a intervalos que coinciden con la altura de línea del texto de cuerpo. Es una ayuda visual para asegurar el ritmo vertical — cuando está activada, el motor ajusta los bloques de encabezado a la rejilla para que el texto de cuerpo en columnas adyacentes se mantenga alineado.
@@ -211,6 +213,10 @@ Al activarse, el lienzo se expande para incluir una zona de sangrado y el motor 
 
 ## Disposición
 
+<Illustration name="ColumnGutter" data='{"title": "Columnas, medianil y margen", "desc": "Una página dividida en tres columnas: cada columna es el área de contenido para el texto, los medianiles son los huecos verticales entre columnas, y el margen es el borde en blanco entre los límites de la página y la primera columna.", "caption": "Las columnas contienen el texto. Los medianiles las separan. Los márgenes enmarcan el contenido.", "pageLabel": "Página", "gutterLabel": "Medianil", "columnLabel": "Columna", "marginLabel": "Margen"}' />
+
+<Illustration name="MarginSystem" data='{"title": "Sistema de márgenes", "desc": "Una página con márgenes independientes superior, derecho, inferior e izquierdo alrededor del área de contenido.", "caption": "Cada lado de la página puede tener su propio margen.", "page": "Página", "content": "Área de contenido", "top": "sup.", "right": "der.", "bottom": "inf.", "left": "izq."}' />
+
 La propiedad `layout` controla cómo se organizan las columnas dentro del área de contenido.
 
 <table>
@@ -295,6 +301,10 @@ Dibuja una línea vertical fina en el medianil para separar visualmente las colu
 
 
 ## Texto de cuerpo
+
+<Illustration name="TypographyScale" data='{"title": "Escala tipográfica", "desc": "Jerarquía tipográfica desde H1 hasta texto pequeño, mostrando tamaños relativos de encabezados, texto de cuerpo y pies.", "caption": "Una escala consistente mantiene la jerarquía legible de un vistazo.", "rows": [{"role": "H1", "sample": "Encabezado 1", "size": "32px"}, {"role": "H2", "sample": "Encabezado 2", "size": "24px"}, {"role": "H3", "sample": "Encabezado 3", "size": "20px"}, {"role": "Cuerpo", "sample": "Texto de cuerpo", "size": "16px"}, {"role": "Pequeño", "sample": "Pie / nota", "size": "13px"}]}' />
+
+<Illustration name="SpacingScale" data='{"title": "Escala de espaciado", "desc": "Una escala de espaciado por pasos con valores crecientes usados en márgenes, rellenos y huecos.", "caption": "Los pasos de espaciado construyen un ritmo predecible en la maquetación.", "steps": [{"name": "xs", "value": "4 px", "px": 4}, {"name": "sm", "value": "8 px", "px": 8}, {"name": "md", "value": "16 px", "px": 16}, {"name": "lg", "value": "24 px", "px": 24}, {"name": "xl", "value": "40 px", "px": 40}, {"name": "2xl", "value": "64 px", "px": 64}]}' />
 
 La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
 

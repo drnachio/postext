@@ -114,6 +114,8 @@ The `page` property controls the physical dimensions and appearance of the page.
   </tbody>
 </table>
 
+<Illustration name="PageSizes" data='{"title": "Page size presets", "desc": "Four built-in page size presets drawn to proportional scale: pocket 11x17, paperback 12x19, technical 17x24, and near-A4 21x28 cm.", "caption": "Presets drawn to proportional scale.", "sizes": [{"name": "11×17", "dims": "Pocket", "wmm": 110, "hmm": 170}, {"name": "12×19", "dims": "Paperback", "wmm": 120, "hmm": 190}, {"name": "17×24", "dims": "Textbook", "wmm": 170, "hmm": 240}, {"name": "21×28", "dims": "~A4", "wmm": 210, "hmm": 280}]}' />
+
 ### Baseline grid
 
 The baseline grid draws horizontal lines at intervals matching the body text line height. It is a visual aid for ensuring vertical rhythm — when enabled, the engine snaps heading blocks to the grid so that body text in adjacent columns stays aligned.
@@ -213,6 +215,10 @@ When enabled, the canvas expands to include a bleed area and the engine draws cr
 
 The `layout` property controls how columns are arranged within the content area.
 
+<Illustration name="ColumnGutter" data='{"title": "Columns, gutter, and margin", "desc": "A page divided into three columns: each column is the content area for text, gutters are the vertical gaps between columns, and the margin is the blank edge between the page boundary and the first column.", "caption": "Columns hold text. Gutters separate them. Margins frame the content.", "pageLabel": "Page", "gutterLabel": "Gutter", "columnLabel": "Column", "marginLabel": "Margin"}' />
+
+<Illustration name="MarginSystem" data='{"title": "Margin system", "desc": "A page with independent top, right, bottom, and left margins surrounding the content area.", "caption": "Each side of the page can have its own margin.", "page": "Page", "content": "Content area", "top": "top", "right": "right", "bottom": "bottom", "left": "left"}' />
+
 <table>
   <thead>
     <tr>
@@ -297,6 +303,10 @@ Draws a thin vertical line in the gutter to visually separate columns.
 ## Body Text
 
 The `bodyText` property controls the typography of all paragraph text.
+
+<Illustration name="TypographyScale" data='{"title": "Type scale", "desc": "Typographic hierarchy from H1 down to small body copy, showing relative sizes for headings, body text, and captions.", "caption": "A consistent scale keeps hierarchy readable at a glance.", "rows": [{"role": "H1", "sample": "Heading 1", "size": "32px"}, {"role": "H2", "sample": "Heading 2", "size": "24px"}, {"role": "H3", "sample": "Heading 3", "size": "20px"}, {"role": "Body", "sample": "Body text", "size": "16px"}, {"role": "Small", "sample": "Caption / note", "size": "13px"}]}' />
+
+<Illustration name="SpacingScale" data='{"title": "Spacing scale", "desc": "A step-based spacing scale showing increasing values used across margins, paddings, and gaps.", "caption": "Spacing steps build up predictable rhythm through the layout.", "steps": [{"name": "xs", "value": "4 px", "px": 4}, {"name": "sm", "value": "8 px", "px": 8}, {"name": "md", "value": "16 px", "px": 16}, {"name": "lg", "value": "24 px", "px": 24}, {"name": "xl", "value": "40 px", "px": 40}, {"name": "2xl", "value": "64 px", "px": 64}]}' />
 
 <table>
   <thead>

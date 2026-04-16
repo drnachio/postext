@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { compileMDX } from "next-mdx-remote/rsc";
 import rehypePrettyCode from "rehype-pretty-code";
+import * as illustrations from "./illustrations";
 
 function slugify(text: string): string {
   return text
@@ -49,6 +50,7 @@ const components = {
   h2: createHeading(2),
   h3: createHeading(3),
   a: MdxLink,
+  ...illustrations,
 };
 
 function wrapScrollableElements(source: string): string {

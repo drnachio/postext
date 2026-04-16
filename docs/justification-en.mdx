@@ -80,6 +80,8 @@ When hyphenation is active, long words are split into fragments separated by pen
 
 Each flagged penalty carries a cost of 50 — not free, but cheaper than producing a loose line.
 
+<Illustration name="BoxGluePenalty" data='{"title": "Box-glue-penalty primitives", "desc": "Visual key for the three primitives: box for a word fragment, glue for inter-word space, and penalty for a potential break point. The example paragraph shows how a hyphenation point becomes a flagged penalty.", "caption": "Every paragraph becomes a sequence of boxes, glues, and penalties.", "box": "Box", "glue": "Glue", "penalty": "Penalty", "boxDesc": "fixed word", "glueDesc": "stretchable space", "penaltyDesc": "possible break", "exampleLabel": "Example: “The art of typography is old.”"}' />
+
 ### How It Finds the Optimum
 
 The algorithm uses dynamic programming. It maintains a set of **active nodes** — potential breakpoints that could start new lines — and evaluates every feasible break from each active node. For each candidate break, it computes:
@@ -94,46 +96,15 @@ The algorithm uses dynamic programming. It maintains a set of **active nodes** �
 
 4. **Fitness class**: each line is classified as tight (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), loose (`0.5 ≤ r < 1.0`), or very loose (`r ≥ 1.0`). Adjacent lines with fitness classes more than one step apart incur the fitness demerit.
 
+<Illustration name="BadnessCurve" data='{"title": "Badness as a function of adjustment ratio", "desc": "Badness grows as 100 times the absolute value of r cubed. Small stretches or compressions are cheap, but extreme stretches become extremely costly, which is why the algorithm avoids them.", "caption": "Badness grows cubically: slightly uneven is tolerable, very uneven is punished hard.", "xAxis": "r", "yAxis": "badness", "zero": "0", "tight": "tight (r < 0)", "loose": "loose (r > 0)", "formula": "badness(r) = 100 · |r|³"}' />
+
+<Illustration name="FitnessClasses" data='{"title": "Fitness classes", "desc": "Every line is classified as tight, normal, loose, or very loose based on its adjustment ratio. Adjacent lines whose classes differ by more than one step are penalized.", "caption": "Adjacent lines more than one class apart incur the fitness demerit.", "classes": [{"name": "Tight", "range": "r < -0.5", "example": "squeezed"}, {"name": "Normal", "range": "-0.5 ≤ r < 0.5", "example": "just right"}, {"name": "Loose", "range": "0.5 ≤ r < 1.0", "example": "a bit airy"}, {"name": "Very loose", "range": "r ≥ 1.0", "example": "very airy"}], "adjacentNote": "Fitness demerit applies when neighbouring lines are more than one class apart."}' />
+
 The algorithm traces back through the active nodes to find the path with the lowest total demerits — the globally optimal set of breakpoints for the entire paragraph.
 
 ### Why It Matters
 
-<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
-  <defs>
-    <filter id="justShadow" x="-4%" y="-4%" width="108%" height="108%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
-    </filter>
-  </defs>
-  <rect width="760" height="220" fill="transparent" rx="8" />
-
-  {/* Greedy column */}
-  <rect x="20" y="30" width="340" height="170" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#justShadow)" />
-  <text x="190" y="55" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-pink-text)">Greedy first-fit</text>
-  <line x1="40" y1="65" x2="340" y2="65" stroke="#E91E63" strokeWidth="1" opacity="0.3" />
-
-  <text x="40" y="85" fontSize="10" fill="var(--svg-pink-text)">Decides line by line, no look-ahead</text>
-  <text x="40" y="105" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  One bad break poisons the next line</text>
-  <text x="40" y="125" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Uneven spacing across the paragraph</text>
-  <text x="40" y="145" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Rivers of white space</text>
-  <text x="40" y="165" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  No cost model for adjacent lines</text>
-  <text x="40" y="185" fontSize="10" fill="var(--svg-mid-text)">= What CSS does</text>
-
-  {/* Arrow */}
-  <path d="M380,115 L410,115" stroke="var(--svg-stroke)" strokeWidth="2" fill="none" />
-  <polygon points="410,110 420,115 410,120" fill="var(--svg-stroke)" />
-
-  {/* KP column */}
-  <rect x="420" y="30" width="320" height="170" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#justShadow)" />
-  <text x="580" y="55" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Knuth-Plass optimal</text>
-  <line x1="440" y1="65" x2="720" y2="65" stroke="#4CAF50" strokeWidth="1" opacity="0.3" />
-
-  <text x="440" y="85" fontSize="10" fill="var(--svg-green-text)">Evaluates every possible break set</text>
-  <text x="440" y="105" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Globally minimal demerits</text>
-  <text x="440" y="125" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Even spacing throughout</text>
-  <text x="440" y="145" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Consecutive-hyphen penalty</text>
-  <text x="440" y="165" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Fitness-class smoothness</text>
-  <text x="440" y="185" fontSize="10" fill="var(--svg-green-text)">= What Postext does</text>
-</svg>
+<Illustration name="GreedyVsKnuthPlass" data='{"title": "Greedy first-fit vs Knuth-Plass optimal", "desc": "Side-by-side illustration: the greedy algorithm takes the first line that fits and poisons later lines, producing ragged paragraphs with uneven spacing. Knuth-Plass evaluates the whole paragraph globally and produces even lines.", "caption": "A local-greedy decision loses where a global-optimal plan wins.", "greedyTitle": "Greedy first-fit", "greedyLead": "Decides line by line, no look-ahead", "greedyCons": ["One bad break poisons the next line", "Uneven spacing across the paragraph", "Rivers of white space", "No cost model for adjacent lines"], "greedyEquals": "= What CSS does", "kpTitle": "Knuth-Plass optimal", "kpLead": "Evaluates every possible break set", "kpPros": ["Globally minimal demerits", "Even spacing throughout", "Consecutive-hyphen penalty", "Fitness-class smoothness"], "kpEquals": "= What Postext does"}' />
 
 The practical difference is visible. In a greedy layout, you will find paragraphs where one line is noticeably looser than its neighbors — and if you look carefully, you will see it happened because the *previous* line grabbed one word too many. Knuth-Plass avoids this by trading a slightly worse current line for a much better next one, because it can see the consequences.
 
@@ -152,6 +123,8 @@ Both paths compute per-line `justifiedSpaceRatio` — the actual space width div
 ## Hyphenation
 
 Hyphenation and justification are inseparable. Without hyphenation, the engine's only way to avoid a loose line is to move a word to the next line — which often just shifts the problem. Hyphenation gives the engine a much larger set of break points to consider, dramatically improving the quality of justified text.
+
+<Illustration name="HyphenationExample" data='{"title": "Justified text with and without hyphenation", "desc": "The left column has no hyphenation enabled: line widths vary wildly because the engine can only move whole words. The right column has hyphenation enabled: line widths are nearly uniform and one word is broken with a hyphen.", "caption": "Hyphenation dramatically reduces spacing variance in justified text.", "withoutTitle": "Without hyphenation", "withTitle": "With hyphenation", "withoutCaption": "Uneven lines, long gaps, visible rivers.", "withCaption": "Even lines, one hyphen absorbs the variance."}' />
 
 ### TeX-Quality Patterns
 

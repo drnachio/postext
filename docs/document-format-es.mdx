@@ -44,6 +44,8 @@ El frontmatter se parsea con [`gray-matter`](https://github.com/jonschlinkert/gr
 
 Postext reconoce seis tipos de bloque. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
 
+<Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de un vistazo", "desc": "Los seis tipos de bloque que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada y lista de tareas, cada uno con su sintaxis markdown.", "caption": "Cada tipo de bloque y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}]}' />
+
 <table>
   <thead>
     <tr>
@@ -90,10 +92,14 @@ Se tolera una única línea en blanco entre dos elementos de lista — la lista 
 
 Se aceptan listas de tipos mixtos a la misma profundidad (puedes pasar de no ordenada a ordenada a mitad de recorrido), pero el motor trata cada tramo por separado a efectos de numeración. En la práctica, conviene mantener un único tipo por profundidad salvo que haya un motivo claro para mezclarlos.
 
+<Illustration name="ListNesting" data='{"title": "Profundidad de anidamiento de listas", "desc": "Las listas se anidan usando exactamente dos espacios por nivel, hasta una profundidad máxima de cinco. Cada nivel sangra más y puede usar un estilo de viñeta diferente.", "caption": "Dos espacios por nivel. Profundidad máxima: cinco.", "level1": "Nivel 1", "level2": "Nivel 2 — dos espacios", "level3": "Nivel 3 — cuatro espacios", "indentNote": "Exactamente dos espacios por nivel. Profundidad máxima: 5."}' />
+
 
 ## Formato en línea
 
 El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezados, párrafos, citas, elementos de lista).
+
+<Illustration name="InlineFormatting" data='{"title": "Formato en línea de un vistazo", "desc": "Comparativa markdown-a-renderizado para negrita, cursiva, negrita cursiva, código en línea y enlace.", "caption": "Markdown a la izquierda, resultado renderizado a la derecha.", "rows": [{"markdown": "**negrita**", "rendered": "negrita", "style": "bold"}, {"markdown": "*cursiva*", "rendered": "cursiva", "style": "italic"}, {"markdown": "***ambas***", "rendered": "ambas", "style": "bold-italic"}, {"markdown": "`código`", "rendered": "código", "style": "code"}, {"markdown": "[enlace](https://…)", "rendered": "enlace", "style": "link"}]}' />
 
 <table>
   <thead>

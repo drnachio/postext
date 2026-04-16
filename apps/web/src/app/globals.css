@@ -176,6 +176,13 @@
   --svg-green-check: #81C784;
   --svg-blue-half: rgba(33, 150, 243, 0.25);
   --svg-pink-half: rgba(233, 30, 99, 0.3);
+  --svg-blue-stroke: #2196F3;
+  --svg-orange-stroke: #FF9800;
+  --svg-green-stroke: #4CAF50;
+  --svg-purple-stroke: #9C27B0;
+  --svg-yellow-stroke: #F57F17;
+  --svg-pink-stroke: #E91E63;
+  --svg-teal-stroke: #009688;
 }
 :root.light {
   --svg-blue-fill: #e8f4fd;
@@ -204,6 +211,13 @@
   --svg-green-check: #4CAF50;
   --svg-blue-half: rgba(33, 150, 243, 0.3);
   --svg-pink-half: rgba(233, 30, 99, 0.35);
+  --svg-blue-stroke: #1976D2;
+  --svg-orange-stroke: #EF6C00;
+  --svg-green-stroke: #2E7D32;
+  --svg-purple-stroke: #7B1FA2;
+  --svg-yellow-stroke: #F57F17;
+  --svg-pink-stroke: #C2185B;
+  --svg-teal-stroke: #00796B;
 }
 
 /* Baseline grid pattern for hero background */
@@ -542,7 +556,37 @@ html { font-size: 18px; }
 }
 .docs-content svg {
   height: auto;
+}
+.docs-content .scroll-wrapper > svg {
   min-width: 480px;
+}
+.docs-content .docs-figure {
+  margin: 1.75rem 0;
+  padding: 0;
+}
+.docs-content .docs-figure > .scroll-wrapper {
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+}
+.docs-content .docs-figure > .scroll-wrapper > svg {
+  display: block;
+  width: 100%;
+  flex-shrink: 0;
+}
+.docs-content .docs-figcaption {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--slate);
+  text-align: center;
+  font-style: italic;
+  line-height: 1.5;
+  padding: 0 1rem;
+}
+@media (min-width: 768px) {
+  .docs-content .docs-figcaption {
+    font-size: 0.82rem;
+  }
 }
 
 /* ── SVG diagram animations ── */
