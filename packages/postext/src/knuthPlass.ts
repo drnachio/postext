@@ -644,7 +644,6 @@ export function reconstructPretextLines(
 ): VDTLine[] {
   const segments = prepared.segments;
   const widths = (prepared as unknown as { widths: number[] }).widths;
-  const kinds = (prepared as unknown as { kinds: string[] }).kinds;
   const discretionaryHyphenWidth =
     (prepared as unknown as { discretionaryHyphenWidth: number }).discretionaryHyphenWidth;
 
@@ -667,7 +666,7 @@ export function reconstructPretextLines(
     const contentEnd = breakItem.type === 'glue' ? breakAt : breakAt;
 
     const lineSegments: VDTLineSegment[] = [];
-    let textParts: string[] = [];
+    const textParts: string[] = [];
 
     for (let j = lineStart; j < contentEnd; j++) {
       const it = items[j]!;
@@ -691,7 +690,7 @@ export function reconstructPretextLines(
 
     // Trim trailing spaces
     while (lineSegments.length > 0 && lineSegments[lineSegments.length - 1]!.kind === 'space') {
-      const removed = lineSegments.pop()!;
+      lineSegments.pop();
       textParts.pop();
     }
 

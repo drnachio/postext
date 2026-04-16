@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   computeBreakpoints,
-  pretextSegmentsToItems,
   richTokensToItems,
-  reconstructPretextLines,
-  reconstructRichLines,
   type KPItem,
   type KPBox,
   type KPGlue,
