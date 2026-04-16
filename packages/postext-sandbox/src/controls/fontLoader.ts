@@ -97,9 +97,30 @@ export function loadFont(font: string): Promise<void> {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = buildFontUrl(font, meta);
+    const linkLoaded = new Promise<void>((resolve) => {
+      link.onload = () => resolve();
+      link.onerror = () => resolve();
+    });
     document.head.appendChild(link);
 
-    // Wait for the font to actually be usable, with a timeout
+    // The stylesheet must be parsed before document.fonts sees the faces;
+    // waiting on document.fonts.ready alone can resolve prematurely.
+    await Promise.race([
+      linkLoaded,
+      new Promise<void>((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
+    ]);
+
+    // Explicitly request each variant so document.fonts tracks them as pending
+    const weights = meta?.weights?.length ? meta.weights : [400, 700];
+    const quoted = `"${font}"`;
+    const specs = meta?.hasItalic
+      ? weights.flatMap((w) => [`${w} 16px ${quoted}`, `italic ${w} 16px ${quoted}`])
+      : weights.map((w) => `${w} 16px ${quoted}`);
+    await Promise.race([
+      Promise.all(specs.map((spec) => document.fonts.load(spec).catch(() => []))),
+      new Promise<void>((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
+    ]);
+
     await Promise.race([
       document.fonts.ready,
       new Promise<void>((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
@@ -132,4 +153,39 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
 export function preloadConfigFonts(config: PostextConfig): Promise<void> {
   const promises = getConfigFontFamilies(config).map((family) => loadFont(family));
   return Promise.all(promises).then(() => {});
+}
+
+/**
+ * Font-spec strings (for `document.fonts.check/load`) covering every
+ * family × weight × style combination a build might hit. Size is fixed at
+ * 16px because the check is per-face — the actual render size doesn't
+ * affect whether a matching face is loaded.
+ */
+export function getConfigFontSpecs(config: PostextConfig): string[] {
+  const specs = new Set<string>();
+  const push = (family: string) => {
+    const q = `"${family}"`;
+    specs.add(`400 16px ${q}`);
+    specs.add(`700 16px ${q}`);
+    specs.add(`italic 400 16px ${q}`);
+    specs.add(`italic 700 16px ${q}`);
+  };
+  for (const f of getConfigFontFamilies(config)) push(f);
+  return [...specs];
+}
+
+/**
+ * Ensure every face the given config will render is actually available to
+ * `CanvasRenderingContext2D.measureText`. Resolves once all faces pass
+ * `document.fonts.check`, or after the timeout. Safe to call repeatedly.
+ */
+export function ensureConfigFontsLoaded(config: PostextConfig): Promise<void> {
+  if (typeof document === 'undefined' || !document.fonts) return Promise.resolve();
+  const specs = getConfigFontSpecs(config);
+  const missing = specs.filter((s) => !document.fonts.check(s));
+  if (missing.length === 0) return Promise.resolve();
+  return Promise.race([
+    Promise.all(missing.map((s) => document.fonts.load(s).catch(() => []))).then(() => {}),
+    new Promise<void>((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
+  ]);
 }

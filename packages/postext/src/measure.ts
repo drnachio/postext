@@ -151,7 +151,11 @@ function buildRichCacheKey(
 
 function cloneMeasuredBlock(block: MeasuredBlock): MeasuredBlock {
   return {
-    lines: block.lines.map((l) => ({ ...l, bbox: { ...l.bbox } })),
+    lines: block.lines.map((l) => ({
+      ...l,
+      bbox: { ...l.bbox },
+      segments: l.segments ? l.segments.map((s) => ({ ...s })) : undefined,
+    })),
     totalHeight: block.totalHeight,
   };
 }
@@ -169,7 +173,7 @@ export function cachedMeasureBlock(
   if (cached) return cloneMeasuredBlock(cached);
   const result = measureBlock(text, font, maxWidthPx, lineHeightPx, options);
   cache._blocks.set(key, result);
-  return result;
+  return cloneMeasuredBlock(result);
 }
 
 export function cachedMeasureRichBlock(
@@ -188,7 +192,7 @@ export function cachedMeasureRichBlock(
   if (cached) return cloneMeasuredBlock(cached);
   const result = measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
   cache._blocks.set(key, result);
-  return result;
+  return cloneMeasuredBlock(result);
 }
 
 export interface MeasureBlockOptions {

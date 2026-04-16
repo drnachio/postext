@@ -7,6 +7,7 @@ import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions, 
 import { createPageCanvas, createOverlaySvg } from './dom';
 import { drawOverlay } from './overlay';
 import { attachSlotClickHandler } from './interaction';
+import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
 
 const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
   en: 'en-us', es: 'es', fr: 'fr', de: 'de', it: 'it', pt: 'pt', ca: 'ca', nl: 'nl',
@@ -97,6 +98,19 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     return () => observer.disconnect();
   }, []);
 
+  // Rebuild when any font finishes loading after the initial layout.
+  // document.fonts.ready only waits for *currently pending* faces; a face
+  // requested later (or one that slips past the preload) can land after the
+  // first measurement, poisoning the cache with fallback metrics. Bumping
+  // resizeKey on loadingdone invalidates the measurement cache and triggers
+  // a fresh buildDocument with the now-loaded glyph widths.
+  useEffect(() => {
+    if (typeof document === 'undefined' || !document.fonts) return;
+    const onLoadingDone = () => setResizeKey((k) => k + 1);
+    document.fonts.addEventListener('loadingdone', onLoadingDone);
+    return () => document.fonts.removeEventListener('loadingdone', onLoadingDone);
+  }, []);
+
   // Build document and set up lazy rendering via IntersectionObserver
   useEffect(() => {
     const container = containerRef.current;
@@ -104,6 +118,23 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
 
     const rect = container.getBoundingClientRect();
     if (rect.width === 0) return;
+
+    // Gate the build on actual font availability. `document.fonts.check` is
+    // authoritative — if any face the config needs isn't loaded, measureText
+    // would return fallback metrics and poison the cache. We kick off an
+    // explicit load and defer the build until they resolve.
+    if (typeof document !== 'undefined' && document.fonts) {
+      const missing = getConfigFontSpecs(deferredConfig).filter((s) => !document.fonts.check(s));
+      if (missing.length > 0) {
+        let cancelled = false;
+        ensureConfigFontsLoaded(deferredConfig).then(() => {
+          if (!cancelled) setResizeKey((k) => k + 1);
+        });
+        return () => {
+          cancelled = true;
+        };
+      }
+    }
 
     clearMeasurementCache();
 
@@ -322,7 +353,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     for (let i = 0; i < doc.blocks.length; i++) {
       const b = doc.blocks[i]!;
       if (b.sourceStart === undefined || b.sourceEnd === undefined) continue;
-      if (from >= b.sourceStart && from < b.sourceEnd) { caretBlockIdx = i; break; }
+      if (from >= b.sourceStart && from <= b.sourceEnd) { caretBlockIdx = i; break; }
     }
     if (caretBlockIdx === -1) {
       for (let i = 0; i < doc.blocks.length; i++) {

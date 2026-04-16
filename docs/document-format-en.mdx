@@ -44,6 +44,8 @@ Frontmatter is parsed with [`gray-matter`](https://github.com/jonschlinkert/gray
 
 Postext recognises six block types. Blocks are always terminated by a blank line or by the start of another block.
 
+<Illustration name="BlockTypesGallery" data='{"title": "Block constructs at a glance", "desc": "The six block types Postext recognises: heading, paragraph, blockquote, unordered list, ordered list, and task list, each with its markdown syntax.", "caption": "Every block type and its markdown entry point.", "blocks": [{"name": "Heading", "syntax": "# Title", "color": "blue"}, {"name": "Paragraph", "syntax": "Plain text lines", "color": "orange"}, {"name": "Blockquote", "syntax": "> quoted text", "color": "green"}, {"name": "Unordered list", "syntax": "- item", "color": "purple"}, {"name": "Ordered list", "syntax": "1. item", "color": "pink"}, {"name": "Task list", "syntax": "- [x] done", "color": "teal"}]}' />
+
 <table>
   <thead>
     <tr>
@@ -90,10 +92,14 @@ A single blank line between two list items is tolerated — the list stays toget
 
 Lists of mixed kinds at the same depth are accepted (you can switch from unordered to ordered mid-run), but the engine treats the runs as separate for numbering purposes. In practice, keep one kind per depth unless you have a reason to mix them.
 
+<Illustration name="ListNesting" data='{"title": "List nesting depth", "desc": "Lists nest using exactly two spaces per level, up to a maximum depth of five. Each level indents further and may use different bullet styling.", "caption": "Two spaces per level. Max depth: five.", "level1": "Level 1", "level2": "Level 2 — two spaces in", "level3": "Level 3 — four spaces in", "indentNote": "Exactly two spaces per nesting level. Max depth: 5."}' />
+
 
 ## Inline formatting
 
 Inline markup is recognised inside any text block (headings, paragraphs, blockquotes, list items).
+
+<Illustration name="InlineFormatting" data='{"title": "Inline formatting at a glance", "desc": "Markdown-to-rendered comparison for bold, italic, bold italic, inline code, and links.", "caption": "Markdown on the left, rendered result on the right.", "rows": [{"markdown": "**bold**", "rendered": "bold", "style": "bold"}, {"markdown": "*italic*", "rendered": "italic", "style": "italic"}, {"markdown": "***both***", "rendered": "both", "style": "bold-italic"}, {"markdown": "`code`", "rendered": "code", "style": "code"}, {"markdown": "[link](https://…)", "rendered": "link", "style": "link"}]}' />
 
 <table>
   <thead>

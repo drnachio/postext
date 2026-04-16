@@ -87,112 +87,7 @@ That is the "compute everything first, render later" philosophy. It is not a per
 
 ## System Architecture
 
-<svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '900px', fontFamily: 'monospace' }}>
-  {/* Background */}
-  <rect width="900" height="420" fill="transparent" rx="8" />
-
-  {/* Input section */}
-  <rect x="20" y="40" width="150" height="60" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#archShadow)" />
-  <text x="95" y="65" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">Enriched</text>
-  <text x="95" y="80" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">Markdown</text>
-
-  <rect x="20" y="120" width="150" height="60" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#archShadow)" />
-  <text x="95" y="145" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">PostextConfig</text>
-  <text x="95" y="162" textAnchor="middle" fontSize="10" fill="var(--svg-blue-text)">(columns, rules, spacing)</text>
-
-  {/* Arrow: Input → Parser */}
-  <line x1="170" y1="70" x2="210" y2="70" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-  <line x1="170" y1="150" x2="210" y2="150" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* Engine box */}
-  <rect x="210" y="15" width="480" height="390" fill="none" stroke="var(--svg-dark-text)" strokeWidth="2" rx="8" strokeDasharray="8,4" />
-  <text x="450" y="35" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-dark-text)">Layout Engine</text>
-
-  {/* Parser */}
-  <rect x="230" y="55" width="110" height="50" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="6" filter="url(#archShadow)" />
-  <text x="285" y="78" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-orange-text)">Parser</text>
-  <text x="285" y="93" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">Pass 1</text>
-
-  {/* Arrow: Parser → VDT */}
-  <line x1="340" y1="80" x2="380" y2="80" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* VDT - central */}
-  <rect x="380" y="50" width="160" height="130" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#archShadow)" />
-  <text x="460" y="75" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Virtual Document</text>
-  <text x="460" y="93" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Tree (VDT)</text>
-  <text x="460" y="115" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">mutable, in-place</text>
-  <text x="460" y="132" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">pages &gt; columns &gt; blocks</text>
-  <text x="460" y="149" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">every node has a bbox</text>
-  <text x="460" y="166" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">dirty-flag tracking</text>
-
-  {/* Pretext */}
-  <rect x="230" y="130" width="110" height="50" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" filter="url(#archShadow)" />
-  <text x="285" y="152" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">Pretext</text>
-  <text x="285" y="167" textAnchor="middle" fontSize="9" fill="var(--svg-purple-text)">text measurement</text>
-
-  {/* Bidirectional arrow: Pretext ↔ VDT */}
-  <line x1="340" y1="145" x2="378" y2="120" stroke="#9C27B0" strokeWidth="2" markerEnd="url(#arrowPurple)" />
-  <line x1="378" y1="130" x2="340" y2="155" stroke="#9C27B0" strokeWidth="2" markerEnd="url(#arrowPurple)" />
-
-  {/* Layout passes */}
-  <rect x="230" y="210" width="420" height="170" fill="var(--svg-yellow-fill)" stroke="#FFC107" strokeWidth="2" rx="6" filter="url(#archShadow)" />
-  <text x="440" y="232" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-yellow-text)">Layout Passes (read &amp; mutate the VDT)</text>
-
-  <text x="250" y="255" fontSize="10" fill="var(--svg-brown-text)">Pass 2</text>
-  <text x="300" y="255" fontSize="10" fill="var(--svg-brown-text)">Text Measurement (via Pretext)</text>
-  <text x="250" y="275" fontSize="10" fill="var(--svg-brown-text)">Pass 3</text>
-  <text x="300" y="275" fontSize="10" fill="var(--svg-brown-text)">Page &amp; Column Placement</text>
-  <text x="250" y="295" fontSize="10" fill="var(--svg-brown-text)">Pass 4</text>
-  <text x="300" y="295" fontSize="10" fill="var(--svg-brown-text)">Resource Placement</text>
-  <text x="250" y="315" fontSize="10" fill="var(--svg-brown-text)">Pass 5</text>
-  <text x="300" y="315" fontSize="10" fill="var(--svg-brown-text)">Typographic Refinement</text>
-  <text x="250" y="335" fontSize="10" fill="var(--svg-brown-text)">Pass 6</text>
-  <text x="300" y="335" fontSize="10" fill="var(--svg-brown-text)">Column Balancing</text>
-  <text x="250" y="355" fontSize="10" fill="var(--svg-brown-text)">Pass 7</text>
-  <text x="300" y="355" fontSize="10" fill="var(--svg-brown-text)">Vertical Rhythm Alignment</text>
-
-  {/* Convergence loop arrow */}
-  <path d="M 655 355 C 675 355, 675 250, 655 250" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#arrowYellow)" className="svg-loop-glow" />
-  <text x="693" y="305" fontSize="9" fill="var(--svg-yellow-text)" transform="rotate(90, 693, 305)" className="svg-pulse">convergence (max 5)</text>
-
-  {/* Arrow: VDT → Passes */}
-  <line x1="460" y1="182" x2="460" y2="208" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* Arrow: Engine → Backend */}
-  <line x1="692" y1="115" x2="720" y2="115" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* Backend */}
-  <rect x="720" y="55" width="150" height="130" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#archShadow)" />
-  <text x="795" y="80" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-pink-text)">Backend</text>
-  <text x="795" y="98" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">(unified interface)</text>
-  <text x="795" y="125" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">Canvas / Browser</text>
-  <text x="795" y="142" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">PDF</text>
-  <text x="795" y="159" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">Server-side (future)</text>
-
-  {/* Output arrows */}
-  <line x1="795" y1="187" x2="795" y2="220" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* Output */}
-  <rect x="720" y="222" width="150" height="50" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="2" rx="6" filter="url(#archShadow)" />
-  <text x="795" y="245" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-teal-text)">HTML / PDF</text>
-  <text x="795" y="260" textAnchor="middle" fontSize="10" fill="var(--svg-teal-text)">rendered output</text>
-
-  {/* Arrow markers */}
-  <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="var(--svg-stroke)" />
-    </marker>
-    <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#9C27B0" />
-    </marker>
-    <marker id="arrowYellow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#F57F17" />
-    </marker>
-    <filter id="archShadow" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
-    </filter>
-  </defs>
-</svg>
+<Illustration name="SystemArchitecture" data='{"title": "Postext system architecture", "desc": "Enriched markdown and PostextConfig enter a parser that builds the Virtual Document Tree. Pretext measures text. Seven layout passes mutate the VDT inside a convergence loop. A backend renders the final VDT to HTML or PDF.", "caption": "Parser → VDT ↔ Pretext → seven layout passes → backend → output.", "markdown": "Enriched Markdown", "configTitle": "PostextConfig", "configSubtitle": "(columns, rules, spacing)", "engine": "Layout Engine", "parser": "Parser", "pass1": "Pass 1", "vdtLine1": "Virtual Document", "vdtLine2": "Tree (VDT)", "vdtAttr1": "mutable, in-place", "vdtAttr2": "pages > columns > blocks", "vdtAttr3": "every node has a bbox", "vdtAttr4": "dirty-flag tracking", "pretext": "Pretext", "pretextSubtitle": "text measurement", "passesTitle": "Layout Passes (read &amp; mutate the VDT)", "passes": [{"num": "Pass 2", "name": "Text Measurement (via Pretext)"}, {"num": "Pass 3", "name": "Page &amp; Column Placement"}, {"num": "Pass 4", "name": "Resource Placement"}, {"num": "Pass 5", "name": "Typographic Refinement"}, {"num": "Pass 6", "name": "Column Balancing"}, {"num": "Pass 7", "name": "Vertical Rhythm Alignment"}], "convergence": "convergence (max 5)", "backend": "Backend", "backendSubtitle": "(unified interface)", "backendItems": ["Canvas / Browser", "PDF", "Server-side (future)"], "output": "HTML / PDF", "outputSubtitle": "rendered output"}' />
 
 **Here is the journey your content takes through the engine:**
 
@@ -208,6 +103,8 @@ That is the "compute everything first, render later" philosophy. It is not a per
 ### Content Model
 
 The content model is a philosophy as much as it is a data structure. You describe *what* to say, not *how* to lay it out. The engine makes the layout decisions.
+
+<Illustration name="ContentModel" data='{"title": "Content model: markdown, resources, notes", "desc": "The input to Postext separates markdown (reading order and semantic structure) from resources (images, tables, figures) and notes (footnotes, endnotes). The engine resolves markers by ID and produces the VDT.", "caption": "Markdown owns the reading order; resources and notes own the visual data.", "contentTitle": "PostextContent", "markdown": "markdown", "markdownSub": "reading order + reference markers", "resources": "resources[]", "resourcesSub": "images, tables, figures", "notes": "notes[]", "notesSub": "footnotes, endnotes", "resolveMarker": "resolved by id: ![fig:…], [^1]", "engineLabel": "engine", "vdtLabel": "VDT"}' />
 
 ```typescript
 // packages/postext/src/types.ts
@@ -261,6 +158,8 @@ Italy by 1465 and France by 1470.
 ```
 
 Notice how `![fig:printing-press]` in the markdown is just a reference marker -- a name, nothing more. The engine resolves it against the `resources` array by ID, pulls the image dimensions, and decides where to place it based on the configured `PlacementStrategy`. Maybe it lands right there. Maybe the engine defers it to the top of the next column because the current one is almost full. Same story for `[^1]` -- the engine resolves it against the `notes` array and places the footnote at the bottom of the column, or the page, or the end of the section, depending on `ReferenceConfig`. The author never has to think about placement. The engine does.
+
+<Illustration name="ReferenceResolution" data='{"title": "Reference resolution", "desc": "A markdown source uses a figure marker ![fig:printing-press] and a footnote marker [^1]. Resources and notes arrays provide the actual content by ID. The engine resolves both markers to produce a laid-out output with the figure in place and the footnote at the bottom.", "caption": "Markers in the markdown are just names. The engine resolves them against resources and notes.", "markdownTitle": "markdown", "markdownLine1": "# The Art of Typography", "markdownLine2": "![fig:printing-press]", "markdownLine3": "movable type[^1]. Invention …", "resourcesTitle": "resources[]", "resourceLine": "{ id: &#39;fig:printing-press&#39;, … }", "notesTitle": "notes[]", "noteLine": "{ id: &#39;1&#39;, content: &#39;Gutenberg…&#39; }", "resolveLabel": "resolve", "outputTitle": "laid-out page", "outputFigure": "[ figure ]", "outputFootnote": "¹ Gutenberg…"}' />
 
 ### Configuration
 
@@ -324,89 +223,7 @@ Immutable trees (like React's virtual DOM) allocate new objects on every change.
 
 ### Structure
 
-<svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '700px', fontFamily: 'monospace' }}>
-  <defs>
-    <filter id="vdtShadow" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
-    </filter>
-  </defs>
-  <rect width="700" height="320" fill="transparent" rx="8" />
-
-  {/* Document */}
-  <g className="svg-fade-1">
-    <rect x="270" y="15" width="160" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#vdtShadow)" />
-    <text x="350" y="40" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">VDTDocument</text>
-  </g>
-
-  {/* Pages */}
-  <g className="svg-fade-2">
-    <line x1="310" y1="55" x2="200" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="350" y1="55" x2="350" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="390" y1="55" x2="500" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-
-    <rect x="130" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" />
-    <text x="200" y="107" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">VDTPage [0]</text>
-
-    <rect x="280" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" />
-    <text x="350" y="107" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">VDTPage [1]</text>
-
-    <rect x="430" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1.5" rx="6" strokeDasharray="4,3" />
-    <text x="500" y="107" textAnchor="middle" fontSize="11" fill="var(--svg-blue-text)">VDTPage [n]</text>
-  </g>
-
-  {/* Columns from Page 0 */}
-  <g className="svg-fade-3">
-    <line x1="170" y1="120" x2="100" y2="155" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="230" y1="120" x2="250" y2="155" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-
-    <rect x="30" y="155" width="140" height="35" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" />
-    <text x="100" y="177" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">VDTColumn [0]</text>
-
-    <rect x="180" y="155" width="140" height="35" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" />
-    <text x="250" y="177" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">VDTColumn [1]</text>
-  </g>
-
-  {/* Blocks from Column 0 */}
-  <g className="svg-fade-4">
-    <line x1="70" y1="190" x2="40" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="100" y1="190" x2="100" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="130" y1="190" x2="160" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-
-    <rect x="5" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
-    <text x="40" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">heading</text>
-
-    <rect x="80" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
-    <text x="115" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">paragraph</text>
-
-    <rect x="155" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
-    <text x="190" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">resource</text>
-  </g>
-
-  {/* Lines from paragraph */}
-  <g className="svg-fade-5">
-    <line x1="105" y1="250" x2="80" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
-    <line x1="115" y1="250" x2="115" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
-    <line x1="125" y1="250" x2="150" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
-
-    <rect x="55" y="275" width="50" height="25" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="1.5" rx="4" />
-    <text x="80" y="292" textAnchor="middle" fontSize="9" fill="var(--svg-teal-text)">line 0</text>
-
-    <rect x="110" y="275" width="50" height="25" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="1.5" rx="4" />
-    <text x="135" y="292" textAnchor="middle" fontSize="9" fill="var(--svg-teal-text)">line 1</text>
-  </g>
-
-  {/* Legend */}
-  <g className="svg-fade-6">
-    <text x="420" y="160" fontSize="10" fill="var(--svg-mid-text)">Every node carries:</text>
-    <text x="420" y="178" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">bbox: {"{ x, y, w, h }"}</text>
-    <text x="420" y="196" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">dirty: boolean</text>
-    <text x="420" y="214" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">pageIndex: number</text>
-    <text x="420" y="232" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">columnIndex: number</text>
-    <text x="420" y="260" fontSize="10" fill="var(--svg-light-text)">Lines also carry:</text>
-    <text x="420" y="278" fontSize="10" fill="var(--svg-light-text)" fontFamily="monospace">baseline: number</text>
-    <text x="420" y="296" fontSize="10" fill="var(--svg-light-text)" fontFamily="monospace">hyphenated: boolean</text>
-  </g>
-</svg>
+<Illustration name="VdtStructure" data='{"title": "Virtual Document Tree structure", "desc": "Hierarchical VDT: document contains pages, each page contains columns, each column contains blocks (heading, paragraph, resource), each text block contains measured lines. Every node carries a bounding box, a dirty flag, and page/column indices.", "caption": "Every node carries bbox, dirty flag, and page/column indices.", "document": "VDTDocument", "pageLabels": ["VDTPage [0]", "VDTPage [1]", "VDTPage [n]"], "columnLabels": ["VDTColumn [0]", "VDTColumn [1]"], "blockLabels": ["heading", "paragraph", "resource"], "lineLabels": ["line 0", "line 1"], "legendHeader": "Every node carries:", "legendAttrs": ["bbox: { x, y, w, h }", "dirty: boolean", "pageIndex: number", "columnIndex: number"], "linesHeader": "Lines also carry:", "linesAttrs": ["baseline: number", "hyphenated: boolean"]}' />
 
 ### Type Definitions
 
@@ -642,84 +459,7 @@ The algorithm computes the total content height for all blocks on a page, divide
 
 ### Convergence Loop
 
-<svg viewBox="0 0 760 140" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
-  <rect width="760" height="140" fill="transparent" rx="8" />
-
-  {/* Pass boxes */}
-  <g className="svg-fade-1">
-    <rect x="20" y="40" width="80" height="40" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="4" filter="url(#convShadow)" />
-    <text x="60" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-orange-text)">Pass 1</text>
-    <text x="60" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-orange-text)">parse</text>
-  </g>
-
-  <line x1="100" y1="60" x2="120" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-2">
-    <rect x="120" y="40" width="80" height="40" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="4" filter="url(#convShadow)" />
-    <text x="160" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-purple-text)">Pass 2</text>
-    <text x="160" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-purple-text)">measure</text>
-  </g>
-
-  <line x1="200" y1="60" x2="220" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  {/* Convergence loop bracket */}
-  <rect x="218" y="25" width="530" height="70" fill="none" stroke="#F57F17" strokeWidth="2" rx="6" strokeDasharray="6,3" />
-  <text x="485" y="20" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-yellow-text)" className="svg-pulse">convergence loop (max 5 iterations)</text>
-
-  <g className="svg-fade-3">
-    <rect x="230" y="40" width="80" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#convShadow)" />
-    <text x="270" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Pass 3</text>
-    <text x="270" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-blue-text)">place</text>
-  </g>
-
-  <line x1="310" y1="60" x2="330" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-4">
-    <rect x="330" y="40" width="80" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#convShadow)" />
-    <text x="370" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Pass 4</text>
-    <text x="370" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-blue-text)">resources</text>
-  </g>
-
-  <line x1="410" y1="60" x2="430" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-5">
-    <rect x="430" y="40" width="80" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadow)" />
-    <text x="470" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pass 5</text>
-    <text x="470" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">typography</text>
-  </g>
-
-  <line x1="510" y1="60" x2="530" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-6">
-    <rect x="530" y="40" width="80" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadow)" />
-    <text x="570" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pass 6</text>
-    <text x="570" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">balance</text>
-  </g>
-
-  <line x1="610" y1="60" x2="630" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-7">
-    <rect x="630" y="40" width="100" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadow)" />
-    <text x="680" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pass 7</text>
-    <text x="680" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">rhythm</text>
-  </g>
-
-  {/* Loop-back arrow */}
-  <path d="M 680 82 L 680 115 L 270 115 L 270 82" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#a3)" className="svg-loop-glow" />
-  <text x="475" y="128" textAnchor="middle" fontSize="9" fill="var(--svg-yellow-text)">if dirty blocks exist &amp;&amp; iterations &lt; 5</text>
-
-  <defs>
-    <marker id="a2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="var(--svg-stroke)" />
-    </marker>
-    <marker id="a3" markerWidth="8" markerHeight="6" refX="4" refY="0" orient="auto">
-      <polygon points="0 6, 4 0, 8 6" fill="#F57F17" />
-    </marker>
-    <filter id="convShadow" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
-    </filter>
-  </defs>
-</svg>
+<Illustration name="ConvergenceLoop" data='{"title": "Convergence loop", "desc": "Pass 1 parses, Pass 2 measures, then passes 3 through 7 run inside a convergence loop. If any block remains dirty and the iteration count is under five, the loop re-runs from Pass 3.", "caption": "The engine loops back to Pass 3 until no dirty blocks remain (max 5 iterations).", "passBadges": [{"num": "Pass 1", "name": "parse"}, {"num": "Pass 2", "name": "measure"}, {"num": "Pass 3", "name": "place"}, {"num": "Pass 4", "name": "resources"}, {"num": "Pass 5", "name": "typography"}, {"num": "Pass 6", "name": "balance"}, {"num": "Pass 7", "name": "rhythm"}], "loopBadge": "convergence loop (max 5 iterations)", "loopCondition": "if dirty blocks exist &amp;&amp; iterations < 5"}' />
 
 Think of the convergence loop as the engine arguing with itself. Pass 5 fixes a widow, which changes column heights. Pass 6 re-balances the columns to compensate, which shifts a block boundary. Pass 7 adjusts vertical rhythm, which might just create a new orphan. So the engine loops back to Pass 3, re-places blocks with the updated measurements, and runs through the whole sequence again. Each iteration resolves more problems than it creates -- until eventually, nothing is dirty anymore.
 
@@ -758,99 +498,7 @@ Some elements inevitably break the grid because their height is not a multiple o
 
 ### Spacing Adjustment Algorithm
 
-<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '600px', fontFamily: 'monospace' }}>
-  <defs>
-    <filter id="rhythmShadow" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
-    </filter>
-  </defs>
-  <rect width="600" height="400" fill="transparent" rx="8" />
-
-  {/* Grid lines */}
-  {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map((i) => (
-    <line key={i} x1="20" y1={30 + i * 24} x2="580" y2={30 + i * 24} stroke="var(--svg-grid)" strokeWidth="1" strokeDasharray="4,4" />
-  ))}
-
-  {/* Column 1 label */}
-  <text x="145" y="22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Column 1</text>
-
-  {/* Column 1 */}
-  <rect x="40" y="30" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="47" fontSize="10" fill="var(--svg-blue-text)">Body text line (baseline: 24px)</text>
-
-  <rect x="40" y="54" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="71" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  {/* Heading - breaks the grid */}
-  <rect x="40" y="78" width="210" height="36" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="3" />
-  <text x="50" y="100" fontSize="12" fontWeight="bold" fill="var(--svg-orange-text)">Heading (36px tall)</text>
-
-  {/* Adjustment gap */}
-  <rect x="40" y="114" width="210" height="12" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="1" strokeDasharray="3,2" className="svg-pulse" />
-  <text x="260" y="124" fontSize="9" fill="var(--svg-pink-text)" fontWeight="bold" className="svg-pulse">+12px spacing adjustment</text>
-
-  {/* Body text resumes on grid */}
-  <rect x="40" y="126" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="143" fontSize="10" fill="var(--svg-blue-text)">Body text (back on grid)</text>
-
-  <rect x="40" y="150" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="167" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  <rect x="40" y="174" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="191" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  {/* Column 2 label */}
-  <text x="445" y="22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Column 2</text>
-
-  {/* Column 2 — all body text, aligned */}
-  <rect x="340" y="30" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="47" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  <rect x="340" y="54" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="71" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  <rect x="340" y="78" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="95" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  <rect x="340" y="102" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="119" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  {/* Alignment indicators */}
-  <line x1="252" y1="126" x2="338" y2="126" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
-  <text x="295" y="138" textAnchor="middle" fontSize="8" fill="var(--svg-green-check)" fontWeight="bold" className="svg-pulse">aligned</text>
-
-  <line x1="252" y1="150" x2="338" y2="150" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
-  <line x1="252" y1="174" x2="338" y2="174" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
-
-  <rect x="340" y="126" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="143" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  <rect x="340" y="150" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="167" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  <rect x="340" y="174" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="191" fontSize="10" fill="var(--svg-blue-text)">Body text line</text>
-
-  {/* Legend */}
-  <rect x="40" y="230" width="520" height="150" fill="var(--svg-legend-fill)" stroke="var(--svg-legend-stroke)" strokeWidth="1" rx="6" filter="url(#rhythmShadow)" />
-  <text x="60" y="252" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Spacing Adjustment Algorithm</text>
-  <text x="60" y="272" fontSize="10" fill="var(--svg-mid-text)">1. Walk each column top to bottom</text>
-  <text x="60" y="290" fontSize="10" fill="var(--svg-mid-text)">2. Track gridDrift = actualY - nearestGridLine(actualY)</text>
-  <text x="60" y="308" fontSize="10" fill="var(--svg-mid-text)">3. At each adjustable gap (heading space, figure space):</text>
-  <text x="75" y="324" fontSize="10" fill="var(--svg-mid-text)">compute correction needed to zero the drift</text>
-  <text x="60" y="342" fontSize="10" fill="var(--svg-mid-text)">4. Distribute correction — prefer expanding over compressing</text>
-  <text x="60" y="360" fontSize="10" fill="var(--svg-mid-text)">5. Clamp to min/max values from TypographyConfig.spacing</text>
-
-  {/* Grid line labels */}
-  <text x="15" y="34" fontSize="8" fill="var(--svg-faint-text)">0</text>
-  <text x="15" y="58" fontSize="8" fill="var(--svg-faint-text)">24</text>
-  <text x="15" y="82" fontSize="8" fill="var(--svg-faint-text)">48</text>
-  <text x="15" y="106" fontSize="8" fill="var(--svg-faint-text)">72</text>
-  <text x="15" y="130" fontSize="8" fill="var(--svg-faint-text)">96</text>
-  <text x="10" y="154" fontSize="8" fill="var(--svg-faint-text)">120</text>
-  <text x="10" y="178" fontSize="8" fill="var(--svg-faint-text)">144</text>
-  <text x="10" y="202" fontSize="8" fill="var(--svg-faint-text)">168</text>
-</svg>
+<Illustration name="VerticalRhythm" data='{"title": "Vertical rhythm alignment", "desc": "Column 1 contains a heading that breaks the baseline grid by 12 pixels. The engine adds 12 pixels of spacing after the heading so the next body line falls back on the grid. Column 2 remains aligned throughout.", "caption": "Spacing is adjusted after grid-breaking elements so baselines across columns stay in sync.", "column1": "Column 1", "column2": "Column 2", "bodyLine": "Body text line", "bodyBaseline": "Body text line (baseline: 24px)", "heading": "Heading (36px tall)", "adjustment": "+12px spacing adjustment", "backOnGrid": "Body text (back on grid)", "aligned": "aligned", "legendTitle": "Spacing Adjustment Algorithm", "legendSteps": ["1. Walk each column top to bottom", "2. Track gridDrift = actualY - nearestGridLine(actualY)", "3. At each adjustable gap (heading space, figure space):", "   compute correction needed to zero the drift", "4. Distribute correction — prefer expanding over compressing", "5. Clamp to min/max values from TypographyConfig.spacing"]}' />
 
 After adjusting spacing in each column independently, the engine verifies **cross-column alignment**: baselines at the same vertical position across columns should match. If they diverge -- because different columns have different grid-breaking elements -- a second alignment pass adjusts gaps in both columns to find a common rhythm.
 
@@ -993,106 +641,7 @@ Performance tests run alongside unit tests in vitest, and regressions are caught
 
 ## Data Flow
 
-<svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '780px', fontFamily: 'monospace' }}>
-  <rect width="780" height="310" fill="transparent" rx="8" />
-
-  <defs>
-    <marker id="a4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="var(--svg-stroke)" />
-    </marker>
-    <marker id="a5" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#F57F17" />
-    </marker>
-    <filter id="flowShadow" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
-    </filter>
-  </defs>
-
-  {/* Row 1: Input → Pass 1 → Pass 2 → into convergence */}
-  <g className="svg-fade-1">
-    <rect x="15" y="30" width="140" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#flowShadow)" />
-    <text x="85" y="47" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Content +</text>
-    <text x="85" y="60" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Config</text>
-  </g>
-
-  <line x1="155" y1="50" x2="175" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <g className="svg-fade-2">
-    <rect x="177" y="35" width="90" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="4" filter="url(#flowShadow)" />
-    <text x="222" y="55" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-orange-text)">1 Parse</text>
-  </g>
-
-  <line x1="267" y1="50" x2="287" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <g className="svg-fade-3">
-    <rect x="289" y="35" width="100" height="30" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="4" filter="url(#flowShadow)" />
-    <text x="339" y="55" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-purple-text)">2 Measure</text>
-  </g>
-
-  <line x1="389" y1="50" x2="409" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  {/* Convergence loop bracket */}
-  <rect x="411" y="20" width="355" height="80" fill="none" stroke="#F57F17" strokeWidth="2" rx="8" strokeDasharray="6,3" />
-  <text x="588" y="16" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-yellow-text)" className="svg-pulse">convergence loop (max 5)</text>
-
-  {/* Passes 3-7 inside loop */}
-  <g className="svg-fade-4">
-    <rect x="421" y="35" width="58" height="30" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#flowShadow)" />
-    <text x="450" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-blue-text)">3</text>
-    <text x="450" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-blue-text)">place</text>
-  </g>
-
-  <line x1="479" y1="50" x2="491" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <g className="svg-fade-4">
-    <rect x="493" y="35" width="58" height="30" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#flowShadow)" />
-    <text x="522" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-blue-text)">4</text>
-    <text x="522" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-blue-text)">resources</text>
-  </g>
-
-  <line x1="551" y1="50" x2="563" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <g className="svg-fade-5">
-    <rect x="565" y="35" width="58" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadow)" />
-    <text x="594" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">5</text>
-    <text x="594" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">typo</text>
-  </g>
-
-  <line x1="623" y1="50" x2="635" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <g className="svg-fade-6">
-    <rect x="637" y="35" width="58" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadow)" />
-    <text x="666" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">6</text>
-    <text x="666" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">balance</text>
-  </g>
-
-  <line x1="695" y1="50" x2="707" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <g className="svg-fade-7">
-    <rect x="709" y="35" width="48" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadow)" />
-    <text x="733" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">7</text>
-    <text x="733" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">rhythm</text>
-  </g>
-
-  {/* Loop-back arrow: from Pass 7 back to Pass 3 */}
-  <path d="M 733 67 L 733 90 L 450 90 L 450 67" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#a5)" className="svg-loop-glow" />
-  <text x="591" y="87" textAnchor="middle" fontSize="8" fill="var(--svg-yellow-text)">if dirty &amp;&amp; iterations &lt; 5</text>
-
-  {/* Row 2: Converged → Backend → Output */}
-  <line x1="588" y1="102" x2="588" y2="130" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <text x="588" y="148" textAnchor="middle" fontSize="9" fill="var(--svg-light-text)">VDT (converged)</text>
-
-  <line x1="588" y1="155" x2="588" y2="175" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <rect x="498" y="177" width="180" height="35" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#flowShadow)" />
-  <text x="588" y="199" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-pink-text)">Backend: Render</text>
-
-  <line x1="588" y1="212" x2="588" y2="235" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4)" className="svg-flow" />
-
-  <rect x="498" y="237" width="180" height="35" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="2" rx="6" filter="url(#flowShadow)" />
-  <text x="588" y="259" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-teal-text)">HTML / PDF</text>
-</svg>
+<Illustration name="DataFlow" data='{"title": "Data flow through the engine", "desc": "Content and config enter Pass 1 (parse) and Pass 2 (measure). Passes 3 through 7 run inside the convergence loop. Once converged, the VDT is handed to the backend, which renders HTML or PDF.", "caption": "End-to-end data flow: parse, measure, converge, render.", "input": ["Content +", "Config"], "parse": "1 Parse", "measure": "2 Measure", "loopBadge": "convergence loop (max 5)", "passesInLoop": [{"num": "3", "name": "place"}, {"num": "4", "name": "resources"}, {"num": "5", "name": "typo"}, {"num": "6", "name": "balance"}, {"num": "7", "name": "rhythm"}], "loopCondition": "if dirty &amp;&amp; iterations < 5", "convergedLabel": "VDT (converged)", "backend": "Backend: Render", "output": "HTML / PDF"}' />
 
 
 ## Non-Goals

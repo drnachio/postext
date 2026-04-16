@@ -87,112 +87,7 @@ Esa es la filosofía de "calcular todo primero, renderizar después". No es un t
 
 ## Arquitectura del sistema
 
-<svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '900px', fontFamily: 'monospace' }}>
-  {/* Background */}
-  <rect width="900" height="420" fill="transparent" rx="8" />
-
-  {/* Input section */}
-  <rect x="20" y="40" width="150" height="60" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
-  <text x="95" y="65" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">Markdown</text>
-  <text x="95" y="80" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">enriquecido</text>
-
-  <rect x="20" y="120" width="150" height="60" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
-  <text x="95" y="145" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">PostextConfig</text>
-  <text x="95" y="162" textAnchor="middle" fontSize="10" fill="var(--svg-blue-text)">(columnas, reglas, espaciado)</text>
-
-  {/* Arrow: Input → Parser */}
-  <line x1="170" y1="70" x2="210" y2="70" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-  <line x1="170" y1="150" x2="210" y2="150" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* Engine box */}
-  <rect x="210" y="15" width="480" height="390" fill="none" stroke="var(--svg-dark-text)" strokeWidth="2" rx="8" strokeDasharray="8,4" />
-  <text x="450" y="35" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-dark-text)">Motor de composición</text>
-
-  {/* Parser */}
-  <rect x="230" y="55" width="110" height="50" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
-  <text x="285" y="78" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-orange-text)">Parser</text>
-  <text x="285" y="93" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">Pasada 1</text>
-
-  {/* Arrow: Parser → VDT */}
-  <line x1="340" y1="80" x2="380" y2="80" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* VDT - central */}
-  <rect x="380" y="50" width="160" height="130" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
-  <text x="460" y="75" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Árbol Virtual del</text>
-  <text x="460" y="93" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Documento (VDT)</text>
-  <text x="460" y="115" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">mutable, in-place</text>
-  <text x="460" y="132" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">páginas &gt; columnas &gt; bloques</text>
-  <text x="460" y="149" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">cada nodo tiene un bbox</text>
-  <text x="460" y="166" textAnchor="middle" fontSize="10" fill="var(--svg-green-text)">seguimiento dirty flags</text>
-
-  {/* Pretext */}
-  <rect x="230" y="130" width="110" height="50" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
-  <text x="285" y="152" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">Pretext</text>
-  <text x="285" y="167" textAnchor="middle" fontSize="9" fill="var(--svg-purple-text)">medición de texto</text>
-
-  {/* Bidirectional arrow: Pretext ↔ VDT */}
-  <line x1="340" y1="145" x2="378" y2="120" stroke="#9C27B0" strokeWidth="2" markerEnd="url(#arrowPurple)" />
-  <line x1="378" y1="130" x2="340" y2="155" stroke="#9C27B0" strokeWidth="2" markerEnd="url(#arrowPurple)" />
-
-  {/* Layout passes */}
-  <rect x="230" y="210" width="420" height="170" fill="var(--svg-yellow-fill)" stroke="#FFC107" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
-  <text x="440" y="232" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-yellow-text)">Pasadas (leen y modifican el VDT)</text>
-
-  <text x="250" y="255" fontSize="10" fill="var(--svg-brown-text)">Pasada 2</text>
-  <text x="300" y="255" fontSize="10" fill="var(--svg-brown-text)">Medición de texto (vía Pretext)</text>
-  <text x="250" y="275" fontSize="10" fill="var(--svg-brown-text)">Pasada 3</text>
-  <text x="300" y="275" fontSize="10" fill="var(--svg-brown-text)">Colocación en páginas y columnas</text>
-  <text x="250" y="295" fontSize="10" fill="var(--svg-brown-text)">Pasada 4</text>
-  <text x="300" y="295" fontSize="10" fill="var(--svg-brown-text)">Colocación de recursos</text>
-  <text x="250" y="315" fontSize="10" fill="var(--svg-brown-text)">Pasada 5</text>
-  <text x="300" y="315" fontSize="10" fill="var(--svg-brown-text)">Refinamiento tipográfico</text>
-  <text x="250" y="335" fontSize="10" fill="var(--svg-brown-text)">Pasada 6</text>
-  <text x="300" y="335" fontSize="10" fill="var(--svg-brown-text)">Equilibrado de columnas</text>
-  <text x="250" y="355" fontSize="10" fill="var(--svg-brown-text)">Pasada 7</text>
-  <text x="300" y="355" fontSize="10" fill="var(--svg-brown-text)">Alineación del ritmo vertical</text>
-
-  {/* Convergence loop arrow */}
-  <path d="M 655 355 C 675 355, 675 250, 655 250" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#arrowYellow)" className="svg-loop-glow" />
-  <text x="693" y="305" fontSize="9" fill="var(--svg-yellow-text)" transform="rotate(90, 693, 305)" className="svg-pulse">convergencia (máx 5)</text>
-
-  {/* Arrow: VDT → Passes */}
-  <line x1="460" y1="182" x2="460" y2="208" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* Arrow: Engine → Backend */}
-  <line x1="692" y1="115" x2="720" y2="115" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* Backend */}
-  <rect x="720" y="55" width="150" height="130" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
-  <text x="795" y="80" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-pink-text)">Backend</text>
-  <text x="795" y="98" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">(interfaz unificada)</text>
-  <text x="795" y="125" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">Canvas / Navegador</text>
-  <text x="795" y="142" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">PDF</text>
-  <text x="795" y="159" textAnchor="middle" fontSize="10" fill="var(--svg-pink-text)">Servidor (futuro)</text>
-
-  {/* Output arrows */}
-  <line x1="795" y1="187" x2="795" y2="220" stroke="var(--svg-stroke)" strokeWidth="2" markerEnd="url(#arrow)" className="svg-flow" />
-
-  {/* Output */}
-  <rect x="720" y="222" width="150" height="50" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="2" rx="6" filter="url(#archShadowEs)" />
-  <text x="795" y="245" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-teal-text)">HTML / PDF</text>
-  <text x="795" y="260" textAnchor="middle" fontSize="10" fill="var(--svg-teal-text)">salida renderizada</text>
-
-  {/* Arrow markers */}
-  <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="var(--svg-stroke)" />
-    </marker>
-    <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#9C27B0" />
-    </marker>
-    <marker id="arrowYellow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#F57F17" />
-    </marker>
-    <filter id="archShadowEs" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.18" />
-    </filter>
-  </defs>
-</svg>
+<Illustration name="SystemArchitecture" data='{"title": "Arquitectura del sistema Postext", "desc": "Markdown enriquecido y PostextConfig entran en un parser que construye el Árbol Virtual del Documento. Pretext mide el texto. Siete pasadas de composición mutan el VDT dentro de un bucle de convergencia. Un backend renderiza el VDT final a HTML o PDF.", "caption": "Parser → VDT ↔ Pretext → siete pasadas de composición → backend → salida.", "markdown": "Markdown enriquecido", "configTitle": "PostextConfig", "configSubtitle": "(columnas, reglas, espaciado)", "engine": "Motor de composición", "parser": "Parser", "pass1": "Pasada 1", "vdtLine1": "Árbol Virtual del", "vdtLine2": "Documento (VDT)", "vdtAttr1": "mutable, in situ", "vdtAttr2": "páginas > columnas > bloques", "vdtAttr3": "cada nodo tiene bbox", "vdtAttr4": "seguimiento dirty", "pretext": "Pretext", "pretextSubtitle": "medición de texto", "passesTitle": "Pasadas (leen y mutan el VDT)", "passes": [{"num": "Pasada 2", "name": "Medición de texto (vía Pretext)"}, {"num": "Pasada 3", "name": "Colocación de página y columna"}, {"num": "Pasada 4", "name": "Colocación de recursos"}, {"num": "Pasada 5", "name": "Refinamiento tipográfico"}, {"num": "Pasada 6", "name": "Equilibrado de columnas"}, {"num": "Pasada 7", "name": "Alineación de ritmo vertical"}], "convergence": "convergencia (máx 5)", "backend": "Backend", "backendSubtitle": "(interfaz unificada)", "backendItems": ["Canvas / Navegador", "PDF", "Servidor (futuro)"], "output": "HTML / PDF", "outputSubtitle": "salida renderizada"}' />
 
 **Este es el recorrido de tu contenido a través del motor:**
 
@@ -208,6 +103,8 @@ Esa es la filosofía de "calcular todo primero, renderizar después". No es un t
 ### Modelo de contenido
 
 El modelo de contenido es tanto una filosofía como una estructura de datos. Tú describes *qué* decir, no *cómo* componerlo. Las decisiones de composición las toma el motor.
+
+<Illustration name="ContentModel" data='{"title": "Modelo de contenido: markdown, recursos, notas", "desc": "La entrada a Postext separa markdown (orden de lectura y estructura semántica) de recursos (imágenes, tablas, figuras) y notas (a pie, finales). El motor resuelve los marcadores por ID y produce el VDT.", "caption": "El markdown aporta el orden de lectura; recursos y notas aportan los datos visuales.", "contentTitle": "PostextContent", "markdown": "markdown", "markdownSub": "orden de lectura + marcadores de referencia", "resources": "resources[]", "resourcesSub": "imágenes, tablas, figuras", "notes": "notes[]", "notesSub": "notas a pie y finales", "resolveMarker": "resuelto por id: ![fig:…], [^1]", "engineLabel": "motor", "vdtLabel": "VDT"}' />
 
 ```typescript
 // packages/postext/src/types.ts
@@ -261,6 +158,8 @@ Italy by 1465 and France by 1470.
 ```
 
 Fíjate en que `![fig:printing-press]` en el markdown es solo un marcador de referencia -- un nombre, nada más. El motor lo resuelve contra el array `resources` por ID, obtiene las dimensiones de la imagen y decide dónde colocarla según la `PlacementStrategy` configurada. Quizá aterriza justo ahí. Quizá el motor la difiere a la parte superior de la siguiente columna porque la actual está casi llena. Lo mismo ocurre con `[^1]` -- el motor lo resuelve contra el array `notes` y coloca la nota al pie en la parte inferior de la columna, o de la página, o al final de la sección, dependiendo de `ReferenceConfig`. El autor nunca tiene que pensar en la colocación. De eso se encarga el motor.
+
+<Illustration name="ReferenceResolution" data='{"title": "Resolución de referencias", "desc": "Un markdown usa un marcador de figura ![fig:printing-press] y un marcador de nota [^1]. Los arrays de recursos y notas proveen el contenido real por ID. El motor resuelve ambos marcadores para producir una página compuesta con la figura en su sitio y la nota al pie.", "caption": "Los marcadores en el markdown son solo nombres. El motor los resuelve contra recursos y notas.", "markdownTitle": "markdown", "markdownLine1": "# El arte de la tipografía", "markdownLine2": "![fig:printing-press]", "markdownLine3": "tipos móviles[^1]. La invención…", "resourcesTitle": "resources[]", "resourceLine": "{ id: &#39;fig:printing-press&#39;, … }", "notesTitle": "notes[]", "noteLine": "{ id: &#39;1&#39;, content: &#39;Gutenberg…&#39; }", "resolveLabel": "resolver", "outputTitle": "página compuesta", "outputFigure": "[ figura ]", "outputFootnote": "¹ Gutenberg…"}' />
 
 ### Configuración
 
@@ -324,89 +223,7 @@ Los árboles inmutables (como el DOM virtual de React) crean objetos nuevos con 
 
 ### Estructura
 
-<svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '700px', fontFamily: 'monospace' }}>
-  <defs>
-    <filter id="vdtShadowEs" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.18" />
-    </filter>
-  </defs>
-  <rect width="700" height="320" fill="transparent" rx="8" />
-
-  {/* Document */}
-  <g className="svg-fade-1">
-    <rect x="270" y="15" width="160" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#vdtShadowEs)" />
-    <text x="350" y="40" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">VDTDocument</text>
-  </g>
-
-  {/* Pages */}
-  <g className="svg-fade-2">
-    <line x1="310" y1="55" x2="200" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="350" y1="55" x2="350" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="390" y1="55" x2="500" y2="85" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-
-    <rect x="130" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" />
-    <text x="200" y="107" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">VDTPage [0]</text>
-
-    <rect x="280" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" />
-    <text x="350" y="107" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-blue-text)">VDTPage [1]</text>
-
-    <rect x="430" y="85" width="140" height="35" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1.5" rx="6" strokeDasharray="4,3" />
-    <text x="500" y="107" textAnchor="middle" fontSize="11" fill="var(--svg-blue-text)">VDTPage [n]</text>
-  </g>
-
-  {/* Columns from Page 0 */}
-  <g className="svg-fade-3">
-    <line x1="170" y1="120" x2="100" y2="155" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="230" y1="120" x2="250" y2="155" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-
-    <rect x="30" y="155" width="140" height="35" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" />
-    <text x="100" y="177" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">VDTColumn [0]</text>
-
-    <rect x="180" y="155" width="140" height="35" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="6" />
-    <text x="250" y="177" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-purple-text)">VDTColumn [1]</text>
-  </g>
-
-  {/* Blocks from Column 0 */}
-  <g className="svg-fade-4">
-    <line x1="70" y1="190" x2="40" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="100" y1="190" x2="100" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-    <line x1="130" y1="190" x2="160" y2="220" stroke="var(--svg-stroke)" strokeWidth="1.5" />
-
-    <rect x="5" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
-    <text x="40" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">encabezado</text>
-
-    <rect x="80" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
-    <text x="115" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">párrafo</text>
-
-    <rect x="155" y="220" width="70" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="1.5" rx="4" />
-    <text x="190" y="239" textAnchor="middle" fontSize="9" fill="var(--svg-orange-text)">recurso</text>
-  </g>
-
-  {/* Lines from paragraph */}
-  <g className="svg-fade-5">
-    <line x1="105" y1="250" x2="80" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
-    <line x1="115" y1="250" x2="115" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
-    <line x1="125" y1="250" x2="150" y2="275" stroke="var(--svg-stroke)" strokeWidth="1" />
-
-    <rect x="55" y="275" width="50" height="25" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="1.5" rx="4" />
-    <text x="80" y="292" textAnchor="middle" fontSize="9" fill="var(--svg-teal-text)">línea 0</text>
-
-    <rect x="110" y="275" width="50" height="25" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="1.5" rx="4" />
-    <text x="135" y="292" textAnchor="middle" fontSize="9" fill="var(--svg-teal-text)">línea 1</text>
-  </g>
-
-  {/* Legend */}
-  <g className="svg-fade-6">
-    <text x="420" y="160" fontSize="10" fill="var(--svg-mid-text)">Cada nodo contiene:</text>
-    <text x="420" y="178" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">bbox: {"{ x, y, w, h }"}</text>
-    <text x="420" y="196" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">dirty: boolean</text>
-    <text x="420" y="214" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">pageIndex: number</text>
-    <text x="420" y="232" fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">columnIndex: number</text>
-    <text x="420" y="260" fontSize="10" fill="var(--svg-light-text)">Las líneas también:</text>
-    <text x="420" y="278" fontSize="10" fill="var(--svg-light-text)" fontFamily="monospace">baseline: number</text>
-    <text x="420" y="296" fontSize="10" fill="var(--svg-light-text)" fontFamily="monospace">hyphenated: boolean</text>
-  </g>
-</svg>
+<Illustration name="VdtStructure" data='{"title": "Estructura del Árbol Virtual del Documento", "desc": "VDT jerárquico: el documento contiene páginas, cada página contiene columnas, cada columna contiene bloques (encabezado, párrafo, recurso), y cada bloque de texto contiene líneas medidas. Cada nodo lleva bounding box, flag dirty e índices de página y columna.", "caption": "Cada nodo lleva bbox, flag dirty e índices de página y columna.", "document": "VDTDocument", "pageLabels": ["VDTPage [0]", "VDTPage [1]", "VDTPage [n]"], "columnLabels": ["VDTColumn [0]", "VDTColumn [1]"], "blockLabels": ["encabezado", "párrafo", "recurso"], "lineLabels": ["línea 0", "línea 1"], "legendHeader": "Cada nodo lleva:", "legendAttrs": ["bbox: { x, y, w, h }", "dirty: boolean", "pageIndex: number", "columnIndex: number"], "linesHeader": "Las líneas llevan además:", "linesAttrs": ["baseline: number", "hyphenated: boolean"]}' />
 
 ### Definiciones de tipos
 
@@ -642,84 +459,7 @@ El algoritmo calcula la altura total de contenido de todos los bloques en una p�
 
 ### Bucle de convergencia
 
-<svg viewBox="0 0 760 140" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
-  <rect width="760" height="140" fill="transparent" rx="8" />
-
-  {/* Pass boxes */}
-  <g className="svg-fade-1">
-    <rect x="20" y="40" width="80" height="40" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
-    <text x="60" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-orange-text)">Pasada 1</text>
-    <text x="60" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-orange-text)">análisis</text>
-  </g>
-
-  <line x1="100" y1="60" x2="120" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-2">
-    <rect x="120" y="40" width="80" height="40" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
-    <text x="160" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-purple-text)">Pasada 2</text>
-    <text x="160" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-purple-text)">medir</text>
-  </g>
-
-  <line x1="200" y1="60" x2="220" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  {/* Convergence loop bracket */}
-  <rect x="218" y="25" width="530" height="70" fill="none" stroke="#F57F17" strokeWidth="2" rx="6" strokeDasharray="6,3" />
-  <text x="485" y="20" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-yellow-text)" className="svg-pulse">bucle de convergencia (máx 5 iteraciones)</text>
-
-  <g className="svg-fade-3">
-    <rect x="230" y="40" width="80" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
-    <text x="270" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Pasada 3</text>
-    <text x="270" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-blue-text)">colocar</text>
-  </g>
-
-  <line x1="310" y1="60" x2="330" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-4">
-    <rect x="330" y="40" width="80" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
-    <text x="370" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Pasada 4</text>
-    <text x="370" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-blue-text)">recursos</text>
-  </g>
-
-  <line x1="410" y1="60" x2="430" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-5">
-    <rect x="430" y="40" width="80" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
-    <text x="470" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pasada 5</text>
-    <text x="470" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">tipografía</text>
-  </g>
-
-  <line x1="510" y1="60" x2="530" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-6">
-    <rect x="530" y="40" width="80" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
-    <text x="570" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pasada 6</text>
-    <text x="570" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">equilibrar</text>
-  </g>
-
-  <line x1="610" y1="60" x2="630" y2="60" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a2)" className="svg-flow" />
-
-  <g className="svg-fade-7">
-    <rect x="630" y="40" width="100" height="40" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#convShadowEs)" />
-    <text x="680" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-green-text)">Pasada 7</text>
-    <text x="680" y="70" textAnchor="middle" fontSize="8" fill="var(--svg-green-text)">ritmo</text>
-  </g>
-
-  {/* Loop-back arrow */}
-  <path d="M 680 82 L 680 115 L 270 115 L 270 82" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#a3)" className="svg-loop-glow" />
-  <text x="475" y="128" textAnchor="middle" fontSize="9" fill="var(--svg-yellow-text)">si hay bloques sucios &amp;&amp; iteraciones &lt; 5</text>
-
-  <defs>
-    <marker id="a2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="var(--svg-stroke)" />
-    </marker>
-    <marker id="a3" markerWidth="8" markerHeight="6" refX="4" refY="0" orient="auto">
-      <polygon points="0 6, 4 0, 8 6" fill="#F57F17" />
-    </marker>
-    <filter id="convShadowEs" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.18" />
-    </filter>
-  </defs>
-</svg>
+<Illustration name="ConvergenceLoop" data='{"title": "Bucle de convergencia", "desc": "La Pasada 1 parsea, la Pasada 2 mide, y las pasadas 3 a 7 se ejecutan dentro del bucle de convergencia. Si algún bloque permanece dirty y el contador de iteraciones está por debajo de cinco, el bucle vuelve a ejecutarse desde la Pasada 3.", "caption": "El motor vuelve a la Pasada 3 hasta que ningún bloque quede dirty (máx 5 iteraciones).", "passBadges": [{"num": "Pasada 1", "name": "parsear"}, {"num": "Pasada 2", "name": "medir"}, {"num": "Pasada 3", "name": "colocar"}, {"num": "Pasada 4", "name": "recursos"}, {"num": "Pasada 5", "name": "tipografía"}, {"num": "Pasada 6", "name": "equilibrar"}, {"num": "Pasada 7", "name": "ritmo"}], "loopBadge": "bucle de convergencia (máx 5 iteraciones)", "loopCondition": "si hay bloques dirty &amp;&amp; iteraciones < 5"}' />
 
 Piensa en el bucle de convergencia como el motor discutiendo consigo mismo. La Pasada 5 corrige una viuda, lo que cambia las alturas de columna. La Pasada 6 re-equilibra las columnas para compensar, lo que desplaza un límite de bloque. La Pasada 7 ajusta el ritmo vertical, lo que podría crear una nueva huérfana. Así que el motor vuelve a la Pasada 3, re-coloca los bloques con las medidas actualizadas, y recorre toda la secuencia otra vez. Cada iteración resuelve más problemas de los que crea -- hasta que, finalmente, nada queda sucio.
 
@@ -758,99 +498,7 @@ Algunos elementos rompen la rejilla porque su altura no es múltiplo de `baselin
 
 ### Algoritmo de ajuste de espaciado
 
-<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '600px', fontFamily: 'monospace' }}>
-  <defs>
-    <filter id="rhythmShadowEs" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.18" />
-    </filter>
-  </defs>
-  <rect width="600" height="400" fill="transparent" rx="8" />
-
-  {/* Grid lines */}
-  {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map((i) => (
-    <line key={i} x1="20" y1={30 + i * 24} x2="580" y2={30 + i * 24} stroke="var(--svg-grid)" strokeWidth="1" strokeDasharray="4,4" />
-  ))}
-
-  {/* Column 1 label */}
-  <text x="145" y="22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Columna 1</text>
-
-  {/* Column 1 */}
-  <rect x="40" y="30" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="47" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo (línea base: 24px)</text>
-
-  <rect x="40" y="54" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="71" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  {/* Heading - breaks the grid */}
-  <rect x="40" y="78" width="210" height="36" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="3" />
-  <text x="50" y="100" fontSize="12" fontWeight="bold" fill="var(--svg-orange-text)">Encabezado (36px alto)</text>
-
-  {/* Adjustment gap */}
-  <rect x="40" y="114" width="210" height="12" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="1" strokeDasharray="3,2" className="svg-pulse" />
-  <text x="260" y="124" fontSize="9" fill="var(--svg-pink-text)" fontWeight="bold" className="svg-pulse">+12px ajuste de espaciado</text>
-
-  {/* Body text resumes on grid */}
-  <rect x="40" y="126" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="143" fontSize="10" fill="var(--svg-blue-text)">Cuerpo (de vuelta en la rejilla)</text>
-
-  <rect x="40" y="150" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="167" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  <rect x="40" y="174" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="50" y="191" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  {/* Column 2 label */}
-  <text x="445" y="22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Columna 2</text>
-
-  {/* Column 2 — all body text, aligned */}
-  <rect x="340" y="30" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="47" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  <rect x="340" y="54" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="71" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  <rect x="340" y="78" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="95" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  <rect x="340" y="102" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="119" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  {/* Alignment indicators */}
-  <line x1="252" y1="126" x2="338" y2="126" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
-  <text x="295" y="138" textAnchor="middle" fontSize="8" fill="var(--svg-green-check)" fontWeight="bold" className="svg-pulse">alineado</text>
-
-  <line x1="252" y1="150" x2="338" y2="150" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
-  <line x1="252" y1="174" x2="338" y2="174" stroke="#4CAF50" strokeWidth="2" strokeDasharray="4,2" />
-
-  <rect x="340" y="126" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="143" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  <rect x="340" y="150" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="167" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  <rect x="340" y="174" width="210" height="24" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="1" />
-  <text x="350" y="191" fontSize="10" fill="var(--svg-blue-text)">Línea de cuerpo</text>
-
-  {/* Legend */}
-  <rect x="40" y="230" width="520" height="150" fill="var(--svg-legend-fill)" stroke="var(--svg-legend-stroke)" strokeWidth="1" rx="6" filter="url(#rhythmShadowEs)" />
-  <text x="60" y="252" fontSize="11" fontWeight="bold" fill="var(--svg-dark-text)">Algoritmo de ajuste de espaciado</text>
-  <text x="60" y="272" fontSize="10" fill="var(--svg-mid-text)">1. Recorrer cada columna de arriba a abajo</text>
-  <text x="60" y="290" fontSize="10" fill="var(--svg-mid-text)">2. Registrar gridDrift = actualY - nearestGridLine(actualY)</text>
-  <text x="60" y="308" fontSize="10" fill="var(--svg-mid-text)">3. En cada hueco ajustable (espacio de encabezado, figura):</text>
-  <text x="75" y="324" fontSize="10" fill="var(--svg-mid-text)">calcular la corrección necesaria para anular la desviación</text>
-  <text x="60" y="342" fontSize="10" fill="var(--svg-mid-text)">4. Distribuir la corrección (preferir expandir a comprimir)</text>
-  <text x="60" y="360" fontSize="10" fill="var(--svg-mid-text)">5. Limitar a valores mín/máx de TypographyConfig.spacing</text>
-
-  {/* Grid line labels */}
-  <text x="15" y="34" fontSize="8" fill="var(--svg-faint-text)">0</text>
-  <text x="15" y="58" fontSize="8" fill="var(--svg-faint-text)">24</text>
-  <text x="15" y="82" fontSize="8" fill="var(--svg-faint-text)">48</text>
-  <text x="15" y="106" fontSize="8" fill="var(--svg-faint-text)">72</text>
-  <text x="15" y="130" fontSize="8" fill="var(--svg-faint-text)">96</text>
-  <text x="10" y="154" fontSize="8" fill="var(--svg-faint-text)">120</text>
-  <text x="10" y="178" fontSize="8" fill="var(--svg-faint-text)">144</text>
-  <text x="10" y="202" fontSize="8" fill="var(--svg-faint-text)">168</text>
-</svg>
+<Illustration name="VerticalRhythm" data='{"title": "Alineación de ritmo vertical", "desc": "La columna 1 contiene un encabezado que rompe la rejilla de línea base en 12 píxeles. El motor añade 12 píxeles de espaciado tras el encabezado para que la siguiente línea de cuerpo vuelva a caer sobre la rejilla. La columna 2 permanece alineada.", "caption": "El espaciado se ajusta tras elementos que rompen la rejilla para mantener sincronizadas las líneas base entre columnas.", "column1": "Columna 1", "column2": "Columna 2", "bodyLine": "Línea de cuerpo", "bodyBaseline": "Línea de cuerpo (base: 24px)", "heading": "Encabezado (36px)", "adjustment": "+12px de ajuste", "backOnGrid": "Cuerpo (vuelve a la rejilla)", "aligned": "alineado", "legendTitle": "Algoritmo de ajuste de espaciado", "legendSteps": ["1. Recorrer cada columna de arriba a abajo", "2. Rastrear gridDrift = yReal - rejillaMásCercana(yReal)", "3. En cada hueco ajustable (tras encabezado, tras figura):", "   calcular la corrección necesaria para anular el drift", "4. Distribuir la corrección — preferir expandir a comprimir", "5. Limitar a valores mín/máx de TypographyConfig.spacing"]}' />
 
 Tras ajustar el espaciado en cada columna de forma independiente, el motor verifica la **alineación entre columnas**: las líneas base en la misma posición vertical en columnas adyacentes deben coincidir. Si divergen -- porque las distintas columnas tienen diferentes elementos que rompen la rejilla -- una segunda pasada de alineación ajusta los huecos en ambas columnas para encontrar un ritmo común.
 
@@ -994,106 +642,7 @@ Los tests de rendimiento se ejecutan junto a los tests unitarios en vitest, y la
 
 ## Flujo de datos
 
-<svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '780px', fontFamily: 'monospace' }}>
-  <rect width="780" height="310" fill="transparent" rx="8" />
-
-  <defs>
-    <marker id="a4es" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="var(--svg-stroke)" />
-    </marker>
-    <marker id="a5es" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#F57F17" />
-    </marker>
-    <filter id="flowShadowEs" x="-4%" y="-4%" width="108%" height="116%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
-    </filter>
-  </defs>
-
-  {/* Row 1: Entrada → Pasada 1 → Pasada 2 → bucle de convergencia */}
-  <g className="svg-fade-1">
-    <rect x="15" y="30" width="140" height="40" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="6" filter="url(#flowShadowEs)" />
-    <text x="85" y="47" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Contenido +</text>
-    <text x="85" y="60" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-blue-text)">Config</text>
-  </g>
-
-  <line x1="155" y1="50" x2="175" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <g className="svg-fade-2">
-    <rect x="177" y="35" width="100" height="30" fill="var(--svg-orange-fill)" stroke="#FF9800" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
-    <text x="227" y="55" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-orange-text)">1 Análisis</text>
-  </g>
-
-  <line x1="277" y1="50" x2="297" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <g className="svg-fade-3">
-    <rect x="299" y="35" width="100" height="30" fill="var(--svg-purple-fill)" stroke="#9C27B0" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
-    <text x="349" y="55" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-purple-text)">2 Medir</text>
-  </g>
-
-  <line x1="399" y1="50" x2="419" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  {/* Convergence loop bracket */}
-  <rect x="421" y="20" width="345" height="80" fill="none" stroke="#F57F17" strokeWidth="2" rx="8" strokeDasharray="6,3" />
-  <text x="593" y="16" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-yellow-text)" className="svg-pulse">bucle de convergencia (máx 5)</text>
-
-  {/* Pasadas 3-7 inside loop */}
-  <g className="svg-fade-4">
-    <rect x="431" y="35" width="55" height="30" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
-    <text x="458" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-blue-text)">3</text>
-    <text x="458" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-blue-text)">colocar</text>
-  </g>
-
-  <line x1="486" y1="50" x2="498" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <g className="svg-fade-4">
-    <rect x="500" y="35" width="55" height="30" fill="var(--svg-blue-fill)" stroke="#2196F3" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
-    <text x="527" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-blue-text)">4</text>
-    <text x="527" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-blue-text)">recursos</text>
-  </g>
-
-  <line x1="555" y1="50" x2="567" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <g className="svg-fade-5">
-    <rect x="569" y="35" width="55" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
-    <text x="596" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">5</text>
-    <text x="596" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">tipo</text>
-  </g>
-
-  <line x1="624" y1="50" x2="636" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <g className="svg-fade-6">
-    <rect x="638" y="35" width="55" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
-    <text x="665" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">6</text>
-    <text x="665" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">equilibrar</text>
-  </g>
-
-  <line x1="693" y1="50" x2="705" y2="50" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <g className="svg-fade-7">
-    <rect x="707" y="35" width="50" height="30" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="4" filter="url(#flowShadowEs)" />
-    <text x="732" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--svg-green-text)">7</text>
-    <text x="732" y="75" textAnchor="middle" fontSize="7" fill="var(--svg-green-text)">ritmo</text>
-  </g>
-
-  {/* Loop-back arrow: from Pass 7 back to Pass 3 */}
-  <path d="M 732 67 L 732 90 L 458 90 L 458 67" fill="none" stroke="#F57F17" strokeWidth="2" markerEnd="url(#a5es)" className="svg-loop-glow" />
-  <text x="595" y="87" textAnchor="middle" fontSize="8" fill="var(--svg-yellow-text)">si dirty &amp;&amp; iteraciones &lt; 5</text>
-
-  {/* Row 2: Convergido → Backend → Salida */}
-  <line x1="593" y1="102" x2="593" y2="130" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <text x="593" y="148" textAnchor="middle" fontSize="9" fill="var(--svg-light-text)">VDT (convergido)</text>
-
-  <line x1="593" y1="155" x2="593" y2="175" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <rect x="503" y="177" width="180" height="35" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#flowShadowEs)" />
-  <text x="593" y="199" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--svg-pink-text)">Backend: Renderizar</text>
-
-  <line x1="593" y1="212" x2="593" y2="235" stroke="var(--svg-stroke)" strokeWidth="1.5" markerEnd="url(#a4es)" className="svg-flow" />
-
-  <rect x="503" y="237" width="180" height="35" fill="var(--svg-teal-fill)" stroke="#009688" strokeWidth="2" rx="6" filter="url(#flowShadowEs)" />
-  <text x="593" y="259" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--svg-teal-text)">HTML / PDF</text>
-</svg>
+<Illustration name="DataFlow" data='{"title": "Flujo de datos a través del motor", "desc": "Contenido y configuración entran en la Pasada 1 (parsear) y la Pasada 2 (medir). Las pasadas 3 a 7 se ejecutan dentro del bucle de convergencia. Una vez convergido, el VDT se entrega al backend, que renderiza HTML o PDF.", "caption": "Flujo de datos de extremo a extremo: parsear, medir, converger, renderizar.", "input": ["Contenido +", "Config"], "parse": "1 Parsear", "measure": "2 Medir", "loopBadge": "bucle de convergencia (máx 5)", "passesInLoop": [{"num": "3", "name": "colocar"}, {"num": "4", "name": "recursos"}, {"num": "5", "name": "tipo"}, {"num": "6", "name": "equilibrar"}, {"num": "7", "name": "ritmo"}], "loopCondition": "si dirty &amp;&amp; iter < 5", "convergedLabel": "VDT (convergido)", "backend": "Backend: Render", "output": "HTML / PDF"}' />
 
 
 ## Fuera de alcance

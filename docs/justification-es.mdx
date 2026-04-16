@@ -80,6 +80,8 @@ Cuando la separación silábica está activa, las palabras largas se dividen en 
 
 Cada penalización marcada tiene un coste de 50 — no es gratis, pero es más barato que producir una línea floja.
 
+<Illustration name="BoxGluePenalty" data='{"title": "Primitivas caja-cola-penalización", "desc": "Clave visual de las tres primitivas: caja para un fragmento de palabra, cola para el espacio entre palabras, penalización para un posible punto de ruptura. El párrafo de ejemplo muestra cómo un punto de separación silábica se convierte en una penalización marcada.", "caption": "Cada párrafo se convierte en una secuencia de cajas, colas y penalizaciones.", "box": "Caja", "glue": "Cola", "penalty": "Penalización", "boxDesc": "palabra fija", "glueDesc": "espacio elástico", "penaltyDesc": "posible ruptura", "exampleLabel": "Ejemplo: “El arte de la tipografía es antiguo.”"}' />
+
 ### Cómo encuentra el óptimo
 
 El algoritmo utiliza programación dinámica. Mantiene un conjunto de **nodos activos** — puntos de ruptura potenciales que podrían iniciar nuevas líneas — y evalúa cada ruptura factible desde cada nodo activo. Para cada ruptura candidata, calcula:
@@ -94,46 +96,15 @@ El algoritmo utiliza programación dinámica. Mantiene un conjunto de **nodos ac
 
 4. **Clase de ajuste (fitness class)**: cada línea se clasifica como apretada (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), floja (`0.5 ≤ r < 1.0`) o muy floja (`r ≥ 1.0`). Las líneas adyacentes con clases de ajuste separadas por más de un paso incurren en el demérito de clase.
 
+<Illustration name="BadnessCurve" data='{"title": "Fealdad en función del ratio de ajuste", "desc": "La fealdad crece como 100 por el valor absoluto de r al cubo. Estiramientos o compresiones pequeños son baratos, pero los extremos se vuelven extremadamente costosos, y por eso el algoritmo los evita.", "caption": "La fealdad crece cúbicamente: algo desigual se tolera, muy desigual se penaliza duro.", "xAxis": "r", "yAxis": "fealdad", "zero": "0", "tight": "apretada (r < 0)", "loose": "floja (r > 0)", "formula": "badness(r) = 100 · |r|³"}' />
+
+<Illustration name="FitnessClasses" data='{"title": "Clases de ajuste", "desc": "Cada línea se clasifica como apretada, normal, floja o muy floja según su ratio de ajuste. Las líneas adyacentes cuyas clases difieren en más de un paso se penalizan.", "caption": "Las líneas contiguas separadas por más de una clase incurren en el demérito de clase.", "classes": [{"name": "Apretada", "range": "r < -0.5", "example": "comprimida"}, {"name": "Normal", "range": "-0.5 ≤ r < 0.5", "example": "justo"}, {"name": "Floja", "range": "0.5 ≤ r < 1.0", "example": "algo aireada"}, {"name": "Muy floja", "range": "r ≥ 1.0", "example": "muy aireada"}], "adjacentNote": "El demérito de clase se aplica cuando líneas vecinas distan en más de una clase."}' />
+
 El algoritmo traza hacia atrás a través de los nodos activos para encontrar la ruta con los deméritos totales más bajos — el conjunto de puntos de ruptura globalmente óptimo para todo el párrafo.
 
 ### Por qué importa
 
-<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '760px', fontFamily: 'monospace' }}>
-  <defs>
-    <filter id="justShadowEs" x="-4%" y="-4%" width="108%" height="108%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
-    </filter>
-  </defs>
-  <rect width="760" height="220" fill="transparent" rx="8" />
-
-  {/* Greedy column */}
-  <rect x="20" y="30" width="340" height="170" fill="var(--svg-pink-fill)" stroke="#E91E63" strokeWidth="2" rx="6" filter="url(#justShadowEs)" />
-  <text x="190" y="55" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-pink-text)">Voraz (primer ajuste)</text>
-  <line x1="40" y1="65" x2="340" y2="65" stroke="#E91E63" strokeWidth="1" opacity="0.3" />
-
-  <text x="40" y="85" fontSize="10" fill="var(--svg-pink-text)">Decide línea por línea, sin anticipación</text>
-  <text x="40" y="105" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Un mal corte envenena la siguiente línea</text>
-  <text x="40" y="125" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Espaciado irregular en el párrafo</text>
-  <text x="40" y="145" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Ríos de espacio en blanco</text>
-  <text x="40" y="165" fontSize="10" fill="var(--svg-mid-text)">&#x2717;  Sin modelo de coste entre líneas</text>
-  <text x="40" y="185" fontSize="10" fill="var(--svg-mid-text)">= Lo que hace CSS</text>
-
-  {/* Arrow */}
-  <path d="M380,115 L410,115" stroke="var(--svg-stroke)" strokeWidth="2" fill="none" />
-  <polygon points="410,110 420,115 410,120" fill="var(--svg-stroke)" />
-
-  {/* KP column */}
-  <rect x="420" y="30" width="320" height="170" fill="var(--svg-green-fill)" stroke="#4CAF50" strokeWidth="2" rx="6" filter="url(#justShadowEs)" />
-  <text x="580" y="55" textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--svg-green-text)">Knuth-Plass óptimo</text>
-  <line x1="440" y1="65" x2="720" y2="65" stroke="#4CAF50" strokeWidth="1" opacity="0.3" />
-
-  <text x="440" y="85" fontSize="10" fill="var(--svg-green-text)">Evalúa todos los conjuntos de ruptura</text>
-  <text x="440" y="105" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Deméritos globalmente mínimos</text>
-  <text x="440" y="125" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Espaciado uniforme en todo el texto</text>
-  <text x="440" y="145" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Penalización por guiones consecutivos</text>
-  <text x="440" y="165" fontSize="10" fill="var(--svg-green-text)">&#x2713;  Suavidad de clase de ajuste</text>
-  <text x="440" y="185" fontSize="10" fill="var(--svg-green-text)">= Lo que hace Postext</text>
-</svg>
+<Illustration name="GreedyVsKnuthPlass" data='{"title": "Primer ajuste voraz frente a Knuth-Plass óptimo", "desc": "Ilustración lado a lado: el algoritmo voraz toma la primera línea que cabe y envenena las líneas siguientes, produciendo párrafos desiguales con espaciado irregular. Knuth-Plass evalúa el párrafo completo globalmente y produce líneas parejas.", "caption": "Una decisión voraz local pierde donde un plan globalmente óptimo gana.", "greedyTitle": "Primer ajuste voraz", "greedyLead": "Decide línea a línea, sin mirar adelante", "greedyCons": ["Un mal corte envenena la siguiente línea", "Espaciado desigual en el párrafo", "Ríos de espacio en blanco", "Sin modelo de coste entre líneas adyacentes"], "greedyEquals": "= Lo que hace CSS", "kpTitle": "Knuth-Plass óptimo", "kpLead": "Evalúa cada conjunto de cortes posible", "kpPros": ["Deméritos globalmente mínimos", "Espaciado parejo en todo el párrafo", "Penalización de guiones consecutivos", "Suavidad de clases de aptitud"], "kpEquals": "= Lo que hace Postext"}' />
 
 La diferencia práctica es visible. En una composición voraz, encontrarás párrafos donde una línea es notablemente más floja que sus vecinas — y si miras con cuidado, verás que ocurrió porque la línea *anterior* tomó una palabra de más. Knuth-Plass evita esto intercambiando una línea actual ligeramente peor por una siguiente mucho mejor, porque puede ver las consecuencias.
 
@@ -150,6 +121,8 @@ Ambos caminos calculan el `justifiedSpaceRatio` por línea — el ancho real del
 
 
 ## Separación silábica
+
+<Illustration name="HyphenationExample" data='{"title": "Texto justificado con y sin separación silábica", "desc": "La columna izquierda no usa separación silábica: los anchos de línea varían mucho porque el motor solo puede mover palabras completas. La columna derecha usa separación: los anchos son casi uniformes y una palabra se parte con guion.", "caption": "La separación silábica reduce drásticamente la variación de espaciado en texto justificado.", "withoutTitle": "Sin separación silábica", "withTitle": "Con separación silábica", "withoutCaption": "Líneas desiguales, huecos largos, ríos visibles.", "withCaption": "Líneas parejas, un guion absorbe la variación."}' />
 
 La separación silábica y la justificación son inseparables. Sin separación silábica, la única forma que tiene el motor de evitar una línea floja es mover una palabra a la línea siguiente — lo que muchas veces solo desplaza el problema. La separación silábica le da al motor un conjunto mucho mayor de puntos de ruptura, mejorando drásticamente la calidad del texto justificado.
 
