@@ -212,6 +212,9 @@ export function buildDocument(
       hyphenate: style.hyphenate,
       firstLineIndentPx: measureFirstLineIndent,
       hangingIndent: measureHangingIndent,
+      optimal: resolved.bodyText.optimalLineBreaking,
+      maxStretchRatio: resolved.bodyText.maxWordSpacing,
+      minShrinkRatio: resolved.bodyText.minWordSpacing,
     };
     const measured = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString
       ? measureRichBlock(
@@ -233,6 +236,7 @@ export function buildDocument(
         );
 
     if (measured.lines.length === 0) continue;
+
 
     if (lineXShift > 0) {
       for (const line of measured.lines) {

@@ -106,6 +106,8 @@ export interface SandboxLabels {
   bodyMaxWordSpacingTooltip: string;
   bodyMinWordSpacing: string;
   bodyMinWordSpacingTooltip: string;
+  bodyOptimalLineBreaking: string;
+  bodyOptimalLineBreakingTooltip: string;
 
   // Headings section
   headings: string;

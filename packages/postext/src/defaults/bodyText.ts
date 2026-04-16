@@ -20,6 +20,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   hangingIndent: false,
   maxWordSpacing: 1.5,
   minWordSpacing: 0.8,
+  optimalLineBreaking: true,
 };
 
 export function hyphenationEqual(a: HyphenationConfig | undefined, b: HyphenationConfig | undefined): boolean {
@@ -51,6 +52,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTex
     hangingIndent: partial.hangingIndent ?? DEFAULT_BODY_TEXT_CONFIG.hangingIndent,
     maxWordSpacing: partial.maxWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing,
     minWordSpacing: partial.minWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.minWordSpacing,
+    optimalLineBreaking: partial.optimalLineBreaking ?? DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking,
   };
 }
 
@@ -118,6 +120,10 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.minWordSpacing !== undefined && bodyText.minWordSpacing !== DEFAULT_BODY_TEXT_CONFIG.minWordSpacing) {
     result.minWordSpacing = bodyText.minWordSpacing;
+    hasOverride = true;
+  }
+  if (bodyText.optimalLineBreaking !== undefined && bodyText.optimalLineBreaking !== DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking) {
+    result.optimalLineBreaking = bodyText.optimalLineBreaking;
     hasOverride = true;
   }
 

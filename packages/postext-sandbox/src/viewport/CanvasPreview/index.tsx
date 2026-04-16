@@ -1,12 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState, useDeferredValue } from 'react';
+import { useEffect, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandbox } from '../../context/SandboxContext';
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, resolveDebugConfig } from 'postext';
-import type { VDTDocument } from 'postext';
+import type { VDTDocument, HyphenationLocale, PostextConfig } from 'postext';
 import { createPageCanvas, createOverlaySvg } from './dom';
 import { drawOverlay } from './overlay';
 import { attachSlotClickHandler } from './interaction';
+
+const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
+  en: 'en-us', es: 'es', fr: 'fr', de: 'de', it: 'it', pt: 'pt', ca: 'ca', nl: 'nl',
+};
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
@@ -59,7 +63,22 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
   const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
   const renderedPagesRef = useRef<Set<number>>(new Set());
   const deferredMarkdown = useDeferredValue(state.markdown);
-  const deferredConfig = useDeferredValue(state.config);
+  const rawDeferredConfig = useDeferredValue(state.config);
+  // Inject app-locale-derived hyphenation locale when user hasn't set one explicitly
+  const deferredConfig = useMemo((): PostextConfig => {
+    if (rawDeferredConfig.bodyText?.hyphenation?.locale) return rawDeferredConfig;
+    const hypLocale = LOCALE_TO_HYPHENATION[state.locale] ?? 'en-us';
+    return {
+      ...rawDeferredConfig,
+      bodyText: {
+        ...rawDeferredConfig.bodyText,
+        hyphenation: {
+          ...rawDeferredConfig.bodyText?.hyphenation,
+          locale: hypLocale,
+        },
+      },
+    };
+  }, [rawDeferredConfig, state.locale]);
   const [resizeKey, setResizeKey] = useState(0);
   const [docVersion, setDocVersion] = useState(0);
 

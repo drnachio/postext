@@ -215,6 +215,8 @@ export interface BodyTextConfig {
   maxWordSpacing?: number;
   /** Min word-spacing when justifying, as a multiplier of the normal space width. */
   minWordSpacing?: number;
+  /** Use Knuth-Plass optimal line breaking instead of greedy first-fit. Default true. */
+  optimalLineBreaking?: boolean;
 }
 
 export interface ResolvedBodyTextConfig {
@@ -233,6 +235,7 @@ export interface ResolvedBodyTextConfig {
   hangingIndent: boolean;
   maxWordSpacing: number;
   minWordSpacing: number;
+  optimalLineBreaking: boolean;
 }
 
 export interface HeadingLevelConfig {

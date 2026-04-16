@@ -281,6 +281,8 @@
     "bodyMaxWordSpacingTooltip": "Maximum allowed word-spacing when justifying, expressed as a multiplier of the natural space width. The engine prefers breaks that stay within this bound (best-effort via hyphenation).",
     "bodyMinWordSpacing": "Min Word-Spacing (× normal)",
     "bodyMinWordSpacingTooltip": "Minimum allowed word-spacing when justifying, expressed as a multiplier of the natural space width.",
+    "bodyOptimalLineBreaking": "Optimal Line Breaking",
+    "bodyOptimalLineBreakingTooltip": "Use the Knuth-Plass algorithm for globally optimal line breaks instead of greedy first-fit.",
     "headings": "Headings",
     "headingsFont": "Font",
     "headingsFontTooltip": "Default font family for all headings",

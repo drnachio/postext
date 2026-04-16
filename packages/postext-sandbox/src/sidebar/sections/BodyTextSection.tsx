@@ -105,6 +105,7 @@ export function BodyTextSection() {
   const isHangingIndentDefault = bodyText.hangingIndent === D.hangingIndent;
   const isMaxWordSpacingDefault = bodyText.maxWordSpacing === D.maxWordSpacing;
   const isMinWordSpacingDefault = bodyText.minWordSpacing === D.minWordSpacing;
+  const isOptimalLineBreakingDefault = bodyText.optimalLineBreaking === D.optimalLineBreaking;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.bodyTextAlignLeft },
@@ -322,6 +323,15 @@ export function BodyTextSection() {
             tooltip={labels.bodyMinWordSpacingTooltip}
             isDefault={isMinWordSpacingDefault}
             onReset={() => resetField('minWordSpacing')}
+          />
+
+          <ToggleSwitch
+            label={labels.bodyOptimalLineBreaking}
+            checked={bodyText.optimalLineBreaking}
+            onChange={(checked) => updateBodyText({ optimalLineBreaking: checked })}
+            tooltip={labels.bodyOptimalLineBreakingTooltip}
+            isDefault={isOptimalLineBreakingDefault}
+            onReset={() => resetField('optimalLineBreaking')}
           />
         </NestedGroup>
       )}

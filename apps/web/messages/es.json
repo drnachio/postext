@@ -281,6 +281,8 @@
     "bodyMaxWordSpacingTooltip": "Espaciado máximo permitido al justificar, expresado como múltiplo del ancho natural del espacio. El motor intentará respetar este límite (mejor esfuerzo mediante hifenación).",
     "bodyMinWordSpacing": "Espaciado mín. entre palabras (× normal)",
     "bodyMinWordSpacingTooltip": "Espaciado mínimo permitido al justificar, expresado como múltiplo del ancho natural del espacio.",
+    "bodyOptimalLineBreaking": "Ruptura de línea óptima",
+    "bodyOptimalLineBreakingTooltip": "Usa el algoritmo Knuth-Plass para rupturas de línea globalmente óptimas en lugar de la estrategia voraz (greedy).",
     "headings": "Títulos",
     "headingsFont": "Fuente",
     "headingsFontTooltip": "Familia tipográfica por defecto para todos los títulos",

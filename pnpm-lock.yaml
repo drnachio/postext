@@ -112,6 +112,33 @@ importers:
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
+      hyphenation.ca:
+        specifier: ^0.2.1
+        version: 0.2.1
+      hyphenation.de:
+        specifier: ^0.2.1
+        version: 0.2.1
+      hyphenation.en-us:
+        specifier: ^0.2.1
+        version: 0.2.1
+      hyphenation.es:
+        specifier: ^0.2.1
+        version: 0.2.1
+      hyphenation.fr:
+        specifier: ^0.2.1
+        version: 0.2.1
+      hyphenation.it:
+        specifier: ^0.2.1
+        version: 0.2.1
+      hyphenation.nl:
+        specifier: ^0.2.1
+        version: 0.2.1
+      hyphenation.pt:
+        specifier: ^0.2.1
+        version: 0.2.1
+      hypher:
+        specifier: ^0.2.5
+        version: 0.2.5
     devDependencies:
       '@postext/typescript-config':
         specifier: workspace:*
@@ -2584,6 +2611,33 @@ packages:
   human-signals@8.0.1:
     resolution: {integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==}
     engines: {node: '>=18.18.0'}
+
+  hyphenation.ca@0.2.1:
+    resolution: {integrity: sha512-cUsAstclykTzi0spFtWgcM3H2P4Xc7ORxObtP74d4AwtxHoYzjakMZjQzG7Vh/p3fSjo6IwWM4x2OFevKDzF/g==}
+
+  hyphenation.de@0.2.1:
+    resolution: {integrity: sha512-s6Y4TFA8xWjRLneOPI6HV/+wzfm2c2yurTvFaXlznmsbeI6waZhMpxu94fSXGNGsrPxrzI1zTtYDEWeEeaANnw==}
+
+  hyphenation.en-us@0.2.1:
+    resolution: {integrity: sha512-ItXYgvIpfN8rfXl/GTBQC7DsSb5PPsKh9gGzViK/iWzCS5mvjDebFJ6xCcIYo8dal+nSp2rUzvTT7BosrKlL8A==}
+
+  hyphenation.es@0.2.1:
+    resolution: {integrity: sha512-SPk6Hc2cdwp1yj5XAax2LCZvpkkl/BPomTlM1SOJj4hcKTefyFhoPLX4AQmjg425WndbXF4j2Pey42OGxDwmMA==}
+
+  hyphenation.fr@0.2.1:
+    resolution: {integrity: sha512-gDaS5KKrk+8aagkHvUxvbG3N/0rSC4Pw7PSK08XG24/1OM2McpkKKMdASc4mF8CJ0dTNAhJBQyrI0u13nO7aWA==}
+
+  hyphenation.it@0.2.1:
+    resolution: {integrity: sha512-rwBqlv+5rlt9pq8qm9GuLEv474FpQ6dYdZCyURkt6xd0cgbx2grgp3WenhWnHVqqAFQtBnq5mxRPMSv4H6Rryg==}
+
+  hyphenation.nl@0.2.1:
+    resolution: {integrity: sha512-/FYDVOuP6rT7QgJmOCAO1e2w5m1n98cuGS50TirFV/8E1+/iBdodqRp8U1CNUM5/80E8/U8enmxd31uke1EkrA==}
+
+  hyphenation.pt@0.2.1:
+    resolution: {integrity: sha512-s1+QlsKuD11q0BQ7/kCuw0/JevC/oktQEqYABUKVv7NN7ORzFeYU2SU+HxyLfz6pP8JvGrWaz9DxzKKzTY8tHA==}
+
+  hypher@0.2.5:
+    resolution: {integrity: sha512-kUTpuyzBWWDO2VakmjHC/cxesg4lKQP+Fdc+7lrK4yvjNjkV9vm5UTZMDAwOyyHTOpbkYrAMlNZHG61NnE9vYQ==}
 
   iconv-lite@0.7.2:
     resolution: {integrity: sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw==}
@@ -6907,6 +6961,40 @@ snapshots:
   human-signals@2.1.0: {}
 
   human-signals@8.0.1: {}
+
+  hyphenation.ca@0.2.1:
+    dependencies:
+      hypher: 0.2.5
+
+  hyphenation.de@0.2.1:
+    dependencies:
+      hypher: 0.2.5
+
+  hyphenation.en-us@0.2.1:
+    dependencies:
+      hypher: 0.2.5
+
+  hyphenation.es@0.2.1:
+    dependencies:
+      hypher: 0.2.5
+
+  hyphenation.fr@0.2.1:
+    dependencies:
+      hypher: 0.2.5
+
+  hyphenation.it@0.2.1:
+    dependencies:
+      hypher: 0.2.5
+
+  hyphenation.nl@0.2.1:
+    dependencies:
+      hypher: 0.2.5
+
+  hyphenation.pt@0.2.1:
+    dependencies:
+      hypher: 0.2.5
+
+  hypher@0.2.5: {}
 
   iconv-lite@0.7.2:
     dependencies:
