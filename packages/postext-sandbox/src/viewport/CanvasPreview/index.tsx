@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandbox } from '../../context/SandboxContext';
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, resolveDebugConfig } from 'postext';
-import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions } from 'postext';
+import { buildDocument, renderPageToCanvas, clearMeasurementCache, createMeasurementCache, resolveDebugConfig } from 'postext';
+import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions, MeasurementCache } from 'postext';
 import { createPageCanvas, createOverlaySvg } from './dom';
 import { drawOverlay } from './overlay';
 import { attachSlotClickHandler } from './interaction';
@@ -79,6 +79,8 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       },
     };
   }, [rawDeferredConfig, state.locale]);
+  const measureCacheRef = useRef<MeasurementCache>(createMeasurementCache());
+  const cacheInvalidationRef = useRef({ config: deferredConfig, resizeKey: 0 });
   const [resizeKey, setResizeKey] = useState(0);
   const [docVersion, setDocVersion] = useState(0);
 
@@ -105,10 +107,17 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
 
     clearMeasurementCache();
 
+    // Invalidate block measurement cache when config or container size changes
+    if (cacheInvalidationRef.current.config !== deferredConfig || cacheInvalidationRef.current.resizeKey !== resizeKey) {
+      measureCacheRef.current = createMeasurementCache();
+      cacheInvalidationRef.current = { config: deferredConfig, resizeKey };
+    }
+
     try {
       const doc = buildDocument(
         { markdown: deferredMarkdown },
         deferredConfig,
+        measureCacheRef.current,
       );
       docRef.current = doc;
 
