@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-15',
+  lastUpdated: '2026-04-16',
   readingTime: '15 min',
   order: 3,
 };
@@ -398,12 +398,18 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>0.8</code></td>
       <td>Límite inferior del espaciado entre palabras en texto justificado, como multiplicador del ancho del espacio normal.</td>
     </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Usar ruptura óptima de líneas Knuth-Plass en lugar de voraz de primer ajuste. Produce un espaciado entre palabras más uniforme en todo el párrafo. Ver <a href="/es/docs/justification">Separación silábica y justificación</a>.</td>
+    </tr>
   </tbody>
 </table>
 
 ### Separación silábica
 
-Cuando la alineación del texto está configurada como `'justify'`, la separación silábica evita el espaciado excesivo entre palabras al romper las palabras largas en los límites silábicos. El motor utiliza reglas según el idioma — patrones de vocales, prefijos y sufijos comunes — para encontrar puntos de ruptura naturales.
+Cuando la alineación del texto está configurada como `'justify'`, la separación silábica evita el espaciado excesivo entre palabras al romper las palabras largas en los límites silábicos. El motor utiliza patrones TeX/Liang para encontrar puntos de ruptura naturales en los límites silábicos. Ver <a href="/es/docs/justification">Separación silábica y justificación</a> para una explicación detallada.
 
 <table>
   <thead>

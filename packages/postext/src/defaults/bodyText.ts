@@ -30,8 +30,8 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
     && (a.locale ?? DEFAULT_HYPHENATION_CONFIG.locale) === (b.locale ?? DEFAULT_HYPHENATION_CONFIG.locale);
 }
 
-export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTextConfig {
-  if (!partial) return { ...DEFAULT_BODY_TEXT_CONFIG, hyphenation: { ...DEFAULT_HYPHENATION_CONFIG } };
+export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?: HyphenationLocale): ResolvedBodyTextConfig {
+  if (!partial) return { ...DEFAULT_BODY_TEXT_CONFIG, hyphenation: { ...DEFAULT_HYPHENATION_CONFIG, locale: documentLocale ?? DEFAULT_HYPHENATION_CONFIG.locale } };
 
   return {
     fontFamily: partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily,
@@ -46,7 +46,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig): ResolvedBodyTex
     boldFontWeight: partial.boldFontWeight ?? DEFAULT_BODY_TEXT_CONFIG.boldFontWeight,
     hyphenation: {
       enabled: partial.hyphenation?.enabled ?? DEFAULT_HYPHENATION_CONFIG.enabled,
-      locale: partial.hyphenation?.locale ?? DEFAULT_HYPHENATION_CONFIG.locale,
+      locale: partial.hyphenation?.locale ?? documentLocale ?? DEFAULT_HYPHENATION_CONFIG.locale,
     },
     firstLineIndent: partial.firstLineIndent ?? DEFAULT_BODY_TEXT_CONFIG.firstLineIndent,
     hangingIndent: partial.hangingIndent ?? DEFAULT_BODY_TEXT_CONFIG.hangingIndent,

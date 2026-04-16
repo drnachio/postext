@@ -478,6 +478,10 @@ export interface PostextConfig {
   typography?: TypographyConfig;
   references?: ReferenceConfig;
 
+  /** Document locale — used as the fallback hyphenation locale when
+   *  `bodyText.hyphenation.locale` is not explicitly set. */
+  locale?: HyphenationLocale;
+
   sectionOverrides?: PostextSectionOverride[];
 
   renderer?: 'web' | 'pdf';
