@@ -11,7 +11,8 @@ import {
 import { parseMarkdown } from '../parse';
 import { computeHeadingNumbers, type HeadingTemplates } from '../numbering';
 import { extractFrontmatter } from '../frontmatter';
-import { measureBlock, measureRichBlock, initHyphenator } from '../measure';
+import { measureBlock, measureRichBlock, cachedMeasureBlock, cachedMeasureRichBlock, initHyphenator } from '../measure';
+import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid } from './config';
 import type { BlockStyle } from './styles';
 import { resolveBodyStyle, resolveHeadingStyle, resolveBlockquoteStyle } from './styles';
@@ -35,6 +36,7 @@ import {
 export function buildDocument(
   content: PostextContent,
   config?: PostextConfig,
+  cache?: MeasurementCache,
 ): VDTDocument {
   const resolved = resolveAllConfig(config);
   const dpi = resolved.page.dpi;
@@ -216,24 +218,14 @@ export function buildDocument(
       maxStretchRatio: resolved.bodyText.maxWordSpacing,
       minShrinkRatio: resolved.bodyText.minWordSpacing,
     };
-    const measured = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString
-      ? measureRichBlock(
-          contentBlock.spans,
-          style.fontString,
-          style.boldFontString,
-          style.italicFontString,
-          style.boldItalicFontString,
-          measureMaxWidth,
-          style.lineHeightPx,
-          measureOptions,
-        )
-      : measureBlock(
-          contentBlock.text,
-          style.fontString,
-          measureMaxWidth,
-          style.lineHeightPx,
-          measureOptions,
-        );
+    const useRich = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString;
+    const measured = cache
+      ? (useRich
+          ? cachedMeasureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions, cache)
+          : cachedMeasureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions, cache))
+      : (useRich
+          ? measureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions)
+          : measureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions));
 
     if (measured.lines.length === 0) continue;
 
