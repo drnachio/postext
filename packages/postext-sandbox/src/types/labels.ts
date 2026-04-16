@@ -67,6 +67,8 @@ export interface SandboxLabels {
   debugLooseLinesColorTooltip: string;
   debugLooseLinesThreshold: string;
   debugLooseLinesThresholdTooltip: string;
+  debugPageNegative: string;
+  debugPageNegativeTooltip: string;
 
   // Body text section
   bodyText: string;

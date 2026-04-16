@@ -1,6 +1,7 @@
 export { createLayout } from './createLayout';
 export { buildDocument } from './pipeline';
 export { renderToCanvas, renderPage, renderPageToCanvas } from './canvas-backend';
+export type { RenderPageOptions } from './canvas-backend';
 export { dimensionToPx } from './units';
 export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache } from './measure';
 export type { MeasuredBlock, MeasureBlockOptions } from './measure';

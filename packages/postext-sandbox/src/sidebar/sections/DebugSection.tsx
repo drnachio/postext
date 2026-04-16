@@ -109,6 +109,16 @@ export function DebugSection() {
     });
   };
 
+  const resetPageNegativeField = (field: 'enabled') => {
+    if (!rawDebug?.pageNegative) return;
+    const nextDebug: DebugConfig = { ...rawDebug };
+    delete nextDebug.pageNegative;
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { debug: Object.keys(nextDebug).length > 0 ? nextDebug : undefined },
+    });
+  };
+
   const resetDebugSection = () => {
     const patch: Partial<PostextConfig> = { debug: undefined };
     if (rawPage?.baselineGrid) {
@@ -132,6 +142,7 @@ export function DebugSection() {
   const isLooseLineEnabledDefault = debug.looseLineHighlight.enabled === DD.looseLineHighlight.enabled;
   const isLooseLineColorDefault = colorsEqual(debug.looseLineHighlight.color, DD.looseLineHighlight.color);
   const isLooseLineThresholdDefault = debug.looseLineHighlight.threshold === DD.looseLineHighlight.threshold;
+  const isPageNegativeEnabledDefault = debug.pageNegative.enabled === DD.pageNegative.enabled;
 
   const hasOverrides =
     (rawPage?.baselineGrid !== undefined && Object.keys(rawPage.baselineGrid).length > 0) ||
@@ -278,6 +289,17 @@ export function DebugSection() {
           />
         </NestedGroup>
       )}
+
+      <ToggleSwitch
+        label={labels.debugPageNegative}
+        checked={debug.pageNegative.enabled}
+        onChange={(v) =>
+          updateDebug({ pageNegative: { enabled: v } })
+        }
+        tooltip={labels.debugPageNegativeTooltip}
+        isDefault={isPageNegativeEnabledDefault}
+        onReset={() => resetPageNegativeField('enabled')}
+      />
     </CollapsibleSection>
   );
 }

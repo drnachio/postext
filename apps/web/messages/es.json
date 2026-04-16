@@ -244,6 +244,8 @@
     "debugLooseLinesColorTooltip": "Color de relleno con el que se marcan las líneas flojas en la previsualización",
     "debugLooseLinesThreshold": "Umbral (× espacio normal)",
     "debugLooseLinesThresholdTooltip": "Proporción entre el espaciado justificado y el ancho natural del espacio. Las líneas por encima de este valor se marcan. Por defecto 1.5 (150%).",
+    "debugPageNegative": "Negativo de página",
+    "debugPageNegativeTooltip": "Aplica un filtro de color inverso (negativo) al contenido de las páginas en el canvas",
     "bodyText": "Cuerpo de texto",
     "bodyFont": "Fuente",
     "bodyFontTooltip": "Familia tipográfica del cuerpo de texto",

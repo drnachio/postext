@@ -9,6 +9,7 @@ export const DEFAULT_DEBUG_CONFIG: ResolvedDebugConfig = {
     color: { hex: '#ff000040', model: 'hex' },
     threshold: 3,
   },
+  pageNegative: { enabled: false },
 };
 
 export function resolveDebugConfig(partial?: DebugConfig): ResolvedDebugConfig {
@@ -17,6 +18,7 @@ export function resolveDebugConfig(partial?: DebugConfig): ResolvedDebugConfig {
       cursorSync: { ...DEFAULT_DEBUG_CONFIG.cursorSync },
       selectionSync: { ...DEFAULT_DEBUG_CONFIG.selectionSync },
       looseLineHighlight: { ...DEFAULT_DEBUG_CONFIG.looseLineHighlight },
+      pageNegative: { ...DEFAULT_DEBUG_CONFIG.pageNegative },
     };
   }
   return {
@@ -32,6 +34,9 @@ export function resolveDebugConfig(partial?: DebugConfig): ResolvedDebugConfig {
       enabled: partial.looseLineHighlight?.enabled ?? DEFAULT_DEBUG_CONFIG.looseLineHighlight.enabled,
       color: partial.looseLineHighlight?.color ?? DEFAULT_DEBUG_CONFIG.looseLineHighlight.color,
       threshold: partial.looseLineHighlight?.threshold ?? DEFAULT_DEBUG_CONFIG.looseLineHighlight.threshold,
+    },
+    pageNegative: {
+      enabled: partial.pageNegative?.enabled ?? DEFAULT_DEBUG_CONFIG.pageNegative.enabled,
     },
   };
 }
@@ -74,6 +79,14 @@ export function stripDebugDefaults(debug?: DebugConfig): DebugConfig | undefined
         ...(colorOverride ? { color: debug.looseLineHighlight.color } : {}),
         ...(thresholdOverride ? { threshold: debug.looseLineHighlight.threshold } : {}),
       };
+      hasOverride = true;
+    }
+  }
+
+  if (debug.pageNegative) {
+    const enabledOverride = debug.pageNegative.enabled !== undefined && debug.pageNegative.enabled !== DEFAULT_DEBUG_CONFIG.pageNegative.enabled;
+    if (enabledOverride) {
+      result.pageNegative = { enabled: debug.pageNegative.enabled };
       hasOverride = true;
     }
   }

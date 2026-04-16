@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandbox } from '../../context/SandboxContext';
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, resolveDebugConfig } from 'postext';
-import type { VDTDocument, HyphenationLocale, PostextConfig } from 'postext';
+import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions } from 'postext';
 import { createPageCanvas, createOverlaySvg } from './dom';
 import { drawOverlay } from './overlay';
 import { attachSlotClickHandler } from './interaction';
@@ -249,12 +249,14 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         // Pre-render pages that were visible in the previous document so the
         // swap from old DOM to new DOM shows already-painted pixels. Any page
         // not in the new doc is simply skipped.
+        const debugConfig = resolveDebugConfig(deferredConfig.debug);
+        const renderOpts: RenderPageOptions = { pageNegative: debugConfig.pageNegative.enabled };
         const renderedSet = new Set<number>();
         for (const pageIndex of previouslyRendered) {
           const canvas = canvasMap.get(pageIndex);
           const page = doc.pages[pageIndex];
           if (!canvas || !page) continue;
-          renderPageToCanvas(page, doc, canvas);
+          renderPageToCanvas(page, doc, canvas, renderOpts);
           renderedSet.add(pageIndex);
         }
         renderedPagesRef.current = renderedSet;
@@ -272,7 +274,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
               if (!canvas || !docRef.current) continue;
 
               if (entry.isIntersecting && !renderedSet.has(idx)) {
-                renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas);
+                renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, renderOpts);
                 renderedSet.add(idx);
               } else if (!entry.isIntersecting && renderedSet.has(idx)) {
                 // Release GPU memory for off-screen pages

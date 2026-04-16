@@ -72,6 +72,8 @@ export function SandboxPage() {
     debugLooseLinesColorTooltip: t("debugLooseLinesColorTooltip"),
     debugLooseLinesThreshold: t("debugLooseLinesThreshold"),
     debugLooseLinesThresholdTooltip: t("debugLooseLinesThresholdTooltip"),
+    debugPageNegative: t("debugPageNegative"),
+    debugPageNegativeTooltip: t("debugPageNegativeTooltip"),
     bodyText: t("bodyText"),
     bodyFont: t("bodyFont"),
     bodyFontTooltip: t("bodyFontTooltip"),

@@ -244,6 +244,8 @@
     "debugLooseLinesColorTooltip": "Fill color used to mark loose lines on the preview",
     "debugLooseLinesThreshold": "Threshold (× normal space)",
     "debugLooseLinesThresholdTooltip": "Ratio of justified word-spacing to the normal space width. Lines above this value are flagged. Default 1.5 (150%).",
+    "debugPageNegative": "Page Negative",
+    "debugPageNegativeTooltip": "Apply an inverse (negative) color filter to the page content on the canvas",
     "bodyText": "Body Text",
     "bodyFont": "Font",
     "bodyFontTooltip": "Font family for the body text",

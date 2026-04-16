@@ -447,12 +447,14 @@ export interface DebugConfig {
   cursorSync?: SyncIndicatorConfig;
   selectionSync?: SyncIndicatorConfig;
   looseLineHighlight?: LooseLineHighlightConfig;
+  pageNegative?: { enabled: boolean };
 }
 
 export interface ResolvedDebugConfig {
   cursorSync: { enabled: boolean; color: ColorValue };
   selectionSync: { enabled: boolean; color: ColorValue };
   looseLineHighlight: { enabled: boolean; color: ColorValue; threshold: number };
+  pageNegative: { enabled: boolean };
 }
 
 export interface PostextSectionOverride {
