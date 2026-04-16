@@ -109,7 +109,7 @@ export function DebugSection() {
     });
   };
 
-  const resetPageNegativeField = (field: 'enabled') => {
+  const resetPageNegativeField = (_field: 'enabled') => {
     if (!rawDebug?.pageNegative) return;
     const nextDebug: DebugConfig = { ...rawDebug };
     delete nextDebug.pageNegative;
