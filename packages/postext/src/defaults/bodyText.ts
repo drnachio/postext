@@ -1,4 +1,4 @@
-import type { BodyTextConfig, ResolvedBodyTextConfig, HyphenationConfig } from '../types';
+import type { BodyTextConfig, ResolvedBodyTextConfig, HyphenationConfig, HyphenationLocale } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
