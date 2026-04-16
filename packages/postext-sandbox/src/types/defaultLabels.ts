@@ -60,6 +60,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   debugLooseLinesColorTooltip: 'Fill color used to mark loose lines on the canvas',
   debugLooseLinesThreshold: 'Threshold',
   debugLooseLinesThresholdTooltip: 'Multiplier of the normal space width above which a justified line is considered loose',
+  debugPageNegative: 'Page Negative',
+  debugPageNegativeTooltip: 'Apply an inverse (negative) color filter to the page content on the canvas',
   bodyText: 'Body Text',
   bodyFont: 'Font',
   bodyFontTooltip: 'Font family for the body text',

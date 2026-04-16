@@ -316,16 +316,26 @@ function computeContentArea(page: VDTPage, doc: VDTDocument): BoundingBox {
   return { x: marginLeft, y: marginTop, width: 0, height: 0 };
 }
 
+export interface RenderPageOptions {
+  pageNegative?: boolean;
+}
+
 export function renderPageToCanvas(
   page: VDTPage,
   doc: VDTDocument,
   canvas: HTMLCanvasElement,
+  options?: RenderPageOptions,
 ): void {
   canvas.width = Math.round(page.width);
   canvas.height = Math.round(page.height);
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
+
+  // Apply invert filter when pageNegative debug flag is active
+  if (options?.pageNegative) {
+    ctx.filter = 'invert(1)';
+  }
 
   // Background
   const bgColor = doc.config.page.backgroundColor.hex;
@@ -388,6 +398,11 @@ export function renderPageToCanvas(
       renderBlock(ctx, block, col.bbox.width, col.bbox.x);
     }
     ctx.restore();
+  }
+
+  // Restore filter before drawing crop marks (they should not be inverted)
+  if (options?.pageNegative) {
+    ctx.filter = 'none';
   }
 
   // Crop marks (drawn last, on top of everything)

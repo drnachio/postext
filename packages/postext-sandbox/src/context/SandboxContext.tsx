@@ -134,36 +134,33 @@ export function SandboxProvider({
 
   const defaultMd = initialMarkdown ?? DEFAULT_MARKDOWN;
 
-  const [state, dispatch] = useReducer(sandboxReducer, {
-    markdown: defaultMd,
-    defaultMarkdown: defaultMd,
-    config: initialConfig ?? DEFAULT_CONFIG,
-    activePanel: 'markdown' as PanelId,
-    sidebarPercent: 25,
-    sidebarDragging: false,
-    activeViewport: 'canvas' as ViewportTab,
-    labels: mergedLabels,
-    locale: locale ?? 'en',
-    selection: { from: 0, to: 0 },
-    editorFocused: false,
-    pendingEditorFocus: null,
-  });
-
-  // Hydrate from localStorage after mount
-  const hydratedRef = useRef(false);
-
-  useEffect(() => {
+  const [state, dispatch] = useReducer(sandboxReducer, undefined, () => {
     const savedMarkdown = loadMarkdown();
     const savedConfig = loadConfig();
     const savedViewport = loadViewport() as ViewportTab | null;
     const savedPercent = loadSidebarPercent();
     const savedPanel = loadPanel() as PanelId | null | undefined;
 
-    if (savedMarkdown) dispatch({ type: 'SET_MARKDOWN', payload: savedMarkdown });
-    if (savedConfig) dispatch({ type: 'SET_CONFIG', payload: savedConfig });
-    if (savedViewport) dispatch({ type: 'SET_VIEWPORT', payload: savedViewport });
-    if (savedPercent !== null) dispatch({ type: 'SET_SIDEBAR_PERCENT', payload: savedPercent });
-    if (savedPanel !== undefined) dispatch({ type: 'SET_PANEL', payload: savedPanel });
+    return {
+      markdown: savedMarkdown ?? defaultMd,
+      defaultMarkdown: defaultMd,
+      config: savedConfig ?? initialConfig ?? DEFAULT_CONFIG,
+      activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
+      sidebarPercent: savedPercent ?? 25,
+      sidebarDragging: false,
+      activeViewport: (savedViewport as ViewportTab) ?? ('canvas' as ViewportTab),
+      labels: mergedLabels,
+      locale: locale ?? 'en',
+      selection: { from: 0, to: 0 },
+      editorFocused: false,
+      pendingEditorFocus: null,
+    };
+  });
+
+  // Skip redundant initial save — state already contains localStorage values
+  const hydratedRef = useRef(false);
+
+  useEffect(() => {
     hydratedRef.current = true;
   }, []);
 

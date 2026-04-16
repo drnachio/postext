@@ -72,6 +72,8 @@ export function SandboxPage() {
     debugLooseLinesColorTooltip: t("debugLooseLinesColorTooltip"),
     debugLooseLinesThreshold: t("debugLooseLinesThreshold"),
     debugLooseLinesThresholdTooltip: t("debugLooseLinesThresholdTooltip"),
+    debugPageNegative: t("debugPageNegative"),
+    debugPageNegativeTooltip: t("debugPageNegativeTooltip"),
     bodyText: t("bodyText"),
     bodyFont: t("bodyFont"),
     bodyFontTooltip: t("bodyFontTooltip"),
@@ -322,6 +324,9 @@ export function SandboxPage() {
     colorPaletteDeleteInUseNote: t("colorPaletteDeleteInUseNote"),
   };
 
+  // PostextSandbox automatically preloads all fonts referenced in the config
+  // (from localStorage or initialConfig) before rendering content — no FOUT.
+  // For custom integrations, use: await preloadConfigFonts(config)
   return (
     <PostextSandbox
       initialMarkdown={initialMarkdown}
