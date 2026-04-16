@@ -1,6 +1,6 @@
 {
   "name": "postext",
-  "version": "0.1.10",
+  "version": "0.1.12",
   "description": "A programmable typesetter for the web. Layout engine that applies professional editorial rules — columns, orphan/widow prevention, resource placement, footnotes — to semantic content. Built on @chenglou/pretext for DOM-free text measurement.",
   "type": "module",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "dev": "tsc --watch",
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
