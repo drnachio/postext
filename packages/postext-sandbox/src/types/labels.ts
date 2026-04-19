@@ -136,6 +136,8 @@ export interface SandboxLabels {
   bodyAvoidOrphansInListsTooltip: string;
   bodyAvoidWidowsInLists: string;
   bodyAvoidWidowsInListsTooltip: string;
+  bodyKeepColonWithList: string;
+  bodyKeepColonWithListTooltip: string;
 
   // Headings section
   headings: string;
@@ -168,6 +170,8 @@ export interface SandboxLabels {
   headingsTextAlignTooltip: string;
   headingsTextAlignLeft: string;
   headingsTextAlignJustify: string;
+  headingsKeepWithNext: string;
+  headingsKeepWithNextTooltip: string;
   headingFontWeight: string;
   headingFontWeightTooltip: string;
   headingMarginTop: string;

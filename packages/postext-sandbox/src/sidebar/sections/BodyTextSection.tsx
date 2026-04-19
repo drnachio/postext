@@ -119,6 +119,7 @@ export function BodyTextSection() {
   const isRuntMinCharactersDefault = bodyText.runtMinCharacters === D.runtMinCharacters;
   const isRuntPenaltyDefault = bodyText.runtPenalty === D.runtPenalty;
   const isAvoidRuntsInListsDefault = bodyText.avoidRuntsInLists === D.avoidRuntsInLists;
+  const isKeepColonWithListDefault = bodyText.keepColonWithList === D.keepColonWithList;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.bodyTextAlignLeft },
@@ -492,6 +493,15 @@ export function BodyTextSection() {
           />
         </NestedGroup>
       )}
+
+      <ToggleSwitch
+        label={labels.bodyKeepColonWithList}
+        checked={bodyText.keepColonWithList}
+        onChange={(checked) => updateBodyText({ keepColonWithList: checked })}
+        tooltip={labels.bodyKeepColonWithListTooltip}
+        isDefault={isKeepColonWithListDefault}
+        onReset={() => resetField('keepColonWithList')}
+      />
     </CollapsibleSection>
   );
 }

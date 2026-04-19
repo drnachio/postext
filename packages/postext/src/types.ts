@@ -260,6 +260,12 @@ export interface BodyTextConfig {
   /** When true, list items also receive the runt penalty (not just paragraphs).
    *  Only effective when `avoidRunts` is true. Default true. */
   avoidRuntsInLists?: boolean;
+  /** When true, a paragraph ending with a colon that directly introduces a
+   *  list is kept joined to the list: if placing the paragraph would leave no
+   *  room for the first list item in the same column/page, the colon-bearing
+   *  last line is moved to the next column together with the list (or the
+   *  whole paragraph, if it is a single line). Default true. */
+  keepColonWithList?: boolean;
 }
 
 export interface ResolvedBodyTextConfig {
@@ -292,6 +298,7 @@ export interface ResolvedBodyTextConfig {
   runtMinCharacters: number;
   runtPenalty: number;
   avoidRuntsInLists: boolean;
+  keepColonWithList: boolean;
 }
 
 export interface HeadingLevelConfig {
@@ -328,6 +335,11 @@ export interface HeadingsConfig {
   fontWeight?: number;
   marginTop?: Dimension;
   marginBottom?: Dimension;
+  /** When true, a heading is never placed as the last element of a column/page.
+   *  If the following block would not have at least one line of room after the
+   *  heading, the heading is pushed to the next column/page so it stays joined
+   *  to its text. Default true. */
+  keepWithNext?: boolean;
   levels?: HeadingLevelConfig[];
 }
 
@@ -339,6 +351,7 @@ export interface ResolvedHeadingsConfig {
   fontWeight: number;
   marginTop: Dimension;
   marginBottom: Dimension;
+  keepWithNext: boolean;
   levels: ResolvedHeadingLevelConfig[];
 }
 
