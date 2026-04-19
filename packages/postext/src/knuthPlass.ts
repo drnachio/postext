@@ -70,6 +70,12 @@ export interface KPOptions {
   consecutiveHyphenDemerit?: number;
   /** Penalty for adjacent lines of very different tightness. */
   fitnessClassDemerit?: number;
+  /** Demerit added when the final line of the paragraph is shorter than
+   *  `runtMinWidth`. 0 (default) disables runt avoidance. */
+  runtPenalty?: number;
+  /** Minimum content width (in px) the final line must have to avoid the runt
+   *  penalty. Typically `runtMinCharacters * normalSpaceWidth`. */
+  runtMinWidth?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +127,10 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
     lineWidth,
     consecutiveHyphenDemerit = DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT,
     fitnessClassDemerit = DEFAULT_FITNESS_CLASS_DEMERIT,
+    runtPenalty = 0,
+    runtMinWidth = 0,
   } = options;
+  const terminalBreakPosition = items.length - 1;
 
   // Running totals up to current item
   let sumWidth = 0;
@@ -278,6 +287,18 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
       const fc = classifyFitness(r);
       if (Math.abs(fc - a.fitnessClass) > 1) {
         d += fitnessClassDemerit;
+      }
+
+      // Runt demerit — when this break closes the paragraph, penalize a
+      // too-short final line. `contentWidth` here is the last line's actual
+      // content width (before the infinite-stretch final glue is rendered).
+      if (
+        runtPenalty > 0 &&
+        i === terminalBreakPosition &&
+        contentWidth > 0 &&
+        contentWidth < runtMinWidth
+      ) {
+        d += runtPenalty;
       }
 
       const totalDemerits = a.totalDemerits + d;

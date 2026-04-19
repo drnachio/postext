@@ -32,6 +32,7 @@ import {
   advanceToNextColumn,
   placeBlockInColumn,
 } from './placement';
+import { chooseParagraphSplit } from './orphanWidow';
 
 export function buildDocument(
   content: PostextContent,
@@ -209,6 +210,7 @@ export function buildDocument(
         measureHangingIndent = false;
       }
     }
+    const runtActive = vdtType === 'paragraph' && resolved.bodyText.avoidRunts;
     const measureOptions = {
       textAlign: style.textAlign,
       hyphenate: style.hyphenate,
@@ -217,6 +219,8 @@ export function buildDocument(
       optimal: resolved.bodyText.optimalLineBreaking,
       maxStretchRatio: resolved.bodyText.maxWordSpacing,
       minShrinkRatio: resolved.bodyText.minWordSpacing,
+      runtPenalty: runtActive ? resolved.bodyText.runtPenalty : 0,
+      runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     };
     const useRich = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString;
     const measured = cache
@@ -392,42 +396,54 @@ export function buildDocument(
         break;
       }
 
-      // Block doesn't fit — try to split
-      if (canSplit && linesPerAvailable >= 2) {
-        // Consume spacing
-        if (spacingBefore > 0) {
-          curCol.availableHeight -= spacingBefore;
+      // Block doesn't fit — try to split (orphan/widow-aware)
+      if (canSplit && linesPerAvailable >= 1) {
+        const choice = chooseParagraphSplit(remainingLines.length, linesPerAvailable, {
+          avoidOrphans: resolved.bodyText.avoidOrphans,
+          orphanMinLines: resolved.bodyText.orphanMinLines,
+          orphanPenalty: resolved.bodyText.orphanPenalty,
+          avoidWidows: resolved.bodyText.avoidWidows,
+          widowMinLines: resolved.bodyText.widowMinLines,
+          widowPenalty: resolved.bodyText.widowPenalty,
+          slackWeight: resolved.bodyText.slackWeight,
+        });
+        if (choice.splitAt > 0) {
+          // Consume spacing
+          if (spacingBefore > 0) {
+            curCol.availableHeight -= spacingBefore;
+          }
+
+          const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
+          const splitLines = remainingLines.slice(0, choice.splitAt);
+
+          const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
+          if (style.boldFontString) blk.boldFontString = style.boldFontString;
+          if (style.italicFontString) blk.italicFontString = style.italicFontString;
+          if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+          if (style.boldColor) blk.boldColor = style.boldColor;
+          if (style.italicColor) blk.italicColor = style.italicColor;
+          if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
+          blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
+          blk.dirty = false;
+          blk.snappedToGrid = false;
+          if (splitLines.length > 0) {
+            blk.sourceStart = splitLines[0]!.sourceStart;
+            blk.sourceEnd = splitLines[splitLines.length - 1]!.sourceEnd;
+          }
+          blk.sourceMap = absoluteSourceMap;
+          blk.plainPrefixLen = prefixLen;
+
+          const splitHeight = choice.splitAt * style.lineHeightPx;
+          placeBlockInColumn(blk, splitHeight, curCol, cursor);
+          doc.blocks.push(blk);
+
+          remainingLines = remainingLines.slice(choice.splitAt);
+          partIndex++;
+          pendingSpacing = 0;
+          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+          continue;
         }
-
-        const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
-        const splitLines = remainingLines.slice(0, linesPerAvailable);
-
-        const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
-        if (style.boldFontString) blk.boldFontString = style.boldFontString;
-        if (style.italicFontString) blk.italicFontString = style.italicFontString;
-        if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
-        if (style.boldColor) blk.boldColor = style.boldColor;
-        if (style.italicColor) blk.italicColor = style.italicColor;
-        if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
-        blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
-        blk.dirty = false;
-        blk.snappedToGrid = false;
-        if (splitLines.length > 0) {
-          blk.sourceStart = splitLines[0]!.sourceStart;
-          blk.sourceEnd = splitLines[splitLines.length - 1]!.sourceEnd;
-        }
-        blk.sourceMap = absoluteSourceMap;
-        blk.plainPrefixLen = prefixLen;
-
-        const splitHeight = linesPerAvailable * style.lineHeightPx;
-        placeBlockInColumn(blk, splitHeight, curCol, cursor);
-        doc.blocks.push(blk);
-
-        remainingLines = remainingLines.slice(linesPerAvailable);
-        partIndex++;
-        pendingSpacing = 0;
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
-        continue;
+        // choice.splitAt === 0: fall through to push whole paragraph to next column
       }
 
       // Cannot split — advance to next column if current has content

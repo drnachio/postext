@@ -21,6 +21,16 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   maxWordSpacing: 1.5,
   minWordSpacing: 0.8,
   optimalLineBreaking: true,
+  avoidOrphans: true,
+  orphanMinLines: 2,
+  orphanPenalty: 3000,
+  avoidWidows: true,
+  widowMinLines: 2,
+  widowPenalty: 3000,
+  slackWeight: 10,
+  avoidRunts: true,
+  runtMinCharacters: 5,
+  runtPenalty: 1500,
 };
 
 export function hyphenationEqual(a: HyphenationConfig | undefined, b: HyphenationConfig | undefined): boolean {
@@ -53,6 +63,16 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     maxWordSpacing: partial.maxWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing,
     minWordSpacing: partial.minWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.minWordSpacing,
     optimalLineBreaking: partial.optimalLineBreaking ?? DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking,
+    avoidOrphans: partial.avoidOrphans ?? DEFAULT_BODY_TEXT_CONFIG.avoidOrphans,
+    orphanMinLines: partial.orphanMinLines ?? DEFAULT_BODY_TEXT_CONFIG.orphanMinLines,
+    orphanPenalty: partial.orphanPenalty ?? DEFAULT_BODY_TEXT_CONFIG.orphanPenalty,
+    avoidWidows: partial.avoidWidows ?? DEFAULT_BODY_TEXT_CONFIG.avoidWidows,
+    widowMinLines: partial.widowMinLines ?? DEFAULT_BODY_TEXT_CONFIG.widowMinLines,
+    widowPenalty: partial.widowPenalty ?? DEFAULT_BODY_TEXT_CONFIG.widowPenalty,
+    slackWeight: partial.slackWeight ?? DEFAULT_BODY_TEXT_CONFIG.slackWeight,
+    avoidRunts: partial.avoidRunts ?? DEFAULT_BODY_TEXT_CONFIG.avoidRunts,
+    runtMinCharacters: partial.runtMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.runtMinCharacters,
+    runtPenalty: partial.runtPenalty ?? DEFAULT_BODY_TEXT_CONFIG.runtPenalty,
   };
 }
 
@@ -124,6 +144,46 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.optimalLineBreaking !== undefined && bodyText.optimalLineBreaking !== DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking) {
     result.optimalLineBreaking = bodyText.optimalLineBreaking;
+    hasOverride = true;
+  }
+  if (bodyText.avoidOrphans !== undefined && bodyText.avoidOrphans !== DEFAULT_BODY_TEXT_CONFIG.avoidOrphans) {
+    result.avoidOrphans = bodyText.avoidOrphans;
+    hasOverride = true;
+  }
+  if (bodyText.orphanMinLines !== undefined && bodyText.orphanMinLines !== DEFAULT_BODY_TEXT_CONFIG.orphanMinLines) {
+    result.orphanMinLines = bodyText.orphanMinLines;
+    hasOverride = true;
+  }
+  if (bodyText.avoidWidows !== undefined && bodyText.avoidWidows !== DEFAULT_BODY_TEXT_CONFIG.avoidWidows) {
+    result.avoidWidows = bodyText.avoidWidows;
+    hasOverride = true;
+  }
+  if (bodyText.widowMinLines !== undefined && bodyText.widowMinLines !== DEFAULT_BODY_TEXT_CONFIG.widowMinLines) {
+    result.widowMinLines = bodyText.widowMinLines;
+    hasOverride = true;
+  }
+  if (bodyText.orphanPenalty !== undefined && bodyText.orphanPenalty !== DEFAULT_BODY_TEXT_CONFIG.orphanPenalty) {
+    result.orphanPenalty = bodyText.orphanPenalty;
+    hasOverride = true;
+  }
+  if (bodyText.widowPenalty !== undefined && bodyText.widowPenalty !== DEFAULT_BODY_TEXT_CONFIG.widowPenalty) {
+    result.widowPenalty = bodyText.widowPenalty;
+    hasOverride = true;
+  }
+  if (bodyText.slackWeight !== undefined && bodyText.slackWeight !== DEFAULT_BODY_TEXT_CONFIG.slackWeight) {
+    result.slackWeight = bodyText.slackWeight;
+    hasOverride = true;
+  }
+  if (bodyText.avoidRunts !== undefined && bodyText.avoidRunts !== DEFAULT_BODY_TEXT_CONFIG.avoidRunts) {
+    result.avoidRunts = bodyText.avoidRunts;
+    hasOverride = true;
+  }
+  if (bodyText.runtMinCharacters !== undefined && bodyText.runtMinCharacters !== DEFAULT_BODY_TEXT_CONFIG.runtMinCharacters) {
+    result.runtMinCharacters = bodyText.runtMinCharacters;
+    hasOverride = true;
+  }
+  if (bodyText.runtPenalty !== undefined && bodyText.runtPenalty !== DEFAULT_BODY_TEXT_CONFIG.runtPenalty) {
+    result.runtPenalty = bodyText.runtPenalty;
     hasOverride = true;
   }
 
