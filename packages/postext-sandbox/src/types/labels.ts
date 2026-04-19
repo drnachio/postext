@@ -130,6 +130,12 @@ export interface SandboxLabels {
   bodyRuntMinCharactersTooltip: string;
   bodyRuntPenalty: string;
   bodyRuntPenaltyTooltip: string;
+  bodyAvoidRuntsInLists: string;
+  bodyAvoidRuntsInListsTooltip: string;
+  bodyAvoidOrphansInLists: string;
+  bodyAvoidOrphansInListsTooltip: string;
+  bodyAvoidWidowsInLists: string;
+  bodyAvoidWidowsInListsTooltip: string;
 
   // Headings section
   headings: string;

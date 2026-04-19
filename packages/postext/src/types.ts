@@ -226,6 +226,9 @@ export interface BodyTextConfig {
   /** Demerit added when an orphan constraint is violated. Higher = stronger
    *  avoidance. 0 effectively disables the penalty. Default 3000. */
   orphanPenalty?: number;
+  /** When true, list items also receive orphan protection (not just paragraphs).
+   *  Only effective when `avoidOrphans` is true. Default true. */
+  avoidOrphansInLists?: boolean;
   /** When true, discourage a paragraph from starting with fewer than `widowMinLines`
    *  lines at the bottom of the current column. Soft (penalty-based). Default true. */
   avoidWidows?: boolean;
@@ -234,6 +237,9 @@ export interface BodyTextConfig {
   widowMinLines?: number;
   /** Demerit added when a widow constraint is violated. Default 3000. */
   widowPenalty?: number;
+  /** When true, list items also receive widow protection (not just paragraphs).
+   *  Only effective when `avoidWidows` is true. Default true. */
+  avoidWidowsInLists?: boolean;
   /** Weight applied to the squared "unused column space" cost. Higher values make
    *  the layout prefer filling columns tightly; 0 disables the slack pressure.
    *  Default 10. */
@@ -251,6 +257,9 @@ export interface BodyTextConfig {
    *  threshold. Default 1500 (softer than orphan/widow since runts are
    *  aesthetic, not structural). */
   runtPenalty?: number;
+  /** When true, list items also receive the runt penalty (not just paragraphs).
+   *  Only effective when `avoidRunts` is true. Default true. */
+  avoidRuntsInLists?: boolean;
 }
 
 export interface ResolvedBodyTextConfig {
@@ -273,13 +282,16 @@ export interface ResolvedBodyTextConfig {
   avoidOrphans: boolean;
   orphanMinLines: number;
   orphanPenalty: number;
+  avoidOrphansInLists: boolean;
   avoidWidows: boolean;
   widowMinLines: number;
   widowPenalty: number;
+  avoidWidowsInLists: boolean;
   slackWeight: number;
   avoidRunts: boolean;
   runtMinCharacters: number;
   runtPenalty: number;
+  avoidRuntsInLists: boolean;
 }
 
 export interface HeadingLevelConfig {

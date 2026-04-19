@@ -24,13 +24,16 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   avoidOrphans: true,
   orphanMinLines: 2,
   orphanPenalty: 3000,
+  avoidOrphansInLists: true,
   avoidWidows: true,
   widowMinLines: 2,
   widowPenalty: 3000,
+  avoidWidowsInLists: true,
   slackWeight: 10,
   avoidRunts: true,
   runtMinCharacters: 5,
   runtPenalty: 1500,
+  avoidRuntsInLists: true,
 };
 
 export function hyphenationEqual(a: HyphenationConfig | undefined, b: HyphenationConfig | undefined): boolean {
@@ -66,13 +69,16 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     avoidOrphans: partial.avoidOrphans ?? DEFAULT_BODY_TEXT_CONFIG.avoidOrphans,
     orphanMinLines: partial.orphanMinLines ?? DEFAULT_BODY_TEXT_CONFIG.orphanMinLines,
     orphanPenalty: partial.orphanPenalty ?? DEFAULT_BODY_TEXT_CONFIG.orphanPenalty,
+    avoidOrphansInLists: partial.avoidOrphansInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidOrphansInLists,
     avoidWidows: partial.avoidWidows ?? DEFAULT_BODY_TEXT_CONFIG.avoidWidows,
     widowMinLines: partial.widowMinLines ?? DEFAULT_BODY_TEXT_CONFIG.widowMinLines,
     widowPenalty: partial.widowPenalty ?? DEFAULT_BODY_TEXT_CONFIG.widowPenalty,
+    avoidWidowsInLists: partial.avoidWidowsInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidWidowsInLists,
     slackWeight: partial.slackWeight ?? DEFAULT_BODY_TEXT_CONFIG.slackWeight,
     avoidRunts: partial.avoidRunts ?? DEFAULT_BODY_TEXT_CONFIG.avoidRunts,
     runtMinCharacters: partial.runtMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.runtMinCharacters,
     runtPenalty: partial.runtPenalty ?? DEFAULT_BODY_TEXT_CONFIG.runtPenalty,
+    avoidRuntsInLists: partial.avoidRuntsInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists,
   };
 }
 
@@ -170,6 +176,14 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
     result.widowPenalty = bodyText.widowPenalty;
     hasOverride = true;
   }
+  if (bodyText.avoidOrphansInLists !== undefined && bodyText.avoidOrphansInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidOrphansInLists) {
+    result.avoidOrphansInLists = bodyText.avoidOrphansInLists;
+    hasOverride = true;
+  }
+  if (bodyText.avoidWidowsInLists !== undefined && bodyText.avoidWidowsInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidWidowsInLists) {
+    result.avoidWidowsInLists = bodyText.avoidWidowsInLists;
+    hasOverride = true;
+  }
   if (bodyText.slackWeight !== undefined && bodyText.slackWeight !== DEFAULT_BODY_TEXT_CONFIG.slackWeight) {
     result.slackWeight = bodyText.slackWeight;
     hasOverride = true;
@@ -184,6 +198,10 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.runtPenalty !== undefined && bodyText.runtPenalty !== DEFAULT_BODY_TEXT_CONFIG.runtPenalty) {
     result.runtPenalty = bodyText.runtPenalty;
+    hasOverride = true;
+  }
+  if (bodyText.avoidRuntsInLists !== undefined && bodyText.avoidRuntsInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists) {
+    result.avoidRuntsInLists = bodyText.avoidRuntsInLists;
     hasOverride = true;
   }
 

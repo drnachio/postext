@@ -210,7 +210,9 @@ export function buildDocument(
         measureHangingIndent = false;
       }
     }
-    const runtActive = vdtType === 'paragraph' && resolved.bodyText.avoidRunts;
+    const runtActive = resolved.bodyText.avoidRunts
+      && (vdtType === 'paragraph'
+        || (vdtType === 'listItem' && resolved.bodyText.avoidRuntsInLists));
     const measureOptions = {
       textAlign: style.textAlign,
       hyphenate: style.hyphenate,
@@ -280,10 +282,13 @@ export function buildDocument(
 
     const absoluteSourceMap = srcMap.map((o) => o + bodyOffset);
 
-    const finalizeListItem = (blk: VDTBlock) => {
+    const finalizeListItem = (blk: VDTBlock, isFirstPart: boolean) => {
       if (!listBullet) return;
       blk.listDepth = listDepth;
       blk.listKind = listKind;
+      // Bullet (and its positional metadata) only belongs on the first part of
+      // a split list item; continuation parts render without a bullet.
+      if (!isFirstPart) return;
       blk.bulletText = listBullet.bulletText;
       blk.bulletFontString = listBullet.bulletFontString;
       blk.bulletColor = listBullet.bulletColor;
@@ -315,8 +320,10 @@ export function buildDocument(
       (vdtType === 'heading' && !nextIsHeading) ||
       (vdtType === 'listItem' && !nextIsListItem);
 
-    // Place block, splitting across columns/pages if needed
-    const canSplit = vdtType === 'paragraph' || vdtType === 'blockquote';
+    // Place block, splitting across columns/pages if needed.
+    // List items may split too — orphan/widow protection per-list is gated by
+    // `avoidOrphansInLists` / `avoidWidowsInLists`; bullet stays on first part.
+    const canSplit = vdtType === 'paragraph' || vdtType === 'blockquote' || vdtType === 'listItem';
     let remainingLines = [...measured.lines];
     let partIndex = 0;
 
@@ -384,7 +391,7 @@ export function buildDocument(
           h = snappedBottom - usedHeight;
         }
         placeBlockInColumn(blk, h, curCol, cursor);
-        finalizeListItem(blk);
+        finalizeListItem(blk, partIndex === 0);
         doc.blocks.push(blk);
         // For snapped headings/list-tails the margin is baked into the snap;
         // for unsnapped ones (consecutive) track it for collapsing
@@ -397,12 +404,17 @@ export function buildDocument(
       }
 
       // Block doesn't fit — try to split (orphan/widow-aware)
+      const inList = vdtType === 'listItem';
+      const effectiveAvoidOrphans = resolved.bodyText.avoidOrphans
+        && (!inList || resolved.bodyText.avoidOrphansInLists);
+      const effectiveAvoidWidows = resolved.bodyText.avoidWidows
+        && (!inList || resolved.bodyText.avoidWidowsInLists);
       if (canSplit && linesPerAvailable >= 1) {
         const choice = chooseParagraphSplit(remainingLines.length, linesPerAvailable, {
-          avoidOrphans: resolved.bodyText.avoidOrphans,
+          avoidOrphans: effectiveAvoidOrphans,
           orphanMinLines: resolved.bodyText.orphanMinLines,
           orphanPenalty: resolved.bodyText.orphanPenalty,
-          avoidWidows: resolved.bodyText.avoidWidows,
+          avoidWidows: effectiveAvoidWidows,
           widowMinLines: resolved.bodyText.widowMinLines,
           widowPenalty: resolved.bodyText.widowPenalty,
           slackWeight: resolved.bodyText.slackWeight,
@@ -435,6 +447,7 @@ export function buildDocument(
 
           const splitHeight = choice.splitAt * style.lineHeightPx;
           placeBlockInColumn(blk, splitHeight, curCol, cursor);
+          finalizeListItem(blk, partIndex === 0);
           doc.blocks.push(blk);
 
           remainingLines = remainingLines.slice(choice.splitAt);
@@ -473,7 +486,7 @@ export function buildDocument(
       blk.plainPrefixLen = prefixLen;
 
       placeBlockInColumn(blk, totalRemainHeight, curCol, cursor);
-      finalizeListItem(blk);
+      finalizeListItem(blk, partIndex === 0);
       doc.blocks.push(blk);
       if (vdtType === 'listItem') {
         pendingSpacing = nextIsListItem ? listBullet!.itemSpacingPx : style.marginBottomPx;

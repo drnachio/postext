@@ -109,13 +109,16 @@ export function BodyTextSection() {
   const isAvoidOrphansDefault = bodyText.avoidOrphans === D.avoidOrphans;
   const isOrphanMinLinesDefault = bodyText.orphanMinLines === D.orphanMinLines;
   const isOrphanPenaltyDefault = bodyText.orphanPenalty === D.orphanPenalty;
+  const isAvoidOrphansInListsDefault = bodyText.avoidOrphansInLists === D.avoidOrphansInLists;
   const isAvoidWidowsDefault = bodyText.avoidWidows === D.avoidWidows;
   const isWidowMinLinesDefault = bodyText.widowMinLines === D.widowMinLines;
   const isWidowPenaltyDefault = bodyText.widowPenalty === D.widowPenalty;
+  const isAvoidWidowsInListsDefault = bodyText.avoidWidowsInLists === D.avoidWidowsInLists;
   const isSlackWeightDefault = bodyText.slackWeight === D.slackWeight;
   const isAvoidRuntsDefault = bodyText.avoidRunts === D.avoidRunts;
   const isRuntMinCharactersDefault = bodyText.runtMinCharacters === D.runtMinCharacters;
   const isRuntPenaltyDefault = bodyText.runtPenalty === D.runtPenalty;
+  const isAvoidRuntsInListsDefault = bodyText.avoidRuntsInLists === D.avoidRuntsInLists;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.bodyTextAlignLeft },
@@ -379,6 +382,14 @@ export function BodyTextSection() {
             isDefault={isOrphanPenaltyDefault}
             onReset={() => resetField('orphanPenalty')}
           />
+          <ToggleSwitch
+            label={labels.bodyAvoidOrphansInLists}
+            checked={bodyText.avoidOrphansInLists}
+            onChange={(checked) => updateBodyText({ avoidOrphansInLists: checked })}
+            tooltip={labels.bodyAvoidOrphansInListsTooltip}
+            isDefault={isAvoidOrphansInListsDefault}
+            onReset={() => resetField('avoidOrphansInLists')}
+          />
         </NestedGroup>
       )}
 
@@ -414,6 +425,14 @@ export function BodyTextSection() {
             tooltip={labels.bodyWidowPenaltyTooltip}
             isDefault={isWidowPenaltyDefault}
             onReset={() => resetField('widowPenalty')}
+          />
+          <ToggleSwitch
+            label={labels.bodyAvoidWidowsInLists}
+            checked={bodyText.avoidWidowsInLists}
+            onChange={(checked) => updateBodyText({ avoidWidowsInLists: checked })}
+            tooltip={labels.bodyAvoidWidowsInListsTooltip}
+            isDefault={isAvoidWidowsInListsDefault}
+            onReset={() => resetField('avoidWidowsInLists')}
           />
         </NestedGroup>
       )}
@@ -462,6 +481,14 @@ export function BodyTextSection() {
             tooltip={labels.bodyRuntPenaltyTooltip}
             isDefault={isRuntPenaltyDefault}
             onReset={() => resetField('runtPenalty')}
+          />
+          <ToggleSwitch
+            label={labels.bodyAvoidRuntsInLists}
+            checked={bodyText.avoidRuntsInLists}
+            onChange={(checked) => updateBodyText({ avoidRuntsInLists: checked })}
+            tooltip={labels.bodyAvoidRuntsInListsTooltip}
+            isDefault={isAvoidRuntsInListsDefault}
+            onReset={() => resetField('avoidRuntsInLists')}
           />
         </NestedGroup>
       )}
