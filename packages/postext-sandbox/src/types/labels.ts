@@ -331,6 +331,22 @@ export interface SandboxLabels {
   doublePageSpread: string;
   canvasToolbar: string;
 
+  // HTML viewport toolbar
+  fontScaleUp: string;
+  fontScaleDown: string;
+  singleColumn: string;
+  multiColumn: string;
+  htmlToolbar: string;
+
+  // HTML viewer config section
+  htmlViewer: string;
+  htmlViewerMaxCharsPerLine: string;
+  htmlViewerMaxCharsPerLineTooltip: string;
+  htmlViewerColumnGap: string;
+  htmlViewerColumnGapTooltip: string;
+  htmlViewerOptimalLineBreaking: string;
+  htmlViewerOptimalLineBreakingTooltip: string;
+
   // Toolbar actions
   bold: string;
   italic: string;

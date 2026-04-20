@@ -309,6 +309,21 @@ export const DEFAULT_LABELS: SandboxLabels = {
   singlePage: 'Single Page',
   doublePageSpread: 'Double-Page Spread',
   canvasToolbar: 'Canvas toolbar',
+  fontScaleUp: 'Increase Font Size',
+  fontScaleDown: 'Decrease Font Size',
+  singleColumn: 'Single Column',
+  multiColumn: 'Multi Column',
+  htmlToolbar: 'HTML toolbar',
+  htmlViewer: 'HTML Viewer',
+  htmlViewerMaxCharsPerLine: 'Max characters per line',
+  htmlViewerMaxCharsPerLineTooltip:
+    'Target line length used to size the reading column — drives both single-column width and how many columns fit in multi-column mode',
+  htmlViewerColumnGap: 'Column gap',
+  htmlViewerColumnGapTooltip:
+    'Horizontal spacing between columns when the HTML viewer is in multi-column mode',
+  htmlViewerOptimalLineBreaking: 'Optimal line breaking',
+  htmlViewerOptimalLineBreakingTooltip:
+    'Use Knuth-Plass optimal line breaking in the HTML viewer. Off by default for performance — the global body-text setting is overridden here only for HTML rendering',
   bold: 'Bold',
   italic: 'Italic',
   heading: 'Heading',

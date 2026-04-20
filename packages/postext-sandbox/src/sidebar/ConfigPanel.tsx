@@ -13,6 +13,7 @@ import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
+import { HtmlViewerSection } from './sections/HtmlViewerSection';
 import { DebugSection } from './sections/DebugSection';
 
 export function ConfigPanel() {
@@ -113,6 +114,7 @@ export function ConfigPanel() {
         <HeadingsSection />
         <UnorderedListsSection />
         <OrderedListsSection />
+        <HtmlViewerSection />
         <DebugSection />
       </div>
     </div>
