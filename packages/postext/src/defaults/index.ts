@@ -8,7 +8,7 @@ import { stripOrderedListsDefaults } from './orderedLists';
 import { stripDebugDefaults } from './debug';
 import { stripHtmlViewerDefaults } from './htmlViewer';
 
-export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig } from './shared';
+export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, resolvePageConfig, stripPageDefaults } from './page';
 export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripLayoutDefaults } from './layout';
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, hyphenationEqual, resolveBodyTextConfig, stripBodyTextDefaults } from './bodyText';

@@ -3,7 +3,15 @@
     "title": "Postext — Programmable Typesetter for the Web",
     "description": "A layout engine that bridges centuries-old print typesetting craft with modern web technology. Semantic markdown in, publication-grade React components out.",
     "ogTitle": "Postext — Programmable Typesetter for the Web",
-    "ogDescription": "Semantic markdown in, publication-grade React components out."
+    "ogDescription": "Semantic markdown in, publication-grade React components out.",
+    "ogImageAlt": "Postext — Programmable Typesetter for the Web",
+    "keywords": "typesetter, typography, layout engine, react, markdown, pretext, editorial layout, column balancing, orphan widow prevention, hyphenation, pdf, web typography, justification, knuth-plass"
+  },
+  "DocsIndex": {
+    "metaTitle": "Documentation — Postext",
+    "metaDescription": "Guides, references, and tutorials for the Postext programmable typesetter: architecture, configuration, document format, justification, and more.",
+    "ogTitle": "Postext Documentation",
+    "ogDescription": "Guides, references, and tutorials for the Postext programmable typesetter."
   },
   "Navbar": {
     "home": "Postext home",

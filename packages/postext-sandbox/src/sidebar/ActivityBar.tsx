@@ -79,7 +79,7 @@ function PanelNav() {
               onClick={() => dispatch({ type: 'TOGGLE_PANEL', payload: id })}
               aria-label={label}
               aria-pressed={isActive}
-              className="flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
               style={{
                 color: isActive ? 'var(--gilt)' : 'var(--slate)',
                 outlineColor: 'var(--gilt-hover)',

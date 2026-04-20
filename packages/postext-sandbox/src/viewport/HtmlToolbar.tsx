@@ -36,7 +36,7 @@ function ToolbarButton({
         aria-label={label}
         aria-pressed={active}
         disabled={disabled}
-        className="flex shrink-0 items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:opacity-40"
+        className="flex shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:cursor-default disabled:opacity-40"
         style={{
           width: 28,
           height: 28,

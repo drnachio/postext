@@ -149,7 +149,7 @@ function renderLine(line: VDTLine, block: VDTBlock): string {
   );
 }
 
-function renderBlock(block: VDTBlock): string {
+function renderBlockInner(block: VDTBlock): string {
   const parts: string[] = [];
   parts.push(renderBullet(block));
   for (const line of block.lines) {
@@ -158,26 +158,77 @@ function renderBlock(block: VDTBlock): string {
   return parts.join('');
 }
 
-function renderPage(page: VDTPage, background: string): string {
+/**
+ * Render a block wrapped in a `<div class="pt-block" data-block-id="...">`
+ * container with `display:contents` so lines keep their absolute positioning
+ * against the page wrapper. The wrapper exists solely as a stable anchor for
+ * per-block DOM patching — consumers can replace a single block's outerHTML
+ * without touching the rest of the page.
+ */
+function renderBlock(block: VDTBlock): string {
+  return (
+    `<div class="pt-block" data-block-id="${esc(block.id)}" style="display:contents;">` +
+    renderBlockInner(block) +
+    `</div>`
+  );
+}
+
+interface PageRenderResult {
+  /** Full outer HTML including the wrapping <div class="pt-page">. */
+  outerHtml: string;
+  /** Inner HTML (all pt-block wrappers concatenated). */
+  innerHtml: string;
+  /** Per-block outer-HTML strings, in render order. */
+  blocks: Array<{ id: string; html: string }>;
+}
+
+function renderPageDetailed(page: VDTPage, background: string): PageRenderResult {
   const bgDecl = background && background !== 'transparent' ? `background:${background};` : '';
-  const blocks: string[] = [];
+  const blocks: Array<{ id: string; html: string }> = [];
   for (const col of page.columns) {
     for (const block of col.blocks) {
-      blocks.push(renderBlock(block));
+      blocks.push({ id: block.id, html: renderBlock(block) });
     }
   }
-  return (
+  const innerHtml = blocks.map((b) => b.html).join('');
+  const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +
     `width:${page.width}px;` +
     `height:${page.height}px;` +
     `flex-shrink:0;` +
     bgDecl +
-    `">${blocks.join('')}</div>`
-  );
+    `">${innerHtml}</div>`;
+  return { outerHtml, innerHtml, blocks };
 }
 
-export function renderToHtml(doc: VDTDocument, options: RenderHtmlOptions = {}): string {
+function renderPage(page: VDTPage, background: string): string {
+  return renderPageDetailed(page, background).outerHtml;
+}
+
+export interface HtmlRenderIndexPage {
+  index: number;
+  width: number;
+  height: number;
+  innerHtml: string;
+  blocks: Array<{ id: string; html: string }>;
+}
+
+export interface HtmlRenderIndex {
+  html: string;
+  mode: 'single' | 'multi';
+  pages: HtmlRenderIndexPage[];
+}
+
+/**
+ * Like renderToHtml, but also returns a per-page / per-block breakdown that
+ * callers can use to diff against a previous render and patch only the DOM
+ * subtrees whose HTML actually changed.
+ */
+export function renderToHtmlIndexed(
+  doc: VDTDocument,
+  options: RenderHtmlOptions = {},
+): HtmlRenderIndex {
   const mode = options.mode ?? 'multi';
   const gap = options.columnGap ?? 24;
   const padding = options.padding ?? 24;
@@ -189,6 +240,28 @@ export function renderToHtml(doc: VDTDocument, options: RenderHtmlOptions = {}):
       ? `display:flex;flex-direction:row;gap:${gap}px;align-items:flex-start;padding:${padding}px;box-sizing:border-box;width:max-content;`
       : `display:flex;flex-direction:column;align-items:center;padding:${padding}px 0;box-sizing:border-box;`;
 
-  const pages = doc.pages.map((p) => renderPage(p, background)).join('');
-  return `<div class="pt-doc" data-mode="${mode}" style="${docStyle}">${pages}</div>`;
+  const indexedPages: HtmlRenderIndexPage[] = [];
+  const pageHtmlParts: string[] = [];
+  for (const p of doc.pages) {
+    const detail = renderPageDetailed(p, background);
+    pageHtmlParts.push(detail.outerHtml);
+    indexedPages.push({
+      index: p.index,
+      width: p.width,
+      height: p.height,
+      innerHtml: detail.innerHtml,
+      blocks: detail.blocks,
+    });
+  }
+
+  const html =
+    `<div class="pt-doc" data-mode="${mode}" style="${docStyle}">` +
+    pageHtmlParts.join('') +
+    `</div>`;
+
+  return { html, mode, pages: indexedPages };
+}
+
+export function renderToHtml(doc: VDTDocument, options: RenderHtmlOptions = {}): string {
+  return renderToHtmlIndexed(doc, options).html;
 }

@@ -21,7 +21,7 @@ const clampFontScale = (n: number) =>
 
 export function HtmlViewport() {
   const [fontScale, setFontScale] = useState(1);
-  const [columnMode, setColumnMode] = useState<ColumnMode>('single');
+  const [columnMode, setColumnMode] = useState<ColumnMode>('multi');
   const hydratedRef = useRef(false);
 
   useEffect(() => {

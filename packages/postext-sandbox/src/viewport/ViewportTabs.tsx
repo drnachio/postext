@@ -55,7 +55,7 @@ export function ViewportTabs() {
             aria-selected={isActive}
             tabIndex={isActive ? 0 : -1}
             onClick={() => dispatch({ type: 'SET_VIEWPORT', payload: tab })}
-            className="px-4 py-2 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:outline-offset-[-1px]"
+            className="cursor-pointer px-4 py-2 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:outline-offset-[-1px]"
             style={{
               color: isActive ? 'var(--foreground)' : 'var(--slate)',
               borderLeft: '1px solid var(--rule)',

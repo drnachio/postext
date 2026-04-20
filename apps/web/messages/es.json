@@ -3,7 +3,15 @@
     "title": "Postext — Tipógrafo Programable para la Web",
     "description": "Un motor de maquetación que conecta la tradición tipográfica con la web moderna. Recibe markdown semántico, devuelve componentes React con calidad editorial.",
     "ogTitle": "Postext — Tipógrafo Programable para la Web",
-    "ogDescription": "Recibe markdown semántico, devuelve componentes React con calidad editorial."
+    "ogDescription": "Recibe markdown semántico, devuelve componentes React con calidad editorial.",
+    "ogImageAlt": "Postext — Tipógrafo Programable para la Web",
+    "keywords": "tipógrafo, tipografía, motor de maquetación, react, markdown, pretext, maquetación editorial, balanceo de columnas, huérfanas, viudas, separación silábica, pdf, justificación, knuth-plass"
+  },
+  "DocsIndex": {
+    "metaTitle": "Documentación — Postext",
+    "metaDescription": "Guías, referencias y tutoriales del tipógrafo programable Postext: arquitectura, configuración, formato de documento, justificación y más.",
+    "ogTitle": "Documentación de Postext",
+    "ogDescription": "Guías, referencias y tutoriales del tipógrafo programable Postext."
   },
   "Navbar": {
     "home": "Inicio de Postext",

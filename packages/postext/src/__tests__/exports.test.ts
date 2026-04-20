@@ -15,6 +15,8 @@ describe("package exports", () => {
       "renderToCanvas",
       "renderPage",
       "renderPageToCanvas",
+      "renderToHtml",
+      "renderToHtmlIndexed",
       "dimensionToPx",
       "buildFontString",
       "measureBlock",
@@ -55,11 +57,19 @@ describe("package exports", () => {
       "colorsEqual",
       "resolveColorValue",
       "applyPaletteToConfig",
+      "DEFAULT_COLOR_PALETTE",
+      "DEFAULT_MAIN_COLOR",
+      "DEFAULT_MAIN_COLOR_ID",
+      "DEFAULT_MAIN_COLOR_NAME",
+      "DEFAULT_MAIN_COLOR_HEX",
       "stripPageDefaults",
       "stripConfigDefaults",
       "DEFAULT_DEBUG_CONFIG",
       "resolveDebugConfig",
       "stripDebugDefaults",
+      "DEFAULT_HTML_VIEWER_CONFIG",
+      "resolveHtmlViewerConfig",
+      "stripHtmlViewerDefaults",
     ]);
   });
 });

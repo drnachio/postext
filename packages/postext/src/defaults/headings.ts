@@ -1,9 +1,9 @@
 import type { HeadingsConfig, HeadingLevelConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ColorValue, Dimension } from '../types';
-import { dimensionsEqual, colorsEqual } from './shared';
+import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
 
 const DEFAULT_HEADING_FONT = 'Open Sans';
 const DEFAULT_HEADING_LINE_HEIGHT: Dimension = { value: 1.2, unit: 'em' };
-const DEFAULT_HEADING_COLOR: ColorValue = { hex: '#000000', model: 'cmyk' };
+const DEFAULT_HEADING_COLOR: ColorValue = { ...DEFAULT_MAIN_COLOR };
 const DEFAULT_HEADING_FONT_WEIGHT = 700;
 const DEFAULT_HEADING_MARGIN_TOP: Dimension = { value: 1.5, unit: 'em' };
 const DEFAULT_HEADING_MARGIN_BOTTOM: Dimension = { value: 0.5, unit: 'em' };

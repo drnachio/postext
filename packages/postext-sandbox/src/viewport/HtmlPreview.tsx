@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import {
   buildDocument,
-  renderToHtml,
+  renderToHtmlIndexed,
   createMeasurementCache,
   clearMeasurementCache,
   buildFontString,
@@ -18,12 +18,13 @@ import type {
   HyphenationLocale,
   MeasurementCache,
   VDTDocument,
+  HtmlRenderIndex,
 } from 'postext';
 import { useSandbox } from '../context/SandboxContext';
 import { useShadowDom } from '../hooks/useShadowDom';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../controls/fontLoader';
 import { createOverlaySvg } from './CanvasPreview/dom';
-import { drawOverlay } from './CanvasPreview/overlay';
+import { drawOverlay, drawBaselines } from './CanvasPreview/overlay';
 import { attachSlotClickHandler } from './CanvasPreview/interaction';
 
 type ColumnMode = 'single' | 'multi';
@@ -170,7 +171,9 @@ function buildHtmlConfigOverride(
         right: { value: 0, unit: 'px' },
       },
       cutLines: { ...(base.page?.cutLines ?? {}), enabled: false },
-      baselineGrid: { ...(base.page?.baselineGrid ?? {}), enabled: false },
+      // baselineGrid.enabled is a pure display flag (layout uses the grid
+      // value regardless of enabled), so let the user's setting flow through
+      // to drive the SVG overlay in HtmlPreview.
       backgroundColor: { hex: 'transparent', model: 'hex' },
     },
     layout: {
@@ -235,6 +238,13 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
   activePanelRef.current = state.activePanel;
   const docRef = useRef<VDTDocument | null>(null);
   const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
+  // Previous indexed render — drives block-level DOM patching so that an
+  // edit that changed a single paragraph touches only that paragraph's DOM.
+  const lastRenderRef = useRef<HtmlRenderIndex | null>(null);
+  // Signature captured alongside the last render. When any of these differ
+  // on the next pass we fall back to a full innerHTML rebuild instead of
+  // trying to patch.
+  const lastRenderSigRef = useRef<string | null>(null);
   const [docVersion, setDocVersion] = useState(0);
 
   // Latest-value refs so the stable ResizeObserver / font-loader callbacks
@@ -263,9 +273,16 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
     shadow.appendChild(scroll);
     scrollHostRef.current = scroll;
     contentHostRef.current = scroll;
+    // The DOM that lastRender was diffing against is gone — force a full
+    // rebuild on the next relayout.
+    lastRenderRef.current = null;
+    lastRenderSigRef.current = null;
+    overlayMapRef.current.clear();
     return () => {
       scrollHostRef.current = null;
       contentHostRef.current = null;
+      lastRenderRef.current = null;
+      lastRenderSigRef.current = null;
     };
   }, [shadowRef]);
 
@@ -282,10 +299,15 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
   );
 
   // Font-loading awareness: rebuild when fonts land so measurements aren't
-  // taken against fallbacks.
+  // taken against fallbacks. Glyph widths may differ once the real font
+  // arrives, so invalidate the measurement caches before the next relayout.
   useEffect(() => {
     if (typeof document === 'undefined' || !document.fonts) return;
-    const onLoadingDone = () => scheduleRelayout(0);
+    const onLoadingDone = () => {
+      clearMeasurementCache();
+      measureCacheRef.current = createMeasurementCache();
+      scheduleRelayout(0);
+    };
     document.fonts.addEventListener('loadingdone', onLoadingDone);
     return () => document.fonts.removeEventListener('loadingdone', onLoadingDone);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -351,8 +373,10 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
       }
     }
 
-    clearMeasurementCache();
-    measureCacheRef.current = createMeasurementCache();
+    // NOTE: the measurement cache persists across relayouts. Keys bake in
+    // text + font + width + line-breaking options, so entries that no longer
+    // match simply go unused. The font `loadingdone` handler clears the
+    // cache when glyph measurements may have changed.
 
     // Resolve body font + size → measure N-char target column width.
     const bodyFontFamily = currentConfig.bodyText?.fontFamily ?? 'EB Garamond';
@@ -399,8 +423,9 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
       );
       if (seq !== renderSeqRef.current) return;
 
-      const html = renderToHtml(doc, {
-        mode: currentColumnMode === 'single' ? 'single' : 'multi',
+      const mode = currentColumnMode === 'single' ? 'single' : 'multi';
+      const indexed = renderToHtmlIndexed(doc, {
+        mode,
         columnGap: columnGapPx,
         padding: PADDING_PX,
         background: 'transparent',
@@ -410,17 +435,27 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
       scroll.style.background = composePageBackground(
         currentConfig.page?.backgroundColor?.hex,
       );
-      scroll.innerHTML = html;
 
-      docRef.current = doc;
-      overlayMapRef.current.clear();
+      // Signature gates incremental patching: when any of these change we
+      // must rebuild the scroll container wholesale, otherwise we can try to
+      // diff at page/block granularity.
+      const sig = `${mode}\0${columnGapPx}\0${PADDING_PX}`;
+      const prev = lastRenderRef.current;
+      const prevSig = lastRenderSigRef.current;
 
-      // Per-page: inject overlay SVG for cursor/selection and wire up
-      // pointer/click/dblclick handlers. HTML pages render at 1:1 with the
-      // VDT page-space px, so display dims == page-space dims.
-      const pageEls = scroll.querySelectorAll<HTMLDivElement>('.pt-page');
-      pageEls.forEach((pageEl) => {
-        const pageIndex = Number(pageEl.dataset.page);
+      // Shared holder for the runtime-measured baseline offset. Populated
+      // lazily on the first `resolveBaselineOffset` call after the new DOM
+      // is in place, then reused for every page in this relayout.
+      let measuredBaselineOffset: number | null = null;
+      const resolveBaselineOffset = (): number | undefined => {
+        if (!doc.config.page.baselineGrid.enabled) return undefined;
+        if (measuredBaselineOffset !== null) return measuredBaselineOffset;
+        const offset = measureBodyBaselineOffset(scroll, doc);
+        if (offset !== null) measuredBaselineOffset = offset;
+        return offset ?? undefined;
+      };
+
+      const attachPageOverlay = (pageEl: HTMLDivElement, pageIndex: number) => {
         const page = doc.pages[pageIndex];
         if (!page) return;
         const pageWidthPx = page.width;
@@ -433,6 +468,7 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
         );
         pageEl.appendChild(overlay);
         overlayMapRef.current.set(pageIndex, overlay);
+        drawBaselines(overlay, doc, pageIndex, resolveBaselineOffset());
         attachSlotClickHandler(
           pageEl,
           pageIndex,
@@ -444,12 +480,141 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
           dispatchRef,
           activePanelRef,
         );
-      });
+      };
+
+      // Decide whether we can patch incrementally. Any structural shift
+      // (page count, page dimensions, the outer signature) forces a full
+      // replace; otherwise we walk pages and only touch blocks that changed.
+      let canPatch =
+        prev !== null &&
+        prevSig === sig &&
+        prev.pages.length === indexed.pages.length;
+      if (canPatch && prev) {
+        for (let i = 0; i < indexed.pages.length; i++) {
+          const np = indexed.pages[i]!;
+          const pp = prev.pages[i]!;
+          if (np.width !== pp.width || np.height !== pp.height) {
+            canPatch = false;
+            break;
+          }
+        }
+      }
+
+      if (!canPatch) {
+        scroll.innerHTML = indexed.html;
+        overlayMapRef.current.clear();
+        const pageEls = scroll.querySelectorAll<HTMLDivElement>('.pt-page');
+        pageEls.forEach((pageEl) => {
+          const pageIndex = Number(pageEl.dataset.page);
+          attachPageOverlay(pageEl, pageIndex);
+        });
+      } else if (prev) {
+        // Per-page diff. Same block IDs in the same order → patch only the
+        // block wrappers whose HTML string changed. Otherwise rebuild the
+        // page's inner HTML (cheaper than rebuilding the whole scroll) and
+        // re-attach just that page's overlay.
+        for (let i = 0; i < indexed.pages.length; i++) {
+          const np = indexed.pages[i]!;
+          const pp = prev.pages[i]!;
+          const pageEl = scroll.querySelector<HTMLDivElement>(
+            `.pt-page[data-page="${np.index}"]`,
+          );
+          if (!pageEl) continue;
+
+          const sameBlockSkeleton =
+            np.blocks.length === pp.blocks.length &&
+            np.blocks.every((b, j) => b.id === pp.blocks[j]!.id);
+
+          if (!sameBlockSkeleton) {
+            pageEl.innerHTML = np.innerHtml;
+            const oldOverlay = overlayMapRef.current.get(np.index);
+            if (oldOverlay && oldOverlay.parentNode === pageEl) {
+              pageEl.removeChild(oldOverlay);
+            }
+            overlayMapRef.current.delete(np.index);
+            attachPageOverlay(pageEl, np.index);
+            continue;
+          }
+
+          // Skeleton matches — replace individual block nodes whose HTML
+          // actually differs. Collect first, then mutate, to avoid issues
+          // from querySelector traversing a changing tree.
+          const changes: Array<{ id: string; html: string }> = [];
+          for (let j = 0; j < np.blocks.length; j++) {
+            const nb = np.blocks[j]!;
+            const pb = pp.blocks[j]!;
+            if (nb.html !== pb.html) changes.push(nb);
+          }
+          for (const c of changes) {
+            const selector = `.pt-block[data-block-id="${cssEscape(c.id)}"]`;
+            const el = pageEl.querySelector<HTMLElement>(selector);
+            if (el) {
+              el.outerHTML = c.html;
+            }
+          }
+        }
+      }
+
+      docRef.current = doc;
+      lastRenderRef.current = indexed;
+      lastRenderSigRef.current = sig;
+
+      // Baseline grid visibility is a pure-overlay concern: toggling it leaves
+      // block HTML unchanged, so the patch path above may not touch any
+      // overlay. Refresh baselines for every live overlay so the setting
+      // takes effect on the next relayout regardless of which path ran.
+      const bOffset = resolveBaselineOffset();
+      for (const [pageIndex, overlay] of overlayMapRef.current) {
+        drawBaselines(overlay, doc, pageIndex, bOffset);
+      }
 
       setDocVersion((v) => v + 1);
     } catch (err) {
       console.error('[HtmlPreview] Layout error:', err);
     }
+  }
+
+  // Minimal CSS.escape fallback — block IDs only use [a-zA-Z0-9-].
+  function cssEscape(s: string): string {
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+      return CSS.escape(s);
+    }
+    return s.replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`);
+  }
+
+  /**
+   * Measure the actual pixel offset of the text baseline within a `.pt-line`
+   * cell. The VDT's own `line.baseline` is `lineY + 0.8 * lineHeight`, which
+   * matches how the canvas backend paints glyphs but not how the browser
+   * positions inline text inside a line-box (the result depends on the
+   * font's ascent metric and the default `line-height: normal`). We append a
+   * zero-sized inline-block to a body paragraph's line — its `bottom` aligns
+   * with the line-box baseline — and take the delta against the line's top.
+   * Returns null when no body line is available (e.g. empty document), in
+   * which case callers fall back to the 0.8 approximation.
+   */
+  function measureBodyBaselineOffset(
+    scroll: HTMLElement,
+    doc: VDTDocument,
+  ): number | null {
+    // Prefer a paragraph block so headings / list bullets don't skew the
+    // measurement — the grid is sized to the body line-height.
+    const bodyBlock = doc.blocks.find(
+      (b) => b.type === 'paragraph' && b.lines.length > 0,
+    );
+    if (!bodyBlock) return null;
+    const selector = `.pt-line[data-block="${cssEscape(bodyBlock.id)}"]`;
+    const lineEl = scroll.querySelector<HTMLElement>(selector);
+    if (!lineEl) return null;
+    const marker = document.createElement('span');
+    marker.style.cssText =
+      'display:inline-block;width:0;height:0;visibility:hidden;vertical-align:baseline;';
+    lineEl.appendChild(marker);
+    const lineRect = lineEl.getBoundingClientRect();
+    const markerRect = marker.getBoundingClientRect();
+    lineEl.removeChild(marker);
+    if (lineRect.height === 0) return null;
+    return markerRect.bottom - lineRect.top;
   }
 
   // Relayout on any real input change.

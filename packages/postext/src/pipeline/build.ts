@@ -8,7 +8,7 @@ import {
   type VDTDocument,
   type VDTBlock,
 } from '../vdt';
-import { parseMarkdown } from '../parse';
+import { parseMarkdownMemo } from '../parse';
 import { computeHeadingNumbers, type HeadingTemplates } from '../numbering';
 import { extractFrontmatter } from '../frontmatter';
 import { measureBlock, measureRichBlock, cachedMeasureBlock, cachedMeasureRichBlock, initHyphenator } from '../measure';
@@ -92,7 +92,7 @@ export function buildDocument(
   // Extract frontmatter, then parse the remaining markdown body
   const { metadata: frontmatterMeta, content: markdownBody, contentOffset: bodyOffset } = extractFrontmatter(content.markdown);
   doc.metadata = { ...(content.metadata ?? {}), ...frontmatterMeta };
-  const contentBlocks = parseMarkdown(markdownBody);
+  const contentBlocks = parseMarkdownMemo(markdownBody);
 
   const headingTemplates: HeadingTemplates = {};
   for (const lvl of resolved.headings.levels) {
@@ -585,6 +585,29 @@ export function buildDocument(
 
       // Cannot split — advance to next column if current has content
       if (curCol.blocks.length > 0) {
+        // Heading keep-with-next (no-fit variant): when a heading can't fit
+        // in the current column and the column's tail is a run of headings,
+        // pull those headings along so they don't remain stranded as orphans
+        // at the column's bottom. Mirrors the rollback inside the "fits" path.
+        if (vdtType === 'heading' && resolved.headings.keepWithNext) {
+          let rollbackCount = 0;
+          for (let j = curCol.blocks.length - 1; j >= 0; j--) {
+            if (curCol.blocks[j]!.type === 'heading') rollbackCount++;
+            else break;
+          }
+          if (rollbackCount > 0) {
+            const popped = curCol.blocks.splice(curCol.blocks.length - rollbackCount);
+            for (const p of popped) {
+              const idx = doc.blocks.indexOf(p);
+              if (idx !== -1) doc.blocks.splice(idx, 1);
+              curCol.availableHeight += p.bbox.height;
+            }
+            blockIdx -= rollbackCount + 1;
+            pendingSpacing = 0;
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            break;
+          }
+        }
         pendingSpacing = 0;
         advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
         continue;

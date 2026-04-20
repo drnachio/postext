@@ -245,6 +245,27 @@ function buildBlockMapping(
   return { text, spans, sourceMap };
 }
 
+// Single-slot memo used by parseMarkdownMemo. The returned array and its
+// ContentBlocks are treated as read-only by the rest of the pipeline.
+let _parseMemoInput: string | null = null;
+let _parseMemoResult: ContentBlock[] | null = null;
+
+/**
+ * Memoized wrapper around parseMarkdown: returns the cached result when the
+ * input string is byte-for-byte identical to the previous call. This avoids
+ * reparsing the whole document on each keystroke when upstream recomputes
+ * only because a sibling state changed.
+ */
+export function parseMarkdownMemo(markdown: string): ContentBlock[] {
+  if (_parseMemoResult !== null && _parseMemoInput === markdown) {
+    return _parseMemoResult;
+  }
+  const result = parseMarkdown(markdown);
+  _parseMemoInput = markdown;
+  _parseMemoResult = result;
+  return result;
+}
+
 /**
  * Merge consecutive blockquote lines into a single block, and consecutive
  * non-blank, non-special lines into paragraphs.

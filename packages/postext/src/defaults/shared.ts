@@ -1,5 +1,44 @@
 import type { ColorValue, ColorPaletteEntry, Dimension, PostextConfig } from '../types';
 
+export const DEFAULT_MAIN_COLOR_ID = 'main-color';
+export const DEFAULT_MAIN_COLOR_NAME = 'Main Color';
+export const DEFAULT_MAIN_COLOR_HEX = '#3a5a87';
+
+export const DEFAULT_MAIN_COLOR: ColorValue = {
+  hex: DEFAULT_MAIN_COLOR_HEX,
+  model: 'hex',
+  paletteId: DEFAULT_MAIN_COLOR_ID,
+};
+
+export const DEFAULT_COLOR_PALETTE: ColorPaletteEntry[] = [
+  {
+    id: DEFAULT_MAIN_COLOR_ID,
+    name: DEFAULT_MAIN_COLOR_NAME,
+    value: { hex: DEFAULT_MAIN_COLOR_HEX, model: 'hex' },
+  },
+];
+
+export function cloneDefaultColorPalette(): ColorPaletteEntry[] {
+  return DEFAULT_COLOR_PALETTE.map((entry) => ({
+    ...entry,
+    value: { ...entry.value },
+  }));
+}
+
+export function isDefaultColorPalette(palette: ColorPaletteEntry[] | undefined): boolean {
+  if (!palette || palette.length !== DEFAULT_COLOR_PALETTE.length) return false;
+  return palette.every((entry, i) => {
+    const def = DEFAULT_COLOR_PALETTE[i]!;
+    return (
+      entry.id === def.id &&
+      entry.name === def.name &&
+      entry.value.hex === def.value.hex &&
+      entry.value.model === def.value.model &&
+      !entry.value.paletteId
+    );
+  });
+}
+
 export function dimensionsEqual(a: Dimension, b: Dimension): boolean {
   return a.value === b.value && a.unit === b.unit;
 }

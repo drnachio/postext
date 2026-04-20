@@ -11,6 +11,7 @@ import {
   type MutableRefObject,
 } from 'react';
 import type { PostextConfig } from 'postext';
+import { DEFAULT_COLOR_PALETTE } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
 import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
@@ -107,7 +108,9 @@ export function useSandbox(): SandboxContextValue {
   return ctx;
 }
 
-const DEFAULT_CONFIG: PostextConfig = {};
+const DEFAULT_CONFIG: PostextConfig = {
+  colorPalette: DEFAULT_COLOR_PALETTE.map((entry) => ({ ...entry, value: { ...entry.value } })),
+};
 
 export const DEFAULT_MARKDOWN = DEFAULT_MARKDOWN_EN;
 
