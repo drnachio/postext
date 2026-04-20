@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Separación silábica y justificación',
   description: 'Cómo Postext corta líneas, justifica texto y controla el espaciado entre palabras usando el algoritmo Knuth-Plass',
   lang: 'es',
-  lastUpdated: '2026-04-16',
+  lastUpdated: '2026-04-19',
   readingTime: '20 min',
   order: 4,
 };
@@ -101,6 +101,16 @@ El algoritmo utiliza programación dinámica. Mantiene un conjunto de **nodos ac
 <Illustration name="FitnessClasses" data='{"title": "Clases de ajuste", "desc": "Cada línea se clasifica como apretada, normal, floja o muy floja según su ratio de ajuste. Las líneas adyacentes cuyas clases difieren en más de un paso se penalizan.", "caption": "Las líneas contiguas separadas por más de una clase incurren en el demérito de clase.", "classes": [{"name": "Apretada", "range": "r < -0.5", "example": "comprimida"}, {"name": "Normal", "range": "-0.5 ≤ r < 0.5", "example": "justo"}, {"name": "Floja", "range": "0.5 ≤ r < 1.0", "example": "algo aireada"}, {"name": "Muy floja", "range": "r ≥ 1.0", "example": "muy aireada"}], "adjacentNote": "El demérito de clase se aplica cuando líneas vecinas distan en más de una clase."}' />
 
 El algoritmo traza hacia atrás a través de los nodos activos para encontrar la ruta con los deméritos totales más bajos — el conjunto de puntos de ruptura globalmente óptimo para todo el párrafo.
+
+#### Penalizaciones de huérfanas, viudas y *runts*
+
+Postext amplía el conjunto estándar de deméritos con tres penalizaciones editoriales que alejan al divisor de líneas de conjuntos de cortes que producirían finales de párrafo visualmente pobres:
+
+- La **penalización de huérfana** se aplica cuando elegir este corte dejaría menos de `orphanMinLines` líneas en la parte superior de la siguiente columna. El valor por defecto de `orphanPenalty` es `3000`.
+- La **penalización de viuda** se aplica cuando el corte dejaría menos de `widowMinLines` líneas al final de la columna actual. El valor por defecto de `widowPenalty` es `3000`.
+- La **penalización de *runt*** se aplica cuando la última línea del párrafo sería más corta que aproximadamente `runtMinCharacters × normalSpaceWidth` píxeles. El valor por defecto de `runtPenalty` es `1500` — más suave que las de huérfana/viuda porque los *runts* son estéticos, no estructurales.
+
+Las tres se suman a los deméritos del nodo candidato antes de que el algoritmo seleccione la ruta globalmente óptima. Como viven dentro de la misma optimización, el solver puede sacrificar una línea ligeramente más holgada a cambio de eliminar una viuda, y preferirá de forma natural conjuntos de cortes que eviten las tres siempre que sea posible. Ajusta el trade-off mediante `orphanPenalty`, `widowPenalty` o `runtPenalty`; ajustar cualquiera a `0` desactiva esa regla. Los ítems de lista se apuntan mediante `avoidOrphansInLists`, `avoidWidowsInLists` y `avoidRuntsInLists` (todos a `true` por defecto).
 
 ### Por qué importa
 
