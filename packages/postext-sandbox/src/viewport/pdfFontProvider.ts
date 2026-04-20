@@ -3,111 +3,45 @@ import { decompressWoff2 } from 'postext-pdf';
 import { loadFont } from '../controls/fontLoader';
 
 const bytesCache = new Map<string, Promise<Uint8Array>>();
-const cssCache = new Map<string, Promise<string>>();
+const weightsCache = new Map<string, Promise<number[] | null>>();
+
+function fontsourceId(family: string): string {
+  return family.toLowerCase().replace(/\s+/g, '-');
+}
 
 function cacheKey(family: string, weight: number, style: 'normal' | 'italic'): string {
   return `${family}|${weight}|${style}`;
 }
 
-function weightMatches(fw: string, target: number): boolean {
-  const parts = fw
-    .split(/\s+/)
-    .map((p) => parseInt(p, 10))
-    .filter((n) => !Number.isNaN(n));
-  if (parts.length === 0) return false;
-  if (parts.length === 1) return parts[0] === target;
-  const [min, max] = [parts[0]!, parts[parts.length - 1]!];
-  return target >= min && target <= max;
+async function fetchAvailableWeights(family: string): Promise<number[] | null> {
+  const cached = weightsCache.get(family);
+  if (cached) return cached;
+  const promise = (async (): Promise<number[] | null> => {
+    try {
+      const res = await fetch(`https://api.fontsource.org/v1/fonts/${fontsourceId(family)}`);
+      if (!res.ok) return null;
+      const data = (await res.json()) as { weights?: number[] };
+      const weights = (data.weights ?? []).filter((w): w is number => typeof w === 'number');
+      return weights.length > 0 ? weights : null;
+    } catch {
+      return null;
+    }
+  })();
+  weightsCache.set(family, promise);
+  return promise;
 }
 
-interface FontFaceBlock {
-  family: string;
-  weight: string;
-  style: string;
-  src: string;
-  unicodeRange: string;
+function nearestWeight(target: number, available: number[]): number {
+  return available.reduce((best, w) => (Math.abs(w - target) < Math.abs(best - target) ? w : best), available[0]!);
 }
 
-function parseFontFaceBlocks(css: string): FontFaceBlock[] {
-  const blocks: FontFaceBlock[] = [];
-  const re = /@font-face\s*\{([^}]*)\}/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(css)) !== null) {
-    const body = m[1]!;
-    const get = (prop: string): string => {
-      const match = body.match(new RegExp(`${prop}\\s*:\\s*([^;]+);`, 'i'));
-      return match ? match[1]!.trim() : '';
-    };
-    const family = get('font-family').replace(/^['"]|['"]$/g, '').trim();
-    if (!family) continue;
-    blocks.push({
-      family,
-      weight: get('font-weight') || '400',
-      style: get('font-style') || 'normal',
-      src: get('src'),
-      unicodeRange: get('unicode-range'),
-    });
-  }
-  return blocks;
-}
-
-function isLatinRange(unicodeRange: string): boolean {
-  return /U\+0{0,2}0{0,2}-0{0,2}0FF/i.test(unicodeRange);
-}
-
-function fetchCss(url: string): Promise<string> {
-  const existing = cssCache.get(url);
-  if (existing) return existing;
-  const p = fetch(url, { mode: 'cors' }).then(async (r) => {
-    if (!r.ok) throw new Error(`css fetch failed: ${r.status} ${url}`);
-    return r.text();
-  });
-  cssCache.set(url, p);
-  return p;
-}
-
-async function collectCandidateCss(family: string): Promise<string[]> {
-  const familyEncoded = encodeURIComponent(family).toLowerCase();
-  const hrefs = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-    .map((link) => (link as HTMLLinkElement).href)
-    .filter((href) => {
-      if (!href.includes('fonts.googleapis.com')) return false;
-      const lower = href.toLowerCase();
-      return lower.includes(familyEncoded) || lower.includes(family.toLowerCase().replace(/\s/g, '+'));
-    });
-  const unique = Array.from(new Set(hrefs));
-  return Promise.all(unique.map((h) => fetchCss(h).catch(() => '')));
-}
-
-async function findWoff2Urls(
+function fontsourceWoff2Url(
   family: string,
   weight: number,
   style: 'normal' | 'italic',
-): Promise<string[]> {
-  const cssTexts = await collectCandidateCss(family);
-  const latin: string[] = [];
-  const other: string[] = [];
-  for (const css of cssTexts) {
-    const blocks = parseFontFaceBlocks(css);
-    for (const block of blocks) {
-      if (block.family.toLowerCase() !== family.toLowerCase()) continue;
-      const normalizedStyle: 'normal' | 'italic' =
-        block.style === 'italic' || block.style === 'oblique' ? 'italic' : 'normal';
-      if (normalizedStyle !== style) continue;
-      if (!weightMatches(block.weight, weight)) continue;
-      const target = isLatinRange(block.unicodeRange) ? latin : other;
-      const re = /url\(([^)]+)\)\s*format\((['"])?woff2\2?\)/g;
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(block.src)) !== null) {
-        const raw = m[1]!.trim().replace(/^['"]|['"]$/g, '');
-        target.push(raw);
-      }
-    }
-  }
-  // Prefer the Latin subset (U+0000-00FF) — it covers ASCII + common Western
-  // punctuation that pdf-lib will encode. Other subsets lack these glyphs
-  // and pdf-lib would render every character as notdef tofu.
-  return [...latin, ...other];
+): string {
+  const id = fontsourceId(family);
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@latest/files/${id}-latin-${weight}-${style}.woff2`;
 }
 
 async function fetchAndDecompress(url: string): Promise<Uint8Array> {
@@ -118,9 +52,11 @@ async function fetchAndDecompress(url: string): Promise<Uint8Array> {
 }
 
 /**
- * Factory for a `PdfFontProvider` backed by the Google Fonts stylesheets
- * injected by the sandbox's `loadFont()`. Cross-origin CSSOM is blocked, so
- * we fetch the CSS text over HTTP and parse `@font-face` blocks ourselves.
+ * Factory for a `PdfFontProvider` backed by Fontsource's jsdelivr CDN. Google
+ * Fonts serves a single variable WOFF2 per family, so pdf-lib would embed
+ * only the default instance and bold text would render at regular weight.
+ * Fontsource exposes per-weight static WOFF2 files, which pdf-lib can embed
+ * directly at the correct weight.
  */
 export function createPdfFontProvider(): PdfFontProvider {
   return async (family, weight, style) => {
@@ -131,25 +67,17 @@ export function createPdfFontProvider(): PdfFontProvider {
     const promise = (async (): Promise<Uint8Array> => {
       await loadFont(family);
 
-      let urls = await findWoff2Urls(family, weight, style);
-      if (urls.length === 0 && style === 'italic') {
-        urls = await findWoff2Urls(family, weight, 'normal');
-      }
-      if (urls.length === 0) {
-        throw new Error(`no woff2 src for ${family} ${weight} ${style}`);
-      }
+      const available = await fetchAvailableWeights(family);
+      const targetWeight = available ? nearestWeight(weight, available) : weight;
 
-      let lastErr: unknown = null;
-      for (const url of urls) {
-        try {
-          return await fetchAndDecompress(url);
-        } catch (err) {
-          lastErr = err;
+      try {
+        return await fetchAndDecompress(fontsourceWoff2Url(family, targetWeight, style));
+      } catch (err) {
+        if (style === 'italic') {
+          return await fetchAndDecompress(fontsourceWoff2Url(family, targetWeight, 'normal'));
         }
+        throw err;
       }
-      throw lastErr instanceof Error
-        ? lastErr
-        : new Error(`failed to load font ${family} ${weight} ${style}`);
     })();
 
     bytesCache.set(key, promise);
