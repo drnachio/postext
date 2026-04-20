@@ -1109,7 +1109,7 @@ Removing a palette entry should go through `unlinkPaletteRefs` (exported from `p
 
 ## HTML Viewer
 
-The `htmlViewer` property controls how the HTML backend lays out pages on screen. It only applies when you render with `renderToHtml` / `renderToHtmlIndexed`; the canvas and PDF paths ignore it entirely.
+The `htmlViewer` property controls how the HTML backend lays out pages on screen. It only applies when you render with `renderToHtml` / `renderToHtmlIndexed`; the canvas and PDF paths ignore it entirely — they consume the configured `page.width`, `page.height`, and `page.dpi` directly.
 
 ```ts
 interface HtmlViewerConfig {
@@ -1565,3 +1565,181 @@ The example above is intentionally flat. Production integrations usually add:
 - **Overlays** — layering an absolutely-positioned SVG on top of each `.pt-page` for cursors, selections, or baseline grids.
 
 The sandbox's `HtmlPreview` component (`packages/postext-sandbox/src/viewport/HtmlPreview.tsx`) implements all of these on top of the same API shown here and can be used as a reference.
+
+
+## Generating PDFs
+
+PDF output lives in a separate package, **`postext-pdf`**, so that web-only integrations do not pay the cost of `pdf-lib` and `@pdf-lib/fontkit`. The PDF backend does not re-measure text: it consumes the exact same `VDTDocument` you would feed to `renderToCanvas` or `renderToHtml` and translates its pixel-space coordinates into PDF points. The three outputs are therefore guaranteed to agree on line breaks, column heights, and resource placement.
+
+### Installation
+
+```bash
+npm install postext postext-pdf
+```
+
+### Public API
+
+The package exposes a single entry point and a handful of types:
+
+- **`renderToPdf(doc, options): Promise<Uint8Array>`** — takes a `VDTDocument` and returns the raw PDF bytes.
+- **`PdfFontProvider`** — the callback signature `(family, weight, style) => Promise<Uint8Array>` that `renderToPdf` uses to request font bytes when it needs to embed a new family/weight/style combination.
+- **`RenderToPdfOptions`** — `{ fontProvider: PdfFontProvider, pageNegative?: boolean }`.
+- **`decompressWoff2(bytes): Uint8Array`** — helper that turns a WOFF2 file into TTF bytes, which is the format `pdf-lib` can embed directly.
+
+### Minimal example
+
+```ts
+import { buildDocument } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+
+const vdt = buildDocument(
+  { markdown: '# Chapter One\n\nThe story begins here…' },
+  {
+    page: { sizePreset: '17x24' },
+    layout: { layoutType: 'double' },
+    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  },
+);
+
+const pdfBytes = await renderToPdf(vdt, {
+  fontProvider: async (family, weight, style) => {
+    // Return TTF bytes for this family/weight/style.
+    // See the "Font provider" section below for a real implementation.
+    const res = await fetch(`/fonts/${family}-${weight}${style === 'italic' ? 'i' : ''}.ttf`);
+    return new Uint8Array(await res.arrayBuffer());
+  },
+});
+
+// `pdfBytes` is a Uint8Array — save, download, or stream it.
+const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+const url = URL.createObjectURL(blob);
+window.open(url);
+```
+
+### Why a font provider?
+
+`pdf-lib` embeds real font files into the PDF — the browser's installed fonts are not available at render time, and a font you only loaded for on-screen measurement is not, on its own, enough to produce a self-contained PDF. `renderToPdf` scans the VDT for every `fontString` it encounters (one per `family|weight|style` combination, including bold, italic, and bold-italic variants) and calls your provider once per unique combination. The provider returns a `Uint8Array` of **TTF or OTF** bytes; `pdf-lib` subsets and embeds them.
+
+**Use per-weight static fonts, not a single variable font.** Google Fonts often serves one variable WOFF2 per family covering the whole weight axis. `pdf-lib` can only embed the default instance from a variable file, so a bold paragraph would render at regular weight. Fontsource publishes per-weight static WOFF2 files that solve this cleanly — this is the pattern the sandbox uses.
+
+### Browser font provider (Fontsource + WOFF2)
+
+The sandbox ships `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`), which you can copy into any browser app. The essentials:
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+const bytesCache = new Map<string, Promise<Uint8Array>>();
+
+function fontsourceId(family: string): string {
+  return family.toLowerCase().replace(/\s+/g, '-');
+}
+
+function fontsourceWoff2Url(
+  family: string,
+  weight: number,
+  style: 'normal' | 'italic',
+): string {
+  const id = fontsourceId(family);
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@latest/files/${id}-latin-${weight}-${style}.woff2`;
+}
+
+export function createPdfFontProvider(): PdfFontProvider {
+  return async (family, weight, style) => {
+    const key = `${family}|${weight}|${style}`;
+    const cached = bytesCache.get(key);
+    if (cached) return cached;
+
+    const promise = (async (): Promise<Uint8Array> => {
+      const url = fontsourceWoff2Url(family, weight, style);
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error(`font fetch failed: ${res.status} ${url}`);
+      // pdf-lib needs TTF bytes, so decompress the WOFF2 wrapper client-side.
+      return decompressWoff2(new Uint8Array(await res.arrayBuffer()));
+    })();
+
+    bytesCache.set(key, promise);
+    return promise;
+  };
+}
+```
+
+A production version should also:
+
+- **Query the available weights** (via `https://api.fontsource.org/v1/fonts/{id}`) and snap the requested weight to the nearest one the family actually ships, so a request for `weight: 600` on a family that only has `{400, 700}` still succeeds.
+- **Fall back from italic to normal** when a family has no italic cut for the requested weight, rather than failing the whole render.
+- **Reuse the cache across renders** (keep the `bytesCache` module-scoped, not per-call) so regenerating the PDF after a config change is effectively free.
+
+### Server-side font provider (Node, local files)
+
+In Node you can skip the WOFF2 step entirely and read TTF/OTF files from disk:
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import type { PdfFontProvider } from 'postext-pdf';
+
+const FONT_DIR = '/path/to/fonts';
+
+function filename(family: string, weight: number, style: 'normal' | 'italic'): string {
+  const slug = family.replace(/\s+/g, '');
+  const styleSuffix = style === 'italic' ? 'Italic' : '';
+  const weightName =
+    weight >= 700 ? 'Bold'
+    : weight >= 600 ? 'SemiBold'
+    : weight >= 500 ? 'Medium'
+    : weight >= 300 ? 'Light'
+    : 'Regular';
+  return `${slug}-${weightName}${styleSuffix}.ttf`;
+}
+
+export const localFontProvider: PdfFontProvider = async (family, weight, style) => {
+  const buf = await readFile(join(FONT_DIR, filename(family, weight, style)));
+  return new Uint8Array(buf);
+};
+```
+
+### Complete browser example: build, render, download
+
+Putting everything together — build the VDT, render to PDF, and trigger a download from the browser:
+
+```tsx
+import { buildDocument, createMeasurementCache } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+import { createPdfFontProvider } from './pdfFontProvider';
+
+const fontProvider = createPdfFontProvider();
+
+export async function downloadPdf(markdown: string, config: PostextConfig) {
+  const cache = createMeasurementCache();
+  const vdt = buildDocument({ markdown }, config, cache);
+
+  const bytes = await renderToPdf(vdt, { fontProvider });
+
+  const blob = new Blob([bytes.slice().buffer], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'document.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+```
+
+**Important:** call `ensureConfigFontsLoaded(config)` (or equivalent) *before* `buildDocument` when your config references web fonts. Layout is measured against whatever font metrics the browser currently has for that family — if the real font has not landed yet, the VDT is measured against a fallback and the PDF will not match the canvas or HTML output. The sandbox does this explicitly before every render (`PdfViewport.tsx:51`).
+
+### Print-ready PDFs
+
+For production print workflows, tune these configuration options before rendering:
+
+- **`page.cutLines.enabled: true`** — adds bleed area and crop marks around the trim. See [Cut lines](#cut-lines).
+- **`page.dpi: 300`** (or higher) — PDF points are fixed at 72/inch, but Postext's layout math runs in pixels; a higher DPI gives finer subdivision for elements measured in `mm` or `cm`.
+- **`colors.model: 'cmyk'`** — preserves the intent that colours were authored in CMYK space. The `hex` fallback is still used to actually draw to the PDF today; `model` is documented here because it rides along into the VDT for downstream tooling.
+- **`{ pageNegative: true }`** in `RenderToPdfOptions` — inverts the trim area using a Difference blend mode (cut marks stay un-inverted). Useful for preflight checks on dark-on-light typography.
+
+### Reference implementation
+
+The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) wires the pieces above into a live preview with regenerate, download, and print buttons, and is a good starting point for any in-browser PDF integration.

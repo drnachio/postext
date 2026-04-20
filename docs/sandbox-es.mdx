@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Entorno interactivo para experimentar con el motor de maquetación de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-19',
+  lastUpdated: '2026-04-20',
   readingTime: '6 min',
   order: 7,
 };
@@ -14,7 +14,7 @@ export const metadata = {
 
 **Un entorno interactivo para el motor de maquetación de Postext.**
 
-El Sandbox ofrece una interfaz estilo VS Code donde puedes escribir markdown, ajustar la configuración de maquetación y ver los resultados renderizados en tiempo real. Está pensado para la experimentación: afina los ajustes de tipografía, cambia el número de columnas, prueba estrategias de colocación de recursos y observa cómo responde el motor.
+El Sandbox ofrece una interfaz estilo VS Code donde puedes escribir markdown, ajustar la configuración de maquetación y ver los resultados renderizados en tiempo real a través de tres modos de salida sincronizados — **canvas**, **HTML** y **PDF**. Está pensado para la experimentación: afina los ajustes de tipografía, cambia el número de columnas, prueba estrategias de colocación de recursos y observa cómo responde el motor.
 
 ## Disposición de la interfaz
 
@@ -76,7 +76,7 @@ La barra de herramientas es extensible: pueden añadirse acciones personalizadas
 
 ### Viewport principal
 
-El lado derecho de la interfaz muestra la salida renderizada. Hay tres pestañas disponibles:
+El lado derecho de la interfaz muestra la salida renderizada. Hay tres pestañas disponibles, una por cada modo de renderizado — **Canvas**, **HTML** y **PDF**. Cambiar de pestaña no vuelve a ejecutar la composición: el mismo VDT alimenta a los tres backends, de modo que el contenido que ves es consistente entre los tres modos.
 
 #### Pestaña Canvas
 
@@ -103,7 +103,15 @@ La geometría de las columnas está controlada por la sección **Visor HTML** de
 
 #### Pestaña PDF
 
-*Próximamente en una versión futura.* Generará un PDF descargable del documento actual.
+Genera un PDF real del documento actual mediante el paquete `postext-pdf` y lo muestra dentro del visor PDF integrado del navegador. El PDF se reconstruye automáticamente al montar la pestaña por primera vez y en cada regeneración posterior, usando el mismo VDT que alimenta a las pestañas de canvas y HTML — de modo que los saltos de línea, las fronteras entre páginas y la colocación de recursos coinciden al píxel entre los tres backends.
+
+Una barra de herramientas flotante en la esquina inferior derecha del viewport proporciona:
+
+- **Regenerar** (icono `RefreshCw`) — Reconstruye el PDF a partir del markdown y la configuración actuales. Útil tras cambiar un ajuste que no dispara un rebuild automáticamente, o cuando las fuentes acaban de terminar de cargarse.
+- **Descargar** (icono `Download`) — Guarda el PDF actual en disco. El nombre del archivo se deriva del primer encabezado H1 del documento (con `document.pdf` como valor por defecto).
+- **Imprimir** (icono `Printer`) — Abre el diálogo de impresión del navegador sobre el visor PDF integrado, que en la mayoría de navegadores permite imprimir o volver a guardar como PDF.
+
+Internamente el sandbox usa un helper `createPdfFontProvider()` que descarga los archivos WOFF2 estáticos por peso desde la CDN de Fontsource en jsdelivr, los descomprime a TTF en el navegador y entrega los bytes a `pdf-lib` a través de `renderToPdf`. Se usan fuentes estáticas por peso (en lugar de una única fuente variable) para que el texto en negrita se incruste realmente con el peso bold. Consulta [Generación de PDF](/es/docs/configuration#generación-de-pdf) para el mismo patrón fuera del sandbox.
 
 ## Persistencia
 
@@ -184,7 +192,6 @@ El paquete usa clases utilitarias de Tailwind CSS que hacen referencia a variabl
 Las siguientes características están planificadas para versiones futuras:
 
 - **Gestión de recursos** — Subir, gestionar y referenciar imágenes, tablas y figuras desde el editor de markdown
-- **Exportación a PDF** — Generar PDFs descargables directamente desde el sandbox
 - **Edición colaborativa** — Compartir sesiones del sandbox mediante URL
 - **Configuraciones predefinidas** — Plantillas de arranque rápido para escenarios de maquetación habituales (periódico, artículo académico, capítulo de libro)
 - **Extensiones personalizadas de la barra de herramientas** — Añadir botones para la sintaxis de markdown enriquecido específica de postext a medida que evolucione la especificación

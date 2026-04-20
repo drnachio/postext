@@ -14,5 +14,10 @@
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.5"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "wawoff2": "patches/wawoff2.patch"
+    }
   }
 }

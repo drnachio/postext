@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introducción',
   description: 'Qué es Postext, por qué existe y el problema que resuelve',
   lang: 'es',
-  lastUpdated: '2026-04-13',
+  lastUpdated: '2026-04-20',
   readingTime: '12 min',
   order: 1,
 };
@@ -145,7 +145,8 @@ qué reglas tipográficas.
 
 ```ts
 import { prepare, layout } from '@chenglou/pretext';
-import { buildDocument, renderToCanvas } from 'postext';
+import { buildDocument, renderToCanvas, renderToHtml } from 'postext';
+import { renderToPdf } from 'postext-pdf';
 
 // pretext: medir (el trabajo "pre")
 const prepared = prepare(paragraphText, '16px/1.5 Inter');
@@ -157,8 +158,10 @@ const vdt = buildDocument(content, config);
 // => Un Árbol Virtual del Documento completo con cada párrafo,
 //     encabezado y recurso colocados en coordenadas exactas.
 
-// renderizar a canvas para una previsualización pixel-perfect
-renderToCanvas(vdt, canvasElement);
+// Un único VDT, tres modos de salida:
+const canvases = renderToCanvas(vdt);                       // bitmap pixel-perfect por página
+const html = renderToHtml(vdt);                             // DOM seleccionable para la web
+const pdfBytes = await renderToPdf(vdt, { fontProvider });  // PDF listo para imprimir
 ```
 
 Pretext proporciona las medidas. Postext proporciona la composición.
@@ -184,9 +187,12 @@ El proceso tiene tres etapas:
    configuración — tú defines las reglas, el motor las aplica.
 
 3. **Obtienes una composición completa.** Coordenadas y dimensiones precisas para cada elemento en
-   cada página. Los renderizadores traducen esta geometría al formato de destino: canvas HTML para
-   una previsualización pixel-perfect, HTML y CSS para la web, PDF para impresión. El mismo
-   contenido, las mismas reglas, múltiples salidas.
+   cada página. Los renderizadores traducen esta geometría al formato de destino — **canvas** para
+   una previsualización bitmap pixel-perfect (`renderToCanvas`, `renderPage`), **HTML** para
+   tipografía seleccionable y sensible al redimensionado en la web (`renderToHtml`,
+   `renderToHtmlIndexed`), y **PDF** para salida lista para imprimir con fuentes incrustadas
+   (`renderToPdf`, desde el paquete `postext-pdf`). El mismo contenido, las mismas reglas, tres
+   salidas intercambiables.
 
 <Illustration name="LayoutProcess" data='{"title": "Proceso de composición en tres etapas", "desc": "Markdown enriquecido más configuración entra en el motor, que ejecuta siete pasadas de composición con medición de Pretext dentro, y genera HTML o PDF renderizado.", "caption": "Contenido dentro, geometría fuera — después renderizada al formato de destino.", "inputTitle": "Markdown enriquecido", "inputSubtitle": "+ configuración", "parse": "parsear", "engineTitle": "motor Postext", "engineSub1": "medición vía Pretext", "engineSub2": "7 pasadas de composición", "render": "renderizar", "outputTitle": "HTML / PDF", "outputSubtitle": "salida renderizada"}' />
 

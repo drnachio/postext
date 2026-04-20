@@ -1,3 +1,5 @@
 packages:
   - "apps/*"
   - "packages/*"
+patchedDependencies:
+  wawoff2: patches/wawoff2.patch

@@ -1109,7 +1109,7 @@ Para eliminar una entrada conviene usar `unlinkPaletteRefs` (exportado desde `po
 
 ## Visor HTML
 
-La propiedad `htmlViewer` controla cómo el backend HTML dispone las páginas en pantalla. Solo se aplica cuando renderizas con `renderToHtml` / `renderToHtmlIndexed`; los caminos de canvas y PDF la ignoran por completo.
+La propiedad `htmlViewer` controla cómo el backend HTML dispone las páginas en pantalla. Solo se aplica cuando renderizas con `renderToHtml` / `renderToHtmlIndexed`; los caminos de canvas y PDF la ignoran por completo — consumen directamente los `page.width`, `page.height` y `page.dpi` configurados.
 
 ```ts
 interface HtmlViewerConfig {
@@ -1567,3 +1567,181 @@ El ejemplo de arriba es deliberadamente plano. Las integraciones en producción 
 - **Superposiciones** — apila un SVG absoluto sobre cada `.pt-page` para cursores, selecciones o la rejilla base.
 
 El componente `HtmlPreview` del sandbox (`packages/postext-sandbox/src/viewport/HtmlPreview.tsx`) implementa todo esto sobre la misma API que se muestra aquí y puede servirte de referencia.
+
+
+## Generación de PDF
+
+La salida PDF vive en un paquete separado, **`postext-pdf`**, para que las integraciones puramente web no paguen el coste de `pdf-lib` ni de `@pdf-lib/fontkit`. El backend de PDF no vuelve a medir el texto: consume exactamente el mismo `VDTDocument` que le pasarías a `renderToCanvas` o `renderToHtml` y traduce sus coordenadas en píxeles a puntos PDF. Las tres salidas están garantizadas, por tanto, a coincidir en saltos de línea, alturas de columna y colocación de recursos.
+
+### Instalación
+
+```bash
+npm install postext postext-pdf
+```
+
+### API pública
+
+El paquete expone un único punto de entrada y un puñado de tipos:
+
+- **`renderToPdf(doc, options): Promise<Uint8Array>`** — toma un `VDTDocument` y devuelve los bytes crudos del PDF.
+- **`PdfFontProvider`** — la firma de callback `(family, weight, style) => Promise<Uint8Array>` que `renderToPdf` usa para pedir los bytes de una fuente cuando necesita incrustar una combinación family/weight/style nueva.
+- **`RenderToPdfOptions`** — `{ fontProvider: PdfFontProvider, pageNegative?: boolean }`.
+- **`decompressWoff2(bytes): Uint8Array`** — helper que convierte un archivo WOFF2 en bytes TTF, que es el formato que `pdf-lib` puede incrustar directamente.
+
+### Ejemplo mínimo
+
+```ts
+import { buildDocument } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+
+const vdt = buildDocument(
+  { markdown: '# Capítulo uno\n\nLa historia empieza aquí…' },
+  {
+    page: { sizePreset: '17x24' },
+    layout: { layoutType: 'double' },
+    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  },
+);
+
+const pdfBytes = await renderToPdf(vdt, {
+  fontProvider: async (family, weight, style) => {
+    // Devuelve los bytes TTF para esta family/weight/style.
+    // Consulta la sección "Proveedor de fuentes" más abajo para una implementación real.
+    const res = await fetch(`/fonts/${family}-${weight}${style === 'italic' ? 'i' : ''}.ttf`);
+    return new Uint8Array(await res.arrayBuffer());
+  },
+});
+
+// `pdfBytes` es un Uint8Array — guárdalo, descárgalo o envíalo por streaming.
+const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+const url = URL.createObjectURL(blob);
+window.open(url);
+```
+
+### ¿Por qué un proveedor de fuentes?
+
+`pdf-lib` incrusta archivos de fuente reales dentro del PDF — las fuentes instaladas en el navegador no están disponibles en el momento del render, y una fuente que solo cargaste para medición en pantalla no basta, por sí sola, para producir un PDF autocontenido. `renderToPdf` recorre el VDT buscando cada `fontString` que aparece (una por cada combinación `family|weight|style`, incluidas las variantes bold, italic y bold-italic) e invoca tu proveedor una sola vez por combinación única. El proveedor devuelve un `Uint8Array` con bytes **TTF u OTF**; `pdf-lib` los subsetea y los incrusta.
+
+**Usa fuentes estáticas por peso, no una única fuente variable.** Google Fonts a menudo sirve un único WOFF2 variable por familia que cubre todo el eje de pesos. `pdf-lib` solo puede incrustar la instancia por defecto de un archivo variable, por lo que un párrafo en negrita se renderizaría con peso regular. Fontsource publica archivos WOFF2 estáticos por peso que resuelven esto limpiamente — es el patrón que usa el sandbox.
+
+### Proveedor de fuentes en el navegador (Fontsource + WOFF2)
+
+El sandbox distribuye `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`), que puedes copiar a cualquier app de navegador. Lo esencial:
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+const bytesCache = new Map<string, Promise<Uint8Array>>();
+
+function fontsourceId(family: string): string {
+  return family.toLowerCase().replace(/\s+/g, '-');
+}
+
+function fontsourceWoff2Url(
+  family: string,
+  weight: number,
+  style: 'normal' | 'italic',
+): string {
+  const id = fontsourceId(family);
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@latest/files/${id}-latin-${weight}-${style}.woff2`;
+}
+
+export function createPdfFontProvider(): PdfFontProvider {
+  return async (family, weight, style) => {
+    const key = `${family}|${weight}|${style}`;
+    const cached = bytesCache.get(key);
+    if (cached) return cached;
+
+    const promise = (async (): Promise<Uint8Array> => {
+      const url = fontsourceWoff2Url(family, weight, style);
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error(`font fetch failed: ${res.status} ${url}`);
+      // pdf-lib necesita bytes TTF, así que descomprimimos el envoltorio WOFF2 en el cliente.
+      return decompressWoff2(new Uint8Array(await res.arrayBuffer()));
+    })();
+
+    bytesCache.set(key, promise);
+    return promise;
+  };
+}
+```
+
+Una versión de producción debería además:
+
+- **Consultar los pesos disponibles** (vía `https://api.fontsource.org/v1/fonts/{id}`) y ajustar el peso pedido al más cercano que la familia realmente distribuye, para que una petición de `weight: 600` sobre una familia que solo tiene `{400, 700}` siga funcionando.
+- **Caer de italic a normal** cuando una familia no tenga cortada la itálica para el peso solicitado, en lugar de fallar todo el render.
+- **Reutilizar la caché entre renders** (mantén `bytesCache` a nivel de módulo, no por llamada) para que regenerar el PDF tras un cambio de configuración sea prácticamente gratis.
+
+### Proveedor de fuentes en el servidor (Node, archivos locales)
+
+En Node puedes saltarte por completo el paso WOFF2 y leer archivos TTF/OTF desde disco:
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import type { PdfFontProvider } from 'postext-pdf';
+
+const FONT_DIR = '/ruta/a/fuentes';
+
+function filename(family: string, weight: number, style: 'normal' | 'italic'): string {
+  const slug = family.replace(/\s+/g, '');
+  const styleSuffix = style === 'italic' ? 'Italic' : '';
+  const weightName =
+    weight >= 700 ? 'Bold'
+    : weight >= 600 ? 'SemiBold'
+    : weight >= 500 ? 'Medium'
+    : weight >= 300 ? 'Light'
+    : 'Regular';
+  return `${slug}-${weightName}${styleSuffix}.ttf`;
+}
+
+export const localFontProvider: PdfFontProvider = async (family, weight, style) => {
+  const buf = await readFile(join(FONT_DIR, filename(family, weight, style)));
+  return new Uint8Array(buf);
+};
+```
+
+### Ejemplo completo en el navegador: componer, renderizar, descargar
+
+Juntándolo todo — construir el VDT, renderizar a PDF y disparar la descarga desde el navegador:
+
+```tsx
+import { buildDocument, createMeasurementCache } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+import { createPdfFontProvider } from './pdfFontProvider';
+
+const fontProvider = createPdfFontProvider();
+
+export async function downloadPdf(markdown: string, config: PostextConfig) {
+  const cache = createMeasurementCache();
+  const vdt = buildDocument({ markdown }, config, cache);
+
+  const bytes = await renderToPdf(vdt, { fontProvider });
+
+  const blob = new Blob([bytes.slice().buffer], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'document.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+```
+
+**Importante:** llama a `ensureConfigFontsLoaded(config)` (o equivalente) *antes* de `buildDocument` cuando tu configuración referencie web fonts. La maquetación se mide contra las métricas de fuente que el navegador tenga en ese momento para esa familia — si la fuente real aún no ha llegado, el VDT se mide contra una de reserva y el PDF no coincidirá con la salida de canvas o HTML. El sandbox lo hace explícitamente antes de cada render (`PdfViewport.tsx:51`).
+
+### PDFs listos para imprenta
+
+Para flujos de trabajo de impresión en producción, ajusta estas opciones de configuración antes de renderizar:
+
+- **`page.cutLines.enabled: true`** — añade área de sangre y marcas de corte alrededor del trim. Ver [Líneas de corte](#líneas-de-corte).
+- **`page.dpi: 300`** (o superior) — los puntos PDF están fijos a 72/pulgada, pero la aritmética de maquetación de Postext corre en píxeles; un DPI mayor da una subdivisión más fina para elementos medidos en `mm` o `cm`.
+- **`colors.model: 'cmyk'`** — preserva la intención de que los colores se autoraron en espacio CMYK. El fallback `hex` sigue siendo el que se usa para dibujar realmente al PDF hoy; `model` se documenta aquí porque viaja junto al VDT para herramientas aguas abajo.
+- **`{ pageNegative: true }`** en `RenderToPdfOptions` — invierte el área de trim usando un blend mode de tipo Difference (las marcas de corte quedan sin invertir). Útil para comprobaciones de preflight sobre tipografía oscura-sobre-claro.
+
+### Implementación de referencia
+
+El componente `PdfViewport` del sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) conecta las piezas anteriores en una previsualización en vivo con botones de regenerar, descargar e imprimir, y es un buen punto de partida para cualquier integración PDF en el navegador.
