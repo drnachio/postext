@@ -1,7 +1,6 @@
-import type { ResolvedBodyTextConfig, OrderedListsConfig, OrderedListLevelConfig, ResolvedOrderedListsConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat } from '../types';
-import { dimensionsEqual } from './shared';
+import type { ResolvedBodyTextConfig, OrderedListsConfig, OrderedListLevelConfig, ResolvedOrderedListsConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, ColorValue } from '../types';
+import { dimensionsEqual, DEFAULT_MAIN_COLOR } from './shared';
 import {
-  DEFAULT_LIST_FONT_WEIGHT,
   DEFAULT_LIST_BULLET_FONT_SIZE,
   DEFAULT_LIST_GAP,
   DEFAULT_LIST_INDENT,
@@ -14,14 +13,16 @@ import {
 
 const DEFAULT_ORDERED_NUMBER_FORMAT: OrderedListNumberFormat = 'arabic';
 const DEFAULT_ORDERED_SEPARATOR = '.';
+const DEFAULT_ORDERED_LIST_FONT_WEIGHT = 700;
+const DEFAULT_ORDERED_LIST_COLOR: ColorValue = { ...DEFAULT_MAIN_COLOR };
 
 export function resolveOrderedListsConfig(
   partial: OrderedListsConfig | undefined,
   bodyText: ResolvedBodyTextConfig,
 ): ResolvedOrderedListsConfig {
   const generalFont = partial?.fontFamily ?? bodyText.fontFamily;
-  const generalColor = partial?.color ?? bodyText.color;
-  const generalFontWeight = partial?.fontWeight ?? DEFAULT_LIST_FONT_WEIGHT;
+  const generalColor = partial?.color ?? DEFAULT_ORDERED_LIST_COLOR;
+  const generalFontWeight = partial?.fontWeight ?? DEFAULT_ORDERED_LIST_FONT_WEIGHT;
   const generalItalic = partial?.italic ?? false;
   const generalNumberFormat = partial?.numberFormat ?? DEFAULT_ORDERED_NUMBER_FORMAT;
   const generalSeparator = partial?.separator ?? DEFAULT_ORDERED_SEPARATOR;
@@ -65,7 +66,7 @@ export function resolveOrderedListsConfig(
 }
 
 export const DEFAULT_ORDERED_LISTS_STATIC = {
-  fontWeight: DEFAULT_LIST_FONT_WEIGHT,
+  fontWeight: DEFAULT_ORDERED_LIST_FONT_WEIGHT,
   italic: false,
   numberFormat: DEFAULT_ORDERED_NUMBER_FORMAT,
   separator: DEFAULT_ORDERED_SEPARATOR,
@@ -95,7 +96,7 @@ export function stripOrderedListsDefaults(
     result.color = lists.color;
     hasOverride = true;
   }
-  if (lists.fontWeight !== undefined && lists.fontWeight !== DEFAULT_LIST_FONT_WEIGHT) {
+  if (lists.fontWeight !== undefined && lists.fontWeight !== DEFAULT_ORDERED_LIST_FONT_WEIGHT) {
     result.fontWeight = lists.fontWeight;
     hasOverride = true;
   }

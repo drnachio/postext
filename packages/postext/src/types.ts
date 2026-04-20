@@ -530,6 +530,24 @@ export interface ResolvedDebugConfig {
   pageNegative: { enabled: boolean };
 }
 
+export interface HtmlViewerConfig {
+  /** Target column width in characters — drives the measured width of the
+   *  single or multi-column layout in the HTML viewer. */
+  maxCharsPerLine?: number;
+  /** Horizontal gap between columns in multi-column mode, in pixels. */
+  columnGap?: number;
+  /** Use Knuth-Plass optimal line breaking in the HTML viewer. When false,
+   *  overrides `bodyText.optimalLineBreaking` only for HTML rendering to
+   *  favour performance. Default false. */
+  optimalLineBreaking?: boolean;
+}
+
+export interface ResolvedHtmlViewerConfig {
+  maxCharsPerLine: number;
+  columnGap: number;
+  optimalLineBreaking: boolean;
+}
+
 export interface PostextSectionOverride {
   selector: string;
   columns?: ColumnConfig;
@@ -562,6 +580,8 @@ export interface PostextConfig {
   renderer?: 'web' | 'pdf';
 
   debug?: DebugConfig;
+
+  htmlViewer?: HtmlViewerConfig;
 
   colorPalette?: ColorPaletteEntry[];
 }

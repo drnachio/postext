@@ -2,6 +2,78 @@ import type { VDTDocument, ResolvedDebugConfig } from 'postext';
 import { SVG_NS } from './dom';
 import { sourceToPlainIndex, xForPlainInLine } from './geometry';
 
+/**
+ * Paint the baseline grid for a single page into the overlay SVG's
+ * `g[data-role="baselines"]` group. Used by the HTML viewer (the canvas
+ * viewer paints its grid directly onto the canvas). Mirrors canvas-backend's
+ * `renderBaselineGrid`: horizontal lines at `y = contentY + baselineIncrement
+ * * 0.8`, spaced by `baselineIncrement`, across the page width. On non-last
+ * pages the grid is clipped to the content height actually consumed so no
+ * phantom baselines trail below placed blocks.
+ */
+export function drawBaselines(
+  svg: SVGSVGElement,
+  doc: VDTDocument,
+  pageIndex: number,
+  /**
+   * First-baseline offset within a line cell, in page-space px. Callers that
+   * render text in the browser (HtmlPreview) should pass a runtime-measured
+   * offset — the VDT's `0.8 * lineHeight` approximation matches the canvas
+   * backend but not the browser's line-box metrics, so the grid would drift
+   * a couple of pixels below the visible text baseline otherwise. When
+   * omitted, the 0.8 fallback keeps the drawing compatible with canvas-mode
+   * callers.
+   */
+  firstBaselineOffsetPx?: number,
+): void {
+  const group = svg.querySelector<SVGGElement>('g[data-role="baselines"]');
+  if (!group) return;
+  while (group.firstChild) group.removeChild(group.firstChild);
+
+  const grid = doc.config.page.baselineGrid;
+  if (!grid.enabled) return;
+
+  const page = doc.pages[pageIndex];
+  if (!page) return;
+
+  const baselineIncrement = doc.baselineGrid;
+  if (!(baselineIncrement > 0)) return;
+
+  // HTML viewer forces margins to 0, so the content area spans the whole
+  // page. Page has no margins in HTML mode; fall back to the whole page if
+  // we ever generalize.
+  const contentX = 0;
+  const contentY = 0;
+  const contentW = page.width;
+  let contentH = page.height;
+
+  const isLastPage = pageIndex === doc.pages.length - 1;
+  if (!isLastPage && page.columns.length > 0) {
+    const maxUsed = Math.max(
+      ...page.columns.map((col) => col.bbox.height - col.availableHeight),
+    );
+    contentH = maxUsed;
+  }
+
+  const maxLines = Math.floor(contentH / baselineIncrement);
+  const color = grid.color.hex;
+  const lineWidth = 1; // px — thin screen hairline, matches canvas look.
+  const firstOffset = firstBaselineOffsetPx ?? baselineIncrement * 0.8;
+
+  for (let i = 0; i < maxLines; i++) {
+    const y = contentY + firstOffset + i * baselineIncrement;
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', String(contentX));
+    line.setAttribute('y1', String(y));
+    line.setAttribute('x2', String(contentX + contentW));
+    line.setAttribute('y2', String(y));
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width', String(lineWidth));
+    line.setAttribute('shape-rendering', 'crispEdges');
+    group.appendChild(line);
+  }
+}
+
 export function drawOverlay(
   svg: SVGSVGElement,
   doc: VDTDocument,

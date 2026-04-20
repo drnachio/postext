@@ -1,29 +1,18 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import {
-  ZoomIn,
-  ZoomOut,
-  MoveHorizontal,
-  MoveVertical,
-  File,
-  BookOpen,
-} from 'lucide-react';
+import { AArrowUp, AArrowDown, AlignLeft, Columns3 } from 'lucide-react';
 import { useSandbox } from '../context/SandboxContext';
 import { Tooltip } from '../panels/Tooltip';
 
-type ViewMode = 'single' | 'spread';
-type FitMode = 'none' | 'width' | 'height';
+type ColumnMode = 'single' | 'multi';
 
-interface CanvasToolbarProps {
-  zoom: number;
-  viewMode: ViewMode;
-  fitMode: FitMode;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onFitWidth: () => void;
-  onFitHeight: () => void;
-  onSetViewMode: (mode: ViewMode) => void;
+interface HtmlToolbarProps {
+  fontScale: number;
+  columnMode: ColumnMode;
+  onFontScaleUp: () => void;
+  onFontScaleDown: () => void;
+  onSetColumnMode: (mode: ColumnMode) => void;
 }
 
 function ToolbarButton({
@@ -31,11 +20,13 @@ function ToolbarButton({
   label,
   onClick,
   active,
+  disabled,
 }: {
   icon: ReactNode;
   label: string;
   onClick: () => void;
   active?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <Tooltip content={label} side="left">
@@ -44,7 +35,8 @@ function ToolbarButton({
         onClick={onClick}
         aria-label={label}
         aria-pressed={active}
-        className="flex shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+        disabled={disabled}
+        className="flex shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:cursor-default disabled:opacity-40"
         style={{
           width: 28,
           height: 28,
@@ -53,13 +45,13 @@ function ToolbarButton({
           outlineColor: 'var(--gilt-hover)',
         }}
         onMouseEnter={(e) => {
-          if (!active) {
+          if (!active && !disabled) {
             e.currentTarget.style.color = 'var(--foreground)';
             e.currentTarget.style.backgroundColor = 'var(--surface)';
           }
         }}
         onMouseLeave={(e) => {
-          if (!active) {
+          if (!active && !disabled) {
             e.currentTarget.style.color = 'var(--slate)';
             e.currentTarget.style.backgroundColor = 'transparent';
           }
@@ -81,22 +73,20 @@ function Separator() {
   );
 }
 
-export function CanvasToolbar({
-  viewMode,
-  fitMode,
-  onZoomIn,
-  onZoomOut,
-  onFitWidth,
-  onFitHeight,
-  onSetViewMode,
-}: CanvasToolbarProps) {
+export function HtmlToolbar({
+  fontScale,
+  columnMode,
+  onFontScaleUp,
+  onFontScaleDown,
+  onSetColumnMode,
+}: HtmlToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
 
   return (
     <div
       role="toolbar"
-      aria-label={labels.canvasToolbar}
+      aria-label={labels.htmlToolbar}
       className="flex flex-col items-center"
       style={{
         position: 'absolute',
@@ -112,40 +102,29 @@ export function CanvasToolbar({
       }}
     >
       <ToolbarButton
-        icon={<ZoomIn size={16} aria-hidden="true" />}
-        label={labels.zoomIn}
-        onClick={onZoomIn}
+        icon={<AArrowUp size={16} aria-hidden="true" />}
+        label={labels.fontScaleUp}
+        onClick={onFontScaleUp}
+        disabled={fontScale >= 2.5 - 1e-6}
       />
       <ToolbarButton
-        icon={<ZoomOut size={16} aria-hidden="true" />}
-        label={labels.zoomOut}
-        onClick={onZoomOut}
-      />
-      <Separator />
-      <ToolbarButton
-        icon={<MoveHorizontal size={16} aria-hidden="true" />}
-        label={labels.fitWidth}
-        onClick={onFitWidth}
-        active={fitMode === 'width'}
-      />
-      <ToolbarButton
-        icon={<MoveVertical size={16} aria-hidden="true" />}
-        label={labels.fitHeight}
-        onClick={onFitHeight}
-        active={fitMode === 'height'}
+        icon={<AArrowDown size={16} aria-hidden="true" />}
+        label={labels.fontScaleDown}
+        onClick={onFontScaleDown}
+        disabled={fontScale <= 0.6 + 1e-6}
       />
       <Separator />
       <ToolbarButton
-        icon={<File size={16} aria-hidden="true" />}
-        label={labels.singlePage}
-        onClick={() => onSetViewMode('single')}
-        active={viewMode === 'single'}
+        icon={<AlignLeft size={16} aria-hidden="true" />}
+        label={labels.singleColumn}
+        onClick={() => onSetColumnMode('single')}
+        active={columnMode === 'single'}
       />
       <ToolbarButton
-        icon={<BookOpen size={16} aria-hidden="true" />}
-        label={labels.doublePageSpread}
-        onClick={() => onSetViewMode('spread')}
-        active={viewMode === 'spread'}
+        icon={<Columns3 size={16} aria-hidden="true" />}
+        label={labels.multiColumn}
+        onClick={() => onSetColumnMode('multi')}
+        active={columnMode === 'multi'}
       />
     </div>
   );

@@ -94,6 +94,13 @@ Las páginas se renderizan de forma perezosa mediante `IntersectionObserver` —
 
 Renderiza la salida de postext dentro de un contenedor Shadow DOM, garantizando un aislamiento completo de estilos respecto a la página anfitriona. El CSS editorial (tipografía, espaciado, filetes de columna) se inyecta dentro del shadow root para que no pueda verse afectado por los estilos de la aplicación circundante ni filtrarse hacia ellos.
 
+Una barra de herramientas en la parte superior del viewport ofrece:
+
+- **Controles de escala de fuente** — Reduce o aumenta el texto del cuerpo conservando cada medida relativa de la configuración.
+- **Modos de columna** — Columna única (una sola columna alta y desplazable verticalmente) o multi-columna (tantas columnas como el viewport encaje a la medida configurada, con scroll-snap horizontal entre ellas).
+
+La geometría de las columnas está controlada por la sección **Visor HTML** del panel de configuración: `maxCharsPerLine` define la medida objetivo en caracteres de la fuente del cuerpo, `columnGap` el espacio horizontal entre columnas en modo multi y `optimalLineBreaking` alterna el algoritmo Knuth–Plass dentro del visor. Consulta la [referencia de configuración del Visor HTML](/es/docs/configuration#visor-html) y el [ejemplo de integración completo](/es/docs/configuration#integrar-el-visor-html) — el mismo patrón que usa internamente el sandbox.
+
 #### Pestaña PDF
 
 *Próximamente en una versión futura.* Generará un PDF descargable del documento actual.

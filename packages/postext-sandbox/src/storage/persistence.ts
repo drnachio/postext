@@ -11,6 +11,8 @@ const COLOR_MODES_KEY = 'postext-sandbox-color-modes';
 const CANVAS_VIEW_MODE_KEY = 'postext-sandbox-canvas-view-mode';
 const CANVAS_FIT_MODE_KEY = 'postext-sandbox-canvas-fit-mode';
 const CANVAS_ZOOM_KEY = 'postext-sandbox-canvas-zoom';
+const HTML_FONT_SCALE_KEY = 'postext-sandbox-html-font-scale';
+const HTML_COLUMN_MODE_KEY = 'postext-sandbox-html-column-mode';
 
 function getStorage(): Storage | null {
   if (typeof window === 'undefined') return null;
@@ -147,6 +149,25 @@ export function loadCanvasZoom(): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+export function saveHtmlFontScale(scale: number): void {
+  getStorage()?.setItem(HTML_FONT_SCALE_KEY, String(scale));
+}
+
+export function loadHtmlFontScale(): number | null {
+  const raw = getStorage()?.getItem(HTML_FONT_SCALE_KEY);
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+export function saveHtmlColumnMode(mode: string): void {
+  getStorage()?.setItem(HTML_COLUMN_MODE_KEY, mode);
+}
+
+export function loadHtmlColumnMode(): string | null {
+  return getStorage()?.getItem(HTML_COLUMN_MODE_KEY) ?? null;
+}
+
 export function clearStorage(): void {
   const storage = getStorage();
   storage?.removeItem(CONFIG_KEY);
@@ -159,6 +180,8 @@ export function clearStorage(): void {
   storage?.removeItem(CANVAS_VIEW_MODE_KEY);
   storage?.removeItem(CANVAS_FIT_MODE_KEY);
   storage?.removeItem(CANVAS_ZOOM_KEY);
+  storage?.removeItem(HTML_FONT_SCALE_KEY);
+  storage?.removeItem(HTML_COLUMN_MODE_KEY);
 }
 
 function downloadJson(data: unknown, filename: string): void {

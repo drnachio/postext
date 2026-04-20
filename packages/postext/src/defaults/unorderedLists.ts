@@ -1,8 +1,7 @@
-import type { ResolvedBodyTextConfig, UnorderedListsConfig, UnorderedListLevelConfig, ResolvedUnorderedListsConfig, ResolvedUnorderedListLevelConfig } from '../types';
-import { dimensionsEqual } from './shared';
+import type { ResolvedBodyTextConfig, UnorderedListsConfig, UnorderedListLevelConfig, ResolvedUnorderedListsConfig, ResolvedUnorderedListLevelConfig, ColorValue } from '../types';
+import { dimensionsEqual, DEFAULT_MAIN_COLOR } from './shared';
 import {
   DEFAULT_LIST_BULLET_CHAR,
-  DEFAULT_LIST_FONT_WEIGHT,
   DEFAULT_LIST_BULLET_FONT_SIZE,
   DEFAULT_LIST_GAP,
   DEFAULT_LIST_INDENT,
@@ -16,13 +15,16 @@ import {
   DEFAULT_TASK_COMPLETED_STRIKETHROUGH,
 } from './lists-shared';
 
+const DEFAULT_UNORDERED_LIST_FONT_WEIGHT = 700;
+const DEFAULT_UNORDERED_LIST_COLOR: ColorValue = { ...DEFAULT_MAIN_COLOR };
+
 export function resolveUnorderedListsConfig(
   partial: UnorderedListsConfig | undefined,
   bodyText: ResolvedBodyTextConfig,
 ): ResolvedUnorderedListsConfig {
   const generalFont = partial?.fontFamily ?? bodyText.fontFamily;
-  const generalColor = partial?.color ?? bodyText.color;
-  const generalFontWeight = partial?.fontWeight ?? DEFAULT_LIST_FONT_WEIGHT;
+  const generalColor = partial?.color ?? DEFAULT_UNORDERED_LIST_COLOR;
+  const generalFontWeight = partial?.fontWeight ?? DEFAULT_UNORDERED_LIST_FONT_WEIGHT;
   const generalItalic = partial?.italic ?? false;
   const generalBulletChar = partial?.bulletChar ?? DEFAULT_LIST_BULLET_CHAR;
   const generalFontSize = partial?.bulletFontSize ?? DEFAULT_LIST_BULLET_FONT_SIZE;
@@ -72,7 +74,7 @@ export function resolveUnorderedListsConfig(
 
 /** Default values for fields that have a fixed (non-inherited) default. */
 export const DEFAULT_UNORDERED_LISTS_STATIC = {
-  fontWeight: DEFAULT_LIST_FONT_WEIGHT,
+  fontWeight: DEFAULT_UNORDERED_LIST_FONT_WEIGHT,
   italic: false,
   bulletChar: DEFAULT_LIST_BULLET_CHAR,
   bulletFontSize: DEFAULT_LIST_BULLET_FONT_SIZE,
@@ -104,7 +106,7 @@ export function stripUnorderedListsDefaults(
     result.color = lists.color;
     hasOverride = true;
   }
-  if (lists.fontWeight !== undefined && lists.fontWeight !== DEFAULT_LIST_FONT_WEIGHT) {
+  if (lists.fontWeight !== undefined && lists.fontWeight !== DEFAULT_UNORDERED_LIST_FONT_WEIGHT) {
     result.fontWeight = lists.fontWeight;
     hasOverride = true;
   }

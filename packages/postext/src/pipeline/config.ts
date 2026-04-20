@@ -7,6 +7,7 @@ import {
   resolveUnorderedListsConfig,
   resolveOrderedListsConfig,
   applyPaletteToConfig,
+  applyPaletteToResolvedConfig,
 } from '../defaults';
 import { dimensionToPx } from '../units';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
@@ -14,7 +15,7 @@ import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt
 export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
   const config = applyPaletteToConfig(rawConfig);
   const bodyText = resolveBodyTextConfig(config?.bodyText);
-  return {
+  const resolved: ResolvedConfig = {
     page: resolvePageConfig(config?.page),
     layout: resolveLayoutConfig(config?.layout),
     bodyText,
@@ -22,6 +23,7 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
     unorderedLists: resolveUnorderedListsConfig(config?.unorderedLists, bodyText),
     orderedLists: resolveOrderedListsConfig(config?.orderedLists, bodyText),
   };
+  return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }
 
 export function computeBaselineGrid(resolved: ResolvedConfig): number {

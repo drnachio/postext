@@ -1,7 +1,6 @@
 import type { Dimension } from '../types';
 
 export const DEFAULT_LIST_BULLET_CHAR = '•';
-export const DEFAULT_LIST_FONT_WEIGHT = 400;
 export const DEFAULT_LIST_BULLET_FONT_SIZE: Dimension = { value: 1, unit: 'em' };
 export const DEFAULT_LIST_GAP: Dimension = { value: 0.5, unit: 'em' };
 export const DEFAULT_LIST_INDENT: Dimension = { value: 0, unit: 'em' };

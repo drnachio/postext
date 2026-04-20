@@ -79,15 +79,6 @@ export function MobileMenu() {
               </li>
               <li>
                 <a
-                  href="#install"
-                  onClick={() => setOpen(false)}
-                  className="block font-body text-base text-slate transition-colors hover:text-foreground"
-                >
-                  {t("getStarted")}
-                </a>
-              </li>
-              <li>
-                <a
                   href="https://github.com/drnachio/postext"
                   target="_blank"
                   rel="noopener noreferrer"

@@ -1,5 +1,5 @@
 import type { BodyTextConfig, ResolvedBodyTextConfig, HyphenationConfig, HyphenationLocale } from '../types';
-import { dimensionsEqual, colorsEqual } from './shared';
+import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
   enabled: true,
@@ -12,13 +12,15 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   lineHeight: { value: 1.5, unit: 'em' },
   paragraphSpacing: false,
   color: { hex: '#000000', model: 'cmyk' },
+  boldColor: { ...DEFAULT_MAIN_COLOR },
+  italicColor: { ...DEFAULT_MAIN_COLOR },
   textAlign: 'justify',
   fontWeight: 400,
   boldFontWeight: 700,
   hyphenation: { ...DEFAULT_HYPHENATION_CONFIG },
   firstLineIndent: { value: 1.5, unit: 'em' },
   hangingIndent: false,
-  maxWordSpacing: 1.8,
+  maxWordSpacing: 1.7,
   minWordSpacing: 0.5,
   optimalLineBreaking: true,
   avoidOrphans: true,
@@ -60,8 +62,8 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     lineHeight: partial.lineHeight ?? DEFAULT_BODY_TEXT_CONFIG.lineHeight,
     paragraphSpacing: partial.paragraphSpacing ?? DEFAULT_BODY_TEXT_CONFIG.paragraphSpacing,
     color: partial.color ?? DEFAULT_BODY_TEXT_CONFIG.color,
-    boldColor: partial.boldColor,
-    italicColor: partial.italicColor,
+    boldColor: partial.boldColor ?? DEFAULT_BODY_TEXT_CONFIG.boldColor,
+    italicColor: partial.italicColor ?? DEFAULT_BODY_TEXT_CONFIG.italicColor,
     textAlign: partial.textAlign ?? DEFAULT_BODY_TEXT_CONFIG.textAlign,
     fontWeight: partial.fontWeight ?? DEFAULT_BODY_TEXT_CONFIG.fontWeight,
     boldFontWeight: partial.boldFontWeight ?? DEFAULT_BODY_TEXT_CONFIG.boldFontWeight,
@@ -117,11 +119,11 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
     result.color = bodyText.color;
     hasOverride = true;
   }
-  if (bodyText.boldColor !== undefined) {
+  if (bodyText.boldColor !== undefined && !colorsEqual(bodyText.boldColor, DEFAULT_BODY_TEXT_CONFIG.boldColor!)) {
     result.boldColor = bodyText.boldColor;
     hasOverride = true;
   }
-  if (bodyText.italicColor !== undefined) {
+  if (bodyText.italicColor !== undefined && !colorsEqual(bodyText.italicColor, DEFAULT_BODY_TEXT_CONFIG.italicColor!)) {
     result.italicColor = bodyText.italicColor;
     hasOverride = true;
   }

@@ -31,12 +31,6 @@ export async function Navbar() {
             {t("sandbox")}
           </Link>
           <a
-            href="#install"
-            className="font-body text-sm text-slate transition-colors hover:text-foreground 2xl:text-base 4xl:text-lg"
-          >
-            {t("getStarted")}
-          </a>
-          <a
             href="https://github.com/drnachio/postext"
             target="_blank"
             rel="noopener noreferrer"

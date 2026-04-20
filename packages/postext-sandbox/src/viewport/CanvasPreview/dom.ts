@@ -31,6 +31,13 @@ export function createOverlaySvg(
 
   // Persistent groups: selection is redrawn each update; cursor is animated
   // via CSS and updated in place so the blink animation stays in sync.
+  // Baselines sit below the loose-line highlight so the highlight remains
+  // readable when both are visible — HTML viewer only; the canvas backend
+  // paints its own baseline grid onto the canvas bitmap.
+  const baselineGroup = document.createElementNS(SVG_NS, 'g');
+  baselineGroup.dataset.role = 'baselines';
+  svg.appendChild(baselineGroup);
+
   const looseLineGroup = document.createElementNS(SVG_NS, 'g');
   looseLineGroup.dataset.role = 'looseLines';
   svg.appendChild(looseLineGroup);

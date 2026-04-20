@@ -84,7 +84,7 @@ The naming is intentional.
 
 ```ts
 import { prepare, layout } from '@chenglou/pretext';
-import { createLayout } from 'postext';
+import { buildDocument } from 'postext';
 
 // pretext: measure (the "pre" work)
 const prepared = prepare(paragraphText, '16px/1.5 Inter');
@@ -92,7 +92,7 @@ const { height } = layout(prepared, columnWidth, 24);
 // => "This paragraph is 144px tall at this column width."
 
 // postext: decide (the "post" work)
-const editorial = createLayout(content, config);
+const doc = buildDocument(content, config);
 // => "Put this paragraph in column 2, starting at y=320.
 //     Move the image to the top of column 3.
 //     Add a footnote at the bottom of column 2.
@@ -222,15 +222,26 @@ npm install postext
 ```
 
 ```ts
-import { createLayout } from 'postext';
+import { buildDocument, renderToHtml } from 'postext';
 
-const layout = createLayout(content, {
-  page: { sizePreset: '17x24' },
-  layout: { layoutType: 'double', gutterWidth: { value: 0.75, unit: 'cm' } },
-  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
-  // ...see docs/configuration for the full reference
-});
+const doc = buildDocument(
+  { markdown: '# Hello\n\nThis is postext.' },
+  {
+    page: { sizePreset: '17x24' },
+    layout: { layoutType: 'double', gutterWidth: { value: 0.75, unit: 'cm' } },
+    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+    // ...see docs/configuration for the full reference
+  },
+);
+
+// Render to an HTML string (in-browser viewer)
+const html = renderToHtml(doc);
+
+// …or rasterize to canvas — see renderPage / renderPageToCanvas.
 ```
+
+For an end-to-end HTML-viewer integration (multi-column, resize-aware, Shadow DOM),
+see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#integrating-the-html-viewer).
 
 ---
 

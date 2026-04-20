@@ -12,7 +12,7 @@ import { MarkdownPanel } from './sidebar/MarkdownPanel';
 import { ResizableHandle } from './panels/ResizableHandle';
 import { ViewportTabs } from './viewport/ViewportTabs';
 import { CanvasViewport } from './viewport/CanvasViewport';
-import { HtmlPreview } from './viewport/HtmlPreview';
+import { HtmlViewport } from './viewport/HtmlViewport';
 import { PdfPreview } from './viewport/PdfPreview';
 
 function SandboxLayout({
@@ -106,7 +106,7 @@ function SandboxLayout({
       case 'canvas':
         return <CanvasViewport />;
       case 'html':
-        return <HtmlPreview />;
+        return <HtmlViewport />;
       case 'pdf':
         return <PdfPreview />;
       default:

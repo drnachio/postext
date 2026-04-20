@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -11,10 +12,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "License" });
-  return {
+  return buildMetadata({
+    locale,
+    path: "/license",
     title: t("metaTitle"),
     description: t("metaDescription"),
-  };
+  });
 }
 
 export default async function LicensePage({

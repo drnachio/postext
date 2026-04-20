@@ -2,7 +2,8 @@
 
 import { useRef } from 'react';
 import { Download, Upload, RotateCcw } from 'lucide-react';
-import { useSandbox } from '../context/SandboxContext';
+import { isDefaultColorPalette } from 'postext';
+import { useSandbox, createDefaultConfig } from '../context/SandboxContext';
 import { exportConfigToJson, importConfigFromJson } from '../storage/persistence';
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
@@ -13,6 +14,7 @@ import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
+import { HtmlViewerSection } from './sections/HtmlViewerSection';
 import { DebugSection } from './sections/DebugSection';
 
 export function ConfigPanel() {
@@ -32,7 +34,8 @@ export function ConfigPanel() {
     e.target.value = '';
   };
 
-  const hasAnyOverrides = Object.keys(config).length > 0;
+  const otherKeys = Object.keys(config).filter((k) => k !== 'colorPalette');
+  const hasAnyOverrides = otherKeys.length > 0 || !isDefaultColorPalette(config.colorPalette);
 
   return (
     <div className="flex h-full flex-col">
@@ -50,7 +53,7 @@ export function ConfigPanel() {
           {hasAnyOverrides && (
             <ConfirmPopover
               message={labels.resetConfigConfirm}
-              onConfirm={() => dispatch({ type: 'SET_CONFIG', payload: {} })}
+              onConfirm={() => dispatch({ type: 'SET_CONFIG', payload: createDefaultConfig() })}
             >
               {({ open }) => (
                 <Tooltip content={labels.reset} side="bottom">
@@ -113,6 +116,7 @@ export function ConfigPanel() {
         <HeadingsSection />
         <UnorderedListsSection />
         <OrderedListsSection />
+        <HtmlViewerSection />
         <DebugSection />
       </div>
     </div>

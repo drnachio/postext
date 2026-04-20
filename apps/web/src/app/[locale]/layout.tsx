@@ -17,6 +17,7 @@ import { CookieConsentProvider } from "@/components/gdpr/CookieConsentProvider";
 import { CookieBanner } from "@/components/gdpr/CookieBanner";
 import { Analytics } from "@vercel/analytics/next";
 import { cn } from "@/lib/utils";
+import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 import "../globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
@@ -55,14 +56,32 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
 
-  return {
+  const base = buildMetadata({
+    locale,
+    path: "",
     title: t("title"),
     description: t("description"),
-    metadataBase: new URL("https://postext.dev"),
-    openGraph: {
-      title: t("ogTitle"),
-      description: t("ogDescription"),
-      type: "website",
+    ogTitle: t("ogTitle"),
+    ogDescription: t("ogDescription"),
+    ogImageAlt: t("ogImageAlt"),
+    keywords: t("keywords")
+      .split(",")
+      .map((k) => k.trim())
+      .filter(Boolean),
+  });
+
+  return {
+    ...base,
+    metadataBase: new URL(SITE_URL),
+    applicationName: SITE_NAME,
+    authors: [{ name: "Postext contributors", url: SITE_URL }],
+    creator: "Postext contributors",
+    publisher: "Postext contributors",
+    category: "technology",
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
     },
   };
 }
@@ -82,6 +101,47 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
   const messages = await getMessages();
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: SITE_URL,
+      inLanguage: locale,
+      description: t("description"),
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${localizedUrl(locale, "/docs")}?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: SITE_NAME,
+      applicationCategory: "DeveloperApplication",
+      operatingSystem: "Web",
+      url: SITE_URL,
+      inLanguage: locale,
+      description: t("description"),
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      license: "https://opensource.org/licenses/MIT",
+      codeRepository: "https://github.com/drnachio/postext",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      sameAs: ["https://github.com/drnachio/postext"],
+    },
+  ];
 
   return (
     <html
@@ -97,6 +157,10 @@ export default async function LocaleLayout({
       )}
     >
       <body className="min-h-full flex flex-col font-body">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             <CookieConsentProvider>

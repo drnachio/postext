@@ -1,4 +1,44 @@
 import type { ColorValue, ColorPaletteEntry, Dimension, PostextConfig } from '../types';
+import type { ResolvedConfig } from '../vdt';
+
+export const DEFAULT_MAIN_COLOR_ID = 'main-color';
+export const DEFAULT_MAIN_COLOR_NAME = 'Main Color';
+export const DEFAULT_MAIN_COLOR_HEX = '#517538';
+
+export const DEFAULT_MAIN_COLOR: ColorValue = {
+  hex: DEFAULT_MAIN_COLOR_HEX,
+  model: 'hex',
+  paletteId: DEFAULT_MAIN_COLOR_ID,
+};
+
+export const DEFAULT_COLOR_PALETTE: ColorPaletteEntry[] = [
+  {
+    id: DEFAULT_MAIN_COLOR_ID,
+    name: DEFAULT_MAIN_COLOR_NAME,
+    value: { hex: DEFAULT_MAIN_COLOR_HEX, model: 'hex' },
+  },
+];
+
+export function cloneDefaultColorPalette(): ColorPaletteEntry[] {
+  return DEFAULT_COLOR_PALETTE.map((entry) => ({
+    ...entry,
+    value: { ...entry.value },
+  }));
+}
+
+export function isDefaultColorPalette(palette: ColorPaletteEntry[] | undefined): boolean {
+  if (!palette || palette.length !== DEFAULT_COLOR_PALETTE.length) return false;
+  return palette.every((entry, i) => {
+    const def = DEFAULT_COLOR_PALETTE[i]!;
+    return (
+      entry.id === def.id &&
+      entry.name === def.name &&
+      entry.value.hex === def.value.hex &&
+      entry.value.model === def.value.model &&
+      !entry.value.paletteId
+    );
+  });
+}
 
 export function dimensionsEqual(a: Dimension, b: Dimension): boolean {
   return a.value === b.value && a.unit === b.unit;
@@ -27,6 +67,47 @@ export function resolveColor(value: ColorValue | undefined, palette: ColorPalett
   const entry = palette?.find((e) => e.id === value.paletteId);
   if (!entry) return { hex: value.hex, model: value.model };
   return { hex: entry.value.hex, model: entry.value.model };
+}
+
+function resolveRequired(value: ColorValue, palette: ColorPaletteEntry[] | undefined): ColorValue {
+  if (!value.paletteId) return value;
+  const entry = palette?.find((e) => e.id === value.paletteId);
+  if (!entry) return { hex: value.hex, model: value.model };
+  return { hex: entry.value.hex, model: entry.value.model };
+}
+
+export function applyPaletteToResolvedConfig(
+  resolved: ResolvedConfig,
+  palette: ColorPaletteEntry[] | undefined,
+): ResolvedConfig {
+  if (!palette || palette.length === 0) return resolved;
+  return {
+    ...resolved,
+    bodyText: {
+      ...resolved.bodyText,
+      color: resolveRequired(resolved.bodyText.color, palette),
+      boldColor: resolved.bodyText.boldColor ? resolveRequired(resolved.bodyText.boldColor, palette) : undefined,
+      italicColor: resolved.bodyText.italicColor ? resolveRequired(resolved.bodyText.italicColor, palette) : undefined,
+    },
+    headings: {
+      ...resolved.headings,
+      color: resolveRequired(resolved.headings.color, palette),
+      levels: resolved.headings.levels.map((l) => ({ ...l, color: resolveRequired(l.color, palette) })),
+    },
+    unorderedLists: {
+      ...resolved.unorderedLists,
+      color: resolveRequired(resolved.unorderedLists.color, palette),
+      taskCompletedColor: resolved.unorderedLists.taskCompletedColor
+        ? resolveRequired(resolved.unorderedLists.taskCompletedColor, palette)
+        : undefined,
+      levels: resolved.unorderedLists.levels.map((l) => ({ ...l, color: resolveRequired(l.color, palette) })),
+    },
+    orderedLists: {
+      ...resolved.orderedLists,
+      color: resolveRequired(resolved.orderedLists.color, palette),
+      levels: resolved.orderedLists.levels.map((l) => ({ ...l, color: resolveRequired(l.color, palette) })),
+    },
+  };
 }
 
 export function applyPaletteToConfig(config: PostextConfig | undefined): PostextConfig | undefined {

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import {
   getDocSource,
   extractToc,
@@ -11,6 +12,7 @@ import { routing } from "@/i18n/routing";
 import { MdxContent } from "@/components/docs/MdxContent";
 import { DocsToc } from "@/components/docs/DocsToc";
 import { DocsMobileNav } from "@/components/docs/DocsMobileNav";
+import { buildMetadata } from "@/lib/seo";
 
 export async function generateStaticParams() {
   const params: { locale: string; slug: string }[] = [];
@@ -27,15 +29,25 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-}) {
+}): Promise<Metadata> {
   const { locale, slug } = await params;
   const doc = getDocSource(slug, locale);
   if (!doc) return {};
 
-  return {
+  const availableLocales = routing.locales.filter((l) =>
+    hasLocaleVersion(slug, l)
+  );
+
+  return buildMetadata({
+    locale,
+    path: `/docs/${slug}`,
     title: `${doc.meta.title} — Postext`,
     description: doc.meta.description,
-  };
+    ogTitle: doc.meta.title,
+    ogDescription: doc.meta.description,
+    availableLocales,
+    type: "article",
+  });
 }
 
 export default async function DocPage({

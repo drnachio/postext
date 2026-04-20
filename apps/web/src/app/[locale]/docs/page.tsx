@@ -1,6 +1,25 @@
 import { redirect } from "@/i18n/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import { getDocSlugsForLocale } from "@/lib/docs";
+import { buildMetadata } from "@/lib/seo";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "DocsIndex" });
+  return buildMetadata({
+    locale,
+    path: "/docs",
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    ogTitle: t("ogTitle"),
+    ogDescription: t("ogDescription"),
+  });
+}
 
 export default async function DocsIndexPage({
   params,
