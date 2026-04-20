@@ -2,7 +2,7 @@ import type { HtmlViewerConfig, ResolvedHtmlViewerConfig } from '../types';
 
 export const DEFAULT_HTML_VIEWER_CONFIG: ResolvedHtmlViewerConfig = {
   maxCharsPerLine: 70,
-  columnGap: 25,
+  columnGap: 50,
   optimalLineBreaking: false,
 };
 

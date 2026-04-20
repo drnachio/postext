@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useDeferredValue } from 'react';
+import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import {
   buildDocument,
   renderToHtml,
@@ -11,15 +11,20 @@ import {
   dimensionToPx,
   resolveHtmlViewerConfig,
   resolveHeadingsConfig,
+  resolveDebugConfig,
 } from 'postext';
 import type {
   PostextConfig,
   HyphenationLocale,
   MeasurementCache,
+  VDTDocument,
 } from 'postext';
 import { useSandbox } from '../context/SandboxContext';
 import { useShadowDom } from '../hooks/useShadowDom';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../controls/fontLoader';
+import { createOverlaySvg } from './CanvasPreview/dom';
+import { drawOverlay } from './CanvasPreview/overlay';
+import { attachSlotClickHandler } from './CanvasPreview/interaction';
 
 type ColumnMode = 'single' | 'multi';
 
@@ -66,6 +71,8 @@ const SHADOW_CSS = `
     height: 100%;
     box-sizing: border-box;
     background: #ffffff;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .pt-scroll[data-mode='single'] { overflow-y: auto; overflow-x: hidden; }
   .pt-scroll[data-mode='multi']  {
@@ -76,6 +83,16 @@ const SHADOW_CSS = `
   }
   .pt-scroll[data-mode='multi'] .pt-page { scroll-snap-align: start; }
   .pt-doc { min-height: 100%; }
+  .pt-page { cursor: text; }
+  @keyframes cursor-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cursor-blink {
+      animation: cursor-blink 1.06s steps(1, end) infinite;
+    }
+  }
 `;
 
 /**
@@ -197,7 +214,7 @@ function measureColumnWidthPx(
 }
 
 export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
-  const { state } = useSandbox();
+  const { state, dispatch } = useSandbox();
   const { hostRef, shadowRef } = useShadowDom();
   const deferredMarkdown = useDeferredValue(state.markdown);
   const deferredConfig = useDeferredValue(state.config);
@@ -208,6 +225,17 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
   const viewportSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const relayoutTimerRef = useRef<number | null>(null);
   const renderSeqRef = useRef(0);
+
+  // Refs for click-handler plumbing — same pattern as CanvasPreview so the
+  // reused attachSlotClickHandler can dispatch and detect the active panel
+  // without re-attaching on every render.
+  const dispatchRef = useRef(dispatch);
+  dispatchRef.current = dispatch;
+  const activePanelRef = useRef(state.activePanel);
+  activePanelRef.current = state.activePanel;
+  const docRef = useRef<VDTDocument | null>(null);
+  const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
+  const [docVersion, setDocVersion] = useState(0);
 
   // Latest-value refs so the stable ResizeObserver / font-loader callbacks
   // don't capture stale values via closure.
@@ -383,6 +411,42 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
         currentConfig.page?.backgroundColor?.hex,
       );
       scroll.innerHTML = html;
+
+      docRef.current = doc;
+      overlayMapRef.current.clear();
+
+      // Per-page: inject overlay SVG for cursor/selection and wire up
+      // pointer/click/dblclick handlers. HTML pages render at 1:1 with the
+      // VDT page-space px, so display dims == page-space dims.
+      const pageEls = scroll.querySelectorAll<HTMLDivElement>('.pt-page');
+      pageEls.forEach((pageEl) => {
+        const pageIndex = Number(pageEl.dataset.page);
+        const page = doc.pages[pageIndex];
+        if (!page) return;
+        const pageWidthPx = page.width;
+        const pageHeightPx = page.height;
+        const overlay = createOverlaySvg(
+          pageWidthPx,
+          pageHeightPx,
+          pageWidthPx,
+          pageHeightPx,
+        );
+        pageEl.appendChild(overlay);
+        overlayMapRef.current.set(pageIndex, overlay);
+        attachSlotClickHandler(
+          pageEl,
+          pageIndex,
+          pageWidthPx,
+          pageHeightPx,
+          pageWidthPx,
+          pageHeightPx,
+          docRef,
+          dispatchRef,
+          activePanelRef,
+        );
+      });
+
+      setDocVersion((v) => v + 1);
     } catch (err) {
       console.error('[HtmlPreview] Layout error:', err);
     }
@@ -393,6 +457,66 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
     scheduleRelayout(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renderKey]);
+
+  // Draw cursor/selection overlays whenever selection, focus, or the document
+  // itself changes. Mirrors the effect in CanvasPreview so behavior is shared.
+  useEffect(() => {
+    const doc = docRef.current;
+    if (!doc) return;
+    const debug = resolveDebugConfig(state.config.debug);
+    const selection = state.selection;
+    const focused = state.editorFocused;
+
+    let caretBlockIdx = -1;
+    const { from } = selection;
+    for (let i = 0; i < doc.blocks.length; i++) {
+      const b = doc.blocks[i]!;
+      if (b.sourceStart === undefined || b.sourceEnd === undefined) continue;
+      if (from >= b.sourceStart && from <= b.sourceEnd) { caretBlockIdx = i; break; }
+    }
+    if (caretBlockIdx === -1) {
+      for (let i = 0; i < doc.blocks.length; i++) {
+        const b = doc.blocks[i]!;
+        if (b.sourceStart === undefined) continue;
+        if (b.sourceStart >= from) { caretBlockIdx = i; break; }
+      }
+    }
+    if (caretBlockIdx === -1 && doc.blocks.length > 0) {
+      caretBlockIdx = doc.blocks.length - 1;
+    }
+
+    let activeCursorRect: SVGRectElement | null = null;
+    for (const [pageIndex, overlay] of overlayMapRef.current) {
+      const page = doc.pages[pageIndex];
+      if (!page) continue;
+      const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx);
+      if (rect) activeCursorRect = rect;
+    }
+
+    const scroll = scrollHostRef.current;
+    const isCollapsed = selection.from === selection.to;
+    if (
+      activeCursorRect &&
+      scroll &&
+      focused &&
+      isCollapsed &&
+      debug.cursorSync.enabled
+    ) {
+      const padding = 16;
+      const cr = activeCursorRect.getBoundingClientRect();
+      const cn = scroll.getBoundingClientRect();
+      if (cr.top < cn.top + padding) {
+        scroll.scrollTop += cr.top - cn.top - padding;
+      } else if (cr.bottom > cn.bottom - padding) {
+        scroll.scrollTop += cr.bottom - cn.bottom + padding;
+      }
+      if (cr.left < cn.left + padding) {
+        scroll.scrollLeft += cr.left - cn.left - padding;
+      } else if (cr.right > cn.right - padding) {
+        scroll.scrollLeft += cr.right - cn.right + padding;
+      }
+    }
+  }, [state.selection, state.config.debug, state.editorFocused, docVersion]);
 
   return <div ref={hostRef} className="h-full w-full" />;
 }
