@@ -546,7 +546,7 @@ Beyond hyphenation and spacing bounds, the body-text configuration exposes the s
       <td><code>keepColonWithList</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>When a paragraph ends with a colon that directly introduces a list, keep the colon-bearing last line joined to the list: if placing the paragraph would leave no room for the first list item in the same column/page, the last line (or the whole paragraph, if it is a single line) is moved to the next column together with the list.</td>
+      <td>When a paragraph ends with a colon that directly introduces a list, keep the colon-bearing last line joined to the list: if placing the paragraph would leave no room for the first list item in the same column/page, the last line (or the whole paragraph, if it is a single line) is moved to the next column together with the list. When this rule would push the whole paragraph and a run of headings immediately precedes it in the column, those headings are pulled forward too so <code>headings.keepWithNext</code> keeps holding.</td>
     </tr>
   </tbody>
 </table>
@@ -618,7 +618,7 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
       <td><code>keepWithNext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>When <code>true</code>, a heading is never placed as the last element of a column or page. If the following block would not have at least one line of room after the heading, the heading is pushed forward so it stays joined to its text.</td>
+      <td>When <code>true</code>, a heading is never placed as the last element of a column or page. If the following block would not have at least <code>bodyText.widowMinLines</code> lines of room after the heading (or one line when <code>bodyText.avoidWidows</code> is <code>false</code>), the heading is pushed forward so it stays joined to its text. Interacts with <code>bodyText.keepColonWithList</code>: if that rule has to push a colon-paragraph whole, any trailing heading(s) in the column travel with it rather than being left stranded.</td>
     </tr>
   </tbody>
 </table>
