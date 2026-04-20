@@ -82,13 +82,13 @@ export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.
 
   return (
     <div className="mb-2 flex items-center justify-between gap-2">
-      <div className="flex items-center gap-1">
+      <div className="flex min-w-0 flex-1 items-center gap-1">
         {tooltip && <InfoTip text={tooltip} />}
-        <label className="text-xs shrink-0" style={{ color: 'var(--slate)' }}>
+        <label className="text-xs" title={label} style={{ color: 'var(--slate)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
           {label}
         </label>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         {!muted && onReset && <ResetButton onClick={onReset} />}
         <input
           ref={inputRef}

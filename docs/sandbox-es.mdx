@@ -1,0 +1,183 @@
+{/* docs/sandbox-es.mdx */}
+
+export const metadata = {
+  title: 'Sandbox',
+  sidebarTitle: 'Sandbox',
+  description: 'Entorno interactivo para experimentar con el motor de maquetación de Postext',
+  lang: 'es',
+  lastUpdated: '2026-04-19',
+  readingTime: '6 min',
+  order: 7,
+};
+
+# Sandbox
+
+**Un entorno interactivo para el motor de maquetación de Postext.**
+
+El Sandbox ofrece una interfaz estilo VS Code donde puedes escribir markdown, ajustar la configuración de maquetación y ver los resultados renderizados en tiempo real. Está pensado para la experimentación: afina los ajustes de tipografía, cambia el número de columnas, prueba estrategias de colocación de recursos y observa cómo responde el motor.
+
+## Disposición de la interfaz
+
+El Sandbox sigue un paradigma IDE familiar con tres áreas principales:
+
+### Barra de actividad
+
+Una tira estrecha en el borde izquierdo (48 px de ancho) contiene botones con iconos para navegar entre paneles. La sección superior aloja tres interruptores de panel:
+
+- **Editor de markdown** (icono `FileCode`) — Abre el panel de edición de markdown
+- **Configuración** (icono `Settings2`) — Abre el panel de configuración de la maquetación
+- **Recursos** (icono `FolderOpen`) — Abre el panel de gestión de recursos (próximamente)
+
+Pulsar el icono del panel activo colapsa la barra lateral. Pulsar un icono distinto cambia a ese panel.
+
+La sección inferior de la barra de actividad contiene:
+
+- **Exportar** — Descarga el estado actual del sandbox (markdown + configuración) como archivo JSON
+- **Importar** — Carga un archivo JSON exportado previamente
+- **Conmutador de tema** — Alterna entre modo oscuro y claro
+- **Selector de idioma** — Cambia el idioma de la interfaz
+
+### Paneles laterales
+
+La barra lateral es redimensionable: arrastra el separador entre la barra lateral y el viewport para ajustar su anchura (rango 240 px–480 px). La barra lateral se colapsa por completo cuando no hay ningún panel activo.
+
+#### Panel de configuración
+
+Un editor basado en formulario para `PostextConfig`. Los ajustes se agrupan en secciones colapsables, cada una con un botón de restablecer para recuperar los valores por defecto:
+
+| Sección | Ajustes |
+|---------|---------|
+| **Página** | Color de fondo, tamaño predefinido (o ancho/alto personalizados), márgenes (superior, inferior, izquierdo, derecho), DPI, líneas de corte, rejilla de línea base (con color y grosor de línea) |
+| **Maquetación** | Tipo de maquetación (una columna, doble, columna y media), ancho del medianil, porcentaje de columna lateral |
+| **Texto de cuerpo** | Familia tipográfica (con búsqueda de Google Fonts), tamaño de fuente, interlineado, color de texto, alineación, peso de fuente, peso de la negrita, separación silábica (interruptor + locale) |
+| **Encabezados** | Valores por defecto generales (familia tipográfica, interlineado, color, alineación, peso, márgenes) más sobrecargas por nivel (H1–H6) para tamaño de fuente, interlineado, familia tipográfica, peso, color y márgenes |
+
+Los controles son contextuales: el ancho del medianil solo aparece en maquetaciones multicolumna, los ajustes de separación silábica solo aparecen cuando el texto está justificado, y el porcentaje de columna lateral solo se muestra en la maquetación de columna y media. Los cambios surten efecto inmediatamente en la vista previa del viewport. Para una referencia completa de todas las opciones de configuración y sus valores por defecto, consulta la página de [Configuración](/es/docs/configuration).
+
+#### Editor de markdown
+
+Un editor basado en CodeMirror 6 con:
+
+- **Resaltado de sintaxis** — Encabezados, énfasis, enlaces, bloques de código y citas quedan visualmente diferenciados
+- **Números de línea** y resaltado de la línea activa
+- **Ajuste de línea** para párrafos largos
+- **Barra de herramientas** con botones para acciones markdown habituales:
+  - Negrita, cursiva
+  - Niveles de encabezado 1–3
+  - Enlace, código en línea
+  - Cita
+  - Listas ordenadas y no ordenadas
+
+La barra de herramientas es extensible: pueden añadirse acciones personalizadas para micro-formatos específicos de postext a medida que evoluciona la especificación de markdown enriquecido.
+
+#### Panel de recursos
+
+*Próximamente en una versión futura.* Este panel gestionará los recursos (imágenes, tablas, figuras, citas destacadas) referenciados desde el contenido markdown.
+
+### Viewport principal
+
+El lado derecho de la interfaz muestra la salida renderizada. Hay tres pestañas disponibles:
+
+#### Pestaña Canvas
+
+Renderiza una vista previa rasterizada del documento en un elemento HTML5 `<canvas>`. Esto ofrece una representación precisa al píxel de cómo se verá el documento compuesto final, incluida la colocación exacta del texto, la maquetación por columnas y la colocación de recursos.
+
+Una barra de herramientas en la parte superior del viewport de canvas proporciona:
+
+- **Controles de zoom** — Aumentar y reducir el zoom (1,25x por paso, rango 0,25x–4x). El zoom manual desactiva el modo de ajuste.
+- **Modos de ajuste** — Ajustar al ancho o al alto de la página. Se activan/desactivan; el ajuste se recalcula automáticamente al redimensionar la ventana.
+- **Modos de vista** — Página única (una página por fila) o doble página (maquetación estilo libro, donde la primera página aparece a la derecha como recto y las siguientes se emparejan como dobles páginas).
+
+Las páginas se renderizan de forma perezosa mediante `IntersectionObserver` — solo las páginas visibles (más un margen de 200 px) se dibujan en canvas, manteniendo el uso de memoria de GPU bajo para documentos largos.
+
+#### Pestaña HTML
+
+Renderiza la salida de postext dentro de un contenedor Shadow DOM, garantizando un aislamiento completo de estilos respecto a la página anfitriona. El CSS editorial (tipografía, espaciado, filetes de columna) se inyecta dentro del shadow root para que no pueda verse afectado por los estilos de la aplicación circundante ni filtrarse hacia ellos.
+
+#### Pestaña PDF
+
+*Próximamente en una versión futura.* Generará un PDF descargable del documento actual.
+
+## Persistencia
+
+El Sandbox guarda automáticamente tu trabajo en el `localStorage` del navegador:
+
+- **Guardado automático** — El contenido markdown y la configuración se guardan tras 1 segundo de inactividad
+- **Carga automática** — Al cargar la página, el contenido de la sesión anterior se restaura automáticamente
+- **Estado del viewport** — El modo de vista del canvas (única/doble página) y el modo de ajuste (ninguno/ancho/alto) se conservan entre sesiones
+- **Estado de secciones** — Se recuerda qué secciones de configuración están expandidas o colapsadas
+
+### Exportar e importar
+
+Para transferir tu trabajo entre dispositivos o compartir configuraciones:
+
+- **Exportar** (icono `Download` en la barra de actividad) — Descarga un archivo `postext-sandbox.json` que contiene tanto el contenido markdown como la configuración completa
+- **Importar** (icono `Upload` en la barra de actividad) — Abre un selector de archivos para cargar un `.json` exportado previamente
+
+El formato de exportación está versionado por compatibilidad hacia adelante:
+
+```json
+{
+  "version": 1,
+  "config": { ... },
+  "markdown": "# Tu contenido..."
+}
+```
+
+## Uso standalone
+
+El Sandbox está disponible como un paquete React independiente (`postext-sandbox`) que puede embeberse en cualquier aplicación React:
+
+```bash
+npm install postext-sandbox postext
+```
+
+```tsx
+import { PostextSandbox } from 'postext-sandbox';
+
+function App() {
+  return (
+    <PostextSandbox
+      initialMarkdown="# Hola Mundo"
+      initialConfig={{ layout: { layoutType: 'double' } }}
+      onMarkdownChange={(md) => console.log(md)}
+      onConfigChange={(cfg) => console.log(cfg)}
+    />
+  );
+}
+```
+
+### Props
+
+| Prop | Tipo | Descripción |
+|------|------|-------------|
+| `initialMarkdown` | `string` | Contenido markdown inicial |
+| `initialConfig` | `PostextConfig` | Configuración de maquetación inicial |
+| `className` | `string` | Clase CSS para el contenedor raíz |
+| `labels` | `Partial<SandboxLabels>` | Sobrecargas de etiquetas i18n (por defecto en inglés) |
+| `onConfigChange` | `(config) => void` | Callback cuando cambia la configuración |
+| `onMarkdownChange` | `(markdown) => void` | Callback cuando cambia el markdown |
+| `themeToggle` | `ReactNode` | Componente personalizado para el conmutador de tema |
+| `languageSwitcher` | `ReactNode` | Componente personalizado para el selector de idioma |
+
+### Requisitos de CSS
+
+El paquete usa clases utilitarias de Tailwind CSS que hacen referencia a variables CSS personalizadas. La aplicación anfitriona debe proporcionar estas variables:
+
+- `--background`, `--foreground` — Colores base
+- `--surface` — Color para superficies elevadas
+- `--gilt` — Color de acento (dorado)
+- `--slate` — Color para texto atenuado
+- `--rule` — Color de bordes/divisores
+- `--accent-blue` — Color de enlace/acento
+- `--font-mono` — Familia monoespaciada (para el editor de código)
+
+## Roadmap
+
+Las siguientes características están planificadas para versiones futuras:
+
+- **Gestión de recursos** — Subir, gestionar y referenciar imágenes, tablas y figuras desde el editor de markdown
+- **Exportación a PDF** — Generar PDFs descargables directamente desde el sandbox
+- **Edición colaborativa** — Compartir sesiones del sandbox mediante URL
+- **Configuraciones predefinidas** — Plantillas de arranque rápido para escenarios de maquetación habituales (periódico, artículo académico, capítulo de libro)
+- **Extensiones personalizadas de la barra de herramientas** — Añadir botones para la sintaxis de markdown enriquecido específica de postext a medida que evolucione la especificación

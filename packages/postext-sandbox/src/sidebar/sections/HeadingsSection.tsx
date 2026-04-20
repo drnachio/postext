@@ -258,6 +258,7 @@ export function HeadingsSection() {
   const isMarginTopDefault = dimensionsEqual(headings.marginTop, D.marginTop);
   const isMarginBottomDefault = dimensionsEqual(headings.marginBottom, D.marginBottom);
   const isTextAlignDefault = headings.textAlign === D.textAlign;
+  const isKeepWithNextDefault = headings.keepWithNext === D.keepWithNext;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.headingsTextAlignLeft },
@@ -351,6 +352,15 @@ export function HeadingsSection() {
         isDefault={isMarginBottomDefault}
         onReset={() => resetField('marginBottom')}
         units={MARGIN_UNITS}
+      />
+
+      <ToggleSwitch
+        label={labels.headingsKeepWithNext}
+        checked={headings.keepWithNext}
+        onChange={(v) => updateHeadings({ keepWithNext: v })}
+        tooltip={labels.headingsKeepWithNextTooltip}
+        isDefault={isKeepWithNextDefault}
+        onReset={() => resetField('keepWithNext')}
       />
 
       {headings.levels.map((resolved) => (

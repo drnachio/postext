@@ -39,6 +39,43 @@ const defaultOptions: KPOptions = {
   minShrinkRatio: 0.8,
 };
 
+describe('runt penalty option', () => {
+  it('accepts runtPenalty + runtMinWidth without crashing and returns valid breaks', () => {
+    const items: KPItem[] = [
+      box(30, 0),
+      glue(10, 5, 2, 1),
+      box(30, 2),
+      ...finalItems(),
+    ];
+    const withRunt = computeBreakpoints(items, {
+      ...defaultOptions,
+      runtPenalty: 1500,
+      runtMinWidth: 50,
+    });
+    const without = computeBreakpoints(items, defaultOptions);
+    expect(withRunt.length).toBeGreaterThan(0);
+    expect(without.length).toBeGreaterThan(0);
+  });
+
+  it('runtPenalty=0 produces identical breaks to omitting the option', () => {
+    const items: KPItem[] = [
+      box(30, 0),
+      glue(10, 5, 2, 1),
+      box(30, 2),
+      glue(10, 5, 2, 3),
+      box(30, 4),
+      ...finalItems(),
+    ];
+    const withZero = computeBreakpoints(items, {
+      ...defaultOptions,
+      runtPenalty: 0,
+      runtMinWidth: 50,
+    });
+    const without = computeBreakpoints(items, defaultOptions);
+    expect(withZero).toEqual(without);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Core algorithm tests
 // ---------------------------------------------------------------------------

@@ -77,14 +77,14 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
   return (
     <div className={className ?? 'mb-2 flex items-center justify-between gap-2'}>
       {!hideLabel && (
-        <div className="flex items-center gap-1">
+        <div className="flex min-w-0 flex-1 items-center gap-1">
           {tooltip && <InfoTip text={tooltip} />}
-          <label className="text-xs shrink-0" style={{ color: 'var(--slate)' }}>
+          <label className="text-xs" title={label} style={{ color: 'var(--slate)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
             {label}
           </label>
         </div>
       )}
-      <div className="relative flex items-center gap-1.5">
+      <div className="relative flex shrink-0 items-center gap-1.5">
         {!muted && onReset && <ResetButton onClick={onReset} />}
         <button
           type="button"

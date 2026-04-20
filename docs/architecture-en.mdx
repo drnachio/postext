@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Technical architecture of the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-04-13',
+  lastUpdated: '2026-04-19',
   readingTime: '35 min',
   order: 2,
 };
@@ -181,7 +181,7 @@ Every aspect of the layout pipeline is controlled by `PostextConfig`:
     </tr>
     <tr>
       <td><code>TypographyConfig</code></td>
-      <td>Widows, orphans, hyphenation, rag optimization, spacing rules, keep-together rules</td>
+      <td>Legacy typographic controls (spacing around figures, rag optimization). Per-field widow/orphan/runt/keep-together controls now live on <code>BodyTextConfig</code> and <code>HeadingsConfig</code> — see the <a href="/en/docs/configuration#body-text">Configuration</a> page.</td>
       <td>Pass 5, Pass 7</td>
     </tr>
     <tr>
@@ -408,6 +408,10 @@ And then there is deferred placement. Say an image is referenced at a point wher
 
 This is the pass that separates a layout engine from a text dumper. It enforces the editorial quality rules that professional typesetters have applied by hand for centuries -- and that naive text rendering completely ignores.
 
+Pass 5 operates at two levels: **penalty-based line breaking** inside each paragraph, and **structural keep-together enforcement** between blocks. They work together, but they are distinct mechanisms.
+
+#### Penalty-based widow/orphan/runt avoidance
+
 **Widows and orphans** are the most visible signs of amateur typesetting:
 
 - A **widow** is a single line of a paragraph left alone at the bottom of a column. The paragraph
@@ -416,28 +420,38 @@ This is the pass that separates a layout engine from a text dumper. It enforces 
 - An **orphan** is a single line of a paragraph stranded at the top of a column. The bulk of the
   paragraph is in the previous column, but one line spilled over (it looks disconnected from its
   context).
+- A **runt** is a paragraph whose last line is a single short word (or two) -- visually far too short to feel like a proper line of text. Less structurally severe than a widow, but just as jarring to a careful reader.
 
-Both are considered unacceptable in professional publishing. The minimum number of lines that should
-appear together is controlled by `TypographyConfig.orphans` and `TypographyConfig.widows` (typically
-2 or 3).
+All three are handled by injecting **demerits** into the Knuth-Plass line-breaking algorithm. Rather than laying out a paragraph and then trying to repair a bad break after the fact, the engine teaches the line breaker that certain break sets are more expensive than others. The algorithm then picks the globally optimal break set that naturally avoids widows, orphans, and runts whenever possible.
 
-- **Sub-passes** (order matters):
-  1. **Widow/orphan detection.** Check each paragraph's first and last lines against column boundaries
-  2. **Widow/orphan correction.** Pull back or push forward lines by adjusting tracking (letter-spacing), inserting hyphenation, or modifying paragraph spacing. For example, to fix a widow, the engine might slightly compress the tracking of the preceding paragraph so it fits in one fewer line, pulling the orphaned line back into the previous column
-  3. **Hyphenation.** For paragraphs with bad rag (a very uneven right edge) or that need to gain or lose a line to fix a widow/orphan, apply hyphenation at legal break points and re-measure via Pretext. Hyphenation can turn a 7-line paragraph into a 6-line one by allowing words to break across lines more efficiently
-  4. **Tracking adjustment.** Slightly expand or compress letter-spacing (typically by ±0.5px or less, invisible to the reader but enough to change line breaks) to improve line breaks and eliminate widows/orphans
-- **Output:** Some blocks may have changed dimensions, marked `dirty`
+Concretely, for every candidate break node in a paragraph:
 
-These corrections are invisible when done well (a reader should never notice them). But their *absence* is immediately obvious to anyone who reads carefully: that awkward single line at the top of a column, those uneven gaps where the engine gave up trying to make text fit. Professional publishers have entire style guides about preventing exactly these problems. Postext automates them.
+- If choosing this break would leave fewer than `orphanMinLines` lines at the top of the next column, add `orphanPenalty` (default 3000) to the node's demerits.
+- If choosing this break would leave fewer than `widowMinLines` lines at the bottom of the current column, add `widowPenalty` (default 3000).
+- If the last line produced from this break would be shorter than `runtMinCharacters × normalSpaceWidth`, add `runtPenalty` (default 1500 -- softer because runts are aesthetic, not structural).
 
-**Keep-together rules.** Beyond widows and orphans, there are structural groupings that must never be split across a column or page break:
+These penalties sit alongside the usual demerits -- badness (squared adjustment ratio), hyphenation cost, and fitness-class mismatch -- in a single global optimisation. The algorithm is free to accept one of them if the alternative is worse (a paragraph with no legal break that satisfies every rule), but it will almost always find a break set that avoids them. List items opt into the same protection via `avoidOrphansInLists`, `avoidWidowsInLists`, `avoidRuntsInLists` (all `true` by default).
 
-- **Heading with its first paragraph.** A heading must never appear at the bottom of a column if the paragraph it introduces starts in the next column. The heading and the opening lines of its first paragraph move together. If there is not enough space for both, the heading is pushed to the next column, and the engine uses tracking or spacing adjustments to fill the resulting gap in the previous column.
+A fourth soft pressure, `slackWeight`, weights a squared "unused column space" cost so the algorithm prefers break sets that fill columns tightly. Together these demerits make Pass 5 a *line-breaking* refinement: most widow/orphan/runt cases are resolved inside the Knuth-Plass solver, not by letter-spacing tweaks after the fact.
+
+All of this is tunable on `BodyTextConfig` -- see [Configuration → Orphans, widows, runts, and keep-together rules](/en/docs/configuration#orphans-widows-runts-and-keep-together-rules). Setting any `*Penalty` to `0` effectively disables that rule.
+
+#### Structural keep-together rules
+
+Some groupings are bigger than a single paragraph -- they span adjacent blocks and cannot be addressed by line-breaking alone. Pass 5 enforces these at the block-placement level, moving entire groups forward when they would otherwise split across a column or page break:
+
+- **Heading with its first paragraph.** A heading must never appear at the bottom of a column if the paragraph it introduces would start in the next column. Enforced by `headings.keepWithNext` (default `true`): if there is not room for the heading *plus* at least one line of the next block, the heading is pushed forward to travel with its text.
 - **Consecutive headings.** When multiple headings appear in sequence (e.g., an h2 followed by an h3 followed by a paragraph), the entire group must stay together. None of the headings can be left stranded at the bottom of a column without the content they introduce.
-- **List introductions.** When a paragraph ends with a colon and introduces an enumeration or bullet list, the end of that paragraph must stay with the beginning of the list. The colon must never be the last element in a column with the list starting in the next one.
+- **Colon-introduced lists.** When a paragraph ends with a colon that directly introduces a list, the colon-bearing line must stay with the start of the list. Enforced by `bodyText.keepColonWithList` (default `true`): if placing the paragraph would leave no room for the first list item, the colon-bearing last line (or the whole paragraph, if it is one line) moves forward together with the list.
 - **Figure with its caption.** A figure and its caption are an inseparable unit. They always move together.
 
-When a keep-together violation is detected, the engine pushes the entire group to the next column or page and fills the vacated space using tracking adjustments or vertical spacing distribution, just as it does for widow/orphan corrections.
+When a keep-together violation is detected, the engine pushes the entire group to the next column or page. The vacated space is handled by the normal column-filling mechanism (the line breaker has already chosen a break set that fits; if the resulting column is a little short, Pass 7 redistributes vertical space around grid-breaking elements to keep the baseline grid honest).
+
+#### Output
+
+Blocks whose measurements or placements changed are marked `dirty` for the next iteration of the convergence loop. In practice, because the heavy lifting is done inside Knuth-Plass rather than by post-hoc adjustments, most documents stabilize quickly -- the line breaker picks a good set of breaks the first time and subsequent iterations only have to deal with downstream effects of block movement and column balancing.
+
+These corrections are invisible when done well (a reader should never notice them). But their *absence* is immediately obvious to anyone who reads carefully: that awkward single line at the top of a column, those uneven gaps where the engine gave up trying to make text fit. Professional publishers have entire style guides about preventing exactly these problems. Postext automates them.
 
 ### Pass 6: Column Balancing
 
@@ -461,7 +475,9 @@ The algorithm computes the total content height for all blocks on a page, divide
 
 <Illustration name="ConvergenceLoop" data='{"title": "Convergence loop", "desc": "Pass 1 parses, Pass 2 measures, then passes 3 through 7 run inside a convergence loop. If any block remains dirty and the iteration count is under five, the loop re-runs from Pass 3.", "caption": "The engine loops back to Pass 3 until no dirty blocks remain (max 5 iterations).", "passBadges": [{"num": "Pass 1", "name": "parse"}, {"num": "Pass 2", "name": "measure"}, {"num": "Pass 3", "name": "place"}, {"num": "Pass 4", "name": "resources"}, {"num": "Pass 5", "name": "typography"}, {"num": "Pass 6", "name": "balance"}, {"num": "Pass 7", "name": "rhythm"}], "loopBadge": "convergence loop (max 5 iterations)", "loopCondition": "if dirty blocks exist &amp;&amp; iterations < 5"}' />
 
-Think of the convergence loop as the engine arguing with itself. Pass 5 fixes a widow, which changes column heights. Pass 6 re-balances the columns to compensate, which shifts a block boundary. Pass 7 adjusts vertical rhythm, which might just create a new orphan. So the engine loops back to Pass 3, re-places blocks with the updated measurements, and runs through the whole sequence again. Each iteration resolves more problems than it creates -- until eventually, nothing is dirty anymore.
+Think of the convergence loop as the engine arguing with itself. Pass 5 picks a break set that avoids a widow inside paragraph A -- but doing so shortens paragraph A by a line, which leaves a gap at the bottom of column 2. Pass 6 re-balances the columns to compensate, which pushes a heading to a new column, which triggers `keepWithNext` and forces the heading back to the next column entirely. Pass 7 adjusts vertical rhythm, which might just create a new runt where the heading used to sit. So the engine loops back to Pass 3, re-places blocks with the updated measurements, and runs through the whole sequence again. Each iteration resolves more problems than it creates -- until eventually, nothing is dirty anymore.
+
+Because most widow/orphan/runt cases are resolved *inside* the Knuth-Plass solver in a single pass of line breaking, typical documents now converge in 1--2 iterations. The loop is still needed when block-level events (a heading pushed forward by `keepWithNext`, a figure deferred by placement, or column balancing equalising heights) shift the column boundaries that Pass 5 measured against. When that happens, Pass 3 re-places, Pass 5 re-breaks with the new constraints, and the loop settles.
 
 After passes 5--7 complete, the engine checks whether any blocks are marked `dirty`. If dirty blocks exist and the iteration count is below 5, the pipeline re-runs from **Pass 3**.
 
@@ -471,7 +487,7 @@ After passes 5--7 complete, the engine checks whether any blocks are marked `dir
 
 The engine tracks a **typographic violation score** at each iteration -- a weighted sum of remaining problems: widows, orphans, unbalanced columns, baseline grid misalignment. Each type of violation carries a weight reflecting its visual severity (a widow is far more noticeable than a 2px grid drift). If the 5-iteration limit is reached without full convergence, the engine picks the iteration that produced the lowest violation score. Not necessarily the last one -- later iterations can sometimes overcorrect, fixing one problem while creating another.
 
-In practice, most documents converge in 2--3 iterations. The 5-iteration cap is a pragmatic safety valve: perfection is the enemy of done. Some pathological cases -- a page where every paragraph is exactly the wrong length to create widows no matter how you balance the columns -- will never fully converge. The engine accepts "best effort" and moves on.
+In practice, most documents converge in 1--2 iterations thanks to penalty-based line breaking -- the Knuth-Plass solver resolves widows, orphans, and runts in a single pass of Pass 5. Further iterations are only needed when block-level events (keep-with-next, colon-with-list, figure deferral, column balancing) shift the column boundaries the line breaker measured against. The 5-iteration cap is a pragmatic safety valve: perfection is the enemy of done. Some pathological cases -- a page where every paragraph is exactly the wrong length to create widows no matter how you balance the columns -- will never fully converge. The engine accepts "best effort" and moves on.
 
 
 ## Vertical Rhythm System

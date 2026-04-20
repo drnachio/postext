@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitectura',
   description: 'Arquitectura técnica del motor de composición tipográfica Postext',
   lang: 'es',
-  lastUpdated: '2026-04-13',
+  lastUpdated: '2026-04-19',
   readingTime: '35 min',
   order: 2,
 };
@@ -181,7 +181,7 @@ Cada aspecto del pipeline de composición está controlado por `PostextConfig`:
     </tr>
     <tr>
       <td><code>TypographyConfig</code></td>
-      <td>Viudas, huérfanas, separación silábica, optimización de bandera, reglas de espaciado, reglas de agrupación</td>
+      <td>Controles tipográficos heredados (espaciado alrededor de figuras, optimización de bandera). Los controles por campo de viudas/huérfanas/<em>runts</em>/cohesión viven ahora en <code>BodyTextConfig</code> y <code>HeadingsConfig</code> — véase la página de [Configuración](/es/docs/configuration#body-text).</td>
       <td>Pasada 5, Pasada 7</td>
     </tr>
     <tr>
@@ -408,6 +408,10 @@ Y luego está la colocación diferida. Imagina que una imagen se referencia en u
 
 Esta es la pasada que separa un motor de composición de un volcador de texto. Aplica las reglas de calidad editorial que los tipógrafos profesionales han aplicado a mano durante siglos -- y que el renderizado de texto ingenuo ignora por completo.
 
+La Pasada 5 opera en dos niveles: **división de líneas basada en penalizaciones** dentro de cada párrafo, y **aplicación estructural de reglas de cohesión (keep-together)** entre bloques. Trabajan juntos, pero son mecanismos distintos.
+
+#### Prevención de huérfanas, viudas y *runts* basada en penalizaciones
+
 Las **viudas y huérfanas** son los signos más visibles de una composición amateur:
 
 - Una **viuda** es una sola línea de un párrafo que queda aislada al final de una columna. El párrafo
@@ -416,28 +420,38 @@ Las **viudas y huérfanas** son los signos más visibles de una composición ama
 - Una **huérfana** es una sola línea de un párrafo que queda varada al inicio de una columna. El
   grueso del párrafo está en la columna anterior, pero una línea se desbordó (parece desconectada
   de su contexto).
+- Un *runt* es un párrafo cuya última línea es una sola palabra corta (o dos) -- visualmente demasiado corta para sentirse como una línea de texto en condiciones. Menos grave estructuralmente que una viuda, pero igual de molesto para un lector atento.
 
-Ambas se consideran inaceptables en la edición profesional. El número mínimo de líneas que deben
-aparecer juntas se controla mediante `TypographyConfig.orphans` y `TypographyConfig.widows`
-(típicamente 2 o 3).
+Los tres se tratan inyectando **demerits** (penalizaciones) en el algoritmo de división de líneas de Knuth-Plass. En lugar de maquetar el párrafo y después tratar de reparar un corte malo *a posteriori*, el motor enseña al algoritmo que ciertos conjuntos de cortes son más caros que otros. El algoritmo elige entonces el conjunto de cortes globalmente óptimo, que de forma natural evita viudas, huérfanas y *runts* siempre que es posible.
 
-- **Sub-pasadas** (el orden importa):
-  1. **Detección de viudas/huérfanas:** Comprobar la primera y última línea de cada párrafo contra los límites de columna
-  2. **Corrección de viudas/huérfanas:** Retraer o avanzar líneas ajustando el tracking (espaciado entre letras), insertando separación silábica o modificando el espaciado entre párrafos. Por ejemplo, para corregir una viuda, el motor podría comprimir ligeramente el tracking del párrafo anterior para que quepa en una línea menos, atrayendo la línea huérfana de vuelta a la columna anterior
-  3. **Separación silábica:** Para párrafos con mala bandera (un borde derecho muy irregular) o que necesitan ganar o perder una línea para corregir una viuda/huérfana, aplicar separación silábica en los puntos de corte legales y volver a medir mediante Pretext. La separación silábica puede convertir un párrafo de 7 líneas en uno de 6 al permitir que las palabras se dividan entre líneas de forma más eficiente
-  4. **Ajuste de tracking:** Expandir o comprimir ligeramente el espaciado entre letras (típicamente ±0,5px o menos, invisible para el lector pero suficiente para cambiar los saltos de línea) para mejorar los cortes y eliminar viudas/huérfanas
-- **Salida:** Algunos bloques pueden haber cambiado de dimensiones, marcados como `dirty`
+Concretamente, para cada nodo de corte candidato en un párrafo:
 
-Estas correcciones son invisibles cuando se hacen bien (un lector nunca debería notarlas). Pero su *ausencia* salta a la vista de cualquiera que lea con atención: esa línea incómoda al inicio de una columna, esos huecos desiguales donde el motor renunció a intentar ajustar el texto. Las editoriales profesionales tienen guías de estilo enteras dedicadas a prevenir exactamente estos problemas. Postext los automatiza.
+- Si elegir este corte dejaría menos de `orphanMinLines` líneas en la parte superior de la siguiente columna, se suman `orphanPenalty` (valor por defecto 3000) a los demerits del nodo.
+- Si elegir este corte dejaría menos de `widowMinLines` líneas al final de la columna actual, se suman `widowPenalty` (valor por defecto 3000).
+- Si la última línea resultante de este corte fuera más corta que `runtMinCharacters × normalSpaceWidth`, se suman `runtPenalty` (valor por defecto 1500 -- más suave porque los *runts* son estéticos, no estructurales).
 
-**Reglas de agrupación (keep-together).** Más allá de viudas y huérfanas, hay agrupaciones estructurales que nunca deben separarse entre un salto de columna o de página:
+Estas penalizaciones conviven con los demerits habituales -- *badness* (razón de ajuste al cuadrado), coste de separación silábica y desajuste de clase de *fitness* -- en una única optimización global. El algoritmo puede aceptar alguna de ellas si la alternativa es peor (un párrafo sin un corte legal que cumpla todas las reglas), pero casi siempre encontrará un conjunto de cortes que las evite. Los ítems de lista se apuntan a la misma protección mediante `avoidOrphansInLists`, `avoidWidowsInLists`, `avoidRuntsInLists` (todos a `true` por defecto).
 
-- **Título con su primer párrafo.** Un título nunca puede aparecer al final de una columna si el párrafo que introduce comienza en la siguiente columna. El título y las primeras líneas de su primer párrafo se mueven juntos. Si no hay espacio suficiente para ambos, el título se empuja a la siguiente columna y el motor utiliza ajustes de tracking o espaciado para rellenar el hueco resultante en la columna anterior.
+Una cuarta presión blanda, `slackWeight`, pondera un coste cuadrático de "espacio de columna no utilizado", de modo que el algoritmo prefiere conjuntos de cortes que llenen las columnas de forma ajustada. Juntos, estos demerits convierten la Pasada 5 en un refinamiento *de división de líneas*: la mayoría de casos de viudas, huérfanas y *runts* se resuelven dentro del solver de Knuth-Plass, no mediante ajustes de tracking *a posteriori*.
+
+Todo esto se puede afinar en `BodyTextConfig` -- véase [Configuración → Huérfanas, viudas, *runts* y cohesión](/es/docs/configuration#huérfanas-viudas-runts-y-reglas-de-cohesión). Ajustar cualquier `*Penalty` a `0` desactiva efectivamente esa regla.
+
+#### Reglas estructurales de cohesión (keep-together)
+
+Algunas agrupaciones son mayores que un solo párrafo -- abarcan bloques adyacentes y no pueden resolverse solo con la división de líneas. La Pasada 5 las aplica a nivel de colocación de bloques, moviendo grupos enteros hacia adelante cuando de otro modo se partirían en un salto de columna o de página:
+
+- **Título con su primer párrafo.** Un título nunca debe aparecer al final de una columna si el párrafo que introduce empezaría en la columna siguiente. Lo gestiona `headings.keepWithNext` (por defecto `true`): si no hay sitio para el título *más* al menos una línea del bloque siguiente, el título se empuja hacia adelante para viajar con su texto.
 - **Títulos consecutivos.** Cuando aparecen varios títulos en secuencia (por ejemplo, un h2 seguido de un h3 seguido de un párrafo), todo el grupo debe permanecer junto. Ninguno de los títulos puede quedar suelto al final de una columna sin el contenido que introducen.
-- **Introducciones de listas.** Cuando un párrafo termina con dos puntos e introduce una enumeración o lista con viñetas, el final de ese párrafo debe permanecer junto al inicio de la lista. Los dos puntos nunca pueden ser el último elemento de una columna con la lista comenzando en la siguiente.
+- **Listas introducidas con dos puntos.** Cuando un párrafo termina con dos puntos que introducen directamente una lista, la línea que lleva los dos puntos debe quedarse con el inicio de la lista. Lo gestiona `bodyText.keepColonWithList` (por defecto `true`): si colocar el párrafo no dejaría sitio para el primer ítem de la lista, la última línea con los dos puntos (o el párrafo entero, si es de una sola línea) se mueve adelante junto con la lista.
 - **Figura con su pie.** Una figura y su pie de figura son una unidad inseparable. Siempre se mueven juntos.
 
-Cuando se detecta una violación de agrupación, el motor empuja todo el grupo a la siguiente columna o página y rellena el espacio vacante mediante ajustes de tracking o distribución de espaciado vertical, igual que hace para las correcciones de viudas y huérfanas.
+Cuando se detecta una violación de cohesión, el motor empuja todo el grupo a la siguiente columna o página. El espacio vacante se gestiona mediante el mecanismo normal de llenado de columnas (el divisor de líneas ya ha elegido un conjunto de cortes que encaja; si la columna resultante queda algo corta, la Pasada 7 redistribuye el espacio vertical alrededor de elementos que rompen la rejilla para mantenerla honesta).
+
+#### Salida
+
+Los bloques cuyas mediciones o colocaciones hayan cambiado se marcan como `dirty` para la siguiente iteración del bucle de convergencia. En la práctica, como el grueso del trabajo lo hace Knuth-Plass en lugar de ajustes *a posteriori*, la mayoría de documentos se estabilizan rápido -- el divisor de líneas elige un buen conjunto de cortes a la primera y las iteraciones siguientes solo tienen que absorber efectos secundarios del movimiento de bloques y del equilibrado de columnas.
+
+Estas correcciones son invisibles cuando se hacen bien (un lector nunca debería notarlas). Pero su *ausencia* salta a la vista de cualquiera que lea con atención: esa línea incómoda al inicio de una columna, esos huecos desiguales donde el motor renunció a intentar ajustar el texto. Las editoriales profesionales tienen guías de estilo enteras dedicadas a prevenir exactamente estos problemas. Postext los automatiza.
 
 ### Pasada 6: Equilibrado de columnas
 
@@ -461,7 +475,9 @@ El algoritmo calcula la altura total de contenido de todos los bloques en una p�
 
 <Illustration name="ConvergenceLoop" data='{"title": "Bucle de convergencia", "desc": "La Pasada 1 parsea, la Pasada 2 mide, y las pasadas 3 a 7 se ejecutan dentro del bucle de convergencia. Si algún bloque permanece dirty y el contador de iteraciones está por debajo de cinco, el bucle vuelve a ejecutarse desde la Pasada 3.", "caption": "El motor vuelve a la Pasada 3 hasta que ningún bloque quede dirty (máx 5 iteraciones).", "passBadges": [{"num": "Pasada 1", "name": "parsear"}, {"num": "Pasada 2", "name": "medir"}, {"num": "Pasada 3", "name": "colocar"}, {"num": "Pasada 4", "name": "recursos"}, {"num": "Pasada 5", "name": "tipografía"}, {"num": "Pasada 6", "name": "equilibrar"}, {"num": "Pasada 7", "name": "ritmo"}], "loopBadge": "bucle de convergencia (máx 5 iteraciones)", "loopCondition": "si hay bloques dirty &amp;&amp; iteraciones < 5"}' />
 
-Piensa en el bucle de convergencia como el motor discutiendo consigo mismo. La Pasada 5 corrige una viuda, lo que cambia las alturas de columna. La Pasada 6 re-equilibra las columnas para compensar, lo que desplaza un límite de bloque. La Pasada 7 ajusta el ritmo vertical, lo que podría crear una nueva huérfana. Así que el motor vuelve a la Pasada 3, re-coloca los bloques con las medidas actualizadas, y recorre toda la secuencia otra vez. Cada iteración resuelve más problemas de los que crea -- hasta que, finalmente, nada queda sucio.
+Piensa en el bucle de convergencia como el motor discutiendo consigo mismo. La Pasada 5 elige un conjunto de cortes que evita una viuda en el párrafo A -- pero al hacerlo, el párrafo A queda una línea más corto, lo que deja un hueco al final de la columna 2. La Pasada 6 re-equilibra las columnas para compensar, lo que empuja un título a una nueva columna, lo que activa `keepWithNext` y fuerza al título a saltar entero a la siguiente columna. La Pasada 7 ajusta el ritmo vertical, lo que podría crear un nuevo *runt* donde antes estaba el título. Así que el motor vuelve a la Pasada 3, re-coloca los bloques con las medidas actualizadas, y recorre toda la secuencia otra vez. Cada iteración resuelve más problemas de los que crea -- hasta que, finalmente, nada queda sucio.
+
+Como la mayoría de los casos de viudas, huérfanas y *runts* se resuelven *dentro* del solver de Knuth-Plass en una sola pasada de división de líneas, los documentos típicos ahora convergen en 1--2 iteraciones. El bucle sigue siendo necesario cuando eventos a nivel de bloque (un título empujado por `keepWithNext`, una figura diferida por la colocación, o el equilibrado de columnas igualando alturas) desplazan los límites de columna sobre los que midió la Pasada 5. Cuando eso ocurre, la Pasada 3 re-coloca, la Pasada 5 re-divide con las nuevas restricciones, y el bucle se asienta.
 
 Tras completarse las pasadas 5--7, el motor comprueba si hay bloques marcados como `dirty`. Si existen bloques sucios y el contador de iteraciones está por debajo de 5, el pipeline se re-ejecuta desde la **Pasada 3**.
 
@@ -471,7 +487,7 @@ Tras completarse las pasadas 5--7, el motor comprueba si hay bloques marcados co
 
 El motor registra una **puntuación de violaciones tipográficas** en cada iteración -- una suma ponderada de los problemas restantes: viudas, huérfanas, columnas desequilibradas, desalineación de la rejilla de líneas base. Cada tipo de violación tiene un peso que refleja su gravedad visual (una viuda es mucho más perceptible que 2px de desalineación en la rejilla). Si se alcanza el límite de 5 iteraciones sin convergencia completa, el motor elige la iteración que produjo la puntuación de violación más baja. No necesariamente la última -- las iteraciones posteriores a veces sobrecorrigen, arreglando un problema mientras crean otro.
 
-En la práctica, la mayoría de los documentos convergen en 2--3 iteraciones. El límite de 5 es una válvula de seguridad pragmática: lo perfecto es enemigo de lo terminado. Algunos casos patológicos -- una página donde cada párrafo tiene exactamente la longitud incorrecta para crear viudas independientemente de cómo equilibres las columnas -- nunca convergerán del todo. El motor acepta el "mejor esfuerzo" y sigue adelante.
+En la práctica, la mayoría de los documentos convergen en 1--2 iteraciones gracias a la división de líneas basada en penalizaciones -- el solver de Knuth-Plass resuelve viudas, huérfanas y *runts* en una sola pasada de la Pasada 5. Solo se necesitan iteraciones adicionales cuando eventos a nivel de bloque (keep-with-next, dos-puntos-con-lista, diferimiento de figuras, equilibrado de columnas) desplazan los límites de columna sobre los que midió el divisor de líneas. El límite de 5 es una válvula de seguridad pragmática: lo perfecto es enemigo de lo terminado. Algunos casos patológicos -- una página donde cada párrafo tiene exactamente la longitud incorrecta para crear viudas independientemente de cómo equilibres las columnas -- nunca convergerán del todo. El motor acepta el "mejor esfuerzo" y sigue adelante.
 
 
 ## Sistema de ritmo vertical

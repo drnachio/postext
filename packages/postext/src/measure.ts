@@ -135,7 +135,7 @@ function buildPlainCacheKey(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
 ): string {
-  return `${text}\0${font}\0${maxWidthPx}\0${lineHeightPx}\0${options?.textAlign ?? ''}\0${options?.hyphenate ?? ''}\0${options?.firstLineIndentPx ?? ''}\0${options?.hangingIndent ?? ''}\0${options?.optimal ?? ''}\0${options?.maxStretchRatio ?? ''}\0${options?.minShrinkRatio ?? ''}`;
+  return `${text}\0${font}\0${maxWidthPx}\0${lineHeightPx}\0${options?.textAlign ?? ''}\0${options?.hyphenate ?? ''}\0${options?.firstLineIndentPx ?? ''}\0${options?.hangingIndent ?? ''}\0${options?.optimal ?? ''}\0${options?.maxStretchRatio ?? ''}\0${options?.minShrinkRatio ?? ''}\0${options?.runtPenalty ?? ''}\0${options?.runtMinCharacters ?? ''}`;
 }
 
 function buildRichCacheKey(
@@ -146,7 +146,7 @@ function buildRichCacheKey(
   options: MeasureBlockOptions | undefined,
 ): string {
   const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}`).join('\x01');
-  return `R\0${spanKey}\0${fonts[0]}\0${fonts[1]}\0${fonts[2]}\0${fonts[3]}\0${maxWidthPx}\0${lineHeightPx}\0${options?.textAlign ?? ''}\0${options?.hyphenate ?? ''}\0${options?.firstLineIndentPx ?? ''}\0${options?.hangingIndent ?? ''}\0${options?.optimal ?? ''}\0${options?.maxStretchRatio ?? ''}\0${options?.minShrinkRatio ?? ''}`;
+  return `R\0${spanKey}\0${fonts[0]}\0${fonts[1]}\0${fonts[2]}\0${fonts[3]}\0${maxWidthPx}\0${lineHeightPx}\0${options?.textAlign ?? ''}\0${options?.hyphenate ?? ''}\0${options?.firstLineIndentPx ?? ''}\0${options?.hangingIndent ?? ''}\0${options?.optimal ?? ''}\0${options?.maxStretchRatio ?? ''}\0${options?.minShrinkRatio ?? ''}\0${options?.runtPenalty ?? ''}\0${options?.runtMinCharacters ?? ''}`;
 }
 
 function cloneMeasuredBlock(block: MeasuredBlock): MeasuredBlock {
@@ -206,6 +206,11 @@ export interface MeasureBlockOptions {
   maxStretchRatio?: number;
   /** Min space shrink ratio (for K-P glue model). Default 0.8. */
   minShrinkRatio?: number;
+  /** Demerit for a too-short final line (runt). 0 disables. */
+  runtPenalty?: number;
+  /** Approximate minimum characters on the final line before runt penalty
+   *  applies. Converted internally to a pixel threshold via normal space width. */
+  runtMinCharacters?: number;
 }
 
 /** Compute the normal space width for a given font, used to express justified
@@ -259,11 +264,17 @@ export function measureBlock(
         ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
         : 0;
     };
+    const runtPenalty = options.runtPenalty ?? 0;
+    const runtMinWidth = runtPenalty > 0
+      ? (options.runtMinCharacters ?? 0) * normalSpaceWidth
+      : 0;
     const breaks = computeBreakpoints(items, {
       lineWidth: lineWidthFn,
       normalSpaceWidth,
       maxStretchRatio,
       minShrinkRatio,
+      runtPenalty,
+      runtMinWidth,
     });
     if (breaks.length > 0) {
       const kpLines = reconstructPretextLines(
@@ -536,11 +547,17 @@ export function measureRichBlock(
         ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
         : 0;
     };
+    const runtPenalty = options.runtPenalty ?? 0;
+    const runtMinWidth = runtPenalty > 0
+      ? (options.runtMinCharacters ?? 0) * normalSpaceWidth
+      : 0;
     const breaks = computeBreakpoints(items, {
       lineWidth: lineWidthFn,
       normalSpaceWidth,
       maxStretchRatio,
       minShrinkRatio,
+      runtPenalty,
+      runtMinWidth,
     });
     if (breaks.length > 0) {
       const kpLines = reconstructRichLines(

@@ -32,6 +32,7 @@ import {
   advanceToNextColumn,
   placeBlockInColumn,
 } from './placement';
+import { chooseParagraphSplit } from './orphanWidow';
 
 export function buildDocument(
   content: PostextContent,
@@ -209,6 +210,9 @@ export function buildDocument(
         measureHangingIndent = false;
       }
     }
+    const runtActive = resolved.bodyText.avoidRunts
+      && (vdtType === 'paragraph'
+        || (vdtType === 'listItem' && resolved.bodyText.avoidRuntsInLists));
     const measureOptions = {
       textAlign: style.textAlign,
       hyphenate: style.hyphenate,
@@ -217,6 +221,8 @@ export function buildDocument(
       optimal: resolved.bodyText.optimalLineBreaking,
       maxStretchRatio: resolved.bodyText.maxWordSpacing,
       minShrinkRatio: resolved.bodyText.minWordSpacing,
+      runtPenalty: runtActive ? resolved.bodyText.runtPenalty : 0,
+      runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     };
     const useRich = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString;
     const measured = cache
@@ -276,10 +282,13 @@ export function buildDocument(
 
     const absoluteSourceMap = srcMap.map((o) => o + bodyOffset);
 
-    const finalizeListItem = (blk: VDTBlock) => {
+    const finalizeListItem = (blk: VDTBlock, isFirstPart: boolean) => {
       if (!listBullet) return;
       blk.listDepth = listDepth;
       blk.listKind = listKind;
+      // Bullet (and its positional metadata) only belongs on the first part of
+      // a split list item; continuation parts render without a bullet.
+      if (!isFirstPart) return;
       blk.bulletText = listBullet.bulletText;
       blk.bulletFontString = listBullet.bulletFontString;
       blk.bulletColor = listBullet.bulletColor;
@@ -311,10 +320,22 @@ export function buildDocument(
       (vdtType === 'heading' && !nextIsHeading) ||
       (vdtType === 'listItem' && !nextIsListItem);
 
-    // Place block, splitting across columns/pages if needed
-    const canSplit = vdtType === 'paragraph' || vdtType === 'blockquote';
+    // Place block, splitting across columns/pages if needed.
+    // List items may split too — orphan/widow protection per-list is gated by
+    // `avoidOrphansInLists` / `avoidWidowsInLists`; bullet stays on first part.
+    const canSplit = vdtType === 'paragraph' || vdtType === 'blockquote' || vdtType === 'listItem';
     let remainingLines = [...measured.lines];
     let partIndex = 0;
+
+    // "Keep with next" for colon-introduced lists: a paragraph ending in `:`
+    // followed directly by a list acts as a lead-in title — the colon-bearing
+    // line must share a column with the first list item. Only checked for the
+    // original, unsplit paragraph (partIndex === 0) on the iteration that is
+    // about to place it.
+    const endsWithColon = vdtType === 'paragraph'
+      && resolved.bodyText.keepColonWithList
+      && nextIsListItem
+      && /:\s*$/.test(contentBlock.text);
 
     while (remainingLines.length > 0) {
       const curCol = currentColumn(doc, cursor);
@@ -339,8 +360,122 @@ export function buildDocument(
       const linesPerAvailable = Math.floor(effectiveAvailable / style.lineHeightPx);
       const totalRemainHeight = remainingLines.length * style.lineHeightPx;
 
+      // Keep-with-list: if this colon-paragraph would fit but would leave no
+      // room for the first list item, split off the colon line (or push the
+      // whole paragraph when it is a single line or the split would leave a
+      // widow). Only applies to the original paragraph placement — once split,
+      // the tail follows the list naturally in the next column.
+      if (
+        endsWithColon
+        && partIndex === 0
+        && totalRemainHeight <= effectiveAvailable
+        && curCol.blocks.length > 0
+      ) {
+        const usedHeight = (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
+        const paragraphBottom = usedHeight + totalRemainHeight;
+        const availableAfter = curCol.bbox.height - paragraphBottom;
+        const nextListKind = (nextBlock as { listKind?: ListKind } | null)?.listKind ?? 'unordered';
+        const nextListMarginDim = nextListKind === 'ordered'
+          ? resolved.orderedLists.marginTop
+          : resolved.unorderedLists.marginTop;
+        const nextListMarginTopPx = dimensionToPx(nextListMarginDim, dpi, bodyStyle.fontSizePx);
+        const effectiveGap = Math.max(style.marginBottomPx, nextListMarginTopPx);
+        const minSpaceForList = effectiveGap + bodyStyle.lineHeightPx;
+        if (availableAfter < minSpaceForList) {
+          const effectiveWidowMin = resolved.bodyText.avoidWidows
+            ? Math.max(1, resolved.bodyText.widowMinLines)
+            : 1;
+          const splitAt = remainingLines.length - 1;
+          if (splitAt >= effectiveWidowMin) {
+            if (spacingBefore > 0) curCol.availableHeight -= spacingBefore;
+            const splitLines = remainingLines.slice(0, splitAt);
+            const blk = createVDTBlock(id, vdtType, style.fontString, style.color, style.textAlign);
+            if (style.boldFontString) blk.boldFontString = style.boldFontString;
+            if (style.italicFontString) blk.italicFontString = style.italicFontString;
+            if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+            if (style.boldColor) blk.boldColor = style.boldColor;
+            if (style.italicColor) blk.italicColor = style.italicColor;
+            blk.headingLevel = headingLevel;
+            if (numberPrefix) blk.numberPrefix = numberPrefix;
+            blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
+            blk.dirty = false;
+            blk.snappedToGrid = false;
+            blk.sourceStart = splitLines[0]!.sourceStart;
+            blk.sourceEnd = splitLines[splitLines.length - 1]!.sourceEnd;
+            blk.sourceMap = absoluteSourceMap;
+            blk.plainPrefixLen = prefixLen;
+            placeBlockInColumn(blk, splitAt * style.lineHeightPx, curCol, cursor);
+            doc.blocks.push(blk);
+            remainingLines = remainingLines.slice(splitAt);
+            partIndex++;
+            pendingSpacing = 0;
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            continue;
+          }
+          pendingSpacing = 0;
+          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+          continue;
+        }
+      }
+
       // Block fits in current column
       if (totalRemainHeight <= effectiveAvailable) {
+        // Heading keep-with-next: never leave a heading as the last block of a
+        // column. If the following (non-heading) block wouldn't have room to
+        // place at least its widow-minimum number of lines after this heading,
+        // push the heading to the next column so it stays joined to its text.
+        // The threshold matches the body's widow penalty so the body doesn't
+        // just get pushed whole, leaving the heading orphaned anyway. When a
+        // run of consecutive headings ends in a pushed heading, any preceding
+        // headings already placed in this column are rolled back and re-placed
+        // with it in the next column — otherwise the earlier headings would be
+        // left behind as their own orphans.
+        if (
+          vdtType === 'heading'
+          && resolved.headings.keepWithNext
+          && !nextIsHeading
+          && nextBlock !== null
+          && curCol.blocks.length > 0
+        ) {
+          const wouldUsedHeight =
+            (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
+          const naturalBottom = wouldUsedHeight + totalRemainHeight + style.marginBottomPx;
+          const snappedBottom = shouldSnapToGrid
+            ? Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid
+            : naturalBottom;
+          const remainAfterHeading = curCol.bbox.height - snappedBottom;
+          const minLinesNeeded = resolved.bodyText.avoidWidows
+            ? Math.max(1, resolved.bodyText.widowMinLines)
+            : 1;
+          const minSpaceAfter = minLinesNeeded * bodyStyle.lineHeightPx;
+          if (remainAfterHeading < minSpaceAfter) {
+            // Roll back any immediately-preceding heading blocks in this
+            // column so they travel with this one.
+            let rollbackCount = 0;
+            for (let j = curCol.blocks.length - 1; j >= 0; j--) {
+              if (curCol.blocks[j]!.type === 'heading') rollbackCount++;
+              else break;
+            }
+            if (rollbackCount > 0) {
+              const popped = curCol.blocks.splice(curCol.blocks.length - rollbackCount);
+              for (const p of popped) {
+                const idx = doc.blocks.indexOf(p);
+                if (idx !== -1) doc.blocks.splice(idx, 1);
+                curCol.availableHeight += p.bbox.height;
+              }
+              // Rewind so the for-loop's blockIdx++ lands on the first
+              // rolled-back heading.
+              blockIdx -= rollbackCount + 1;
+              pendingSpacing = 0;
+              advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+              break;
+            }
+            pendingSpacing = 0;
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            continue;
+          }
+        }
+
         // Consume spacing
         if (spacingBefore > 0) {
           curCol.availableHeight -= spacingBefore;
@@ -380,7 +515,7 @@ export function buildDocument(
           h = snappedBottom - usedHeight;
         }
         placeBlockInColumn(blk, h, curCol, cursor);
-        finalizeListItem(blk);
+        finalizeListItem(blk, partIndex === 0);
         doc.blocks.push(blk);
         // For snapped headings/list-tails the margin is baked into the snap;
         // for unsnapped ones (consecutive) track it for collapsing
@@ -392,42 +527,60 @@ export function buildDocument(
         break;
       }
 
-      // Block doesn't fit — try to split
-      if (canSplit && linesPerAvailable >= 2) {
-        // Consume spacing
-        if (spacingBefore > 0) {
-          curCol.availableHeight -= spacingBefore;
+      // Block doesn't fit — try to split (orphan/widow-aware)
+      const inList = vdtType === 'listItem';
+      const effectiveAvoidOrphans = resolved.bodyText.avoidOrphans
+        && (!inList || resolved.bodyText.avoidOrphansInLists);
+      const effectiveAvoidWidows = resolved.bodyText.avoidWidows
+        && (!inList || resolved.bodyText.avoidWidowsInLists);
+      if (canSplit && linesPerAvailable >= 1) {
+        const choice = chooseParagraphSplit(remainingLines.length, linesPerAvailable, {
+          avoidOrphans: effectiveAvoidOrphans,
+          orphanMinLines: resolved.bodyText.orphanMinLines,
+          orphanPenalty: resolved.bodyText.orphanPenalty,
+          avoidWidows: effectiveAvoidWidows,
+          widowMinLines: resolved.bodyText.widowMinLines,
+          widowPenalty: resolved.bodyText.widowPenalty,
+          slackWeight: resolved.bodyText.slackWeight,
+        });
+        if (choice.splitAt > 0) {
+          // Consume spacing
+          if (spacingBefore > 0) {
+            curCol.availableHeight -= spacingBefore;
+          }
+
+          const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
+          const splitLines = remainingLines.slice(0, choice.splitAt);
+
+          const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
+          if (style.boldFontString) blk.boldFontString = style.boldFontString;
+          if (style.italicFontString) blk.italicFontString = style.italicFontString;
+          if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
+          if (style.boldColor) blk.boldColor = style.boldColor;
+          if (style.italicColor) blk.italicColor = style.italicColor;
+          if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
+          blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
+          blk.dirty = false;
+          blk.snappedToGrid = false;
+          if (splitLines.length > 0) {
+            blk.sourceStart = splitLines[0]!.sourceStart;
+            blk.sourceEnd = splitLines[splitLines.length - 1]!.sourceEnd;
+          }
+          blk.sourceMap = absoluteSourceMap;
+          blk.plainPrefixLen = prefixLen;
+
+          const splitHeight = choice.splitAt * style.lineHeightPx;
+          placeBlockInColumn(blk, splitHeight, curCol, cursor);
+          finalizeListItem(blk, partIndex === 0);
+          doc.blocks.push(blk);
+
+          remainingLines = remainingLines.slice(choice.splitAt);
+          partIndex++;
+          pendingSpacing = 0;
+          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+          continue;
         }
-
-        const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
-        const splitLines = remainingLines.slice(0, linesPerAvailable);
-
-        const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
-        if (style.boldFontString) blk.boldFontString = style.boldFontString;
-        if (style.italicFontString) blk.italicFontString = style.italicFontString;
-        if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
-        if (style.boldColor) blk.boldColor = style.boldColor;
-        if (style.italicColor) blk.italicColor = style.italicColor;
-        if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
-        blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
-        blk.dirty = false;
-        blk.snappedToGrid = false;
-        if (splitLines.length > 0) {
-          blk.sourceStart = splitLines[0]!.sourceStart;
-          blk.sourceEnd = splitLines[splitLines.length - 1]!.sourceEnd;
-        }
-        blk.sourceMap = absoluteSourceMap;
-        blk.plainPrefixLen = prefixLen;
-
-        const splitHeight = linesPerAvailable * style.lineHeightPx;
-        placeBlockInColumn(blk, splitHeight, curCol, cursor);
-        doc.blocks.push(blk);
-
-        remainingLines = remainingLines.slice(linesPerAvailable);
-        partIndex++;
-        pendingSpacing = 0;
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
-        continue;
+        // choice.splitAt === 0: fall through to push whole paragraph to next column
       }
 
       // Cannot split — advance to next column if current has content
@@ -457,7 +610,7 @@ export function buildDocument(
       blk.plainPrefixLen = prefixLen;
 
       placeBlockInColumn(blk, totalRemainHeight, curCol, cursor);
-      finalizeListItem(blk);
+      finalizeListItem(blk, partIndex === 0);
       doc.blocks.push(blk);
       if (vdtType === 'listItem') {
         pendingSpacing = nextIsListItem ? listBullet!.itemSpacingPx : style.marginBottomPx;

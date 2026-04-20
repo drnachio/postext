@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-04-16',
-  readingTime: '15 min',
+  lastUpdated: '2026-04-19',
+  readingTime: '18 min',
   order: 3,
 };
 
@@ -327,7 +327,7 @@ The `bodyText` property controls the typography of all paragraph text.
     <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
-      <td><code>9 pt</code></td>
+      <td><code>8 pt</code></td>
       <td>Base font size for body text.</td>
     </tr>
     <tr>
@@ -450,6 +450,111 @@ When text alignment is set to `'justify'`, hyphenation prevents excessive word s
 
 Words shorter than 5 characters are never hyphenated. The engine requires at least 2 characters before and 3 characters after a break point.
 
+### Orphans, widows, runts, and keep-together rules
+
+Beyond hyphenation and spacing bounds, the body-text configuration exposes the soft rules that prevent structurally awkward paragraph breaks. All of these are fed into the Knuth-Plass line-breaking algorithm as demerits (see [Hyphenation & Justification](/en/docs/justification)) — they bias the layout toward clean breaks without ever forcing a hard rule. Set the `*Penalty` values to `0` to effectively disable any one of them.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '140px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>avoidOrphans</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Discourage a paragraph from ending with fewer than <code>orphanMinLines</code> lines at the top of the next column.</td>
+    </tr>
+    <tr>
+      <td><code>orphanMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Minimum lines required at the top of the next column when a paragraph is split. Only active when <code>avoidOrphans</code> is <code>true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>orphanPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>3000</code></td>
+      <td>Demerit added when an orphan constraint is violated. Higher values bias the algorithm more strongly against orphans; <code>0</code> disables the penalty.</td>
+    </tr>
+    <tr>
+      <td><code>avoidOrphansInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When <code>true</code>, list items also receive orphan protection (not just paragraphs). Only effective when <code>avoidOrphans</code> is <code>true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>avoidWidows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Discourage a paragraph from starting with fewer than <code>widowMinLines</code> lines at the bottom of the current column.</td>
+    </tr>
+    <tr>
+      <td><code>widowMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Minimum lines required at the bottom of the current column when a paragraph is split. Only active when <code>avoidWidows</code> is <code>true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>widowPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>3000</code></td>
+      <td>Demerit added when a widow constraint is violated. <code>0</code> disables the penalty.</td>
+    </tr>
+    <tr>
+      <td><code>avoidWidowsInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When <code>true</code>, list items also receive widow protection. Only effective when <code>avoidWidows</code> is <code>true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>avoidRunts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Discourage paragraphs from ending with a very short last line — a <em>runt</em>, e.g. a single short word alone.</td>
+    </tr>
+    <tr>
+      <td><code>runtMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>Approximate minimum character count for the last line of a paragraph. Interpreted internally as <code>runtMinCharacters × normalSpaceWidth</code> pixels: the test is "is the last line visually shorter than N characters' worth of space-width content".</td>
+    </tr>
+    <tr>
+      <td><code>runtPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>1500</code></td>
+      <td>Demerit added when the last line of a paragraph is shorter than the runt threshold. Default is softer than orphan/widow (runts are aesthetic, not structural). <code>0</code> disables it.</td>
+    </tr>
+    <tr>
+      <td><code>avoidRuntsInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When <code>true</code>, list items also receive the runt penalty. Only effective when <code>avoidRunts</code> is <code>true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>slackWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>Weight applied to the squared "unused column space" cost. Higher values make the layout prefer filling columns tightly; <code>0</code> disables the slack pressure entirely.</td>
+    </tr>
+    <tr>
+      <td><code>keepColonWithList</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When a paragraph ends with a colon that directly introduces a list, keep the colon-bearing last line joined to the list: if placing the paragraph would leave no room for the first list item in the same column/page, the last line (or the whole paragraph, if it is a single line) is moved to the next column together with the list.</td>
+    </tr>
+  </tbody>
+</table>
+
+**About runts.** A runt is a paragraph whose last line is too short to feel like a proper line of text — typically one or two short words marooned at the end of a paragraph. Because the check is based on the pixel length of the line relative to the normal space width, `runtMinCharacters` adapts automatically to the current font size. A short word that is visually wider than `runtMinCharacters × spaceWidth` is fine; a word that is narrower than that (or truly alone) attracts the runt penalty.
+
+**Soft, not hard.** None of these rules can *prevent* a break — the engine will always produce a layout. They are demerits: the algorithm trades off badness, hyphenation cost, fitness-class smoothness, and these structural penalties in a single global optimisation and picks the break set with the lowest total cost. If you need a harder guarantee, raise the penalty; if a given document reads better with the penalty relaxed, lower it.
+
 
 ## Headings
 
@@ -508,6 +613,12 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
       <td><code>Dimension</code></td>
       <td><code>0.5 em</code></td>
       <td>Space below headings.</td>
+    </tr>
+    <tr>
+      <td><code>keepWithNext</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When <code>true</code>, a heading is never placed as the last element of a column or page. If the following block would not have at least one line of room after the heading, the heading is pushed forward so it stays joined to its text.</td>
     </tr>
   </tbody>
 </table>
@@ -991,16 +1102,23 @@ The `debug` property controls visual indicators the editor uses to keep the sour
       <td>disabled, <code>#ff000040</code>, <code>3</code></td>
       <td>Paints an overlay on justified lines whose word spacing exceeds the given multiplier of the normal space width.</td>
     </tr>
+    <tr>
+      <td><code>pageNegative</code></td>
+      <td><code>{'{ enabled: boolean }'}</code></td>
+      <td>disabled</td>
+      <td>Renders a high-contrast negative overlay over the page — useful for visually auditing the overall shape of a spread (text density, column balance, whitespace) at a glance, without being distracted by glyph detail.</td>
+    </tr>
   </tbody>
 </table>
 
-Each `SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`. `LooseLineHighlightConfig` is `{ enabled: boolean; color?: ColorValue; threshold?: number }`.
+Each `SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`. `LooseLineHighlightConfig` is `{ enabled: boolean; color?: ColorValue; threshold?: number }`. `pageNegative` is a minimal `{ enabled: boolean }` toggle.
 
 ```ts
 debug: {
   cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
   selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
   looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
+  pageNegative: { enabled: true },
 }
 ```
 
@@ -1159,3 +1277,28 @@ const blocks = parseMarkdown(content);
 ```
 
 See the [Document Format](/en/docs/document-format) page for the full list of markdown constructs Postext recognises.
+
+### Measurement cache
+
+Text measurement is the expensive step in layout. To avoid re-measuring the same block across convergence iterations — or across re-layouts when only the configuration changed — Postext ships a pluggable measurement cache:
+
+```ts
+import {
+  createMeasurementCache,
+  cachedMeasureBlock,
+  cachedMeasureRichBlock,
+  clearMeasurementCache,
+} from 'postext';
+import type { MeasurementCache } from 'postext';
+
+const cache: MeasurementCache = createMeasurementCache();
+
+// Same signature as measureBlock / measureRichBlock, plus a cache argument.
+const measured = cachedMeasureBlock(cache, block, options);
+const richMeasured = cachedMeasureRichBlock(cache, richBlock, options);
+
+// Drop all cached entries (e.g. when the font family changes):
+clearMeasurementCache(cache);
+```
+
+`buildDocument` maintains its own cache internally across the convergence loop, so for typical usage you do not need to touch these. They are exposed for applications that drive the pipeline piece-by-piece — for example an editor that re-runs layout on every keystroke and wants to reuse measurements from the previous frame.

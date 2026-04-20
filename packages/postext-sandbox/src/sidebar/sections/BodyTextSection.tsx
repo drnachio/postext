@@ -106,6 +106,20 @@ export function BodyTextSection() {
   const isMaxWordSpacingDefault = bodyText.maxWordSpacing === D.maxWordSpacing;
   const isMinWordSpacingDefault = bodyText.minWordSpacing === D.minWordSpacing;
   const isOptimalLineBreakingDefault = bodyText.optimalLineBreaking === D.optimalLineBreaking;
+  const isAvoidOrphansDefault = bodyText.avoidOrphans === D.avoidOrphans;
+  const isOrphanMinLinesDefault = bodyText.orphanMinLines === D.orphanMinLines;
+  const isOrphanPenaltyDefault = bodyText.orphanPenalty === D.orphanPenalty;
+  const isAvoidOrphansInListsDefault = bodyText.avoidOrphansInLists === D.avoidOrphansInLists;
+  const isAvoidWidowsDefault = bodyText.avoidWidows === D.avoidWidows;
+  const isWidowMinLinesDefault = bodyText.widowMinLines === D.widowMinLines;
+  const isWidowPenaltyDefault = bodyText.widowPenalty === D.widowPenalty;
+  const isAvoidWidowsInListsDefault = bodyText.avoidWidowsInLists === D.avoidWidowsInLists;
+  const isSlackWeightDefault = bodyText.slackWeight === D.slackWeight;
+  const isAvoidRuntsDefault = bodyText.avoidRunts === D.avoidRunts;
+  const isRuntMinCharactersDefault = bodyText.runtMinCharacters === D.runtMinCharacters;
+  const isRuntPenaltyDefault = bodyText.runtPenalty === D.runtPenalty;
+  const isAvoidRuntsInListsDefault = bodyText.avoidRuntsInLists === D.avoidRuntsInLists;
+  const isKeepColonWithListDefault = bodyText.keepColonWithList === D.keepColonWithList;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.bodyTextAlignLeft },
@@ -335,6 +349,159 @@ export function BodyTextSection() {
           />
         </NestedGroup>
       )}
+
+      <ToggleSwitch
+        label={labels.bodyAvoidOrphans}
+        checked={bodyText.avoidOrphans}
+        onChange={(checked) => updateBodyText({ avoidOrphans: checked })}
+        tooltip={labels.bodyAvoidOrphansTooltip}
+        isDefault={isAvoidOrphansDefault}
+        onReset={() => resetField('avoidOrphans')}
+      />
+
+      {bodyText.avoidOrphans && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.bodyOrphanMinLines}
+            value={bodyText.orphanMinLines}
+            onChange={(v) => updateBodyText({ orphanMinLines: v })}
+            min={1}
+            max={5}
+            step={1}
+            tooltip={labels.bodyOrphanMinLinesTooltip}
+            isDefault={isOrphanMinLinesDefault}
+            onReset={() => resetField('orphanMinLines')}
+          />
+          <NumberInput
+            label={labels.bodyOrphanPenalty}
+            value={bodyText.orphanPenalty}
+            onChange={(v) => updateBodyText({ orphanPenalty: v })}
+            min={0}
+            max={10000}
+            step={100}
+            tooltip={labels.bodyOrphanPenaltyTooltip}
+            isDefault={isOrphanPenaltyDefault}
+            onReset={() => resetField('orphanPenalty')}
+          />
+          <ToggleSwitch
+            label={labels.bodyAvoidOrphansInLists}
+            checked={bodyText.avoidOrphansInLists}
+            onChange={(checked) => updateBodyText({ avoidOrphansInLists: checked })}
+            tooltip={labels.bodyAvoidOrphansInListsTooltip}
+            isDefault={isAvoidOrphansInListsDefault}
+            onReset={() => resetField('avoidOrphansInLists')}
+          />
+        </NestedGroup>
+      )}
+
+      <ToggleSwitch
+        label={labels.bodyAvoidWidows}
+        checked={bodyText.avoidWidows}
+        onChange={(checked) => updateBodyText({ avoidWidows: checked })}
+        tooltip={labels.bodyAvoidWidowsTooltip}
+        isDefault={isAvoidWidowsDefault}
+        onReset={() => resetField('avoidWidows')}
+      />
+
+      {bodyText.avoidWidows && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.bodyWidowMinLines}
+            value={bodyText.widowMinLines}
+            onChange={(v) => updateBodyText({ widowMinLines: v })}
+            min={1}
+            max={5}
+            step={1}
+            tooltip={labels.bodyWidowMinLinesTooltip}
+            isDefault={isWidowMinLinesDefault}
+            onReset={() => resetField('widowMinLines')}
+          />
+          <NumberInput
+            label={labels.bodyWidowPenalty}
+            value={bodyText.widowPenalty}
+            onChange={(v) => updateBodyText({ widowPenalty: v })}
+            min={0}
+            max={10000}
+            step={100}
+            tooltip={labels.bodyWidowPenaltyTooltip}
+            isDefault={isWidowPenaltyDefault}
+            onReset={() => resetField('widowPenalty')}
+          />
+          <ToggleSwitch
+            label={labels.bodyAvoidWidowsInLists}
+            checked={bodyText.avoidWidowsInLists}
+            onChange={(checked) => updateBodyText({ avoidWidowsInLists: checked })}
+            tooltip={labels.bodyAvoidWidowsInListsTooltip}
+            isDefault={isAvoidWidowsInListsDefault}
+            onReset={() => resetField('avoidWidowsInLists')}
+          />
+        </NestedGroup>
+      )}
+
+      <NumberInput
+        label={labels.bodySlackWeight}
+        value={bodyText.slackWeight}
+        onChange={(v) => updateBodyText({ slackWeight: v })}
+        min={0}
+        max={1000}
+        step={1}
+        tooltip={labels.bodySlackWeightTooltip}
+        isDefault={isSlackWeightDefault}
+        onReset={() => resetField('slackWeight')}
+      />
+
+      <ToggleSwitch
+        label={labels.bodyAvoidRunts}
+        checked={bodyText.avoidRunts}
+        onChange={(checked) => updateBodyText({ avoidRunts: checked })}
+        tooltip={labels.bodyAvoidRuntsTooltip}
+        isDefault={isAvoidRuntsDefault}
+        onReset={() => resetField('avoidRunts')}
+      />
+
+      {bodyText.avoidRunts && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.bodyRuntMinCharacters}
+            value={bodyText.runtMinCharacters}
+            onChange={(v) => updateBodyText({ runtMinCharacters: v })}
+            min={1}
+            max={20}
+            step={1}
+            tooltip={labels.bodyRuntMinCharactersTooltip}
+            isDefault={isRuntMinCharactersDefault}
+            onReset={() => resetField('runtMinCharacters')}
+          />
+          <NumberInput
+            label={labels.bodyRuntPenalty}
+            value={bodyText.runtPenalty}
+            onChange={(v) => updateBodyText({ runtPenalty: v })}
+            min={0}
+            max={10000}
+            step={100}
+            tooltip={labels.bodyRuntPenaltyTooltip}
+            isDefault={isRuntPenaltyDefault}
+            onReset={() => resetField('runtPenalty')}
+          />
+          <ToggleSwitch
+            label={labels.bodyAvoidRuntsInLists}
+            checked={bodyText.avoidRuntsInLists}
+            onChange={(checked) => updateBodyText({ avoidRuntsInLists: checked })}
+            tooltip={labels.bodyAvoidRuntsInListsTooltip}
+            isDefault={isAvoidRuntsInListsDefault}
+            onReset={() => resetField('avoidRuntsInLists')}
+          />
+        </NestedGroup>
+      )}
+
+      <ToggleSwitch
+        label={labels.bodyKeepColonWithList}
+        checked={bodyText.keepColonWithList}
+        onChange={(checked) => updateBodyText({ keepColonWithList: checked })}
+        tooltip={labels.bodyKeepColonWithListTooltip}
+        isDefault={isKeepColonWithListDefault}
+        onReset={() => resetField('keepColonWithList')}
+      />
     </CollapsibleSection>
   );
 }

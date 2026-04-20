@@ -25,6 +25,7 @@ export const DEFAULT_HEADINGS_CONFIG: ResolvedHeadingsConfig = {
   fontWeight: DEFAULT_HEADING_FONT_WEIGHT,
   marginTop: DEFAULT_HEADING_MARGIN_TOP,
   marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM,
+  keepWithNext: true,
   levels: DEFAULT_HEADING_LEVELS,
 };
 
@@ -38,6 +39,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   const generalFontWeight = partial.fontWeight ?? DEFAULT_HEADINGS_CONFIG.fontWeight;
   const generalMarginTop = partial.marginTop ?? DEFAULT_HEADINGS_CONFIG.marginTop;
   const generalMarginBottom = partial.marginBottom ?? DEFAULT_HEADINGS_CONFIG.marginBottom;
+  const generalKeepWithNext = partial.keepWithNext ?? DEFAULT_HEADINGS_CONFIG.keepWithNext;
 
   const levels: ResolvedHeadingLevelConfig[] = DEFAULT_HEADING_LEVELS.map((def) => {
     const override = partial.levels?.find((l) => l.level === def.level);
@@ -55,7 +57,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
     };
   });
 
-  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, levels };
+  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, levels };
 }
 
 export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig | undefined {
@@ -90,6 +92,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
   }
   if (headings.marginBottom !== undefined && !dimensionsEqual(headings.marginBottom, DEFAULT_HEADINGS_CONFIG.marginBottom)) {
     result.marginBottom = headings.marginBottom;
+    hasOverride = true;
+  }
+  if (headings.keepWithNext !== undefined && headings.keepWithNext !== DEFAULT_HEADINGS_CONFIG.keepWithNext) {
+    result.keepWithNext = headings.keepWithNext;
     hasOverride = true;
   }
   if (headings.levels && headings.levels.length > 0) {

@@ -110,6 +110,34 @@ export interface SandboxLabels {
   bodyMinWordSpacingTooltip: string;
   bodyOptimalLineBreaking: string;
   bodyOptimalLineBreakingTooltip: string;
+  bodyAvoidOrphans: string;
+  bodyAvoidOrphansTooltip: string;
+  bodyOrphanMinLines: string;
+  bodyOrphanMinLinesTooltip: string;
+  bodyOrphanPenalty: string;
+  bodyOrphanPenaltyTooltip: string;
+  bodyAvoidWidows: string;
+  bodyAvoidWidowsTooltip: string;
+  bodyWidowMinLines: string;
+  bodyWidowMinLinesTooltip: string;
+  bodyWidowPenalty: string;
+  bodyWidowPenaltyTooltip: string;
+  bodySlackWeight: string;
+  bodySlackWeightTooltip: string;
+  bodyAvoidRunts: string;
+  bodyAvoidRuntsTooltip: string;
+  bodyRuntMinCharacters: string;
+  bodyRuntMinCharactersTooltip: string;
+  bodyRuntPenalty: string;
+  bodyRuntPenaltyTooltip: string;
+  bodyAvoidRuntsInLists: string;
+  bodyAvoidRuntsInListsTooltip: string;
+  bodyAvoidOrphansInLists: string;
+  bodyAvoidOrphansInListsTooltip: string;
+  bodyAvoidWidowsInLists: string;
+  bodyAvoidWidowsInListsTooltip: string;
+  bodyKeepColonWithList: string;
+  bodyKeepColonWithListTooltip: string;
 
   // Headings section
   headings: string;
@@ -142,6 +170,8 @@ export interface SandboxLabels {
   headingsTextAlignTooltip: string;
   headingsTextAlignLeft: string;
   headingsTextAlignJustify: string;
+  headingsKeepWithNext: string;
+  headingsKeepWithNextTooltip: string;
   headingFontWeight: string;
   headingFontWeightTooltip: string;
   headingMarginTop: string;

@@ -217,6 +217,55 @@ export interface BodyTextConfig {
   minWordSpacing?: number;
   /** Use Knuth-Plass optimal line breaking instead of greedy first-fit. Default true. */
   optimalLineBreaking?: boolean;
+  /** When true, discourage a paragraph from ending with fewer than `orphanMinLines`
+   *  lines at the top of the next column. Soft (penalty-based). Default true. */
+  avoidOrphans?: boolean;
+  /** Minimum lines required at the top of the next column when a paragraph is split.
+   *  Only effective when `avoidOrphans` is true. Default 2. */
+  orphanMinLines?: number;
+  /** Demerit added when an orphan constraint is violated. Higher = stronger
+   *  avoidance. 0 effectively disables the penalty. Default 3000. */
+  orphanPenalty?: number;
+  /** When true, list items also receive orphan protection (not just paragraphs).
+   *  Only effective when `avoidOrphans` is true. Default true. */
+  avoidOrphansInLists?: boolean;
+  /** When true, discourage a paragraph from starting with fewer than `widowMinLines`
+   *  lines at the bottom of the current column. Soft (penalty-based). Default true. */
+  avoidWidows?: boolean;
+  /** Minimum lines required at the bottom of the current column when a paragraph is
+   *  split. Only effective when `avoidWidows` is true. Default 2. */
+  widowMinLines?: number;
+  /** Demerit added when a widow constraint is violated. Default 3000. */
+  widowPenalty?: number;
+  /** When true, list items also receive widow protection (not just paragraphs).
+   *  Only effective when `avoidWidows` is true. Default true. */
+  avoidWidowsInLists?: boolean;
+  /** Weight applied to the squared "unused column space" cost. Higher values make
+   *  the layout prefer filling columns tightly; 0 disables the slack pressure.
+   *  Default 10. */
+  slackWeight?: number;
+  /** When true, discourage paragraphs from ending with a very short last line
+   *  (a "runt" — e.g. a single short word alone). Soft (Knuth-Plass penalty).
+   *  Default true. */
+  avoidRunts?: boolean;
+  /** Approximate minimum character count for the last line of a paragraph.
+   *  Interpreted internally as `runtMinCharacters * normalSpaceWidth` pixels, so
+   *  the real test is "is the last line visually shorter than N characters'
+   *  worth of space-width content". Default 5. */
+  runtMinCharacters?: number;
+  /** Demerit added when the last line of a paragraph is shorter than the runt
+   *  threshold. Default 1500 (softer than orphan/widow since runts are
+   *  aesthetic, not structural). */
+  runtPenalty?: number;
+  /** When true, list items also receive the runt penalty (not just paragraphs).
+   *  Only effective when `avoidRunts` is true. Default true. */
+  avoidRuntsInLists?: boolean;
+  /** When true, a paragraph ending with a colon that directly introduces a
+   *  list is kept joined to the list: if placing the paragraph would leave no
+   *  room for the first list item in the same column/page, the colon-bearing
+   *  last line is moved to the next column together with the list (or the
+   *  whole paragraph, if it is a single line). Default true. */
+  keepColonWithList?: boolean;
 }
 
 export interface ResolvedBodyTextConfig {
@@ -236,6 +285,20 @@ export interface ResolvedBodyTextConfig {
   maxWordSpacing: number;
   minWordSpacing: number;
   optimalLineBreaking: boolean;
+  avoidOrphans: boolean;
+  orphanMinLines: number;
+  orphanPenalty: number;
+  avoidOrphansInLists: boolean;
+  avoidWidows: boolean;
+  widowMinLines: number;
+  widowPenalty: number;
+  avoidWidowsInLists: boolean;
+  slackWeight: number;
+  avoidRunts: boolean;
+  runtMinCharacters: number;
+  runtPenalty: number;
+  avoidRuntsInLists: boolean;
+  keepColonWithList: boolean;
 }
 
 export interface HeadingLevelConfig {
@@ -272,6 +335,11 @@ export interface HeadingsConfig {
   fontWeight?: number;
   marginTop?: Dimension;
   marginBottom?: Dimension;
+  /** When true, a heading is never placed as the last element of a column/page.
+   *  If the following block would not have at least one line of room after the
+   *  heading, the heading is pushed to the next column/page so it stays joined
+   *  to its text. Default true. */
+  keepWithNext?: boolean;
   levels?: HeadingLevelConfig[];
 }
 
@@ -283,6 +351,7 @@ export interface ResolvedHeadingsConfig {
   fontWeight: number;
   marginTop: Dimension;
   marginBottom: Dimension;
+  keepWithNext: boolean;
   levels: ResolvedHeadingLevelConfig[];
 }
 
