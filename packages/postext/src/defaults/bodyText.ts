@@ -18,21 +18,28 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   hyphenation: { ...DEFAULT_HYPHENATION_CONFIG },
   firstLineIndent: { value: 1.5, unit: 'em' },
   hangingIndent: false,
-  maxWordSpacing: 1.5,
-  minWordSpacing: 0.8,
+  maxWordSpacing: 1.8,
+  minWordSpacing: 0.5,
   optimalLineBreaking: true,
   avoidOrphans: true,
   orphanMinLines: 2,
-  orphanPenalty: 3000,
+  // Penalties below are normalized to a shared 0–10000 scale. Each expresses
+  // "equivalent cost" for the avoidance:
+  //   • orphan/widow: added linearly in chooseParagraphSplit, alongside
+  //     slackWeight·slack². At 1000 the threshold where slack wins is
+  //     slack > √100 = 10 lines of whitespace — strong but not absolute.
+  //   • runt: injected as equivalent badness in Knuth–Plass (squared scale).
+  //     At 1000 it dominates alternatives up to roughly r≈2.15 stretch.
+  orphanPenalty: 1000,
   avoidOrphansInLists: true,
   avoidWidows: true,
   widowMinLines: 2,
-  widowPenalty: 3000,
+  widowPenalty: 1000,
   avoidWidowsInLists: true,
   slackWeight: 10,
   avoidRunts: true,
-  runtMinCharacters: 5,
-  runtPenalty: 1500,
+  runtMinCharacters: 20,
+  runtPenalty: 1000,
   avoidRuntsInLists: true,
   keepColonWithList: true,
 };

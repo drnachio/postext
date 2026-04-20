@@ -399,13 +399,13 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
     <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>1.5</code></td>
+      <td><code>1.8</code></td>
       <td>Límite superior del espaciado entre palabras en texto justificado, expresado como multiplicador del ancho del espacio normal. Las líneas que superan esta proporción se consideran "flojas".</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>0.8</code></td>
+      <td><code>0.5</code></td>
       <td>Límite inferior del espaciado entre palabras en texto justificado, como multiplicador del ancho del espacio normal.</td>
     </tr>
     <tr>
@@ -479,7 +479,7 @@ Más allá de la separación silábica y los límites de espaciado, la configura
     <tr>
       <td><code>orphanPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>3000</code></td>
+      <td><code>1000</code></td>
       <td>Demérito añadido cuando se incumple la restricción de huérfanas. Valores más altos sesgan más fuertemente al algoritmo; <code>0</code> desactiva la penalización.</td>
     </tr>
     <tr>
@@ -503,7 +503,7 @@ Más allá de la separación silábica y los límites de espaciado, la configura
     <tr>
       <td><code>widowPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>3000</code></td>
+      <td><code>1000</code></td>
       <td>Demérito añadido cuando se incumple la restricción de viudas. <code>0</code> desactiva la penalización.</td>
     </tr>
     <tr>
@@ -521,14 +521,14 @@ Más allá de la separación silábica y los límites de espaciado, la configura
     <tr>
       <td><code>runtMinCharacters</code></td>
       <td><code>number</code></td>
-      <td><code>5</code></td>
+      <td><code>20</code></td>
       <td>Umbral aproximado de caracteres para la última línea de un párrafo. Internamente se interpreta como <code>runtMinCharacters × anchoDeEspacioNormal</code> píxeles: la prueba real es "¿es la última línea visualmente más corta que N espacios de contenido?".</td>
     </tr>
     <tr>
       <td><code>runtPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>1500</code></td>
-      <td>Demérito añadido cuando la última línea de un párrafo es más corta que el umbral de <em>runt</em>. El valor por defecto es más suave que el de huérfanas/viudas (los <em>runts</em> son estéticos, no estructurales). <code>0</code> desactiva la penalización.</td>
+      <td><code>1000</code></td>
+      <td>Penalización equivalente a <em>badness</em> (se inyecta en la fórmula cuadrática de Knuth–Plass, en la misma escala que el <em>badness</em> de línea, que satura en 10000). Al nivel 1000 domina sobre alternativas que supondrían un estiramiento de espacio de hasta aproximadamente r≈2,15. <code>0</code> desactiva la penalización.</td>
     </tr>
     <tr>
       <td><code>avoidRuntsInLists</code></td>

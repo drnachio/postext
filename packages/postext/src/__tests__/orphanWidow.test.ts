@@ -100,13 +100,14 @@ describe('chooseParagraphSplit', () => {
   });
 
   it('higher orphanPenalty overrides larger slack cost', () => {
-    // 10-line paragraph, 9 space, orphan threshold 2. At penalty=DEFAULT=3000,
-    // helper pulls to k=8. At penalty=100 (low), slack cost of k=8 (slack=1,
-    // cost=10) vs penalty 100 — k=9 still has slack=0 and penalty=100; k=8
-    // has slack=1 penalty=10 → k=8 still wins. So bump penalty search further.
+    // 10-line paragraph, 9 space, orphan threshold 2.
+    //   • k=9 → tail=1 line (orphan): cost = orphanPenalty
+    //   • k=8 → tail=2 lines (no orphan), slack=1: cost = slackWeight·slack² = 10
+    // Penalty=5: k=9 costs 5, k=8 costs 10 → k=9 wins (penalty too weak).
+    // Penalty=1000 (DEFAULT): k=9 costs 1000, k=8 costs 10 → k=8 wins.
     const low = chooseParagraphSplit(10, 9, { ...ON, orphanPenalty: 5 });
     expect(low.splitAt).toBe(9); // penalty too small, greedy wins
-    const high = chooseParagraphSplit(10, 9, { ...ON, orphanPenalty: 3000 });
+    const high = chooseParagraphSplit(10, 9, { ...ON, orphanPenalty: 1000 });
     expect(high.splitAt).toBe(8); // penalty strong enough to pull back
   });
 

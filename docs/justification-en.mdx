@@ -106,9 +106,9 @@ The algorithm traces back through the active nodes to find the path with the low
 
 Postext extends the standard demerit set with three editorial penalties that push the line breaker away from break sets that would leave visually poor paragraph ends:
 
-- **Orphan penalty** applies when choosing this break would leave fewer than `orphanMinLines` lines at the top of the next column. Default `orphanPenalty` is `3000`.
-- **Widow penalty** applies when the break would leave fewer than `widowMinLines` lines at the bottom of the current column. Default `widowPenalty` is `3000`.
-- **Runt penalty** applies when the paragraph's final line would be shorter than roughly `runtMinCharacters × normalSpaceWidth` pixels. Default `runtPenalty` is `1500` — softer than orphan/widow because runts are aesthetic rather than structural.
+- **Orphan penalty** applies when choosing this break would leave fewer than `orphanMinLines` lines at the top of the next column. Default `orphanPenalty` is `1000`.
+- **Widow penalty** applies when the break would leave fewer than `widowMinLines` lines at the bottom of the current column. Default `widowPenalty` is `1000`.
+- **Runt penalty** applies when the paragraph's final line would be shorter than roughly `runtMinCharacters × normalSpaceWidth` pixels. Default `runtPenalty` is `1000`. Unlike orphan/widow (which add linearly to the split demerit), runt is injected as equivalent *badness* inside the Knuth–Plass squared formula so it competes on the same scale as line badness (which saturates at 10000) rather than being dwarfed by it.
 
 All three are added to the candidate node's demerits before the algorithm selects the globally optimal path. Because they live inside the same optimisation, the solver is free to trade a slightly looser line for the elimination of a widow, and it will naturally prefer break sets that avoid all three whenever possible. Tune the trade-off by adjusting `orphanPenalty`, `widowPenalty`, or `runtPenalty`; set any of them to `0` to disable that rule entirely. List items opt in via `avoidOrphansInLists`, `avoidWidowsInLists`, and `avoidRuntsInLists` (all `true` by default).
 
@@ -239,13 +239,13 @@ The glue model gives the engine explicit bounds on how much inter-word spaces ca
   <tbody>
     <tr>
       <td><code>maxWordSpacing</code></td>
-      <td><code>1.5</code></td>
-      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 150% of their natural width.</td>
+      <td><code>1.8</code></td>
+      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 180% of their natural width.</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
-      <td><code>0.8</code></td>
-      <td>Lower bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can shrink down to 80% of their natural width.</td>
+      <td><code>0.5</code></td>
+      <td>Lower bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can shrink down to 50% of their natural width.</td>
     </tr>
   </tbody>
 </table>
@@ -257,13 +257,13 @@ stretchPerSpace = normalSpaceWidth × (maxWordSpacing - 1)
 shrinkPerSpace  = normalSpaceWidth × (1 - minWordSpacing)
 ```
 
-At the defaults (1.5 / 0.8), if the normal space width is 4 px:
-- Each space can stretch by 2 px (from 4 px to 6 px)
-- Each space can shrink by 0.8 px (from 4 px to 3.2 px)
+At the defaults (1.8 / 0.5), if the normal space width is 4 px:
+- Each space can stretch by 3.2 px (from 4 px to 7.2 px)
+- Each space can shrink by 2 px (from 4 px to 2 px)
 
 **Tighter bounds** (e.g., `maxWordSpacing: 1.2`) produce more uniform spacing but give the algorithm less room to maneuver, which may result in more hyphenation or, in extreme cases, overflow. **Looser bounds** (e.g., `maxWordSpacing: 2.0`) give the algorithm more flexibility but allow visibly uneven spacing on some lines.
 
-The defaults of 1.5 and 0.8 are a well-tested compromise — they match the range traditionally recommended in typographic literature and produce good results across most column widths and font sizes.
+The defaults of 1.8 and 0.5 favor the algorithm's flexibility — giving Knuth-Plass enough room to avoid overflow, hyphenation, and runts across narrow columns, while still being well within ranges typographic literature considers acceptable.
 
 ### Optimal vs. Greedy Line Breaking
 
@@ -356,7 +356,7 @@ When you enable loose-line highlighting and see red bands across certain lines, 
     </tr>
     <tr>
       <td>Word spacing bounds are too tight</td>
-      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 1.5 to 1.8). This gives the algorithm more room.</td>
+      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 1.8 to 2.0). This gives the algorithm more room.</td>
     </tr>
     <tr>
       <td>Language has long compound words (e.g., German)</td>
@@ -389,8 +389,8 @@ const vdt = buildDocument(content, {
     },
 
     // Word spacing bounds (multipliers of normal space width)
-    maxWordSpacing: 1.5,   // spaces stretch up to 150%
-    minWordSpacing: 0.8,   // spaces shrink down to 80%
+    maxWordSpacing: 1.8,   // spaces stretch up to 180%
+    minWordSpacing: 0.5,   // spaces shrink down to 50%
   },
 
   // Debug: highlight lines with excessive spacing

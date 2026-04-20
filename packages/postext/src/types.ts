@@ -224,7 +224,9 @@ export interface BodyTextConfig {
    *  Only effective when `avoidOrphans` is true. Default 2. */
   orphanMinLines?: number;
   /** Demerit added when an orphan constraint is violated. Higher = stronger
-   *  avoidance. 0 effectively disables the penalty. Default 3000. */
+   *  avoidance. 0 effectively disables the penalty. Default 1000 — chosen so
+   *  orphan avoidance normally wins over slack (slackWeight·slack²) unless
+   *  pushing the paragraph would leave ≳10 lines of whitespace. */
   orphanPenalty?: number;
   /** When true, list items also receive orphan protection (not just paragraphs).
    *  Only effective when `avoidOrphans` is true. Default true. */
@@ -235,7 +237,8 @@ export interface BodyTextConfig {
   /** Minimum lines required at the bottom of the current column when a paragraph is
    *  split. Only effective when `avoidWidows` is true. Default 2. */
   widowMinLines?: number;
-  /** Demerit added when a widow constraint is violated. Default 3000. */
+  /** Demerit added when a widow constraint is violated. Default 1000 (same
+   *  scale as `orphanPenalty`). */
   widowPenalty?: number;
   /** When true, list items also receive widow protection (not just paragraphs).
    *  Only effective when `avoidWidows` is true. Default true. */
@@ -253,9 +256,10 @@ export interface BodyTextConfig {
    *  the real test is "is the last line visually shorter than N characters'
    *  worth of space-width content". Default 5. */
   runtMinCharacters?: number;
-  /** Demerit added when the last line of a paragraph is shorter than the runt
-   *  threshold. Default 1500 (softer than orphan/widow since runts are
-   *  aesthetic, not structural). */
+  /** Equivalent-badness added to the last line when it is shorter than the
+   *  runt threshold. Feeds into the Knuth–Plass squared demerit on the same
+   *  scale as line `badness` (which saturates at 10000). Default 1000 —
+   *  dominates alternatives up to roughly r≈2.15 word-spacing stretch. */
   runtPenalty?: number;
   /** When true, list items also receive the runt penalty (not just paragraphs).
    *  Only effective when `avoidRunts` is true. Default true. */

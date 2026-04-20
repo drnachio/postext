@@ -17,8 +17,9 @@ export interface SplitChoice {
 }
 
 // Defaults — exported for UI defaults and tests.
-export const DEFAULT_ORPHAN_PENALTY = 3000;
-export const DEFAULT_WIDOW_PENALTY = 3000;
+// Kept in sync with DEFAULT_BODY_TEXT_CONFIG in defaults/bodyText.ts.
+export const DEFAULT_ORPHAN_PENALTY = 1000;
+export const DEFAULT_WIDOW_PENALTY = 1000;
 export const DEFAULT_SLACK_WEIGHT = 10;
 
 /**

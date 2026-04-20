@@ -70,8 +70,11 @@ export interface KPOptions {
   consecutiveHyphenDemerit?: number;
   /** Penalty for adjacent lines of very different tightness. */
   fitnessClassDemerit?: number;
-  /** Demerit added when the final line of the paragraph is shorter than
-   *  `runtMinWidth`. 0 (default) disables runt avoidance. */
+  /** Equivalent-badness added to the final line when it is shorter than
+   *  `runtMinWidth` — enters the squared demerit formula on the same scale as
+   *  `badness` (and hyphen penalties). 0 (default) disables runt avoidance.
+   *  As a reference, `badness` saturates at 10000, so values ≳ 1000 will
+   *  dominate most feasible layouts; values around 100–500 nudge. */
   runtPenalty?: number;
   /** Minimum content width (in px) the final line must have to avoid the runt
    *  penalty. Typically `runtMinCharacters * normalSpaceWidth`. */
@@ -266,13 +269,25 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
       const badness = computeBadness(r);
       const pen = item.type === 'penalty' ? item.penalty : 0;
 
+      // Runt: when this break closes the paragraph with a too-short final
+      // line, inject `runtPenalty` as equivalent badness — so it enters the
+      // squared demerit formula alongside `badness`, on the same scale as
+      // hyphen penalties. Applied linearly (old behavior) it was dwarfed by
+      // badness² (up to 10001² ≈ 1e8) from any stretched alternative.
+      const isRunt =
+        runtPenalty > 0 &&
+        i === terminalBreakPosition &&
+        contentWidth > 0 &&
+        contentWidth < runtMinWidth;
+      const effectiveBadness = isRunt ? badness + runtPenalty : badness;
+
       let d: number;
       if (pen >= 0) {
-        d = (1 + badness + pen) * (1 + badness + pen);
+        d = (1 + effectiveBadness + pen) * (1 + effectiveBadness + pen);
       } else if (pen > -KP_INFINITY) {
-        d = (1 + badness) * (1 + badness) - pen * pen;
+        d = (1 + effectiveBadness) * (1 + effectiveBadness) - pen * pen;
       } else {
-        d = (1 + badness) * (1 + badness);
+        d = (1 + effectiveBadness) * (1 + effectiveBadness);
       }
 
       // Consecutive hyphen demerit
@@ -287,18 +302,6 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
       const fc = classifyFitness(r);
       if (Math.abs(fc - a.fitnessClass) > 1) {
         d += fitnessClassDemerit;
-      }
-
-      // Runt demerit — when this break closes the paragraph, penalize a
-      // too-short final line. `contentWidth` here is the last line's actual
-      // content width (before the infinite-stretch final glue is rendered).
-      if (
-        runtPenalty > 0 &&
-        i === terminalBreakPosition &&
-        contentWidth > 0 &&
-        contentWidth < runtMinWidth
-      ) {
-        d += runtPenalty;
       }
 
       const totalDemerits = a.totalDemerits + d;

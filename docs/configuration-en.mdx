@@ -399,13 +399,13 @@ The `bodyText` property controls the typography of all paragraph text.
     <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>1.5</code></td>
+      <td><code>1.8</code></td>
       <td>Upper bound for word spacing in justified text, expressed as a multiplier of the normal space width. Lines exceeding this ratio are considered "loose".</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>0.8</code></td>
+      <td><code>0.5</code></td>
       <td>Lower bound for word spacing in justified text, as a multiplier of the normal space width.</td>
     </tr>
     <tr>
@@ -479,7 +479,7 @@ Beyond hyphenation and spacing bounds, the body-text configuration exposes the s
     <tr>
       <td><code>orphanPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>3000</code></td>
+      <td><code>1000</code></td>
       <td>Demerit added when an orphan constraint is violated. Higher values bias the algorithm more strongly against orphans; <code>0</code> disables the penalty.</td>
     </tr>
     <tr>
@@ -503,7 +503,7 @@ Beyond hyphenation and spacing bounds, the body-text configuration exposes the s
     <tr>
       <td><code>widowPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>3000</code></td>
+      <td><code>1000</code></td>
       <td>Demerit added when a widow constraint is violated. <code>0</code> disables the penalty.</td>
     </tr>
     <tr>
@@ -521,14 +521,14 @@ Beyond hyphenation and spacing bounds, the body-text configuration exposes the s
     <tr>
       <td><code>runtMinCharacters</code></td>
       <td><code>number</code></td>
-      <td><code>5</code></td>
+      <td><code>20</code></td>
       <td>Approximate minimum character count for the last line of a paragraph. Interpreted internally as <code>runtMinCharacters × normalSpaceWidth</code> pixels: the test is "is the last line visually shorter than N characters' worth of space-width content".</td>
     </tr>
     <tr>
       <td><code>runtPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>1500</code></td>
-      <td>Demerit added when the last line of a paragraph is shorter than the runt threshold. Default is softer than orphan/widow (runts are aesthetic, not structural). <code>0</code> disables it.</td>
+      <td><code>1000</code></td>
+      <td>Equivalent-badness injected into the Knuth–Plass squared demerit formula (same scale as line <em>badness</em>, which saturates at 10000). At 1000 it dominates alternatives requiring up to roughly r≈2.15 word-spacing stretch. <code>0</code> disables the penalty.</td>
     </tr>
     <tr>
       <td><code>avoidRuntsInLists</code></td>
