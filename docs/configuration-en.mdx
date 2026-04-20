@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-04-19',
+  lastUpdated: '2026-04-20',
   readingTime: '18 min',
   order: 3,
 };
@@ -351,14 +351,14 @@ The `bodyText` property controls the typography of all paragraph text.
     <tr>
       <td><code>boldColor</code></td>
       <td><code>ColorValue</code></td>
-      <td>inherits <code>color</code></td>
-      <td>Optional override for bold/strong spans. When unset, bold text uses <code>color</code>.</td>
+      <td>Main Color (<code>#517538</code>)</td>
+      <td>Color applied to bold/strong spans. Resolved against the default palette's <code>main-color</code> entry, so changing the palette colour retints all bold runs across the document.</td>
     </tr>
     <tr>
       <td><code>italicColor</code></td>
       <td><code>ColorValue</code></td>
-      <td>inherits <code>color</code></td>
-      <td>Optional override for italic/emphasis spans. When unset, italic text uses <code>color</code>.</td>
+      <td>Main Color (<code>#517538</code>)</td>
+      <td>Color applied to italic/emphasis spans. Same palette-linked default as <code>boldColor</code>.</td>
     </tr>
     <tr>
       <td><code>textAlign</code></td>
@@ -587,8 +587,8 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td><code>#000000</code></td>
-      <td>Heading text color.</td>
+      <td>Main Color (<code>#517538</code>)</td>
+      <td>Heading text color. Bound to the default palette's <code>main-color</code> entry, so swapping the palette colour retints every heading.</td>
     </tr>
     <tr>
       <td><code>textAlign</code></td>
@@ -707,14 +707,14 @@ The `unorderedLists` property controls how bullet lists (`-`, `*`, `+`) and GFM 
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>inherits <code>bodyText.color</code></td>
-      <td>Text color for items.</td>
+      <td>Main Color (<code>#517538</code>)</td>
+      <td>Text and bullet color for items. Bound to the default palette's <code>main-color</code> entry.</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
       <td><code>number</code></td>
-      <td><code>400</code></td>
-      <td>Weight for item text (100–900).</td>
+      <td><code>700</code></td>
+      <td>Weight for item text (100–900). Bullets inherit this weight unless overridden per-level.</td>
     </tr>
     <tr>
       <td><code>italic</code></td>
@@ -884,14 +884,14 @@ The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to fi
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>inherits <code>bodyText.color</code></td>
-      <td>Text color for items and number markers.</td>
+      <td>Main Color (<code>#517538</code>)</td>
+      <td>Text and number-marker color for items. Bound to the default palette's <code>main-color</code> entry.</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
       <td><code>number</code></td>
-      <td><code>400</code></td>
-      <td>Weight for item text (100–900).</td>
+      <td><code>700</code></td>
+      <td>Weight for item text and number markers (100–900).</td>
     </tr>
     <tr>
       <td><code>italic</code></td>
@@ -1020,7 +1020,7 @@ interface ColorValue {
 
 The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` preserves the intent that the color should be specified in CMYK when exported to PDF.
 
-Because Postext targets publication-grade output, the default body text and heading colors ship with `model: 'cmyk'` (both values are `#000000`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
+Because Postext targets publication-grade output, the default body text color ships with `model: 'cmyk'` (`#000000`). Heading, bold, italic, and list colors default to the palette-linked **Main Color** (`#517538`, `model: 'hex'`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
 
 
 ## Color Palette
@@ -1033,6 +1033,30 @@ interface ColorPaletteEntry {
   name: string;     // human label shown in sandbox UIs
   value: ColorValue;
 }
+```
+
+### The default palette
+
+Postext ships with a single-entry default palette called **Main Color** (`id: 'main-color'`, hex `#517538`). Several defaults — heading color, bold/italic body color, bullet and number-marker colors — reference this entry via `paletteId: 'main-color'`, so changing that one swatch retints every part of the document that uses it.
+
+You can inspect, clone, or compare against the default palette via three exports:
+
+```ts
+import {
+  DEFAULT_COLOR_PALETTE,
+  cloneDefaultColorPalette,
+  isDefaultColorPalette,
+} from 'postext';
+
+// Read-only snapshot of the shipped palette.
+DEFAULT_COLOR_PALETTE;
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#517538', model: 'hex' } }]
+
+// Independent copy — mutate this, not DEFAULT_COLOR_PALETTE.
+const palette = cloneDefaultColorPalette();
+
+// Detect whether a user has customised the palette at all.
+isDefaultColorPalette(palette); // true
 ```
 
 A palette lives at the top level of the config:
@@ -1054,13 +1078,26 @@ Any `ColorValue` in the configuration — page background, body text color, head
 
 ### How palettes are applied
 
-`buildDocument` calls `applyPaletteToConfig` internally as the first step of the pipeline, before any defaults are resolved. You rarely need to call it yourself, but it is exported so you can inspect the flattened result:
+`buildDocument` runs the palette in two places so referenced colors work both for overrides you spelled out and for defaults that are filled in later:
+
+1. `applyPaletteToConfig(config)` — flattens every `ColorValue` in the raw user config that carries a `paletteId`. Useful when you want to inspect what the engine will actually see.
+2. `applyPaletteToResolvedConfig(resolved, palette)` — runs *after* defaults are resolved and rewrites the palette-linked defaults (heading color, bold/italic body color, list colors) to match the active palette.
+
+You rarely need to call these yourself, but both are exported so you can inspect or reuse them:
 
 ```ts
-import { applyPaletteToConfig, resolveColorValue } from 'postext';
+import {
+  applyPaletteToConfig,
+  applyPaletteToResolvedConfig,
+  resolveColorValue,
+} from 'postext';
 
 const flat = applyPaletteToConfig(config);
-// Every ColorValue with a paletteId has been replaced by the palette entry's hex/model.
+// Every ColorValue with a paletteId in the raw config has been replaced
+// with the palette entry's hex/model.
+
+// `applyPaletteToResolvedConfig` is typically handled by buildDocument; use it
+// directly if you build a ResolvedConfig yourself and want the palette applied.
 ```
 
 `resolveColorValue(value, palette, fallback)` is the single-value variant, handy when you are composing configs imperatively and need to resolve one color at a time.
@@ -1068,6 +1105,68 @@ const flat = applyPaletteToConfig(config);
 ### Editing the palette
 
 Removing a palette entry should go through `unlinkPaletteRefs` (exported from `postext-sandbox`) so that any `ColorValue` still pointing at the removed id gets rewritten with the plain `hex` / `model` fallback. The sandbox's "Color Palette" section does this automatically.
+
+
+## HTML Viewer
+
+The `htmlViewer` property controls how the HTML backend lays out pages on screen. It only applies when you render with `renderToHtml` / `renderToHtmlIndexed`; the canvas and PDF paths ignore it entirely.
+
+```ts
+interface HtmlViewerConfig {
+  maxCharsPerLine?: number;     // Target column width, in characters of the body font.
+  columnGap?: number;            // Horizontal gap between columns in multi-column mode (px).
+  optimalLineBreaking?: boolean; // Use Knuth–Plass inside the HTML viewer instead of greedy.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxCharsPerLine</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Target measure for each rendered column, expressed in characters of the body font. The viewport samples a representative prose string at that length to derive the actual pixel width — so the result adapts to any proportional font and font-size combination.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>number</code></td>
+      <td><code>50</code></td>
+      <td>Horizontal gap, in CSS pixels, between columns when the viewer is in multi-column mode. Ignored in single-column mode.</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Enable Knuth–Plass line breaking in the HTML viewer. Off by default because the viewer reruns layout on every resize and font-size change — the greedy first-fit algorithm is fast enough to feel instantaneous. Turn it on when you want the same optimal breaks the canvas backend uses.</td>
+    </tr>
+  </tbody>
+</table>
+
+Resolver and stripper follow the same pattern as the other sections:
+
+```ts
+import {
+  DEFAULT_HTML_VIEWER_CONFIG,
+  resolveHtmlViewerConfig,
+  stripHtmlViewerDefaults,
+} from 'postext';
+
+const resolved = resolveHtmlViewerConfig(config.htmlViewer);
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+
+const minimal = stripHtmlViewerDefaults(config.htmlViewer);
+// => undefined when everything matches the defaults
+```
+
+See [Integrating the HTML viewer](#integrating-the-html-viewer) below for an end-to-end example.
 
 
 ## Debug
@@ -1232,7 +1331,7 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`. Color palettes are applied separately through `applyPaletteToConfig(config)` and `resolveColorValue(value, palette, fallback)` — see [Color Palette](#color-palette).
+Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`. Color palettes are applied separately through `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)`, and `resolveColorValue(value, palette, fallback)` — see [Color Palette](#color-palette).
 
 `resolveUnorderedListsConfig` and `resolveOrderedListsConfig` are the only resolvers that take a second argument — the already-resolved `ResolvedBodyTextConfig` — because list defaults for `fontFamily` and `color` cascade from body text:
 
@@ -1244,7 +1343,7 @@ const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
 // => lists.fontFamily === 'Inter' (inherited)
 ```
 
-Static default bundles — the values used when no cascade is involved — are exported too: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_DEBUG_CONFIG`.
+Static default bundles — the values used when no cascade is involved — are exported too: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`.
 
 ### Stripping defaults
 
@@ -1257,7 +1356,7 @@ const minimal = stripConfigDefaults(fullConfig);
 // Only properties that differ from defaults remain
 ```
 
-Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripDebugDefaults`.
+Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`.
 
 ### Parsing
 
@@ -1302,3 +1401,167 @@ clearMeasurementCache(cache);
 ```
 
 `buildDocument` maintains its own cache internally across the convergence loop, so for typical usage you do not need to touch these. They are exposed for applications that drive the pipeline piece-by-piece — for example an editor that re-runs layout on every keystroke and wants to reuse measurements from the previous frame.
+
+
+## Integrating the HTML viewer
+
+The HTML viewer is Postext's screen-first renderer. Instead of rasterising pages to a bitmap it emits absolutely-positioned DOM nodes whose geometry is driven by the same pipeline that produces print output. This makes it the right choice when you want readable, selectable, and resize-aware typography in a browser — a reading app, an in-product preview, or an embedded docs surface — without pulling in a PDF viewer.
+
+The key pieces from the public API:
+
+- **`buildDocument(content, config, cache?)`** — runs the full layout pipeline and returns a `VDTDocument`.
+- **`renderToHtmlIndexed(doc, options)`** — turns the VDT into a single HTML string plus a per-page / per-block breakdown. The breakdown enables cheap DOM patching when only a few blocks changed between renders.
+- **`resolveHtmlViewerConfig(partial)`** — fills in the HTML-viewer defaults (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
+- **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — measurement primitives used to derive an actual pixel column width from a target character count.
+- **`createMeasurementCache` / `clearMeasurementCache`** — pluggable caches so you can reuse measurements across re-layouts.
+
+### Minimal integration
+
+The snippet below is the shortest useful integration: build the document at the current viewport size, render it into a container, and re-run on resize.
+
+```tsx
+import { useEffect, useRef } from 'react';
+import {
+  buildDocument,
+  renderToHtmlIndexed,
+  resolveHtmlViewerConfig,
+  buildFontString,
+  measureGlyphWidth,
+  dimensionToPx,
+  createMeasurementCache,
+} from 'postext';
+import type { PostextConfig, MeasurementCache } from 'postext';
+
+// Screen-friendly DPI: at 144 DPI, an 8pt body size resolves to 16 px.
+const HTML_DPI = 144;
+const PADDING_PX = 24;
+
+// Prose sample used to measure the target column width. Proportional fonts
+// make "N × average width" unreliable, so we measure a representative string.
+const SAMPLE =
+  'The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow.';
+
+function sampleForChars(n: number): string {
+  let s = SAMPLE;
+  while (s.length < n) s += ' ' + SAMPLE;
+  return s.slice(0, n);
+}
+
+export function PostextHtmlViewer({
+  markdown,
+  config,
+  mode = 'multi',
+}: {
+  markdown: string;
+  config: PostextConfig;
+  mode?: 'single' | 'multi';
+}) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const cacheRef = useRef<MeasurementCache>(createMeasurementCache());
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const relayout = () => {
+      const rect = host.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const viewer = resolveHtmlViewerConfig(config.htmlViewer);
+      const fontFamily = config.bodyText?.fontFamily ?? 'EB Garamond';
+      const fontWeight = config.bodyText?.fontWeight ?? 400;
+      const fontSize = config.bodyText?.fontSize ?? { value: 8, unit: 'pt' as const };
+      const fontSizePx = dimensionToPx(fontSize, HTML_DPI);
+
+      // Measure the *actual* column width for N characters of body prose.
+      const targetColumnPx = measureGlyphWidth(
+        sampleForChars(viewer.maxCharsPerLine),
+        buildFontString(fontFamily, fontSizePx, String(fontWeight), 'normal'),
+      );
+
+      const inner = Math.max(rect.width - PADDING_PX * 2, 100);
+      let columnWidthPx: number;
+      if (mode === 'single') {
+        columnWidthPx = Math.min(targetColumnPx, inner);
+      } else {
+        // Fit as many columns as we can at the target width.
+        const count = Math.max(
+          1,
+          Math.floor((inner + viewer.columnGap) / (targetColumnPx + viewer.columnGap)),
+        );
+        columnWidthPx = (inner - viewer.columnGap * (count - 1)) / count;
+      }
+      columnWidthPx = Math.max(Math.floor(columnWidthPx), 80);
+
+      // Single mode uses one very tall page; multi mode uses the viewport
+      // height so each VDT "page" becomes one column.
+      const pageHeightPx =
+        mode === 'single' ? Math.max(rect.height * 20, 200_000) : Math.max(rect.height - PADDING_PX * 2, 400);
+
+      const override: PostextConfig = {
+        ...config,
+        page: {
+          ...config.page,
+          dpi: HTML_DPI,
+          width: { value: columnWidthPx, unit: 'px' },
+          height: { value: pageHeightPx, unit: 'px' },
+          margins: {
+            top: { value: 0, unit: 'px' },
+            bottom: { value: 0, unit: 'px' },
+            left: { value: 0, unit: 'px' },
+            right: { value: 0, unit: 'px' },
+          },
+        },
+        layout: { ...config.layout, layoutType: 'single' },
+        bodyText: {
+          ...config.bodyText,
+          optimalLineBreaking: viewer.optimalLineBreaking,
+        },
+      };
+
+      const doc = buildDocument({ markdown }, override, cacheRef.current);
+      const { html } = renderToHtmlIndexed(doc, {
+        mode,
+        columnGap: viewer.columnGap,
+        padding: PADDING_PX,
+        background: 'transparent',
+      });
+
+      host.innerHTML = html;
+    };
+
+    relayout();
+
+    const ro = new ResizeObserver(() => relayout());
+    ro.observe(host);
+
+    // Re-measure when web fonts land so glyph widths aren't taken from fallbacks.
+    const onFontsDone = () => relayout();
+    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+
+    return () => {
+      ro.disconnect();
+      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+    };
+  }, [markdown, config, mode]);
+
+  return <div ref={hostRef} style={{ width: '100%', height: '100%', overflow: 'auto' }} />;
+}
+```
+
+A few notes on what this example is doing:
+
+- **Measuring the column, not approximating it.** Because `maxCharsPerLine` is a *target* expressed in characters, the actual pixel width depends on the body font. `measureGlyphWidth` gives a real measurement against the chosen font, which keeps the measure consistent across font swaps.
+- **Rewriting the page.** The HTML viewer treats each VDT "page" as one on-screen column. The example overrides `page.width` with the measured column width, sets margins to zero (the padding lives outside the page in the wrapping `.pt-doc` div), and uses `HTML_DPI = 144` so `8pt` body text resolves to `16px`.
+- **Font-loading awareness.** `document.fonts.loadingdone` fires when a newly-requested web font has arrived. Without the relayout, the first render uses a fallback font's metrics and jumps when the real font lands.
+- **Reusing the measurement cache.** Creating the cache once per component means resizes and font-scale changes reuse measurements from the previous render instead of re-measuring every paragraph.
+
+### Going further
+
+The example above is intentionally flat. Production integrations usually add:
+
+- **Shadow DOM isolation** — render into `host.attachShadow({ mode: 'open' })` so nothing in the outer page can bleed CSS into the viewer.
+- **Incremental patching** — `renderToHtmlIndexed` returns `pages[i].blocks`, each with a stable `id` and the block's outer HTML. When only a few blocks differ between two renders you can replace those block wrappers in place instead of rebuilding `innerHTML`.
+- **Overlays** — layering an absolutely-positioned SVG on top of each `.pt-page` for cursors, selections, or baseline grids.
+
+The sandbox's `HtmlPreview` component (`packages/postext-sandbox/src/viewport/HtmlPreview.tsx`) implements all of these on top of the same API shown here and can be used as a reference.

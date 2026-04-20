@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-19',
+  lastUpdated: '2026-04-20',
   readingTime: '18 min',
   order: 3,
 };
@@ -351,14 +351,14 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
     <tr>
       <td><code>boldColor</code></td>
       <td><code>ColorValue</code></td>
-      <td>hereda <code>color</code></td>
-      <td>Sobrescritura opcional para fragmentos en negrita. Si no se define, la negrita usa <code>color</code>.</td>
+      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color aplicado a los fragmentos en negrita. Se resuelve contra la entrada <code>main-color</code> de la paleta por defecto, de modo que cambiar ese color retintea todos los fragmentos en negrita del documento.</td>
     </tr>
     <tr>
       <td><code>italicColor</code></td>
       <td><code>ColorValue</code></td>
-      <td>hereda <code>color</code></td>
-      <td>Sobrescritura opcional para fragmentos en cursiva. Si no se define, la cursiva usa <code>color</code>.</td>
+      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color aplicado a los fragmentos en cursiva. Mismo enlace a la paleta que <code>boldColor</code>.</td>
     </tr>
     <tr>
       <td><code>textAlign</code></td>
@@ -587,8 +587,8 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td><code>#000000</code></td>
-      <td>Color del texto de encabezado.</td>
+      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color del texto de encabezado. Enlazado a la entrada <code>main-color</code> de la paleta por defecto, de modo que cambiar ese color retintea todos los encabezados.</td>
     </tr>
     <tr>
       <td><code>textAlign</code></td>
@@ -707,14 +707,14 @@ La propiedad `unorderedLists` controla cómo se renderizan las listas con viñet
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>hereda <code>bodyText.color</code></td>
-      <td>Color del texto de los elementos.</td>
+      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color del texto y de las viñetas de los elementos. Enlazado a la entrada <code>main-color</code> de la paleta por defecto.</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
       <td><code>number</code></td>
-      <td><code>400</code></td>
-      <td>Peso del texto de los elementos (100–900).</td>
+      <td><code>700</code></td>
+      <td>Peso del texto de los elementos (100–900). Las viñetas heredan este peso salvo que se sobrescriba por nivel.</td>
     </tr>
     <tr>
       <td><code>italic</code></td>
@@ -884,14 +884,14 @@ La propiedad `orderedLists` controla las listas numeradas (`1.`, `2)`, etc.). Se
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>hereda <code>bodyText.color</code></td>
-      <td>Color del texto y del marcador numérico.</td>
+      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color del texto y del marcador numérico. Enlazado a la entrada <code>main-color</code> de la paleta por defecto.</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
       <td><code>number</code></td>
-      <td><code>400</code></td>
-      <td>Peso del texto (100–900).</td>
+      <td><code>700</code></td>
+      <td>Peso del texto y del marcador numérico (100–900).</td>
     </tr>
     <tr>
       <td><code>italic</code></td>
@@ -1020,7 +1020,7 @@ interface ColorValue {
 
 El campo `model` indica el espacio de color previsto. Para renderizado web, `'hex'` o `'rgb'` son los habituales. Para flujos de trabajo de impresión, `'cmyk'` preserva la intención de que el color debe especificarse en CMYK al exportar a PDF.
 
-Como Postext apunta a salida de calidad editorial, los colores por defecto del cuerpo de texto y de los encabezados se publican con `model: 'cmyk'` (ambos `#000000`). El fondo de página y los indicadores de interfaz (rejilla base, marcas de corte, indicadores de depuración) usan `model: 'hex'` por defecto. Sobrescribe `color.model` en cualquier campo si necesitas otra semántica de exportación.
+Como Postext apunta a salida de calidad editorial, el color por defecto del cuerpo de texto se publica con `model: 'cmyk'` (`#000000`). Los colores de encabezados, negritas, cursivas y listas toman por defecto el **Color principal** enlazado a la paleta (`#517538`, `model: 'hex'`). El fondo de página y los indicadores de interfaz (rejilla base, marcas de corte, indicadores de depuración) usan `model: 'hex'` por defecto. Sobrescribe `color.model` en cualquier campo si necesitas otra semántica de exportación.
 
 
 ## Paleta de colores
@@ -1033,6 +1033,30 @@ interface ColorPaletteEntry {
   name: string;     // etiqueta legible que se muestra en las UIs del sandbox
   value: ColorValue;
 }
+```
+
+### La paleta por defecto
+
+Postext incluye una paleta por defecto con una única entrada llamada **Color principal** (`id: 'main-color'`, hex `#517538`). Varios valores por defecto — color de encabezados, color de negritas/cursivas del cuerpo, color de viñetas y marcadores numéricos de listas — referencian esa entrada vía `paletteId: 'main-color'`, de modo que al cambiar esa única muestra se retintea cada elemento del documento que la utilice.
+
+Se puede inspeccionar, clonar o comparar la paleta por defecto mediante tres exportaciones:
+
+```ts
+import {
+  DEFAULT_COLOR_PALETTE,
+  cloneDefaultColorPalette,
+  isDefaultColorPalette,
+} from 'postext';
+
+// Snapshot de solo lectura de la paleta publicada.
+DEFAULT_COLOR_PALETTE;
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#517538', model: 'hex' } }]
+
+// Copia independiente — muta esta, no DEFAULT_COLOR_PALETTE.
+const palette = cloneDefaultColorPalette();
+
+// Comprueba si el usuario ha personalizado la paleta.
+isDefaultColorPalette(palette); // true
 ```
 
 La paleta vive en el nivel superior de la configuración:
@@ -1054,13 +1078,26 @@ Cualquier `ColorValue` de la configuración — fondo de página, color del cuer
 
 ### Cómo se aplican las paletas
 
-`buildDocument` llama internamente a `applyPaletteToConfig` como primer paso del pipeline, antes de resolver los valores por defecto. Raramente hace falta invocarlo directamente, pero está exportado para poder inspeccionar el resultado ya aplanado:
+`buildDocument` ejecuta la paleta en dos puntos para que los colores referenciados funcionen tanto para las sobrescrituras que hayas indicado como para los valores por defecto que se completen después:
+
+1. `applyPaletteToConfig(config)` — aplana cada `ColorValue` del config original que lleve `paletteId`. Útil para inspeccionar qué verá realmente el motor.
+2. `applyPaletteToResolvedConfig(resolved, palette)` — se ejecuta *después* de resolver los valores por defecto y reescribe los defaults enlazados a la paleta (color de encabezados, de negrita/cursiva del cuerpo, de listas) para que coincidan con la paleta activa.
+
+Raramente necesitas invocarlas, pero ambas están exportadas para inspección y reutilización:
 
 ```ts
-import { applyPaletteToConfig, resolveColorValue } from 'postext';
+import {
+  applyPaletteToConfig,
+  applyPaletteToResolvedConfig,
+  resolveColorValue,
+} from 'postext';
 
 const flat = applyPaletteToConfig(config);
-// Cada ColorValue con paletteId queda sustituido por el hex/model de la entrada de la paleta.
+// Cada ColorValue con paletteId en el config original queda sustituido por
+// el hex/model de la entrada de la paleta.
+
+// `applyPaletteToResolvedConfig` normalmente lo gestiona buildDocument; úsalo
+// directamente si construyes un ResolvedConfig a mano y quieres aplicar la paleta.
 ```
 
 `resolveColorValue(value, palette, fallback)` es la variante para un único valor, útil cuando compones configuraciones de forma imperativa y necesitas resolver un color suelto.
@@ -1068,6 +1105,68 @@ const flat = applyPaletteToConfig(config);
 ### Editar la paleta
 
 Para eliminar una entrada conviene usar `unlinkPaletteRefs` (exportado desde `postext-sandbox`) de modo que cualquier `ColorValue` que todavía apunte al id eliminado se reescriba con el `hex` / `model` de respaldo. La sección "Paleta de colores" del sandbox lo hace automáticamente.
+
+
+## Visor HTML
+
+La propiedad `htmlViewer` controla cómo el backend HTML dispone las páginas en pantalla. Solo se aplica cuando renderizas con `renderToHtml` / `renderToHtmlIndexed`; los caminos de canvas y PDF la ignoran por completo.
+
+```ts
+interface HtmlViewerConfig {
+  maxCharsPerLine?: number;     // Ancho objetivo de columna, en caracteres de la fuente del cuerpo.
+  columnGap?: number;            // Espacio horizontal entre columnas en modo multi-columna (px).
+  optimalLineBreaking?: boolean; // Usar Knuth–Plass dentro del visor HTML en lugar de greedy.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxCharsPerLine</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Medida objetivo de cada columna renderizada, expresada en caracteres de la fuente del cuerpo. El viewport mide una cadena representativa de prosa con esa longitud para obtener el ancho real en píxeles — así el resultado se adapta a cualquier combinación de fuente proporcional y tamaño.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>number</code></td>
+      <td><code>50</code></td>
+      <td>Espacio horizontal, en píxeles CSS, entre columnas cuando el visor está en modo multi-columna. Se ignora en modo columna única.</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Activa la división de líneas Knuth–Plass dentro del visor HTML. Está desactivado por defecto porque el visor recompone la maquetación en cada resize o cambio de tamaño — el algoritmo greedy first-fit es lo bastante rápido para sentirse instantáneo. Actívalo cuando quieras los mismos cortes óptimos que usa el backend canvas.</td>
+    </tr>
+  </tbody>
+</table>
+
+El resolver y el stripper siguen el mismo patrón que las demás secciones:
+
+```ts
+import {
+  DEFAULT_HTML_VIEWER_CONFIG,
+  resolveHtmlViewerConfig,
+  stripHtmlViewerDefaults,
+} from 'postext';
+
+const resolved = resolveHtmlViewerConfig(config.htmlViewer);
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+
+const minimal = stripHtmlViewerDefaults(config.htmlViewer);
+// => undefined cuando todo coincide con los valores por defecto
+```
+
+Consulta [Integrar el visor HTML](#integrar-el-visor-html) más abajo para un ejemplo completo.
 
 
 ## Depuración
@@ -1232,7 +1331,7 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`. Las paletas de color se aplican por separado con `applyPaletteToConfig(config)` y `resolveColorValue(value, palette, fallback)` — ver [Paleta de colores](#paleta-de-colores).
+Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`. Las paletas de color se aplican por separado con `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)` y `resolveColorValue(value, palette, fallback)` — ver [Paleta de colores](#paleta-de-colores).
 
 `resolveUnorderedListsConfig` y `resolveOrderedListsConfig` son los únicos resolvers que aceptan un segundo argumento — el `ResolvedBodyTextConfig` ya resuelto — porque las listas heredan `fontFamily` y `color` del cuerpo de texto:
 
@@ -1244,7 +1343,7 @@ const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
 // => lists.fontFamily === 'Inter' (heredado)
 ```
 
-También se exportan los paquetes de valores por defecto estáticos — los que se usan cuando no hay herencia: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_DEBUG_CONFIG`.
+También se exportan los paquetes de valores por defecto estáticos — los que se usan cuando no hay herencia: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`.
 
 ### Eliminar valores por defecto
 
@@ -1257,7 +1356,7 @@ const minimal = stripConfigDefaults(fullConfig);
 // Solo permanecen las propiedades que difieren de los valores por defecto
 ```
 
-También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripDebugDefaults`.
+También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`.
 
 ### Parseo
 
@@ -1302,3 +1401,169 @@ clearMeasurementCache(cache);
 ```
 
 `buildDocument` mantiene su propia caché internamente a lo largo del bucle de convergencia, así que para el uso habitual no necesitas tocar nada de esto. Estas funciones se exponen para aplicaciones que orquestan el pipeline pieza a pieza — por ejemplo un editor que reejecuta la composición en cada pulsación de tecla y quiere reutilizar las medidas del fotograma anterior.
+
+
+## Integrar el visor HTML
+
+El visor HTML es el renderizador de Postext orientado a pantalla. En lugar de rasterizar páginas a un bitmap emite nodos DOM posicionados absolutamente cuya geometría está generada por el mismo pipeline que produce la salida impresa. Es la opción adecuada cuando quieres tipografía legible, seleccionable y consciente del resize en el navegador — una app de lectura, una previsualización dentro de un producto o una superficie de documentación embebida — sin arrastrar contigo un visor PDF.
+
+Las piezas clave de la API pública:
+
+- **`buildDocument(content, config, cache?)`** — ejecuta el pipeline completo de composición y devuelve un `VDTDocument`.
+- **`renderToHtmlIndexed(doc, options)`** — convierte el VDT en una única cadena HTML más un desglose por página y por bloque. El desglose permite parchear el DOM de forma barata cuando solo han cambiado algunos bloques entre renders.
+- **`resolveHtmlViewerConfig(partial)`** — completa los valores por defecto del visor HTML (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
+- **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — primitivas de medida usadas para derivar un ancho de columna real en píxeles a partir de un objetivo en caracteres.
+- **`createMeasurementCache` / `clearMeasurementCache`** — cachés enchufables para reutilizar medidas entre recomposiciones.
+
+### Integración mínima
+
+El fragmento siguiente es la integración útil más corta: construye el documento al tamaño actual del viewport, lo renderiza en un contenedor y recompone al redimensionar.
+
+```tsx
+import { useEffect, useRef } from 'react';
+import {
+  buildDocument,
+  renderToHtmlIndexed,
+  resolveHtmlViewerConfig,
+  buildFontString,
+  measureGlyphWidth,
+  dimensionToPx,
+  createMeasurementCache,
+} from 'postext';
+import type { PostextConfig, MeasurementCache } from 'postext';
+
+// DPI adecuado para pantalla: a 144 DPI un tamaño de cuerpo de 8pt resuelve a 16 px.
+const HTML_DPI = 144;
+const PADDING_PX = 24;
+
+// Muestra de prosa usada para medir el ancho objetivo de columna. Las fuentes
+// proporcionales hacen poco fiable "N × ancho medio", así que medimos una
+// cadena representativa.
+const SAMPLE =
+  'The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow.';
+
+function sampleForChars(n: number): string {
+  let s = SAMPLE;
+  while (s.length < n) s += ' ' + SAMPLE;
+  return s.slice(0, n);
+}
+
+export function PostextHtmlViewer({
+  markdown,
+  config,
+  mode = 'multi',
+}: {
+  markdown: string;
+  config: PostextConfig;
+  mode?: 'single' | 'multi';
+}) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const cacheRef = useRef<MeasurementCache>(createMeasurementCache());
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const relayout = () => {
+      const rect = host.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const viewer = resolveHtmlViewerConfig(config.htmlViewer);
+      const fontFamily = config.bodyText?.fontFamily ?? 'EB Garamond';
+      const fontWeight = config.bodyText?.fontWeight ?? 400;
+      const fontSize = config.bodyText?.fontSize ?? { value: 8, unit: 'pt' as const };
+      const fontSizePx = dimensionToPx(fontSize, HTML_DPI);
+
+      // Mide el ancho *real* de columna para N caracteres de prosa del cuerpo.
+      const targetColumnPx = measureGlyphWidth(
+        sampleForChars(viewer.maxCharsPerLine),
+        buildFontString(fontFamily, fontSizePx, String(fontWeight), 'normal'),
+      );
+
+      const inner = Math.max(rect.width - PADDING_PX * 2, 100);
+      let columnWidthPx: number;
+      if (mode === 'single') {
+        columnWidthPx = Math.min(targetColumnPx, inner);
+      } else {
+        // Encaja tantas columnas como se pueda al ancho objetivo.
+        const count = Math.max(
+          1,
+          Math.floor((inner + viewer.columnGap) / (targetColumnPx + viewer.columnGap)),
+        );
+        columnWidthPx = (inner - viewer.columnGap * (count - 1)) / count;
+      }
+      columnWidthPx = Math.max(Math.floor(columnWidthPx), 80);
+
+      // El modo single usa una página muy alta; el modo multi usa la altura
+      // del viewport, de modo que cada "página" VDT se convierte en una columna.
+      const pageHeightPx =
+        mode === 'single' ? Math.max(rect.height * 20, 200_000) : Math.max(rect.height - PADDING_PX * 2, 400);
+
+      const override: PostextConfig = {
+        ...config,
+        page: {
+          ...config.page,
+          dpi: HTML_DPI,
+          width: { value: columnWidthPx, unit: 'px' },
+          height: { value: pageHeightPx, unit: 'px' },
+          margins: {
+            top: { value: 0, unit: 'px' },
+            bottom: { value: 0, unit: 'px' },
+            left: { value: 0, unit: 'px' },
+            right: { value: 0, unit: 'px' },
+          },
+        },
+        layout: { ...config.layout, layoutType: 'single' },
+        bodyText: {
+          ...config.bodyText,
+          optimalLineBreaking: viewer.optimalLineBreaking,
+        },
+      };
+
+      const doc = buildDocument({ markdown }, override, cacheRef.current);
+      const { html } = renderToHtmlIndexed(doc, {
+        mode,
+        columnGap: viewer.columnGap,
+        padding: PADDING_PX,
+        background: 'transparent',
+      });
+
+      host.innerHTML = html;
+    };
+
+    relayout();
+
+    const ro = new ResizeObserver(() => relayout());
+    ro.observe(host);
+
+    // Vuelve a medir cuando cargan las web fonts para que los anchos de glifo no
+    // queden tomados a partir de las fuentes de reserva.
+    const onFontsDone = () => relayout();
+    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+
+    return () => {
+      ro.disconnect();
+      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+    };
+  }, [markdown, config, mode]);
+
+  return <div ref={hostRef} style={{ width: '100%', height: '100%', overflow: 'auto' }} />;
+}
+```
+
+Algunas notas sobre lo que hace el ejemplo:
+
+- **Se mide la columna, no se aproxima.** Como `maxCharsPerLine` es un *objetivo* expresado en caracteres, el ancho real en píxeles depende de la fuente del cuerpo. `measureGlyphWidth` da una medida real sobre la fuente elegida, manteniendo la medida consistente al cambiar de fuente.
+- **Se reescribe la página.** El visor HTML trata cada "página" del VDT como una columna en pantalla. El ejemplo sobrescribe `page.width` con el ancho medido de columna, pone los márgenes a cero (el padding vive fuera de la página, en el `.pt-doc` envolvente) y usa `HTML_DPI = 144` para que `8pt` de cuerpo resuelva a `16px`.
+- **Atento a la carga de fuentes.** `document.fonts.loadingdone` se dispara cuando llega una web font recién solicitada. Sin recomponer entonces, el primer render usa métricas de la fuente de reserva y se produce un salto cuando llega la real.
+- **Se reutiliza la caché de medidas.** Crear la caché una sola vez por componente hace que los resizes y los cambios de escala de fuente reutilicen medidas del render anterior en lugar de volver a medir cada párrafo.
+
+### Siguiente paso
+
+El ejemplo de arriba es deliberadamente plano. Las integraciones en producción añaden habitualmente:
+
+- **Aislamiento con Shadow DOM** — renderiza en `host.attachShadow({ mode: 'open' })` para que nada del documento externo filtre CSS al visor.
+- **Parcheo incremental** — `renderToHtmlIndexed` devuelve `pages[i].blocks`, cada uno con un `id` estable y el HTML externo del bloque. Cuando solo unos cuantos bloques difieren entre dos renders puedes reemplazar esos envoltorios en el sitio en lugar de reconstruir `innerHTML`.
+- **Superposiciones** — apila un SVG absoluto sobre cada `.pt-page` para cursores, selecciones o la rejilla base.
+
+El componente `HtmlPreview` del sandbox (`packages/postext-sandbox/src/viewport/HtmlPreview.tsx`) implementa todo esto sobre la misma API que se muestra aquí y puede servirte de referencia.

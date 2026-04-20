@@ -113,21 +113,27 @@ function renderBullet(block: VDTBlock): string {
   if (
     block.type !== 'listItem' ||
     !block.bulletText ||
-    block.bulletOffsetX === undefined ||
-    block.bulletY === undefined
+    block.bulletOffsetX === undefined
   ) {
     return '';
   }
+  const firstLine = block.lines[0];
+  if (!firstLine) return '';
   const bulletFont = quoteFontString(block.bulletFontString ?? block.fontString);
   const bulletColor = block.bulletColor ?? block.color;
+  // Render the bullet with the same geometry as the first text line so the
+  // browser aligns the bullet glyph on the same baseline as the body text.
+  // Canvas uses `textBaseline='middle'` at `bulletY` to center the em square
+  // on the x-height; in HTML we get the equivalent alignment naturally when
+  // both bullet and line share top/height and font metrics.
   return (
     `<div class="pt-bullet" aria-hidden="true" style="` +
     `position:absolute;` +
     `left:${block.bulletOffsetX}px;` +
-    `top:${block.bulletY}px;` +
+    `top:${firstLine.bbox.y}px;` +
+    `height:${firstLine.bbox.height}px;` +
     `font:${bulletFont};` +
     `color:${bulletColor};` +
-    `transform:translateY(-50%);` +
     `white-space:pre;` +
     `">${esc(block.bulletText)}</div>`
   );

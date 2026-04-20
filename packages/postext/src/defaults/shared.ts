@@ -1,8 +1,9 @@
 import type { ColorValue, ColorPaletteEntry, Dimension, PostextConfig } from '../types';
+import type { ResolvedConfig } from '../vdt';
 
 export const DEFAULT_MAIN_COLOR_ID = 'main-color';
 export const DEFAULT_MAIN_COLOR_NAME = 'Main Color';
-export const DEFAULT_MAIN_COLOR_HEX = '#3a5a87';
+export const DEFAULT_MAIN_COLOR_HEX = '#517538';
 
 export const DEFAULT_MAIN_COLOR: ColorValue = {
   hex: DEFAULT_MAIN_COLOR_HEX,
@@ -66,6 +67,47 @@ export function resolveColor(value: ColorValue | undefined, palette: ColorPalett
   const entry = palette?.find((e) => e.id === value.paletteId);
   if (!entry) return { hex: value.hex, model: value.model };
   return { hex: entry.value.hex, model: entry.value.model };
+}
+
+function resolveRequired(value: ColorValue, palette: ColorPaletteEntry[] | undefined): ColorValue {
+  if (!value.paletteId) return value;
+  const entry = palette?.find((e) => e.id === value.paletteId);
+  if (!entry) return { hex: value.hex, model: value.model };
+  return { hex: entry.value.hex, model: entry.value.model };
+}
+
+export function applyPaletteToResolvedConfig(
+  resolved: ResolvedConfig,
+  palette: ColorPaletteEntry[] | undefined,
+): ResolvedConfig {
+  if (!palette || palette.length === 0) return resolved;
+  return {
+    ...resolved,
+    bodyText: {
+      ...resolved.bodyText,
+      color: resolveRequired(resolved.bodyText.color, palette),
+      boldColor: resolved.bodyText.boldColor ? resolveRequired(resolved.bodyText.boldColor, palette) : undefined,
+      italicColor: resolved.bodyText.italicColor ? resolveRequired(resolved.bodyText.italicColor, palette) : undefined,
+    },
+    headings: {
+      ...resolved.headings,
+      color: resolveRequired(resolved.headings.color, palette),
+      levels: resolved.headings.levels.map((l) => ({ ...l, color: resolveRequired(l.color, palette) })),
+    },
+    unorderedLists: {
+      ...resolved.unorderedLists,
+      color: resolveRequired(resolved.unorderedLists.color, palette),
+      taskCompletedColor: resolved.unorderedLists.taskCompletedColor
+        ? resolveRequired(resolved.unorderedLists.taskCompletedColor, palette)
+        : undefined,
+      levels: resolved.unorderedLists.levels.map((l) => ({ ...l, color: resolveRequired(l.color, palette) })),
+    },
+    orderedLists: {
+      ...resolved.orderedLists,
+      color: resolveRequired(resolved.orderedLists.color, palette),
+      levels: resolved.orderedLists.levels.map((l) => ({ ...l, color: resolveRequired(l.color, palette) })),
+    },
+  };
 }
 
 export function applyPaletteToConfig(config: PostextConfig | undefined): PostextConfig | undefined {

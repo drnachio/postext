@@ -11,7 +11,7 @@ import {
   type MutableRefObject,
 } from 'react';
 import type { PostextConfig } from 'postext';
-import { DEFAULT_COLOR_PALETTE } from 'postext';
+import { cloneDefaultColorPalette } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
 import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
@@ -108,9 +108,9 @@ export function useSandbox(): SandboxContextValue {
   return ctx;
 }
 
-const DEFAULT_CONFIG: PostextConfig = {
-  colorPalette: DEFAULT_COLOR_PALETTE.map((entry) => ({ ...entry, value: { ...entry.value } })),
-};
+export function createDefaultConfig(): PostextConfig {
+  return { colorPalette: cloneDefaultColorPalette() };
+}
 
 export const DEFAULT_MARKDOWN = DEFAULT_MARKDOWN_EN;
 
@@ -147,7 +147,7 @@ export function SandboxProvider({
     return {
       markdown: savedMarkdown ?? defaultMd,
       defaultMarkdown: defaultMd,
-      config: savedConfig ?? initialConfig ?? DEFAULT_CONFIG,
+      config: savedConfig ?? initialConfig ?? createDefaultConfig(),
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,

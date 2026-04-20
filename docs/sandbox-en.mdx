@@ -94,6 +94,13 @@ Pages render lazily via `IntersectionObserver` — only visible pages (plus a 20
 
 Renders the postext output inside a Shadow DOM container, ensuring complete style isolation from the host page. The editorial CSS (typography, spacing, column rules) is injected inside the shadow root so it cannot be affected by or leak into the surrounding application styles.
 
+A toolbar at the top of the viewport provides:
+
+- **Font-scale controls** — Shrink or grow body text while preserving every relative measurement in the configuration.
+- **Column modes** — Single (one tall scrollable column) or multi (as many columns as the viewport fits at the configured measure, with horizontal scroll-snap between them).
+
+Column geometry is driven by the **HTML Viewer** section of the configuration sidebar: `maxCharsPerLine` sets the target measure in characters of the body font, `columnGap` the horizontal gap between columns in multi mode, and `optimalLineBreaking` toggles Knuth–Plass inside the viewer. See the [HTML Viewer configuration reference](/en/docs/configuration#html-viewer) and the end-to-end [integration example](/en/docs/configuration#integrating-the-html-viewer) for the same pattern used internally by the sandbox.
+
 #### PDF tab
 
 *Coming in a future version.* Will generate a downloadable PDF of the current document.

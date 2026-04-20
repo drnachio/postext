@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import type { ColorPaletteEntry } from 'postext';
+import { cloneDefaultColorPalette, isDefaultColorPalette } from 'postext';
 import { useSandbox } from '../../context/SandboxContext';
 import { findPaletteUsages, unlinkPaletteRefs } from '../../context/paletteUtils';
 import { CollapsibleSection, ColorPicker } from '../../controls';
@@ -79,8 +80,8 @@ export function ColorPaletteSection() {
     <CollapsibleSection
       title={labels.colorPalette}
       sectionId="color-palette"
-      hasOverrides={palette.length > 0}
-      onReset={() => writePalette([])}
+      hasOverrides={!isDefaultColorPalette(palette)}
+      onReset={() => writePalette(cloneDefaultColorPalette())}
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
