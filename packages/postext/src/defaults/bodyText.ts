@@ -18,7 +18,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   hyphenation: { ...DEFAULT_HYPHENATION_CONFIG },
   firstLineIndent: { value: 1.5, unit: 'em' },
   hangingIndent: false,
-  maxWordSpacing: 1.8,
+  maxWordSpacing: 1.7,
   minWordSpacing: 0.5,
   optimalLineBreaking: true,
   avoidOrphans: true,
