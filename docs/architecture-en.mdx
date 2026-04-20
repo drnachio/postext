@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Technical architecture of the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-04-19',
+  lastUpdated: '2026-04-20',
   readingTime: '35 min',
   order: 2,
 };
@@ -71,7 +71,7 @@ That is the "compute everything first, render later" philosophy. It is not a per
     </tr>
     <tr>
       <td><strong>Backend</strong></td>
-      <td>A unified implementation of text measurement and output rendering for a specific target (canvas/browser, PDF).</td>
+      <td>A unified implementation of text measurement and output rendering for a specific target. Three are shipping today: <strong>canvas</strong> (bitmap preview), <strong>HTML</strong> (DOM-based screen reading) and <strong>PDF</strong> (print-ready output via <code>postext-pdf</code>).</td>
     </tr>
     <tr>
       <td><strong>Pass</strong></td>
@@ -95,7 +95,7 @@ That is the "compute everything first, render later" philosophy. It is not a per
 2. **Layout passes** take over, mutating the VDT in sequence: measuring text via Pretext, flowing blocks into pages and columns, refining typography until it meets professional standards
 3. The **Convergence loop** watches for trouble -- when a later pass (say, fixing a widow) invalidates an earlier decision (say, column heights), the engine loops back and re-runs from the affected point. Up to 5 iterations, until everything settles
 4. The **final VDT** is the complete layout geometry: every element knows its page number, column assignment, position, and bounding box. The document is fully "typeset" before any rendering happens
-5. A **backend** walks the finished VDT and renders it to the target format -- HTML elements on a canvas, or eventually PDF pages
+5. A **backend** walks the finished VDT and renders it to the target format -- a rasterized canvas bitmap, a DOM tree of positioned HTML elements, or a PDF document with embedded fonts. The same VDT feeds all three; picking a backend is purely an output decision
 
 
 ## Input Layer
@@ -536,6 +536,8 @@ The backend is a single interface that handles both text measurement *and* outpu
 
 That is a deliberate choice, and it exists for a critical reason: **the way you measure text must exactly match the way you render it.** Imagine the measurement backend uses canvas font metrics, but the rendering backend uses a PDF library with slightly different kerning tables. The layout will not match the output. Lines that the engine measured as fitting in 320px might overflow or underflow when rendered. Every pixel of drift is a lie. By bundling measurement and rendering into one interface, each backend guarantees internal consistency: whatever font metrics it uses to measure are the same metrics it uses to draw.
 
+This is why the PDF backend, for example, does not re-measure text: it consumes an already-converged VDT produced by the canvas measurement backend and translates its pixel coordinates into PDF points. The canvas metrics are the source of truth; PDF is a transport. Users of `renderToPdf` (from the `postext-pdf` package) pass the same VDT they would hand to `renderToCanvas` or `renderToHtml`, and the three outputs are guaranteed to agree on line breaks, column heights, and resource placement.
+
 ### Interface
 
 ```typescript
@@ -567,7 +569,7 @@ interface MeasuredText {
 }
 ```
 
-### Planned Backends
+### Backends
 
 <table>
   <thead>
@@ -575,21 +577,27 @@ interface MeasuredText {
       <th>Backend</th>
       <th>Measurement</th>
       <th>Rendering</th>
-      <th>Phase</th>
+      <th>Status</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Canvas / Browser</strong></td>
+      <td><strong>Canvas</strong></td>
       <td>Pretext (canvas font metrics)</td>
-      <td>Positioned HTML elements or canvas drawing</td>
-      <td><strong>Phase 1</strong></td>
+      <td>Bitmap drawing on an <code>HTMLCanvasElement</code> (<code>renderToCanvas</code>, <code>renderPage</code>, <code>renderPageToCanvas</code>)</td>
+      <td><strong>Shipping</strong></td>
+    </tr>
+    <tr>
+      <td><strong>HTML</strong></td>
+      <td>Pretext (same metrics as canvas)</td>
+      <td>Absolutely-positioned DOM nodes with editorial CSS (<code>renderToHtml</code>, <code>renderToHtmlIndexed</code>)</td>
+      <td><strong>Shipping</strong></td>
     </tr>
     <tr>
       <td><strong>PDF</strong></td>
-      <td>Pretext + PDF font metrics</td>
-      <td>PDF page construction (e.g., pdf-lib)</td>
-      <td>Phase 4</td>
+      <td>Consumes the VDT already measured with Pretext</td>
+      <td>PDF page construction via pdf-lib with per-weight font embedding (<code>renderToPdf</code> in <code>postext-pdf</code>)</td>
+      <td><strong>Shipping</strong></td>
     </tr>
     <tr>
       <td><strong>Server-side</strong></td>
@@ -599,6 +607,8 @@ interface MeasuredText {
     </tr>
   </tbody>
 </table>
+
+All three shipping backends consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes.
 
 **Browser-only constraint:** In Phase 1, all layout computation happens client-side in the browser. The engine runs on the main thread, with Web Worker support for large documents planned as a future optimization. This is a deliberate scope decision -- nail the browser experience first, expand to other targets later.
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitectura',
   description: 'Arquitectura técnica del motor de composición tipográfica Postext',
   lang: 'es',
-  lastUpdated: '2026-04-19',
+  lastUpdated: '2026-04-20',
   readingTime: '35 min',
   order: 2,
 };
@@ -71,7 +71,7 @@ Esa es la filosofía de "calcular todo primero, renderizar después". No es un t
     </tr>
     <tr>
       <td><strong>Backend</strong></td>
-      <td>Implementación unificada de medición de texto y renderizado de salida para un destino específico (canvas/navegador, PDF).</td>
+      <td>Implementación unificada de medición de texto y renderizado de salida para un destino específico. Hoy se distribuyen tres: <strong>canvas</strong> (previsualización bitmap), <strong>HTML</strong> (lectura en pantalla basada en DOM) y <strong>PDF</strong> (salida lista para imprimir a través de <code>postext-pdf</code>).</td>
     </tr>
     <tr>
       <td><strong>Pass</strong></td>
@@ -95,7 +95,7 @@ Esa es la filosofía de "calcular todo primero, renderizar después". No es un t
 2. Las **pasadas de composición** toman el control, mutando el VDT en secuencia: midiendo texto vía Pretext, fluyendo bloques hacia páginas y columnas, refinando la tipografía hasta alcanzar estándares profesionales
 3. El **bucle de convergencia** vigila los problemas -- cuando una pasada posterior (digamos, corregir una viuda) invalida una decisión anterior (digamos, las alturas de columna), el motor vuelve atrás y re-ejecuta desde el punto afectado. Hasta 5 iteraciones, hasta que todo se estabiliza
 4. El **VDT final** es la geometría completa de la composición: cada elemento conoce su número de página, su columna asignada, su posición y su caja delimitadora. El documento está completamente "compuesto" antes de que ocurra ningún renderizado
-5. Un **backend** recorre el VDT terminado y lo renderiza al formato destino -- elementos HTML sobre un canvas, o eventualmente páginas PDF
+5. Un **backend** recorre el VDT terminado y lo renderiza al formato destino -- un bitmap rasterizado sobre canvas, un árbol DOM de elementos HTML posicionados, o un documento PDF con fuentes incrustadas. El mismo VDT alimenta a los tres; elegir backend es puramente una decisión de salida
 
 
 ## Capa de entrada
@@ -536,6 +536,8 @@ El backend es una sola interfaz que gestiona tanto la medición de texto *como* 
 
 Es una decisión deliberada, y existe por una razón crítica: **la forma en que mides el texto debe coincidir exactamente con la forma en que lo renderizas.** Imagina que el backend de medición usa métricas de fuente del canvas, pero el backend de renderizado usa una librería PDF con tablas de kerning ligeramente diferentes. La composición no coincidirá con la salida. Líneas que el motor midió como ajustadas en 320px podrían desbordarse o quedarse cortas al renderizar. Cada píxel de desviación es una mentira. Al integrar medición y renderizado en una sola interfaz, cada backend garantiza consistencia interna: las métricas de fuente que usa para medir son exactamente las mismas que usa para dibujar.
 
+Por eso el backend de PDF, por ejemplo, no vuelve a medir el texto: consume un VDT ya convergido producido por el backend de medición canvas y traduce sus coordenadas en píxeles a puntos PDF. Las métricas del canvas son la fuente de verdad; PDF es un transporte. Los usuarios de `renderToPdf` (del paquete `postext-pdf`) pasan el mismo VDT que pasarían a `renderToCanvas` o `renderToHtml`, y las tres salidas están garantizadas a coincidir en saltos de línea, alturas de columna y colocación de recursos.
+
 ### Interfaz
 
 ```typescript
@@ -567,7 +569,7 @@ interface MeasuredText {
 }
 ```
 
-### Backends planificados
+### Backends
 
 <table>
   <thead>
@@ -575,21 +577,27 @@ interface MeasuredText {
       <th>Backend</th>
       <th>Medición</th>
       <th>Renderizado</th>
-      <th>Fase</th>
+      <th>Estado</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Canvas / Navegador</strong></td>
+      <td><strong>Canvas</strong></td>
       <td>Pretext (métricas de fuente del canvas)</td>
-      <td>Elementos HTML posicionados o dibujo en canvas</td>
-      <td><strong>Fase 1</strong></td>
+      <td>Dibujo bitmap sobre un <code>HTMLCanvasElement</code> (<code>renderToCanvas</code>, <code>renderPage</code>, <code>renderPageToCanvas</code>)</td>
+      <td><strong>Disponible</strong></td>
+    </tr>
+    <tr>
+      <td><strong>HTML</strong></td>
+      <td>Pretext (las mismas métricas que canvas)</td>
+      <td>Nodos DOM posicionados absolutamente con CSS editorial (<code>renderToHtml</code>, <code>renderToHtmlIndexed</code>)</td>
+      <td><strong>Disponible</strong></td>
     </tr>
     <tr>
       <td><strong>PDF</strong></td>
-      <td>Pretext + métricas de fuente PDF</td>
-      <td>Construcción de páginas PDF (p. ej., pdf-lib)</td>
-      <td>Fase 4</td>
+      <td>Consume el VDT ya medido con Pretext</td>
+      <td>Construcción de páginas PDF mediante pdf-lib con incrustación de fuentes por peso (<code>renderToPdf</code> en <code>postext-pdf</code>)</td>
+      <td><strong>Disponible</strong></td>
     </tr>
     <tr>
       <td><strong>Server-side</strong></td>
@@ -599,6 +607,8 @@ interface MeasuredText {
     </tr>
   </tbody>
 </table>
+
+Los tres backends disponibles consumen el mismo `VDTDocument`. La división entre `postext` (que exporta los backends de canvas y HTML) y `postext-pdf` (que exporta el backend de PDF) es puramente cuestión de dependencias: el camino PDF arrastra `pdf-lib` y `@pdf-lib/fontkit`, y la mayoría de integraciones web no los necesitan. Instala `postext-pdf` solo cuando realmente quieras emitir bytes PDF.
 
 **Restricción de solo navegador:** En la Fase 1, toda la computación de composición ocurre en el lado del cliente, en el navegador. El motor se ejecuta en el hilo principal, con soporte de Web Workers para documentos grandes planificado como optimización futura. Es una decisión de alcance deliberada -- clavar primero la experiencia en el navegador, expandir a otros destinos después.
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-04-13',
+  lastUpdated: '2026-04-20',
   readingTime: '6 min',
   order: 7,
 };
@@ -14,7 +14,7 @@ export const metadata = {
 
 **An interactive playground for the Postext layout engine.**
 
-The Sandbox provides a VS Code-like interface where you can write markdown, adjust layout configuration, and see the results rendered in real time. It is designed for experimentation: tweak typography settings, change column counts, test resource placement strategies, and watch how the engine responds.
+The Sandbox provides a VS Code-like interface where you can write markdown, adjust layout configuration, and see the results rendered in real time through three synchronized output modes — **canvas**, **HTML** and **PDF**. It is designed for experimentation: tweak typography settings, change column counts, test resource placement strategies, and watch how the engine responds.
 
 ## Interface layout
 
@@ -76,7 +76,7 @@ The toolbar is extensible: custom actions can be added for postext-specific micr
 
 ### Main viewport
 
-The right side of the interface displays the rendered output. Three tabs are available:
+The right side of the interface displays the rendered output. Three tabs are available, one per rendering mode — **Canvas**, **HTML** and **PDF**. Switching tabs does not re-run layout: the same VDT feeds every backend, so the content you see is consistent across modes.
 
 #### Canvas tab
 
@@ -103,7 +103,15 @@ Column geometry is driven by the **HTML Viewer** section of the configuration si
 
 #### PDF tab
 
-*Coming in a future version.* Will generate a downloadable PDF of the current document.
+Generates a real PDF of the current document via the `postext-pdf` package and displays it inside an embedded browser PDF viewer. The PDF is rebuilt automatically on first mount and on every subsequent regeneration, using the same VDT that feeds the canvas and HTML tabs — so line breaks, page boundaries, and resource placement match pixel-for-pixel across the three backends.
+
+A floating toolbar at the bottom-right of the viewport provides:
+
+- **Regenerate** (`RefreshCw` icon) — Rebuilds the PDF from the current markdown and configuration. Useful after changing a setting that does not auto-trigger a rebuild, or when fonts have finished loading.
+- **Download** (`Download` icon) — Saves the current PDF to disk. The filename is derived from the document's first H1 heading (falling back to `document.pdf`).
+- **Print** (`Printer` icon) — Opens the browser's print dialog against the embedded PDF viewer, which in most browsers lets you either print or save as PDF again.
+
+Under the hood the sandbox uses a `createPdfFontProvider()` helper that fetches per-weight static WOFF2 files from the Fontsource jsdelivr CDN, decompresses them to TTF in the browser, and hands the bytes to `pdf-lib` via `renderToPdf`. Per-weight static fonts (rather than a single variable font) are required so that bold text actually embeds at the bold weight. See [Generating PDFs](/en/docs/configuration#generating-pdfs) for the same pattern used outside the sandbox.
 
 ## Persistence
 
@@ -184,7 +192,6 @@ The package uses Tailwind CSS utility classes that reference CSS custom properti
 The following features are planned for future versions:
 
 - **Resource management** — Upload, manage, and reference images, tables, and figures from the markdown editor
-- **PDF export** — Generate downloadable PDFs directly from the sandbox
 - **Collaborative editing** — Share sandbox sessions via URL
 - **Preset configurations** — Quick-start templates for common layout scenarios (newspaper, academic paper, book chapter)
 - **Custom micro-format toolbar extensions** — Add buttons for postext-specific enriched markdown syntax as the specification evolves

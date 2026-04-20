@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introduction',
   description: 'What Postext is, why it exists, and the problem it solves',
   lang: 'en',
-  lastUpdated: '2026-04-13',
+  lastUpdated: '2026-04-20',
   readingTime: '12 min',
   order: 1,
 };
@@ -135,7 +135,8 @@ what position, flowing around which resources, obeying which typographic rules.
 
 ```ts
 import { prepare, layout } from '@chenglou/pretext';
-import { buildDocument, renderToCanvas } from 'postext';
+import { buildDocument, renderToCanvas, renderToHtml } from 'postext';
+import { renderToPdf } from 'postext-pdf';
 
 // pretext: measure (the "pre" work)
 const prepared = prepare(paragraphText, '16px/1.5 Inter');
@@ -147,8 +148,10 @@ const vdt = buildDocument(content, config);
 // => A complete Virtual Document Tree with every paragraph,
 //     heading, and resource placed at exact coordinates.
 
-// render to canvas for pixel-accurate preview
-renderToCanvas(vdt, canvasElement);
+// One VDT, three output modes:
+const canvases = renderToCanvas(vdt);                       // pixel-accurate bitmap per page
+const html = renderToHtml(vdt);                             // selectable DOM for the web
+const pdfBytes = await renderToPdf(vdt, { fontProvider });  // print-ready PDF
 ```
 
 Pretext gives you the measurements. Postext gives you the layout.
@@ -172,9 +175,11 @@ The process has three stages:
    decision is driven by configuration — you control the rules, the engine applies them.
 
 3. **You get a complete layout.** Precise coordinates and dimensions for every element on every
-   page. Renderers translate this geometry to the target format: HTML canvas for pixel-accurate
-   preview, HTML and CSS for the web, PDF for print. The same content, the same rules, multiple
-   outputs.
+   page. Renderers translate this geometry to the target format — **canvas** for a pixel-accurate
+   bitmap preview (`renderToCanvas`, `renderPage`), **HTML** for selectable, resize-aware typography
+   on the web (`renderToHtml`, `renderToHtmlIndexed`), and **PDF** for print-ready output with
+   embedded fonts (`renderToPdf`, from the `postext-pdf` package). The same content, the same
+   rules, three interchangeable outputs.
 
 <Illustration name="LayoutProcess" data='{"title": "Three-stage layout process", "desc": "Enriched markdown plus config enters the engine, which runs seven layout passes with Pretext measurement inside, and outputs rendered HTML or PDF.", "caption": "Content in, geometry out — then rendered to the target format.", "inputTitle": "Enriched Markdown", "inputSubtitle": "+ config", "parse": "parse", "engineTitle": "Postext engine", "engineSub1": "Pretext measurement inside", "engineSub2": "7 layout passes", "render": "render", "outputTitle": "HTML / PDF", "outputSubtitle": "rendered output"}' />
 
