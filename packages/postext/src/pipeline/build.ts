@@ -412,9 +412,39 @@ export function buildDocument(
             advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
             continue;
           }
-          pendingSpacing = 0;
-          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
-          continue;
+          // Can't cleanly split the colon line off — would create a widow.
+          // Pushing the whole paragraph keeps the colon+list together, but
+          // strands any trailing heading(s) as last-in-column orphans. Roll
+          // those along with the paragraph when there's non-heading content
+          // before them; if the column contains only heading(s) (fresh after
+          // a prior rollback), rolling back again would loop — fall through
+          // and place the paragraph here, trading the heading-orphan for a
+          // softer colon/list separation.
+          let headingRunCount = 0;
+          if (resolved.headings.keepWithNext) {
+            for (let j = curCol.blocks.length - 1; j >= 0; j--) {
+              if (curCol.blocks[j]!.type === 'heading') headingRunCount++;
+              else break;
+            }
+          }
+          if (headingRunCount > 0 && headingRunCount < curCol.blocks.length) {
+            const popped = curCol.blocks.splice(curCol.blocks.length - headingRunCount);
+            for (const p of popped) {
+              const idx = doc.blocks.indexOf(p);
+              if (idx !== -1) doc.blocks.splice(idx, 1);
+              curCol.availableHeight += p.bbox.height;
+            }
+            blockIdx -= headingRunCount + 1;
+            pendingSpacing = 0;
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            break;
+          }
+          if (headingRunCount === 0) {
+            pendingSpacing = 0;
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            continue;
+          }
+          // headingRunCount === curCol.blocks.length: fall through to place.
         }
       }
 

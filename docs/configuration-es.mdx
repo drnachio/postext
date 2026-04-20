@@ -399,13 +399,13 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
     <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>1.7</code></td>
+      <td><code>2</code></td>
       <td>Límite superior del espaciado entre palabras en texto justificado, expresado como multiplicador del ancho del espacio normal. Las líneas que superan esta proporción se consideran "flojas".</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>0.5</code></td>
+      <td><code>0.6</code></td>
       <td>Límite inferior del espaciado entre palabras en texto justificado, como multiplicador del ancho del espacio normal.</td>
     </tr>
     <tr>
@@ -546,7 +546,7 @@ Más allá de la separación silábica y los límites de espaciado, la configura
       <td><code>keepColonWithList</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Cuando un párrafo termina con dos puntos que introducen directamente una lista, mantiene la línea de los dos puntos unida a la lista: si colocar el párrafo no deja sitio para el primer elemento de la lista en la misma columna/página, la última línea (o el párrafo entero, si tiene una sola línea) se mueve a la siguiente columna junto con la lista.</td>
+      <td>Cuando un párrafo termina con dos puntos que introducen directamente una lista, mantiene la línea de los dos puntos unida a la lista: si colocar el párrafo no deja sitio para el primer elemento de la lista en la misma columna/página, la última línea (o el párrafo entero, si tiene una sola línea) se mueve a la siguiente columna junto con la lista. Cuando esta regla tenga que empujar el párrafo completo y justo antes haya una secuencia de títulos en la columna, esos títulos también se arrastran hacia adelante para que <code>headings.keepWithNext</code> siga cumpliéndose.</td>
     </tr>
   </tbody>
 </table>
@@ -618,7 +618,7 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
       <td><code>keepWithNext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Cuando es <code>true</code>, un encabezado nunca se coloca como último elemento de una columna o página. Si el siguiente bloque no tuviera al menos una línea de hueco tras el encabezado, el encabezado se empuja hacia delante para quedar unido a su texto.</td>
+      <td>Cuando es <code>true</code>, un encabezado nunca se coloca como último elemento de una columna o página. Si el siguiente bloque no tuviera al menos <code>bodyText.widowMinLines</code> líneas de hueco tras el encabezado (o una línea cuando <code>bodyText.avoidWidows</code> es <code>false</code>), el encabezado se empuja hacia delante para quedar unido a su texto. Interactúa con <code>bodyText.keepColonWithList</code>: si esa regla tiene que empujar el párrafo de dos puntos por completo, los encabezados que lo preceden en la columna viajan con él en vez de quedar varados.</td>
     </tr>
   </tbody>
 </table>

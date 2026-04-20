@@ -239,13 +239,13 @@ El modelo de cola le da al motor límites explícitos sobre cuánto pueden estir
   <tbody>
     <tr>
       <td><code>maxWordSpacing</code></td>
-      <td><code>1.7</code></td>
-      <td>Límite superior del espaciado entre palabras, como multiplicador del ancho normal del espacio. Con el valor por defecto, los espacios pueden estirarse hasta el 170% de su ancho natural.</td>
+      <td><code>2</code></td>
+      <td>Límite superior del espaciado entre palabras, como multiplicador del ancho normal del espacio. Con el valor por defecto, los espacios pueden estirarse hasta el 200% de su ancho natural.</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
-      <td><code>0.5</code></td>
-      <td>Límite inferior del espaciado entre palabras, como multiplicador del ancho normal del espacio. Con el valor por defecto, los espacios pueden comprimirse hasta el 50% de su ancho natural.</td>
+      <td><code>0.6</code></td>
+      <td>Límite inferior del espaciado entre palabras, como multiplicador del ancho normal del espacio. Con el valor por defecto, los espacios pueden comprimirse hasta el 60% de su ancho natural.</td>
     </tr>
   </tbody>
 </table>
@@ -257,13 +257,13 @@ estiramientoPorEspacio = anchoNormalEspacio × (maxWordSpacing - 1)
 compresiónPorEspacio   = anchoNormalEspacio × (1 - minWordSpacing)
 ```
 
-Con los valores por defecto (1.7 / 0.5), si el ancho normal del espacio es 4 px:
-- Cada espacio puede estirarse 2.8 px (de 4 px a 6.8 px)
-- Cada espacio puede comprimirse 2 px (de 4 px a 2 px)
+Con los valores por defecto (2 / 0.6), si el ancho normal del espacio es 4 px:
+- Cada espacio puede estirarse 4 px (de 4 px a 8 px)
+- Cada espacio puede comprimirse 1.6 px (de 4 px a 2.4 px)
 
-**Límites más estrictos** (por ej., `maxWordSpacing: 1.2`) producen un espaciado más uniforme pero dan menos margen al algoritmo, lo que puede resultar en más separación silábica o, en casos extremos, desbordamiento. **Límites más amplios** (por ej., `maxWordSpacing: 2.0`) dan más flexibilidad al algoritmo pero permiten un espaciado visiblemente desigual en algunas líneas.
+**Límites más estrictos** (por ej., `maxWordSpacing: 1.2`) producen un espaciado más uniforme pero dan menos margen al algoritmo, lo que puede resultar en más separación silábica o, en casos extremos, desbordamiento. **Límites más amplios** (por ej., `maxWordSpacing: 2.5`) dan más flexibilidad al algoritmo pero permiten un espaciado visiblemente desigual en algunas líneas.
 
-Los valores por defecto de 1.7 y 0.5 priorizan la flexibilidad del algoritmo — dan a Knuth-Plass margen suficiente para evitar desbordamientos, separaciones silábicas y *runts* en columnas estrechas, manteniéndose dentro del rango que la literatura tipográfica considera aceptable.
+Los valores por defecto de 2 y 0.6 priorizan la flexibilidad del algoritmo — dan a Knuth-Plass margen suficiente para evitar desbordamientos, separaciones silábicas y *runts* en columnas estrechas, manteniéndose dentro del rango que la literatura tipográfica considera aceptable.
 
 ### Ruptura óptima vs. voraz
 
@@ -356,7 +356,7 @@ Cuando activas el resaltado de líneas flojas y ves bandas rojas en ciertas lín
     </tr>
     <tr>
       <td>Los límites de espaciado son demasiado estrictos</td>
-      <td>Aumenta <code>maxWordSpacing</code> ligeramente (por ej., de 1.7 a 2.0). Esto le da más espacio al algoritmo.</td>
+      <td>Aumenta <code>maxWordSpacing</code> ligeramente (por ej., de 2 a 2.5). Esto le da más espacio al algoritmo.</td>
     </tr>
     <tr>
       <td>El idioma tiene palabras compuestas largas (por ej., alemán)</td>
@@ -389,8 +389,8 @@ const vdt = buildDocument(content, {
     },
 
     // Límites de espaciado entre palabras (multiplicadores del ancho normal)
-    maxWordSpacing: 1.7,   // los espacios se estiran hasta el 170%
-    minWordSpacing: 0.5,   // los espacios se comprimen hasta el 50%
+    maxWordSpacing: 2,     // los espacios se estiran hasta el 200%
+    minWordSpacing: 0.6,   // los espacios se comprimen hasta el 60%
   },
 
   // Depuración: resaltar líneas con espaciado excesivo
