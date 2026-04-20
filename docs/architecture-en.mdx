@@ -426,9 +426,9 @@ All three are handled by injecting **demerits** into the Knuth-Plass line-breaki
 
 Concretely, for every candidate break node in a paragraph:
 
-- If choosing this break would leave fewer than `orphanMinLines` lines at the top of the next column, add `orphanPenalty` (default 3000) to the node's demerits.
-- If choosing this break would leave fewer than `widowMinLines` lines at the bottom of the current column, add `widowPenalty` (default 3000).
-- If the last line produced from this break would be shorter than `runtMinCharacters × normalSpaceWidth`, add `runtPenalty` (default 1500 -- softer because runts are aesthetic, not structural).
+- If choosing this break would leave fewer than `orphanMinLines` lines at the top of the next column, add `orphanPenalty` (default 1000) to the node's demerits.
+- If choosing this break would leave fewer than `widowMinLines` lines at the bottom of the current column, add `widowPenalty` (default 1000).
+- If the last line produced from this break would be shorter than `runtMinCharacters × normalSpaceWidth`, inject `runtPenalty` (default 1000) as equivalent badness into the squared demerit formula -- so it competes on the same scale as line badness (which saturates at 10000) rather than being dwarfed by it.
 
 These penalties sit alongside the usual demerits -- badness (squared adjustment ratio), hyphenation cost, and fitness-class mismatch -- in a single global optimisation. The algorithm is free to accept one of them if the alternative is worse (a paragraph with no legal break that satisfies every rule), but it will almost always find a break set that avoids them. List items opt into the same protection via `avoidOrphansInLists`, `avoidWidowsInLists`, `avoidRuntsInLists` (all `true` by default).
 

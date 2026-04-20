@@ -426,9 +426,9 @@ Los tres se tratan inyectando **demerits** (penalizaciones) en el algoritmo de d
 
 Concretamente, para cada nodo de corte candidato en un párrafo:
 
-- Si elegir este corte dejaría menos de `orphanMinLines` líneas en la parte superior de la siguiente columna, se suman `orphanPenalty` (valor por defecto 3000) a los demerits del nodo.
-- Si elegir este corte dejaría menos de `widowMinLines` líneas al final de la columna actual, se suman `widowPenalty` (valor por defecto 3000).
-- Si la última línea resultante de este corte fuera más corta que `runtMinCharacters × normalSpaceWidth`, se suman `runtPenalty` (valor por defecto 1500 -- más suave porque los *runts* son estéticos, no estructurales).
+- Si elegir este corte dejaría menos de `orphanMinLines` líneas en la parte superior de la siguiente columna, se suman `orphanPenalty` (valor por defecto 1000) a los demerits del nodo.
+- Si elegir este corte dejaría menos de `widowMinLines` líneas al final de la columna actual, se suman `widowPenalty` (valor por defecto 1000).
+- Si la última línea resultante de este corte fuera más corta que `runtMinCharacters × normalSpaceWidth`, se inyecta `runtPenalty` (valor por defecto 1000) como *badness* equivalente dentro de la fórmula cuadrática de demerits -- así compite en la misma escala que el *badness* de línea (que satura en 10000) en vez de quedar aplastado por él.
 
 Estas penalizaciones conviven con los demerits habituales -- *badness* (razón de ajuste al cuadrado), coste de separación silábica y desajuste de clase de *fitness* -- en una única optimización global. El algoritmo puede aceptar alguna de ellas si la alternativa es peor (un párrafo sin un corte legal que cumpla todas las reglas), pero casi siempre encontrará un conjunto de cortes que las evite. Los ítems de lista se apuntan a la misma protección mediante `avoidOrphansInLists`, `avoidWidowsInLists`, `avoidRuntsInLists` (todos a `true` por defecto).
 
