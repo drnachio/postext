@@ -208,10 +208,6 @@ function renderPageDetailed(page: VDTPage, background: string): PageRenderResult
   return { outerHtml, innerHtml, blocks };
 }
 
-function renderPage(page: VDTPage, background: string): string {
-  return renderPageDetailed(page, background).outerHtml;
-}
-
 export interface HtmlRenderIndexPage {
   index: number;
   width: number;
