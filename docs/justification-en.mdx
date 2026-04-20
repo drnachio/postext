@@ -239,13 +239,13 @@ The glue model gives the engine explicit bounds on how much inter-word spaces ca
   <tbody>
     <tr>
       <td><code>maxWordSpacing</code></td>
-      <td><code>1.7</code></td>
-      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 170% of their natural width.</td>
+      <td><code>2</code></td>
+      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 200% of their natural width.</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
-      <td><code>0.5</code></td>
-      <td>Lower bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can shrink down to 50% of their natural width.</td>
+      <td><code>0.6</code></td>
+      <td>Lower bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can shrink down to 60% of their natural width.</td>
     </tr>
   </tbody>
 </table>
@@ -257,13 +257,13 @@ stretchPerSpace = normalSpaceWidth × (maxWordSpacing - 1)
 shrinkPerSpace  = normalSpaceWidth × (1 - minWordSpacing)
 ```
 
-At the defaults (1.7 / 0.5), if the normal space width is 4 px:
-- Each space can stretch by 2.8 px (from 4 px to 6.8 px)
-- Each space can shrink by 2 px (from 4 px to 2 px)
+At the defaults (2 / 0.6), if the normal space width is 4 px:
+- Each space can stretch by 4 px (from 4 px to 8 px)
+- Each space can shrink by 1.6 px (from 4 px to 2.4 px)
 
-**Tighter bounds** (e.g., `maxWordSpacing: 1.2`) produce more uniform spacing but give the algorithm less room to maneuver, which may result in more hyphenation or, in extreme cases, overflow. **Looser bounds** (e.g., `maxWordSpacing: 2.0`) give the algorithm more flexibility but allow visibly uneven spacing on some lines.
+**Tighter bounds** (e.g., `maxWordSpacing: 1.2`) produce more uniform spacing but give the algorithm less room to maneuver, which may result in more hyphenation or, in extreme cases, overflow. **Looser bounds** (e.g., `maxWordSpacing: 2.5`) give the algorithm more flexibility but allow visibly uneven spacing on some lines.
 
-The defaults of 1.7 and 0.5 favor the algorithm's flexibility — giving Knuth-Plass enough room to avoid overflow, hyphenation, and runts across narrow columns, while still being well within ranges typographic literature considers acceptable.
+The defaults of 2 and 0.6 favor the algorithm's flexibility — giving Knuth-Plass enough room to avoid overflow, hyphenation, and runts across narrow columns, while still being well within ranges typographic literature considers acceptable.
 
 ### Optimal vs. Greedy Line Breaking
 
@@ -356,7 +356,7 @@ When you enable loose-line highlighting and see red bands across certain lines, 
     </tr>
     <tr>
       <td>Word spacing bounds are too tight</td>
-      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 1.7 to 2.0). This gives the algorithm more room.</td>
+      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 2 to 2.5). This gives the algorithm more room.</td>
     </tr>
     <tr>
       <td>Language has long compound words (e.g., German)</td>
@@ -389,8 +389,8 @@ const vdt = buildDocument(content, {
     },
 
     // Word spacing bounds (multipliers of normal space width)
-    maxWordSpacing: 1.7,   // spaces stretch up to 170%
-    minWordSpacing: 0.5,   // spaces shrink down to 50%
+    maxWordSpacing: 2,     // spaces stretch up to 200%
+    minWordSpacing: 0.6,   // spaces shrink down to 60%
   },
 
   // Debug: highlight lines with excessive spacing
