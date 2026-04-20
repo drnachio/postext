@@ -12,7 +12,17 @@ export interface SandboxLabels {
   // Placeholders
   comingSoon: string;
   resourcesComingSoonDescription: string;
-  pdfComingSoonDescription: string;
+
+  // PDF viewport
+  pdfToolbar: string;
+  pdfRegenerate: string;
+  pdfRegenerateTooltip: string;
+  pdfDownload: string;
+  pdfDownloadTooltip: string;
+  pdfPrint: string;
+  pdfPrintTooltip: string;
+  pdfGenerating: string;
+  pdfError: string;
 
   // Page section
   page: string;

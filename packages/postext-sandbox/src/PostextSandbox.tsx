@@ -13,7 +13,7 @@ import { ResizableHandle } from './panels/ResizableHandle';
 import { ViewportTabs } from './viewport/ViewportTabs';
 import { CanvasViewport } from './viewport/CanvasViewport';
 import { HtmlViewport } from './viewport/HtmlViewport';
-import { PdfPreview } from './viewport/PdfPreview';
+import { PdfViewport } from './viewport/PdfViewport';
 
 function SandboxLayout({
   themeToggle,
@@ -108,7 +108,7 @@ function SandboxLayout({
       case 'html':
         return <HtmlViewport />;
       case 'pdf':
-        return <PdfPreview />;
+        return <PdfViewport />;
       default:
         return null;
     }
