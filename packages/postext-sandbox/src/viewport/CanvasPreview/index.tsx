@@ -332,7 +332,6 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     const padding = 32;
     const gap = 24;
     const firstPage = doc.pages[0]!;
-    const aspectRatio = firstPage.height / firstPage.width;
     const isSpread = viewMode === 'spread';
 
     const { displayWidth, displayHeight } = computeDisplaySize(containerW, containerH);
