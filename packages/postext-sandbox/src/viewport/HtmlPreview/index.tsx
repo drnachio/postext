@@ -3,214 +3,36 @@
 import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import {
   renderToHtmlIndexed,
-  buildFontString,
-  measureGlyphWidth,
   dimensionToPx,
   resolveHtmlViewerConfig,
-  resolveHeadingsConfig,
   resolveDebugConfig,
 } from 'postext';
 import type {
-  PostextConfig,
-  HyphenationLocale,
   VDTDocument,
   HtmlRenderIndex,
 } from 'postext';
-import { useSandbox } from '../context/SandboxContext';
-import { useShadowDom } from '../hooks/useShadowDom';
-import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../controls/fontLoader';
-import { useLayoutWorker } from '../worker/useLayoutWorker';
-import { createOverlaySvg } from './CanvasPreview/dom';
-import { drawOverlay, drawBaselines } from './CanvasPreview/overlay';
-import { attachSlotClickHandler } from './CanvasPreview/interaction';
-
-type ColumnMode = 'single' | 'multi';
+import { useSandbox } from '../../context/SandboxContext';
+import { useShadowDom } from '../../hooks/useShadowDom';
+import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
+import { useLayoutWorker } from '../../worker/useLayoutWorker';
+import { createOverlaySvg } from '../CanvasPreview/dom';
+import { drawOverlay, drawBaselines } from '../CanvasPreview/overlay';
+import { attachSlotClickHandler } from '../CanvasPreview/interaction';
+import {
+  type ColumnMode,
+  HTML_DPI,
+  PADDING_PX,
+  RESIZE_DEBOUNCE_MS,
+  SHADOW_CSS,
+  buildColumnWidthSample,
+  composePageBackground,
+} from './constants';
+import { buildHtmlConfigOverride, measureColumnWidthPx } from './configOverride';
+import { cssEscape, measureBodyBaselineOffset } from './baseline';
 
 interface HtmlPreviewProps {
   fontScale: number;
   columnMode: ColumnMode;
-}
-
-const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
-  en: 'en-us', es: 'es', fr: 'fr', de: 'de', it: 'it', pt: 'pt', ca: 'ca', nl: 'nl',
-};
-
-// Prose sample used to measure the target column width for a given body font.
-// Proportional fonts make "N × average glyph width" unreliable, so we measure
-// actual representative text. The sample is sliced / padded to the configured
-// maxCharsPerLine.
-const COLUMN_WIDTH_BASE_SAMPLE =
-  'The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump.';
-
-function buildColumnWidthSample(chars: number): string {
-  const n = Math.max(1, Math.floor(chars));
-  let s = COLUMN_WIDTH_BASE_SAMPLE;
-  while (s.length < n) s += ' ' + COLUMN_WIDTH_BASE_SAMPLE;
-  return s.slice(0, n);
-}
-
-// Debounce delay for resize-driven relayouts (ms).
-const RESIZE_DEBOUNCE_MS = 100;
-
-// Screen-friendly DPI. At 144 DPI, a default 8pt body size resolves to 16px,
-// matching the conventional web body size at fontScale=1.
-const HTML_DPI = 144;
-
-const PADDING_PX = 24;
-
-const SHADOW_CSS = `
-  :host {
-    display: block;
-    height: 100%;
-    width: 100%;
-  }
-  .pt-scroll {
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    background: #ffffff;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  .pt-scroll[data-mode='single'] { overflow-y: auto; overflow-x: hidden; }
-  .pt-scroll[data-mode='multi']  {
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: 24px;
-  }
-  .pt-scroll[data-mode='multi'] .pt-page { scroll-snap-align: start; }
-  .pt-doc { min-height: 100%; }
-  .pt-page { cursor: text; }
-  @keyframes cursor-blink {
-    0%, 49% { opacity: 1; }
-    50%, 100% { opacity: 0; }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .cursor-blink {
-      animation: cursor-blink 1.06s steps(1, end) infinite;
-    }
-  }
-`;
-
-/**
- * Compose a CSS background value for the page reading area. A transparent
- * (or undefined) page colour means "no paper tint" → pure white. Any other
- * colour is layered over white via linear-gradient so that semi-transparent
- * values (e.g. rgba / 8-digit hex) composite correctly instead of letting
- * the host's surface colour bleed through.
- */
-function composePageBackground(hex: string | undefined | null): string {
-  if (!hex || hex === 'transparent') return '#ffffff';
-  return `linear-gradient(${hex}, ${hex}), #ffffff`;
-}
-
-function buildHtmlConfigOverride(
-  base: PostextConfig,
-  opts: {
-    fontScale: number;
-    columnMode: ColumnMode;
-    columnWidthPx: number;
-    viewportHeightPx: number;
-    locale: string;
-    optimalLineBreaking: boolean;
-  },
-): PostextConfig {
-  const {
-    fontScale,
-    columnMode,
-    columnWidthPx,
-    viewportHeightPx,
-    locale,
-    optimalLineBreaking,
-  } = opts;
-
-  // Body font-size override — screen rendering uses pt at HTML_DPI so the
-  // default 8pt ≈ 16px at fontScale=1.
-  const baseFontSize = base.bodyText?.fontSize ?? { value: 8, unit: 'pt' as const };
-  const scaledFontSize = { value: baseFontSize.value * fontScale, unit: baseFontSize.unit };
-
-  const hypLocale =
-    base.bodyText?.hyphenation?.locale ?? LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
-
-  // Single-column mode: disable widow/orphan/runt avoidance (no column breaks
-  // to protect — the whole document lives on one tall, scrollable page).
-  const disableParagraphRules = columnMode === 'single';
-
-  // Page height: single-column mode needs one very tall page so content never
-  // flows to a second. Multi-column mode uses the viewport inner height, so
-  // each VDT "page" = one column and horizontal stacking produces the scroll.
-  const pageHeightPx =
-    columnMode === 'single'
-      ? Math.max(viewportHeightPx * 20, 200_000)
-      : Math.max(viewportHeightPx - PADDING_PX * 2, 400);
-
-  // Headings use absolute pt sizes, so they don't scale through em cascades.
-  // Resolve the user's partial headings config and emit explicit per-level
-  // overrides with scaled fontSize so fontScale acts as a uniform multiplier.
-  const resolvedHeadings = resolveHeadingsConfig(base.headings);
-  const scaledHeadingLevels = resolvedHeadings.levels.map((lvl) => ({
-    ...lvl,
-    fontSize: { value: lvl.fontSize.value * fontScale, unit: lvl.fontSize.unit },
-  }));
-
-  return {
-    ...base,
-    page: {
-      ...base.page,
-      dpi: HTML_DPI,
-      width: { value: columnWidthPx, unit: 'px' },
-      height: { value: pageHeightPx, unit: 'px' },
-      margins: {
-        top: { value: 0, unit: 'px' },
-        bottom: { value: 0, unit: 'px' },
-        left: { value: 0, unit: 'px' },
-        right: { value: 0, unit: 'px' },
-      },
-      cutLines: { ...(base.page?.cutLines ?? {}), enabled: false },
-      // baselineGrid.enabled is a pure display flag (layout uses the grid
-      // value regardless of enabled), so let the user's setting flow through
-      // to drive the SVG overlay in HtmlPreview.
-      backgroundColor: { hex: 'transparent', model: 'hex' },
-    },
-    layout: {
-      ...base.layout,
-      layoutType: 'single',
-    },
-    bodyText: {
-      ...base.bodyText,
-      fontSize: scaledFontSize,
-      optimalLineBreaking,
-      hyphenation: {
-        ...(base.bodyText?.hyphenation ?? {}),
-        locale: hypLocale,
-      },
-      ...(disableParagraphRules
-        ? {
-            avoidOrphans: false,
-            avoidWidows: false,
-            avoidRunts: false,
-            avoidOrphansInLists: false,
-            avoidWidowsInLists: false,
-            avoidRuntsInLists: false,
-          }
-        : {}),
-    },
-    headings: {
-      ...base.headings,
-      levels: scaledHeadingLevels,
-    },
-  };
-}
-
-function measureColumnWidthPx(
-  sample: string,
-  fontFamily: string,
-  fontSizePx: number,
-  fontWeight: number,
-): number {
-  const font = buildFontString(fontFamily, fontSizePx, String(fontWeight), 'normal');
-  return measureGlyphWidth(sample, font);
 }
 
 export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
@@ -570,49 +392,6 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
       if ((err as { name?: string } | null)?.name === 'AbortError') return;
       console.error('[HtmlPreview] Layout error:', err);
     }
-  }
-
-  // Minimal CSS.escape fallback — block IDs only use [a-zA-Z0-9-].
-  function cssEscape(s: string): string {
-    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
-      return CSS.escape(s);
-    }
-    return s.replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`);
-  }
-
-  /**
-   * Measure the actual pixel offset of the text baseline within a `.pt-line`
-   * cell. The VDT's own `line.baseline` is `lineY + 0.8 * lineHeight`, which
-   * matches how the canvas backend paints glyphs but not how the browser
-   * positions inline text inside a line-box (the result depends on the
-   * font's ascent metric and the default `line-height: normal`). We append a
-   * zero-sized inline-block to a body paragraph's line — its `bottom` aligns
-   * with the line-box baseline — and take the delta against the line's top.
-   * Returns null when no body line is available (e.g. empty document), in
-   * which case callers fall back to the 0.8 approximation.
-   */
-  function measureBodyBaselineOffset(
-    scroll: HTMLElement,
-    doc: VDTDocument,
-  ): number | null {
-    // Prefer a paragraph block so headings / list bullets don't skew the
-    // measurement — the grid is sized to the body line-height.
-    const bodyBlock = doc.blocks.find(
-      (b) => b.type === 'paragraph' && b.lines.length > 0,
-    );
-    if (!bodyBlock) return null;
-    const selector = `.pt-line[data-block="${cssEscape(bodyBlock.id)}"]`;
-    const lineEl = scroll.querySelector<HTMLElement>(selector);
-    if (!lineEl) return null;
-    const marker = document.createElement('span');
-    marker.style.cssText =
-      'display:inline-block;width:0;height:0;visibility:hidden;vertical-align:baseline;';
-    lineEl.appendChild(marker);
-    const lineRect = lineEl.getBoundingClientRect();
-    const markerRect = marker.getBoundingClientRect();
-    lineEl.removeChild(marker);
-    if (lineRect.height === 0) return null;
-    return markerRect.bottom - lineRect.top;
   }
 
   // Relayout on any real input change.

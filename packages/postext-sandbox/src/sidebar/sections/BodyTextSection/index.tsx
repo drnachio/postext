@@ -1,9 +1,9 @@
 'use client';
 
 import { memo } from 'react';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
 import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
-import type { BodyTextConfig, HyphenationConfig, HyphenationLocale } from 'postext';
+import type { BodyTextConfig, HyphenationConfig } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -12,24 +12,10 @@ import {
   NumberInput,
   SelectInput,
   ToggleSwitch,
-  NestedGroup,
-} from '../../controls';
-import type { DimensionUnit } from 'postext';
-
-const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
-  en: 'en-us',
-  es: 'es',
-  fr: 'fr',
-  de: 'de',
-  it: 'it',
-  pt: 'pt',
-  ca: 'ca',
-  nl: 'nl',
-};
-
-const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
-const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
-const INDENT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+} from '../../../controls';
+import { LOCALE_TO_HYPHENATION, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
+import { JustificationSubsection } from './JustificationSubsection';
+import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -126,17 +112,6 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.bodyTextAlignLeft },
     { value: 'justify', label: labels.bodyTextAlignJustify },
-  ];
-
-  const LOCALE_OPTIONS = [
-    { value: 'en-us', label: 'English' },
-    { value: 'es', label: 'Español' },
-    { value: 'fr', label: 'Français' },
-    { value: 'de', label: 'Deutsch' },
-    { value: 'it', label: 'Italiano' },
-    { value: 'pt', label: 'Português' },
-    { value: 'ca', label: 'Català' },
-    { value: 'nl', label: 'Nederlands' },
   ];
 
   return (
@@ -285,71 +260,20 @@ export const BodyTextSection = memo(function BodyTextSection() {
       />
 
       {bodyText.textAlign === 'justify' && (
-        <NestedGroup>
-          <ToggleSwitch
-            label={labels.bodyHyphenation}
-            checked={bodyText.hyphenation.enabled}
-            onChange={(enabled) => updateHyphenation({ enabled })}
-            tooltip={labels.bodyHyphenationTooltip}
-            isDefault={isHyphenationEnabledDefault}
-            onReset={() => {
-              if (!raw?.hyphenation) return;
-              const next = { ...raw.hyphenation };
-              delete next.enabled;
-              updateBodyText({ hyphenation: Object.keys(next).length > 0 ? next : undefined });
-            }}
-          />
-
-          {bodyText.hyphenation.enabled && (
-            <SelectInput
-              label={labels.bodyHyphenationLocale}
-              value={effectiveHyphenationLocale}
-              options={LOCALE_OPTIONS}
-              onChange={(locale) => updateHyphenation({ locale: locale as HyphenationConfig['locale'] })}
-              tooltip={labels.bodyHyphenationLocaleTooltip}
-              isDefault={isHyphenationLocaleDefault}
-              onReset={() => {
-                if (!raw?.hyphenation) return;
-                const next = { ...raw.hyphenation };
-                delete next.locale;
-                updateBodyText({ hyphenation: Object.keys(next).length > 0 ? next : undefined });
-              }}
-            />
-          )}
-
-          <NumberInput
-            label={labels.bodyMaxWordSpacing}
-            value={bodyText.maxWordSpacing}
-            onChange={(v) => updateBodyText({ maxWordSpacing: v })}
-            min={1}
-            max={3}
-            step={0.05}
-            tooltip={labels.bodyMaxWordSpacingTooltip}
-            isDefault={isMaxWordSpacingDefault}
-            onReset={() => resetField('maxWordSpacing')}
-          />
-
-          <NumberInput
-            label={labels.bodyMinWordSpacing}
-            value={bodyText.minWordSpacing}
-            onChange={(v) => updateBodyText({ minWordSpacing: v })}
-            min={0.5}
-            max={1}
-            step={0.05}
-            tooltip={labels.bodyMinWordSpacingTooltip}
-            isDefault={isMinWordSpacingDefault}
-            onReset={() => resetField('minWordSpacing')}
-          />
-
-          <ToggleSwitch
-            label={labels.bodyOptimalLineBreaking}
-            checked={bodyText.optimalLineBreaking}
-            onChange={(checked) => updateBodyText({ optimalLineBreaking: checked })}
-            tooltip={labels.bodyOptimalLineBreakingTooltip}
-            isDefault={isOptimalLineBreakingDefault}
-            onReset={() => resetField('optimalLineBreaking')}
-          />
-        </NestedGroup>
+        <JustificationSubsection
+          bodyText={bodyText}
+          raw={raw}
+          effectiveHyphenationLocale={effectiveHyphenationLocale}
+          isHyphenationEnabledDefault={isHyphenationEnabledDefault}
+          isHyphenationLocaleDefault={isHyphenationLocaleDefault}
+          isMaxWordSpacingDefault={isMaxWordSpacingDefault}
+          isMinWordSpacingDefault={isMinWordSpacingDefault}
+          isOptimalLineBreakingDefault={isOptimalLineBreakingDefault}
+          updateBodyText={updateBodyText}
+          updateHyphenation={updateHyphenation}
+          resetField={resetField}
+          labels={labels}
+        />
       )}
 
       <ToggleSwitch
@@ -362,38 +286,15 @@ export const BodyTextSection = memo(function BodyTextSection() {
       />
 
       {bodyText.avoidOrphans && (
-        <NestedGroup>
-          <NumberInput
-            label={labels.bodyOrphanMinLines}
-            value={bodyText.orphanMinLines}
-            onChange={(v) => updateBodyText({ orphanMinLines: v })}
-            min={1}
-            max={5}
-            step={1}
-            tooltip={labels.bodyOrphanMinLinesTooltip}
-            isDefault={isOrphanMinLinesDefault}
-            onReset={() => resetField('orphanMinLines')}
-          />
-          <NumberInput
-            label={labels.bodyOrphanPenalty}
-            value={bodyText.orphanPenalty}
-            onChange={(v) => updateBodyText({ orphanPenalty: v })}
-            min={0}
-            max={10000}
-            step={100}
-            tooltip={labels.bodyOrphanPenaltyTooltip}
-            isDefault={isOrphanPenaltyDefault}
-            onReset={() => resetField('orphanPenalty')}
-          />
-          <ToggleSwitch
-            label={labels.bodyAvoidOrphansInLists}
-            checked={bodyText.avoidOrphansInLists}
-            onChange={(checked) => updateBodyText({ avoidOrphansInLists: checked })}
-            tooltip={labels.bodyAvoidOrphansInListsTooltip}
-            isDefault={isAvoidOrphansInListsDefault}
-            onReset={() => resetField('avoidOrphansInLists')}
-          />
-        </NestedGroup>
+        <OrphansSubsection
+          bodyText={bodyText}
+          isOrphanMinLinesDefault={isOrphanMinLinesDefault}
+          isOrphanPenaltyDefault={isOrphanPenaltyDefault}
+          isAvoidOrphansInListsDefault={isAvoidOrphansInListsDefault}
+          updateBodyText={updateBodyText}
+          resetField={resetField}
+          labels={labels}
+        />
       )}
 
       <ToggleSwitch
@@ -406,38 +307,15 @@ export const BodyTextSection = memo(function BodyTextSection() {
       />
 
       {bodyText.avoidWidows && (
-        <NestedGroup>
-          <NumberInput
-            label={labels.bodyWidowMinLines}
-            value={bodyText.widowMinLines}
-            onChange={(v) => updateBodyText({ widowMinLines: v })}
-            min={1}
-            max={5}
-            step={1}
-            tooltip={labels.bodyWidowMinLinesTooltip}
-            isDefault={isWidowMinLinesDefault}
-            onReset={() => resetField('widowMinLines')}
-          />
-          <NumberInput
-            label={labels.bodyWidowPenalty}
-            value={bodyText.widowPenalty}
-            onChange={(v) => updateBodyText({ widowPenalty: v })}
-            min={0}
-            max={10000}
-            step={100}
-            tooltip={labels.bodyWidowPenaltyTooltip}
-            isDefault={isWidowPenaltyDefault}
-            onReset={() => resetField('widowPenalty')}
-          />
-          <ToggleSwitch
-            label={labels.bodyAvoidWidowsInLists}
-            checked={bodyText.avoidWidowsInLists}
-            onChange={(checked) => updateBodyText({ avoidWidowsInLists: checked })}
-            tooltip={labels.bodyAvoidWidowsInListsTooltip}
-            isDefault={isAvoidWidowsInListsDefault}
-            onReset={() => resetField('avoidWidowsInLists')}
-          />
-        </NestedGroup>
+        <WidowsSubsection
+          bodyText={bodyText}
+          isWidowMinLinesDefault={isWidowMinLinesDefault}
+          isWidowPenaltyDefault={isWidowPenaltyDefault}
+          isAvoidWidowsInListsDefault={isAvoidWidowsInListsDefault}
+          updateBodyText={updateBodyText}
+          resetField={resetField}
+          labels={labels}
+        />
       )}
 
       <NumberInput
@@ -462,38 +340,15 @@ export const BodyTextSection = memo(function BodyTextSection() {
       />
 
       {bodyText.avoidRunts && (
-        <NestedGroup>
-          <NumberInput
-            label={labels.bodyRuntMinCharacters}
-            value={bodyText.runtMinCharacters}
-            onChange={(v) => updateBodyText({ runtMinCharacters: v })}
-            min={1}
-            max={20}
-            step={1}
-            tooltip={labels.bodyRuntMinCharactersTooltip}
-            isDefault={isRuntMinCharactersDefault}
-            onReset={() => resetField('runtMinCharacters')}
-          />
-          <NumberInput
-            label={labels.bodyRuntPenalty}
-            value={bodyText.runtPenalty}
-            onChange={(v) => updateBodyText({ runtPenalty: v })}
-            min={0}
-            max={10000}
-            step={100}
-            tooltip={labels.bodyRuntPenaltyTooltip}
-            isDefault={isRuntPenaltyDefault}
-            onReset={() => resetField('runtPenalty')}
-          />
-          <ToggleSwitch
-            label={labels.bodyAvoidRuntsInLists}
-            checked={bodyText.avoidRuntsInLists}
-            onChange={(checked) => updateBodyText({ avoidRuntsInLists: checked })}
-            tooltip={labels.bodyAvoidRuntsInListsTooltip}
-            isDefault={isAvoidRuntsInListsDefault}
-            onReset={() => resetField('avoidRuntsInLists')}
-          />
-        </NestedGroup>
+        <RuntsSubsection
+          bodyText={bodyText}
+          isRuntMinCharactersDefault={isRuntMinCharactersDefault}
+          isRuntPenaltyDefault={isRuntPenaltyDefault}
+          isAvoidRuntsInListsDefault={isAvoidRuntsInListsDefault}
+          updateBodyText={updateBodyText}
+          resetField={resetField}
+          labels={labels}
+        />
       )}
 
       <ToggleSwitch

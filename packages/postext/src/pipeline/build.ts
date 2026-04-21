@@ -2,7 +2,6 @@ import type { PostextContent, PostextConfig } from '../types';
 import type { ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import {
-  createBoundingBox,
   createVDTDocument,
   createVDTBlock,
   type VDTDocument,
@@ -11,19 +10,14 @@ import {
 import { parseMarkdownMemo } from '../parse';
 import { computeHeadingNumbers, type HeadingTemplates } from '../numbering';
 import { extractFrontmatter } from '../frontmatter';
-import { measureBlock, measureRichBlock, cachedMeasureBlock, cachedMeasureRichBlock, initHyphenator } from '../measure';
-import type { MeasurementCache, MeasuredBlock } from '../measure';
+import { initHyphenator } from '../measure';
+import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid } from './config';
-import type { BlockStyle } from './styles';
-import { resolveBodyStyle, resolveHeadingStyle, resolveBlockquoteStyle, resolveMathDisplayStyle } from './styles';
-import { renderMath, isMathReady } from '../math';
-import type { ListBulletStyle, ListItemResolved } from './lists';
+import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
 import {
   computeLevelIndentsPx,
   computeOrderedLevelIndentsPx,
   computeOrderedListRunMetrics,
-  resolveUnorderedListItemStyle,
-  resolveOrderedListItemStyle,
 } from './lists';
 import type { PlacementCursor } from './placement';
 import {
@@ -34,6 +28,16 @@ import {
   placeBlockInColumn,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
+import {
+  applyStyleAttrs,
+  computeMeasureViewport,
+  computePageMetrics,
+  enrichMathSpans,
+  rollbackTrailingBlocks,
+  stampSourceRanges,
+} from './buildHelpers';
+import { resolveBlockKind } from './buildBlockKind';
+import { runMeasurement } from './buildMeasurement';
 
 export interface BuildDocumentOptions {
   /**
@@ -72,36 +76,7 @@ export function buildDocument(
   // Create document
   const doc = createVDTDocument(resolved, baselineGrid);
 
-  // Page dimensions in px (trim size)
-  const trimWidthPx = dimensionToPx(resolved.page.width, dpi);
-  const trimHeightPx = dimensionToPx(resolved.page.height, dpi);
-
-  // Cut lines expansion: canvas grows to fit bleed + mark offset + mark length
-  let trimOffset = 0;
-  if (resolved.page.cutLines.enabled) {
-    const bleedPx = dimensionToPx(resolved.page.cutLines.bleed, dpi);
-    const markOffsetPx = dimensionToPx(resolved.page.cutLines.markOffset, dpi);
-    const markLengthPx = dimensionToPx(resolved.page.cutLines.markLength, dpi);
-    trimOffset = bleedPx + markOffsetPx + markLengthPx;
-  }
-
-  const pageWidthPx = trimWidthPx + trimOffset * 2;
-  const pageHeightPx = trimHeightPx + trimOffset * 2;
-
-  // Margins in px
-  const marginTop = dimensionToPx(resolved.page.margins.top, dpi);
-  const marginBottom = dimensionToPx(resolved.page.margins.bottom, dpi);
-  const marginLeft = dimensionToPx(resolved.page.margins.left, dpi);
-  const marginRight = dimensionToPx(resolved.page.margins.right, dpi);
-
-  // Content area (offset by trimOffset so content sits inside the trim area)
-  const contentArea = createBoundingBox(
-    marginLeft + trimOffset,
-    marginTop + trimOffset,
-    trimWidthPx - marginLeft - marginRight,
-    trimHeightPx - marginTop - marginBottom,
-  );
-
+  const { pageWidthPx, pageHeightPx, trimOffset, contentArea } = computePageMetrics(resolved);
   doc.trimOffset = trimOffset;
 
   // Create first page
@@ -143,119 +118,36 @@ export function buildDocument(
     const rawBlock = contentBlocks[blockIdx]!;
     const id = `block-${blockIdCounter++}`;
 
-    let style: BlockStyle;
-    let vdtType: VDTBlock['type'];
-    let headingLevel: number | undefined;
-    let numberPrefix: string | undefined;
-    let contentBlock = rawBlock;
-    let listBullet: ListBulletStyle | undefined;
-    let listDepth: number | undefined;
-    let listKind: ListKind | undefined;
-    let bulletXOffsetInColumn = 0;
-    let strikethroughText = false;
-
-    switch (rawBlock.type) {
-      case 'heading': {
-        style = resolveHeadingStyle(rawBlock.level ?? 1, resolved);
-        vdtType = 'heading';
-        headingLevel = rawBlock.level;
-        numberPrefix = headingPrefixes[blockIdx];
-        if (numberPrefix) {
-          const sep = `${numberPrefix} `;
-          const firstSpan = rawBlock.spans[0];
-          const newSpans = firstSpan
-            ? [{ text: sep + firstSpan.text, bold: firstSpan.bold, italic: firstSpan.italic }, ...rawBlock.spans.slice(1)]
-            : [{ text: sep, bold: false, italic: false }];
-          contentBlock = { ...rawBlock, text: sep + rawBlock.text, spans: newSpans };
-        }
-        break;
-      }
-      case 'blockquote':
-        style = blockquoteStyle;
-        vdtType = 'blockquote';
-        break;
-      case 'mathDisplay': {
-        style = resolveMathDisplayStyle(resolved);
-        vdtType = 'mathDisplay';
-        break;
-      }
-      case 'listItem': {
-        const depth = rawBlock.depth ?? 1;
-        const kind: ListKind = rawBlock.listKind ?? 'unordered';
-        let resolvedList: ListItemResolved;
-        if (kind === 'ordered') {
-          const metric =
-            orderedMetrics.perBlock.get(blockIdx) ??
-            { numberText: '', numberWidthPx: 0, maxNumberWidthPx: 0 };
-          resolvedList = resolveOrderedListItemStyle(depth, resolved, orderedLevelIndentsPx, metric);
-        } else {
-          resolvedList = resolveUnorderedListItemStyle(
-            depth,
-            resolved,
-            listLevelIndentsPx,
-            rawBlock.checked ?? false,
-            kind === 'task',
-          );
-        }
-        style = resolvedList.text;
-        listBullet = resolvedList.bullet;
-        listDepth = depth;
-        listKind = kind;
-        bulletXOffsetInColumn = resolvedList.bulletXOffsetInColumn;
-        strikethroughText = resolvedList.strikethroughText;
-        vdtType = 'listItem';
-        break;
-      }
-      default:
-        style = bodyStyle;
-        vdtType = 'paragraph';
-        break;
-    }
+    const kind = resolveBlockKind(rawBlock, {
+      resolved,
+      bodyStyle,
+      blockquoteStyle,
+      headingPrefixes,
+      blockIdx,
+      listLevelIndentsPx,
+      orderedLevelIndentsPx,
+      orderedMetrics,
+    });
+    const { style, vdtType, headingLevel, numberPrefix, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
+    let contentBlock = kind.contentBlock;
 
     // Measure text — use rich measurement for blocks with bold spans
     const col = currentColumn(doc, cursor);
 
-    // Resolve inline math: renderMath each `span.math` and attach mathRender.
-    // When math is disabled, drop the math metadata so spans fall back to
-    // the raw TeX (visible as literal `$...$`).
+    // Resolve inline math on spans (no-op when the block has no math).
     const mathEnabled = resolved.math.enabled;
-    if (contentBlock.spans.some((s) => s.math)) {
-      const mathFontSizePx = style.fontSizePx * resolved.math.fontSizeScale;
-      const mathColor = resolved.math.color?.hex ?? style.color;
-      const enrichedSpans = contentBlock.spans.map((s) => {
-        if (!s.math) return s;
-        if (!mathEnabled) {
-          return { text: `$${s.math.tex}$`, bold: s.bold, italic: s.italic };
-        }
-        const render = isMathReady()
-          ? renderMath(s.math.tex, false, mathFontSizePx, { lineBoxPx: style.lineHeightPx, color: mathColor })
-          : undefined;
-        return { ...s, mathRender: render };
-      });
-      contentBlock = { ...contentBlock, spans: enrichedSpans };
-    }
+    contentBlock = enrichMathSpans(contentBlock, style, resolved);
 
     const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender);
 
     // List items reserve horizontal space for indent + bullet + gap.
-    let measureMaxWidth = col.bbox.width;
-    let lineXShift = 0;
-    let measureFirstLineIndent = style.firstLineIndentPx;
-    let measureHangingIndent = style.hangingIndent;
-    if (listBullet) {
-      const textGap = listBullet.bulletWidthPx + listBullet.gapPx;
-      if (listBullet.hangingIndent) {
-        measureMaxWidth = Math.max(1, col.bbox.width - listBullet.indentPx - textGap);
-        lineXShift = listBullet.indentPx + textGap;
-        measureFirstLineIndent = 0;
-        measureHangingIndent = false;
-      } else {
-        measureMaxWidth = Math.max(1, col.bbox.width - listBullet.indentPx);
-        lineXShift = listBullet.indentPx;
-        measureFirstLineIndent = textGap;
-        measureHangingIndent = false;
-      }
-    }
+    const {
+      measureMaxWidth,
+      lineXShift,
+      measureFirstLineIndent,
+      measureHangingIndent,
+    } = computeMeasureViewport(col.bbox.width, style, listBullet);
+
     const runtActive = resolved.bodyText.avoidRunts
       && (vdtType === 'paragraph'
         || (vdtType === 'listItem' && resolved.bodyText.avoidRuntsInLists));
@@ -270,53 +162,11 @@ export function buildDocument(
       runtPenalty: runtActive ? resolved.bodyText.runtPenalty : 0,
       runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     };
-    const useRich = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString;
+    const useRich = !!(hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString);
 
-    // Math display block: bypass text layout entirely. Produce a single
-    // VDTLine whose bbox is the math render's pixel box, centred later.
-    let mathDisplayRender: ReturnType<typeof renderMath> | undefined;
-    let measured: MeasuredBlock;
-    if (vdtType === 'mathDisplay') {
-      const tex = rawBlock.tex ?? '';
-      if (!mathEnabled) {
-        // Fallback: render the literal TeX as a paragraph-like run.
-        measured = useRich
-          ? measureRichBlock(
-              [{ text: `$$${tex}$$`, bold: false, italic: false }],
-              style.fontString, style.fontString, style.fontString, style.fontString,
-              measureMaxWidth, style.lineHeightPx, measureOptions,
-            )
-          : measureBlock(`$$${tex}$$`, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions);
-      } else {
-        // `renderMath` internally returns a cheap placeholder when MathJax
-        // isn't initialised yet — no need to gate the call here. When the
-        // real engine lands later, `CanvasPreview` bumps `resizeKey` and the
-        // pipeline rebuilds with the genuine render.
-        const render = renderMath(tex, true, style.fontSizePx, { color: style.color });
-        mathDisplayRender = render;
-        const width = Math.min(render.widthPx, measureMaxWidth);
-        const height = render.heightPx;
-        measured = {
-          lines: [{
-            text: '',
-            bbox: { x: 0, y: 0, width, height },
-            baseline: render.ascentPx,
-            hyphenated: false,
-            segments: [{ kind: 'math' as const, text: '\uFFFC', width, mathRender: render }],
-            isLastLine: true,
-          }],
-          totalHeight: height,
-        };
-      }
-    } else {
-      measured = cache
-        ? (useRich
-            ? cachedMeasureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions, cache)
-            : cachedMeasureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions, cache))
-        : (useRich
-            ? measureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions)
-            : measureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions));
-    }
+    const { measured, mathDisplayRender } = runMeasurement({
+      vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
+    });
 
     if (measured.lines.length === 0) continue;
 
@@ -329,43 +179,7 @@ export function buildDocument(
 
     // Per-line source-range mapping using the block's plain→source map.
     // Accounts for heading numbering prefix which prepends chars with no source.
-    const blockSrcStart = rawBlock.sourceStart + bodyOffset;
-    const blockSrcEnd = rawBlock.sourceEnd + bodyOffset;
-    const srcMap = rawBlock.sourceMap;
-    const prefixLen = contentBlock.text.length - rawBlock.text.length;
-    const plainToSrc = (p: number): number => {
-      const idx = p - prefixLen;
-      if (idx <= 0) return blockSrcStart;
-      if (idx >= srcMap.length) return blockSrcEnd;
-      return srcMap[idx]! + bodyOffset;
-    };
-    let cumPlain = 0;
-    const lastLineIdx = measured.lines.length - 1;
-    for (let li = 0; li < measured.lines.length; li++) {
-      const line = measured.lines[li]!;
-      // If segments are present, prefer their aggregate text length for a more
-      // accurate plain-char count (excludes trailing hyphen for hyphenated lines).
-      let lineLen: number;
-      if (line.segments && line.segments.length > 0) {
-        lineLen = line.segments.reduce((s, seg) => s + seg.text.length, 0);
-        if (line.hyphenated) {
-          const last = line.segments[line.segments.length - 1]!;
-          if (last.text.endsWith('-')) lineLen -= 1;
-        }
-      } else {
-        lineLen = line.text.length - (line.hyphenated ? 1 : 0);
-      }
-      line.plainStart = cumPlain;
-      line.plainEnd = cumPlain + lineLen;
-      // Advance past the separator space that was consumed to break the line
-      // (skip when hyphenated — break was at a soft hyphen — or on the last line).
-      const skipSeparator = !line.hyphenated && li !== lastLineIdx ? 1 : 0;
-      cumPlain = line.plainEnd + skipSeparator;
-      line.sourceStart = plainToSrc(line.plainStart);
-      line.sourceEnd = plainToSrc(line.plainEnd);
-    }
-
-    const absoluteSourceMap = srcMap.map((o) => o + bodyOffset);
+    const { prefixLen, absoluteSourceMap } = stampSourceRanges(measured, rawBlock, contentBlock, bodyOffset);
 
     const finalizeListItem = (blk: VDTBlock, isFirstPart: boolean) => {
       if (!listBullet) return;
@@ -480,11 +294,7 @@ export function buildDocument(
             if (spacingBefore > 0) curCol.availableHeight -= spacingBefore;
             const splitLines = remainingLines.slice(0, splitAt);
             const blk = createVDTBlock(id, vdtType, style.fontString, style.color, style.textAlign);
-            if (style.boldFontString) blk.boldFontString = style.boldFontString;
-            if (style.italicFontString) blk.italicFontString = style.italicFontString;
-            if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
-            if (style.boldColor) blk.boldColor = style.boldColor;
-            if (style.italicColor) blk.italicColor = style.italicColor;
+            applyStyleAttrs(blk, style);
             blk.headingLevel = headingLevel;
             if (numberPrefix) blk.numberPrefix = numberPrefix;
             blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
@@ -571,18 +381,8 @@ export function buildDocument(
           if (remainAfterHeading < minSpaceAfter) {
             // Roll back any immediately-preceding heading blocks in this
             // column so they travel with this one.
-            let rollbackCount = 0;
-            for (let j = curCol.blocks.length - 1; j >= 0; j--) {
-              if (curCol.blocks[j]!.type === 'heading') rollbackCount++;
-              else break;
-            }
+            const rollbackCount = rollbackTrailingBlocks(curCol, doc.blocks, (b) => b.type === 'heading');
             if (rollbackCount > 0) {
-              const popped = curCol.blocks.splice(curCol.blocks.length - rollbackCount);
-              for (const p of popped) {
-                const idx = doc.blocks.indexOf(p);
-                if (idx !== -1) doc.blocks.splice(idx, 1);
-                curCol.availableHeight += p.bbox.height;
-              }
               // Rewind so the for-loop's blockIdx++ lands on the first
               // rolled-back heading.
               blockIdx -= rollbackCount + 1;
@@ -603,11 +403,7 @@ export function buildDocument(
 
         const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
         const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
-        if (style.boldFontString) blk.boldFontString = style.boldFontString;
-        if (style.italicFontString) blk.italicFontString = style.italicFontString;
-        if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
-        if (style.boldColor) blk.boldColor = style.boldColor;
-        if (style.italicColor) blk.italicColor = style.italicColor;
+        applyStyleAttrs(blk, style);
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         if (vdtType === 'mathDisplay' && mathDisplayRender) {
           blk.mathRender = mathDisplayRender;
@@ -685,11 +481,7 @@ export function buildDocument(
           const splitLines = remainingLines.slice(0, choice.splitAt);
 
           const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
-          if (style.boldFontString) blk.boldFontString = style.boldFontString;
-          if (style.italicFontString) blk.italicFontString = style.italicFontString;
-          if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
-          if (style.boldColor) blk.boldColor = style.boldColor;
-          if (style.italicColor) blk.italicColor = style.italicColor;
+          applyStyleAttrs(blk, style);
           if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
           blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
           blk.dirty = false;
@@ -722,18 +514,8 @@ export function buildDocument(
         // pull those headings along so they don't remain stranded as orphans
         // at the column's bottom. Mirrors the rollback inside the "fits" path.
         if (vdtType === 'heading' && resolved.headings.keepWithNext) {
-          let rollbackCount = 0;
-          for (let j = curCol.blocks.length - 1; j >= 0; j--) {
-            if (curCol.blocks[j]!.type === 'heading') rollbackCount++;
-            else break;
-          }
+          const rollbackCount = rollbackTrailingBlocks(curCol, doc.blocks, (b) => b.type === 'heading');
           if (rollbackCount > 0) {
-            const popped = curCol.blocks.splice(curCol.blocks.length - rollbackCount);
-            for (const p of popped) {
-              const idx = doc.blocks.indexOf(p);
-              if (idx !== -1) doc.blocks.splice(idx, 1);
-              curCol.availableHeight += p.bbox.height;
-            }
             blockIdx -= rollbackCount + 1;
             pendingSpacing = 0;
             advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
@@ -748,11 +530,7 @@ export function buildDocument(
       // Empty column but block still doesn't fit (block taller than page) — place anyway
       const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
       const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
-      if (style.boldFontString) blk.boldFontString = style.boldFontString;
-      if (style.italicFontString) blk.italicFontString = style.italicFontString;
-      if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
-      if (style.boldColor) blk.boldColor = style.boldColor;
-      if (style.italicColor) blk.italicColor = style.italicColor;
+      applyStyleAttrs(blk, style);
       if (partIndex === 0) blk.headingLevel = headingLevel;
       blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
       blk.dirty = false;

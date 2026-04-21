@@ -80,6 +80,8 @@ La barra de herramientas es extensible: pueden añadirse acciones personalizadas
 
 El lado derecho de la interfaz muestra la salida renderizada. Hay tres pestañas disponibles, una por cada modo de renderizado — **Canvas**, **HTML** y **PDF**. Cambiar de pestaña no vuelve a ejecutar la composición: el mismo VDT alimenta a los tres backends, de modo que el contenido que ves es consistente entre los tres modos.
 
+Cada viewport ejecuta el pipeline de composición dentro de un **Web Worker** dedicado (`postext/worker`). Un hook `useLayoutWorker` por viewport posee el handle del worker, envía las fuentes como `ArrayBuffer`s transferibles y dirige los builds con **cancelación last-wins** — una pulsación de tecla o un arrastre de slider aborta el `AbortSignal` del build anterior antes de que empiece el siguiente, por lo que teclear rápido nunca acumula trabajo obsoleto en el hilo principal. Desmontar un viewport libera su worker y rechaza cualquier build pendiente. Consulta [Configuración → Ejecutar la composición en un Web Worker](/es/docs/configuration#ejecutar-la-composición-en-un-web-worker) para el patrón de integración que se usa aquí.
+
 <Illustration name="SandboxSyncFlow" data='{"title": "Un único VDT, tres salidas", "desc": "El markdown y la configuración del sandbox alimentan un único VDT en memoria. Canvas, HTML y PDF se renderizan desde ese mismo VDT, garantizando resultados idénticos entre las tres pestañas.", "caption": "Un mismo VDT alimenta las tres pestañas de salida.", "markdownLabel": "Markdown", "configLabel": "Configuración", "vdtTitle": "VDT", "vdtSubtitle": "composición compartida", "canvasLabel": "Canvas", "htmlLabel": "HTML", "pdfLabel": "PDF", "singleSource": "fuente única de verdad"}' />
 
 #### Pestaña Canvas

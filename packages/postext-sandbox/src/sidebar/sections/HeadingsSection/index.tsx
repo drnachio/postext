@@ -1,9 +1,9 @@
 'use client';
 
 import { memo } from 'react';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
 import { resolveHeadingsConfig, DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
-import type { HeadingsConfig, HeadingLevelConfig, ColorValue, Dimension, DimensionUnit } from 'postext';
+import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -11,160 +11,14 @@ import {
   FontPicker,
   NumberInput,
   SelectInput,
-  TextInput,
   ToggleSwitch,
-} from '../../controls';
+} from '../../../controls';
+import { HeadingLevelSection } from './HeadingLevelSection';
 
-const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 const D = DEFAULT_HEADINGS_CONFIG;
-
-function HeadingLevelSection({
-  level,
-  resolved,
-  raw,
-  generalFont,
-  generalLineHeight,
-  generalColor,
-  generalFontWeight,
-  generalMarginTop,
-  generalMarginBottom,
-  onUpdate,
-  onReset,
-  labels,
-}: {
-  level: number;
-  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension; numberingTemplate: string; italic: boolean };
-  raw: HeadingLevelConfig | undefined;
-  generalFont: string;
-  generalLineHeight: Dimension;
-  generalColor: ColorValue;
-  generalFontWeight: number;
-  generalMarginTop: Dimension;
-  generalMarginBottom: Dimension;
-  onUpdate: (level: number, partial: Partial<HeadingLevelConfig>) => void;
-  onReset: (level: number, field: keyof HeadingLevelConfig) => void;
-  labels: ReturnType<typeof useSandboxLabels>;
-}) {
-  const defLevel = D.levels.find((l) => l.level === level)!;
-
-  const isSizeDefault = dimensionsEqual(resolved.fontSize, defLevel.fontSize);
-  const isLhDefault = dimensionsEqual(resolved.lineHeight, generalLineHeight);
-  const isFontDefault = resolved.fontFamily === generalFont;
-  const isColorDefault = colorsEqual(resolved.color, generalColor);
-  const isFontWeightDefault = resolved.fontWeight === generalFontWeight;
-  const isMarginTopDefault = dimensionsEqual(resolved.marginTop, generalMarginTop);
-  const isMarginBottomDefault = dimensionsEqual(resolved.marginBottom, generalMarginBottom);
-  const isNumberingDefault = (resolved.numberingTemplate ?? '') === '';
-  const isItalicDefault = resolved.italic === false;
-  const hasOverrides = raw !== undefined && Object.keys(raw).filter((k) => k !== 'level').length > 0;
-
-  return (
-    <CollapsibleSection
-      title={`${labels.headingLevel}${level}`}
-      sectionId={`heading-h${level}`}
-      onReset={() => onReset(level, 'fontSize')}
-      hasOverrides={hasOverrides}
-      resetLabel={labels.reset}
-      resetConfirmMessage={labels.resetSectionConfirm}
-    >
-      <DimensionInput
-        label={labels.headingFontSize}
-        value={resolved.fontSize}
-        onChange={(dim) => onUpdate(level, { fontSize: dim })}
-        min={1}
-        step={0.5}
-        tooltip={labels.headingFontSizeTooltip}
-        isDefault={isSizeDefault}
-        onReset={() => onReset(level, 'fontSize')}
-        units={TEXT_SIZE_UNITS}
-      />
-      <DimensionInput
-        label={labels.headingLineHeight}
-        value={resolved.lineHeight}
-        onChange={(dim) => onUpdate(level, { lineHeight: dim })}
-        min={0.5}
-        max={5}
-        step={0.1}
-        tooltip={labels.headingLineHeightTooltip}
-        isDefault={isLhDefault}
-        onReset={() => onReset(level, 'lineHeight')}
-        units={LINE_HEIGHT_UNITS}
-      />
-      <FontPicker
-        label={labels.headingFont}
-        value={resolved.fontFamily}
-        onChange={(font) => onUpdate(level, { fontFamily: font })}
-        tooltip={labels.headingFontTooltip}
-        isDefault={isFontDefault}
-        onReset={() => onReset(level, 'fontFamily')}
-        searchPlaceholder={labels.headingFontSearch}
-        noResultsLabel={labels.headingFontNoResults}
-      />
-      <NumberInput
-        label={labels.headingFontWeight}
-        value={resolved.fontWeight}
-        onChange={(w) => onUpdate(level, { fontWeight: w })}
-        min={100}
-        max={900}
-        step={10}
-        tooltip={labels.headingFontWeightTooltip}
-        isDefault={isFontWeightDefault}
-        onReset={() => onReset(level, 'fontWeight')}
-      />
-      <ColorPicker
-        label={labels.headingColor}
-        value={resolved.color}
-        onChange={(color) => onUpdate(level, { color })}
-        tooltip={labels.headingColorTooltip}
-        isDefault={isColorDefault}
-        onReset={() => onReset(level, 'color')}
-        fieldId={`heading-h${level}-color`}
-      />
-      <DimensionInput
-        label={labels.headingMarginTop}
-        value={resolved.marginTop}
-        onChange={(dim) => onUpdate(level, { marginTop: dim })}
-        min={0}
-        step={0.1}
-        tooltip={labels.headingMarginTopTooltip}
-        isDefault={isMarginTopDefault}
-        onReset={() => onReset(level, 'marginTop')}
-        units={MARGIN_UNITS}
-      />
-      <DimensionInput
-        label={labels.headingMarginBottom}
-        value={resolved.marginBottom}
-        onChange={(dim) => onUpdate(level, { marginBottom: dim })}
-        min={0}
-        step={0.1}
-        tooltip={labels.headingMarginBottomTooltip}
-        isDefault={isMarginBottomDefault}
-        onReset={() => onReset(level, 'marginBottom')}
-        units={MARGIN_UNITS}
-      />
-      <ToggleSwitch
-        label={labels.headingItalic}
-        checked={resolved.italic}
-        onChange={(v) => onUpdate(level, { italic: v })}
-        tooltip={labels.headingItalicTooltip}
-        isDefault={isItalicDefault}
-        onReset={() => onReset(level, 'italic')}
-      />
-      <TextInput
-        label={labels.headingNumberingTemplate}
-        value={resolved.numberingTemplate ?? ''}
-        onChange={(v) => onUpdate(level, { numberingTemplate: v })}
-        placeholder={labels.headingNumberingTemplatePlaceholder}
-        tooltip={labels.headingNumberingTemplateTooltip}
-        isDefault={isNumberingDefault}
-        onReset={() => onReset(level, 'numberingTemplate')}
-      />
-    </CollapsibleSection>
-  );
-}
 
 export const HeadingsSection = memo(function HeadingsSection() {
   const dispatch = useSandboxDispatch();
