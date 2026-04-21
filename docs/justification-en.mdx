@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Hyphenation & Justification',
   description: 'How Postext breaks lines, justifies text, and controls word spacing using the Knuth-Plass algorithm',
   lang: 'en',
-  lastUpdated: '2026-04-19',
+  lastUpdated: '2026-04-21',
   readingTime: '20 min',
   order: 4,
 };
@@ -95,6 +95,8 @@ The algorithm uses dynamic programming. It maintains a set of **active nodes** �
    - **Fitness class demerit** (default 100): penalizes adjacent lines of very different tightness. If a tight line sits next to a very loose line, the contrast is jarring.
 
 4. **Fitness class**: each line is classified as tight (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), loose (`0.5 ≤ r < 1.0`), or very loose (`r ≥ 1.0`). Adjacent lines with fitness classes more than one step apart incur the fitness demerit.
+
+The four costs are summed into a single number per candidate break, and the algorithm picks the sequence with the lowest total cost across the whole paragraph — that is the entire advantage over greedy.
 
 <Illustration name="BadnessCurve" data='{"title": "Badness as a function of adjustment ratio", "desc": "Badness grows as 100 times the absolute value of r cubed. Small stretches or compressions are cheap, but extreme stretches become extremely costly, which is why the algorithm avoids them.", "caption": "Badness grows cubically: slightly uneven is tolerable, very uneven is punished hard.", "xAxis": "r", "yAxis": "badness", "zero": "0", "tight": "tight (r < 0)", "loose": "loose (r > 0)", "formula": "badness(r) = 100 · |r|³"}' />
 
@@ -332,7 +334,7 @@ debug: {
 
 ### Interpreting the Results
 
-When you enable loose-line highlighting and see red bands across certain lines, it means the engine could not find a way to set those lines without excessive word spacing. Common causes and solutions:
+When you enable loose-line highlighting and see red bands across certain lines, it means the engine could not find a way to set those lines without excessive word spacing. Start at the top: causes are ordered from most to least likely.
 
 <table>
   <thead>

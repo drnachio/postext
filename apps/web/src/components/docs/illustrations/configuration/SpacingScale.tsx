@@ -17,7 +17,7 @@ export function SpacingScale({ labels }: { labels: SpacingScaleLabels }) {
       {labels.steps.map((s, i) => {
         const y = startY + i * rowH;
         return (
-          <g key={i} className={`svg-fade-${Math.min(i + 1, 7)}`}>
+          <g key={i}>
             <Label x={100} y={y + 12} anchor="end" size={10} bold color="mid">{s.name}</Label>
             <rect x={startX} y={y} width={s.px} height={16} fill={colorTokens.teal.fill} stroke={colorTokens.teal.stroke} strokeWidth={1.5} rx={2} />
             <Label x={startX + s.px + 8} y={y + 12} size={9} color="teal">{s.value}</Label>

@@ -22,7 +22,7 @@ export function ListNesting({ labels }: { labels: ListNestingLabels }) {
         const color = [colorTokens.blue, colorTokens.orange, colorTokens.green][i]!;
         const label = [labels.level1, labels.level2, labels.level3][i]!;
         return (
-          <g key={i} className={`svg-fade-${i + 1}`}>
+          <g key={i}>
             <circle cx={x - 12} cy={y + 4} r={4} fill={color.stroke} />
             <rect x={x} y={y} width={500 - i * 40} height={14} rx={2} fill={color.fill} stroke={color.stroke} strokeWidth={1.2} />
             <Label x={x + 520 - i * 40} y={y + 10} size={9} color="mid">{label}</Label>

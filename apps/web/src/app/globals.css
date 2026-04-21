@@ -589,30 +589,6 @@ html { font-size: 18px; }
   }
 }
 
-/* ── SVG diagram animations ── */
-@keyframes svg-dash-flow {
-  to { stroke-dashoffset: -14; }
-}
-@keyframes svg-dash-flow-slow {
-  to { stroke-dashoffset: -18; }
-}
-@keyframes svg-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.65; }
-}
-@keyframes svg-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes svg-loop-glow {
-  0%, 100% { stroke-opacity: 0.6; stroke-width: 2; }
-  50% { stroke-opacity: 1; stroke-width: 2.8; }
-}
-@keyframes svg-scan {
-  0% { transform: translateY(0); opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { transform: translateY(360px); opacity: 0; }
-}
 @keyframes cursor-blink {
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
@@ -621,29 +597,6 @@ html { font-size: 18px; }
   .cursor-blink {
     animation: cursor-blink 1.06s steps(1, end) infinite;
   }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .docs-content .svg-flow {
-    stroke-dasharray: 8 6;
-    animation: svg-dash-flow 0.8s linear infinite;
-  }
-  .docs-content .svg-flow-slow {
-    stroke-dasharray: 10 8;
-    animation: svg-dash-flow-slow 1.5s linear infinite;
-  }
-  .docs-content .svg-pulse {
-    animation: svg-pulse 3s ease-in-out infinite;
-  }
-  .docs-content .svg-loop-glow {
-    animation: svg-loop-glow 2.5s ease-in-out infinite;
-  }
-  .docs-content .svg-fade-1 { animation: svg-fade-in 0.5s ease-out 0.1s both; }
-  .docs-content .svg-fade-2 { animation: svg-fade-in 0.5s ease-out 0.25s both; }
-  .docs-content .svg-fade-3 { animation: svg-fade-in 0.5s ease-out 0.4s both; }
-  .docs-content .svg-fade-4 { animation: svg-fade-in 0.5s ease-out 0.55s both; }
-  .docs-content .svg-fade-5 { animation: svg-fade-in 0.5s ease-out 0.7s both; }
-  .docs-content .svg-fade-6 { animation: svg-fade-in 0.5s ease-out 0.85s both; }
-  .docs-content .svg-fade-7 { animation: svg-fade-in 0.5s ease-out 1.0s both; }
 }
 .docs-content img {
   max-width: 100%;

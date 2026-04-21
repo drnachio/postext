@@ -20,7 +20,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   hyphenation: { ...DEFAULT_HYPHENATION_CONFIG },
   firstLineIndent: { value: 1.5, unit: 'em' },
   hangingIndent: false,
-  maxWordSpacing: 2,
+  maxWordSpacing: 1.9,
   minWordSpacing: 0.6,
   optimalLineBreaking: true,
   avoidOrphans: true,

@@ -13,7 +13,7 @@ interface UseCodeMirrorOptions {
   initialValue: string;
   externalValue?: string;
   onChange: (value: string) => void;
-  onSelectionChange?: (selection: { from: number; to: number }) => void;
+  onSelectionChange?: (selection: { from: number; to: number; head: number }) => void;
   onFocusChange?: (focused: boolean) => void;
   isDark?: boolean;
   persistedStateRef?: MutableRefObject<unknown | null>;
@@ -40,7 +40,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       }
       if (update.docChanged || update.selectionSet) {
         const sel = update.state.selection.main;
-        onSelectionChangeRef.current?.({ from: sel.from, to: sel.to });
+        onSelectionChangeRef.current?.({ from: sel.from, to: sel.to, head: sel.head });
       }
       if (update.focusChanged) {
         onFocusChangeRef.current?.(update.view.hasFocus);

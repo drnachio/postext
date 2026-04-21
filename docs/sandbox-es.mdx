@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Entorno interactivo para experimentar con el motor de maquetación de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-20',
+  lastUpdated: '2026-04-21',
   readingTime: '6 min',
   order: 7,
 };
@@ -18,7 +18,9 @@ El Sandbox ofrece una interfaz estilo VS Code donde puedes escribir markdown, aj
 
 ## Disposición de la interfaz
 
-El Sandbox sigue un paradigma IDE familiar con tres áreas principales:
+El Sandbox sigue un paradigma IDE familiar con tres áreas principales: una **barra de actividad** estrecha para cambiar de panel, un **panel lateral** redimensionable con el editor o la configuración, y un **viewport** a la derecha con las tres pestañas de salida.
+
+<Illustration name="SandboxLayout" data='{"title": "Interfaz del Sandbox", "desc": "Barra de actividad de 48 px a la izquierda, panel lateral redimensionable en el centro y viewport a la derecha con pestañas Canvas, HTML y PDF.", "caption": "Tres áreas: barra de actividad, panel lateral redimensionable y viewport con pestañas.", "activityBar": "Actividad", "activityIcons": ["MD", "⚙", "📁", "⇣", "⇡"], "sidebarTitle": "Panel lateral", "sidebarSubtitle": "editor o configuración", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "arrastra para redimensionar"}' />
 
 ### Barra de actividad
 
@@ -77,6 +79,8 @@ La barra de herramientas es extensible: pueden añadirse acciones personalizadas
 ### Viewport principal
 
 El lado derecho de la interfaz muestra la salida renderizada. Hay tres pestañas disponibles, una por cada modo de renderizado — **Canvas**, **HTML** y **PDF**. Cambiar de pestaña no vuelve a ejecutar la composición: el mismo VDT alimenta a los tres backends, de modo que el contenido que ves es consistente entre los tres modos.
+
+<Illustration name="SandboxSyncFlow" data='{"title": "Un único VDT, tres salidas", "desc": "El markdown y la configuración del sandbox alimentan un único VDT en memoria. Canvas, HTML y PDF se renderizan desde ese mismo VDT, garantizando resultados idénticos entre las tres pestañas.", "caption": "Un mismo VDT alimenta las tres pestañas de salida.", "markdownLabel": "Markdown", "configLabel": "Configuración", "vdtTitle": "VDT", "vdtSubtitle": "composición compartida", "canvasLabel": "Canvas", "htmlLabel": "HTML", "pdfLabel": "PDF", "singleSource": "fuente única de verdad"}' />
 
 #### Pestaña Canvas
 

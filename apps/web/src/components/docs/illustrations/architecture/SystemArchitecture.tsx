@@ -47,8 +47,8 @@ export function SystemArchitecture({ labels }: { labels: SystemArchitectureLabel
       <Label x={95} y={145} anchor="middle" size={11} bold color="blue">{labels.configTitle}</Label>
       <Label x={95} y={162} anchor="middle" size={8} color="blue">{labels.configSubtitle}</Label>
 
-      <line x1={170} y1={70} x2={210} y2={70} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" className="svg-flow" />
-      <line x1={170} y1={150} x2={210} y2={150} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" className="svg-flow" />
+      <line x1={170} y1={70} x2={210} y2={70} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" />
+      <line x1={170} y1={150} x2={210} y2={150} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" />
 
       <rect x={210} y={15} width={480} height={390} fill="none" stroke="var(--svg-dark-text)" strokeWidth={2} rx={8} strokeDasharray="8,4" />
       <Label x={450} y={35} anchor="middle" size={12} bold color="dark">{labels.engine}</Label>
@@ -57,7 +57,7 @@ export function SystemArchitecture({ labels }: { labels: SystemArchitectureLabel
       <Label x={285} y={78} anchor="middle" size={11} bold color="orange">{labels.parser}</Label>
       <Label x={285} y={93} anchor="middle" size={9} color="orange">{labels.pass1}</Label>
 
-      <line x1={340} y1={80} x2={360} y2={80} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" className="svg-flow" />
+      <line x1={340} y1={80} x2={360} y2={80} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" />
 
       <Box x={360} y={50} width={200} height={130} color="green" filter="url(#archShadow)" />
       <Label x={460} y={75} anchor="middle" size={12} bold color="green">{labels.vdtLine1}</Label>
@@ -83,11 +83,11 @@ export function SystemArchitecture({ labels }: { labels: SystemArchitectureLabel
         </g>
       ))}
 
-      <path d="M 655 355 C 675 355, 675 250, 655 250" fill="none" stroke="var(--svg-yellow-stroke)" strokeWidth={2} markerEnd="url(#archArrowYellow)" className="svg-loop-glow" />
-      <text x={680} y={302} fontSize="8" fill="var(--svg-yellow-text)" textAnchor="middle" transform="rotate(90, 680, 302)" className="svg-pulse">{labels.convergence}</text>
+      <path d="M 655 355 C 675 355, 675 250, 655 250" fill="none" stroke="var(--svg-yellow-stroke)" strokeWidth={2} markerEnd="url(#archArrowYellow)" />
+      <text x={680} y={302} fontSize="8" fill="var(--svg-yellow-text)" textAnchor="middle" transform="rotate(90, 680, 302)">{labels.convergence}</text>
 
-      <line x1={460} y1={182} x2={460} y2={208} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" className="svg-flow" />
-      <line x1={560} y1={115} x2={720} y2={115} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" className="svg-flow" />
+      <line x1={460} y1={182} x2={460} y2={208} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" />
+      <line x1={560} y1={115} x2={720} y2={115} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" />
 
       <Box x={720} y={55} width={150} height={130} color="pink" filter="url(#archShadow)" />
       <Label x={795} y={80} anchor="middle" size={11} bold color="pink">{labels.backend}</Label>
@@ -96,7 +96,7 @@ export function SystemArchitecture({ labels }: { labels: SystemArchitectureLabel
         <Label key={i} x={795} y={125 + i * 17} anchor="middle" color="pink">{b}</Label>
       ))}
 
-      <line x1={795} y1={187} x2={795} y2={220} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" className="svg-flow" />
+      <line x1={795} y1={187} x2={795} y2={220} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#archArrow)" />
 
       <Box x={720} y={222} width={150} height={50} color="teal" filter="url(#archShadow)" />
       <Label x={795} y={245} anchor="middle" size={11} bold color="teal">{labels.output}</Label>

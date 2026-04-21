@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Technical architecture of the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-04-20',
+  lastUpdated: '2026-04-21',
   readingTime: '35 min',
   order: 2,
 };
@@ -28,6 +28,9 @@ That is the "compute everything first, render later" philosophy. It is not a per
 
 
 ## Core Concepts
+
+A quick glossary. The rest of the document assumes these terms — come back here whenever one
+has gone fuzzy.
 
 <table>
   <thead>
@@ -672,7 +675,8 @@ Performance tests run alongside unit tests in vitest, and regressions are caught
 
 ## Non-Goals
 
-Saying no is how you ship. The layout engine is complex enough on its own -- taking on responsibilities that belong elsewhere would be the fastest way to never finish. Each of these non-goals is a confident, intentional choice.
+Each of these limits is a deliberate choice — the engine is complex enough on its own, and
+taking on responsibilities that belong elsewhere would be the fastest way to never finish.
 
 - **Server-side rendering.** All layout runs in the browser. The engine depends on canvas font metrics (via Pretext), which require a browser environment. A server-side backend using `node-canvas` may come later, but it is not part of the initial design. Browser first.
 - **WYSIWYG editing.** Postext is a layout engine, not an editor. Content in, geometry out. Building an interactive editing surface -- cursor management, selection, undo/redo, input handling -- is an entirely separate problem. Postext can serve as the rendering backend for an editor, but it does not provide editing capabilities itself.

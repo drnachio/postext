@@ -217,7 +217,7 @@ function measureColumnWidthPx(
 }
 
 export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
-  const { state, dispatch } = useSandbox();
+  const { state, dispatch, docRef: sharedDocRef } = useSandbox();
   const { hostRef, shadowRef } = useShadowDom();
   const deferredMarkdown = useDeferredValue(state.markdown);
   const deferredConfig = useDeferredValue(state.config);
@@ -556,6 +556,8 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
       }
 
       docRef.current = doc;
+      sharedDocRef.current = doc;
+      dispatch({ type: 'BUMP_DOC_VERSION' });
       lastRenderRef.current = indexed;
       lastRenderSigRef.current = sig;
 
@@ -633,17 +635,17 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
     const focused = state.editorFocused;
 
     let caretBlockIdx = -1;
-    const { from } = selection;
+    const { head } = selection;
     for (let i = 0; i < doc.blocks.length; i++) {
       const b = doc.blocks[i]!;
       if (b.sourceStart === undefined || b.sourceEnd === undefined) continue;
-      if (from >= b.sourceStart && from <= b.sourceEnd) { caretBlockIdx = i; break; }
+      if (head >= b.sourceStart && head <= b.sourceEnd) { caretBlockIdx = i; break; }
     }
     if (caretBlockIdx === -1) {
       for (let i = 0; i < doc.blocks.length; i++) {
         const b = doc.blocks[i]!;
         if (b.sourceStart === undefined) continue;
-        if (b.sourceStart >= from) { caretBlockIdx = i; break; }
+        if (b.sourceStart >= head) { caretBlockIdx = i; break; }
       }
     }
     if (caretBlockIdx === -1 && doc.blocks.length > 0) {
@@ -660,12 +662,14 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
 
     const scroll = scrollHostRef.current;
     const isCollapsed = selection.from === selection.to;
+    const scrollEnabled = isCollapsed
+      ? debug.cursorSync.enabled
+      : debug.selectionSync.enabled;
     if (
       activeCursorRect &&
       scroll &&
       focused &&
-      isCollapsed &&
-      debug.cursorSync.enabled
+      scrollEnabled
     ) {
       const padding = 16;
       const cr = activeCursorRect.getBoundingClientRect();

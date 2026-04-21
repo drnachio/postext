@@ -40,7 +40,7 @@ export function BadnessCurve({ labels }: { labels: BadnessCurveLabels }) {
       <Label x={left + width / 2} y={bottom + 15} anchor="middle" size={9} color="light">r = 0</Label>
 
       {/* curve */}
-      <polyline points={points.join(" ")} fill="none" stroke={colorTokens.purple.stroke} strokeWidth={2} className="svg-fade-2" />
+      <polyline points={points.join(" ")} fill="none" stroke={colorTokens.purple.stroke} strokeWidth={2} />
 
       {/* zones */}
       <rect x={left} y={bottom - height - 10} width={width / 2} height={height + 10} fill={colorTokens.pink.fill} opacity={0.25} />

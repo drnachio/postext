@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Formato del documento',
   description: 'El subconjunto de markdown que parsea Postext y las normas para escribir los documentos fuente',
   lang: 'es',
-  lastUpdated: '2026-04-15',
+  lastUpdated: '2026-04-21',
   readingTime: '8 min',
   order: 5,
 };
@@ -14,7 +14,7 @@ export const metadata = {
 
 **Postext lee un dialecto de markdown deliberadamente reducido.**
 
-El parser es un tokenizador escrito a mano — no una implementación completa de CommonMark — por lo que el formato de entrada es estrecho y predecible. La intención es doble: mantener el motor pequeño y rápido, y hacer que los documentos sean trivialmente portables entre Postext y cualquier otro lector de CommonMark. Todo lo que no aparezca en esta página se trata como texto plano o se elimina del flujo en línea.
+El parser es un tokenizador escrito a mano — no una implementación completa de CommonMark — por lo que el formato de entrada es estrecho y predecible. La intención es doble: mantener el motor pequeño y rápido, y hacer que los documentos sean trivialmente portables entre Postext y cualquier otro lector de CommonMark (Obsidian, Pandoc, VS Code…). Todo lo que no aparezca en esta página se trata como texto plano o se elimina del flujo en línea.
 
 Si construyes el documento por código, la función `parseMarkdown` (ver [Configuración › Parseo](/es/docs/configuration#parseo)) te devuelve exactamente la misma estructura de bloques que consume el motor de composición.
 

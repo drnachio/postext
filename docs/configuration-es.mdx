@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-20',
+  lastUpdated: '2026-04-21',
   readingTime: '18 min',
   order: 3,
 };
@@ -28,6 +28,23 @@ const document = buildDocument(content, {
 ```
 
 Para una visión general de cómo el motor procesa esta configuración, consulta la página de [Arquitectura](/es/docs/architecture).
+
+
+## Índice
+
+Esta referencia es larga. Estos son los bloques principales:
+
+- [Página](#página) — tamaño, márgenes, rejilla base, marcas de corte.
+- [Disposición](#disposición) — número de columnas, medianil, filetes.
+- [Texto de cuerpo](#texto-de-cuerpo) — tipografía, separación silábica, viudas y huérfanas.
+- [Encabezados](#encabezados) — valores generales y sobrescrituras H1–H6.
+- [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
+- [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
+- [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
+- [Depuración](#depuración) — superposiciones visuales del editor.
+- [Configuración avanzada](#configuración-avanzada) — tipos declarados, soporte futuro.
+- [Uso programático](#uso-programático) — `buildDocument`, resolvers, cachés.
+- [Integrar el visor HTML](#integrar-el-visor-html) y [Generación de PDF](#generación-de-pdf) — recetas completas.
 
 
 ## Página
@@ -452,7 +469,9 @@ Las palabras de menos de 5 caracteres nunca se separan. El motor requiere al men
 
 ### Huérfanas, viudas, *runts* y reglas de cohesión
 
-Más allá de la separación silábica y los límites de espaciado, la configuración del cuerpo expone las reglas *blandas* que evitan las rupturas de párrafo estructuralmente incómodas. Todas ellas se inyectan como deméritos en el algoritmo de ruptura de líneas Knuth-Plass (ver [Separación silábica y justificación](/es/docs/justification)) — sesgan la maquetación hacia rupturas limpias sin imponer nunca una regla dura. Pon a `0` cualquier `*Penalty` para desactivar esa penalización.
+Consulta [Separación silábica y justificación](/es/docs/justification) para entender la mecánica de deméritos que hay detrás. Esta sección es la referencia de las claves de `bodyText` que gobiernan esas penalizaciones.
+
+Más allá de la separación silábica y los límites de espaciado, la configuración del cuerpo expone las reglas *blandas* que evitan las rupturas de párrafo estructuralmente incómodas. Todas ellas se inyectan como deméritos en el algoritmo de ruptura de líneas Knuth-Plass — sesgan la maquetación hacia rupturas limpias sin imponer nunca una regla dura. Pon a `0` cualquier `*Penalty` para desactivar esa penalización.
 
 <table>
   <thead>

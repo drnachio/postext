@@ -21,6 +21,10 @@ import { MarginSystem } from "./configuration/MarginSystem";
 import { BlockTypesGallery } from "./document-format/BlockTypesGallery";
 import { ListNesting } from "./document-format/ListNesting";
 import { InlineFormatting } from "./document-format/InlineFormatting";
+import { SandboxLayout } from "./sandbox/SandboxLayout";
+import { SandboxSyncFlow } from "./sandbox/SandboxSyncFlow";
+import { ContributionAreas } from "./contributing/ContributionAreas";
+import { ContributionWorkflow } from "./contributing/ContributionWorkflow";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const registry: Record<string, React.ComponentType<{ labels: any }>> = {
@@ -47,6 +51,10 @@ const registry: Record<string, React.ComponentType<{ labels: any }>> = {
   BlockTypesGallery,
   ListNesting,
   InlineFormatting,
+  SandboxLayout,
+  SandboxSyncFlow,
+  ContributionAreas,
+  ContributionWorkflow,
 };
 
 interface IllustrationProps {

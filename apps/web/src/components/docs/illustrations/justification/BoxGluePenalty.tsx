@@ -48,7 +48,7 @@ export function BoxGluePenalty({ labels }: { labels: BoxGluePenaltyLabels }) {
       </defs>
 
       {/* Legend */}
-      <g className="svg-fade-1">
+      <g>
         <rect x={60} y={30} width={20} height={20} fill={colorTokens.blue.fill} stroke={colorTokens.blue.stroke} strokeWidth={1.5} rx={3} />
         <Label x={90} y={45} size={10} bold color="blue">{labels.box}</Label>
         <Label x={135} y={45} size={10} color="mid">— {labels.boxDesc}</Label>
@@ -65,7 +65,7 @@ export function BoxGluePenalty({ labels }: { labels: BoxGluePenaltyLabels }) {
       <Label x={60} y={95} size={10} color="light">{labels.exampleLabel}</Label>
 
       {/* Example */}
-      <g className="svg-fade-2">
+      <g>
         {example.map((it, i) => {
           const cx = positions.cx[i];
           const color = it.type === "box" ? "blue" : it.type === "glue" ? "yellow" : "pink";
@@ -80,7 +80,7 @@ export function BoxGluePenalty({ labels }: { labels: BoxGluePenaltyLabels }) {
       </g>
 
       {/* Break points hint */}
-      <g className="svg-fade-3">
+      <g>
         <line x1={60} y1={170} x2={positions.end - 4} y2={170} stroke="var(--svg-stroke)" strokeWidth={1} strokeDasharray="2,3" />
         <Label x={60} y={190} size={9} color="light">breakpoints ⇄ glue and penalty positions</Label>
       </g>

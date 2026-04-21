@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-04-20',
+  lastUpdated: '2026-04-21',
   readingTime: '18 min',
   order: 3,
 };
@@ -28,6 +28,23 @@ const document = buildDocument(content, {
 ```
 
 For an overview of how the engine processes this configuration, see the [Architecture](/en/docs/architecture) page.
+
+
+## Index
+
+This reference is long. These are the main blocks:
+
+- [Page](#page) — size, margins, baseline grid, cut lines.
+- [Layout](#layout) — column count, gutters, rules.
+- [Body text](#body-text) — typography, hyphenation, orphans and widows.
+- [Headings](#headings) — shared defaults and H1–H6 overrides.
+- [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
+- [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
+- [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
+- [Debug](#debug) — visual overlays for the editor.
+- [Advanced configuration](#advanced-configuration) — declared types, future support.
+- [Programmatic use](#programmatic-use) — `buildDocument`, resolvers, caches.
+- [Integrating the HTML viewer](#integrating-the-html-viewer) and [PDF generation](#pdf-generation) — end-to-end recipes.
 
 
 ## Page
@@ -452,7 +469,9 @@ Words shorter than 5 characters are never hyphenated. The engine requires at lea
 
 ### Orphans, widows, runts, and keep-together rules
 
-Beyond hyphenation and spacing bounds, the body-text configuration exposes the soft rules that prevent structurally awkward paragraph breaks. All of these are fed into the Knuth-Plass line-breaking algorithm as demerits (see [Hyphenation & Justification](/en/docs/justification)) — they bias the layout toward clean breaks without ever forcing a hard rule. Set the `*Penalty` values to `0` to effectively disable any one of them.
+See [Hyphenation & Justification](/en/docs/justification) for the mechanics behind these demerits. This section is the reference for the `bodyText` keys that drive them.
+
+Beyond hyphenation and spacing bounds, the body-text configuration exposes the soft rules that prevent structurally awkward paragraph breaks. All of these are fed into the Knuth-Plass line-breaking algorithm as demerits — they bias the layout toward clean breaks without ever forcing a hard rule. Set the `*Penalty` values to `0` to effectively disable any one of them.
 
 <table>
   <thead>

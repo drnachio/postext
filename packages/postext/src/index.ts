@@ -61,6 +61,8 @@ export type {
   SyncIndicatorConfig,
   DebugConfig,
   ResolvedDebugConfig,
+  WarningsToggleConfig,
+  ResolvedWarningsToggleConfig,
   HtmlViewerConfig,
   ResolvedHtmlViewerConfig,
 } from './types';

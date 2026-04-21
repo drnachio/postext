@@ -18,7 +18,7 @@ export function TypographyScale({ labels }: { labels: TypographyScaleLabels }) {
         const y = 50 + i * 38;
         const sizePx = parseInt(r.size, 10) || 12;
         return (
-          <g key={i} className={`svg-fade-${Math.min(i + 1, 7)}`}>
+          <g key={i}>
             <Label x={55} y={y + 4} size={10} color="mid">{r.role}</Label>
             <text x={170} y={y + sizePx / 3} fontSize={sizePx} fontFamily="serif" fill={colorTokens.blue.text} fontWeight={r.role.toLowerCase().includes("head") ? "bold" : "normal"}>
               {r.sample}

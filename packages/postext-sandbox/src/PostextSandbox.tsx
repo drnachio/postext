@@ -9,6 +9,7 @@ import { SidebarPanel } from './sidebar/SidebarPanel';
 import { ConfigPanel } from './sidebar/ConfigPanel';
 import { ResourcesPanel } from './sidebar/ResourcesPanel';
 import { MarkdownPanel } from './sidebar/MarkdownPanel';
+import { WarningsPanel } from './sidebar/WarningsPanel';
 import { ResizableHandle } from './panels/ResizableHandle';
 import { ViewportTabs } from './viewport/ViewportTabs';
 import { CanvasViewport } from './viewport/CanvasViewport';
@@ -96,6 +97,8 @@ function SandboxLayout({
         return <ResourcesPanel />;
       case 'markdown':
         return <MarkdownPanel isDark={isDark} />;
+      case 'warnings':
+        return <WarningsPanel />;
       default:
         return null;
     }

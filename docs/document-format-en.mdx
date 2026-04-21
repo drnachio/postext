@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-04-15',
+  lastUpdated: '2026-04-21',
   readingTime: '8 min',
   order: 5,
 };
@@ -14,7 +14,7 @@ export const metadata = {
 
 **Postext reads a deliberately small markdown dialect.**
 
-The parser ships as a hand-written tokenizer — not a full CommonMark implementation — so the source format is narrow and predictable. The intent is twofold: keep the engine small and fast, and make documents trivially portable between Postext and any other CommonMark reader. Anything not listed on this page is either treated as plain text or removed from the inline stream.
+The parser ships as a hand-written tokenizer — not a full CommonMark implementation — so the source format is narrow and predictable. The intent is twofold: keep the engine small and fast, and make documents trivially portable between Postext and any other CommonMark reader (Obsidian, Pandoc, VS Code…). Anything not listed on this page is either treated as plain text or removed from the inline stream.
 
 If you are building a document programmatically, the `parseMarkdown` function (see [Configuration › Parsing](/en/docs/configuration#parsing)) gives you the exact block structure the layout engine consumes.
 

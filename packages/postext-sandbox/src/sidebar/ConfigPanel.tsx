@@ -16,6 +16,7 @@ import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
 import { HtmlViewerSection } from './sections/HtmlViewerSection';
 import { DebugSection } from './sections/DebugSection';
+import { WarningsConfigSection } from './sections/WarningsConfigSection';
 
 export function ConfigPanel() {
   const { state, dispatch } = useSandbox();
@@ -118,6 +119,7 @@ export function ConfigPanel() {
         <OrderedListsSection />
         <HtmlViewerSection />
         <DebugSection />
+        <WarningsConfigSection />
       </div>
     </div>
   );
