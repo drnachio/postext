@@ -1,7 +1,7 @@
 'use client';
 
 import { useSandbox } from '../../context/SandboxContext';
-import { resolveMathConfig, DEFAULT_MATH_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
+import { resolveMathConfig, DEFAULT_MATH_CONFIG, dimensionsEqual } from 'postext';
 import type { MathConfig, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
