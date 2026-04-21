@@ -35,10 +35,28 @@ import {
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
 
+export interface BuildDocumentOptions {
+  /**
+   * Cooperative cancellation hook. Called once per top-level content block
+   * during placement. Throw (or return a truthy value checked by the caller)
+   * to abort. Intended for running `buildDocument` inside a Web Worker where
+   * a newer request has superseded this one.
+   */
+  shouldCancel?: () => boolean;
+}
+
+export class BuildCancelledError extends Error {
+  constructor() {
+    super('Build cancelled');
+    this.name = 'BuildCancelledError';
+  }
+}
+
 export function buildDocument(
   content: PostextContent,
   config?: PostextConfig,
   cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
 ): VDTDocument {
   const resolved = resolveAllConfig(config);
   const dpi = resolved.page.dpi;
@@ -121,6 +139,7 @@ export function buildDocument(
   let pendingSpacing = 0;
 
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
+    if (options?.shouldCancel?.()) throw new BuildCancelledError();
     const rawBlock = contentBlocks[blockIdx]!;
     const id = `block-${blockIdCounter++}`;
 

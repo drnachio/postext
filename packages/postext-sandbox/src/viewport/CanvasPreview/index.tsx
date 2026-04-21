@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandboxDispatch, useSandboxDocRef, useSandboxSelector } from '../../context/SandboxContext';
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, createMeasurementCache, resolveDebugConfig, initMathEngine, isMathReady } from 'postext';
-import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions, MeasurementCache } from 'postext';
+import { renderPageToCanvas, resolveDebugConfig } from 'postext';
+import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions } from 'postext';
 import { createPageCanvas, createOverlaySvg } from './dom';
 import { drawOverlay } from './overlay';
 import { attachSlotClickHandler } from './interaction';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
+import { useLayoutWorker } from '../../worker/useLayoutWorker';
 
 const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
   en: 'en-us', es: 'es', fr: 'fr', de: 'de', it: 'it', pt: 'pt', ca: 'ca', nl: 'nl',
@@ -102,7 +103,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       },
     };
   }, [rawDeferredConfig, locale]);
-  const measureCacheRef = useRef<MeasurementCache>(createMeasurementCache());
+  const layoutWorker = useLayoutWorker();
   // `rebuildKey` only bumps for events that invalidate measurements (fonts
   // loaded, math engine ready). Container resize does NOT bump this — the
   // VDT is in PT units and is independent of the CSS display size.
@@ -231,21 +232,6 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoom, fitMode]);
 
-  // Kick off MathJax init once the document contains math. Once ready, bump
-  // `rebuildKey` so the pipeline re-builds with real math renders instead of
-  // the placeholder boxes the first pass may have produced.
-  useEffect(() => {
-    if (isMathReady()) return;
-    if (!/\$/.test(deferredMarkdown)) return;
-    let cancelled = false;
-    initMathEngine().then(() => {
-      if (!cancelled) {
-        setRebuildKey((k) => k + 1);
-      }
-    }).catch(() => { /* error surfaces via warnings */ });
-    return () => { cancelled = true; };
-  }, [deferredMarkdown]);
-
   // Rebuild when any font finishes loading after the initial layout.
   // document.fonts.ready only waits for *currently pending* faces; a face
   // requested later (or one that slips past the preload) can land after the
@@ -264,14 +250,14 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
   // NOT depend on container size: VDT coordinates are in PT and independent
   // of viewport dimensions. Resize only rescales the canvas at paint time.
   useEffect(() => {
-    // Gate the build on actual font availability. `document.fonts.check` is
-    // authoritative — if any face the config needs isn't loaded, measureText
-    // would return fallback metrics and poison the cache. We kick off an
-    // explicit load and defer the build until they resolve.
+    let cancelled = false;
+    // Gate on main-thread font availability — the canvas repaint path still
+    // uses `fillText` against the document's FontFaceSet, so we must hold off
+    // the first build until faces are loaded. The worker loads its own copy
+    // of the same fonts separately (see `useLayoutWorker`).
     if (typeof document !== 'undefined' && document.fonts) {
       const missing = getConfigFontSpecs(deferredConfig).filter((s) => !document.fonts.check(s));
       if (missing.length > 0) {
-        let cancelled = false;
         ensureConfigFontsLoaded(deferredConfig).then(() => {
           if (!cancelled) setRebuildKey((k) => k + 1);
         });
@@ -281,32 +267,28 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       }
     }
 
-    // The block measurement cache keys already encode the measurement-
-    // relevant fields (text, font, width, line height, alignment,
-    // hyphenation, word-spacing bounds, indents). A config change that
-    // doesn't affect any of those produces the same keys, so cached values
-    // stay valid. We only wipe the cache on rebuild-invalidating events
-    // (fonts loaded / math ready), tracked via `rebuildKey`.
-    if (appliedRebuildKeyRef.current !== rebuildKey) {
-      measureCacheRef.current = createMeasurementCache();
-      appliedRebuildKeyRef.current = rebuildKey;
-      clearMeasurementCache();
-    }
+    // Track rebuildKey so worker fonts are re-registered when main-thread
+    // fonts land after the first build. The worker's own cache is keyed on
+    // measurement-relevant config bits, so unchanged builds stay cheap.
+    appliedRebuildKeyRef.current = rebuildKey;
 
-    try {
-      const doc = buildDocument(
-        { markdown: deferredMarkdown },
-        deferredConfig,
-        measureCacheRef.current,
-      );
-      docRef.current = doc;
-      sharedDocRef.current = doc;
-      dispatch({ type: 'BUMP_DOC_VERSION' });
-      setDocVersion((v) => v + 1);
-    } catch (err) {
-      console.error('[CanvasPreview] Layout error:', err);
-    }
-  }, [deferredMarkdown, deferredConfig, rebuildKey, dispatch, sharedDocRef]);
+    layoutWorker.build({ markdown: deferredMarkdown }, deferredConfig)
+      .then((doc) => {
+        if (cancelled) return;
+        docRef.current = doc;
+        sharedDocRef.current = doc;
+        dispatch({ type: 'BUMP_DOC_VERSION' });
+        setDocVersion((v) => v + 1);
+      })
+      .catch((err: unknown) => {
+        if ((err as { name?: string } | null)?.name === 'AbortError') return;
+        console.error('[CanvasPreview] Layout error:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deferredMarkdown, deferredConfig, rebuildKey, dispatch, sharedDocRef, layoutWorker]);
 
   // LAYOUT effect — (re)builds the page DOM and repaints visible pages.
   // Runs when a new doc is produced, or when view mode changes. Resize is
