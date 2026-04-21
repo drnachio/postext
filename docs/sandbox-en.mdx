@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-04-20',
+  lastUpdated: '2026-04-21',
   readingTime: '6 min',
   order: 7,
 };
@@ -18,7 +18,9 @@ The Sandbox provides a VS Code-like interface where you can write markdown, adju
 
 ## Interface layout
 
-The Sandbox follows a familiar IDE paradigm with three main areas:
+The Sandbox follows a familiar IDE paradigm with three main areas: a narrow **activity bar** for switching panels, a resizable **sidebar** hosting the editor or configuration, and a **viewport** on the right with the three output tabs.
+
+<Illustration name="SandboxLayout" data='{"title": "Sandbox interface", "desc": "48px activity bar on the left, resizable sidebar in the middle, and viewport on the right with Canvas, HTML, and PDF tabs.", "caption": "Three areas: activity bar, resizable sidebar, and viewport with output tabs.", "activityBar": "Activity", "activityIcons": ["MD", "⚙", "📁", "⇣", "⇡"], "sidebarTitle": "Sidebar", "sidebarSubtitle": "editor or config", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "drag to resize"}' />
 
 ### Activity bar
 
@@ -77,6 +79,8 @@ The toolbar is extensible: custom actions can be added for postext-specific micr
 ### Main viewport
 
 The right side of the interface displays the rendered output. Three tabs are available, one per rendering mode — **Canvas**, **HTML** and **PDF**. Switching tabs does not re-run layout: the same VDT feeds every backend, so the content you see is consistent across modes.
+
+<Illustration name="SandboxSyncFlow" data='{"title": "One VDT, three outputs", "desc": "The sandbox markdown and configuration feed a single in-memory VDT. Canvas, HTML, and PDF each render from that same VDT, guaranteeing identical results across all three tabs.", "caption": "A single VDT feeds the three output tabs.", "markdownLabel": "Markdown", "configLabel": "Configuration", "vdtTitle": "VDT", "vdtSubtitle": "shared layout", "canvasLabel": "Canvas", "htmlLabel": "HTML", "pdfLabel": "PDF", "singleSource": "single source of truth"}' />
 
 #### Canvas tab
 

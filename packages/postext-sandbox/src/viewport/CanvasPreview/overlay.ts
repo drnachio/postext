@@ -78,7 +78,7 @@ export function drawOverlay(
   svg: SVGSVGElement,
   doc: VDTDocument,
   pageIndex: number,
-  selection: { from: number; to: number },
+  selection: { from: number; to: number; head: number },
   debug: ResolvedDebugConfig,
   focused: boolean,
   caretBlockIdx: number,
@@ -92,6 +92,7 @@ export function drawOverlay(
   while (selectionGroup.firstChild) selectionGroup.removeChild(selectionGroup.firstChild);
   if (looseLineGroup) while (looseLineGroup.firstChild) looseLineGroup.removeChild(looseLineGroup.firstChild);
   cursorRect.style.display = 'none';
+  cursorRect.style.visibility = 'hidden';
 
   // Loose-line highlight: paint lines whose justified space ratio exceeds the threshold.
   if (looseLineGroup && debug.looseLineHighlight.enabled) {
@@ -113,7 +114,7 @@ export function drawOverlay(
     }
   }
 
-  const { from, to } = selection;
+  const { from, to, head } = selection;
   const isCollapsed = from === to;
   const cursorActive = debug.cursorSync.enabled && isCollapsed;
   const selectionActive = debug.selectionSync.enabled && !isCollapsed;
@@ -121,19 +122,21 @@ export function drawOverlay(
   if (!focused) return null;
   if (!cursorActive && !selectionActive) return null;
 
-  const caretBlock = cursorActive ? doc.blocks[caretBlockIdx] : undefined;
-  let cursorDrawn = false;
+  // The scroll-target rect is positioned at the selection's `head` (the
+  // active end). When the selection is collapsed this coincides with the
+  // visible caret; when it isn't, the rect is still positioned but kept
+  // invisible so callers can scroll it into view without drawing anything.
+  const caretBlock = doc.blocks[caretBlockIdx];
+  let cursorPositioned = false;
 
-  // Cursor: draw once on the pre-identified caret block if it lives on this page.
-  if (cursorActive && caretBlock && caretBlock.pageIndex === pageIndex) {
+  if (caretBlock && caretBlock.pageIndex === pageIndex) {
     const prefixLen = caretBlock.plainPrefixLen ?? 0;
     const plainLen = prefixLen + (caretBlock.sourceMap?.length ?? 0);
-    // Clamp: if `from` is before the block (cursor between paragraphs) snap to start.
     let plainCaret: number;
-    if (caretBlock.sourceStart !== undefined && from < caretBlock.sourceStart) {
+    if (caretBlock.sourceStart !== undefined && head < caretBlock.sourceStart) {
       plainCaret = prefixLen;
     } else {
-      const mapped = sourceToPlainIndex(caretBlock, from);
+      const mapped = sourceToPlainIndex(caretBlock, head);
       plainCaret = mapped === null ? prefixLen : Math.min(mapped, plainLen);
     }
     for (const line of caretBlock.lines) {
@@ -147,14 +150,22 @@ export function drawOverlay(
       cursorRect.setAttribute('width', '3');
       cursorRect.setAttribute('height', String(line.bbox.height));
       cursorRect.setAttribute('fill', debug.cursorSync.color.hex);
-      cursorRect.style.display = '';
-      cursorDrawn = true;
+      if (cursorActive) {
+        cursorRect.style.display = '';
+        cursorRect.style.visibility = '';
+      } else {
+        // Keep the rect in layout so callers can read getBoundingClientRect()
+        // for scroll-to-selection, but don't paint it.
+        cursorRect.style.display = '';
+        cursorRect.style.visibility = 'hidden';
+      }
+      cursorPositioned = true;
       break;
     }
-    if (!selectionActive) return cursorDrawn ? cursorRect : null;
+    if (!selectionActive) return cursorPositioned ? cursorRect : null;
   }
 
-  if (!selectionActive) return cursorDrawn ? cursorRect : null;
+  if (!selectionActive) return cursorPositioned ? cursorRect : null;
 
   const blocks = doc.blocks.filter((b) => b.pageIndex === pageIndex);
   for (const block of blocks) {
@@ -189,5 +200,5 @@ export function drawOverlay(
       }
     }
   }
-  return cursorDrawn ? cursorRect : null;
+  return cursorPositioned ? cursorRect : null;
 }

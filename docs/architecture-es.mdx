@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitectura',
   description: 'Arquitectura técnica del motor de composición tipográfica Postext',
   lang: 'es',
-  lastUpdated: '2026-04-20',
+  lastUpdated: '2026-04-21',
   readingTime: '35 min',
   order: 2,
 };
@@ -28,6 +28,9 @@ Esa es la filosofía de "calcular todo primero, renderizar después". No es un t
 
 
 ## Conceptos fundamentales
+
+Glosario rápido. El resto del documento asume estos términos — vuelve aquí cuando alguno se haya
+desdibujado.
 
 <table>
   <thead>
@@ -673,7 +676,9 @@ Los tests de rendimiento se ejecutan junto a los tests unitarios en vitest, y la
 
 ## Fuera de alcance
 
-Decir que no es lo que permite entregar. El motor de composición es lo suficientemente complejo por sí solo -- asumir responsabilidades que pertenecen a otro lugar sería la forma más rápida de no terminar nunca. Cada uno de estos límites es una decisión consciente e intencionada.
+Cada uno de estos límites es una decisión consciente — el motor es lo bastante complejo por sí
+solo, y asumir responsabilidades que pertenecen a otro lugar sería la forma más rápida de no
+terminar nunca.
 
 - **Renderizado en servidor.** Toda la composición se ejecuta en el navegador. El motor depende de métricas de fuente del canvas (vía Pretext), que requieren un entorno de navegador. Un backend de servidor usando `node-canvas` podría llegar más adelante, pero no forma parte del diseño inicial. Primero el navegador.
 - **Edición WYSIWYG.** Postext es un motor de composición, no un editor. Contenido entra, geometría sale. Construir una superficie de edición interactiva -- gestión de cursor, selección, deshacer/rehacer, manejo de entrada -- es un problema completamente diferente. Postext puede servir como backend de renderizado para un editor, pero no proporciona capacidades de edición por sí mismo.

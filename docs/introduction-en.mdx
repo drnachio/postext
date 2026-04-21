@@ -75,15 +75,13 @@ intelligently through columns, around images, past footnotes, obeying the rules 
 <Illustration name="CssGapVsEditorial" data='{"title": "The gap between CSS multi-column and editorial layout", "desc": "CSS offers column-count and little else; editorial layout needs orphan and widow control, flow around obstacles, column balancing, footnote placement, and convergence-based refinement.", "caption": "What CSS gives you versus what editorial layout actually requires.", "cssTitle": "What CSS gives you", "cssLead": "column-count", "cssMore": "...and that&#39;s about it.", "cssCons": ["No orphan/widow control", "No flow around obstacles", "No column balancing", "No footnote placement", "No convergence/refinement"], "gap": "the gap", "editorialTitle": "What editorial layout needs", "editorialPros": ["Orphan &amp; widow prevention", "Text flow around resources", "Balanced columns", "Footnote placement", "Hyphenation control", "Convergence-based refinement"], "equals": "= Postext"}' />
 
 
-## A Decade of Trying
-
-I have been chasing this problem for a long time.
+## A Decade Looking for the Missing Piece
 
 The [Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)
-project started around 2014 as an early attempt to bring editorial layout quality to the web. I
-built column-based layouts. I experimented with text flow algorithms. And I ran into the same wall,
-again and again: **you cannot make good layout decisions without knowing exactly how much space text
-will occupy.**
+project started in 2014 as an early attempt to bring editorial layout quality to the web.
+Column-based layouts, text flow experiments, successive prototypes — and always the same wall:
+**you cannot make good layout decisions without knowing exactly how much space text will
+occupy.**
 
 That sounds simple, but it is the whole problem. Every time you ask the browser "how tall is this
 paragraph at this width?", you trigger a full layout reflow. Do that a few hundred times for a
@@ -97,22 +95,23 @@ the main thread. For a decade, that tool did not exist.
 
 ## The Missing Piece
 
-In 2025, Cheng Lou released [`Pretext`](https://github.com/chenglou/pretext).
+In 2025, Cheng Lou released [`Pretext`](https://github.com/chenglou/pretext): a DOM-free text
+measurement library, 300 to 600 times faster than browser reflow and pixel-perfect across Chrome,
+Safari and Firefox. It uses canvas font metrics and pure arithmetic to compute text height and
+line breaks without ever touching the DOM.
 
-It is a DOM-free text measurement library — 300 to 600 times faster than asking the browser.
-Pixel-perfect across Chrome, Safari, and Firefox. It uses canvas font metrics and pure arithmetic to
-compute text height and line breaks without ever touching the DOM.
-
-With Pretext, the bottleneck that blocked this work for ten years simply disappears. You can measure
-thousands of text blocks in milliseconds. You can try ten different column configurations and pick
-the best one. You can run the entire layout algorithm on every window resize, in real time.
+With Pretext, the bottleneck that blocked this work for ten years disappears. Measure thousands
+of text blocks in milliseconds, try ten different column configurations and keep the best, run
+the entire layout algorithm on every window resize without blocking the main thread.
 
 Postext is what happens next.
 
 
 ## Pretext + Postext
 
-The naming is intentional — two halves of the same operation.
+The naming is intentional: two halves of the same operation. Keeping them separate matters because
+they are distinct responsibilities — one measures, the other decides — and isolating measurement
+lets any backend consume it without coupling to editorial rules.
 
 **Pretext** is what happens *before* text is placed: measuring how much space it will need.
 DOM-free, canvas-based, operating on pure numbers.

@@ -20,6 +20,7 @@ import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
 export interface EditorSelection {
   from: number;
   to: number;
+  head: number;
 }
 
 export interface SandboxState {
@@ -77,7 +78,11 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
     case 'SET_VIEWPORT':
       return { ...state, activeViewport: action.payload };
     case 'SET_SELECTION':
-      if (state.selection.from === action.payload.from && state.selection.to === action.payload.to) {
+      if (
+        state.selection.from === action.payload.from &&
+        state.selection.to === action.payload.to &&
+        state.selection.head === action.payload.head
+      ) {
         return state;
       }
       return { ...state, selection: action.payload };
@@ -165,7 +170,7 @@ export function SandboxProvider({
       activeViewport: (savedViewport as ViewportTab) ?? ('canvas' as ViewportTab),
       labels: mergedLabels,
       locale: locale ?? 'en',
-      selection: { from: 0, to: 0 },
+      selection: { from: 0, to: 0, head: 0 },
       editorFocused: false,
       pendingEditorFocus: null,
       docVersion: 0,

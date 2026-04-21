@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Separación silábica y justificación',
   description: 'Cómo Postext corta líneas, justifica texto y controla el espaciado entre palabras usando el algoritmo Knuth-Plass',
   lang: 'es',
-  lastUpdated: '2026-04-19',
+  lastUpdated: '2026-04-21',
   readingTime: '20 min',
   order: 4,
 };
@@ -95,6 +95,8 @@ El algoritmo utiliza programación dinámica. Mantiene un conjunto de **nodos ac
    - **Demérito por clase de ajuste** (por defecto 100): penaliza líneas adyacentes de tensión muy diferente. Si una línea apretada está junto a una muy floja, el contraste resulta chocante.
 
 4. **Clase de ajuste (fitness class)**: cada línea se clasifica como apretada (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), floja (`0.5 ≤ r < 1.0`) o muy floja (`r ≥ 1.0`). Las líneas adyacentes con clases de ajuste separadas por más de un paso incurren en el demérito de clase.
+
+Los cuatro costes se suman en un único número por corte candidato, y el algoritmo elige la secuencia con el coste total más bajo en todo el párrafo — ahí está toda su ventaja sobre el voraz.
 
 <Illustration name="BadnessCurve" data='{"title": "Fealdad en función del ratio de ajuste", "desc": "La fealdad crece como 100 por el valor absoluto de r al cubo. Estiramientos o compresiones pequeños son baratos, pero los extremos se vuelven extremadamente costosos, y por eso el algoritmo los evita.", "caption": "La fealdad crece cúbicamente: algo desigual se tolera, muy desigual se penaliza duro.", "xAxis": "r", "yAxis": "fealdad", "zero": "0", "tight": "apretada (r < 0)", "loose": "floja (r > 0)", "formula": "badness(r) = 100 · |r|³"}' />
 
@@ -332,7 +334,7 @@ debug: {
 
 ### Interpretar los resultados
 
-Cuando activas el resaltado de líneas flojas y ves bandas rojas en ciertas líneas, significa que el motor no pudo encontrar una forma de componer esas líneas sin un espaciado excesivo. Causas comunes y soluciones:
+Cuando activas el resaltado de líneas flojas y ves bandas rojas en ciertas líneas, significa que el motor no pudo encontrar una forma de componer esas líneas sin un espaciado excesivo. Empieza por arriba: las causas están ordenadas de más probable a menos.
 
 <table>
   <thead>
