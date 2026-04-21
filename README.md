@@ -249,36 +249,36 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#inte
 
 ### Phase 1: Foundation
 
-- [ ] Core layout data structures (columns, blocks, inline resources, break points)
-- [ ] Integration with `@chenglou/pretext` for text measurement
-- [ ] Enriched markdown input format definition and parser
-- [ ] Basic single-column layout with paragraph placement
-- [ ] Configuration file schema (first draft)
+- [x] Core layout data structures (columns, blocks, inline resources, break points)
+- [x] Integration with `@chenglou/pretext` for text measurement
+- [x] Enriched markdown input format definition and parser
+- [x] Basic single-column layout with paragraph placement
+- [x] Configuration file schema (first draft)
 
 ### Phase 2: Editorial Layout
 
-- [ ] Multi-column layout engine
+- [x] Multi-column layout engine
 - [ ] Column balancing algorithm
 - [ ] Resource placement within columns (images, figures, tables)
 - [ ] Text flow around obstacles (using pretext's `layoutNextLine`)
-- [ ] Orphan and widow prevention
+- [x] Orphan and widow prevention
 - [ ] Keep-together rules (headings + first paragraph, figures + captions)
 
 ### Phase 3: Professional Typography
 
-- [ ] Hyphenation dictionary integration
+- [x] Hyphenation dictionary integration
 - [ ] Footnote and endnote systems
 - [ ] Pull quotes and margin notes
-- [ ] Fine-grained spacing rules (configurable spacing scale)
-- [ ] Rag optimization
+- [x] Fine-grained spacing rules (configurable spacing scale)
+- [x] Rag optimization
 - [ ] Configuration file format finalization
 
 ### Phase 4: Output Targets
 
-- [ ] Web renderer (HTML/CSS with precise positioning)
-- [ ] PDF renderer
-- [ ] Interactive playground in `apps/web`
-- [ ] Visual configuration editor (stretch goal)
+- [x] Web renderer (HTML/CSS with precise positioning)
+- [x] PDF renderer
+- [x] Interactive playground in `apps/web`
+- [x] Visual configuration editor (stretch goal)
 
 ---
 

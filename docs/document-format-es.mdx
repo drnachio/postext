@@ -6,7 +6,7 @@ export const metadata = {
   description: 'El subconjunto de markdown que parsea Postext y las normas para escribir los documentos fuente',
   lang: 'es',
   lastUpdated: '2026-04-21',
-  readingTime: '8 min',
+  readingTime: '9 min',
   order: 5,
 };
 
@@ -42,9 +42,9 @@ El frontmatter se parsea con [`gray-matter`](https://github.com/jonschlinkert/gr
 
 ## Construcciones de bloque
 
-Postext reconoce seis tipos de bloque. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
+Postext reconoce siete tipos de bloque. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
 
-<Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de un vistazo", "desc": "Los seis tipos de bloque que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada y lista de tareas, cada uno con su sintaxis markdown.", "caption": "Cada tipo de bloque y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}]}' />
+<Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de un vistazo", "desc": "Los siete tipos de bloque que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada, lista de tareas y fórmula en display, cada uno con su sintaxis markdown.", "caption": "Cada tipo de bloque y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}, {"name": "Fórmula display", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
 <table>
   <thead>
@@ -84,6 +84,11 @@ Postext reconoce seis tipos de bloque. Los bloques siempre terminan al encontrar
       <td>Lista de tareas (GFM)</td>
       <td><code>- [ ] pendiente</code>, <code>- [x] hecho</code></td>
       <td>Un elemento de lista no ordenada con una casilla entre corchetes. Acepta <code>x</code> en minúscula o <code>X</code> en mayúscula. Se renderiza con los glifos <code>taskCheckboxChar</code> / <code>taskCheckedChar</code>.</td>
+    </tr>
+    <tr>
+      <td>Fórmula display</td>
+      <td><code>$$ … $$</code></td>
+      <td>Una fórmula LaTeX, bien en una única línea (<code>$$\int_0^1 x^2\,dx$$</code>) o vallada en varias líneas con marcadores <code>$$</code> en sus propias líneas. Se renderiza centrada en la columna, ajustada a la rejilla de línea base como una cabecera, y se mantiene vectorial en el PDF.</td>
     </tr>
   </tbody>
 </table>
@@ -140,8 +145,32 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td><code>![alt](src)</code></td>
       <td>El markdown de imagen en línea se <strong>elimina</strong> del texto. Las imágenes deben declararse en <code>PostextContent.resources</code> para que el motor las coloque según las reglas de <code>resourcePlacement</code>.</td>
     </tr>
+    <tr>
+      <td>Matemáticas en línea</td>
+      <td><code>$…$</code></td>
+      <td>Una fórmula LaTeX que fluye con el texto que la rodea, p. ej. <code>$e^{'{i\\pi}'}+1=0$</code>. Se compone con MathJax y se renderiza como trazos vectoriales en todos los backends. Las fórmulas cuya ascendente o descendente se salga de la caja de línea se escalan hacia abajo para no romper la rejilla vertical. Usa <code>\\$</code> para un signo de dólar literal.</td>
+    </tr>
   </tbody>
 </table>
+
+
+## Fórmulas matemáticas
+
+El soporte matemático forma parte del formato de documento de primer nivel. Postext parsea `$…$` para fórmulas en línea y `$$…$$` para fórmulas en display (bloque), y las renderiza con [MathJax](https://www.mathjax.org/) en modo SVG. Los mismos trazos vectoriales alimentan los tres backends, de modo que la vista previa en canvas, la exportación HTML y la salida PDF coinciden píxel a píxel — y el PDF se mantiene completamente vectorial sea cual sea el nivel de zoom.
+
+- **En línea:** `$…$`. Se reconoce dentro de cualquier bloque de texto (párrafo, encabezado, cita, elemento de lista). Aporta una única caja atómica no partible a la línea; Knuth-Plass la trata como una palabra que no puede separarse. Si la altura natural de la fórmula rompería la caja de línea, se escala uniformemente para conservar la rejilla de línea base — las expresiones muy altas deben vivir en modo display.
+- **Display:** `$$…$$`. Bien en una línea propia (`$$\int_0^1 x^2\,dx$$`) o vallada en varias líneas con marcadores `$$` en sus propias líneas. Se renderiza centrada en la columna y ajustada a la rejilla de línea base con márgenes superior e inferior configurables (`math.marginTop`, `math.marginBottom`) — exactamente la misma corrección que usan los encabezados, de modo que el párrafo que sigue vuelve a caer sobre la rejilla.
+- **Escapado:** `\$` es un signo de dólar literal. Un delimitador `$` o `$$` sin cerrar produce una entrada `unclosedMath` en el panel de avisos con un ancla de fuente al que puedes saltar con un clic.
+- **Errores:** el código TeX que MathJax rechaza (macros no definidos, errores de sintaxis) se refleja como un aviso `invalidMath`. La fórmula se sustituye por una pequeña caja roja para que la geometría del layout siga siendo válida.
+- **Configuración:** la sección `math` de la configuración expone `enabled`, `fontSizeScale` (relativo al tamaño del cuerpo), `color` (hereda del cuerpo si se omite) y los márgenes del display.
+
+```md
+La identidad de Euler $e^{i\pi}+1=0$ enlaza las cinco constantes fundamentales.
+
+$$
+\int_0^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+$$
+```
 
 
 ## Qué NO se soporta
@@ -171,6 +200,7 @@ Unas pocas normas marcan la diferencia entre un documento que se parsea limpiame
 - **Las marcas de tarea van entre corchetes con un único espacio.** `[ ]`, `[x]`, `[X]` — sin variaciones. `[*]` o `[-]` no son marcas de tarea; se renderizan como texto literal.
 - **No se admiten citas dentro de listas.** Empieza la cita en la columna 0, fuera de la lista.
 - **Las imágenes y tablas viven en `resources`.** El `![alt](src)` en línea se elimina precisamente porque rompe la colocación consciente de columnas. Declara cada imagen como recurso y refiérela por id — el motor decide si flota, rompe la columna o se desplaza al inicio de la página siguiente.
+- **Escapa los signos de dólar con `\$` cuando no sean matemáticas.** Postext interpreta `$…$` como LaTeX en línea, así que un `$` suelto en prosa iniciaría una fórmula. Precios, prompts de shell y cualquier otro dólar literal deben escribirse como `\$`.
 
 
 ## Ejemplo completo
@@ -214,6 +244,15 @@ Entre los fallos habituales están:
 - [x] Interlínea ajustada a 1,5
 - [ ] Paso de huérfanas y viudas
 - [ ] Corrección final
+
+### Una nota sobre fórmulas
+
+Las matemáticas en línea como $a^2 + b^2 = c^2$ fluyen con el texto que las
+rodea, y las de display quedan centradas sobre la rejilla de línea base:
+
+$$
+\int_0^1 x^2\,dx = \tfrac{1}{3}
+$$
 ```
 
 Ese mismo documento, procesado por el motor, produce un `VDTDocument` estructurado cuyas páginas contienen cada uno de estos bloques como entradas tipadas — consulta la página de [Arquitectura](/es/docs/architecture) para ver cómo los bloques se convierten en geometría.

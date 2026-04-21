@@ -174,7 +174,7 @@ export interface ResolvedLayoutConfig {
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
 }
 
-export type TextAlign = 'left' | 'justify';
+export type TextAlign = 'left' | 'justify' | 'center';
 
 export type HyphenationLocale =
   | 'en-us'
@@ -573,6 +573,31 @@ export interface PostextSectionOverride {
   resourcePlacement?: ResourcePlacementConfig;
 }
 
+export interface MathConfig {
+  /** Enable LaTeX rendering. When false, `$...$` / `$$...$$` spans are
+   *  still parsed (so warnings track unclosed delimiters) but rendered as
+   *  their literal TeX source. */
+  enabled?: boolean;
+  /** Scale applied to the body font size when rendering math. 1.0 = match
+   *  body text. Range: typically 0.5–2.0. */
+  fontSizeScale?: number;
+  /** Formula colour. If omitted, inherits the body colour. */
+  color?: ColorValue;
+  /** Top margin for display math blocks. */
+  marginTop?: Dimension;
+  /** Bottom margin for display math blocks. Baseline grid snap uses this
+   *  as the *minimum* bottom gap (the grid always wins). */
+  marginBottom?: Dimension;
+}
+
+export interface ResolvedMathConfig {
+  enabled: boolean;
+  fontSizeScale: number;
+  color?: ColorValue;
+  marginTop: Dimension;
+  marginBottom: Dimension;
+}
+
 export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;
@@ -580,6 +605,7 @@ export interface PostextConfig {
   headings?: HeadingsConfig;
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
+  math?: MathConfig;
 
   columns?: number;
   gutter?: string;

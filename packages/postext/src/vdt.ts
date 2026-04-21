@@ -7,7 +7,9 @@ import type {
   ResolvedHeadingsConfig,
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
+  ResolvedMathConfig,
 } from './types';
+import type { MathRender } from './math/types';
 
 // ---------------------------------------------------------------------------
 // Bounding box — all values in px, relative to page origin
@@ -31,6 +33,7 @@ export interface ResolvedConfig {
   headings: ResolvedHeadingsConfig;
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
+  math: ResolvedMathConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,16 +46,19 @@ export type VDTBlockType =
   | 'resource'
   | 'blockquote'
   | 'listItem'
-  | 'footnoteRef';
+  | 'footnoteRef'
+  | 'mathDisplay';
 
-export type TextAlign = 'left' | 'justify';
+export type TextAlign = 'left' | 'justify' | 'center';
 
 export interface VDTLineSegment {
-  kind: 'text' | 'space';
+  kind: 'text' | 'space' | 'math';
   text: string;
   width: number;
   bold?: boolean;
   italic?: boolean;
+  /** Present when `kind === 'math'`. The rendered formula. */
+  mathRender?: MathRender;
 }
 
 export interface VDTLine {
@@ -121,6 +127,11 @@ export interface VDTBlock {
   listKind?: 'unordered' | 'ordered' | 'task';
   /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */
   strikethroughText?: boolean;
+  /** Present on `mathDisplay` blocks. */
+  mathRender?: MathRender;
+  /** Original TeX source for math spans/blocks — used for warnings and the
+   *  disabled-math fallback rendering. */
+  tex?: string;
 }
 
 export interface VDTColumn {

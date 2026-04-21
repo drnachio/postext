@@ -3,14 +3,18 @@ export type WarningKind =
   | 'looseLine'
   | 'headingHierarchy'
   | 'consecutiveHeadings'
-  | 'listAfterHeading';
+  | 'listAfterHeading'
+  | 'invalidMath'
+  | 'unclosedMath';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
   | { kind: 'looseLine'; ratio: number; threshold: number }
   | { kind: 'headingHierarchy'; from: number; to: number }
   | { kind: 'consecutiveHeadings' }
-  | { kind: 'listAfterHeading' };
+  | { kind: 'listAfterHeading' }
+  | { kind: 'invalidMath'; tex: string; message: string }
+  | { kind: 'unclosedMath'; delimiter: '$' | '$$'; tex: string };
 
 export interface Warning {
   id: string;

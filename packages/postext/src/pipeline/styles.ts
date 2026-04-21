@@ -70,6 +70,29 @@ export function resolveHeadingStyle(
   return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false };
 }
 
+export function resolveMathDisplayStyle(resolved: ResolvedConfig): BlockStyle {
+  const dpi = resolved.page.dpi;
+  const fontSizePx = dimensionToPx(resolved.bodyText.fontSize, dpi) * resolved.math.fontSizeScale;
+  const lineHeightPx = computeBaselineGrid(resolved);
+  const weight = resolved.bodyText.fontWeight.toString();
+  const fontString = buildFontString(resolved.bodyText.fontFamily, fontSizePx, weight);
+  const marginTopPx = dimensionToPx(resolved.math.marginTop, dpi, fontSizePx);
+  const marginBottomPx = dimensionToPx(resolved.math.marginBottom, dpi, fontSizePx);
+  const color = resolved.math.color?.hex ?? resolved.bodyText.color.hex;
+  return {
+    fontString,
+    fontSizePx,
+    lineHeightPx,
+    color,
+    textAlign: 'center',
+    hyphenate: false,
+    marginTopPx,
+    marginBottomPx,
+    firstLineIndentPx: 0,
+    hangingIndent: false,
+  };
+}
+
 export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
   const dpi = resolved.page.dpi;
   const fontSizePx = dimensionToPx(resolved.bodyText.fontSize, dpi);

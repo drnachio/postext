@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandbox } from '../../context/SandboxContext';
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, createMeasurementCache, resolveDebugConfig } from 'postext';
+import { buildDocument, renderPageToCanvas, clearMeasurementCache, createMeasurementCache, resolveDebugConfig, initMathEngine, isMathReady } from 'postext';
 import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions, MeasurementCache } from 'postext';
 import { createPageCanvas, createOverlaySvg } from './dom';
 import { drawOverlay } from './overlay';
@@ -97,6 +97,22 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     observer.observe(container);
     return () => observer.disconnect();
   }, []);
+
+  // Kick off MathJax init once the document contains math. Once ready, bump
+  // `resizeKey` so the pipeline re-builds with real math renders instead of
+  // the placeholder boxes the first pass may have produced.
+  useEffect(() => {
+    if (isMathReady()) return;
+    if (!/\$/.test(deferredMarkdown)) return;
+    let cancelled = false;
+    initMathEngine().then(() => {
+      if (!cancelled) {
+        clearMeasurementCache();
+        setResizeKey((k) => k + 1);
+      }
+    }).catch(() => { /* error surfaces via warnings */ });
+    return () => { cancelled = true; };
+  }, [deferredMarkdown]);
 
   // Rebuild when any font finishes loading after the initial layout.
   // document.fonts.ready only waits for *currently pending* faces; a face

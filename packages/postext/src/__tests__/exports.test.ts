@@ -53,6 +53,9 @@ describe("package exports", () => {
       "DEFAULT_ORDERED_LISTS_STATIC",
       "resolveOrderedListsConfig",
       "stripOrderedListsDefaults",
+      "DEFAULT_MATH_CONFIG",
+      "resolveMathConfig",
+      "stripMathDefaults",
       "dimensionsEqual",
       "colorsEqual",
       "resolveColorValue",
@@ -73,6 +76,14 @@ describe("package exports", () => {
       "DEFAULT_HTML_VIEWER_CONFIG",
       "resolveHtmlViewerConfig",
       "stripHtmlViewerDefaults",
+      "parseMarkdownWithIssues",
+      "MATH_PLACEHOLDER",
+      "initMathEngine",
+      "isMathReady",
+      "onMathReady",
+      "renderMath",
+      "placeholderRender",
+      "clearMathCache",
     ]);
   });
 });

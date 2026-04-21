@@ -68,6 +68,20 @@ function pickSegmentColor(
   return block.color;
 }
 
+function renderMathSegmentSvg(seg: VDTLineSegment, xPx: number, line: VDTLine, block: VDTBlock): string {
+  const render = seg.mathRender;
+  if (!render) return '';
+  // Position the SVG with top = (line.baseline - block.bbox.y - ascent).
+  // line.bbox.y is absolute; we need top relative to the line's wrapper top.
+  const topOffset = line.baseline - line.bbox.y - render.ascentPx;
+  const color = block.color;
+  // Use the pre-serialised self-contained SVG. Replace any currentColor fills
+  // with the block colour so the SVG is independent of CSS inheritance.
+  const svg = render.svg
+    .replace(/<svg\b[^>]*>/, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${render.viewBox.minX} ${render.viewBox.minY} ${render.viewBox.width} ${render.viewBox.height}" width="${render.widthPx}" height="${render.heightPx}" style="color:${color};">`);
+  return `<span style="position:absolute;left:${xPx.toFixed(3)}px;top:${topOffset.toFixed(3)}px;display:inline-block;line-height:0;">${svg}</span>`;
+}
+
 function renderSegments(line: VDTLine, block: VDTBlock): string {
   if (!line.segments || line.segments.length === 0) {
     return `<span style="position:absolute;left:0;top:0;white-space:pre;">${esc(line.text)}</span>`;
@@ -90,11 +104,21 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
     ? (effectiveWidth - wordWidth) / spaceCount
     : 0;
 
+  // Centred alignment — used by math display blocks. Distribute leading gap.
+  const useCenter = block.textAlign === 'center';
+  const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
+  const centerLeft = useCenter ? Math.max(0, (effectiveWidth - contentWidth) / 2) : 0;
+
   const parts: string[] = [];
-  let x = 0;
+  let x = centerLeft;
   for (const seg of line.segments) {
     if (seg.kind === 'space') {
       x += useJustify ? justifiedSpaceWidth : seg.width;
+      continue;
+    }
+    if (seg.kind === 'math') {
+      parts.push(renderMathSegmentSvg(seg, x, line, block));
+      x += seg.width;
       continue;
     }
     const font = quoteFontString(pickSegmentFont(seg, block));

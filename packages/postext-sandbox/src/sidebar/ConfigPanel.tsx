@@ -14,6 +14,7 @@ import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
+import { MathSection } from './sections/MathSection';
 import { HtmlViewerSection } from './sections/HtmlViewerSection';
 import { DebugSection } from './sections/DebugSection';
 import { WarningsConfigSection } from './sections/WarningsConfigSection';
@@ -117,6 +118,7 @@ export function ConfigPanel() {
         <HeadingsSection />
         <UnorderedListsSection />
         <OrderedListsSection />
+        <MathSection />
         <HtmlViewerSection />
         <DebugSection />
         <WarningsConfigSection />

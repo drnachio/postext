@@ -6,6 +6,7 @@ import {
   resolveHeadingsConfig,
   resolveUnorderedListsConfig,
   resolveOrderedListsConfig,
+  resolveMathConfig,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
 } from '../defaults';
@@ -22,6 +23,7 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
     headings: resolveHeadingsConfig(config?.headings),
     unorderedLists: resolveUnorderedListsConfig(config?.unorderedLists, bodyText),
     orderedLists: resolveOrderedListsConfig(config?.orderedLists, bodyText),
+    math: resolveMathConfig(config?.math),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }

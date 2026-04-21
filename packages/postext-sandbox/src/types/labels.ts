@@ -105,6 +105,21 @@ export interface SandboxLabels {
   warningsConsecutiveHeadingsDetail: string;
   warningsListAfterHeadingTitle: string;
   warningsListAfterHeadingDetail: string;
+  warningsInvalidMathTitle?: string;
+  warningsUnclosedMathTitle?: string;
+
+  // Math section
+  mathSection?: string;
+  mathEnabled?: string;
+  mathEnabledTooltip?: string;
+  mathFontSizeScale?: string;
+  mathFontSizeScaleTooltip?: string;
+  mathColor?: string;
+  mathColorTooltip?: string;
+  mathMarginTop?: string;
+  mathMarginTopTooltip?: string;
+  mathMarginBottom?: string;
+  mathMarginBottomTooltip?: string;
 
   // Body text section
   bodyText: string;

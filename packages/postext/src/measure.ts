@@ -7,6 +7,7 @@ import {
 } from '@chenglou/pretext';
 import type { VDTLine, VDTLineSegment } from './vdt';
 import { createBoundingBox } from './vdt';
+import type { MathRender } from './math/types';
 import type { TextAlign, HyphenationLocale } from './types';
 import type { InlineSpan } from './parse';
 import { hyphenateText, setHyphenationLocale } from './hyphenate';
@@ -405,6 +406,9 @@ interface RichToken {
   width: number;
   breakPoints?: RichBreakPoint[];
   hyphenWidth?: number;
+  /** When present, this token is an atomic math formula. `text` is a single
+   *  `\uFFFC` placeholder and `width` is the math render's widthPx. */
+  mathRender?: MathRender;
 }
 
 let _measureCtx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null = null;
@@ -445,6 +449,20 @@ function tokenizeSpans(
   const tokens: RichToken[] = [];
 
   for (const span of spans) {
+    // Math spans are atomic: a single non-breaking box with the render's
+    // widthPx. Kind 'text' is correct (not 'space') so trimming trailing
+    // spaces from a line doesn't drop the formula.
+    if (span.math && span.mathRender) {
+      tokens.push({
+        text: span.text,
+        bold: span.bold,
+        italic: span.italic,
+        kind: 'text',
+        width: span.mathRender.widthPx,
+        mathRender: span.mathRender,
+      });
+      continue;
+    }
     const text = shouldHyphenate ? hyphenateText(span.text) : span.text;
     const font = span.bold && span.italic
       ? boldItalicFont
@@ -667,11 +685,12 @@ export function measureRichBlock(
 
     // Build segments for justified rendering
     const segments: VDTLineSegment[] = lineTokens.map((t) => ({
-      kind: t.kind,
+      kind: t.mathRender ? ('math' as const) : t.kind,
       text: cleanSoftHyphens(t.text),
       width: t.width,
       bold: t.bold || undefined,
       italic: t.italic || undefined,
+      ...(t.mathRender ? { mathRender: t.mathRender } : {}),
     }));
 
     const lineText = lineTokens.map((t) => cleanSoftHyphens(t.text)).join('');

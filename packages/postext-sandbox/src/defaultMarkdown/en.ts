@@ -202,6 +202,18 @@ The algorithm models text as a sequence of three primitives:
 
 For each candidate break the algorithm computes an adjustment ratio, a badness value that grows cubically with the absolute ratio, and a total demerit that also takes into account hyphenation and fitness class transitions between adjacent lines. Postext extends the classic demerit set with three editorial penalties — orphan, widow, and runt — so the same optimiser that balances word spacing also avoids paragraph-end defects.
 
+### Mathematical Typesetting
+
+Postext treats LaTeX formulas as first-class citizens of the document format, not as an afterthought bolted on top. Inline expressions such as $e^{i\pi}+1=0$ flow with the surrounding text and are typeset by MathJax as vector paths, so they remain crisp at any zoom level. When a formula's natural height would exceed the body line box the engine scales it down uniformly so the baseline grid is preserved — the reader keeps the horizontal rhythm of the text no matter how dense the notation becomes.
+
+Display formulas live on their own lines inside \`$$…$$\` markers. The engine centres them on the column, applies configurable top and bottom margins, and snaps the bottom edge to the baseline grid using the same correction mechanism that headings rely on:
+
+$$
+\\int_0^{\\infty} e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}
+$$
+
+The next paragraph therefore lands exactly on a grid line, regardless of how tall the formula is — a feature that matters a great deal in technical books and scientific articles where math and prose alternate relentlessly. The same vector paths drive the canvas preview, the HTML export, and the PDF backend, so the three outputs are pixel-for-pixel consistent, and the PDF stays fully vectorial for print production.
+
 ### Spacing and Rhythm
 
 Vertical spacing in editorial typography follows strict rules that maintain the visual rhythm of the page. Postext enforces these rules through its configuration system:

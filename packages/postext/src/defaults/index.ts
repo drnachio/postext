@@ -5,6 +5,7 @@ import { stripBodyTextDefaults } from './bodyText';
 import { stripHeadingsDefaults } from './headings';
 import { stripUnorderedListsDefaults } from './unorderedLists';
 import { stripOrderedListsDefaults } from './orderedLists';
+import { stripMathDefaults } from './math';
 import { stripDebugDefaults } from './debug';
 import { stripHtmlViewerDefaults } from './htmlViewer';
 
@@ -15,6 +16,7 @@ export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, hyphenationEqual,
 export { DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
 export { DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults } from './unorderedLists';
 export { DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults } from './orderedLists';
+export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './math';
 export { DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './debug';
 export { DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults } from './htmlViewer';
 
@@ -55,6 +57,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.orderedLists = strippedOrdered;
   } else {
     delete result.orderedLists;
+  }
+  const strippedMath = stripMathDefaults(config.math);
+  if (strippedMath) {
+    result.math = strippedMath;
+  } else {
+    delete result.math;
   }
   const strippedDebug = stripDebugDefaults(config.debug);
   if (strippedDebug) {

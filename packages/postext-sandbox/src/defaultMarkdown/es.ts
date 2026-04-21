@@ -202,6 +202,18 @@ El algoritmo modela el texto como una secuencia de tres primitivas:
 
 Para cada corte candidato, el algoritmo calcula un ratio de ajuste, un valor de maldad que crece cúbicamente con el valor absoluto de ese ratio y un total de deméritos que también contempla la separación silábica y las transiciones de clase de holgura entre líneas contiguas. Postext amplía el conjunto clásico de deméritos con tres penalizaciones editoriales —huérfana, viuda y rabo— para que el mismo optimizador que equilibra el espaciado también evite los defectos al final del párrafo.
 
+### Composición matemática
+
+Postext trata las fórmulas LaTeX como ciudadanas de primera del formato de documento, no como un añadido posterior. Las expresiones en línea como $e^{i\\pi}+1=0$ fluyen con el texto que las rodea y se componen con MathJax como trazos vectoriales, de modo que se mantienen nítidas a cualquier nivel de zoom. Cuando la altura natural de una fórmula excedería la caja de línea del cuerpo, el motor la escala uniformemente hacia abajo para preservar la rejilla de línea base — el lector conserva el ritmo horizontal del texto por densa que sea la notación.
+
+Las fórmulas en display viven en sus propias líneas, enmarcadas por los marcadores \`$$…$$\`. El motor las centra en la columna, aplica márgenes superior e inferior configurables y ajusta el borde inferior a la rejilla de línea base usando el mismo mecanismo de corrección que emplean los encabezados:
+
+$$
+\\int_0^{\\infty} e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}
+$$
+
+El siguiente párrafo cae por tanto exactamente sobre una línea de la rejilla, independientemente de lo alta que sea la fórmula — una propiedad que importa mucho en libros técnicos y artículos científicos donde las matemáticas y la prosa se alternan sin descanso. Los mismos trazos vectoriales alimentan la vista canvas, la exportación HTML y el backend PDF, de modo que las tres salidas coinciden píxel a píxel, y el PDF se mantiene plenamente vectorial para producción impresa.
+
 ### Espaciado y ritmo
 
 El espaciado vertical en la tipografía editorial obedece a reglas estrictas que mantienen el ritmo visual de la página. Postext aplica esas reglas a través de su sistema de configuración:
