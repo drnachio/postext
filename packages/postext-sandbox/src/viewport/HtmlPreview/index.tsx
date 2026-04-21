@@ -258,7 +258,7 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
       // Signature gates incremental patching: when any of these change we
       // must rebuild the scroll container wholesale, otherwise we can try to
       // diff at page/block granularity.
-      const sig = `${mode}\0${columnGapPx}\0${PADDING_PX}`;
+      const sig = `${mode}\x00${columnGapPx}\x00${PADDING_PX}`;
       const prev = lastRenderRef.current;
       const prevSig = lastRenderSigRef.current;
 

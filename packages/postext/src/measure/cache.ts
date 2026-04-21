@@ -10,7 +10,7 @@ function buildPlainCacheKey(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
 ): string {
-  return `${text}\0${font}\0${maxWidthPx}\0${lineHeightPx}\0${options?.textAlign ?? ''}\0${options?.hyphenate ?? ''}\0${options?.firstLineIndentPx ?? ''}\0${options?.hangingIndent ?? ''}\0${options?.optimal ?? ''}\0${options?.maxStretchRatio ?? ''}\0${options?.minShrinkRatio ?? ''}\0${options?.runtPenalty ?? ''}\0${options?.runtMinCharacters ?? ''}`;
+  return `${text}\x00${font}\x00${maxWidthPx}\x00${lineHeightPx}\x00${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}`;
 }
 
 function buildRichCacheKey(
@@ -21,7 +21,7 @@ function buildRichCacheKey(
   options: MeasureBlockOptions | undefined,
 ): string {
   const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}`).join('\x01');
-  return `R\0${spanKey}\0${fonts[0]}\0${fonts[1]}\0${fonts[2]}\0${fonts[3]}\0${maxWidthPx}\0${lineHeightPx}\0${options?.textAlign ?? ''}\0${options?.hyphenate ?? ''}\0${options?.firstLineIndentPx ?? ''}\0${options?.hangingIndent ?? ''}\0${options?.optimal ?? ''}\0${options?.maxStretchRatio ?? ''}\0${options?.minShrinkRatio ?? ''}\0${options?.runtPenalty ?? ''}\0${options?.runtMinCharacters ?? ''}`;
+  return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}`;
 }
 
 function cloneMeasuredBlock(block: MeasuredBlock): MeasuredBlock {
