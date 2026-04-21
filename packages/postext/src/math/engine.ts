@@ -110,12 +110,6 @@ interface ParsedSvg {
   defs: Map<string, string>;
 }
 
-function parseAttrNumber(attr: string | undefined): number | null {
-  if (!attr) return null;
-  const m = /(-?\d*\.?\d+)/.exec(attr);
-  return m ? Number(m[1]) : null;
-}
-
 function parseExValue(attr: string | undefined): number | null {
   if (!attr) return null;
   const m = /(-?\d*\.?\d+)ex/.exec(attr);
