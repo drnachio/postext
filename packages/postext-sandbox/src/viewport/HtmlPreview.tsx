@@ -474,8 +474,6 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
           pageIndex,
           pageWidthPx,
           pageHeightPx,
-          pageWidthPx,
-          pageHeightPx,
           docRef,
           dispatchRef,
           activePanelRef,

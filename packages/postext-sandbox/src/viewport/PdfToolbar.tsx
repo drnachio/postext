@@ -1,8 +1,8 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { Download, Printer, RefreshCw } from 'lucide-react';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandboxLabels } from '../context/SandboxContext';
 import { Tooltip } from '../panels/Tooltip';
 
 interface PdfToolbarProps {
@@ -74,7 +74,7 @@ function Separator() {
   );
 }
 
-export function PdfToolbar({
+export const PdfToolbar = memo(function PdfToolbar({
   onRegenerate,
   onDownload,
   onPrint,
@@ -82,8 +82,7 @@ export function PdfToolbar({
   canPrint,
   generating,
 }: PdfToolbarProps) {
-  const { state } = useSandbox();
-  const { labels } = state;
+  const labels = useSandboxLabels();
   return (
     <div
       role="toolbar"
@@ -125,4 +124,4 @@ export function PdfToolbar({
       <style>{`@keyframes postext-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
-}
+});

@@ -328,10 +328,13 @@ export function renderMath(
     // depth scales too
   }
 
-  const colour = options.color ?? 'currentColor';
+  // Keep paths color-agnostic — backends substitute `currentColor` at paint
+  // time (see canvas-backend / html-backend). Baking `options.color` into
+  // the cached render would make the LRU cache miss every time the user
+  // tweaks the math or body colour, which we want to avoid.
   const resolvedPaths: MathPath[] = parsed.paths.map((p) => ({
     d: p.d,
-    fill: p.fill === 'currentColor' ? colour : p.fill,
+    fill: p.fill,
   }));
 
   const svgSerialized = serializeForHtml(parsed, svgOnly, widthPx, heightPx, ascentPx);

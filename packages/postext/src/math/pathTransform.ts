@@ -73,6 +73,12 @@ function fmt(n: number): string {
 
 // Transform the path. Output uses only absolute commands with a conservative
 // whitespace policy that is round-trippable through any SVG consumer.
+//
+// Smooth-curve shorthands `T`/`t` and `S`/`s` are expanded to explicit `Q`/`C`
+// commands. pdf-lib 1.17's SVG path parser has a bug in its `T` handler that
+// miscomputes the implicit control point for *chained* T commands, producing
+// ink-splatter artifacts on MathJax font glyphs (which use long T runs).
+// Expanding here keeps the output portable across parsers.
 export function transformPath(d: string, matrix: AffineMatrix): string {
   if (matrix === IDENTITY) return d;
   const cmds = tokenize(d);
@@ -81,10 +87,19 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
   let cy = 0;
   let startX = 0;
   let startY = 0;
+  // Previous quadratic control point in ORIGINAL space, for T reflection.
+  let prevQCx: number | null = null;
+  let prevQCy: number | null = null;
+  // Previous cubic second-control point in ORIGINAL space, for S reflection.
+  let prevCC2x: number | null = null;
+  let prevCC2y: number | null = null;
 
   const out: string[] = [];
   const emit = (op: string, ...args: number[]) => {
     out.push(op + args.map(fmt).join(' '));
+  };
+  const clearControlMemory = () => {
+    prevQCx = prevQCy = prevCC2x = prevCC2y = null;
   };
 
   for (const { op, args } of cmds) {
@@ -103,6 +118,7 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           cx = args[i]!;
           cy = args[i + 1]!;
         }
+        clearControlMemory();
         break;
       }
       case 'm':
@@ -121,6 +137,7 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           cx = ax;
           cy = ay;
         }
+        clearControlMemory();
         break;
       }
       case 'H': {
@@ -129,6 +146,7 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           emit('L', x, y);
           cx = a;
         }
+        clearControlMemory();
         break;
       }
       case 'h': {
@@ -138,6 +156,7 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           emit('L', x, y);
           cx = ax;
         }
+        clearControlMemory();
         break;
       }
       case 'V': {
@@ -146,6 +165,7 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           emit('L', x, y);
           cy = a;
         }
+        clearControlMemory();
         break;
       }
       case 'v': {
@@ -155,6 +175,7 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           emit('L', x, y);
           cy = ay;
         }
+        clearControlMemory();
         break;
       }
       case 'C':
@@ -171,6 +192,9 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           const [a2x, a2y] = applyPoint(matrix, p2x, p2y);
           const [aex, aey] = applyPoint(matrix, ex, ey);
           emit('C', a1x, a1y, a2x, a2y, aex, aey);
+          prevCC2x = p2x;
+          prevCC2y = p2y;
+          prevQCx = prevQCy = null;
           cx = ex;
           cy = ey;
         }
@@ -178,15 +202,23 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
       }
       case 'S':
       case 's': {
+        // Expand S to C with an explicit first control point (reflection of
+        // the previous cubic's second control across the current point).
         const rel = op === 's';
         for (let i = 0; i < args.length; i += 4) {
+          const p1x: number = prevCC2x === null ? cx : 2 * cx - prevCC2x;
+          const p1y: number = prevCC2y === null ? cy : 2 * cy - prevCC2y;
           const p2x = rel ? cx + args[i]! : args[i]!;
           const p2y = rel ? cy + args[i + 1]! : args[i + 1]!;
           const ex = rel ? cx + args[i + 2]! : args[i + 2]!;
           const ey = rel ? cy + args[i + 3]! : args[i + 3]!;
+          const [a1x, a1y] = applyPoint(matrix, p1x, p1y);
           const [a2x, a2y] = applyPoint(matrix, p2x, p2y);
           const [aex, aey] = applyPoint(matrix, ex, ey);
-          emit('S', a2x, a2y, aex, aey);
+          emit('C', a1x, a1y, a2x, a2y, aex, aey);
+          prevCC2x = p2x;
+          prevCC2y = p2y;
+          prevQCx = prevQCy = null;
           cx = ex;
           cy = ey;
         }
@@ -203,6 +235,9 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           const [a1x, a1y] = applyPoint(matrix, p1x, p1y);
           const [aex, aey] = applyPoint(matrix, ex, ey);
           emit('Q', a1x, a1y, aex, aey);
+          prevQCx = p1x;
+          prevQCy = p1y;
+          prevCC2x = prevCC2y = null;
           cx = ex;
           cy = ey;
         }
@@ -210,12 +245,21 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
       }
       case 'T':
       case 't': {
+        // Expand T to Q with an explicit control point (reflection of the
+        // previous quadratic's control across the current point). Avoids
+        // pdf-lib 1.17's buggy T handler, which breaks chained T commands.
         const rel = op === 't';
         for (let i = 0; i < args.length; i += 2) {
+          const p1x: number = prevQCx === null ? cx : 2 * cx - prevQCx;
+          const p1y: number = prevQCy === null ? cy : 2 * cy - prevQCy;
           const ex = rel ? cx + args[i]! : args[i]!;
           const ey = rel ? cy + args[i + 1]! : args[i + 1]!;
+          const [a1x, a1y] = applyPoint(matrix, p1x, p1y);
           const [aex, aey] = applyPoint(matrix, ex, ey);
-          emit('T', aex, aey);
+          emit('Q', a1x, a1y, aex, aey);
+          prevQCx = p1x;
+          prevQCy = p1y;
+          prevCC2x = prevCC2y = null;
           cx = ex;
           cy = ey;
         }
@@ -238,6 +282,7 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
           cx = ex;
           cy = ey;
         }
+        clearControlMemory();
         break;
       }
       case 'Z':
@@ -245,6 +290,7 @@ export function transformPath(d: string, matrix: AffineMatrix): string {
         emit('Z');
         cx = startX;
         cy = startY;
+        clearControlMemory();
         break;
       }
       default:

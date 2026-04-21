@@ -1,13 +1,15 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import type { ViewportTab } from '../types';
 
 const TABS: ViewportTab[] = ['canvas', 'html', 'pdf'];
 
 export function ViewportTabs() {
-  const { state, dispatch } = useSandbox();
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const activeViewport = useSandboxSelector((s) => s.activeViewport);
   const containerRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
@@ -26,7 +28,7 @@ export function ViewportTabs() {
 
   useEffect(() => {
     updateIndicator();
-  }, [state.activeViewport, updateIndicator]);
+  }, [activeViewport, updateIndicator]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -45,8 +47,8 @@ export function ViewportTabs() {
       aria-label="Preview mode"
     >
       {TABS.map((tab) => {
-        const isActive = state.activeViewport === tab;
-        const label = state.labels[tab];
+        const isActive = activeViewport === tab;
+        const label = labels[tab];
         return (
           <button
             key={tab}

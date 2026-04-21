@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
   resolveHtmlViewerConfig,
   DEFAULT_HTML_VIEWER_CONFIG,
@@ -12,11 +13,11 @@ import {
   ToggleSwitch,
 } from '../../controls';
 
-export function HtmlViewerSection() {
-  const { state, dispatch } = useSandbox();
-  const rawHtmlViewer = state.config.htmlViewer;
+export const HtmlViewerSection = memo(function HtmlViewerSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const rawHtmlViewer = useSandboxSelector((s) => s.config.htmlViewer);
   const htmlViewer = resolveHtmlViewerConfig(rawHtmlViewer);
-  const { labels } = state;
 
   const updateHtmlViewer = (partial: Partial<HtmlViewerConfig>) => {
     dispatch({
@@ -93,4 +94,4 @@ export function HtmlViewerSection() {
       />
     </CollapsibleSection>
   );
-}
+});

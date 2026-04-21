@@ -62,4 +62,18 @@ describe('math parsing', () => {
     // The source map entry at the placeholder should point at the opening `$`.
     expect(p.sourceMap[placeholderIdx]).toBe(md.indexOf('$'));
   });
+
+  it('keeps source mapping aligned for plain chars after inline math', () => {
+    const md = 'ab $x$ cd';
+    const { blocks } = parseMarkdownWithIssues(md);
+    const p = blocks[0]!;
+    // Plain text is `ab \uFFFC cd`. Each char after the placeholder must point
+    // at its real source offset, not collapse to blockSrcEnd — otherwise any
+    // selection that touches post-math source offsets snaps to the end of the
+    // block and engulfs the whole tail.
+    const spaceAfterMath = p.text.indexOf(MATH_PLACEHOLDER) + 1;
+    expect(p.sourceMap[spaceAfterMath]).toBe(md.indexOf(' cd'));
+    expect(p.sourceMap[spaceAfterMath + 1]).toBe(md.indexOf('cd'));
+    expect(p.sourceMap[spaceAfterMath + 2]).toBe(md.indexOf('cd') + 1);
+  });
 });

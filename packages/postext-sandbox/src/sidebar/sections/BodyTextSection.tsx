@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
 import type { BodyTextConfig, HyphenationConfig, HyphenationLocale } from 'postext';
 import {
@@ -32,12 +33,13 @@ const INDENT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
-export function BodyTextSection() {
-  const { state, dispatch } = useSandbox();
-  const raw = state.config.bodyText;
+export const BodyTextSection = memo(function BodyTextSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.bodyText);
+  const locale = useSandboxSelector((s) => s.locale);
   const bodyText = resolveBodyTextConfig(raw);
-  const { labels } = state;
-  const defaultLocale = LOCALE_TO_HYPHENATION[state.locale] ?? 'en-us';
+  const defaultLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
 
   // Use app locale as the effective default when user hasn't explicitly set one
   const effectiveHyphenationLocale = raw?.hyphenation?.locale ?? defaultLocale;
@@ -504,4 +506,4 @@ export function BodyTextSection() {
       />
     </CollapsibleSection>
   );
-}
+});

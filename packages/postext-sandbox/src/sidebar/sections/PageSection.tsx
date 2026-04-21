@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, dimensionsEqual, colorsEqual } from 'postext';
 import type { PageConfig, PageSizePreset, Dimension } from 'postext';
 import {
@@ -23,11 +24,11 @@ const PAGE_SIZE_OPTIONS = [
 
 const D = DEFAULT_PAGE_CONFIG;
 
-export function PageSection() {
-  const { state, dispatch } = useSandbox();
-  const raw = state.config.page;
+export const PageSection = memo(function PageSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.page);
   const page = resolvePageConfig(raw);
-  const { labels } = state;
 
   const updatePage = (partial: Partial<PageConfig>) => {
     dispatch({
@@ -308,4 +309,4 @@ export function PageSection() {
 
     </CollapsibleSection>
   );
-}
+});
