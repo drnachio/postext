@@ -44,7 +44,6 @@
   "dependencies": {
     "@chenglou/pretext": "^0.0.5",
     "gray-matter": "^4.0.3",
-    "hypher": "^0.2.5",
     "hyphenation.ca": "^0.2.1",
     "hyphenation.de": "^0.2.1",
     "hyphenation.en-us": "^0.2.1",
@@ -52,6 +51,8 @@
     "hyphenation.fr": "^0.2.1",
     "hyphenation.it": "^0.2.1",
     "hyphenation.nl": "^0.2.1",
-    "hyphenation.pt": "^0.2.1"
+    "hyphenation.pt": "^0.2.1",
+    "hypher": "^0.2.5",
+    "mathjax-full": "^3.2.2"
   }
 }

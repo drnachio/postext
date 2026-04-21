@@ -537,6 +537,7 @@ interface RichToken {
   width: number;
   breakPoints?: RichBreakPoint[];
   hyphenWidth?: number;
+  mathRender?: import('./math/types').MathRender;
 }
 
 export interface RichTokenMeta {
@@ -808,11 +809,12 @@ export function reconstructRichLines(
           : token.text;
         const cleanText = cleanSoftHyphens(subText);
         lineSegments.push({
-          kind: 'text',
+          kind: token.mathRender ? 'math' : 'text',
           text: cleanText,
           width: it.width,
           bold: meta.bold || undefined,
           italic: meta.italic || undefined,
+          ...(token.mathRender ? { mathRender: token.mathRender } : {}),
         });
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {

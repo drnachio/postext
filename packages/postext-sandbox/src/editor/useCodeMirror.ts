@@ -8,6 +8,7 @@ import { defaultKeymap, history, historyField, historyKeymap } from '@codemirror
 import { bracketMatching } from '@codemirror/language';
 import { getEditorTheme } from './postextTheme';
 import { frontmatterHighlight, frontmatterParser, frontmatterTheme } from './frontmatterHighlight';
+import { mathHighlight, mathTheme } from './mathHighlight';
 
 interface UseCodeMirrorOptions {
   initialValue: string;
@@ -55,6 +56,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       markdown({ extensions: [frontmatterParser] }),
       frontmatterTheme,
       frontmatterHighlight,
+      mathTheme,
+      mathHighlight,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       themeCompartment.current.of(getEditorTheme(isDark)),
       updateListener,

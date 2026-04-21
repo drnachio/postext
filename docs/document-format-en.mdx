@@ -6,7 +6,7 @@ export const metadata = {
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
   lastUpdated: '2026-04-21',
-  readingTime: '8 min',
+  readingTime: '9 min',
   order: 5,
 };
 
@@ -42,9 +42,9 @@ Frontmatter is parsed with [`gray-matter`](https://github.com/jonschlinkert/gray
 
 ## Block constructs
 
-Postext recognises six block types. Blocks are always terminated by a blank line or by the start of another block.
+Postext recognises seven block types. Blocks are always terminated by a blank line or by the start of another block.
 
-<Illustration name="BlockTypesGallery" data='{"title": "Block constructs at a glance", "desc": "The six block types Postext recognises: heading, paragraph, blockquote, unordered list, ordered list, and task list, each with its markdown syntax.", "caption": "Every block type and its markdown entry point.", "blocks": [{"name": "Heading", "syntax": "# Title", "color": "blue"}, {"name": "Paragraph", "syntax": "Plain text lines", "color": "orange"}, {"name": "Blockquote", "syntax": "> quoted text", "color": "green"}, {"name": "Unordered list", "syntax": "- item", "color": "purple"}, {"name": "Ordered list", "syntax": "1. item", "color": "pink"}, {"name": "Task list", "syntax": "- [x] done", "color": "teal"}]}' />
+<Illustration name="BlockTypesGallery" data='{"title": "Block constructs at a glance", "desc": "The seven block types Postext recognises: heading, paragraph, blockquote, unordered list, ordered list, task list, and display math, each with its markdown syntax.", "caption": "Every block type and its markdown entry point.", "blocks": [{"name": "Heading", "syntax": "# Title", "color": "blue"}, {"name": "Paragraph", "syntax": "Plain text lines", "color": "orange"}, {"name": "Blockquote", "syntax": "> quoted text", "color": "green"}, {"name": "Unordered list", "syntax": "- item", "color": "purple"}, {"name": "Ordered list", "syntax": "1. item", "color": "pink"}, {"name": "Task list", "syntax": "- [x] done", "color": "teal"}, {"name": "Display math", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
 <table>
   <thead>
@@ -84,6 +84,11 @@ Postext recognises six block types. Blocks are always terminated by a blank line
       <td>Task list (GFM)</td>
       <td><code>- [ ] todo</code>, <code>- [x] done</code></td>
       <td>An unordered item with a bracketed checkbox. Accepts lowercase <code>x</code> or uppercase <code>X</code>. Rendered with the <code>taskCheckboxChar</code> / <code>taskCheckedChar</code> glyphs.</td>
+    </tr>
+    <tr>
+      <td>Display math</td>
+      <td><code>$$ … $$</code></td>
+      <td>A LaTeX formula either on a single line (<code>$$\int_0^1 x^2\,dx$$</code>) or fenced across multiple lines with <code>$$</code> markers on their own lines. Rendered centred on the column, snapped to the baseline grid like a heading, and kept vectorial in the PDF output.</td>
     </tr>
   </tbody>
 </table>
@@ -140,8 +145,32 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td><code>![alt](src)</code></td>
       <td>Inline image markdown is <strong>removed</strong> from the text. Images must be declared on <code>PostextContent.resources</code> so the layout engine can place them according to <code>resourcePlacement</code> rules.</td>
     </tr>
+    <tr>
+      <td>Inline math</td>
+      <td><code>$…$</code></td>
+      <td>A LaTeX formula that flows with the surrounding text, e.g. <code>$e^{'{i\\pi}'}+1=0$</code>. Typeset by MathJax and rendered as vector paths on every backend. Formulas whose ascent or depth would overflow the body line box are scaled down so they stay on the baseline grid. Use <code>\\$</code> for a literal dollar sign.</td>
+    </tr>
   </tbody>
 </table>
+
+
+## Mathematical formulas
+
+Math support is a first-class part of the document format. Postext parses `$…$` for inline formulas and `$$…$$` for display (block) formulas, and renders them via [MathJax](https://www.mathjax.org/) in SVG mode. The same vector paths drive all three backends, so the canvas preview, the HTML export, and the PDF output are pixel-for-pixel consistent — and the PDF stays fully vectorial regardless of the zoom level.
+
+- **Inline:** `$…$`. Recognised inside any text block (paragraph, heading, blockquote, list item). Contributes a single atomic, non-breaking box to the line; Knuth-Plass treats it like a word that must not be split. If the formula's natural height would break the line box, it is scaled down uniformly so the baseline grid is preserved — very tall expressions belong in display mode.
+- **Display:** `$$…$$`. Either on its own line (`$$\int_0^1 x^2\,dx$$`) or fenced across multiple lines with `$$` markers on their own lines. Rendered centred on the column and snapped to the baseline grid with configurable top and bottom margins (`math.marginTop`, `math.marginBottom`) — exactly the same correction mechanism headings use, so the paragraph after the formula lands back on the grid.
+- **Escaping:** `\$` is a literal dollar sign. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the warnings panel with a click-to-focus source anchor.
+- **Errors:** TeX source that MathJax rejects (undefined macros, syntax errors) surfaces as an `invalidMath` warning. The formula is replaced by a small red placeholder so the layout geometry stays valid.
+- **Configuration:** the `math` section of the config exposes `enabled`, `fontSizeScale` (relative to the body font size), `color` (inherits the body colour when unset), and the display margins.
+
+```md
+The Euler identity $e^{i\pi}+1=0$ links the five fundamental constants.
+
+$$
+\int_0^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+$$
+```
 
 
 ## What is NOT supported
@@ -171,6 +200,7 @@ A few conventions make the difference between a document that parses cleanly and
 - **Task markers must be in square brackets with a single space.** `[ ]`, `[x]`, `[X]` — no variations. `[*]` or `[-]` are not task markers; they render as literal text.
 - **Blockquotes inside lists are not supported.** Start the blockquote at column 0, outside the list.
 - **Images and tables live in `resources`.** Inline `![alt](src)` is stripped precisely because inline images break column-aware placement. Declare each image as a resource and reference it by id — the engine then decides whether it floats, breaks the column, or moves to the top of the next page.
+- **Escape dollar signs with `\$` when you do not mean math.** Postext interprets `$…$` as inline LaTeX, so a raw `$` in prose will start a formula. Prices, shell prompts, and anything else with a bare dollar sign should be written as `\$`.
 
 
 ## Worked example
@@ -214,6 +244,15 @@ Common failure modes include:
 - [x] Leading set to 1.5
 - [ ] Orphan and widow pass
 - [ ] Final proofread
+
+### A note on formulas
+
+Inline math such as $a^2 + b^2 = c^2$ flows with the surrounding text, and
+display math sits centred on the baseline grid:
+
+$$
+\int_0^1 x^2\,dx = \tfrac{1}{3}
+$$
 ```
 
 The same document, rendered through the layout engine, produces a structured `VDTDocument` whose pages carry each of these blocks as typed entries — see the [Architecture](/en/docs/architecture) page for how blocks become geometry.

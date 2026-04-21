@@ -12,10 +12,11 @@ import { parseMarkdownMemo } from '../parse';
 import { computeHeadingNumbers, type HeadingTemplates } from '../numbering';
 import { extractFrontmatter } from '../frontmatter';
 import { measureBlock, measureRichBlock, cachedMeasureBlock, cachedMeasureRichBlock, initHyphenator } from '../measure';
-import type { MeasurementCache } from '../measure';
+import type { MeasurementCache, MeasuredBlock } from '../measure';
 import { resolveAllConfig, computeBaselineGrid } from './config';
 import type { BlockStyle } from './styles';
-import { resolveBodyStyle, resolveHeadingStyle, resolveBlockquoteStyle } from './styles';
+import { resolveBodyStyle, resolveHeadingStyle, resolveBlockquoteStyle, resolveMathDisplayStyle } from './styles';
+import { renderMath, isMathReady } from '../math';
 import type { ListBulletStyle, ListItemResolved } from './lists';
 import {
   computeLevelIndentsPx,
@@ -154,6 +155,11 @@ export function buildDocument(
         style = blockquoteStyle;
         vdtType = 'blockquote';
         break;
+      case 'mathDisplay': {
+        style = resolveMathDisplayStyle(resolved);
+        vdtType = 'mathDisplay';
+        break;
+      }
       case 'listItem': {
         const depth = rawBlock.depth ?? 1;
         const kind: ListKind = rawBlock.listKind ?? 'unordered';
@@ -189,7 +195,28 @@ export function buildDocument(
 
     // Measure text — use rich measurement for blocks with bold spans
     const col = currentColumn(doc, cursor);
-    const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic);
+
+    // Resolve inline math: renderMath each `span.math` and attach mathRender.
+    // When math is disabled, drop the math metadata so spans fall back to
+    // the raw TeX (visible as literal `$...$`).
+    const mathEnabled = resolved.math.enabled;
+    if (contentBlock.spans.some((s) => s.math)) {
+      const mathFontSizePx = style.fontSizePx * resolved.math.fontSizeScale;
+      const mathColor = resolved.math.color?.hex ?? style.color;
+      const enrichedSpans = contentBlock.spans.map((s) => {
+        if (!s.math) return s;
+        if (!mathEnabled) {
+          return { text: `$${s.math.tex}$`, bold: s.bold, italic: s.italic };
+        }
+        const render = isMathReady()
+          ? renderMath(s.math.tex, false, mathFontSizePx, { lineBoxPx: style.lineHeightPx, color: mathColor })
+          : undefined;
+        return { ...s, mathRender: render };
+      });
+      contentBlock = { ...contentBlock, spans: enrichedSpans };
+    }
+
+    const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender);
 
     // List items reserve horizontal space for indent + bullet + gap.
     let measureMaxWidth = col.bbox.width;
@@ -225,13 +252,50 @@ export function buildDocument(
       runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     };
     const useRich = hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString;
-    const measured = cache
-      ? (useRich
-          ? cachedMeasureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions, cache)
-          : cachedMeasureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions, cache))
-      : (useRich
-          ? measureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions)
-          : measureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions));
+
+    // Math display block: bypass text layout entirely. Produce a single
+    // VDTLine whose bbox is the math render's pixel box, centred later.
+    let mathDisplayRender: ReturnType<typeof renderMath> | undefined;
+    let measured: MeasuredBlock;
+    if (vdtType === 'mathDisplay') {
+      const tex = rawBlock.tex ?? '';
+      if (!mathEnabled) {
+        // Fallback: render the literal TeX as a paragraph-like run.
+        measured = useRich
+          ? measureRichBlock(
+              [{ text: `$$${tex}$$`, bold: false, italic: false }],
+              style.fontString, style.fontString, style.fontString, style.fontString,
+              measureMaxWidth, style.lineHeightPx, measureOptions,
+            )
+          : measureBlock(`$$${tex}$$`, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions);
+      } else {
+        const render = isMathReady()
+          ? renderMath(tex, true, style.fontSizePx, { color: style.color })
+          : renderMath(tex, true, style.fontSizePx, { color: style.color });
+        mathDisplayRender = render;
+        const width = Math.min(render.widthPx, measureMaxWidth);
+        const height = render.heightPx;
+        measured = {
+          lines: [{
+            text: '',
+            bbox: { x: 0, y: 0, width, height },
+            baseline: render.ascentPx,
+            hyphenated: false,
+            segments: [{ kind: 'math' as const, text: '\uFFFC', width, mathRender: render }],
+            isLastLine: true,
+          }],
+          totalHeight: height,
+        };
+      }
+    } else {
+      measured = cache
+        ? (useRich
+            ? cachedMeasureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions, cache)
+            : cachedMeasureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions, cache))
+        : (useRich
+            ? measureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions)
+            : measureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions));
+    }
 
     if (measured.lines.length === 0) continue;
 
@@ -318,7 +382,8 @@ export function buildDocument(
     const nextIsHeading = nextBlock?.type === 'heading';
     const shouldSnapToGrid =
       (vdtType === 'heading' && !nextIsHeading) ||
-      (vdtType === 'listItem' && !nextIsListItem);
+      (vdtType === 'listItem' && !nextIsListItem) ||
+      vdtType === 'mathDisplay';
 
     // Place block, splitting across columns/pages if needed.
     // List items may split too — orphan/widow protection per-list is gated by
@@ -346,7 +411,7 @@ export function buildDocument(
       let spacingBefore = 0;
       if (!isFirstInColumn) {
         spacingBefore = pendingSpacing;
-        if (vdtType === 'heading') {
+        if (vdtType === 'heading' || vdtType === 'mathDisplay') {
           spacingBefore = Math.max(spacingBefore, style.marginTopPx);
         } else if (vdtType === 'listItem') {
           const prevWasList = blockIdx > 0 && contentBlocks[blockIdx - 1]!.type === 'listItem';
@@ -358,7 +423,11 @@ export function buildDocument(
 
       const effectiveAvailable = curCol.availableHeight - spacingBefore;
       const linesPerAvailable = Math.floor(effectiveAvailable / style.lineHeightPx);
-      const totalRemainHeight = remainingLines.length * style.lineHeightPx;
+      // Math display blocks carry their natural pixel height on the single
+      // VDTLine; text blocks use the uniform body lineHeightPx per line.
+      const totalRemainHeight = vdtType === 'mathDisplay'
+        ? (remainingLines[0]?.bbox.height ?? style.lineHeightPx)
+        : remainingLines.length * style.lineHeightPx;
 
       // Keep-with-list: if this colon-paragraph would fit but would leave no
       // room for the first list item, split off the colon line (or push the
@@ -519,12 +588,24 @@ export function buildDocument(
         if (style.boldColor) blk.boldColor = style.boldColor;
         if (style.italicColor) blk.italicColor = style.italicColor;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
-        blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
+        if (vdtType === 'mathDisplay' && mathDisplayRender) {
+          blk.mathRender = mathDisplayRender;
+          blk.tex = rawBlock.tex;
+          // Place the single line using its natural height (not the body lineHeight).
+          const mathLine = { ...remainingLines[0]!, bbox: { ...remainingLines[0]!.bbox, y: 0 } };
+          blk.lines = [mathLine];
+        } else {
+          blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
+        }
         blk.dirty = false;
         blk.snappedToGrid = shouldSnapToGrid && partIndex === 0;
         if (remainingLines.length > 0) {
-          blk.sourceStart = remainingLines[0]!.sourceStart;
-          blk.sourceEnd = remainingLines[remainingLines.length - 1]!.sourceEnd;
+          blk.sourceStart = remainingLines[0]!.sourceStart ?? rawBlock.sourceStart + bodyOffset;
+          blk.sourceEnd = remainingLines[remainingLines.length - 1]!.sourceEnd ?? rawBlock.sourceEnd + bodyOffset;
+        }
+        if (vdtType === 'mathDisplay') {
+          blk.sourceStart = rawBlock.sourceStart + bodyOffset;
+          blk.sourceEnd = rawBlock.sourceEnd + bodyOffset;
         }
         blk.sourceMap = absoluteSourceMap;
         blk.plainPrefixLen = prefixLen;

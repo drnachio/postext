@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { AlertTriangle, Type, FileWarning, Heading, List, FileText } from 'lucide-react';
+import { AlertTriangle, Type, FileWarning, Heading, List, FileText, Sigma } from 'lucide-react';
 import { useSandbox } from '../context/SandboxContext';
 import { computeWarnings } from '../warnings/compute';
 import type { Warning, WarningPayload } from '../warnings/types';
@@ -19,6 +19,9 @@ function iconFor(kind: WarningPayload['kind']) {
       return Heading;
     case 'listAfterHeading':
       return List;
+    case 'invalidMath':
+    case 'unclosedMath':
+      return Sigma;
     default:
       return AlertTriangle;
   }
@@ -36,6 +39,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsConsecutiveHeadingsTitle;
     case 'listAfterHeading':
       return labels.warningsListAfterHeadingTitle;
+    case 'invalidMath':
+      return labels.warningsInvalidMathTitle ?? 'Invalid LaTeX';
+    case 'unclosedMath':
+      return labels.warningsUnclosedMathTitle ?? 'Unclosed math delimiter';
   }
 }
 
@@ -51,6 +58,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsConsecutiveHeadingsDetail;
     case 'listAfterHeading':
       return labels.warningsListAfterHeadingDetail;
+    case 'invalidMath':
+      return `${payload.tex.slice(0, 60)} — ${payload.message}`;
+    case 'unclosedMath':
+      return `${payload.delimiter}${payload.tex.slice(0, 40)}…`;
   }
 }
 

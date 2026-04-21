@@ -2,15 +2,55 @@
 // Minimal block-level markdown tokenizer
 // ---------------------------------------------------------------------------
 
-export type ContentBlockType = 'heading' | 'paragraph' | 'blockquote' | 'listItem';
+export type ContentBlockType =
+  | 'heading'
+  | 'paragraph'
+  | 'blockquote'
+  | 'listItem'
+  | 'mathDisplay';
+
+/** Metadata attached to an `InlineSpan` when it represents a math formula.
+ *  The span's `text` is a single `\uFFFC` (object replacement character)
+ *  acting as a one-char-wide atomic placeholder in the plain text. */
+export interface MathMeta {
+  tex: string;
+  /** Absolute source offset of the opening `$` in the original markdown. */
+  sourceStart: number;
+  /** Absolute source offset just past the closing `$`. */
+  sourceEnd: number;
+}
 
 export interface InlineSpan {
   text: string;
   bold: boolean;
   italic: boolean;
+  /** Present when this span carries an inline math formula. The `text` is
+   *  a single `\uFFFC` placeholder that layout treats atomically. */
+  math?: MathMeta;
+  /** Resolved math render — populated by the pipeline before measurement
+   *  so the parser remains free of MathJax dependencies. */
+  mathRender?: import('./math/types').MathRender;
 }
 
+/** Convenience discriminants for inline span iteration. */
+export type TextSpan = InlineSpan & { math?: undefined };
+export type MathSpan = InlineSpan & { math: MathMeta };
+
 export type ListKind = 'unordered' | 'ordered' | 'task';
+
+export type ParseIssueKind = 'unclosedMath' | 'unclosedMathBlock';
+
+export interface ParseIssue {
+  kind: ParseIssueKind;
+  delimiter: '$' | '$$';
+  /** Absolute source offset of the unmatched opening delimiter. */
+  sourceStart: number;
+  /** End of the scanned region (usually the line or block end). */
+  sourceEnd: number;
+  /** Raw TeX captured up to the end of the scanned region, for warning
+   *  messages — may be empty. */
+  tex: string;
+}
 
 export interface ContentBlock {
   type: ContentBlockType;
@@ -25,6 +65,8 @@ export interface ContentBlock {
   startNumber?: number;
   /** Checkbox state for task list items. */
   checked?: boolean;
+  /** TeX source for `mathDisplay` blocks. */
+  tex?: string;
   /** Character offset of the first source character of this block in the original markdown */
   sourceStart: number;
   /** Character offset just past the last source character of this block */
@@ -41,6 +83,153 @@ const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
 const ORDERED_LIST_ITEM_RE = /^(\s*)(\d+)([.)])\s+(.*)$/;
 const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
+
+/** Object Replacement Character — atomic plain-text placeholder for a math
+ *  span. One code unit per formula so `sourceMap` stays 1-to-1. */
+export const MATH_PLACEHOLDER = '\uFFFC';
+
+/** One-line `$$ ... $$` display math (the whole line is the formula). */
+const BLOCK_MATH_SINGLE_RE = /^\s*\$\$([\s\S]+?)\$\$\s*$/;
+/** Standalone `$$` marker (opening or closing a multi-line display block). */
+const BLOCK_MATH_FENCE_RE = /^\s*\$\$\s*$/;
+
+/** Extract inline `$...$` math spans from a line's text.
+ *  - Returns a cleaned text where each match is replaced by `MATH_PLACEHOLDER`.
+ *  - Returns the list of math metadata aligned with the order of placeholders.
+ *  - Detects unclosed `$` (odd number of unescaped `$` in the text).
+ *
+ *  `absOffsets[i]` is the absolute source offset of `text[i]` in the original
+ *  markdown; used to emit accurate `sourceStart`/`sourceEnd` on each math
+ *  span. When the caller cannot provide an exact map (e.g. text has been
+ *  reassembled from multiple source lines) it can pass `null` and math
+ *  offsets will default to the block's source range.
+ */
+function extractInlineMath(
+  text: string,
+  absOffsets: number[] | null,
+  fallbackStart: number,
+  fallbackEnd: number,
+): { cleaned: string; maths: MathMeta[]; issues: ParseIssue[] } {
+  const maths: MathMeta[] = [];
+  const issues: ParseIssue[] = [];
+  let out = '';
+  let i = 0;
+  const absAt = (idx: number): number => {
+    if (absOffsets && idx < absOffsets.length) return absOffsets[idx]!;
+    if (absOffsets && absOffsets.length > 0) return absOffsets[absOffsets.length - 1]! + (idx - (absOffsets.length - 1));
+    return fallbackStart + idx;
+  };
+  while (i < text.length) {
+    const ch = text[i]!;
+    if (ch === '\\' && text[i + 1] === '$') {
+      // Escaped dollar sign — keep as literal `$` in output.
+      out += '$';
+      i += 2;
+      continue;
+    }
+    if (ch !== '$') {
+      out += ch;
+      i++;
+      continue;
+    }
+    // Found a '$'. Skip display-math `$$` sequences — those are handled at
+    // block level, so inside a paragraph we treat `$$` as literal.
+    if (text[i + 1] === '$') {
+      out += '$$';
+      i += 2;
+      continue;
+    }
+    // Scan for the matching closing `$`, honouring `\$` escapes.
+    let j = i + 1;
+    let foundClose = -1;
+    while (j < text.length) {
+      if (text[j] === '\\' && text[j + 1] === '$') {
+        j += 2;
+        continue;
+      }
+      if (text[j] === '$') {
+        foundClose = j;
+        break;
+      }
+      // Bail on newline — inline math must be on a single line.
+      if (text[j] === '\n') break;
+      j++;
+    }
+    if (foundClose < 0) {
+      issues.push({
+        kind: 'unclosedMath',
+        delimiter: '$',
+        sourceStart: absAt(i),
+        sourceEnd: fallbackEnd,
+        tex: text.slice(i + 1),
+      });
+      out += text.slice(i);
+      break;
+    }
+    const tex = text.slice(i + 1, foundClose).replace(/\\\$/g, '$');
+    maths.push({ tex, sourceStart: absAt(i), sourceEnd: absAt(foundClose) + 1 });
+    out += MATH_PLACEHOLDER;
+    i = foundClose + 1;
+  }
+  return { cleaned: out, maths, issues };
+}
+
+/** Walk an InlineSpan list and attach MathMeta to each `\uFFFC` occurrence
+ *  in order. Splits plain-text spans around the placeholder so the math
+ *  span is its own entry (carrying the ambient bold/italic). */
+function injectMathSpans(spans: InlineSpan[], maths: MathMeta[]): InlineSpan[] {
+  if (maths.length === 0) return spans;
+  const out: InlineSpan[] = [];
+  let idx = 0;
+  for (const span of spans) {
+    if (span.text.indexOf(MATH_PLACEHOLDER) < 0) {
+      out.push(span);
+      continue;
+    }
+    let buf = '';
+    for (const ch of span.text) {
+      if (ch === MATH_PLACEHOLDER) {
+        if (buf.length > 0) {
+          out.push({ text: buf, bold: span.bold, italic: span.italic });
+          buf = '';
+        }
+        const meta = maths[idx++];
+        if (meta) {
+          out.push({
+            text: MATH_PLACEHOLDER,
+            bold: span.bold,
+            italic: span.italic,
+            math: meta,
+          });
+        }
+      } else {
+        buf += ch;
+      }
+    }
+    if (buf.length > 0) {
+      out.push({ text: buf, bold: span.bold, italic: span.italic });
+    }
+  }
+  return out;
+}
+
+/** Overwrite `sourceMap[i]` entries corresponding to math placeholders with
+ *  the math span's absolute sourceStart. Keeps click-to-focus accurate for
+ *  formulas even though the placeholder char has no direct source match. */
+function fixMathSourceMap(text: string, spans: InlineSpan[], sourceMap: number[]): void {
+  if (sourceMap.length === 0) return;
+  // Walk spans in order, tracking plain-text position. Each math span
+  // contributes exactly one placeholder char whose sourceMap entry we
+  // overwrite with its span's sourceStart.
+  let p = 0;
+  for (const span of spans) {
+    if (span.math && p < sourceMap.length) {
+      sourceMap[p] = span.math.sourceStart;
+    }
+    p += span.text.length;
+    if (p > text.length) break;
+  }
+}
 
 /**
  * Strip inline markdown formatting for plain-text extraction.
@@ -248,7 +437,7 @@ function buildBlockMapping(
 // Single-slot memo used by parseMarkdownMemo. The returned array and its
 // ContentBlocks are treated as read-only by the rest of the pipeline.
 let _parseMemoInput: string | null = null;
-let _parseMemoResult: ContentBlock[] | null = null;
+let _parseMemoResult: { blocks: ContentBlock[]; issues: ParseIssue[] } | null = null;
 
 /**
  * Memoized wrapper around parseMarkdown: returns the cached result when the
@@ -258,20 +447,35 @@ let _parseMemoResult: ContentBlock[] | null = null;
  */
 export function parseMarkdownMemo(markdown: string): ContentBlock[] {
   if (_parseMemoResult !== null && _parseMemoInput === markdown) {
+    return _parseMemoResult.blocks;
+  }
+  const result = parseMarkdownWithIssues(markdown);
+  _parseMemoInput = markdown;
+  _parseMemoResult = result;
+  return result.blocks;
+}
+
+export function parseMarkdownWithIssuesMemo(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  if (_parseMemoResult !== null && _parseMemoInput === markdown) {
     return _parseMemoResult;
   }
-  const result = parseMarkdown(markdown);
+  const result = parseMarkdownWithIssues(markdown);
   _parseMemoInput = markdown;
   _parseMemoResult = result;
   return result;
+}
+
+export function parseMarkdown(markdown: string): ContentBlock[] {
+  return parseMarkdownWithIssues(markdown).blocks;
 }
 
 /**
  * Merge consecutive blockquote lines into a single block, and consecutive
  * non-blank, non-special lines into paragraphs.
  */
-export function parseMarkdown(markdown: string): ContentBlock[] {
+export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
   const blocks: ContentBlock[] = [];
+  const issues: ParseIssue[] = [];
   const rawLines = markdown.split('\n');
 
   // Precompute starting offset of each raw line in the original markdown.
@@ -300,15 +504,85 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
       continue;
     }
 
+    // Display math — single-line `$$ ... $$`
+    const singleMath = line.match(BLOCK_MATH_SINGLE_RE);
+    if (singleMath) {
+      const srcStart = lineOffsets[i]!;
+      const srcEnd = lineEndOffset(i);
+      blocks.push({
+        type: 'mathDisplay',
+        text: '',
+        spans: [],
+        tex: singleMath[1]!,
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: [],
+      });
+      i++;
+      continue;
+    }
+
+    // Display math — multi-line `$$` ... `$$` (opening fence on its own line).
+    if (BLOCK_MATH_FENCE_RE.test(line)) {
+      const startIdx = i;
+      i++;
+      const texLines: string[] = [];
+      let closed = false;
+      while (i < rawLines.length) {
+        if (BLOCK_MATH_FENCE_RE.test(rawLines[i]!)) {
+          closed = true;
+          break;
+        }
+        texLines.push(rawLines[i]!);
+        i++;
+      }
+      const srcStart = lineOffsets[startIdx]!;
+      const srcEnd = closed ? lineEndOffset(i) : lineEndOffset(i - 1);
+      if (!closed) {
+        issues.push({
+          kind: 'unclosedMathBlock',
+          delimiter: '$$',
+          sourceStart: srcStart,
+          sourceEnd: srcEnd,
+          tex: texLines.join('\n'),
+        });
+      }
+      blocks.push({
+        type: 'mathDisplay',
+        text: '',
+        spans: [],
+        tex: texLines.join('\n'),
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: [],
+      });
+      if (closed) i++; // consume the closing fence
+      continue;
+    }
+
     // Heading
     const headingMatch = trimmed.match(HEADING_RE);
     if (headingMatch) {
-      const rawText = stripInlineFormatting(headingMatch[2]!);
+      const headingRawContent = headingMatch[2]!;
       const srcStart = lineOffsets[i]!;
       const srcEnd = lineEndOffset(i);
-      const mapping = buildBlockMapping(markdown, srcStart, srcEnd, [
-        { text: rawText, bold: false, italic: false },
-      ]);
+      // Absolute offset of the first content char (after the `# `).
+      const prefixLen = line.indexOf(headingRawContent);
+      const contentAbsStart = srcStart + (prefixLen >= 0 ? prefixLen : 0);
+      const { cleaned, maths, issues: mathIssues } = extractInlineMath(
+        headingRawContent,
+        null,
+        contentAbsStart,
+        srcEnd,
+      );
+      issues.push(...mathIssues);
+      const rawText = stripInlineFormatting(cleaned);
+      const rawSpans = injectMathSpans(
+        [{ text: rawText, bold: false, italic: false }],
+        maths,
+      );
+      const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
+      fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({
         type: 'heading',
         text: mapping.text,
@@ -365,10 +639,13 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
             markerLength = unorderedMatch![2]!.length + 1;
           }
 
-          const rawSpans = parseInlineFormatting(itemText);
           const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
+          const mathExtract = extractInlineMath(itemText, null, itemSrcStart, srcEnd);
+          issues.push(...mathExtract.issues);
+          const rawSpans = injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths);
           const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
+          fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
           const block: ContentBlock = {
             type: 'listItem',
             text: mapping.text,
@@ -413,10 +690,13 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
         lastIdx = i;
         i++;
       }
-      const rawSpans = parseInlineFormatting(quoteLines.join(' '));
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
+      const mathExtract = extractInlineMath(quoteLines.join(' '), null, srcStart, srcEnd);
+      issues.push(...mathExtract.issues);
+      const rawSpans = injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths);
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
+      fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({
         type: 'blockquote',
         text: mapping.text,
@@ -441,10 +721,13 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
       i++;
     }
     if (paraLines.length > 0) {
-      const rawSpans = parseInlineFormatting(paraLines.join(' '));
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
+      const mathExtract = extractInlineMath(paraLines.join(' '), null, srcStart, srcEnd);
+      issues.push(...mathExtract.issues);
+      const rawSpans = injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths);
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
+      fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({
         type: 'paragraph',
         text: mapping.text,
@@ -456,5 +739,5 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
     }
   }
 
-  return blocks;
+  return { blocks, issues };
 }

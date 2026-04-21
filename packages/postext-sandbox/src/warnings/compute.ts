@@ -4,7 +4,7 @@ import type {
   ResolvedDebugConfig,
   ContentBlock,
 } from 'postext';
-import { parseMarkdown, resolveDebugConfig } from 'postext';
+import { parseMarkdownWithIssues, resolveDebugConfig } from 'postext';
 import { getConfigFontSpecs, getConfigFontFamilies } from '../controls/fontLoader';
 import type { Warning } from './types';
 
@@ -139,21 +139,35 @@ export function computeWarnings(params: {
     }
   }
 
-  const needsParse =
-    toggles.headingHierarchy ||
-    toggles.consecutiveHeadings ||
-    toggles.listAfterHeading;
-  if (needsParse) {
-    const blocks = parseMarkdown(markdown);
-    if (toggles.headingHierarchy) {
-      warnings.push(...collectHeadingHierarchyWarnings(blocks, markdown));
+  // Always parse so we can surface math issues (unclosed delimiters) even
+  // when other toggles are off.
+  const { blocks, issues } = parseMarkdownWithIssues(markdown);
+  if (toggles.headingHierarchy) {
+    warnings.push(...collectHeadingHierarchyWarnings(blocks, markdown));
+  }
+  if (toggles.consecutiveHeadings) {
+    warnings.push(...collectConsecutiveHeadingsWarnings(blocks, markdown));
+  }
+  if (toggles.listAfterHeading) {
+    warnings.push(...collectListAfterHeadingWarnings(blocks, markdown));
+  }
+
+  // Math: parser-level unclosed issues, plus engine errors harvested from
+  // the built VDT (see collectMathWarnings below).
+  let mathIdx = 0;
+  for (const issue of issues) {
+    if (issue.kind === 'unclosedMath' || issue.kind === 'unclosedMathBlock') {
+      warnings.push({
+        id: `math-unclosed-${mathIdx++}-${issue.sourceStart}`,
+        payload: { kind: 'unclosedMath', delimiter: issue.delimiter, tex: issue.tex.slice(0, 80) },
+        sourceStart: issue.sourceStart,
+        sourceEnd: issue.sourceEnd,
+        line: lineNumberForOffset(markdown, issue.sourceStart),
+      });
     }
-    if (toggles.consecutiveHeadings) {
-      warnings.push(...collectConsecutiveHeadingsWarnings(blocks, markdown));
-    }
-    if (toggles.listAfterHeading) {
-      warnings.push(...collectListAfterHeadingWarnings(blocks, markdown));
-    }
+  }
+  if (doc) {
+    warnings.push(...collectMathRenderWarnings(doc, markdown));
   }
 
   if (toggles.looseLines && doc) {
@@ -161,4 +175,36 @@ export function computeWarnings(params: {
   }
 
   return warnings;
+}
+
+function collectMathRenderWarnings(doc: VDTDocument, markdown: string): Warning[] {
+  const out: Warning[] = [];
+  let idx = 0;
+  for (const block of doc.blocks) {
+    if (block.mathRender?.error) {
+      out.push({
+        id: `math-err-${idx++}-${block.sourceStart ?? 'x'}`,
+        payload: { kind: 'invalidMath', tex: block.mathRender.tex, message: block.mathRender.error },
+        sourceStart: block.sourceStart,
+        sourceEnd: block.sourceEnd,
+        line: block.sourceStart !== undefined ? lineNumberForOffset(markdown, block.sourceStart) : undefined,
+      });
+    }
+    for (const line of block.lines) {
+      if (!line.segments) continue;
+      for (const seg of line.segments) {
+        if (seg.kind === 'math' && seg.mathRender?.error) {
+          const src = line.sourceStart ?? block.sourceStart;
+          out.push({
+            id: `math-err-${idx++}-${src ?? 'x'}`,
+            payload: { kind: 'invalidMath', tex: seg.mathRender.tex, message: seg.mathRender.error },
+            sourceStart: src,
+            sourceEnd: line.sourceEnd ?? block.sourceEnd,
+            line: src !== undefined ? lineNumberForOffset(markdown, src) : undefined,
+          });
+        }
+      }
+    }
+  }
+  return out;
 }

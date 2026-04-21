@@ -18,7 +18,9 @@ import type {
   VDTColumn,
   VDTBlock,
   VDTLine,
+  VDTLineSegment,
   BoundingBox,
+  MathRender,
 } from 'postext';
 import { dimensionToPx } from 'postext';
 import { hexToRgb } from './colors';
@@ -249,6 +251,36 @@ function renderCutLines(ctx: PageCtx, page: VDTPage, doc: VDTDocument): void {
   }
 }
 
+function renderMathRender(
+  ctx: PageCtx,
+  render: MathRender,
+  topLeftXPx: number,
+  topLeftYPx: number,
+  fallbackColor: RGB,
+): void {
+  if (!render.paths.length || render.viewBox.width <= 0 || render.viewBox.height <= 0) return;
+  const { scale: pxToPt, pageHeightPt } = ctx;
+  const pxPerVb = render.widthPx / render.viewBox.width;
+  const S = pxPerVb * pxToPt;
+  const x = topLeftXPx * pxToPt - render.viewBox.minX * S;
+  const y = pageHeightPt - topLeftYPx * pxToPt + render.viewBox.minY * S;
+  for (const path of render.paths) {
+    const color = path.fill === 'currentColor' ? fallbackColor : rgbFromHex(path.fill);
+    ctx.page.drawSvgPath(path.d, { x, y, scale: S, color });
+  }
+}
+
+function renderMathSegment(
+  ctx: PageCtx,
+  seg: VDTLineSegment,
+  xPx: number,
+  baselinePx: number,
+  fallbackColor: RGB,
+): void {
+  if (!seg.mathRender) return;
+  renderMathRender(ctx, seg.mathRender, xPx, baselinePx - seg.mathRender.ascentPx, fallbackColor);
+}
+
 function renderLine(
   ctx: PageCtx,
   line: VDTLine,
@@ -281,6 +313,9 @@ function renderLine(
       for (const seg of line.segments) {
         if (seg.kind === 'space') {
           x += justifiedSpaceWidth;
+        } else if (seg.kind === 'math') {
+          renderMathSegment(ctx, seg, x, line.baseline, blockColor);
+          x += seg.width;
         } else {
           const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
           const font = fontCache.get(fontStr) ?? blockFont;
@@ -295,10 +330,36 @@ function renderLine(
     }
   }
 
-  if (hasRichSegments && line.segments) {
+  if (block.textAlign === 'center' && line.segments) {
+    const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
+    let x = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
+    for (const seg of line.segments) {
+      if (seg.kind === 'space') {
+        x += seg.width;
+      } else if (seg.kind === 'math') {
+        renderMathSegment(ctx, seg, x, line.baseline, blockColor);
+        x += seg.width;
+      } else {
+        const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
+        const font = fontCache.get(fontStr) ?? blockFont;
+        const size = parseFontString(fontStr)?.sizePx ?? blockSize;
+        const colorHex = pickSegmentColor(!!seg.bold, !!seg.italic, block);
+        const color = colorHex === block.color ? blockColor : rgbFromHex(colorHex);
+        drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
+        x += seg.width;
+      }
+    }
+    return;
+  }
+
+  const hasMathSegments = line.segments && line.segments.some((s) => s.kind === 'math');
+  if ((hasRichSegments || hasMathSegments) && line.segments) {
     let x = line.bbox.x;
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
+        x += seg.width;
+      } else if (seg.kind === 'math') {
+        renderMathSegment(ctx, seg, x, line.baseline, blockColor);
         x += seg.width;
       } else {
         const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);

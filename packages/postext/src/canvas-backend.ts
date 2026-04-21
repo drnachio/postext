@@ -1,4 +1,5 @@
-import type { VDTDocument, VDTPage, VDTBlock, VDTLine, VDTColumn, BoundingBox } from './vdt';
+import type { VDTDocument, VDTPage, VDTBlock, VDTLine, VDTLineSegment, VDTColumn, BoundingBox, TextAlign } from './vdt';
+import type { MathRender } from './math/types';
 import { dimensionToPx } from './units';
 
 // ---------------------------------------------------------------------------
@@ -158,6 +159,46 @@ function pickSegmentColor(
   return color;
 }
 
+function renderMathRender(
+  ctx: CanvasRenderingContext2D,
+  render: MathRender,
+  topLeftX: number,
+  topLeftY: number,
+  fallbackColor: string,
+): void {
+  const { viewBox, widthPx, heightPx, paths } = render;
+  if (!paths.length || viewBox.width <= 0 || viewBox.height <= 0) {
+    // Fallback — draw a muted placeholder so the box is still visible.
+    ctx.save();
+    ctx.fillStyle = render.error ? 'rgba(198, 40, 40, 0.15)' : 'rgba(160, 160, 160, 0.15)';
+    ctx.fillRect(topLeftX, topLeftY, widthPx, heightPx);
+    ctx.restore();
+    return;
+  }
+  const sx = widthPx / viewBox.width;
+  const sy = heightPx / viewBox.height;
+  ctx.save();
+  ctx.translate(topLeftX, topLeftY);
+  ctx.scale(sx, sy);
+  ctx.translate(-viewBox.minX, -viewBox.minY);
+  for (const path of paths) {
+    ctx.fillStyle = path.fill === 'currentColor' ? fallbackColor : path.fill;
+    ctx.fill(new Path2D(path.d));
+  }
+  ctx.restore();
+}
+
+function renderMathSegment(
+  ctx: CanvasRenderingContext2D,
+  seg: VDTLineSegment,
+  x: number,
+  baselineY: number,
+  fallbackColor: string,
+): void {
+  if (!seg.mathRender) return;
+  renderMathRender(ctx, seg.mathRender, x, baselineY - seg.mathRender.ascentPx, fallbackColor);
+}
+
 function renderLine(
   ctx: CanvasRenderingContext2D,
   line: VDTLine,
@@ -168,7 +209,7 @@ function renderLine(
   color: string,
   boldColor: string | undefined,
   italicColor: string | undefined,
-  textAlign: 'left' | 'justify',
+  textAlign: TextAlign,
   columnWidth: number,
   columnX: number,
 ): void {
@@ -197,6 +238,9 @@ function renderLine(
       for (const seg of line.segments) {
         if (seg.kind === 'space') {
           x += justifiedSpaceWidth;
+        } else if (seg.kind === 'math') {
+          renderMathSegment(ctx, seg, x, line.baseline, color);
+          x += seg.width;
         } else {
           ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
           ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
@@ -208,12 +252,37 @@ function renderLine(
     }
   }
 
+  // Centred alignment — used by math display blocks. Distribute remaining
+  // space equally on either side.
+  if (textAlign === 'center' && line.segments) {
+    const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
+    let x = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
+    for (const seg of line.segments) {
+      if (seg.kind === 'space') {
+        x += seg.width;
+      } else if (seg.kind === 'math') {
+        renderMathSegment(ctx, seg, x, line.baseline, color);
+        x += seg.width;
+      } else {
+        ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
+        ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
+        ctx.fillText(seg.text, x, line.baseline);
+        x += seg.width;
+      }
+    }
+    return;
+  }
+
   // Ragged (left-aligned) rendering — also used for last lines of justified blocks
   // If there are bold/italic segments, render per-segment to apply correct fonts
-  if (hasRichSegments && line.segments) {
+  const hasMathSegments = line.segments && line.segments.some((s) => s.kind === 'math');
+  if ((hasRichSegments || hasMathSegments) && line.segments) {
     let x = line.bbox.x;
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
+        x += seg.width;
+      } else if (seg.kind === 'math') {
+        renderMathSegment(ctx, seg, x, line.baseline, color);
         x += seg.width;
       } else {
         ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
