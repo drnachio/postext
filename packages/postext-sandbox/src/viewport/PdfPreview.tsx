@@ -1,7 +1,8 @@
 'use client';
 
+import { memo } from 'react';
 import { FileText } from 'lucide-react';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandboxLabels } from '../context/SandboxContext';
 
 interface PdfPreviewProps {
   bytesUrl: string | null;
@@ -9,8 +10,8 @@ interface PdfPreviewProps {
   error: string | null;
 }
 
-export function PdfPreview({ bytesUrl, generating, error }: PdfPreviewProps) {
-  const { state } = useSandbox();
+export const PdfPreview = memo(function PdfPreview({ bytesUrl, generating, error }: PdfPreviewProps) {
+  const labels = useSandboxLabels();
 
   if (error && !generating) {
     return (
@@ -27,7 +28,7 @@ export function PdfPreview({ bytesUrl, generating, error }: PdfPreviewProps) {
           className="mb-2 text-sm font-semibold"
           style={{ color: 'var(--foreground)' }}
         >
-          {state.labels.pdfError}
+          {labels.pdfError}
         </h2>
         <p className="max-w-md text-xs" style={{ color: 'var(--slate)' }}>
           {error}
@@ -44,7 +45,7 @@ export function PdfPreview({ bytesUrl, generating, error }: PdfPreviewProps) {
       {bytesUrl && (
         <iframe
           data-postext-pdf="true"
-          title={state.labels.pdf}
+          title={labels.pdf}
           src={bytesUrl}
           style={{
             position: 'absolute',
@@ -72,11 +73,11 @@ export function PdfPreview({ bytesUrl, generating, error }: PdfPreviewProps) {
             }}
           />
           <p className="mt-3 text-xs" style={{ color: 'var(--slate)' }}>
-            {state.labels.pdfGenerating}
+            {labels.pdfGenerating}
           </p>
           <style>{`@keyframes postext-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
     </div>
   );
-}
+});

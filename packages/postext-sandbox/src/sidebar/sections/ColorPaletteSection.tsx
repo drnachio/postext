@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import type { ColorPaletteEntry } from 'postext';
 import { cloneDefaultColorPalette, isDefaultColorPalette } from 'postext';
-import { useSandbox } from '../../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { findPaletteUsages, unlinkPaletteRefs } from '../../context/paletteUtils';
 import { CollapsibleSection, ColorPicker } from '../../controls';
 import { ConfirmPopover } from '../../panels/ConfirmPopover';
@@ -16,9 +16,10 @@ function newEntryId(): string {
   return `palette-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function ColorPaletteSection() {
-  const { state, dispatch } = useSandbox();
-  const { config, labels } = state;
+export const ColorPaletteSection = memo(function ColorPaletteSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const config = useSandboxSelector((s) => s.config);
   const palette: ColorPaletteEntry[] = config.colorPalette ?? [];
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export function ColorPaletteSection() {
   };
 
   const removeEntry = (id: string) => {
-    const unlinked = unlinkPaletteRefs(state.config, id);
+    const unlinked = unlinkPaletteRefs(config, id);
     const nextPalette = palette.filter((e) => e.id !== id);
     dispatch({
       type: 'SET_CONFIG',
@@ -91,7 +92,7 @@ export function ColorPaletteSection() {
         </p>
       )}
       {palette.map((entry) => {
-        const usages = findPaletteUsages(state.config, entry.id, labels);
+        const usages = findPaletteUsages(config, entry.id, labels);
         const isEditing = editingId === entry.id;
         const confirmMessage = (
           <>
@@ -208,4 +209,4 @@ export function ColorPaletteSection() {
       </button>
     </CollapsibleSection>
   );
-}
+});

@@ -340,6 +340,26 @@ function computeSourceMap(
   let r = blockSrcStart;
   for (let p = 0; p < plainText.length; p++) {
     const ch = plainText[p]!;
+    // Math placeholder: the plain char represents `$...$` in the markdown.
+    // Advance to the opening `$`, map to it, then skip past the closing `$`
+    // so subsequent plain chars can keep aligning with the source.
+    if (ch === MATH_PLACEHOLDER) {
+      while (r < blockSrcEnd && markdown[r] !== '$') r++;
+      if (r >= blockSrcEnd) {
+        map[p] = blockSrcEnd;
+        continue;
+      }
+      map[p] = r;
+      let j = r + 1;
+      while (j < blockSrcEnd) {
+        if (markdown[j] === '\\' && markdown[j + 1] === '$') { j += 2; continue; }
+        if (markdown[j] === '$') { j++; break; }
+        if (markdown[j] === '\n') break;
+        j++;
+      }
+      r = j;
+      continue;
+    }
     const isSpace = ch === ' ';
     while (r < blockSrcEnd) {
       const rc = markdown[r]!;

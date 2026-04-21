@@ -269,9 +269,11 @@ export function buildDocument(
             )
           : measureBlock(`$$${tex}$$`, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions);
       } else {
-        const render = isMathReady()
-          ? renderMath(tex, true, style.fontSizePx, { color: style.color })
-          : renderMath(tex, true, style.fontSizePx, { color: style.color });
+        // `renderMath` internally returns a cheap placeholder when MathJax
+        // isn't initialised yet — no need to gate the call here. When the
+        // real engine lands later, `CanvasPreview` bumps `resizeKey` and the
+        // pipeline rebuilds with the genuine render.
+        const render = renderMath(tex, true, style.fontSizePx, { color: style.color });
         mathDisplayRender = render;
         const width = Math.min(render.widthPx, measureMaxWidth);
         const height = render.heightPx;

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PostextSandboxProps } from './types';
-import { SandboxProvider, useSandbox } from './context/SandboxContext';
+import { SandboxProvider, useSandboxSelector, useSandboxDispatch } from './context/SandboxContext';
 import { preloadConfigFonts, getConfigFontFamilies } from './controls/fontLoader';
 import { ActivityBar } from './sidebar/ActivityBar';
 import { SidebarPanel } from './sidebar/SidebarPanel';
@@ -29,7 +29,10 @@ function SandboxLayout({
   homeUrl?: string;
   homeLink?: React.ReactNode;
 }) {
-  const { state, dispatch } = useSandbox();
+  const dispatch = useSandboxDispatch();
+  const config = useSandboxSelector((s) => s.config);
+  const activePanel = useSandboxSelector((s) => s.activePanel);
+  const activeViewport = useSandboxSelector((s) => s.activeViewport);
   const containerRef = useRef<HTMLDivElement>(null);
   const [fontsReady, setFontsReady] = useState(false);
   const configVersionRef = useRef(0);
@@ -37,15 +40,15 @@ function SandboxLayout({
   // Stable key derived from the config's font families to avoid
   // resetting fontsReady when non-font config fields change
   const fontKey = useMemo(
-    () => getConfigFontFamilies(state.config).sort().join(','),
-    [state.config],
+    () => getConfigFontFamilies(config).sort().join(','),
+    [config],
   );
 
   useEffect(() => {
     const version = ++configVersionRef.current;
     setFontsReady(false);
 
-    preloadConfigFonts(state.config).then(() => {
+    preloadConfigFonts(config).then(() => {
       if (configVersionRef.current === version) setFontsReady(true);
     });
   }, [fontKey]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -90,7 +93,7 @@ function SandboxLayout({
   );
 
   const renderPanel = () => {
-    switch (state.activePanel) {
+    switch (activePanel) {
       case 'config':
         return <ConfigPanel />;
       case 'resources':
@@ -105,7 +108,7 @@ function SandboxLayout({
   };
 
   const renderViewport = () => {
-    switch (state.activeViewport) {
+    switch (activeViewport) {
       case 'canvas':
         return <CanvasViewport />;
       case 'html':
@@ -150,7 +153,7 @@ function SandboxLayout({
         {renderPanel()}
       </SidebarPanel>
 
-      {state.activePanel !== null && (
+      {activePanel !== null && (
         <ResizableHandle onPointerDown={handlePointerDown} />
       )}
 

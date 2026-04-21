@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
   resolveUnorderedListsConfig,
   resolveBodyTextConfig,
@@ -62,7 +63,7 @@ function UnorderedListLevelSection({
   generalVerticalOffset: Dimension;
   onUpdate: (level: number, partial: Partial<UnorderedListLevelConfig>) => void;
   onReset: (level: number, field: keyof UnorderedListLevelConfig) => void;
-  labels: ReturnType<typeof useSandbox>['state']['labels'];
+  labels: ReturnType<typeof useSandboxLabels>;
 }) {
   const isBulletCharDefault = resolved.bulletChar === generalBulletChar;
   const isFontDefault = resolved.fontFamily === generalFont;
@@ -171,12 +172,13 @@ function UnorderedListLevelSection({
   );
 }
 
-export function UnorderedListsSection() {
-  const { state, dispatch } = useSandbox();
-  const raw = state.config.unorderedLists;
-  const bodyText = resolveBodyTextConfig(state.config.bodyText);
+export const UnorderedListsSection = memo(function UnorderedListsSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.unorderedLists);
+  const rawBodyText = useSandboxSelector((s) => s.config.bodyText);
+  const bodyText = resolveBodyTextConfig(rawBodyText);
   const lists = resolveUnorderedListsConfig(raw, bodyText);
-  const { labels } = state;
 
   const updateLists = (partial: Partial<UnorderedListsConfig>) => {
     dispatch({
@@ -505,4 +507,4 @@ export function UnorderedListsSection() {
       </CollapsibleSection>
     </CollapsibleSection>
   );
-}
+});

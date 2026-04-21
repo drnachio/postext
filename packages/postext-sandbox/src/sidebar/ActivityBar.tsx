@@ -2,7 +2,7 @@
 
 import { FileCode, Settings2, FolderOpen, AlertTriangle } from 'lucide-react';
 import { useMemo, useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import type { PanelId } from '../types';
 import { Tooltip } from '../panels/Tooltip';
 import { computeWarnings } from '../warnings/compute';
@@ -22,7 +22,13 @@ const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: 'markdownEdit
 ];
 
 function PanelNav() {
-  const { state, dispatch, docRef } = useSandbox();
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const activePanel = useSandboxSelector((s) => s.activePanel);
+  const markdown = useSandboxSelector((s) => s.markdown);
+  const config = useSandboxSelector((s) => s.config);
+  const docVersion = useSandboxSelector((s) => s.docVersion);
+  const docRef = useSandboxDocRef();
   const navRef = useRef<HTMLElement>(null);
   const buttonRefs = useRef<Map<PanelId, HTMLButtonElement>>(new Map());
   const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null);
@@ -32,25 +38,25 @@ function PanelNav() {
   // Also exposed via the Warnings panel — parseMarkdown is memoized, so the
   // duplicate call is cheap.
   const warningCount = useMemo(
-    () => computeWarnings({ markdown: state.markdown, config: state.config, doc: docRef.current }).length,
+    () => computeWarnings({ markdown, config, doc: docRef.current }).length,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.markdown, state.config, state.docVersion],
+    [markdown, config, docVersion],
   );
 
   const updateIndicator = useCallback(() => {
-    if (state.activePanel === null) {
+    if (activePanel === null) {
       setIndicator(null);
       hasAnimated.current = false;
       return;
     }
-    const btn = buttonRefs.current.get(state.activePanel);
+    const btn = buttonRefs.current.get(activePanel);
     const nav = navRef.current;
     if (!btn || !nav) return;
     const navRect = nav.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
     setIndicator({ top: btnRect.top - navRect.top, height: btnRect.height });
     hasAnimated.current = true;
-  }, [state.activePanel]);
+  }, [activePanel]);
 
   useLayoutEffect(updateIndicator, [updateIndicator]);
 
@@ -80,8 +86,8 @@ function PanelNav() {
         />
       )}
       {PANEL_ICONS.map(({ id, Icon, labelKey }) => {
-        const isActive = state.activePanel === id;
-        const label = state.labels[labelKey];
+        const isActive = activePanel === id;
+        const label = labels[labelKey];
         const showBadge = id === 'warnings' && warningCount > 0;
         const badgeText = warningCount > 99 ? '99+' : String(warningCount);
         return (

@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveHeadingsConfig, DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
 import type { HeadingsConfig, HeadingLevelConfig, ColorValue, Dimension, DimensionUnit } from 'postext';
 import {
@@ -45,7 +46,7 @@ function HeadingLevelSection({
   generalMarginBottom: Dimension;
   onUpdate: (level: number, partial: Partial<HeadingLevelConfig>) => void;
   onReset: (level: number, field: keyof HeadingLevelConfig) => void;
-  labels: ReturnType<typeof useSandbox>['state']['labels'];
+  labels: ReturnType<typeof useSandboxLabels>;
 }) {
   const defLevel = D.levels.find((l) => l.level === level)!;
 
@@ -165,11 +166,11 @@ function HeadingLevelSection({
   );
 }
 
-export function HeadingsSection() {
-  const { state, dispatch } = useSandbox();
-  const raw = state.config.headings;
+export const HeadingsSection = memo(function HeadingsSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.headings);
   const headings = resolveHeadingsConfig(raw);
-  const { labels } = state;
 
   const updateHeadings = (partial: Partial<HeadingsConfig>) => {
     dispatch({
@@ -382,4 +383,4 @@ export function HeadingsSection() {
       ))}
     </CollapsibleSection>
   );
-}
+});

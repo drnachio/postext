@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveLayoutConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
 import type { LayoutConfig, Dimension, ColorValue } from 'postext';
 import {
@@ -15,11 +16,11 @@ import {
 
 const D = DEFAULT_LAYOUT_CONFIG;
 
-export function LayoutSection() {
-  const { state, dispatch } = useSandbox();
-  const raw = state.config.layout;
+export const LayoutSection = memo(function LayoutSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.layout);
   const layout = resolveLayoutConfig(raw);
-  const { labels } = state;
 
   const updateLayout = (partial: Partial<LayoutConfig>) => {
     dispatch({
@@ -190,4 +191,4 @@ export function LayoutSection() {
       )}
     </CollapsibleSection>
   );
-}
+});

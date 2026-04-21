@@ -15,16 +15,27 @@ interface NumberPopoverProps {
 
 const POPOVER_WIDTH = 200;
 const POPOVER_GAP = 6;
+const TYPE_COMMIT_DELAY_MS = 120;
 
 export const NumberPopover = forwardRef<HTMLDivElement, NumberPopoverProps>(function NumberPopover({ value, onChange, anchorRect, onClose, min, max, step, label }, ref) {
+  // Single source of truth for what the popover displays. Committing to the
+  // upstream `onChange` is deferred so slider drags and keystrokes don't
+  // each trigger a full pipeline run (T1-a in the perf plan).
   const [localValue, setLocalValue] = useState(value);
   const popoverRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const interactingRef = useRef(false);
+  const typeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestLocalRef = useRef(localValue);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  latestLocalRef.current = localValue;
 
   useImperativeHandle(ref, () => popoverRef.current!, []);
 
+  // Mirror external updates unless the user is mid-interaction.
   useEffect(() => {
-    setLocalValue(value);
+    if (!interactingRef.current) setLocalValue(value);
   }, [value]);
 
   // Click-outside and Escape
@@ -47,36 +58,64 @@ export const NumberPopover = forwardRef<HTMLDivElement, NumberPopoverProps>(func
 
   const clampAndSnap = useCallback((raw: number) => {
     const clamped = Math.min(max, Math.max(min, raw));
-    // Snap to step
     const snapped = Math.round(clamped / step) * step;
-    // Round to avoid floating point issues
     const decimals = step < 1 ? String(step).split('.')[1]?.length ?? 0 : 0;
     return Number(snapped.toFixed(decimals));
   }, [min, max, step]);
+
+  const flushCommit = useCallback(() => {
+    if (typeTimerRef.current) {
+      clearTimeout(typeTimerRef.current);
+      typeTimerRef.current = null;
+    }
+    if (interactingRef.current) {
+      interactingRef.current = false;
+      onChangeRef.current(latestLocalRef.current);
+    }
+  }, []);
 
   const updateFromPointer = useCallback((clientX: number) => {
     const rect = trackRef.current?.getBoundingClientRect();
     if (!rect) return;
     const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
     const raw = min + ratio * (max - min);
-    const snapped = clampAndSnap(raw);
-    setLocalValue(snapped);
-    onChange(snapped);
-  }, [min, max, onChange, clampAndSnap]);
+    setLocalValue(clampAndSnap(raw));
+  }, [min, max, clampAndSnap]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
+    interactingRef.current = true;
+    if (typeTimerRef.current) {
+      clearTimeout(typeTimerRef.current);
+      typeTimerRef.current = null;
+    }
     updateFromPointer(e.clientX);
 
     const onMove = (ev: PointerEvent) => updateFromPointer(ev.clientX);
     const onUp = () => {
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
+      // Commit once at the end of the gesture — single pipeline run instead
+      // of ~60/s during the drag.
+      interactingRef.current = false;
+      onChangeRef.current(latestLocalRef.current);
     };
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp);
   }, [updateFromPointer]);
+
+  const handleTypedChange = useCallback((raw: number) => {
+    const v = clampAndSnap(raw);
+    interactingRef.current = true;
+    setLocalValue(v);
+    if (typeTimerRef.current) clearTimeout(typeTimerRef.current);
+    typeTimerRef.current = setTimeout(() => {
+      typeTimerRef.current = null;
+      interactingRef.current = false;
+      onChangeRef.current(latestLocalRef.current);
+    }, TYPE_COMMIT_DELAY_MS);
+  }, [clampAndSnap]);
 
   const ratio = Math.min(1, Math.max(0, (localValue - min) / (max - min)));
 
@@ -117,11 +156,8 @@ export const NumberPopover = forwardRef<HTMLDivElement, NumberPopoverProps>(func
         <input
           type="number"
           value={localValue}
-          onChange={(e) => {
-            const v = clampAndSnap(Number(e.target.value));
-            setLocalValue(v);
-            onChange(v);
-          }}
+          onChange={(e) => handleTypedChange(Number(e.target.value))}
+          onBlur={flushCommit}
           min={min}
           max={max}
           step={step}

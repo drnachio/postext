@@ -1,5 +1,6 @@
 import type { VDTDocument, VDTPage, VDTBlock, VDTLine, VDTLineSegment, VDTColumn, BoundingBox, TextAlign } from './vdt';
 import type { MathRender } from './math/types';
+import { getMathRaster } from './math/rasterCache';
 import { dimensionToPx } from './units';
 
 // ---------------------------------------------------------------------------
@@ -173,6 +174,11 @@ function renderMathRender(
     ctx.fillStyle = render.error ? 'rgba(198, 40, 40, 0.15)' : 'rgba(160, 160, 160, 0.15)';
     ctx.fillRect(topLeftX, topLeftY, widthPx, heightPx);
     ctx.restore();
+    return;
+  }
+  const raster = getMathRaster(render, fallbackColor);
+  if (raster) {
+    ctx.drawImage(raster, topLeftX, topLeftY, widthPx, heightPx);
     return;
   }
   const sx = widthPx / viewBox.width;

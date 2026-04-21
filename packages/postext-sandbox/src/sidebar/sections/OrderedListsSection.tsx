@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
   resolveOrderedListsConfig,
   resolveBodyTextConfig,
@@ -35,7 +36,7 @@ const OFFSET_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 const D = DEFAULT_ORDERED_LISTS_STATIC;
 
-function numberFormatOptions(labels: ReturnType<typeof useSandbox>['state']['labels']) {
+function numberFormatOptions(labels: ReturnType<typeof useSandboxLabels>) {
   return [
     { label: labels.orderedListsNumberFormatArabic, value: 'arabic' },
     { label: labels.orderedListsNumberFormatLowerAlpha, value: 'lower-alpha' },
@@ -76,7 +77,7 @@ function OrderedListLevelSection({
   generalVerticalOffset: Dimension;
   onUpdate: (level: number, partial: Partial<OrderedListLevelConfig>) => void;
   onReset: (level: number, field: keyof OrderedListLevelConfig) => void;
-  labels: ReturnType<typeof useSandbox>['state']['labels'];
+  labels: ReturnType<typeof useSandboxLabels>;
 }) {
   const isNumberFormatDefault = resolved.numberFormat === generalNumberFormat;
   const isSeparatorDefault = resolved.separator === generalSeparator;
@@ -193,12 +194,13 @@ function OrderedListLevelSection({
   );
 }
 
-export function OrderedListsSection() {
-  const { state, dispatch } = useSandbox();
-  const raw = state.config.orderedLists;
-  const bodyText = resolveBodyTextConfig(state.config.bodyText);
+export const OrderedListsSection = memo(function OrderedListsSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.orderedLists);
+  const rawBodyText = useSandboxSelector((s) => s.config.bodyText);
+  const bodyText = resolveBodyTextConfig(rawBodyText);
   const lists = resolveOrderedListsConfig(raw, bodyText);
-  const { labels } = state;
 
   const updateLists = (partial: Partial<OrderedListsConfig>) => {
     dispatch({
@@ -465,4 +467,4 @@ export function OrderedListsSection() {
       ))}
     </CollapsibleSection>
   );
-}
+});

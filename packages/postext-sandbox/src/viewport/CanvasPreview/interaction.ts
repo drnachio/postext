@@ -11,8 +11,6 @@ import { pixelToSourceOffset } from './geometry';
 export function attachSlotClickHandler(
   slot: HTMLDivElement,
   pageIndex: number,
-  displayWidth: number,
-  displayHeight: number,
   pageWidthPx: number,
   pageHeightPx: number,
   docRef: MutableRefObject<VDTDocument | null>,
@@ -24,9 +22,13 @@ export function attachSlotClickHandler(
   const resolveOffset = (ev: MouseEvent): number | null => {
     const doc = docRef.current;
     if (!doc) return null;
+    // Read the current slot size instead of the creation-time displayWidth/Height:
+    // applyDisplaySize mutates the canvas/overlay CSS dims on resize, so a cached
+    // scale factor goes stale and clicks land on the wrong offset.
     const rect = slot.getBoundingClientRect();
-    const scaleX = pageWidthPx / displayWidth;
-    const scaleY = pageHeightPx / displayHeight;
+    if (rect.width === 0 || rect.height === 0) return null;
+    const scaleX = pageWidthPx / rect.width;
+    const scaleY = pageHeightPx / rect.height;
     const xPage = (ev.clientX - rect.left) * scaleX;
     const yPage = (ev.clientY - rect.top) * scaleY;
     return pixelToSourceOffset(doc, pageIndex, xPage, yPage);

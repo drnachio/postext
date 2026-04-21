@@ -1,8 +1,9 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveMathConfig, DEFAULT_MATH_CONFIG, dimensionsEqual } from 'postext';
-import type { MathConfig, DimensionUnit } from 'postext';
+import type { ColorValue, MathConfig, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -15,11 +16,14 @@ const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 const D = DEFAULT_MATH_CONFIG;
 
-export function MathSection() {
-  const { state, dispatch } = useSandbox();
-  const raw = state.config.math;
+const FALLBACK_COLOR: ColorValue = { model: 'rgb', hex: '#000000' };
+
+export const MathSection = memo(function MathSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.math);
+  const bodyColor = useSandboxSelector((s) => s.config.bodyText?.color);
   const math = resolveMathConfig(raw);
-  const { labels } = state;
 
   const updateMath = (partial: Partial<MathConfig>) => {
     dispatch({
@@ -83,7 +87,7 @@ export function MathSection() {
       />
       <ColorPicker
         label={labels.mathColor ?? 'Color'}
-        value={math.color ?? state.config.bodyText?.color ?? { model: 'rgb', hex: '#000000' }}
+        value={math.color ?? bodyColor ?? FALLBACK_COLOR}
         onChange={(color) => updateMath({ color })}
         tooltip={labels.mathColorTooltip ?? 'Formula colour (inherits body colour when unset)'}
         isDefault={isColorDefault}
@@ -114,4 +118,4 @@ export function MathSection() {
       />
     </CollapsibleSection>
   );
-}
+});

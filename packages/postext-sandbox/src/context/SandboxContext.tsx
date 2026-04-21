@@ -6,6 +6,8 @@ import {
   useReducer,
   useEffect,
   useRef,
+  useMemo,
+  useSyncExternalStore,
   type ReactNode,
   type Dispatch,
   type MutableRefObject,
@@ -106,8 +108,9 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
   }
 }
 
-interface SandboxContextValue {
-  state: SandboxState;
+interface SandboxStore {
+  getSnapshot: () => SandboxState;
+  subscribe: (cb: () => void) => () => void;
   dispatch: Dispatch<SandboxAction>;
   editorStateRef: MutableRefObject<unknown | null>;
   /** Ref to the most recently built VDT document from whichever viewport
@@ -116,12 +119,78 @@ interface SandboxContextValue {
   docRef: MutableRefObject<VDTDocument | null>;
 }
 
-const SandboxContext = createContext<SandboxContextValue | null>(null);
+export interface SandboxContextValue {
+  state: SandboxState;
+  dispatch: Dispatch<SandboxAction>;
+  editorStateRef: MutableRefObject<unknown | null>;
+  docRef: MutableRefObject<VDTDocument | null>;
+}
+
+const SandboxStoreContext = createContext<SandboxStore | null>(null);
+
+function useStore(): SandboxStore {
+  const store = useContext(SandboxStoreContext);
+  if (!store) throw new Error('useSandbox must be used within <SandboxProvider>');
+  return store;
+}
 
 export function useSandbox(): SandboxContextValue {
-  const ctx = useContext(SandboxContext);
-  if (!ctx) throw new Error('useSandbox must be used within <SandboxProvider>');
-  return ctx;
+  const store = useStore();
+  const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
+  return { state, dispatch: store.dispatch, editorStateRef: store.editorStateRef, docRef: store.docRef };
+}
+
+/** Stable dispatch reference — never triggers a re-render on state changes. */
+export function useSandboxDispatch(): Dispatch<SandboxAction> {
+  return useStore().dispatch;
+}
+
+/** Subscribe to a slice of state; component re-renders only when the selected
+ *  value changes (by `isEqual`, defaults to `Object.is`). */
+export function useSandboxSelector<T>(
+  selector: (s: SandboxState) => T,
+  isEqual: (a: T, b: T) => boolean = Object.is,
+): T {
+  const store = useStore();
+  const selectorRef = useRef(selector);
+  selectorRef.current = selector;
+  const isEqualRef = useRef(isEqual);
+  isEqualRef.current = isEqual;
+  const lastStateRef = useRef<SandboxState | null>(null);
+  const lastResultRef = useRef<T>(undefined as T);
+
+  const getSnapshot = () => {
+    const s = store.getSnapshot();
+    if (s !== lastStateRef.current) {
+      const next = selectorRef.current(s);
+      if (lastStateRef.current === null || !isEqualRef.current(lastResultRef.current, next)) {
+        lastResultRef.current = next;
+      }
+      lastStateRef.current = s;
+    }
+    return lastResultRef.current;
+  };
+
+  return useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
+}
+
+export function useSandboxConfig(): PostextConfig {
+  return useSandboxSelector((s) => s.config);
+}
+
+export function useSandboxLabels() {
+  return useSandboxSelector((s) => s.labels);
+}
+
+/** Stable ref to the most recently built VDT document. Does not subscribe
+ *  to state changes — read inside effects/handlers via `.current`. */
+export function useSandboxDocRef(): MutableRefObject<VDTDocument | null> {
+  return useStore().docRef;
+}
+
+/** Stable ref for the editor state, mirroring useSandboxDocRef. */
+export function useSandboxEditorStateRef(): MutableRefObject<unknown | null> {
+  return useStore().editorStateRef;
 }
 
 export function createDefaultConfig(): PostextConfig {
@@ -228,9 +297,33 @@ export function SandboxProvider({
   const editorStateRef = useRef<unknown | null>(null);
   const docRef = useRef<VDTDocument | null>(null);
 
+  // Subscription plumbing: hold the live state in a ref and notify
+  // subscribers when it changes. Lets hooks below subscribe to specific
+  // slices via useSyncExternalStore without re-rendering on unrelated
+  // state changes.
+  const stateRef = useRef(state);
+  const listenersRef = useRef<Set<() => void>>(new Set());
+  stateRef.current = state;
+
+  useEffect(() => {
+    // Fire after commit so subscribers see the committed state.
+    for (const cb of listenersRef.current) cb();
+  }, [state]);
+
+  const store = useMemo<SandboxStore>(() => ({
+    getSnapshot: () => stateRef.current,
+    subscribe: (cb) => {
+      listenersRef.current.add(cb);
+      return () => { listenersRef.current.delete(cb); };
+    },
+    dispatch,
+    editorStateRef,
+    docRef,
+  }), [dispatch]);
+
   return (
-    <SandboxContext.Provider value={{ state, dispatch, editorStateRef, docRef }}>
+    <SandboxStoreContext.Provider value={store}>
       {children}
-    </SandboxContext.Provider>
+    </SandboxStoreContext.Provider>
   );
 }

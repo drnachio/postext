@@ -1,16 +1,18 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandboxSelector } from '../context/SandboxContext';
 
 interface SidebarPanelProps {
   children: ReactNode;
 }
 
 export function SidebarPanel({ children }: SidebarPanelProps) {
-  const { state } = useSandbox();
-  const isOpen = state.activePanel !== null;
-  const widthValue = isOpen ? `${state.sidebarPercent}%` : '0%';
+  const activePanel = useSandboxSelector((s) => s.activePanel);
+  const sidebarPercent = useSandboxSelector((s) => s.sidebarPercent);
+  const sidebarDragging = useSandboxSelector((s) => s.sidebarDragging);
+  const isOpen = activePanel !== null;
+  const widthValue = isOpen ? `${sidebarPercent}%` : '0%';
 
   return (
     <div
@@ -18,7 +20,7 @@ export function SidebarPanel({ children }: SidebarPanelProps) {
       style={{
         width: widthValue,
         backgroundColor: 'var(--background)',
-        transition: state.sidebarDragging ? 'none' : 'width 200ms ease-in-out',
+        transition: sidebarDragging ? 'none' : 'width 200ms ease-in-out',
       }}
     >
       <div style={{ height: '100%', width: '100%', overflow: 'hidden', position: 'relative' }}>

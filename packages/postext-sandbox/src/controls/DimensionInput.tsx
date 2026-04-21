@@ -1,10 +1,11 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { Dimension, DimensionUnit } from 'postext';
 import { InfoTip } from './InfoTip';
 import { ResetButton } from './ResetButton';
 import { NumberPopover } from './NumberPopover';
+import { useDebouncedCommit } from './useDebouncedCommit';
 
 interface DimensionInputProps {
   label: string;
@@ -48,16 +49,24 @@ const MAX_BY_UNIT: Record<DimensionUnit, number> = {
 };
 
 export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.1, tooltip, isDefault, onReset, units = DEFAULT_UNITS }: DimensionInputProps) {
-  const handleValueChange = (v: number) => {
-    onChange({ value: v, unit: value.unit });
-  };
+  const unitRef = useRef(value.unit);
+  unitRef.current = value.unit;
+  // Callback used by the slider popover — commits a new value in the
+  // currently-selected unit. Stable so `useDebouncedCommit` inside the
+  // popover doesn't see a new onChange every render.
+  const commitNumber = useCallback((v: number) => {
+    onChange({ value: v, unit: unitRef.current });
+  }, [onChange]);
+  // Same path for typing in the number field, but debounced (T1-a).
+  const [typedValue, commitTyped, flushTyped] = useDebouncedCommit(value.value, commitNumber);
 
   const handleUnitChange = (unit: DimensionUnit) => {
+    flushTyped();
     const converted = convert(value.value, value.unit, unit);
     onChange({ value: converted, unit });
   };
 
-  const chars = Math.max(String(value.value).length, 2);
+  const chars = Math.max(String(typedValue).length, 2);
   const muted = isDefault ?? false;
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
@@ -75,6 +84,7 @@ export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.
   const handleBlur = (e: React.FocusEvent) => {
     const related = e.relatedTarget as Node | null;
     if (related && popoverRef.current?.contains(related)) return;
+    flushTyped();
     setPopoverOpen(false);
   };
 
@@ -93,8 +103,8 @@ export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.
         <input
           ref={inputRef}
           type="number"
-          value={value.value}
-          onChange={(e) => handleValueChange(Number(e.target.value))}
+          value={typedValue}
+          onChange={(e) => commitTyped(Number(e.target.value))}
           onFocus={openPopover}
           onBlur={handleBlur}
           min={min}
@@ -129,7 +139,7 @@ export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.
         <NumberPopover
           ref={popoverRef}
           value={value.value}
-          onChange={handleValueChange}
+          onChange={commitNumber}
           anchorRect={anchorRect}
           onClose={() => setPopoverOpen(false)}
           min={min}

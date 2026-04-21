@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { InfoTip } from './InfoTip';
 import { ResetButton } from './ResetButton';
 import { NumberPopover } from './NumberPopover';
+import { useDebouncedCommit } from './useDebouncedCommit';
 
 interface NumberInputProps {
   label: string;
@@ -19,7 +20,10 @@ interface NumberInputProps {
 }
 
 export function NumberInput({ label, value, onChange, min = 0, max = 100, step = 1, tooltip, isDefault, onReset, suffix }: NumberInputProps) {
-  const chars = Math.max(String(value).length, 2);
+  // Typing into the field updates `typed` immediately but only commits
+  // upstream after a short quiet window. See T1-a in the perf plan.
+  const [typed, commitTyped, flushTyped] = useDebouncedCommit(value, onChange);
+  const chars = Math.max(String(typed).length, 2);
   const muted = isDefault ?? false;
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
@@ -36,6 +40,7 @@ export function NumberInput({ label, value, onChange, min = 0, max = 100, step =
   const handleBlur = (e: React.FocusEvent) => {
     const related = e.relatedTarget as Node | null;
     if (related && popoverRef.current?.contains(related)) return;
+    flushTyped();
     setPopoverOpen(false);
   };
 
@@ -52,8 +57,8 @@ export function NumberInput({ label, value, onChange, min = 0, max = 100, step =
         <input
           ref={inputRef}
           type="number"
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
+          value={typed}
+          onChange={(e) => commitTyped(Number(e.target.value))}
           onFocus={openPopover}
           onBlur={handleBlur}
           min={min}

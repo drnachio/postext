@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useDeferredValue, useMemo } from 'react';
-import { useSandbox } from '../../context/SandboxContext';
+import { useSandboxDispatch, useSandboxDocRef, useSandboxSelector } from '../../context/SandboxContext';
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, createMeasurementCache, resolveDebugConfig, initMathEngine, isMathReady } from 'postext';
 import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions, MeasurementCache } from 'postext';
 import { createPageCanvas, createOverlaySvg } from './dom';
@@ -20,6 +20,15 @@ interface CanvasPreviewProps {
   zoom: number;
   viewMode: ViewMode;
   fitMode: FitMode;
+}
+
+interface GeomSnapshot {
+  pageCount: number;
+  pageWidthPx: number;
+  pageHeightPx: number;
+  displayWidth: number;
+  displayHeight: number;
+  viewMode: ViewMode;
 }
 
 /**
@@ -50,25 +59,38 @@ function groupPagesIntoRows(pageCount: number, viewMode: ViewMode): number[][] {
  * only the pages visible in the scroll viewport via IntersectionObserver.
  */
 export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
-  const { state, dispatch, docRef: sharedDocRef } = useSandbox();
+  const dispatch = useSandboxDispatch();
+  const sharedDocRef = useSandboxDocRef();
+  const markdown = useSandboxSelector((s) => s.markdown);
+  const config = useSandboxSelector((s) => s.config);
+  const locale = useSandboxSelector((s) => s.locale);
+  const activePanel = useSandboxSelector((s) => s.activePanel);
+  const selection = useSandboxSelector((s) => s.selection);
+  const editorFocused = useSandboxSelector((s) => s.editorFocused);
   const containerRef = useRef<HTMLDivElement>(null);
   // Refs used by click handlers so changing panel/dispatch identity doesn't
   // force a full DOM rebuild of the page slots.
   const dispatchRef = useRef(dispatch);
   dispatchRef.current = dispatch;
-  const activePanelRef = useRef(state.activePanel);
-  activePanelRef.current = state.activePanel;
+  const activePanelRef = useRef(activePanel);
+  activePanelRef.current = activePanel;
   const docRef = useRef<VDTDocument | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
   const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
   const renderedPagesRef = useRef<Set<number>>(new Set());
-  const deferredMarkdown = useDeferredValue(state.markdown);
-  const rawDeferredConfig = useDeferredValue(state.config);
+  const lastGeomRef = useRef<GeomSnapshot | null>(null);
+  // Tracks the docVersion last painted into the canvas bitmaps so we can
+  // skip bitmap repaints on pure CSS-size changes (window/sidebar resize).
+  // The canvas internal pixel size is fixed at page dimensions, so browser
+  // scaling handles size changes with no paint cost.
+  const lastPaintedDocVersionRef = useRef(-1);
+  const deferredMarkdown = useDeferredValue(markdown);
+  const rawDeferredConfig = useDeferredValue(config);
   // Inject app-locale-derived hyphenation locale when user hasn't set one explicitly
   const deferredConfig = useMemo((): PostextConfig => {
     if (rawDeferredConfig.bodyText?.hyphenation?.locale) return rawDeferredConfig;
-    const hypLocale = LOCALE_TO_HYPHENATION[state.locale] ?? 'en-us';
+    const hypLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
     return {
       ...rawDeferredConfig,
       bodyText: {
@@ -79,27 +101,138 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         },
       },
     };
-  }, [rawDeferredConfig, state.locale]);
+  }, [rawDeferredConfig, locale]);
   const measureCacheRef = useRef<MeasurementCache>(createMeasurementCache());
-  const cacheInvalidationRef = useRef({ config: deferredConfig, resizeKey: 0 });
-  const [resizeKey, setResizeKey] = useState(0);
+  // `rebuildKey` only bumps for events that invalidate measurements (fonts
+  // loaded, math engine ready). Container resize does NOT bump this — the
+  // VDT is in PT units and is independent of the CSS display size.
+  const [rebuildKey, setRebuildKey] = useState(0);
+  const appliedRebuildKeyRef = useRef(0);
+  // Container size lives in a ref, NOT state — resize must never trigger a
+  // React re-render. The ResizeObserver below imperatively updates canvas /
+  // overlay CSS dimensions in place, so the main thread stays idle during
+  // window/sidebar drags.
+  const containerSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
+  // Incremented whenever a structural rebuild is needed (new doc, viewMode
+  // toggle). Resize does NOT bump this.
+  const [layoutKey, setLayoutKey] = useState(0);
   const [docVersion, setDocVersion] = useState(0);
 
-  // Resize observer — triggers repaint when container size changes
+  const applyDisplaySize = (displayWidth: number, displayHeight: number) => {
+    const container = containerRef.current;
+    if (!container) return;
+    const prev = lastGeomRef.current;
+    if (prev && prev.displayWidth === displayWidth && prev.displayHeight === displayHeight) return;
+    const pagesPerRow = prev?.viewMode === 'spread' ? 2 : 1;
+    const padding = 32;
+    const gap = 24;
+    for (const [, canvas] of canvasMapRef.current) {
+      canvas.style.width = `${displayWidth}px`;
+      canvas.style.height = `${displayHeight}px`;
+    }
+    for (const [, overlay] of overlayMapRef.current) {
+      overlay.style.width = `${displayWidth}px`;
+      overlay.style.height = `${displayHeight}px`;
+    }
+    const spacers = container.querySelectorAll<HTMLDivElement>('[data-spread-spacer="1"]');
+    for (const spacer of spacers) spacer.style.width = `${displayWidth}px`;
+    // Rows carry a minHeight sized to the canvas so ragged last pages don't
+    // pull the row up. It must be recomputed on resize, otherwise shrinking
+    // leaves rows taller than their canvases and the spread drifts apart
+    // vertically.
+    const rows = container.querySelectorAll<HTMLDivElement>('[data-page-row="1"]');
+    const totalRows = rows.length;
+    rows.forEach((rowDiv, rowIdx) => {
+      const paddingTop = rowIdx === 0 ? padding : gap / 2;
+      const paddingBottom = rowIdx === totalRows - 1 ? padding : gap / 2;
+      rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
+    });
+    const innerDiv = container.firstChild as HTMLDivElement | null;
+    if (innerDiv) {
+      innerDiv.style.width = `${displayWidth * pagesPerRow + gap * (pagesPerRow - 1) + padding * 2}px`;
+    }
+    if (prev) {
+      prev.displayWidth = displayWidth;
+      prev.displayHeight = displayHeight;
+    }
+  };
+
+  const computeDisplaySize = (containerW: number, containerH: number) => {
+    const padding = 32;
+    const gap = 24;
+    const isSpread = viewMode === 'spread';
+    const doc = docRef.current;
+    const firstPage = doc?.pages[0];
+    const aspectRatio = firstPage ? firstPage.height / firstPage.width : 1;
+    let displayWidth: number;
+    if (fitMode === 'width') {
+      displayWidth = isSpread
+        ? (containerW - padding * 2 - gap) / 2
+        : containerW - padding * 2;
+    } else if (fitMode === 'height') {
+      const containerInnerH = containerH - padding * 2;
+      displayWidth = containerInnerH / aspectRatio;
+      if (isSpread) {
+        const maxPerPage = (containerW - padding * 2 - gap) / 2;
+        displayWidth = Math.min(displayWidth, maxPerPage);
+      }
+    } else {
+      const base = Math.min(containerW - padding * 2, 800);
+      displayWidth = base * zoom;
+    }
+    displayWidth = Math.max(displayWidth, 50);
+    return { displayWidth, displayHeight: displayWidth * aspectRatio };
+  };
+  // The ResizeObserver is registered once at mount, so its handler captures
+  // a stale `computeDisplaySize` (and therefore a stale viewMode / fitMode /
+  // zoom). Mirror the latest function through a ref so window resizes always
+  // use the current viewMode — otherwise spread-mode resize collapses to the
+  // single-page calculation.
+  const computeDisplaySizeRef = useRef(computeDisplaySize);
+  computeDisplaySizeRef.current = computeDisplaySize;
+
+  // ResizeObserver updates the container-size ref and imperatively resizes
+  // the existing page DOM. No React state is touched, so resize costs a
+  // single synchronous CSS write per page — no rebuild, no re-render.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
+    let rafId = 0;
+    const apply = () => {
+      rafId = 0;
+      const rect = container.getBoundingClientRect();
+      if (rect.width === containerSizeRef.current.width && rect.height === containerSizeRef.current.height) return;
+      containerSizeRef.current = { width: rect.width, height: rect.height };
+      const { displayWidth, displayHeight } = computeDisplaySizeRef.current(rect.width, rect.height);
+      applyDisplaySize(displayWidth, displayHeight);
+    };
     const observer = new ResizeObserver(() => {
-      setResizeKey((k) => k + 1);
+      if (rafId !== 0) return;
+      rafId = requestAnimationFrame(apply);
     });
-
     observer.observe(container);
-    return () => observer.disconnect();
+    const rect = container.getBoundingClientRect();
+    containerSizeRef.current = { width: rect.width, height: rect.height };
+    // Kick off initial layout after first measure.
+    setLayoutKey((k) => k + 1);
+    return () => {
+      observer.disconnect();
+      if (rafId !== 0) cancelAnimationFrame(rafId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // When zoom or fit mode change, recompute display size imperatively.
+  useEffect(() => {
+    const { width, height } = containerSizeRef.current;
+    if (width === 0) return;
+    const { displayWidth, displayHeight } = computeDisplaySize(width, height);
+    applyDisplaySize(displayWidth, displayHeight);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoom, fitMode]);
+
   // Kick off MathJax init once the document contains math. Once ready, bump
-  // `resizeKey` so the pipeline re-builds with real math renders instead of
+  // `rebuildKey` so the pipeline re-builds with real math renders instead of
   // the placeholder boxes the first pass may have produced.
   useEffect(() => {
     if (isMathReady()) return;
@@ -107,8 +240,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     let cancelled = false;
     initMathEngine().then(() => {
       if (!cancelled) {
-        clearMeasurementCache();
-        setResizeKey((k) => k + 1);
+        setRebuildKey((k) => k + 1);
       }
     }).catch(() => { /* error surfaces via warnings */ });
     return () => { cancelled = true; };
@@ -118,23 +250,20 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
   // document.fonts.ready only waits for *currently pending* faces; a face
   // requested later (or one that slips past the preload) can land after the
   // first measurement, poisoning the cache with fallback metrics. Bumping
-  // resizeKey on loadingdone invalidates the measurement cache and triggers
+  // rebuildKey on loadingdone invalidates the measurement cache and triggers
   // a fresh buildDocument with the now-loaded glyph widths.
   useEffect(() => {
     if (typeof document === 'undefined' || !document.fonts) return;
-    const onLoadingDone = () => setResizeKey((k) => k + 1);
+    const onLoadingDone = () => setRebuildKey((k) => k + 1);
     document.fonts.addEventListener('loadingdone', onLoadingDone);
     return () => document.fonts.removeEventListener('loadingdone', onLoadingDone);
   }, []);
 
-  // Build document and set up lazy rendering via IntersectionObserver
+  // BUILD effect — produces a new VDT document when the markdown, config, or
+  // a rebuild-invalidating event (fonts loaded, math ready) changes. Does
+  // NOT depend on container size: VDT coordinates are in PT and independent
+  // of viewport dimensions. Resize only rescales the canvas at paint time.
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const rect = container.getBoundingClientRect();
-    if (rect.width === 0) return;
-
     // Gate the build on actual font availability. `document.fonts.check` is
     // authoritative — if any face the config needs isn't loaded, measureText
     // would return fallback metrics and poison the cache. We kick off an
@@ -144,7 +273,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       if (missing.length > 0) {
         let cancelled = false;
         ensureConfigFontsLoaded(deferredConfig).then(() => {
-          if (!cancelled) setResizeKey((k) => k + 1);
+          if (!cancelled) setRebuildKey((k) => k + 1);
         });
         return () => {
           cancelled = true;
@@ -152,12 +281,16 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       }
     }
 
-    clearMeasurementCache();
-
-    // Invalidate block measurement cache when config or container size changes
-    if (cacheInvalidationRef.current.config !== deferredConfig || cacheInvalidationRef.current.resizeKey !== resizeKey) {
+    // The block measurement cache keys already encode the measurement-
+    // relevant fields (text, font, width, line height, alignment,
+    // hyphenation, word-spacing bounds, indents). A config change that
+    // doesn't affect any of those produces the same keys, so cached values
+    // stay valid. We only wipe the cache on rebuild-invalidating events
+    // (fonts loaded / math ready), tracked via `rebuildKey`.
+    if (appliedRebuildKeyRef.current !== rebuildKey) {
       measureCacheRef.current = createMeasurementCache();
-      cacheInvalidationRef.current = { config: deferredConfig, resizeKey };
+      appliedRebuildKeyRef.current = rebuildKey;
+      clearMeasurementCache();
     }
 
     try {
@@ -169,93 +302,148 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       docRef.current = doc;
       sharedDocRef.current = doc;
       dispatch({ type: 'BUMP_DOC_VERSION' });
+      setDocVersion((v) => v + 1);
+    } catch (err) {
+      console.error('[CanvasPreview] Layout error:', err);
+    }
+  }, [deferredMarkdown, deferredConfig, rebuildKey, dispatch, sharedDocRef]);
 
-      // Tear down previous observer + maps, but keep the old DOM in place
-      // until the new one is fully built and painted — this avoids a blank
-      // flash while the user is typing fast.
+  // LAYOUT effect — (re)builds the page DOM and repaints visible pages.
+  // Runs when a new doc is produced, or when view mode changes. Resize is
+  // handled imperatively by the ResizeObserver and does NOT trigger this.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const doc = docRef.current;
+    if (!doc) return;
+    const { width: containerW, height: containerH } = containerSizeRef.current;
+    if (containerW === 0) return;
+
+    if (doc.pages.length === 0) {
+      while (container.firstChild) container.removeChild(container.firstChild);
       observerRef.current?.disconnect();
       canvasMapRef.current.clear();
       overlayMapRef.current.clear();
-      const previouslyRendered = renderedPagesRef.current;
-      renderedPagesRef.current = new Set();
+      renderedPagesRef.current.clear();
+      lastGeomRef.current = null;
+      return;
+    }
 
-      if (doc.pages.length === 0) {
-        while (container.firstChild) container.removeChild(container.firstChild);
-        return;
-      }
+    const padding = 32;
+    const gap = 24;
+    const firstPage = doc.pages[0]!;
+    const aspectRatio = firstPage.height / firstPage.width;
+    const isSpread = viewMode === 'spread';
 
-      // Compute uniform CSS display dimensions (all pages share the same size)
-      const padding = 32;
-      const gap = 24;
-      const firstPage = doc.pages[0]!;
-      const aspectRatio = firstPage.height / firstPage.width;
+    const { displayWidth, displayHeight } = computeDisplaySize(containerW, containerH);
 
-      let displayWidth: number;
-      const isSpread = viewMode === 'spread';
+    const debugConfig = resolveDebugConfig(deferredConfig.debug);
+    const renderOpts: RenderPageOptions = { pageNegative: debugConfig.pageNegative.enabled };
+    const pageWidthPx = firstPage.width;
+    const pageHeightPx = firstPage.height;
 
-      if (fitMode === 'width') {
-        if (isSpread) {
-          displayWidth = (rect.width - padding * 2 - gap) / 2;
-        } else {
-          displayWidth = rect.width - padding * 2;
+    const geom: GeomSnapshot = {
+      pageCount: doc.pages.length,
+      pageWidthPx,
+      pageHeightPx,
+      displayWidth,
+      displayHeight,
+      viewMode,
+    };
+    const prev = lastGeomRef.current;
+    const structureSame = !!prev
+      && prev.pageCount === geom.pageCount
+      && prev.pageWidthPx === geom.pageWidthPx
+      && prev.pageHeightPx === geom.pageHeightPx
+      && prev.viewMode === geom.viewMode
+      && canvasMapRef.current.size === geom.pageCount;
+
+    if (structureSame) {
+      applyDisplaySize(displayWidth, displayHeight);
+      // Only repaint bitmaps when the doc itself changed. CSS scaling
+      // handles pure size changes (window/sidebar resize) at zero bitmap cost.
+      if (lastPaintedDocVersionRef.current !== docVersion) {
+        for (const pageIndex of renderedPagesRef.current) {
+          const canvas = canvasMapRef.current.get(pageIndex);
+          const page = doc.pages[pageIndex];
+          if (canvas && page) renderPageToCanvas(page, doc, canvas, renderOpts);
         }
-      } else if (fitMode === 'height') {
-        const containerHeight = rect.height - padding * 2;
-        displayWidth = containerHeight / aspectRatio;
-        if (isSpread) {
-          const maxPerPage = (rect.width - padding * 2 - gap) / 2;
-          displayWidth = Math.min(displayWidth, maxPerPage);
+        lastPaintedDocVersionRef.current = docVersion;
+      }
+      lastGeomRef.current = geom;
+      return;
+    }
+
+    // Structure changed — tear down and rebuild the page DOM. Keep the old
+    // DOM in place until the new one is fully built and painted so fast
+    // typing doesn't flash blank.
+    observerRef.current?.disconnect();
+    canvasMapRef.current.clear();
+    overlayMapRef.current.clear();
+    const previouslyRendered = renderedPagesRef.current;
+    renderedPagesRef.current = new Set();
+
+    const pagesPerRow = isSpread ? 2 : 1;
+    const innerWidth = displayWidth * pagesPerRow + gap * (pagesPerRow - 1) + padding * 2;
+    const innerDiv = document.createElement('div');
+    innerDiv.style.width = `${innerWidth}px`;
+    innerDiv.style.margin = '0 auto';
+
+    const canvasMap = canvasMapRef.current;
+    const overlayMap = overlayMapRef.current;
+    const rows = groupPagesIntoRows(doc.pages.length, viewMode);
+    const allSlots: HTMLDivElement[] = [];
+
+    for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+      const row = rows[rowIdx]!;
+      const rowDiv = document.createElement('div');
+      rowDiv.style.display = 'flex';
+      rowDiv.style.justifyContent = 'center';
+      rowDiv.style.alignItems = 'flex-start';
+      const paddingTop = rowIdx === 0 ? padding : gap / 2;
+      const paddingBottom = rowIdx === rows.length - 1 ? padding : gap / 2;
+      rowDiv.style.padding = `${paddingTop}px ${padding}px ${paddingBottom}px`;
+      rowDiv.style.gap = `${gap}px`;
+      rowDiv.style.boxSizing = 'border-box';
+      rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
+      rowDiv.dataset.pageRow = '1';
+
+      if (isSpread && row.length === 1) {
+        const pageIndex = row[0]!;
+        const isFirstPage = pageIndex === 0;
+
+        if (isFirstPage) {
+          const spacer = document.createElement('div');
+          spacer.style.width = `${displayWidth}px`;
+          spacer.style.flexShrink = '0';
+          spacer.dataset.spreadSpacer = '1';
+          rowDiv.appendChild(spacer);
+        }
+
+        const slot = document.createElement('div');
+        slot.style.flexShrink = '0';
+        slot.style.position = 'relative';
+        slot.dataset.pageIndex = String(pageIndex);
+
+        const canvas = createPageCanvas(displayWidth, displayHeight);
+        slot.appendChild(canvas);
+        canvasMap.set(pageIndex, canvas);
+        const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
+        slot.appendChild(overlay);
+        overlayMap.set(pageIndex, overlay);
+        attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
+        allSlots.push(slot);
+        rowDiv.appendChild(slot);
+
+        if (!isFirstPage) {
+          const spacer = document.createElement('div');
+          spacer.style.width = `${displayWidth}px`;
+          spacer.style.flexShrink = '0';
+          spacer.dataset.spreadSpacer = '1';
+          rowDiv.appendChild(spacer);
         }
       } else {
-        const base = Math.min(rect.width - padding * 2, 800);
-        displayWidth = base * zoom;
-      }
-
-      displayWidth = Math.max(displayWidth, 50);
-      const displayHeight = displayWidth * aspectRatio;
-
-      // Inner wrapper centers content via auto margins, enabling full
-      // horizontal scroll in both directions when zoomed in
-      const pagesPerRow = isSpread ? 2 : 1;
-      const innerWidth = displayWidth * pagesPerRow + gap * (pagesPerRow - 1) + padding * 2;
-      const innerDiv = document.createElement('div');
-      innerDiv.style.width = `${innerWidth}px`;
-      innerDiv.style.margin = '0 auto';
-
-      const canvasMap = canvasMapRef.current;
-      const overlayMap = overlayMapRef.current;
-      const pageWidthPx = firstPage.width;
-      const pageHeightPx = firstPage.height;
-      const rows = groupPagesIntoRows(doc.pages.length, viewMode);
-      const allSlots: HTMLDivElement[] = [];
-
-      for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
-        const row = rows[rowIdx]!;
-        const rowDiv = document.createElement('div');
-        rowDiv.style.display = 'flex';
-        rowDiv.style.justifyContent = 'center';
-        rowDiv.style.alignItems = 'flex-start';
-        const paddingTop = rowIdx === 0 ? padding : gap / 2;
-        const paddingBottom = rowIdx === rows.length - 1 ? padding : gap / 2;
-        rowDiv.style.padding = `${paddingTop}px ${padding}px ${paddingBottom}px`;
-        rowDiv.style.gap = `${gap}px`;
-        rowDiv.style.boxSizing = 'border-box';
-        rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
-
-        if (isSpread && row.length === 1) {
-          const pageIndex = row[0]!;
-          const isFirstPage = pageIndex === 0;
-
-          // First page (cover) goes on the RIGHT (recto in book terms)
-          // Trailing unpaired page goes on the LEFT (verso)
-          if (isFirstPage) {
-            // Spacer on the left
-            const spacer = document.createElement('div');
-            spacer.style.width = `${displayWidth}px`;
-            spacer.style.flexShrink = '0';
-            rowDiv.appendChild(spacer);
-          }
-
+        for (const pageIndex of row) {
           const slot = document.createElement('div');
           slot.style.flexShrink = '0';
           slot.style.position = 'relative';
@@ -267,102 +455,60 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
           const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
           slot.appendChild(overlay);
           overlayMap.set(pageIndex, overlay);
-          attachSlotClickHandler(slot, pageIndex, displayWidth, displayHeight, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
+          attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
           allSlots.push(slot);
           rowDiv.appendChild(slot);
-
-          if (!isFirstPage) {
-            // Spacer on the right for trailing unpaired page
-            const spacer = document.createElement('div');
-            spacer.style.width = `${displayWidth}px`;
-            spacer.style.flexShrink = '0';
-            rowDiv.appendChild(spacer);
-          }
-        } else {
-          for (const pageIndex of row) {
-            const slot = document.createElement('div');
-            slot.style.flexShrink = '0';
-            slot.style.position = 'relative';
-            slot.dataset.pageIndex = String(pageIndex);
-
-            const canvas = createPageCanvas(displayWidth, displayHeight);
-            slot.appendChild(canvas);
-            canvasMap.set(pageIndex, canvas);
-            const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
-            slot.appendChild(overlay);
-            overlayMap.set(pageIndex, overlay);
-            attachSlotClickHandler(slot, pageIndex, displayWidth, displayHeight, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
-            allSlots.push(slot);
-            rowDiv.appendChild(slot);
-          }
         }
-
-        innerDiv.appendChild(rowDiv);
       }
 
-      // Pre-render pages that were visible in the previous document so the
-      // swap from old DOM to new DOM shows already-painted pixels. Any page
-      // not in the new doc is simply skipped.
-      const debugConfig = resolveDebugConfig(deferredConfig.debug);
-      const renderOpts: RenderPageOptions = { pageNegative: debugConfig.pageNegative.enabled };
-      const renderedSet = new Set<number>();
-      for (const pageIndex of previouslyRendered) {
-        const canvas = canvasMap.get(pageIndex);
-        const page = doc.pages[pageIndex];
-        if (!canvas || !page) continue;
-        renderPageToCanvas(page, doc, canvas, renderOpts);
-        renderedSet.add(pageIndex);
-      }
-      renderedPagesRef.current = renderedSet;
-
-      // Atomic swap: remove old children and attach the new tree in one go.
-      while (container.firstChild) container.removeChild(container.firstChild);
-      container.appendChild(innerDiv);
-
-      // Lazy-render pages as they scroll into view
-      const observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            const idx = Number((entry.target as HTMLElement).dataset.pageIndex);
-            const canvas = canvasMap.get(idx);
-            if (!canvas || !docRef.current) continue;
-
-            if (entry.isIntersecting && !renderedSet.has(idx)) {
-              renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, renderOpts);
-              renderedSet.add(idx);
-            } else if (!entry.isIntersecting && renderedSet.has(idx)) {
-              // Release GPU memory for off-screen pages
-              canvas.width = 1;
-              canvas.height = 1;
-              renderedSet.delete(idx);
-            }
-          }
-        },
-        { root: container, rootMargin: '200px 0px 200px 0px' },
-      );
-      observerRef.current = observer;
-
-      for (const slot of allSlots) {
-        observer.observe(slot);
-      }
-
-      setDocVersion((v) => v + 1);
-    } catch (err) {
-      console.error('[CanvasPreview] Layout error:', err);
+      innerDiv.appendChild(rowDiv);
     }
 
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, [deferredMarkdown, deferredConfig, resizeKey, zoom, viewMode, fitMode]);
+    // Pre-render pages that were visible in the previous document so the
+    // swap from old DOM to new DOM shows already-painted pixels.
+    const renderedSet = new Set<number>();
+    for (const pageIndex of previouslyRendered) {
+      const canvas = canvasMap.get(pageIndex);
+      const page = doc.pages[pageIndex];
+      if (!canvas || !page) continue;
+      renderPageToCanvas(page, doc, canvas, renderOpts);
+      renderedSet.add(pageIndex);
+    }
+    renderedPagesRef.current = renderedSet;
+    lastPaintedDocVersionRef.current = docVersion;
+
+    while (container.firstChild) container.removeChild(container.firstChild);
+    container.appendChild(innerDiv);
+
+    // Rasterize on entry but never release bitmaps on exit. Once a page is
+    // painted, its bitmap stays cached so resize / scroll can't thrash the
+    // rasterizer: the browser scales the existing bitmap for free and there
+    // is no work to redo when a page crosses the intersection margin.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const idx = Number((entry.target as HTMLElement).dataset.pageIndex);
+          if (renderedPagesRef.current.has(idx)) continue;
+          const canvas = canvasMapRef.current.get(idx);
+          if (!canvas || !docRef.current) continue;
+          renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, renderOpts);
+          renderedPagesRef.current.add(idx);
+        }
+      },
+      { root: container, rootMargin: '200px 0px 200px 0px' },
+    );
+    observerRef.current = observer;
+    for (const slot of allSlots) observer.observe(slot);
+    lastGeomRef.current = geom;
+  }, [docVersion, layoutKey, zoom, viewMode, fitMode, deferredConfig]);
 
   // Draw cursor/selection overlays whenever selection or debug config changes
   useEffect(() => {
     const doc = docRef.current;
     if (!doc) return;
-    const debug = resolveDebugConfig(state.config.debug);
-    const selection = state.selection;
-    const focused = state.editorFocused;
+    const debug = resolveDebugConfig(config.debug);
+    const focused = editorFocused;
     // Find the block that should host the caret. Prefer the block that
     // actually contains the source offset; otherwise fall back to the first
     // block starting at or after the offset (cursor between paragraphs).
@@ -417,13 +563,13 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         container.scrollLeft += cr.right - cn.right + padding;
       }
     }
-  }, [state.selection, state.config.debug, state.editorFocused, docVersion]);
+  }, [selection, config.debug, editorFocused, docVersion]);
 
   return (
     <div
       ref={containerRef}
       className="h-full w-full"
-      style={{ backgroundColor: 'var(--surface)', overflow: 'auto' }}
+      style={{ backgroundColor: 'var(--surface)', overflow: 'auto', scrollbarGutter: 'stable' }}
     />
   );
 }

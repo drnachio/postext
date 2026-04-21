@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
   resolvePageConfig,
   resolveDebugConfig,
@@ -19,13 +20,13 @@ import {
   NestedGroup,
 } from '../../controls';
 
-export function DebugSection() {
-  const { state, dispatch } = useSandbox();
-  const rawPage = state.config.page;
+export const DebugSection = memo(function DebugSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const rawPage = useSandboxSelector((s) => s.config.page);
+  const rawDebug = useSandboxSelector((s) => s.config.debug);
   const page = resolvePageConfig(rawPage);
-  const rawDebug = state.config.debug;
   const debug = resolveDebugConfig(rawDebug);
-  const { labels } = state;
 
   const updatePage = (partial: Partial<PageConfig>) => {
     dispatch({
@@ -315,4 +316,4 @@ export function DebugSection() {
       />
     </CollapsibleSection>
   );
-}
+});

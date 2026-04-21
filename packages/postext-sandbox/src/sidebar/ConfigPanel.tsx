@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { Download, Upload, RotateCcw } from 'lucide-react';
 import { isDefaultColorPalette } from 'postext';
-import { useSandbox, createDefaultConfig } from '../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, createDefaultConfig } from '../context/SandboxContext';
 import { exportConfigToJson, importConfigFromJson } from '../storage/persistence';
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
@@ -20,8 +20,9 @@ import { DebugSection } from './sections/DebugSection';
 import { WarningsConfigSection } from './sections/WarningsConfigSection';
 
 export function ConfigPanel() {
-  const { state, dispatch } = useSandbox();
-  const { config, labels } = state;
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const config = useSandboxSelector((s) => s.config);
   const importRef = useRef<HTMLInputElement>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

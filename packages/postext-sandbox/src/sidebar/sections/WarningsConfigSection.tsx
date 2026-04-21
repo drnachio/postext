@@ -1,6 +1,7 @@
 'use client';
 
-import { useSandbox } from '../../context/SandboxContext';
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
   resolveDebugConfig,
   DEFAULT_DEBUG_CONFIG,
@@ -8,11 +9,11 @@ import {
 import type { DebugConfig, WarningsToggleConfig } from 'postext';
 import { CollapsibleSection, ToggleSwitch } from '../../controls';
 
-export function WarningsConfigSection() {
-  const { state, dispatch } = useSandbox();
-  const rawDebug = state.config.debug;
+export const WarningsConfigSection = memo(function WarningsConfigSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const rawDebug = useSandboxSelector((s) => s.config.debug);
   const debug = resolveDebugConfig(rawDebug);
-  const { labels } = state;
 
   const updateWarningToggle = (key: keyof WarningsToggleConfig, value: boolean) => {
     const nextWarnings: WarningsToggleConfig = { ...rawDebug?.warnings, [key]: value };
@@ -108,4 +109,4 @@ export function WarningsConfigSection() {
       />
     </CollapsibleSection>
   );
-}
+});
