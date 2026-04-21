@@ -1,17 +1,18 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link2Off } from 'lucide-react';
 import type { ColorPaletteEntry } from 'postext';
-import { SaturationValueArea } from './SaturationValueArea';
-import { HueSlider } from './HueSlider';
-import { AlphaSlider } from './AlphaSlider';
+import { SaturationValueArea } from '../SaturationValueArea';
+import { HueSlider } from '../HueSlider';
+import { AlphaSlider } from '../AlphaSlider';
 import {
   hexToHsv, hsvToHex, hsvToRgb, rgbToHsv,
   rgbToHsl, hslToRgb, rgbToCmyk, cmykToRgb,
   clamp, hexAlpha, hexWithoutAlpha, hexWithAlpha,
   type HSV, type RGB, type HSL, type CMYK, type ColorMode,
-} from './color-utils';
+} from '../color-utils';
+import { PaletteChips } from './PaletteChips';
+import { TabInputs } from './TabInputs';
 
 interface ColorPopoverProps {
   hex: string;
@@ -37,44 +38,6 @@ const TABS: { id: ColorMode; label: string }[] = [
 const POPOVER_WIDTH = 240;
 const POPOVER_GAP = 6;
 
-function SmallInput({
-  value,
-  onChange,
-  label,
-  min = 0,
-  max = 255,
-}: {
-  value: number;
-  onChange: (v: number) => void;
-  label: string;
-  min?: number;
-  max?: number;
-}) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-      <input
-        type="number"
-        value={value}
-        onChange={(e) => onChange(clamp(Number(e.target.value), min, max))}
-        min={min}
-        max={max}
-        style={{
-          width: 42,
-          padding: '3px 4px',
-          fontSize: 10,
-          textAlign: 'center',
-          borderRadius: 3,
-          border: '1px solid var(--rule)',
-          backgroundColor: 'var(--background)',
-          color: 'var(--foreground)',
-          outline: 'none',
-        }}
-      />
-      <span style={{ fontSize: 9, color: 'var(--slate)' }}>{label}</span>
-    </div>
-  );
-}
-
 const CHECKER = `repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 0 0 / 10px 10px`;
 
 export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel }: ColorPopoverProps) {
@@ -96,12 +59,10 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
     setAlpha(hexAlpha(hex));
   }, [hex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update hex text when HSV changes internally
   useEffect(() => {
     setHexText(hsvToHex(hsv));
   }, [hsv]);
 
-  // Click-outside and Escape
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
@@ -142,13 +103,11 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
     updateHsv({ ...hsv, h });
   }, [hsv, updateHsv]);
 
-  // Derived values
   const rgb = hsvToRgb(hsv);
   const hsl = rgbToHsl(rgb);
   const cmyk = rgbToCmyk(rgb);
   const currentHex = hsvToHex(hsv);
 
-  // Handlers for tab inputs
   const handleRgbChange = (channel: keyof RGB, v: number) => {
     const next = { ...rgb, [channel]: v };
     updateHsv(rgbToHsv(next));
@@ -203,70 +162,15 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
       }}
     >
       {palette && palette.length > 0 && (
-        <div style={{ marginBottom: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          {palette.map((entry) => {
-            const selected = entry.id === linkedPaletteId;
-            return (
-              <button
-                key={entry.id}
-                type="button"
-                onClick={() => onLinkPalette?.(entry.id)}
-                title={entry.name}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '2px 6px 2px 2px',
-                  borderRadius: 10,
-                  border: '1px solid var(--rule)',
-                  backgroundColor: selected ? 'var(--surface)' : 'var(--background)',
-                  color: 'var(--foreground)',
-                  fontSize: 10,
-                  cursor: 'pointer',
-                  maxWidth: '100%',
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    display: 'inline-block',
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    border: '1px solid var(--rule)',
-                    backgroundColor: entry.value.hex,
-                  }}
-                />
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
-                  {entry.name}
-                </span>
-              </button>
-            );
-          })}
-          {linkedPaletteId && onUnlinkPalette && (
-            <button
-              type="button"
-              onClick={onUnlinkPalette}
-              title={unlinkLabel}
-              aria-label={unlinkLabel}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '2px 6px',
-                borderRadius: 10,
-                border: '1px solid var(--rule)',
-                backgroundColor: 'var(--background)',
-                color: 'var(--slate)',
-                cursor: 'pointer',
-              }}
-            >
-              <Link2Off size={11} aria-hidden="true" />
-            </button>
-          )}
-        </div>
+        <PaletteChips
+          palette={palette}
+          linkedPaletteId={linkedPaletteId}
+          onLinkPalette={onLinkPalette}
+          onUnlinkPalette={onUnlinkPalette}
+          unlinkLabel={unlinkLabel}
+        />
       )}
 
-      {/* SV Area */}
       <SaturationValueArea
         hue={hsv.h}
         saturation={hsv.s}
@@ -274,13 +178,10 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
         onChange={handleSvChange}
       />
 
-      {/* Hue Slider */}
       <HueSlider hue={hsv.h} onChange={handleHueChange} />
 
-      {/* Alpha Slider */}
       <AlphaSlider alpha={alpha} color={currentHex} onChange={updateAlpha} />
 
-      {/* Color preview */}
       <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
         <div style={{
           flex: 1,
@@ -316,7 +217,6 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
         </div>
       </div>
 
-      {/* Alpha value display */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -346,7 +246,6 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
         <span style={{ fontSize: 9, color: 'var(--slate)' }}>%</span>
       </div>
 
-      {/* Tab bar */}
       <div
         role="tablist"
         style={{
@@ -381,55 +280,18 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
         ))}
       </div>
 
-      {/* Tab inputs */}
-      <div style={{ marginTop: 8 }}>
-        {activeTab === 'hex' && (
-          <input
-            type="text"
-            value={hexText}
-            onChange={(e) => setHexText(e.target.value)}
-            onBlur={handleHexSubmit}
-            onKeyDown={(e) => e.key === 'Enter' && handleHexSubmit()}
-            style={{
-              width: '100%',
-              padding: '4px 6px',
-              fontSize: 11,
-              fontFamily: 'monospace',
-              borderRadius: 3,
-              border: '1px solid var(--rule)',
-              backgroundColor: 'var(--background)',
-              color: 'var(--foreground)',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
-        )}
-
-        {activeTab === 'rgb' && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-            <SmallInput value={rgb.r} onChange={(v) => handleRgbChange('r', v)} label="R" max={255} />
-            <SmallInput value={rgb.g} onChange={(v) => handleRgbChange('g', v)} label="G" max={255} />
-            <SmallInput value={rgb.b} onChange={(v) => handleRgbChange('b', v)} label="B" max={255} />
-          </div>
-        )}
-
-        {activeTab === 'cmyk' && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 6 }}>
-            <SmallInput value={cmyk.c} onChange={(v) => handleCmykChange('c', v)} label="C" max={100} />
-            <SmallInput value={cmyk.m} onChange={(v) => handleCmykChange('m', v)} label="M" max={100} />
-            <SmallInput value={cmyk.y} onChange={(v) => handleCmykChange('y', v)} label="Y" max={100} />
-            <SmallInput value={cmyk.k} onChange={(v) => handleCmykChange('k', v)} label="K" max={100} />
-          </div>
-        )}
-
-        {activeTab === 'hsl' && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-            <SmallInput value={hsl.h} onChange={(v) => handleHslChange('h', v)} label="H" max={360} />
-            <SmallInput value={hsl.s} onChange={(v) => handleHslChange('s', v)} label="S" max={100} />
-            <SmallInput value={hsl.l} onChange={(v) => handleHslChange('l', v)} label="L" max={100} />
-          </div>
-        )}
-      </div>
+      <TabInputs
+        activeTab={activeTab}
+        hexText={hexText}
+        setHexText={setHexText}
+        handleHexSubmit={handleHexSubmit}
+        rgb={rgb}
+        hsl={hsl}
+        cmyk={cmyk}
+        handleRgbChange={handleRgbChange}
+        handleHslChange={handleHslChange}
+        handleCmykChange={handleCmykChange}
+      />
     </div>
   );
 }

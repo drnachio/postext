@@ -613,7 +613,7 @@ interface MeasuredText {
 
 Los tres backends disponibles consumen el mismo `VDTDocument`. La división entre `postext` (que exporta los backends de canvas y HTML) y `postext-pdf` (que exporta el backend de PDF) es puramente cuestión de dependencias: el camino PDF arrastra `pdf-lib` y `@pdf-lib/fontkit`, y la mayoría de integraciones web no los necesitan. Instala `postext-pdf` solo cuando realmente quieras emitir bytes PDF.
 
-**Restricción de solo navegador:** En la Fase 1, toda la computación de composición ocurre en el lado del cliente, en el navegador. El motor se ejecuta en el hilo principal, con soporte de Web Workers para documentos grandes planificado como optimización futura. Es una decisión de alcance deliberada -- clavar primero la experiencia en el navegador, expandir a otros destinos después.
+**Restricción de solo navegador:** En la Fase 1, toda la computación de composición ocurre en el lado del cliente, en el navegador. El pipeline puede ejecutarse tanto en el hilo principal (`buildDocument`) como dentro de un Web Worker dedicado (`createLayoutWorker` desde `postext/worker`) -- la ruta del worker es la integración recomendada para aplicaciones orientadas a UI porque mantiene la medición y el bucle de convergencia fuera del hilo principal, soporta cancelación *last-wins* mediante `AbortSignal`, y posee su propia caché de medición y caché de rasterización de matemáticas para que las reconstrucciones sucesivas sigan siendo baratas. Consulta [Configuración → Ejecutar la composición en un Web Worker](/es/docs/configuration#ejecutar-la-composición-en-un-web-worker) para el patrón de integración completo. El renderizado en servidor sigue siendo una decisión de alcance deliberada para más adelante -- clavar primero la experiencia en el navegador, expandir a otros destinos después.
 
 
 ## Estrategia de rendimiento
@@ -637,11 +637,21 @@ Piensa a qué se enfrenta el motor: miles de bloques de texto repartidos en cien
    motor puede permitirse re-medir texto de forma especulativa (probando diferentes anchos de columna,
    puntos de separación silábica, ajustes de tracking) sin bloquear el hilo principal.
 
-5. **Campos numéricos planos.** Las cajas delimitadoras se almacenan como campos planos `x, y, width,
+5. **Builds fuera del hilo principal.** El punto de entrada `postext/worker` ejecuta el pipeline
+   completo dentro de un Web Worker dedicado. El hilo principal publica `{ content, config }` y un
+   `AbortSignal`; el worker registra las fuentes (transferidas como `ArrayBuffer`s), ejecuta el bucle
+   de convergencia y publica de vuelta el `VDTDocument` terminado. Una nueva llamada a `build()`
+   cancela cooperativamente la anterior -- el worker consulta un hook de cancelación por bloque dentro
+   de `buildDocument` y lanza `BuildCancelledError`, de modo que un usuario escribiendo en un editor
+   nunca espera por una composición ya obsoleta. El worker también mantiene su propia caché persistente
+   de medición y una caché de rasterización de matemáticas con clave por contenido, de modo que los
+   objetos `MathRender` clonados estructuralmente sobreviven a las reconstrucciones sin re-rasterizarse.
+
+6. **Campos numéricos planos.** Las cajas delimitadoras se almacenan como campos planos `x, y, width,
    height` en cada nodo, no como objetos anidados. Esto evita perseguir punteros y es más amigable
    con la caché.
 
-6. **VDT de doble acceso.** El árbol (`pages > columns > blocks`) proporciona acceso jerárquico para
+7. **VDT de doble acceso.** El árbol (`pages > columns > blocks`) proporciona acceso jerárquico para
    pasadas que necesitan trabajar página por página o columna por columna (como la Pasada 6, equilibrado
    de columnas). Un array plano paralelo `blocks[]` proporciona acceso indexado O(1) para pasadas que
    necesitan iterar todos los bloques independientemente de su ubicación (como la Pasada 5, detección

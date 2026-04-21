@@ -240,6 +240,34 @@ const html = renderToHtml(doc);
 // …or rasterize to canvas — see renderPage / renderPageToCanvas.
 ```
 
+### Asynchronous layout in a Web Worker (recommended for UIs)
+
+For interactive integrations — live previews, editors, anything that rebuilds
+the document on every keystroke or resize — run the pipeline off the main
+thread via the dedicated worker entry point. This keeps the UI responsive,
+gives you last-wins cancellation via `AbortSignal`, and ships fonts into the
+worker as transferable `ArrayBuffer`s so measurement stays pixel-identical to
+the main-thread build:
+
+```ts
+import { createLayoutWorker } from 'postext/worker';
+
+const layout = createLayoutWorker();
+
+// Register fonts once per family (woff2/ttf ArrayBuffers are transferred).
+await layout.registerFonts(fontPayloads);
+
+const controller = new AbortController();
+const vdt = await layout.build(content, config, { signal: controller.signal });
+
+// Call controller.abort() to supersede an in-flight build — the worker stops
+// the current pipeline and the pending promise rejects with AbortError.
+layout.dispose();
+```
+
+The full async integration pattern (font shipping, cancellation, measurement
+cache reuse) is documented under
+[Running layout in a Web Worker](https://postext.dev/en/docs/configuration#running-layout-in-a-web-worker).
 For an end-to-end HTML-viewer integration (multi-column, resize-aware, Shadow DOM),
 see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#integrating-the-html-viewer).
 
@@ -279,6 +307,7 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#inte
 - [x] PDF renderer
 - [x] Interactive playground in `apps/web`
 - [x] Visual configuration editor (stretch goal)
+- [x] Asynchronous layout worker (off-main-thread `buildDocument` with last-wins cancellation)
 
 ---
 

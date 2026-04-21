@@ -1,18 +1,10 @@
-"use client";
-
-import Link from "next/link";
-import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from "postext-sandbox";
-import { useTranslations, useLocale } from "next-intl";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { CompactLanguageSwitcher } from "@/components/sandbox/CompactLanguageSwitcher";
+import type { useTranslations } from "next-intl";
 import type { SandboxLabels } from "postext-sandbox";
 
-export function SandboxPage() {
-  const t = useTranslations("Sandbox");
-  const locale = useLocale();
-  const initialMarkdown = locale === "es" ? DEFAULT_MARKDOWN_ES : DEFAULT_MARKDOWN_EN;
+type SandboxTranslator = ReturnType<typeof useTranslations<"Sandbox">>;
 
-  const labels: SandboxLabels = {
+export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
+  return {
     configuration: t("configuration"),
     resources: t("resources"),
     markdownEditor: t("markdownEditor"),
@@ -410,40 +402,4 @@ export function SandboxPage() {
     colorPaletteDeleteInUse: t("colorPaletteDeleteInUse"),
     colorPaletteDeleteInUseNote: t("colorPaletteDeleteInUseNote"),
   };
-
-  // PostextSandbox automatically preloads all fonts referenced in the config
-  // (from localStorage or initialConfig) before rendering content — no FOUT.
-  // For custom integrations, use: await preloadConfigFonts(config)
-  return (
-    <PostextSandbox
-      initialMarkdown={initialMarkdown}
-      labels={labels}
-      locale={locale}
-      themeToggle={<ThemeToggle />}
-      languageSwitcher={<CompactLanguageSwitcher />}
-      homeLink={
-        <Link
-          href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2"
-          style={{ color: "var(--gilt)", outlineColor: "var(--accent-blue)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--surface)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <span
-            className="text-2xl font-black leading-none"
-            style={{
-              fontFamily:
-                'var(--font-logo, var(--font-cormorant, "Cormorant Garamond", Georgia, serif))',
-            }}
-          >
-            P
-          </span>
-        </Link>
-      }
-    />
-  );
 }

@@ -3,55 +3,25 @@
 import { useEffect, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandboxDispatch, useSandboxDocRef, useSandboxSelector } from '../../context/SandboxContext';
 import { renderPageToCanvas, resolveDebugConfig } from 'postext';
-import type { VDTDocument, HyphenationLocale, PostextConfig, RenderPageOptions } from 'postext';
-import { createPageCanvas, createOverlaySvg } from './dom';
+import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { drawOverlay } from './overlay';
-import { attachSlotClickHandler } from './interaction';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
-
-const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
-  en: 'en-us', es: 'es', fr: 'fr', de: 'de', it: 'it', pt: 'pt', ca: 'ca', nl: 'nl',
-};
-
-type ViewMode = 'single' | 'spread';
-type FitMode = 'none' | 'width' | 'height';
+import {
+  LOCALE_TO_HYPHENATION,
+  PAGE_GAP,
+  PAGE_PADDING,
+  type FitMode,
+  type GeomSnapshot,
+  type ViewMode,
+} from './layoutUtils';
+import { findCaretBlockIdx } from './caret';
+import { buildPagesDom } from './pageDom';
 
 interface CanvasPreviewProps {
   zoom: number;
   viewMode: ViewMode;
   fitMode: FitMode;
-}
-
-interface GeomSnapshot {
-  pageCount: number;
-  pageWidthPx: number;
-  pageHeightPx: number;
-  displayWidth: number;
-  displayHeight: number;
-  viewMode: ViewMode;
-}
-
-/**
- * Groups pages into rows for display.
- * Single mode: one page per row.
- * Spread mode: page 0 alone (on the right, like a book recto),
- * then pairs [1,2], [3,4], ... Last unpaired page goes on the left.
- */
-function groupPagesIntoRows(pageCount: number, viewMode: ViewMode): number[][] {
-  if (viewMode === 'single') {
-    return Array.from({ length: pageCount }, (_, i) => [i]);
-  }
-  const rows: number[][] = [];
-  if (pageCount > 0) rows.push([0]);
-  for (let i = 1; i < pageCount; i += 2) {
-    if (i + 1 < pageCount) {
-      rows.push([i, i + 1]);
-    } else {
-      rows.push([i]);
-    }
-  }
-  return rows;
 }
 
 /**
@@ -125,8 +95,6 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     const prev = lastGeomRef.current;
     if (prev && prev.displayWidth === displayWidth && prev.displayHeight === displayHeight) return;
     const pagesPerRow = prev?.viewMode === 'spread' ? 2 : 1;
-    const padding = 32;
-    const gap = 24;
     for (const [, canvas] of canvasMapRef.current) {
       canvas.style.width = `${displayWidth}px`;
       canvas.style.height = `${displayHeight}px`;
@@ -144,13 +112,13 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     const rows = container.querySelectorAll<HTMLDivElement>('[data-page-row="1"]');
     const totalRows = rows.length;
     rows.forEach((rowDiv, rowIdx) => {
-      const paddingTop = rowIdx === 0 ? padding : gap / 2;
-      const paddingBottom = rowIdx === totalRows - 1 ? padding : gap / 2;
+      const paddingTop = rowIdx === 0 ? PAGE_PADDING : PAGE_GAP / 2;
+      const paddingBottom = rowIdx === totalRows - 1 ? PAGE_PADDING : PAGE_GAP / 2;
       rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
     });
     const innerDiv = container.firstChild as HTMLDivElement | null;
     if (innerDiv) {
-      innerDiv.style.width = `${displayWidth * pagesPerRow + gap * (pagesPerRow - 1) + padding * 2}px`;
+      innerDiv.style.width = `${displayWidth * pagesPerRow + PAGE_GAP * (pagesPerRow - 1) + PAGE_PADDING * 2}px`;
     }
     if (prev) {
       prev.displayWidth = displayWidth;
@@ -159,8 +127,6 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
   };
 
   const computeDisplaySize = (containerW: number, containerH: number) => {
-    const padding = 32;
-    const gap = 24;
     const isSpread = viewMode === 'spread';
     const doc = docRef.current;
     const firstPage = doc?.pages[0];
@@ -168,17 +134,17 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     let displayWidth: number;
     if (fitMode === 'width') {
       displayWidth = isSpread
-        ? (containerW - padding * 2 - gap) / 2
-        : containerW - padding * 2;
+        ? (containerW - PAGE_PADDING * 2 - PAGE_GAP) / 2
+        : containerW - PAGE_PADDING * 2;
     } else if (fitMode === 'height') {
-      const containerInnerH = containerH - padding * 2;
+      const containerInnerH = containerH - PAGE_PADDING * 2;
       displayWidth = containerInnerH / aspectRatio;
       if (isSpread) {
-        const maxPerPage = (containerW - padding * 2 - gap) / 2;
+        const maxPerPage = (containerW - PAGE_PADDING * 2 - PAGE_GAP) / 2;
         displayWidth = Math.min(displayWidth, maxPerPage);
       }
     } else {
-      const base = Math.min(containerW - padding * 2, 800);
+      const base = Math.min(containerW - PAGE_PADDING * 2, 800);
       displayWidth = base * zoom;
     }
     displayWidth = Math.max(displayWidth, 50);
@@ -311,11 +277,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       return;
     }
 
-    const padding = 32;
-    const gap = 24;
     const firstPage = doc.pages[0]!;
-    const isSpread = viewMode === 'spread';
-
     const { displayWidth, displayHeight } = computeDisplaySize(containerW, containerH);
 
     const debugConfig = resolveDebugConfig(deferredConfig.debug);
@@ -364,92 +326,25 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     const previouslyRendered = renderedPagesRef.current;
     renderedPagesRef.current = new Set();
 
-    const pagesPerRow = isSpread ? 2 : 1;
-    const innerWidth = displayWidth * pagesPerRow + gap * (pagesPerRow - 1) + padding * 2;
-    const innerDiv = document.createElement('div');
-    innerDiv.style.width = `${innerWidth}px`;
-    innerDiv.style.margin = '0 auto';
-
-    const canvasMap = canvasMapRef.current;
-    const overlayMap = overlayMapRef.current;
-    const rows = groupPagesIntoRows(doc.pages.length, viewMode);
-    const allSlots: HTMLDivElement[] = [];
-
-    for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
-      const row = rows[rowIdx]!;
-      const rowDiv = document.createElement('div');
-      rowDiv.style.display = 'flex';
-      rowDiv.style.justifyContent = 'center';
-      rowDiv.style.alignItems = 'flex-start';
-      const paddingTop = rowIdx === 0 ? padding : gap / 2;
-      const paddingBottom = rowIdx === rows.length - 1 ? padding : gap / 2;
-      rowDiv.style.padding = `${paddingTop}px ${padding}px ${paddingBottom}px`;
-      rowDiv.style.gap = `${gap}px`;
-      rowDiv.style.boxSizing = 'border-box';
-      rowDiv.style.minHeight = `${displayHeight + paddingTop + paddingBottom}px`;
-      rowDiv.dataset.pageRow = '1';
-
-      if (isSpread && row.length === 1) {
-        const pageIndex = row[0]!;
-        const isFirstPage = pageIndex === 0;
-
-        if (isFirstPage) {
-          const spacer = document.createElement('div');
-          spacer.style.width = `${displayWidth}px`;
-          spacer.style.flexShrink = '0';
-          spacer.dataset.spreadSpacer = '1';
-          rowDiv.appendChild(spacer);
-        }
-
-        const slot = document.createElement('div');
-        slot.style.flexShrink = '0';
-        slot.style.position = 'relative';
-        slot.dataset.pageIndex = String(pageIndex);
-
-        const canvas = createPageCanvas(displayWidth, displayHeight);
-        slot.appendChild(canvas);
-        canvasMap.set(pageIndex, canvas);
-        const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
-        slot.appendChild(overlay);
-        overlayMap.set(pageIndex, overlay);
-        attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
-        allSlots.push(slot);
-        rowDiv.appendChild(slot);
-
-        if (!isFirstPage) {
-          const spacer = document.createElement('div');
-          spacer.style.width = `${displayWidth}px`;
-          spacer.style.flexShrink = '0';
-          spacer.dataset.spreadSpacer = '1';
-          rowDiv.appendChild(spacer);
-        }
-      } else {
-        for (const pageIndex of row) {
-          const slot = document.createElement('div');
-          slot.style.flexShrink = '0';
-          slot.style.position = 'relative';
-          slot.dataset.pageIndex = String(pageIndex);
-
-          const canvas = createPageCanvas(displayWidth, displayHeight);
-          slot.appendChild(canvas);
-          canvasMap.set(pageIndex, canvas);
-          const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
-          slot.appendChild(overlay);
-          overlayMap.set(pageIndex, overlay);
-          attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
-          allSlots.push(slot);
-          rowDiv.appendChild(slot);
-        }
-      }
-
-      innerDiv.appendChild(rowDiv);
-    }
+    const { innerDiv, allSlots } = buildPagesDom(
+      doc,
+      viewMode,
+      displayWidth,
+      displayHeight,
+      pageWidthPx,
+      pageHeightPx,
+      canvasMapRef.current,
+      overlayMapRef.current,
+      docRef,
+      dispatchRef,
+      activePanelRef,
+    );
 
     // Pre-render pages that were visible in the previous document so the
     // swap from old DOM to new DOM shows already-painted pixels.
     const renderedSet = new Set<number>();
     for (const pageIndex of previouslyRendered) {
-      const canvas = canvasMap.get(pageIndex);
+      const canvas = canvasMapRef.current.get(pageIndex);
       const page = doc.pages[pageIndex];
       if (!canvas || !page) continue;
       renderPageToCanvas(page, doc, canvas, renderOpts);
@@ -490,26 +385,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     if (!doc) return;
     const debug = resolveDebugConfig(config.debug);
     const focused = editorFocused;
-    // Find the block that should host the caret. Prefer the block that
-    // actually contains the source offset; otherwise fall back to the first
-    // block starting at or after the offset (cursor between paragraphs).
-    let caretBlockIdx = -1;
-    const { head } = selection;
-    for (let i = 0; i < doc.blocks.length; i++) {
-      const b = doc.blocks[i]!;
-      if (b.sourceStart === undefined || b.sourceEnd === undefined) continue;
-      if (head >= b.sourceStart && head <= b.sourceEnd) { caretBlockIdx = i; break; }
-    }
-    if (caretBlockIdx === -1) {
-      for (let i = 0; i < doc.blocks.length; i++) {
-        const b = doc.blocks[i]!;
-        if (b.sourceStart === undefined) continue;
-        if (b.sourceStart >= head) { caretBlockIdx = i; break; }
-      }
-    }
-    if (caretBlockIdx === -1 && doc.blocks.length > 0) {
-      caretBlockIdx = doc.blocks.length - 1;
-    }
+    const caretBlockIdx = findCaretBlockIdx(doc, selection.head);
 
     let activeCursorRect: SVGRectElement | null = null;
     for (const [pageIndex, overlay] of overlayMapRef.current) {

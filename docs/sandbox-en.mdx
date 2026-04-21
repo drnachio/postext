@@ -80,6 +80,8 @@ The toolbar is extensible: custom actions can be added for postext-specific micr
 
 The right side of the interface displays the rendered output. Three tabs are available, one per rendering mode — **Canvas**, **HTML** and **PDF**. Switching tabs does not re-run layout: the same VDT feeds every backend, so the content you see is consistent across modes.
 
+Each viewport runs the layout pipeline inside a dedicated **Web Worker** (`postext/worker`). A per-viewport `useLayoutWorker` hook owns the worker handle, ships fonts into it as transferable `ArrayBuffer`s, and drives builds with **last-wins cancellation** — a keystroke or slider drag aborts the previous build's `AbortSignal` before the next one starts, so fast typing never queues up stale work on the main thread. Unmounting a viewport disposes its worker and rejects any pending build. See [Configuration → Running layout in a Web Worker](/en/docs/configuration#running-layout-in-a-web-worker) for the integration pattern used here.
+
 <Illustration name="SandboxSyncFlow" data='{"title": "One VDT, three outputs", "desc": "The sandbox markdown and configuration feed a single in-memory VDT. Canvas, HTML, and PDF each render from that same VDT, guaranteeing identical results across all three tabs.", "caption": "A single VDT feeds the three output tabs.", "markdownLabel": "Markdown", "configLabel": "Configuration", "vdtTitle": "VDT", "vdtSubtitle": "shared layout", "canvasLabel": "Canvas", "htmlLabel": "HTML", "pdfLabel": "PDF", "singleSource": "single source of truth"}' />
 
 #### Canvas tab

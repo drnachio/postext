@@ -613,7 +613,7 @@ interface MeasuredText {
 
 All three shipping backends consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes.
 
-**Browser-only constraint:** In Phase 1, all layout computation happens client-side in the browser. The engine runs on the main thread, with Web Worker support for large documents planned as a future optimization. This is a deliberate scope decision -- nail the browser experience first, expand to other targets later.
+**Browser-only constraint:** In Phase 1, all layout computation happens client-side in the browser. The pipeline can run either on the main thread (`buildDocument`) or inside a dedicated Web Worker (`createLayoutWorker` from `postext/worker`) -- the worker path is the recommended integration for UI-driven apps because it keeps measurement and the convergence loop off the main thread, supports last-wins cancellation via `AbortSignal`, and owns its own measurement cache and math raster cache so successive rebuilds stay cheap. See [Configuration -> Running layout in a Web Worker](/en/docs/configuration#running-layout-in-a-web-worker) for the full integration pattern. Server-side rendering remains a deliberate scope decision for later -- nail the browser experience first, expand to other targets later.
 
 
 ## Performance Strategy
@@ -637,10 +637,20 @@ Consider what the engine is up against: thousands of text blocks across hundreds
    re-measure text speculatively (trying different column widths, hyphenation points, tracking
    adjustments) without blocking the main thread.
 
-5. **Flat numeric fields.** Bounding boxes are stored as flat `x, y, width, height` fields on
+5. **Off-main-thread builds.** The `postext/worker` entry point runs the entire pipeline
+   inside a dedicated Web Worker. The main thread posts `{ content, config }` and an
+   `AbortSignal`; the worker registers fonts (transferred as `ArrayBuffer`s), runs the
+   convergence loop, and posts back the finished `VDTDocument`. A newer `build()` call
+   cancels the previous one cooperatively — the worker checks a per-block cancellation hook
+   inside `buildDocument` and throws `BuildCancelledError`, so a user typing into an editor
+   never waits on a superseded layout. The worker also maintains its own persistent
+   measurement cache and a content-keyed math raster cache so that structured-cloned
+   `MathRender` objects survive across rebuilds without re-rasterising.
+
+6. **Flat numeric fields.** Bounding boxes are stored as flat `x, y, width, height` fields on
    each node, not as nested objects. This avoids pointer chasing and is more cache-friendly.
 
-6. **Dual-access VDT.** The tree (`pages > columns > blocks`) gives hierarchical access for
+7. **Dual-access VDT.** The tree (`pages > columns > blocks`) gives hierarchical access for
    passes that need to work page-by-page or column-by-column (like Pass 6, column balancing).
    A parallel flat `blocks[]` array gives O(1) indexed access for passes that need to iterate
    all blocks regardless of their location (like Pass 5, widow/orphan detection). Both views

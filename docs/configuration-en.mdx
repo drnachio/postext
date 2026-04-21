@@ -44,6 +44,7 @@ This reference is long. These are the main blocks:
 - [Debug](#debug) — visual overlays for the editor.
 - [Advanced configuration](#advanced-configuration) — declared types, future support.
 - [Programmatic use](#programmatic-use) — `buildDocument`, resolvers, caches.
+- [Running layout in a Web Worker](#running-layout-in-a-web-worker) — off-main-thread builds with cancellation.
 - [Integrating the HTML viewer](#integrating-the-html-viewer) and [PDF generation](#pdf-generation) — end-to-end recipes.
 
 
@@ -1422,6 +1423,115 @@ clearMeasurementCache(cache);
 `buildDocument` maintains its own cache internally across the convergence loop, so for typical usage you do not need to touch these. They are exposed for applications that drive the pipeline piece-by-piece — for example an editor that re-runs layout on every keystroke and wants to reuse measurements from the previous frame.
 
 
+## Running layout in a Web Worker
+
+Calling `buildDocument` directly runs the full pipeline — parse, measure, seven passes, up to five convergence iterations — on whichever thread invoked it. For a one-shot export that is fine. For an **interactive UI** (live preview, editor, resize-aware viewer) that is the wrong thread: a 150 ms layout blocks input events, keystrokes queue up, and scroll stutters.
+
+Postext ships a dedicated Web Worker entry point — `postext/worker` — that takes the pipeline off the main thread. It is the recommended integration for any UI that rebuilds the document in response to user input. The sandbox's Canvas, HTML and PDF viewports all share the same `createLayoutWorker()` handle through a single `useLayoutWorker` hook (`packages/postext-sandbox/src/worker/useLayoutWorker.ts`) and drive it with last-wins cancellation — a new keystroke aborts the in-flight build before it even finishes.
+
+### What the worker gives you
+
+- **Main thread stays free.** Parsing, measurement, and the seven-pass convergence loop all run inside the worker. The main thread is only touched when the finished `VDTDocument` is posted back.
+- **Last-wins cancellation.** `build(content, config, { signal })` threads an `AbortSignal` into the worker. Aborting before completion raises an `AbortError` on the main side; inside the worker the pipeline throws a `BuildCancelledError` at the next per-block cancellation checkpoint and stops immediately.
+- **Per-worker measurement cache.** The worker keeps a single `MeasurementCache` for its lifetime. Subsequent builds that share font, text, and width reuse the cached line measurements — typing a single character into a long document only re-measures blocks whose input actually changed.
+- **Identical metrics to the main thread.** Fonts are shipped into the worker as transferable `ArrayBuffer`s and registered via `new FontFace(...)` on the worker's own `FontFaceSet`. The worker measures with the same canvas font metrics the main thread would use, so line breaks and column heights are byte-for-byte identical.
+- **Math raster cache survives worker builds.** The math renderer ships a content-keyed raster cache alongside the identity-keyed one — structured-cloning a `MathRender` across the worker boundary would otherwise miss the identity cache on every rebuild.
+
+### Public API
+
+The worker client lives at the `postext/worker` subpath and is a handful of names:
+
+- **`createLayoutWorker(opts?): LayoutWorkerHandle`** — spawns a dedicated worker (or wraps one you pass in via `opts.worker`) and returns a typed handle.
+- **`LayoutWorkerHandle.registerFonts(faces: FontPayload[]): Promise<void>`** — ship font bytes into the worker. Buffers are transferred, so keep a fresh copy on the main thread if you need to re-send later.
+- **`LayoutWorkerHandle.build(content, config?, { signal? }): Promise<VDTDocument>`** — run the pipeline. Aborting the signal cancels the in-flight build.
+- **`LayoutWorkerHandle.dispose(): void`** — terminate the worker and reject any pending builds with `AbortError`.
+- **`FontPayload`** — `{ family, weight, style, unicodeRange?, buffer: ArrayBuffer }`. The `buffer` is transferred to the worker when you call `registerFonts`.
+- **`BuildCancelledError`** (re-exported from `postext`) — what `buildDocument` throws internally when `options.shouldCancel` returns `true`. You do not usually see this on the main thread: the worker protocol converts it to an `AbortError` before it reaches your code.
+
+The package also publishes a `postext/worker/entry` path pointing at the compiled worker script. `createLayoutWorker()` resolves this URL automatically; you only need to reference it explicitly when your bundler requires a hand-constructed `new Worker(new URL(...), { type: 'module' })` call.
+
+### Minimal integration
+
+```ts
+import { createLayoutWorker } from 'postext/worker';
+import type { FontPayload } from 'postext/worker';
+
+const layout = createLayoutWorker();
+
+// 1. Register fonts once per family (transferable ArrayBuffers).
+const payloads: FontPayload[] = await collectFontPayloadsForFamilies([
+  'EB Garamond',
+  'Open Sans',
+]);
+await layout.registerFonts(payloads);
+
+// 2. Build — supersede a previous call by aborting its signal first.
+let pending: AbortController | null = null;
+
+async function rebuild(markdown: string, config: PostextConfig) {
+  pending?.abort();
+  pending = new AbortController();
+  try {
+    const vdt = await layout.build({ markdown }, config, { signal: pending.signal });
+    return vdt;
+  } catch (err) {
+    if ((err as { name?: string } | null)?.name === 'AbortError') return null;
+    throw err;
+  }
+}
+
+// 3. Dispose when the component that owns the worker unmounts.
+//    Pending builds reject with AbortError.
+layout.dispose();
+```
+
+### Font payload collection (Fontsource / Google Fonts)
+
+`registerFonts` takes raw font bytes. The main thread is the right place to fetch them, because Google Fonts only returns WOFF2 to browser-like User-Agent strings, and because a central cache lets multiple worker instances share the same bytes.
+
+The sandbox's `collectFontPayloadsForFamilies` (`packages/postext-sandbox/src/controls/fontLoader.ts`) is a drop-in reference implementation. It:
+
+1. Queries `https://api.fontsource.org/v1/fonts/{family-id}` to discover the available weights and whether the family ships a variable axis.
+2. Builds a Google Fonts CSS2 URL that covers every weight and style the family advertises.
+3. Fetches the generated `@font-face` stylesheet, scrapes each `src: url(...) format('woff2')` declaration, and downloads the raw bytes.
+4. Returns a `FontPayload[]` where `buffer` is a fresh `ArrayBuffer` per call — important, because `registerFonts` transfers the buffer and leaves the sender-side copy detached.
+
+Pair it with `getConfigFontFamilies(config)` to get the list of families a given `PostextConfig` will actually render (body, headings, list bullets, ordered-list numbers).
+
+### Cooperative cancellation inside the engine
+
+If you are driving `buildDocument` yourself — for example inside a custom worker — the pipeline exposes a `shouldCancel` hook you can use directly:
+
+```ts
+import { buildDocument, BuildCancelledError } from 'postext';
+
+let superseded = false;
+try {
+  const vdt = buildDocument(content, config, cache, {
+    shouldCancel: () => superseded,
+  });
+} catch (err) {
+  if (err instanceof BuildCancelledError) return; // a newer build took over
+  throw err;
+}
+```
+
+`shouldCancel` is called once per top-level block during placement. The hook is intentionally cooperative — it cannot stop pretext's own layout call mid-line, but it keeps the cancellation granularity small enough (milliseconds) that a fast-typing user never waits on a stale build.
+
+### When to use the worker, when not to
+
+Use the worker for:
+
+- **Live previews, editors, and playgrounds.** Anything where the document is rebuilt in response to user input.
+- **Resize-aware HTML viewers** that re-run layout on every `ResizeObserver` tick.
+- **Multiple output tabs** that all need the same VDT (the sandbox's Canvas / HTML / PDF viewports share one worker handle per viewport mount).
+
+Skip the worker for:
+
+- **Server-side generation** — Node does not have a browser `FontFaceSet`, and you control the thread anyway.
+- **One-shot exports** that run in response to an explicit user action (clicking "Export PDF") and happen to be acceptable at any latency. Calling `buildDocument` directly is simpler and avoids the cost of the initial font transfer.
+
+
 ## Integrating the HTML viewer
 
 The HTML viewer is Postext's screen-first renderer. Instead of rasterising pages to a bitmap it emits absolutely-positioned DOM nodes whose geometry is driven by the same pipeline that produces print output. This makes it the right choice when you want readable, selectable, and resize-aware typography in a browser — a reading app, an in-product preview, or an embedded docs surface — without pulling in a PDF viewer.
@@ -1583,7 +1693,7 @@ The example above is intentionally flat. Production integrations usually add:
 - **Incremental patching** — `renderToHtmlIndexed` returns `pages[i].blocks`, each with a stable `id` and the block's outer HTML. When only a few blocks differ between two renders you can replace those block wrappers in place instead of rebuilding `innerHTML`.
 - **Overlays** — layering an absolutely-positioned SVG on top of each `.pt-page` for cursors, selections, or baseline grids.
 
-The sandbox's `HtmlPreview` component (`packages/postext-sandbox/src/viewport/HtmlPreview.tsx`) implements all of these on top of the same API shown here and can be used as a reference.
+The sandbox's `HtmlPreview` component (`packages/postext-sandbox/src/viewport/HtmlPreview.tsx`) implements all of these on top of the same API shown here and can be used as a reference. It also routes every build through a shared layout worker (see [Running layout in a Web Worker](#running-layout-in-a-web-worker)) so that live edits and resizes never block the main thread — swap the direct `buildDocument(...)` call in the snippet above for `layoutWorker.build(...)` when you are ready to move layout off the main thread.
 
 
 ## Generating PDFs
@@ -1761,4 +1871,4 @@ For production print workflows, tune these configuration options before renderin
 
 ### Reference implementation
 
-The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) wires the pieces above into a live preview with regenerate, download, and print buttons, and is a good starting point for any in-browser PDF integration.
+The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) wires the pieces above into a live preview with regenerate, download, and print buttons, and is a good starting point for any in-browser PDF integration. It builds the VDT through the shared layout worker (see [Running layout in a Web Worker](#running-layout-in-a-web-worker)) so clicking *Regenerate* doesn't freeze the UI while the pipeline runs — the main thread only handles `renderToPdf` (which is already fast once the VDT exists).
