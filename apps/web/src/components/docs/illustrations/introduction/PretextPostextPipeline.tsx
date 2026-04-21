@@ -29,9 +29,9 @@ export function PretextPostextPipeline({ labels }: { labels: PretextPostextLabel
         <Label key={i} x={40} y={92 + i * 18} color="purple">{b}</Label>
       ))}
 
-      <line x1={300} y1={80} x2={400} y2={80} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#relArrow)" className="svg-flow" />
+      <line x1={300} y1={80} x2={400} y2={80} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#relArrow)" />
       {labels.bridge.map((b, i) => (
-        <Label key={i} x={350} y={72 + i * 23} anchor="middle" size={9} color="light" className="svg-pulse">{b}</Label>
+        <Label key={i} x={350} y={72 + i * 23} anchor="middle" size={9} color="light">{b}</Label>
       ))}
 
       <Box x={400} y={20} width={340} height={120} color="orange" filter="url(#relShadow)" />

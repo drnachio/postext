@@ -217,7 +217,7 @@ function measureColumnWidthPx(
 }
 
 export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
-  const { state, dispatch } = useSandbox();
+  const { state, dispatch, docRef: sharedDocRef } = useSandbox();
   const { hostRef, shadowRef } = useShadowDom();
   const deferredMarkdown = useDeferredValue(state.markdown);
   const deferredConfig = useDeferredValue(state.config);
@@ -556,6 +556,8 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
       }
 
       docRef.current = doc;
+      sharedDocRef.current = doc;
+      dispatch({ type: 'BUMP_DOC_VERSION' });
       lastRenderRef.current = indexed;
       lastRenderSigRef.current = sig;
 

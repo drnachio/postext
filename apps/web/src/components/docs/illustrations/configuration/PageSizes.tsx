@@ -27,7 +27,7 @@ export function PageSizes({ labels }: { labels: PageSizesLabels }) {
         const h = (s.hmm / maxH) * (cellH - 40);
         const cx = startX + i * (cellW + gap);
         return (
-          <g key={i} className={`svg-fade-${i + 1}`}>
+          <g key={i}>
             <rect x={cx + (cellW - w) / 2} y={startY + (cellH - 40 - h)} width={w} height={h} fill={colorTokens.blue.fill} stroke={colorTokens.blue.stroke} strokeWidth={2} rx={4} filter="url(#psShadow)" />
             <Label x={cx + cellW / 2} y={startY + cellH - 15} anchor="middle" size={11} bold color="blue">{s.name}</Label>
             <Label x={cx + cellW / 2} y={startY + cellH} anchor="middle" size={9} color="mid">{s.dims}</Label>

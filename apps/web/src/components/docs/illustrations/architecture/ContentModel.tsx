@@ -44,12 +44,12 @@ export function ContentModel({ labels }: { labels: ContentModelLabels }) {
       <path d="M 200 118 Q 250 125 282 128" stroke={colorTokens.green.stroke} strokeWidth={1.5} fill="none" strokeDasharray="3,3" markerEnd="url(#cmArrow)" />
       <Label x={200} y={206} anchor="middle" size={9} color="light">{labels.resolveMarker}</Label>
 
-      <line x1={380} y1={130} x2={430} y2={130} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#cmArrow)" className="svg-flow" />
+      <line x1={380} y1={130} x2={430} y2={130} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#cmArrow)" />
 
       <Box x={440} y={90} width={140} height={80} color="orange" filter="url(#cmShadow)" />
       <Label x={510} y={135} anchor="middle" size={12} bold color="orange">{labels.engineLabel}</Label>
 
-      <line x1={580} y1={130} x2={630} y2={130} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#cmArrow)" className="svg-flow" />
+      <line x1={580} y1={130} x2={630} y2={130} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#cmArrow)" />
 
       <Box x={640} y={90} width={100} height={80} color="green" filter="url(#cmShadow)" />
       <Label x={690} y={135} anchor="middle" size={12} bold color="green">{labels.vdtLabel}</Label>

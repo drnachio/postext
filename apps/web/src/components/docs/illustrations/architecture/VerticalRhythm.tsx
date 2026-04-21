@@ -38,8 +38,8 @@ export function VerticalRhythm({ labels }: { labels: VerticalRhythmLabels }) {
       <rect x={40} y={78} width={210} height={36} fill="var(--svg-orange-fill)" stroke="var(--svg-orange-stroke)" strokeWidth={2} rx={3} />
       <Label x={50} y={100} size={12} bold color="orange">{labels.heading}</Label>
 
-      <rect x={40} y={114} width={210} height={12} fill="var(--svg-pink-fill)" stroke="var(--svg-pink-stroke)" strokeWidth={1} strokeDasharray="3,2" className="svg-pulse" />
-      <Label x={260} y={124} size={9} color="pink" bold className="svg-pulse">{labels.adjustment}</Label>
+      <rect x={40} y={114} width={210} height={12} fill="var(--svg-pink-fill)" stroke="var(--svg-pink-stroke)" strokeWidth={1} strokeDasharray="3,2" />
+      <Label x={260} y={124} size={9} color="pink" bold>{labels.adjustment}</Label>
 
       <rect x={40} y={126} width={210} height={24} fill="var(--svg-blue-fill)" stroke="var(--svg-blue-stroke)" strokeWidth={1} />
       <Label x={50} y={143} color="blue">{labels.backOnGrid}</Label>
@@ -57,7 +57,7 @@ export function VerticalRhythm({ labels }: { labels: VerticalRhythmLabels }) {
       ))}
 
       <line x1={252} y1={126} x2={338} y2={126} stroke="var(--svg-green-stroke)" strokeWidth={2} strokeDasharray="4,2" />
-      <Label x={295} y={138} anchor="middle" size={8} color="green" bold className="svg-pulse">{labels.aligned}</Label>
+      <Label x={295} y={138} anchor="middle" size={8} color="green" bold>{labels.aligned}</Label>
       <line x1={252} y1={150} x2={338} y2={150} stroke="var(--svg-green-stroke)" strokeWidth={2} strokeDasharray="4,2" />
       <line x1={252} y1={174} x2={338} y2={174} stroke="var(--svg-green-stroke)" strokeWidth={2} strokeDasharray="4,2" />
 

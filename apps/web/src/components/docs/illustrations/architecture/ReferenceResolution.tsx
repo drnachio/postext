@@ -50,7 +50,7 @@ export function ReferenceResolution({ labels }: { labels: ReferenceResolutionLab
       <path d="M 260 88 Q 275 55 290 50" stroke={colorTokens.orange.stroke} strokeWidth={1.5} fill="none" strokeDasharray="3,3" markerEnd="url(#rrArrowOrange)" />
       <path d="M 260 113 Q 275 120 290 125" stroke={colorTokens.green.stroke} strokeWidth={1.5} fill="none" strokeDasharray="3,3" markerEnd="url(#rrArrowGreen)" />
 
-      <line x1={520} y1={90} x2={570} y2={90} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#rrArrow)" className="svg-flow" />
+      <line x1={520} y1={90} x2={570} y2={90} stroke="var(--svg-stroke)" strokeWidth={2} markerEnd="url(#rrArrow)" />
       <Label x={545} y={82} anchor="middle" size={9} color="light">{labels.resolveLabel}</Label>
 
       <Box x={580} y={30} width={160} height={220} color="teal" filter="url(#rrShadow)" />

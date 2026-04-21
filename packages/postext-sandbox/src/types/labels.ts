@@ -3,6 +3,7 @@ export interface SandboxLabels {
   configuration: string;
   resources: string;
   markdownEditor: string;
+  warnings: string;
 
   // Viewport tabs
   canvas: string;
@@ -79,6 +80,31 @@ export interface SandboxLabels {
   debugLooseLinesThresholdTooltip: string;
   debugPageNegative: string;
   debugPageNegativeTooltip: string;
+  debugWarnings: string;
+  debugWarningsMissingFont: string;
+  debugWarningsMissingFontTooltip: string;
+  debugWarningsLooseLines: string;
+  debugWarningsLooseLinesTooltip: string;
+  debugWarningsHeadingHierarchy: string;
+  debugWarningsHeadingHierarchyTooltip: string;
+  debugWarningsConsecutiveHeadings: string;
+  debugWarningsConsecutiveHeadingsTooltip: string;
+  debugWarningsListAfterHeading: string;
+  debugWarningsListAfterHeadingTooltip: string;
+
+  // Warnings panel
+  warningsEmpty: string;
+  warningsLineLabel: string;
+  warningsThresholdLabel: string;
+  warningsMissingFontTitle: string;
+  warningsMissingFontDetail: string;
+  warningsLooseLineTitle: string;
+  warningsHeadingHierarchyTitle: string;
+  warningsHeadingHierarchyDetail: string;
+  warningsConsecutiveHeadingsTitle: string;
+  warningsConsecutiveHeadingsDetail: string;
+  warningsListAfterHeadingTitle: string;
+  warningsListAfterHeadingDetail: string;
 
   // Body text section
   bodyText: string;

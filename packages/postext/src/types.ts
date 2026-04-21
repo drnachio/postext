@@ -516,11 +516,28 @@ export interface LooseLineHighlightConfig {
   threshold?: number;
 }
 
+export interface WarningsToggleConfig {
+  missingFont?: boolean;
+  looseLines?: boolean;
+  headingHierarchy?: boolean;
+  consecutiveHeadings?: boolean;
+  listAfterHeading?: boolean;
+}
+
+export interface ResolvedWarningsToggleConfig {
+  missingFont: boolean;
+  looseLines: boolean;
+  headingHierarchy: boolean;
+  consecutiveHeadings: boolean;
+  listAfterHeading: boolean;
+}
+
 export interface DebugConfig {
   cursorSync?: SyncIndicatorConfig;
   selectionSync?: SyncIndicatorConfig;
   looseLineHighlight?: LooseLineHighlightConfig;
   pageNegative?: { enabled: boolean };
+  warnings?: WarningsToggleConfig;
 }
 
 export interface ResolvedDebugConfig {
@@ -528,6 +545,7 @@ export interface ResolvedDebugConfig {
   selectionSync: { enabled: boolean; color: ColorValue };
   looseLineHighlight: { enabled: boolean; color: ColorValue; threshold: number };
   pageNegative: { enabled: boolean };
+  warnings: ResolvedWarningsToggleConfig;
 }
 
 export interface HtmlViewerConfig {

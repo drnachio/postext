@@ -24,7 +24,7 @@ export function InlineFormatting({ labels }: { labels: InlineFormattingLabels })
         else if (r.style === "code") rendered = <tspan fontFamily="monospace" fill={colorTokens.orange.text}>{r.rendered}</tspan>;
         else rendered = <tspan fill={colorTokens.blue.text} textDecoration="underline">{r.rendered}</tspan>;
         return (
-          <g key={i} className={`svg-fade-${Math.min(i + 1, 7)}`}>
+          <g key={i}>
             <text x={60} y={y} fontFamily="monospace" fontSize="12" fill={colorTokens.purple.text}>{r.markdown}</text>
             <text x={400} y={y} fontSize="13" fill="var(--svg-dark-text)">{rendered}</text>
           </g>

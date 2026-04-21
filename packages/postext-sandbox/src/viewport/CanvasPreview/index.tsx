@@ -50,7 +50,7 @@ function groupPagesIntoRows(pageCount: number, viewMode: ViewMode): number[][] {
  * only the pages visible in the scroll viewport via IntersectionObserver.
  */
 export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
-  const { state, dispatch } = useSandbox();
+  const { state, dispatch, docRef: sharedDocRef } = useSandbox();
   const containerRef = useRef<HTMLDivElement>(null);
   // Refs used by click handlers so changing panel/dispatch identity doesn't
   // force a full DOM rebuild of the page slots.
@@ -151,6 +151,8 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         measureCacheRef.current,
       );
       docRef.current = doc;
+      sharedDocRef.current = doc;
+      dispatch({ type: 'BUMP_DOC_VERSION' });
 
       // Tear down previous observer + maps, but keep the old DOM in place
       // until the new one is fully built and painted — this avoids a blank

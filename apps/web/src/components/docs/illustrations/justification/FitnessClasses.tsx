@@ -25,7 +25,7 @@ export function FitnessClasses({ labels }: { labels: FitnessClassesLabels }) {
         const x = startX + i * (boxW + gap);
         const color = palette[i]!;
         return (
-          <g key={i} className={`svg-fade-${i + 1}`}>
+          <g key={i}>
             <Box x={x} y={30} width={boxW} height={130} color={color} filter="url(#fcShadow)" />
             <Label x={x + boxW / 2} y={52} anchor="middle" size={11} bold color={color}>{c.name}</Label>
             <Label x={x + boxW / 2} y={70} anchor="middle" size={10} color={color}>{c.range}</Label>

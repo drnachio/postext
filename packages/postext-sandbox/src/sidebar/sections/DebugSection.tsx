@@ -120,11 +120,19 @@ export function DebugSection() {
   };
 
   const resetDebugSection = () => {
-    const patch: Partial<PostextConfig> = { debug: undefined };
+    const patch: Partial<PostextConfig> = {};
     if (rawPage?.baselineGrid) {
       const p = { ...rawPage };
       delete p.baselineGrid;
       patch.page = Object.keys(p).length > 0 ? p : undefined;
+    }
+    // Preserve `debug.warnings` — the Warnings section manages that subtree.
+    if (rawDebug) {
+      if (rawDebug.warnings) {
+        patch.debug = { warnings: rawDebug.warnings };
+      } else {
+        patch.debug = undefined;
+      }
     }
     dispatch({ type: 'UPDATE_CONFIG', payload: patch });
   };
@@ -144,9 +152,14 @@ export function DebugSection() {
   const isLooseLineThresholdDefault = debug.looseLineHighlight.threshold === DD.looseLineHighlight.threshold;
   const isPageNegativeEnabledDefault = debug.pageNegative.enabled === DD.pageNegative.enabled;
 
+  // The Warnings section (below Debug) owns `debug.warnings`. Only count
+  // non-warnings debug overrides so its reset button doesn't wipe them.
   const hasOverrides =
     (rawPage?.baselineGrid !== undefined && Object.keys(rawPage.baselineGrid).length > 0) ||
-    (rawDebug !== undefined && Object.keys(rawDebug).length > 0);
+    rawDebug?.cursorSync !== undefined ||
+    rawDebug?.selectionSync !== undefined ||
+    rawDebug?.looseLineHighlight !== undefined ||
+    rawDebug?.pageNegative !== undefined;
 
   return (
     <CollapsibleSection

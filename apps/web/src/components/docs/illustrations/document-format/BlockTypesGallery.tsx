@@ -31,7 +31,7 @@ export function BlockTypesGallery({ labels }: { labels: BlockTypesGalleryLabels 
         const color = palette[i % palette.length]!;
         const t = colorTokens[color];
         return (
-          <g key={i} className={`svg-fade-${Math.min((i % 7) + 1, 7)}`}>
+          <g key={i}>
             <rect x={x} y={y} width={cellW} height={cellH} fill={t.fill} stroke={t.stroke} strokeWidth={2} rx={6} filter="url(#btShadow)" />
             <Label x={x + 12} y={y + 22} size={11} bold color={color}>{b.name}</Label>
             <text x={x + 12} y={y + 48} fontSize="10" fontFamily="monospace" fill={t.text}>{b.syntax}</text>

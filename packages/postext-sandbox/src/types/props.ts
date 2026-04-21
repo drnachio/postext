@@ -2,7 +2,7 @@ import type { PostextConfig } from 'postext';
 import type { ReactNode } from 'react';
 import type { SandboxLabels } from './labels';
 
-export type PanelId = 'markdown' | 'config' | 'resources';
+export type PanelId = 'markdown' | 'config' | 'resources' | 'warnings';
 export type ViewportTab = 'canvas' | 'html' | 'pdf';
 
 export interface PostextSandboxProps {

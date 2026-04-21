@@ -31,7 +31,7 @@ export function CssGapVsEditorial({ labels }: { labels: CssGapLabels }) {
         <Label key={i} x={50} y={142 + i * 20} color="mid">{`\u2717  ${c}`}</Label>
       ))}
 
-      <path d="M360,134 L390,134" stroke="var(--svg-stroke)" strokeWidth={2} fill="none" className="svg-flow" />
+      <path d="M360,134 L390,134" stroke="var(--svg-stroke)" strokeWidth={2} fill="none" />
       <polygon points="390,129 400,134 390,139" fill="var(--svg-stroke)" />
       <Label x={380} y={162} anchor="middle" size={10} bold color="stroke">{labels.gap}</Label>
 

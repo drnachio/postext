@@ -1,10 +1,11 @@
 'use client';
 
-import { FileCode, Settings2, FolderOpen } from 'lucide-react';
-import { useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
+import { FileCode, Settings2, FolderOpen, AlertTriangle } from 'lucide-react';
+import { useMemo, useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandbox } from '../context/SandboxContext';
 import type { PanelId } from '../types';
 import { Tooltip } from '../panels/Tooltip';
+import { computeWarnings } from '../warnings/compute';
 
 interface ActivityBarProps {
   themeToggle?: ReactNode;
@@ -13,18 +14,28 @@ interface ActivityBarProps {
   homeLink?: ReactNode;
 }
 
-const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: 'markdownEditor' | 'configuration' | 'resources' }[] = [
+const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: 'markdownEditor' | 'configuration' | 'resources' | 'warnings' }[] = [
   { id: 'markdown', Icon: FileCode, labelKey: 'markdownEditor' },
   { id: 'resources', Icon: FolderOpen, labelKey: 'resources' },
+  { id: 'warnings', Icon: AlertTriangle, labelKey: 'warnings' },
   { id: 'config', Icon: Settings2, labelKey: 'configuration' },
 ];
 
 function PanelNav() {
-  const { state, dispatch } = useSandbox();
+  const { state, dispatch, docRef } = useSandbox();
   const navRef = useRef<HTMLElement>(null);
   const buttonRefs = useRef<Map<PanelId, HTMLButtonElement>>(new Map());
   const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null);
   const hasAnimated = useRef(false);
+
+  // Recomputed whenever markdown, config, or the last-built VDT change.
+  // Also exposed via the Warnings panel — parseMarkdown is memoized, so the
+  // duplicate call is cheap.
+  const warningCount = useMemo(
+    () => computeWarnings({ markdown: state.markdown, config: state.config, doc: docRef.current }).length,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.markdown, state.config, state.docVersion],
+  );
 
   const updateIndicator = useCallback(() => {
     if (state.activePanel === null) {
@@ -71,15 +82,17 @@ function PanelNav() {
       {PANEL_ICONS.map(({ id, Icon, labelKey }) => {
         const isActive = state.activePanel === id;
         const label = state.labels[labelKey];
+        const showBadge = id === 'warnings' && warningCount > 0;
+        const badgeText = warningCount > 99 ? '99+' : String(warningCount);
         return (
           <Tooltip key={id} content={label} side="right">
             <button
               ref={(el) => { if (el) buttonRefs.current.set(id, el); }}
               type="button"
               onClick={() => dispatch({ type: 'TOGGLE_PANEL', payload: id })}
-              aria-label={label}
+              aria-label={showBadge ? `${label} (${warningCount})` : label}
               aria-pressed={isActive}
-              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+              className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
               style={{
                 color: isActive ? 'var(--gilt)' : 'var(--slate)',
                 outlineColor: 'var(--gilt-hover)',
@@ -92,6 +105,31 @@ function PanelNav() {
               }}
             >
               <Icon size={22} aria-hidden="true" />
+              {showBadge && (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: 2,
+                    right: 2,
+                    minWidth: 16,
+                    height: 16,
+                    padding: '0 4px',
+                    borderRadius: 8,
+                    backgroundColor: 'var(--gilt)',
+                    color: 'var(--background)',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    lineHeight: '16px',
+                    textAlign: 'center',
+                    fontVariantNumeric: 'tabular-nums',
+                    boxSizing: 'border-box',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {badgeText}
+                </span>
+              )}
             </button>
           </Tooltip>
         );

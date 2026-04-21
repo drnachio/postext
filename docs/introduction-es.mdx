@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introducción',
   description: 'Qué es Postext, por qué existe y el problema que resuelve',
   lang: 'es',
-  lastUpdated: '2026-04-20',
+  lastUpdated: '2026-04-21',
   readingTime: '12 min',
   order: 1,
 };
@@ -52,38 +52,24 @@ periódicos y revistas:
 Dos de estas reglas son tan fundamentales que merecen atención especial — porque la web las viola
 en prácticamente todas las páginas.
 
-**El ancho de carro** (la medida tipográfica, el número de caracteres por línea) es quizá el factor
-más determinante para una lectura cómoda. Cuando una línea es demasiado larga, el ojo tiene
-dificultad para regresar al inicio de la siguiente y a menudo aterriza en la línea equivocada.
-Cuando es demasiado corta, el ojo regresa con demasiada frecuencia y se rompe el ritmo de lectura.
-Robert Bringhurst, en los *Elementos del estilo tipográfico*, establece que **entre 45 y 75
-caracteres por línea** es el rango aceptable para una página a una columna en texto con serifa,
-siendo **66 caracteres el ideal**. Para maquetaciones multicolumna, recomienda **entre 40 y 50
-caracteres**. La directriz de accesibilidad
-[WCAG 1.4.8](https://www.w3.org/WAI/WCAG21/Understanding/visual-presentation.html) fija el límite
-superior en 80 caracteres. Sin embargo, la mayoría de las webs dejan que sus párrafos se estiren a
-100, 120 o incluso más caracteres en una pantalla ancha — muy por encima del punto en el que el ojo
-puede seguir las líneas con fiabilidad.
+Dos datos concretos bastan para medir la distancia:
 
-**El interlineado** (line-height, el espacio vertical entre líneas) trabaja en tándem con el ancho
-de carro. Las líneas más largas necesitan más espacio vertical para que el ojo encuentre el camino
-de vuelta. La tipografía tradicional recomienda un interlineado de **1,3 a 1,5 veces el tamaño de
-la fuente** para texto corrido, siendo 1,45–1,5 el punto óptimo para lectura prolongada. WCAG 1.4.8
-(Nivel AAA) exige al menos 1,5, y la más reciente
-[WCAG 1.4.12](https://www.w3.org/WAI/WCAG21/Understanding/text-spacing.html) (Nivel AA) requiere
-que el contenido siga siendo funcional cuando el interlineado se establece en al menos 1,5 veces el
-tamaño de la fuente. La relación no es lineal — una columna de 50 caracteres con
-`line-height: 1.4` se lee cómodamente, pero el mismo interlineado a 90 caracteres se convierte en
-un esfuerzo. Los tipógrafos profesionales ajustan el interlineado en función del ancho de carro.
-CSS no ofrece ningún mecanismo para hacer esto automáticamente.
+- **Ancho de carro.** Bringhurst sitúa el rango cómodo entre **45 y 75 caracteres** para una
+  columna (y entre **40 y 50** en multicolumna); la guía de accesibilidad
+  [WCAG 1.4.8](https://www.w3.org/WAI/WCAG21/Understanding/visual-presentation.html) fija el
+  tope en 80. La mayoría de webs dejan que la línea se estire a 100, 120 o más — muy por encima
+  del punto donde el ojo puede seguirla sin descarrilar.
+- **Interlineado.** La tradición recomienda **1,3–1,5 veces el tamaño de fuente**, y
+  [WCAG 1.4.12](https://www.w3.org/WAI/WCAG21/Understanding/text-spacing.html) exige que el
+  contenido siga funcionando con al menos 1,5. Pero el ajuste depende del ancho de carro: un
+  interlineado que se lee bien a 50 caracteres se queda corto a 90. Los tipógrafos ajustan uno
+  en función del otro; CSS no ofrece ninguna forma automática de hacerlo.
 
-CSS no ofrece prácticamente nada de esto.
-
-Tienes `column-count`, y poco más — frágil, sin control sobre la colocación de recursos, sin
-consciencia del desbordamiento y sin prevención de huérfanas o viudas entre columnas. No existe
-un concepto nativo de "fluir texto alrededor de un obstáculo posicionado arbitrariamente." Las
-maquetaciones editoriales multicolumna en la web siguen siendo artesanales: diseños estáticos
-que se rompen en cuanto cambia el tamaño de pantalla.
+Y aquí se acaba lo que CSS aporta: `column-count` y poco más. Sin control sobre la colocación de
+recursos, sin consciencia del desbordamiento, sin prevención de huérfanas o viudas entre columnas,
+sin forma nativa de fluir texto alrededor de un obstáculo arbitrario. Las maquetaciones
+editoriales multicolumna siguen siendo artesanales — diseños estáticos que se rompen en cuanto
+cambia el tamaño de la pantalla.
 
 La web lleva más de una década con maquetación responsiva — flexbox, grid, contenedores que se
 adaptan a cualquier pantalla. Lo que nunca ha tenido es maquetación *editorial* responsiva: el tipo
@@ -93,16 +79,14 @@ allá de notas al pie, obedeciendo las reglas que hacen que el texto sea *agrada
 <Illustration name="CssGapVsEditorial" data='{"title": "La brecha entre CSS multicolumna y la maquetación editorial", "desc": "CSS ofrece column-count y poco más; la maquetación editorial necesita control de huérfanas y viudas, flujo alrededor de obstáculos, equilibrado de columnas, colocación de notas al pie y refinamiento por convergencia.", "caption": "Lo que CSS ofrece frente a lo que la maquetación editorial realmente necesita.", "cssTitle": "Lo que CSS ofrece", "cssLead": "column-count", "cssMore": "...y poco más.", "cssCons": ["Sin control de huérfanas/viudas", "Sin flujo alrededor de obstáculos", "Sin equilibrado de columnas", "Sin colocación de notas al pie", "Sin convergencia/refinamiento"], "gap": "la brecha", "editorialTitle": "Lo que necesita la edición", "editorialPros": ["Prevención de huérfanas y viudas", "Flujo de texto alrededor de recursos", "Columnas equilibradas", "Colocación de notas al pie", "Control de separación silábica", "Refinamiento por convergencia"], "equals": "= Postext"}' />
 
 
-## Una década de intentos
-
-Llevo mucho tiempo persiguiendo este problema.
+## Una década buscando la pieza que faltaba
 
 El proyecto
 [Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)
-arrancó alrededor de 2014 como un intento temprano de llevar la calidad de la composición editorial
-a la web. Construí maquetaciones basadas en columnas. Experimenté con algoritmos de flujo de texto.
-Y me topé con el mismo muro, una y otra vez: **no puedes tomar buenas decisiones de composición sin
-saber exactamente cuánto espacio va a ocupar el texto.**
+arrancó en 2014 como un intento temprano de llevar la calidad de la composición editorial a la
+web. Maquetaciones en columnas, algoritmos de flujo de texto, prototipos sucesivos — y siempre el
+mismo muro: **no puedes tomar buenas decisiones de composición sin saber exactamente cuánto
+espacio va a ocupar el texto.**
 
 Suena sencillo, pero ahí está todo el problema. Cada vez que le preguntas al navegador "¿cuánto
 mide este párrafo a este ancho?", provocas un reflow completo del layout. Hazlo unos cientos de
@@ -117,23 +101,24 @@ el hilo principal. Durante una década, esa herramienta no existió.
 
 ## La pieza que faltaba
 
-En 2025, Cheng Lou publicó [`Pretext`](https://github.com/chenglou/pretext).
+En 2025, Cheng Lou publicó [`Pretext`](https://github.com/chenglou/pretext): una librería de
+medición de texto sin DOM, entre 300 y 600 veces más rápida que el reflow del navegador y
+pixel-perfect en Chrome, Safari y Firefox. Usa las métricas de fuente del canvas y pura
+aritmética para calcular la altura del texto y los saltos de línea sin tocar jamás el DOM.
 
-Es una librería de medición de texto sin DOM — entre 300 y 600 veces más rápida que preguntarle
-al navegador. Pixel-perfect en Chrome, Safari y Firefox. Usa métricas de fuente del canvas y
-aritmética pura para calcular la altura del texto y los saltos de línea sin tocar jamás el DOM.
-
-Con Pretext, el cuello de botella que bloqueó este trabajo durante diez años simplemente desaparece. Puedes
-medir miles de bloques de texto en milisegundos. Puedes probar diez configuraciones de columna
-diferentes y elegir la mejor. Puedes ejecutar el algoritmo completo de composición en cada
-redimensionado de ventana, en tiempo real.
+Con Pretext, el cuello de botella que bloqueó este trabajo durante diez años desaparece. Se
+pueden medir miles de bloques de texto en milisegundos, probar diez configuraciones de columna
+diferentes y quedarse con la mejor, ejecutar el algoritmo completo de composición en cada
+redimensionado de ventana sin bloquear el hilo principal.
 
 Postext es lo que viene después.
 
 
 ## Pretext + Postext
 
-La nomenclatura es intencionada — dos mitades de la misma operación.
+La nomenclatura es intencionada: dos mitades de la misma operación. Separarlas importa porque
+son responsabilidades distintas — una mide, la otra decide — y aislar la medición permite
+consumirla desde cualquier backend sin acoplarse a las reglas editoriales.
 
 **Pretext** es lo que ocurre *antes* de colocar el texto: medir cuánto espacio va a necesitar.
 Sin DOM, basado en canvas, operando con números puros.

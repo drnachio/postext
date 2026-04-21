@@ -1,4 +1,4 @@
-import type { DebugConfig, ResolvedDebugConfig } from '../types';
+import type { DebugConfig, ResolvedDebugConfig, WarningsToggleConfig } from '../types';
 import { colorsEqual } from './shared';
 
 export const DEFAULT_DEBUG_CONFIG: ResolvedDebugConfig = {
@@ -10,6 +10,13 @@ export const DEFAULT_DEBUG_CONFIG: ResolvedDebugConfig = {
     threshold: 3,
   },
   pageNegative: { enabled: false },
+  warnings: {
+    missingFont: true,
+    looseLines: true,
+    headingHierarchy: true,
+    consecutiveHeadings: false,
+    listAfterHeading: false,
+  },
 };
 
 export function resolveDebugConfig(partial?: DebugConfig): ResolvedDebugConfig {
@@ -19,6 +26,7 @@ export function resolveDebugConfig(partial?: DebugConfig): ResolvedDebugConfig {
       selectionSync: { ...DEFAULT_DEBUG_CONFIG.selectionSync },
       looseLineHighlight: { ...DEFAULT_DEBUG_CONFIG.looseLineHighlight },
       pageNegative: { ...DEFAULT_DEBUG_CONFIG.pageNegative },
+      warnings: { ...DEFAULT_DEBUG_CONFIG.warnings },
     };
   }
   return {
@@ -37,6 +45,13 @@ export function resolveDebugConfig(partial?: DebugConfig): ResolvedDebugConfig {
     },
     pageNegative: {
       enabled: partial.pageNegative?.enabled ?? DEFAULT_DEBUG_CONFIG.pageNegative.enabled,
+    },
+    warnings: {
+      missingFont: partial.warnings?.missingFont ?? DEFAULT_DEBUG_CONFIG.warnings.missingFont,
+      looseLines: partial.warnings?.looseLines ?? DEFAULT_DEBUG_CONFIG.warnings.looseLines,
+      headingHierarchy: partial.warnings?.headingHierarchy ?? DEFAULT_DEBUG_CONFIG.warnings.headingHierarchy,
+      consecutiveHeadings: partial.warnings?.consecutiveHeadings ?? DEFAULT_DEBUG_CONFIG.warnings.consecutiveHeadings,
+      listAfterHeading: partial.warnings?.listAfterHeading ?? DEFAULT_DEBUG_CONFIG.warnings.listAfterHeading,
     },
   };
 }
@@ -87,6 +102,37 @@ export function stripDebugDefaults(debug?: DebugConfig): DebugConfig | undefined
     const enabledOverride = debug.pageNegative.enabled !== undefined && debug.pageNegative.enabled !== DEFAULT_DEBUG_CONFIG.pageNegative.enabled;
     if (enabledOverride) {
       result.pageNegative = { enabled: debug.pageNegative.enabled };
+      hasOverride = true;
+    }
+  }
+
+  if (debug.warnings) {
+    const def = DEFAULT_DEBUG_CONFIG.warnings;
+    const w = debug.warnings;
+    const out: WarningsToggleConfig = {};
+    let warnHas = false;
+    if (w.missingFont !== undefined && w.missingFont !== def.missingFont) {
+      out.missingFont = w.missingFont;
+      warnHas = true;
+    }
+    if (w.looseLines !== undefined && w.looseLines !== def.looseLines) {
+      out.looseLines = w.looseLines;
+      warnHas = true;
+    }
+    if (w.headingHierarchy !== undefined && w.headingHierarchy !== def.headingHierarchy) {
+      out.headingHierarchy = w.headingHierarchy;
+      warnHas = true;
+    }
+    if (w.consecutiveHeadings !== undefined && w.consecutiveHeadings !== def.consecutiveHeadings) {
+      out.consecutiveHeadings = w.consecutiveHeadings;
+      warnHas = true;
+    }
+    if (w.listAfterHeading !== undefined && w.listAfterHeading !== def.listAfterHeading) {
+      out.listAfterHeading = w.listAfterHeading;
+      warnHas = true;
+    }
+    if (warnHas) {
+      result.warnings = out;
       hasOverride = true;
     }
   }

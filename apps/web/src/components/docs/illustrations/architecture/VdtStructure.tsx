@@ -23,12 +23,12 @@ export function VdtStructure({ labels }: { labels: VdtStructureLabels }) {
         <DropShadowDef id="vdtShadow" />
       </defs>
 
-      <g className="svg-fade-1">
+      <g>
         <Box x={270} y={15} width={160} height={40} color="green" filter="url(#vdtShadow)" />
         <Label x={350} y={40} anchor="middle" size={12} bold color="green">{labels.document}</Label>
       </g>
 
-      <g className="svg-fade-2">
+      <g>
         <line x1={310} y1={55} x2={200} y2={85} stroke="var(--svg-stroke)" strokeWidth={1.5} />
         <line x1={350} y1={55} x2={350} y2={85} stroke="var(--svg-stroke)" strokeWidth={1.5} />
         <line x1={390} y1={55} x2={500} y2={85} stroke="var(--svg-stroke)" strokeWidth={1.5} />
@@ -40,7 +40,7 @@ export function VdtStructure({ labels }: { labels: VdtStructureLabels }) {
         <Label x={500} y={107} anchor="middle" size={11} color="blue">{labels.pageLabels[2]}</Label>
       </g>
 
-      <g className="svg-fade-3">
+      <g>
         <line x1={170} y1={120} x2={100} y2={155} stroke="var(--svg-stroke)" strokeWidth={1.5} />
         <line x1={230} y1={120} x2={250} y2={155} stroke="var(--svg-stroke)" strokeWidth={1.5} />
         <Box x={30} y={155} width={140} height={35} color="purple" />
@@ -49,7 +49,7 @@ export function VdtStructure({ labels }: { labels: VdtStructureLabels }) {
         <Label x={250} y={177} anchor="middle" size={11} bold color="purple">{labels.columnLabels[1]}</Label>
       </g>
 
-      <g className="svg-fade-4">
+      <g>
         <line x1={70} y1={190} x2={40} y2={220} stroke="var(--svg-stroke)" strokeWidth={1.5} />
         <line x1={100} y1={190} x2={100} y2={220} stroke="var(--svg-stroke)" strokeWidth={1.5} />
         <line x1={130} y1={190} x2={160} y2={220} stroke="var(--svg-stroke)" strokeWidth={1.5} />
@@ -61,7 +61,7 @@ export function VdtStructure({ labels }: { labels: VdtStructureLabels }) {
         <Label x={190} y={239} anchor="middle" size={9} color="orange">{labels.blockLabels[2]}</Label>
       </g>
 
-      <g className="svg-fade-5">
+      <g>
         <line x1={105} y1={250} x2={80} y2={275} stroke="var(--svg-stroke)" strokeWidth={1} />
         <line x1={115} y1={250} x2={115} y2={275} stroke="var(--svg-stroke)" strokeWidth={1} />
         <line x1={125} y1={250} x2={150} y2={275} stroke="var(--svg-stroke)" strokeWidth={1} />
@@ -71,7 +71,7 @@ export function VdtStructure({ labels }: { labels: VdtStructureLabels }) {
         <Label x={135} y={292} anchor="middle" size={9} color="teal">{labels.lineLabels[1]}</Label>
       </g>
 
-      <g className="svg-fade-6">
+      <g>
         <Label x={420} y={160} color="mid">{labels.legendHeader}</Label>
         {labels.legendAttrs.map((a, i) => (
           <text key={i} x={420} y={178 + i * 18} fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">{a}</text>

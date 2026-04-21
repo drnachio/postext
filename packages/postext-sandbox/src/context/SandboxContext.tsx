@@ -10,7 +10,7 @@ import {
   type Dispatch,
   type MutableRefObject,
 } from 'react';
-import type { PostextConfig } from 'postext';
+import type { PostextConfig, VDTDocument } from 'postext';
 import { cloneDefaultColorPalette } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
@@ -35,6 +35,10 @@ export interface SandboxState {
   selection: EditorSelection;
   editorFocused: boolean;
   pendingEditorFocus: { anchor: number; head: number; selectWord: boolean } | null;
+  /** Incremented whenever a viewport publishes a new built VDTDocument to
+   *  `docRef`. Consumers (e.g. WarningsPanel) listen to this counter to
+   *  recompute derived data. */
+  docVersion: number;
 }
 
 export type SandboxAction =
@@ -48,7 +52,8 @@ export type SandboxAction =
   | { type: 'SET_VIEWPORT'; payload: ViewportTab }
   | { type: 'SET_SELECTION'; payload: EditorSelection }
   | { type: 'SET_EDITOR_FOCUSED'; payload: boolean }
-  | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: { anchor: number; head: number; selectWord: boolean } | null };
+  | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: { anchor: number; head: number; selectWord: boolean } | null }
+  | { type: 'BUMP_DOC_VERSION' };
 
 function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
@@ -89,6 +94,8 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
         state.pendingEditorFocus.selectWord === action.payload.selectWord
       ) return state;
       return { ...state, pendingEditorFocus: action.payload };
+    case 'BUMP_DOC_VERSION':
+      return { ...state, docVersion: state.docVersion + 1 };
     default:
       return state;
   }
@@ -98,6 +105,10 @@ interface SandboxContextValue {
   state: SandboxState;
   dispatch: Dispatch<SandboxAction>;
   editorStateRef: MutableRefObject<unknown | null>;
+  /** Ref to the most recently built VDT document from whichever viewport
+   *  last rendered. Null until the first successful build. Updated together
+   *  with a `BUMP_DOC_VERSION` dispatch so consumers can react. */
+  docRef: MutableRefObject<VDTDocument | null>;
 }
 
 const SandboxContext = createContext<SandboxContextValue | null>(null);
@@ -157,6 +168,7 @@ export function SandboxProvider({
       selection: { from: 0, to: 0 },
       editorFocused: false,
       pendingEditorFocus: null,
+      docVersion: 0,
     };
   });
 
@@ -209,9 +221,10 @@ export function SandboxProvider({
   }, [state.markdown, onMarkdownChange]);
 
   const editorStateRef = useRef<unknown | null>(null);
+  const docRef = useRef<VDTDocument | null>(null);
 
   return (
-    <SandboxContext.Provider value={{ state, dispatch, editorStateRef }}>
+    <SandboxContext.Provider value={{ state, dispatch, editorStateRef, docRef }}>
       {children}
     </SandboxContext.Provider>
   );
