@@ -12,6 +12,7 @@ describe("package exports", () => {
     expect(exportedKeys).toEqual([
       "createLayout",
       "buildDocument",
+      "BuildCancelledError",
       "renderToCanvas",
       "renderPage",
       "renderPageToCanvas",

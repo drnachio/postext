@@ -1,1 +1,2 @@
-export { buildDocument } from './build';
+export { buildDocument, BuildCancelledError } from './build';
+export type { BuildDocumentOptions } from './build';

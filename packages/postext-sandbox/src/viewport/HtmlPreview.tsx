@@ -2,10 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import {
-  buildDocument,
   renderToHtmlIndexed,
-  createMeasurementCache,
-  clearMeasurementCache,
   buildFontString,
   measureGlyphWidth,
   dimensionToPx,
@@ -16,13 +13,13 @@ import {
 import type {
   PostextConfig,
   HyphenationLocale,
-  MeasurementCache,
   VDTDocument,
   HtmlRenderIndex,
 } from 'postext';
 import { useSandbox } from '../context/SandboxContext';
 import { useShadowDom } from '../hooks/useShadowDom';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../controls/fontLoader';
+import { useLayoutWorker } from '../worker/useLayoutWorker';
 import { createOverlaySvg } from './CanvasPreview/dom';
 import { drawOverlay, drawBaselines } from './CanvasPreview/overlay';
 import { attachSlotClickHandler } from './CanvasPreview/interaction';
@@ -222,7 +219,7 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
   const deferredMarkdown = useDeferredValue(state.markdown);
   const deferredConfig = useDeferredValue(state.config);
 
-  const measureCacheRef = useRef<MeasurementCache>(createMeasurementCache());
+  const layoutWorker = useLayoutWorker();
   const scrollHostRef = useRef<HTMLDivElement | null>(null);
   const contentHostRef = useRef<HTMLDivElement | null>(null);
   const viewportSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
@@ -304,8 +301,9 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
   useEffect(() => {
     if (typeof document === 'undefined' || !document.fonts) return;
     const onLoadingDone = () => {
-      clearMeasurementCache();
-      measureCacheRef.current = createMeasurementCache();
+      // Worker owns its own measurement cache; when fonts land the main
+      // thread re-triggers a relayout and the worker picks up the newly-
+      // registered faces on its next build.
       scheduleRelayout(0);
     };
     document.fonts.addEventListener('loadingdone', onLoadingDone);
@@ -416,10 +414,9 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
     });
 
     try {
-      const doc = buildDocument(
+      const doc = await layoutWorker.build(
         { markdown: currentMarkdown },
         configOverride,
-        measureCacheRef.current,
       );
       if (seq !== renderSeqRef.current) return;
 
@@ -570,6 +567,7 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
 
       setDocVersion((v) => v + 1);
     } catch (err) {
+      if ((err as { name?: string } | null)?.name === 'AbortError') return;
       console.error('[HtmlPreview] Layout error:', err);
     }
   }

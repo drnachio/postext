@@ -8,16 +8,25 @@ import type { MathRender } from './types';
 // into an offscreen bitmap the first time it is painted, then blit it on
 // subsequent repaints — O(paths) once, O(1) forever after.
 //
-// Keyed by MathRender object identity: the upstream engine cache (see
-// engine.ts) already returns the same MathRender instance for the same TeX +
-// font size + line box, so a WeakMap keyed on the render object gives us
-// "invalidate on change" for free — when inputs change the engine produces a
-// new MathRender object and the old raster is GC'd.
+// Two-tier lookup:
+// 1. A WeakMap keyed by `MathRender` identity handles the same-build case
+//    (same object reused across multiple page repaints) with zero hashing.
+// 2. A bounded Map keyed by a content hash handles the cross-build case:
+//    when the layout is produced by a Web Worker, every build posts a freshly
+//    structured-cloned `MathRender`, so identity-keyed caches always miss.
+//    The content key makes the raster survive across worker rebuilds — the
+//    bitmap only changes when the TeX, font size, or viewport change.
 // ---------------------------------------------------------------------------
 
 type RasterCanvas = OffscreenCanvas | HTMLCanvasElement;
 
-const cache = new WeakMap<MathRender, Map<string, RasterCanvas>>();
+const identityCache = new WeakMap<MathRender, Map<string, RasterCanvas>>();
+const contentCache = new Map<string, RasterCanvas>();
+const CONTENT_CACHE_MAX = 512;
+
+function contentKey(render: MathRender, fallbackColor: string): string {
+  return `${render.displayMode ? 'D' : 'I'}|${render.widthPx}|${render.heightPx}|${render.scale}|${fallbackColor}|${render.tex}`;
+}
 
 function createCanvas(pxW: number, pxH: number): RasterCanvas | null {
   if (typeof OffscreenCanvas !== 'undefined') {
@@ -32,6 +41,15 @@ function createCanvas(pxW: number, pxH: number): RasterCanvas | null {
   return null;
 }
 
+function touchLru(key: string, value: RasterCanvas): void {
+  if (contentCache.has(key)) contentCache.delete(key);
+  contentCache.set(key, value);
+  if (contentCache.size > CONTENT_CACHE_MAX) {
+    const oldest = contentCache.keys().next().value;
+    if (oldest !== undefined) contentCache.delete(oldest);
+  }
+}
+
 export function getMathRaster(
   render: MathRender,
   fallbackColor: string,
@@ -40,13 +58,21 @@ export function getMathRaster(
   if (!paths.length || widthPx <= 0 || heightPx <= 0 || viewBox.width <= 0 || viewBox.height <= 0) {
     return null;
   }
-  let inner = cache.get(render);
+  let inner = identityCache.get(render);
   if (!inner) {
     inner = new Map();
-    cache.set(render, inner);
+    identityCache.set(render, inner);
   }
-  const hit = inner.get(fallbackColor);
-  if (hit) return hit;
+  const identityHit = inner.get(fallbackColor);
+  if (identityHit) return identityHit;
+
+  const ckey = contentKey(render, fallbackColor);
+  const contentHit = contentCache.get(ckey);
+  if (contentHit) {
+    inner.set(fallbackColor, contentHit);
+    touchLru(ckey, contentHit);
+    return contentHit;
+  }
 
   const pxW = Math.max(1, Math.ceil(widthPx));
   const pxH = Math.max(1, Math.ceil(heightPx));
@@ -67,5 +93,6 @@ export function getMathRaster(
     ctx.fill(new Path2D(path.d));
   }
   inner.set(fallbackColor, canvas);
+  touchLru(ckey, canvas);
   return canvas;
 }

@@ -1,5 +1,6 @@
 export { createLayout } from './createLayout';
-export { buildDocument } from './pipeline';
+export { buildDocument, BuildCancelledError } from './pipeline';
+export type { BuildDocumentOptions } from './pipeline';
 export { renderToCanvas, renderPage, renderPageToCanvas } from './canvas-backend';
 export type { RenderPageOptions } from './canvas-backend';
 export { renderToHtml, renderToHtmlIndexed } from './html-backend';

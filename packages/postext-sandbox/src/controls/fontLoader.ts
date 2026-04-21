@@ -1,4 +1,5 @@
 import type { PostextConfig } from 'postext';
+import type { FontPayload } from 'postext/worker';
 import { resolveBodyTextConfig, resolveHeadingsConfig, resolveUnorderedListsConfig, resolveOrderedListsConfig } from 'postext';
 
 const FONT_LOAD_TIMEOUT_MS = 3000;
@@ -188,4 +189,139 @@ export function ensureConfigFontsLoaded(config: PostextConfig): Promise<void> {
     Promise.all(missing.map((s) => document.fonts.load(s).catch(() => []))).then(() => {}),
     new Promise<void>((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
   ]);
+}
+
+// ---------------------------------------------------------------------------
+// Worker font payload collection
+// ---------------------------------------------------------------------------
+
+interface ParsedFace {
+  family: string;
+  weight: string;
+  style: string;
+  unicodeRange?: string;
+  url: string;
+}
+
+const FACE_RE = /@font-face\s*\{([^}]+)\}/g;
+const DECL_RES = {
+  family: /font-family:\s*['"]?([^;'"]+)['"]?\s*;/i,
+  style: /font-style:\s*([^;]+);/i,
+  weight: /font-weight:\s*([^;]+);/i,
+  unicodeRange: /unicode-range:\s*([^;]+);/i,
+  src: /src:\s*url\(([^)]+)\)\s*format\(['"]?woff2['"]?\)/i,
+};
+
+function parseFontFaceCss(css: string): ParsedFace[] {
+  const out: ParsedFace[] = [];
+  for (const match of css.matchAll(FACE_RE)) {
+    const body = match[1]!;
+    const srcMatch = DECL_RES.src.exec(body);
+    const familyMatch = DECL_RES.family.exec(body);
+    if (!srcMatch || !familyMatch) continue;
+    const weight = DECL_RES.weight.exec(body)?.[1]?.trim() ?? '400';
+    const style = DECL_RES.style.exec(body)?.[1]?.trim() ?? 'normal';
+    const unicodeRange = DECL_RES.unicodeRange.exec(body)?.[1]?.trim();
+    const url = srcMatch[1]!.trim().replace(/^['"]|['"]$/g, '');
+    out.push({
+      family: familyMatch[1]!.trim(),
+      weight,
+      style,
+      unicodeRange,
+      url,
+    });
+  }
+  return out;
+}
+
+const facePayloadCache = new Map<string, Promise<FontPayload[]>>();
+
+function faceCacheKey(p: { family: string; weight: string; style: string; unicodeRange?: string }): string {
+  return `${p.family}|${p.weight}|${p.style}|${p.unicodeRange ?? ''}`;
+}
+
+async function fetchFamilyPayloads(family: string): Promise<FontPayload[]> {
+  const meta = await fetchFontMetadata(family);
+  const cssUrl = buildFontUrl(family, meta);
+  // Google Fonts returns woff2 only if the UA is browser-like. Normal fetch
+  // from the main thread inherits the browser UA, so this is fine. From a
+  // worker it would return ttf; that's why we do this on the main thread.
+  const cssRes = await fetch(cssUrl, { credentials: 'omit' });
+  if (!cssRes.ok) return [];
+  const css = await cssRes.text();
+  const faces = parseFontFaceCss(css);
+  const payloads: FontPayload[] = [];
+  await Promise.all(faces.map(async (face) => {
+    try {
+      const r = await fetch(face.url, { credentials: 'omit' });
+      if (!r.ok) return;
+      const buffer = await r.arrayBuffer();
+      payloads.push({
+        family: face.family,
+        weight: face.weight,
+        style: face.style,
+        unicodeRange: face.unicodeRange,
+        buffer,
+      });
+    } catch { /* ignore individual face failures */ }
+  }));
+  return payloads;
+}
+
+/**
+ * Collect `FontPayload` objects (woff2 ArrayBuffers + descriptors) for every
+ * family a config will render, so they can be shipped to a layout worker.
+ *
+ * The buffers are freshly fetched each call (so the caller can transfer them
+ * into the worker without detaching a shared copy). The CSS lookup and face
+ * *list* is cached.
+ */
+export async function collectFontPayloadsForConfig(
+  config: PostextConfig,
+): Promise<FontPayload[]> {
+  return collectFontPayloadsForFamilies(getConfigFontFamilies(config));
+}
+
+/**
+ * Variant of `collectFontPayloadsForConfig` that fetches only the requested
+ * families, so the caller can ship a delta (newly-seen families) to the
+ * worker instead of the whole configured set on every update.
+ */
+export async function collectFontPayloadsForFamilies(
+  families: string[],
+): Promise<FontPayload[]> {
+  if (families.length === 0) return [];
+  const byFamily = await Promise.all(families.map(async (family) => {
+    const cached = facePayloadCache.get(family);
+    if (cached) {
+      // The cached promise resolves with FontPayload[] whose buffers may
+      // already have been transferred. Re-fetch to produce fresh buffers,
+      // but dedupe concurrent re-fetches.
+      return cached.then(async (payloads) => {
+        // If any buffer has been neutered (byteLength === 0), re-fetch.
+        if (payloads.some((p) => p.buffer.byteLength === 0)) {
+          const fresh = fetchFamilyPayloads(family);
+          facePayloadCache.set(family, fresh);
+          return fresh;
+        }
+        // Clone buffers so transferring to the worker doesn't neuter the cache.
+        return payloads.map((p) => ({ ...p, buffer: p.buffer.slice(0) }));
+      });
+    }
+    const promise = fetchFamilyPayloads(family);
+    facePayloadCache.set(family, promise);
+    return promise;
+  }));
+  // Deduplicate across families (cheap — same family appears at most once).
+  const seen = new Set<string>();
+  const flat: FontPayload[] = [];
+  for (const group of byFamily) {
+    for (const p of group) {
+      const key = faceCacheKey(p);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      flat.push(p);
+    }
+  }
+  return flat;
 }
