@@ -8,6 +8,8 @@ import type {
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
+  ResolvedHeaderFooterSlot,
+  HeaderFooterHAlign,
 } from './types';
 import type { MathRender } from './math/types';
 
@@ -34,6 +36,8 @@ export interface ResolvedConfig {
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;
+  header: ResolvedHeaderFooterSlot;
+  footer: ResolvedHeaderFooterSlot;
 }
 
 // ---------------------------------------------------------------------------
@@ -148,13 +152,39 @@ export interface VDTFootnoteArea {
   separator: boolean;
 }
 
+/** A rendered rule (horizontal separator) inside a header/footer slot. */
+export interface VDTRuleBlock {
+  kind: 'rule';
+  bbox: BoundingBox;
+  color: string;
+  thicknessPx: number;
+}
+
+/** Text block rendered inside a header/footer slot. */
+export interface VDTHeaderFooterTextBlock {
+  kind: 'text';
+  bbox: BoundingBox;
+  text: string;
+  align: HeaderFooterHAlign;
+  fontString: string;
+  color: string;
+  baseline: number;
+}
+
+export type VDTHeaderFooterBlock = VDTHeaderFooterTextBlock | VDTRuleBlock;
+
+export interface VDTHeaderFooterSlot {
+  bbox: BoundingBox;
+  blocks: VDTHeaderFooterBlock[];
+}
+
 export interface VDTPage {
   index: number;
   width: number;
   height: number;
   columns: VDTColumn[];
-  header?: VDTBlock;
-  footer?: VDTBlock;
+  header?: VDTHeaderFooterSlot;
+  footer?: VDTHeaderFooterSlot;
   marginNotes: VDTBlock[];
   footnoteArea?: VDTFootnoteArea;
 }

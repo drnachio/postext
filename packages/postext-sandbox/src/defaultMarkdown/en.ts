@@ -5,7 +5,7 @@ author: "Ignacio Ferro"
 publishDate: "2026-04-21"
 ---
 
-# Postext: A Programmable Typesetter for the Web
+# Introduction to Postext
 
 Postext is an **open-source layout engine** designed to bring the sophistication of professional print typography to modern web development. For centuries, the world of editorial design has refined techniques for placing text, images, and annotations on a page with extraordinary precision. These techniques encompass everything from careful column balancing to meticulous orphan and widow prevention, from intelligent hyphenation to elegant footnote placement. Until now, the web has lacked a tool capable of reproducing these standards in a programmable, declarative way.
 
@@ -31,7 +31,7 @@ CSS handles the first case brilliantly. For the second case, it falls short in c
    - It cannot handle resources that span columns or float to specific positions within a column grid
    - It provides no mechanism for keeping headings together with their following paragraphs
    - It has no concept of a globally optimal break set across a page
-2. **No orphan and widow prevention across columns**
+2. **No orphan and widow prevention across columns standardized across browsers and configurable by the user**
    - While CSS has _orphans_ and _widows_ properties, browser support is inconsistent
    - These properties do not work across column boundaries in the way professional typesetters expect
    - Editorial-grade prevention requires awareness of the entire page geometry, not just a single text container

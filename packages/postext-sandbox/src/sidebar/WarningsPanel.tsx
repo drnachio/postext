@@ -25,6 +25,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'invalidMath':
     case 'unclosedMath':
       return Sigma;
+    case 'headerFooterUnknownPlaceholder':
+    case 'headerFooterMetadataMissing':
+      return FileText;
     default:
       return AlertTriangle;
   }
@@ -52,6 +55,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsInvalidMathTitle ?? 'Invalid LaTeX';
     case 'unclosedMath':
       return labels.warningsUnclosedMathTitle ?? 'Unclosed math delimiter';
+    case 'headerFooterUnknownPlaceholder':
+      return labels.warningsHeaderFooterUnknownPlaceholderTitle;
+    case 'headerFooterMetadataMissing':
+      return labels.warningsHeaderFooterMetadataMissingTitle;
   }
 }
 
@@ -87,6 +94,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.tex.slice(0, 60)} — ${payload.message}`;
     case 'unclosedMath':
       return `${payload.delimiter}${payload.tex.slice(0, 40)}…`;
+    case 'headerFooterUnknownPlaceholder':
+      return `${payload.slot} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
+    case 'headerFooterMetadataMissing':
+      return `${payload.slot} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
   }
 }
 
