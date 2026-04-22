@@ -39,9 +39,11 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Texto de cuerpo](#texto-de-cuerpo) — tipografía, separación silábica, viudas y huérfanas.
 - [Encabezados](#encabezados) — valores generales y sobrescrituras H1–H6.
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
+- [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
-- [Depuración](#depuración) — superposiciones visuales del editor.
+- [Generación de PDF (configuración)](#generación-de-pdf-configuración) — outlines y espacio de color forzado para el backend PDF.
+- [Depuración](#depuración) — superposiciones visuales y avisos de autoría para el editor.
 - [Configuración avanzada](#configuración-avanzada) — tipos declarados, soporte futuro.
 - [Uso programático](#uso-programático) — `buildDocument`, resolvers, cachés.
 - [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker) — builds fuera del hilo principal con cancelación.
@@ -1010,6 +1012,89 @@ Esto produce la clásica combinación anidada:
 ```
 
 
+## Matemáticas
+
+La propiedad `math` controla cómo se analizan y se renderizan las fórmulas LaTeX escritas entre delimitadores `$...$` (en línea) y `$$...$$` (en bloque). El motor subyacente es KaTeX, rasterizado en el canvas e incrustado como glifos escalables en el PDF.
+
+```ts
+interface MathConfig {
+  enabled?: boolean;        // Renderizar LaTeX. Si es false, los spans salen como TeX literal.
+  fontSizeScale?: number;   // Multiplicador aplicado al tamaño del texto de cuerpo.
+  color?: ColorValue;       // Color de la fórmula; hereda del cuerpo si se omite.
+  marginTop?: Dimension;    // Espacio encima de las fórmulas en bloque.
+  marginBottom?: Dimension; // Espacio mínimo debajo; el snap a rejilla puede aumentarlo.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Cuando es `false`, los spans `$...$` y `$$...$$` siguen analizándose (los avisos por delimitadores sin cerrar siguen disparándose), pero se renderizan como su código TeX literal. Útil cuando el contenido contiene signos de dólar a propósito o cuando quieres desactivar por completo el renderizado matemático.</td>
+    </tr>
+    <tr>
+      <td><code>fontSizeScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1.0</code></td>
+      <td>Multiplicador aplicado a `bodyText.fontSize` antes del renderizado. 1.0 iguala al texto de cuerpo; valores en el rango 0.9–1.1 son habituales cuando la fuente matemática parece ligeramente más grande o más pequeña que la fuente de prosa.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>hereda del cuerpo</td>
+      <td>Color de la fórmula renderizada. Omítelo para heredar `bodyText.color`. Fíjalo explícitamente cuando quieras tintar las fórmulas de forma distinta a la prosa — por ejemplo para que coincidan con el acento de los encabezados.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Espacio por encima de una fórmula en bloque. Se ignora para fórmulas en línea.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Espacio por debajo de una fórmula en bloque. Con la rejilla base activada este valor se trata como **mínimo** — el snap puede ampliarlo para que la siguiente línea base caiga en una línea de la rejilla.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+math: {
+  enabled: true,
+  fontSizeScale: 1.0,
+  color: { hex: '#517538', model: 'hex' },
+  marginTop: { value: 1, unit: 'em' },
+  marginBottom: { value: 1, unit: 'em' },
+}
+```
+
+El resolver y el stripper siguen el mismo patrón que las otras secciones:
+
+```ts
+import {
+  DEFAULT_MATH_CONFIG,
+  resolveMathConfig,
+  stripMathDefaults,
+} from 'postext';
+
+const resolved = resolveMathConfig(config.math);
+const minimal  = stripMathDefaults(config.math);
+```
+
+Para la gramática del documento (`$...$`, `$$...$$`, cómo escapar un dólar literal), consulta [Formato del documento](/es/docs/document-format#fórmulas-matemáticas).
+
+
 ## Unidades y colores
 
 ### Dimensiones
@@ -1189,9 +1274,83 @@ const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 Consulta [Integrar el visor HTML](#integrar-el-visor-html) más abajo para un ejemplo completo.
 
 
+## Generación de PDF (configuración)
+
+La propiedad `pdfGeneration` controla cómo el backend PDF emite el documento final. Estos ajustes los consume el paquete `postext-pdf` en el momento de exportar; los visores canvas y HTML los ignoran.
+
+```ts
+type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
+
+interface PdfGenerationConfig {
+  outlines?: boolean;          // Emitir marcadores PDF desde el árbol de encabezados.
+  forceColorSpace?: boolean;   // Convertir todos los colores a `colorSpace`.
+  colorSpace?: PdfColorSpace;  // Espacio destino cuando `forceColorSpace` es true.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>outlines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Emite outlines (marcadores) PDF a partir de la jerarquía de encabezados, de modo que los lectores puedan saltar directamente a cualquier encabezado desde la barra lateral del visor PDF. Desactívalo para documentos en los que el árbol de encabezados no aporta valor (por ejemplo, pósteres de una sola página).</td>
+    </tr>
+    <tr>
+      <td><code>forceColorSpace</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Cuando es `true`, todos los colores del PDF renderizado se convierten a `colorSpace` al exportar. Déjalo desactivado en PDFs pensados para pantalla si los colores de entrada ya están en el espacio deseado; actívalo para garantizar un único espacio de color partiendo de fuentes heterogéneas.</td>
+    </tr>
+    <tr>
+      <td><code>colorSpace</code></td>
+      <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
+      <td><code>'cmyk'</code></td>
+      <td>Espacio de color destino usado cuando `forceColorSpace` está activado. Usa `'cmyk'` para imprenta offset, `'rgb'` para PDFs solo-pantalla y `'grayscale'` para pruebas en blanco y negro. No tiene efecto si `forceColorSpace` es `false`.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+pdfGeneration: {
+  outlines: true,
+  forceColorSpace: true,
+  colorSpace: 'cmyk',
+}
+```
+
+El resolver y el stripper siguen el mismo patrón que las demás secciones:
+
+```ts
+import {
+  DEFAULT_PDF_GENERATION_CONFIG,
+  resolvePdfGenerationConfig,
+  stripPdfGenerationDefaults,
+} from 'postext';
+
+const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk' }
+
+const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
+// => undefined cuando todo coincide con los valores por defecto
+```
+
+Consulta [Generación de PDF](#generación-de-pdf) más abajo para la receta completa de exportación.
+
+
 ## Depuración
 
-La propiedad `debug` controla los indicadores visuales que el editor usa para mantener sincronizados el texto fuente y la composición renderizada mientras se edita. Solo los renderiza el editor interactivo — no tienen efecto en la salida exportada.
+La propiedad `debug` agrupa dos tipos de ayudas de autoría: superposiciones visuales que mantienen sincronizados el texto fuente y la composición renderizada, y un conjunto de avisos que muestran en el panel de avisos del editor los problemas tipográficos o estructurales del documento. Ninguno de los dos afecta a la salida exportada.
+
+### Superposiciones visuales
 
 <table>
   <thead>
@@ -1241,6 +1400,75 @@ debug: {
 }
 ```
 
+### Avisos
+
+`debug.warnings` controla qué problemas de autoría aparecen en el panel de avisos del editor. Cada clave es un interruptor booleano independiente; pon una en `false` para silenciar ese aviso concreto sin desactivar los demás.
+
+```ts
+interface WarningsToggleConfig {
+  missingFont?: boolean;
+  looseLines?: boolean;
+  headingHierarchy?: boolean;
+  consecutiveHeadings?: boolean;
+  listAfterHeading?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>missingFont</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa cuando una fuente referenciada por la configuración no ha podido cargarse en el navegador. Detecta erratas en `fontFamily` y paquetes `@fontsource/...` ausentes antes de que se conviertan en sustituciones silenciosas por una fuente de reserva en la salida renderizada.</td>
+    </tr>
+    <tr>
+      <td><code>looseLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de las líneas justificadas cuyo espaciado entre palabras supera `debug.looseLineHighlight.threshold`. Complementa la superposición: el aviso las enumera en el panel, la superposición las muestra en su posición.</td>
+    </tr>
+    <tr>
+      <td><code>headingHierarchy</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de niveles de encabezado que saltan un rango — por ejemplo, un H1 seguido directamente de un H3. Los saltos en la jerarquía suelen indicar o bien una errata en la profundidad del encabezado o un malentendido sobre el esquema del documento.</td>
+    </tr>
+    <tr>
+      <td><code>consecutiveHeadings</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Avisa cuando un encabezado va seguido inmediatamente de otro encabezado, sin párrafo ni lista intermedios. Desactivado por defecto porque los encabezados encadenados son legítimos en muchas plantillas (título + subtítulo, capítulo + epígrafe); actívalo en manuscritos donde cada encabezado debe introducir prosa.</td>
+    </tr>
+    <tr>
+      <td><code>listAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Avisa cuando una lista empieza inmediatamente después de un encabezado, sin párrafo introductorio. Desactivado por defecto porque el material de referencia suele hacerlo; actívalo en escritura narrativa donde cada lista debería estar encuadrada por prosa.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  warnings: {
+    missingFont: true,
+    looseLines: true,
+    headingHierarchy: true,
+    consecutiveHeadings: true,
+    listAfterHeading: false,
+  },
+}
+```
+
 
 ## Configuración avanzada
 
@@ -1273,9 +1501,11 @@ Formato de salida objetivo: `'web'` para renderizado HTML/canvas, `'pdf'` para s
 
 ## Uso programático
 
+> **Camino recomendado: usa el Web Worker.** En el navegador, la inmensa mayoría de las integraciones deben ejecutar el pipeline a través de `createLayoutWorker()` de `postext/worker`, **no** llamando a `buildDocument` directamente en el hilo principal. El worker mantiene la UI fluida durante los builds, cachea las mediciones de texto entre reconstrucciones incrementales y conecta la cancelación *last-wins* para que una nueva pulsación aborte cualquier build obsoleto en curso. Salta directamente a [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker) para la receta canónica. Todo lo del resto de esta sección (llamar a `buildDocument` directamente, resolvers, strippers, cachés) sigue siendo útil — el worker expone exactamente las mismas entradas y salidas — pero para código de UI el envoltorio del worker es el punto de partida correcto. Solo recurre a `buildDocument` en el hilo principal para exportaciones puntuales, renderizado en servidor (Node) o tests.
+
 ### Construir un documento
 
-La función `buildDocument` ejecuta el pipeline de composición completo y devuelve un Árbol Virtual del Documento (VDT) con coordenadas precisas para cada elemento:
+La función `buildDocument` ejecuta el pipeline de composición completo y devuelve un Árbol Virtual del Documento (VDT) con coordenadas precisas para cada elemento. Es el punto de entrada de más bajo nivel; el código de UI debería preferir el [envoltorio Web Worker](#ejecutar-la-composición-en-un-web-worker), que llama a `buildDocument` dentro de un hilo worker dedicado con los mismos argumentos.
 
 ```ts
 import { buildDocument } from 'postext';
@@ -1425,9 +1655,21 @@ clearMeasurementCache(cache);
 
 ## Ejecutar la composición en un Web Worker
 
-Llamar directamente a `buildDocument` ejecuta el pipeline completo — parseo, medición, siete pasadas, hasta cinco iteraciones de convergencia — en el hilo que invoca la función. Para una exportación puntual está bien. Para una **interfaz interactiva** (preview en vivo, editor, visor sensible al resize) ese es el hilo equivocado: una composición de 150 ms bloquea los eventos de entrada, las pulsaciones de teclado se encolan y el scroll se entrecorta.
+**Esta es la forma recomendada de usar Postext en el navegador.** Si estás construyendo algo interactivo — una previsualización en vivo, un editor, un visor sensible al resize o un playground estilo sandbox — dirige el pipeline a través de `createLayoutWorker()` de `postext/worker`. No llames a `buildDocument` directamente en el hilo principal para código de UI.
 
-Postext incluye un punto de entrada dedicado a Web Worker — `postext/worker` — que saca el pipeline del hilo principal. Es la integración recomendada para cualquier UI que reconstruya el documento en respuesta al input del usuario. Los tres viewports del sandbox (Canvas, HTML y PDF) comparten el mismo handle `createLayoutWorker()` a través de un único hook `useLayoutWorker` (`packages/postext-sandbox/src/worker/useLayoutWorker.ts`) y lo dirigen con cancelación *last-wins* — una nueva pulsación aborta el build en curso antes incluso de que termine.
+Llamar a `buildDocument` en el hilo principal ejecuta el pipeline completo — parseo, medición, siete pasadas, hasta cinco iteraciones de convergencia — en el hilo que invoca la función. Para una exportación puntual está bien. Para una interfaz interactiva es el hilo equivocado: una composición de 150 ms bloquea los eventos de entrada, las pulsaciones de teclado se encolan y el scroll se entrecorta. El worker mueve cada uno de esos milisegundos a un hilo secundario.
+
+Postext incluye un punto de entrada dedicado a Web Worker — `postext/worker` — que saca el pipeline del hilo principal. Es el camino que esperamos que la mayoría de las integraciones sigan: los tres viewports del sandbox (Canvas, HTML y PDF) comparten el mismo handle `createLayoutWorker()` a través de un único hook `useLayoutWorker` (`packages/postext-sandbox/src/worker/useLayoutWorker.ts`) y lo dirigen con cancelación *last-wins* — una nueva pulsación aborta el build en curso antes incluso de que termine.
+
+De un vistazo, la integración canónica es:
+
+1. **Crea** un worker una vez por viewport con `createLayoutWorker()`.
+2. **Registra las fuentes** una vez por familia enviando `ArrayBuffer`s transferibles vía `registerFonts(payloads)`.
+3. **Compone** con `build(content, config, { signal })`, pasando un `AbortSignal` fresco en cada llamada para poder cancelar builds obsoletos.
+4. **Supersede** cualquier build anterior abortando su signal *antes* de iniciar el siguiente — este es el patrón *last-wins*.
+5. **Libera (dispose)** el worker cuando el componente propietario se desmonta.
+
+El mismo `VDTDocument` que devuelve `build(...)` alimenta a cada renderizador descendente: `renderPage`/`renderPageToCanvas` para canvas, `renderToHtmlIndexed` para HTML y `renderToPdf` (de `postext-pdf`) para PDF. Construyes una vez en el worker y rasterizas tantas veces como necesite la UI en el hilo principal.
 
 ### Qué te aporta el worker
 
@@ -1454,36 +1696,103 @@ El paquete también publica el path `postext/worker/entry`, apuntando al script 
 
 ```ts
 import { createLayoutWorker } from 'postext/worker';
-import type { FontPayload } from 'postext/worker';
+import type { FontPayload, LayoutWorkerHandle } from 'postext/worker';
+import type { PostextConfig, VDTDocument } from 'postext';
 
-const layout = createLayoutWorker();
+// 1. Crea el worker una única vez y conserva el handle durante toda la vida de tu viewport.
+const layout: LayoutWorkerHandle = createLayoutWorker();
 
-// 1. Registrar fuentes una vez por familia (ArrayBuffers transferibles).
+// 2. Registra las fuentes una vez por familia (ArrayBuffers transferibles).
+//    getConfigFontFamilies(config) es un helper que lista las familias que tu config va a renderizar.
 const payloads: FontPayload[] = await collectFontPayloadsForFamilies([
   'EB Garamond',
   'Open Sans',
 ]);
 await layout.registerFonts(payloads);
 
-// 2. Build — supersede una llamada anterior abortando su signal primero.
+// 3. Dirige los builds con cancelación last-wins: aborta el signal anterior
+//    antes de iniciar uno nuevo. Un build obsoleto se descarta dentro del worker.
 let pending: AbortController | null = null;
 
-async function rebuild(markdown: string, config: PostextConfig) {
+async function rebuild(
+  markdown: string,
+  config: PostextConfig,
+): Promise<VDTDocument | null> {
   pending?.abort();
   pending = new AbortController();
   try {
-    const vdt = await layout.build({ markdown }, config, { signal: pending.signal });
-    return vdt;
+    return await layout.build({ markdown }, config, { signal: pending.signal });
   } catch (err) {
     if ((err as { name?: string } | null)?.name === 'AbortError') return null;
     throw err;
   }
 }
 
-// 3. Dispose cuando el componente propietario del worker se desmonta.
+// 4. Libera (dispose) cuando el componente propietario del worker se desmonta.
 //    Los builds pendientes rechazan con AbortError.
 layout.dispose();
 ```
+
+Envuelto en un componente React, la forma es:
+
+```tsx
+import { useEffect, useRef } from 'react';
+import { createLayoutWorker } from 'postext/worker';
+import type { LayoutWorkerHandle } from 'postext/worker';
+import { renderPageToCanvas } from 'postext';
+import type { PostextConfig } from 'postext';
+
+export function CanvasPreview({
+  markdown,
+  config,
+}: {
+  markdown: string;
+  config: PostextConfig;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const workerRef = useRef<LayoutWorkerHandle | null>(null);
+  const pendingRef = useRef<AbortController | null>(null);
+
+  // Montaje: arranca el worker y envía las fuentes una sola vez.
+  useEffect(() => {
+    const handle = createLayoutWorker();
+    workerRef.current = handle;
+    (async () => {
+      const payloads = await collectFontPayloadsForFamilies(
+        getConfigFontFamilies(config),
+      );
+      await handle.registerFonts(payloads);
+    })();
+    return () => {
+      pendingRef.current?.abort();
+      handle.dispose();
+    };
+  }, []); // las fuentes se registran una vez; re-regístralas solo cuando cambie el conjunto de familias
+
+  // En cada tecla o cambio de config: supersede el build en curso y lanza uno nuevo.
+  useEffect(() => {
+    const handle = workerRef.current;
+    if (!handle) return;
+    pendingRef.current?.abort();
+    const ac = new AbortController();
+    pendingRef.current = ac;
+    (async () => {
+      try {
+        const vdt = await handle.build({ markdown }, config, { signal: ac.signal });
+        const canvas = canvasRef.current;
+        if (!canvas || !vdt.pages[0]) return;
+        renderPageToCanvas(vdt.pages[0], vdt, canvas); // rasteriza en el hilo principal
+      } catch (err) {
+        if ((err as { name?: string } | null)?.name !== 'AbortError') throw err;
+      }
+    })();
+  }, [markdown, config]);
+
+  return <canvas ref={canvasRef} />;
+}
+```
+
+El patrón siempre es el mismo: **crea una vez, registra las fuentes una vez, construye-con-AbortSignal muchas veces, libera al desmontar.**
 
 ### Recolección de payloads de fuente (Fontsource / Google Fonts)
 
@@ -1518,18 +1827,50 @@ try {
 
 `shouldCancel` se invoca una vez por cada bloque de nivel superior durante la colocación. El hook es intencionadamente cooperativo — no puede detener la propia llamada de layout de Pretext a mitad de una línea, pero mantiene la granularidad de cancelación lo bastante fina (milisegundos) como para que un usuario tecleando rápido nunca espere por un build obsoleto.
 
+### Exportar PDF desde el worker
+
+El backend PDF toma un `VDTDocument` ya listo y lo convierte en bytes PDF. **No** vuelve a ejecutar la composición. Eso significa que el flujo canónico de PDF en el navegador encaja limpiamente con el worker: construye el VDT en el worker (fuera del hilo principal, cancelable, reutilizando la caché), y luego llama a `renderToPdf` en el hilo principal sobre ese mismo VDT.
+
+```ts
+import type { LayoutWorkerHandle } from 'postext/worker';
+import { renderToPdf } from 'postext-pdf';
+import type { PostextConfig } from 'postext';
+import { createPdfFontProvider } from './pdfFontProvider';
+
+const fontProvider = createPdfFontProvider();
+
+export async function exportPdf(
+  layout: LayoutWorkerHandle,
+  markdown: string,
+  config: PostextConfig,
+): Promise<Uint8Array> {
+  // 1. Construye el VDT en el worker — la UI se mantiene fluida durante las pasadas de composición.
+  const vdt = await layout.build({ markdown }, config);
+
+  // 2. Rasteriza a PDF en el hilo principal. renderToPdf es rápido una vez que existe el VDT
+  //    porque recorre coordenadas precalculadas, no vuelve a medir texto.
+  return renderToPdf(vdt, {
+    fontProvider,
+    // La config `pdfGeneration` de `vdt.config` se respeta automáticamente.
+  });
+}
+```
+
+Si ya mantienes un handle de worker para la previsualización en vivo, reutilízalo para la exportación en vez de levantar un segundo worker — la caché de medición dentro del worker hace que una exportación PDF posterior a una previsualización en pantalla sea esencialmente gratis.
+
 ### Cuándo usar el worker y cuándo no
 
 Usa el worker para:
 
 - **Previsualizaciones en vivo, editores y playgrounds.** Cualquier escenario donde el documento se reconstruye en respuesta a la entrada del usuario.
 - **Visores HTML sensibles al resize** que re-ejecutan la composición en cada tick del `ResizeObserver`.
+- **Exportación PDF desde el navegador** disparada desde una UI que ya tiene previsualización en vivo — reutiliza el handle de worker existente para aprovechar la caché de medición.
 - **Múltiples pestañas de salida** que necesitan el mismo VDT (los viewports Canvas / HTML / PDF del sandbox comparten un handle de worker por montaje de viewport).
 
 Sáltatelo para:
 
 - **Generación en servidor** — Node no tiene un `FontFaceSet` del navegador, y controlas el hilo de todos modos.
-- **Exportaciones puntuales** que se ejecutan en respuesta a una acción explícita del usuario (clic en "Exportar PDF") y cuya latencia es aceptable. Llamar a `buildDocument` directamente es más simple y evita el coste de la transferencia inicial de fuentes.
+- **Exportaciones puntuales aisladas** (un CLI, un script de exportación headless, una Cloud Function) en las que no existe una UI interactiva que se pueda bloquear. Llamar a `buildDocument` directamente es más simple y evita el coste de la transferencia inicial de fuentes.
 
 
 ## Integrar el visor HTML
@@ -1701,6 +2042,8 @@ El componente `HtmlPreview` del sandbox (`packages/postext-sandbox/src/viewport/
 ## Generación de PDF
 
 La salida PDF vive en un paquete separado, **`postext-pdf`**, para que las integraciones puramente web no paguen el coste de `pdf-lib` ni de `@pdf-lib/fontkit`. El backend de PDF no vuelve a medir el texto: consume exactamente el mismo `VDTDocument` que le pasarías a `renderToCanvas` o `renderToHtml` y traduce sus coordenadas en píxeles a puntos PDF. Las tres salidas están garantizadas, por tanto, a coincidir en saltos de línea, alturas de columna y colocación de recursos.
+
+> **En el navegador, construye el VDT a través del [Web Worker](#ejecutar-la-composición-en-un-web-worker).** `renderToPdf` en sí es rápido una vez que existe el VDT — la parte costosa es el pipeline de composición que lo produjo. Ejecutar ese pipeline en el worker mantiene la UI fluida y permite que una exportación PDF reutilice la misma caché de medición que ya calentó la previsualización en vivo. Consulta [Exportar PDF desde el worker](#exportar-pdf-desde-el-worker) para el flujo recomendado. Los ejemplos en hilo principal que siguen son la referencia de *qué significan los argumentos* — para código de UI, construye primero el VDT en el worker y llama a `renderToPdf` directamente.
 
 ### Instalación
 
