@@ -5,7 +5,14 @@ import type {
   ContentBlock,
 } from 'postext';
 import { parseMarkdownWithIssues, resolveDebugConfig } from 'postext';
-import { getConfigFontSpecs, getConfigFontFamilies } from '../controls/fontLoader';
+import {
+  getConfigFontSpecs,
+  getConfigFontFamilies,
+  getCustomFontFamily,
+  missingStandardVariants,
+  isKnownUnavailableGoogleFont,
+  isRemovedCustomFontFamily,
+} from '../controls/fontLoader';
 import type { Warning } from './types';
 
 function lineNumberForOffset(markdown: string, offset: number): number {
@@ -131,11 +138,60 @@ export function computeWarnings(params: {
   const warnings: Warning[] = [];
 
   if (toggles.missingFont) {
-    for (const family of detectMissingFonts(config)) {
-      warnings.push({
-        id: `missing-font-${family}`,
-        payload: { kind: 'missingFont', family },
-      });
+    // Duplicate (weight, style) slots apply to every declared custom
+    // family, used or not — the user wants a reminder to retune the
+    // variant settings regardless of where the family is referenced.
+    for (const family of config.customFonts ?? []) {
+      const slotCounts = new Map<string, { weight: number; style: 'normal' | 'italic'; count: number }>();
+      for (const v of family.variants) {
+        const key = `${v.weight}|${v.style}`;
+        const entry = slotCounts.get(key);
+        if (entry) entry.count++;
+        else slotCounts.set(key, { weight: v.weight, style: v.style, count: 1 });
+      }
+      const duplicates = [...slotCounts.values()].filter((s) => s.count > 1);
+      if (duplicates.length > 0) {
+        warnings.push({
+          id: `duplicate-font-variant-${family.name}`,
+          payload: { kind: 'duplicateFontVariant', family: family.name, variants: duplicates },
+        });
+      }
+    }
+
+    const families = getConfigFontFamilies(config);
+    const specMissing = new Set(detectMissingFonts(config));
+    for (const family of families) {
+      const custom = getCustomFontFamily(family);
+      if (custom) {
+        // Custom family still declared: report specifically which
+        // standard variants are missing (weight × style).
+        const missingVariants = missingStandardVariants(custom);
+        if (missingVariants.length > 0) {
+          warnings.push({
+            id: `missing-font-variant-${family}`,
+            payload: { kind: 'missingFontVariant', family, variants: missingVariants },
+          });
+        }
+        continue;
+      }
+      // Family referenced but no current custom match. Three sub-cases:
+      //   1) User deleted a custom family that is still referenced — fire
+      //      immediately, don't wait for document.fonts to notice.
+      //   2) Fontsource metadata fetch proved the name is not a Google
+      //      Font — treat as unknown family.
+      //   3) document.fonts.check failed for at least one spec — generic
+      //      "not loaded" (may be transient/network).
+      if (isRemovedCustomFontFamily(family) || isKnownUnavailableGoogleFont(family)) {
+        warnings.push({
+          id: `missing-font-family-${family}`,
+          payload: { kind: 'missingFontFamily', family },
+        });
+      } else if (specMissing.has(family)) {
+        warnings.push({
+          id: `missing-font-${family}`,
+          payload: { kind: 'missingFont', family },
+        });
+      }
     }
   }
 

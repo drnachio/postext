@@ -1,5 +1,6 @@
 'use client';
 
+import type { FocusEventHandler } from 'react';
 import {
   AArrowUp,
   AArrowDown,
@@ -36,6 +37,8 @@ interface HtmlToolbarProps {
   onScrollColumn: (delta: number) => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  onFocus?: FocusEventHandler<HTMLDivElement>;
+  onBlur?: FocusEventHandler<HTMLDivElement>;
 }
 
 export function HtmlToolbar({
@@ -54,6 +57,8 @@ export function HtmlToolbar({
   onScrollColumn,
   onMouseEnter,
   onMouseLeave,
+  onFocus,
+  onBlur,
 }: HtmlToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
@@ -68,6 +73,8 @@ export function HtmlToolbar({
       style={{ ...TOOLBAR_STYLE_BASE, ...toolbarHiddenStyle(hidden) }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
     >
       <ToolbarButton
         icon={<RefreshCw size={16} aria-hidden="true" />}

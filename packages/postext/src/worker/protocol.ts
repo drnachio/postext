@@ -17,6 +17,15 @@ export type RequestMessage =
       faces: FontPayload[];
     }
   | {
+      kind: 'unregisterFonts';
+      id: number;
+      /** Family names to drop from the worker's face set. All faces whose
+       *  family matches are removed from `document.fonts` and from the
+       *  internal dedup map, so the next `registerFonts` for the same
+       *  family takes effect instead of being deduped. */
+      families: string[];
+    }
+  | {
       kind: 'build';
       id: number;
       content: PostextContent;
@@ -39,6 +48,10 @@ export type ResponseMessage =
     }
   | {
       kind: 'fontsRegistered';
+      id: number;
+    }
+  | {
+      kind: 'fontsUnregistered';
       id: number;
     }
   | {

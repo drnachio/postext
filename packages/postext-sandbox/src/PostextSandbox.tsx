@@ -10,6 +10,7 @@ import { ConfigPanel } from './sidebar/ConfigPanel';
 import { ResourcesPanel } from './sidebar/ResourcesPanel';
 import { MarkdownPanel } from './sidebar/MarkdownPanel';
 import { WarningsPanel } from './sidebar/WarningsPanel';
+import { FontsPanel } from './sidebar/FontsPanel';
 import { ResizableHandle } from './panels/ResizableHandle';
 import { ViewportTabs } from './viewport/ViewportTabs';
 import { CanvasViewport } from './viewport/CanvasViewport';
@@ -102,6 +103,8 @@ function SandboxLayout({
         return <MarkdownPanel isDark={isDark} />;
       case 'warnings':
         return <WarningsPanel />;
+      case 'fonts':
+        return <FontsPanel />;
       default:
         return null;
     }

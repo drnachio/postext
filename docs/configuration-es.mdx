@@ -41,6 +41,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
 - [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
+- [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
 - [Generación de PDF (configuración)](#generación-de-pdf-configuración) — outlines y espacio de color forzado para el backend PDF.
 - [Depuración](#depuración) — superposiciones visuales y avisos de autoría para el editor.
@@ -342,7 +343,7 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>fontFamily</code></td>
       <td><code>string</code></td>
       <td><code>'EB Garamond'</code></td>
-      <td>Familia tipográfica para el cuerpo de texto. Cualquier fuente de Google Fonts o del sistema.</td>
+      <td>Familia tipográfica para el cuerpo de texto. Cualquier fuente de Google Fonts, del sistema, o declarada como <a href="#fuentes-personalizadas">fuente personalizada</a>.</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>
@@ -1127,6 +1128,73 @@ El campo `model` indica el espacio de color previsto. Para renderizado web, `'he
 
 Como Postext apunta a salida de calidad editorial, el color por defecto del cuerpo de texto se publica con `model: 'cmyk'` (`#000000`). Los colores de encabezados, negritas, cursivas y listas toman por defecto el **Color principal** enlazado a la paleta (`#517538`, `model: 'hex'`). El fondo de página y los indicadores de interfaz (rejilla base, marcas de corte, indicadores de depuración) usan `model: 'hex'` por defecto. Sobrescribe `color.model` en cualquier campo si necesitas otra semántica de exportación.
 
+
+## Fuentes personalizadas
+
+Postext resuelve cada `fontFamily` contra **ambos** el catálogo de Google Fonts y la lista `customFonts` del documento. Las fuentes personalizadas tienen prioridad en caso de coincidencia de nombre: si declaras `customFonts: [{ name: 'Roboto', … }]`, Postext usará tu archivo en lugar de la "Roboto" de Google Fonts.
+
+Usa fuentes personalizadas cuando:
+
+- El documento requiere una tipografía de marca o con licencia que no está en Google Fonts.
+- El entorno no puede alcanzar la CDN de Google Fonts (sin conexión, intranet, sensibilidad de privacidad).
+- Necesitas mantener el archivo de fuente privado y evitar subirlo a un tercero.
+
+### Esquema de configuración
+
+```ts
+type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+type CustomFontStyle = 'normal' | 'italic';
+
+interface CustomFontVariant {
+  weight: number;           // CSS font-weight, 100..900
+  style: CustomFontStyle;
+  fileId: string;           // id opaco del binario en almacenamiento externo
+  format: CustomFontFormat;
+  fileName?: string;        // nombre original del archivo (se muestra en la UI)
+}
+
+interface CustomFontFamily {
+  name: string;             // se usa donde encajaría un nombre de Google Font
+  variants: CustomFontVariant[];
+}
+
+interface PostextConfig {
+  // ...
+  customFonts?: CustomFontFamily[];
+}
+```
+
+El binario de cada variante **no** se empotra en la propia configuración. La configuración solo guarda punteros `fileId`; los bytes viven fuera de ella. En el sandbox eso significa IndexedDB (almacén clave-valor, exclusivo del navegador, privado del documento). Un integrador que empotre Postext en otro entorno es libre de resolver `fileId` como prefiera —un endpoint de servidor, un service worker, lo que sea— mientras los bytes lleguen al hilo principal antes de `buildDocument`.
+
+### Gestionar fuentes personalizadas en el sandbox
+
+Abre el panel **Fonts** desde la barra de actividad izquierda (entre Resources y Configuration). Para cada familia:
+
+1. **Añadir familia** — crea una familia vacía; renómbrala en línea.
+2. **Subir variante(s)** — elige un peso (100–900) y un estilo (normal / italic), y selecciona uno *o varios* archivos `.woff2`, `.woff`, `.ttf` u `.otf`. Cada archivo se convierte en su propia variante asociada a la combinación (peso, estilo) seleccionada; el nombre del archivo queda guardado y se muestra en la fila para diferenciar variantes. Puedes retocar el peso o el estilo de una variante desde sus desplegables en cualquier momento.
+3. **Se permiten variantes duplicadas.** Si dos archivos caen en la misma ranura (peso, estilo), se guardan los dos y aparece un aviso **Duplicate font variant** para que ajustes los extras.
+4. **Eliminar variante** o **Eliminar familia** — elimina la entrada de la configuración *y* los bytes guardados en IndexedDB.
+
+Una vez declarada la familia, cada selector de fuente la agrupa bajo **Custom**, por encima de la lista de Google Fonts. Al elegirla, queda cableada a todos los campos `fontFamily` donde la apliques.
+
+### Comportamiento de renderizado
+
+Bajo el capó:
+
+- Cuando `customFonts` cambia, cada familia declarada se registra automáticamente como `FontFace` en `document.fonts` — por lo que el visor HTML, el visor Canvas (que mide a través de `document.fonts`) y cualquier referencia CSS directa toman la cara personalizada sin necesidad de abrir antes el Font Picker.
+- El worker de composición recibe los mismos `ArrayBuffer` por el mismo canal de transferencia de *font payloads*, así la medición (`buildFontString`, pretext) produce métricas idénticas a las de Google Fonts.
+- Cambiar o eliminar una variante descarta la cara cacheada en el worker para esa familia y se vuelve a registrar en el siguiente build, de modo que las previsualizaciones se mantienen sincronizadas con el conjunto actual de variantes.
+- **Exportación a PDF**: los binarios subidos fluyen por la misma canalización `PdfFontProvider`. Los `.woff2` se descomprimen; los `.ttf` y `.otf` se pasan tal cual. `.woff` se rechaza con un mensaje claro (pdf-lib no puede empotrar WOFF crudo — vuelve a subirlo como `.woff2`/`.ttf`/`.otf`). El OpenType con tablas CFF (`.otf` cuya firma es `OTTO`) se empotra **sin subsetting**, porque el subsetter CFF de pdf-lib recorre cada glifo al hacer `save()` y puede bloquearse durante minutos con fuentes reales; saltarse el subset intercambia algo más de tamaño de PDF por tiempos de render consistentes.
+
+### Avisos de fuentes faltantes
+
+El panel de avisos reconoce tres modos nuevos de fallo específicos de las fuentes personalizadas (todos gobernados por el mismo toggle `debug.warnings.missingFont` que ya controla el aviso genérico "no cargada"):
+
+- **Familia desconocida** — un `fontFamily` referencia un nombre que no es ni una Google Font conocida ni una familia personalizada actualmente declarada. También salta al instante cuando eliminas una familia personalizada que algún `fontFamily` todavía referencia, sin esperar a que el DOM lo note.
+- **Variante faltante** — la familia existe pero al menos una de las ranuras estándar (400 / 700, normal / italic) no tiene archivo subido. El aviso enumera las combinaciones concretas que faltan.
+- **Variante duplicada** — dos o más archivos comparten la misma ranura (peso, estilo) dentro de una misma familia. Solo uno se usa al renderizar; el aviso te recuerda que retoques las entradas sobrantes.
+
+Al pulsar cualquiera de los avisos se abre el panel **Fonts** para que subas la variante necesaria, vuelvas a añadir la familia o desambigües los duplicados.
 
 ## Paleta de colores
 

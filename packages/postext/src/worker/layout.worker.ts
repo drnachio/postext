@@ -49,6 +49,26 @@ async function registerFonts(faces: FontPayload[]): Promise<void> {
   }
 }
 
+function unregisterFonts(families: string[]): void {
+  const fontSet = (ctx as unknown as { fonts?: FontFaceSet }).fonts;
+  if (!fontSet) return;
+  const targets = new Set(families);
+  const toRemove: FontFace[] = [];
+  fontSet.forEach((ff) => {
+    if (targets.has(ff.family)) toRemove.push(ff);
+  });
+  for (const ff of toRemove) {
+    try { fontSet.delete(ff); } catch { /* ignore */ }
+  }
+  for (const key of Array.from(registeredFaces)) {
+    const family = key.split('|', 1)[0]!;
+    if (targets.has(family)) registeredFaces.delete(key);
+  }
+  // A dropped face may have been cached against old glyph metrics.
+  measurementCache = createMeasurementCache();
+  clearMeasurementCache();
+}
+
 function post(msg: ResponseMessage): void {
   ctx.postMessage(msg);
 }
@@ -65,6 +85,15 @@ ctx.addEventListener('message', async (event: MessageEvent<RequestMessage>) => {
       try {
         await registerFonts(msg.faces);
         post({ kind: 'fontsRegistered', id: msg.id });
+      } catch (err) {
+        post({ kind: 'error', id: msg.id, ...serializeError(err) });
+      }
+      return;
+    }
+    case 'unregisterFonts': {
+      try {
+        unregisterFonts(msg.families);
+        post({ kind: 'fontsUnregistered', id: msg.id });
       } catch (err) {
         post({ kind: 'error', id: msg.id, ...serializeError(err) });
       }
