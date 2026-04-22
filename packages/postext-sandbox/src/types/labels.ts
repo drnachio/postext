@@ -14,6 +14,11 @@ export interface SandboxLabels {
   comingSoon: string;
   resourcesComingSoonDescription: string;
 
+  // Shared toolbar pin + dirty indicator
+  toolbarPin: string;
+  toolbarUnpin: string;
+  pdfDirty: string;
+
   // PDF viewport
   pdfToolbar: string;
   pdfRegenerate: string;
@@ -107,6 +112,18 @@ export interface SandboxLabels {
   warningsListAfterHeadingDetail: string;
   warningsInvalidMathTitle?: string;
   warningsUnclosedMathTitle?: string;
+
+  // PDF generation section
+  pdfGenerationSection?: string;
+  pdfOutlines?: string;
+  pdfOutlinesTooltip?: string;
+  pdfForceColorSpace?: string;
+  pdfForceColorSpaceTooltip?: string;
+  pdfColorSpace?: string;
+  pdfColorSpaceTooltip?: string;
+  pdfColorSpaceCmyk?: string;
+  pdfColorSpaceRgb?: string;
+  pdfColorSpaceGrayscale?: string;
 
   // Math section
   mathSection?: string;
@@ -381,6 +398,11 @@ export interface SandboxLabels {
   singlePage: string;
   doublePageSpread: string;
   canvasToolbar: string;
+  canvasRegenerate: string;
+  canvasRegenerateTooltip: string;
+  previousPage: string;
+  nextPage: string;
+  pageNumberInput: string;
 
   // HTML viewport toolbar
   fontScaleUp: string;
@@ -388,6 +410,10 @@ export interface SandboxLabels {
   singleColumn: string;
   multiColumn: string;
   htmlToolbar: string;
+  htmlRegenerate: string;
+  htmlRegenerateTooltip: string;
+  previousColumn: string;
+  nextColumn: string;
 
   // HTML viewer config section
   htmlViewer: string;

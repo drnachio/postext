@@ -598,6 +598,23 @@ export interface ResolvedMathConfig {
   marginBottom: Dimension;
 }
 
+export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
+
+export interface PdfGenerationConfig {
+  /** Emit PDF outlines (bookmarks) so readers can jump between headings. */
+  outlines?: boolean;
+  /** When true, convert every colour in the rendered PDF to `colorSpace`. */
+  forceColorSpace?: boolean;
+  /** Target colour space when `forceColorSpace` is true. */
+  colorSpace?: PdfColorSpace;
+}
+
+export interface ResolvedPdfGenerationConfig {
+  outlines: boolean;
+  forceColorSpace: boolean;
+  colorSpace: PdfColorSpace;
+}
+
 export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;
@@ -626,6 +643,8 @@ export interface PostextConfig {
   debug?: DebugConfig;
 
   htmlViewer?: HtmlViewerConfig;
+
+  pdfGeneration?: PdfGenerationConfig;
 
   colorPalette?: ColorPaletteEntry[];
 }

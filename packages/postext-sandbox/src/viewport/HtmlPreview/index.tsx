@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, useDeferredValue } from 'react';
 import {
   renderToHtmlIndexed,
   dimensionToPx,
@@ -33,9 +33,20 @@ import { cssEscape, measureBodyBaselineOffset } from './baseline';
 interface HtmlPreviewProps {
   fontScale: number;
   columnMode: ColumnMode;
+  onGeneratingChange?: (generating: boolean) => void;
+  // Emits whether the viewer can scroll further in each direction. Scroll
+  // bounds rather than column indices — the viewer may show several columns
+  // per viewport, so reporting a single "current column" is ambiguous.
+  onScrollBoundsChange?: (info: { canPrev: boolean; canNext: boolean }) => void;
 }
 
-export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
+export interface HtmlPreviewHandle {
+  regenerate: () => void;
+  scrollColumn: (delta: number) => void;
+}
+
+export const HtmlPreview = forwardRef<HtmlPreviewHandle, HtmlPreviewProps>(
+function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBoundsChange }, ref) {
   const { state, dispatch, docRef: sharedDocRef } = useSandbox();
   const { hostRef, shadowRef } = useShadowDom();
   const deferredMarkdown = useDeferredValue(state.markdown);
@@ -47,6 +58,14 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
   const viewportSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const relayoutTimerRef = useRef<number | null>(null);
   const renderSeqRef = useRef(0);
+  // Column geometry captured by the last successful relayout. Used by the
+  // column-scroll imperative API and the current-column emitter so they read
+  // the same values doRelayout decided on, without recomputing them.
+  const columnGeomRef = useRef<{ columnWidthPx: number; columnGapPx: number }>({ columnWidthPx: 0, columnGapPx: 0 });
+  const onGeneratingChangeRef = useRef(onGeneratingChange);
+  onGeneratingChangeRef.current = onGeneratingChange;
+  const onScrollBoundsChangeRef = useRef(onScrollBoundsChange);
+  onScrollBoundsChangeRef.current = onScrollBoundsChange;
 
   // Refs for click-handler plumbing — same pattern as CanvasPreview so the
   // reused attachSlotClickHandler can dispatch and detect the active panel
@@ -163,6 +182,7 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
     const seq = ++renderSeqRef.current;
     const scroll = scrollHostRef.current;
     if (!scroll) return;
+    onGeneratingChangeRef.current?.(true);
 
     const host = hostRef.current;
     if (!host) return;
@@ -225,6 +245,7 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
         (innerViewportW - columnGapPx * (maxVisible - 1)) / maxVisible;
     }
     columnWidthPx = Math.max(Math.floor(columnWidthPx), 80);
+    columnGeomRef.current = { columnWidthPx, columnGapPx };
 
     const configOverride = buildHtmlConfigOverride(currentConfig, {
       fontScale: currentFontScale,
@@ -391,6 +412,8 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
     } catch (err) {
       if ((err as { name?: string } | null)?.name === 'AbortError') return;
       console.error('[HtmlPreview] Layout error:', err);
+    } finally {
+      if (seq === renderSeqRef.current) onGeneratingChangeRef.current?.(false);
     }
   }
 
@@ -462,5 +485,63 @@ export function HtmlPreview({ fontScale, columnMode }: HtmlPreviewProps) {
     }
   }, [state.selection, state.config.debug, state.editorFocused, docVersion]);
 
+  // Imperative API exposed to the viewport toolbar.
+  // - regenerate: force a fresh relayout immediately.
+  // - scrollColumn(delta): shift the scroll container by ±1 column step. In
+  //   multi-column mode that's horizontal (column width + gap). In single
+  //   mode we fall back to a viewport-height vertical scroll (one "screen").
+  useImperativeHandle(ref, () => ({
+    regenerate: () => scheduleRelayout(0),
+    scrollColumn: (delta: number) => {
+      const scroll = scrollHostRef.current;
+      if (!scroll) return;
+      if (columnModeRef.current === 'multi') {
+        const { columnWidthPx, columnGapPx } = columnGeomRef.current;
+        if (columnWidthPx <= 0) return;
+        const step = columnWidthPx + columnGapPx;
+        scroll.scrollBy({ left: delta * step, behavior: 'smooth' });
+      } else {
+        scroll.scrollBy({ top: delta * scroll.clientHeight, behavior: 'smooth' });
+      }
+    },
+  }), []);
+
+  // Scroll-bounds emitter. Rather than computing column indices (which is
+  // ambiguous when several columns are visible per page and pages snap
+  // horizontally), just report whether there's room to scroll further in
+  // either direction. The toolbar uses these booleans to enable/disable
+  // prev/next column buttons.
+  useEffect(() => {
+    const scroll = scrollHostRef.current;
+    if (!scroll) return;
+    let rafId = 0;
+    const compute = () => {
+      rafId = 0;
+      if (columnModeRef.current !== 'multi') {
+        onScrollBoundsChangeRef.current?.({ canPrev: false, canNext: false });
+        return;
+      }
+      const tolerance = 4;
+      const canPrev = scroll.scrollLeft > tolerance;
+      const canNext =
+        scroll.scrollLeft + scroll.clientWidth < scroll.scrollWidth - tolerance;
+      onScrollBoundsChangeRef.current?.({ canPrev, canNext });
+    };
+    const onScroll = () => {
+      if (rafId !== 0) return;
+      rafId = requestAnimationFrame(compute);
+    };
+    scroll.addEventListener('scroll', onScroll, { passive: true });
+    // Compute once now and again after a frame so we pick up scrollWidth
+    // updates from the relayout that just completed.
+    compute();
+    const id = requestAnimationFrame(compute);
+    return () => {
+      scroll.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(id);
+      if (rafId !== 0) cancelAnimationFrame(rafId);
+    };
+  }, [docVersion, columnMode]);
+
   return <div ref={hostRef} className="h-full w-full" />;
-}
+});

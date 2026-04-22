@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useDeferredValue, useMemo } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandboxDispatch, useSandboxDocRef, useSandboxSelector } from '../../context/SandboxContext';
 import { renderPageToCanvas, resolveDebugConfig } from 'postext';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
@@ -22,6 +22,14 @@ interface CanvasPreviewProps {
   zoom: number;
   viewMode: ViewMode;
   fitMode: FitMode;
+  onGeneratingChange?: (generating: boolean) => void;
+  onPageCountChange?: (count: number) => void;
+  onCurrentPageChange?: (index: number) => void;
+}
+
+export interface CanvasPreviewHandle {
+  regenerate: () => void;
+  jumpToPage: (pageIndex: number) => void;
 }
 
 /**
@@ -29,7 +37,8 @@ interface CanvasPreviewProps {
  * Builds a VDT at the configured DPI (default 300), then lazily renders
  * only the pages visible in the scroll viewport via IntersectionObserver.
  */
-export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
+export const CanvasPreview = forwardRef<CanvasPreviewHandle, CanvasPreviewProps>(
+function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCountChange, onCurrentPageChange }, ref) {
   const dispatch = useSandboxDispatch();
   const sharedDocRef = useSandboxDocRef();
   const markdown = useSandboxSelector((s) => s.markdown);
@@ -215,6 +224,10 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
   // a rebuild-invalidating event (fonts loaded, math ready) changes. Does
   // NOT depend on container size: VDT coordinates are in PT and independent
   // of viewport dimensions. Resize only rescales the canvas at paint time.
+  const onGeneratingChangeRef = useRef(onGeneratingChange);
+  onGeneratingChangeRef.current = onGeneratingChange;
+  const onPageCountChangeRef = useRef(onPageCountChange);
+  onPageCountChangeRef.current = onPageCountChange;
   useEffect(() => {
     let cancelled = false;
     // Gate on main-thread font availability — the canvas repaint path still
@@ -224,6 +237,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     if (typeof document !== 'undefined' && document.fonts) {
       const missing = getConfigFontSpecs(deferredConfig).filter((s) => !document.fonts.check(s));
       if (missing.length > 0) {
+        onGeneratingChangeRef.current?.(true);
         ensureConfigFontsLoaded(deferredConfig).then(() => {
           if (!cancelled) setRebuildKey((k) => k + 1);
         });
@@ -238,6 +252,7 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     // measurement-relevant config bits, so unchanged builds stay cheap.
     appliedRebuildKeyRef.current = rebuildKey;
 
+    onGeneratingChangeRef.current?.(true);
     layoutWorker.build({ markdown: deferredMarkdown }, deferredConfig)
       .then((doc) => {
         if (cancelled) return;
@@ -245,10 +260,14 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
         sharedDocRef.current = doc;
         dispatch({ type: 'BUMP_DOC_VERSION' });
         setDocVersion((v) => v + 1);
+        onPageCountChangeRef.current?.(doc.pages.length);
       })
       .catch((err: unknown) => {
         if ((err as { name?: string } | null)?.name === 'AbortError') return;
         console.error('[CanvasPreview] Layout error:', err);
+      })
+      .finally(() => {
+        if (!cancelled) onGeneratingChangeRef.current?.(false);
       });
 
     return () => {
@@ -422,6 +441,62 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
     }
   }, [selection, config.debug, editorFocused, docVersion]);
 
+  // Imperative API: regenerate by bumping rebuildKey; jumpToPage by scrolling
+  // the slot element with the matching data-page-index into view.
+  useImperativeHandle(ref, () => ({
+    regenerate: () => setRebuildKey((k) => k + 1),
+    jumpToPage: (pageIndex: number) => {
+      const container = containerRef.current;
+      if (!container) return;
+      const slot = container.querySelector<HTMLElement>(
+        `[data-page-index="${pageIndex}"]`,
+      );
+      if (!slot) return;
+      const slotRect = slot.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      container.scrollTop += slotRect.top - containerRect.top - PAGE_PADDING;
+    },
+  }), []);
+
+  // Current-page tracking: find the slot whose vertical center is closest to
+  // the container's vertical center. Emits on scroll and when the doc changes.
+  const onCurrentPageChangeRef = useRef(onCurrentPageChange);
+  onCurrentPageChangeRef.current = onCurrentPageChange;
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    let rafId = 0;
+    const compute = () => {
+      rafId = 0;
+      const slots = container.querySelectorAll<HTMLElement>('[data-page-index]');
+      if (slots.length === 0) return;
+      const cRect = container.getBoundingClientRect();
+      const viewportCenter = cRect.top + cRect.height / 2;
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      slots.forEach((slot) => {
+        const r = slot.getBoundingClientRect();
+        const center = r.top + r.height / 2;
+        const dist = Math.abs(center - viewportCenter);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIdx = Number(slot.dataset.pageIndex);
+        }
+      });
+      onCurrentPageChangeRef.current?.(bestIdx);
+    };
+    const onScroll = () => {
+      if (rafId !== 0) return;
+      rafId = requestAnimationFrame(compute);
+    };
+    container.addEventListener('scroll', onScroll, { passive: true });
+    compute();
+    return () => {
+      container.removeEventListener('scroll', onScroll);
+      if (rafId !== 0) cancelAnimationFrame(rafId);
+    };
+  }, [docVersion, viewMode]);
+
   return (
     <div
       ref={containerRef}
@@ -429,4 +504,4 @@ export function CanvasPreview({ zoom, viewMode, fitMode }: CanvasPreviewProps) {
       style={{ backgroundColor: 'var(--surface)', overflow: 'auto', scrollbarGutter: 'stable' }}
     />
   );
-}
+});

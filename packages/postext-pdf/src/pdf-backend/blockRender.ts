@@ -1,8 +1,8 @@
-import type { RGB } from 'pdf-lib';
+import type { Color } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, drawLinePx, drawTextPx, rgbFromHex } from './primitives';
+import { type PageCtx, drawLinePx, drawTextPx, colorFromHex } from './primitives';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 
 function renderMathRender(
@@ -10,7 +10,7 @@ function renderMathRender(
   render: MathRender,
   topLeftXPx: number,
   topLeftYPx: number,
-  fallbackColor: RGB,
+  fallbackColor: Color,
 ): void {
   if (!render.paths.length || render.viewBox.width <= 0 || render.viewBox.height <= 0) return;
   const { scale: pxToPt, pageHeightPt } = ctx;
@@ -19,7 +19,7 @@ function renderMathRender(
   const x = topLeftXPx * pxToPt - render.viewBox.minX * S;
   const y = pageHeightPt - topLeftYPx * pxToPt + render.viewBox.minY * S;
   for (const path of render.paths) {
-    const color = path.fill === 'currentColor' ? fallbackColor : rgbFromHex(path.fill);
+    const color = path.fill === 'currentColor' ? fallbackColor : colorFromHex(path.fill, ctx.colorSpace);
     ctx.page.drawSvgPath(path.d, { x, y, scale: S, color });
   }
 }
@@ -29,7 +29,7 @@ function renderMathSegment(
   seg: VDTLineSegment,
   xPx: number,
   baselinePx: number,
-  fallbackColor: RGB,
+  fallbackColor: Color,
 ): void {
   if (!seg.mathRender) return;
   renderMathRender(ctx, seg.mathRender, xPx, baselinePx - seg.mathRender.ascentPx, fallbackColor);
@@ -46,7 +46,7 @@ function renderLine(
   const blockFont = fontCache.get(block.fontString);
   if (!blockFont) return;
   const blockSize = parseFontString(block.fontString)?.sizePx ?? 0;
-  const blockColor = rgbFromHex(block.color);
+  const blockColor = colorFromHex(block.color, ctx.colorSpace);
 
   const hasRichSegments =
     !!line.segments && line.segments.some((s) => s.bold || s.italic);
@@ -75,7 +75,7 @@ function renderLine(
           const font = fontCache.get(fontStr) ?? blockFont;
           const size = parseFontString(fontStr)?.sizePx ?? blockSize;
           const colorHex = pickSegmentColor(!!seg.bold, !!seg.italic, block);
-          const color = colorHex === block.color ? blockColor : rgbFromHex(colorHex);
+          const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
           drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
           x += seg.width;
         }
@@ -98,7 +98,7 @@ function renderLine(
         const font = fontCache.get(fontStr) ?? blockFont;
         const size = parseFontString(fontStr)?.sizePx ?? blockSize;
         const colorHex = pickSegmentColor(!!seg.bold, !!seg.italic, block);
-        const color = colorHex === block.color ? blockColor : rgbFromHex(colorHex);
+        const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
         drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
         x += seg.width;
       }
@@ -120,7 +120,7 @@ function renderLine(
         const font = fontCache.get(fontStr) ?? blockFont;
         const size = parseFontString(fontStr)?.sizePx ?? blockSize;
         const colorHex = pickSegmentColor(!!seg.bold, !!seg.italic, block);
-        const color = colorHex === block.color ? blockColor : rgbFromHex(colorHex);
+        const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
         drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
         x += seg.width;
       }
@@ -145,7 +145,7 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache): void
   if (!font) return;
   const size = parseFontString(block.bulletFontString)?.sizePx ?? 0;
   const colorHex = block.bulletColor ?? block.color;
-  const color = rgbFromHex(colorHex);
+  const color = colorFromHex(colorHex, ctx.colorSpace);
 
   // Canvas uses `textBaseline='middle'` at bulletY; pdf-lib draws from the
   // alphabetic baseline. Shift the baseline down by ~0.3em so the em-square
@@ -157,7 +157,7 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache): void
 
 function renderStrikethrough(ctx: PageCtx, block: VDTBlock): void {
   if (!block.strikethroughText) return;
-  const color = rgbFromHex(block.color);
+  const color = colorFromHex(block.color, ctx.colorSpace);
   const thickness = Math.max(
     1,
     block.lines[0]?.bbox.height ? block.lines[0].bbox.height * 0.05 : 1,

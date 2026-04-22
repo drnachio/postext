@@ -1,19 +1,19 @@
 import {
   PDFDocument,
-  rgb,
   BlendMode,
 } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-import type { VDTDocument, VDTPage } from 'postext';
+import type { PdfColorSpace, VDTDocument, VDTPage } from 'postext';
 import { dimensionToPx } from 'postext';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import {
   type PageCtx,
+  colorFromHex,
   fillRectPx,
   makeScale,
   popClip,
   pushClipRect,
-  rgbFromHex,
+  whiteColor,
 } from './primitives';
 import { collectFontStrings } from './fontHelpers';
 import {
@@ -23,10 +23,17 @@ import {
   renderCutLines,
 } from './pageDecorations';
 import { renderBlock } from './blockRender';
+import { addOutlines } from './outlines';
 
 export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
   pageNegative?: boolean;
+  /** Emit a PDF outline tree (bookmarks) so readers can jump between
+   *  headings. Defaults to true. */
+  outlines?: boolean;
+  /** Force every colour in the rendered output through the given PDF colour
+   *  space. Defaults to `'rgb'` (pdf-lib's native output). */
+  colorSpace?: PdfColorSpace;
 }
 
 export type { PdfFontProvider };
@@ -37,16 +44,17 @@ function renderPage(
   doc: VDTDocument,
   fontCache: FontCache,
   pageNegative: boolean,
+  colorSpace: PdfColorSpace,
 ): void {
   const scale = makeScale(doc.config.page.dpi);
   const pageWidthPt = vdtPage.width * scale;
   const pageHeightPt = vdtPage.height * scale;
   const page = pdfDoc.addPage([pageWidthPt, pageHeightPt]);
-  const ctx: PageCtx = { page, pageHeightPt, scale };
+  const ctx: PageCtx = { page, pageHeightPt, scale, colorSpace };
 
   // Background: full page white first (cut-mark area stays white), then the
   // trim+bleed area filled with the configured page background colour.
-  fillRectPx(ctx, 0, 0, vdtPage.width, vdtPage.height, rgb(1, 1, 1));
+  fillRectPx(ctx, 0, 0, vdtPage.width, vdtPage.height, whiteColor(colorSpace));
 
   const bgHex = doc.config.page.backgroundColor.hex;
   const trimOff = doc.trimOffset;
@@ -60,7 +68,7 @@ function renderPage(
       trimOff - bleedPx,
       vdtPage.width - (trimOff - bleedPx) * 2,
       vdtPage.height - (trimOff - bleedPx) * 2,
-      rgbFromHex(bgHex),
+      colorFromHex(bgHex, colorSpace),
     );
   }
 
@@ -124,7 +132,7 @@ function renderPage(
     const invY = trimOff - bleedPx;
     const invW = vdtPage.width - (trimOff - bleedPx) * 2;
     const invH = vdtPage.height - (trimOff - bleedPx) * 2;
-    fillRectPx(ctx, invX, invY, invW, invH, rgb(1, 1, 1), BlendMode.Difference);
+    fillRectPx(ctx, invX, invY, invW, invH, whiteColor(colorSpace), BlendMode.Difference);
   }
 
   renderCutLines(ctx, vdtPage, doc);
@@ -152,8 +160,13 @@ export async function renderToPdf(
     );
   }
 
+  const colorSpace: PdfColorSpace = options.colorSpace ?? 'rgb';
   for (const page of doc.pages) {
-    renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false);
+    renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace);
+  }
+
+  if (options.outlines ?? true) {
+    addOutlines(pdfDoc, doc);
   }
 
   return pdfDoc.save();

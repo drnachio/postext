@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { CanvasPreview } from './CanvasPreview';
+import { useCallback, useState, useEffect, useRef } from 'react';
+import { CanvasPreview, type CanvasPreviewHandle } from './CanvasPreview';
 import { CanvasToolbar } from './CanvasToolbar';
+import { useFloatingToolbarShell } from './useFloatingToolbarShell';
 import { loadCanvasViewMode, saveCanvasViewMode, loadCanvasFitMode, saveCanvasFitMode, loadCanvasZoom, saveCanvasZoom } from '../storage/persistence';
 
 type ViewMode = 'single' | 'spread';
@@ -16,6 +17,10 @@ export function CanvasViewport() {
   const [zoom, setZoom] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>('single');
   const [fitMode, setFitMode] = useState<FitMode>('width');
+  const [generating, setGenerating] = useState(false);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const previewRef = useRef<CanvasPreviewHandle | null>(null);
   const hydratedRef = useRef(false);
 
   // Hydrate from localStorage. The hydrated flag is flipped via rAF so the
@@ -77,18 +82,46 @@ export function CanvasViewport() {
     setViewMode(mode);
   };
 
+  const handleRegenerate = useCallback(() => {
+    previewRef.current?.regenerate();
+  }, []);
+
+  const handleJumpToPage = useCallback((pageIndex: number) => {
+    previewRef.current?.jumpToPage(pageIndex);
+  }, []);
+
+  const shell = useFloatingToolbarShell('canvas', generating);
+
   return (
-    <div className="relative h-full w-full">
-      <CanvasPreview zoom={zoom} viewMode={viewMode} fitMode={fitMode} />
+    <div className="relative h-full w-full" {...shell.containerProps}>
+      <CanvasPreview
+        ref={previewRef}
+        zoom={zoom}
+        viewMode={viewMode}
+        fitMode={fitMode}
+        onGeneratingChange={setGenerating}
+        onPageCountChange={setPageCount}
+        onCurrentPageChange={setCurrentPage}
+      />
+      <div {...shell.hoverStripProps} />
       <CanvasToolbar
         zoom={zoom}
         viewMode={viewMode}
         fitMode={fitMode}
+        generating={generating}
+        currentPage={currentPage}
+        pageCount={pageCount}
+        pinned={shell.pinned}
+        hidden={shell.hidden}
+        onRegenerate={handleRegenerate}
+        onTogglePin={shell.togglePin}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onFitWidth={handleFitWidth}
         onFitHeight={handleFitHeight}
         onSetViewMode={handleSetViewMode}
+        onJumpToPage={handleJumpToPage}
+        {...shell.toolbarHoverProps}
       />
     </div>
   );

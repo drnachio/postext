@@ -1,5 +1,7 @@
 import {
   rgb,
+  cmyk,
+  grayscale,
   BlendMode,
   pushGraphicsState,
   popGraphicsState,
@@ -8,23 +10,43 @@ import {
   endPath,
   type PDFPage,
   type PDFFont,
-  type RGB,
+  type Color,
 } from 'pdf-lib';
-import { hexToRgb } from '../colors';
+import { hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
+import type { PdfColorSpace } from 'postext';
 
 export interface PageCtx {
   page: PDFPage;
   pageHeightPt: number;
   scale: number;
+  colorSpace: PdfColorSpace;
 }
 
 export function makeScale(dpi: number): number {
   return 72 / dpi;
 }
 
-export function rgbFromHex(hex: string): RGB {
+export function whiteColor(colorSpace: PdfColorSpace): Color {
+  if (colorSpace === 'cmyk') return cmyk(0, 0, 0, 0);
+  if (colorSpace === 'grayscale') return grayscale(1);
+  return rgb(1, 1, 1);
+}
+
+export function colorFromHex(hex: string, colorSpace: PdfColorSpace): Color {
   const c = hexToRgb(hex);
+  if (colorSpace === 'cmyk') {
+    const k = rgbToCmyk(c);
+    return cmyk(k.c, k.m, k.y, k.k);
+  }
+  if (colorSpace === 'grayscale') {
+    return grayscale(rgbToGrayscale(c));
+  }
   return rgb(c.r, c.g, c.b);
+}
+
+/** Back-compat alias — defaults to RGB. */
+export function rgbFromHex(hex: string): Color {
+  return colorFromHex(hex, 'rgb');
 }
 
 export function fillRectPx(
@@ -33,7 +55,7 @@ export function fillRectPx(
   yPx: number,
   wPx: number,
   hPx: number,
-  color: RGB,
+  color: Color,
   blendMode?: BlendMode,
 ): void {
   const { scale, pageHeightPt } = ctx;
@@ -57,7 +79,7 @@ export function drawLinePx(
   y1Px: number,
   x2Px: number,
   y2Px: number,
-  color: RGB,
+  color: Color,
   thicknessPx: number,
 ): void {
   const { scale, pageHeightPt } = ctx;
@@ -76,7 +98,7 @@ export function drawTextPx(
   baselinePx: number,
   font: PDFFont,
   sizePx: number,
-  color: RGB,
+  color: Color,
 ): void {
   if (!text) return;
   const { scale, pageHeightPt } = ctx;
