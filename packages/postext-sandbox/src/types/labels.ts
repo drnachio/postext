@@ -4,6 +4,7 @@ export interface SandboxLabels {
   resources: string;
   markdownEditor: string;
   warnings: string;
+  fonts: string;
 
   // Viewport tabs
   canvas: string;
@@ -474,6 +475,8 @@ export interface SandboxLabels {
   warningsMissingFontVariantDetail: string;
   warningsMissingFontFamilyTitle: string;
   warningsMissingFontFamilyDetail: string;
+  warningsDuplicateFontVariantTitle: string;
+  warningsDuplicateFontVariantDetail: string;
 
   // Color palette section
   colorPalette: string;

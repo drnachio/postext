@@ -625,6 +625,11 @@ export interface CustomFontVariant {
   /** Identifier of the binary stored out-of-band (IndexedDB). */
   fileId: string;
   format: CustomFontFormat;
+  /** Original filename of the uploaded binary. Shown in the sandbox UI
+   *  so the user can tell variants apart at a glance. Optional for
+   *  backward compatibility with configs saved before this field was
+   *  introduced. */
+  fileName?: string;
 }
 
 export interface CustomFontFamily {

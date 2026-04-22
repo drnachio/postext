@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, FocusEvent as ReactFocusEvent } from 'react';
 import { loadToolbarPinned, saveToolbarPinned } from '../storage/persistence';
 
 // Width of the invisible hover strip anchored to the right edge of the
@@ -30,6 +30,8 @@ export interface FloatingToolbarShell {
   toolbarHoverProps: {
     onMouseEnter: () => void;
     onMouseLeave: () => void;
+    onFocus: (e: ReactFocusEvent<HTMLDivElement>) => void;
+    onBlur: (e: ReactFocusEvent<HTMLDivElement>) => void;
   };
 }
 
@@ -47,6 +49,7 @@ export function useFloatingToolbarShell(
 ): FloatingToolbarShell {
   const [pinned, setPinned] = useState(true);
   const [hovered, setHovered] = useState(false);
+  const [focusWithin, setFocusWithin] = useState(false);
   const hydratedRef = useRef(false);
   const hideTimerRef = useRef<number | null>(null);
 
@@ -98,7 +101,23 @@ export function useFloatingToolbarShell(
 
   const togglePin = useCallback(() => setPinned((p) => !p), []);
 
-  const hidden = !pinned && !hovered && !forceVisible;
+  const onFocus = useCallback(() => {
+    clearHideTimer();
+    setFocusWithin(true);
+  }, [clearHideTimer]);
+  const onBlur = useCallback(
+    (e: ReactFocusEvent<HTMLDivElement>) => {
+      // Focus moving between siblings inside the toolbar (e.g. Tab from the
+      // page-number input to a nav button) fires blur on the outgoing node
+      // before focus on the new one. Ignore those — we only care about focus
+      // actually leaving the toolbar.
+      if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+      setFocusWithin(false);
+    },
+    [],
+  );
+
+  const hidden = !pinned && !hovered && !focusWithin && !forceVisible;
 
   return {
     pinned,
@@ -129,6 +148,8 @@ export function useFloatingToolbarShell(
     toolbarHoverProps: {
       onMouseEnter: onEnter,
       onMouseLeave: onLeave,
+      onFocus,
+      onBlur,
     },
   };
 }

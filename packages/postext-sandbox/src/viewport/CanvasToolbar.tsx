@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type FocusEventHandler, type ReactNode } from 'react';
 import {
   ZoomIn,
   ZoomOut,
@@ -63,6 +63,8 @@ interface CanvasToolbarProps {
   onJumpToPage: (pageIndex: number) => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  onFocus?: FocusEventHandler<HTMLDivElement>;
+  onBlur?: FocusEventHandler<HTMLDivElement>;
 }
 
 // In spread view, pages are grouped into rows as [[0],[1,2],[3,4],…]. The
@@ -258,6 +260,8 @@ export function CanvasToolbar({
   onJumpToPage,
   onMouseEnter,
   onMouseLeave,
+  onFocus,
+  onBlur,
 }: CanvasToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
@@ -274,6 +278,8 @@ export function CanvasToolbar({
       style={{ ...TOOLBAR_STYLE_BASE, ...toolbarHiddenStyle(hidden) }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
     >
       <ToolbarButton
         icon={<RefreshCw size={16} aria-hidden="true" />}

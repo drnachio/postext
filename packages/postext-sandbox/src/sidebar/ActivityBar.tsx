@@ -1,6 +1,6 @@
 'use client';
 
-import { FileCode, Settings2, FolderOpen, AlertTriangle } from 'lucide-react';
+import { FileCode, Settings2, FolderOpen, AlertTriangle, Type } from 'lucide-react';
 import { useMemo, useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import type { PanelId } from '../types';
@@ -14,11 +14,12 @@ interface ActivityBarProps {
   homeLink?: ReactNode;
 }
 
-const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: 'markdownEditor' | 'configuration' | 'resources' | 'warnings' }[] = [
+const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: 'markdownEditor' | 'configuration' | 'resources' | 'warnings' | 'fonts' }[] = [
   { id: 'markdown', Icon: FileCode, labelKey: 'markdownEditor' },
   { id: 'resources', Icon: FolderOpen, labelKey: 'resources' },
-  { id: 'warnings', Icon: AlertTriangle, labelKey: 'warnings' },
+  { id: 'fonts', Icon: Type, labelKey: 'fonts' },
   { id: 'config', Icon: Settings2, labelKey: 'configuration' },
+  { id: 'warnings', Icon: AlertTriangle, labelKey: 'warnings' },
 ];
 
 function PanelNav() {

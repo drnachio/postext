@@ -17,6 +17,7 @@ export {
   listCustomFontFamilies,
   getCustomFontFamily,
   isCustomFontFamily,
+  isRemovedCustomFontFamily,
   onCustomFontsChanged,
   missingStandardVariants,
 } from './fontLoader';

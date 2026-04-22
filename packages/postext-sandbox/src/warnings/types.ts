@@ -2,6 +2,7 @@ export type WarningKind =
   | 'missingFont'
   | 'missingFontFamily'
   | 'missingFontVariant'
+  | 'duplicateFontVariant'
   | 'looseLine'
   | 'headingHierarchy'
   | 'consecutiveHeadings'
@@ -21,6 +22,14 @@ export type WarningPayload =
       kind: 'missingFontVariant';
       family: string;
       variants: Array<{ weight: number; style: 'normal' | 'italic' }>;
+    }
+  /** Two or more uploaded files share the same weight/style slot within
+   *  a custom family. Only one of them will actually be used at render
+   *  time; the warning nudges the user to retune the variant settings. */
+  | {
+      kind: 'duplicateFontVariant';
+      family: string;
+      variants: Array<{ weight: number; style: 'normal' | 'italic'; count: number }>;
     }
   | { kind: 'looseLine'; ratio: number; threshold: number }
   | { kind: 'headingHierarchy'; from: number; to: number }

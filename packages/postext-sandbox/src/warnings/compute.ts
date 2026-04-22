@@ -11,6 +11,7 @@ import {
   getCustomFontFamily,
   missingStandardVariants,
   isKnownUnavailableGoogleFont,
+  isRemovedCustomFontFamily,
 } from '../controls/fontLoader';
 import type { Warning } from './types';
 
@@ -137,12 +138,33 @@ export function computeWarnings(params: {
   const warnings: Warning[] = [];
 
   if (toggles.missingFont) {
+    // Duplicate (weight, style) slots apply to every declared custom
+    // family, used or not — the user wants a reminder to retune the
+    // variant settings regardless of where the family is referenced.
+    for (const family of config.customFonts ?? []) {
+      const slotCounts = new Map<string, { weight: number; style: 'normal' | 'italic'; count: number }>();
+      for (const v of family.variants) {
+        const key = `${v.weight}|${v.style}`;
+        const entry = slotCounts.get(key);
+        if (entry) entry.count++;
+        else slotCounts.set(key, { weight: v.weight, style: v.style, count: 1 });
+      }
+      const duplicates = [...slotCounts.values()].filter((s) => s.count > 1);
+      if (duplicates.length > 0) {
+        warnings.push({
+          id: `duplicate-font-variant-${family.name}`,
+          payload: { kind: 'duplicateFontVariant', family: family.name, variants: duplicates },
+        });
+      }
+    }
+
     const families = getConfigFontFamilies(config);
     const specMissing = new Set(detectMissingFonts(config));
     for (const family of families) {
       const custom = getCustomFontFamily(family);
       if (custom) {
-        // Custom family: report specifically which variants are missing.
+        // Custom family still declared: report specifically which
+        // standard variants are missing (weight × style).
         const missingVariants = missingStandardVariants(custom);
         if (missingVariants.length > 0) {
           warnings.push({
@@ -152,18 +174,19 @@ export function computeWarnings(params: {
         }
         continue;
       }
-      if (!specMissing.has(family)) continue;
-      // Family referenced but neither a custom family nor a currently
-      // loaded Google font. If the Google list is loaded and the family
-      // isn't in it, report as an unknown family; otherwise fall back to
-      // the generic "not loaded" warning (it may still be loading or be
-      // transient).
-      if (isKnownUnavailableGoogleFont(family)) {
+      // Family referenced but no current custom match. Three sub-cases:
+      //   1) User deleted a custom family that is still referenced — fire
+      //      immediately, don't wait for document.fonts to notice.
+      //   2) Fontsource metadata fetch proved the name is not a Google
+      //      Font — treat as unknown family.
+      //   3) document.fonts.check failed for at least one spec — generic
+      //      "not loaded" (may be transient/network).
+      if (isRemovedCustomFontFamily(family) || isKnownUnavailableGoogleFont(family)) {
         warnings.push({
           id: `missing-font-family-${family}`,
           payload: { kind: 'missingFontFamily', family },
         });
-      } else {
+      } else if (specMissing.has(family)) {
         warnings.push({
           id: `missing-font-${family}`,
           payload: { kind: 'missingFont', family },

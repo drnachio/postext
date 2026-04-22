@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, type FocusEventHandler } from 'react';
 import { ArrowRight, Download, Printer, RefreshCw } from 'lucide-react';
 import { useSandboxLabels } from '../context/SandboxContext';
 import {
@@ -24,6 +24,8 @@ interface PdfToolbarProps {
   dirty: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  onFocus?: FocusEventHandler<HTMLDivElement>;
+  onBlur?: FocusEventHandler<HTMLDivElement>;
 }
 
 export const PdfToolbar = memo(function PdfToolbar({
@@ -39,6 +41,8 @@ export const PdfToolbar = memo(function PdfToolbar({
   dirty,
   onMouseEnter,
   onMouseLeave,
+  onFocus,
+  onBlur,
 }: PdfToolbarProps) {
   const labels = useSandboxLabels();
   const showDirtyArrow = dirty && !generating && !hidden;
@@ -50,6 +54,8 @@ export const PdfToolbar = memo(function PdfToolbar({
       style={{ ...TOOLBAR_STYLE_BASE, ...toolbarHiddenStyle(hidden) }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
     >
       {showDirtyArrow && (
         <span

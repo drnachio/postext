@@ -344,6 +344,11 @@ export async function collectFontPayloadsForFamilies(
 // ---------------------------------------------------------------------------
 
 const customFontRegistry = new Map<string, CustomFontFamily>();
+/** Names of families that have ever been registered as a custom font in
+ *  this session. Seeded by every `setCustomFonts` call so `hasBeen…`
+ *  checks can distinguish "deleted a custom I had declared" from "never
+ *  seen this name". Never pruned — membership is monotonic. */
+const everSeenCustomFamilies = new Set<string>();
 /** Listeners notified when the set of known custom families changes. The
  *  payload is the list of family names whose definition changed, was added,
  *  or was removed. Consumers (the worker bundle) use it to drop stale
@@ -378,7 +383,10 @@ export function setCustomFonts(list: CustomFontFamily[] | undefined): void {
   }
 
   customFontRegistry.clear();
-  for (const [name, fam] of next) customFontRegistry.set(name, fam);
+  for (const [name, fam] of next) {
+    customFontRegistry.set(name, fam);
+    everSeenCustomFamilies.add(name);
+  }
 
   for (const family of changed) {
     loadedFonts.delete(family);
@@ -396,6 +404,16 @@ export function setCustomFonts(list: CustomFontFamily[] | undefined): void {
   if (changed.length > 0) {
     for (const cb of customFontListeners) cb(changed);
   }
+
+  // Kick off FontFace registration on document.fonts for every currently
+  // declared custom family. Without this, the HTML viewport (which only
+  // applies the family via CSS) falls back to a system font because no
+  // FontFace matches the name.
+  if (typeof document !== 'undefined' && document.fonts) {
+    for (const name of customFontRegistry.keys()) {
+      loadFont(name).catch(() => { /* individual variant failures are logged below */ });
+    }
+  }
 }
 
 export function getCustomFontFamily(name: string): CustomFontFamily | undefined {
@@ -408,6 +426,13 @@ export function listCustomFontFamilies(): CustomFontFamily[] {
 
 export function isCustomFontFamily(name: string): boolean {
   return customFontRegistry.has(name);
+}
+
+/** True when `name` was registered as a custom family earlier in this
+ *  session but is no longer present — i.e. the user has deleted it while
+ *  some `fontFamily` field still references it. */
+export function isRemovedCustomFontFamily(name: string): boolean {
+  return everSeenCustomFamilies.has(name) && !customFontRegistry.has(name);
 }
 
 /** Subscribe to custom-font registry changes. The callback receives the
