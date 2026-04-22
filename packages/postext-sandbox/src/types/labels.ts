@@ -456,6 +456,8 @@ export interface SandboxLabels {
   customFontsFamilyNamePlaceholder: string;
   customFontsNewFamilyName: string;
   customFontsEditFamilyName: string;
+  customFontsExpandFamily: string;
+  customFontsCollapseFamily: string;
   customFontsDeleteFamily: string;
   customFontsDeleteFamilyConfirm: string;
   customFontsVariants: string;

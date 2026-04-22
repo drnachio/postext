@@ -422,6 +422,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   customFontsFamilyNamePlaceholder: 'e.g. Acme Sans',
   customFontsNewFamilyName: 'New font family',
   customFontsEditFamilyName: 'Edit family name',
+  customFontsExpandFamily: 'Expand family',
+  customFontsCollapseFamily: 'Collapse family',
   customFontsDeleteFamily: 'Delete family',
   customFontsDeleteFamilyConfirm: 'Delete this font family and all its variants?',
   customFontsVariants: 'Variants',
