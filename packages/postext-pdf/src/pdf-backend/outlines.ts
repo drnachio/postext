@@ -93,11 +93,10 @@ export function addOutlines(pdfDoc: PDFDocument, doc: VDTDocument): void {
 
   const rootRef = context.nextRef();
 
-  const makeRef = (node: TreeNode): PDFRef => context.nextRef();
   const refMap = new Map<TreeNode, PDFRef>();
   function assignRefs(nodes: TreeNode[]) {
     for (const node of nodes) {
-      refMap.set(node, makeRef(node));
+      refMap.set(node, context.nextRef());
       assignRefs(node.children);
     }
   }
