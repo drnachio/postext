@@ -1,6 +1,7 @@
-import type { PostextConfig } from 'postext';
+import type { CustomFontFamily, CustomFontVariant, PostextConfig } from 'postext';
 import type { FontPayload } from 'postext/worker';
 import { resolveBodyTextConfig, resolveHeadingsConfig, resolveUnorderedListsConfig, resolveOrderedListsConfig } from 'postext';
+import { getFontFile } from '../storage/fontStorage';
 
 const FONT_LOAD_TIMEOUT_MS = 3000;
 
@@ -92,6 +93,16 @@ export function loadFont(font: string): Promise<void> {
 
   const existing = loadingPromises.get(font);
   if (existing) return existing;
+
+  const custom = getCustomFontFamily(font);
+  if (custom) {
+    const promise = loadCustomFontFamily(custom).then(() => {
+      loadedFonts.add(font);
+      loadingPromises.delete(font);
+    });
+    loadingPromises.set(font, promise);
+    return promise;
+  }
 
   const promise = (async () => {
     const meta = await fetchFontMetadata(font);
@@ -241,6 +252,8 @@ function faceCacheKey(p: { family: string; weight: string; style: string; unicod
 }
 
 async function fetchFamilyPayloads(family: string): Promise<FontPayload[]> {
+  const custom = getCustomFontFamily(family);
+  if (custom) return fetchCustomFamilyPayloads(custom);
   const meta = await fetchFontMetadata(family);
   const cssUrl = buildFontUrl(family, meta);
   // Google Fonts returns woff2 only if the UA is browser-like. Normal fetch
@@ -324,4 +337,160 @@ export async function collectFontPayloadsForFamilies(
     }
   }
   return flat;
+}
+
+// ---------------------------------------------------------------------------
+// Custom (user-uploaded) font registry
+// ---------------------------------------------------------------------------
+
+const customFontRegistry = new Map<string, CustomFontFamily>();
+/** Listeners notified when the set of known custom families changes. The
+ *  payload is the list of family names whose definition changed, was added,
+ *  or was removed. Consumers (the worker bundle) use it to drop stale
+ *  registrations so the next build reloads the fresh bytes. */
+const customFontListeners = new Set<(changedFamilies: string[]) => void>();
+/** Document-level FontFace instances we registered, keyed by family — so
+ *  `setCustomFonts` can remove them when a family is updated or deleted. */
+const registeredCustomFaces = new Map<string, FontFace[]>();
+
+function variantKey(v: CustomFontVariant): string {
+  return `${v.weight}|${v.style}|${v.fileId}`;
+}
+
+function familySignature(f: CustomFontFamily): string {
+  const vs = [...f.variants].map(variantKey).sort();
+  return `${f.name}::${vs.join(';')}`;
+}
+
+/** Replace the sandbox's known custom fonts. Invalidates every cached
+ *  loader state for families that changed, added, or were removed. */
+export function setCustomFonts(list: CustomFontFamily[] | undefined): void {
+  const next = new Map<string, CustomFontFamily>();
+  for (const f of list ?? []) next.set(f.name, f);
+
+  const changed: string[] = [];
+  for (const [name, fam] of next) {
+    const prev = customFontRegistry.get(name);
+    if (!prev || familySignature(prev) !== familySignature(fam)) changed.push(name);
+  }
+  for (const name of customFontRegistry.keys()) {
+    if (!next.has(name)) changed.push(name);
+  }
+
+  customFontRegistry.clear();
+  for (const [name, fam] of next) customFontRegistry.set(name, fam);
+
+  for (const family of changed) {
+    loadedFonts.delete(family);
+    loadingPromises.delete(family);
+    facePayloadCache.delete(family);
+    const faces = registeredCustomFaces.get(family);
+    if (faces && typeof document !== 'undefined' && document.fonts) {
+      for (const ff of faces) {
+        try { document.fonts.delete(ff); } catch { /* ignore */ }
+      }
+    }
+    registeredCustomFaces.delete(family);
+  }
+
+  if (changed.length > 0) {
+    for (const cb of customFontListeners) cb(changed);
+  }
+}
+
+export function getCustomFontFamily(name: string): CustomFontFamily | undefined {
+  return customFontRegistry.get(name);
+}
+
+export function listCustomFontFamilies(): CustomFontFamily[] {
+  return Array.from(customFontRegistry.values());
+}
+
+export function isCustomFontFamily(name: string): boolean {
+  return customFontRegistry.has(name);
+}
+
+/** Subscribe to custom-font registry changes. The callback receives the
+ *  family names whose definition changed (added, removed, or variant set
+ *  altered). Returns an unsubscribe function. */
+export function onCustomFontsChanged(cb: (families: string[]) => void): () => void {
+  customFontListeners.add(cb);
+  return () => { customFontListeners.delete(cb); };
+}
+
+async function loadVariantBuffer(variant: CustomFontVariant): Promise<ArrayBuffer | null> {
+  const file = await getFontFile(variant.fileId).catch(() => null);
+  return file ? file.buffer : null;
+}
+
+async function loadCustomFontFamily(family: CustomFontFamily): Promise<void> {
+  if (typeof document === 'undefined' || !document.fonts) return;
+  const existing = registeredCustomFaces.get(family.name) ?? [];
+  // Skip variants that already have a matching FontFace loaded.
+  const haveKeys = new Set(
+    existing.map((ff) => `${ff.weight}|${ff.style}`),
+  );
+  const faces: FontFace[] = [...existing];
+  await Promise.all(
+    family.variants.map(async (variant) => {
+      const key = `${variant.weight}|${variant.style}`;
+      if (haveKeys.has(key)) return;
+      const buffer = await loadVariantBuffer(variant);
+      if (!buffer) return;
+      try {
+        const ff = new FontFace(family.name, buffer, {
+          weight: String(variant.weight),
+          style: variant.style,
+        });
+        await ff.load();
+        document.fonts.add(ff);
+        faces.push(ff);
+      } catch (err) {
+        console.warn('[postext-sandbox] failed to load custom font variant', family.name, variant, err);
+      }
+    }),
+  );
+  registeredCustomFaces.set(family.name, faces);
+}
+
+async function fetchCustomFamilyPayloads(family: CustomFontFamily): Promise<FontPayload[]> {
+  const payloads: FontPayload[] = [];
+  await Promise.all(
+    family.variants.map(async (variant) => {
+      const buffer = await loadVariantBuffer(variant);
+      if (!buffer) return;
+      payloads.push({
+        family: family.name,
+        weight: String(variant.weight),
+        style: variant.style,
+        buffer: buffer.slice(0),
+      });
+    }),
+  );
+  return payloads;
+}
+
+/** Resolve which of the standard specs (400/700 × normal/italic) are not
+ *  covered by this family's variants. Returns an empty array if every spec
+ *  has a matching variant (exact weight + style). */
+/** Returns true only when we've conclusively tried and failed to fetch
+ *  metadata for `family` from Fontsource (so we know it's not a Google
+ *  Font). Returns false while the lookup is pending or not yet started. */
+export function isKnownUnavailableGoogleFont(family: string): boolean {
+  return metadataCache.has(family) && metadataCache.get(family) === null;
+}
+
+export function missingStandardVariants(
+  family: CustomFontFamily,
+): Array<{ weight: number; style: 'normal' | 'italic' }> {
+  const have = new Set(
+    family.variants.map((v) => `${v.weight}|${v.style}`),
+  );
+  const want: Array<{ weight: number; style: 'normal' | 'italic' }> = [
+    { weight: 400, style: 'normal' },
+    { weight: 700, style: 'normal' },
+    { weight: 400, style: 'italic' },
+    { weight: 700, style: 'italic' },
+  ];
+  return want.filter((w) => !have.has(`${w.weight}|${w.style}`));
 }

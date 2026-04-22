@@ -41,6 +41,7 @@ This reference is long. These are the main blocks:
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
+- [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
 - [PDF generation](#pdf-generation) — outlines, forced colour space for the PDF backend.
 - [Debug](#debug) — visual overlays and authoring warnings for the editor.
@@ -342,7 +343,7 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>fontFamily</code></td>
       <td><code>string</code></td>
       <td><code>'EB Garamond'</code></td>
-      <td>Font family for body text. Any Google Font or system font.</td>
+      <td>Font family for body text. Any Google Font, system font, or custom family declared in <a href="#custom-fonts"><code>customFonts</code></a>.</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>
@@ -1127,6 +1128,69 @@ The `model` field indicates the intended color space. For web rendering, `'hex'`
 
 Because Postext targets publication-grade output, the default body text color ships with `model: 'cmyk'` (`#000000`). Heading, bold, italic, and list colors default to the palette-linked **Main Color** (`#517538`, `model: 'hex'`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
 
+
+## Custom fonts
+
+Postext resolves every `fontFamily` string against **both** the Google Fonts catalogue and the document's `customFonts` list. Custom fonts take precedence on name collision — if you declare `customFonts: [{ name: 'Roboto', … }]`, Postext uses your uploaded file instead of the Google Fonts "Roboto".
+
+Use custom fonts when:
+
+- The document needs a brand or licensed typeface that is not on Google Fonts.
+- The environment can't reach the Google Fonts CDN (offline, intranet, privacy-sensitive).
+- You must keep the font binary private and not upload it to a third party.
+
+### Configuration schema
+
+```ts
+type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+type CustomFontStyle = 'normal' | 'italic';
+
+interface CustomFontVariant {
+  weight: number;           // CSS font-weight, 100..900
+  style: CustomFontStyle;
+  fileId: string;           // opaque id of the binary in out-of-band storage
+  format: CustomFontFormat;
+}
+
+interface CustomFontFamily {
+  name: string;             // used anywhere a Google Font family name fits
+  variants: CustomFontVariant[];
+}
+
+interface PostextConfig {
+  // ...
+  customFonts?: CustomFontFamily[];
+}
+```
+
+Each variant's binary is **not** embedded in the config itself. The config only holds `fileId` pointers; the bytes live out-of-band. In the sandbox, that means IndexedDB (key-value store, browser-only, private to the document). An integrator embedding Postext in another host is free to resolve `fileId` however they like — a server endpoint, a service worker cache, anything — as long as the bytes reach the main thread before `buildDocument` runs.
+
+### Managing custom fonts in the sandbox
+
+Open the **Custom Fonts** section in the configuration panel. For each family:
+
+1. **Add font family** — creates an empty family; rename it inline.
+2. **Upload variant** — pick a weight (100–900) and style (normal / italic), then choose a `.woff2`, `.woff`, `.ttf`, or `.otf` file. The file is stored in IndexedDB and bound to that (weight, style) slot. Re-uploading a slot replaces the previous file.
+3. **Delete variant** or **Delete family** — removes the entry from the config *and* the stored bytes from IndexedDB.
+
+Once a family is declared, every [`FontPicker`](#font-picker) groups it under **Custom**, above the Google Fonts list. Selecting it wires the family into every font-family field you apply it to.
+
+### Rendering behaviour
+
+Under the hood:
+
+- The sandbox registers each uploaded variant as a `FontFace` on `document.fonts`, so the HTML viewer and PDF export see it alongside Google-fetched faces.
+- The layout worker receives the same ArrayBuffers through the existing font payload transfer path, so measurement (`buildFontString`, pretext) produces identical metrics to Google Fonts.
+- Changing or removing a variant drops the worker's cached face for that family and re-registers on the next build, so previews stay in sync with the current variant set.
+
+### Missing-font warnings
+
+The warnings panel recognises two new failure modes specific to custom fonts (both enabled by the same `debug.warnings.missingFont` toggle that already guards the generic "not loaded" warning):
+
+- **Unknown font family** — a `fontFamily` references a name that is neither a known Google Font nor a custom family. Normally this silently falls back to the system default; the warning surfaces it so you can catch typos or deleted families.
+- **Missing font variant** — the family exists but at least one of the standard weight/style slots (400 / 700, normal / italic) has no uploaded file. The warning lists the specific combinations that are missing.
+
+Clicking either warning opens the configuration panel so you can rename, re-add, or upload the required variant.
 
 ## Color Palette
 

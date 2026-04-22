@@ -10,6 +10,10 @@ export interface BuildOptions {
 
 export interface LayoutWorkerHandle {
   registerFonts(faces: FontPayload[]): Promise<void>;
+  /** Drop every face whose family matches one of `families` from the worker's
+   *  face set so the next `registerFonts` for that family takes effect
+   *  instead of being deduped against a stale face. */
+  unregisterFonts(families: string[]): Promise<void>;
   build(
     content: PostextContent,
     config?: PostextConfig,
@@ -55,6 +59,10 @@ export function createLayoutWorker(
         pending.delete(msg.id);
         entry.resolve(undefined);
         return;
+      case 'fontsUnregistered':
+        pending.delete(msg.id);
+        entry.resolve(undefined);
+        return;
       case 'cancelled':
         pending.delete(msg.id);
         entry.reject(new DOMException('Build cancelled', 'AbortError'));
@@ -91,6 +99,16 @@ export function createLayoutWorker(
           { kind: 'registerFonts', id, faces },
           faces.map((f) => f.buffer),
         );
+      });
+    },
+    unregisterFonts(families) {
+      const id = nextId++;
+      return new Promise<void>((resolve, reject) => {
+        pending.set(id, {
+          resolve: () => resolve(),
+          reject,
+        });
+        send({ kind: 'unregisterFonts', id, families });
       });
     },
     build(content, config, opts) {

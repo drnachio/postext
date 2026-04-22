@@ -446,6 +446,35 @@ export interface SandboxLabels {
   resetSectionConfirm: string;
   resetMarkdownConfirm: string;
 
+  // Custom fonts section
+  customFonts: string;
+  customFontsTooltip: string;
+  customFontsNone: string;
+  customFontsAddFamily: string;
+  customFontsFamilyName: string;
+  customFontsFamilyNamePlaceholder: string;
+  customFontsNewFamilyName: string;
+  customFontsEditFamilyName: string;
+  customFontsDeleteFamily: string;
+  customFontsDeleteFamilyConfirm: string;
+  customFontsVariants: string;
+  customFontsAddVariant: string;
+  customFontsUploadVariant: string;
+  customFontsVariantFile: string;
+  customFontsVariantWeight: string;
+  customFontsVariantStyle: string;
+  customFontsVariantStyleNormal: string;
+  customFontsVariantStyleItalic: string;
+  customFontsVariantDelete: string;
+  customFontsVariantUnsupported: string;
+  customFontsGroupLabel: string;
+  customFontsGoogleGroupLabel: string;
+  customFontsCategoryLabel?: string;
+  warningsMissingFontVariantTitle: string;
+  warningsMissingFontVariantDetail: string;
+  warningsMissingFontFamilyTitle: string;
+  warningsMissingFontFamilyDetail: string;
+
   // Color palette section
   colorPalette: string;
   colorPaletteTooltip: string;

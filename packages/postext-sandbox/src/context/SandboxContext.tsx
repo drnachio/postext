@@ -17,6 +17,8 @@ import { cloneDefaultColorPalette } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
 import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
+import { setCustomFonts } from '../controls/fontLoader';
+import { pruneFontFiles } from '../storage/fontStorage';
 import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
 
 export interface EditorSelection {
@@ -284,6 +286,24 @@ export function SandboxProvider({
       saveSidebarPercent(state.sidebarPercent);
     }
   }, [state.sidebarDragging, state.sidebarPercent]);
+
+  // Keep the fontLoader's custom-font registry in sync with the config so
+  // that FontPicker, loadFont(), and the worker payload collector can all
+  // resolve custom families by name.
+  useEffect(() => {
+    setCustomFonts(state.config.customFonts);
+  }, [state.config.customFonts]);
+
+  // Drop IndexedDB font files that are no longer referenced by any variant.
+  // Runs after hydration and any time the customFonts shape changes.
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    const keep = new Set<string>();
+    for (const family of state.config.customFonts ?? []) {
+      for (const v of family.variants) keep.add(v.fileId);
+    }
+    pruneFontFiles(keep).catch(() => { /* ignore */ });
+  }, [state.config.customFonts]);
 
   // Notify parent of changes
   useEffect(() => {

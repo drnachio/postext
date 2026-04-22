@@ -615,6 +615,24 @@ export interface ResolvedPdfGenerationConfig {
   colorSpace: PdfColorSpace;
 }
 
+export type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+export type CustomFontStyle = 'normal' | 'italic';
+
+export interface CustomFontVariant {
+  /** CSS font-weight (100..900). */
+  weight: number;
+  style: CustomFontStyle;
+  /** Identifier of the binary stored out-of-band (IndexedDB). */
+  fileId: string;
+  format: CustomFontFormat;
+}
+
+export interface CustomFontFamily {
+  /** Family name — used anywhere a Google Font family name would be used. */
+  name: string;
+  variants: CustomFontVariant[];
+}
+
 export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;
@@ -647,4 +665,11 @@ export interface PostextConfig {
   pdfGeneration?: PdfGenerationConfig;
 
   colorPalette?: ColorPaletteEntry[];
+
+  /** User-provided font families. Referenced the same way as Google Fonts:
+   *  set `bodyText.fontFamily` (or any other font-family field) to the
+   *  family's `name`. Custom fonts take precedence over a same-named
+   *  Google Font. Binary data is stored out-of-band (IndexedDB in the
+   *  sandbox) and referenced by `fileId`. */
+  customFonts?: CustomFontFamily[];
 }

@@ -5,7 +5,13 @@ import type {
   ContentBlock,
 } from 'postext';
 import { parseMarkdownWithIssues, resolveDebugConfig } from 'postext';
-import { getConfigFontSpecs, getConfigFontFamilies } from '../controls/fontLoader';
+import {
+  getConfigFontSpecs,
+  getConfigFontFamilies,
+  getCustomFontFamily,
+  missingStandardVariants,
+  isKnownUnavailableGoogleFont,
+} from '../controls/fontLoader';
 import type { Warning } from './types';
 
 function lineNumberForOffset(markdown: string, offset: number): number {
@@ -131,11 +137,38 @@ export function computeWarnings(params: {
   const warnings: Warning[] = [];
 
   if (toggles.missingFont) {
-    for (const family of detectMissingFonts(config)) {
-      warnings.push({
-        id: `missing-font-${family}`,
-        payload: { kind: 'missingFont', family },
-      });
+    const families = getConfigFontFamilies(config);
+    const specMissing = new Set(detectMissingFonts(config));
+    for (const family of families) {
+      const custom = getCustomFontFamily(family);
+      if (custom) {
+        // Custom family: report specifically which variants are missing.
+        const missingVariants = missingStandardVariants(custom);
+        if (missingVariants.length > 0) {
+          warnings.push({
+            id: `missing-font-variant-${family}`,
+            payload: { kind: 'missingFontVariant', family, variants: missingVariants },
+          });
+        }
+        continue;
+      }
+      if (!specMissing.has(family)) continue;
+      // Family referenced but neither a custom family nor a currently
+      // loaded Google font. If the Google list is loaded and the family
+      // isn't in it, report as an unknown family; otherwise fall back to
+      // the generic "not loaded" warning (it may still be loading or be
+      // transient).
+      if (isKnownUnavailableGoogleFont(family)) {
+        warnings.push({
+          id: `missing-font-family-${family}`,
+          payload: { kind: 'missingFontFamily', family },
+        });
+      } else {
+        warnings.push({
+          id: `missing-font-${family}`,
+          payload: { kind: 'missingFont', family },
+        });
+      }
     }
   }
 

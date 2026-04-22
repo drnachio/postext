@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useSyncExternalStore } from 'react';
 import { InfoTip } from './InfoTip';
 import { ResetButton } from './ResetButton';
-import { loadFont } from './fontLoader';
+import { listCustomFontFamilies, loadFont, onCustomFontsChanged } from './fontLoader';
 
 interface FontPickerProps {
   label: string;
@@ -14,6 +14,28 @@ interface FontPickerProps {
   onReset?: () => void;
   searchPlaceholder?: string;
   noResultsLabel?: string;
+  customGroupLabel?: string;
+  googleGroupLabel?: string;
+}
+
+/** Snapshot of the custom-font registry — exposed to React via
+ *  `useSyncExternalStore` so the picker re-renders when a family is added
+ *  or removed via the CustomFontsSection. The snapshot is cached until a
+ *  change listener fires so React's referential-stability check passes. */
+let customSnapshot: readonly string[] = Object.freeze(
+  listCustomFontFamilies().map((f) => f.name),
+);
+let customSnapshotDirty = false;
+onCustomFontsChanged(() => { customSnapshotDirty = true; });
+function subscribeCustomFonts(cb: () => void): () => void {
+  return onCustomFontsChanged(() => cb());
+}
+function getCustomFontSnapshot(): readonly string[] {
+  if (customSnapshotDirty) {
+    customSnapshot = Object.freeze(listCustomFontFamilies().map((f) => f.name));
+    customSnapshotDirty = false;
+  }
+  return customSnapshot;
 }
 
 // Fallback list in case API is unavailable
@@ -106,12 +128,28 @@ const POPOVER_WIDTH = 260;
 const POPOVER_HEIGHT = 320;
 const POPOVER_GAP = 6;
 
-export function FontPicker({ label, value, onChange, tooltip, isDefault, onReset, searchPlaceholder, noResultsLabel }: FontPickerProps) {
+export function FontPicker({
+  label,
+  value,
+  onChange,
+  tooltip,
+  isDefault,
+  onReset,
+  searchPlaceholder,
+  noResultsLabel,
+  customGroupLabel,
+  googleGroupLabel,
+}: FontPickerProps) {
   const muted = isDefault ?? false;
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const [fonts, setFonts] = useState<string[]>(cachedFonts ?? FALLBACK_FONTS);
+  const customFonts = useSyncExternalStore(
+    subscribeCustomFonts,
+    getCustomFontSnapshot,
+    getCustomFontSnapshot,
+  );
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -154,9 +192,14 @@ export function FontPicker({ label, value, onChange, tooltip, isDefault, onReset
     loadFont(value);
   }, [value]);
 
-  const filtered = search
-    ? fonts.filter((f) => f.toLowerCase().includes(search.toLowerCase()))
-    : fonts;
+  const matches = (f: string) =>
+    !search || f.toLowerCase().includes(search.toLowerCase());
+  // Exclude custom-font names from the Google list so a user-chosen name
+  // collision doesn't render the same family twice.
+  const customSet = new Set(customFonts);
+  const filteredCustom = customFonts.filter(matches);
+  const filteredGoogle = fonts.filter((f) => !customSet.has(f) && matches(f));
+  const hasAny = filteredCustom.length > 0 || filteredGoogle.length > 0;
 
   return (
     <div className="mb-2 flex items-center justify-between gap-2">
@@ -232,7 +275,7 @@ export function FontPicker({ label, value, onChange, tooltip, isDefault, onReset
               paddingBottom: 4,
             }}
           >
-            {filtered.length === 0 && (
+            {!hasAny && (
               <div
                 className="px-3 py-2 text-xs"
                 style={{ color: 'var(--slate)' }}
@@ -240,17 +283,58 @@ export function FontPicker({ label, value, onChange, tooltip, isDefault, onReset
                 {noResultsLabel ?? 'No fonts found'}
               </div>
             )}
-            {filtered.map((font) => (
-              <FontListItem
-                key={font}
-                font={font}
-                selected={font === value}
-                onClick={() => {
-                  onChange(font);
-                  setOpen(false);
-                }}
-              />
-            ))}
+            {filteredCustom.length > 0 && (
+              <>
+                <div
+                  className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide"
+                  style={{
+                    color: 'var(--slate)',
+                    backgroundColor: 'var(--background)',
+                    borderBottom: '1px solid var(--rule)',
+                  }}
+                >
+                  {customGroupLabel ?? 'Custom'}
+                </div>
+                {filteredCustom.map((font) => (
+                  <FontListItem
+                    key={`custom-${font}`}
+                    font={font}
+                    selected={font === value}
+                    onClick={() => {
+                      onChange(font);
+                      setOpen(false);
+                    }}
+                  />
+                ))}
+              </>
+            )}
+            {filteredGoogle.length > 0 && (
+              <>
+                {filteredCustom.length > 0 && (
+                  <div
+                    className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide"
+                    style={{
+                      color: 'var(--slate)',
+                      backgroundColor: 'var(--background)',
+                      borderBottom: '1px solid var(--rule)',
+                    }}
+                  >
+                    {googleGroupLabel ?? 'Google Fonts'}
+                  </div>
+                )}
+                {filteredGoogle.map((font) => (
+                  <FontListItem
+                    key={`google-${font}`}
+                    font={font}
+                    selected={font === value}
+                    onClick={() => {
+                      onChange(font);
+                      setOpen(false);
+                    }}
+                  />
+                ))}
+              </>
+            )}
           </div>
         </div>
       )}
