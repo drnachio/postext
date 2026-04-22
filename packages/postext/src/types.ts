@@ -638,6 +638,88 @@ export interface CustomFontFamily {
   variants: CustomFontVariant[];
 }
 
+export type PageParity = 'all' | 'odd' | 'even';
+export type HeaderFooterHAlign = 'left' | 'center' | 'right';
+
+export interface HeaderFooterTextElement {
+  kind: 'text';
+  align: HeaderFooterHAlign;
+  /** Template string. Placeholders: {pageNumber}, {totalPages}, {title},
+   *  {subtitle}, {author}, {publishDate}, {chapterTitle}. Use `{{` / `}}`
+   *  for literal braces. */
+  content: string;
+  parity: PageParity;
+  /** Absolute distance between the element's body-facing edge and the body
+   *  edge. Elements are independent — two with the same `marginFromBody`
+   *  overlap rather than stacking. In a header, gap from element bottom to
+   *  body top; in a footer, gap from element top to body bottom. */
+  marginFromBody?: Dimension;
+  /** Horizontal inset from the aligned content edge. When `align` is
+   *  `'left'`, offset from the left content edge; when `'right'`, from the
+   *  right. Ignored when `align` is `'center'`. */
+  marginFromEdge?: Dimension;
+  fontFamily?: string;
+  fontSize?: Dimension;
+  fontWeight?: number;
+  italic?: boolean;
+  color?: ColorValue;
+}
+
+export interface HeaderFooterRuleElement {
+  kind: 'rule';
+  color: ColorValue;
+  thickness: Dimension;
+  /** Rule width — a Dimension or the literal 'full' meaning full content width. */
+  width: Dimension | 'full';
+  align: HeaderFooterHAlign;
+  /** Absolute distance from the rule's body-facing edge to the body edge.
+   *  Independent of other elements. */
+  marginFromBody?: Dimension;
+  /** Horizontal inset from the aligned content edge. Only applies when
+   *  `width` is a `Dimension` and `align` is `'left'` or `'right'`. */
+  marginFromEdge?: Dimension;
+  parity: PageParity;
+}
+
+export type HeaderFooterElement = HeaderFooterTextElement | HeaderFooterRuleElement;
+
+export interface HeaderFooterSlot {
+  elements: HeaderFooterElement[];
+}
+
+export interface ResolvedHeaderFooterTextElement {
+  kind: 'text';
+  align: HeaderFooterHAlign;
+  content: string;
+  parity: PageParity;
+  marginFromBody: Dimension;
+  marginFromEdge: Dimension;
+  fontFamily: string;
+  fontSize: Dimension;
+  fontWeight: number;
+  italic: boolean;
+  color: ColorValue;
+}
+
+export interface ResolvedHeaderFooterRuleElement {
+  kind: 'rule';
+  color: ColorValue;
+  thickness: Dimension;
+  width: Dimension | 'full';
+  align: HeaderFooterHAlign;
+  marginFromBody: Dimension;
+  marginFromEdge: Dimension;
+  parity: PageParity;
+}
+
+export type ResolvedHeaderFooterElement =
+  | ResolvedHeaderFooterTextElement
+  | ResolvedHeaderFooterRuleElement;
+
+export interface ResolvedHeaderFooterSlot {
+  elements: ResolvedHeaderFooterElement[];
+}
+
 export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;
@@ -646,6 +728,8 @@ export interface PostextConfig {
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;
+  header?: HeaderFooterSlot;
+  footer?: HeaderFooterSlot;
 
   columns?: number;
   gutter?: string;

@@ -8,7 +8,9 @@ export type WarningKind =
   | 'consecutiveHeadings'
   | 'listAfterHeading'
   | 'invalidMath'
-  | 'unclosedMath';
+  | 'unclosedMath'
+  | 'headerFooterUnknownPlaceholder'
+  | 'headerFooterMetadataMissing';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -36,7 +38,19 @@ export type WarningPayload =
   | { kind: 'consecutiveHeadings' }
   | { kind: 'listAfterHeading' }
   | { kind: 'invalidMath'; tex: string; message: string }
-  | { kind: 'unclosedMath'; delimiter: '$' | '$$'; tex: string };
+  | { kind: 'unclosedMath'; delimiter: '$' | '$$'; tex: string }
+  | {
+      kind: 'headerFooterUnknownPlaceholder';
+      slot: 'header' | 'footer';
+      elementIndex: number;
+      name: string;
+    }
+  | {
+      kind: 'headerFooterMetadataMissing';
+      slot: 'header' | 'footer';
+      elementIndex: number;
+      name: string;
+    };
 
 export interface Warning {
   id: string;

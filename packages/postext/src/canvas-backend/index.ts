@@ -2,6 +2,7 @@ import type { VDTDocument, VDTPage } from '../vdt';
 import { dimensionToPx } from '../units';
 import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentArea } from './decorations';
 import { renderBlock } from './blockRender';
+import { renderHeaderFooterSlot } from './headerFooter';
 
 export interface RenderPageOptions {
   pageNegative?: boolean;
@@ -88,6 +89,9 @@ export function renderPageToCanvas(
     }
     ctx.restore();
   }
+
+  if (page.header) renderHeaderFooterSlot(ctx, page.header);
+  if (page.footer) renderHeaderFooterSlot(ctx, page.footer);
 
   if (options?.pageNegative) {
     ctx.filter = 'none';

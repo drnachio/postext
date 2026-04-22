@@ -36,6 +36,7 @@ This reference is long. These are the main blocks:
 
 - [Page](#page) — size, margins, baseline grid, cut lines.
 - [Layout](#layout) — column count, gutters, rules.
+- [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
@@ -319,6 +320,194 @@ Draws a thin vertical line in the gutter to visually separate columns.
 - **`'double'`** — Two equal-width columns. The classic editorial layout — keeps line measure within the optimal 40–50 character range for comfortable reading.
 
 - **`'oneAndHalf'`** — An asymmetric layout with a main column and a narrower side column. The side column (controlled by `sideColumnPercent`) is ideal for margin notes, small figures, or supporting content. Values between 25–40% work well.
+
+
+## Headers & Footers
+
+The `header` and `footer` properties control per-page header and footer slots. Headers and footers render **inside the existing page margins** — they do not reserve additional space and do not shrink the content area. Each element positions itself independently: `marginFromBody` is the absolute distance between the element's body-facing edge and the body edge. Elements do not push each other — two elements with the same `marginFromBody` will overlap.
+
+Each slot holds a list of **text** and **rule** elements.
+
+**Built-in defaults.** When `header` or `footer` is `undefined`, postext applies a sensible built-in default rather than an empty slot:
+
+- **Default header:** `{title}` right-aligned on odd pages, `{chapterTitle}` left-aligned on even pages, and a full-width rule — all in the palette's main color, Open Sans 8pt/600, `marginFromBody` `16pt` (text) / `13pt` (rule).
+- **Default footer:** `{pageNumber}` centered on every page in the palette's main color, Open Sans 8pt/600, `marginFromBody` `16pt`.
+
+To opt out of the built-in defaults, set `header: { elements: [] }` (or `footer: { elements: [] }`). An explicit empty `elements` array is preserved as "no elements" — only `undefined` triggers the defaults.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>elements</code></td>
+      <td><code>HeaderFooterElement[]</code></td>
+      <td><code>[]</code></td>
+      <td>Ordered list of text and rule elements.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Text elements
+
+Text elements render a template string with placeholder substitution. Placeholders use `{name}` syntax; `{{` and `}}` emit literal braces.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'text'</code></td>
+      <td>—</td>
+      <td>Discriminator.</td>
+    </tr>
+    <tr>
+      <td><code>content</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Template string. Supports placeholders listed below.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'center'</code></td>
+      <td>Horizontal alignment inside the slot.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>Which pages the element appears on (page number parity: page 1 is odd).</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'EB Garamond'</code></td>
+      <td>Font family.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>8 pt</code></td>
+      <td>Font size.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>Font weight (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to render in italic.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Text colour.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromBody</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6 pt</code></td>
+      <td>Absolute distance between the element's body-facing edge and the body edge. Independent of other elements.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromEdge</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Horizontal inset from the aligned content edge. Only applies when <code>align</code> is <code>'left'</code> or <code>'right'</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Available placeholders:
+
+- `{pageNumber}` — 1-based page number of the current page.
+- `{totalPages}` — total page count for the document.
+- `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — values read from `content.metadata`. Unknown or empty metadata renders as an empty string (and raises a warning in the sandbox).
+- `{chapterTitle}` — text of the most recent H1 on or before the current page.
+
+### Rule elements
+
+Rule elements render a horizontal line across the slot.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'rule'</code></td>
+      <td>—</td>
+      <td>Discriminator.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Stroke colour.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>Line thickness.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>Dimension | 'full'</code></td>
+      <td><code>'full'</code></td>
+      <td><code>'full'</code> spans the content area; a Dimension constrains the line to a fixed length positioned by <code>align</code>.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'center'</code></td>
+      <td>Alignment when <code>width</code> is not <code>'full'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromBody</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6 pt</code></td>
+      <td>Absolute distance between the rule's body-facing edge and the body edge. Independent of other elements.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromEdge</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Horizontal inset from the aligned content edge. Only applies when <code>width</code> is a fixed <code>Dimension</code> and <code>align</code> is <code>'left'</code> or <code>'right'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>Which pages the rule appears on.</td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## Body Text

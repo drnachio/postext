@@ -4,7 +4,14 @@ import type {
   ResolvedDebugConfig,
   ContentBlock,
 } from 'postext';
-import { parseMarkdownWithIssues, resolveDebugConfig } from 'postext';
+import {
+  parseMarkdownWithIssues,
+  resolveDebugConfig,
+  resolveHeaderFooterConfig,
+  collectPlaceholderNames,
+  isKnownPlaceholder,
+  isMetadataPlaceholder,
+} from 'postext';
 import {
   getConfigFontSpecs,
   getConfigFontFamilies,
@@ -230,7 +237,47 @@ export function computeWarnings(params: {
     warnings.push(...collectLooseLineWarnings(doc, debug, markdown));
   }
 
+  warnings.push(...collectHeaderFooterWarnings(config, doc));
+
   return warnings;
+}
+
+function collectHeaderFooterWarnings(
+  config: PostextConfig,
+  doc: VDTDocument | null,
+): Warning[] {
+  const out: Warning[] = [];
+  const metadata = doc?.metadata ?? {};
+  const hasMetadata = (name: string): boolean => {
+    if (!isMetadataPlaceholder(name)) return true;
+    const val = (metadata as Record<string, unknown>)[name];
+    return typeof val === 'string' && val.length > 0;
+  };
+
+  const check = (slot: 'header' | 'footer', raw: PostextConfig['header'] | PostextConfig['footer']) => {
+    const resolved = resolveHeaderFooterConfig(raw, slot);
+    resolved.elements.forEach((el, elementIndex) => {
+      if (el.kind !== 'text') return;
+      const names = collectPlaceholderNames(el.content);
+      for (const name of names) {
+        if (!isKnownPlaceholder(name)) {
+          out.push({
+            id: `hf-unknown-${slot}-${elementIndex}-${name}`,
+            payload: { kind: 'headerFooterUnknownPlaceholder', slot, elementIndex, name },
+          });
+        } else if (!hasMetadata(name)) {
+          out.push({
+            id: `hf-metadata-${slot}-${elementIndex}-${name}`,
+            payload: { kind: 'headerFooterMetadataMissing', slot, elementIndex, name },
+          });
+        }
+      }
+    });
+  };
+  check('header', config.header);
+  check('footer', config.footer);
+
+  return out;
 }
 
 function collectMathRenderWarnings(doc: VDTDocument, markdown: string): Warning[] {
