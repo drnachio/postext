@@ -116,10 +116,14 @@ export function useFloatingToolbarShell(
         bottom: 0,
         width: HOVER_STRIP_WIDTH_PX,
         zIndex: 9,
-        // Only active when the toolbar is actually hidden. Once the toolbar
-        // is visible, the strip becomes transparent to pointer events so the
-        // rightmost content area stays fully clickable.
-        pointerEvents: pinned || hovered || forceVisible ? 'none' : 'auto',
+        // Active whenever the toolbar is unpinned so the strip participates
+        // in the hover zone even while the toolbar is visible. That closes
+        // the gap between the toolbar's right edge (right:12) and the
+        // viewport edge — previously, moving the pointer into that gap left
+        // both the toolbar's and the strip's bounds, flipping the toolbar
+        // back to hidden. When pinned, the strip is inert so the rightmost
+        // content (e.g. PDF scrollbar) stays clickable.
+        pointerEvents: pinned ? 'none' : 'auto',
       },
     },
     toolbarHoverProps: {
