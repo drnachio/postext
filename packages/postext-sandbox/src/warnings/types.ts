@@ -1,5 +1,8 @@
 export type WarningKind =
   | 'missingFont'
+  | 'missingFontFamily'
+  | 'missingFontVariant'
+  | 'duplicateFontVariant'
   | 'looseLine'
   | 'headingHierarchy'
   | 'consecutiveHeadings'
@@ -9,6 +12,25 @@ export type WarningKind =
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
+  /** Referenced family is neither a loaded Google Font nor a custom
+   *  family in `customFonts`. Silently falls back to a system font at
+   *  render time; this warning makes the fall-through visible. */
+  | { kind: 'missingFontFamily'; family: string }
+  /** Custom family exists but at least one required weight/style variant
+   *  has no uploaded file. Names the specific missing combinations. */
+  | {
+      kind: 'missingFontVariant';
+      family: string;
+      variants: Array<{ weight: number; style: 'normal' | 'italic' }>;
+    }
+  /** Two or more uploaded files share the same weight/style slot within
+   *  a custom family. Only one of them will actually be used at render
+   *  time; the warning nudges the user to retune the variant settings. */
+  | {
+      kind: 'duplicateFontVariant';
+      family: string;
+      variants: Array<{ weight: number; style: 'normal' | 'italic'; count: number }>;
+    }
   | { kind: 'looseLine'; ratio: number; threshold: number }
   | { kind: 'headingHierarchy'; from: number; to: number }
   | { kind: 'consecutiveHeadings' }

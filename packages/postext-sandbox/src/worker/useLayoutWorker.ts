@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { createLayoutWorker } from 'postext/worker';
 import type { LayoutWorkerHandle } from 'postext/worker';
 import type { PostextConfig, PostextContent, VDTDocument } from 'postext';
-import { collectFontPayloadsForFamilies, getConfigFontFamilies } from '../controls/fontLoader';
+import { collectFontPayloadsForFamilies, getConfigFontFamilies, onCustomFontsChanged } from '../controls/fontLoader';
 
 export interface LayoutWorkerApi {
   /**
@@ -46,6 +46,25 @@ export function useLayoutWorker(): LayoutWorkerApi {
       bundleRef.current?.handle.dispose();
       bundleRef.current = null;
     };
+  }, []);
+
+  // When the custom-font registry changes (family added, variants altered,
+  // or family removed), drop those families from the worker's face set so
+  // the next build re-registers them from fresh bytes.
+  useEffect(() => {
+    const unsub = onCustomFontsChanged((families) => {
+      const bundle = bundleRef.current;
+      if (!bundle) return;
+      const toUnregister = families.filter((f) => bundle.registeredFamilies.has(f));
+      for (const f of families) bundle.registeredFamilies.delete(f);
+      if (toUnregister.length === 0) return;
+      bundle.fontQueue = bundle.fontQueue.then(() =>
+        bundle.handle.unregisterFonts(toUnregister).catch((err) => {
+          console.warn('[useLayoutWorker] font unregister failed', err);
+        }),
+      );
+    });
+    return unsub;
   }, []);
 
   const ensureFonts = useCallback(async (

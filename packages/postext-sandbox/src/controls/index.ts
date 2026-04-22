@@ -9,4 +9,15 @@ export { InfoTip } from './InfoTip';
 export { ResetButton } from './ResetButton';
 export { NestedGroup } from './NestedGroup';
 export { FontPicker } from './FontPicker';
-export { loadFont, preloadConfigFonts, getConfigFontFamilies } from './fontLoader';
+export {
+  loadFont,
+  preloadConfigFonts,
+  getConfigFontFamilies,
+  setCustomFonts,
+  listCustomFontFamilies,
+  getCustomFontFamily,
+  isCustomFontFamily,
+  isRemovedCustomFontFamily,
+  onCustomFontsChanged,
+  missingStandardVariants,
+} from './fontLoader';

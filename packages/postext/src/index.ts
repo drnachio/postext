@@ -71,6 +71,10 @@ export type {
   PdfColorSpace,
   PdfGenerationConfig,
   ResolvedPdfGenerationConfig,
+  CustomFontFormat,
+  CustomFontStyle,
+  CustomFontVariant,
+  CustomFontFamily,
 } from './types';
 export type {
   BoundingBox,
