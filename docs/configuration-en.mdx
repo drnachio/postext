@@ -1150,6 +1150,7 @@ interface CustomFontVariant {
   style: CustomFontStyle;
   fileId: string;           // opaque id of the binary in out-of-band storage
   format: CustomFontFormat;
+  fileName?: string;        // original upload filename (optional, shown in UI)
 }
 
 interface CustomFontFamily {
@@ -1167,11 +1168,12 @@ Each variant's binary is **not** embedded in the config itself. The config only 
 
 ### Managing custom fonts in the sandbox
 
-Open the **Custom Fonts** section in the configuration panel. For each family:
+Open the **Fonts** panel from the left activity bar (between Resources and Configuration). For each family:
 
 1. **Add font family** — creates an empty family; rename it inline.
-2. **Upload variant** — pick a weight (100–900) and style (normal / italic), then choose a `.woff2`, `.woff`, `.ttf`, or `.otf` file. The file is stored in IndexedDB and bound to that (weight, style) slot. Re-uploading a slot replaces the previous file.
-3. **Delete variant** or **Delete family** — removes the entry from the config *and* the stored bytes from IndexedDB.
+2. **Upload variant(s)** — pick a weight (100–900) and style (normal / italic), then choose one *or many* `.woff2`, `.woff`, `.ttf`, or `.otf` files. Each file becomes its own variant bound to the currently-selected (weight, style); the uploaded filename is remembered and shown in the row so you can tell variants apart. Re-tune a variant's weight or style from its dropdowns at any time.
+3. **Duplicate variants are allowed.** If two files land on the same (weight, style) slot, both are kept and a **Duplicate font variant** warning appears so you know to disambiguate the settings of the extras.
+4. **Delete variant** or **Delete family** — removes the entry from the config *and* the stored bytes from IndexedDB.
 
 Once a family is declared, every [`FontPicker`](#font-picker) groups it under **Custom**, above the Google Fonts list. Selecting it wires the family into every font-family field you apply it to.
 
@@ -1179,18 +1181,20 @@ Once a family is declared, every [`FontPicker`](#font-picker) groups it under **
 
 Under the hood:
 
-- The sandbox registers each uploaded variant as a `FontFace` on `document.fonts`, so the HTML viewer and PDF export see it alongside Google-fetched faces.
+- When `customFonts` changes, every declared family is automatically registered as `FontFace` entries on `document.fonts` — so the HTML viewer, the Canvas viewport (which measures through `document.fonts`), and any direct CSS reference all pick up the custom face without requiring the user to first open the Font Picker.
 - The layout worker receives the same ArrayBuffers through the existing font payload transfer path, so measurement (`buildFontString`, pretext) produces identical metrics to Google Fonts.
 - Changing or removing a variant drops the worker's cached face for that family and re-registers on the next build, so previews stay in sync with the current variant set.
+- **PDF export**: uploaded binaries flow through the same `PdfFontProvider` pipeline. `.woff2` files are decompressed; `.ttf` and `.otf` are passed through directly. `.woff` is rejected with a clear error (pdf-lib can't embed raw WOFF — re-upload as `.woff2`/`.ttf`/`.otf`). CFF-flavored OpenType (`.otf` with `OTTO` magic) is embedded **without subsetting**, because pdf-lib's CFF subsetter walks every glyph at `save()` time and can hang for minutes on real fonts; skipping subset trades a somewhat larger PDF for consistent render times.
 
 ### Missing-font warnings
 
-The warnings panel recognises two new failure modes specific to custom fonts (both enabled by the same `debug.warnings.missingFont` toggle that already guards the generic "not loaded" warning):
+The warnings panel recognises three new failure modes specific to custom fonts (all enabled by the same `debug.warnings.missingFont` toggle that already guards the generic "not loaded" warning):
 
-- **Unknown font family** — a `fontFamily` references a name that is neither a known Google Font nor a custom family. Normally this silently falls back to the system default; the warning surfaces it so you can catch typos or deleted families.
+- **Unknown font family** — a `fontFamily` references a name that is neither a known Google Font nor a currently-declared custom family. This also fires immediately when you delete a custom family that some `fontFamily` field still references, instead of waiting for the DOM to notice.
 - **Missing font variant** — the family exists but at least one of the standard weight/style slots (400 / 700, normal / italic) has no uploaded file. The warning lists the specific combinations that are missing.
+- **Duplicate font variant** — two or more uploaded files share the same (weight, style) slot within one family. Only one file is actually used at render time; the warning nudges you to retune the remaining entries.
 
-Clicking either warning opens the configuration panel so you can rename, re-add, or upload the required variant.
+Clicking any of these warnings opens the Fonts panel so you can upload the missing variant, re-add the family, or disambiguate the duplicates.
 
 ## Color Palette
 

@@ -1150,6 +1150,7 @@ interface CustomFontVariant {
   style: CustomFontStyle;
   fileId: string;           // id opaco del binario en almacenamiento externo
   format: CustomFontFormat;
+  fileName?: string;        // nombre original del archivo (se muestra en la UI)
 }
 
 interface CustomFontFamily {
@@ -1167,11 +1168,12 @@ El binario de cada variante **no** se empotra en la propia configuración. La co
 
 ### Gestionar fuentes personalizadas en el sandbox
 
-Abre la sección **Custom Fonts** del panel de configuración. Para cada familia:
+Abre el panel **Fonts** desde la barra de actividad izquierda (entre Resources y Configuration). Para cada familia:
 
 1. **Añadir familia** — crea una familia vacía; renómbrala en línea.
-2. **Subir variante** — elige un peso (100–900) y un estilo (normal / italic), luego selecciona un archivo `.woff2`, `.woff`, `.ttf` u `.otf`. El archivo se guarda en IndexedDB y queda asociado a esa ranura (peso, estilo). Volver a subir a una ranura existente reemplaza el archivo anterior.
-3. **Eliminar variante** o **Eliminar familia** — elimina la entrada de la configuración *y* los bytes guardados en IndexedDB.
+2. **Subir variante(s)** — elige un peso (100–900) y un estilo (normal / italic), y selecciona uno *o varios* archivos `.woff2`, `.woff`, `.ttf` u `.otf`. Cada archivo se convierte en su propia variante asociada a la combinación (peso, estilo) seleccionada; el nombre del archivo queda guardado y se muestra en la fila para diferenciar variantes. Puedes retocar el peso o el estilo de una variante desde sus desplegables en cualquier momento.
+3. **Se permiten variantes duplicadas.** Si dos archivos caen en la misma ranura (peso, estilo), se guardan los dos y aparece un aviso **Duplicate font variant** para que ajustes los extras.
+4. **Eliminar variante** o **Eliminar familia** — elimina la entrada de la configuración *y* los bytes guardados en IndexedDB.
 
 Una vez declarada la familia, cada selector de fuente la agrupa bajo **Custom**, por encima de la lista de Google Fonts. Al elegirla, queda cableada a todos los campos `fontFamily` donde la apliques.
 
@@ -1179,18 +1181,20 @@ Una vez declarada la familia, cada selector de fuente la agrupa bajo **Custom**,
 
 Bajo el capó:
 
-- El sandbox registra cada variante subida como un `FontFace` en `document.fonts`, de modo que el visor HTML y la exportación a PDF la ven junto a las caras traídas desde Google.
+- Cuando `customFonts` cambia, cada familia declarada se registra automáticamente como `FontFace` en `document.fonts` — por lo que el visor HTML, el visor Canvas (que mide a través de `document.fonts`) y cualquier referencia CSS directa toman la cara personalizada sin necesidad de abrir antes el Font Picker.
 - El worker de composición recibe los mismos `ArrayBuffer` por el mismo canal de transferencia de *font payloads*, así la medición (`buildFontString`, pretext) produce métricas idénticas a las de Google Fonts.
 - Cambiar o eliminar una variante descarta la cara cacheada en el worker para esa familia y se vuelve a registrar en el siguiente build, de modo que las previsualizaciones se mantienen sincronizadas con el conjunto actual de variantes.
+- **Exportación a PDF**: los binarios subidos fluyen por la misma canalización `PdfFontProvider`. Los `.woff2` se descomprimen; los `.ttf` y `.otf` se pasan tal cual. `.woff` se rechaza con un mensaje claro (pdf-lib no puede empotrar WOFF crudo — vuelve a subirlo como `.woff2`/`.ttf`/`.otf`). El OpenType con tablas CFF (`.otf` cuya firma es `OTTO`) se empotra **sin subsetting**, porque el subsetter CFF de pdf-lib recorre cada glifo al hacer `save()` y puede bloquearse durante minutos con fuentes reales; saltarse el subset intercambia algo más de tamaño de PDF por tiempos de render consistentes.
 
 ### Avisos de fuentes faltantes
 
-El panel de avisos reconoce dos modos nuevos de fallo específicos de las fuentes personalizadas (ambos gobernados por el mismo toggle `debug.warnings.missingFont` que ya controla el aviso genérico "no cargada"):
+El panel de avisos reconoce tres modos nuevos de fallo específicos de las fuentes personalizadas (todos gobernados por el mismo toggle `debug.warnings.missingFont` que ya controla el aviso genérico "no cargada"):
 
-- **Familia desconocida** — un `fontFamily` referencia un nombre que no es ni una Google Font conocida ni una familia personalizada. Normalmente esto cae en silencio al sistema por defecto; el aviso lo visibiliza para que detectes erratas o familias eliminadas.
+- **Familia desconocida** — un `fontFamily` referencia un nombre que no es ni una Google Font conocida ni una familia personalizada actualmente declarada. También salta al instante cuando eliminas una familia personalizada que algún `fontFamily` todavía referencia, sin esperar a que el DOM lo note.
 - **Variante faltante** — la familia existe pero al menos una de las ranuras estándar (400 / 700, normal / italic) no tiene archivo subido. El aviso enumera las combinaciones concretas que faltan.
+- **Variante duplicada** — dos o más archivos comparten la misma ranura (peso, estilo) dentro de una misma familia. Solo uno se usa al renderizar; el aviso te recuerda que retoques las entradas sobrantes.
 
-Al pulsar cualquiera de los dos avisos se abre el panel de configuración para que renombres, vuelvas a añadir o subas la variante necesaria.
+Al pulsar cualquiera de los avisos se abre el panel **Fonts** para que subas la variante necesaria, vuelvas a añadir la familia o desambigües los duplicados.
 
 ## Paleta de colores
 
