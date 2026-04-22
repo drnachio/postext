@@ -10,6 +10,14 @@ export function collectFontStrings(doc: VDTDocument): string[] {
     if (block.boldItalicFontString) out.add(block.boldItalicFontString);
     if (block.bulletFontString) out.add(block.bulletFontString);
   }
+  for (const page of doc.pages) {
+    for (const slot of [page.header, page.footer]) {
+      if (!slot) continue;
+      for (const b of slot.blocks) {
+        if (b.kind === 'text') out.add(b.fontString);
+      }
+    }
+  }
   return [...out];
 }
 

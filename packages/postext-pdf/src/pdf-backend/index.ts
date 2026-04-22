@@ -23,6 +23,7 @@ import {
   renderCutLines,
 } from './pageDecorations';
 import { renderBlock } from './blockRender';
+import { renderHeaderFooterSlot } from './headerFooter';
 import { addOutlines } from './outlines';
 
 export interface RenderToPdfOptions {
@@ -121,6 +122,9 @@ function renderPage(
     }
     popClip(ctx);
   }
+
+  if (vdtPage.header) renderHeaderFooterSlot(ctx, vdtPage.header, fontCache);
+  if (vdtPage.footer) renderHeaderFooterSlot(ctx, vdtPage.footer, fontCache);
 
   // Page negative: overlay white rect with Difference blend across trim+bleed.
   // Crop marks remain un-inverted (drawn afterwards).

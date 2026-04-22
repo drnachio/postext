@@ -38,6 +38,7 @@ import {
 } from './buildHelpers';
 import { resolveBlockKind } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
+import { buildHeadersAndFooters } from './headerFooter';
 
 export interface BuildDocumentOptions {
   /**
@@ -553,6 +554,8 @@ export function buildDocument(
       break;
     }
   }
+
+  buildHeadersAndFooters(doc);
 
   doc.converged = true;
   doc.iterationCount = 1;

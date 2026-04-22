@@ -10,6 +10,7 @@ import { ConfirmPopover } from '../panels/ConfirmPopover';
 import { ColorPaletteSection } from './sections/ColorPaletteSection';
 import { PageSection } from './sections/PageSection';
 import { LayoutSection } from './sections/LayoutSection';
+import { HeaderFooterSection } from './sections/HeaderFooterSection';
 import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
@@ -116,6 +117,7 @@ export function ConfigPanel() {
         <ColorPaletteSection />
         <PageSection />
         <LayoutSection />
+        <HeaderFooterSection />
         <BodyTextSection />
         <HeadingsSection />
         <UnorderedListsSection />

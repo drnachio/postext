@@ -5,7 +5,7 @@ author: "Ignacio Ferro"
 publishDate: "2026-04-21"
 ---
 
-# Postext: Un tipógrafo programable para la web
+# Introducción a Postext
 
 Postext es un **motor de maquetación de código abierto** concebido para llevar la sofisticación de la tipografía profesional de imprenta al desarrollo web moderno. Durante siglos, el mundo del diseño editorial ha depurado técnicas para colocar texto, imágenes y anotaciones sobre la página con una precisión extraordinaria. Esas técnicas abarcan desde el equilibrio minucioso de columnas hasta la prevención rigurosa de huérfanas y viudas, desde la separación silábica inteligente hasta la colocación elegante de notas al pie. Hasta ahora, la web carecía de una herramienta capaz de reproducir esos estándares de manera programable y declarativa.
 
@@ -31,7 +31,7 @@ CSS atiende brillantemente el primer caso. Para el segundo se queda corto en asp
    - No sabe gestionar recursos que abarquen columnas ni floten a posiciones concretas dentro de una retícula de columnas
    - No ofrece un mecanismo para mantener los encabezados junto con su párrafo siguiente
    - No existe un concepto de conjunto óptimo de saltos a escala de página
-2. **No hay prevención de huérfanas y viudas entre columnas**
+2. **No hay prevención de huérfanas y viudas entre columnas estandarizada entre los distintos navegadores y configurable por el usuario**
    - Aunque CSS cuenta con las propiedades _orphans_ y _widows_, el soporte en los navegadores es irregular
    - Esas propiedades no funcionan a través de los límites de columna como la tipografía profesional espera
    - Una prevención de nivel editorial exige conocer toda la geometría de la página, no sólo un contenedor de texto

@@ -9,6 +9,7 @@ import { stripMathDefaults } from './math';
 import { stripDebugDefaults } from './debug';
 import { stripHtmlViewerDefaults } from './htmlViewer';
 import { stripPdfGenerationDefaults } from './pdfGeneration';
+import { stripHeaderFooterDefaults } from './headerFooter';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, resolvePageConfig, stripPageDefaults } from './page';
@@ -21,6 +22,8 @@ export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './mat
 export { DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './debug';
 export { DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults } from './htmlViewer';
 export { DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults } from './pdfGeneration';
+export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults } from './headerFooter';
+export type { HeaderFooterSlotKind } from './headerFooter';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
@@ -83,6 +86,18 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.pdfGeneration = strippedPdfGeneration;
   } else {
     delete result.pdfGeneration;
+  }
+  const strippedHeader = stripHeaderFooterDefaults(config.header, 'header');
+  if (strippedHeader) {
+    result.header = strippedHeader;
+  } else {
+    delete result.header;
+  }
+  const strippedFooter = stripHeaderFooterDefaults(config.footer, 'footer');
+  if (strippedFooter) {
+    result.footer = strippedFooter;
+  } else {
+    delete result.footer;
   }
   return result;
 }
