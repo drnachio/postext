@@ -39,9 +39,11 @@ This reference is long. These are the main blocks:
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
+- [Math](#math) — LaTeX rendering, scale, colour, margins.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
-- [Debug](#debug) — visual overlays for the editor.
+- [PDF generation](#pdf-generation) — outlines, forced colour space for the PDF backend.
+- [Debug](#debug) — visual overlays and authoring warnings for the editor.
 - [Advanced configuration](#advanced-configuration) — declared types, future support.
 - [Programmatic use](#programmatic-use) — `buildDocument`, resolvers, caches.
 - [Running layout in a Web Worker](#running-layout-in-a-web-worker) — off-main-thread builds with cancellation.
@@ -1010,6 +1012,89 @@ This yields the classic nested mix:
 ```
 
 
+## Math
+
+The `math` property controls how LaTeX formulas inside `$...$` (inline) and `$$...$$` (display) delimiters are parsed and rendered. The underlying engine is KaTeX, rasterised to the canvas and embedded as scalable glyphs in the PDF.
+
+```ts
+interface MathConfig {
+  enabled?: boolean;        // Render LaTeX. When false, spans pass through as literal TeX.
+  fontSizeScale?: number;   // Multiplier applied to the body font size.
+  color?: ColorValue;       // Formula colour; inherits body colour if omitted.
+  marginTop?: Dimension;    // Space above display math blocks.
+  marginBottom?: Dimension; // Minimum space below; baseline grid snap may enlarge it.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When false, `$...$` and `$$...$$` spans are still parsed (so unclosed-delimiter warnings still fire) but are rendered as their literal TeX source. Useful when the content intentionally contains dollar signs or when you want to disable math rendering entirely.</td>
+    </tr>
+    <tr>
+      <td><code>fontSizeScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1.0</code></td>
+      <td>Multiplier applied to `bodyText.fontSize` before rendering. 1.0 matches body text; values in the 0.9–1.1 range are typical when the math font looks slightly larger or smaller than the prose font.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits body colour</td>
+      <td>Colour of the rendered formula. Omit to inherit `bodyText.color`. Set explicitly when you want formulas tinted differently from prose — e.g. matching a heading accent.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Space above a display math block. Ignored for inline math.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Space below a display math block. When the baseline grid is enabled this is treated as a **minimum** — the grid snap may extend it so the next baseline falls on a grid line.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+math: {
+  enabled: true,
+  fontSizeScale: 1.0,
+  color: { hex: '#517538', model: 'hex' },
+  marginTop: { value: 1, unit: 'em' },
+  marginBottom: { value: 1, unit: 'em' },
+}
+```
+
+Resolver and stripper match the other sections:
+
+```ts
+import {
+  DEFAULT_MATH_CONFIG,
+  resolveMathConfig,
+  stripMathDefaults,
+} from 'postext';
+
+const resolved = resolveMathConfig(config.math);
+const minimal  = stripMathDefaults(config.math);
+```
+
+For the document-side grammar (`$...$`, `$$...$$`, escaping a literal dollar), see [Document format](/en/docs/document-format#mathematical-formulas).
+
+
 ## Units and Colors
 
 ### Dimensions
@@ -1189,9 +1274,83 @@ const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 See [Integrating the HTML viewer](#integrating-the-html-viewer) below for an end-to-end example.
 
 
+## PDF Generation
+
+The `pdfGeneration` property controls how the PDF backend emits the final document. These settings are consumed by the `postext-pdf` package at export time; the canvas and HTML viewers ignore them.
+
+```ts
+type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
+
+interface PdfGenerationConfig {
+  outlines?: boolean;          // Emit PDF bookmarks from the heading tree.
+  forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
+  colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>outlines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Emit PDF outlines (bookmarks) from the heading hierarchy so readers can jump directly to any heading from the sidebar of a PDF viewer. Turn off for documents where the heading tree is meaningless (e.g. single-page posters).</td>
+    </tr>
+    <tr>
+      <td><code>forceColorSpace</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When true, every colour in the rendered PDF is converted to `colorSpace` at export time. Leave off for screen-first PDFs where input colours are already in the desired space; turn on to guarantee a single colour space across mixed sources.</td>
+    </tr>
+    <tr>
+      <td><code>colorSpace</code></td>
+      <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
+      <td><code>'cmyk'</code></td>
+      <td>Target colour space used when `forceColorSpace` is on. Use `'cmyk'` for offset printing, `'rgb'` for screen-only PDFs, and `'grayscale'` for black-and-white print proofs. Has no effect when `forceColorSpace` is false.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+pdfGeneration: {
+  outlines: true,
+  forceColorSpace: true,
+  colorSpace: 'cmyk',
+}
+```
+
+Resolver and stripper match the other sections:
+
+```ts
+import {
+  DEFAULT_PDF_GENERATION_CONFIG,
+  resolvePdfGenerationConfig,
+  stripPdfGenerationDefaults,
+} from 'postext';
+
+const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk' }
+
+const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
+// => undefined when everything matches the defaults
+```
+
+See [Generating PDFs](#generating-pdfs) below for the end-to-end export recipe.
+
+
 ## Debug
 
-The `debug` property controls visual indicators the editor uses to keep the source text and the rendered layout in sync while editing. These are rendered only by the interactive editor — they have no effect on exported output.
+The `debug` property groups two kinds of authoring aids: visual overlays that keep the source text and the rendered layout in sync, and a set of warnings that surface typographic or structural problems in the editor's warnings panel. Neither affects exported output.
+
+### Visual overlays
 
 <table>
   <thead>
@@ -1241,6 +1400,75 @@ debug: {
 }
 ```
 
+### Warnings
+
+`debug.warnings` controls which authoring issues appear in the editor's warnings panel. Each key is an independent boolean toggle; set one to `false` to silence that specific warning without disabling the others.
+
+```ts
+interface WarningsToggleConfig {
+  missingFont?: boolean;
+  looseLines?: boolean;
+  headingHierarchy?: boolean;
+  consecutiveHeadings?: boolean;
+  listAfterHeading?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '120px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>missingFont</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Report when a font referenced by the configuration failed to load in the browser. Catches typos in `fontFamily` and missing `@fontsource/...` packages early, before they show up as silent fallback-font substitutions in the rendered output.</td>
+    </tr>
+    <tr>
+      <td><code>looseLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Report justified lines whose word spacing exceeds `debug.looseLineHighlight.threshold`. Pairs with the overlay: the warning enumerates them in the panel, the overlay shows them in place.</td>
+    </tr>
+    <tr>
+      <td><code>headingHierarchy</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Report heading levels that skip a rank — e.g. an H1 followed directly by an H3. Structural heading gaps usually indicate either a typo in the heading depth or a misunderstanding of the document's outline.</td>
+    </tr>
+    <tr>
+      <td><code>consecutiveHeadings</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Report when a heading is immediately followed by another heading with no paragraph or list between them. Off by default because stacked headings are legitimate in many templates (title + subtitle, chapter + epigraph); turn on for manuscripts where every heading is supposed to introduce prose.</td>
+    </tr>
+    <tr>
+      <td><code>listAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Report when a list starts immediately after a heading without an introductory paragraph. Off by default because reference material routinely does this; turn on for narrative writing where every list should be framed by prose.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  warnings: {
+    missingFont: true,
+    looseLines: true,
+    headingHierarchy: true,
+    consecutiveHeadings: true,
+    listAfterHeading: false,
+  },
+}
+```
+
 
 ## Advanced Configuration
 
@@ -1273,9 +1501,11 @@ Target output format: `'web'` for HTML/canvas rendering, `'pdf'` for print outpu
 
 ## Programmatic Usage
 
+> **Recommended path: use the Web Worker.** In a browser, the overwhelming majority of integrations should drive the layout pipeline through `createLayoutWorker()` from `postext/worker`, **not** by calling `buildDocument` directly on the main thread. The worker keeps the UI responsive during builds, caches text measurements across incremental rebuilds, and wires up last-wins cancellation so a new keystroke aborts any stale build already in flight. Jump straight to [Running layout in a Web Worker](#running-layout-in-a-web-worker) for the canonical recipe. Everything in the rest of this section (direct `buildDocument`, resolvers, strippers, caches) is still useful — the worker exposes the exact same inputs and outputs — but for UI code the worker wrapper is the correct starting point. Only fall back to calling `buildDocument` on the main thread for one-shot exports, server-side rendering (Node), or tests.
+
 ### Building a document
 
-The `buildDocument` function runs the full layout pipeline and returns a Virtual Document Tree (VDT) with precise coordinates for every element:
+The `buildDocument` function runs the full layout pipeline and returns a Virtual Document Tree (VDT) with precise coordinates for every element. This is the lowest-level entry point; UI code should prefer the [Web Worker wrapper](#running-layout-in-a-web-worker), which calls `buildDocument` inside a dedicated worker thread with the same arguments.
 
 ```ts
 import { buildDocument } from 'postext';
@@ -1425,9 +1655,21 @@ clearMeasurementCache(cache);
 
 ## Running layout in a Web Worker
 
-Calling `buildDocument` directly runs the full pipeline — parse, measure, seven passes, up to five convergence iterations — on whichever thread invoked it. For a one-shot export that is fine. For an **interactive UI** (live preview, editor, resize-aware viewer) that is the wrong thread: a 150 ms layout blocks input events, keystrokes queue up, and scroll stutters.
+**This is the recommended way to use Postext in the browser.** If you are building anything interactive — a live preview, an editor, a resize-aware viewer, or a sandbox-style playground — drive the pipeline through `createLayoutWorker()` from `postext/worker`. Do not call `buildDocument` directly on the main thread for UI code.
 
-Postext ships a dedicated Web Worker entry point — `postext/worker` — that takes the pipeline off the main thread. It is the recommended integration for any UI that rebuilds the document in response to user input. The sandbox's Canvas, HTML and PDF viewports all share the same `createLayoutWorker()` handle through a single `useLayoutWorker` hook (`packages/postext-sandbox/src/worker/useLayoutWorker.ts`) and drive it with last-wins cancellation — a new keystroke aborts the in-flight build before it even finishes.
+Calling `buildDocument` on the main thread runs the full pipeline — parse, measure, seven passes, up to five convergence iterations — on whichever thread invoked it. For a one-shot export that is fine. For an interactive UI it is the wrong thread: a 150 ms layout blocks input events, keystrokes queue up, and scroll stutters. The worker moves every one of those milliseconds to a background thread.
+
+Postext ships a dedicated Web Worker entry point — `postext/worker` — that takes the pipeline off the main thread. It is the path we expect the majority of integrations to use: the sandbox's Canvas, HTML and PDF viewports all share the same `createLayoutWorker()` handle through a single `useLayoutWorker` hook (`packages/postext-sandbox/src/worker/useLayoutWorker.ts`) and drive it with last-wins cancellation — a new keystroke aborts the in-flight build before it even finishes.
+
+At a glance, the canonical integration is:
+
+1. **Create** a worker once per viewport with `createLayoutWorker()`.
+2. **Register fonts** once per family by posting transferable `ArrayBuffer`s via `registerFonts(payloads)`.
+3. **Build** with `build(content, config, { signal })`, passing a fresh `AbortSignal` every call so stale builds can be cancelled.
+4. **Supersede** any previous build by aborting its signal *before* starting the next one — this is the last-wins pattern.
+5. **Dispose** the worker when the component that owns it unmounts.
+
+The same `VDTDocument` that comes back from `build(...)` feeds every downstream renderer: `renderPage`/`renderPageToCanvas` for canvas, `renderToHtmlIndexed` for HTML, and `renderToPdf` (from `postext-pdf`) for PDF. You build once in the worker and rasterise as many times as the UI needs on the main thread.
 
 ### What the worker gives you
 
@@ -1454,36 +1696,103 @@ The package also publishes a `postext/worker/entry` path pointing at the compile
 
 ```ts
 import { createLayoutWorker } from 'postext/worker';
-import type { FontPayload } from 'postext/worker';
+import type { FontPayload, LayoutWorkerHandle } from 'postext/worker';
+import type { PostextConfig, VDTDocument } from 'postext';
 
-const layout = createLayoutWorker();
+// 1. Create the worker once and keep the handle for the lifetime of your viewport.
+const layout: LayoutWorkerHandle = createLayoutWorker();
 
-// 1. Register fonts once per family (transferable ArrayBuffers).
+// 2. Register fonts once per family (transferable ArrayBuffers).
+//    getConfigFontFamilies(config) is a helper that lists the families your config will render.
 const payloads: FontPayload[] = await collectFontPayloadsForFamilies([
   'EB Garamond',
   'Open Sans',
 ]);
 await layout.registerFonts(payloads);
 
-// 2. Build — supersede a previous call by aborting its signal first.
+// 3. Drive builds with last-wins cancellation: abort the previous signal
+//    before starting a new build. A stale build is thrown away inside the worker.
 let pending: AbortController | null = null;
 
-async function rebuild(markdown: string, config: PostextConfig) {
+async function rebuild(
+  markdown: string,
+  config: PostextConfig,
+): Promise<VDTDocument | null> {
   pending?.abort();
   pending = new AbortController();
   try {
-    const vdt = await layout.build({ markdown }, config, { signal: pending.signal });
-    return vdt;
+    return await layout.build({ markdown }, config, { signal: pending.signal });
   } catch (err) {
     if ((err as { name?: string } | null)?.name === 'AbortError') return null;
     throw err;
   }
 }
 
-// 3. Dispose when the component that owns the worker unmounts.
+// 4. Dispose when the component that owns the worker unmounts.
 //    Pending builds reject with AbortError.
 layout.dispose();
 ```
+
+Wrapped in a React component the shape is:
+
+```tsx
+import { useEffect, useRef } from 'react';
+import { createLayoutWorker } from 'postext/worker';
+import type { LayoutWorkerHandle } from 'postext/worker';
+import { renderPageToCanvas } from 'postext';
+import type { PostextConfig } from 'postext';
+
+export function CanvasPreview({
+  markdown,
+  config,
+}: {
+  markdown: string;
+  config: PostextConfig;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const workerRef = useRef<LayoutWorkerHandle | null>(null);
+  const pendingRef = useRef<AbortController | null>(null);
+
+  // Mount: spin up the worker and ship the fonts once.
+  useEffect(() => {
+    const handle = createLayoutWorker();
+    workerRef.current = handle;
+    (async () => {
+      const payloads = await collectFontPayloadsForFamilies(
+        getConfigFontFamilies(config),
+      );
+      await handle.registerFonts(payloads);
+    })();
+    return () => {
+      pendingRef.current?.abort();
+      handle.dispose();
+    };
+  }, []); // fonts registered once; re-register only when the family set changes
+
+  // Every keystroke or config change: supersede the in-flight build and kick a new one.
+  useEffect(() => {
+    const handle = workerRef.current;
+    if (!handle) return;
+    pendingRef.current?.abort();
+    const ac = new AbortController();
+    pendingRef.current = ac;
+    (async () => {
+      try {
+        const vdt = await handle.build({ markdown }, config, { signal: ac.signal });
+        const canvas = canvasRef.current;
+        if (!canvas || !vdt.pages[0]) return;
+        renderPageToCanvas(vdt.pages[0], vdt, canvas); // rasterise on the main thread
+      } catch (err) {
+        if ((err as { name?: string } | null)?.name !== 'AbortError') throw err;
+      }
+    })();
+  }, [markdown, config]);
+
+  return <canvas ref={canvasRef} />;
+}
+```
+
+The pattern is always the same: **create once, register fonts once, build-with-AbortSignal many times, dispose on unmount.**
 
 ### Font payload collection (Fontsource / Google Fonts)
 
@@ -1518,18 +1827,50 @@ try {
 
 `shouldCancel` is called once per top-level block during placement. The hook is intentionally cooperative — it cannot stop pretext's own layout call mid-line, but it keeps the cancellation granularity small enough (milliseconds) that a fast-typing user never waits on a stale build.
 
+### Driving PDF export from the worker
+
+The PDF backend takes a ready `VDTDocument` and turns it into PDF bytes. It does **not** re-run layout. That means the canonical browser PDF flow pairs cleanly with the worker: build the VDT in the worker (off the main thread, cancellable, cache-reusing), then call `renderToPdf` on the main thread against the same VDT.
+
+```ts
+import type { LayoutWorkerHandle } from 'postext/worker';
+import { renderToPdf } from 'postext-pdf';
+import type { PostextConfig } from 'postext';
+import { createPdfFontProvider } from './pdfFontProvider';
+
+const fontProvider = createPdfFontProvider();
+
+export async function exportPdf(
+  layout: LayoutWorkerHandle,
+  markdown: string,
+  config: PostextConfig,
+): Promise<Uint8Array> {
+  // 1. Build the VDT in the worker — UI stays responsive during the layout passes.
+  const vdt = await layout.build({ markdown }, config);
+
+  // 2. Rasterise to PDF on the main thread. renderToPdf is fast once the VDT exists
+  //    because it is walking precomputed coordinates, not remeasuring text.
+  return renderToPdf(vdt, {
+    fontProvider,
+    // pdfGeneration config on `vdt.config` is honoured automatically.
+  });
+}
+```
+
+If you already maintain a worker handle for the live preview, reuse it for export instead of spinning up a second worker — the measurement cache inside the worker makes a PDF export that follows an on-screen preview essentially free.
+
 ### When to use the worker, when not to
 
 Use the worker for:
 
 - **Live previews, editors, and playgrounds.** Anything where the document is rebuilt in response to user input.
 - **Resize-aware HTML viewers** that re-run layout on every `ResizeObserver` tick.
+- **In-browser PDF export** triggered from a UI that already has a live preview — reuse the existing worker handle so the export piggybacks on the measurement cache.
 - **Multiple output tabs** that all need the same VDT (the sandbox's Canvas / HTML / PDF viewports share one worker handle per viewport mount).
 
 Skip the worker for:
 
 - **Server-side generation** — Node does not have a browser `FontFaceSet`, and you control the thread anyway.
-- **One-shot exports** that run in response to an explicit user action (clicking "Export PDF") and happen to be acceptable at any latency. Calling `buildDocument` directly is simpler and avoids the cost of the initial font transfer.
+- **Isolated one-shot exports** (a CLI, a headless export script, a Cloud Function) where no interactive UI exists to block. Calling `buildDocument` directly is simpler and avoids the cost of the initial font transfer.
 
 
 ## Integrating the HTML viewer
@@ -1699,6 +2040,8 @@ The sandbox's `HtmlPreview` component (`packages/postext-sandbox/src/viewport/Ht
 ## Generating PDFs
 
 PDF output lives in a separate package, **`postext-pdf`**, so that web-only integrations do not pay the cost of `pdf-lib` and `@pdf-lib/fontkit`. The PDF backend does not re-measure text: it consumes the exact same `VDTDocument` you would feed to `renderToCanvas` or `renderToHtml` and translates its pixel-space coordinates into PDF points. The three outputs are therefore guaranteed to agree on line breaks, column heights, and resource placement.
+
+> **In the browser, build the VDT through the [Web Worker](#running-layout-in-a-web-worker).** `renderToPdf` itself is fast once the VDT exists — the expensive part is the layout pipeline that produced it. Running that pipeline on the worker keeps the UI responsive and lets a PDF export reuse the same measurement cache the live preview already warmed up. See [Driving PDF export from the worker](#driving-pdf-export-from-the-worker) for the recommended flow. The main-thread examples below are the reference for *what the arguments mean* — for UI code, build the VDT in the worker first and only call `renderToPdf` directly.
 
 ### Installation
 

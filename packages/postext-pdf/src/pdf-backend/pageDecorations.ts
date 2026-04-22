@@ -1,6 +1,6 @@
 import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from 'postext';
 import { dimensionToPx } from 'postext';
-import { type PageCtx, drawLinePx, rgbFromHex } from './primitives';
+import { type PageCtx, drawLinePx, colorFromHex } from './primitives';
 
 export function renderBaselineGrid(
   ctx: PageCtx,
@@ -9,7 +9,7 @@ export function renderBaselineGrid(
   colorHex: string,
   lineWidthPx: number,
 ): void {
-  const color = rgbFromHex(colorHex);
+  const color = colorFromHex(colorHex, ctx.colorSpace);
   const maxLines = Math.floor(contentArea.height / baselineIncrement);
   let y = contentArea.y + baselineIncrement * 0.8;
   const right = contentArea.x + contentArea.width;
@@ -26,7 +26,7 @@ export function renderColumnRule(
   lineWidthPx: number,
 ): void {
   if (columns.length < 2) return;
-  const color = rgbFromHex(colorHex);
+  const color = colorFromHex(colorHex, ctx.colorSpace);
   for (let i = 0; i < columns.length - 1; i++) {
     const left = columns[i]!.bbox;
     const right = columns[i + 1]!.bbox;
@@ -49,7 +49,7 @@ export function renderCutLines(ctx: PageCtx, page: VDTPage, doc: VDTDocument): v
   const trimY = totalExpansion;
   const trimW = page.width - totalExpansion * 2;
   const trimH = page.height - totalExpansion * 2;
-  const color = rgbFromHex(cutLines.color.hex);
+  const color = colorFromHex(cutLines.color.hex, ctx.colorSpace);
 
   const corners = [
     { x: trimX, y: trimY },

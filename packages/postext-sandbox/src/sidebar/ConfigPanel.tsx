@@ -16,6 +16,7 @@ import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
 import { MathSection } from './sections/MathSection';
 import { HtmlViewerSection } from './sections/HtmlViewerSection';
+import { PdfGenerationSection } from './sections/PdfGenerationSection';
 import { DebugSection } from './sections/DebugSection';
 import { WarningsConfigSection } from './sections/WarningsConfigSection';
 
@@ -121,6 +122,7 @@ export function ConfigPanel() {
         <OrderedListsSection />
         <MathSection />
         <HtmlViewerSection />
+        <PdfGenerationSection />
         <DebugSection />
         <WarningsConfigSection />
       </div>

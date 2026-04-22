@@ -4,6 +4,13 @@ export interface RgbTuple {
   b: number;
 }
 
+export interface CmykTuple {
+  c: number;
+  m: number;
+  y: number;
+  k: number;
+}
+
 /**
  * Parse a CSS hex color (3, 4, 6 or 8 hex digits with a leading `#`) into
  * normalized 0..1 RGB components suitable for pdf-lib's `rgb()` factory.
@@ -29,4 +36,23 @@ export function hexToRgb(hex: string): RgbTuple {
     return { r: r / 255, g: g / 255, b: b / 255 };
   }
   return { r: 0, g: 0, b: 0 };
+}
+
+/** Naive RGB → CMYK conversion (no ICC profile). Adequate for forcing a
+ *  4-channel output when the source is authored in sRGB hex. */
+export function rgbToCmyk({ r, g, b }: RgbTuple): CmykTuple {
+  const k = 1 - Math.max(r, g, b);
+  if (k >= 1) return { c: 0, m: 0, y: 0, k: 1 };
+  const denom = 1 - k;
+  return {
+    c: (1 - r - k) / denom,
+    m: (1 - g - k) / denom,
+    y: (1 - b - k) / denom,
+    k,
+  };
+}
+
+/** Luminance-weighted RGB → grayscale (Rec. 601). */
+export function rgbToGrayscale({ r, g, b }: RgbTuple): number {
+  return 0.299 * r + 0.587 * g + 0.114 * b;
 }

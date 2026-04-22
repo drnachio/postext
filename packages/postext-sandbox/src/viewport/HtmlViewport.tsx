@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { HtmlPreview } from './HtmlPreview';
+import { useCallback, useState, useEffect, useRef } from 'react';
+import { HtmlPreview, type HtmlPreviewHandle } from './HtmlPreview';
 import { HtmlToolbar } from './HtmlToolbar';
+import { useFloatingToolbarShell } from './useFloatingToolbarShell';
 import {
   loadHtmlFontScale,
   saveHtmlFontScale,
@@ -22,6 +23,9 @@ const clampFontScale = (n: number) =>
 export function HtmlViewport() {
   const [fontScale, setFontScale] = useState(1);
   const [columnMode, setColumnMode] = useState<ColumnMode>('multi');
+  const [generating, setGenerating] = useState(false);
+  const [scrollBounds, setScrollBounds] = useState<{ canPrev: boolean; canNext: boolean }>({ canPrev: false, canNext: false });
+  const previewRef = useRef<HtmlPreviewHandle | null>(null);
   const hydratedRef = useRef(false);
 
   useEffect(() => {
@@ -61,15 +65,41 @@ export function HtmlViewport() {
     setColumnMode(mode);
   };
 
+  const handleRegenerate = useCallback(() => {
+    previewRef.current?.regenerate();
+  }, []);
+
+  const handleScrollColumn = useCallback((delta: number) => {
+    previewRef.current?.scrollColumn(delta);
+  }, []);
+
+  const shell = useFloatingToolbarShell('html', generating);
+
   return (
-    <div className="relative h-full w-full">
-      <HtmlPreview fontScale={fontScale} columnMode={columnMode} />
+    <div className="relative h-full w-full" {...shell.containerProps}>
+      <HtmlPreview
+        ref={previewRef}
+        fontScale={fontScale}
+        columnMode={columnMode}
+        onGeneratingChange={setGenerating}
+        onScrollBoundsChange={setScrollBounds}
+      />
+      <div {...shell.hoverStripProps} />
       <HtmlToolbar
         fontScale={fontScale}
         columnMode={columnMode}
+        generating={generating}
+        pinned={shell.pinned}
+        hidden={shell.hidden}
+        canScrollPrev={scrollBounds.canPrev}
+        canScrollNext={scrollBounds.canNext}
+        onRegenerate={handleRegenerate}
+        onTogglePin={shell.togglePin}
         onFontScaleUp={handleFontScaleUp}
         onFontScaleDown={handleFontScaleDown}
         onSetColumnMode={handleSetColumnMode}
+        onScrollColumn={handleScrollColumn}
+        {...shell.toolbarHoverProps}
       />
     </div>
   );

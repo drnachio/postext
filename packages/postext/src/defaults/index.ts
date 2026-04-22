@@ -8,6 +8,7 @@ import { stripOrderedListsDefaults } from './orderedLists';
 import { stripMathDefaults } from './math';
 import { stripDebugDefaults } from './debug';
 import { stripHtmlViewerDefaults } from './htmlViewer';
+import { stripPdfGenerationDefaults } from './pdfGeneration';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, resolvePageConfig, stripPageDefaults } from './page';
@@ -19,6 +20,7 @@ export { DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedLi
 export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './math';
 export { DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './debug';
 export { DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults } from './htmlViewer';
+export { DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults } from './pdfGeneration';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
@@ -75,6 +77,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.htmlViewer = strippedHtmlViewer;
   } else {
     delete result.htmlViewer;
+  }
+  const strippedPdfGeneration = stripPdfGenerationDefaults(config.pdfGeneration);
+  if (strippedPdfGeneration) {
+    result.pdfGeneration = strippedPdfGeneration;
+  } else {
+    delete result.pdfGeneration;
   }
   return result;
 }

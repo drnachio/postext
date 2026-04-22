@@ -13,6 +13,7 @@ const CANVAS_FIT_MODE_KEY = 'postext-sandbox-canvas-fit-mode';
 const CANVAS_ZOOM_KEY = 'postext-sandbox-canvas-zoom';
 const HTML_FONT_SCALE_KEY = 'postext-sandbox-html-font-scale';
 const HTML_COLUMN_MODE_KEY = 'postext-sandbox-html-column-mode';
+const TOOLBAR_PINNED_PREFIX = 'postext-sandbox-toolbar-pinned-';
 
 function getStorage(): Storage | null {
   if (typeof window === 'undefined') return null;
@@ -166,6 +167,17 @@ export function saveHtmlColumnMode(mode: string): void {
 
 export function loadHtmlColumnMode(): string | null {
   return getStorage()?.getItem(HTML_COLUMN_MODE_KEY) ?? null;
+}
+
+export function saveToolbarPinned(id: string, pinned: boolean): void {
+  getStorage()?.setItem(TOOLBAR_PINNED_PREFIX + id, pinned ? 'true' : 'false');
+}
+
+export function loadToolbarPinned(id: string): boolean | null {
+  const raw = getStorage()?.getItem(TOOLBAR_PINNED_PREFIX + id);
+  if (raw === 'true') return true;
+  if (raw === 'false') return false;
+  return null;
 }
 
 export function clearStorage(): void {
