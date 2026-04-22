@@ -606,6 +606,8 @@
     "customFontsFamilyNamePlaceholder": "p. ej. Acme Sans",
     "customFontsNewFamilyName": "Nueva familia de fuentes",
     "customFontsEditFamilyName": "Editar nombre de la familia",
+    "customFontsExpandFamily": "Expandir familia",
+    "customFontsCollapseFamily": "Contraer familia",
     "customFontsDeleteFamily": "Eliminar familia",
     "customFontsDeleteFamilyConfirm": "\u00bfEliminar esta familia de fuentes y todas sus variantes?",
     "customFontsVariants": "Variantes",

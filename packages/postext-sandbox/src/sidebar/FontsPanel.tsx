@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { Pencil, Plus, RotateCcw, Trash2, Upload } from 'lucide-react';
+import { ChevronRight, Pencil, Plus, RotateCcw, Trash2, Upload } from 'lucide-react';
 import type { CustomFontFamily, CustomFontVariant, CustomFontStyle } from 'postext';
 import {
   useSandboxDispatch,
@@ -48,6 +48,11 @@ export function FontsPanel() {
   const [editingName, setEditingName] = useState<string | null>(null);
   const [draftName, setDraftName] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const toggleExpanded = (name: string) => {
+    setExpanded((prev) => ({ ...prev, [name]: !prev[name] }));
+  };
 
   const writeFamilies = useCallback(
     (next: CustomFontFamily[]) => {
@@ -72,6 +77,7 @@ export function FontsPanel() {
     writeFamilies([...customFonts, { name, variants: [] }]);
     setDraftName(name);
     setEditingName(name);
+    setExpanded((prev) => ({ ...prev, [name]: true }));
   };
 
   const deleteFamily = async (name: string) => {
@@ -93,6 +99,11 @@ export function FontsPanel() {
       f.name === currentName ? { ...f, name: trimmed } : f,
     );
     writeFamilies(next);
+    setExpanded((prev) => {
+      if (!(currentName in prev)) return prev;
+      const { [currentName]: wasOpen, ...rest } = prev;
+      return { ...rest, [trimmed]: wasOpen };
+    });
   };
 
   const addVariantFiles = async (
@@ -218,6 +229,7 @@ export function FontsPanel() {
         )}
         {customFonts.map((family) => {
           const isEditing = editingName === family.name;
+          const isOpen = expanded[family.name] ?? false;
           return (
             <div
               key={family.name}
@@ -225,9 +237,40 @@ export function FontsPanel() {
               style={{ borderColor: 'var(--rule)' }}
             >
               <div
-                className="flex items-center gap-1 border-b px-2 py-1.5"
-                style={{ borderColor: 'var(--rule)' }}
+                className="flex items-center gap-1 px-2 py-1.5"
+                style={{
+                  borderColor: 'var(--rule)',
+                  borderBottomWidth: isOpen ? 1 : 0,
+                  borderBottomStyle: 'solid',
+                }}
               >
+                <button
+                  type="button"
+                  onClick={() => toggleExpanded(family.name)}
+                  aria-expanded={isOpen}
+                  aria-label={
+                    isOpen ? labels.customFontsCollapseFamily : labels.customFontsExpandFamily
+                  }
+                  title={
+                    isOpen ? labels.customFontsCollapseFamily : labels.customFontsExpandFamily
+                  }
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
+                  style={{
+                    color: 'var(--slate)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <ChevronRight
+                    size={13}
+                    aria-hidden="true"
+                    style={{
+                      transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 200ms ease',
+                    }}
+                  />
+                </button>
                 {isEditing ? (
                   <input
                     type="text"
@@ -307,6 +350,7 @@ export function FontsPanel() {
                 </ConfirmPopover>
               </div>
 
+              {isOpen && (
               <div className="px-2 py-2">
                 {family.variants.map((variant, index) => (
                   <VariantRow
@@ -333,6 +377,7 @@ export function FontsPanel() {
                   </p>
                 )}
               </div>
+              )}
             </div>
           );
         })}

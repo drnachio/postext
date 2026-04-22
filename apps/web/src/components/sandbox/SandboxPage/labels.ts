@@ -419,6 +419,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     customFontsFamilyNamePlaceholder: t("customFontsFamilyNamePlaceholder"),
     customFontsNewFamilyName: t("customFontsNewFamilyName"),
     customFontsEditFamilyName: t("customFontsEditFamilyName"),
+    customFontsExpandFamily: t("customFontsExpandFamily"),
+    customFontsCollapseFamily: t("customFontsCollapseFamily"),
     customFontsDeleteFamily: t("customFontsDeleteFamily"),
     customFontsDeleteFamilyConfirm: t("customFontsDeleteFamilyConfirm"),
     customFontsVariants: t("customFontsVariants"),
