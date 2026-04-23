@@ -1,0 +1,140 @@
+name: Feature request
+description: Propose a new capability, typographic rule, renderer target, or configuration option for postext.
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping shape postext.
+
+        postext aims to bring centuries of editorial typesetting craft to the web — column-based layouts, orphan/widow prevention, footnote placement, resource flow, hyphenation, and other rules that professional typesetters apply by hand. Proposals that strengthen that mission are very welcome.
+
+        Before opening a feature request:
+
+        - **Check the [roadmap](https://github.com/drnachio/postext/blob/main/README.md#roadmap) and existing issues.** Many capabilities are already planned; a duplicate request just adds noise.
+        - **For non-trivial features, open this issue *before* starting a PR.** Alignment on approach up front avoids wasted work on both sides.
+        - **postext is browser-first and FP-first.** Features that require a Node-only runtime, long-running server processes, or deep mutation of shared state are unlikely to be accepted without strong motivation.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Editorial / layout problem
+      description: |
+        What layout, typography, or editorial problem are you trying to solve? Describe it from the *reader's* or *typesetter's* point of view first — what does the output need to look like, and why does that matter for readability or craft?
+
+        If this is a documented typographic rule (Bringhurst, Tschichold, Knuth-Plass, newspaper/magazine practice), please name it. If there is prior art in InDesign, LaTeX, or a specific publication, reference it.
+      placeholder: |
+        "In a two-column spread, when a figure straddles the gutter, body text should flow around it on both columns. Currently postext only supports single-column wrap, which forces me to break the figure into two halves manually."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Which part of the system does this touch? Pick the closest matches.
+      multiple: true
+      options:
+        - Input format — enriched markdown extensions
+        - Layout engine — column flow / balancing
+        - Layout engine — resource placement
+        - Layout engine — VDT convergence / iteration model
+        - Typography — new rule (orphan/widow variant, keep-together, rag, spacing)
+        - Typography — hyphenation (new language, rule tuning)
+        - References — footnotes / endnotes / margin notes / cross-references
+        - Renderer — HTML / CSS output
+        - Renderer — PDF output
+        - Renderer — new output target (SVG, canvas, print intent, etc.)
+        - Configuration — new option or preset
+        - Web Worker integration / cancellation / font pipeline
+        - Developer ergonomics — types, errors, debugging
+        - Playground / documentation site (`apps/web`)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Concrete use case
+      description: |
+        Describe the specific kind of document you want to produce. The more concrete, the better: magazine spread, academic book, newspaper column, art catalog, bilingual edition, poem with margin notes, technical manual with side-by-side code, etc.
+
+        Include a link to a reference document (photo, PDF, website) if you have one.
+      placeholder: |
+        "A 17×24 cm art catalog with two columns of body text, full-bleed figures that break across the spread, pull quotes set in the outer margin, and footnotes at the bottom of the column where they are referenced."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: |
+        How should postext behave? Sketch the API if it is a new public function, or the configuration shape if it is a new option. Pseudocode is fine — the goal is to make the proposal concrete enough to discuss.
+
+        If the feature affects rendered output, describe the geometry postext should compute, not just the CSS/PDF primitives the renderer should emit.
+      render: ts
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: |
+        What did you try or consider before opening this? This can include:
+
+        - Configuration workarounds in the current version.
+        - Handling the problem in user code before calling postext.
+        - Doing nothing (what is the cost of not having this feature?).
+
+        Understanding the alternatives helps us decide whether the feature belongs in the library core, in a plugin, or in documentation.
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact on existing behavior
+      description: |
+        Would this be purely additive, or does it change existing defaults, API signatures, configuration schema, or output? Backwards-incompatible changes are not off the table pre-1.0, but they need stronger justification.
+      placeholder: |
+        - Purely additive — new optional configuration field, defaults to current behavior.
+        - Changes default behavior of X — would require a migration note.
+        - Extends the VDT schema — consumers of intermediate state would need to update.
+
+  - type: dropdown
+    id: roadmap-fit
+    attributes:
+      label: Roadmap fit
+      description: Which roadmap phase does this naturally belong to? (See README.)
+      options:
+        - "Phase 1 — Foundation"
+        - "Phase 2 — Editorial layout"
+        - "Phase 3 — Professional typography"
+        - "Phase 4 — Output targets"
+        - "Beyond current roadmap / new area"
+        - "Not sure"
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Are you able to help implement this?
+      description: Optional — but knowing up front helps scope the discussion.
+      options:
+        - "Yes, I can open a PR."
+        - "Yes, with guidance."
+        - "I can help with design / review but not implementation."
+        - "No, I am requesting this as a user."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the roadmap and existing issues and did not find a duplicate.
+          required: true
+        - label: The problem I am describing is a layout, typography, or editorial concern — not a request to expose internal implementation details.
+          required: true
+        - label: I understand postext is browser-first, FP-first, and pre-1.0, and my proposal respects those constraints.
+          required: true

@@ -1,0 +1,185 @@
+name: Bug report
+description: A postext layout, rendering, or API behavior is wrong.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug in postext.
+
+        Before you open this issue:
+
+        - **Search existing issues** (open and closed) to see whether the same problem has already been reported.
+        - **Try the latest version** on npm (`postext@latest`) — the pre-1.0 API still changes quickly and the bug may already be fixed.
+        - **Security issues do not belong here.** If you believe this is a security vulnerability, please follow [SECURITY.md](https://github.com/drnachio/postext/blob/main/SECURITY.md) instead.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences. What is wrong?
+      placeholder: "The HTML renderer leaves an orphan at the top of column 2 when a figure is placed at the bottom of column 1."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Which part of the pipeline is misbehaving? Pick the closest match.
+      multiple: true
+      options:
+        - Markdown parsing / enriched content input
+        - Layout engine — column flow
+        - Layout engine — orphan / widow prevention
+        - Layout engine — column balancing
+        - Layout engine — resource placement (figures, tables, pull quotes)
+        - Layout engine — keep-together rules
+        - Layout engine — VDT iterative convergence
+        - Typography — hyphenation
+        - Typography — spacing rules
+        - Typography — rag / line breaking
+        - References — footnotes / endnotes / margin notes
+        - Renderer — HTML
+        - Renderer — PDF
+        - Renderer — canvas / rasterization
+        - Web Worker (`postext/worker`) — build / cancellation / font registration
+        - Configuration — schema / validation / defaults
+        - Playground / documentation site (`apps/web`)
+        - Build, types, or packaging
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: postext-version
+    attributes:
+      label: postext version
+      description: Output of `pnpm why postext` or the version pinned in your `package.json`.
+      placeholder: "0.3.15"
+    validations:
+      required: true
+
+  - type: input
+    id: pretext-version
+    attributes:
+      label: "`@chenglou/pretext` version"
+      description: Only required for bugs that look measurement-related (wrong heights, broken line breaks, off-by-a-pixel layouts). Leave blank otherwise.
+      placeholder: "0.0.5"
+
+  - type: dropdown
+    id: entry-point
+    attributes:
+      label: Entry point
+      description: How are you calling postext?
+      options:
+        - "`buildDocument` on the main thread"
+        - "`createLayoutWorker` / `postext/worker`"
+        - "`renderToHtml` / HTML viewer"
+        - "`renderPage` / `renderPageToCanvas`"
+        - PDF renderer
+        - Playground (`apps/web`)
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Browser(s) + version where you reproduced it, OS, and Node.js version if you ran postext in Node. If the bug only shows in one browser, say so explicitly — pretext and the HTML renderer target Chrome, Safari, and Firefox, and cross-browser regressions are important.
+      placeholder: |
+        - Browser: Chrome 131 (also reproduces on Firefox 133; does not reproduce on Safari 18)
+        - OS: macOS 15.2 (Apple Silicon)
+        - Node.js: 20.18.1
+        - Runtime: Web Worker via `createLayoutWorker`
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro-input
+    attributes:
+      label: Minimal reproduction — input content
+      description: |
+        The **smallest** enriched markdown that triggers the bug. Please trim aggressively: if the bug still reproduces without a block, remove it. Paste as a fenced code block.
+      render: markdown
+      placeholder: |
+        # Heading
+
+        First paragraph…
+
+        ![figure](ref) A second paragraph with a figure reference.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro-config
+    attributes:
+      label: Minimal reproduction — configuration
+      description: |
+        The configuration you passed to `buildDocument` (or equivalent). Include only the fields that are non-default and relevant to the bug.
+      render: ts
+      placeholder: |
+        {
+          page: { sizePreset: '17x24' },
+          layout: { layoutType: 'double', gutterWidth: { value: 0.75, unit: 'cm' } },
+          bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+        }
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro-code
+    attributes:
+      label: Minimal reproduction — code / link
+      description: |
+        The exact postext call that triggers the bug, or a link to a runnable reproduction (StackBlitz, CodeSandbox, a gist, or a branch on a fork).
+
+        A runnable reproduction significantly speeds up triage for layout bugs — visual issues are hard to debug from screenshots alone.
+      render: ts
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect postext to produce? If this is a typographic rule, cite the rule (orphan, widow, keep-together, column balancing, etc.).
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What did postext produce instead? For layout bugs, please attach a screenshot of the rendered HTML or PDF (drag the image into this field).
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errors, warnings, or VDT state (optional)
+      description: |
+        Any thrown errors, console warnings, or — if you have access to it — the VDT / intermediate layout state that shows the problem. For non-terminating convergence, mention the iteration count you observed (postext caps at 5 iterations).
+      render: shell
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround (optional)
+      description: Have you found a configuration change or content tweak that avoids the bug? Knowing this helps prioritize.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I reproduced this on the latest published `postext` version.
+          required: true
+        - label: My reproduction is minimal — I removed content and configuration that is not required to trigger the bug.
+          required: true
