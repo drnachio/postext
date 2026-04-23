@@ -116,6 +116,17 @@ export function enforcePageParity(
   parity: HeadingBreakParity,
 ): void {
   if (parity === 'any') return;
+  // Document-start exception: when the first block of the document is a
+  // heading with `breakBefore` (or the source opens with a `:::pagebreak`),
+  // we're still sitting on page 0 with nothing placed yet. Skip parity
+  // and force logic entirely — there's no previous content to separate
+  // from, and padding would only create a spurious blank opening page.
+  if (cursor.pageIndex === 0) {
+    const firstPage = doc.pages[0];
+    if (firstPage && firstPage.columns.every((c) => c.blocks.length === 0)) {
+      return;
+    }
+  }
   const alwaysForce = parity === 'always-odd' || parity === 'always-even';
   const targetParity: 'odd' | 'even' =
     parity === 'always-odd' ? 'odd'
