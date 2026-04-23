@@ -623,7 +623,7 @@
     "pagebreakDirective": "Page break",
     "pagebreakDirectiveTooltip": "Insert a `:::pagebreak` directive at the current line",
     "numberingDirective": "Page numbering",
-    "numberingDirectiveTooltip": "Insert a `:::numbering{...}` directive to switch the page-number format or restart the counter",
+    "numberingDirectiveTooltip": "Insert a `:::numbering` directive to switch the page-number format or restart the counter",
     "save": "Save",
     "load": "Load",
     "exportFile": "Export",
