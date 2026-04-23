@@ -13,6 +13,8 @@ import {
   ListOrdered,
   Undo2,
   Redo2,
+  SeparatorHorizontal,
+  Hash,
 } from 'lucide-react';
 import type { EditorView } from '@codemirror/view';
 import { undo, redo } from '@codemirror/commands';
@@ -86,6 +88,28 @@ function insertLinePrefix(view: EditorView, prefix: string) {
   view.focus();
 }
 
+/** Insert a standalone block line (e.g. a directive). If the current line
+ *  is non-empty, the directive is appended after it with a blank line on
+ *  each side; if empty, it replaces the current line. The final cursor
+ *  position is placed at `cursorOffset` characters into the inserted
+ *  `text` — useful for dropping the caret inside the attribute braces. */
+function insertBlockLine(view: EditorView, text: string, cursorOffset?: number) {
+  const { from } = view.state.selection.main;
+  const line = view.state.doc.lineAt(from);
+  const lineIsEmpty = line.text.trim() === '';
+  const insertAt = lineIsEmpty ? line.from : line.to;
+  const leading = lineIsEmpty ? '' : '\n\n';
+  const trailing = '\n\n';
+  const insert = `${leading}${text}${trailing}`;
+  const finalCaret =
+    insertAt + leading.length + (cursorOffset ?? text.length);
+  view.dispatch({
+    changes: { from: insertAt, to: lineIsEmpty ? line.to : insertAt, insert },
+    selection: { anchor: finalCaret },
+  });
+  view.focus();
+}
+
 export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
@@ -155,6 +179,23 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
       icon: <List size={16} aria-hidden="true" />,
       label: labels.unorderedList,
       action: () => { const v = getView(); if (v) insertLinePrefix(v, '- '); },
+      separator: true,
+    },
+    {
+      icon: <SeparatorHorizontal size={16} aria-hidden="true" />,
+      label: labels.pagebreakDirective,
+      action: () => { const v = getView(); if (v) insertBlockLine(v, ':::pagebreak'); },
+    },
+    {
+      icon: <Hash size={16} aria-hidden="true" />,
+      label: labels.numberingDirective,
+      action: () => {
+        const v = getView();
+        if (!v) return;
+        // Drop the caret between the braces so the user can tweak attributes.
+        const text = ':::numbering{format="decimal" startAt=1}';
+        insertBlockLine(v, text, text.length);
+      },
     },
   ];
 

@@ -178,7 +178,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
   const dpi = resolved.page.dpi;
   const { contentArea } = computePageMetrics(resolved);
 
-  const chapterTitleByPageIndex = computeChapterTitles(doc.blocks, doc.pages.length);
+  const chapterTitleByPageIndex = computeChapterTitles(doc.blocks, doc.pages.length, doc.pages);
 
   for (const page of doc.pages) {
     if (resolved.header.elements.length > 0) {

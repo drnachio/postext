@@ -11,6 +11,7 @@ import type {
   ResolvedHeaderFooterSlot,
   HeaderFooterHAlign,
 } from './types';
+import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
 
 // ---------------------------------------------------------------------------
@@ -187,6 +188,24 @@ export interface VDTPage {
   footer?: VDTHeaderFooterSlot;
   marginNotes: VDTBlock[];
   footnoteArea?: VDTFootnoteArea;
+  /** Numeric counter for this page from the active page-numbering sequence.
+   *  Always set after placement — defaults to `index + 1` when no explicit
+   *  numbering config applies. */
+  pageNumberValue: number;
+  /** Rendered label for `pageNumberValue` using `pageNumberFormat`
+   *  (e.g. `'iv'`, `'1'`, `'A'`). */
+  pageLabel: string;
+  /** Format active at this page. */
+  pageNumberFormat: NumeralStyle;
+  /** Marks pages inserted purely to satisfy a parity constraint
+   *  (`:::pagebreak{parity=...}` or heading `breakBefore.parity`).
+   *  They render empty body content but still consume a page number. */
+  blankForParity?: boolean;
+  /** Marks the mandatory leading blank page inserted by an `always-odd`
+   *  or `always-even` parity mode. Unlike `blankForParity`, a
+   *  `blankForForce` page belongs to the *previous* chapter — it serves
+   *  as a separator, not as parity padding for the upcoming one. */
+  blankForForce?: boolean;
 }
 
 export interface VDTDocument {
@@ -241,6 +260,9 @@ export function createVDTPage(
     height,
     columns: [],
     marginNotes: [],
+    pageNumberValue: index + 1,
+    pageLabel: String(index + 1),
+    pageNumberFormat: 'decimal',
   };
 }
 

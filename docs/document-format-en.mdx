@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-04-21',
+  lastUpdated: '2026-04-23',
   readingTime: '9 min',
   order: 5,
 };
@@ -96,6 +96,103 @@ Postext recognises seven block types. Blocks are always terminated by a blank li
 A single blank line between two list items is tolerated — the list stays together. Two or more blank lines terminate the list.
 
 Lists of mixed kinds at the same depth are accepted (you can switch from unordered to ordered mid-run), but the engine treats the runs as separate for numbering purposes. In practice, keep one kind per depth unless you have a reason to mix them.
+
+
+## Directives
+
+Directives are single-line control tags written as `:::name` or `:::name{attrs}` on their own line. They produce no visible output — they drive the placement and numbering pipeline.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Syntax</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>:::pagebreak</code></td>
+      <td>Force the next block to open on a new page.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="odd"&#125;</code></td>
+      <td>Same, plus ensure the new page is odd (right-hand). Inserts a blank padding page when needed.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="even"&#125;</code></td>
+      <td>Same, but targeting an even (left-hand) page.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="always-odd"&#125;</code></td>
+      <td>Guarantee at least one mandatory blank separator page before landing on an odd page. The separator blank belongs to the preceding content; any further parity padding belongs to what follows. Useful when every chapter must start on a fresh spread.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="always-even"&#125;</code></td>
+      <td>Same, but targeting an even page.</td>
+    </tr>
+    <tr>
+      <td><code>:::numbering&#123;format="decimal" startAt=1&#125;</code></td>
+      <td>At the next page boundary, switch the page-numbering sequence. Both attributes are optional — omit <code>format</code> to keep the format, omit <code>startAt</code> to continue the counter.</td>
+    </tr>
+  </tbody>
+</table>
+
+Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
+
+Only `pagebreak` and `numbering` are recognized today — any other `:::name` line is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
+
+### `:::pagebreak`
+
+The directive itself does not force parity on its own — only the next block's layout. Use it to end a preface, force a dedication onto its own page, or mark the end of a section. When both a page break and a numbering reset are wanted at the same point, compose `:::pagebreak` followed by `:::numbering` — the numbering switch applies at the fresh page the `:::pagebreak` just created.
+
+```md
+The old chapter ends here.
+
+:::pagebreak{parity="odd"}
+
+# A new chapter
+```
+
+#### Parity attribute
+
+The `parity` attribute accepts the same five values as `headings.levels[*].breakBefore.parity`:
+
+- `'odd'` / `'even'` — the new page opens on the requested side of the spread; a single blank is inserted only when the natural next page is on the wrong side.
+- `'always-odd'` / `'always-even'` — guarantee at least one mandatory blank separator page between the previous content and the new page, then enforce parity. The separator blank belongs to the **previous** chapter; any further parity padding belongs to whatever follows.
+
+#### Blank-page ownership
+
+The two kinds of blank pages `:::pagebreak` (and `breakBefore`) can introduce are distinguished in the `VDTPage` model:
+
+- `blankForParity: true` — inserted to satisfy a parity constraint. In `{chapterTitle}` headers this page carries the **upcoming** chapter's title, because the blank exists only to push that chapter onto the right parity.
+- `blankForForce: true` — the mandatory leading separator of an `'always-*'` mode. It belongs to the **previous** chapter — a deliberate end-of-chapter breath, not parity padding for the next chapter.
+
+#### Document-start exception
+
+When `:::pagebreak` is the very first construct in a document (or a heading with `breakBefore` would pull one in), parity enforcement is skipped while the first page is still empty. The next block lands on page 1 as written, regardless of the requested parity — no spurious leading blank.
+
+### `:::numbering`
+
+`:::numbering` is how you restart the page counter mid-document. The canonical book example:
+
+```md
+---
+title: "A Book With Front Matter"
+---
+
+# Preface
+
+…
+
+:::pagebreak{parity="odd"}
+:::numbering{format="decimal" startAt=1}
+
+# Chapter 1
+```
+
+Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a right-hand page labelled `1`.
+
+Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
 
 <Illustration name="ListNesting" data='{"title": "List nesting depth", "desc": "Lists nest using exactly two spaces per level, up to a maximum depth of five. Each level indents further and may use different bullet styling.", "caption": "Two spaces per level. Max depth: five.", "level1": "Level 1", "level2": "Level 2 — two spaces in", "level3": "Level 3 — four spaces in", "indentNote": "Exactly two spaces per nesting level. Max depth: 5."}' />
 

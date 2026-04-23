@@ -2,13 +2,15 @@
 
 import type { useSandboxLabels } from '../../../context/SandboxContext';
 import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
-import type { HeadingLevelConfig, ColorValue, Dimension, DimensionUnit } from 'postext';
+import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, ColorValue, Dimension, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
   DimensionInput,
   FontPicker,
+  NestedGroup,
   NumberInput,
+  SelectInput,
   TextInput,
   ToggleSwitch,
 } from '../../../controls';
@@ -34,7 +36,7 @@ export function HeadingLevelSection({
   labels,
 }: {
   level: number;
-  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension; numberingTemplate: string; italic: boolean };
+  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension; numberingTemplate: string; italic: boolean; breakBefore: { enabled: boolean; parity: HeadingBreakParity } };
   raw: HeadingLevelConfig | undefined;
   generalFont: string;
   generalLineHeight: Dimension;
@@ -57,6 +59,8 @@ export function HeadingLevelSection({
   const isMarginBottomDefault = dimensionsEqual(resolved.marginBottom, generalMarginBottom);
   const isNumberingDefault = (resolved.numberingTemplate ?? '') === '';
   const isItalicDefault = resolved.italic === false;
+  const isBreakBeforeEnabledDefault = resolved.breakBefore.enabled === false;
+  const isBreakBeforeParityDefault = resolved.breakBefore.parity === 'any';
   const hasOverrides = raw !== undefined && Object.keys(raw).filter((k) => k !== 'level').length > 0;
 
   return (
@@ -160,6 +164,37 @@ export function HeadingLevelSection({
         isDefault={isNumberingDefault}
         onReset={() => onReset(level, 'numberingTemplate')}
       />
+      <ToggleSwitch
+        label={labels.headingBreakBefore}
+        checked={resolved.breakBefore.enabled}
+        onChange={(v) => {
+          const next: HeadingBreakBeforeConfig = { enabled: v };
+          if (resolved.breakBefore.parity !== 'any') next.parity = resolved.breakBefore.parity;
+          onUpdate(level, { breakBefore: next });
+        }}
+        tooltip={labels.headingBreakBeforeTooltip}
+        isDefault={isBreakBeforeEnabledDefault}
+        onReset={() => onReset(level, 'breakBefore')}
+      />
+      {resolved.breakBefore.enabled && (
+        <NestedGroup>
+          <SelectInput
+            label={labels.headingBreakBeforeParity}
+            value={resolved.breakBefore.parity}
+            options={[
+              { value: 'any', label: labels.headingBreakBeforeParityAny },
+              { value: 'odd', label: labels.headingBreakBeforeParityOdd },
+              { value: 'even', label: labels.headingBreakBeforeParityEven },
+              { value: 'always-odd', label: labels.headingBreakBeforeParityAlwaysOdd },
+              { value: 'always-even', label: labels.headingBreakBeforeParityAlwaysEven },
+            ]}
+            onChange={(v) => onUpdate(level, { breakBefore: { enabled: true, parity: v as HeadingBreakParity } })}
+            tooltip={labels.headingBreakBeforeParityTooltip}
+            isDefault={isBreakBeforeParityDefault}
+            onReset={() => onUpdate(level, { breakBefore: { enabled: true } })}
+          />
+        </NestedGroup>
+      )}
     </CollapsibleSection>
   );
 }

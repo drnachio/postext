@@ -5,12 +5,32 @@
  * positions back into the original markdown.
  */
 
-import type { ContentBlock, ListKind, ParseIssue } from './types';
+import type { ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue } from './types';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
 import { parseInlineFormatting, stripInlineFormatting } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
+/** `:::name` or `:::name{attrs}` on its own line. */
+const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
+/** Set of directive names recognized today. Unknown names fall through to
+ *  paragraph-parsing and downstream warnings flag them. */
+const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering']);
+
+/** Parse the attribute blob inside a `:::name{ ... }` directive.
+ *  Supports `key="quoted"`, `key='quoted'`, `key=bare`, and bare `key`. */
+export function parseDirectiveAttrs(raw: string): DirectiveAttrs {
+  const out: DirectiveAttrs = {};
+  // Token forms: key="..." | key='...' | key=bare | bare
+  const tokenRe = /([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s]+)))?/g;
+  let m: RegExpExecArray | null;
+  while ((m = tokenRe.exec(raw)) !== null) {
+    const key = m[1]!;
+    const value = m[2] ?? m[3] ?? m[4] ?? '';
+    out[key] = value;
+  }
+  return out;
+}
 const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
 const ORDERED_LIST_ITEM_RE = /^(\s*)(\d+)([.)])\s+(.*)$/;
 const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
@@ -143,6 +163,30 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
         sourceMap: [],
       });
       if (closed) i++; // consume the closing fence
+      continue;
+    }
+
+    // Directive — `:::name` or `:::name{attrs}` on its own line. Only known
+    // directive names are promoted to a `directive` block; unknown names
+    // fall through to paragraph parsing so they remain visible in the
+    // output (and downstream warnings surface the typo).
+    const directiveMatch = trimmed.match(DIRECTIVE_RE);
+    if (directiveMatch && KNOWN_DIRECTIVES.has(directiveMatch[1] as DirectiveName)) {
+      const name = directiveMatch[1] as DirectiveName;
+      const attrsRaw = directiveMatch[2] ?? '';
+      const srcStart = lineOffsets[i]!;
+      const srcEnd = lineEndOffset(i);
+      blocks.push({
+        type: 'directive',
+        text: '',
+        spans: [],
+        directiveName: name,
+        directiveAttrs: parseDirectiveAttrs(attrsRaw),
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: [],
+      });
+      i++;
       continue;
     }
 

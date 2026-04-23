@@ -68,6 +68,19 @@ export interface SandboxLabels {
   baselineGridLineWidth: string;
   baselineGridLineWidthTooltip: string;
 
+  // Page numbering (inside Page section)
+  pageNumbering: string;
+  pageNumberingTooltip: string;
+  pageNumberingFormat: string;
+  pageNumberingFormatTooltip: string;
+  pageNumberingFormatDecimal: string;
+  pageNumberingFormatLowerRoman: string;
+  pageNumberingFormatUpperRoman: string;
+  pageNumberingFormatLowerAlpha: string;
+  pageNumberingFormatUpperAlpha: string;
+  pageNumberingStartAt: string;
+  pageNumberingStartAtTooltip: string;
+
   // Debug section
   debug: string;
   debugCursorSync: string;
@@ -111,6 +124,18 @@ export interface SandboxLabels {
   warningsConsecutiveHeadingsDetail: string;
   warningsListAfterHeadingTitle: string;
   warningsListAfterHeadingDetail: string;
+  warningsUnknownDirectiveTitle: string;
+  warningsUnknownDirectiveDetail: string;
+  warningsNumberingInvalidFormatTitle: string;
+  warningsNumberingInvalidFormatDetail: string;
+  warningsNumberingInvalidStartAtTitle: string;
+  warningsNumberingInvalidStartAtDetail: string;
+  warningsPagebreakInvalidParityTitle: string;
+  warningsPagebreakInvalidParityDetail: string;
+  warningsParityCascadeTitle: string;
+  warningsParityCascadeDetail: string;
+  warningsAlphaPdfOverflowTitle: string;
+  warningsAlphaPdfOverflowDetail: string;
   warningsInvalidMathTitle?: string;
   warningsUnclosedMathTitle?: string;
 
@@ -252,6 +277,15 @@ export interface SandboxLabels {
   headingNumberingTemplatePlaceholder: string;
   headingItalic: string;
   headingItalicTooltip: string;
+  headingBreakBefore: string;
+  headingBreakBeforeTooltip: string;
+  headingBreakBeforeParity: string;
+  headingBreakBeforeParityTooltip: string;
+  headingBreakBeforeParityAny: string;
+  headingBreakBeforeParityOdd: string;
+  headingBreakBeforeParityEven: string;
+  headingBreakBeforeParityAlwaysOdd: string;
+  headingBreakBeforeParityAlwaysEven: string;
 
   // Unordered lists section
   unorderedLists: string;
@@ -436,6 +470,10 @@ export interface SandboxLabels {
   unorderedList: string;
   undo: string;
   redo: string;
+  pagebreakDirective: string;
+  pagebreakDirectiveTooltip: string;
+  numberingDirective: string;
+  numberingDirectiveTooltip: string;
 
   // Persistence
   save: string;

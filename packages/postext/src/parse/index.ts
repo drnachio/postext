@@ -1,5 +1,7 @@
 export type {
   ContentBlockType,
+  DirectiveName,
+  DirectiveAttrs,
   MathMeta,
   InlineSpan,
   TextSpan,

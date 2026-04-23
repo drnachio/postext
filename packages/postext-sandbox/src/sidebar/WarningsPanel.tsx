@@ -28,6 +28,14 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'headerFooterUnknownPlaceholder':
     case 'headerFooterMetadataMissing':
       return FileText;
+    case 'unknownDirective':
+    case 'numberingInvalidFormat':
+    case 'numberingInvalidStartAt':
+    case 'pagebreakInvalidParity':
+    case 'headingBreakInvalidParity':
+    case 'parityCascade':
+    case 'alphaPdfOverflow':
+      return FileWarning;
     default:
       return AlertTriangle;
   }
@@ -59,6 +67,19 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeaderFooterUnknownPlaceholderTitle;
     case 'headerFooterMetadataMissing':
       return labels.warningsHeaderFooterMetadataMissingTitle;
+    case 'unknownDirective':
+      return labels.warningsUnknownDirectiveTitle;
+    case 'numberingInvalidFormat':
+      return labels.warningsNumberingInvalidFormatTitle;
+    case 'numberingInvalidStartAt':
+      return labels.warningsNumberingInvalidStartAtTitle;
+    case 'pagebreakInvalidParity':
+    case 'headingBreakInvalidParity':
+      return labels.warningsPagebreakInvalidParityTitle;
+    case 'parityCascade':
+      return labels.warningsParityCascadeTitle;
+    case 'alphaPdfOverflow':
+      return labels.warningsAlphaPdfOverflowTitle;
   }
 }
 
@@ -98,6 +119,20 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.slot} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
     case 'headerFooterMetadataMissing':
       return `${payload.slot} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
+    case 'unknownDirective':
+      return `:::${payload.name} — ${labels.warningsUnknownDirectiveDetail}`;
+    case 'numberingInvalidFormat':
+      return `format="${payload.value}" — ${labels.warningsNumberingInvalidFormatDetail}`;
+    case 'numberingInvalidStartAt':
+      return `startAt=${payload.value} — ${labels.warningsNumberingInvalidStartAtDetail}`;
+    case 'pagebreakInvalidParity':
+      return `parity="${payload.value}" — ${labels.warningsPagebreakInvalidParityDetail}`;
+    case 'headingBreakInvalidParity':
+      return `H${payload.level} parity="${payload.value}" — ${labels.warningsPagebreakInvalidParityDetail}`;
+    case 'parityCascade':
+      return `${payload.runLength} — ${labels.warningsParityCascadeDetail}`;
+    case 'alphaPdfOverflow':
+      return labels.warningsAlphaPdfOverflowDetail;
   }
 }
 
