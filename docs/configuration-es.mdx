@@ -592,13 +592,13 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
     <tr>
       <td><code>boldColor</code></td>
       <td><code>ColorValue</code></td>
-      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color principal (<code>#295AA3</code>)</td>
       <td>Color aplicado a los fragmentos en negrita. Se resuelve contra la entrada <code>main-color</code> de la paleta por defecto, de modo que cambiar ese color retintea todos los fragmentos en negrita del documento.</td>
     </tr>
     <tr>
       <td><code>italicColor</code></td>
       <td><code>ColorValue</code></td>
-      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color principal (<code>#295AA3</code>)</td>
       <td>Color aplicado a los fragmentos en cursiva. Mismo enlace a la paleta que <code>boldColor</code>.</td>
     </tr>
     <tr>
@@ -830,7 +830,7 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color principal (<code>#295AA3</code>)</td>
       <td>Color del texto de encabezado. Enlazado a la entrada <code>main-color</code> de la paleta por defecto, de modo que cambiar ese color retintea todos los encabezados.</td>
     </tr>
     <tr>
@@ -868,24 +868,27 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
 
 ### Configuración por nivel
 
-Cada nivel de encabezado puede sobrescribir los valores generales a través del array `levels`. Solo el `fontSize` difiere por defecto — todas las demás propiedades se heredan de la configuración general de encabezados.
+Cada nivel de encabezado puede sobrescribir los valores generales a través del array `levels`. Solo `fontSize` (más el `breakBefore` de H1, indicado abajo) difiere por defecto — todas las demás propiedades se heredan de la configuración general de encabezados.
 
 <table>
   <thead>
     <tr>
       <th>Nivel</th>
       <th>Tamaño de fuente por defecto</th>
+      <th><code>breakBefore</code> por defecto</th>
     </tr>
   </thead>
   <tbody>
-    <tr><td>H1</td><td><code>18 pt</code></td></tr>
-    <tr><td>H2</td><td><code>15 pt</code></td></tr>
-    <tr><td>H3</td><td><code>12 pt</code></td></tr>
-    <tr><td>H4</td><td><code>10 pt</code></td></tr>
-    <tr><td>H5</td><td><code>9 pt</code></td></tr>
-    <tr><td>H6</td><td><code>8 pt</code></td></tr>
+    <tr><td>H1</td><td><code>18 pt</code></td><td><code>&#123; enabled: true, parity: 'always-odd' &#125;</code></td></tr>
+    <tr><td>H2</td><td><code>15 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H3</td><td><code>12 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H4</td><td><code>10 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H5</td><td><code>9 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H6</td><td><code>8 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
   </tbody>
 </table>
+
+El valor por defecto de H1 reproduce la maqueta clásica de un libro: cada encabezado de nivel superior se abre en una página derecha (impar) nueva, con una página separadora en blanco obligatoria que cierra el capítulo anterior. Anula `levels[0].breakBefore` si tu documento es más plano que un libro.
 
 Las configuraciones por nivel soportan las mismas propiedades que los valores generales — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom` — más dos campos exclusivos de cada nivel:
 
@@ -914,7 +917,7 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
     <tr>
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
-      <td><code>&#123; enabled: false, parity: 'any' &#125;</code></td>
+      <td>H1: <code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6: <code>&#123; enabled: false, parity: 'any' &#125;</code></td>
       <td>Fuerza un salto de página antes de cada encabezado de este nivel. <code>parity: 'odd'</code> / <code>'even'</code> restringe además en qué lado del pliego se abrirá — se inserta una página en blanco de relleno cuando sea necesario (sigue contando para la numeración). <code>'always-odd'</code> / <code>'always-even'</code> garantizan además al menos una página separadora en blanco obligatoria entre el contenido anterior y el nuevo encabezado (la separadora pertenece al capítulo anterior; cualquier relleno de paridad adicional pertenece al nuevo). Cuando el encabezado es el primer bloque del documento y la primera página sigue vacía, la imposición de paridad se omite — el encabezado aterriza en la página 1 tal cual.</td>
     </tr>
   </tbody>
@@ -1005,7 +1008,7 @@ La propiedad `unorderedLists` controla cómo se renderizan las listas con viñet
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color principal (<code>#295AA3</code>)</td>
       <td>Color del texto y de las viñetas de los elementos. Enlazado a la entrada <code>main-color</code> de la paleta por defecto.</td>
     </tr>
     <tr>
@@ -1182,7 +1185,7 @@ La propiedad `orderedLists` controla las listas numeradas (`1.`, `2)`, etc.). Se
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>Color principal (<code>#517538</code>)</td>
+      <td>Color principal (<code>#295AA3</code>)</td>
       <td>Color del texto y del marcador numérico. Enlazado a la entrada <code>main-color</code> de la paleta por defecto.</td>
     </tr>
     <tr>
@@ -1349,7 +1352,7 @@ interface MathConfig {
 math: {
   enabled: true,
   fontSizeScale: 1.0,
-  color: { hex: '#517538', model: 'hex' },
+  color: { hex: '#295AA3', model: 'hex' },
   marginTop: { value: 1, unit: 'em' },
   marginBottom: { value: 1, unit: 'em' },
 }
@@ -1401,7 +1404,7 @@ interface ColorValue {
 
 El campo `model` indica el espacio de color previsto. Para renderizado web, `'hex'` o `'rgb'` son los habituales. Para flujos de trabajo de impresión, `'cmyk'` preserva la intención de que el color debe especificarse en CMYK al exportar a PDF.
 
-Como Postext apunta a salida de calidad editorial, el color por defecto del cuerpo de texto se publica con `model: 'cmyk'` (`#000000`). Los colores de encabezados, negritas, cursivas y listas toman por defecto el **Color principal** enlazado a la paleta (`#517538`, `model: 'hex'`). El fondo de página y los indicadores de interfaz (rejilla base, marcas de corte, indicadores de depuración) usan `model: 'hex'` por defecto. Sobrescribe `color.model` en cualquier campo si necesitas otra semántica de exportación.
+Como Postext apunta a salida de calidad editorial, el color por defecto del cuerpo de texto se publica con `model: 'cmyk'` (`#000000`). Los colores de encabezados, negritas, cursivas y listas toman por defecto el **Color principal** enlazado a la paleta (`#295AA3`, `model: 'hex'`). El fondo de página y los indicadores de interfaz (rejilla base, marcas de corte, indicadores de depuración) usan `model: 'hex'` por defecto. Sobrescribe `color.model` en cualquier campo si necesitas otra semántica de exportación.
 
 
 ## Fuentes personalizadas
@@ -1485,7 +1488,7 @@ interface ColorPaletteEntry {
 
 ### La paleta por defecto
 
-Postext incluye una paleta por defecto con una única entrada llamada **Color principal** (`id: 'main-color'`, hex `#517538`). Varios valores por defecto — color de encabezados, color de negritas/cursivas del cuerpo, color de viñetas y marcadores numéricos de listas — referencian esa entrada vía `paletteId: 'main-color'`, de modo que al cambiar esa única muestra se retintea cada elemento del documento que la utilice.
+Postext incluye una paleta por defecto con una única entrada llamada **Color principal** (`id: 'main-color'`, hex `#295AA3`). Varios valores por defecto — color de encabezados, color de negritas/cursivas del cuerpo, color de viñetas y marcadores numéricos de listas — referencian esa entrada vía `paletteId: 'main-color'`, de modo que al cambiar esa única muestra se retintea cada elemento del documento que la utilice.
 
 Se puede inspeccionar, clonar o comparar la paleta por defecto mediante tres exportaciones:
 
@@ -1498,7 +1501,7 @@ import {
 
 // Snapshot de solo lectura de la paleta publicada.
 DEFAULT_COLOR_PALETTE;
-// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#517538', model: 'hex' } }]
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#295AA3', model: 'hex' } }]
 
 // Copia independiente — muta esta, no DEFAULT_COLOR_PALETTE.
 const palette = cloneDefaultColorPalette();

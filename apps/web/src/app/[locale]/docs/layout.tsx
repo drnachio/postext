@@ -3,6 +3,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { DocsSidebar } from "@/components/docs/DocsSidebar";
 import { DocsShell } from "@/components/docs/DocsShell";
+import { DocsSearchPalette } from "@/components/docs/DocsSearchPalette";
 import { getAllDocs } from "@/lib/docs";
 
 export default async function DocsLayout({
@@ -20,6 +21,7 @@ export default async function DocsLayout({
   return (
     <div className="max-w-[100vw]" style={{ overflowX: 'clip' }}>
       <Navbar />
+      <DocsSearchPalette />
       <DocsShell>
         <DocsSidebar docs={docs} />
         {children}

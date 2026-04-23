@@ -207,7 +207,7 @@ function collectHeadingBreakParityWarnings(config: PostextConfig): Warning[] {
   const headings = resolveHeadingsConfig(config.headings);
   for (const lvl of headings.levels) {
     const parity = lvl.breakBefore.parity;
-    if (parity !== 'any' && parity !== 'odd' && parity !== 'even') {
+    if (parity !== 'any' && parity !== 'odd' && parity !== 'even' && parity !== 'always-odd' && parity !== 'always-even') {
       out.push({
         id: `h-break-parity-${lvl.level}`,
         payload: { kind: 'headingBreakInvalidParity', level: lvl.level, value: String(parity) },
