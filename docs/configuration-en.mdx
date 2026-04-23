@@ -592,13 +592,13 @@ The `bodyText` property controls the typography of all paragraph text.
     <tr>
       <td><code>boldColor</code></td>
       <td><code>ColorValue</code></td>
-      <td>Main Color (<code>#517538</code>)</td>
+      <td>Main Color (<code>#295AA3</code>)</td>
       <td>Color applied to bold/strong spans. Resolved against the default palette's <code>main-color</code> entry, so changing the palette colour retints all bold runs across the document.</td>
     </tr>
     <tr>
       <td><code>italicColor</code></td>
       <td><code>ColorValue</code></td>
-      <td>Main Color (<code>#517538</code>)</td>
+      <td>Main Color (<code>#295AA3</code>)</td>
       <td>Color applied to italic/emphasis spans. Same palette-linked default as <code>boldColor</code>.</td>
     </tr>
     <tr>
@@ -830,7 +830,7 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>Main Color (<code>#517538</code>)</td>
+      <td>Main Color (<code>#295AA3</code>)</td>
       <td>Heading text color. Bound to the default palette's <code>main-color</code> entry, so swapping the palette colour retints every heading.</td>
     </tr>
     <tr>
@@ -868,24 +868,27 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
 
 ### Per-level overrides
 
-Each heading level can override the general defaults via the `levels` array. Only the `fontSize` differs by default — all other properties inherit from the general heading settings.
+Each heading level can override the general defaults via the `levels` array. Only `fontSize` (plus H1's `breakBefore`, noted below) differs by default — all other properties inherit from the general heading settings.
 
 <table>
   <thead>
     <tr>
       <th>Level</th>
       <th>Default font size</th>
+      <th>Default <code>breakBefore</code></th>
     </tr>
   </thead>
   <tbody>
-    <tr><td>H1</td><td><code>18 pt</code></td></tr>
-    <tr><td>H2</td><td><code>15 pt</code></td></tr>
-    <tr><td>H3</td><td><code>12 pt</code></td></tr>
-    <tr><td>H4</td><td><code>10 pt</code></td></tr>
-    <tr><td>H5</td><td><code>9 pt</code></td></tr>
-    <tr><td>H6</td><td><code>8 pt</code></td></tr>
+    <tr><td>H1</td><td><code>18 pt</code></td><td><code>&#123; enabled: true, parity: 'always-odd' &#125;</code></td></tr>
+    <tr><td>H2</td><td><code>15 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H3</td><td><code>12 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H4</td><td><code>10 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H5</td><td><code>9 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H6</td><td><code>8 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
   </tbody>
 </table>
+
+The H1 default models a book-style chapter layout: every top-level heading opens on a fresh right-hand (odd) page, with a mandatory blank separator page from the previous chapter. Override it on `levels[0].breakBefore` if your document is flatter than a book.
 
 Per-level overrides support the same properties as the general defaults — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom` — plus two level-only fields:
 
@@ -914,7 +917,7 @@ Per-level overrides support the same properties as the general defaults — `fon
     <tr>
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
-      <td><code>&#123; enabled: false, parity: 'any' &#125;</code></td>
+      <td>H1: <code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6: <code>&#123; enabled: false, parity: 'any' &#125;</code></td>
       <td>Force a page break before every heading of this level. <code>parity: 'odd'</code> / <code>'even'</code> further constrains which side of the spread the heading opens on — a blank padding page is inserted when needed (still counted in the page numbering). <code>'always-odd'</code> / <code>'always-even'</code> additionally guarantee at least one mandatory blank separator page between the previous content and the new heading (the separator belongs to the previous chapter; any further parity padding belongs to the new one). When the heading is the very first block of the document and the first page is still empty, parity enforcement is skipped — the heading lands on page 1 as written.</td>
     </tr>
   </tbody>
@@ -1005,7 +1008,7 @@ The `unorderedLists` property controls how bullet lists (`-`, `*`, `+`) and GFM 
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>Main Color (<code>#517538</code>)</td>
+      <td>Main Color (<code>#295AA3</code>)</td>
       <td>Text and bullet color for items. Bound to the default palette's <code>main-color</code> entry.</td>
     </tr>
     <tr>
@@ -1182,7 +1185,7 @@ The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to fi
     <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
-      <td>Main Color (<code>#517538</code>)</td>
+      <td>Main Color (<code>#295AA3</code>)</td>
       <td>Text and number-marker color for items. Bound to the default palette's <code>main-color</code> entry.</td>
     </tr>
     <tr>
@@ -1349,7 +1352,7 @@ interface MathConfig {
 math: {
   enabled: true,
   fontSizeScale: 1.0,
-  color: { hex: '#517538', model: 'hex' },
+  color: { hex: '#295AA3', model: 'hex' },
   marginTop: { value: 1, unit: 'em' },
   marginBottom: { value: 1, unit: 'em' },
 }
@@ -1401,7 +1404,7 @@ interface ColorValue {
 
 The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` preserves the intent that the color should be specified in CMYK when exported to PDF.
 
-Because Postext targets publication-grade output, the default body text color ships with `model: 'cmyk'` (`#000000`). Heading, bold, italic, and list colors default to the palette-linked **Main Color** (`#517538`, `model: 'hex'`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
+Because Postext targets publication-grade output, the default body text color ships with `model: 'cmyk'` (`#000000`). Heading, bold, italic, and list colors default to the palette-linked **Main Color** (`#295AA3`, `model: 'hex'`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
 
 
 ## Custom fonts
@@ -1485,7 +1488,7 @@ interface ColorPaletteEntry {
 
 ### The default palette
 
-Postext ships with a single-entry default palette called **Main Color** (`id: 'main-color'`, hex `#517538`). Several defaults — heading color, bold/italic body color, bullet and number-marker colors — reference this entry via `paletteId: 'main-color'`, so changing that one swatch retints every part of the document that uses it.
+Postext ships with a single-entry default palette called **Main Color** (`id: 'main-color'`, hex `#295AA3`). Several defaults — heading color, bold/italic body color, bullet and number-marker colors — reference this entry via `paletteId: 'main-color'`, so changing that one swatch retints every part of the document that uses it.
 
 You can inspect, clone, or compare against the default palette via three exports:
 
@@ -1498,7 +1501,7 @@ import {
 
 // Read-only snapshot of the shipped palette.
 DEFAULT_COLOR_PALETTE;
-// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#517538', model: 'hex' } }]
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#295AA3', model: 'hex' } }]
 
 // Independent copy — mutate this, not DEFAULT_COLOR_PALETTE.
 const palette = cloneDefaultColorPalette();
