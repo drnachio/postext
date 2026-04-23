@@ -8,7 +8,13 @@ import {
   type VDTBlock,
 } from '../vdt';
 import { parseMarkdownMemo } from '../parse';
-import { computeHeadingNumbers, type HeadingTemplates } from '../numbering';
+import {
+  buildPageLabels,
+  computeHeadingNumbers,
+  type HeadingTemplates,
+  type NumeralStyle,
+  type PageNumberSegment,
+} from '../numbering';
 import { extractFrontmatter } from '../frontmatter';
 import { initHyphenator } from '../measure';
 import type { MeasurementCache } from '../measure';
@@ -25,6 +31,8 @@ import {
   createPageWithColumns,
   currentColumn,
   advanceToNextColumn,
+  advanceToNextPageBoundary,
+  enforcePageParity,
   placeBlockInColumn,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
@@ -114,9 +122,87 @@ export function buildDocument(
   let blockIdCounter = 0;
   let pendingSpacing = 0;
 
+  // Page-numbering segments. The implicit first segment comes from
+  // `cfg.page.pageNumbering`; `:::numbering` directives append more,
+  // each applied at the next page boundary.
+  const pageNumberSegments: PageNumberSegment[] = [
+    {
+      startPageIndex: 0,
+      format: resolved.page.pageNumbering.format,
+      startAt: resolved.page.pageNumbering.startAt,
+    },
+  ];
+  let pendingNumberingChange:
+    | { format?: NumeralStyle; startAt?: number }
+    | null = null;
+  let lastSeenPageIndex = 0;
+
+  /** Commits any pending `:::numbering` change once we've crossed into a
+   *  new page. Called after every block iteration. */
+  const flushPendingNumberingAtBoundary = (): void => {
+    if (cursor.pageIndex > lastSeenPageIndex) {
+      if (pendingNumberingChange) {
+        pageNumberSegments.push({
+          startPageIndex: cursor.pageIndex,
+          ...pendingNumberingChange,
+        });
+        pendingNumberingChange = null;
+      }
+      lastSeenPageIndex = cursor.pageIndex;
+    }
+  };
+
+  const ALLOWED_PAGE_FORMATS: ReadonlySet<NumeralStyle> = new Set<NumeralStyle>([
+    'decimal',
+    'lower-roman',
+    'upper-roman',
+    'lower-alpha',
+    'upper-alpha',
+  ]);
+
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
     const rawBlock = contentBlocks[blockIdx]!;
+
+    // --- Directives ----------------------------------------------------
+    if (rawBlock.type === 'directive') {
+      const name = rawBlock.directiveName;
+      const attrs = rawBlock.directiveAttrs ?? {};
+      if (name === 'pagebreak') {
+        pendingSpacing = 0;
+        advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+        const parity = attrs.parity;
+        if (parity === 'odd' || parity === 'even') {
+          enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, parity);
+        }
+        flushPendingNumberingAtBoundary();
+      } else if (name === 'numbering') {
+        const change: { format?: NumeralStyle; startAt?: number } = {};
+        const fmt = attrs.format as NumeralStyle | undefined;
+        if (fmt && ALLOWED_PAGE_FORMATS.has(fmt)) change.format = fmt;
+        if (attrs.startAt !== undefined) {
+          const n = Number(attrs.startAt);
+          if (Number.isInteger(n) && n >= 1) change.startAt = n;
+        }
+        if (Object.keys(change).length > 0) pendingNumberingChange = change;
+      }
+      continue;
+    }
+
+    // --- Heading `breakBefore` ----------------------------------------
+    if (rawBlock.type === 'heading' && rawBlock.level) {
+      const level = resolved.headings.levels.find((l) => l.level === rawBlock.level);
+      const bb = level?.breakBefore;
+      if (bb && bb.enabled) {
+        pendingSpacing = 0;
+        advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+        if (bb.parity === 'odd' || bb.parity === 'even') {
+          enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, bb.parity);
+        }
+        flushPendingNumberingAtBoundary();
+      }
+    }
+
     const id = `block-${blockIdCounter++}`;
 
     const kind = resolveBlockKind(rawBlock, {
@@ -553,6 +639,19 @@ export function buildDocument(
       }
       break;
     }
+
+    flushPendingNumberingAtBoundary();
+  }
+
+  // Stamp page-number info onto every page (including blank parity pages).
+  const labels = buildPageLabels(doc.pages.length, pageNumberSegments);
+  for (let i = 0; i < doc.pages.length; i++) {
+    const info = labels[i];
+    if (!info) continue;
+    const page = doc.pages[i]!;
+    page.pageNumberValue = info.value;
+    page.pageLabel = info.label;
+    page.pageNumberFormat = info.format;
   }
 
   buildHeadersAndFooters(doc);

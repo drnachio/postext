@@ -130,6 +130,27 @@ export interface CutLinesConfig {
   color?: ColorValue;
 }
 
+export type PageNumberFormat =
+  | 'decimal'
+  | 'lower-roman'
+  | 'upper-roman'
+  | 'lower-alpha'
+  | 'upper-alpha';
+
+export interface PageNumberingConfig {
+  /** Format for page labels. Default: `'decimal'`. */
+  format?: PageNumberFormat;
+  /** Numeric starting value assigned to the first page of the document,
+   *  regardless of format. `format: 'lower-roman', startAt: 1` yields
+   *  `i, ii, iii, ...`. Default: 1. */
+  startAt?: number;
+}
+
+export interface ResolvedPageNumberingConfig {
+  format: PageNumberFormat;
+  startAt: number;
+}
+
 export interface PageConfig {
   backgroundColor?: ColorValue;
   sizePreset?: PageSizePreset;
@@ -139,6 +160,7 @@ export interface PageConfig {
   dpi?: number;
   cutLines?: CutLinesConfig;
   baselineGrid?: BaselineGridConfig;
+  pageNumbering?: PageNumberingConfig;
 }
 
 export interface ResolvedPageConfig {
@@ -150,6 +172,7 @@ export interface ResolvedPageConfig {
   dpi: number;
   cutLines: { enabled: boolean; bleed: Dimension; markLength: Dimension; markOffset: Dimension; markWidth: Dimension; color: ColorValue };
   baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
+  pageNumbering: ResolvedPageNumberingConfig;
 }
 
 export type LayoutType = 'single' | 'double' | 'oneAndHalf';
@@ -305,6 +328,22 @@ export interface ResolvedBodyTextConfig {
   keepColonWithList: boolean;
 }
 
+export type HeadingBreakParity = 'any' | 'odd' | 'even';
+
+export interface HeadingBreakBeforeConfig {
+  /** When true, force a page break before every heading of this level. */
+  enabled?: boolean;
+  /** Optional parity constraint on the page the heading opens on.
+   *  `'odd'` / `'even'` inserts a blank padding page when needed. Default:
+   *  `'any'`. */
+  parity?: HeadingBreakParity;
+}
+
+export interface ResolvedHeadingBreakBeforeConfig {
+  enabled: boolean;
+  parity: HeadingBreakParity;
+}
+
 export interface HeadingLevelConfig {
   level: number;
   fontSize?: Dimension;
@@ -316,6 +355,7 @@ export interface HeadingLevelConfig {
   marginBottom?: Dimension;
   numberingTemplate?: string;
   italic?: boolean;
+  breakBefore?: HeadingBreakBeforeConfig;
 }
 
 export interface ResolvedHeadingLevelConfig {
@@ -329,6 +369,7 @@ export interface ResolvedHeadingLevelConfig {
   marginBottom: Dimension;
   numberingTemplate: string;
   italic: boolean;
+  breakBefore: ResolvedHeadingBreakBeforeConfig;
 }
 
 export interface HeadingsConfig {

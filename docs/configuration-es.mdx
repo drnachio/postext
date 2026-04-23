@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-21',
+  lastUpdated: '2026-04-23',
   readingTime: '18 min',
   order: 3,
 };
@@ -231,6 +231,37 @@ Al activarse, el lienzo se expande para incluir una zona de sangrado y el motor 
     </tr>
   </tbody>
 </table>
+
+### Numeración
+
+El bloque `page.pageNumbering` controla cómo se formatean las etiquetas de página y dónde empieza el contador. Define únicamente el valor por defecto de todo el documento — para reiniciar la numeración en medio del documento (por ejemplo, números romanos en las páginas preliminares que pasan a decimal desde 1 en los capítulos), usa la directiva `:::numbering` (consulta **Formato del documento → Directivas**).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '260px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code></td>
+      <td><code>'decimal'</code></td>
+      <td>Estilo numérico utilizado para renderizar las etiquetas de página.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Valor numérico asignado a la primera página, independientemente del formato. <code>format: 'lower-roman', startAt: 1</code> produce <code>i, ii, iii, …</code>; <code>format: 'decimal', startAt: 17</code> produce <code>17, 18, 19, …</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+La etiqueta calculada se almacena en cada `VDTPage` como `pageLabel` y es el valor que resuelve el marcador <code>\{pageNumber\}</code> en encabezados y pies. Los PDFs emiten un árbol `/PageLabels` de modo que el indicador de página y la navegación «Ir a la página» de Preview / Acrobat coinciden exactamente con las etiquetas impresas.
 
 
 ## Disposición
@@ -880,6 +911,12 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td><code>''</code></td>
       <td>Reservado para numeración automática de encabezados (por ejemplo, <code>'Capítulo {n}. '</code>). Actualmente se almacena en la configuración resuelta y se propaga a través del pipeline; el renderizado lo respetará en una próxima versión.</td>
     </tr>
+    <tr>
+      <td><code>breakBefore</code></td>
+      <td><code>HeadingBreakBeforeConfig</code></td>
+      <td><code>&#123; enabled: false, parity: 'any' &#125;</code></td>
+      <td>Fuerza un salto de página antes de cada encabezado de este nivel. <code>parity: 'odd'</code> / <code>'even'</code> restringe además en qué lado del pliego se abrirá — se inserta una página en blanco de relleno cuando sea necesario (sigue contando para la numeración).</td>
+    </tr>
   </tbody>
 </table>
 
@@ -887,11 +924,16 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
 headings: {
   fontFamily: 'Merriweather',
   levels: [
-    { level: 1, fontSize: { value: 24, unit: 'pt' }, color: { hex: '#1a1a2e', model: 'hex' } },
+    // Preajuste canónico de libro: los capítulos se abren en la página derecha (impar).
+    { level: 1, fontSize: { value: 24, unit: 'pt' }, breakBefore: { enabled: true, parity: 'odd' } },
     { level: 2, fontSize: { value: 18, unit: 'pt' }, italic: true },
   ]
 }
 ```
+
+### Saltar antes
+
+`breakBefore` es ortogonal a los controles de numeración: activarlo fuerza un salto de página, pero el contador numérico solo se reinicia cuando insertas explícitamente una directiva <code>:::numbering</code>. Las páginas de relleno por paridad cuentan como páginas reales en la secuencia y reciben encabezados/pies según sus reglas normales de impar/par.
 
 
 ## Listas no ordenadas

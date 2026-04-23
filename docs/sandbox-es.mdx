@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Entorno interactivo para experimentar con el motor de maquetación de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-21',
+  lastUpdated: '2026-04-23',
   readingTime: '6 min',
   order: 7,
 };
@@ -49,10 +49,10 @@ Un editor basado en formulario para `PostextConfig`. Los ajustes se agrupan en s
 
 | Sección | Ajustes |
 |---------|---------|
-| **Página** | Color de fondo, tamaño predefinido (o ancho/alto personalizados), márgenes (superior, inferior, izquierdo, derecho), DPI, líneas de corte, rejilla de línea base (con color y grosor de línea) |
+| **Página** | Color de fondo, tamaño predefinido (o ancho/alto personalizados), márgenes (superior, inferior, izquierdo, derecho), DPI, líneas de corte, rejilla de línea base (con color y grosor de línea) y una subsección **Numeración** (formato + valor inicial) para las etiquetas de página |
 | **Maquetación** | Tipo de maquetación (una columna, doble, columna y media), ancho del medianil, porcentaje de columna lateral |
 | **Texto de cuerpo** | Familia tipográfica (con búsqueda de Google Fonts), tamaño de fuente, interlineado, color de texto, alineación, peso de fuente, peso de la negrita, separación silábica (interruptor + locale) |
-| **Encabezados** | Valores por defecto generales (familia tipográfica, interlineado, color, alineación, peso, márgenes) más sobrecargas por nivel (H1–H6) para tamaño de fuente, interlineado, familia tipográfica, peso, color y márgenes |
+| **Encabezados** | Valores por defecto generales (familia tipográfica, interlineado, color, alineación, peso, márgenes) más sobrecargas por nivel (H1–H6) para tamaño de fuente, interlineado, familia tipográfica, peso, color, márgenes, y un interruptor **Romper antes** con selector de paridad opcional |
 
 Los controles son contextuales: el ancho del medianil solo aparece en maquetaciones multicolumna, los ajustes de separación silábica solo aparecen cuando el texto está justificado, y el porcentaje de columna lateral solo se muestra en la maquetación de columna y media. Los cambios surten efecto inmediatamente en la vista previa del viewport. Para una referencia completa de todas las opciones de configuración y sus valores por defecto, consulta la página de [Configuración](/es/docs/configuration).
 

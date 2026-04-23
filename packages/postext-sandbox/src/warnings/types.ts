@@ -10,7 +10,14 @@ export type WarningKind =
   | 'invalidMath'
   | 'unclosedMath'
   | 'headerFooterUnknownPlaceholder'
-  | 'headerFooterMetadataMissing';
+  | 'headerFooterMetadataMissing'
+  | 'unknownDirective'
+  | 'numberingInvalidFormat'
+  | 'numberingInvalidStartAt'
+  | 'pagebreakInvalidParity'
+  | 'headingBreakInvalidParity'
+  | 'parityCascade'
+  | 'alphaPdfOverflow';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -50,7 +57,14 @@ export type WarningPayload =
       slot: 'header' | 'footer';
       elementIndex: number;
       name: string;
-    };
+    }
+  | { kind: 'unknownDirective'; name: string }
+  | { kind: 'numberingInvalidFormat'; value: string }
+  | { kind: 'numberingInvalidStartAt'; value: string }
+  | { kind: 'pagebreakInvalidParity'; value: string }
+  | { kind: 'headingBreakInvalidParity'; level: number; value: string }
+  | { kind: 'parityCascade'; runLength: number }
+  | { kind: 'alphaPdfOverflow' };
 
 export interface Warning {
   id: string;

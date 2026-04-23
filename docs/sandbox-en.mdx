@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-04-21',
+  lastUpdated: '2026-04-23',
   readingTime: '6 min',
   order: 7,
 };
@@ -49,10 +49,10 @@ A form-based editor for `PostextConfig`. Settings are grouped into collapsible s
 
 | Section | Settings |
 |---------|----------|
-| **Page** | Background color, size preset (or custom width/height), margins (top, bottom, left, right), DPI, cut lines, baseline grid (with color and line width) |
+| **Page** | Background color, size preset (or custom width/height), margins (top, bottom, left, right), DPI, cut lines, baseline grid (with color and line width), and a **Numbering** subsection (format + start-at) for page labels |
 | **Layout** | Layout type (single, double, column-and-a-half), gutter width, side column percentage |
 | **Body Text** | Font family (with Google Fonts search), font size, line height, text color, text alignment, font weight, bold font weight, hyphenation (toggle + locale) |
-| **Headings** | General defaults (font family, line height, color, alignment, weight, margins) plus per-level overrides (H1–H6) for font size, line height, font family, weight, color, and margins |
+| **Headings** | General defaults (font family, line height, color, alignment, weight, margins) plus per-level overrides (H1–H6) for font size, line height, font family, weight, color, margins, and a **Break before** toggle with an optional parity selector |
 
 Controls are context-aware: gutter width only appears for multi-column layouts, hyphenation settings only appear when text is justified, and side column percentage only shows for the column-and-a-half layout. Changes take effect immediately in the viewport preview. For a full reference of all configuration options and their defaults, see the [Configuration](/en/docs/configuration) page.
 

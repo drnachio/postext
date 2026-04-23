@@ -132,7 +132,7 @@ export function resolvePlaceholders(
 function resolveName(name: string, ctx: PlaceholderContext): string {
   switch (name) {
     case 'pageNumber':
-      return String(ctx.page.index + 1);
+      return ctx.page.pageLabel;
     case 'totalPages':
       return String(ctx.allPages.length);
     case 'title':

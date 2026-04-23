@@ -2,8 +2,8 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
-import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, dimensionsEqual, colorsEqual } from 'postext';
-import type { PageConfig, PageSizePreset, Dimension } from 'postext';
+import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, DEFAULT_PAGE_NUMBERING, dimensionsEqual, colorsEqual } from 'postext';
+import type { PageConfig, PageNumberingConfig, PageSizePreset, PageNumberFormat, Dimension } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -69,6 +69,24 @@ export const PageSection = memo(function PageSection() {
     }
   };
 
+  const updatePageNumbering = (partial: Partial<PageNumberingConfig>) => {
+    updatePage({ pageNumbering: { ...raw?.pageNumbering, ...partial } });
+  };
+
+  const resetPageNumberingField = (field: keyof PageNumberingConfig) => {
+    if (!raw?.pageNumbering) return;
+    const next = { ...raw.pageNumbering };
+    delete next[field];
+    const hasKeys = Object.keys(next).length > 0;
+    if (hasKeys) {
+      updatePage({ pageNumbering: next });
+    } else {
+      const r = { ...raw };
+      delete r.pageNumbering;
+      dispatch({ type: 'UPDATE_CONFIG', payload: { page: Object.keys(r).length > 0 ? r : undefined } });
+    }
+  };
+
   const resetCutLinesField = (field: 'enabled' | 'bleed' | 'markLength' | 'markOffset' | 'markWidth' | 'color') => {
     if (!raw?.cutLines || typeof raw.cutLines === 'boolean') return;
     const next = { ...raw.cutLines };
@@ -120,6 +138,16 @@ export const PageSection = memo(function PageSection() {
   const isCutLinesMarkOffsetDefault = dimensionsEqual(page.cutLines.markOffset, DEFAULT_CUT_LINES.markOffset);
   const isCutLinesMarkWidthDefault = dimensionsEqual(page.cutLines.markWidth, DEFAULT_CUT_LINES.markWidth);
   const isCutLinesColorDefault = colorsEqual(page.cutLines.color, DEFAULT_CUT_LINES.color);
+  const isNumberingFormatDefault = page.pageNumbering.format === DEFAULT_PAGE_NUMBERING.format;
+  const isNumberingStartAtDefault = page.pageNumbering.startAt === DEFAULT_PAGE_NUMBERING.startAt;
+
+  const PAGE_NUMBER_FORMAT_OPTIONS = [
+    { value: 'decimal', label: labels.pageNumberingFormatDecimal },
+    { value: 'lower-roman', label: labels.pageNumberingFormatLowerRoman },
+    { value: 'upper-roman', label: labels.pageNumberingFormatUpperRoman },
+    { value: 'lower-alpha', label: labels.pageNumberingFormatLowerAlpha },
+    { value: 'upper-alpha', label: labels.pageNumberingFormatUpperAlpha },
+  ];
 
   return (
     <CollapsibleSection
@@ -306,6 +334,31 @@ export const PageSection = memo(function PageSection() {
           />
         </NestedGroup>
       )}
+
+      <CollapsibleSection
+        title={labels.pageNumbering}
+        sectionId="page-numbering"
+      >
+        <SelectInput
+          label={labels.pageNumberingFormat}
+          value={page.pageNumbering.format}
+          options={PAGE_NUMBER_FORMAT_OPTIONS}
+          onChange={(v) => updatePageNumbering({ format: v as PageNumberFormat })}
+          tooltip={labels.pageNumberingFormatTooltip}
+          isDefault={isNumberingFormatDefault}
+          onReset={() => resetPageNumberingField('format')}
+        />
+        <NumberInput
+          label={labels.pageNumberingStartAt}
+          value={page.pageNumbering.startAt}
+          onChange={(v) => updatePageNumbering({ startAt: v })}
+          min={1}
+          step={1}
+          tooltip={labels.pageNumberingStartAtTooltip}
+          isDefault={isNumberingStartAtDefault}
+          onReset={() => resetPageNumberingField('startAt')}
+        />
+      </CollapsibleSection>
 
     </CollapsibleSection>
   );
