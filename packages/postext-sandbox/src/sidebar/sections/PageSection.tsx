@@ -338,26 +338,29 @@ export const PageSection = memo(function PageSection() {
       <CollapsibleSection
         title={labels.pageNumbering}
         sectionId="page-numbering"
+        variant="subsection"
       >
-        <SelectInput
-          label={labels.pageNumberingFormat}
-          value={page.pageNumbering.format}
-          options={PAGE_NUMBER_FORMAT_OPTIONS}
-          onChange={(v) => updatePageNumbering({ format: v as PageNumberFormat })}
-          tooltip={labels.pageNumberingFormatTooltip}
-          isDefault={isNumberingFormatDefault}
-          onReset={() => resetPageNumberingField('format')}
-        />
-        <NumberInput
-          label={labels.pageNumberingStartAt}
-          value={page.pageNumbering.startAt}
-          onChange={(v) => updatePageNumbering({ startAt: v })}
-          min={1}
-          step={1}
-          tooltip={labels.pageNumberingStartAtTooltip}
-          isDefault={isNumberingStartAtDefault}
-          onReset={() => resetPageNumberingField('startAt')}
-        />
+        <NestedGroup>
+          <SelectInput
+            label={labels.pageNumberingFormat}
+            value={page.pageNumbering.format}
+            options={PAGE_NUMBER_FORMAT_OPTIONS}
+            onChange={(v) => updatePageNumbering({ format: v as PageNumberFormat })}
+            tooltip={labels.pageNumberingFormatTooltip}
+            isDefault={isNumberingFormatDefault}
+            onReset={() => resetPageNumberingField('format')}
+          />
+          <NumberInput
+            label={labels.pageNumberingStartAt}
+            value={page.pageNumbering.startAt}
+            onChange={(v) => updatePageNumbering({ startAt: v })}
+            min={1}
+            step={1}
+            tooltip={labels.pageNumberingStartAtTooltip}
+            isDefault={isNumberingStartAtDefault}
+            onReset={() => resetPageNumberingField('startAt')}
+          />
+        </NestedGroup>
       </CollapsibleSection>
 
     </CollapsibleSection>

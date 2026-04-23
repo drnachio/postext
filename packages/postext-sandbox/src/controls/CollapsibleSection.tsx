@@ -15,6 +15,10 @@ interface CollapsibleSectionProps {
   hasOverrides?: boolean;
   resetLabel?: string;
   resetConfirmMessage?: string;
+  /** Visual density of the header. `'section'` (default) is the uppercase
+   *  primary-section style. `'subsection'` renders a smaller, non-uppercase
+   *  header that nests inside another section. */
+  variant?: 'section' | 'subsection';
 }
 
 export function CollapsibleSection({
@@ -26,6 +30,7 @@ export function CollapsibleSection({
   hasOverrides = false,
   resetLabel = 'Reset section',
   resetConfirmMessage = 'Reset this section to defaults?',
+  variant = 'section',
 }: CollapsibleSectionProps) {
   const [open, setOpen] = useState(() => {
     if (sectionId) {
@@ -64,20 +69,29 @@ export function CollapsibleSection({
     }
   };
 
+  const isSubsection = variant === 'subsection';
+  const headerClass = isSubsection
+    ? 'flex flex-1 items-center justify-between px-3 py-2 text-xs transition-colors'
+    : 'flex flex-1 items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors';
+  const headerIdleColor = isSubsection ? 'var(--slate)' : 'var(--gilt)';
+  const containerClass = isSubsection
+    ? 'flex w-full items-center'
+    : 'flex w-full items-center border-b';
+
   return (
     <div>
       <div
-        className="flex w-full items-center border-b"
+        className={containerClass}
         style={{ borderColor: 'var(--rule)' }}
       >
         <button
           type="button"
           aria-expanded={open}
           onClick={toggle}
-          className="flex flex-1 items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors"
-          style={{ color: 'var(--gilt)', cursor: 'pointer', border: 'none', background: 'none' }}
+          className={headerClass}
+          style={{ color: headerIdleColor, cursor: 'pointer', border: 'none', background: 'none' }}
           onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--gilt)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = headerIdleColor)}
         >
           {title}
           <ChevronRight

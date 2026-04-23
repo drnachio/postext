@@ -468,6 +468,10 @@ export interface SandboxLabels {
   unorderedList: string;
   undo: string;
   redo: string;
+  pagebreakDirective: string;
+  pagebreakDirectiveTooltip: string;
+  numberingDirective: string;
+  numberingDirectiveTooltip: string;
 
   // Persistence
   save: string;
