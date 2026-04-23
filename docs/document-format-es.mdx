@@ -153,6 +153,24 @@ El capítulo anterior termina aquí.
 # Un nuevo capítulo
 ```
 
+#### Atributo `parity`
+
+El atributo `parity` acepta los mismos cinco valores que `headings.levels[*].breakBefore.parity`:
+
+- `'odd'` / `'even'` — la nueva página abre en el lado solicitado del pliego; solo se inserta una página en blanco cuando la siguiente página natural cae en el lado equivocado.
+- `'always-odd'` / `'always-even'` — garantizan al menos una página separadora en blanco obligatoria entre el contenido anterior y la nueva página, y después fuerzan la paridad. La separadora pertenece al capítulo **anterior**; cualquier relleno de paridad adicional pertenece a lo que viene después.
+
+#### Pertenencia de las páginas en blanco
+
+Los dos tipos de páginas en blanco que `:::pagebreak` (y `breakBefore`) pueden introducir se distinguen en el modelo `VDTPage`:
+
+- `blankForParity: true` — insertada para satisfacer una restricción de paridad. En el marcador `{chapterTitle}` esta página lleva el título del capítulo **entrante**, porque la página en blanco solo existe para empujar ese capítulo a la paridad correcta.
+- `blankForForce: true` — la página separadora obligatoria que añade un modo `'always-*'`. Pertenece al capítulo **anterior** — es una pausa deliberada de cierre de capítulo, no un relleno de paridad para el capítulo siguiente.
+
+#### Excepción al inicio del documento
+
+Cuando `:::pagebreak` es la primera construcción del documento (o un encabezado con `breakBefore` lo dispara), la imposición de paridad se omite mientras la primera página siga vacía. El siguiente bloque aterriza en la página 1 tal cual, independientemente de la paridad solicitada — no se inserta una página en blanco inicial superflua.
+
 ### `:::numbering`
 
 `:::numbering` es la forma de reiniciar el contador de páginas a mitad del documento. Ejemplo canónico de libro:

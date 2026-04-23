@@ -915,7 +915,7 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td><code>&#123; enabled: false, parity: 'any' &#125;</code></td>
-      <td>Fuerza un salto de página antes de cada encabezado de este nivel. <code>parity: 'odd'</code> / <code>'even'</code> restringe además en qué lado del pliego se abrirá — se inserta una página en blanco de relleno cuando sea necesario (sigue contando para la numeración). <code>'always-odd'</code> / <code>'always-even'</code> garantizan además al menos una página separadora en blanco obligatoria entre el contenido anterior y el nuevo encabezado (la separadora pertenece al capítulo anterior; cualquier relleno de paridad adicional pertenece al nuevo).</td>
+      <td>Fuerza un salto de página antes de cada encabezado de este nivel. <code>parity: 'odd'</code> / <code>'even'</code> restringe además en qué lado del pliego se abrirá — se inserta una página en blanco de relleno cuando sea necesario (sigue contando para la numeración). <code>'always-odd'</code> / <code>'always-even'</code> garantizan además al menos una página separadora en blanco obligatoria entre el contenido anterior y el nuevo encabezado (la separadora pertenece al capítulo anterior; cualquier relleno de paridad adicional pertenece al nuevo). Cuando el encabezado es el primer bloque del documento y la primera página sigue vacía, la imposición de paridad se omite — el encabezado aterriza en la página 1 tal cual.</td>
     </tr>
   </tbody>
 </table>
@@ -933,7 +933,51 @@ headings: {
 
 ### Saltar antes
 
-`breakBefore` es ortogonal a los controles de numeración: activarlo fuerza un salto de página, pero el contador numérico solo se reinicia cuando insertas explícitamente una directiva <code>:::numbering</code>. Las páginas de relleno por paridad cuentan como páginas reales en la secuencia y reciben encabezados/pies según sus reglas normales de impar/par.
+`breakBefore` es ortogonal a los controles de numeración: activarlo fuerza un salto de página, pero el contador numérico solo se reinicia cuando insertas explícitamente una directiva `:::numbering`. Las páginas de relleno por paridad cuentan como páginas reales en la secuencia y reciben encabezados/pies según sus reglas normales de impar/par.
+
+#### Valores de paridad
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Valor</th>
+      <th>Comportamiento</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>'any'</code> (por defecto)</td>
+      <td>Sin restricción de paridad. El encabezado simplemente se abre en la siguiente página.</td>
+    </tr>
+    <tr>
+      <td><code>'odd'</code></td>
+      <td>Garantiza que el encabezado se abra en una página impar (lado derecho). Solo se inserta una página en blanco si la siguiente página natural sería par.</td>
+    </tr>
+    <tr>
+      <td><code>'even'</code></td>
+      <td>Igual pero para una página par (lado izquierdo).</td>
+    </tr>
+    <tr>
+      <td><code>'always-odd'</code></td>
+      <td>Garantiza <strong>al menos una página separadora en blanco obligatoria</strong> entre el contenido anterior y el nuevo encabezado, y después fuerza la paridad impar. Útil cuando cada capítulo debe empezar un pliego nuevo.</td>
+    </tr>
+    <tr>
+      <td><code>'always-even'</code></td>
+      <td>Igual pero para una página par.</td>
+    </tr>
+  </tbody>
+</table>
+
+#### Pertenencia de las páginas en blanco
+
+Las páginas en blanco que inserta `breakBefore` reciben el encabezado `{chapterTitle}` en función del motivo de su inserción:
+
+- Las páginas insertadas para satisfacer una restricción de paridad (`'odd'`, `'even'`, o la cola de paridad de `'always-*'`) pertenecen al capítulo **entrante**. Su marcador `{chapterTitle}` resuelve al título del nuevo capítulo — porque la página en blanco solo existe para empujar al nuevo capítulo hasta la paridad correcta.
+- La página separadora obligatoria que inserta `'always-odd'` / `'always-even'` pertenece al capítulo **anterior**. Es una pausa de cierre de capítulo deliberada, así que `{chapterTitle}` sigue mostrando el título del capítulo saliente.
+
+#### Excepción al inicio del documento
+
+Cuando el primer bloque del documento es un encabezado con `breakBefore` activado — o la fuente empieza con `:::pagebreak` —, la imposición de paridad se omite mientras la primera página siga vacía. El encabezado aterriza en la página 1 tal cual, independientemente de la paridad configurada, de modo que un documento que comienza con `# Capítulo 1` con `parity: 'odd'` no arrastra una página en blanco inicial innecesaria. Una vez que se ha colocado cualquier contenido, la imposición de paridad funciona de forma habitual.
 
 
 ## Listas no ordenadas

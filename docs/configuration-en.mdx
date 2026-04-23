@@ -915,7 +915,7 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td><code>&#123; enabled: false, parity: 'any' &#125;</code></td>
-      <td>Force a page break before every heading of this level. <code>parity: 'odd'</code> / <code>'even'</code> further constrains which side of the spread the heading opens on — a blank padding page is inserted when needed (still counted in the page numbering). <code>'always-odd'</code> / <code>'always-even'</code> additionally guarantee at least one mandatory blank separator page between the previous content and the new heading (the separator belongs to the previous chapter; any further parity padding belongs to the new one).</td>
+      <td>Force a page break before every heading of this level. <code>parity: 'odd'</code> / <code>'even'</code> further constrains which side of the spread the heading opens on — a blank padding page is inserted when needed (still counted in the page numbering). <code>'always-odd'</code> / <code>'always-even'</code> additionally guarantee at least one mandatory blank separator page between the previous content and the new heading (the separator belongs to the previous chapter; any further parity padding belongs to the new one). When the heading is the very first block of the document and the first page is still empty, parity enforcement is skipped — the heading lands on page 1 as written.</td>
     </tr>
   </tbody>
 </table>
@@ -933,7 +933,51 @@ headings: {
 
 ### Break before
 
-`breakBefore` is orthogonal to the numbering controls: turning it on forces a page break, but the numeric counter only resets when you explicitly insert a <code>:::numbering</code> directive. Blank parity pages count as real pages in the sequence and receive headers/footers according to their normal odd/even rules.
+`breakBefore` is orthogonal to the numbering controls: turning it on forces a page break, but the numeric counter only resets when you explicitly insert a `:::numbering` directive. Blank parity pages count as real pages in the sequence and receive headers/footers according to their normal odd/even rules.
+
+#### Parity values
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Value</th>
+      <th>Behavior</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>'any'</code> (default)</td>
+      <td>No parity constraint. The heading just opens on the next page.</td>
+    </tr>
+    <tr>
+      <td><code>'odd'</code></td>
+      <td>Ensure the heading opens on an odd (right-hand) page. A single blank is inserted only when the natural next page is even.</td>
+    </tr>
+    <tr>
+      <td><code>'even'</code></td>
+      <td>Same but for an even (left-hand) page.</td>
+    </tr>
+    <tr>
+      <td><code>'always-odd'</code></td>
+      <td>Guarantee <strong>at least one mandatory blank separator page</strong> between the previous content and the new heading, then ensure odd parity. Useful when every chapter must start on a fresh spread.</td>
+    </tr>
+    <tr>
+      <td><code>'always-even'</code></td>
+      <td>Same but for an even page.</td>
+    </tr>
+  </tbody>
+</table>
+
+#### Blank-page ownership
+
+Blank pages inserted by `breakBefore` carry chapter-title headers based on *why* they were inserted:
+
+- Pages inserted to satisfy a parity constraint (`'odd'`, `'even'`, or the parity tail of `'always-*'`) belong to the **upcoming** chapter. Their `{chapterTitle}` header placeholder resolves to the new chapter's title — because the blank exists only to push the new chapter onto the correct parity.
+- The mandatory leading separator inserted by `'always-odd'` / `'always-even'` belongs to the **previous** chapter. It's a deliberate end-of-chapter breath, so the `{chapterTitle}` header still shows the old chapter's title.
+
+#### Document-start exception
+
+When the very first block of the document is a heading with `breakBefore` enabled — or the source opens with `:::pagebreak` — parity enforcement is skipped while the first page is still empty. The heading lands on page 1 as written, regardless of the configured parity, so a document that begins with a `# Chapter 1` configured `parity: 'odd'` doesn't inherit a spurious leading blank. Once any content has been placed, parity enforcement behaves normally.
 
 
 ## Unordered Lists
