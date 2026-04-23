@@ -3,7 +3,7 @@ import type { ResolvedConfig } from '../vdt';
 
 export const DEFAULT_MAIN_COLOR_ID = 'main-color';
 export const DEFAULT_MAIN_COLOR_NAME = 'Main Color';
-export const DEFAULT_MAIN_COLOR_HEX = '#517538';
+export const DEFAULT_MAIN_COLOR_HEX = '#295AA3';
 
 export const DEFAULT_MAIN_COLOR: ColorValue = {
   hex: DEFAULT_MAIN_COLOR_HEX,
