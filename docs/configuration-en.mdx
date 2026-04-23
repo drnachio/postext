@@ -915,7 +915,7 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td><code>&#123; enabled: false, parity: 'any' &#125;</code></td>
-      <td>Force a page break before every heading of this level. <code>parity: 'odd'</code> / <code>'even'</code> further constrains which side of the spread the heading opens on — a blank padding page is inserted when needed (still counted in the page numbering).</td>
+      <td>Force a page break before every heading of this level. <code>parity: 'odd'</code> / <code>'even'</code> further constrains which side of the spread the heading opens on — a blank padding page is inserted when needed (still counted in the page numbering). <code>'always-odd'</code> / <code>'always-even'</code> additionally guarantee at least one mandatory blank separator page between the previous content and the new heading (the separator belongs to the previous chapter; any further parity padding belongs to the new one).</td>
     </tr>
   </tbody>
 </table>

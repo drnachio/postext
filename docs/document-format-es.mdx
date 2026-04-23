@@ -123,6 +123,14 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
       <td>Igual, pero apuntando a una página par (lado izquierdo).</td>
     </tr>
     <tr>
+      <td><code>:::pagebreak&#123;parity="always-odd"&#125;</code></td>
+      <td>Garantiza al menos una página separadora en blanco obligatoria antes de aterrizar en una página impar. La página separadora pertenece al contenido anterior; cualquier relleno de paridad adicional pertenece a lo que sigue. Útil cuando cada capítulo debe empezar un pliego nuevo.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="always-even"&#125;</code></td>
+      <td>Igual, pero apuntando a una página par.</td>
+    </tr>
+    <tr>
       <td><code>:::numbering&#123;format="decimal" startAt=1&#125;</code></td>
       <td>En el siguiente límite de página, cambia la secuencia de numeración. Ambos atributos son opcionales — omite <code>format</code> para mantener el formato, omite <code>startAt</code> para continuar el contador.</td>
     </tr>

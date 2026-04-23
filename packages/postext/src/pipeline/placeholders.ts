@@ -2,10 +2,16 @@ import type { DocumentMetadata } from '../types';
 import type { VDTBlock, VDTPage } from '../vdt';
 
 /** A minimal view of a page used by `computeChapterTitles` to detect
- *  blank parity-padding pages. We accept just the flag rather than the
- *  whole `VDTPage` so this helper stays easy to test in isolation. */
+ *  blank parity-padding pages. We accept just the flags rather than the
+ *  whole `VDTPage` so this helper stays easy to test in isolation.
+ *
+ *  `blankForParity` pages belong to the upcoming chapter (they exist
+ *  solely to push it onto the right parity). `blankForForce` pages
+ *  belong to the *previous* chapter (they are the mandatory separator
+ *  of the `always-*` modes) — the walker stops when it hits one. */
 export interface ChapterTitlePageInfo {
   blankForParity?: boolean;
+  blankForForce?: boolean;
 }
 
 export interface PlaceholderContext {
@@ -83,11 +89,16 @@ export function computeChapterTitles(
   // Reassign parity-padding pages preceding each H1 to the upcoming
   // chapter's title. The blank page was inserted solely to push the
   // chapter onto the correct parity — conceptually it belongs to the
-  // chapter it precedes.
+  // chapter it precedes. `blankForForce` pages (the mandatory leading
+  // separator of `always-*` modes) stop the walk: they belong to the
+  // previous chapter.
   if (pages) {
     for (const { pageIndex, title } of h1PageIndices) {
       for (let p = pageIndex - 1; p >= 0; p--) {
-        if (!pages[p]?.blankForParity) break;
+        const info = pages[p];
+        if (!info) break;
+        if (info.blankForForce) break;
+        if (!info.blankForParity) break;
         out[p] = title;
       }
     }

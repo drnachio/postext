@@ -8,6 +8,7 @@ import {
   ColorPicker,
   DimensionInput,
   FontPicker,
+  NestedGroup,
   NumberInput,
   SelectInput,
   TextInput,
@@ -176,19 +177,23 @@ export function HeadingLevelSection({
         onReset={() => onReset(level, 'breakBefore')}
       />
       {resolved.breakBefore.enabled && (
-        <SelectInput
-          label={labels.headingBreakBeforeParity}
-          value={resolved.breakBefore.parity}
-          options={[
-            { value: 'any', label: labels.headingBreakBeforeParityAny },
-            { value: 'odd', label: labels.headingBreakBeforeParityOdd },
-            { value: 'even', label: labels.headingBreakBeforeParityEven },
-          ]}
-          onChange={(v) => onUpdate(level, { breakBefore: { enabled: true, parity: v as HeadingBreakParity } })}
-          tooltip={labels.headingBreakBeforeParityTooltip}
-          isDefault={isBreakBeforeParityDefault}
-          onReset={() => onUpdate(level, { breakBefore: { enabled: true } })}
-        />
+        <NestedGroup>
+          <SelectInput
+            label={labels.headingBreakBeforeParity}
+            value={resolved.breakBefore.parity}
+            options={[
+              { value: 'any', label: labels.headingBreakBeforeParityAny },
+              { value: 'odd', label: labels.headingBreakBeforeParityOdd },
+              { value: 'even', label: labels.headingBreakBeforeParityEven },
+              { value: 'always-odd', label: labels.headingBreakBeforeParityAlwaysOdd },
+              { value: 'always-even', label: labels.headingBreakBeforeParityAlwaysEven },
+            ]}
+            onChange={(v) => onUpdate(level, { breakBefore: { enabled: true, parity: v as HeadingBreakParity } })}
+            tooltip={labels.headingBreakBeforeParityTooltip}
+            isDefault={isBreakBeforeParityDefault}
+            onReset={() => onUpdate(level, { breakBefore: { enabled: true } })}
+          />
+        </NestedGroup>
       )}
     </CollapsibleSection>
   );

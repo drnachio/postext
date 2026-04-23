@@ -915,7 +915,7 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td><code>&#123; enabled: false, parity: 'any' &#125;</code></td>
-      <td>Fuerza un salto de página antes de cada encabezado de este nivel. <code>parity: 'odd'</code> / <code>'even'</code> restringe además en qué lado del pliego se abrirá — se inserta una página en blanco de relleno cuando sea necesario (sigue contando para la numeración).</td>
+      <td>Fuerza un salto de página antes de cada encabezado de este nivel. <code>parity: 'odd'</code> / <code>'even'</code> restringe además en qué lado del pliego se abrirá — se inserta una página en blanco de relleno cuando sea necesario (sigue contando para la numeración). <code>'always-odd'</code> / <code>'always-even'</code> garantizan además al menos una página separadora en blanco obligatoria entre el contenido anterior y el nuevo encabezado (la separadora pertenece al capítulo anterior; cualquier relleno de paridad adicional pertenece al nuevo).</td>
     </tr>
   </tbody>
 </table>

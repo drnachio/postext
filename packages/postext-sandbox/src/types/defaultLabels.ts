@@ -265,6 +265,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   headingBreakBeforeParityAny: 'Any side',
   headingBreakBeforeParityOdd: 'Odd (right-hand)',
   headingBreakBeforeParityEven: 'Even (left-hand)',
+  headingBreakBeforeParityAlwaysOdd: 'Always new spread + odd (right-hand)',
+  headingBreakBeforeParityAlwaysEven: 'Always new spread + even (left-hand)',
   unorderedLists: 'Unordered Lists',
   unorderedListsFont: 'Bullet Font',
   unorderedListsFontTooltip: 'Default font family used to render list bullets (inherits from body text when unset)',

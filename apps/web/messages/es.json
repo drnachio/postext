@@ -448,6 +448,8 @@
     "headingBreakBeforeParityAny": "Cualquier lado",
     "headingBreakBeforeParityOdd": "Impar (lado derecho)",
     "headingBreakBeforeParityEven": "Par (lado izquierdo)",
+    "headingBreakBeforeParityAlwaysOdd": "Forzar siempre nueva página + impar (lado derecho)",
+    "headingBreakBeforeParityAlwaysEven": "Forzar siempre nueva página + par (lado izquierdo)",
     "unorderedLists": "Listas no ordenadas",
     "unorderedListsFont": "Fuente del bullet",
     "unorderedListsFontTooltip": "Fuente por defecto para los símbolos de las listas (hereda del cuerpo si no se define)",

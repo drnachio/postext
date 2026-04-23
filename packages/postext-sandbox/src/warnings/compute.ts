@@ -182,7 +182,13 @@ function collectDirectiveWarnings(
         }
       }
     } else if (b.directiveName === 'pagebreak') {
-      if (attrs.parity !== undefined && attrs.parity !== 'odd' && attrs.parity !== 'even') {
+      if (
+        attrs.parity !== undefined
+        && attrs.parity !== 'odd'
+        && attrs.parity !== 'even'
+        && attrs.parity !== 'always-odd'
+        && attrs.parity !== 'always-even'
+      ) {
         out.push({
           id: `pagebreak-parity-${idx++}-${b.sourceStart}`,
           payload: { kind: 'pagebreakInvalidParity', value: attrs.parity },

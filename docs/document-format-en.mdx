@@ -123,6 +123,14 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td>Same, but targeting an even (left-hand) page.</td>
     </tr>
     <tr>
+      <td><code>:::pagebreak&#123;parity="always-odd"&#125;</code></td>
+      <td>Guarantee at least one mandatory blank separator page before landing on an odd page. The separator blank belongs to the preceding content; any further parity padding belongs to what follows. Useful when every chapter must start on a fresh spread.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="always-even"&#125;</code></td>
+      <td>Same, but targeting an even page.</td>
+    </tr>
+    <tr>
       <td><code>:::numbering&#123;format="decimal" startAt=1&#125;</code></td>
       <td>At the next page boundary, switch the page-numbering sequence. Both attributes are optional — omit <code>format</code> to keep the format, omit <code>startAt</code> to continue the counter.</td>
     </tr>

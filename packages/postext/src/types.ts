@@ -328,7 +328,18 @@ export interface ResolvedBodyTextConfig {
   keepColonWithList: boolean;
 }
 
-export type HeadingBreakParity = 'any' | 'odd' | 'even';
+/** Parity constraint for a forced page break.
+ *
+ *  - `'any'` — no constraint; the break just opens a new page.
+ *  - `'odd'` / `'even'` — ensure the new page falls on the requested
+ *    side of the spread. If the natural next page already matches, no
+ *    blank is inserted; otherwise one blank page is inserted.
+ *  - `'always-odd'` / `'always-even'` — guarantee at least one blank
+ *    page between the previous content and the new page, then enforce
+ *    parity. The leading blank is attributed to the *previous* chapter;
+ *    any subsequent parity-padding blanks belong to the *new* chapter.
+ *    Useful for books where every chapter must start a fresh spread. */
+export type HeadingBreakParity = 'any' | 'odd' | 'even' | 'always-odd' | 'always-even';
 
 export interface HeadingBreakBeforeConfig {
   /** When true, force a page break before every heading of this level. */

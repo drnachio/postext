@@ -261,6 +261,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     headingBreakBeforeParityAny: t("headingBreakBeforeParityAny"),
     headingBreakBeforeParityOdd: t("headingBreakBeforeParityOdd"),
     headingBreakBeforeParityEven: t("headingBreakBeforeParityEven"),
+    headingBreakBeforeParityAlwaysOdd: t("headingBreakBeforeParityAlwaysOdd"),
+    headingBreakBeforeParityAlwaysEven: t("headingBreakBeforeParityAlwaysEven"),
     unorderedLists: t("unorderedLists"),
     unorderedListsFont: t("unorderedListsFont"),
     unorderedListsFontTooltip: t("unorderedListsFontTooltip"),

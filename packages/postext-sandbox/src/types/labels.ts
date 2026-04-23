@@ -284,6 +284,8 @@ export interface SandboxLabels {
   headingBreakBeforeParityAny: string;
   headingBreakBeforeParityOdd: string;
   headingBreakBeforeParityEven: string;
+  headingBreakBeforeParityAlwaysOdd: string;
+  headingBreakBeforeParityAlwaysEven: string;
 
   // Unordered lists section
   unorderedLists: string;

@@ -201,6 +201,11 @@ export interface VDTPage {
    *  (`:::pagebreak{parity=...}` or heading `breakBefore.parity`).
    *  They render empty body content but still consume a page number. */
   blankForParity?: boolean;
+  /** Marks the mandatory leading blank page inserted by an `always-odd`
+   *  or `always-even` parity mode. Unlike `blankForParity`, a
+   *  `blankForForce` page belongs to the *previous* chapter — it serves
+   *  as a separator, not as parity padding for the upcoming one. */
+  blankForForce?: boolean;
 }
 
 export interface VDTDocument {

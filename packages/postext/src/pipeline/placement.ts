@@ -99,7 +99,13 @@ export function advanceToNextPageBoundary(
  *  requested parity. If not, flag the current page as a blank-for-parity
  *  placeholder and advance to the next page. Repeats until parity matches
  *  (at most one extra page in practice). Parity uses `pageIndex + 1`
- *  (page 1 = odd) — the same convention as header/footer parity. */
+ *  (page 1 = odd) — the same convention as header/footer parity.
+ *
+ *  For the `always-*` modes, one mandatory blank page is inserted first
+ *  (flagged as `blankForForce`, belonging to the previous chapter) before
+ *  the parity check runs. This guarantees at least one separator page
+ *  between the previous content and the new chapter, regardless of
+ *  whether the natural next page already matched the requested parity. */
 export function enforcePageParity(
   doc: VDTDocument,
   cursor: PlacementCursor,
@@ -110,11 +116,23 @@ export function enforcePageParity(
   parity: HeadingBreakParity,
 ): void {
   if (parity === 'any') return;
+  const alwaysForce = parity === 'always-odd' || parity === 'always-even';
+  const targetParity: 'odd' | 'even' =
+    parity === 'always-odd' ? 'odd'
+    : parity === 'always-even' ? 'even'
+    : parity;
+  if (alwaysForce) {
+    doc.pages[cursor.pageIndex]!.blankForForce = true;
+    const startPageIndex = cursor.pageIndex;
+    do {
+      advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+    } while (cursor.pageIndex === startPageIndex);
+  }
   while (true) {
     const curPage = doc.pages[cursor.pageIndex]!;
     const pageNumber = curPage.index + 1;
     const isOdd = pageNumber % 2 === 1;
-    const ok = parity === 'odd' ? isOdd : !isOdd;
+    const ok = targetParity === 'odd' ? isOdd : !isOdd;
     if (ok) return;
     curPage.blankForParity = true;
     const startPageIndex = cursor.pageIndex;

@@ -172,7 +172,12 @@ export function buildDocument(
         pendingSpacing = 0;
         advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
         const parity = attrs.parity;
-        if (parity === 'odd' || parity === 'even') {
+        if (
+          parity === 'odd'
+          || parity === 'even'
+          || parity === 'always-odd'
+          || parity === 'always-even'
+        ) {
           enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, parity);
         }
         flushPendingNumberingAtBoundary();
@@ -196,7 +201,7 @@ export function buildDocument(
       if (bb && bb.enabled) {
         pendingSpacing = 0;
         advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
-        if (bb.parity === 'odd' || bb.parity === 'even') {
+        if (bb.parity !== 'any') {
           enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, bb.parity);
         }
         flushPendingNumberingAtBoundary();
