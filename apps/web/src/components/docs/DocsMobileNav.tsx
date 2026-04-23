@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import type { DocEntry } from "@/lib/docs";
 import type { TocItem } from "@/lib/docs";
+import { DocsSearchTrigger } from "./DocsSearchPalette";
 
 interface DocsMobileNavProps {
   docs: DocEntry[];
@@ -22,7 +23,7 @@ export function DocsMobileNav({ docs, toc }: DocsMobileNavProps) {
   const availableDocs = docs.filter((d) => d.locales[locale]);
 
   return (
-    <div className="lg:hidden">
+    <div className="flex items-center gap-2 lg:hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -32,6 +33,9 @@ export function DocsMobileNav({ docs, toc }: DocsMobileNavProps) {
         {open ? <X className="size-4" /> : <Menu className="size-4" />}
         {t("menu")}
       </button>
+      <div className="flex-1">
+        <DocsSearchTrigger />
+      </div>
 
       {open && (
         <div className="fixed inset-x-0 top-auto z-40 max-h-[70vh] overflow-y-auto border-b border-rule bg-background p-4 shadow-lg">

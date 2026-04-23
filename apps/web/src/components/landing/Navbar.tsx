@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { DocsSearchNavSlot } from "@/components/docs/DocsSearchNavSlot";
 import { MobileMenu } from "./MobileMenu";
 
 export async function Navbar() {
@@ -39,6 +40,7 @@ export async function Navbar() {
           >
             {t("github")}
           </a>
+          <DocsSearchNavSlot />
           <LanguageSwitcher />
           <ThemeToggle />
         </div>

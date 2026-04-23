@@ -82,6 +82,7 @@ export default async function DocPage({
         {/* Title row: title left, metadata right on large screens */}
         <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-baseline lg:justify-between">
           <h1
+            id={toc[0]?.level === 1 ? toc[0].id : undefined}
             className="docs-heading font-display text-[1.5rem] font-bold italic tracking-tight text-foreground md:text-[2rem]"
             style={{ scrollMarginTop: "var(--docs-nav-h, 5rem)" }}
           >

@@ -30,6 +30,19 @@
     "openMenu": "Abrir menú de navegación",
     "closeMenu": "Cerrar menú de navegación"
   },
+  "DocsSearch": {
+    "triggerPlaceholder": "Buscar en la documentación…",
+    "triggerAriaLabel": "Abrir buscador de documentación",
+    "title": "Buscar en la documentación",
+    "description": "Encuentra páginas y secciones de la documentación",
+    "inputPlaceholder": "Escribe para buscar…",
+    "inputAriaLabel": "Término de búsqueda",
+    "loading": "Cargando índice de búsqueda…",
+    "emptyState": "Empieza a escribir para buscar en la documentación",
+    "noResults": "Sin resultados para «{query}»",
+    "hintNavigate": "navegar",
+    "hintOpen": "abrir"
+  },
   "Hero": {
     "title": "El Tipógrafo Programable para la Web",
     "subtitle": "Postext parte de markdown semántico y aplica reglas de maquetación con siglos de historia — prevención de huérfanas, balanceo de columnas, colocación de figuras — para generar componentes React con calidad editorial.",

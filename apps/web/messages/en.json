@@ -30,6 +30,19 @@
     "openMenu": "Open navigation menu",
     "closeMenu": "Close navigation menu"
   },
+  "DocsSearch": {
+    "triggerPlaceholder": "Search documentation…",
+    "triggerAriaLabel": "Open documentation search",
+    "title": "Search documentation",
+    "description": "Find pages and sections across the documentation",
+    "inputPlaceholder": "Type to search…",
+    "inputAriaLabel": "Search query",
+    "loading": "Loading search index…",
+    "emptyState": "Start typing to search the documentation",
+    "noResults": "No results for \"{query}\"",
+    "hintNavigate": "navigate",
+    "hintOpen": "open"
+  },
   "Hero": {
     "title": "The Programmable Typesetter for the Web",
     "subtitle": "Postext takes semantic markdown and applies centuries-old editorial layout rules — orphan prevention, column balancing, figure placement — producing publication-grade React components.",
