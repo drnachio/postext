@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Formato del documento',
   description: 'El subconjunto de markdown que parsea Postext y las normas para escribir los documentos fuente',
   lang: 'es',
-  lastUpdated: '2026-04-21',
+  lastUpdated: '2026-04-23',
   readingTime: '9 min',
   order: 5,
 };
@@ -96,6 +96,85 @@ Postext reconoce siete tipos de bloque. Los bloques siempre terminan al encontra
 Se tolera una única línea en blanco entre dos elementos de lista — la lista se mantiene unida. Dos o más líneas en blanco consecutivas terminan la lista.
 
 Se aceptan listas de tipos mixtos a la misma profundidad (puedes pasar de no ordenada a ordenada a mitad de recorrido), pero el motor trata cada tramo por separado a efectos de numeración. En la práctica, conviene mantener un único tipo por profundidad salvo que haya un motivo claro para mezclarlos.
+
+
+## Directivas
+
+Las directivas son etiquetas de control de una sola línea escritas como `:::nombre` o `:::nombre{atributos}` en su propia línea. No producen salida visible — controlan el pipeline de colocación y numeración.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Sintaxis</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>:::pagebreak</code></td>
+      <td>Fuerza que el siguiente bloque comience en una nueva página.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="odd"&#125;</code></td>
+      <td>Igual, además asegura que la nueva página sea impar (lado derecho). Inserta una página en blanco de relleno cuando sea necesario.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="even"&#125;</code></td>
+      <td>Igual, pero apuntando a una página par (lado izquierdo).</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="always-odd"&#125;</code></td>
+      <td>Garantiza al menos una página separadora en blanco obligatoria antes de aterrizar en una página impar. La página separadora pertenece al contenido anterior; cualquier relleno de paridad adicional pertenece a lo que sigue. Útil cuando cada capítulo debe empezar un pliego nuevo.</td>
+    </tr>
+    <tr>
+      <td><code>:::pagebreak&#123;parity="always-even"&#125;</code></td>
+      <td>Igual, pero apuntando a una página par.</td>
+    </tr>
+    <tr>
+      <td><code>:::numbering&#123;format="decimal" startAt=1&#125;</code></td>
+      <td>En el siguiente límite de página, cambia la secuencia de numeración. Ambos atributos son opcionales — omite <code>format</code> para mantener el formato, omite <code>startAt</code> para continuar el contador.</td>
+    </tr>
+  </tbody>
+</table>
+
+Los valores de los atributos pueden ir entre comillas dobles (<code>"…"</code>), comillas simples (<code>'…'</code>) o sin comillas (<code>startAt=17</code>). Una clave sin `=` se trata como una bandera presente con valor vacío.
+
+Hoy solo se reconocen `pagebreak` y `numbering` — cualquier otra línea `:::nombre` se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox.
+
+### `:::pagebreak`
+
+La directiva por sí sola no fuerza paridad — solo afecta al siguiente bloque. Úsala para terminar un prólogo, forzar una dedicatoria en su propia página, o marcar el final de una sección. Cuando se quieren ambos efectos (salto de página y reinicio de numeración), compón `:::pagebreak` seguido de `:::numbering` — el cambio de numeración se aplica en la nueva página que acaba de crear `:::pagebreak`.
+
+```md
+El capítulo anterior termina aquí.
+
+:::pagebreak{parity="odd"}
+
+# Un nuevo capítulo
+```
+
+### `:::numbering`
+
+`:::numbering` es la forma de reiniciar el contador de páginas a mitad del documento. Ejemplo canónico de libro:
+
+```md
+---
+title: "Un libro con páginas preliminares"
+---
+
+# Prefacio
+
+…
+
+:::pagebreak{parity="odd"}
+:::numbering{format="decimal" startAt=1}
+
+# Capítulo 1
+```
+
+Las páginas del prefacio se etiquetan `i`, `ii`, `iii`, …; el primer capítulo se abre en una página derecha etiquetada `1`.
+
+Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil para, por ejemplo, pasar de `lower-alpha` a `upper-alpha` sin reiniciar.
 
 <Illustration name="ListNesting" data='{"title": "Profundidad de anidamiento de listas", "desc": "Las listas se anidan usando exactamente dos espacios por nivel, hasta una profundidad máxima de cinco. Cada nivel sangra más y puede usar un estilo de viñeta diferente.", "caption": "Dos espacios por nivel. Profundidad máxima: cinco.", "level1": "Nivel 1", "level2": "Nivel 2 — dos espacios", "level3": "Nivel 3 — cuatro espacios", "indentNote": "Exactamente dos espacios por nivel. Profundidad máxima: 5."}' />
 

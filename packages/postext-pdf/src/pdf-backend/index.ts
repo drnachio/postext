@@ -25,6 +25,7 @@ import {
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { addOutlines } from './outlines';
+import { addPageLabels } from './pageLabels';
 
 export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
@@ -172,6 +173,8 @@ export async function renderToPdf(
   if (options.outlines ?? true) {
     addOutlines(pdfDoc, doc);
   }
+
+  addPageLabels(pdfDoc, doc);
 
   return pdfDoc.save();
 }

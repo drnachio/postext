@@ -8,6 +8,7 @@ import {
   parseMarkdownWithIssues,
   resolveDebugConfig,
   resolveHeaderFooterConfig,
+  resolveHeadingsConfig,
   collectPlaceholderNames,
   isKnownPlaceholder,
   isMetadataPlaceholder,
@@ -113,6 +114,148 @@ function collectConsecutiveHeadingsWarnings(blocks: ContentBlock[], markdown: st
     }
   }
   return out;
+}
+
+const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\b/;
+const ALLOWED_PAGE_FORMATS = new Set([
+  'decimal',
+  'lower-roman',
+  'upper-roman',
+  'lower-alpha',
+  'upper-alpha',
+]);
+
+function collectDirectiveWarnings(
+  markdown: string,
+  blocks: ContentBlock[],
+): Warning[] {
+  const out: Warning[] = [];
+  let idx = 0;
+
+  // 1. Unknown directive-looking lines that didn't parse as a directive
+  //    block. We scan the markdown for `:::name` lines and flag those whose
+  //    `name` isn't recognized.
+  const rawLines = markdown.split('\n');
+  let offset = 0;
+  for (const rawLine of rawLines) {
+    const lineLen = rawLine.length;
+    const m = rawLine.trim().match(DIRECTIVE_RE);
+    if (m) {
+      const name = m[1]!;
+      if (name !== 'pagebreak' && name !== 'numbering') {
+        out.push({
+          id: `directive-unknown-${idx++}-${offset}`,
+          payload: { kind: 'unknownDirective', name },
+          sourceStart: offset,
+          sourceEnd: offset + lineLen,
+          line: lineNumberForOffset(markdown, offset),
+        });
+      }
+    }
+    offset += lineLen + 1; // +1 for '\n'
+  }
+
+  // 2. Attribute-level validation on parsed directive blocks.
+  for (const b of blocks) {
+    if (b.type !== 'directive' || !b.directiveAttrs) continue;
+    const attrs = b.directiveAttrs;
+    if (b.directiveName === 'numbering') {
+      if (attrs.format !== undefined && !ALLOWED_PAGE_FORMATS.has(attrs.format)) {
+        out.push({
+          id: `numbering-format-${idx++}-${b.sourceStart}`,
+          payload: { kind: 'numberingInvalidFormat', value: attrs.format },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+      if (attrs.startAt !== undefined) {
+        const n = Number(attrs.startAt);
+        if (!Number.isInteger(n) || n < 1) {
+          out.push({
+            id: `numbering-startat-${idx++}-${b.sourceStart}`,
+            payload: { kind: 'numberingInvalidStartAt', value: attrs.startAt },
+            sourceStart: b.sourceStart,
+            sourceEnd: b.sourceEnd,
+            line: lineNumberForOffset(markdown, b.sourceStart),
+          });
+        }
+      }
+    } else if (b.directiveName === 'pagebreak') {
+      if (
+        attrs.parity !== undefined
+        && attrs.parity !== 'odd'
+        && attrs.parity !== 'even'
+        && attrs.parity !== 'always-odd'
+        && attrs.parity !== 'always-even'
+      ) {
+        out.push({
+          id: `pagebreak-parity-${idx++}-${b.sourceStart}`,
+          payload: { kind: 'pagebreakInvalidParity', value: attrs.parity },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+function collectHeadingBreakParityWarnings(config: PostextConfig): Warning[] {
+  const out: Warning[] = [];
+  const headings = resolveHeadingsConfig(config.headings);
+  for (const lvl of headings.levels) {
+    const parity = lvl.breakBefore.parity;
+    if (parity !== 'any' && parity !== 'odd' && parity !== 'even') {
+      out.push({
+        id: `h-break-parity-${lvl.level}`,
+        payload: { kind: 'headingBreakInvalidParity', level: lvl.level, value: String(parity) },
+      });
+    }
+  }
+  return out;
+}
+
+function collectParityCascadeWarnings(doc: VDTDocument | null): Warning[] {
+  if (!doc) return [];
+  const out: Warning[] = [];
+  let run = 0;
+  let runStartIndex = -1;
+  let idx = 0;
+  for (let i = 0; i < doc.pages.length; i++) {
+    if (doc.pages[i]!.blankForParity) {
+      if (run === 0) runStartIndex = i;
+      run++;
+    } else {
+      if (run > 2) {
+        out.push({
+          id: `parity-cascade-${idx++}-${runStartIndex}`,
+          payload: { kind: 'parityCascade', runLength: run },
+        });
+      }
+      run = 0;
+    }
+  }
+  if (run > 2) {
+    out.push({
+      id: `parity-cascade-${idx++}-${runStartIndex}`,
+      payload: { kind: 'parityCascade', runLength: run },
+    });
+  }
+  return out;
+}
+
+function collectAlphaOverflowWarnings(doc: VDTDocument | null): Warning[] {
+  if (!doc) return [];
+  const hasOverflow = doc.pages.some(
+    (p) =>
+      (p.pageNumberFormat === 'upper-alpha' || p.pageNumberFormat === 'lower-alpha')
+      && p.pageNumberValue > 26,
+  );
+  return hasOverflow
+    ? [{ id: 'alpha-pdf-overflow', payload: { kind: 'alphaPdfOverflow' } }]
+    : [];
 }
 
 function collectListAfterHeadingWarnings(blocks: ContentBlock[], markdown: string): Warning[] {
@@ -238,6 +381,10 @@ export function computeWarnings(params: {
   }
 
   warnings.push(...collectHeaderFooterWarnings(config, doc));
+  warnings.push(...collectDirectiveWarnings(markdown, blocks));
+  warnings.push(...collectHeadingBreakParityWarnings(config));
+  warnings.push(...collectParityCascadeWarnings(doc));
+  warnings.push(...collectAlphaOverflowWarnings(doc));
 
   return warnings;
 }

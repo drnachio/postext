@@ -3,7 +3,17 @@ export type ContentBlockType =
   | 'paragraph'
   | 'blockquote'
   | 'listItem'
-  | 'mathDisplay';
+  | 'mathDisplay'
+  | 'directive';
+
+/** Attributes parsed from a `:::name{key="v" other=bare flag}` directive.
+ *  Values are kept as strings; directive consumers validate/coerce. A bare
+ *  `flag` becomes `{ flag: '' }`. */
+export type DirectiveAttrs = Record<string, string>;
+
+/** Recognized directive names. Unknown names are not parsed as directives —
+ *  they fall through to the paragraph branch and surface via warnings. */
+export type DirectiveName = 'pagebreak' | 'numbering';
 
 /** Metadata attached to an `InlineSpan` when it represents a math formula.
  *  The span's `text` is a single `\uFFFC` (object replacement character)
@@ -63,6 +73,10 @@ export interface ContentBlock {
   checked?: boolean;
   /** TeX source for `mathDisplay` blocks. */
   tex?: string;
+  /** For `directive` blocks: the directive name (e.g. `'pagebreak'`). */
+  directiveName?: DirectiveName;
+  /** For `directive` blocks: parsed attributes. */
+  directiveAttrs?: DirectiveAttrs;
   /** Character offset of the first source character of this block in the original markdown */
   sourceStart: number;
   /** Character offset just past the last source character of this block */

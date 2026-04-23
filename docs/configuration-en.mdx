@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-04-21',
+  lastUpdated: '2026-04-23',
   readingTime: '18 min',
   order: 3,
 };
@@ -231,6 +231,37 @@ When enabled, the canvas expands to include a bleed area and the engine draws cr
     </tr>
   </tbody>
 </table>
+
+### Numbering
+
+The `page.pageNumbering` block controls how page labels are formatted and where the counter starts. It only defines the document-wide default — to restart numbering mid-document (e.g. roman-numeral front matter switching to decimal chapters from 1), use the `:::numbering` directive (see **Document format → Directives**).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '260px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code></td>
+      <td><code>'decimal'</code></td>
+      <td>Numeric style used to render page labels.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Numeric value assigned to the first page regardless of format. <code>format: 'lower-roman', startAt: 1</code> yields <code>i, ii, iii, …</code>; <code>format: 'decimal', startAt: 17</code> yields <code>17, 18, 19, …</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+The computed label is stored on every `VDTPage` as `pageLabel` and is what the <code>\{pageNumber\}</code> header/footer placeholder resolves to. PDFs emit a <code>/PageLabels</code> number tree so Preview / Acrobat's page indicator and "Go to page" navigation match the printed labels exactly.
 
 
 ## Layout
@@ -880,6 +911,12 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td><code>''</code></td>
       <td>Reserved for automatic heading numbering (e.g. <code>'Chapter {n}. '</code>). Currently stored on the resolved config and carried through the pipeline; rendering will honour it in an upcoming release.</td>
     </tr>
+    <tr>
+      <td><code>breakBefore</code></td>
+      <td><code>HeadingBreakBeforeConfig</code></td>
+      <td><code>&#123; enabled: false, parity: 'any' &#125;</code></td>
+      <td>Force a page break before every heading of this level. <code>parity: 'odd'</code> / <code>'even'</code> further constrains which side of the spread the heading opens on — a blank padding page is inserted when needed (still counted in the page numbering). <code>'always-odd'</code> / <code>'always-even'</code> additionally guarantee at least one mandatory blank separator page between the previous content and the new heading (the separator belongs to the previous chapter; any further parity padding belongs to the new one).</td>
+    </tr>
   </tbody>
 </table>
 
@@ -887,11 +924,16 @@ Per-level overrides support the same properties as the general defaults — `fon
 headings: {
   fontFamily: 'Merriweather',
   levels: [
-    { level: 1, fontSize: { value: 24, unit: 'pt' }, color: { hex: '#1a1a2e', model: 'hex' } },
+    // Canonical book preset: chapters on a right-hand (odd) page.
+    { level: 1, fontSize: { value: 24, unit: 'pt' }, breakBefore: { enabled: true, parity: 'odd' } },
     { level: 2, fontSize: { value: 18, unit: 'pt' }, italic: true },
   ]
 }
 ```
+
+### Break before
+
+`breakBefore` is orthogonal to the numbering controls: turning it on forces a page break, but the numeric counter only resets when you explicitly insert a <code>:::numbering</code> directive. Blank parity pages count as real pages in the sequence and receive headers/footers according to their normal odd/even rules.
 
 
 ## Unordered Lists

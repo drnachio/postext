@@ -1,4 +1,4 @@
-import type { PageConfig, ResolvedPageConfig, PageMargins, PageSizePreset, Dimension, CutLinesConfig } from '../types';
+import type { PageConfig, ResolvedPageConfig, ResolvedPageNumberingConfig, PageMargins, PageNumberingConfig, PageSizePreset, Dimension, CutLinesConfig } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
 
 export const PAGE_SIZE_PRESETS: Record<
@@ -27,6 +27,11 @@ export const DEFAULT_CUT_LINES = {
   color: { hex: '#000000', model: 'hex' } as const,
 };
 
+export const DEFAULT_PAGE_NUMBERING: ResolvedPageNumberingConfig = {
+  format: 'decimal',
+  startAt: 1,
+};
+
 export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
   backgroundColor: { hex: 'transparent', model: 'hex' },
   sizePreset: '17x24',
@@ -36,7 +41,16 @@ export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
   dpi: 300,
   cutLines: { ...DEFAULT_CUT_LINES },
   baselineGrid: { enabled: false, color: { hex: '#cccccc', model: 'hex' }, lineWidth: { value: 0.5, unit: 'pt' } },
+  pageNumbering: { ...DEFAULT_PAGE_NUMBERING },
 };
+
+function resolvePageNumbering(raw?: PageNumberingConfig): ResolvedPageNumberingConfig {
+  if (!raw) return { ...DEFAULT_PAGE_NUMBERING };
+  return {
+    format: raw.format ?? DEFAULT_PAGE_NUMBERING.format,
+    startAt: raw.startAt ?? DEFAULT_PAGE_NUMBERING.startAt,
+  };
+}
 
 function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cutLines'] {
   if (!raw) return { ...DEFAULT_CUT_LINES };
@@ -77,6 +91,7 @@ export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
           lineWidth: partial.baselineGrid.lineWidth ?? DEFAULT_PAGE_CONFIG.baselineGrid.lineWidth,
         }
       : { ...DEFAULT_PAGE_CONFIG.baselineGrid },
+    pageNumbering: resolvePageNumbering(partial.pageNumbering),
   };
 }
 
@@ -135,6 +150,17 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
         ...(markOffsetOverride ? { markOffset: page.cutLines.markOffset } : {}),
         ...(markWidthOverride ? { markWidth: page.cutLines.markWidth } : {}),
         ...(colorOverride ? { color: page.cutLines.color } : {}),
+      };
+      hasOverride = true;
+    }
+  }
+  if (page.pageNumbering) {
+    const formatOverride = page.pageNumbering.format !== undefined && page.pageNumbering.format !== DEFAULT_PAGE_NUMBERING.format;
+    const startAtOverride = page.pageNumbering.startAt !== undefined && page.pageNumbering.startAt !== DEFAULT_PAGE_NUMBERING.startAt;
+    if (formatOverride || startAtOverride) {
+      result.pageNumbering = {
+        ...(formatOverride ? { format: page.pageNumbering.format } : {}),
+        ...(startAtOverride ? { startAt: page.pageNumbering.startAt } : {}),
       };
       hasOverride = true;
     }

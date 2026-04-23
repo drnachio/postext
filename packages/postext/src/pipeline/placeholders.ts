@@ -1,6 +1,19 @@
 import type { DocumentMetadata } from '../types';
 import type { VDTBlock, VDTPage } from '../vdt';
 
+/** A minimal view of a page used by `computeChapterTitles` to detect
+ *  blank parity-padding pages. We accept just the flags rather than the
+ *  whole `VDTPage` so this helper stays easy to test in isolation.
+ *
+ *  `blankForParity` pages belong to the upcoming chapter (they exist
+ *  solely to push it onto the right parity). `blankForForce` pages
+ *  belong to the *previous* chapter (they are the mandatory separator
+ *  of the `always-*` modes) — the walker stops when it hits one. */
+export interface ChapterTitlePageInfo {
+  blankForParity?: boolean;
+  blankForForce?: boolean;
+}
+
 export interface PlaceholderContext {
   page: VDTPage;
   allPages: VDTPage[];
@@ -32,14 +45,27 @@ const METADATA_PLACEHOLDERS = new Set(['title', 'subtitle', 'author', 'publishDa
  * walking blocks once. Returns an array where `result[pageIndex]` is the plain
  * text of the most recent H1 encountered at or before that page. When no H1
  * has appeared yet, the entry is an empty string.
+ *
+ * When `pages` is supplied, blank parity-padding pages immediately
+ * preceding a new H1 are retroactively attributed to the *upcoming*
+ * chapter — the blank left-hand page that exists only to push the next
+ * chapter onto a right-hand page should display the new chapter's title
+ * in its header, not the previous chapter's.
  */
-export function computeChapterTitles(blocks: VDTBlock[], totalPages: number): string[] {
+export function computeChapterTitles(
+  blocks: VDTBlock[],
+  totalPages: number,
+  pages?: ChapterTitlePageInfo[],
+): string[] {
   const out = new Array<string>(totalPages).fill('');
   const byPage = new Map<number, string>();
   let current = '';
   // Walk blocks in page/column order. The VDT `doc.blocks` array is already
   // insertion-ordered by placement, so pages are in increasing index.
   let lastPageIndex = -1;
+  // Track H1 page-indices so we can reassign any parity-padding pages
+  // that precede them.
+  const h1PageIndices: Array<{ pageIndex: number; title: string }> = [];
   for (const b of blocks) {
     if (b.pageIndex < 0) continue;
     while (lastPageIndex < b.pageIndex) {
@@ -49,6 +75,7 @@ export function computeChapterTitles(blocks: VDTBlock[], totalPages: number): st
     if (b.headingLevel === 1) {
       current = plainTextOfBlock(b);
       byPage.set(b.pageIndex, current);
+      h1PageIndices.push({ pageIndex: b.pageIndex, title: current });
     }
   }
   // Fill any trailing pages (past the last block) with current value.
@@ -57,6 +84,23 @@ export function computeChapterTitles(blocks: VDTBlock[], totalPages: number): st
       out[p] = byPage.get(p)!;
     } else if (p > 0) {
       out[p] = out[p - 1]!;
+    }
+  }
+  // Reassign parity-padding pages preceding each H1 to the upcoming
+  // chapter's title. The blank page was inserted solely to push the
+  // chapter onto the correct parity — conceptually it belongs to the
+  // chapter it precedes. `blankForForce` pages (the mandatory leading
+  // separator of `always-*` modes) stop the walk: they belong to the
+  // previous chapter.
+  if (pages) {
+    for (const { pageIndex, title } of h1PageIndices) {
+      for (let p = pageIndex - 1; p >= 0; p--) {
+        const info = pages[p];
+        if (!info) break;
+        if (info.blankForForce) break;
+        if (!info.blankForParity) break;
+        out[p] = title;
+      }
     }
   }
   return out;
@@ -132,7 +176,7 @@ export function resolvePlaceholders(
 function resolveName(name: string, ctx: PlaceholderContext): string {
   switch (name) {
     case 'pageNumber':
-      return String(ctx.page.index + 1);
+      return ctx.page.pageLabel;
     case 'totalPages':
       return String(ctx.allPages.length);
     case 'title':
