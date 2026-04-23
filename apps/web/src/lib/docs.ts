@@ -120,7 +120,17 @@ export function extractToc(source: string): TocItem[] {
   const items: TocItem[] = [];
   const lines = source.split("\n");
 
+  let fence: string | null = null;
   for (const line of lines) {
+    const fenceMatch = line.match(/^(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0];
+      if (fence === null) fence = marker;
+      else if (fence === marker) fence = null;
+      continue;
+    }
+    if (fence !== null) continue;
+
     const match = line.match(/^(#{1,3})\s+(.+)$/);
     if (!match) continue;
     const level = match[1].length;
