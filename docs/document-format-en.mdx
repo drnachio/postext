@@ -153,6 +153,24 @@ The old chapter ends here.
 # A new chapter
 ```
 
+#### Parity attribute
+
+The `parity` attribute accepts the same five values as `headings.levels[*].breakBefore.parity`:
+
+- `'odd'` / `'even'` — the new page opens on the requested side of the spread; a single blank is inserted only when the natural next page is on the wrong side.
+- `'always-odd'` / `'always-even'` — guarantee at least one mandatory blank separator page between the previous content and the new page, then enforce parity. The separator blank belongs to the **previous** chapter; any further parity padding belongs to whatever follows.
+
+#### Blank-page ownership
+
+The two kinds of blank pages `:::pagebreak` (and `breakBefore`) can introduce are distinguished in the `VDTPage` model:
+
+- `blankForParity: true` — inserted to satisfy a parity constraint. In `{chapterTitle}` headers this page carries the **upcoming** chapter's title, because the blank exists only to push that chapter onto the right parity.
+- `blankForForce: true` — the mandatory leading separator of an `'always-*'` mode. It belongs to the **previous** chapter — a deliberate end-of-chapter breath, not parity padding for the next chapter.
+
+#### Document-start exception
+
+When `:::pagebreak` is the very first construct in a document (or a heading with `breakBefore` would pull one in), parity enforcement is skipped while the first page is still empty. The next block lands on page 1 as written, regardless of the requested parity — no spurious leading blank.
+
 ### `:::numbering`
 
 `:::numbering` is how you restart the page counter mid-document. The canonical book example:
