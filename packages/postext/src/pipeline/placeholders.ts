@@ -106,6 +106,51 @@ export function computeChapterTitles(
   return out;
 }
 
+/**
+ * Precompute chapter numbers (most recent H1 `numberPrefix`) per page. Mirrors
+ * `computeChapterTitles` but tracks the numeric prefix (e.g. `"1"`, `"2"`) so
+ * `{chapterNumber}` in heading-context slots resolves to the current chapter.
+ */
+export function computeChapterNumbers(
+  blocks: VDTBlock[],
+  totalPages: number,
+  pages?: ChapterTitlePageInfo[],
+): string[] {
+  const out = new Array<string>(totalPages).fill('');
+  const byPage = new Map<number, string>();
+  let current = '';
+  let lastPageIndex = -1;
+  const h1PageIndices: Array<{ pageIndex: number; number: string }> = [];
+  for (const b of blocks) {
+    if (b.pageIndex < 0) continue;
+    while (lastPageIndex < b.pageIndex) {
+      lastPageIndex++;
+      byPage.set(lastPageIndex, current);
+    }
+    if (b.headingLevel === 1) {
+      current = b.numberPrefix ?? '';
+      byPage.set(b.pageIndex, current);
+      h1PageIndices.push({ pageIndex: b.pageIndex, number: current });
+    }
+  }
+  for (let p = 0; p < totalPages; p++) {
+    if (byPage.has(p)) out[p] = byPage.get(p)!;
+    else if (p > 0) out[p] = out[p - 1]!;
+  }
+  if (pages) {
+    for (const { pageIndex, number } of h1PageIndices) {
+      for (let p = pageIndex - 1; p >= 0; p--) {
+        const info = pages[p];
+        if (!info) break;
+        if (info.blankForForce) break;
+        if (!info.blankForParity) break;
+        out[p] = number;
+      }
+    }
+  }
+  return out;
+}
+
 function plainTextOfBlock(block: VDTBlock): string {
   // Strip any numbering prefix that was prepended during build.
   const lines = block.lines.map((l) => l.text).join(' ');

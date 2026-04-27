@@ -1,4 +1,17 @@
-import type { VDTDocument, VDTPage, VDTBlock, VDTLine, VDTLineSegment } from './vdt';
+import type {
+  VDTDocument,
+  VDTPage,
+  VDTBlock,
+  VDTLine,
+  VDTLineSegment,
+  VDTDesignSlot,
+  VDTDesignBlock,
+  VDTDesignTextBlock,
+  VDTDesignRuleBlock,
+  VDTDesignBoxBlock,
+  VDTDesignBoxStyle,
+  BoundingBox,
+} from './vdt';
 
 export interface RenderHtmlOptions {
   /** Layout mode: single vertical column or many columns laid out horizontally. */
@@ -179,7 +192,95 @@ function renderLine(line: VDTLine, block: VDTBlock): string {
   );
 }
 
+function extractFontSizePx(fontString: string): number {
+  const m = fontString.match(/(\d+(?:\.\d+)?)px/);
+  return m ? parseFloat(m[1]) : 16;
+}
+
+function boxStyleDecls(style: VDTDesignBoxStyle): string {
+  const bg = style.backgroundColor ? `background:${style.backgroundColor};` : '';
+  const border = style.borderColor && style.borderWidthPx > 0
+    ? `border:${style.borderWidthPx}px solid ${style.borderColor};box-sizing:border-box;`
+    : '';
+  const radius = style.borderRadiusPx > 0 ? `border-radius:${style.borderRadiusPx}px;` : '';
+  return `${bg}${border}${radius}`;
+}
+
+function renderBoxAt(bbox: BoundingBox, style: VDTDesignBoxStyle): string {
+  if (bbox.width <= 0 || bbox.height <= 0) return '';
+  if (!style.backgroundColor && !style.borderColor) return '';
+  return (
+    `<div aria-hidden="true" style="` +
+    `position:absolute;` +
+    `left:${bbox.x}px;top:${bbox.y}px;` +
+    `width:${bbox.width}px;height:${bbox.height}px;` +
+    boxStyleDecls(style) +
+    `"></div>`
+  );
+}
+
+function renderDesignTextBlock(block: VDTDesignTextBlock): string {
+  const parts: string[] = [];
+  if (block.box) parts.push(renderBoxAt(block.bbox, block.box));
+  const font = quoteFontString(block.fontString);
+  const fontSize = extractFontSizePx(block.fontString);
+  const lineParts: string[] = [];
+  for (const line of block.lines) {
+    const top = line.baselineY - block.bbox.y - fontSize * 0.8;
+    lineParts.push(
+      `<span style="` +
+      `position:absolute;` +
+      `left:${line.xOffset.toFixed(3)}px;` +
+      `top:${top.toFixed(3)}px;` +
+      `line-height:1;white-space:pre;` +
+      `">${esc(line.text)}</span>`,
+    );
+  }
+  const clipDecl = block.clip ? 'overflow:hidden;' : '';
+  parts.push(
+    `<div style="` +
+    `position:absolute;` +
+    `left:${block.bbox.x}px;top:${block.bbox.y}px;` +
+    `width:${block.bbox.width}px;height:${block.bbox.height}px;` +
+    `font:${font};color:${block.color};` +
+    clipDecl +
+    `">${lineParts.join('')}</div>`,
+  );
+  return parts.join('');
+}
+
+function renderDesignRuleBlock(block: VDTDesignRuleBlock): string {
+  const w = block.direction === 'vertical' ? block.thicknessPx : block.bbox.width;
+  const h = block.direction === 'vertical' ? block.bbox.height : block.thicknessPx;
+  return (
+    `<div aria-hidden="true" style="` +
+    `position:absolute;` +
+    `left:${block.bbox.x}px;top:${block.bbox.y}px;` +
+    `width:${w}px;height:${h}px;` +
+    `background:${block.color};` +
+    `"></div>`
+  );
+}
+
+function renderDesignBoxBlock(block: VDTDesignBoxBlock): string {
+  return renderBoxAt(block.bbox, block.box);
+}
+
+function renderDesignBlock(block: VDTDesignBlock): string {
+  if (block.kind === 'text') return renderDesignTextBlock(block);
+  if (block.kind === 'rule') return renderDesignRuleBlock(block);
+  return renderDesignBoxBlock(block);
+}
+
+function renderDesignSlot(slot: VDTDesignSlot): string {
+  const parts: string[] = [];
+  for (const block of slot.blocks) parts.push(renderDesignBlock(block));
+  return parts.join('');
+}
+
 function renderBlockInner(block: VDTBlock): string {
+  if (block.hidden) return '';
+  if (block.designOverlay) return renderDesignSlot(block.designOverlay);
   const parts: string[] = [];
   parts.push(renderBullet(block));
   for (const line of block.lines) {
@@ -220,7 +321,12 @@ function renderPageDetailed(page: VDTPage, background: string): PageRenderResult
       blocks.push({ id: block.id, html: renderBlock(block) });
     }
   }
-  const innerHtml = blocks.map((b) => b.html).join('');
+  const blocksHtml = blocks.map((b) => b.html).join('');
+  const slotParts: string[] = [];
+  if (page.openerBand) slotParts.push(renderDesignSlot(page.openerBand));
+  if (page.header) slotParts.push(renderDesignSlot(page.header));
+  if (page.footer) slotParts.push(renderDesignSlot(page.footer));
+  const innerHtml = blocksHtml + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +

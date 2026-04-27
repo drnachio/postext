@@ -3,29 +3,44 @@
 import { useSandboxLabels } from '../../../context/SandboxContext';
 import { DEFAULT_RULE_ELEMENT, dimensionsEqual, colorsEqual } from 'postext';
 import type {
-  HeaderFooterRuleElement,
-  ResolvedHeaderFooterRuleElement,
-  HeaderFooterHAlign,
+  DesignRuleElement,
+  ResolvedDesignRuleElement,
+  HAlign,
   PageParity,
   Dimension,
   ColorValue,
 } from 'postext';
+import type { PlacementSize } from './placementAdapter';
 import {
   SelectInput,
   DimensionInput,
   ColorPicker,
 } from '../../../controls';
+import {
+  type SlotKind,
+  alignFromPlacement,
+  applyAlign,
+  applyMarginFromBody,
+  applyMarginFromEdge,
+  applyWidthMode,
+  marginFromBody,
+  marginFromEdge,
+  widthMode,
+} from './placementAdapter';
+
+const ZERO: Dimension = { value: 0, unit: 'pt' };
 
 interface Props {
-  raw: HeaderFooterRuleElement;
-  resolved: ResolvedHeaderFooterRuleElement;
-  onChange: (next: HeaderFooterRuleElement) => void;
+  raw: DesignRuleElement;
+  resolved: ResolvedDesignRuleElement;
+  slotKind: SlotKind;
+  onChange: (next: DesignRuleElement) => void;
 }
 
-export function RuleElementEditor({ raw, resolved, onChange }: Props) {
+export function RuleElementEditor({ raw, resolved, slotKind, onChange }: Props) {
   const labels = useSandboxLabels();
 
-  const update = (partial: Partial<HeaderFooterRuleElement>) => {
+  const update = (partial: Partial<DesignRuleElement>) => {
     onChange({ ...raw, ...partial });
   };
 
@@ -44,11 +59,26 @@ export function RuleElementEditor({ raw, resolved, onChange }: Props) {
     { value: 'custom', label: labels.headerFooterElementWidthCustom },
   ];
 
-  const widthMode: 'full' | 'custom' = raw.width === 'full' ? 'full' : 'custom';
+  const mode = widthMode(resolved.placement.size);
+  const customWidth: Dimension =
+    resolved.placement.size && typeof resolved.placement.size.width === 'object'
+      ? resolved.placement.size.width
+      : { value: 40, unit: 'pt' };
+
+  const align = alignFromPlacement(resolved.placement);
+  const resolvedMarginFromBody = marginFromBody(resolved.placement, slotKind);
+  const resolvedMarginFromEdge = marginFromEdge(resolved.placement);
+  const defaultMarginFromBody = marginFromBody(DEFAULT_RULE_ELEMENT.placement, slotKind);
+  const defaultMarginFromEdge = marginFromEdge(DEFAULT_RULE_ELEMENT.placement);
+
   const isColorDefault = colorsEqual(resolved.color, DEFAULT_RULE_ELEMENT.color);
   const isThicknessDefault = dimensionsEqual(resolved.thickness, DEFAULT_RULE_ELEMENT.thickness);
-  const isMarginFromBodyDefault = dimensionsEqual(resolved.marginFromBody, DEFAULT_RULE_ELEMENT.marginFromBody);
-  const isMarginFromEdgeDefault = dimensionsEqual(resolved.marginFromEdge, DEFAULT_RULE_ELEMENT.marginFromEdge);
+  const isMarginFromBodyDefault = dimensionsEqual(resolvedMarginFromBody, defaultMarginFromBody);
+  const isMarginFromEdgeDefault = dimensionsEqual(resolvedMarginFromEdge, defaultMarginFromEdge);
+
+  const updateSize = (next: PlacementSize) => {
+    update({ placement: { ...resolved.placement, size: next } });
+  };
 
   return (
     <>
@@ -58,7 +88,7 @@ export function RuleElementEditor({ raw, resolved, onChange }: Props) {
         onChange={(color: ColorValue) => update({ color })}
         isDefault={isColorDefault}
         onReset={() => update({ color: { ...DEFAULT_RULE_ELEMENT.color } })}
-        fieldId={`headerFooter-rule-color-${resolved.thickness.value}`}
+        fieldId={`headerFooter-rule-color-${raw.id}`}
       />
       <DimensionInput
         label={labels.headerFooterElementThickness}
@@ -71,62 +101,51 @@ export function RuleElementEditor({ raw, resolved, onChange }: Props) {
       />
       <SelectInput
         label={labels.headerFooterElementWidth}
-        value={widthMode}
+        value={mode}
         options={WIDTH_MODE_OPTIONS}
-        onChange={(v) => {
-          if (v === 'full') update({ width: 'full' });
-          else update({ width: { value: 40, unit: 'pt' } as Dimension });
-        }}
+        onChange={(v) => updateSize(applyWidthMode(resolved.placement.size, v as 'full' | 'custom'))}
       />
-      {widthMode === 'custom' && typeof raw.width !== 'string' && (
+      {mode === 'custom' && (
         <DimensionInput
           label={labels.headerFooterElementWidth}
-          value={raw.width as Dimension}
-          onChange={(dim: Dimension) => update({ width: dim })}
+          value={customWidth}
+          onChange={(dim: Dimension) => updateSize({ ...(resolved.placement.size ?? {}), width: dim })}
           min={0}
           step={1}
         />
       )}
       <SelectInput
         label={labels.headerFooterElementAlign}
-        value={resolved.align}
+        value={align}
         options={ALIGN_OPTIONS}
-        onChange={(v) => update({ align: v as HeaderFooterHAlign })}
+        onChange={(v) => update({ placement: applyAlign(resolved.placement, slotKind, v as HAlign) })}
       />
       <SelectInput
         label={labels.headerFooterElementParity}
-        value={resolved.parity}
+        value={raw.parity ?? 'all'}
         options={PARITY_OPTIONS}
         onChange={(v) => update({ parity: v as PageParity })}
       />
       <DimensionInput
         label={labels.headerFooterElementMarginFromBody}
-        value={resolved.marginFromBody}
-        onChange={(dim: Dimension) => update({ marginFromBody: dim })}
+        value={resolvedMarginFromBody}
+        onChange={(dim: Dimension) => update({ placement: applyMarginFromBody(resolved.placement, slotKind, dim) })}
         min={0}
         step={1}
         tooltip={labels.headerFooterElementMarginFromBodyTooltip}
         isDefault={isMarginFromBodyDefault}
-        onReset={() => {
-          const next = { ...raw };
-          delete next.marginFromBody;
-          onChange(next);
-        }}
+        onReset={() => update({ placement: applyMarginFromBody(resolved.placement, slotKind, ZERO) })}
       />
-      {widthMode === 'custom' && resolved.align !== 'center' && (
+      {mode === 'custom' && align !== 'center' && (
         <DimensionInput
           label={labels.headerFooterElementMarginFromEdge}
-          value={resolved.marginFromEdge}
-          onChange={(dim: Dimension) => update({ marginFromEdge: dim })}
+          value={resolvedMarginFromEdge}
+          onChange={(dim: Dimension) => update({ placement: applyMarginFromEdge(resolved.placement, dim) })}
           min={0}
           step={1}
           tooltip={labels.headerFooterElementMarginFromEdgeTooltip}
           isDefault={isMarginFromEdgeDefault}
-          onReset={() => {
-            const next = { ...raw };
-            delete next.marginFromEdge;
-            onChange(next);
-          }}
+          onReset={() => update({ placement: applyMarginFromEdge(resolved.placement, ZERO) })}
         />
       )}
     </>

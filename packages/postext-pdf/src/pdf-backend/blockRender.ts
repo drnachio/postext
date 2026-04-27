@@ -4,6 +4,7 @@ import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
 import { type PageCtx, drawLinePx, drawTextPx, colorFromHex } from './primitives';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
+import { renderDesignSlot } from './headerFooter';
 
 function renderMathRender(
   ctx: PageCtx,
@@ -175,6 +176,11 @@ export function renderBlock(
   columnX: number,
   fontCache: FontCache,
 ): void {
+  if (block.hidden) return;
+  if (block.designOverlay) {
+    renderDesignSlot(ctx, block.designOverlay, fontCache);
+    return;
+  }
   if (block.type === 'listItem') {
     renderBullet(ctx, block, fontCache);
   }

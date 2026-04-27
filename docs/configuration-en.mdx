@@ -355,9 +355,11 @@ Draws a thin vertical line in the gutter to visually separate columns.
 
 ## Headers & Footers
 
-The `header` and `footer` properties control per-page header and footer slots. Headers and footers render **inside the existing page margins** — they do not reserve additional space and do not shrink the content area. Each element positions itself independently: `marginFromBody` is the absolute distance between the element's body-facing edge and the body edge. Elements do not push each other — two elements with the same `marginFromBody` will overlap.
+The `header` and `footer` properties control per-page header and footer slots. Headers and footers render **inside the existing page margins** — they do not reserve additional space and do not shrink the content area.
 
-Each slot holds a list of **text** and **rule** elements.
+Slots use the unified **design slot** model: every element has a `placement` with an `anchor` (to the container or to another element by `#id`), an optional `offset`, and an optional `size`. The legacy flat fields `align`, `marginFromBody`, `marginFromEdge`, and `width: 'full'` are still accepted on input and are migrated to the new shape automatically; the equivalent new-shape description is documented below.
+
+Each slot holds a list of **text**, **rule**, and **box** elements. Array order is paint order (first element paints first, last element paints on top).
 
 **Built-in defaults.** When `header` or `footer` is `undefined`, postext applies a sensible built-in default rather than an empty slot:
 
@@ -454,16 +456,34 @@ Text elements render a template string with placeholder substitution. Placeholde
       <td>Text colour.</td>
     </tr>
     <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>How the engine handles text that exceeds the element's available width. <code>'wrap'</code> breaks the line into multiple lines; the ellipsis variants truncate to a single line and insert <code>…</code> at the start, middle, or end; <code>'clip'</code> hard-clips to the element's bounding box without inserting any character.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenate</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When <code>true</code> and <code>overflow</code> is <code>'wrap'</code>, long words that would still overflow after a regular line break are split at syllable boundaries (using the document's active hyphenation locale) with a soft-hyphen at the break.</td>
+    </tr>
+    <tr>
       <td><code>marginFromBody</code></td>
       <td><code>Dimension</code></td>
       <td><code>6 pt</code></td>
-      <td>Absolute distance between the element's body-facing edge and the body edge. Independent of other elements.</td>
+      <td>Absolute distance between the element's body-facing edge and the body edge. Independent of other elements. Migrated to <code>placement.offset.y</code>.</td>
     </tr>
     <tr>
       <td><code>marginFromEdge</code></td>
       <td><code>Dimension</code></td>
       <td><code>0 pt</code></td>
-      <td>Horizontal inset from the aligned content edge. Only applies when <code>align</code> is <code>'left'</code> or <code>'right'</code>.</td>
+      <td>Horizontal inset from the aligned content edge. Only applies when <code>align</code> is <code>'left'</code> or <code>'right'</code>. Migrated to <code>placement.offset.x</code>.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>derived from <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>Advanced placement (see below). When set, takes precedence over the legacy flat fields.</td>
     </tr>
   </tbody>
 </table>
@@ -474,6 +494,15 @@ Available placeholders:
 - `{totalPages}` — total page count for the document.
 - `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — values read from `content.metadata`. Unknown or empty metadata renders as an empty string (and raises a warning in the sandbox).
 - `{chapterTitle}` — text of the most recent H1 on or before the current page.
+
+#### Edge-implied alignment
+
+When a text element's `placement.anchor.to` references another element by `#id`, the anchor edge implies a default text alignment for wrapped lines:
+
+- `right-of` and `align-left` imply text `align: 'left'` — wrapped lines flow rightward from the anchor.
+- `left-of` and `align-right` imply `align: 'right'` — wrapped lines hug the side closest to the anchor target.
+
+The sandbox heading editor applies these implied alignments automatically when you change the anchor edge or target. They keep multi-line wrapped text visually anchored to the element it relates to (so e.g. the "P" of a wrapped "Postext" lines up vertically under the "I" of "Introduction").
 
 ### Rule elements
 
@@ -540,6 +569,91 @@ Rule elements render a horizontal line across the slot.
   </tbody>
 </table>
 
+### Box elements
+
+Box elements paint a rounded rectangle inside the slot — useful as a backdrop behind text in chapter openers, sidebars or footers. Box elements are positioned exclusively through the `placement` field; they have no legacy flat shorthand.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'box'</code></td>
+      <td>—</td>
+      <td>Discriminator.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Fill colour. Set to <code>transparent</code> for an outline-only box.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Stroke colour.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Stroke width. Strokes are painted on the inside of the box's bounding rectangle so the outer dimensions stay constant.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Corner radius. Clamped to half the smaller side at render time.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>—</td>
+      <td>Required. See "Element placement" below.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>Which pages the box appears on.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Element placement
+
+`ElementPlacement` is the unified positioning model used by every element type (text, rule, box) inside any design slot — page header, page footer, or heading-level advanced design slot. Three pieces of state describe a placement:
+
+```ts
+interface ElementPlacement {
+  /** What this element anchors to and which edge of that target. */
+  anchor: {
+    to: 'container' | `#${string}`; // container = the slot; #id = another element in the slot
+    edge: AnchorEdge;
+  };
+  /** Distance from the anchor point. */
+  offset?: { x?: Dimension; y?: Dimension };
+  /** Optional fixed width / height. Width also accepts 'fill' (span the slot). */
+  size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto' };
+}
+```
+
+`AnchorEdge` accepts:
+
+- **Container edges** (when `anchor.to === 'container'`): `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
+- **Element-relative edges** (when `anchor.to === '#someId'`): `right-of`, `left-of`, `below`, `above`, `align-top`, `align-bottom`, `align-left`, `align-right`.
+
+Each element has a stable `id` (auto-assigned by the sandbox; you can also set it by hand). Elements anchored to other elements form a small dependency graph that the engine resolves before measuring, so an element can chain off another without manual coordinates.
+
+The legacy `align` + `marginFromBody` + `marginFromEdge` shape is parsed on input and rewritten into a placement at config-resolution time, so existing configs keep working unchanged.
 
 ## Body Text
 
@@ -981,6 +1095,92 @@ Blank pages inserted by `breakBefore` carry chapter-title headers based on *why*
 #### Document-start exception
 
 When the very first block of the document is a heading with `breakBefore` enabled — or the source opens with `:::pagebreak` — parity enforcement is skipped while the first page is still empty. The heading lands on page 1 as written, regardless of the configured parity, so a document that begins with a `# Chapter 1` configured `parity: 'odd'` doesn't inherit a spurious leading blank. Once any content has been placed, parity enforcement behaves normally.
+
+### Span and advanced design
+
+Each heading level accepts two additional fields that control how the heading renders as a full page-wide chapter opener.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>When <code>'page'</code>, the heading is treated as a chapter opener and its advanced design (if enabled) is attached to the page as an opener band above the body. Pair with <code>breakBefore.enabled: true</code> so the opener reliably begins a new page.</td>
+    </tr>
+    <tr>
+      <td><code>advancedDesign</code></td>
+      <td><code>HeadingAdvancedDesignConfig</code></td>
+      <td><code>{'{ enabled: false, slot: { elements: [] } }'}</code></td>
+      <td>Free-composition design slot for this level. When <code>enabled</code>, the slot's elements compose the opener. Use <code>{'{titleText}'}</code> inside a text element to render the heading's title text; use <code>{'{number}'}</code>, <code>{'{numberRoman}'}</code>, etc. to insert the formatted heading number.</td>
+    </tr>
+  </tbody>
+</table>
+
+Example — a minimalist chapter opener that shows "Chapter N" above the title:
+
+```json
+{
+  "headings": {
+    "levels": [
+      {
+        "level": 1,
+        "span": "page",
+        "breakBefore": { "enabled": true, "parity": "always-odd" },
+        "advancedDesign": {
+          "enabled": true,
+          "slot": {
+            "elements": [
+              {
+                "kind": "text",
+                "id": "chapterLabel",
+                "placement": {
+                  "anchor": { "to": "container", "edge": "top" },
+                  "offset": { "y": { "value": 48, "unit": "pt" } },
+                  "size": { "width": "fill" }
+                },
+                "content": "Chapter {numberRoman}",
+                "fontSize": { "value": 10, "unit": "pt" },
+                "align": "center",
+                "overflow": "ellipsis-end"
+              },
+              {
+                "kind": "text",
+                "id": "chapterTitle",
+                "placement": {
+                  "anchor": { "to": "#chapterLabel", "edge": "below" },
+                  "offset": { "y": { "value": 12, "unit": "pt" } },
+                  "size": { "width": "fill" }
+                },
+                "content": "{titleText}",
+                "fontSize": { "value": 24, "unit": "pt" },
+                "fontWeight": 700,
+                "align": "center",
+                "overflow": "wrap"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+Heading placeholders available inside a level's design slot:
+
+- `{titleText}` — the heading's plain text (without numbering prefix).
+- `{number}` — the formatted number per the level's `numberingTemplate`.
+- `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` — alternative numeral formats.
+- `{chapterNumber}`, `{chapterTitle}`, `{pageNumber}`, `{totalPages}`, `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — shared metadata placeholders.
 
 
 ## Unordered Lists

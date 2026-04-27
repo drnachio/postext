@@ -355,6 +355,26 @@ export interface ResolvedHeadingBreakBeforeConfig {
   parity: HeadingBreakParity;
 }
 
+/** Whether a heading occupies the single column it sits in, or spans the
+ *  full page content width. `'page'` only takes effect on headings that
+ *  start a new page (via `breakBefore.enabled`). */
+export type HeadingSpan = 'column' | 'page';
+
+/** Advanced design configuration for a heading level. When `enabled: true`
+ *  the heading is rendered from `slot` and the inline typography fields
+ *  (`fontFamily`, `fontSize`, `fontWeight`, `color`, `italic`,
+ *  `numberingTemplate`-as-prefix) on `HeadingLevelConfig` are ignored. The
+ *  heading's own text is carried via the `{titleText}` placeholder. */
+export interface HeadingAdvancedDesignConfig {
+  enabled: boolean;
+  slot: DesignSlot;
+}
+
+export interface ResolvedHeadingAdvancedDesignConfig {
+  enabled: boolean;
+  slot: ResolvedDesignSlot;
+}
+
 export interface HeadingLevelConfig {
   level: number;
   fontSize?: Dimension;
@@ -367,6 +387,10 @@ export interface HeadingLevelConfig {
   numberingTemplate?: string;
   italic?: boolean;
   breakBefore?: HeadingBreakBeforeConfig;
+  /** Column vs full-page span. Default `'column'`. */
+  span?: HeadingSpan;
+  /** When enabled, the heading renders as a design slot. */
+  advancedDesign?: HeadingAdvancedDesignConfig;
 }
 
 export interface ResolvedHeadingLevelConfig {
@@ -381,6 +405,8 @@ export interface ResolvedHeadingLevelConfig {
   numberingTemplate: string;
   italic: boolean;
   breakBefore: ResolvedHeadingBreakBeforeConfig;
+  span: HeadingSpan;
+  advancedDesign: ResolvedHeadingAdvancedDesignConfig;
 }
 
 export interface HeadingsConfig {
@@ -574,6 +600,7 @@ export interface WarningsToggleConfig {
   headingHierarchy?: boolean;
   consecutiveHeadings?: boolean;
   listAfterHeading?: boolean;
+  designIssues?: boolean;
 }
 
 export interface ResolvedWarningsToggleConfig {
@@ -582,6 +609,7 @@ export interface ResolvedWarningsToggleConfig {
   headingHierarchy: boolean;
   consecutiveHeadings: boolean;
   listAfterHeading: boolean;
+  designIssues: boolean;
 }
 
 export interface DebugConfig {
@@ -693,12 +721,159 @@ export interface CustomFontFamily {
 export type PageParity = 'all' | 'odd' | 'even';
 export type HeaderFooterHAlign = 'left' | 'center' | 'right';
 
-export interface HeaderFooterTextElement {
+// ---------------------------------------------------------------------------
+// Unified design slot primitives — shared by header, footer, and advanced
+// heading designs. Each element is placed by an anchor (container-relative
+// nine-point grid or element-to-element), with optional offset and size.
+// Paint order is strictly array order (first = back, last = front).
+// ---------------------------------------------------------------------------
+
+export type HAlign = 'left' | 'center' | 'right';
+export type VAlign = 'top' | 'middle' | 'bottom';
+
+export type AnchorEdge =
+  // Container-relative (nine-point grid)
+  | 'top-left' | 'top' | 'top-right'
+  | 'left' | 'center' | 'right'
+  | 'bottom-left' | 'bottom' | 'bottom-right'
+  // Element-to-element (requires anchor.to = '#elementId')
+  | 'right-of' | 'left-of' | 'below' | 'above'
+  | 'align-top' | 'align-bottom' | 'align-left' | 'align-right';
+
+export interface ElementAnchor {
+  /** `'container'` or `'#elementId'` reference to another element in the slot. */
+  to: 'container' | `#${string}`;
+  edge: AnchorEdge;
+}
+
+export type ElementSize = 'auto' | 'fill' | Dimension;
+
+export interface ElementPlacement {
+  anchor: ElementAnchor;
+  offset?: { x?: Dimension; y?: Dimension };
+  size?: {
+    width?: ElementSize;
+    height?: ElementSize;
+  };
+}
+
+export interface ElementBoxStyle {
+  backgroundColor?: ColorValue;
+  borderColor?: ColorValue;
+  borderWidth?: Dimension;
+  borderRadius?: Dimension;
+  padding?: { top?: Dimension; right?: Dimension; bottom?: Dimension; left?: Dimension };
+}
+
+export type TextOverflow = 'wrap' | 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip';
+
+export interface DesignTextElement {
+  kind: 'text';
+  /** Stable, unique within the slot. Anchors reference elements by `#id`. */
+  id: string;
+  /** Header/footer only; ignored by heading designs. */
+  parity?: PageParity;
+  placement: ElementPlacement;
+  /** Template with placeholders (see design/placeholders.ts). Use `{{`/`}}`
+   *  for literal braces. */
+  content: string;
+  fontFamily?: string;
+  fontSize: Dimension;
+  fontWeight?: number;
+  italic?: boolean;
+  color?: ColorValue;
+  /** Horizontal alignment within the element's box. */
+  align?: HAlign;
+  /** Vertical alignment within the element's box. */
+  verticalAlign?: VAlign;
+  lineHeight?: number;
+  letterSpacing?: Dimension;
+  overflow: TextOverflow;
+  /** When true, break long words at syllable boundaries while wrapping.
+   *  Uses the document's active hyphenation locale. */
+  hyphenate?: boolean;
+  box?: ElementBoxStyle;
+}
+
+export interface DesignRuleElement {
+  kind: 'rule';
+  id: string;
+  parity?: PageParity;
+  placement: ElementPlacement;
+  direction: 'horizontal' | 'vertical';
+  color: ColorValue;
+  thickness: Dimension;
+}
+
+export interface DesignBoxElement {
+  kind: 'box';
+  id: string;
+  parity?: PageParity;
+  placement: ElementPlacement;
+  style: ElementBoxStyle;
+}
+
+export type DesignElement = DesignTextElement | DesignRuleElement | DesignBoxElement;
+
+export interface DesignSlot {
+  /** Array order = paint order: first = back, last = front. */
+  elements: DesignElement[];
+}
+
+// ---------------------------------------------------------------------------
+// Resolved design slot — same shape with required-where-necessary fields.
+// Resolution mostly normalizes defaults; geometry resolution happens at
+// layout time (see design/layout.ts).
+// ---------------------------------------------------------------------------
+
+export interface ResolvedDesignTextElement extends Omit<DesignTextElement, 'fontFamily' | 'fontWeight' | 'italic' | 'color' | 'align' | 'verticalAlign' | 'lineHeight' | 'parity'> {
+  parity: PageParity;
+  fontFamily: string;
+  fontWeight: number;
+  italic: boolean;
+  color: ColorValue;
+  align: HAlign;
+  verticalAlign: VAlign;
+  lineHeight: number;
+}
+
+export interface ResolvedDesignRuleElement extends Omit<DesignRuleElement, 'parity'> {
+  parity: PageParity;
+}
+
+export interface ResolvedDesignBoxElement extends Omit<DesignBoxElement, 'parity'> {
+  parity: PageParity;
+}
+
+export type ResolvedDesignElement =
+  | ResolvedDesignTextElement
+  | ResolvedDesignRuleElement
+  | ResolvedDesignBoxElement;
+
+export interface ResolvedDesignSlot {
+  elements: ResolvedDesignElement[];
+}
+
+// ---------------------------------------------------------------------------
+// Header/footer — the unified model. `HeaderFooterSlot` and friends are
+// type aliases on top of the design primitives, kept for naming
+// back-compat.
+// ---------------------------------------------------------------------------
+
+export type HeaderFooterElement = DesignElement;
+export type HeaderFooterSlot = DesignSlot;
+
+export type ResolvedHeaderFooterElement = ResolvedDesignElement;
+export type ResolvedHeaderFooterSlot = ResolvedDesignSlot;
+
+// ---------------------------------------------------------------------------
+// Legacy header/footer types — retained solely so the migrator can
+// recognize pre-migration configs and convert them to DesignSlot.
+// ---------------------------------------------------------------------------
+
+export interface LegacyHeaderFooterTextElement {
   kind: 'text';
   align: HeaderFooterHAlign;
-  /** Template string. Placeholders: {pageNumber}, {totalPages}, {title},
-   *  {subtitle}, {author}, {publishDate}, {chapterTitle}. Use `{{` / `}}`
-   *  for literal braces. */
   content: string;
   parity: PageParity;
   /** Absolute distance between the element's body-facing edge and the body
@@ -717,60 +892,31 @@ export interface HeaderFooterTextElement {
   color?: ColorValue;
 }
 
-export interface HeaderFooterRuleElement {
+export interface LegacyHeaderFooterRuleElement {
   kind: 'rule';
   color: ColorValue;
   thickness: Dimension;
-  /** Rule width — a Dimension or the literal 'full' meaning full content width. */
   width: Dimension | 'full';
   align: HeaderFooterHAlign;
-  /** Absolute distance from the rule's body-facing edge to the body edge.
-   *  Independent of other elements. */
   marginFromBody?: Dimension;
-  /** Horizontal inset from the aligned content edge. Only applies when
-   *  `width` is a `Dimension` and `align` is `'left'` or `'right'`. */
   marginFromEdge?: Dimension;
   parity: PageParity;
 }
 
-export type HeaderFooterElement = HeaderFooterTextElement | HeaderFooterRuleElement;
+export type LegacyHeaderFooterElement = LegacyHeaderFooterTextElement | LegacyHeaderFooterRuleElement;
 
-export interface HeaderFooterSlot {
-  elements: HeaderFooterElement[];
+export interface LegacyHeaderFooterSlot {
+  elements: LegacyHeaderFooterElement[];
 }
 
-export interface ResolvedHeaderFooterTextElement {
-  kind: 'text';
-  align: HeaderFooterHAlign;
-  content: string;
-  parity: PageParity;
-  marginFromBody: Dimension;
-  marginFromEdge: Dimension;
-  fontFamily: string;
-  fontSize: Dimension;
-  fontWeight: number;
-  italic: boolean;
-  color: ColorValue;
-}
-
-export interface ResolvedHeaderFooterRuleElement {
-  kind: 'rule';
-  color: ColorValue;
-  thickness: Dimension;
-  width: Dimension | 'full';
-  align: HeaderFooterHAlign;
-  marginFromBody: Dimension;
-  marginFromEdge: Dimension;
-  parity: PageParity;
-}
-
-export type ResolvedHeaderFooterElement =
-  | ResolvedHeaderFooterTextElement
-  | ResolvedHeaderFooterRuleElement;
-
-export interface ResolvedHeaderFooterSlot {
-  elements: ResolvedHeaderFooterElement[];
-}
+/** @deprecated Use `DesignTextElement`. Kept as alias for legacy API exports. */
+export type HeaderFooterTextElement = DesignTextElement;
+/** @deprecated Use `DesignRuleElement`. */
+export type HeaderFooterRuleElement = DesignRuleElement;
+/** @deprecated Use `ResolvedDesignTextElement`. */
+export type ResolvedHeaderFooterTextElement = ResolvedDesignTextElement;
+/** @deprecated Use `ResolvedDesignRuleElement`. */
+export type ResolvedHeaderFooterRuleElement = ResolvedDesignRuleElement;
 
 export interface PostextConfig {
   page?: PageConfig;

@@ -124,6 +124,7 @@ function renderPage(
     popClip(ctx);
   }
 
+  if (vdtPage.openerBand) renderHeaderFooterSlot(ctx, vdtPage.openerBand, fontCache);
   if (vdtPage.header) renderHeaderFooterSlot(ctx, vdtPage.header, fontCache);
   if (vdtPage.footer) renderHeaderFooterSlot(ctx, vdtPage.footer, fontCache);
 

@@ -202,6 +202,111 @@ function collectDirectiveWarnings(
   return out;
 }
 
+function detectAnchorIssues(
+  elements: Array<{ id: string; placement: { anchor: { to: string } } }>,
+): { cyclic: string[]; dangling: Array<{ id: string; target: string }> } {
+  const ids = new Set(elements.map((e) => e.id));
+  const edges = new Map<string, string | null>();
+  const dangling: Array<{ id: string; target: string }> = [];
+  for (const el of elements) {
+    const to = el.placement.anchor.to;
+    if (to === 'container') {
+      edges.set(el.id, null);
+    } else if (to.startsWith('#')) {
+      const tgt = to.slice(1);
+      if (!ids.has(tgt)) {
+        dangling.push({ id: el.id, target: tgt });
+        edges.set(el.id, null);
+      } else {
+        edges.set(el.id, tgt);
+      }
+    } else {
+      edges.set(el.id, null);
+    }
+  }
+  const cyclic = new Set<string>();
+  for (const start of ids) {
+    const visited = new Set<string>();
+    let cur: string | undefined = start;
+    while (cur) {
+      if (visited.has(cur)) {
+        cyclic.add(start);
+        break;
+      }
+      visited.add(cur);
+      const nxt = edges.get(cur);
+      cur = nxt ?? undefined;
+    }
+  }
+  return { cyclic: [...cyclic], dangling };
+}
+
+function collectDesignWarnings(config: PostextConfig): Warning[] {
+  const out: Warning[] = [];
+  const headings = resolveHeadingsConfig(config.headings);
+
+  // Header/footer anchor integrity
+  for (const slot of ['header', 'footer'] as const) {
+    const resolved = resolveHeaderFooterConfig(config[slot], slot);
+    const { cyclic, dangling } = detectAnchorIssues(resolved.elements);
+    for (const id of cyclic) {
+      out.push({
+        id: `design-cyclic-${slot}-${id}`,
+        payload: { kind: 'designCyclicAnchor', slot, elementId: id },
+      });
+    }
+    for (const d of dangling) {
+      out.push({
+        id: `design-dangling-${slot}-${d.id}-${d.target}`,
+        payload: { kind: 'designDanglingAnchor', slot, elementId: d.id, referencedId: d.target },
+      });
+    }
+  }
+
+  // Heading-level warnings
+  for (const lvl of headings.levels) {
+    if (lvl.span === 'page' && !lvl.breakBefore.enabled) {
+      out.push({
+        id: `h-span-without-break-${lvl.level}`,
+        payload: { kind: 'headingSpanWithoutBreak', level: lvl.level },
+      });
+    }
+    if (lvl.advancedDesign.enabled) {
+      const slot = lvl.advancedDesign.slot;
+      const { cyclic, dangling } = detectAnchorIssues(slot.elements);
+      for (const id of cyclic) {
+        out.push({
+          id: `design-cyclic-h${lvl.level}-${id}`,
+          payload: { kind: 'designCyclicAnchor', slot: 'heading', level: lvl.level, elementId: id },
+        });
+      }
+      for (const d of dangling) {
+        out.push({
+          id: `design-dangling-h${lvl.level}-${d.id}-${d.target}`,
+          payload: {
+            kind: 'designDanglingAnchor',
+            slot: 'heading',
+            level: lvl.level,
+            elementId: d.id,
+            referencedId: d.target,
+          },
+        });
+      }
+      const hasTitleText = slot.elements.some(
+        (e) => e.kind === 'text' && e.content.includes('{titleText}'),
+      );
+      if (!hasTitleText) {
+        out.push({
+          id: `h-advanced-no-title-${lvl.level}`,
+          payload: { kind: 'headingAdvancedWithoutTitleText', level: lvl.level },
+        });
+      }
+    }
+  }
+
+  return out;
+}
+
 function collectHeadingBreakParityWarnings(config: PostextConfig): Warning[] {
   const out: Warning[] = [];
   const headings = resolveHeadingsConfig(config.headings);
@@ -385,6 +490,9 @@ export function computeWarnings(params: {
   warnings.push(...collectHeadingBreakParityWarnings(config));
   warnings.push(...collectParityCascadeWarnings(doc));
   warnings.push(...collectAlphaOverflowWarnings(doc));
+  if (toggles.designIssues) {
+    warnings.push(...collectDesignWarnings(config));
+  }
 
   return warnings;
 }
