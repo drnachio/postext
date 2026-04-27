@@ -355,9 +355,11 @@ Dibuja una línea vertical fina en el medianil para separar visualmente las colu
 
 ## Encabezados y pies
 
-Las propiedades `header` y `footer` controlan los bloques de encabezado y pie de página. Los encabezados y pies se dibujan **dentro de los márgenes de página existentes** — no reservan espacio adicional ni reducen el área de contenido. Cada elemento se posiciona de forma independiente: `marginFromBody` es la distancia absoluta entre el borde del elemento que mira al cuerpo y el borde del cuerpo. Los elementos no se empujan entre sí — dos elementos con el mismo `marginFromBody` se solaparán.
+Las propiedades `header` y `footer` controlan los bloques de encabezado y pie de página. Los encabezados y pies se dibujan **dentro de los márgenes de página existentes** — no reservan espacio adicional ni reducen el área de contenido.
 
-Cada bloque contiene una lista de elementos de **texto** y **línea** (`rule`).
+Los bloques utilizan el modelo unificado de **ranura de diseño**: cada elemento define un `placement` con un `anchor` (al contenedor o a otro elemento por `#id`), un `offset` opcional y un `size` opcional. Los campos planos heredados `align`, `marginFromBody`, `marginFromEdge` y `width: 'full'` siguen aceptándose como entrada y se migran automáticamente al nuevo formato; debajo se documenta la equivalencia.
+
+Cada bloque contiene una lista de elementos de **texto**, **línea** (`rule`) y **caja** (`box`). El orden del array es el orden de pintado (el primer elemento se pinta primero, el último se pinta encima).
 
 **Valores por defecto incluidos.** Cuando `header` o `footer` son `undefined`, postext aplica un valor por defecto sensato en lugar de un bloque vacío:
 
@@ -454,16 +456,34 @@ Los elementos de texto renderizan una plantilla con sustitución de marcadores. 
       <td>Color del texto.</td>
     </tr>
     <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>Cómo se gestiona el texto que excede el ancho disponible del elemento. <code>'wrap'</code> divide el texto en varias líneas; las variantes de elipsis truncan a una sola línea e insertan <code>…</code> al principio, en el centro o al final; <code>'clip'</code> recorta de forma estricta al rectángulo del elemento sin insertar ningún carácter.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenate</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Cuando es <code>true</code> y <code>overflow</code> es <code>'wrap'</code>, las palabras largas que aún excederían el ancho tras un salto de línea normal se dividen en límites silábicos (utilizando el idioma de separación silábica activo del documento) insertando un guion blando en el corte.</td>
+    </tr>
+    <tr>
       <td><code>marginFromBody</code></td>
       <td><code>Dimension</code></td>
       <td><code>6 pt</code></td>
-      <td>Distancia absoluta entre el borde del elemento que mira al cuerpo y el borde del cuerpo. Independiente de otros elementos.</td>
+      <td>Distancia absoluta entre el borde del elemento que mira al cuerpo y el borde del cuerpo. Independiente de otros elementos. Migrado a <code>placement.offset.y</code>.</td>
     </tr>
     <tr>
       <td><code>marginFromEdge</code></td>
       <td><code>Dimension</code></td>
       <td><code>0 pt</code></td>
-      <td>Desplazamiento horizontal respecto al borde al que está alineado. Solo aplica cuando <code>align</code> es <code>'left'</code> o <code>'right'</code>.</td>
+      <td>Desplazamiento horizontal respecto al borde al que está alineado. Solo aplica cuando <code>align</code> es <code>'left'</code> o <code>'right'</code>. Migrado a <code>placement.offset.x</code>.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>derivado de <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>Posicionamiento avanzado (ver más abajo). Cuando se define, prevalece sobre los campos planos heredados.</td>
     </tr>
   </tbody>
 </table>
@@ -474,6 +494,15 @@ Marcadores disponibles:
 - `{totalPages}` — total de páginas del documento.
 - `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — valores leídos desde `content.metadata`. Los metadatos desconocidos o vacíos se renderizan como cadena vacía (y generan un aviso en el sandbox).
 - `{chapterTitle}` — texto del H1 más reciente en o antes de la página actual.
+
+#### Alineación implícita por borde
+
+Cuando un elemento de texto tiene `placement.anchor.to` apuntando a otro elemento mediante `#id`, el borde del anclaje implica una alineación por defecto para las líneas envueltas:
+
+- `right-of` y `align-left` implican `align: 'left'` — las líneas envueltas fluyen hacia la derecha desde el anclaje.
+- `left-of` y `align-right` implican `align: 'right'` — las líneas envueltas se pegan al lado más cercano al elemento de referencia.
+
+El editor de encabezados del sandbox aplica estas alineaciones implícitas automáticamente al cambiar el borde o el destino del anclaje. Mantienen el texto envuelto visualmente atado al elemento al que se relaciona (de modo que, p. ej., la "P" de un "Postext" envuelto queda verticalmente bajo la "I" de "Introducción").
 
 ### Elementos de línea
 
@@ -540,6 +569,91 @@ Los elementos de línea dibujan una línea horizontal dentro del bloque.
   </tbody>
 </table>
 
+### Elementos de caja
+
+Los elementos de caja pintan un rectángulo redondeado dentro del bloque — útiles como fondo tras un texto en aperturas de capítulo, columnas laterales o pies. Las cajas se posicionan exclusivamente mediante el campo `placement`; no tienen variante plana heredada.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '220px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'box'</code></td>
+      <td>—</td>
+      <td>Discriminador.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Color de relleno. Pon <code>transparent</code> para una caja solo de borde.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Color del trazo.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Grosor del trazo. El trazo se pinta hacia el interior del rectángulo de la caja, así las dimensiones exteriores no varían.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Radio de esquina. Se acota a la mitad del lado más corto en tiempo de renderizado.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>—</td>
+      <td>Obligatorio. Ver «Posicionamiento de elementos» más abajo.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>En qué páginas aparece la caja.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Posicionamiento de elementos
+
+`ElementPlacement` es el modelo unificado de posicionamiento que utilizan todos los tipos de elementos (texto, línea, caja) dentro de cualquier ranura de diseño — encabezado de página, pie de página o ranura de diseño avanzado a nivel de encabezado. Tres campos describen un placement:
+
+```ts
+interface ElementPlacement {
+  /** A qué ancla este elemento y a qué borde de ese destino. */
+  anchor: {
+    to: 'container' | `#${string}`; // container = el bloque; #id = otro elemento del mismo bloque
+    edge: AnchorEdge;
+  };
+  /** Distancia desde el punto de anclaje. */
+  offset?: { x?: Dimension; y?: Dimension };
+  /** Ancho / alto opcional. El ancho admite también 'fill' (extender a lo largo del bloque). */
+  size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto' };
+}
+```
+
+`AnchorEdge` admite:
+
+- **Bordes del contenedor** (cuando `anchor.to === 'container'`): `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
+- **Bordes relativos a otro elemento** (cuando `anchor.to === '#someId'`): `right-of`, `left-of`, `below`, `above`, `align-top`, `align-bottom`, `align-left`, `align-right`.
+
+Cada elemento tiene un `id` estable (que asigna automáticamente el sandbox; también puedes establecerlo a mano). Los elementos anclados a otros elementos forman un pequeño grafo de dependencias que el motor resuelve antes de medir, así un elemento puede encadenarse a otro sin coordenadas manuales.
+
+La forma heredada `align` + `marginFromBody` + `marginFromEdge` se interpreta a la entrada y se reescribe a un placement en el momento de resolver la configuración, así que las configuraciones existentes siguen funcionando sin cambios.
 
 ## Texto de cuerpo
 
@@ -981,6 +1095,93 @@ Las páginas en blanco que inserta `breakBefore` reciben el encabezado `{chapter
 #### Excepción al inicio del documento
 
 Cuando el primer bloque del documento es un encabezado con `breakBefore` activado — o la fuente empieza con `:::pagebreak` —, la imposición de paridad se omite mientras la primera página siga vacía. El encabezado aterriza en la página 1 tal cual, independientemente de la paridad configurada, de modo que un documento que comienza con `# Capítulo 1` con `parity: 'odd'` no arrastra una página en blanco inicial innecesaria. Una vez que se ha colocado cualquier contenido, la imposición de paridad funciona de forma habitual.
+
+### Span y diseño avanzado
+
+Cada nivel de encabezado admite dos campos adicionales que controlan cómo se renderiza el encabezado como apertura de capítulo a página completa.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '220px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Predeterminado</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>Cuando es <code>'page'</code>, el encabezado se trata como apertura de capítulo y su diseño avanzado (si está habilitado) se adjunta a la página como una banda de apertura por encima del cuerpo. Combínese con <code>breakBefore.enabled: true</code> para que la apertura comience fiablemente en una nueva página.</td>
+    </tr>
+    <tr>
+      <td><code>advancedDesign</code></td>
+      <td><code>HeadingAdvancedDesignConfig</code></td>
+      <td><code>{'{ enabled: false, slot: { elements: [] } }'}</code></td>
+      <td>Ranura de diseño de composición libre para este nivel. Cuando está <code>enabled</code>, los elementos de la ranura componen la apertura. Utilice <code>{'{titleText}'}</code> dentro de un elemento de texto para renderizar el texto del título; <code>{'{number}'}</code>, <code>{'{numberRoman}'}</code>, etc. para insertar el número del encabezado.</td>
+    </tr>
+  </tbody>
+</table>
+
+Ejemplo — una apertura de capítulo minimalista que muestra «Capítulo N» encima del título:
+
+```json
+{
+  "headings": {
+    "levels": [
+      {
+        "level": 1,
+        "span": "page",
+        "breakBefore": { "enabled": true, "parity": "always-odd" },
+        "advancedDesign": {
+          "enabled": true,
+          "slot": {
+            "elements": [
+              {
+                "kind": "text",
+                "id": "chapterLabel",
+                "placement": {
+                  "anchor": { "to": "container", "edge": "top" },
+                  "offset": { "y": { "value": 48, "unit": "pt" } },
+                  "size": { "width": "fill" }
+                },
+                "content": "Capítulo {numberRoman}",
+                "fontSize": { "value": 10, "unit": "pt" },
+                "align": "center",
+                "overflow": "ellipsis-end"
+              },
+              {
+                "kind": "text",
+                "id": "chapterTitle",
+                "placement": {
+                  "anchor": { "to": "#chapterLabel", "edge": "below" },
+                  "offset": { "y": { "value": 12, "unit": "pt" } },
+                  "size": { "width": "fill" }
+                },
+                "content": "{titleText}",
+                "fontSize": { "value": 24, "unit": "pt" },
+                "fontWeight": 700,
+                "align": "center",
+                "overflow": "wrap",
+                "hyphenate": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+Marcadores disponibles dentro de una ranura de diseño de encabezado:
+
+- `{titleText}` — texto plano del encabezado (sin prefijo numérico).
+- `{number}` — número formateado según `numberingTemplate`.
+- `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` — formatos alternativos.
+- `{chapterNumber}`, `{chapterTitle}`, `{pageNumber}`, `{totalPages}`, `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — metadatos compartidos.
 
 
 ## Listas no ordenadas

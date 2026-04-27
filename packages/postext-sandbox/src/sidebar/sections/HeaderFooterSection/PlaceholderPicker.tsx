@@ -1,15 +1,17 @@
 'use client';
 
 import { useSandboxLabels } from '../../../context/SandboxContext';
+import type { SlotKind } from './placementAdapter';
 
 interface Props {
   onInsert: (placeholderName: string) => void;
+  slotKind?: SlotKind;
 }
 
-export function PlaceholderPicker({ onInsert }: Props) {
+export function PlaceholderPicker({ onInsert, slotKind = 'header' }: Props) {
   const labels = useSandboxLabels();
 
-  const ITEMS: { name: string; label: string }[] = [
+  const BASE_ITEMS: { name: string; label: string }[] = [
     { name: 'pageNumber', label: labels.headerFooterPlaceholderPageNumber },
     { name: 'totalPages', label: labels.headerFooterPlaceholderTotalPages },
     { name: 'title', label: labels.headerFooterPlaceholderTitle },
@@ -18,6 +20,14 @@ export function PlaceholderPicker({ onInsert }: Props) {
     { name: 'publishDate', label: labels.headerFooterPlaceholderPublishDate },
     { name: 'chapterTitle', label: labels.headerFooterPlaceholderChapterTitle },
   ];
+
+  const HEADING_ITEMS: { name: string; label: string }[] = [
+    { name: 'titleText', label: labels.headerFooterPlaceholderHeadingTitle ?? 'Current title' },
+    { name: 'number', label: labels.headerFooterPlaceholderHeadingNumber ?? 'Numbering' },
+    { name: 'chapterNumber', label: labels.headerFooterPlaceholderChapterNumber ?? 'Chapter number' },
+  ];
+
+  const ITEMS = slotKind === 'heading' ? [...BASE_ITEMS, ...HEADING_ITEMS] : BASE_ITEMS;
 
   return (
     <div className="mb-2">

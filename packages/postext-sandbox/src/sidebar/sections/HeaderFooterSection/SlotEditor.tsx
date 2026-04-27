@@ -2,24 +2,33 @@
 
 import { Plus, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { useSandboxLabels } from '../../../context/SandboxContext';
-import { DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT } from 'postext';
+import { DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, DEFAULT_BOX_ELEMENT } from 'postext';
 import type {
-  HeaderFooterSlot,
-  HeaderFooterElement,
-  HeaderFooterTextElement,
-  HeaderFooterRuleElement,
-  ResolvedHeaderFooterElement,
-  ResolvedHeaderFooterSlot,
+  DesignSlot,
+  DesignElement,
+  DesignTextElement,
+  DesignRuleElement,
+  DesignBoxElement,
+  ResolvedDesignElement,
+  ResolvedDesignSlot,
 } from 'postext';
 import { Tooltip } from '../../../panels/Tooltip';
 import { TextElementEditor } from './TextElementEditor';
 import { RuleElementEditor } from './RuleElementEditor';
+import { BoxElementEditor } from './BoxElementEditor';
+import { applyAlign, type SlotKind } from './placementAdapter';
 
 interface SlotEditorProps {
-  slotKey: 'header' | 'footer';
-  raw: HeaderFooterSlot | undefined;
-  resolved: ResolvedHeaderFooterSlot;
-  onUpdate: (slot: HeaderFooterSlot | undefined) => void;
+  slotKey: SlotKind;
+  raw: DesignSlot | undefined;
+  resolved: ResolvedDesignSlot;
+  onUpdate: (slot: DesignSlot | undefined) => void;
+}
+
+function generateId(kind: 'text' | 'rule' | 'box', used: Set<string>): string {
+  let i = 1;
+  while (used.has(`${kind}${i}`)) i++;
+  return `${kind}${i}`;
 }
 
 export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps) {
@@ -28,36 +37,48 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
   // When there's no override, show the resolved (library-default) elements
   // so the list is never mysteriously empty. Any edit then materialises the
   // full current snapshot as an override.
-  const currentRaw: HeaderFooterElement[] = raw?.elements ?? resolved.elements;
-  const resolvedElements: ResolvedHeaderFooterElement[] = resolved.elements;
+  const currentRaw: DesignElement[] = (raw?.elements ?? resolved.elements) as DesignElement[];
+  const resolvedElements: ResolvedDesignElement[] = resolved.elements;
 
-  const commit = (elements: HeaderFooterElement[]) => {
+  const commit = (elements: DesignElement[]) => {
     onUpdate({ elements });
   };
 
+  const existingIds = new Set(currentRaw.map((el) => el.id));
+
   const addText = () => {
-    const newEl: HeaderFooterTextElement = {
-      kind: 'text',
-      align: DEFAULT_TEXT_ELEMENT.align,
+    const id = generateId('text', existingIds);
+    const template: DesignTextElement = {
+      ...DEFAULT_TEXT_ELEMENT,
+      id,
       content: '',
-      parity: DEFAULT_TEXT_ELEMENT.parity,
+      // Default anchor aligned to the body edge for this slot.
+      placement: applyAlign(DEFAULT_TEXT_ELEMENT.placement, slotKey, 'center'),
     };
-    commit([...currentRaw, newEl]);
+    commit([...currentRaw, template]);
   };
 
   const addRule = () => {
-    const newEl: HeaderFooterRuleElement = {
-      kind: 'rule',
-      color: { ...DEFAULT_RULE_ELEMENT.color },
-      thickness: { ...DEFAULT_RULE_ELEMENT.thickness },
-      width: DEFAULT_RULE_ELEMENT.width,
-      align: DEFAULT_RULE_ELEMENT.align,
-      parity: DEFAULT_RULE_ELEMENT.parity,
+    const id = generateId('rule', existingIds);
+    const template: DesignRuleElement = {
+      ...DEFAULT_RULE_ELEMENT,
+      id,
+      placement: applyAlign(DEFAULT_RULE_ELEMENT.placement, slotKey, 'center'),
     };
-    commit([...currentRaw, newEl]);
+    commit([...currentRaw, template]);
   };
 
-  const updateAt = (index: number, next: HeaderFooterElement) => {
+  const addBox = () => {
+    const id = generateId('box', existingIds);
+    const template: DesignBoxElement = {
+      ...DEFAULT_BOX_ELEMENT,
+      id,
+      placement: applyAlign(DEFAULT_BOX_ELEMENT.placement, slotKey, 'center'),
+    };
+    commit([...currentRaw, template]);
+  };
+
+  const updateAt = (index: number, next: DesignElement) => {
     const arr = currentRaw.slice();
     arr[index] = next;
     commit(arr);
@@ -96,7 +117,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
         const isLast = idx === currentRaw.length - 1;
         return (
           <div
-            key={`${slotKey}-${idx}`}
+            key={`${slotKey}-${rawEl.id}-${idx}`}
             className="mb-2 rounded border"
             style={{ borderColor: 'var(--rule)' }}
           >
@@ -105,28 +126,21 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
               style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)' }}
             >
               <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--gilt)' }}>
-                {rawEl.kind === 'text' ? labels.headerFooterElementText : labels.headerFooterElementRule}
+                {rawEl.kind === 'text'
+                  ? labels.headerFooterElementText
+                  : rawEl.kind === 'rule'
+                    ? labels.headerFooterElementRule
+                    : (labels.headerFooterElementBox ?? 'Box')}
                 {' '}#{idx + 1}
               </span>
               <div className="flex items-center gap-1">
-                <IconButton
-                  label={labels.headerFooterMoveUp}
-                  disabled={isFirst}
-                  onClick={() => moveUp(idx)}
-                >
+                <IconButton label={labels.headerFooterMoveUp} disabled={isFirst} onClick={() => moveUp(idx)}>
                   <ArrowUp size={12} aria-hidden="true" />
                 </IconButton>
-                <IconButton
-                  label={labels.headerFooterMoveDown}
-                  disabled={isLast}
-                  onClick={() => moveDown(idx)}
-                >
+                <IconButton label={labels.headerFooterMoveDown} disabled={isLast} onClick={() => moveDown(idx)}>
                   <ArrowDown size={12} aria-hidden="true" />
                 </IconButton>
-                <IconButton
-                  label={labels.headerFooterDelete}
-                  onClick={() => removeAt(idx)}
-                >
+                <IconButton label={labels.headerFooterDelete} onClick={() => removeAt(idx)}>
                   <Trash2 size={12} aria-hidden="true" />
                 </IconButton>
               </div>
@@ -136,12 +150,22 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
                 <TextElementEditor
                   raw={rawEl}
                   resolved={resolvedEl}
+                  slotKind={slotKey}
+                  siblings={currentRaw.map((s, i) => ({ id: s.id, kind: s.kind, index: i })).filter((s) => s.id !== rawEl.id)}
                   onChange={(next) => updateAt(idx, next)}
                 />
               ) : rawEl.kind === 'rule' && resolvedEl?.kind === 'rule' ? (
                 <RuleElementEditor
                   raw={rawEl}
                   resolved={resolvedEl}
+                  slotKind={slotKey}
+                  onChange={(next) => updateAt(idx, next)}
+                />
+              ) : rawEl.kind === 'box' && resolvedEl?.kind === 'box' ? (
+                <BoxElementEditor
+                  raw={rawEl}
+                  resolved={resolvedEl}
+                  slotKind={slotKey}
                   onChange={(next) => updateAt(idx, next)}
                 />
               ) : null}
@@ -153,6 +177,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
       <div className="mt-2 flex gap-2">
         <AddButton label={labels.headerFooterAddText} onClick={addText} />
         <AddButton label={labels.headerFooterAddRule} onClick={addRule} />
+        <AddButton label={labels.headerFooterAddBox ?? 'Add box'} onClick={addBox} />
       </div>
     </div>
   );

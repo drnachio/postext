@@ -90,6 +90,7 @@ export function renderPageToCanvas(
     ctx.restore();
   }
 
+  if (page.openerBand) renderHeaderFooterSlot(ctx, page.openerBand);
   if (page.header) renderHeaderFooterSlot(ctx, page.header);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer);
 

@@ -46,7 +46,7 @@ import {
 } from './buildHelpers';
 import { resolveBlockKind } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
-import { buildHeadersAndFooters } from './headerFooter';
+import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
 
 export interface BuildDocumentOptions {
   /**
@@ -206,6 +206,16 @@ export function buildDocument(
         }
         flushPendingNumberingAtBoundary();
       }
+      // `span: 'page'` headings open a chapter band across the full content
+      // width. Always start on a fresh page boundary so the band sits at the
+      // page top, and reset the cursor to column 0 so all other columns will
+      // have their availableHeight reduced symmetrically after placement.
+      if (level?.span === 'page') {
+        pendingSpacing = 0;
+        advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+        cursor.columnIndex = 0;
+        flushPendingNumberingAtBoundary();
+      }
     }
 
     const id = `block-${blockIdCounter++}`;
@@ -356,6 +366,34 @@ export function buildDocument(
         ? (remainingLines[0]?.bbox.height ?? style.lineHeightPx)
         : remainingLines.length * style.lineHeightPx;
 
+      // For headings with an enabled advanced-design slot, the rendered
+      // overlay may extend below the natural text bottom. Measure the slot's
+      // actual content bottom so the reserved block height (and the
+      // subsequent marginBottom + grid snap) starts from there.
+      let effectiveRemainHeight = totalRemainHeight;
+      if (vdtType === 'heading' && headingLevel !== undefined && partIndex === 0) {
+        const lvl = resolved.headings.levels.find((l) => l.level === headingLevel);
+        if (lvl) {
+          const full = remainingLines
+            .map((ln) => (ln.segments ?? []).map((s) => s.text).join(''))
+            .join(' ');
+          const pref = numberPrefix ?? '';
+          const title = pref && full.startsWith(`${pref} `) ? full.slice(pref.length + 1) : full;
+          // Span-page openers lay out across the full content area (both
+          // columns); in-column headings use just the column width.
+          const measureWidth = lvl.span === 'page' ? contentArea.width : curCol.bbox.width;
+          const designBottom = measureHeadingAdvancedDesignHeight(
+            lvl,
+            { titleText: title, formattedNumber: pref, chapterNumber: pref },
+            measureWidth,
+            resolved.page.dpi,
+            doc.metadata,
+            cursor.pageIndex,
+          );
+          if (designBottom > effectiveRemainHeight) effectiveRemainHeight = designBottom;
+        }
+      }
+
       // Keep-with-list: if this colon-paragraph would fit but would leave no
       // room for the first list item, split off the colon line (or push the
       // whole paragraph when it is a single line or the split would leave a
@@ -441,7 +479,7 @@ export function buildDocument(
       }
 
       // Block fits in current column
-      if (totalRemainHeight <= effectiveAvailable) {
+      if (effectiveRemainHeight <= effectiveAvailable) {
         // Heading keep-with-next: never leave a heading as the last block of a
         // column. If the following (non-heading) block wouldn't have room to
         // place at least its widow-minimum number of lines after this heading,
@@ -461,7 +499,7 @@ export function buildDocument(
         ) {
           const wouldUsedHeight =
             (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
-          const naturalBottom = wouldUsedHeight + totalRemainHeight + style.marginBottomPx;
+          const naturalBottom = wouldUsedHeight + effectiveRemainHeight + style.marginBottomPx;
           const snappedBottom = shouldSnapToGrid
             ? Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid
             : naturalBottom;
@@ -519,7 +557,7 @@ export function buildDocument(
         blk.sourceMap = absoluteSourceMap;
         blk.plainPrefixLen = prefixLen;
 
-        let h = totalRemainHeight;
+        let h = effectiveRemainHeight;
         if (shouldSnapToGrid && partIndex === 0) {
           // Snap using the absolute position in the column so that the block
           // bottom lands on a baseline grid line. This accounts for off-grid
@@ -527,7 +565,7 @@ export function buildDocument(
           // the minimum marginBottom — the grid always wins, but the margin
           // below is guaranteed to be at least marginBottomPx.
           const usedHeight = curCol.bbox.height - curCol.availableHeight;
-          const naturalBottom = usedHeight + totalRemainHeight + style.marginBottomPx;
+          const naturalBottom = usedHeight + effectiveRemainHeight + style.marginBottomPx;
           // Tolerance guards against FP drift: if naturalBottom is already on
           // the grid (e.g. marginBottom is an exact multiple of baselineGrid),
           // don't round up to the next line.
@@ -537,6 +575,20 @@ export function buildDocument(
         placeBlockInColumn(blk, h, curCol, cursor);
         finalizeListItem(blk, partIndex === 0);
         doc.blocks.push(blk);
+        // Page-spanning heading: reserve the same vertical band in every
+        // other column on this page so body text under the opener band
+        // starts below it in ALL columns, not just the one it was placed in.
+        if (vdtType === 'heading' && headingLevel !== undefined) {
+          const lvl = resolved.headings.levels.find((l) => l.level === headingLevel);
+          if (lvl?.span === 'page') {
+            const page = doc.pages[cursor.pageIndex]!;
+            for (const otherCol of page.columns) {
+              if (otherCol !== curCol) {
+                otherCol.availableHeight = Math.max(0, otherCol.availableHeight - h);
+              }
+            }
+          }
+        }
         // For snapped headings/list-tails the margin is baked into the snap;
         // for unsnapped ones (consecutive) track it for collapsing
         if (vdtType === 'listItem' && nextIsListItem) {

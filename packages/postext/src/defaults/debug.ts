@@ -16,6 +16,7 @@ export const DEFAULT_DEBUG_CONFIG: ResolvedDebugConfig = {
     headingHierarchy: true,
     consecutiveHeadings: false,
     listAfterHeading: false,
+    designIssues: true,
   },
 };
 
@@ -52,6 +53,7 @@ export function resolveDebugConfig(partial?: DebugConfig): ResolvedDebugConfig {
       headingHierarchy: partial.warnings?.headingHierarchy ?? DEFAULT_DEBUG_CONFIG.warnings.headingHierarchy,
       consecutiveHeadings: partial.warnings?.consecutiveHeadings ?? DEFAULT_DEBUG_CONFIG.warnings.consecutiveHeadings,
       listAfterHeading: partial.warnings?.listAfterHeading ?? DEFAULT_DEBUG_CONFIG.warnings.listAfterHeading,
+      designIssues: partial.warnings?.designIssues ?? DEFAULT_DEBUG_CONFIG.warnings.designIssues,
     },
   };
 }
@@ -129,6 +131,10 @@ export function stripDebugDefaults(debug?: DebugConfig): DebugConfig | undefined
     }
     if (w.listAfterHeading !== undefined && w.listAfterHeading !== def.listAfterHeading) {
       out.listAfterHeading = w.listAfterHeading;
+      warnHas = true;
+    }
+    if (w.designIssues !== undefined && w.designIssues !== def.designIssues) {
+      out.designIssues = w.designIssues;
       warnHas = true;
     }
     if (warnHas) {

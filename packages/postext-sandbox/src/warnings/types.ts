@@ -17,7 +17,12 @@ export type WarningKind =
   | 'pagebreakInvalidParity'
   | 'headingBreakInvalidParity'
   | 'parityCascade'
-  | 'alphaPdfOverflow';
+  | 'alphaPdfOverflow'
+  | 'designCyclicAnchor'
+  | 'designDanglingAnchor'
+  | 'designTextClipAlwaysTruncates'
+  | 'headingSpanWithoutBreak'
+  | 'headingAdvancedWithoutTitleText';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -64,7 +69,28 @@ export type WarningPayload =
   | { kind: 'pagebreakInvalidParity'; value: string }
   | { kind: 'headingBreakInvalidParity'; level: number; value: string }
   | { kind: 'parityCascade'; runLength: number }
-  | { kind: 'alphaPdfOverflow' };
+  | { kind: 'alphaPdfOverflow' }
+  | {
+      kind: 'designCyclicAnchor';
+      slot: 'header' | 'footer' | 'heading';
+      level?: number;
+      elementId: string;
+    }
+  | {
+      kind: 'designDanglingAnchor';
+      slot: 'header' | 'footer' | 'heading';
+      level?: number;
+      elementId: string;
+      referencedId: string;
+    }
+  | {
+      kind: 'designTextClipAlwaysTruncates';
+      slot: 'header' | 'footer' | 'heading';
+      level?: number;
+      elementId: string;
+    }
+  | { kind: 'headingSpanWithoutBreak'; level: number }
+  | { kind: 'headingAdvancedWithoutTitleText'; level: number };
 
 export interface Warning {
   id: string;

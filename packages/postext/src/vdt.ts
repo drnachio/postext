@@ -8,8 +8,7 @@ import type {
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
-  ResolvedHeaderFooterSlot,
-  HeaderFooterHAlign,
+  ResolvedDesignSlot,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -37,8 +36,8 @@ export interface ResolvedConfig {
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;
-  header: ResolvedHeaderFooterSlot;
-  footer: ResolvedHeaderFooterSlot;
+  header: ResolvedDesignSlot;
+  footer: ResolvedDesignSlot;
 }
 
 // ---------------------------------------------------------------------------
@@ -137,6 +136,15 @@ export interface VDTBlock {
   /** Original TeX source for math spans/blocks — used for warnings and the
    *  disabled-math fallback rendering. */
   tex?: string;
+  /** When true, the block is skipped during rendering but still reserves
+   *  its bbox space within the column flow. Used for headings with
+   *  `span: 'page'` whose visual output is produced by an opener band. */
+  hidden?: boolean;
+  /** Optional in-column design slot rendered in place of the block's default
+   *  text content. Populated for heading blocks whose level has
+   *  `advancedDesign.enabled` and (for `span: 'column'`) at least one
+   *  element. Renderers render this instead of `lines` when present. */
+  designOverlay?: VDTDesignSlot;
 }
 
 export interface VDTColumn {
@@ -153,39 +161,80 @@ export interface VDTFootnoteArea {
   separator: boolean;
 }
 
-/** A rendered rule (horizontal separator) inside a header/footer slot. */
-export interface VDTRuleBlock {
+/** Line of wrapped text inside a `VDTDesignTextBlock`. */
+export interface VDTDesignTextLine {
+  text: string;
+  /** X offset of the line's visible content inside the element's content box. */
+  xOffset: number;
+  /** Y offset of the line baseline relative to the element's y. */
+  baselineY: number;
+  /** Measured width of the visible text. */
+  width: number;
+}
+
+/** Rounded-rectangle box style resolved to absolute px / hex values. */
+export interface VDTDesignBoxStyle {
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidthPx: number;
+  borderRadiusPx: number;
+}
+
+/** Text block rendered inside a design slot (header / footer / heading). */
+export interface VDTDesignTextBlock {
+  kind: 'text';
+  bbox: BoundingBox;
+  fontString: string;
+  color: string;
+  /** Absolute-page-coordinate baselines per line, already offset. */
+  lines: VDTDesignTextLine[];
+  box?: VDTDesignBoxStyle;
+  /** Whether rendering should clip to `bbox`. */
+  clip: boolean;
+}
+
+/** Rendered rule inside a design slot. */
+export interface VDTDesignRuleBlock {
   kind: 'rule';
   bbox: BoundingBox;
   color: string;
   thicknessPx: number;
+  direction: 'horizontal' | 'vertical';
 }
 
-/** Text block rendered inside a header/footer slot. */
-export interface VDTHeaderFooterTextBlock {
-  kind: 'text';
+/** Decorative rounded box. */
+export interface VDTDesignBoxBlock {
+  kind: 'box';
   bbox: BoundingBox;
-  text: string;
-  align: HeaderFooterHAlign;
-  fontString: string;
-  color: string;
-  baseline: number;
+  box: VDTDesignBoxStyle;
 }
 
-export type VDTHeaderFooterBlock = VDTHeaderFooterTextBlock | VDTRuleBlock;
+export type VDTDesignBlock = VDTDesignTextBlock | VDTDesignRuleBlock | VDTDesignBoxBlock;
 
-export interface VDTHeaderFooterSlot {
+export interface VDTDesignSlot {
   bbox: BoundingBox;
-  blocks: VDTHeaderFooterBlock[];
+  blocks: VDTDesignBlock[];
 }
+
+/** @deprecated Use `VDTDesignSlot`. */
+export type VDTHeaderFooterSlot = VDTDesignSlot;
+/** @deprecated Use `VDTDesignBlock`. */
+export type VDTHeaderFooterBlock = VDTDesignBlock;
+/** @deprecated Use `VDTDesignTextBlock`. */
+export type VDTHeaderFooterTextBlock = VDTDesignTextBlock;
+/** @deprecated Use `VDTDesignRuleBlock`. */
+export type VDTRuleBlock = VDTDesignRuleBlock;
 
 export interface VDTPage {
   index: number;
   width: number;
   height: number;
   columns: VDTColumn[];
-  header?: VDTHeaderFooterSlot;
-  footer?: VDTHeaderFooterSlot;
+  header?: VDTDesignSlot;
+  footer?: VDTDesignSlot;
+  /** Optional full-width opener band above the column flow, used for
+   *  heading-level `span: 'page'` chapter openers. */
+  openerBand?: VDTDesignSlot;
   marginNotes: VDTBlock[];
   footnoteArea?: VDTFootnoteArea;
   /** Numeric counter for this page from the active page-numbering sequence.

@@ -12,6 +12,8 @@ interface TextInputProps {
   isDefault?: boolean;
   onReset?: () => void;
   widthCh?: number;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 export function TextInput({
@@ -23,6 +25,8 @@ export function TextInput({
   isDefault,
   onReset,
   widthCh = 14,
+  onFocus,
+  onBlur,
 }: TextInputProps) {
   const muted = isDefault ?? false;
   return (
@@ -39,6 +43,8 @@ export function TextInput({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onFocus={onFocus}
+          onBlur={onBlur}
           placeholder={placeholder}
           className="rounded border px-2 py-1 text-xs"
           style={{
