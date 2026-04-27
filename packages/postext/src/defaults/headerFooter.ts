@@ -1,294 +1,410 @@
 import type {
-  HeaderFooterSlot,
-  ResolvedHeaderFooterSlot,
-  HeaderFooterElement,
-  ResolvedHeaderFooterElement,
-  HeaderFooterTextElement,
-  HeaderFooterRuleElement,
-  ResolvedHeaderFooterTextElement,
-  ResolvedHeaderFooterRuleElement,
-  Dimension,
   ColorValue,
+  Dimension,
+  DesignBoxElement,
+  DesignElement,
+  DesignRuleElement,
+  DesignSlot,
+  DesignTextElement,
+  LegacyHeaderFooterSlot,
+  LegacyHeaderFooterRuleElement,
+  LegacyHeaderFooterTextElement,
+  ResolvedDesignBoxElement,
+  ResolvedDesignElement,
+  ResolvedDesignRuleElement,
+  ResolvedDesignSlot,
+  ResolvedDesignTextElement,
 } from '../types';
-import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
+import { DEFAULT_MAIN_COLOR } from './shared';
 
 export type HeaderFooterSlotKind = 'header' | 'footer';
 
 const DEFAULT_MARGIN_FROM_BODY: Dimension = { value: 6, unit: 'pt' };
-const DEFAULT_MARGIN_FROM_EDGE: Dimension = { value: 0, unit: 'pt' };
 
 function mainColor(): ColorValue {
   return { ...DEFAULT_MAIN_COLOR };
 }
 
-export const DEFAULT_HEADER_FOOTER_SLOT: ResolvedHeaderFooterSlot = {
-  elements: [],
-};
+export const DEFAULT_HEADER_FOOTER_SLOT: ResolvedDesignSlot = { elements: [] };
 
-export const DEFAULT_TEXT_ELEMENT: ResolvedHeaderFooterTextElement = {
+/** Reference defaults for a freshly-created text element. */
+export const DEFAULT_TEXT_ELEMENT: ResolvedDesignTextElement = {
   kind: 'text',
-  align: 'center',
-  content: '',
+  id: 'text',
   parity: 'all',
-  marginFromBody: { ...DEFAULT_MARGIN_FROM_BODY },
-  marginFromEdge: { ...DEFAULT_MARGIN_FROM_EDGE },
+  placement: {
+    anchor: { to: 'container', edge: 'bottom' },
+    offset: { x: { value: 0, unit: 'pt' }, y: { value: 0, unit: 'pt' } },
+    size: { width: 'auto', height: 'auto' },
+  },
+  content: '',
   fontFamily: 'EB Garamond',
   fontSize: { value: 8, unit: 'pt' },
   fontWeight: 400,
   italic: false,
   color: { hex: '#000000', model: 'hex' },
+  align: 'center',
+  verticalAlign: 'middle',
+  lineHeight: 1.2,
+  overflow: 'ellipsis-end',
 };
 
-export const DEFAULT_RULE_ELEMENT: ResolvedHeaderFooterRuleElement = {
+export const DEFAULT_RULE_ELEMENT: ResolvedDesignRuleElement = {
   kind: 'rule',
+  id: 'rule',
+  parity: 'all',
+  placement: {
+    anchor: { to: 'container', edge: 'bottom' },
+    offset: { x: { value: 0, unit: 'pt' }, y: { value: 0, unit: 'pt' } },
+    size: { width: 'fill' },
+  },
+  direction: 'horizontal',
   color: { hex: '#000000', model: 'hex' },
   thickness: { value: 0.5, unit: 'pt' },
-  width: 'full',
-  align: 'center',
-  marginFromBody: { ...DEFAULT_MARGIN_FROM_BODY },
-  marginFromEdge: { ...DEFAULT_MARGIN_FROM_EDGE },
+};
+
+export const DEFAULT_BOX_ELEMENT: ResolvedDesignBoxElement = {
+  kind: 'box',
+  id: 'box',
   parity: 'all',
+  placement: {
+    anchor: { to: 'container', edge: 'top-left' },
+    offset: { x: { value: 0, unit: 'pt' }, y: { value: 0, unit: 'pt' } },
+    size: { width: { value: 20, unit: 'pt' }, height: { value: 20, unit: 'pt' } },
+  },
+  style: {
+    backgroundColor: mainColor(),
+    borderRadius: { value: 4, unit: 'pt' },
+  },
 };
 
 /** Built-in default header: book title (right, odd) + chapter title (left,
  *  even) + full-width rule. Applied when `config.header` is `undefined`. */
-export const DEFAULT_HEADER_SLOT: ResolvedHeaderFooterSlot = {
+export const DEFAULT_HEADER_SLOT: ResolvedDesignSlot = {
   elements: [
     {
       kind: 'text',
-      align: 'right',
-      content: '{title}',
+      id: 'titleOdd',
       parity: 'odd',
-      marginFromBody: { value: 16, unit: 'pt' },
-      marginFromEdge: { value: 0, unit: 'pt' },
+      placement: {
+        anchor: { to: 'container', edge: 'bottom-right' },
+        offset: { x: { value: 0, unit: 'pt' }, y: { value: -16, unit: 'pt' } },
+        size: { width: 'auto', height: 'auto' },
+      },
+      content: '{title}',
       fontFamily: 'Open Sans',
       fontSize: { value: 8, unit: 'pt' },
       fontWeight: 600,
       italic: false,
       color: mainColor(),
+      align: 'right',
+      verticalAlign: 'middle',
+      lineHeight: 1.2,
+      overflow: 'ellipsis-end',
     },
     {
       kind: 'text',
-      align: 'left',
-      content: '{chapterTitle}',
+      id: 'chapterEven',
       parity: 'even',
-      marginFromBody: { value: 16, unit: 'pt' },
-      marginFromEdge: { value: 0, unit: 'pt' },
+      placement: {
+        anchor: { to: 'container', edge: 'bottom-left' },
+        offset: { x: { value: 0, unit: 'pt' }, y: { value: -16, unit: 'pt' } },
+        size: { width: 'auto', height: 'auto' },
+      },
+      content: '{chapterTitle}',
       fontFamily: 'Open Sans',
       fontSize: { value: 8, unit: 'pt' },
       fontWeight: 600,
       italic: false,
       color: mainColor(),
+      align: 'left',
+      verticalAlign: 'middle',
+      lineHeight: 1.2,
+      overflow: 'ellipsis-end',
     },
     {
       kind: 'rule',
+      id: 'rule',
+      parity: 'all',
+      placement: {
+        anchor: { to: 'container', edge: 'bottom' },
+        offset: { x: { value: 0, unit: 'pt' }, y: { value: -13, unit: 'pt' } },
+        size: { width: 'fill' },
+      },
+      direction: 'horizontal',
       color: mainColor(),
       thickness: { value: 1, unit: 'pt' },
-      width: 'full',
-      align: 'center',
-      marginFromBody: { value: 13, unit: 'pt' },
-      marginFromEdge: { value: 0, unit: 'pt' },
-      parity: 'all',
     },
   ],
 };
 
-/** Built-in default footer: centered page number on every page. Applied when
- *  `config.footer` is `undefined`. */
-export const DEFAULT_FOOTER_SLOT: ResolvedHeaderFooterSlot = {
+/** Built-in default footer: centered page number on every page. */
+export const DEFAULT_FOOTER_SLOT: ResolvedDesignSlot = {
   elements: [
     {
       kind: 'text',
-      align: 'center',
-      content: '{pageNumber}',
+      id: 'pageNumber',
       parity: 'all',
-      marginFromBody: { value: 16, unit: 'pt' },
-      marginFromEdge: { value: 0, unit: 'pt' },
+      placement: {
+        anchor: { to: 'container', edge: 'top' },
+        offset: { x: { value: 0, unit: 'pt' }, y: { value: 16, unit: 'pt' } },
+        size: { width: 'auto', height: 'auto' },
+      },
+      content: '{pageNumber}',
       fontFamily: 'Open Sans',
       fontSize: { value: 8, unit: 'pt' },
       fontWeight: 600,
       italic: false,
       color: mainColor(),
+      align: 'center',
+      verticalAlign: 'middle',
+      lineHeight: 1.2,
+      overflow: 'ellipsis-end',
     },
   ],
 };
 
-function defaultSlotFor(kind: HeaderFooterSlotKind): ResolvedHeaderFooterSlot {
+function defaultSlotFor(kind: HeaderFooterSlotKind): ResolvedDesignSlot {
   return kind === 'header' ? DEFAULT_HEADER_SLOT : DEFAULT_FOOTER_SLOT;
 }
 
-function cloneResolvedSlot(slot: ResolvedHeaderFooterSlot): ResolvedHeaderFooterSlot {
+// ---------------------------------------------------------------------------
+// Legacy detection + migration
+// ---------------------------------------------------------------------------
+
+function isLegacyTextElement(el: unknown): el is LegacyHeaderFooterTextElement {
+  if (!el || typeof el !== 'object') return false;
+  const o = el as Record<string, unknown>;
+  if (o.kind !== 'text') return false;
+  // Legacy has `align` at the top level and no `placement`.
+  return 'align' in o && !('placement' in o);
+}
+
+function isLegacyRuleElement(el: unknown): el is LegacyHeaderFooterRuleElement {
+  if (!el || typeof el !== 'object') return false;
+  const o = el as Record<string, unknown>;
+  if (o.kind !== 'rule') return false;
+  return 'align' in o && !('placement' in o);
+}
+
+/** Returns true when the slot uses the legacy `align`/`marginFromBody` shape. */
+export function isLegacyHeaderFooterSlot(slot: unknown): slot is LegacyHeaderFooterSlot {
+  if (!slot || typeof slot !== 'object') return false;
+  const elements = (slot as { elements?: unknown[] }).elements;
+  if (!Array.isArray(elements)) return false;
+  return elements.some((e) => isLegacyTextElement(e) || isLegacyRuleElement(e));
+}
+
+function anchorFromLegacy(
+  kind: HeaderFooterSlotKind,
+  align: 'left' | 'center' | 'right',
+): { edge: 'top-left' | 'top' | 'top-right' | 'bottom-left' | 'bottom' | 'bottom-right' } {
+  const side = kind === 'header' ? 'bottom' : 'top';
+  if (align === 'left') return { edge: `${side}-left` as const };
+  if (align === 'right') return { edge: `${side}-right` as const };
+  return { edge: side as 'top' | 'bottom' };
+}
+
+function migrateTextElement(
+  el: LegacyHeaderFooterTextElement,
+  kind: HeaderFooterSlotKind,
+  idx: number,
+): DesignTextElement {
+  const anchor = anchorFromLegacy(kind, el.align);
+  const yOffsetVal = el.marginFromBody?.value ?? DEFAULT_MARGIN_FROM_BODY.value;
+  const yUnit = el.marginFromBody?.unit ?? DEFAULT_MARGIN_FROM_BODY.unit;
+  // Header anchors to bottom and moves UP (negative y); footer anchors to top
+  // and moves DOWN (positive y).
+  const y: Dimension = {
+    value: kind === 'header' ? -yOffsetVal : yOffsetVal,
+    unit: yUnit,
+  };
+  const edgeInset = el.marginFromEdge;
+  let x: Dimension | undefined;
+  if (el.align === 'left' && edgeInset) x = edgeInset;
+  else if (el.align === 'right' && edgeInset)
+    x = { value: -edgeInset.value, unit: edgeInset.unit };
+  else x = undefined;
+
   return {
-    elements: slot.elements.map((el) =>
-      el.kind === 'text'
-        ? {
-            ...el,
-            marginFromBody: { ...el.marginFromBody },
-            marginFromEdge: { ...el.marginFromEdge },
-            fontSize: { ...el.fontSize },
-            color: { ...el.color },
-          }
-        : {
-            ...el,
-            marginFromBody: { ...el.marginFromBody },
-            marginFromEdge: { ...el.marginFromEdge },
-            thickness: { ...el.thickness },
-            width: typeof el.width === 'string' ? el.width : { ...el.width },
-            color: { ...el.color },
-          },
-    ),
+    kind: 'text',
+    id: `text-${idx + 1}`,
+    parity: el.parity,
+    placement: {
+      anchor: { to: 'container', edge: anchor.edge },
+      offset: { x, y },
+      size: { width: 'auto', height: 'auto' },
+    },
+    content: el.content,
+    fontFamily: el.fontFamily,
+    fontSize: el.fontSize ?? DEFAULT_TEXT_ELEMENT.fontSize,
+    fontWeight: el.fontWeight,
+    italic: el.italic,
+    color: el.color,
+    align: el.align,
+    verticalAlign: 'middle',
+    lineHeight: 1.2,
+    overflow: 'ellipsis-end',
   };
 }
 
-function resolveTextElement(el: HeaderFooterTextElement): ResolvedHeaderFooterTextElement {
+function migrateRuleElement(
+  el: LegacyHeaderFooterRuleElement,
+  kind: HeaderFooterSlotKind,
+  idx: number,
+): DesignRuleElement {
+  const anchor = anchorFromLegacy(kind, el.align);
+  const yOffsetVal = el.marginFromBody?.value ?? DEFAULT_MARGIN_FROM_BODY.value;
+  const yUnit = el.marginFromBody?.unit ?? DEFAULT_MARGIN_FROM_BODY.unit;
+  const y: Dimension = {
+    value: kind === 'header' ? -yOffsetVal : yOffsetVal,
+    unit: yUnit,
+  };
+  const widthSize = el.width === 'full' ? 'fill' : el.width;
+  const edgeInset = el.align !== 'center' && el.width !== 'full' ? el.marginFromEdge : undefined;
+  let x: Dimension | undefined;
+  if (el.align === 'left' && edgeInset) x = edgeInset;
+  else if (el.align === 'right' && edgeInset)
+    x = { value: -edgeInset.value, unit: edgeInset.unit };
+
+  return {
+    kind: 'rule',
+    id: `rule-${idx + 1}`,
+    parity: el.parity,
+    placement: {
+      anchor: { to: 'container', edge: anchor.edge },
+      offset: { x, y },
+      size: { width: widthSize },
+    },
+    direction: 'horizontal',
+    color: el.color,
+    thickness: el.thickness,
+  };
+}
+
+/** Convert a legacy-shaped header/footer slot to a `DesignSlot`. Safe to
+ *  call on already-migrated slots (returns them unchanged). */
+export function migrateLegacyHeaderFooterConfig(
+  slot: unknown,
+  kind: HeaderFooterSlotKind,
+): DesignSlot | undefined {
+  if (!slot || typeof slot !== 'object') return undefined;
+  const elements = (slot as { elements?: unknown[] }).elements;
+  if (!Array.isArray(elements)) return { elements: [] };
+  const migrated: DesignElement[] = elements.map((raw, i) => {
+    if (isLegacyTextElement(raw)) return migrateTextElement(raw, kind, i);
+    if (isLegacyRuleElement(raw)) return migrateRuleElement(raw, kind, i);
+    return raw as DesignElement;
+  });
+  return { elements: migrated };
+}
+
+// ---------------------------------------------------------------------------
+// Resolve / strip
+// ---------------------------------------------------------------------------
+
+function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignTextElement {
   return {
     kind: 'text',
-    align: el.align ?? DEFAULT_TEXT_ELEMENT.align,
-    content: el.content ?? DEFAULT_TEXT_ELEMENT.content,
-    parity: el.parity ?? DEFAULT_TEXT_ELEMENT.parity,
-    marginFromBody: el.marginFromBody ?? DEFAULT_TEXT_ELEMENT.marginFromBody,
-    marginFromEdge: el.marginFromEdge ?? DEFAULT_TEXT_ELEMENT.marginFromEdge,
+    id: el.id ?? `text-${idx + 1}`,
+    parity: el.parity ?? 'all',
+    placement: {
+      anchor: el.placement.anchor,
+      offset: el.placement.offset ?? {},
+      size: el.placement.size ?? { width: 'auto', height: 'auto' },
+    },
+    content: el.content,
     fontFamily: el.fontFamily ?? DEFAULT_TEXT_ELEMENT.fontFamily,
-    fontSize: el.fontSize ?? DEFAULT_TEXT_ELEMENT.fontSize,
+    fontSize: el.fontSize,
     fontWeight: el.fontWeight ?? DEFAULT_TEXT_ELEMENT.fontWeight,
     italic: el.italic ?? DEFAULT_TEXT_ELEMENT.italic,
     color: el.color ?? DEFAULT_TEXT_ELEMENT.color,
+    align: el.align ?? DEFAULT_TEXT_ELEMENT.align,
+    verticalAlign: el.verticalAlign ?? DEFAULT_TEXT_ELEMENT.verticalAlign,
+    lineHeight: el.lineHeight ?? DEFAULT_TEXT_ELEMENT.lineHeight,
+    letterSpacing: el.letterSpacing,
+    overflow: el.overflow ?? DEFAULT_TEXT_ELEMENT.overflow,
+    hyphenate: el.hyphenate,
+    box: el.box,
   };
 }
 
-function resolveRuleElement(el: HeaderFooterRuleElement): ResolvedHeaderFooterRuleElement {
+function resolveRuleElement(el: DesignRuleElement, idx: number): ResolvedDesignRuleElement {
   return {
     kind: 'rule',
-    color: el.color ?? DEFAULT_RULE_ELEMENT.color,
-    thickness: el.thickness ?? DEFAULT_RULE_ELEMENT.thickness,
-    width: el.width ?? DEFAULT_RULE_ELEMENT.width,
-    align: el.align ?? DEFAULT_RULE_ELEMENT.align,
-    marginFromBody: el.marginFromBody ?? DEFAULT_RULE_ELEMENT.marginFromBody,
-    marginFromEdge: el.marginFromEdge ?? DEFAULT_RULE_ELEMENT.marginFromEdge,
-    parity: el.parity ?? DEFAULT_RULE_ELEMENT.parity,
-  };
-}
-
-function resolveElement(el: HeaderFooterElement): ResolvedHeaderFooterElement {
-  if (el.kind === 'text') return resolveTextElement(el);
-  return resolveRuleElement(el);
-}
-
-/** Resolve a header/footer slot. When `slot` is `undefined`, returns the
- *  built-in default for `kind`. An explicit empty slot (`{ elements: [] }`)
- *  stays empty — the user opted out of the default. */
-export function resolveHeaderFooterConfig(
-  slot: HeaderFooterSlot | undefined,
-  kind: HeaderFooterSlotKind = 'header',
-): ResolvedHeaderFooterSlot {
-  if (slot === undefined) return cloneResolvedSlot(defaultSlotFor(kind));
-  return {
-    elements: (slot.elements ?? []).map(resolveElement),
-  };
-}
-
-function stripTextElement(el: HeaderFooterTextElement): HeaderFooterTextElement {
-  const out: HeaderFooterTextElement = {
-    kind: 'text',
-    align: el.align,
-    content: el.content,
-    parity: el.parity,
-  };
-  if (el.marginFromBody !== undefined && !dimensionsEqual(el.marginFromBody, DEFAULT_TEXT_ELEMENT.marginFromBody)) out.marginFromBody = el.marginFromBody;
-  if (el.marginFromEdge !== undefined && !dimensionsEqual(el.marginFromEdge, DEFAULT_TEXT_ELEMENT.marginFromEdge)) out.marginFromEdge = el.marginFromEdge;
-  if (el.fontFamily !== undefined && el.fontFamily !== DEFAULT_TEXT_ELEMENT.fontFamily) out.fontFamily = el.fontFamily;
-  if (el.fontSize !== undefined && !dimensionsEqual(el.fontSize, DEFAULT_TEXT_ELEMENT.fontSize)) out.fontSize = el.fontSize;
-  if (el.fontWeight !== undefined && el.fontWeight !== DEFAULT_TEXT_ELEMENT.fontWeight) out.fontWeight = el.fontWeight;
-  if (el.italic !== undefined && el.italic !== DEFAULT_TEXT_ELEMENT.italic) out.italic = el.italic;
-  if (el.color !== undefined && !colorsEqual(el.color, DEFAULT_TEXT_ELEMENT.color)) out.color = el.color;
-  return out;
-}
-
-function stripRuleElement(el: HeaderFooterRuleElement): HeaderFooterRuleElement {
-  const out: HeaderFooterRuleElement = {
-    kind: 'rule',
+    id: el.id ?? `rule-${idx + 1}`,
+    parity: el.parity ?? 'all',
+    placement: {
+      anchor: el.placement.anchor,
+      offset: el.placement.offset ?? {},
+      size: el.placement.size ?? {},
+    },
+    direction: el.direction ?? 'horizontal',
     color: el.color,
     thickness: el.thickness,
-    width: el.width,
-    align: el.align,
-    parity: el.parity,
   };
-  if (el.marginFromBody !== undefined && !dimensionsEqual(el.marginFromBody, DEFAULT_RULE_ELEMENT.marginFromBody)) out.marginFromBody = el.marginFromBody;
-  if (el.marginFromEdge !== undefined && !dimensionsEqual(el.marginFromEdge, DEFAULT_RULE_ELEMENT.marginFromEdge)) out.marginFromEdge = el.marginFromEdge;
-  return out;
 }
 
-function textElementsEqual(
-  a: HeaderFooterTextElement,
-  b: ResolvedHeaderFooterTextElement,
-): boolean {
-  return (
-    a.kind === 'text' &&
-    a.align === b.align &&
-    a.content === b.content &&
-    a.parity === b.parity &&
-    dimensionsEqual(a.marginFromBody ?? DEFAULT_TEXT_ELEMENT.marginFromBody, b.marginFromBody) &&
-    dimensionsEqual(a.marginFromEdge ?? DEFAULT_TEXT_ELEMENT.marginFromEdge, b.marginFromEdge) &&
-    (a.fontFamily ?? DEFAULT_TEXT_ELEMENT.fontFamily) === b.fontFamily &&
-    dimensionsEqual(a.fontSize ?? DEFAULT_TEXT_ELEMENT.fontSize, b.fontSize) &&
-    (a.fontWeight ?? DEFAULT_TEXT_ELEMENT.fontWeight) === b.fontWeight &&
-    (a.italic ?? DEFAULT_TEXT_ELEMENT.italic) === b.italic &&
-    colorsEqual(a.color ?? DEFAULT_TEXT_ELEMENT.color, b.color)
-  );
+function resolveBoxElement(el: DesignBoxElement, idx: number): ResolvedDesignBoxElement {
+  return {
+    kind: 'box',
+    id: el.id ?? `box-${idx + 1}`,
+    parity: el.parity ?? 'all',
+    placement: {
+      anchor: el.placement.anchor,
+      offset: el.placement.offset ?? {},
+      size: el.placement.size ?? {},
+    },
+    style: el.style,
+  };
 }
 
-function ruleElementsEqual(
-  a: HeaderFooterRuleElement,
-  b: ResolvedHeaderFooterRuleElement,
-): boolean {
-  const widthEq =
-    typeof a.width === 'string' && typeof b.width === 'string'
-      ? a.width === b.width
-      : typeof a.width !== 'string' && typeof b.width !== 'string'
-      ? dimensionsEqual(a.width, b.width)
-      : false;
-  return (
-    a.kind === 'rule' &&
-    colorsEqual(a.color, b.color) &&
-    dimensionsEqual(a.thickness, b.thickness) &&
-    widthEq &&
-    a.align === b.align &&
-    dimensionsEqual(a.marginFromBody ?? DEFAULT_RULE_ELEMENT.marginFromBody, b.marginFromBody) &&
-    dimensionsEqual(a.marginFromEdge ?? DEFAULT_RULE_ELEMENT.marginFromEdge, b.marginFromEdge) &&
-    a.parity === b.parity
-  );
+function resolveElement(el: DesignElement, idx: number): ResolvedDesignElement {
+  if (el.kind === 'text') return resolveTextElement(el, idx);
+  if (el.kind === 'rule') return resolveRuleElement(el, idx);
+  return resolveBoxElement(el, idx);
 }
 
-function slotEqualsDefault(slot: HeaderFooterSlot, def: ResolvedHeaderFooterSlot): boolean {
-  const els = slot.elements ?? [];
-  if (els.length !== def.elements.length) return false;
-  for (let i = 0; i < els.length; i++) {
-    const a = els[i]!;
-    const b = def.elements[i]!;
-    if (a.kind !== b.kind) return false;
-    if (a.kind === 'text' && b.kind === 'text') {
-      if (!textElementsEqual(a, b)) return false;
-    } else if (a.kind === 'rule' && b.kind === 'rule') {
-      if (!ruleElementsEqual(a, b)) return false;
-    }
-  }
-  return true;
-}
-
-/** Strip defaults from a header/footer slot. Returns `undefined` when the
- *  slot matches the built-in default for `kind` (so persisted configs omit
- *  it); otherwise returns the slot with per-element field defaults stripped.
- *  An explicit empty slot is preserved — the user opted out and we must not
- *  conflate that with "use the default". */
-export function stripHeaderFooterDefaults(
-  slot: HeaderFooterSlot | undefined,
+/** Resolve a design slot used for header/footer. `undefined` returns the
+ *  built-in default for `kind`. Legacy slots are migrated on the fly. */
+export function resolveDesignSlot(
+  slot: DesignSlot | undefined,
   kind: HeaderFooterSlotKind = 'header',
-): HeaderFooterSlot | undefined {
-  if (!slot) return undefined;
-  if (slotEqualsDefault(slot, defaultSlotFor(kind))) return undefined;
-  const elements = (slot.elements ?? []).map((el) =>
-    el.kind === 'text' ? stripTextElement(el) : stripRuleElement(el),
-  );
-  return { elements };
+): ResolvedDesignSlot {
+  if (slot === undefined) return cloneResolvedSlot(defaultSlotFor(kind));
+  const maybeMigrated = isLegacyHeaderFooterSlot(slot)
+    ? migrateLegacyHeaderFooterConfig(slot, kind) ?? slot
+    : slot;
+  return {
+    elements: (maybeMigrated.elements ?? []).map(resolveElement),
+  };
 }
 
+export const resolveHeaderFooterConfig = resolveDesignSlot;
+
+function cloneResolvedSlot(slot: ResolvedDesignSlot): ResolvedDesignSlot {
+  return { elements: slot.elements.map((el) => deepClone(el)) };
+}
+
+function deepClone<T>(v: T): T {
+  return JSON.parse(JSON.stringify(v)) as T;
+}
+
+// Strip is intentionally minimal: only returns `undefined` when the slot
+// deep-equals the default (so persisted configs omit it entirely). Per-field
+// stripping across the new union is not worth the complexity — the slot is
+// stored as-is otherwise.
+export function stripDesignSlotDefaults(
+  slot: DesignSlot | undefined,
+  kind: HeaderFooterSlotKind = 'header',
+): DesignSlot | undefined {
+  if (!slot) return undefined;
+  const def = defaultSlotFor(kind);
+  const migrated = isLegacyHeaderFooterSlot(slot)
+    ? migrateLegacyHeaderFooterConfig(slot, kind) ?? slot
+    : slot;
+  if (JSON.stringify(migrated) === JSON.stringify(def)) return undefined;
+  return migrated;
+}
+
+export const stripHeaderFooterDefaults = stripDesignSlotDefaults;

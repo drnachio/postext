@@ -1,6 +1,7 @@
 import type { VDTBlock, VDTLine, VDTLineSegment, TextAlign } from '../vdt';
 import type { MathRender } from '../math/types';
 import { getMathRaster } from '../math/rasterCache';
+import { renderDesignSlot } from './headerFooter';
 
 function pickSegmentFont(
   bold: boolean,
@@ -207,6 +208,11 @@ export function renderBlock(
   columnWidth: number,
   columnX: number,
 ): void {
+  if (block.hidden) return;
+  if (block.designOverlay) {
+    renderDesignSlot(ctx, block.designOverlay);
+    return;
+  }
   if (block.type === 'listItem') {
     renderBullet(ctx, block);
   }

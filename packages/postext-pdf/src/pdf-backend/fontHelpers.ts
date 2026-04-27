@@ -11,7 +11,7 @@ export function collectFontStrings(doc: VDTDocument): string[] {
     if (block.bulletFontString) out.add(block.bulletFontString);
   }
   for (const page of doc.pages) {
-    for (const slot of [page.header, page.footer]) {
+    for (const slot of [page.header, page.footer, page.openerBand]) {
       if (!slot) continue;
       for (const b of slot.blocks) {
         if (b.kind === 'text') out.add(b.fontString);

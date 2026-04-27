@@ -1,8 +1,9 @@
 'use client';
 
 import type { useSandboxLabels } from '../../../context/SandboxContext';
-import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
-import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, ColorValue, Dimension, DimensionUnit } from 'postext';
+import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual, resolveDesignSlot } from 'postext';
+import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, HeadingSpan, HeadingAdvancedDesignConfig, ColorValue, Dimension, DimensionUnit, DesignSlot, ResolvedDesignSlot } from 'postext';
+import { SlotEditor } from '../HeaderFooterSection/SlotEditor';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -36,7 +37,7 @@ export function HeadingLevelSection({
   labels,
 }: {
   level: number;
-  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension; numberingTemplate: string; italic: boolean; breakBefore: { enabled: boolean; parity: HeadingBreakParity } };
+  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension; numberingTemplate: string; italic: boolean; breakBefore: { enabled: boolean; parity: HeadingBreakParity }; span: HeadingSpan; advancedDesign: { enabled: boolean; slot: { elements: unknown[] } } };
   raw: HeadingLevelConfig | undefined;
   generalFont: string;
   generalLineHeight: Dimension;
@@ -192,6 +193,50 @@ export function HeadingLevelSection({
             tooltip={labels.headingBreakBeforeParityTooltip}
             isDefault={isBreakBeforeParityDefault}
             onReset={() => onUpdate(level, { breakBefore: { enabled: true } })}
+          />
+        </NestedGroup>
+      )}
+      <SelectInput
+        label={labels.headingSpan ?? 'Span'}
+        value={resolved.span}
+        options={[
+          { value: 'column', label: labels.headingSpanColumn ?? 'Column (default)' },
+          { value: 'page', label: labels.headingSpanPage ?? 'Full page (chapter opener)' },
+        ]}
+        onChange={(v) => onUpdate(level, { span: v as HeadingSpan })}
+        tooltip={labels.headingSpanTooltip}
+        isDefault={resolved.span === 'column'}
+        onReset={() => onUpdate(level, { span: 'column' })}
+      />
+      <ToggleSwitch
+        label={labels.headingAdvancedDesign ?? 'Advanced design'}
+        checked={resolved.advancedDesign.enabled}
+        onChange={(v) => {
+          const next: HeadingAdvancedDesignConfig = {
+            enabled: v,
+            slot: { elements: [] },
+          };
+          onUpdate(level, { advancedDesign: next });
+        }}
+        tooltip={labels.headingAdvancedDesignTooltip}
+        isDefault={resolved.advancedDesign.enabled === false}
+        onReset={() => onUpdate(level, { advancedDesign: { enabled: false, slot: { elements: [] } } })}
+      />
+      {resolved.advancedDesign.enabled && (
+        <NestedGroup>
+          <p className="px-2 py-1 text-xs" style={{ color: 'var(--slate)' }}>
+            {labels.headingAdvancedDesignInfo ??
+              'Compose text, rules, and boxes. Include a text element with {titleText} to render the heading.'}
+          </p>
+          <SlotEditor
+            slotKey="heading"
+            raw={raw?.advancedDesign?.slot}
+            resolved={(resolveDesignSlot(raw?.advancedDesign?.slot, 'header') as ResolvedDesignSlot)}
+            onUpdate={(slot: DesignSlot | undefined) => {
+              onUpdate(level, {
+                advancedDesign: { enabled: true, slot: slot ?? { elements: [] } },
+              });
+            }}
           />
         </NestedGroup>
       )}

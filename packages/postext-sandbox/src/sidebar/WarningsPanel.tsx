@@ -36,6 +36,13 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'parityCascade':
     case 'alphaPdfOverflow':
       return FileWarning;
+    case 'designCyclicAnchor':
+    case 'designDanglingAnchor':
+    case 'designTextClipAlwaysTruncates':
+      return FileWarning;
+    case 'headingSpanWithoutBreak':
+    case 'headingAdvancedWithoutTitleText':
+      return Heading;
     default:
       return AlertTriangle;
   }
@@ -80,6 +87,16 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsParityCascadeTitle;
     case 'alphaPdfOverflow':
       return labels.warningsAlphaPdfOverflowTitle;
+    case 'designCyclicAnchor':
+      return labels.warningsDesignCyclicAnchorTitle ?? 'Cyclic anchor reference';
+    case 'designDanglingAnchor':
+      return labels.warningsDesignDanglingAnchorTitle ?? 'Dangling anchor reference';
+    case 'designTextClipAlwaysTruncates':
+      return labels.warningsDesignTextClipAlwaysTruncatesTitle ?? 'Text always truncated';
+    case 'headingSpanWithoutBreak':
+      return labels.warningsHeadingSpanWithoutBreakTitle ?? 'Heading span without break';
+    case 'headingAdvancedWithoutTitleText':
+      return labels.warningsHeadingAdvancedWithoutTitleTextTitle ?? 'Heading title not referenced';
   }
 }
 
@@ -133,6 +150,22 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.runLength} — ${labels.warningsParityCascadeDetail}`;
     case 'alphaPdfOverflow':
       return labels.warningsAlphaPdfOverflowDetail;
+    case 'designCyclicAnchor': {
+      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail ?? 'anchor chain loops back to this element'}`;
+    }
+    case 'designDanglingAnchor': {
+      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      return `${where} · #${payload.elementId} → #${payload.referencedId} — ${labels.warningsDesignDanglingAnchorDetail ?? 'referenced element does not exist'}`;
+    }
+    case 'designTextClipAlwaysTruncates': {
+      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      return `${where} · #${payload.elementId} — ${labels.warningsDesignTextClipAlwaysTruncatesDetail ?? 'overflow clip with a small box always truncates'}`;
+    }
+    case 'headingSpanWithoutBreak':
+      return `H${payload.level} — ${labels.warningsHeadingSpanWithoutBreakDetail ?? 'span is "page" but breakBefore is disabled'}`;
+    case 'headingAdvancedWithoutTitleText':
+      return `H${payload.level} — ${labels.warningsHeadingAdvancedWithoutTitleTextDetail ?? 'no element references {titleText}; the heading text will not appear'}`;
   }
 }
 
