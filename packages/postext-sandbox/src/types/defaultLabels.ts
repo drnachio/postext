@@ -198,6 +198,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyFirstLineIndentTooltip: 'Indent applied to the first line of each paragraph',
   bodyHangingIndent: 'Hanging Indent',
   bodyHangingIndentTooltip: 'When enabled, all lines except the first are indented (French indent)',
+  bodyIndentAfterHeading: 'Indent After Heading',
+  bodyIndentAfterHeadingTooltip: 'When disabled, the first paragraph immediately following a heading is rendered without first-line indent — a typographic convention common in scientific publications and many book styles',
   bodyMaxWordSpacing: 'Max Word Spacing',
   bodyMaxWordSpacingTooltip: 'Maximum word spacing in justified text, as a multiplier of the normal space width',
   bodyMinWordSpacing: 'Min Word Spacing',

@@ -20,6 +20,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   hyphenation: { ...DEFAULT_HYPHENATION_CONFIG },
   firstLineIndent: { value: 1.5, unit: 'em' },
   hangingIndent: false,
+  indentAfterHeading: true,
   maxWordSpacing: 1.9,
   minWordSpacing: 0.6,
   optimalLineBreaking: true,
@@ -73,6 +74,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     },
     firstLineIndent: partial.firstLineIndent ?? DEFAULT_BODY_TEXT_CONFIG.firstLineIndent,
     hangingIndent: partial.hangingIndent ?? DEFAULT_BODY_TEXT_CONFIG.hangingIndent,
+    indentAfterHeading: partial.indentAfterHeading ?? DEFAULT_BODY_TEXT_CONFIG.indentAfterHeading,
     maxWordSpacing: partial.maxWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing,
     minWordSpacing: partial.minWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.minWordSpacing,
     optimalLineBreaking: partial.optimalLineBreaking ?? DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking,
@@ -149,6 +151,10 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.hangingIndent !== undefined && bodyText.hangingIndent !== DEFAULT_BODY_TEXT_CONFIG.hangingIndent) {
     result.hangingIndent = bodyText.hangingIndent;
+    hasOverride = true;
+  }
+  if (bodyText.indentAfterHeading !== undefined && bodyText.indentAfterHeading !== DEFAULT_BODY_TEXT_CONFIG.indentAfterHeading) {
+    result.indentAfterHeading = bodyText.indentAfterHeading;
     hasOverride = true;
   }
   if (bodyText.maxWordSpacing !== undefined && bodyText.maxWordSpacing !== DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing) {

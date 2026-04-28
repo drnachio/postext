@@ -233,6 +233,11 @@ export interface BodyTextConfig {
   hyphenation?: HyphenationConfig;
   firstLineIndent?: Dimension;
   hangingIndent?: boolean;
+  /** When `false`, the first paragraph immediately following a heading is
+   *  rendered without first-line indent. A common typographic convention in
+   *  scientific publications and many book styles ("indent run-in" style).
+   *  Default `true` — every paragraph receives the indent. */
+  indentAfterHeading?: boolean;
   /** Max word-spacing when justifying, as a multiplier of the normal space width.
    *  Lines that would exceed this trigger extra hyphenation/reflow attempts. */
   maxWordSpacing?: number;
@@ -309,6 +314,7 @@ export interface ResolvedBodyTextConfig {
   hyphenation: ResolvedHyphenationConfig;
   firstLineIndent: Dimension;
   hangingIndent: boolean;
+  indentAfterHeading: boolean;
   maxWordSpacing: number;
   minWordSpacing: number;
   optimalLineBreaking: boolean;

@@ -91,6 +91,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isHyphenationLocaleDefault = effectiveHyphenationLocale === defaultLocale;
   const isFirstLineIndentDefault = dimensionsEqual(bodyText.firstLineIndent, D.firstLineIndent);
   const isHangingIndentDefault = bodyText.hangingIndent === D.hangingIndent;
+  const isIndentAfterHeadingDefault = bodyText.indentAfterHeading === D.indentAfterHeading;
   const isMaxWordSpacingDefault = bodyText.maxWordSpacing === D.maxWordSpacing;
   const isMinWordSpacingDefault = bodyText.minWordSpacing === D.minWordSpacing;
   const isOptimalLineBreakingDefault = bodyText.optimalLineBreaking === D.optimalLineBreaking;
@@ -241,6 +242,15 @@ export const BodyTextSection = memo(function BodyTextSection() {
         tooltip={labels.bodyHangingIndentTooltip}
         isDefault={isHangingIndentDefault}
         onReset={() => resetField('hangingIndent')}
+      />
+
+      <ToggleSwitch
+        label={labels.bodyIndentAfterHeading}
+        checked={bodyText.indentAfterHeading}
+        onChange={(checked) => updateBodyText({ indentAfterHeading: checked })}
+        tooltip={labels.bodyIndentAfterHeadingTooltip}
+        isDefault={isIndentAfterHeadingDefault}
+        onReset={() => resetField('indentAfterHeading')}
       />
 
       <SelectInput
