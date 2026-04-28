@@ -181,6 +181,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     bodyFirstLineIndentTooltip: t("bodyFirstLineIndentTooltip"),
     bodyHangingIndent: t("bodyHangingIndent"),
     bodyHangingIndentTooltip: t("bodyHangingIndentTooltip"),
+    bodyIndentAfterHeading: t("bodyIndentAfterHeading"),
+    bodyIndentAfterHeadingTooltip: t("bodyIndentAfterHeadingTooltip"),
     bodyMaxWordSpacing: t("bodyMaxWordSpacing"),
     bodyMaxWordSpacingTooltip: t("bodyMaxWordSpacingTooltip"),
     bodyMinWordSpacing: t("bodyMinWordSpacing"),

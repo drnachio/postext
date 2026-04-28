@@ -215,6 +215,8 @@ export interface SandboxLabels {
   bodyFirstLineIndentTooltip: string;
   bodyHangingIndent: string;
   bodyHangingIndentTooltip: string;
+  bodyIndentAfterHeading: string;
+  bodyIndentAfterHeadingTooltip: string;
   bodyMaxWordSpacing: string;
   bodyMaxWordSpacingTooltip: string;
   bodyMinWordSpacing: string;

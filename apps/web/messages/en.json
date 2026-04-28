@@ -381,6 +381,8 @@
     "bodyFirstLineIndentTooltip": "Indent applied to the first line of each paragraph",
     "bodyHangingIndent": "Hanging Indent",
     "bodyHangingIndentTooltip": "When enabled, all lines except the first are indented (French indent)",
+    "bodyIndentAfterHeading": "Indent After Heading",
+    "bodyIndentAfterHeadingTooltip": "When disabled, the first paragraph immediately following a heading is rendered without first-line indent — a typographic convention common in scientific publications and many book styles",
     "bodyMaxWordSpacing": "Max Word-Spacing (× normal)",
     "bodyMaxWordSpacingTooltip": "Maximum allowed word-spacing when justifying, expressed as a multiplier of the natural space width. The engine prefers breaks that stay within this bound (best-effort via hyphenation).",
     "bodyMinWordSpacing": "Min Word-Spacing (× normal)",

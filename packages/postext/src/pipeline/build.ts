@@ -250,13 +250,32 @@ export function buildDocument(
       measureHangingIndent,
     } = computeMeasureViewport(col.bbox.width, style, listBullet);
 
+    // First-paragraph-after-heading: typographic convention used in many
+    // scientific publications and book styles where the paragraph that
+    // immediately follows a heading is rendered without first-line indent.
+    // Only applies to regular paragraphs without hanging indent; list items
+    // and hanging-indent paragraphs are unaffected.
+    let effectiveFirstLineIndent = measureFirstLineIndent;
+    if (
+      vdtType === 'paragraph'
+      && !resolved.bodyText.indentAfterHeading
+      && !resolved.bodyText.hangingIndent
+      && blockIdx > 0
+    ) {
+      let prevIdx = blockIdx - 1;
+      while (prevIdx >= 0 && contentBlocks[prevIdx]!.type === 'directive') prevIdx--;
+      if (prevIdx >= 0 && contentBlocks[prevIdx]!.type === 'heading') {
+        effectiveFirstLineIndent = 0;
+      }
+    }
+
     const runtActive = resolved.bodyText.avoidRunts
       && (vdtType === 'paragraph'
         || (vdtType === 'listItem' && resolved.bodyText.avoidRuntsInLists));
     const measureOptions = {
       textAlign: style.textAlign,
       hyphenate: style.hyphenate,
-      firstLineIndentPx: measureFirstLineIndent,
+      firstLineIndentPx: effectiveFirstLineIndent,
       hangingIndent: measureHangingIndent,
       optimal: resolved.bodyText.optimalLineBreaking,
       maxStretchRatio: resolved.bodyText.maxWordSpacing,

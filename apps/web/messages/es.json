@@ -381,6 +381,8 @@
     "bodyFirstLineIndentTooltip": "Sangría aplicada a la primera línea de cada párrafo",
     "bodyHangingIndent": "Sangría francesa",
     "bodyHangingIndentTooltip": "Cuando está activado, todas las líneas excepto la primera se sangran",
+    "bodyIndentAfterHeading": "Sangrar tras encabezado",
+    "bodyIndentAfterHeadingTooltip": "Cuando está desactivado, el primer párrafo inmediatamente posterior a un encabezado se compone sin sangría de primera línea — convención tipográfica habitual en publicaciones científicas y en muchos estilos editoriales",
     "bodyMaxWordSpacing": "Espaciado máx. entre palabras (× normal)",
     "bodyMaxWordSpacingTooltip": "Espaciado máximo permitido al justificar, expresado como múltiplo del ancho natural del espacio. El motor intentará respetar este límite (mejor esfuerzo mediante hifenación).",
     "bodyMinWordSpacing": "Espaciado mín. entre palabras (× normal)",
