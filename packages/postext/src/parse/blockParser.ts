@@ -7,7 +7,7 @@
 
 import type { ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue } from './types';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { parseInlineFormatting, stripInlineFormatting } from './inlineFormatting';
+import { extractInlineRefs, injectRefSpans, parseInlineFormatting, stripInlineFormatting } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
@@ -39,6 +39,10 @@ const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
 const BLOCK_MATH_SINGLE_RE = /^\s*\$\$([\s\S]+?)\$\$\s*$/;
 /** Standalone `$$` marker (opening or closing a multi-line display block). */
 const BLOCK_MATH_FENCE_RE = /^\s*\$\$\s*$/;
+
+/** `::resource{id="..."}` block embed on its own line. Malformed variants
+ *  (missing/empty id, extra attrs) fall through to paragraph parsing. */
+const RESOURCE_DIRECTIVE_RE = /^::resource\s*\{id="([^"]+)"\}\s*$/;
 
 // Single-slot memo used by parseMarkdownMemo. The returned array and its
 // ContentBlocks are treated as read-only by the rest of the pipeline.
@@ -166,6 +170,26 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       continue;
     }
 
+    // Resource embed — `::resource{id="..."}` on its own line. Emits a block
+    // carrying only the resource id; rendering/numbering happen downstream.
+    // Malformed variants fall through to paragraph parsing.
+    const resourceMatch = trimmed.match(RESOURCE_DIRECTIVE_RE);
+    if (resourceMatch) {
+      const srcStart = lineOffsets[i]!;
+      const srcEnd = lineEndOffset(i);
+      blocks.push({
+        type: 'resourceBlock',
+        text: '',
+        spans: [],
+        resourceId: resourceMatch[1]!,
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: [],
+      });
+      i++;
+      continue;
+    }
+
     // Directive — `:::name` or `:::name{attrs}` on its own line. Only known
     // directive names are promoted to a `directive` block; unknown names
     // fall through to paragraph parsing so they remain visible in the
@@ -199,17 +223,23 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       // Absolute offset of the first content char (after the `# `).
       const prefixLen = line.indexOf(headingRawContent);
       const contentAbsStart = srcStart + (prefixLen >= 0 ? prefixLen : 0);
+      // Inline pre-passes run refs -> math -> formatting so a ref's `text="…"`
+      // attribute is shielded from the later math/formatting scanners.
+      const refExtract = extractInlineRefs(headingRawContent, contentAbsStart);
       const { cleaned, maths, issues: mathIssues } = extractInlineMath(
-        headingRawContent,
+        refExtract.cleaned,
         null,
         contentAbsStart,
         srcEnd,
       );
       issues.push(...mathIssues);
       const rawText = stripInlineFormatting(cleaned);
-      const rawSpans = injectMathSpans(
-        [{ text: rawText, bold: false, italic: false }],
-        maths,
+      const rawSpans = injectRefSpans(
+        injectMathSpans(
+          [{ text: rawText, bold: false, italic: false }],
+          maths,
+        ),
+        refExtract.refs,
       );
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
@@ -271,9 +301,13 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
 
           const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
-          const mathExtract = extractInlineMath(itemText, null, itemSrcStart, srcEnd);
+          const refExtract = extractInlineRefs(itemText, itemSrcStart);
+          const mathExtract = extractInlineMath(refExtract.cleaned, null, itemSrcStart, srcEnd);
           issues.push(...mathExtract.issues);
-          const rawSpans = injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths);
+          const rawSpans = injectRefSpans(
+            injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths),
+            refExtract.refs,
+          );
           const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
           fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
           const block: ContentBlock = {
@@ -322,9 +356,13 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       }
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
-      const mathExtract = extractInlineMath(quoteLines.join(' '), null, srcStart, srcEnd);
+      const refExtract = extractInlineRefs(quoteLines.join(' '), srcStart);
+      const mathExtract = extractInlineMath(refExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths);
+      const rawSpans = injectRefSpans(
+        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths),
+        refExtract.refs,
+      );
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({
@@ -353,9 +391,13 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
     if (paraLines.length > 0) {
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
-      const mathExtract = extractInlineMath(paraLines.join(' '), null, srcStart, srcEnd);
+      const refExtract = extractInlineRefs(paraLines.join(' '), srcStart);
+      const mathExtract = extractInlineMath(refExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths);
+      const rawSpans = injectRefSpans(
+        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths),
+        refExtract.refs,
+      );
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({
