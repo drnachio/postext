@@ -145,7 +145,11 @@ export interface DocumentMetadata {
 export interface PostextContent {
   markdown: string;
   metadata?: DocumentMetadata;
-  resources?: PostextResource[];
+  /** User-managed resources (issue #49) embedded via `::resource{id=…}` and
+   *  referenced inline via `:ref{id=…}`. Binary payloads (bitmaps, SVGs) are
+   *  resolved out-of-band by the renderer; table resources carry their model
+   *  inline. */
+  resources?: Resource[];
   notes?: PostextNote[];
 }
 

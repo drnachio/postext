@@ -1,6 +1,9 @@
 import type {
   DocumentMetadata,
   PostextResource,
+  Resource,
+  TableCellAlign,
+  TableCellVerticalAlign,
   ResolvedPageConfig,
   ResolvedLayoutConfig,
   ResolvedBodyTextConfig,
@@ -63,6 +66,10 @@ export interface VDTLineSegment {
   italic?: boolean;
   /** Present when `kind === 'math'`. The rendered formula. */
   mathRender?: MathRender;
+  /** Present when this segment renders an inline `:ref{…}` to a resource.
+   *  Renderers recolour it (link colour) and the PDF backend emits a link
+   *  annotation to the resource's named destination. */
+  refResourceId?: string;
 }
 
 export interface VDTLine {
@@ -87,12 +94,92 @@ export interface VDTLine {
   justifiedSpaceRatio?: number;
 }
 
+// ---------------------------------------------------------------------------
+// Resolved resource block (issue #49) — a measured, placement-ready embed of a
+// `Resource` (bitmap / svg / table) plus its caption. Produced during the
+// measurement phase so canvas/PDF renderers can draw it synchronously. All
+// geometry is in px, relative to the block origin (`(0,0)` = block top-left),
+// and offset to absolute page coordinates at placement time.
+// ---------------------------------------------------------------------------
+
+/** A single laid-out table cell: its primary grid position, pixel rect within
+ *  the block, alignment, header flag, and the measured rich-text lines of its
+ *  content. Cells covered by a merge are omitted (only the primary is kept). */
+export interface VDTResourceTableCell {
+  row: number;
+  col: number;
+  colSpan: number;
+  rowSpan: number;
+  isHeader: boolean;
+  align: TableCellAlign;
+  verticalAlign: TableCellVerticalAlign;
+  /** Pixel rect of the cell relative to the resource block origin. */
+  rect: BoundingBox;
+  /** Measured content lines, with bboxes relative to the cell's text origin. */
+  lines: VDTLine[];
+}
+
+/** Laid-out table geometry for a `kind: 'table'` resource block. */
+export interface VDTResourceTableLayout {
+  /** Cell font string used for the rich-text line renderer. */
+  fontString: string;
+  boldFontString: string;
+  italicFontString: string;
+  boldItalicFontString: string;
+  color: string;
+  /** Border colour (hex). */
+  borderColor: string;
+  borderWidthPx: number;
+  /** Header background colour (hex), or undefined for no fill. */
+  headerBackground?: string;
+  cells: VDTResourceTableCell[];
+  /** Column x-edges (length = columnCount + 1) relative to block origin. */
+  columnEdges: number[];
+  /** Row y-edges (length = rowCount + 1) relative to the table's top. */
+  rowEdges: number[];
+}
+
+/** The resolved, measured content of a resource block. */
+export interface ResolvedResourceBlock {
+  /** The source resource. */
+  resource: Resource;
+  kind: 'bitmap' | 'svg' | 'table';
+  /** Rendered number string (e.g. `"1.7"`) for this resource. */
+  number: string;
+  /** Caption prefix from the resource type (e.g. `"Figure"`). */
+  captionPrefix: string;
+  /** Pixel rect of the figure body (image / table area) relative to the block
+   *  origin. Caption is laid out below it. */
+  bodyRect: BoundingBox;
+  /** For bitmap/svg: the out-of-band binary id to resolve at render time. */
+  fileId?: string;
+  /** For bitmap: the source format (e.g. `'png'`, `'jpeg'`, `'webp'`). */
+  format?: string;
+  /** Measured caption lines (bboxes relative to the block origin), already
+   *  including the prefix + number. Empty when there is no caption. */
+  captionLines: VDTLine[];
+  /** Font strings used to render the caption (normal / bold / italic / bold+italic). */
+  captionFontString: string;
+  captionBoldFontString: string;
+  captionItalicFontString: string;
+  captionBoldItalicFontString: string;
+  /** Caption text colour (hex). */
+  captionColor: string;
+  /** Link colour (hex) used for inline `:ref` segments inside the caption. */
+  linkColor: string;
+  /** Table geometry, present only when `kind === 'table'`. */
+  table?: VDTResourceTableLayout;
+}
+
 export interface VDTBlock {
   id: string;
   type: VDTBlockType;
   bbox: BoundingBox;
   lines: VDTLine[];
   resource?: PostextResource;
+  /** Resolved resource embed (issue #49). Present only for `type ===
+   *  'resource'` blocks; carries the measured image/table + caption layout. */
+  resourceBlock?: ResolvedResourceBlock;
   pageIndex: number;
   columnIndex: number;
   dirty: boolean;

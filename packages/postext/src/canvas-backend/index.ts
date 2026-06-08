@@ -4,6 +4,14 @@ import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentAre
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
 
+export {
+  registerResourceImage,
+  unregisterResourceImage,
+  clearResourceImages,
+  getResourceImage,
+} from './renderResourceBlock';
+export type { ResourceImageSource } from './renderResourceBlock';
+
 export interface RenderPageOptions {
   pageNegative?: boolean;
 }

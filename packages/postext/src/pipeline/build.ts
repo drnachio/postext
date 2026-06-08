@@ -1,4 +1,4 @@
-import type { PostextContent, PostextConfig } from '../types';
+import type { PostextContent, PostextConfig, Resource, ResourceType } from '../types';
 import type { ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import {
@@ -34,6 +34,7 @@ import {
   advanceToNextPageBoundary,
   enforcePageParity,
   placeBlockInColumn,
+  placeResourceBlock,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
 import {
@@ -114,21 +115,26 @@ export function buildDocument(
   // Resource numbering — computed up front (before the placement loop) so that
   // captions and inline `:ref`s can resolve their rendered number strings
   // before measurement. Numbering follows order of first reference in the
-  // document. Resources themselves are threaded by later phases; until then the
-  // list is empty and the map resolves to {}.
-  const resourceTypes = config?.resourceTypes ?? defaultResourceTypes();
+  // document.
+  const resourceTypes: ResourceType[] = config?.resourceTypes ?? defaultResourceTypes();
+  const resources: Resource[] = content.resources ?? [];
   const headingContext = computeHeadingContext(contentBlocks);
   const resourceNumbering: ResourceNumberingMap = computeResourceNumbering(
     contentBlocks,
     resourceTypes,
-    [],
+    resources,
     headingContext,
   );
-  // The map is held here so it can be threaded into measurement (so resource
-  // captions and inline refs resolve their strings before layout). The
-  // measurement/render plumbing that consumes it lands in a later phase; the
-  // explicit reference keeps the computed map live in the meantime.
-  void resourceNumbering;
+
+  // Lookups threaded into block-kind resolution + measurement.
+  const resourceById = new Map<string, Resource>();
+  for (const r of resources) resourceById.set(r.id, r);
+  const resourceTypeById = new Map<string, ResourceType>();
+  for (const t of resourceTypes) resourceTypeById.set(t.id, t);
+  const resourceNumberById = new Map<string, string>();
+  for (const [id, entry] of Object.entries(resourceNumbering)) {
+    resourceNumberById.set(id, entry.number);
+  }
 
   // Resolve styles
   const bodyStyle = resolveBodyStyle(resolved);
@@ -254,9 +260,91 @@ export function buildDocument(
       listLevelIndentsPx,
       orderedLevelIndentsPx,
       orderedMetrics,
+      resourceById,
+      resourceTypeById,
+      resourceNumberById,
     });
     const { style, vdtType, headingLevel, numberPrefix, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
     let contentBlock = kind.contentBlock;
+
+    // --- Resource blocks (image / svg / table + caption) -----------------
+    // Measured and placed atomically (kept-together) — no mid-content split
+    // for v1. An unknown resource id produces no output (warnings handle it).
+    if (vdtType === 'resource') {
+      if (!kind.resource) {
+        flushPendingNumberingAtBoundary();
+        continue;
+      }
+      const rCol = currentColumn(doc, cursor);
+      const { resourceBlock, measured } = runMeasurement({
+        vdtType,
+        rawBlock,
+        contentBlock,
+        style,
+        measureMaxWidth: rCol.bbox.width,
+        measureOptions: { textAlign: style.textAlign },
+        mathEnabled: resolved.math.enabled,
+        useRich: false,
+        resolved,
+        resources,
+        resourceTypes,
+        resourceNumbering,
+        resource: kind.resource,
+        resourceType: kind.resourceType,
+        resourceNumber: kind.resourceNumber,
+      });
+      if (!resourceBlock) {
+        flushPendingNumberingAtBoundary();
+        continue;
+      }
+      const groupHeight = measured.totalHeight;
+      const blk = createVDTBlock(id, 'resource', style.fontString, style.color, style.textAlign);
+      blk.resourceBlock = resourceBlock;
+      blk.dirty = false;
+      blk.snappedToGrid = false;
+      blk.sourceStart = rawBlock.sourceStart + bodyOffset;
+      blk.sourceEnd = rawBlock.sourceEnd + bodyOffset;
+      // The single placeholder line carries the group height; caption lines are
+      // carried on `resourceBlock` and offset to absolute coords below.
+      blk.lines = [{
+        text: '',
+        bbox: { x: 0, y: 0, width: resourceBlock.bodyRect.width, height: groupHeight },
+        baseline: 0,
+        hyphenated: false,
+        segments: [],
+        isLastLine: true,
+      }];
+      const spacingBefore = pendingSpacing;
+      placeResourceBlock(
+        blk, groupHeight, spacingBefore, cursor, doc, resolved,
+        contentArea, pageWidthPx, pageHeightPx,
+      );
+      // `placeBlockInColumn` (inside placeResourceBlock) shifts `blk.lines`; the
+      // resource's own caption/table lines live on `resourceBlock` and must be
+      // offset to absolute page coordinates here using the placed bbox origin.
+      const ox = blk.bbox.x;
+      const oy = blk.bbox.y;
+      for (const ln of resourceBlock.captionLines) {
+        ln.bbox.x += ox;
+        ln.bbox.y += oy;
+        ln.baseline += oy;
+      }
+      if (resourceBlock.table) {
+        for (const cell of resourceBlock.table.cells) {
+          cell.rect.x += ox;
+          cell.rect.y += oy;
+          for (const cl of cell.lines) {
+            cl.bbox.x += ox;
+            cl.bbox.y += oy;
+            cl.baseline += oy;
+          }
+        }
+      }
+      doc.blocks.push(blk);
+      pendingSpacing = style.marginBottomPx;
+      flushPendingNumberingAtBoundary();
+      continue;
+    }
 
     // Measure text — use rich measurement for blocks with bold spans
     const col = currentColumn(doc, cursor);

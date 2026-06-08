@@ -5,6 +5,7 @@
  */
 
 import type { ContentBlock, ListKind } from '../parse';
+import type { Resource, ResourceType } from '../types';
 import type { ResolvedConfig, VDTBlock } from '../vdt';
 import type { BlockStyle } from './styles';
 import { resolveHeadingStyle, resolveMathDisplayStyle } from './styles';
@@ -25,6 +26,13 @@ export interface BlockKind {
   listKind?: ListKind;
   bulletXOffsetInColumn: number;
   strikethroughText: boolean;
+  /** For `resource` blocks: the resolved `Resource` referenced by the
+   *  `::resource{id=…}` directive, or undefined when the id is unknown. */
+  resource?: Resource;
+  /** For `resource` blocks: the `ResourceType` of the resolved resource. */
+  resourceType?: ResourceType;
+  /** For `resource` blocks: the computed number string (e.g. `"1.7"`). */
+  resourceNumber?: string;
 }
 
 export interface BlockKindContext {
@@ -36,6 +44,12 @@ export interface BlockKindContext {
   listLevelIndentsPx: number[];
   orderedLevelIndentsPx: number[];
   orderedMetrics: OrderedListMetrics;
+  /** Resource lookup by id (for resolving `::resource{id=…}` blocks). */
+  resourceById: Map<string, Resource>;
+  /** Resource-type lookup by id. */
+  resourceTypeById: Map<string, ResourceType>;
+  /** Computed resource number strings keyed by resource id. */
+  resourceNumberById: Map<string, string>;
 }
 
 export function resolveBlockKind(
@@ -43,9 +57,25 @@ export function resolveBlockKind(
   ctx: BlockKindContext,
 ): BlockKind {
   const { resolved, bodyStyle, blockquoteStyle, headingPrefixes, blockIdx,
-    listLevelIndentsPx, orderedLevelIndentsPx, orderedMetrics } = ctx;
+    listLevelIndentsPx, orderedLevelIndentsPx, orderedMetrics,
+    resourceById, resourceTypeById, resourceNumberById } = ctx;
 
   switch (rawBlock.type) {
+    case 'resourceBlock': {
+      const resource = rawBlock.resourceId ? resourceById.get(rawBlock.resourceId) : undefined;
+      const resourceType = resource ? resourceTypeById.get(resource.typeId) : undefined;
+      const resourceNumber = rawBlock.resourceId ? resourceNumberById.get(rawBlock.resourceId) : undefined;
+      return {
+        style: bodyStyle,
+        vdtType: 'resource',
+        contentBlock: rawBlock,
+        bulletXOffsetInColumn: 0,
+        strikethroughText: false,
+        resource,
+        resourceType,
+        resourceNumber: resourceNumber ?? '',
+      };
+    }
     case 'heading': {
       const style = resolveHeadingStyle(rawBlock.level ?? 1, resolved);
       const numberPrefix = headingPrefixes[blockIdx];

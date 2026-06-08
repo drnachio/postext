@@ -5,6 +5,17 @@ import { FontCache } from '../fontCache';
 import { type PageCtx, drawLinePx, drawTextPx, colorFromHex } from './primitives';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderDesignSlot } from './headerFooter';
+import {
+  renderResourceBlock,
+  type ResourceImageMap,
+} from './renderResourceBlock';
+import { LinkRegistry } from './links';
+
+/** Per-document context for resource rendering, threaded through `renderBlock`. */
+export interface ResourceRenderContext {
+  images: ResourceImageMap;
+  linkRegistry: LinkRegistry;
+}
 
 function renderMathRender(
   ctx: PageCtx,
@@ -175,10 +186,21 @@ export function renderBlock(
   columnWidth: number,
   columnX: number,
   fontCache: FontCache,
+  resourceCtx?: ResourceRenderContext,
 ): void {
   if (block.hidden) return;
   if (block.designOverlay) {
     renderDesignSlot(ctx, block.designOverlay, fontCache);
+    return;
+  }
+  if (block.type === 'resource') {
+    renderResourceBlock(
+      ctx,
+      block,
+      fontCache,
+      resourceCtx?.images ?? new Map(),
+      resourceCtx?.linkRegistry,
+    );
     return;
   }
   if (block.type === 'listItem') {
