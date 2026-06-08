@@ -270,6 +270,90 @@ $$
 ```
 
 
+## Resources
+
+Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's Resources panel) and then placed into the document by id. Two pieces of syntax connect prose to a resource: a **block embed** that renders the resource at a given location, and an **inline reference** that prints its computed number (and optionally links to it).
+
+Both forms are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
+
+### Block embed
+
+Place a resource at a specific point in the flow with `::resource{id="…"}` on its own line:
+
+```md
+Here is the floor plan we discussed.
+
+::resource{id="lighthouse-diagram"}
+
+The keeper's quarters occupy the eastern wing.
+```
+
+The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) at this location, with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.**
+
+A malformed embed (missing or empty `id`, extra attributes) is not promoted to a resource block; it falls through to ordinary paragraph parsing and remains visible in the output, and the sandbox surfaces a warning.
+
+### Inline reference
+
+Refer to a resource from within prose with `:ref{id="…"}`. The reference renders the resource's computed number, prefixed by the type's short label by default:
+
+```md
+As shown in :ref{id="lighthouse-diagram"}, the lantern room sits above the gallery.
+```
+
+renders as: *As shown in Fig. 1.7, the lantern room sits above the gallery.*
+
+Inline references are recognised inside any text block — paragraphs, headings, blockquotes, and list items — and may sit alongside bold, italic, inline code, and inline math.
+
+#### Reference options
+
+The `:ref` directive accepts two optional attributes:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Syntax</th>
+      <th style={{ width: '160px' }}>Renders</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>:ref&#123;id="…"&#125;</code></td>
+      <td><code>Fig. 1.7</code></td>
+      <td>Default style: the type's <code>shortLabel</code> followed by the number, joined with a non-breaking space so they never wrap apart.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" style="number"&#125;</code></td>
+      <td><code>1.7</code></td>
+      <td>The bare computed number, no label.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" style="full"&#125;</code></td>
+      <td><code>Figure 1.7</code></td>
+      <td>The type's full <code>name</code> followed by the number. Use at the start of a sentence or where the abbreviation reads poorly.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" text="see the plan"&#125;</code></td>
+      <td><code>see the plan</code></td>
+      <td>An explicit override. The given text is used verbatim instead of any computed label — useful for prose links like "as we saw earlier". When present, <code>text</code> takes precedence over <code>style</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+If a `:ref` (or `::resource`) names an id with no matching resource, the label falls back to `?` and the sandbox raises an **unknown resource** warning.
+
+### First-reference numbering
+
+A resource's number is assigned the **first time it is mentioned in reading order** — whether that first mention is a `::resource` block embed or an inline `:ref`. From then on, every reference to the same id prints that same number.
+
+This means numbers follow the order the reader meets them, not the order resources were created in the panel:
+
+- If you `:ref` a figure in the introduction and only embed it (`::resource`) two pages later, it still takes the introduction's number — the reference came first.
+- Inserting a new reference *earlier* in the document automatically renumbers everything after it. There is no manual numbering to keep in sync.
+
+Numbering is per resource type and respects each type's reset scope and counter format — see [Configuration › Resource types](/en/docs/configuration#resource-types) for the template tokens (`{h1}`, `{n}`), `resetOn`, and `counterFormat`.
+
+
 ## What is NOT supported
 
 Postext does not recognise the following CommonMark features. They are either treated as plain text (and therefore will appear literally in the output) or silently dropped:

@@ -270,6 +270,90 @@ $$
 ```
 
 
+## Recursos
+
+Las imágenes, los SVG y las tablas no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el panel de Recursos del sandbox) y luego se colocan en el documento por id. Dos piezas de sintaxis conectan el texto con un recurso: una **inserción en bloque** que renderiza el recurso en un lugar dado, y una **referencia en línea** que imprime su número calculado (y opcionalmente enlaza a él).
+
+Ambas formas son sintaxis completamente nueva que no choca con CommonMark, por lo que un documento que las use sigue leyéndose como texto plano en cualquier otro visor de markdown.
+
+### Inserción en bloque
+
+Coloca un recurso en un punto concreto del flujo con `::resource{id="…"}` en su propia línea:
+
+```md
+Aquí está el plano que comentamos.
+
+::resource{id="lighthouse-diagram"}
+
+Las dependencias del farero ocupan el ala este.
+```
+
+El `id` debe coincidir con un recurso definido en el panel de Recursos. El motor renderiza el recurso (imagen, SVG o tabla) en esta posición, con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.**
+
+Una inserción mal formada (sin `id`, con `id` vacío o con atributos de más) no se promueve a bloque de recurso; recae en el parseo de párrafo normal y sigue siendo visible en la salida, y el sandbox muestra un aviso.
+
+### Referencia en línea
+
+Refiérete a un recurso desde el texto con `:ref{id="…"}`. La referencia renderiza el número calculado del recurso, precedido por defecto por la etiqueta corta del tipo:
+
+```md
+Como se ve en :ref{id="lighthouse-diagram"}, la sala de la linterna queda sobre la galería.
+```
+
+se renderiza como: *Como se ve en Fig. 1.7, la sala de la linterna queda sobre la galería.*
+
+Las referencias en línea se reconocen dentro de cualquier bloque de texto — párrafos, encabezados, citas y elementos de lista — y pueden convivir con negrita, cursiva, código en línea y matemáticas en línea.
+
+#### Opciones de la referencia
+
+La directiva `:ref` admite dos atributos opcionales:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Sintaxis</th>
+      <th style={{ width: '160px' }}>Renderiza</th>
+      <th>Notas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>:ref&#123;id="…"&#125;</code></td>
+      <td><code>Fig. 1.7</code></td>
+      <td>Estilo por defecto: la etiqueta corta (<code>shortLabel</code>) del tipo seguida del número, unidas con un espacio irrompible para que nunca se separen al final de la línea.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" style="number"&#125;</code></td>
+      <td><code>1.7</code></td>
+      <td>El número calculado a secas, sin etiqueta.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" style="full"&#125;</code></td>
+      <td><code>Figura 1.7</code></td>
+      <td>El nombre completo (<code>name</code>) del tipo seguido del número. Útil al inicio de una frase o donde la abreviatura se lea mal.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" text="ver el plano"&#125;</code></td>
+      <td><code>ver el plano</code></td>
+      <td>Una anulación explícita. El texto dado se usa literalmente en lugar de cualquier etiqueta calculada — útil para enlaces de prosa como "como vimos antes". Cuando está presente, <code>text</code> tiene prioridad sobre <code>style</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Si un `:ref` (o un `::resource`) nombra un id sin recurso correspondiente, la etiqueta recae en `?` y el sandbox emite un aviso de **recurso desconocido**.
+
+### Numeración por primera referencia
+
+El número de un recurso se asigna **la primera vez que se menciona en orden de lectura** — sea esa primera mención una inserción en bloque `::resource` o una referencia en línea `:ref`. A partir de ahí, toda referencia al mismo id imprime ese mismo número.
+
+Esto significa que los números siguen el orden en que el lector los encuentra, no el orden en que se crearon los recursos en el panel:
+
+- Si haces `:ref` de una figura en la introducción y solo la insertas (`::resource`) dos páginas después, igualmente toma el número de la introducción — la referencia llegó primero.
+- Insertar una nueva referencia *antes* en el documento renumera automáticamente todo lo que viene después. No hay numeración manual que mantener sincronizada.
+
+La numeración es por tipo de recurso y respeta el ámbito de reinicio y el formato de contador de cada tipo — ver [Configuración › Tipos de recurso](/es/docs/configuration#tipos-de-recurso) para los tokens de plantilla (`{h1}`, `{n}`), `resetOn` y `counterFormat`.
+
+
 ## Qué NO se soporta
 
 Postext no reconoce las siguientes características de CommonMark. O se tratan como texto plano (y por tanto aparecerán literalmente en la salida) o se descartan silenciosamente:
