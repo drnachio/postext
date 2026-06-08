@@ -23,6 +23,7 @@ const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
 export function PdfViewport() {
   const markdown = useSandboxSelector((s) => s.markdown);
   const config = useSandboxSelector((s) => s.config);
+  const resources = useSandboxSelector((s) => s.resources);
   const locale = useSandboxSelector((s) => s.locale);
   const [bytesUrl, setBytesUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -59,9 +60,13 @@ export function PdfViewport() {
     setError(null);
     const snapshotMarkdown = markdown;
     const snapshotConfig = effectiveConfig;
+    const snapshotResources = resources;
     try {
       await ensureConfigFontsLoaded(snapshotConfig);
-      const doc = await layoutWorker.build({ markdown: snapshotMarkdown }, snapshotConfig);
+      const doc = await layoutWorker.build(
+        { markdown: snapshotMarkdown, resources: snapshotResources },
+        snapshotConfig,
+      );
       const debug = resolveDebugConfig(snapshotConfig.debug);
       const pdfGen = resolvePdfGenerationConfig(snapshotConfig.pdfGeneration);
       const bytes = await renderToPdf(doc, {
@@ -87,7 +92,7 @@ export function PdfViewport() {
     } finally {
       setGenerating(false);
     }
-  }, [markdown, effectiveConfig, layoutWorker]);
+  }, [markdown, effectiveConfig, resources, layoutWorker]);
 
   // Dirty = current markdown/config differ from the snapshot of the last
   // successful render. Set whenever either drifts; cleared inside regenerate.

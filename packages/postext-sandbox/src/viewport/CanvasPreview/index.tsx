@@ -6,6 +6,7 @@ import { renderPageToCanvas, resolveDebugConfig } from 'postext';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { drawOverlay } from './overlay';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
+import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import {
   LOCALE_TO_HYPHENATION,
@@ -43,6 +44,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   const sharedDocRef = useSandboxDocRef();
   const markdown = useSandboxSelector((s) => s.markdown);
   const config = useSandboxSelector((s) => s.config);
+  const resources = useSandboxSelector((s) => s.resources);
   const locale = useSandboxSelector((s) => s.locale);
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const selection = useSandboxSelector((s) => s.selection);
@@ -66,6 +68,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // scaling handles size changes with no paint cost.
   const lastPaintedDocVersionRef = useRef(-1);
   const deferredMarkdown = useDeferredValue(markdown);
+  const deferredResources = useDeferredValue(resources);
   const rawDeferredConfig = useDeferredValue(config);
   // Inject app-locale-derived hyphenation locale when user hasn't set one explicitly
   const deferredConfig = useMemo((): PostextConfig => {
@@ -253,7 +256,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     appliedRebuildKeyRef.current = rebuildKey;
 
     onGeneratingChangeRef.current?.(true);
-    layoutWorker.build({ markdown: deferredMarkdown }, deferredConfig)
+    layoutWorker.build({ markdown: deferredMarkdown, resources: deferredResources }, deferredConfig)
       .then((doc) => {
         if (cancelled) return;
         docRef.current = doc;
@@ -273,7 +276,23 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     return () => {
       cancelled = true;
     };
-  }, [deferredMarkdown, deferredConfig, rebuildKey, dispatch, sharedDocRef, layoutWorker]);
+  }, [deferredMarkdown, deferredResources, deferredConfig, rebuildKey, dispatch, sharedDocRef, layoutWorker]);
+
+  // Decode resource image payloads (bitmaps/SVGs) from IndexedDB and register
+  // them with the canvas backend, then force a repaint — mirrors the
+  // font-load → rebuildKey pattern above. The worker lays out from the resource
+  // metadata (intrinsic dims); the actual pixels are drawn on the main thread.
+  useEffect(() => {
+    let cancelled = false;
+    ensureResourceImages(deferredResources)
+      .then((changed) => {
+        if (!cancelled && changed) setRebuildKey((k) => k + 1);
+      })
+      .catch(() => { /* leave placeholders */ });
+    return () => {
+      cancelled = true;
+    };
+  }, [deferredResources]);
 
   // LAYOUT effect — (re)builds the page DOM and repaints visible pages.
   // Runs when a new doc is produced, or when view mode changes. Resize is
