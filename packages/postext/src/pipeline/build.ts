@@ -46,6 +46,12 @@ import {
 } from './buildHelpers';
 import { resolveBlockKind } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
+import {
+  computeHeadingContext,
+  computeResourceNumbering,
+  type ResourceNumberingMap,
+} from './resourceNumbering';
+import { defaultResourceTypes } from '../defaults/resourceTypes';
 import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
 
 export interface BuildDocumentOptions {
@@ -104,6 +110,25 @@ export function buildDocument(
     }
   }
   const headingPrefixes = computeHeadingNumbers(contentBlocks, headingTemplates);
+
+  // Resource numbering — computed up front (before the placement loop) so that
+  // captions and inline `:ref`s can resolve their rendered number strings
+  // before measurement. Numbering follows order of first reference in the
+  // document. Resources themselves are threaded by later phases; until then the
+  // list is empty and the map resolves to {}.
+  const resourceTypes = config?.resourceTypes ?? defaultResourceTypes();
+  const headingContext = computeHeadingContext(contentBlocks);
+  const resourceNumbering: ResourceNumberingMap = computeResourceNumbering(
+    contentBlocks,
+    resourceTypes,
+    [],
+    headingContext,
+  );
+  // The map is held here so it can be threaded into measurement (so resource
+  // captions and inline refs resolve their strings before layout). The
+  // measurement/render plumbing that consumes it lands in a later phase; the
+  // explicit reference keeps the computed map live in the meantime.
+  void resourceNumbering;
 
   // Resolve styles
   const bodyStyle = resolveBodyStyle(resolved);

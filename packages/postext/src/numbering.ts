@@ -125,12 +125,48 @@ export function formatNumeral(n: number, style: NumeralStyle): string {
   }
 }
 
+/** A pre-resolved template piece fed to {@link renderCounterTemplate}. A
+ *  `counter` piece whose `text` is empty is treated as a "missing" counter and
+ *  triggers separator collapsing — its adjacent literal separator is dropped so
+ *  the rendered string never carries dangling punctuation. */
+export type RenderPiece =
+  | { kind: 'literal'; text: string }
+  | { kind: 'counter'; text: string };
+
+/** Shared template renderer used by both heading and resource numbering. Joins
+ *  the pieces in order, dropping a literal separator that sits next to an empty
+ *  counter so a missing leading/trailing counter doesn't leave orphan
+ *  punctuation (e.g. `{h1}.{n}` with no h1 renders as `1`, not `.1`). */
+export function renderCounterTemplate(pieces: RenderPiece[]): string {
+  // Work on a shallow copy so the collapsing logic can blank neighbouring
+  // literals without mutating the caller's array.
+  const work: RenderPiece[] = pieces.map((p) => ({ ...p }));
+  let out = '';
+  for (let i = 0; i < work.length; i++) {
+    const p = work[i]!;
+    if (p.kind === 'counter' && p.text === '') {
+      const prev = out;
+      const next = work[i + 1];
+      if (next && next.kind === 'literal') {
+        work[i + 1] = { kind: 'literal', text: '' };
+        continue;
+      }
+      if (prev.length > 0 && work[i - 1]?.kind === 'literal') {
+        out = out.replace(/[^A-Za-z0-9]+$/, '');
+      }
+      continue;
+    }
+    out += p.text;
+  }
+  return out;
+}
+
 function renderTemplate(
   tokens: Token[],
   counters: number[],
   currentLevel: number,
 ): string {
-  const pieces: Array<{ kind: 'literal' | 'counter'; text: string }> = [];
+  const pieces: RenderPiece[] = [];
   for (const t of tokens) {
     if (t.kind === 'literal') {
       pieces.push({ kind: 'literal', text: t.text });
@@ -141,24 +177,7 @@ function renderTemplate(
     const rendered = value > 0 ? formatNumeral(value, t.style) : '';
     pieces.push({ kind: 'counter', text: rendered });
   }
-  let out = '';
-  for (let i = 0; i < pieces.length; i++) {
-    const p = pieces[i]!;
-    if (p.kind === 'counter' && p.text === '') {
-      const prev = out;
-      const next = pieces[i + 1];
-      if (next && next.kind === 'literal') {
-        pieces[i + 1] = { kind: 'literal', text: '' };
-        continue;
-      }
-      if (prev.length > 0 && pieces[i - 1]?.kind === 'literal') {
-        out = out.replace(/[^A-Za-z0-9]+$/, '');
-      }
-      continue;
-    }
-    out += p.text;
-  }
-  return out;
+  return renderCounterTemplate(pieces);
 }
 
 export type HeadingTemplates = Partial<Record<1 | 2 | 3 | 4 | 5 | 6, string>>;
