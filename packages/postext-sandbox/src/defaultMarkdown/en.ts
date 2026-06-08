@@ -24,6 +24,10 @@ Modern CSS is a remarkably powerful tool for building user interfaces. Flexbox, 
 - **Application layout** arranges interactive components such as buttons, forms, navigation bars, and cards within a viewport that the user can scroll freely
 - **Editorial layout** arranges flowing text, images, tables, figures, and annotations across a series of fixed-dimension pages or columns, following strict typographic rules inherited from centuries of print tradition
 
+The contrast in :ref{id="feature-comparison"} summarises where the two approaches diverge for long-form documents.
+
+::resource{id="feature-comparison"}
+
 CSS handles the first case brilliantly. For the second case, it falls short in critical ways that have never really been addressed by the platform:
 
 1. **No native multi-column text flow with reflow awareness**
@@ -69,7 +73,9 @@ Understanding the architecture of Postext is the fastest way to understand what 
 
 ### The Processing Pipeline
 
-The Postext layout engine processes content through a carefully orchestrated pipeline. Each stage builds upon the results of the previous one, gradually transforming raw Markdown into a complete, precisely measured layout. Understanding this pipeline is key to understanding the design philosophy of the project, and it also clarifies which parts of the engine you can replace, extend, or reuse in isolation.
+The Postext layout engine processes content through a carefully orchestrated pipeline. Each stage builds upon the results of the previous one, gradually transforming raw Markdown into a complete, precisely measured layout. Understanding this pipeline is key to understanding the design philosophy of the project, and it also clarifies which parts of the engine you can replace, extend, or reuse in isolation. The diagram in :ref{id="layout-pipeline"} summarises the journey from source text to rendered output.
+
+::resource{id="layout-pipeline"}
 
 #### Input Layer
 

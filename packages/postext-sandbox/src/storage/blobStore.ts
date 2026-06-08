@@ -82,6 +82,20 @@ export function putBlob(bytes: ArrayBuffer, contentType: string): Promise<string
   ).then(() => record.fileId);
 }
 
+/** Store bytes under a caller-chosen `fileId`, overwriting any existing record.
+ *  Used for seeding deterministic default resources idempotently (re-seeding
+ *  reuses the same key instead of orphaning the previous blob). */
+export function putBlobAt(
+  fileId: string,
+  bytes: ArrayBuffer,
+  contentType: string,
+): Promise<string> {
+  const record: BlobRecord = { fileId, contentType, bytes };
+  return runInStore(BLOBS_STORE, 'readwrite', (store) =>
+    store.put(record) as IDBRequest<IDBValidKey>,
+  ).then(() => fileId);
+}
+
 export function getBlob(fileId: string): Promise<BlobRecord | null> {
   return runInStore(BLOBS_STORE, 'readonly', (store) =>
     store.get(fileId) as IDBRequest<BlobRecord | undefined>,

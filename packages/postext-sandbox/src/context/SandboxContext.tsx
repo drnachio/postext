@@ -18,6 +18,7 @@ import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
 import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
+import { buildDefaultResources } from '../defaultResources';
 import { setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
 import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
@@ -297,13 +298,22 @@ export function SandboxProvider({
   useEffect(() => {
     let cancelled = false;
     loadResources()
-      .then((loaded) => {
+      .then(async (loaded) => {
         if (cancelled) return;
+        // First entry (empty store): seed the example resources so the default
+        // document's `::resource`/`:ref` directives resolve out-of-the-box.
+        // The persistence effect below diffs against the empty snapshot and
+        // writes them to IndexedDB.
+        if (loaded.length === 0) {
+          const seeded = await buildDefaultResources().catch(() => []);
+          if (cancelled) return;
+          resourcesLoadedRef.current = true;
+          if (seeded.length > 0) dispatch({ type: 'SET_RESOURCES', payload: seeded });
+          return;
+        }
         prevResourcesRef.current = loaded;
         resourcesLoadedRef.current = true;
-        if (loaded.length > 0) {
-          dispatch({ type: 'SET_RESOURCES', payload: loaded });
-        }
+        dispatch({ type: 'SET_RESOURCES', payload: loaded });
       })
       .catch(() => {
         if (cancelled) return;
