@@ -63,6 +63,12 @@ export type TableCellAlign = 'left' | 'center' | 'right';
 /** Vertical alignment of a table cell's content. */
 export type TableCellVerticalAlign = 'top' | 'middle' | 'bottom';
 
+/** Position of a cell within a {@link TableModel} grid (zero-based). */
+export interface TableCellPos {
+  row: number;
+  col: number;
+}
+
 export interface TableCell {
   /** Cell content (plain text / inline markdown). */
   content: string;
@@ -74,6 +80,10 @@ export interface TableCell {
   isHeader?: boolean;
   align?: TableCellAlign;
   verticalAlign?: TableCellVerticalAlign;
+  /** When set, this cell is covered by a merge whose primary (top-left) cell
+   *  is at the referenced position. Hidden cells are skipped during rendering
+   *  and restored on unmerge. */
+  hiddenBy?: TableCellPos;
 }
 
 export interface TableModel {
