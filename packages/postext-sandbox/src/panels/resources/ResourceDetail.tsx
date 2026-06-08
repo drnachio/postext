@@ -8,7 +8,9 @@ import { ConfirmPopover } from '../ConfirmPopover';
 import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
+import { TableEditor } from './TableEditor/TableEditor';
 import { slugify } from './slugify';
+import type { TableModel } from 'postext';
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
@@ -227,11 +229,12 @@ export function ResourceDetail({
         )}
         {resource.kind === 'table' && (
           <Field label="Table">
-            <span style={labelStyle}>
-              {resource.table
-                ? `${resource.table.model.rows.length} rows`
-                : 'Empty table — the table editor arrives in a later phase.'}
-            </span>
+            <TableEditor
+              model={resource.table?.model ?? { rows: [] }}
+              onModelChange={(model: TableModel) =>
+                onChange(touch({ table: { model } }))
+              }
+            />
           </Field>
         )}
 
