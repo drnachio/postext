@@ -24,6 +24,7 @@ export { DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDef
 export { DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults } from './pdfGeneration';
 export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults } from './headerFooter';
 export type { HeaderFooterSlotKind } from './headerFooter';
+export { defaultResourceTypes } from './resourceTypes';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };

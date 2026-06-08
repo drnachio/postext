@@ -1,3 +1,7 @@
+/** @deprecated Legacy content-model resource used by the VDT renderer
+ *  (`VDTBlock.resource`). The Resources-panel feature uses the newer
+ *  `Resource` / `ResourceType` model below. Retained until the renderer
+ *  migrates off it. */
 export interface PostextResource {
   id: string;
   type: 'image' | 'table' | 'figure' | 'pullQuote';
@@ -7,6 +11,110 @@ export interface PostextResource {
   content?: string;
   width?: number;
   height?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Resources model (issue #49) — user-managed, typed, numbered resources
+// (images, SVGs, HTML tables) that can be referenced inline.
+// ---------------------------------------------------------------------------
+
+/** How a counter renders for a given resource type. */
+export type ResourceCounterFormat =
+  | 'decimal'
+  | 'roman-lower'
+  | 'roman-upper'
+  | 'alpha-lower'
+  | 'alpha-upper';
+
+/** When the per-type counter resets back to its starting value. `'never'`
+ *  yields a single document-wide running count; `'h1'..'h6'` resets the
+ *  counter whenever a heading of that level is encountered. */
+export type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+/** A user-definable category of resource (e.g. "Figure", "Table"). Drives
+ *  numbering, caption prefixes, and inline-reference labels. */
+export interface ResourceType {
+  /** Stable identifier, referenced by `Resource.typeId`. */
+  id: string;
+  /** Display name, singular (e.g. "Figure"). */
+  name: string;
+  /** Optional plural display name (e.g. "Figures"). */
+  namePlural?: string;
+  /** Compact label used in inline references (e.g. "Fig."). */
+  shortLabel: string;
+  /** Template for the computed number. Placeholders: `{n}` (the counter),
+   *  `{h1}`..`{h6}` (current heading numbers). E.g. `'{h1}.{n}'`. */
+  numberingTemplate: string;
+  /** When the counter resets. */
+  resetOn: ResourceCounterReset;
+  /** How the `{n}` counter is formatted. */
+  counterFormat: ResourceCounterFormat;
+  /** Prefix prepended to the caption (e.g. "Figure"). The computed number
+   *  follows this prefix. */
+  captionPrefix: string;
+}
+
+/** The concrete payload kind a `Resource` carries. */
+export type ResourceKind = 'bitmap' | 'svg' | 'table';
+
+/** Horizontal alignment of a table cell's content. */
+export type TableCellAlign = 'left' | 'center' | 'right';
+
+/** Vertical alignment of a table cell's content. */
+export type TableCellVerticalAlign = 'top' | 'middle' | 'bottom';
+
+export interface TableCell {
+  /** Cell content (plain text / inline markdown). */
+  content: string;
+  /** Number of columns this cell spans. Default 1. */
+  colSpan?: number;
+  /** Number of rows this cell spans. Default 1. */
+  rowSpan?: number;
+  /** When true, render as a header cell (`<th>`). */
+  isHeader?: boolean;
+  align?: TableCellAlign;
+  verticalAlign?: TableCellVerticalAlign;
+}
+
+export interface TableModel {
+  /** Row-major grid of cells. */
+  rows: TableCell[][];
+  /** Number of leading rows that form the table header. Default 0. */
+  headerRowCount?: number;
+}
+
+/** A user-managed resource instance. Binary payloads (bitmaps, SVGs) are
+ *  stored out-of-band (IndexedDB in the sandbox) and referenced by
+ *  `fileId`; table resources carry their model inline. */
+export interface Resource {
+  /** Stable identifier, referenced by inline `ref`s. */
+  id: string;
+  /** The `ResourceType.id` this resource belongs to. */
+  typeId: string;
+  kind: ResourceKind;
+  /** Optional caption text (the type prefix + number are computed). */
+  caption?: string;
+  /** Accessibility alt text. */
+  altText?: string;
+  /** Creation timestamp (ms since epoch). */
+  createdAt: number;
+  /** Last-modified timestamp (ms since epoch). */
+  updatedAt: number;
+  /** Present when `kind === 'bitmap'`. */
+  bitmap?: {
+    fileId: string;
+    format: string;
+    width: number;
+    height: number;
+  };
+  /** Present when `kind === 'svg'`. */
+  svg?: {
+    fileId: string;
+  };
+  /** Present when `kind === 'table'`. */
+  table?: {
+    model: TableModel;
+  };
 }
 
 export interface PostextNote {
@@ -965,4 +1073,9 @@ export interface PostextConfig {
    *  Google Font. Binary data is stored out-of-band (IndexedDB in the
    *  sandbox) and referenced by `fileId`. */
   customFonts?: CustomFontFamily[];
+
+  /** User-definable resource categories (figures, tables, etc.) that drive
+   *  typed numbering, caption prefixes, and inline references. Defaults to
+   *  the built-in 'figure' and 'table' types when unset. */
+  resourceTypes?: ResourceType[];
 }
