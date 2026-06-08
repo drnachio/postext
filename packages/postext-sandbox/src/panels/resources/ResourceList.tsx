@@ -139,8 +139,8 @@ interface ResourceListProps {
   onNew: (kind: ResourceKind) => void;
 }
 
-/** Left column: a header with the "New" menu and resources grouped by their
- *  resource-type name. */
+/** Main view: a header with the "New" menu and resources grouped by their
+ *  resource-type name. Selecting a resource swaps this for the detail view. */
 export function ResourceList({ resources, types, selectedId, onSelect, onNew }: ResourceListProps) {
   const typeById = new Map(types.map((t) => [t.id, t]));
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import type {
   ResourceType,

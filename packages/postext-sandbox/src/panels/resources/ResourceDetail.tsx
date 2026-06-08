@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { ChevronLeft, Trash2 } from 'lucide-react';
 import type { Resource, ResourceType } from 'postext';
 import { InlineMarkdownInput } from '../../controls/InlineMarkdownInput';
 import { ConfirmPopover } from '../ConfirmPopover';
@@ -47,9 +47,11 @@ interface ResourceDetailProps {
   /** Rename: change the resource id (callers update selection + storage). */
   onRename: (oldId: string, next: Resource) => void;
   onDelete: () => void;
+  /** Return to the resource list. */
+  onBack: () => void;
 }
 
-/** Right column: editable detail for the selected resource. */
+/** Detail view: editable detail for the selected resource, with a back button. */
 export function ResourceDetail({
   resource,
   types,
@@ -58,6 +60,7 @@ export function ResourceDetail({
   onChange,
   onRename,
   onDelete,
+  onBack,
 }: ResourceDetailProps) {
   const type = types.find((t) => t.id === resource.typeId);
   const touch = (partial: Partial<Resource>): Resource => ({
@@ -115,9 +118,21 @@ export function ResourceDetail({
 
   return (
     <div className="flex h-full flex-col overflow-y-auto p-3">
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-3 flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back to resources"
+          title="Back to resources"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
+          style={{ color: 'var(--slate)', background: 'none', border: 'none', cursor: 'pointer' }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        >
+          <ChevronLeft size={16} aria-hidden="true" />
+        </button>
         <span
-          className="truncate text-xs font-semibold"
+          className="min-w-0 flex-1 truncate text-xs font-semibold"
           style={{ color: 'var(--foreground)' }}
           title={resource.id}
         >

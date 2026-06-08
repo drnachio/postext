@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { FolderOpen } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { UploadCloud } from 'lucide-react';
 import type { Resource, ResourceKind, ResourceType, TableModel } from 'postext';
 import { defaultResourceTypes } from 'postext';
 import { useSandbox } from '../context/SandboxContext';
@@ -9,6 +9,7 @@ import { getBlob, putBlob } from '../storage/blobStore';
 import { ResourceList } from '../panels/resources/ResourceList';
 import { ResourceDetail } from '../panels/resources/ResourceDetail';
 import { uniqueSlug } from '../panels/resources/slugify';
+import { uploadFiles } from '../panels/resources/uploadFiles';
 
 /** Escape a string for safe inclusion in a RegExp. */
 function escapeRegExp(s: string): string {
@@ -50,11 +51,63 @@ export function ResourcesPanel() {
   const types: ResourceType[] = state.config.resourceTypes ?? defaultResourceTypes();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dropActive, setDropActive] = useState(false);
+  const [uploadNote, setUploadNote] = useState<string | null>(null);
+  // Drag events fire for every nested child; a depth counter keeps the overlay
+  // stable until the pointer actually leaves the panel.
+  const dragDepth = useRef(0);
 
   const selected = useMemo(
     () => resources.find((r) => r.id === selectedId) ?? null,
     [resources, selectedId],
   );
+
+  const ingestFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+    const existingIds = new Set(resources.map((r) => r.id));
+    const typeId = types[0]?.id ?? '';
+    const { created, skipped } = await uploadFiles(files, typeId, existingIds);
+    for (const r of created) dispatch({ type: 'UPSERT_RESOURCE', payload: r });
+    if (created.length === 1) setSelectedId(created[0].id);
+    setUploadNote(
+      skipped.length > 0
+        ? `Added ${created.length}; skipped ${skipped.length} unsupported file${skipped.length === 1 ? '' : 's'}.`
+        : null,
+    );
+  };
+
+  // Only react to drags that carry files (not internal element drags).
+  const hasFiles = (e: React.DragEvent) => e.dataTransfer.types.includes('Files');
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    dragDepth.current += 1;
+    setDropActive(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!hasFiles(e)) return;
+    dragDepth.current -= 1;
+    if (dragDepth.current <= 0) {
+      dragDepth.current = 0;
+      setDropActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    dragDepth.current = 0;
+    setDropActive(false);
+    void ingestFiles(Array.from(e.dataTransfer.files ?? []));
+  };
 
   const handleNew = (kind: ResourceKind) => {
     const existingIds = new Set(resources.map((r) => r.id));
@@ -115,44 +168,63 @@ export function ResourcesPanel() {
     setSelectedId(null);
   };
 
-  // Empty state: keep the friendly placeholder but with a working "New" path.
+  // Single-column flow: the list fills the panel, and selecting a resource
+  // swaps it for the detail view (with a back button) rather than splitting
+  // the panel into two narrow columns. The whole panel is a drop target so
+  // files dragged from disk (one or many) upload automatically.
   return (
-    <div className="flex h-full min-h-0">
-      <div
-        className="flex h-full flex-col border-r"
-        style={{ width: '42%', minWidth: 180, borderColor: 'var(--rule)' }}
-      >
-        <ResourceList
-          resources={resources}
+    <div
+      className="relative flex h-full min-h-0 flex-col"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {selected ? (
+        <ResourceDetail
+          key={selected.id}
+          resource={selected}
           types={types}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onNew={handleNew}
+          otherIds={new Set(resources.filter((r) => r.id !== selected.id).map((r) => r.id))}
+          referenceCount={countReferences(state.markdown, selected.id)}
+          onChange={handleChange}
+          onRename={handleRename}
+          onDelete={handleDelete}
+          onBack={() => setSelectedId(null)}
         />
-      </div>
-      <div className="h-full min-w-0 flex-1">
-        {selected ? (
-          <ResourceDetail
-            key={selected.id}
-            resource={selected}
+      ) : (
+        <>
+          <ResourceList
+            resources={resources}
             types={types}
-            otherIds={new Set(resources.filter((r) => r.id !== selected.id).map((r) => r.id))}
-            referenceCount={countReferences(state.markdown, selected.id)}
-            onChange={handleChange}
-            onRename={handleRename}
-            onDelete={handleDelete}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onNew={handleNew}
           />
-        ) : (
-          <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-            <FolderOpen size={40} className="mb-3" style={{ color: 'var(--rule)' }} />
-            <p className="text-xs" style={{ color: 'var(--slate)' }}>
-              {resources.length === 0
-                ? 'No resources yet. Use “New” to upload an image or SVG, or create a table.'
-                : 'Select a resource to edit its details.'}
-            </p>
-          </div>
-        )}
-      </div>
+          {uploadNote && (
+            <div
+              className="border-t px-2 py-1 text-xs"
+              style={{ borderColor: 'var(--rule)', color: 'var(--slate)' }}
+            >
+              {uploadNote}
+            </div>
+          )}
+        </>
+      )}
+
+      {dropActive && (
+        <div
+          className="pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center gap-2 text-xs"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--background) 85%, transparent)',
+            border: '2px dashed var(--gilt)',
+            color: 'var(--foreground)',
+          }}
+        >
+          <UploadCloud size={28} aria-hidden="true" style={{ color: 'var(--gilt)' }} />
+          <span>Drop images or SVGs to upload</span>
+        </div>
+      )}
     </div>
   );
 }
