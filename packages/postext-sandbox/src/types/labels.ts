@@ -148,6 +148,18 @@ export interface SandboxLabels {
   warningsHeadingSpanWithoutBreakDetail?: string;
   warningsHeadingAdvancedWithoutTitleTextTitle?: string;
   warningsHeadingAdvancedWithoutTitleTextDetail?: string;
+  warningsUnknownResourceIdTitle?: string;
+  warningsUnknownResourceIdDetail?: string;
+  warningsUnusedResourceTitle?: string;
+  warningsUnusedResourceDetail?: string;
+  warningsDuplicateResourceIdTitle?: string;
+  warningsDuplicateResourceIdDetail?: string;
+  warningsDanglingTypeRefTitle?: string;
+  warningsDanglingTypeRefDetail?: string;
+  warningsBitmapTooSmallTitle?: string;
+  warningsBitmapTooSmallDetail?: string;
+  warningsStorageUnavailableTitle?: string;
+  warningsStorageUnavailableDetail?: string;
   headingSpan?: string;
   headingSpanTooltip?: string;
   headingSpanColumn?: string;
