@@ -1,5 +1,6 @@
 import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
+import { REF_PLACEHOLDER } from './inlineFormatting';
 
 /**
  * Build a per-character map from plain text to absolute source offsets.
@@ -34,6 +35,22 @@ function computeSourceMap(
         if (markdown[j] === '\n') break;
         j++;
       }
+      r = j;
+      continue;
+    }
+    // Ref placeholder: the plain char represents `:ref{…}` in the markdown.
+    // Advance to the leading `:`, map to it, then skip past the closing `}`
+    // so subsequent plain chars keep aligning with the source.
+    if (ch === REF_PLACEHOLDER) {
+      while (r < blockSrcEnd && !(markdown[r] === ':' && markdown.startsWith(':ref{', r))) r++;
+      if (r >= blockSrcEnd) {
+        map[p] = blockSrcEnd;
+        continue;
+      }
+      map[p] = r;
+      let j = r;
+      while (j < blockSrcEnd && markdown[j] !== '}') j++;
+      if (j < blockSrcEnd) j++; // consume the closing `}`
       r = j;
       continue;
     }

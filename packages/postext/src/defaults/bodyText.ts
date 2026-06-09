@@ -14,12 +14,18 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   color: { hex: '#000000', model: 'cmyk' },
   boldColor: { ...DEFAULT_MAIN_COLOR },
   italicColor: { ...DEFAULT_MAIN_COLOR },
+  // Inline `:ref` labels default to the emphasis (bold) colour, in the bold
+  // font, upright.
+  referenceColor: { ...DEFAULT_MAIN_COLOR },
+  referenceBold: true,
+  referenceItalic: false,
   textAlign: 'justify',
   fontWeight: 400,
   boldFontWeight: 700,
   hyphenation: { ...DEFAULT_HYPHENATION_CONFIG },
   firstLineIndent: { value: 1.5, unit: 'em' },
   hangingIndent: false,
+  indentAfterHeading: true,
   maxWordSpacing: 1.9,
   minWordSpacing: 0.6,
   optimalLineBreaking: true,
@@ -64,6 +70,14 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     color: partial.color ?? DEFAULT_BODY_TEXT_CONFIG.color,
     boldColor: partial.boldColor ?? DEFAULT_BODY_TEXT_CONFIG.boldColor,
     italicColor: partial.italicColor ?? DEFAULT_BODY_TEXT_CONFIG.italicColor,
+    // Reference colour follows the (possibly overridden) bold/emphasis colour
+    // unless explicitly set.
+    referenceColor:
+      partial.referenceColor
+      ?? partial.boldColor
+      ?? DEFAULT_BODY_TEXT_CONFIG.referenceColor,
+    referenceBold: partial.referenceBold ?? DEFAULT_BODY_TEXT_CONFIG.referenceBold,
+    referenceItalic: partial.referenceItalic ?? DEFAULT_BODY_TEXT_CONFIG.referenceItalic,
     textAlign: partial.textAlign ?? DEFAULT_BODY_TEXT_CONFIG.textAlign,
     fontWeight: partial.fontWeight ?? DEFAULT_BODY_TEXT_CONFIG.fontWeight,
     boldFontWeight: partial.boldFontWeight ?? DEFAULT_BODY_TEXT_CONFIG.boldFontWeight,
@@ -73,6 +87,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     },
     firstLineIndent: partial.firstLineIndent ?? DEFAULT_BODY_TEXT_CONFIG.firstLineIndent,
     hangingIndent: partial.hangingIndent ?? DEFAULT_BODY_TEXT_CONFIG.hangingIndent,
+    indentAfterHeading: partial.indentAfterHeading ?? DEFAULT_BODY_TEXT_CONFIG.indentAfterHeading,
     maxWordSpacing: partial.maxWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing,
     minWordSpacing: partial.minWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.minWordSpacing,
     optimalLineBreaking: partial.optimalLineBreaking ?? DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking,
@@ -127,6 +142,18 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
     result.italicColor = bodyText.italicColor;
     hasOverride = true;
   }
+  if (bodyText.referenceColor !== undefined && !colorsEqual(bodyText.referenceColor, DEFAULT_BODY_TEXT_CONFIG.referenceColor)) {
+    result.referenceColor = bodyText.referenceColor;
+    hasOverride = true;
+  }
+  if (bodyText.referenceBold !== undefined && bodyText.referenceBold !== DEFAULT_BODY_TEXT_CONFIG.referenceBold) {
+    result.referenceBold = bodyText.referenceBold;
+    hasOverride = true;
+  }
+  if (bodyText.referenceItalic !== undefined && bodyText.referenceItalic !== DEFAULT_BODY_TEXT_CONFIG.referenceItalic) {
+    result.referenceItalic = bodyText.referenceItalic;
+    hasOverride = true;
+  }
   if (bodyText.textAlign !== undefined && bodyText.textAlign !== DEFAULT_BODY_TEXT_CONFIG.textAlign) {
     result.textAlign = bodyText.textAlign;
     hasOverride = true;
@@ -149,6 +176,10 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.hangingIndent !== undefined && bodyText.hangingIndent !== DEFAULT_BODY_TEXT_CONFIG.hangingIndent) {
     result.hangingIndent = bodyText.hangingIndent;
+    hasOverride = true;
+  }
+  if (bodyText.indentAfterHeading !== undefined && bodyText.indentAfterHeading !== DEFAULT_BODY_TEXT_CONFIG.indentAfterHeading) {
+    result.indentAfterHeading = bodyText.indentAfterHeading;
     hasOverride = true;
   }
   if (bodyText.maxWordSpacing !== undefined && bodyText.maxWordSpacing !== DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing) {

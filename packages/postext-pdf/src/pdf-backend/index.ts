@@ -22,10 +22,15 @@ import {
   renderColumnRule,
   renderCutLines,
 } from './pageDecorations';
-import { renderBlock } from './blockRender';
+import { renderBlock, type ResourceRenderContext } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { addOutlines } from './outlines';
 import { addPageLabels } from './pageLabels';
+import {
+  preloadResourceImages,
+  type ResourceBytesProvider,
+} from './renderResourceBlock';
+import { LinkRegistry } from './links';
 
 export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
@@ -36,9 +41,14 @@ export interface RenderToPdfOptions {
   /** Force every colour in the rendered output through the given PDF colour
    *  space. Defaults to `'rgb'` (pdf-lib's native output). */
   colorSpace?: PdfColorSpace;
+  /** Resolver for resource binary bytes by `fileId` (bitmaps, and SVGs
+   *  pre-rasterised to PNG by the host). When omitted, resource images are
+   *  drawn as placeholders. */
+  resourceBytes?: ResourceBytesProvider;
 }
 
 export type { PdfFontProvider };
+export type { ResourceBytesProvider } from './renderResourceBlock';
 
 function renderPage(
   pdfDoc: PDFDocument,
@@ -47,6 +57,7 @@ function renderPage(
   fontCache: FontCache,
   pageNegative: boolean,
   colorSpace: PdfColorSpace,
+  resourceCtx: ResourceRenderContext,
 ): void {
   const scale = makeScale(doc.config.page.dpi);
   const pageWidthPt = vdtPage.width * scale;
@@ -119,9 +130,17 @@ function renderPage(
       col.bbox.height,
     );
     for (const block of col.blocks) {
-      renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache);
+      renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
     }
     popClip(ctx);
+  }
+
+  // Floated resources sit outside the column clip (a `span: 'page'` float can
+  // cross the gutter); they carry an absolute bbox positioned at build time.
+  if (vdtPage.floats) {
+    for (const fb of vdtPage.floats) {
+      renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, fontCache, resourceCtx);
+    }
   }
 
   if (vdtPage.openerBand) renderHeaderFooterSlot(ctx, vdtPage.openerBand, fontCache);
@@ -167,9 +186,20 @@ export async function renderToPdf(
   }
 
   const colorSpace: PdfColorSpace = options.colorSpace ?? 'rgb';
+
+  // Resource images are embedded up front (async) so page rendering stays sync.
+  const resourceImages = await preloadResourceImages(pdfDoc, doc, options.resourceBytes);
+  const resourceCtx: ResourceRenderContext = {
+    images: resourceImages,
+    linkRegistry: new LinkRegistry(),
+  };
+
   for (const page of doc.pages) {
-    renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace);
+    renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx);
   }
+
+  // Attach inline-ref link annotations now that every destination is known.
+  resourceCtx.linkRegistry.finalize(pdfDoc);
 
   if (options.outlines ?? true) {
     addOutlines(pdfDoc, doc);

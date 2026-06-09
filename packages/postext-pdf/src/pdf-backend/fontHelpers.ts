@@ -9,6 +9,20 @@ export function collectFontStrings(doc: VDTDocument): string[] {
     if (block.italicFontString) out.add(block.italicFontString);
     if (block.boldItalicFontString) out.add(block.boldItalicFontString);
     if (block.bulletFontString) out.add(block.bulletFontString);
+    // Resource caption + table cell fonts (issue #49).
+    const rb = block.resourceBlock;
+    if (rb) {
+      out.add(rb.captionFontString);
+      out.add(rb.captionBoldFontString);
+      out.add(rb.captionItalicFontString);
+      out.add(rb.captionBoldItalicFontString);
+      if (rb.table) {
+        out.add(rb.table.fontString);
+        out.add(rb.table.boldFontString);
+        out.add(rb.table.italicFontString);
+        out.add(rb.table.boldItalicFontString);
+      }
+    }
   }
   for (const page of doc.pages) {
     for (const slot of [page.header, page.footer, page.openerBand]) {

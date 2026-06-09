@@ -24,6 +24,8 @@ El CSS moderno es una herramienta notablemente potente para construir interfaces
 - **Maquetar aplicaciones** consiste en organizar componentes interactivos como botones, formularios, barras de navegación y tarjetas dentro de un viewport por el que el usuario puede desplazarse con libertad
 - **Maquetar publicaciones** consiste en organizar texto fluido, imágenes, tablas, figuras y anotaciones a lo largo de una sucesión de páginas o columnas de dimensiones fijas, siguiendo reglas tipográficas estrictas heredadas de siglos de tradición impresa
 
+El contraste de la :ref{id="feature-comparison"} resume dónde divergen ambos enfoques en documentos extensos. (Fíjate en que basta con referenciarla: la tabla flota por sí sola a la parte superior de la página; nunca se coloca dos veces.)
+
 CSS atiende brillantemente el primer caso. Para el segundo se queda corto en aspectos críticos que, en el fondo, la plataforma nunca ha llegado a resolver:
 
 1. **No hay flujo multicolumna nativo con conciencia del reflujo**
@@ -61,7 +63,7 @@ Existen, por supuesto, herramientas que abordan parte del problema. Los procesad
 - Su salida es estática, no interactiva, y rara vez conserva la estructura semántica de la que dependen las herramientas de accesibilidad
 - Sus formatos de origen son propietarios, binarios o tan complejos que resultan difíciles de generar de manera programática
 
-Postext ocupa una posición singular en este panorama. Es una **biblioteca de JavaScript** que se ejecuta en el navegador, recibe Markdown como entrada, aplica reglas tipográficas profesionales y produce una maquetación que puede renderizarse como HTML, como canvas o como PDF. Está pensada para ser incrustada, configurada y ampliada por quienes desarrollan en la web sin abandonar su cadena de herramientas habitual. Trata la web como superficie de edición y como destino de renderizado de primera clase al mismo tiempo, no como una ocurrencia tardía.
+Postext ocupa una posición singular en este panorama. Es una **biblioteca de JavaScript** que se ejecuta en el navegador, recibe Markdown como entrada, aplica reglas tipográficas profesionales y produce una maquetación que puede renderizarse como HTML, como canvas o como PDF. Está pensada para ser incrustada, configurada y ampliada por quienes desarrollan en la web sin abandonar su cadena de herramientas habitual. Trata la web como superficie de edición y como destino de renderizado de primera clase al mismo tiempo, no como una ocurrencia tardía. La tabla a ancho completo :ref{id="tools-comparison"} sitúa a Postext frente a las alternativas establecidas de un vistazo.
 
 ## Cómo funciona Postext
 
@@ -69,7 +71,7 @@ Entender la arquitectura de Postext es la forma más rápida de entender qué pu
 
 ### La tubería de procesamiento
 
-El motor de maquetación de Postext procesa el contenido a través de una tubería cuidadosamente orquestada. Cada etapa se construye sobre los resultados de la anterior, transformando de forma gradual el Markdown en bruto en una maquetación completa y medida con precisión. Comprender esta tubería es clave para asimilar la filosofía de diseño del proyecto y, además, clarifica qué partes del motor pueden sustituirse, extenderse o reutilizarse de forma aislada.
+El motor de maquetación de Postext procesa el contenido a través de una tubería cuidadosamente orquestada. Cada etapa se construye sobre los resultados de la anterior, transformando de forma gradual el Markdown en bruto en una maquetación completa y medida con precisión. Comprender esta tubería es clave para asimilar la filosofía de diseño del proyecto y, además, clarifica qué partes del motor pueden sustituirse, extenderse o reutilizarse de forma aislada. El diagrama de la :ref{id="layout-pipeline"} resume el recorrido desde el texto fuente hasta la salida renderizada: una figura a columna sencilla que flota a la parte superior de la página. El coste aproximado de cada etapa se recoge en la tabla a columna sencilla :ref{id="runtime-metrics"}.
 
 #### Capa de entrada
 
@@ -96,7 +98,7 @@ Antes de poder decidir dónde colocar cada elemento, el motor necesita saber cu�
 
 El reto de medir no es trivial. Representar texto es complejo porque el ancho y el alto de un párrafo dependen de la fuente, del tamaño de la fuente, de la interlínea, del ancho disponible, de las reglas de separación silábica y de muchos otros factores. Tradicionalmente, la única manera de medir texto con precisión en un navegador consiste en renderizarlo en el DOM y leer las dimensiones calculadas. Ese enfoque es lento, ya que dispara reflujos de maquetación que pueden bloquear el hilo principal cientos de milisegundos por párrafo en documentos realistas.
 
-Postext adopta un enfoque radicalmente distinto. La biblioteca _pretext_ realiza **medición de texto sin DOM** utilizando métricas de fuente del canvas y aritmética pura. Esta técnica resulta entre 300 y 600 veces más rápida que la medición basada en DOM, dependiendo del navegador y del documento, y funciona combinando tres ingredientes:
+Postext adopta un enfoque radicalmente distinto. La biblioteca _pretext_ realiza **medición de texto sin DOM** utilizando métricas de fuente del canvas y aritmética pura. Esta técnica resulta entre 300 y 600 veces más rápida que la medición basada en DOM, dependiendo del navegador y del documento, como deja ver el gráfico de la :ref{id="measurement-speed"}, y funciona combinando tres ingredientes:
 
 1. Cargando métricas de fuente desde la API del canvas
    - Anchos de glifos y métricas de avance
@@ -127,7 +129,7 @@ El motor de maquetación trabaja de forma iterativa. Realiza una primera pasada 
 - Eliminar esa viuda podría requerir traer contenido de vuelta, rompiendo la restricción entre encabezado y párrafo
 - Una figura pensada para la cabeza de la siguiente columna podría retrasarse una columna más si al caer ahí dejara una huérfana arriba
 
-Estas dependencias circulares se resuelven mediante un **bucle de convergencia** que ejecuta hasta cinco iteraciones. En la práctica, la mayoría de las maquetaciones convergen en dos o tres pasadas. El motor detecta cuándo no puede mejorar más y se detiene antes, de modo que el tope es una red de seguridad, no una ruta habitual. La estructura de datos que sobrevive a este bucle se conoce internamente como **VDT**, el árbol virtual del documento, y es la fuente única de verdad que consume cada uno de los renderizadores.
+Estas dependencias circulares se resuelven mediante un **bucle de convergencia** que ejecuta hasta cinco iteraciones, ilustrado a todo el ancho, cruzando ambas columnas, en la :ref{id="convergence-loop"}. En la práctica, la mayoría de las maquetaciones convergen en dos o tres pasadas. El motor detecta cuándo no puede mejorar más y se detiene antes, de modo que el tope es una red de seguridad, no una ruta habitual. La estructura de datos que sobrevive a este bucle se conoce internamente como **VDT**, el árbol virtual del documento, y es la fuente única de verdad que consume cada uno de los renderizadores.
 
 El motor de maquetación produce un VDT que describe la posición exacta y las dimensiones de cada elemento en cada página. Esta estructura es independiente del formato, es decir, contiene geometría pura sin información específica de renderizado, y es precisamente esa independencia la que permite que Canvas, HTML y PDF produzcan una salida coherente.
 
@@ -158,7 +160,7 @@ Las siguientes características son en las que Postext invierte el grueso de su 
 
 ### Prevención de huérfanas y viudas
 
-En la tipografía profesional, una **huérfana** es una única línea de un párrafo que aparece aislada al comienzo de una columna o página, separada del resto de su párrafo. Una **viuda** es una única línea que aparece sola al final de una columna o página. Ambas se consideran defectos tipográficos serios porque rompen el ritmo visual del texto y dificultan que quien lee mantenga su fluidez.
+En la tipografía profesional, una **huérfana** es una única línea de un párrafo que aparece aislada al comienzo de una columna o página, separada del resto de su párrafo. Una **viuda** es una única línea que aparece sola al final de una columna o página. Ambas se consideran defectos tipográficos serios porque rompen el ritmo visual del texto y dificultan que quien lee mantenga su fluidez. La figura :ref{id="orphan-widow"} muestra ambos defectos uno al lado del otro a través de una frontera de columna.
 
 Postext ofrece una prevención configurable de huérfanas y viudas:
 
@@ -194,7 +196,7 @@ La **optimización del margen** se refiere al suavizado del borde derecho del te
 
 Para el texto justificado, Postext implementa al completo el **algoritmo de salto de línea óptimo de Knuth-Plass**, el mismo que impulsa TeX desde 1981. A diferencia del enfoque voraz de primer ajuste que emplea CSS, Knuth-Plass evalúa todas las formas posibles de romper un párrafo entero y escoge la combinación que minimiza la _maldad_ total de todas sus líneas. El resultado es un texto justificado cuyo espaciado entre palabras es visiblemente más uniforme de lo que cualquier navegador puede producir de manera nativa.
 
-El algoritmo modela el texto como una secuencia de tres primitivas:
+El algoritmo modela el texto como una secuencia de tres primitivas, dispuestas a todo el ancho en la :ref{id="knuth-plass-model"}:
 
 - **Las cajas** son palabras o fragmentos de palabra con un ancho fijo que no puede estirarse, comprimirse ni romperse
 - **Las gomas** son espacios entre palabras con un ancho natural más capacidades de estiramiento y contracción que el motor ajusta para llenar la línea
@@ -229,7 +231,7 @@ El espaciado vertical en la tipografía editorial obedece a reglas estrictas que
 - **El espaciado de listas** controla la distancia entre elementos y entre niveles anidados
    - Los elementos de una lista pueden estar compactos o holgados
    - Las listas anidadas admiten sangría adicional y estilos de viñeta distintos en cada nivel
-- **La alineación a la retícula de línea base** fija el texto a una cuadrícula vertical regular
+- **La alineación a la retícula de línea base** fija el texto a una cuadrícula vertical regular, como ilustra la :ref{id="baseline-grid"}
    - Esto asegura que el texto en columnas adyacentes se alinee horizontalmente
    - Aporta una sensación de orden y estabilidad a toda la página
    - Los elementos que rompen la retícula, como los encabezados con tamaños mayores, pueden configurarse para realinearse con ella después
@@ -247,7 +249,7 @@ Una de las características más distintivas de la maquetación editorial es el 
 - Aportan variedad visual y estructura a la página
 - Brindan oportunidades para una colocación sofisticada de recursos y para combinar pasajes textuales estrechos con figuras anchas
 
-Postext admite configuraciones multicolumna flexibles:
+Postext admite configuraciones multicolumna flexibles, las más habituales de las cuales se previsualizan como miniaturas de página en la :ref{id="column-layouts"}:
 
 1. **El número de columnas** puede establecerse en cualquier entero positivo, o elegirse entre varios presets
    - Maquetaciones a una columna para viewports estrechos o lectura concentrada
@@ -304,7 +306,7 @@ Los recursos son todo lo que no es texto fluido: imágenes, tablas, figuras, cit
 
 En el diseño editorial, los recursos como imágenes, tablas, figuras y citas destacadas no se insertan sin más en el lugar exacto donde se referencian. Se colocan, más bien, siguiendo estrategias que optimizan la calidad visual de la página y la legibilidad del texto circundante. La referencia en el texto es una _pista_ sobre dónde encaja el recurso, no una orden.
 
-Postext admite varias estrategias de colocación:
+Postext admite varias estrategias de colocación, resumidas en la tabla :ref{id="placement-options"} y esbozadas juntas sobre una misma página en la :ref{id="placement-strategies"}:
 
 - **Cabeza de columna** coloca el recurso en la parte superior de la columna actual o de la siguiente disponible
    - Es la estrategia más habitual en la publicación académica y profesional
@@ -327,7 +329,7 @@ Postext admite varias estrategias de colocación:
 
 ### Relación de aspecto y dimensionado
 
-Al colocar recursos, Postext respeta la relación de aspecto y ofrece varias opciones de dimensionado:
+Al colocar recursos, Postext respeta la relación de aspecto y ofrece varias opciones de dimensionado, recogidas en la :ref{id="sizing-options"}:
 
 1. **Tamaño natural** utiliza las dimensiones intrínsecas del recurso
 2. **Ancho de columna** escala el recurso para llenar el ancho de una columna
@@ -389,7 +391,7 @@ Todo lo descrito hasta aquí puede explorarse ahora mismo sin escribir una sola 
 
 ### Disposición de la interfaz
 
-El Sandbox sigue un paradigma familiar tipo IDE con tres áreas principales:
+El Sandbox sigue un paradigma familiar tipo IDE con tres áreas principales, esbozadas en la :ref{id="sandbox-ui"}:
 
 - Una **barra de actividad** en el extremo izquierdo para cambiar entre paneles y alojar acciones globales
 - Una **barra lateral redimensionable** que aloja el panel activo, ya sea el editor Markdown, el formulario de configuración o la lista de avisos
@@ -497,7 +499,7 @@ Cada sobrescritura indica qué valores de configuración cambian. Los no especif
 
 ### Tamaños preestablecidos y paletas con nombre
 
-Postext incluye un conjunto de **tamaños de página preestablecidos** que corresponden a formatos habituales de libro y documento:
+Postext incluye un conjunto de **tamaños de página preestablecidos** que corresponden a formatos habituales de libro y documento, reunidos en la :ref{id="preset-sizes"}:
 
 - **11 x 17 cm** para libros de bolsillo pequeños y guías de mano
 - **12 x 19 cm** para novelas de bolsillo estándar
@@ -539,7 +541,7 @@ La visión a largo plazo incluye:
 
 ### Fases de desarrollo
 
-El desarrollo de Postext se organiza en cuatro grandes fases. No son hitos rígidos; describen el orden aproximado en el que cada capacidad se estabiliza y queda lista para uso en producción.
+El desarrollo de Postext se organiza en cuatro grandes fases, resumidas en la tabla a ancho completo :ref{id="development-phases"}. No son hitos rígidos; describen el orden aproximado en el que cada capacidad se estabiliza y queda lista para uso en producción.
 
 1. **Fundamentos**
    - Estructuras de datos centrales y sistema de tipos

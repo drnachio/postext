@@ -6,6 +6,7 @@ import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxSelec
 import type { PanelId } from '../types';
 import { Tooltip } from '../panels/Tooltip';
 import { computeWarnings } from '../warnings/compute';
+import { hasIndexedDB } from '../storage/blobStore';
 
 interface ActivityBarProps {
   themeToggle?: ReactNode;
@@ -29,6 +30,7 @@ function PanelNav() {
   const markdown = useSandboxSelector((s) => s.markdown);
   const config = useSandboxSelector((s) => s.config);
   const docVersion = useSandboxSelector((s) => s.docVersion);
+  const resources = useSandboxSelector((s) => s.resources);
   const docRef = useSandboxDocRef();
   const navRef = useRef<HTMLElement>(null);
   const buttonRefs = useRef<Map<PanelId, HTMLButtonElement>>(new Map());
@@ -39,9 +41,16 @@ function PanelNav() {
   // Also exposed via the Warnings panel — parseMarkdown is memoized, so the
   // duplicate call is cheap.
   const warningCount = useMemo(
-    () => computeWarnings({ markdown, config, doc: docRef.current }).length,
+    () =>
+      computeWarnings({
+        markdown,
+        config,
+        doc: docRef.current,
+        resources,
+        storageUnavailable: !hasIndexedDB(),
+      }).length,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [markdown, config, docVersion],
+    [markdown, config, docVersion, resources],
   );
 
   const updateIndicator = useCallback(() => {

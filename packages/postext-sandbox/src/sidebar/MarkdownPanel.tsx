@@ -7,6 +7,7 @@ import { useSandbox } from '../context/SandboxContext';
 import { exportMarkdownToJson, importMarkdownFromJson } from '../storage/persistence';
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
+import { buildDefaultResources } from '../defaultResources';
 
 interface MarkdownPanelProps {
   isDark?: boolean;
@@ -30,6 +31,15 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
 
   const isDefault = state.markdown === state.defaultMarkdown;
 
+  // Reset restores the default document and re-seeds the example resources it
+  // references (upserting by id so any user-added resources are preserved).
+  const handleReset = () => {
+    dispatch({ type: 'SET_MARKDOWN', payload: state.defaultMarkdown });
+    void buildDefaultResources().then((rs) => {
+      for (const r of rs) dispatch({ type: 'UPSERT_RESOURCE', payload: r });
+    });
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column' as const, height: '100%', minHeight: 0, overflow: 'hidden' }}>
       <div
@@ -46,7 +56,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
           {!isDefault && (
             <ConfirmPopover
               message={state.labels.resetMarkdownConfirm}
-              onConfirm={() => dispatch({ type: 'SET_MARKDOWN', payload: state.defaultMarkdown })}
+              onConfirm={handleReset}
             >
               {({ open }) => (
                 <Tooltip content={state.labels.reset} side="bottom">

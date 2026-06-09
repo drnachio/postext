@@ -752,6 +752,12 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>When enabled, the indent is applied to all lines except the first (French/hanging indent).</td>
     </tr>
     <tr>
+      <td><code>indentAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When set to <code>false</code>, the first paragraph immediately following a heading is rendered without first-line indent — a typographic convention common in scientific publications and many book styles. Has no effect when <code>hangingIndent</code> is enabled.</td>
+    </tr>
+    <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
       <td><code>2</code></td>
@@ -1572,6 +1578,129 @@ const minimal  = stripMathDefaults(config.math);
 ```
 
 For the document-side grammar (`$...$`, `$$...$$`, escaping a literal dollar), see [Document format](/en/docs/document-format#mathematical-formulas).
+
+
+## Resource types
+
+A **resource type** is a user-definable category — *Figure*, *Table*, *Diagram*, *Listing*… — that drives how the resources of that kind are numbered, captioned, and referenced. The list lives on `config.resourceTypes`; the sandbox edits it through a dedicated section of the configuration panel.
+
+When `config.resourceTypes` is unset, Postext ships two built-in defaults: **Figure** and **Table**, both numbered `{h1}.{n}` (resetting on every level-1 heading) with decimal counters.
+
+```ts
+type ResourceCounterFormat =
+  | 'decimal'
+  | 'roman-lower'
+  | 'roman-upper'
+  | 'alpha-lower'
+  | 'alpha-upper';
+
+type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+interface ResourceType {
+  id: string;                          // stable id, referenced by Resource.typeId
+  name: string;                        // singular display name, e.g. "Figure"
+  namePlural?: string;                 // optional plural, e.g. "Figures"
+  shortLabel: string;                  // compact label for inline refs, e.g. "Fig."
+  numberingTemplate: string;           // "{h1}.{n}" or "{n}"
+  resetOn: ResourceCounterReset;       // when the {n} counter resets
+  counterFormat: ResourceCounterFormat;// how {n} is formatted
+  captionPrefix: string;               // prepended to the caption, e.g. "Figure"
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>Stable identifier referenced by each resource's <code>typeId</code>. Set once when the type is created; deleting a type that resources still reference raises a <strong>dangling type</strong> warning.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td>Singular display name. Used by the <code>style="full"</code> inline reference (e.g. <code>Figure 1.7</code>).</td>
+    </tr>
+    <tr>
+      <td><code>namePlural</code></td>
+      <td><code>string</code> (optional)</td>
+      <td>Plural display name, for UI labels and lists of resources.</td>
+    </tr>
+    <tr>
+      <td><code>shortLabel</code></td>
+      <td><code>string</code></td>
+      <td>Compact abbreviation used by the default inline reference style (e.g. <code>Fig. 1.7</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td>Template for the computed number. See <strong>Template tokens</strong> below. Common forms are <code>{'{h1}.{n}'}</code> (chapter-scoped, e.g. <code>2.3</code>) and <code>{'{n}'}</code> (a single running count).</td>
+    </tr>
+    <tr>
+      <td><code>resetOn</code></td>
+      <td><code>ResourceCounterReset</code></td>
+      <td><code>'never'</code> gives one document-wide running count; <code>'h1'</code>..<code>'h6'</code> reset the <code>{'{n}'}</code> counter each time a heading of that level (or any ancestor) is encountered. Set this to match the heading level that appears in the template — e.g. <code>{'{h1}.{n}'}</code> with <code>resetOn: 'h1'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counterFormat</code></td>
+      <td><code>ResourceCounterFormat</code></td>
+      <td>How the <code>{'{n}'}</code> counter renders: decimal (<code>1, 2, 3</code>), lower/upper roman (<code>i, ii</code> / <code>I, II</code>), or lower/upper alpha (<code>a, b</code> / <code>A, B</code>). Heading tokens (<code>{'{h1}'}</code>…) always render as decimals.</td>
+    </tr>
+    <tr>
+      <td><code>captionPrefix</code></td>
+      <td><code>string</code></td>
+      <td>Text prepended to the figure/table caption. The computed number follows the prefix — a caption renders as <code>{'{captionPrefix}'} {'{number}'}. {'{caption text}'}</code>, e.g. <strong>Figure 1.7. The original plan.</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+### Template tokens
+
+`numberingTemplate` is rendered with the same engine as heading numbering (see [Headings](#headings)). It recognises two kinds of token:
+
+- `{n}` — the per-type counter, formatted per `counterFormat`. This is the value that increments per resource and resets according to `resetOn`.
+- `{h1}` … `{h6}` — the heading numbers in effect at the point of first reference, always rendered as decimals. `{h1}` is the current level-1 heading number, `{h2}` the level-2, and so on.
+
+Any other text is literal. A backslash escapes a literal `{`, `}`, or `\`. When a heading token has no value in scope (e.g. `{h1}` before any level-1 heading), it collapses together with its adjacent separator — so `{h1}.{n}` degrades gracefully to the bare counter.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Template</th>
+      <th style={{ width: '180px' }}>With <code>h1 = 2</code>, counter = 3</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{'{n}'}</code></td>
+      <td><code>3</code></td>
+      <td>A single running count. Pair with <code>resetOn: 'never'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{n}'}</code></td>
+      <td><code>2.3</code></td>
+      <td>Chapter-scoped. Pair with <code>resetOn: 'h1'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{h2}.{n}'}</code></td>
+      <td><code>2.0.3</code></td>
+      <td>Section-scoped. Pair with <code>resetOn: 'h2'</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Numbering and references
+
+The number a resource type produces is what `:ref` prints and what the caption prefix precedes. The document-side grammar — the `::resource{id}` block embed and the `:ref{id}` inline reference, plus its `style` and `text` options — is documented in [Document format › Resources](/en/docs/document-format#resources), including how first-reference order drives the count.
+
+This mirrors heading numbering: just as a heading level carries a `numberingTemplate`, a resource type carries one too — but the resource counter (`{n}`) advances per first-reference rather than per heading, and `resetOn` ties it back to the heading hierarchy.
 
 
 ## Units and Colors

@@ -84,6 +84,10 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isItalicColorDefault = bodyText.italicColor === undefined;
   const DEFAULT_BOLD_COLOR = bodyText.boldColor ?? bodyText.color;
   const DEFAULT_ITALIC_COLOR = bodyText.italicColor ?? bodyText.color;
+  const DEFAULT_REFERENCE_COLOR = bodyText.referenceColor;
+  const isReferenceColorDefault = raw?.referenceColor === undefined;
+  const isReferenceBoldDefault = bodyText.referenceBold === D.referenceBold;
+  const isReferenceItalicDefault = bodyText.referenceItalic === D.referenceItalic;
   const isTextAlignDefault = bodyText.textAlign === D.textAlign;
   const isFontWeightDefault = bodyText.fontWeight === D.fontWeight;
   const isBoldFontWeightDefault = bodyText.boldFontWeight === D.boldFontWeight;
@@ -91,6 +95,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isHyphenationLocaleDefault = effectiveHyphenationLocale === defaultLocale;
   const isFirstLineIndentDefault = dimensionsEqual(bodyText.firstLineIndent, D.firstLineIndent);
   const isHangingIndentDefault = bodyText.hangingIndent === D.hangingIndent;
+  const isIndentAfterHeadingDefault = bodyText.indentAfterHeading === D.indentAfterHeading;
   const isMaxWordSpacingDefault = bodyText.maxWordSpacing === D.maxWordSpacing;
   const isMinWordSpacingDefault = bodyText.minWordSpacing === D.minWordSpacing;
   const isOptimalLineBreakingDefault = bodyText.optimalLineBreaking === D.optimalLineBreaking;
@@ -198,6 +203,34 @@ export const BodyTextSection = memo(function BodyTextSection() {
         fieldId="bodyText-italicColor"
       />
 
+      <ColorPicker
+        label={labels.bodyReferenceColor}
+        value={DEFAULT_REFERENCE_COLOR}
+        onChange={(color) => updateBodyText({ referenceColor: color })}
+        tooltip={labels.bodyReferenceColorTooltip}
+        isDefault={isReferenceColorDefault}
+        onReset={() => resetField('referenceColor')}
+        fieldId="bodyText-referenceColor"
+      />
+
+      <ToggleSwitch
+        label={labels.bodyReferenceBold}
+        checked={bodyText.referenceBold}
+        onChange={(checked) => updateBodyText({ referenceBold: checked })}
+        tooltip={labels.bodyReferenceBoldTooltip}
+        isDefault={isReferenceBoldDefault}
+        onReset={() => resetField('referenceBold')}
+      />
+
+      <ToggleSwitch
+        label={labels.bodyReferenceItalic}
+        checked={bodyText.referenceItalic}
+        onChange={(checked) => updateBodyText({ referenceItalic: checked })}
+        tooltip={labels.bodyReferenceItalicTooltip}
+        isDefault={isReferenceItalicDefault}
+        onReset={() => resetField('referenceItalic')}
+      />
+
       <NumberInput
         label={labels.bodyFontWeight}
         value={bodyText.fontWeight}
@@ -241,6 +274,15 @@ export const BodyTextSection = memo(function BodyTextSection() {
         tooltip={labels.bodyHangingIndentTooltip}
         isDefault={isHangingIndentDefault}
         onReset={() => resetField('hangingIndent')}
+      />
+
+      <ToggleSwitch
+        label={labels.bodyIndentAfterHeading}
+        checked={bodyText.indentAfterHeading}
+        onChange={(checked) => updateBodyText({ indentAfterHeading: checked })}
+        tooltip={labels.bodyIndentAfterHeadingTooltip}
+        isDefault={isIndentAfterHeadingDefault}
+        onReset={() => resetField('indentAfterHeading')}
       />
 
       <SelectInput

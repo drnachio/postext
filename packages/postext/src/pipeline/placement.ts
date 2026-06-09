@@ -55,6 +55,7 @@ export function advanceToNextColumn(
   contentArea: BoundingBox,
   pageWidthPx: number,
   pageHeightPx: number,
+  onNewPage?: (page: VDTPage) => void,
 ): void {
   const page = doc.pages[cursor.pageIndex]!;
   if (cursor.columnIndex < page.columns.length - 1) {
@@ -71,6 +72,11 @@ export function advanceToNextColumn(
     doc.pages.push(newPage);
     cursor.pageIndex = newPage.index;
     cursor.columnIndex = 0;
+    // Let the caller reserve float bands at the top/bottom of the freshly
+    // opened page before any content flows into it. Only the content-flow
+    // advances pass this hook — parity / force-blank pages never receive
+    // floats because `enforcePageParity` calls this without `onNewPage`.
+    onNewPage?.(newPage);
   }
 }
 
@@ -85,13 +91,14 @@ export function advanceToNextPageBoundary(
   contentArea: BoundingBox,
   pageWidthPx: number,
   pageHeightPx: number,
+  onNewPage?: (page: VDTPage) => void,
 ): void {
   const curPage = doc.pages[cursor.pageIndex]!;
   const curPageEmpty = curPage.columns.every((c) => c.blocks.length === 0);
   if (curPageEmpty) return;
   const startPageIndex = cursor.pageIndex;
   do {
-    advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+    advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
   } while (cursor.pageIndex === startPageIndex);
 }
 
@@ -151,6 +158,48 @@ export function enforcePageParity(
       advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
     } while (cursor.pageIndex === startPageIndex);
   }
+}
+
+/**
+ * Place a resource block (image / svg / table + caption) keeping it together as
+ * one atomic unit (issue #49 §7 — Placement). Resources never split mid-content
+ * for v1: if the group's combined height fits the remaining column space it is
+ * placed there; otherwise the cursor advances to the next column/page (without
+ * emitting a leading blank page when the current column is empty), and the
+ * resource is force-placed there even when it exceeds a single column's height.
+ *
+ * `spacingBefore` is consumed from the target column's available height before
+ * placement (collapsed against the previous block's bottom margin by the
+ * caller). Returns the height actually reserved for the block.
+ */
+export function placeResourceBlock(
+  block: VDTBlock,
+  groupHeight: number,
+  spacingBefore: number,
+  cursor: PlacementCursor,
+  doc: VDTDocument,
+  resolved: ResolvedConfig,
+  contentArea: BoundingBox,
+  pageWidthPx: number,
+  pageHeightPx: number,
+): number {
+  let col = currentColumn(doc, cursor);
+  const isFirstInColumn = col.blocks.length === 0;
+  const effectiveSpacing = isFirstInColumn ? 0 : spacingBefore;
+  const available = col.availableHeight - effectiveSpacing;
+
+  // Advance to the next column/page when the group does not fit and the current
+  // column already holds content. A group taller than a full column is placed
+  // anyway (no mid-split for v1) once it lands in an empty column.
+  if (groupHeight > available && col.blocks.length > 0) {
+    advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+    col = currentColumn(doc, cursor);
+  }
+
+  const consumeSpacing = col.blocks.length === 0 ? 0 : spacingBefore;
+  if (consumeSpacing > 0) col.availableHeight -= consumeSpacing;
+  placeBlockInColumn(block, groupHeight, col, cursor);
+  return groupHeight;
 }
 
 export function placeBlockInColumn(
