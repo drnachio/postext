@@ -123,6 +123,7 @@ function paintLine(
   linkColor: Color,
   linkRegistry: LinkRegistry | undefined,
   resolveRefId: ((seg: { refResourceId?: string }) => string | undefined),
+  labelColor: Color = color,
 ): void {
   const baseFont = fontCache.get(fonts.normal);
   if (!baseFont) return;
@@ -138,7 +139,7 @@ function paintLine(
       const font = fontCache.get(fontStr) ?? baseFont;
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
       const refId = resolveRefId(seg);
-      const segColor = refId !== undefined ? linkColor : color;
+      const segColor = refId !== undefined ? linkColor : seg.captionLabel ? labelColor : color;
       drawTextPx(ctx, seg.text, x, line.baseline, font, size, segColor);
       if (refId !== undefined && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
@@ -166,34 +167,43 @@ function renderTable(
   if (!t) return;
   const borderColor = colorFromHex(t.borderColor, ctx.colorSpace);
   const headerBg = t.headerBackground ? colorFromHex(t.headerBackground, ctx.colorSpace) : undefined;
-  const tableColor = colorFromHex(t.color, ctx.colorSpace);
-  const fonts: PaintFonts = {
+  const bodyBg = t.bodyBackground ? colorFromHex(t.bodyBackground, ctx.colorSpace) : undefined;
+  const bodyColor = colorFromHex(t.color, ctx.colorSpace);
+  const headerColor = colorFromHex(t.headerColor, ctx.colorSpace);
+  const bodyFonts: PaintFonts = {
     normal: t.fontString,
     bold: t.boldFontString,
     italic: t.italicFontString,
     boldItalic: t.boldItalicFontString,
   };
+  const headerFonts: PaintFonts = {
+    normal: t.headerFontString,
+    bold: t.headerBoldFontString,
+    italic: t.headerItalicFontString,
+    boldItalic: t.headerBoldItalicFontString,
+  };
 
-  // Header backgrounds.
-  if (headerBg) {
-    for (const cell of t.cells) {
-      if (cell.isHeader) {
-        fillRectPx(ctx, cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height, headerBg);
-      }
-    }
+  // Cell backgrounds (header tint / body fill).
+  for (const cell of t.cells) {
+    const fill = cell.isHeader ? headerBg : bodyBg;
+    if (fill) fillRectPx(ctx, cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height, fill);
   }
   // Borders (per-cell rectangle outline).
-  for (const cell of t.cells) {
-    const { x, y, width, height } = cell.rect;
-    drawLinePx(ctx, x, y, x + width, y, borderColor, t.borderWidthPx);
-    drawLinePx(ctx, x, y + height, x + width, y + height, borderColor, t.borderWidthPx);
-    drawLinePx(ctx, x, y, x, y + height, borderColor, t.borderWidthPx);
-    drawLinePx(ctx, x + width, y, x + width, y + height, borderColor, t.borderWidthPx);
+  if (t.borderWidthPx > 0) {
+    for (const cell of t.cells) {
+      const { x, y, width, height } = cell.rect;
+      drawLinePx(ctx, x, y, x + width, y, borderColor, t.borderWidthPx);
+      drawLinePx(ctx, x, y + height, x + width, y + height, borderColor, t.borderWidthPx);
+      drawLinePx(ctx, x, y, x, y + height, borderColor, t.borderWidthPx);
+      drawLinePx(ctx, x + width, y, x + width, y + height, borderColor, t.borderWidthPx);
+    }
   }
   // Cell content.
   for (const cell of t.cells) {
+    const fonts = cell.isHeader ? headerFonts : bodyFonts;
+    const color = cell.isHeader ? headerColor : bodyColor;
     for (const line of cell.lines) {
-      paintLine(ctx, line, fonts, fontCache, tableColor, linkColor, linkRegistry, (seg) => seg.refResourceId);
+      paintLine(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, (seg) => seg.refResourceId);
     }
   }
 }
@@ -243,6 +253,7 @@ export function renderResourceBlock(
 
   // Caption.
   const captionColor = colorFromHex(rb.captionColor, ctx.colorSpace);
+  const captionLabelColor = colorFromHex(rb.captionLabelColor, ctx.colorSpace);
   const captionFonts: PaintFonts = {
     normal: rb.captionFontString,
     bold: rb.captionBoldFontString,
@@ -250,6 +261,6 @@ export function renderResourceBlock(
     boldItalic: rb.captionBoldItalicFontString,
   };
   for (const line of rb.captionLines) {
-    paintLine(ctx, line, captionFonts, fontCache, captionColor, linkColor, linkRegistry, (seg) => seg.refResourceId);
+    paintLine(ctx, line, captionFonts, fontCache, captionColor, linkColor, linkRegistry, (seg) => seg.refResourceId, captionLabelColor);
   }
 }

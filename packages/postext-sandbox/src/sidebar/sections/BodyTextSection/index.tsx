@@ -84,6 +84,10 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isItalicColorDefault = bodyText.italicColor === undefined;
   const DEFAULT_BOLD_COLOR = bodyText.boldColor ?? bodyText.color;
   const DEFAULT_ITALIC_COLOR = bodyText.italicColor ?? bodyText.color;
+  const DEFAULT_REFERENCE_COLOR = bodyText.referenceColor;
+  const isReferenceColorDefault = raw?.referenceColor === undefined;
+  const isReferenceBoldDefault = bodyText.referenceBold === D.referenceBold;
+  const isReferenceItalicDefault = bodyText.referenceItalic === D.referenceItalic;
   const isTextAlignDefault = bodyText.textAlign === D.textAlign;
   const isFontWeightDefault = bodyText.fontWeight === D.fontWeight;
   const isBoldFontWeightDefault = bodyText.boldFontWeight === D.boldFontWeight;
@@ -197,6 +201,34 @@ export const BodyTextSection = memo(function BodyTextSection() {
         isDefault={isItalicColorDefault}
         onReset={() => resetField('italicColor')}
         fieldId="bodyText-italicColor"
+      />
+
+      <ColorPicker
+        label={labels.bodyReferenceColor}
+        value={DEFAULT_REFERENCE_COLOR}
+        onChange={(color) => updateBodyText({ referenceColor: color })}
+        tooltip={labels.bodyReferenceColorTooltip}
+        isDefault={isReferenceColorDefault}
+        onReset={() => resetField('referenceColor')}
+        fieldId="bodyText-referenceColor"
+      />
+
+      <ToggleSwitch
+        label={labels.bodyReferenceBold}
+        checked={bodyText.referenceBold}
+        onChange={(checked) => updateBodyText({ referenceBold: checked })}
+        tooltip={labels.bodyReferenceBoldTooltip}
+        isDefault={isReferenceBoldDefault}
+        onReset={() => resetField('referenceBold')}
+      />
+
+      <ToggleSwitch
+        label={labels.bodyReferenceItalic}
+        checked={bodyText.referenceItalic}
+        onChange={(checked) => updateBodyText({ referenceItalic: checked })}
+        tooltip={labels.bodyReferenceItalicTooltip}
+        isDefault={isReferenceItalicDefault}
+        onReset={() => resetField('referenceItalic')}
       />
 
       <NumberInput

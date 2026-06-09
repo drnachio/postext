@@ -85,6 +85,7 @@ function renderLine(
   color: string,
   boldColor: string | undefined,
   italicColor: string | undefined,
+  refColor: string | undefined,
   textAlign: TextAlign,
   columnWidth: number,
   columnX: number,
@@ -119,7 +120,9 @@ function renderLine(
           x += seg.width;
         } else {
           ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-          ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
+          ctx.fillStyle = seg.refResourceId !== undefined && refColor
+          ? refColor
+          : pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
           ctx.fillText(seg.text, x, line.baseline);
           x += seg.width;
         }
@@ -141,7 +144,9 @@ function renderLine(
         x += seg.width;
       } else {
         ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-        ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
+        ctx.fillStyle = seg.refResourceId !== undefined && refColor
+          ? refColor
+          : pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
         ctx.fillText(seg.text, x, line.baseline);
         x += seg.width;
       }
@@ -152,7 +157,8 @@ function renderLine(
   // Ragged (left-aligned) rendering — also used for last lines of justified blocks
   // If there are bold/italic segments, render per-segment to apply correct fonts
   const hasMathSegments = line.segments && line.segments.some((s) => s.kind === 'math');
-  if ((hasRichSegments || hasMathSegments) && line.segments) {
+  const hasRefSegments = line.segments && line.segments.some((s) => s.refResourceId !== undefined);
+  if ((hasRichSegments || hasMathSegments || hasRefSegments) && line.segments) {
     let x = line.bbox.x;
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
@@ -162,7 +168,9 @@ function renderLine(
         x += seg.width;
       } else {
         ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-        ctx.fillStyle = pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
+        ctx.fillStyle = seg.refResourceId !== undefined && refColor
+          ? refColor
+          : pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
         ctx.fillText(seg.text, x, line.baseline);
         x += seg.width;
       }
@@ -232,6 +240,7 @@ export function renderBlock(
       block.color,
       block.boldColor,
       block.italicColor,
+      block.refColor,
       block.textAlign,
       columnWidth,
       columnX,

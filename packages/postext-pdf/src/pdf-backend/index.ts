@@ -135,6 +135,14 @@ function renderPage(
     popClip(ctx);
   }
 
+  // Floated resources sit outside the column clip (a `span: 'page'` float can
+  // cross the gutter); they carry an absolute bbox positioned at build time.
+  if (vdtPage.floats) {
+    for (const fb of vdtPage.floats) {
+      renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x, fontCache, resourceCtx);
+    }
+  }
+
   if (vdtPage.openerBand) renderHeaderFooterSlot(ctx, vdtPage.openerBand, fontCache);
   if (vdtPage.header) renderHeaderFooterSlot(ctx, vdtPage.header, fontCache);
   if (vdtPage.footer) renderHeaderFooterSlot(ctx, vdtPage.footer, fontCache);

@@ -3,6 +3,7 @@ import { dimensionToPx } from '../units';
 import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentArea } from './decorations';
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
+import { renderResourceBlock } from './renderResourceBlock';
 
 export {
   registerResourceImage,
@@ -96,6 +97,13 @@ export function renderPageToCanvas(
       renderBlock(ctx, block, col.bbox.width, col.bbox.x);
     }
     ctx.restore();
+  }
+
+  // Floated resources live outside the column clip (a `span: 'page'` float
+  // crosses the gutter) — they were positioned into reserved bands at build
+  // time, so they render straight from their absolute bbox.
+  if (page.floats) {
+    for (const fb of page.floats) renderResourceBlock(ctx, fb);
   }
 
   if (page.openerBand) renderHeaderFooterSlot(ctx, page.openerBand);

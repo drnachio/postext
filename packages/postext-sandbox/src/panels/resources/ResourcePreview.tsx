@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { FileCode, Table as TableIcon, ImageOff } from 'lucide-react';
 import type { Resource, ResourceType } from 'postext';
+import { useSandboxLabels } from '../../context/SandboxContext';
 import { getBlob } from '../../storage/blobStore';
 import { parseInlinePreview } from '../../controls/InlineMarkdownInput';
 
@@ -137,6 +138,7 @@ interface TableBodyProps {
 }
 
 function TableBody({ resource }: TableBodyProps) {
+  const labels = useSandboxLabels();
   const model = resource.table?.model;
   if (!model || model.rows.length === 0) {
     return (
@@ -145,7 +147,7 @@ function TableBody({ resource }: TableBodyProps) {
         style={{ height: 80, backgroundColor: 'var(--surface)', color: 'var(--slate)' }}
       >
         <TableIcon size={16} aria-hidden="true" />
-        Empty table
+        {labels.resourcePreviewEmptyTable}
       </div>
     );
   }
@@ -191,6 +193,7 @@ interface ResourcePreviewProps {
 
 /** Mock embed of a resource (visual payload + caption foot). */
 export function ResourcePreview({ resource, type }: ResourcePreviewProps) {
+  const labels = useSandboxLabels();
   const alt = resource.altText ?? '';
   return (
     <figure
@@ -208,7 +211,7 @@ export function ResourcePreview({ resource, type }: ResourcePreviewProps) {
           className="flex items-center justify-center rounded text-xs"
           style={{ height: 80, backgroundColor: 'var(--surface)', color: 'var(--slate)' }}
         >
-          No content yet
+          {labels.resourcePreviewNoContent}
         </div>
       )}
       <CaptionFoot resource={resource} type={type} />

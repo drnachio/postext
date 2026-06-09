@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FileCode, Table as TableIcon, ImageIcon, Plus, ChevronDown } from 'lucide-react';
 import type { Resource, ResourceKind, ResourceType } from 'postext';
+import { useSandboxLabels } from '../../context/SandboxContext';
 import { useBlobObjectUrl } from './ResourcePreview';
 
 interface ThumbProps {
@@ -57,6 +58,7 @@ interface NewMenuProps {
 
 /** "New" dropdown: Upload image / Upload SVG / New table. */
 function NewMenu({ onNew }: NewMenuProps) {
+  const labels = useSandboxLabels();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -109,7 +111,7 @@ function NewMenu({ onNew }: NewMenuProps) {
         }}
       >
         <Plus size={12} aria-hidden="true" />
-        New
+        {labels.resourceNew}
         <ChevronDown size={12} aria-hidden="true" />
       </button>
       {open && (
@@ -122,9 +124,9 @@ function NewMenu({ onNew }: NewMenuProps) {
             borderColor: 'var(--rule)',
           }}
         >
-          {item('Upload image', 'bitmap', ImageIcon)}
-          {item('Upload SVG', 'svg', FileCode)}
-          {item('New table', 'table', TableIcon)}
+          {item(labels.resourceUploadImage, 'bitmap', ImageIcon)}
+          {item(labels.resourceUploadSvg, 'svg', FileCode)}
+          {item(labels.resourceNewTable, 'table', TableIcon)}
         </div>
       )}
     </div>
@@ -142,6 +144,7 @@ interface ResourceListProps {
 /** Main view: a header with the "New" menu and resources grouped by their
  *  resource-type name. Selecting a resource swaps this for the detail view. */
 export function ResourceList({ resources, types, selectedId, onSelect, onNew }: ResourceListProps) {
+  const labels = useSandboxLabels();
   const typeById = new Map(types.map((t) => [t.id, t]));
 
   // Group resources by type name. Resources whose typeId is unknown fall into
@@ -150,7 +153,7 @@ export function ResourceList({ resources, types, selectedId, onSelect, onNew }: 
   for (const r of resources) {
     const type = typeById.get(r.typeId);
     const key = type ? type.id : '__untyped__';
-    const name = type ? type.name : 'Untyped';
+    const name = type ? type.name : labels.resourceUntyped;
     const group = groups.get(key);
     if (group) group.items.push(r);
     else groups.set(key, { name, items: [r] });
@@ -163,14 +166,14 @@ export function ResourceList({ resources, types, selectedId, onSelect, onNew }: 
         style={{ borderColor: 'var(--rule)' }}
       >
         <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-          Resources
+          {labels.resources}
         </span>
         <NewMenu onNew={onNew} />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
         {resources.length === 0 ? (
           <p className="px-1 py-4 text-center text-xs" style={{ color: 'var(--slate)' }}>
-            No resources yet. Use “New” to add one.
+            {labels.resourcesEmpty}
           </p>
         ) : (
           [...groups.values()].map((group) => (

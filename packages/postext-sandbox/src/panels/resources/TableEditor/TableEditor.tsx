@@ -18,6 +18,7 @@ import {
   setCellContent,
   unmergeCell,
 } from 'postext';
+import { useSandboxLabels } from '../../../context/SandboxContext';
 import { TableEditorCell, type CellNav } from './TableEditorCell';
 import { TableEditorToolbar } from './TableEditorToolbar';
 
@@ -139,6 +140,7 @@ const clampPos = (m: TableModel, pos: TableCellPos): TableCellPos => {
 };
 
 export function TableEditor({ model, onModelChange }: TableEditorProps) {
+  const labels = useSandboxLabels();
   // Undo/redo snapshot stacks of TableModel. The live model is the prop; these
   // hold history only (past = older snapshots, future = redo targets).
   const [past, setPast] = useState<TableModel[]>([]);
@@ -270,7 +272,7 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
       text = '';
     }
     if (!text.trim()) {
-      const manual = window.prompt('Paste tab- or comma-separated rows:');
+      const manual = window.prompt(labels.tableEditorPastePrompt);
       if (!manual) return;
       text = manual;
     }
@@ -280,7 +282,7 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
   const applyPaste = (text: string) => {
     const parsed = parseDelimited(text);
     if (parsed.rows.length === 0) return;
-    const ok = window.confirm('Replace the whole table with the pasted data?');
+    const ok = window.confirm(labels.tableEditorPasteConfirm);
     if (!ok) return;
     commit(parsed);
     setActive({ row: 0, col: 0 });
@@ -379,7 +381,7 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
           onPasteTsv={handlePasteTsv}
         />
         <p className="text-xs" style={{ color: 'var(--slate)' }}>
-          Empty table. Add a row, or paste tab/comma-separated data.
+          {labels.tableEditorEmpty}
         </p>
       </div>
     );
@@ -442,28 +444,28 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
           type="button"
           onClick={undo}
           disabled={!canUndo}
-          aria-label="Undo"
-          title="Undo (Cmd/Ctrl+Z)"
+          aria-label={labels.tableEditorUndo}
+          title={labels.tableEditorUndoTitle}
           style={{ background: 'none', border: 'none', padding: 0, cursor: canUndo ? 'pointer' : 'default', color: 'inherit', opacity: canUndo ? 1 : 0.4 }}
         >
-          Undo
+          {labels.tableEditorUndo}
         </button>
         <button
           type="button"
           onClick={redo}
           disabled={!canRedo}
-          aria-label="Redo"
-          title="Redo (Shift+Cmd/Ctrl+Z)"
+          aria-label={labels.tableEditorRedo}
+          title={labels.tableEditorRedoTitle}
           style={{ background: 'none', border: 'none', padding: 0, cursor: canRedo ? 'pointer' : 'default', color: 'inherit', opacity: canRedo ? 1 : 0.4 }}
         >
-          Redo
+          {labels.tableEditorRedo}
         </button>
         <span aria-hidden="true">·</span>
         <span>
-          Cell {active.row + 1},{active.col + 1}
+          {labels.tableEditorCellPosition.replace('__row__', String(active.row + 1)).replace('__col__', String(active.col + 1))}
         </span>
         <span aria-hidden="true">·</span>
-        <span>Tab / arrows to move · Shift+arrows to select</span>
+        <span>{labels.tableEditorNavHelp}</span>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import type { Resource } from 'postext';
 import { putBlob } from '../../storage/blobStore';
 import { slugifyFilename, uniqueSlug } from './slugify';
+import { isValidSvg, svgIntrinsicSize } from './svgIntrinsic';
 
 /** Bitmap MIME types we accept for upload. */
 const IMAGE_FORMATS: Record<string, 'png' | 'jpeg' | 'webp' | 'gif'> = {
@@ -9,18 +10,6 @@ const IMAGE_FORMATS: Record<string, 'png' | 'jpeg' | 'webp' | 'gif'> = {
   'image/webp': 'webp',
   'image/gif': 'gif',
 };
-
-/** Validate that `text` parses as SVG XML with a root `<svg>` element. */
-function isValidSvg(text: string): boolean {
-  if (typeof DOMParser === 'undefined') return text.includes('<svg');
-  try {
-    const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-    if (doc.getElementsByTagName('parsererror').length > 0) return false;
-    return doc.documentElement?.tagName.toLowerCase() === 'svg';
-  } catch {
-    return false;
-  }
-}
 
 /** Turn a single dropped/selected file into a stored Resource, or null if the
  *  file is not a supported image/SVG. `existingIds` is mutated so a batch of
@@ -40,7 +29,8 @@ export async function resourceFromFile(
     const fileId = await putBlob(buffer, 'image/svg+xml');
     const id = uniqueSlug(slugifyFilename(file.name), existingIds, 'svg');
     existingIds.add(id);
-    return { id, typeId, kind: 'svg', svg: { fileId }, createdAt: now, updatedAt: now };
+    const size = svgIntrinsicSize(text);
+    return { id, typeId, kind: 'svg', svg: { fileId, ...size }, createdAt: now, updatedAt: now };
   }
 
   const format = IMAGE_FORMATS[file.type];

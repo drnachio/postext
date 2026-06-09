@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { TableCell, TableCellPos } from 'postext';
+import { useSandboxLabels } from '../../../context/SandboxContext';
 import { InlineMarkdownInput } from '../../../controls/InlineMarkdownInput';
 
 // ---------------------------------------------------------------------------
@@ -39,6 +40,7 @@ export function TableEditorCell({
   onNavigate,
   onPaste,
 }: TableEditorCellProps) {
+  const labels = useSandboxLabels();
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const textarea = (): HTMLTextAreaElement | null =>
@@ -119,7 +121,9 @@ export function TableEditorCell({
         <InlineMarkdownInput
           value={cell.content}
           onChange={(value) => onContentChange(pos, value)}
-          ariaLabel={`Cell row ${pos.row + 1}, column ${pos.col + 1}`}
+          ariaLabel={labels.tableEditorCellAria
+            .replace('__row__', String(pos.row + 1))
+            .replace('__col__', String(pos.col + 1))}
           multiline
           rows={1}
           hidePreview

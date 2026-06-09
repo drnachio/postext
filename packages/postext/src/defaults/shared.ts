@@ -107,6 +107,19 @@ export function applyPaletteToResolvedConfig(
       color: resolveRequired(resolved.orderedLists.color, palette),
       levels: resolved.orderedLists.levels.map((l) => ({ ...l, color: resolveRequired(l.color, palette) })),
     },
+    tableStyle: {
+      ...resolved.tableStyle,
+      bodyColor: resolveRequired(resolved.tableStyle.bodyColor, palette),
+      headerColor: resolveRequired(resolved.tableStyle.headerColor, palette),
+      headerBackground: resolveRequired(resolved.tableStyle.headerBackground, palette),
+      bodyBackground: resolveRequired(resolved.tableStyle.bodyBackground, palette),
+      borderColor: resolveRequired(resolved.tableStyle.borderColor, palette),
+    },
+    captionStyle: {
+      ...resolved.captionStyle,
+      color: resolveRequired(resolved.captionStyle.color, palette),
+      labelColor: resolveRequired(resolved.captionStyle.labelColor, palette),
+    },
   };
 }
 
@@ -168,6 +181,25 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
       ...config.orderedLists,
       color: resolveColor(config.orderedLists.color, palette),
       levels: config.orderedLists.levels?.map((l) => ({ ...l, color: resolveColor(l.color, palette) })),
+    };
+  }
+
+  if (config.tableStyle) {
+    next.tableStyle = {
+      ...config.tableStyle,
+      bodyColor: resolveColor(config.tableStyle.bodyColor, palette),
+      headerColor: resolveColor(config.tableStyle.headerColor, palette),
+      headerBackground: resolveColor(config.tableStyle.headerBackground, palette),
+      bodyBackground: resolveColor(config.tableStyle.bodyBackground, palette),
+      borderColor: resolveColor(config.tableStyle.borderColor, palette),
+    };
+  }
+
+  if (config.captionStyle) {
+    next.captionStyle = {
+      ...config.captionStyle,
+      color: resolveColor(config.captionStyle.color, palette),
+      labelColor: resolveColor(config.captionStyle.labelColor, palette),
     };
   }
 

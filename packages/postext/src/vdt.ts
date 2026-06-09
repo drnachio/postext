@@ -8,6 +8,8 @@ import type {
   ResolvedLayoutConfig,
   ResolvedBodyTextConfig,
   ResolvedHeadingsConfig,
+  ResolvedTableStyleConfig,
+  ResolvedCaptionStyleConfig,
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
@@ -36,6 +38,8 @@ export interface ResolvedConfig {
   layout: ResolvedLayoutConfig;
   bodyText: ResolvedBodyTextConfig;
   headings: ResolvedHeadingsConfig;
+  tableStyle: ResolvedTableStyleConfig;
+  captionStyle: ResolvedCaptionStyleConfig;
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;
@@ -70,6 +74,9 @@ export interface VDTLineSegment {
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */
   refResourceId?: string;
+  /** True when this segment is part of a caption's numbered label, so renderers
+   *  paint it in the configured caption-label colour. */
+  captionLabel?: boolean;
 }
 
 export interface VDTLine {
@@ -121,17 +128,29 @@ export interface VDTResourceTableCell {
 
 /** Laid-out table geometry for a `kind: 'table'` resource block. */
 export interface VDTResourceTableLayout {
-  /** Cell font string used for the rich-text line renderer. */
+  /** Body-cell font strings used for the rich-text line renderer. */
   fontString: string;
   boldFontString: string;
   italicFontString: string;
   boldItalicFontString: string;
+  /** Body-cell text colour (hex). */
   color: string;
+  /** Header-cell font strings. Header cells are measured with these, so the
+   *  renderer must paint header cells with the same set. */
+  headerFontString: string;
+  headerBoldFontString: string;
+  headerItalicFontString: string;
+  headerBoldItalicFontString: string;
+  /** Header-cell text colour (hex). */
+  headerColor: string;
   /** Border colour (hex). */
   borderColor: string;
+  /** Border thickness in px; `0` means no borders. */
   borderWidthPx: number;
   /** Header background colour (hex), or undefined for no fill. */
   headerBackground?: string;
+  /** Body background colour (hex), or undefined for no fill. */
+  bodyBackground?: string;
   cells: VDTResourceTableCell[];
   /** Column x-edges (length = columnCount + 1) relative to block origin. */
   columnEdges: number[];
@@ -163,8 +182,11 @@ export interface ResolvedResourceBlock {
   captionBoldFontString: string;
   captionItalicFontString: string;
   captionBoldItalicFontString: string;
-  /** Caption text colour (hex). */
+  /** Caption description text colour (hex). */
   captionColor: string;
+  /** Caption numbered-label colour (hex); applied to segments tagged
+   *  `captionLabel`. */
+  captionLabelColor: string;
   /** Link colour (hex) used for inline `:ref` segments inside the caption. */
   linkColor: string;
   /** Table geometry, present only when `kind === 'table'`. */
@@ -193,6 +215,8 @@ export interface VDTBlock {
   color: string;
   boldColor?: string;
   italicColor?: string;
+  /** Colour for inline `:ref` segments (`refResourceId` set). */
+  refColor?: string;
   textAlign: TextAlign;
   /** Character offset in the original markdown where the source content for this block starts */
   sourceStart?: number;
@@ -322,6 +346,12 @@ export interface VDTPage {
   /** Optional full-width opener band above the column flow, used for
    *  heading-level `span: 'page'` chapter openers. */
   openerBand?: VDTDesignSlot;
+  /** Floated resource blocks (figures / tables) reserved into a band at the
+   *  top or bottom of this page. They live outside the column flow — their
+   *  bands shrink the columns' usable height — and are rendered after the
+   *  columns, clipped to the content area rather than to a single column so a
+   *  `span: 'page'` float can cross the gutter. */
+  floats?: VDTBlock[];
   marginNotes: VDTBlock[];
   footnoteArea?: VDTFootnoteArea;
   /** Numeric counter for this page from the active page-numbering sequence.

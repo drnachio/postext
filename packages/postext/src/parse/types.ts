@@ -31,6 +31,10 @@ export interface InlineSpan {
   text: string;
   bold: boolean;
   italic: boolean;
+  /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
+   *  so renderers can paint it in the configured label colour. Flows span →
+   *  token → segment, mirroring {@link ref}. */
+  captionLabel?: boolean;
   /** Present when this span carries an inline math formula. The `text` is
    *  a single `\uFFFC` placeholder that layout treats atomically. */
   math?: MathMeta;

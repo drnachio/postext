@@ -272,13 +272,25 @@ $$
 
 ## Resources
 
-Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's Resources panel) and then placed into the document by id. Two pieces of syntax connect prose to a resource: a **block embed** that renders the resource at a given location, and an **inline reference** that prints its computed number (and optionally links to it).
+Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's Resources panel) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table to a band at the top or bottom of the page near that reference, just as a print typesetter would. You do not place it a second time.
 
-Both forms are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
+Both forms below are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
 
-### Block embed
+### Inline reference (the primary form)
 
-Place a resource at a specific point in the flow with `::resource{id="…"}` on its own line:
+Refer to a resource from within prose with `:ref{id="…"}`. The first reference both **incorporates** the resource (so it gets placed on the page) and renders its computed number, prefixed by the type's short label by default:
+
+```md
+As shown in :ref{id="lighthouse-diagram"}, the lantern room sits above the gallery.
+```
+
+renders as: *As shown in Fig. 1.7, the lantern room sits above the gallery.* — and the diagram itself floats to the top (or bottom) of the page, while this sentence and the text after it flow on uninterrupted.
+
+The running text is never broken at the reference point. Where the resource lands — top or bottom of the page, within a single column or across the full width — is governed by its **placement** (see [Placement](#resource-placement) below), not by where you mention it.
+
+### Block embed (optional, explicit inline placement)
+
+Occasionally you want a resource to sit at an exact point in the flow rather than float. Opt out of floating by giving the resource `placement.position: "here"` and embedding it with `::resource{id="…"}` on its own line:
 
 ```md
 Here is the floor plan we discussed.
@@ -288,19 +300,11 @@ Here is the floor plan we discussed.
 The keeper's quarters occupy the eastern wing.
 ```
 
-The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) at this location, with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.**
+For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`.
+
+The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.**
 
 A malformed embed (missing or empty `id`, extra attributes) is not promoted to a resource block; it falls through to ordinary paragraph parsing and remains visible in the output, and the sandbox surfaces a warning.
-
-### Inline reference
-
-Refer to a resource from within prose with `:ref{id="…"}`. The reference renders the resource's computed number, prefixed by the type's short label by default:
-
-```md
-As shown in :ref{id="lighthouse-diagram"}, the lantern room sits above the gallery.
-```
-
-renders as: *As shown in Fig. 1.7, the lantern room sits above the gallery.*
 
 Inline references are recognised inside any text block — paragraphs, headings, blockquotes, and list items — and may sit alongside bold, italic, inline code, and inline math.
 
@@ -352,6 +356,36 @@ This means numbers follow the order the reader meets them, not the order resourc
 - Inserting a new reference *earlier* in the document automatically renumbers everything after it. There is no manual numbering to keep in sync.
 
 Numbering is per resource type and respects each type's reset scope and counter format — see [Configuration › Resource types](/en/docs/configuration#resource-types) for the template tokens (`{h1}`, `{n}`), `resetOn`, and `counterFormat`.
+
+### Placement
+
+Each resource has a **placement** that decides where its float lands, resolved per resource (its own `placement`), then its type's `defaultPlacement`, then the built-in default of `top` / `column`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Field</th>
+      <th style={{ width: '200px' }}>Values</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
+      <td>Float to the top or bottom band of the page, or — for <code>"here"</code> — opt out of floating and embed inline at the <code>::resource</code> directive.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>"column"</code> · <code>"page"</code></td>
+      <td>Occupy a single column, or break the column flow and span the full content width across all columns. In a single-column layout the two are identical.</td>
+    </tr>
+  </tbody>
+</table>
+
+A float is placed on the next page opened after its first reference, near it in reading order. If it does not fit in that page's band, it **defers to the next page** (it is never shrunk or split). Floats keep first-reference order, so figures never reorder relative to where they are mentioned.
+
+> **Note:** the HTML viewer does not yet render resources; the canvas preview and the PDF backend do.
 
 
 ## What is NOT supported

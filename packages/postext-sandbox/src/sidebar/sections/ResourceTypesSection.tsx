@@ -10,9 +10,11 @@ import type {
 import { defaultResourceTypes, formatNumeral } from 'postext';
 import {
   useSandboxDispatch,
+  useSandboxLabels,
   useSandboxSelector,
   useSandboxResources,
 } from '../../context/SandboxContext';
+import type { SandboxLabels } from '../../types/labels';
 import { CollapsibleSection } from '../../controls';
 import { ConfirmPopover } from '../../panels/ConfirmPopover';
 
@@ -33,23 +35,27 @@ const PREVIEW_HEADING: Record<string, number> = {
   h6: 6,
 };
 
-const COUNTER_FORMAT_OPTIONS: { value: ResourceCounterFormat; label: string }[] = [
-  { value: 'decimal', label: 'Decimal (1, 2, 3)' },
-  { value: 'roman-lower', label: 'Roman lower (i, ii, iii)' },
-  { value: 'roman-upper', label: 'Roman upper (I, II, III)' },
-  { value: 'alpha-lower', label: 'Alpha lower (a, b, c)' },
-  { value: 'alpha-upper', label: 'Alpha upper (A, B, C)' },
-];
+function counterFormatOptions(labels: SandboxLabels): { value: ResourceCounterFormat; label: string }[] {
+  return [
+    { value: 'decimal', label: labels.counterFormatDecimal },
+    { value: 'roman-lower', label: labels.counterFormatRomanLower },
+    { value: 'roman-upper', label: labels.counterFormatRomanUpper },
+    { value: 'alpha-lower', label: labels.counterFormatAlphaLower },
+    { value: 'alpha-upper', label: labels.counterFormatAlphaUpper },
+  ];
+}
 
-const RESET_ON_OPTIONS: { value: ResourceCounterReset; label: string }[] = [
-  { value: 'never', label: 'Never (document-wide)' },
-  { value: 'h1', label: 'On each H1' },
-  { value: 'h2', label: 'On each H2' },
-  { value: 'h3', label: 'On each H3' },
-  { value: 'h4', label: 'On each H4' },
-  { value: 'h5', label: 'On each H5' },
-  { value: 'h6', label: 'On each H6' },
-];
+function resetOnOptions(labels: SandboxLabels): { value: ResourceCounterReset; label: string }[] {
+  return [
+    { value: 'never', label: labels.resetOnNever },
+    { value: 'h1', label: labels.resetOnH1 },
+    { value: 'h2', label: labels.resetOnH2 },
+    { value: 'h3', label: labels.resetOnH3 },
+    { value: 'h4', label: labels.resetOnH4 },
+    { value: 'h5', label: labels.resetOnH5 },
+    { value: 'h6', label: labels.resetOnH6 },
+  ];
+}
 
 function counterFormatToNumeralStyle(format: ResourceCounterFormat) {
   switch (format) {
@@ -107,10 +113,14 @@ function Field({ label, children }: FieldProps) {
 
 export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
+  const locale = useSandboxSelector((s) => s.locale);
   const resources = useSandboxResources();
-  const types: ResourceType[] = config.resourceTypes ?? defaultResourceTypes();
+  const types: ResourceType[] = config.resourceTypes ?? defaultResourceTypes(locale);
   const isDefault = config.resourceTypes === undefined;
+  const counterFormats = counterFormatOptions(labels);
+  const resetOns = resetOnOptions(labels);
 
   const writeTypes = (next: ResourceType[]) => {
     dispatch({
@@ -122,7 +132,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const addType = () => {
     const type: ResourceType = {
       id: newTypeId(),
-      name: 'New type',
+      name: labels.resourceTypeNewName,
       namePlural: '',
       shortLabel: '',
       numberingTemplate: '{h1}.{n}',
@@ -145,16 +155,16 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
 
   return (
     <CollapsibleSection
-      title="Resource Types"
+      title={labels.resourceTypesSection}
       sectionId="resource-types"
       hasOverrides={!isDefault}
       onReset={() => dispatch({ type: 'UPDATE_CONFIG', payload: { resourceTypes: undefined } })}
-      resetLabel="Reset"
-      resetConfirmMessage="Reset resource types to defaults?"
+      resetLabel={labels.reset}
+      resetConfirmMessage={labels.resourceTypesResetConfirm}
     >
       {types.length === 0 && (
         <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }}>
-          No resource types defined.
+          {labels.resourceTypesEmpty}
         </p>
       )}
       {types.map((type) => {
@@ -162,13 +172,13 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
         const confirmMessage = (
           <>
             <div style={{ fontWeight: 500, marginBottom: usageCount > 0 ? 6 : 0 }}>
-              Delete this resource type?
+              {labels.resourceTypeDeleteConfirm}
             </div>
             {usageCount > 0 && (
               <div style={{ color: 'var(--slate)', fontSize: 11, lineHeight: '14px' }}>
                 {usageCount === 1
-                  ? '1 resource uses this type and will be left without a valid type.'
-                  : `${usageCount} resources use this type and will be left without a valid type.`}
+                  ? labels.resourceTypeDeleteUsageOne
+                  : labels.resourceTypeDeleteUsageMany.replace('__count__', String(usageCount))}
               </div>
             )}
           </>
@@ -193,8 +203,8 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   <button
                     type="button"
                     onClick={open}
-                    aria-label="Delete resource type"
-                    title="Delete resource type"
+                    aria-label={labels.resourceTypeDelete}
+                    title={labels.resourceTypeDelete}
                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
                     style={{ color: 'var(--destructive)', background: 'none', border: 'none', cursor: 'pointer' }}
                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
@@ -207,98 +217,98 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Field label="ID">
+              <Field label={labels.idLabel}>
                 <input
                   type="text"
                   value={type.id}
                   readOnly
                   disabled
-                  aria-label="Resource type ID"
+                  aria-label={labels.resourceTypeIdAria}
                   className={inputClass}
                   style={{ ...inputStyle, color: 'var(--slate)', cursor: 'not-allowed' }}
                 />
               </Field>
-              <Field label="Name (singular)">
+              <Field label={labels.resourceTypeNameLabel}>
                 <input
                   type="text"
                   value={type.name}
                   onChange={(e) => updateType(type.id, { name: e.target.value })}
-                  aria-label="Resource type name"
+                  aria-label={labels.resourceTypeNameAria}
                   className={inputClass}
                   style={inputStyle}
                 />
               </Field>
-              <Field label="Name (plural)">
+              <Field label={labels.resourceTypeNamePluralLabel}>
                 <input
                   type="text"
                   value={type.namePlural ?? ''}
                   onChange={(e) => updateType(type.id, { namePlural: e.target.value })}
-                  aria-label="Resource type plural name"
+                  aria-label={labels.resourceTypeNamePluralAria}
                   className={inputClass}
                   style={inputStyle}
                 />
               </Field>
-              <Field label="Short label">
+              <Field label={labels.resourceTypeShortLabelLabel}>
                 <input
                   type="text"
                   value={type.shortLabel}
                   onChange={(e) => updateType(type.id, { shortLabel: e.target.value })}
-                  aria-label="Resource type short label"
+                  aria-label={labels.resourceTypeShortLabelAria}
                   className={inputClass}
                   style={inputStyle}
                 />
               </Field>
-              <Field label="Numbering template">
+              <Field label={labels.resourceTypeNumberingLabel}>
                 <input
                   type="text"
                   value={type.numberingTemplate}
                   onChange={(e) => updateType(type.id, { numberingTemplate: e.target.value })}
-                  aria-label="Resource type numbering template"
+                  aria-label={labels.resourceTypeNumberingAria}
                   placeholder="{h1}.{n}"
                   className={inputClass}
                   style={inputStyle}
                 />
               </Field>
-              <Field label="Reset counter">
+              <Field label={labels.resourceTypeResetCounterLabel}>
                 <select
                   value={type.resetOn}
                   onChange={(e) =>
                     updateType(type.id, { resetOn: e.target.value as ResourceCounterReset })
                   }
-                  aria-label="Resource type counter reset"
+                  aria-label={labels.resourceTypeResetCounterAria}
                   className={inputClass}
                   style={inputStyle}
                 >
-                  {RESET_ON_OPTIONS.map((o) => (
+                  {resetOns.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
                   ))}
                 </select>
               </Field>
-              <Field label="Counter format">
+              <Field label={labels.resourceTypeCounterFormatLabel}>
                 <select
                   value={type.counterFormat}
                   onChange={(e) =>
                     updateType(type.id, { counterFormat: e.target.value as ResourceCounterFormat })
                   }
-                  aria-label="Resource type counter format"
+                  aria-label={labels.resourceTypeCounterFormatAria}
                   className={inputClass}
                   style={inputStyle}
                 >
-                  {COUNTER_FORMAT_OPTIONS.map((o) => (
+                  {counterFormats.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
                   ))}
                 </select>
               </Field>
-              <Field label="Caption prefix">
+              <Field label={labels.resourceTypeCaptionPrefixLabel}>
                 <input
                   type="text"
                   value={type.captionPrefix}
                   onChange={(e) => updateType(type.id, { captionPrefix: e.target.value })}
-                  aria-label="Resource type caption prefix"
+                  aria-label={labels.resourceTypeCaptionPrefixAria}
                   className={inputClass}
                   style={inputStyle}
                 />
@@ -309,7 +319,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               className="mt-2 flex items-center gap-1.5 text-xs"
               style={{ color: 'var(--slate)' }}
             >
-              <span style={labelStyle}>Preview</span>
+              <span style={labelStyle}>{labels.previewLabel}</span>
               <span
                 className="rounded px-1.5 py-0.5"
                 style={{ backgroundColor: 'var(--surface)', color: 'var(--foreground)' }}
@@ -332,7 +342,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
         }}
       >
         <Plus size={12} aria-hidden="true" />
-        Add resource type
+        {labels.resourceTypeAdd}
       </button>
     </CollapsibleSection>
   );

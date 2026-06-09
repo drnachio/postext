@@ -74,6 +74,7 @@ function pickSegmentColor(
   seg: VDTLineSegment,
   block: VDTBlock,
 ): string {
+  if (seg.refResourceId !== undefined && block.refColor) return block.refColor;
   const bold = !!seg.bold;
   const italic = !!seg.italic;
   if (bold && block.boldColor) return block.boldColor;

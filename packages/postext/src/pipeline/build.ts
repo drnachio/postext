@@ -4,8 +4,11 @@ import { dimensionToPx } from '../units';
 import {
   createVDTDocument,
   createVDTBlock,
+  createBoundingBox,
   type VDTDocument,
   type VDTBlock,
+  type VDTPage,
+  type ResolvedResourceBlock,
 } from '../vdt';
 import { parseMarkdownMemo } from '../parse';
 import {
@@ -47,6 +50,12 @@ import {
 } from './buildHelpers';
 import { resolveBlockKind } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
+import { resolveRefSpans, layoutResourceBlock } from './resourceLayout';
+import {
+  computeFloatPlan,
+  floatedResourceIds,
+  type PlannedFloat,
+} from './floatPlacement';
 import {
   computeHeadingContext,
   computeResourceNumbering,
@@ -147,6 +156,180 @@ export function buildDocument(
     orderedMetrics.maxWidthByDepth,
   );
 
+  // --- Float planning (issue #49 — resources float to page bands) ----------
+  // A resource is incorporated by its first reference (an inline `:ref` or a
+  // `::resource` directive, whichever comes first in reading order). Floated
+  // resources detach from the running text and reserve a band at the top or
+  // bottom of the next page opened after that reference; the text flows past
+  // the reference uninterrupted. `position: 'here'` resources keep inline
+  // `::resource` placement and are not floated.
+  const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes);
+  const floatedIds = floatedResourceIds(floatPlan);
+  const floatsByFirstBlock = new Map<number, PlannedFloat[]>();
+  for (const f of floatPlan) {
+    const list = floatsByFirstBlock.get(f.firstBlockIdx);
+    if (list) list.push(f);
+    else floatsByFirstBlock.set(f.firstBlockIdx, [f]);
+  }
+  // Floats whose first reference has been passed but which are not yet placed
+  // into a page band, in reading order.
+  const pendingFloats: PlannedFloat[] = [];
+  const floatGapPx = bodyStyle.lineHeightPx;
+  const minTextPx = bodyStyle.lineHeightPx * 3;
+
+  /** Offset a resolved resource block's caption/table geometry from
+   *  block-relative to absolute page coordinates (mirrors inline placement). */
+  const offsetResourceBlockToAbsolute = (
+    rb: ResolvedResourceBlock,
+    ox: number,
+    oy: number,
+  ): void => {
+    for (const ln of rb.captionLines) {
+      ln.bbox.x += ox; ln.bbox.y += oy; ln.baseline += oy;
+    }
+    if (rb.table) {
+      for (const cell of rb.table.cells) {
+        cell.rect.x += ox; cell.rect.y += oy;
+        for (const cl of cell.lines) { cl.bbox.x += ox; cl.bbox.y += oy; cl.baseline += oy; }
+      }
+    }
+  };
+
+  /** Measure + build a float block at horizontal offset `x` (y = 0), or null
+   *  when the resource id is unknown. Caller offsets it to its final `y`. */
+  const buildFloatBlock = (
+    resourceId: string,
+    x: number,
+    width: number,
+  ): { block: VDTBlock; height: number } | null => {
+    const resource = resourceById.get(resourceId);
+    if (!resource) return null;
+    const { block: rb, totalHeight } = layoutResourceBlock({
+      resource,
+      resourceType: resourceTypeById.get(resource.typeId),
+      number: resourceNumberById.get(resourceId) ?? '',
+      resolved,
+      columnWidth: width,
+      resourceNumbering,
+      resourceTypes,
+      resources,
+    });
+    const blk = createVDTBlock(`float-${resourceId}`, 'resource', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);
+    blk.resourceBlock = rb;
+    blk.dirty = false;
+    blk.snappedToGrid = false;
+    blk.bbox = createBoundingBox(x, 0, width, totalHeight);
+    blk.lines = [];
+    offsetResourceBlockToAbsolute(rb, x, 0);
+    return { block: blk, height: totalHeight };
+  };
+
+  /** Reserve top/bottom bands on a freshly opened page and position as many
+   *  pending floats as fit, shrinking the affected columns so body text flows
+   *  around them. Preserves reading order: stops at the first float that does
+   *  not fit (so figures never reorder relative to their references), except
+   *  on a band that is still all-text, where a dominating/oversized float is
+   *  force-placed so the queue always makes progress. */
+  const flushFloatsIntoPage = (page: VDTPage): void => {
+    if (pendingFloats.length === 0) return;
+    const topUsed = page.columns.map(() => 0);
+    const botUsed = page.columns.map(() => 0);
+    const floats: VDTBlock[] = page.floats ?? [];
+
+    /** Try to place one float on this page. Returns whether it was placed,
+     *  must be deferred (does not fit), or skipped (unknown id). Only mutates
+     *  page geometry when it actually places. */
+    const attemptFloat = (f: PlannedFloat): 'placed' | 'defer' | 'skip' => {
+      const pageSpan = f.span === 'page' && page.columns.length > 1;
+      let targetCols: number[];
+      if (pageSpan) {
+        targetCols = page.columns.map((_, i) => i);
+      } else {
+        // Single-column float: pick the column with the most room left.
+        let best = 0;
+        for (let i = 1; i < page.columns.length; i++) {
+          if (topUsed[i]! + botUsed[i]! < topUsed[best]! + botUsed[best]!) best = i;
+        }
+        targetCols = [best];
+      }
+      const firstCol = page.columns[targetCols[0]!]!;
+      const width = pageSpan ? contentArea.width : firstCol.bbox.width;
+      const xLeft = pageSpan ? contentArea.x : firstCol.bbox.x;
+
+      const built = buildFloatBlock(f.resourceId, xLeft, width);
+      if (!built) return 'skip';
+      const need = built.height + floatGapPx;
+
+      let minAvail = Infinity;
+      let anyReserved = false;
+      for (const c of targetCols) {
+        minAvail = Math.min(minAvail, page.columns[c]!.availableHeight);
+        if (topUsed[c]! > 0 || botUsed[c]! > 0) anyReserved = true;
+      }
+      // Keep some text room, unless this band is still all-text (then a
+      // dominating / oversized float is force-placed so the queue progresses).
+      if (need > minAvail - minTextPx && anyReserved) return 'defer';
+
+      let y = 0;
+      for (const c of targetCols) {
+        const col = page.columns[c]!;
+        if (f.position === 'top') {
+          y = col.bbox.y;            // float sits at the current top edge
+          col.bbox.y += need;        // push column content below the band
+          col.bbox.height = Math.max(0, col.bbox.height - need);
+          topUsed[c]! += need;
+        } else {
+          col.bbox.height = Math.max(0, col.bbox.height - need);
+          y = col.bbox.y + col.bbox.height + floatGapPx; // flush toward the bottom
+          botUsed[c]! += need;
+        }
+        col.availableHeight = Math.max(0, col.availableHeight - need);
+      }
+
+      offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
+      built.block.bbox = createBoundingBox(xLeft, y, width, built.height);
+      built.block.pageIndex = page.index;
+      built.block.columnIndex = targetCols[0]!;
+      floats.push(built.block);
+      return 'placed';
+    };
+
+    // Full-width (page-span) floats reserve the outermost bands first, so a
+    // later single-column float nests inside the remaining column space rather
+    // than overlapping a full-width band. Within each pass, stop at the first
+    // float that does not fit to preserve reading order.
+    for (const pageSpanPass of [true, false]) {
+      let i = 0;
+      while (i < pendingFloats.length) {
+        const f = pendingFloats[i]!;
+        const isPageSpan = f.span === 'page' && page.columns.length > 1;
+        if (isPageSpan !== pageSpanPass) { i++; continue; }
+        const r = attemptFloat(f);
+        if (r === 'placed' || r === 'skip') pendingFloats.splice(i, 1);
+        else break; // defer: leave this and the rest of the pass for a later page
+      }
+    }
+    if (floats.length > 0) page.floats = floats;
+  };
+
+  /** Drain floats still pending after body placement (referenced on the last
+   *  page, or never followed by a content-overflow page break) onto freshly
+   *  appended pages. Each new page force-places at least one float. */
+  const finalizeFloats = (): void => {
+    let guard = 0;
+    while (pendingFloats.length > 0 && guard++ < 1000) {
+      const before = pendingFloats.length;
+      const page = createPageWithColumns(doc.pages.length, resolved, contentArea, pageWidthPx, pageHeightPx);
+      doc.pages.push(page);
+      flushFloatsIntoPage(page);
+      if (pendingFloats.length === before) break; // safety: no progress
+    }
+  };
+
+  /** Reserve floats on each freshly opened content page. Passed only to the
+   *  content-flow column advances — parity / force-blank pages never get it. */
+  const onNewPage = (page: VDTPage): void => flushFloatsIntoPage(page);
+
   // Placement cursor
   const cursor: PlacementCursor = { pageIndex: 0, columnIndex: 0 };
 
@@ -194,6 +377,13 @@ export function buildDocument(
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
     const rawBlock = contentBlocks[blockIdx]!;
+
+    // Enqueue floats first-referenced in this block so the next page opened
+    // while placing it (or any later block) reserves their band. Done before
+    // placement so a reference near a column/page boundary still floats onto
+    // the page that follows it.
+    const floatsHere = floatsByFirstBlock.get(blockIdx);
+    if (floatsHere) pendingFloats.push(...floatsHere);
 
     // --- Directives ----------------------------------------------------
     if (rawBlock.type === 'directive') {
@@ -275,6 +465,14 @@ export function buildDocument(
         flushPendingNumberingAtBoundary();
         continue;
       }
+      // Floated resources are not placed inline at their `::resource`
+      // directive — the directive is just an anchor (already enqueued above);
+      // the float lands in a page band. Only `position: 'here'` resources fall
+      // through to inline placement.
+      if (floatedIds.has(kind.resource.id)) {
+        flushPendingNumberingAtBoundary();
+        continue;
+      }
       const rCol = currentColumn(doc, cursor);
       const { resourceBlock, measured } = runMeasurement({
         vdtType,
@@ -353,7 +551,21 @@ export function buildDocument(
     const mathEnabled = resolved.math.enabled;
     contentBlock = enrichMathSpans(contentBlock, style, resolved);
 
-    const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender);
+    // Resolve inline `:ref{…}` spans to their computed label so references
+    // print their number in the running text. Each label becomes one atomic,
+    // non-breaking token tagged with its `refResourceId` (handled by the
+    // rich-text measurer), so we always take the rich path for ref blocks.
+    if (contentBlock.spans.some((s) => s.ref)) {
+      contentBlock = {
+        ...contentBlock,
+        spans: resolveRefSpans(contentBlock.spans, resourceNumbering, resourceTypes, resources, {
+          bold: bodyStyle.referenceBold ?? true,
+          italic: bodyStyle.referenceItalic ?? false,
+        }),
+      };
+    }
+
+    const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref);
 
     // List items reserve horizontal space for indent + bullet + gap.
     const {
@@ -571,7 +783,7 @@ export function buildDocument(
             remainingLines = remainingLines.slice(splitAt);
             partIndex++;
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             continue;
           }
           // Can't cleanly split the colon line off — would create a widow.
@@ -598,12 +810,12 @@ export function buildDocument(
             }
             blockIdx -= headingRunCount + 1;
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             break;
           }
           if (headingRunCount === 0) {
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             continue;
           }
           // headingRunCount === curCol.blocks.length: fall through to place.
@@ -649,11 +861,11 @@ export function buildDocument(
               // rolled-back heading.
               blockIdx -= rollbackCount + 1;
               pendingSpacing = 0;
-              advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+              advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
               break;
             }
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             continue;
           }
         }
@@ -777,7 +989,7 @@ export function buildDocument(
           remainingLines = remainingLines.slice(choice.splitAt);
           partIndex++;
           pendingSpacing = 0;
-          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
           continue;
         }
         // choice.splitAt === 0: fall through to push whole paragraph to next column
@@ -794,12 +1006,12 @@ export function buildDocument(
           if (rollbackCount > 0) {
             blockIdx -= rollbackCount + 1;
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             break;
           }
         }
         pendingSpacing = 0;
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
         continue;
       }
 
@@ -831,6 +1043,10 @@ export function buildDocument(
 
     flushPendingNumberingAtBoundary();
   }
+
+  // Place any floats still pending (referenced on the last page, or never
+  // followed by a content-overflow page break) onto freshly appended pages.
+  finalizeFloats();
 
   // Stamp page-number info onto every page (including blank parity pages).
   const labels = buildPageLabels(doc.pages.length, pageNumberSegments);

@@ -16,6 +16,8 @@ import { HeadingsSection } from './sections/HeadingsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
 import { MathSection } from './sections/MathSection';
+import { TableStyleSection } from './sections/TableStyleSection';
+import { CaptionStyleSection } from './sections/CaptionStyleSection';
 import { ResourceTypesSection } from './sections/ResourceTypesSection';
 import { HtmlViewerSection } from './sections/HtmlViewerSection';
 import { PdfGenerationSection } from './sections/PdfGenerationSection';
@@ -124,6 +126,8 @@ export function ConfigPanel() {
         <UnorderedListsSection />
         <OrderedListsSection />
         <MathSection />
+        <TableStyleSection />
+        <CaptionStyleSection />
         <ResourceTypesSection />
         <HtmlViewerSection />
         <PdfGenerationSection />

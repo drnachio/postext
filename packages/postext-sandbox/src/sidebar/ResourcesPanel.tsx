@@ -48,7 +48,7 @@ function newResource(kind: ResourceKind, typeId: string, existingIds: Set<string
 export function ResourcesPanel() {
   const { state, dispatch } = useSandbox();
   const resources = state.resources;
-  const types: ResourceType[] = state.config.resourceTypes ?? defaultResourceTypes();
+  const types: ResourceType[] = state.config.resourceTypes ?? defaultResourceTypes(state.locale);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dropActive, setDropActive] = useState(false);
@@ -71,7 +71,9 @@ export function ResourcesPanel() {
     if (created.length === 1) setSelectedId(created[0].id);
     setUploadNote(
       skipped.length > 0
-        ? `Added ${created.length}; skipped ${skipped.length} unsupported file${skipped.length === 1 ? '' : 's'}.`
+        ? state.labels.resourcesUploadNote
+            .replace('__added__', String(created.length))
+            .replace('__skipped__', String(skipped.length))
         : null,
     );
   };
@@ -222,7 +224,7 @@ export function ResourcesPanel() {
           }}
         >
           <UploadCloud size={28} aria-hidden="true" style={{ color: 'var(--gilt)' }} />
-          <span>Drop images or SVGs to upload</span>
+          <span>{state.labels.resourcesDropToUpload}</span>
         </div>
       )}
     </div>

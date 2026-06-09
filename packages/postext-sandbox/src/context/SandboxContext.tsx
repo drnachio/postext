@@ -219,16 +219,17 @@ export function useSandboxEditorStateRef(): MutableRefObject<unknown | null> {
   return useStore().editorStateRef;
 }
 
-export function createDefaultConfig(): PostextConfig {
-  return { colorPalette: cloneDefaultColorPalette(), resourceTypes: defaultResourceTypes() };
+export function createDefaultConfig(locale = 'en'): PostextConfig {
+  return { colorPalette: cloneDefaultColorPalette(), resourceTypes: defaultResourceTypes(locale) };
 }
 
 /** Ensure `config.resourceTypes` is populated, falling back to the built-in
- *  defaults when unset (e.g. configs persisted before the feature existed).
- *  Returns a new config object only when a change is needed. */
-function withDefaultResourceTypes(config: PostextConfig): PostextConfig {
+ *  defaults (localised to `locale`) when unset (e.g. configs persisted before
+ *  the feature existed). Returns a new config object only when a change is
+ *  needed. */
+function withDefaultResourceTypes(config: PostextConfig, locale = 'en'): PostextConfig {
   if (config.resourceTypes && config.resourceTypes.length > 0) return config;
-  return { ...config, resourceTypes: defaultResourceTypes() };
+  return { ...config, resourceTypes: defaultResourceTypes(locale) };
 }
 
 export const DEFAULT_MARKDOWN = DEFAULT_MARKDOWN_EN;
@@ -266,7 +267,10 @@ export function SandboxProvider({
     return {
       markdown: savedMarkdown ?? defaultMd,
       defaultMarkdown: defaultMd,
-      config: withDefaultResourceTypes(savedConfig ?? initialConfig ?? createDefaultConfig()),
+      config: withDefaultResourceTypes(
+        savedConfig ?? initialConfig ?? createDefaultConfig(locale ?? 'en'),
+        locale ?? 'en',
+      ),
       resources: [],
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
@@ -305,7 +309,7 @@ export function SandboxProvider({
         // The persistence effect below diffs against the empty snapshot and
         // writes them to IndexedDB.
         if (loaded.length === 0) {
-          const seeded = await buildDefaultResources().catch(() => []);
+          const seeded = await buildDefaultResources(locale ?? 'en').catch(() => []);
           if (cancelled) return;
           resourcesLoadedRef.current = true;
           if (seeded.length > 0) dispatch({ type: 'SET_RESOURCES', payload: seeded });
@@ -322,6 +326,9 @@ export function SandboxProvider({
     return () => {
       cancelled = true;
     };
+    // Mount-only seed: `locale` is read once to pick the example resources'
+    // language and must not re-trigger seeding if it changes later.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Persist resource changes to IndexedDB by diffing against the previous

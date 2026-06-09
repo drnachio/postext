@@ -31,6 +31,27 @@ export type ResourceCounterFormat =
  *  counter whenever a heading of that level is encountered. */
 export type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
+/** Where a resource floats on the page. `'top'` / `'bottom'` detach the
+ *  resource from the running text and reserve a band at the top or bottom of
+ *  the next available page near its first reference (the standard editorial
+ *  figure-float behaviour). `'here'` opts out of floating and embeds the
+ *  resource inline at the exact `::resource` directive position. */
+export type ResourceFloatPosition = 'top' | 'bottom' | 'here';
+
+/** How wide a floated resource is. `'column'` keeps it within a single column;
+ *  `'page'` spans the full content width across all columns (a full-width
+ *  float that breaks the column flow). In a single-column layout the two are
+ *  equivalent. */
+export type ResourceFloatSpan = 'column' | 'page';
+
+/** Placement of a resource on the page. Resolved per resource, falling back to
+ *  its {@link ResourceType.defaultPlacement} and then the built-in default
+ *  (`top` / `column`). See {@link resolveResourcePlacement}. */
+export interface ResourcePlacement {
+  position?: ResourceFloatPosition;
+  span?: ResourceFloatSpan;
+}
+
 /** A user-definable category of resource (e.g. "Figure", "Table"). Drives
  *  numbering, caption prefixes, and inline-reference labels. */
 export interface ResourceType {
@@ -52,6 +73,9 @@ export interface ResourceType {
   /** Prefix prepended to the caption (e.g. "Figure"). The computed number
    *  follows this prefix. */
   captionPrefix: string;
+  /** Default placement for resources of this type, used when a resource does
+   *  not specify its own `placement`. Falls back to `top` / `column`. */
+  defaultPlacement?: ResourcePlacement;
 }
 
 /** The concrete payload kind a `Resource` carries. */
@@ -120,11 +144,22 @@ export interface Resource {
   /** Present when `kind === 'svg'`. */
   svg?: {
     fileId: string;
+    /** Intrinsic width in px (from the SVG's `width`/`height` or `viewBox`),
+     *  used to preserve aspect ratio on layout. Absent for SVGs with no
+     *  declared size. */
+    width?: number;
+    /** Intrinsic height in px; see `width`. */
+    height?: number;
   };
   /** Present when `kind === 'table'`. */
   table?: {
     model: TableModel;
   };
+  /** Optional per-resource placement override. When unset, the resource's
+   *  type default (then `top` / `column`) applies. A `position` of `'top'` or
+   *  `'bottom'` floats the resource to a band on the page near its first
+   *  reference; `'here'` embeds it inline at its `::resource` directive. */
+  placement?: ResourcePlacement;
 }
 
 export interface PostextNote {
@@ -349,6 +384,13 @@ export interface BodyTextConfig {
   color?: ColorValue;
   boldColor?: ColorValue;
   italicColor?: ColorValue;
+  /** Colour of inline `:ref` reference labels (e.g. "Fig. 1.7"). Defaults to
+   *  {@link boldColor} (the emphasis colour). */
+  referenceColor?: ColorValue;
+  /** Whether reference labels are rendered in the bold font. Default `true`. */
+  referenceBold?: boolean;
+  /** Whether reference labels are rendered italic. Default `false`. */
+  referenceItalic?: boolean;
   textAlign?: TextAlign;
   fontWeight?: number;
   boldFontWeight?: number;
@@ -430,6 +472,12 @@ export interface ResolvedBodyTextConfig {
   color: ColorValue;
   boldColor?: ColorValue;
   italicColor?: ColorValue;
+  /** Resolved colour for inline `:ref` labels (defaults to the bold colour). */
+  referenceColor: ColorValue;
+  /** Whether reference labels use the bold font. */
+  referenceBold: boolean;
+  /** Whether reference labels are italic. */
+  referenceItalic: boolean;
   textAlign: TextAlign;
   fontWeight: number;
   boldFontWeight: number;
@@ -454,6 +502,106 @@ export interface ResolvedBodyTextConfig {
   runtPenalty: number;
   avoidRuntsInLists: boolean;
   keepColonWithList: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Table & caption styling (resource figures/tables)
+// ---------------------------------------------------------------------------
+
+/** User-facing styling for embedded `kind: 'table'` resources. Every field is
+ *  optional; unset fields inherit body-text defaults (font family, size,
+ *  colour) so a document with no table config looks the same as before this
+ *  config existed. See {@link ResolvedTableStyleConfig}. */
+export interface TableStyleConfig {
+  /** Body-cell font family. Defaults to the body-text family. */
+  bodyFontFamily?: string;
+  /** Body-cell font size. Defaults to the body-text size. */
+  bodyFontSize?: Dimension;
+  /** Body-cell text colour. Defaults to the body-text colour. */
+  bodyColor?: ColorValue;
+  /** Header-cell font family. Defaults to the body-text family. */
+  headerFontFamily?: string;
+  /** Header-cell font size. Defaults to the body-text size. */
+  headerFontSize?: Dimension;
+  /** Header-cell text colour. Defaults to the body-text colour. */
+  headerColor?: ColorValue;
+  /** Render header cells bold. Default `true`. */
+  headerBold?: boolean;
+  /** Render header cells italic. Default `false`. */
+  headerItalic?: boolean;
+  /** Fill header cells with {@link headerBackground}. Default `true`. */
+  headerBackgroundEnabled?: boolean;
+  /** Header-cell fill colour. Default light grey. */
+  headerBackground?: ColorValue;
+  /** Fill body cells with {@link bodyBackground}. Default `false`. */
+  bodyBackgroundEnabled?: boolean;
+  /** Body-cell fill colour. Default white. */
+  bodyBackground?: ColorValue;
+  /** Draw cell borders. Default `true`. */
+  borders?: boolean;
+  /** Border colour. Defaults to the body-text colour. */
+  borderColor?: ColorValue;
+  /** Border thickness. Default `0.75pt` (≈1px at 96dpi). */
+  borderWidth?: Dimension;
+  /** Inner padding inside each cell. Default `0.375em`. */
+  cellPadding?: Dimension;
+}
+
+export interface ResolvedTableStyleConfig {
+  bodyFontFamily: string;
+  bodyFontSize: Dimension;
+  bodyColor: ColorValue;
+  headerFontFamily: string;
+  headerFontSize: Dimension;
+  headerColor: ColorValue;
+  headerBold: boolean;
+  headerItalic: boolean;
+  headerBackgroundEnabled: boolean;
+  headerBackground: ColorValue;
+  bodyBackgroundEnabled: boolean;
+  bodyBackground: ColorValue;
+  borders: boolean;
+  borderColor: ColorValue;
+  borderWidth: Dimension;
+  cellPadding: Dimension;
+}
+
+/** User-facing styling for resource captions (the numbered label such as
+ *  "Figure 1." plus the description text). The label and description share one
+ *  typeface and size (the caption is measured as a single wrapped run); they
+ *  differ in weight, slant, and colour. Every field is optional and inherits
+ *  body-text defaults. See {@link ResolvedCaptionStyleConfig}. */
+export interface CaptionStyleConfig {
+  /** Caption font family (label + description). Defaults to the body family. */
+  fontFamily?: string;
+  /** Caption font size (label + description). Defaults to the body size. */
+  fontSize?: Dimension;
+  /** Description text colour. Defaults to the body-text colour. */
+  color?: ColorValue;
+  /** Horizontal alignment of caption text. Default `'left'`. */
+  align?: TextAlign;
+  /** Gap between the figure body and the caption. Default `0.75em`. */
+  gap?: Dimension;
+  /** Render the numbered label bold. Default `true`. */
+  labelBold?: boolean;
+  /** Render the numbered label italic. Default `false`. */
+  labelItalic?: boolean;
+  /** Numbered-label colour. Defaults to {@link color}. */
+  labelColor?: ColorValue;
+  /** Render the description italic. Default `false`. */
+  descriptionItalic?: boolean;
+}
+
+export interface ResolvedCaptionStyleConfig {
+  fontFamily: string;
+  fontSize: Dimension;
+  color: ColorValue;
+  align: TextAlign;
+  gap: Dimension;
+  labelBold: boolean;
+  labelItalic: boolean;
+  labelColor: ColorValue;
+  descriptionItalic: boolean;
 }
 
 /** Parity constraint for a forced page break.
@@ -1051,6 +1199,10 @@ export interface PostextConfig {
   layout?: LayoutConfig;
   bodyText?: BodyTextConfig;
   headings?: HeadingsConfig;
+  /** Styling for embedded table resources. */
+  tableStyle?: TableStyleConfig;
+  /** Styling for resource captions (numbered label + description). */
+  captionStyle?: CaptionStyleConfig;
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;

@@ -36,8 +36,9 @@ import type {
   VDTResourceTableLayout,
 } from '../vdt';
 import { createBoundingBox } from '../vdt';
-import { measureRichBlock } from '../measure';
-import { parseInlineFormatting } from '../parse/inlineFormatting';
+import { measureRichBlock, buildFontString } from '../measure';
+import { dimensionToPx } from '../units';
+import { extractInlineRefs, injectRefSpans, parseInlineFormatting } from '../parse/inlineFormatting';
 import { resolveBodyStyle } from './styles';
 import type { ResourceNumberingMap } from './resourceNumbering';
 
@@ -81,39 +82,38 @@ export function resolveRefLabel(
   return short ? `${short}${NBSP}${number}` : number;
 }
 
-/** Resolve inline `:ref` placeholder spans to plain text spans carrying the
- *  computed label. Each ref label is glued with NBSP so it remains a single
- *  token; the returned set records the exact label strings so a downstream pass
- *  can re-tag the produced segments with their `refResourceId`. */
-function resolveCaptionSpans(
+/** Parse caption / table-cell content into inline spans, recognising the same
+ *  inline `:ref{…}` microformat as body text so references inside captions and
+ *  cells resolve to their computed labels (the cell/caption is self-contained,
+ *  so source offsets are irrelevant here). */
+function parseRefAwareSpans(content: string): InlineSpan[] {
+  const { cleaned, refs } = extractInlineRefs(content, 0);
+  return injectRefSpans(parseInlineFormatting(cleaned), refs);
+}
+
+/** Resolve inline `:ref` spans to their computed label, keeping the `ref`
+ *  metadata so the rich-text measurer treats each label as one atomic,
+ *  non-breaking token and tags the produced segment with `refResourceId`. */
+export function resolveRefSpans(
   spans: InlineSpan[],
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
-): { spans: InlineSpan[]; refByLabel: Map<string, string> } {
-  const refByLabel = new Map<string, string>();
-  const out: InlineSpan[] = spans.map((span) => {
+  refStyle?: { bold: boolean; italic: boolean },
+): InlineSpan[] {
+  if (!spans.some((s) => s.ref)) return spans;
+  return spans.map((span) => {
     if (!span.ref) return span;
-    const rawLabel = resolveRefLabel(span.ref, resourceNumbering, resourceTypes, resources);
-    const label = rawLabel.replace(/\s+/g, NBSP);
-    refByLabel.set(label, span.ref.resourceId);
-    return { text: label, bold: span.bold, italic: span.italic };
+    return {
+      ...span,
+      text: resolveRefLabel(span.ref, resourceNumbering, resourceTypes, resources),
+      // Reference labels carry their own emphasis (bold/italic) so the measurer
+      // selects the matching font; colour is applied by renderers via
+      // `refResourceId`.
+      bold: refStyle?.bold ?? span.bold,
+      italic: refStyle?.italic ?? span.italic,
+    };
   });
-  return { spans: out, refByLabel };
-}
-
-/** Tag segments whose text matches a resolved ref label with `refResourceId`,
- *  so renderers can recolour / link them. Mutates the supplied lines in place
- *  (they are freshly produced by the measurer and not shared). */
-function tagRefSegments(lines: VDTLine[], refByLabel: Map<string, string>): void {
-  if (refByLabel.size === 0) return;
-  for (const line of lines) {
-    if (!line.segments) continue;
-    for (const seg of line.segments) {
-      const id = refByLabel.get(seg.text);
-      if (id !== undefined) seg.refResourceId = id;
-    }
-  }
 }
 
 /** Offset every line's bbox / baseline by `dy` (block-relative → block-relative
@@ -137,12 +137,29 @@ function fitWidth(intrinsicW: number, intrinsicH: number, columnWidth: number): 
   return { width, height };
 }
 
-interface TableCellStyleStrings {
+/** One resolved font set (normal / bold / italic / bold+italic), its colour,
+ *  and its line height, for either the body or header cells of a table. */
+interface CellFontSet {
   fontString: string;
   boldFontString: string;
   italicFontString: string;
   boldItalicFontString: string;
   color: string;
+  lineHeightPx: number;
+}
+
+/** Fully-resolved table styling consumed by {@link layoutTable}. */
+interface TableLayoutStyle {
+  body: CellFontSet;
+  header: CellFontSet;
+  borderColor: string;
+  /** Border thickness in px; `0` disables borders. */
+  borderWidthPx: number;
+  cellPaddingPx: number;
+  /** Header fill (hex), or undefined when disabled. */
+  headerBackground?: string;
+  /** Body fill (hex), or undefined when disabled. */
+  bodyBackground?: string;
 }
 
 /** Lay out an HTML-table resource: equal column split, per-cell rich-text
@@ -151,16 +168,13 @@ interface TableCellStyleStrings {
 function layoutTable(
   model: TableModel,
   columnWidth: number,
-  styles: TableCellStyleStrings,
-  lineHeightPx: number,
+  style: TableLayoutStyle,
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
-  borderColor: string,
-  borderWidthPx: number,
-  cellPaddingPx: number,
-  headerBackground: string | undefined,
+  refStyle: { bold: boolean; italic: boolean },
 ): { layout: VDTResourceTableLayout; height: number } {
+  const { body, header, borderColor, borderWidthPx, cellPaddingPx } = style;
   const rowCount = model.rows.length;
   const colCount = rowCount > 0 ? Math.max(...model.rows.map((r) => r.length)) : 0;
   const colWidth = colCount > 0 ? columnWidth / colCount : columnWidth;
@@ -182,7 +196,7 @@ function layoutTable(
     contentHeight: number;
   }
   const measured: Measured[] = [];
-  const rowMinHeight = new Array<number>(rowCount).fill(lineHeightPx);
+  const rowMinHeight = new Array<number>(rowCount).fill(body.lineHeightPx);
 
   for (let r = 0; r < rowCount; r++) {
     const row = model.rows[r]!;
@@ -191,31 +205,33 @@ function layoutTable(
       if (cell.hiddenBy) continue;
       const colSpan = Math.max(1, cell.colSpan ?? 1);
       const rowSpan = Math.max(1, cell.rowSpan ?? 1);
+      const isHeader = cell.isHeader ?? r < (model.headerRowCount ?? 0);
+      const set = isHeader ? header : body;
       const cellWidth = colSpan * colWidth - cellPaddingPx * 2;
-      const { spans, refByLabel } = resolveCaptionSpans(
-        parseInlineFormatting(cell.content),
+      const spans = resolveRefSpans(
+        parseRefAwareSpans(cell.content),
         resourceNumbering,
         resourceTypes,
         resources,
+        refStyle,
       );
       const m = measureRichBlock(
         spans,
-        styles.fontString,
-        styles.boldFontString,
-        styles.italicFontString,
-        styles.boldItalicFontString,
+        set.fontString,
+        set.boldFontString,
+        set.italicFontString,
+        set.boldItalicFontString,
         Math.max(1, cellWidth),
-        lineHeightPx,
+        set.lineHeightPx,
         { textAlign: cell.align === 'center' ? 'center' : cell.align === 'right' ? 'left' : 'left' },
       );
-      tagRefSegments(m.lines, refByLabel);
-      const contentHeight = Math.max(lineHeightPx, m.totalHeight) + cellPaddingPx * 2;
+      const contentHeight = Math.max(set.lineHeightPx, m.totalHeight) + cellPaddingPx * 2;
       measured.push({
         row: r,
         col: c,
         colSpan,
         rowSpan,
-        isHeader: cell.isHeader ?? r < (model.headerRowCount ?? 0),
+        isHeader,
         align: cell.align ?? 'left',
         verticalAlign: cell.verticalAlign ?? 'top',
         lines: m.lines,
@@ -268,14 +284,20 @@ function layoutTable(
   });
 
   const layout: VDTResourceTableLayout = {
-    fontString: styles.fontString,
-    boldFontString: styles.boldFontString,
-    italicFontString: styles.italicFontString,
-    boldItalicFontString: styles.boldItalicFontString,
-    color: styles.color,
+    fontString: body.fontString,
+    boldFontString: body.boldFontString,
+    italicFontString: body.italicFontString,
+    boldItalicFontString: body.boldItalicFontString,
+    color: body.color,
+    headerFontString: header.fontString,
+    headerBoldFontString: header.boldFontString,
+    headerItalicFontString: header.italicFontString,
+    headerBoldItalicFontString: header.boldItalicFontString,
+    headerColor: header.color,
     borderColor,
     borderWidthPx,
-    headerBackground,
+    headerBackground: style.headerBackground,
+    bodyBackground: style.bodyBackground,
     cells,
     columnEdges,
     rowEdges,
@@ -305,8 +327,16 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   } = input;
 
   const bodyStyle = resolveBodyStyle(resolved);
-  const lineHeightPx = bodyStyle.lineHeightPx;
-  const captionGapPx = lineHeightPx * 0.5;
+  const dpi = resolved.page.dpi;
+  // Normal / bold weights reused for table + caption font sets.
+  const normalWeight = resolved.bodyText.fontWeight.toString();
+  const boldWeight = resolved.bodyText.boldFontWeight.toString();
+  // Line-height ratio of the body text — applied to any custom table/caption
+  // font size so a resized run keeps a proportional leading (and reproduces the
+  // previous heights exactly when the size is left at the body default).
+  const lineHeightRatio = bodyStyle.lineHeightPx / bodyStyle.fontSizePx;
+  // Inline `:ref` emphasis (bold/italic), applied to refs in captions + cells.
+  const refStyle = { bold: resolved.bodyText.referenceBold, italic: resolved.bodyText.referenceItalic };
 
   // --- Figure body -------------------------------------------------------
   let bodyWidth = columnWidth;
@@ -323,33 +353,54 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     bodyHeight = fit.height;
   } else if (resource.kind === 'svg' && resource.svg) {
     fileId = resource.svg.fileId;
-    const fit = fitWidth(0, 0, columnWidth);
-    bodyWidth = fit.width;
-    bodyHeight = fit.height;
+    // SVGs are vector: fill the column width and derive height from the
+    // intrinsic aspect ratio (viewBox / width:height). Fall back to a 4:3 box
+    // only when no intrinsic size was captured.
+    const iw = resource.svg.width ?? 0;
+    const ih = resource.svg.height ?? 0;
+    bodyWidth = columnWidth;
+    bodyHeight = iw > 0 && ih > 0 ? columnWidth * (ih / iw) : columnWidth * 0.75;
   } else if (resource.kind === 'table' && resource.table) {
-    const styles: TableCellStyleStrings = {
-      fontString: bodyStyle.fontString,
-      boldFontString: bodyStyle.boldFontString ?? bodyStyle.fontString,
-      italicFontString: bodyStyle.italicFontString ?? bodyStyle.fontString,
-      boldItalicFontString: bodyStyle.boldItalicFontString ?? bodyStyle.fontString,
-      color: bodyStyle.color,
+    const ts = resolved.tableStyle;
+    const bodyFontPx = dimensionToPx(ts.bodyFontSize, dpi);
+    const headerFontPx = dimensionToPx(ts.headerFontSize, dpi);
+    // Header weight/slant: the header's base run is bold (and/or italic) by
+    // default; inline markup still toggles relative to that base, mirroring the
+    // blockquote/heading italic-flip convention.
+    const hWeight = ts.headerBold ? boldWeight : normalWeight;
+    const hBase = ts.headerItalic ? 'italic' : 'normal';
+    const hFlip = ts.headerItalic ? 'normal' : 'italic';
+    const style: TableLayoutStyle = {
+      body: {
+        fontString: buildFontString(ts.bodyFontFamily, bodyFontPx, normalWeight),
+        boldFontString: buildFontString(ts.bodyFontFamily, bodyFontPx, boldWeight),
+        italicFontString: buildFontString(ts.bodyFontFamily, bodyFontPx, normalWeight, 'italic'),
+        boldItalicFontString: buildFontString(ts.bodyFontFamily, bodyFontPx, boldWeight, 'italic'),
+        color: ts.bodyColor.hex,
+        lineHeightPx: bodyFontPx * lineHeightRatio,
+      },
+      header: {
+        fontString: buildFontString(ts.headerFontFamily, headerFontPx, hWeight, hBase),
+        boldFontString: buildFontString(ts.headerFontFamily, headerFontPx, boldWeight, hBase),
+        italicFontString: buildFontString(ts.headerFontFamily, headerFontPx, hWeight, hFlip),
+        boldItalicFontString: buildFontString(ts.headerFontFamily, headerFontPx, boldWeight, hFlip),
+        color: ts.headerColor.hex,
+        lineHeightPx: headerFontPx * lineHeightRatio,
+      },
+      borderColor: ts.borderColor.hex,
+      borderWidthPx: ts.borders ? Math.max(1, Math.round(dimensionToPx(ts.borderWidth, dpi))) : 0,
+      cellPaddingPx: dimensionToPx(ts.cellPadding, dpi, bodyFontPx),
+      headerBackground: ts.headerBackgroundEnabled ? ts.headerBackground.hex : undefined,
+      bodyBackground: ts.bodyBackgroundEnabled ? ts.bodyBackground.hex : undefined,
     };
-    const borderWidthPx = Math.max(1, Math.round(resolved.page.dpi / 96));
-    const cellPaddingPx = lineHeightPx * 0.25;
     const { layout, height } = layoutTable(
       resource.table.model,
       columnWidth,
-      styles,
-      lineHeightPx,
+      style,
       resourceNumbering,
       resourceTypes,
       resources,
-      bodyStyle.color,
-      borderWidthPx,
-      cellPaddingPx,
-      // Light header tint — derived from the body colour at low alpha is not
-      // available here as hex, so use a neutral light grey for v1.
-      '#f0f0f0',
+      refStyle,
     );
     table = layout;
     bodyWidth = columnWidth;
@@ -359,8 +410,21 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   const bodyRect = createBoundingBox(0, 0, bodyWidth, bodyHeight);
 
   // --- Caption -----------------------------------------------------------
+  const cs = resolved.captionStyle;
+  const captionFontPx = dimensionToPx(cs.fontSize, dpi);
+  const captionLineHeightPx = captionFontPx * lineHeightRatio;
+  const captionGapPx = dimensionToPx(cs.gap, dpi, captionFontPx);
+  // Caption font set (label + description share one typeface/size; weight and
+  // slant vary per span).
+  const captionFontString = buildFontString(cs.fontFamily, captionFontPx, normalWeight);
+  const captionBoldFontString = buildFontString(cs.fontFamily, captionFontPx, boldWeight);
+  const captionItalicFontString = buildFontString(cs.fontFamily, captionFontPx, normalWeight, 'italic');
+  const captionBoldItalicFontString = buildFontString(cs.fontFamily, captionFontPx, boldWeight, 'italic');
+
   const captionPrefix = resourceType?.captionPrefix ?? '';
-  const linkColor = resolved.bodyText.color.hex;
+  // Inline `:ref` labels render in the configured reference colour (defaults to
+  // the emphasis/bold colour).
+  const linkColor = resolved.bodyText.referenceColor.hex;
   let captionLines: VDTLine[] = [];
   const captionText = resource.caption ?? '';
   const hasCaption = captionText.trim().length > 0 || captionPrefix.length > 0;
@@ -369,32 +433,35 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const prefixText = captionPrefix.length > 0
       ? `${captionPrefix}${NBSP}${number}.${number ? ' ' : ''}`
       : '';
-    const captionSpans = parseInlineFormatting(captionText);
-    const { spans: resolvedSpans, refByLabel } = resolveCaptionSpans(
-      captionSpans,
+    const resolvedSpans = resolveRefSpans(
+      parseRefAwareSpans(captionText),
       resourceNumbering,
       resourceTypes,
       resources,
+      refStyle,
     );
-    const allSpans: InlineSpan[] = prefixText.length > 0
-      ? [{ text: prefixText, bold: true, italic: false }, ...resolvedSpans]
+    // Description spans pick up the configured slant on top of their own markup.
+    const descSpans: InlineSpan[] = cs.descriptionItalic
+      ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : resolvedSpans;
+    const allSpans: InlineSpan[] = prefixText.length > 0
+      ? [{ text: prefixText, bold: cs.labelBold, italic: cs.labelItalic, captionLabel: true }, ...descSpans]
+      : descSpans;
     const measured = measureRichBlock(
       allSpans,
-      bodyStyle.fontString,
-      bodyStyle.boldFontString ?? bodyStyle.fontString,
-      bodyStyle.italicFontString ?? bodyStyle.fontString,
-      bodyStyle.boldItalicFontString ?? bodyStyle.fontString,
+      captionFontString,
+      captionBoldFontString,
+      captionItalicFontString,
+      captionBoldItalicFontString,
       Math.max(1, columnWidth),
-      lineHeightPx,
-      { textAlign: 'left' },
+      captionLineHeightPx,
+      { textAlign: cs.align },
     );
-    tagRefSegments(measured.lines, refByLabel);
     captionLines = shiftLines(measured.lines, 0, bodyHeight + captionGapPx);
   }
 
   const captionHeight = captionLines.length > 0
-    ? captionLines.length * lineHeightPx + captionGapPx
+    ? captionLines.length * captionLineHeightPx + captionGapPx
     : 0;
   const totalHeight = bodyHeight + captionHeight;
 
@@ -407,11 +474,12 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     fileId,
     format,
     captionLines,
-    captionFontString: bodyStyle.fontString,
-    captionBoldFontString: bodyStyle.boldFontString ?? bodyStyle.fontString,
-    captionItalicFontString: bodyStyle.italicFontString ?? bodyStyle.fontString,
-    captionBoldItalicFontString: bodyStyle.boldItalicFontString ?? bodyStyle.fontString,
-    captionColor: bodyStyle.color,
+    captionFontString,
+    captionBoldFontString,
+    captionItalicFontString,
+    captionBoldItalicFontString,
+    captionColor: cs.color.hex,
+    captionLabelColor: cs.labelColor.hex,
     linkColor,
     table,
   };

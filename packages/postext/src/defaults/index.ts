@@ -3,6 +3,8 @@ import { stripPageDefaults } from './page';
 import { stripLayoutDefaults } from './layout';
 import { stripBodyTextDefaults } from './bodyText';
 import { stripHeadingsDefaults } from './headings';
+import { stripTableStyleDefaults } from './tableStyle';
+import { stripCaptionStyleDefaults } from './captionStyle';
 import { stripUnorderedListsDefaults } from './unorderedLists';
 import { stripOrderedListsDefaults } from './orderedLists';
 import { stripMathDefaults } from './math';
@@ -16,6 +18,8 @@ export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE
 export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripLayoutDefaults } from './layout';
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, hyphenationEqual, resolveBodyTextConfig, stripBodyTextDefaults } from './bodyText';
 export { DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
+export { resolveTableStyleConfig, stripTableStyleDefaults } from './tableStyle';
+export { resolveCaptionStyleConfig, stripCaptionStyleDefaults } from './captionStyle';
 export { DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults } from './unorderedLists';
 export { DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults } from './orderedLists';
 export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './math';
@@ -51,6 +55,18 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.headings = strippedHeadings;
   } else {
     delete result.headings;
+  }
+  const strippedTableStyle = stripTableStyleDefaults(config.tableStyle);
+  if (strippedTableStyle) {
+    result.tableStyle = strippedTableStyle;
+  } else {
+    delete result.tableStyle;
+  }
+  const strippedCaptionStyle = stripCaptionStyleDefaults(config.captionStyle);
+  if (strippedCaptionStyle) {
+    result.captionStyle = strippedCaptionStyle;
+  } else {
+    delete result.captionStyle;
   }
   const strippedLists = stripUnorderedListsDefaults(config.unorderedLists);
   if (strippedLists) {

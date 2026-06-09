@@ -3,11 +3,16 @@
 import { useCallback, useRef, useState } from 'react';
 import { FileCode, Loader2 } from 'lucide-react';
 import { putBlob } from '../../storage/blobStore';
+import { useSandboxLabels } from '../../context/SandboxContext';
+import { isValidSvg, svgIntrinsicSize } from './svgIntrinsic';
 
 /** Result of a successful SVG upload, ready to fold into a Resource. */
 export interface SvgUploadResult {
   fileId: string;
   filename: string;
+  /** Intrinsic size parsed from the SVG, when declared. */
+  width?: number;
+  height?: number;
 }
 
 interface SvgUploaderProps {
@@ -17,21 +22,10 @@ interface SvgUploaderProps {
 
 const ACCEPT = 'image/svg+xml,.svg';
 
-/** Validate that `text` parses as SVG XML with a root `<svg>` element. */
-function isValidSvg(text: string): boolean {
-  if (typeof DOMParser === 'undefined') return text.includes('<svg');
-  try {
-    const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-    if (doc.getElementsByTagName('parsererror').length > 0) return false;
-    return doc.documentElement?.tagName.toLowerCase() === 'svg';
-  } catch {
-    return false;
-  }
-}
-
 /** Drag/drop + file-input uploader for SVG files. Validates with `DOMParser`
  *  before persisting the source text through `putBlob`. */
 export function SvgUploader({ onUploaded, compact = false }: SvgUploaderProps) {
+  const labels = useSandboxLabels();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -44,19 +38,20 @@ export function SvgUploader({ onUploaded, compact = false }: SvgUploaderProps) {
       try {
         const text = await file.text();
         if (!isValidSvg(text)) {
-          setError('Not a valid SVG file.');
+          setError(labels.uploadSvgInvalid);
           return;
         }
         const buffer = new TextEncoder().encode(text).buffer;
         const fileId = await putBlob(buffer, 'image/svg+xml');
-        onUploaded({ fileId, filename: file.name });
+        const size = svgIntrinsicSize(text);
+        onUploaded({ fileId, filename: file.name, ...size });
       } catch {
-        setError('Failed to store SVG.');
+        setError(labels.uploadSvgFailed);
       } finally {
         setBusy(false);
       }
     },
-    [onUploaded],
+    [onUploaded, labels],
   );
 
   const onDrop = useCallback(
@@ -80,7 +75,7 @@ export function SvgUploader({ onUploaded, compact = false }: SvgUploaderProps) {
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        aria-label={compact ? 'Replace SVG' : 'Upload SVG'}
+        aria-label={compact ? labels.uploadSvgReplace : labels.resourceUploadSvg}
         className="flex flex-col items-center justify-center gap-1.5 rounded border border-dashed text-xs"
         style={{
           borderColor: dragOver ? 'var(--gilt)' : 'var(--rule)',
@@ -97,10 +92,10 @@ export function SvgUploader({ onUploaded, compact = false }: SvgUploaderProps) {
         )}
         <span>
           {busy
-            ? 'Storing…'
+            ? labels.uploadStoring
             : compact
-              ? 'Replace SVG'
-              : 'Drop an SVG here or click to upload'}
+              ? labels.uploadSvgReplace
+              : labels.uploadSvgDrop}
         </span>
       </button>
       <input

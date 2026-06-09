@@ -70,6 +70,7 @@ function paintLine(
   boldItalicFont: string,
   color: string,
   linkColor: string,
+  labelColor: string = color,
 ): void {
   ctx.textBaseline = 'alphabetic';
   if (line.segments && line.segments.length > 0) {
@@ -80,7 +81,11 @@ function paintLine(
         continue;
       }
       ctx.font = pickFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-      ctx.fillStyle = seg.refResourceId !== undefined ? linkColor : color;
+      ctx.fillStyle = seg.refResourceId !== undefined
+        ? linkColor
+        : seg.captionLabel
+          ? labelColor
+          : color;
       ctx.fillText(seg.text, x, line.baseline);
       x += seg.width;
     }
@@ -119,27 +124,31 @@ function renderTable(
 ): void {
   const t = rb.table;
   if (!t) return;
-  // Header backgrounds first, then borders, then cell content.
+  // Cell backgrounds first (header tint / body fill), then borders, then text.
   for (const cell of t.cells) {
-    if (cell.isHeader && t.headerBackground) {
-      ctx.fillStyle = t.headerBackground;
+    const fill = cell.isHeader ? t.headerBackground : t.bodyBackground;
+    if (fill) {
+      ctx.fillStyle = fill;
       ctx.fillRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
     }
   }
-  ctx.save();
-  ctx.strokeStyle = t.borderColor;
-  ctx.lineWidth = t.borderWidthPx;
-  for (const cell of t.cells) {
-    ctx.strokeRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
+  if (t.borderWidthPx > 0) {
+    ctx.save();
+    ctx.strokeStyle = t.borderColor;
+    ctx.lineWidth = t.borderWidthPx;
+    for (const cell of t.cells) {
+      ctx.strokeRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
+    }
+    ctx.restore();
   }
-  ctx.restore();
   for (const cell of t.cells) {
+    const font = cell.isHeader ? t.headerFontString : t.fontString;
+    const bold = cell.isHeader ? t.headerBoldFontString : t.boldFontString;
+    const italic = cell.isHeader ? t.headerItalicFontString : t.italicFontString;
+    const boldItalic = cell.isHeader ? t.headerBoldItalicFontString : t.boldItalicFontString;
+    const color = cell.isHeader ? t.headerColor : t.color;
     for (const line of cell.lines) {
-      paintLine(
-        ctx, line,
-        t.fontString, t.boldFontString, t.italicFontString, t.boldItalicFontString,
-        t.color, rb.linkColor,
-      );
+      paintLine(ctx, line, font, bold, italic, boldItalic, color, rb.linkColor);
     }
   }
 }
@@ -173,7 +182,7 @@ export function renderResourceBlock(
     paintLine(
       ctx, line,
       rb.captionFontString, rb.captionBoldFontString, rb.captionItalicFontString, rb.captionBoldItalicFontString,
-      rb.captionColor, rb.linkColor,
+      rb.captionColor, rb.linkColor, rb.captionLabelColor,
     );
   }
   ctx.restore();

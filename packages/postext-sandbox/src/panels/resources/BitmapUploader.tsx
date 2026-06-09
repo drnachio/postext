@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { ImagePlus, Loader2 } from 'lucide-react';
 import { putBlob } from '../../storage/blobStore';
+import { useSandboxLabels } from '../../context/SandboxContext';
 
 /** Result of a successful bitmap upload, ready to fold into a Resource. */
 export interface BitmapUploadResult {
@@ -32,6 +33,7 @@ function formatFromMime(mime: string): string {
  *  `createImageBitmap` to capture intrinsic width/height, then persists the
  *  bytes through `putBlob`. */
 export function BitmapUploader({ onUploaded, compact = false }: BitmapUploaderProps) {
+  const labels = useSandboxLabels();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -41,7 +43,7 @@ export function BitmapUploader({ onUploaded, compact = false }: BitmapUploaderPr
     async (file: File) => {
       setError(null);
       if (!file.type.startsWith('image/')) {
-        setError('Not an image file.');
+        setError(labels.uploadImageInvalid);
         return;
       }
       setBusy(true);
@@ -69,12 +71,12 @@ export function BitmapUploader({ onUploaded, compact = false }: BitmapUploaderPr
           filename: file.name,
         });
       } catch {
-        setError('Failed to store image.');
+        setError(labels.uploadImageFailed);
       } finally {
         setBusy(false);
       }
     },
-    [onUploaded],
+    [onUploaded, labels],
   );
 
   const onDrop = useCallback(
@@ -98,7 +100,7 @@ export function BitmapUploader({ onUploaded, compact = false }: BitmapUploaderPr
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        aria-label={compact ? 'Replace image' : 'Upload image'}
+        aria-label={compact ? labels.uploadImageReplace : labels.resourceUploadImage}
         className="flex flex-col items-center justify-center gap-1.5 rounded border border-dashed text-xs"
         style={{
           borderColor: dragOver ? 'var(--gilt)' : 'var(--rule)',
@@ -115,10 +117,10 @@ export function BitmapUploader({ onUploaded, compact = false }: BitmapUploaderPr
         )}
         <span>
           {busy
-            ? 'Storing…'
+            ? labels.uploadStoring
             : compact
-              ? 'Replace image'
-              : 'Drop an image here or click to upload'}
+              ? labels.uploadImageReplace
+              : labels.uploadImageDrop}
         </span>
       </button>
       <input

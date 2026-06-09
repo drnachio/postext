@@ -86,7 +86,9 @@ function renderLine(
           const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
           const font = fontCache.get(fontStr) ?? blockFont;
           const size = parseFontString(fontStr)?.sizePx ?? blockSize;
-          const colorHex = pickSegmentColor(!!seg.bold, !!seg.italic, block);
+          const colorHex = seg.refResourceId !== undefined && block.refColor
+          ? block.refColor
+          : pickSegmentColor(!!seg.bold, !!seg.italic, block);
           const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
           drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
           x += seg.width;
@@ -109,7 +111,9 @@ function renderLine(
         const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
         const font = fontCache.get(fontStr) ?? blockFont;
         const size = parseFontString(fontStr)?.sizePx ?? blockSize;
-        const colorHex = pickSegmentColor(!!seg.bold, !!seg.italic, block);
+        const colorHex = seg.refResourceId !== undefined && block.refColor
+          ? block.refColor
+          : pickSegmentColor(!!seg.bold, !!seg.italic, block);
         const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
         drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
         x += seg.width;
@@ -119,7 +123,8 @@ function renderLine(
   }
 
   const hasMathSegments = line.segments && line.segments.some((s) => s.kind === 'math');
-  if ((hasRichSegments || hasMathSegments) && line.segments) {
+  const hasRefSegments = line.segments && line.segments.some((s) => s.refResourceId !== undefined);
+  if ((hasRichSegments || hasMathSegments || hasRefSegments) && line.segments) {
     let x = line.bbox.x;
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
@@ -131,7 +136,9 @@ function renderLine(
         const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
         const font = fontCache.get(fontStr) ?? blockFont;
         const size = parseFontString(fontStr)?.sizePx ?? blockSize;
-        const colorHex = pickSegmentColor(!!seg.bold, !!seg.italic, block);
+        const colorHex = seg.refResourceId !== undefined && block.refColor
+          ? block.refColor
+          : pickSegmentColor(!!seg.bold, !!seg.italic, block);
         const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
         drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
         x += seg.width;

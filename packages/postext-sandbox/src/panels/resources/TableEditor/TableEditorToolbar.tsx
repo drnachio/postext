@@ -12,6 +12,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { TableCellAlign } from 'postext';
+import { useSandboxLabels } from '../../../context/SandboxContext';
 
 // ---------------------------------------------------------------------------
 // TableEditorToolbar — structural & formatting actions for the table editor.
@@ -106,6 +107,7 @@ export function TableEditorToolbar({
   onSetAlign,
   onPasteTsv,
 }: TableEditorToolbarProps) {
+  const labels = useSandboxLabels();
   const iconSize = 13;
   return (
     <div
@@ -113,68 +115,68 @@ export function TableEditorToolbar({
       style={{ borderColor: 'var(--rule)' }}
     >
       <Group>
-        <Btn label="Add row below" onClick={onAddRow}>
+        <Btn label={labels.tableEditorAddRow} onClick={onAddRow}>
           <Rows size={iconSize} aria-hidden="true" />+
         </Btn>
-        <Btn label="Remove row" onClick={onRemoveRow}>
+        <Btn label={labels.tableEditorRemoveRow} onClick={onRemoveRow}>
           <Rows size={iconSize} aria-hidden="true" />
           <Trash2 size={iconSize} aria-hidden="true" />
         </Btn>
       </Group>
       <Divider />
       <Group>
-        <Btn label="Add column right" onClick={onAddColumn}>
+        <Btn label={labels.tableEditorAddColumn} onClick={onAddColumn}>
           <Columns size={iconSize} aria-hidden="true" />+
         </Btn>
-        <Btn label="Remove column" onClick={onRemoveColumn}>
+        <Btn label={labels.tableEditorRemoveColumn} onClick={onRemoveColumn}>
           <Columns size={iconSize} aria-hidden="true" />
           <Trash2 size={iconSize} aria-hidden="true" />
         </Btn>
       </Group>
       <Divider />
       <Group>
-        <Btn label="Merge cells" onClick={onMerge} disabled={!canMerge}>
+        <Btn label={labels.tableEditorMergeCells} onClick={onMerge} disabled={!canMerge}>
           <Merge size={iconSize} aria-hidden="true" />
         </Btn>
-        <Btn label="Split cell" onClick={onSplit} disabled={!canSplit}>
+        <Btn label={labels.tableEditorSplitCell} onClick={onSplit} disabled={!canSplit}>
           <Split size={iconSize} aria-hidden="true" />
         </Btn>
       </Group>
       <Divider />
       <Group>
         <Btn
-          label="Toggle header row"
+          label={labels.tableEditorToggleHeaderRow}
           onClick={onToggleHeaderRow}
           active={headerRowActive}
         >
-          H row
+          {labels.tableEditorHeaderRowShort}
         </Btn>
         <Btn
-          label="Toggle header column"
+          label={labels.tableEditorToggleHeaderColumn}
           onClick={onToggleHeaderColumn}
           active={headerColumnActive}
         >
-          H col
+          {labels.tableEditorHeaderColumnShort}
         </Btn>
       </Group>
       <Divider />
       <Group>
         <Btn
-          label="Align left"
+          label={labels.tableEditorAlignLeft}
           onClick={() => onSetAlign('left')}
           active={(activeAlign ?? 'left') === 'left'}
         >
           <AlignLeft size={iconSize} aria-hidden="true" />
         </Btn>
         <Btn
-          label="Align center"
+          label={labels.tableEditorAlignCenter}
           onClick={() => onSetAlign('center')}
           active={activeAlign === 'center'}
         >
           <AlignCenter size={iconSize} aria-hidden="true" />
         </Btn>
         <Btn
-          label="Align right"
+          label={labels.tableEditorAlignRight}
           onClick={() => onSetAlign('right')}
           active={activeAlign === 'right'}
         >
@@ -183,7 +185,7 @@ export function TableEditorToolbar({
       </Group>
       <Divider />
       <Group>
-        <Btn label="Paste as table (TSV/CSV)" onClick={onPasteTsv}>
+        <Btn label={labels.tableEditorPasteAsTable} onClick={onPasteTsv}>
           <ClipboardPaste size={iconSize} aria-hidden="true" />
         </Btn>
       </Group>
