@@ -92,11 +92,13 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const markdownRef = useRef(deferredMarkdown);
   const configRef = useRef(deferredConfig);
   const localeRef = useRef(state.locale);
+  const resourcesRef = useRef(state.resources);
   fontScaleRef.current = fontScale;
   columnModeRef.current = columnMode;
   markdownRef.current = deferredMarkdown;
   configRef.current = deferredConfig;
   localeRef.current = state.locale;
+  resourcesRef.current = state.resources;
 
   // Initialize shadow DOM structure once.
   useEffect(() => {
@@ -258,7 +260,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     try {
       const doc = await layoutWorker.build(
-        { markdown: currentMarkdown },
+        { markdown: currentMarkdown, resources: resourcesRef.current },
         configOverride,
       );
       if (seq !== renderSeqRef.current) return;

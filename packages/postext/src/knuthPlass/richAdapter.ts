@@ -25,6 +25,7 @@ interface RichToken {
   breakPoints?: RichBreakPoint[];
   hyphenWidth?: number;
   mathRender?: import('../math/types').MathRender;
+  refResourceId?: string;
 }
 
 export function richTokensToItems(
@@ -169,6 +170,7 @@ export function reconstructRichLines(
           bold: meta.bold || undefined,
           italic: meta.italic || undefined,
           ...(token.mathRender ? { mathRender: token.mathRender } : {}),
+          ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId } : {}),
         });
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {
@@ -196,7 +198,7 @@ export function reconstructRichLines(
         : 0;
       const lastIdx = lineSegments.length - 1;
       const last = lineSegments[lastIdx]!;
-      if (last.kind === 'text') {
+      if (last.kind === 'text' && last.refResourceId === undefined) {
         lineSegments[lastIdx] = {
           ...last,
           text: last.text + '-',

@@ -29,6 +29,13 @@ export interface RichToken {
   /** When present, this token is an atomic math formula. `text` is a single
    *  `\uFFFC` placeholder and `width` is the math render's widthPx. */
   mathRender?: MathRender;
+  /** When present, this token is an inline `:ref{\u2026}` to a resource. `text`
+   *  already carries the resolved label; the token is atomic (never wraps
+   *  apart) and the id flows onto the segment so renderers can colour/link it. */
+  refResourceId?: string;
+  /** True when this token belongs to a caption's numbered label. Flows to the
+   *  segment so renderers can apply the label colour. */
+  captionLabel?: boolean;
 }
 
 /**
@@ -45,6 +52,29 @@ function tokenizeSpans(
   const tokens: RichToken[] = [];
 
   for (const span of spans) {
+    // Inline `:ref` spans are atomic: the resolved label (already in `text`)
+    // is one non-breaking box so it never wraps apart. Kind 'text' keeps the
+    // generic layout/renderers treating it like a word; `refResourceId` flows
+    // onto the segment for link colouring / PDF link annotations.
+    if (span.ref) {
+      const refFont = span.bold && span.italic
+        ? boldItalicFont
+        : span.bold
+          ? boldFont
+          : span.italic
+            ? italicFont
+            : normalFont;
+      tokens.push({
+        text: span.text,
+        bold: span.bold,
+        italic: span.italic,
+        captionLabel: span.captionLabel,
+        kind: 'text',
+        width: measureTextWidth(span.text, refFont),
+        refResourceId: span.ref.resourceId,
+      });
+      continue;
+    }
     // Math spans are atomic: a single non-breaking box with the render's
     // widthPx. Kind 'text' is correct (not 'space') so trimming trailing
     // spaces from a line doesn't drop the formula.
@@ -53,6 +83,7 @@ function tokenizeSpans(
         text: span.text,
         bold: span.bold,
         italic: span.italic,
+        captionLabel: span.captionLabel,
         kind: 'text',
         width: span.mathRender.widthPx,
         mathRender: span.mathRender,
@@ -93,6 +124,7 @@ function tokenizeSpans(
           text: clean,
           bold: span.bold,
           italic: span.italic,
+          captionLabel: span.captionLabel,
           kind: 'text',
           width: cleanWidth,
           breakPoints,
@@ -103,6 +135,7 @@ function tokenizeSpans(
           text: part,
           bold: span.bold,
           italic: span.italic,
+          captionLabel: span.captionLabel,
           kind: isSpace ? 'space' : 'text',
           width: measureTextWidth(part, font),
         });
@@ -229,6 +262,7 @@ export function measureRichBlock(
             text: token.text.slice(0, chosen.charIndex) + '-',
             bold: token.bold,
             italic: token.italic,
+            captionLabel: token.captionLabel,
             kind: 'text',
             width: chosen.widthBefore + hyphenW,
           });
@@ -244,6 +278,7 @@ export function measureRichBlock(
             text: token.text.slice(chosenIdx),
             bold: token.bold,
             italic: token.italic,
+            captionLabel: token.captionLabel,
             kind: 'text',
             width: token.width - chosenWidth,
             ...(residualBreakPoints.length > 0
@@ -287,6 +322,8 @@ export function measureRichBlock(
       bold: t.bold || undefined,
       italic: t.italic || undefined,
       ...(t.mathRender ? { mathRender: t.mathRender } : {}),
+      ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId } : {}),
+      ...(t.captionLabel ? { captionLabel: true } : {}),
     }));
 
     const lineText = lineTokens.map((t) => cleanSoftHyphens(t.text)).join('');

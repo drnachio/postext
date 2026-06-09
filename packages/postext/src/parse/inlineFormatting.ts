@@ -1,5 +1,104 @@
 import type { InlineSpan } from './types';
 
+/** Atomic plain-text placeholder for an inline reference span. One code unit
+ *  per `:ref{…}` so `sourceMap` stays 1-to-1 (mirroring the inline-math
+ *  `MATH_PLACEHOLDER` technique). A distinct code point from the math
+ *  placeholder so `sourceMap` building and span injection can tell the two
+ *  apart even when a paragraph mixes refs and math. */
+export const REF_PLACEHOLDER = '⁣';
+
+/** Resolved metadata for an inline `:ref{…}` directive. The owning span's
+ *  `text` is a single `REF_PLACEHOLDER`; the pipeline later resolves the
+ *  reference to its computed number/label. */
+export interface RefMeta {
+  resourceId: string;
+  style?: 'default' | 'number' | 'full';
+  text?: string;
+  /** Absolute source offset of the leading `:` of `:ref{…}`. */
+  sourceStart: number;
+  /** Absolute source offset just past the closing `}`. */
+  sourceEnd: number;
+}
+
+/** `:ref{id="…"}` with optional `style=` and `text=` attributes. */
+const INLINE_REF_RE =
+  /:ref\{id="([^"]+)"(?:\s+style="(default|number|full)")?(?:\s+text="([^"]*)")?\}/g;
+
+/**
+ * Extract inline `:ref{…}` references from a line's text.
+ *  - Returns a cleaned text where each match is replaced by `REF_PLACEHOLDER`.
+ *  - Returns the list of ref metadata aligned with the order of placeholders.
+ *
+ *  This runs as the first inline pre-pass (before math and formatting) so that
+ *  a `text="…"` attribute cannot be mangled by later passes.
+ *
+ *  `fallbackStart` is the absolute source offset of `text[0]` in the original
+ *  markdown; ref offsets are computed relative to it.
+ */
+export function extractInlineRefs(
+  text: string,
+  fallbackStart: number,
+): { cleaned: string; refs: RefMeta[] } {
+  const refs: RefMeta[] = [];
+  let out = '';
+  let last = 0;
+  INLINE_REF_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = INLINE_REF_RE.exec(text)) !== null) {
+    out += text.slice(last, m.index);
+    const meta: RefMeta = {
+      resourceId: m[1]!,
+      sourceStart: fallbackStart + m.index,
+      sourceEnd: fallbackStart + m.index + m[0].length,
+    };
+    if (m[2] !== undefined) meta.style = m[2] as RefMeta['style'];
+    if (m[3] !== undefined) meta.text = m[3];
+    refs.push(meta);
+    out += REF_PLACEHOLDER;
+    last = m.index + m[0].length;
+  }
+  out += text.slice(last);
+  return { cleaned: out, refs };
+}
+
+/** Walk an InlineSpan list and attach a `ref` to each `REF_PLACEHOLDER`
+ *  occurrence in order. Splits plain-text spans around the placeholder so the
+ *  ref span is its own entry (carrying the ambient bold/italic). Mirrors
+ *  `injectMathSpans`. */
+export function injectRefSpans(spans: InlineSpan[], refs: RefMeta[]): InlineSpan[] {
+  if (refs.length === 0) return spans;
+  const out: InlineSpan[] = [];
+  let idx = 0;
+  for (const span of spans) {
+    if (span.text.indexOf(REF_PLACEHOLDER) < 0) {
+      out.push(span);
+      continue;
+    }
+    let buf = '';
+    for (const ch of span.text) {
+      if (ch === REF_PLACEHOLDER) {
+        if (buf.length > 0) {
+          out.push({ text: buf, bold: span.bold, italic: span.italic });
+          buf = '';
+        }
+        const meta = refs[idx++];
+        if (meta) {
+          const ref: InlineSpan['ref'] = { resourceId: meta.resourceId };
+          if (meta.style !== undefined) ref.style = meta.style;
+          if (meta.text !== undefined) ref.text = meta.text;
+          out.push({ text: REF_PLACEHOLDER, bold: span.bold, italic: span.italic, ref });
+        }
+      } else {
+        buf += ch;
+      }
+    }
+    if (buf.length > 0) {
+      out.push({ text: buf, bold: span.bold, italic: span.italic });
+    }
+  }
+  return out;
+}
+
 /**
  * Strip inline markdown formatting for plain-text extraction.
  * Handles bold, italic, code, links, and images.

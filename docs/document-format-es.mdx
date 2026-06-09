@@ -270,6 +270,124 @@ $$
 ```
 
 
+## Recursos
+
+Las imágenes, los SVG y las tablas no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el panel de Recursos del sandbox) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla a una banda en la parte superior o inferior de la página, cerca de esa referencia, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
+
+Ambas formas de abajo son sintaxis completamente nueva que no choca con CommonMark, por lo que un documento que las use sigue leyéndose como texto plano en cualquier otro visor de markdown.
+
+### Referencia en línea (la forma principal)
+
+Refiérete a un recurso desde el texto con `:ref{id="…"}`. La primera referencia **incorpora** el recurso (para que se coloque en la página) y renderiza su número calculado, precedido por defecto por la etiqueta corta del tipo:
+
+```md
+Como se ve en :ref{id="lighthouse-diagram"}, la sala de la linterna queda sobre la galería.
+```
+
+se renderiza como: *Como se ve en Fig. 1.7, la sala de la linterna queda sobre la galería.* — y el propio diagrama flota a la parte superior (o inferior) de la página, mientras esta frase y el texto posterior siguen fluyendo sin interrupción.
+
+El texto nunca se corta en el punto de la referencia. Dónde aterriza el recurso —arriba o abajo de la página, en una sola columna o a todo el ancho— lo decide su **colocación** (ver [Colocación](#colocacion-de-recursos) más abajo), no el lugar donde lo mencionas.
+
+### Inserción en bloque (opcional, colocación en línea explícita)
+
+A veces quieres que un recurso quede en un punto exacto del flujo en lugar de flotar. Renuncia al flotado dando al recurso `placement.position: "here"` e insertándolo con `::resource{id="…"}` en su propia línea:
+
+```md
+Aquí está el plano que comentamos.
+
+::resource{id="lighthouse-diagram"}
+
+Las dependencias del farero ocupan el ala este.
+```
+
+Para un recurso que flota, la directiva `::resource` es innecesaria —el `:ref` ya lo colocó, y un `::resource` redundante para el mismo id se trata como otra referencia, no como una segunda copia. Un `::resource` solo renderiza el recurso en línea cuando su colocación resuelta es `"here"`.
+
+El `id` debe coincidir con un recurso definido en el panel de Recursos. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.**
+
+Una inserción mal formada (sin `id`, con `id` vacío o con atributos de más) no se promueve a bloque de recurso; recae en el parseo de párrafo normal y sigue siendo visible en la salida, y el sandbox muestra un aviso.
+
+Las referencias en línea se reconocen dentro de cualquier bloque de texto — párrafos, encabezados, citas y elementos de lista — y pueden convivir con negrita, cursiva, código en línea y matemáticas en línea.
+
+#### Opciones de la referencia
+
+La directiva `:ref` admite dos atributos opcionales:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Sintaxis</th>
+      <th style={{ width: '160px' }}>Renderiza</th>
+      <th>Notas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>:ref&#123;id="…"&#125;</code></td>
+      <td><code>Fig. 1.7</code></td>
+      <td>Estilo por defecto: la etiqueta corta (<code>shortLabel</code>) del tipo seguida del número, unidas con un espacio irrompible para que nunca se separen al final de la línea.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" style="number"&#125;</code></td>
+      <td><code>1.7</code></td>
+      <td>El número calculado a secas, sin etiqueta.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" style="full"&#125;</code></td>
+      <td><code>Figura 1.7</code></td>
+      <td>El nombre completo (<code>name</code>) del tipo seguido del número. Útil al inicio de una frase o donde la abreviatura se lea mal.</td>
+    </tr>
+    <tr>
+      <td><code>:ref&#123;id="…" text="ver el plano"&#125;</code></td>
+      <td><code>ver el plano</code></td>
+      <td>Una anulación explícita. El texto dado se usa literalmente en lugar de cualquier etiqueta calculada — útil para enlaces de prosa como "como vimos antes". Cuando está presente, <code>text</code> tiene prioridad sobre <code>style</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Si un `:ref` (o un `::resource`) nombra un id sin recurso correspondiente, la etiqueta recae en `?` y el sandbox emite un aviso de **recurso desconocido**.
+
+### Numeración por primera referencia
+
+El número de un recurso se asigna **la primera vez que se menciona en orden de lectura** — sea esa primera mención una inserción en bloque `::resource` o una referencia en línea `:ref`. A partir de ahí, toda referencia al mismo id imprime ese mismo número.
+
+Esto significa que los números siguen el orden en que el lector los encuentra, no el orden en que se crearon los recursos en el panel:
+
+- Si haces `:ref` de una figura en la introducción y solo la insertas (`::resource`) dos páginas después, igualmente toma el número de la introducción — la referencia llegó primero.
+- Insertar una nueva referencia *antes* en el documento renumera automáticamente todo lo que viene después. No hay numeración manual que mantener sincronizada.
+
+La numeración es por tipo de recurso y respeta el ámbito de reinicio y el formato de contador de cada tipo — ver [Configuración › Tipos de recurso](/es/docs/configuration#tipos-de-recurso) para los tokens de plantilla (`{h1}`, `{n}`), `resetOn` y `counterFormat`.
+
+### Colocación
+
+Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, resuelta por recurso (su propio `placement`), luego el `defaultPlacement` de su tipo, y por último el valor por defecto integrado `top` / `column`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Campo</th>
+      <th style={{ width: '200px' }}>Valores</th>
+      <th>Significado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
+      <td>Flota a la banda superior o inferior de la página, o —con <code>"here"</code>— renuncia al flotado e inserta el recurso en línea en la directiva <code>::resource</code>.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>"column"</code> · <code>"page"</code></td>
+      <td>Ocupa una sola columna, o rompe el flujo de columnas y abarca todo el ancho del contenido cruzando todas las columnas. En una maquetación de una sola columna ambas opciones son idénticas.</td>
+    </tr>
+  </tbody>
+</table>
+
+Un flotante se coloca en la siguiente página que se abre tras su primera referencia, cerca de ella en orden de lectura. Si no cabe en la banda de esa página, **se difiere a la página siguiente** (nunca se reduce ni se parte). Los flotantes mantienen el orden de primera referencia, de modo que las figuras no se reordenan respecto a donde se mencionan.
+
+> **Nota:** el visor HTML aún no renderiza recursos; la previsualización en canvas y el backend PDF sí.
+
+
 ## Qué NO se soporta
 
 Postext no reconoce las siguientes características de CommonMark. O se tratan como texto plano (y por tanto aparecerán literalmente en la salida) o se descartan silenciosamente:

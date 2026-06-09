@@ -70,6 +70,7 @@ export function applyStyleAttrs(blk: VDTBlock, style: BlockStyle): void {
   if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
   if (style.boldColor) blk.boldColor = style.boldColor;
   if (style.italicColor) blk.italicColor = style.italicColor;
+  if (style.referenceColor) blk.refColor = style.referenceColor;
 }
 
 // ---------------------------------------------------------------------------
@@ -181,7 +182,14 @@ export function stampSourceRanges(
     // accurate plain-char count (excludes trailing hyphen for hyphenated lines).
     let lineLen: number;
     if (line.segments && line.segments.length > 0) {
-      lineLen = line.segments.reduce((s, seg) => s + seg.text.length, 0);
+      // An inline `:ref` segment renders a multi-char label but occupies a
+      // single placeholder char in the block's plain text / `sourceMap`. Count
+      // it as 1 so plain offsets stay aligned with the source map for any text
+      // that follows the reference (mirrors the math placeholder).
+      lineLen = line.segments.reduce(
+        (s, seg) => s + (seg.refResourceId !== undefined ? 1 : seg.text.length),
+        0,
+      );
       if (line.hyphenated) {
         const last = line.segments[line.segments.length - 1]!;
         if (last.text.endsWith('-')) lineLen -= 1;

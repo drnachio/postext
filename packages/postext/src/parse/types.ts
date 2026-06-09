@@ -4,6 +4,7 @@ export type ContentBlockType =
   | 'blockquote'
   | 'listItem'
   | 'mathDisplay'
+  | 'resourceBlock'
   | 'directive';
 
 /** Attributes parsed from a `:::name{key="v" other=bare flag}` directive.
@@ -30,12 +31,29 @@ export interface InlineSpan {
   text: string;
   bold: boolean;
   italic: boolean;
+  /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
+   *  so renderers can paint it in the configured label colour. Flows span →
+   *  token → segment, mirroring {@link ref}. */
+  captionLabel?: boolean;
   /** Present when this span carries an inline math formula. The `text` is
    *  a single `\uFFFC` placeholder that layout treats atomically. */
   math?: MathMeta;
   /** Resolved math render — populated by the pipeline before measurement
    *  so the parser remains free of MathJax dependencies. */
   mathRender?: import('../math/types').MathRender;
+  /** Present when this span is an inline reference to a `Resource`. The
+   *  `text` carries placeholder/fallback content; the pipeline resolves the
+   *  reference to its computed number/label. */
+  ref?: {
+    /** The referenced `Resource.id`. */
+    resourceId: string;
+    /** Rendering style: `'default'` uses the type short label + number,
+     *  `'number'` is the bare number, `'full'` is the full caption prefix +
+     *  number. */
+    style?: 'default' | 'number' | 'full';
+    /** Optional override text to display instead of the computed label. */
+    text?: string;
+  };
 }
 
 /** Convenience discriminants for inline span iteration. */
@@ -77,6 +95,8 @@ export interface ContentBlock {
   directiveName?: DirectiveName;
   /** For `directive` blocks: parsed attributes. */
   directiveAttrs?: DirectiveAttrs;
+  /** For `resourceBlock` blocks: the referenced `Resource.id`. */
+  resourceId?: string;
   /** Character offset of the first source character of this block in the original markdown */
   sourceStart: number;
   /** Character offset just past the last source character of this block */

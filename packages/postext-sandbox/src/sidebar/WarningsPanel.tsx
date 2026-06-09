@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
-import { AlertTriangle, Type, FileWarning, Heading, List, FileText, Sigma } from 'lucide-react';
+import { AlertTriangle, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database } from 'lucide-react';
 import { useSandbox } from '../context/SandboxContext';
 import { computeWarnings } from '../warnings/compute';
+import { hasIndexedDB } from '../storage/blobStore';
 import type { Warning, WarningPayload } from '../warnings/types';
 import type { SandboxLabels } from '../types';
 
@@ -43,6 +44,14 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'headingSpanWithoutBreak':
     case 'headingAdvancedWithoutTitleText':
       return Heading;
+    case 'unknownResourceId':
+    case 'unusedResource':
+    case 'duplicateResourceId':
+    case 'danglingTypeRef':
+    case 'bitmapTooSmall':
+      return Image;
+    case 'storageUnavailable':
+      return Database;
     default:
       return AlertTriangle;
   }
@@ -97,6 +106,18 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeadingSpanWithoutBreakTitle ?? 'Heading span without break';
     case 'headingAdvancedWithoutTitleText':
       return labels.warningsHeadingAdvancedWithoutTitleTextTitle ?? 'Heading title not referenced';
+    case 'unknownResourceId':
+      return labels.warningsUnknownResourceIdTitle ?? 'Unknown resource';
+    case 'unusedResource':
+      return labels.warningsUnusedResourceTitle ?? 'Unused resource';
+    case 'duplicateResourceId':
+      return labels.warningsDuplicateResourceIdTitle ?? 'Duplicate resource id';
+    case 'danglingTypeRef':
+      return labels.warningsDanglingTypeRefTitle ?? 'Unknown resource type';
+    case 'bitmapTooSmall':
+      return labels.warningsBitmapTooSmallTitle ?? 'Low-resolution image';
+    case 'storageUnavailable':
+      return labels.warningsStorageUnavailableTitle ?? 'Storage unavailable';
   }
 }
 
@@ -166,6 +187,22 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `H${payload.level} — ${labels.warningsHeadingSpanWithoutBreakDetail ?? 'span is "page" but breakBefore is disabled'}`;
     case 'headingAdvancedWithoutTitleText':
       return `H${payload.level} — ${labels.warningsHeadingAdvancedWithoutTitleTextDetail ?? 'no element references {titleText}; the heading text will not appear'}`;
+    case 'unknownResourceId': {
+      const where = payload.usage === 'embed' ? '::resource' : ':ref';
+      return `${where}{id=${payload.resourceId}} — ${labels.warningsUnknownResourceIdDetail ?? 'no resource with this id exists'}`;
+    }
+    case 'unusedResource': {
+      const name = payload.caption ? `"${payload.caption}" ` : '';
+      return `${name}#${payload.resourceId} — ${labels.warningsUnusedResourceDetail ?? 'defined but never embedded or referenced'}`;
+    }
+    case 'duplicateResourceId':
+      return `#${payload.resourceId} ×${payload.count} — ${labels.warningsDuplicateResourceIdDetail ?? 'multiple resources share this id; only one resolves'}`;
+    case 'danglingTypeRef':
+      return `#${payload.resourceId} → ${payload.typeId} — ${labels.warningsDanglingTypeRefDetail ?? 'resource type no longer exists; a default is used'}`;
+    case 'bitmapTooSmall':
+      return `#${payload.resourceId} · ${payload.renderedWidth}px / ${payload.bitmapWidth}px — ${labels.warningsBitmapTooSmallDetail ?? 'rendered larger than its native size; may look blurry'}`;
+    case 'storageUnavailable':
+      return labels.warningsStorageUnavailableDetail ?? 'IndexedDB is unavailable; uploaded images cannot be saved';
   }
 }
 
@@ -241,13 +278,20 @@ function WarningItem({
 
 export function WarningsPanel() {
   const { state, dispatch, docRef } = useSandbox();
-  const { markdown, config, labels, docVersion } = state;
+  const { markdown, config, labels, docVersion, resources } = state;
 
   const warnings = useMemo(
-    () => computeWarnings({ markdown, config, doc: docRef.current }),
+    () =>
+      computeWarnings({
+        markdown,
+        config,
+        doc: docRef.current,
+        resources,
+        storageUnavailable: !hasIndexedDB(),
+      }),
     // docRef is a ref — rely on docVersion to re-compute when the doc changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [markdown, config, docVersion],
+    [markdown, config, docVersion, resources],
   );
 
   const handleClick = (w: Warning) => {

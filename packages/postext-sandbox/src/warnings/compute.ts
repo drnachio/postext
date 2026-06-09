@@ -3,6 +3,8 @@ import type {
   VDTDocument,
   ResolvedDebugConfig,
   ContentBlock,
+  Resource,
+  ResourceType,
 } from 'postext';
 import {
   parseMarkdownWithIssues,
@@ -382,12 +384,137 @@ function collectListAfterHeadingWarnings(blocks: ContentBlock[], markdown: strin
   return out;
 }
 
+/** Bitmaps rendered wider than this multiple of their natural pixel width are
+ *  flagged as upscaled (blurry). Mirrors issue #49 §8. */
+const BITMAP_UPSCALE_THRESHOLD = 1.5;
+
+/**
+ * Resource integrity warnings (issue #49 §8):
+ *   - unknownResourceId: an `::resource` embed or `:ref` inline reference whose
+ *     id is not in `resources`.
+ *   - unusedResource: a resource that is never embedded or referenced.
+ *   - duplicateResourceId: two or more resources sharing the same id.
+ *   - danglingTypeRef: a resource whose `typeId` is not a known `ResourceType`.
+ *   - bitmapTooSmall: a bitmap rendered larger than 1.5× its natural width.
+ */
+function collectResourceWarnings(
+  blocks: ContentBlock[],
+  markdown: string,
+  resources: Resource[],
+  resourceTypes: ResourceType[],
+  doc: VDTDocument | null,
+): Warning[] {
+  const out: Warning[] = [];
+  let idx = 0;
+
+  // Map of id -> count to detect duplicates and existence.
+  const idCounts = new Map<string, number>();
+  for (const r of resources) {
+    idCounts.set(r.id, (idCounts.get(r.id) ?? 0) + 1);
+  }
+  const knownIds = new Set(idCounts.keys());
+  const knownTypeIds = new Set(resourceTypes.map((t) => t.id));
+
+  // Track which resource ids are actually used (embedded or referenced).
+  const usedIds = new Set<string>();
+
+  // 1. Walk blocks for embeds (`::resource`) and inline `:ref`s, flagging
+  //    unknown ids and recording usage with source positions for navigation.
+  for (const b of blocks) {
+    if (b.type === 'resourceBlock' && b.resourceId !== undefined) {
+      usedIds.add(b.resourceId);
+      if (!knownIds.has(b.resourceId)) {
+        out.push({
+          id: `resource-unknown-embed-${idx++}-${b.sourceStart}`,
+          payload: { kind: 'unknownResourceId', resourceId: b.resourceId, usage: 'embed' },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    }
+    for (const span of b.spans) {
+      const ref = span.ref;
+      if (!ref) continue;
+      usedIds.add(ref.resourceId);
+      if (!knownIds.has(ref.resourceId)) {
+        out.push({
+          id: `resource-unknown-ref-${idx++}-${b.sourceStart}-${ref.resourceId}`,
+          payload: { kind: 'unknownResourceId', resourceId: ref.resourceId, usage: 'ref' },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    }
+  }
+
+  // 2. Per-resource integrity: duplicates, dangling type refs, unused.
+  //    Duplicates are reported once per colliding id.
+  const reportedDuplicate = new Set<string>();
+  for (const r of resources) {
+    const count = idCounts.get(r.id) ?? 1;
+    if (count > 1 && !reportedDuplicate.has(r.id)) {
+      reportedDuplicate.add(r.id);
+      out.push({
+        id: `resource-duplicate-${r.id}`,
+        payload: { kind: 'duplicateResourceId', resourceId: r.id, count },
+      });
+    }
+    if (!knownTypeIds.has(r.typeId)) {
+      out.push({
+        id: `resource-dangling-type-${idx++}-${r.id}`,
+        payload: { kind: 'danglingTypeRef', resourceId: r.id, typeId: r.typeId },
+      });
+    }
+    if (!usedIds.has(r.id)) {
+      out.push({
+        id: `resource-unused-${idx++}-${r.id}`,
+        payload: { kind: 'unusedResource', resourceId: r.id, caption: r.caption },
+      });
+    }
+  }
+
+  // 3. bitmapTooSmall: compare rendered body width against the bitmap's
+  //    natural pixel width from the measured VDT.
+  if (doc) {
+    const seen = new Set<string>();
+    for (const block of doc.blocks) {
+      const rb = block.resourceBlock;
+      if (!rb || rb.kind !== 'bitmap') continue;
+      const bitmapWidth = rb.resource.bitmap?.width;
+      if (!bitmapWidth || bitmapWidth <= 0) continue;
+      const renderedWidth = rb.bodyRect.width;
+      if (renderedWidth > bitmapWidth * BITMAP_UPSCALE_THRESHOLD) {
+        const key = rb.resource.id;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({
+          id: `resource-bitmap-small-${key}`,
+          payload: {
+            kind: 'bitmapTooSmall',
+            resourceId: key,
+            renderedWidth: Math.round(renderedWidth),
+            bitmapWidth,
+          },
+        });
+      }
+    }
+  }
+
+  return out;
+}
+
 export function computeWarnings(params: {
   markdown: string;
   config: PostextConfig;
   doc: VDTDocument | null;
+  resources?: Resource[];
+  /** True when IndexedDB is unavailable, so binary resource payloads cannot
+   *  be persisted or resolved. Surfaces the `storageUnavailable` warning. */
+  storageUnavailable?: boolean;
 }): Warning[] {
-  const { markdown, config, doc } = params;
+  const { markdown, config, doc, resources = [], storageUnavailable = false } = params;
   const debug = resolveDebugConfig(config.debug);
   const toggles = debug.warnings;
   const warnings: Warning[] = [];
@@ -492,6 +619,13 @@ export function computeWarnings(params: {
   warnings.push(...collectAlphaOverflowWarnings(doc));
   if (toggles.designIssues) {
     warnings.push(...collectDesignWarnings(config));
+  }
+
+  warnings.push(
+    ...collectResourceWarnings(blocks, markdown, resources, config.resourceTypes ?? [], doc),
+  );
+  if (storageUnavailable) {
+    warnings.push({ id: 'resource-storage-unavailable', payload: { kind: 'storageUnavailable' } });
   }
 
   return warnings;

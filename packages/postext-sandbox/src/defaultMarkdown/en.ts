@@ -24,6 +24,8 @@ Modern CSS is a remarkably powerful tool for building user interfaces. Flexbox, 
 - **Application layout** arranges interactive components such as buttons, forms, navigation bars, and cards within a viewport that the user can scroll freely
 - **Editorial layout** arranges flowing text, images, tables, figures, and annotations across a series of fixed-dimension pages or columns, following strict typographic rules inherited from centuries of print tradition
 
+The contrast in :ref{id="feature-comparison"} summarises where the two approaches diverge for long-form documents. (Notice that referencing it is enough — the table floats to the top of the page on its own; you never place it twice.)
+
 CSS handles the first case brilliantly. For the second case, it falls short in critical ways that have never really been addressed by the platform:
 
 1. **No native multi-column text flow with reflow awareness**
@@ -61,7 +63,7 @@ There are, of course, tools that address parts of this problem. Word processors 
 - Their output is static, not interactive, and rarely preserves the semantic structure that accessibility tools depend on
 - Their source formats are either proprietary, binary, or so complex that they are difficult to generate programmatically
 
-Postext occupies a unique position in this landscape. It is a **JavaScript library** that runs in the browser, takes Markdown as input, applies professional typographic rules, and produces a layout that can be rendered as HTML, as canvas, or as PDF. It is designed to be embedded, configured, and extended by web developers who want publication-grade results without leaving their familiar toolchain. It uses the web as both an editing surface and a first-class rendering target, rather than treating it as an afterthought.
+Postext occupies a unique position in this landscape. It is a **JavaScript library** that runs in the browser, takes Markdown as input, applies professional typographic rules, and produces a layout that can be rendered as HTML, as canvas, or as PDF. It is designed to be embedded, configured, and extended by web developers who want publication-grade results without leaving their familiar toolchain. It uses the web as both an editing surface and a first-class rendering target, rather than treating it as an afterthought. The full-width table :ref{id="tools-comparison"} positions Postext against the established alternatives at a glance.
 
 ## How Postext Works
 
@@ -69,7 +71,7 @@ Understanding the architecture of Postext is the fastest way to understand what 
 
 ### The Processing Pipeline
 
-The Postext layout engine processes content through a carefully orchestrated pipeline. Each stage builds upon the results of the previous one, gradually transforming raw Markdown into a complete, precisely measured layout. Understanding this pipeline is key to understanding the design philosophy of the project, and it also clarifies which parts of the engine you can replace, extend, or reuse in isolation.
+The Postext layout engine processes content through a carefully orchestrated pipeline. Each stage builds upon the results of the previous one, gradually transforming raw Markdown into a complete, precisely measured layout. Understanding this pipeline is key to understanding the design philosophy of the project, and it also clarifies which parts of the engine you can replace, extend, or reuse in isolation. The diagram in :ref{id="layout-pipeline"} summarises the journey from source text to rendered output — a single-column figure that floats to the top of the page. The approximate per-stage cost is collected in the single-column table :ref{id="runtime-metrics"}.
 
 #### Input Layer
 
@@ -96,7 +98,7 @@ Before the engine can decide where to place each element, it must know how much 
 
 The measurement challenge is significant. Text rendering is complex because the width and height of a paragraph depend on the font, the font size, the line height, the available width, the hyphenation rules, and many other factors. Traditionally, the only way to measure text accurately in a browser is to render it into the DOM and read back the computed dimensions. This approach is slow, as it triggers layout reflows that can block the main thread for hundreds of milliseconds per paragraph on realistic documents.
 
-Postext takes a fundamentally different approach. The _pretext_ library performs **DOM-free text measurement** using canvas font metrics and pure arithmetic. This technique is between 300 and 600 times faster than DOM-based measurement, depending on the browser and the document, and it works by combining three ingredients:
+Postext takes a fundamentally different approach. The _pretext_ library performs **DOM-free text measurement** using canvas font metrics and pure arithmetic. This technique is between 300 and 600 times faster than DOM-based measurement, depending on the browser and the document, as the chart in :ref{id="measurement-speed"} makes vivid, and it works by combining three ingredients:
 
 1. Loading font metrics from the canvas API
    - Glyph widths and advance metrics
@@ -127,7 +129,7 @@ The layout engine operates iteratively. It makes an initial placement pass and t
 - Eliminating that widow might require pulling content back, which could break the heading-paragraph constraint
 - A figure that should appear at the top of the next column might get deferred one more column if it would otherwise push an orphan into the top of the current one
 
-These circular dependencies are resolved through a **convergence loop** that runs up to five iterations. In practice, most layouts converge within two or three iterations. The engine detects when no further improvements can be made and stops early, so the cap is a safety net rather than a typical code path. The data structure that survives this loop is known internally as the **VDT**, the virtual document tree, and it is the single source of truth that every renderer consumes.
+These circular dependencies are resolved through a **convergence loop** that runs up to five iterations, illustrated full width across both columns in :ref{id="convergence-loop"}. In practice, most layouts converge within two or three iterations. The engine detects when no further improvements can be made and stops early, so the cap is a safety net rather than a typical code path. The data structure that survives this loop is known internally as the **VDT**, the virtual document tree, and it is the single source of truth that every renderer consumes.
 
 The layout engine produces a VDT that describes the exact position and dimensions of every element on every page. This structure is format-agnostic, meaning it contains pure geometry without any rendering-specific information, and that format-agnosticism is precisely what allows Canvas, HTML, and PDF to produce matching output.
 
@@ -158,7 +160,7 @@ The following features are where Postext invests most of its effort. Each of the
 
 ### Orphan and Widow Prevention
 
-In professional typography, an **orphan** is a single line of a paragraph that appears alone at the top of a column or page, separated from the rest of its paragraph. A **widow** is a single line that appears alone at the bottom of a column or page. Both are considered serious typographic flaws because they disrupt the visual rhythm of the text and make it harder for readers to maintain their flow.
+In professional typography, an **orphan** is a single line of a paragraph that appears alone at the top of a column or page, separated from the rest of its paragraph. A **widow** is a single line that appears alone at the bottom of a column or page. Both are considered serious typographic flaws because they disrupt the visual rhythm of the text and make it harder for readers to maintain their flow. The figure :ref{id="orphan-widow"} shows both defects side by side across a column boundary.
 
 Postext provides configurable orphan and widow prevention:
 
@@ -194,7 +196,7 @@ The hyphenation system exposes the following controls:
 
 For justified text, Postext implements the full **Knuth-Plass optimal line breaking algorithm**, the same algorithm that has powered TeX since 1981. Unlike the greedy first-fit approach that CSS uses, Knuth-Plass evaluates every possible way to break an entire paragraph and selects the combination that minimises total _badness_ across all lines. The result is justified text whose inter-word spacing is visibly more even than anything the browser can produce natively.
 
-The algorithm models text as a sequence of three primitives:
+The algorithm models text as a sequence of three primitives, laid out full width in :ref{id="knuth-plass-model"}:
 
 - **Boxes** are words or word fragments that have a fixed width and cannot be stretched, compressed, or broken
 - **Glues** are inter-word spaces that have a natural width plus stretch and shrink capacities, so the engine can adjust them to fill the line
@@ -229,7 +231,7 @@ Vertical spacing in editorial typography follows strict rules that maintain the 
 - **List spacing** controls the distance between list items and between nested levels
    - Items within a list can be tightly or loosely spaced
    - Nested lists can have additional indentation and different bullet styles at each level
-- **Baseline grid alignment** snaps text to a regular vertical grid
+- **Baseline grid alignment** snaps text to a regular vertical grid, as :ref{id="baseline-grid"} illustrates
    - This ensures that text in adjacent columns aligns horizontally
    - It creates a sense of order and stability across the entire page
    - Elements that break the grid, such as headings with larger font sizes, can be configured to realign to the grid afterwards
@@ -247,7 +249,7 @@ One of the most distinctive features of editorial layout is the use of multiple 
 - They create visual variety and structure on the page
 - They provide opportunities for sophisticated resource placement and for mixing narrow textual passages with wide figures
 
-Postext supports flexible multi-column configurations:
+Postext supports flexible multi-column configurations, the most common of which are previewed as page thumbnails in :ref{id="column-layouts"}:
 
 1. **Column count** can be set to any positive integer, or chosen from several preset layouts
    - Single-column layouts for narrow viewports or focused reading
@@ -304,7 +306,7 @@ Resources are everything that is not flowing text: images, tables, figures, pull
 
 In editorial design, resources such as images, tables, figures, and pull quotes are not simply inserted inline at the point where they are referenced. Instead, they are placed according to strategies that optimise the visual quality of the page and the readability of the surrounding text. A reference in the text is a _hint_ about where a resource belongs, not a command.
 
-Postext supports several placement strategies:
+Postext supports several placement strategies, summarised in the table :ref{id="placement-options"} and sketched together on a single page in :ref{id="placement-strategies"}:
 
 - **Top of column** places the resource at the top of the current or next available column
    - This is the most common strategy in academic and professional publishing
@@ -327,7 +329,7 @@ Postext supports several placement strategies:
 
 ### Aspect Ratio and Sizing
 
-When placing resources, Postext preserves aspect ratios and provides multiple sizing options:
+When placing resources, Postext preserves aspect ratios and provides multiple sizing options, collected in :ref{id="sizing-options"}:
 
 1. **Natural size** uses the intrinsic dimensions of the resource
 2. **Column width** scales the resource to fill the width of a single column
@@ -389,7 +391,7 @@ Everything described so far can be explored right now without writing a single l
 
 ### Interface Layout
 
-The Sandbox follows a familiar IDE paradigm with three main areas:
+The Sandbox follows a familiar IDE paradigm with three main areas, sketched in :ref{id="sandbox-ui"}:
 
 - An **activity bar** on the far left that switches between panels and hosts global actions
 - A **resizable sidebar** that hosts the active panel, whether that is the markdown editor, the configuration form, or the warnings list
@@ -497,7 +499,7 @@ Each section override specifies which configuration values to change. Unspecifie
 
 ### Preset Sizes and Named Palettes
 
-Postext includes a set of **preset page sizes** that correspond to common book and document formats:
+Postext includes a set of **preset page sizes** that correspond to common book and document formats, gathered in :ref{id="preset-sizes"}:
 
 - **11 x 17 cm** for small paperback books and pocket guides
 - **12 x 19 cm** for standard fiction paperbacks
@@ -539,7 +541,7 @@ The long-term vision includes:
 
 ### Development Phases
 
-The development of Postext is organised into four major phases. These phases are not strict milestones; they describe the rough order in which capabilities become stable and ready for production use.
+The development of Postext is organised into four major phases, summarised in the full-width table :ref{id="development-phases"}. These phases are not strict milestones; they describe the rough order in which capabilities become stable and ready for production use.
 
 1. **Foundation**
    - Core data structures and type system

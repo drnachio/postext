@@ -1581,6 +1581,129 @@ const minimal  = stripMathDefaults(config.math);
 Para la gramática del documento (`$...$`, `$$...$$`, cómo escapar un dólar literal), consulta [Formato del documento](/es/docs/document-format#fórmulas-matemáticas).
 
 
+## Tipos de recurso
+
+Un **tipo de recurso** es una categoría definible por el usuario — *Figura*, *Tabla*, *Diagrama*, *Listado*… — que determina cómo se numeran, cómo se rotula su pie y cómo se referencian los recursos de esa clase. La lista vive en `config.resourceTypes`; el sandbox la edita mediante una sección específica del panel de configuración.
+
+Cuando `config.resourceTypes` no está definido, Postext incluye dos valores por defecto integrados: **Figura** y **Tabla**, ambos numerados como `{h1}.{n}` (reiniciando en cada encabezado de nivel 1) con contadores decimales.
+
+```ts
+type ResourceCounterFormat =
+  | 'decimal'
+  | 'roman-lower'
+  | 'roman-upper'
+  | 'alpha-lower'
+  | 'alpha-upper';
+
+type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+interface ResourceType {
+  id: string;                          // id estable, referenciado por Resource.typeId
+  name: string;                        // nombre singular, p. ej. "Figura"
+  namePlural?: string;                 // plural opcional, p. ej. "Figuras"
+  shortLabel: string;                  // etiqueta corta para refs en línea, p. ej. "Fig."
+  numberingTemplate: string;           // "{h1}.{n}" o "{n}"
+  resetOn: ResourceCounterReset;       // cuándo se reinicia el contador {n}
+  counterFormat: ResourceCounterFormat;// cómo se formatea {n}
+  captionPrefix: string;               // prefijo del pie, p. ej. "Figura"
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>Identificador estable referenciado por el <code>typeId</code> de cada recurso. Se fija al crear el tipo; borrar un tipo al que aún apuntan recursos genera un aviso de <strong>tipo colgante</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td>Nombre singular. Lo usa la referencia en línea con <code>style="full"</code> (p. ej. <code>Figura 1.7</code>).</td>
+    </tr>
+    <tr>
+      <td><code>namePlural</code></td>
+      <td><code>string</code> (opcional)</td>
+      <td>Nombre plural, para etiquetas de la interfaz y listas de recursos.</td>
+    </tr>
+    <tr>
+      <td><code>shortLabel</code></td>
+      <td><code>string</code></td>
+      <td>Abreviatura compacta que usa el estilo de referencia en línea por defecto (p. ej. <code>Fig. 1.7</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td>Plantilla del número calculado. Ver <strong>Tokens de plantilla</strong> más abajo. Las formas habituales son <code>{'{h1}.{n}'}</code> (ámbito de capítulo, p. ej. <code>2.3</code>) y <code>{'{n}'}</code> (un único conteo continuo).</td>
+    </tr>
+    <tr>
+      <td><code>resetOn</code></td>
+      <td><code>ResourceCounterReset</code></td>
+      <td><code>'never'</code> da un conteo continuo para todo el documento; <code>'h1'</code>..<code>'h6'</code> reinician el contador <code>{'{n}'}</code> cada vez que se encuentra un encabezado de ese nivel (o de cualquier ancestro). Ajústalo para que coincida con el nivel de encabezado que aparece en la plantilla — p. ej. <code>{'{h1}.{n}'}</code> con <code>resetOn: 'h1'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counterFormat</code></td>
+      <td><code>ResourceCounterFormat</code></td>
+      <td>Cómo se renderiza el contador <code>{'{n}'}</code>: decimal (<code>1, 2, 3</code>), romano minúsculo/mayúsculo (<code>i, ii</code> / <code>I, II</code>) o alfabético minúsculo/mayúsculo (<code>a, b</code> / <code>A, B</code>). Los tokens de encabezado (<code>{'{h1}'}</code>…) se renderizan siempre como decimales.</td>
+    </tr>
+    <tr>
+      <td><code>captionPrefix</code></td>
+      <td><code>string</code></td>
+      <td>Texto que se antepone al pie de figura/tabla. El número calculado sigue al prefijo — un pie se renderiza como <code>{'{captionPrefix}'} {'{número}'}. {'{texto del pie}'}</code>, p. ej. <strong>Figura 1.7. El plano original.</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+### Tokens de plantilla
+
+`numberingTemplate` se renderiza con el mismo motor que la numeración de encabezados (ver [Encabezados](#encabezados)). Reconoce dos clases de token:
+
+- `{n}` — el contador por tipo, formateado según `counterFormat`. Es el valor que se incrementa por recurso y se reinicia según `resetOn`.
+- `{h1}` … `{h6}` — los números de encabezado vigentes en el punto de la primera referencia, renderizados siempre como decimales. `{h1}` es el número del encabezado de nivel 1 actual, `{h2}` el de nivel 2, y así sucesivamente.
+
+Cualquier otro texto es literal. Una barra invertida escapa un `{`, `}` o `\` literal. Cuando un token de encabezado no tiene valor en su ámbito (p. ej. `{h1}` antes de cualquier encabezado de nivel 1), colapsa junto con su separador adyacente — así `{h1}.{n}` degrada con elegancia al contador a secas.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Plantilla</th>
+      <th style={{ width: '180px' }}>Con <code>h1 = 2</code>, contador = 3</th>
+      <th>Notas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{'{n}'}</code></td>
+      <td><code>3</code></td>
+      <td>Un único conteo continuo. Combínalo con <code>resetOn: 'never'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{n}'}</code></td>
+      <td><code>2.3</code></td>
+      <td>Ámbito de capítulo. Combínalo con <code>resetOn: 'h1'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{h2}.{n}'}</code></td>
+      <td><code>2.0.3</code></td>
+      <td>Ámbito de sección. Combínalo con <code>resetOn: 'h2'</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Numeración y referencias
+
+El número que produce un tipo de recurso es lo que imprime `:ref` y lo que precede el prefijo del pie. La gramática del lado del documento — la inserción en bloque `::resource{id}` y la referencia en línea `:ref{id}`, junto con sus opciones `style` y `text` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
+
+Esto refleja la numeración de encabezados: igual que un nivel de encabezado lleva un `numberingTemplate`, un tipo de recurso también lo lleva — pero el contador del recurso (`{n}`) avanza por primera referencia en lugar de por encabezado, y `resetOn` lo ata de vuelta a la jerarquía de encabezados.
+
+
 ## Unidades y colores
 
 ### Dimensiones

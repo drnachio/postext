@@ -22,7 +22,13 @@ export type WarningKind =
   | 'designDanglingAnchor'
   | 'designTextClipAlwaysTruncates'
   | 'headingSpanWithoutBreak'
-  | 'headingAdvancedWithoutTitleText';
+  | 'headingAdvancedWithoutTitleText'
+  | 'unknownResourceId'
+  | 'unusedResource'
+  | 'duplicateResourceId'
+  | 'danglingTypeRef'
+  | 'bitmapTooSmall'
+  | 'storageUnavailable';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -90,7 +96,31 @@ export type WarningPayload =
       elementId: string;
     }
   | { kind: 'headingSpanWithoutBreak'; level: number }
-  | { kind: 'headingAdvancedWithoutTitleText'; level: number };
+  | { kind: 'headingAdvancedWithoutTitleText'; level: number }
+  /** A `::resource{id=…}` block or `:ref{id=…}` inline reference points at a
+   *  resource id that does not exist in the resources list. `usage` records
+   *  whether it came from an embed block or an inline reference. */
+  | { kind: 'unknownResourceId'; resourceId: string; usage: 'embed' | 'ref' }
+  /** A resource is defined but never embedded or referenced anywhere in the
+   *  markdown. */
+  | { kind: 'unusedResource'; resourceId: string; caption?: string }
+  /** Two or more resources share the same id. Only one of them resolves at
+   *  render time; the warning names the colliding id and how many share it. */
+  | { kind: 'duplicateResourceId'; resourceId: string; count: number }
+  /** A resource's `typeId` points at a `ResourceType` that no longer exists in
+   *  the config. The resource falls back to a default type at render time. */
+  | { kind: 'danglingTypeRef'; resourceId: string; typeId: string }
+  /** A bitmap is rendered substantially larger than its natural pixel size
+   *  (rendered width > natural width × 1.5), so it will look blurry. */
+  | {
+      kind: 'bitmapTooSmall';
+      resourceId: string;
+      renderedWidth: number;
+      bitmapWidth: number;
+    }
+  /** IndexedDB is unavailable (private browsing / storage disabled), so
+   *  uploaded bitmaps and SVGs cannot be persisted or resolved. */
+  | { kind: 'storageUnavailable' };
 
 export interface Warning {
   id: string;

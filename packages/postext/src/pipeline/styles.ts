@@ -14,6 +14,12 @@ export interface BlockStyle {
   color: string;
   boldColor?: string;
   italicColor?: string;
+  /** Colour for inline `:ref` reference labels. */
+  referenceColor?: string;
+  /** Whether reference labels render in the bold font. */
+  referenceBold?: boolean;
+  /** Whether reference labels render italic. */
+  referenceItalic?: boolean;
   textAlign: TextAlign;
   hyphenate: boolean;
   marginTopPx: number;
@@ -37,7 +43,7 @@ export function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = resolved.bodyText.hangingIndent;
   const marginBottomPx = resolved.bodyText.paragraphSpacing ? lineHeightPx : 0;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, boldColor: resolved.bodyText.boldColor?.hex, italicColor: resolved.bodyText.italicColor?.hex, textAlign, hyphenate, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent };
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: resolved.bodyText.color.hex, boldColor: resolved.bodyText.boldColor?.hex, italicColor: resolved.bodyText.italicColor?.hex, referenceColor: resolved.bodyText.referenceColor.hex, referenceBold: resolved.bodyText.referenceBold, referenceItalic: resolved.bodyText.referenceItalic, textAlign, hyphenate, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent };
 }
 
 export function resolveHeadingStyle(
