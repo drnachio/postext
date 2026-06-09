@@ -14,6 +14,8 @@ name: Release
 on:
   push:
     branches: [main]
+  # Manual recovery: re-run a release without a new merge (e.g. after fixing NPM_TOKEN)
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -78,6 +80,15 @@ jobs:
         id: version
         working-directory: packages/postext
         run: |
+          # If a previous run published but failed to push the bump commit,
+          # the repo lags the registry — rebase the bump on whichever is higher.
+          NPM_VERSION=$(npm view postext version 2>/dev/null || echo "0.0.0")
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          BASE=$(printf '%s\n%s\n' "$NPM_VERSION" "$LOCAL_VERSION" | sort -V | tail -1)
+          if [ "$BASE" != "$LOCAL_VERSION" ]; then
+            echo "Repo at $LOCAL_VERSION but npm at $NPM_VERSION — syncing to $BASE first"
+            npm version "$BASE" --no-git-tag-version --allow-same-version
+          fi
           npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -101,7 +112,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/postext/package.json
           git commit -m "chore: release v${{ steps.version.outputs.version }}"
-          git tag "v${{ steps.version.outputs.version }}"
+          # Annotated tag: --follow-tags only pushes annotated tags, not lightweight ones
+          git tag -a "v${{ steps.version.outputs.version }}" -m "v${{ steps.version.outputs.version }}"
           git push origin main --follow-tags
 
       # Keep develop in sync with the version bump
