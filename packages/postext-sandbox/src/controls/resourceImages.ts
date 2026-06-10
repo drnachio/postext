@@ -53,10 +53,58 @@ async function decodeImage(rec: BlobRecord, inkHex: string | null): Promise<Canv
   return createImageBitmap(blob);
 }
 
+/** fileId → object URL handed to the HTML backend, with the variant it was
+ *  built for. Kept separate from the canvas registry: the HTML viewer needs a
+ *  URL (an `<img src>`), not a decoded CanvasImageSource. */
+const urls = new Map<string, { variant: string; url: string }>();
+
 /** Drop a fileId's decode record so the next `ensureResourceImages` call
  *  re-reads and re-registers it (used when a blob is overwritten in place). */
 export function invalidateResourceImage(fileId: string): void {
   decoded.delete(fileId);
+  const entry = urls.get(fileId);
+  if (entry) {
+    URL.revokeObjectURL(entry.url);
+    urls.delete(fileId);
+  }
+}
+
+/** The displayable URL for a resource image, as last built by
+ *  {@link ensureResourceImageUrls}. Passed to the HTML backend's
+ *  `resourceImageUrl` option. */
+export function getResourceImageUrl(fileId: string): string | undefined {
+  return urls.get(fileId)?.url;
+}
+
+/** Ensure every image-bearing resource has an object URL, recolouring SVGs to
+ *  `inkHex` when set (single-ink diagrams). Returns true if any URL was
+ *  (re)built so the caller can re-render. Safe to call repeatedly. */
+export async function ensureResourceImageUrls(
+  resources: Resource[],
+  inkHex: string | null = null,
+): Promise<boolean> {
+  let changed = false;
+  for (const r of resources) {
+    const fileId = imageFileId(r);
+    if (!fileId) continue;
+    const variant = r.kind === 'svg' && inkHex ? inkHex.toLowerCase() : '';
+    const existing = urls.get(fileId);
+    if (existing && existing.variant === variant) continue;
+    const rec = await getBlob(fileId).catch(() => null);
+    if (!rec) continue;
+    let blob: Blob;
+    if (rec.contentType === 'image/svg+xml') {
+      let svgText = new TextDecoder().decode(rec.bytes);
+      if (variant) svgText = applySingleInkToSvg(svgText, variant);
+      blob = new Blob([svgText], { type: 'image/svg+xml' });
+    } else {
+      blob = new Blob([rec.bytes], { type: rec.contentType });
+    }
+    if (existing) URL.revokeObjectURL(existing.url);
+    urls.set(fileId, { variant, url: URL.createObjectURL(blob) });
+    changed = true;
+  }
+  return changed;
 }
 
 /** Ensure every image-bearing resource has its decoded image registered,

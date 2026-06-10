@@ -66,7 +66,6 @@ export function DocsSearchPalette() {
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [hits, setHits] = useState<Hit[]>([]);
   const [selected, setSelected] = useState(0);
   const [index, setIndex] = useState<MiniSearch<SearchSection> | null>(null);
   const [sectionsById, setSectionsById] = useState<Map<string, SearchSection>>(new Map());
@@ -100,39 +99,42 @@ export function DocsSearchPalette() {
     }
   }, [index, loading, locale]);
 
+  // Open/close work lives in the event handler (not an effect): kick off the
+  // index fetch, focus the input once the portal has mounted, and reset the
+  // query on close. The Dialog and the global shortcuts share this path.
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      setOpen(next);
+      if (next) {
+        void loadIndex();
+        setTimeout(() => inputRef.current?.focus(), 50);
+      } else {
+        setQuery("");
+        setSelected(0);
+      }
+    },
+    [loadIndex],
+  );
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setOpen(true);
+        handleOpenChange(true);
       }
     };
-    const onCustom = () => setOpen(true);
+    const onCustom = () => handleOpenChange(true);
     window.addEventListener("keydown", onKey);
     window.addEventListener(OPEN_EVENT, onCustom);
     return () => {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener(OPEN_EVENT, onCustom);
     };
-  }, []);
+  }, [handleOpenChange]);
 
-  useEffect(() => {
-    if (open) {
-      loadIndex();
-      setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      setQuery("");
-      setHits([]);
-      setSelected(0);
-    }
-  }, [open, loadIndex]);
-
-  useEffect(() => {
-    if (!index || !query.trim()) {
-      setHits([]);
-      setSelected(0);
-      return;
-    }
+  // Search results derive from the query and the loaded index — no state.
+  const hits = useMemo<Hit[]>(() => {
+    if (!index || !query.trim()) return [];
     const results = index.search(query).slice(0, MAX_RESULTS);
     const mapped: Hit[] = [];
     for (const r of results) {
@@ -140,8 +142,7 @@ export function DocsSearchPalette() {
       if (!section) continue;
       mapped.push({ section, score: r.score, terms: r.terms });
     }
-    setHits(mapped);
-    setSelected(0);
+    return mapped;
   }, [query, index, sectionsById]);
 
   const hrefFor = useCallback(
@@ -153,7 +154,7 @@ export function DocsSearchPalette() {
   );
 
   const navigateTo = useCallback((href: string) => {
-    setOpen(false);
+    handleOpenChange(false);
     const [pathname, hash] = href.split("#");
     const samePath = window.location.pathname === pathname;
     if (samePath) {
@@ -170,7 +171,7 @@ export function DocsSearchPalette() {
       return;
     }
     window.location.assign(href);
-  }, []);
+  }, [handleOpenChange]);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
@@ -192,7 +193,7 @@ export function DocsSearchPalette() {
   }, [selected]);
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 transition-opacity duration-150" />
         <Dialog.Popup
@@ -223,7 +224,10 @@ export function DocsSearchPalette() {
               ref={inputRef}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setSelected(0);
+              }}
               placeholder={t("inputPlaceholder")}
               className="flex-1 border-0 bg-transparent font-body text-sm text-foreground placeholder:text-slate focus:outline-none focus:ring-0 focus-visible:outline-none"
               style={{ outline: "none" }}
