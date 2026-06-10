@@ -15,7 +15,7 @@ import {
 } from '../knuthPlass';
 import { SOFT_HYPHEN } from './types';
 import type { MeasuredBlock, MeasureBlockOptions } from './types';
-import { cleanSoftHyphens, normalSpaceWidthFor } from './canvas';
+import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 
 function extractSegments(
   prepared: PreparedTextWithSegments,
@@ -64,13 +64,13 @@ function findLastTextSegmentIndex(segments: VDTLineSegment[]): number {
   return -1;
 }
 
-function getHyphenWidth(prepared: PreparedTextWithSegments): number {
+function getHyphenWidth(prepared: PreparedTextWithSegments, font: string): number {
   // Use discretionaryHyphenWidth from pretext internals
   const core = prepared as unknown as { discretionaryHyphenWidth?: number };
   if (core.discretionaryHyphenWidth && core.discretionaryHyphenWidth > 0) {
     return core.discretionaryHyphenWidth;
   }
-  return 5; // fallback
+  return measureTextWidth('-', font);
 }
 
 export function computeJustifiedSpaceRatio(
@@ -176,7 +176,6 @@ export function measureBlock(
     if (line === null) break;
 
     const nextCursor = line.end;
-    const isLastLine = layoutNextLine(prepared, nextCursor, lineMaxWidth) === null;
 
     const { segments, hyphenated } = extractSegments(prepared, cursor, nextCursor);
 
@@ -187,17 +186,20 @@ export function measureBlock(
         segments[lastTextIdx] = {
           kind: 'text',
           text: lastSeg.text + '-',
-          width: lastSeg.width + getHyphenWidth(prepared),
+          width: lastSeg.width + getHyphenWidth(prepared, font),
         };
       }
     }
 
+    // Whether this turns out to be the last line is only known once the
+    // loop ends; the ratio is computed as if it weren't and corrected below.
+    // This avoids a second layoutNextLine call per line just to peek ahead.
     const justifiedSpaceRatio = computeJustifiedSpaceRatio(
       segments,
       lineMaxWidth,
       normalSpaceWidth,
       textAlign,
-      isLastLine,
+      false,
     );
 
     lines.push({
@@ -206,13 +208,19 @@ export function measureBlock(
       baseline: y + lineHeightPx * 0.8,
       hyphenated,
       segments,
-      isLastLine,
+      isLastLine: false,
       ...(justifiedSpaceRatio !== undefined ? { justifiedSpaceRatio } : {}),
     });
 
     cursor = nextCursor;
     y += lineHeightPx;
     lineIndex++;
+  }
+
+  const lastLine = lines[lines.length - 1];
+  if (lastLine) {
+    lastLine.isLastLine = true;
+    delete lastLine.justifiedSpaceRatio;
   }
 
   return { lines, totalHeight: y };

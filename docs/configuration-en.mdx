@@ -41,6 +41,8 @@ This reference is long. These are the main blocks:
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
+- [Resource types](#resource-types) — typed numbering for figures, tables, and custom kinds.
+- [Table style](#table-style) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
@@ -140,7 +142,7 @@ The `page` property controls the physical dimensions and appearance of the page.
 
 ### Baseline grid
 
-The baseline grid draws horizontal lines at intervals matching the body text line height. It is a visual aid for ensuring vertical rhythm — when enabled, the engine snaps heading blocks to the grid so that body text in adjacent columns stays aligned.
+The baseline grid draws horizontal lines at intervals matching the body text line height. It is a visual aid for ensuring vertical rhythm — when enabled, the engine snaps heading blocks to the grid so that body text in adjacent columns stays aligned. The lines span only the page's actual text — from the first text line to the last — so float bands, blank parity pages, and unused tail space show no grid.
 
 <table>
   <thead>
@@ -716,6 +718,24 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Color applied to italic/emphasis spans. Same palette-linked default as <code>boldColor</code>.</td>
     </tr>
     <tr>
+      <td><code>referenceColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>Main Color (<code>#295AA3</code>)</td>
+      <td>Color applied to inline <code>:ref</code> labels (resource references). Same palette-linked default as <code>boldColor</code>.</td>
+    </tr>
+    <tr>
+      <td><code>referenceBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Render inline <code>:ref</code> labels with the bold font.</td>
+    </tr>
+    <tr>
+      <td><code>referenceItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render inline <code>:ref</code> labels in italics.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
@@ -760,7 +780,7 @@ The `bodyText` property controls the typography of all paragraph text.
     <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>2</code></td>
+      <td><code>1.9</code></td>
       <td>Upper bound for word spacing in justified text, expressed as a multiplier of the normal space width. Lines exceeding this ratio are considered "loose".</td>
     </tr>
     <tr>
@@ -1701,6 +1721,214 @@ Any other text is literal. A backslash escapes a literal `{`, `}`, or `\`. When 
 The number a resource type produces is what `:ref` prints and what the caption prefix precedes. The document-side grammar — the `::resource{id}` block embed and the `:ref{id}` inline reference, plus its `style` and `text` options — is documented in [Document format › Resources](/en/docs/document-format#resources), including how first-reference order drives the count.
 
 This mirrors heading numbering: just as a heading level carries a `numberingTemplate`, a resource type carries one too — but the resource counter (`{n}`) advances per first-reference rather than per heading, and `resetOn` ties it back to the heading hierarchy.
+
+
+## Table style
+
+The `tableStyle` property controls the typography and decoration of table resources. Body and header cells are styled independently. Font family, size, and colours inherit the resolved body text when unset, so a document with no `tableStyle` renders tables with body-text typography.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    headerBold: true,
+    headerBackground: { hex: '#f0f0f0', model: 'hex' },
+    borders: true,
+    borderWidth: { value: 0.75, unit: 'pt' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Property</th>
+      <th style={{ width: '140px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bodyFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>body text font</td>
+      <td>Font family for body cells.</td>
+    </tr>
+    <tr>
+      <td><code>bodyFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>body text size</td>
+      <td>Font size for body cells.</td>
+    </tr>
+    <tr>
+      <td><code>bodyColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body text color</td>
+      <td>Text color for body cells.</td>
+    </tr>
+    <tr>
+      <td><code>headerFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>body text font</td>
+      <td>Font family for header cells.</td>
+    </tr>
+    <tr>
+      <td><code>headerFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>body text size</td>
+      <td>Font size for header cells.</td>
+    </tr>
+    <tr>
+      <td><code>headerColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body text color</td>
+      <td>Text color for header cells.</td>
+    </tr>
+    <tr>
+      <td><code>headerBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Render header cells in bold.</td>
+    </tr>
+    <tr>
+      <td><code>headerItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render header cells in italics.</td>
+    </tr>
+    <tr>
+      <td><code>headerBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Paint a fill behind the header row.</td>
+    </tr>
+    <tr>
+      <td><code>headerBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#f0f0f0</code></td>
+      <td>Header row fill color.</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Paint a fill behind body rows.</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffffff</code></td>
+      <td>Body row fill color (only painted when enabled).</td>
+    </tr>
+    <tr>
+      <td><code>borders</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Draw cell borders.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body text color</td>
+      <td>Border stroke color.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75pt</code></td>
+      <td>Border stroke width (≈1px at 96 DPI; scales with page DPI).</td>
+    </tr>
+    <tr>
+      <td><code>cellPadding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.375em</code></td>
+      <td>Inner padding of every cell.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Caption style
+
+The `captionStyle` property controls resource captions (the `Figure 1 — …` line under images, SVGs, and tables). The numbered label and the description share the same typeface and size — an engine constraint — but the label can carry its own weight, italics, and color. Font family, size, and color inherit the body text when unset.
+
+```ts
+const config: PostextConfig = {
+  captionStyle: {
+    align: 'center',
+    labelBold: true,
+    labelColor: { hex: '#295AA3', model: 'hex' },
+    descriptionItalic: true,
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>body text font</td>
+      <td>Caption font family (label and description).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>body text size</td>
+      <td>Caption font size (label and description).</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body text color</td>
+      <td>Description text color.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>Horizontal alignment of the caption under the resource.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>Vertical gap between the resource and its caption.</td>
+    </tr>
+    <tr>
+      <td><code>labelBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Render the numbered label (e.g. <code>Figure 1</code>) in bold.</td>
+    </tr>
+    <tr>
+      <td><code>labelItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render the numbered label in italics.</td>
+    </tr>
+    <tr>
+      <td><code>labelColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>caption <code>color</code></td>
+      <td>Color of the numbered label.</td>
+    </tr>
+    <tr>
+      <td><code>descriptionItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render the description text in italics.</td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## Units and Colors

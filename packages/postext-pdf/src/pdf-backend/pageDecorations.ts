@@ -8,12 +8,20 @@ export function renderBaselineGrid(
   baselineIncrement: number,
   colorHex: string,
   lineWidthPx: number,
+  textExtent: { top: number; bottom: number },
 ): void {
   const color = colorFromHex(colorHex, ctx.colorSpace);
-  const maxLines = Math.floor(contentArea.height / baselineIncrement);
-  let y = contentArea.y + baselineIncrement * 0.8;
+  // Mirrors the canvas backend: baselines on the global grid anchored at the
+  // content-area top, drawn only across the page's actual text extent. `k0`
+  // may be negative when column 0 carries a top float band (its bbox-derived
+  // contentArea.y sits below the global top); band heights are grid
+  // multiples, so those earlier baselines still lie on the global grid.
+  const eps = 0.5;
+  const firstBaseline = contentArea.y + baselineIncrement * 0.8;
+  const k0 = Math.ceil((textExtent.top - eps - firstBaseline) / baselineIncrement);
+  let y = firstBaseline + k0 * baselineIncrement;
   const right = contentArea.x + contentArea.width;
-  for (let i = 0; i < maxLines; i++) {
+  while (y <= textExtent.bottom + eps) {
     drawLinePx(ctx, contentArea.x, y, right, y, color, lineWidthPx);
     y += baselineIncrement;
   }

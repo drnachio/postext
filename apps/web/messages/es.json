@@ -793,7 +793,7 @@
     "reset": "Restablecer",
     "resetConfigConfirm": "\u00bfRestablecer toda la configuraci\u00f3n a los valores por defecto?",
     "resetSectionConfirm": "\u00bfRestablecer esta secci\u00f3n a los valores por defecto?",
-    "resetMarkdownConfirm": "\u00bfReemplazar el contenido con el ejemplo por defecto?",
+    "resetMarkdownConfirm": "\u00bfReemplazar el contenido y los recursos con el ejemplo por defecto?",
     "customFonts": "Fuentes personalizadas",
     "customFontsTooltip": "Sube tus propios archivos de fuentes y refer\u00e9ncialas por nombre en cualquier lugar donde se pueda usar una fuente de Google.",
     "customFontsNone": "A\u00fan no hay fuentes personalizadas.",

@@ -385,6 +385,8 @@ Each resource has a **placement** that decides where its float lands, resolved p
 
 A float is placed on the next page opened after its first reference, near it in reading order. If it does not fit in that page's band, it **defers to the next page** (it is never shrunk or split). Floats keep first-reference order, so figures never reorder relative to where they are mentioned.
 
+Float bands are corrected against the baseline grid so the surrounding text keeps the page-wide vertical rhythm. A **top** band grows its bottom margin to the next grid line, so the text below the float stays aligned with the neighbouring columns and the facing page. A **bottom** float is anchored so its caption's last line shares a baseline with the last text line of the other columns (captionless content aligns its bottom edge to the last grid slot) — full pages therefore end at the same height across columns and across facing pages.
+
 > **Note:** the HTML viewer does not yet render resources; the canvas preview and the PDF backend do.
 
 

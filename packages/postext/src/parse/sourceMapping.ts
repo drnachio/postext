@@ -42,7 +42,16 @@ function computeSourceMap(
     // Advance to the leading `:`, map to it, then skip past the closing `}`
     // so subsequent plain chars keep aligning with the source.
     if (ch === REF_PLACEHOLDER) {
-      while (r < blockSrcEnd && !(markdown[r] === ':' && markdown.startsWith(':ref{', r))) r++;
+      while (
+        r < blockSrcEnd
+        && !(
+          markdown[r] === ':'
+          && markdown[r + 1] === 'r'
+          && markdown[r + 2] === 'e'
+          && markdown[r + 3] === 'f'
+          && markdown[r + 4] === '{'
+        )
+      ) r++;
       if (r >= blockSrcEnd) {
         map[p] = blockSrcEnd;
         continue;
@@ -71,7 +80,9 @@ function computeSourceMap(
   return map;
 }
 
-const COLLAPSIBLE_WS_RE = /[ \t\n\r\f]/;
+/** Whitespace collapsed by pretext's `normalizeWhitespaceNormal`. A Set
+ *  lookup is cheaper than a per-character regex test in these loops. */
+const COLLAPSIBLE_WS = new Set([' ', '\t', '\n', '\r', '\f']);
 
 /**
  * Collapse runs of `[ \t\n\r\f]` to a single space and strip leading/trailing
@@ -84,19 +95,19 @@ function normalizeWhitespaceInSpans(spans: InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let inSpace = true; // start true to strip leading whitespace
   for (const span of spans) {
-    let result = '';
+    const result: string[] = [];
     for (const ch of span.text) {
-      if (COLLAPSIBLE_WS_RE.test(ch)) {
+      if (COLLAPSIBLE_WS.has(ch)) {
         if (!inSpace) {
-          result += ' ';
+          result.push(' ');
           inSpace = true;
         }
       } else {
-        result += ch;
+        result.push(ch);
         inSpace = false;
       }
     }
-    out.push({ ...span, text: result });
+    out.push({ ...span, text: result.join('') });
   }
   // Strip trailing space from the last span that contributed content
   for (let i = out.length - 1; i >= 0; i--) {
@@ -133,7 +144,7 @@ export function buildBlockMapping(
   let inSpace = true;
   for (let i = 0; i < rawText.length; i++) {
     const ch = rawText[i]!;
-    if (COLLAPSIBLE_WS_RE.test(ch)) {
+    if (COLLAPSIBLE_WS.has(ch)) {
       if (!inSpace) {
         sourceMap.push(rawSourceMap[i] ?? blockSrcEnd);
         inSpace = true;

@@ -59,6 +59,7 @@ describe("package exports", () => {
       "renderToHtml",
       "renderToHtmlIndexed",
       "dimensionToPx",
+      "computePageTextExtent",
       "buildFontString",
       "measureBlock",
       "measureRichBlock",

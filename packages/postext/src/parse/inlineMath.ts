@@ -1,4 +1,5 @@
 import type { InlineSpan, MathMeta, ParseIssue } from './types';
+import { injectPlaceholderSpans } from './injectSpans';
 
 /** Object Replacement Character — atomic plain-text placeholder for a math
  *  span. One code unit per formula so `sourceMap` stays 1-to-1. */
@@ -21,9 +22,17 @@ export function extractInlineMath(
   fallbackStart: number,
   fallbackEnd: number,
 ): { cleaned: string; maths: MathMeta[]; issues: ParseIssue[] } {
+  // Fast path: no `$` anywhere means no math and no escapes to unescape.
+  if (text.indexOf('$') < 0) {
+    return { cleaned: text, maths: [], issues: [] };
+  }
   const maths: MathMeta[] = [];
   const issues: ParseIssue[] = [];
-  let out = '';
+  // Cleaned output is assembled from slices of `text` (plus placeholders and
+  // unescaped `$`) instead of per-character concatenation. `segStart` marks
+  // the beginning of the literal run not yet flushed into `parts`.
+  const parts: string[] = [];
+  let segStart = 0;
   let i = 0;
   const absAt = (idx: number): number => {
     if (absOffsets && idx < absOffsets.length) return absOffsets[idx]!;
@@ -34,19 +43,19 @@ export function extractInlineMath(
     const ch = text[i]!;
     if (ch === '\\' && text[i + 1] === '$') {
       // Escaped dollar sign — keep as literal `$` in output.
-      out += '$';
+      parts.push(text.slice(segStart, i), '$');
       i += 2;
+      segStart = i;
       continue;
     }
     if (ch !== '$') {
-      out += ch;
       i++;
       continue;
     }
     // Found a '$'. Skip display-math `$$` sequences — those are handled at
-    // block level, so inside a paragraph we treat `$$` as literal.
+    // block level, so inside a paragraph we treat `$$` as literal (it stays
+    // part of the running literal segment).
     if (text[i + 1] === '$') {
-      out += '$$';
       i += 2;
       continue;
     }
@@ -74,54 +83,29 @@ export function extractInlineMath(
         sourceEnd: fallbackEnd,
         tex: text.slice(i + 1),
       });
-      out += text.slice(i);
+      // Keep the rest verbatim (covered by the final segment flush).
       break;
     }
     const tex = text.slice(i + 1, foundClose).replace(/\\\$/g, '$');
     maths.push({ tex, sourceStart: absAt(i), sourceEnd: absAt(foundClose) + 1 });
-    out += MATH_PLACEHOLDER;
+    parts.push(text.slice(segStart, i), MATH_PLACEHOLDER);
     i = foundClose + 1;
+    segStart = i;
   }
-  return { cleaned: out, maths, issues };
+  if (segStart < text.length) parts.push(text.slice(segStart));
+  return { cleaned: parts.join(''), maths, issues };
 }
 
 /** Walk an InlineSpan list and attach MathMeta to each `\uFFFC` occurrence
  *  in order. Splits plain-text spans around the placeholder so the math
  *  span is its own entry (carrying the ambient bold/italic). */
 export function injectMathSpans(spans: InlineSpan[], maths: MathMeta[]): InlineSpan[] {
-  if (maths.length === 0) return spans;
-  const out: InlineSpan[] = [];
-  let idx = 0;
-  for (const span of spans) {
-    if (span.text.indexOf(MATH_PLACEHOLDER) < 0) {
-      out.push(span);
-      continue;
-    }
-    let buf = '';
-    for (const ch of span.text) {
-      if (ch === MATH_PLACEHOLDER) {
-        if (buf.length > 0) {
-          out.push({ text: buf, bold: span.bold, italic: span.italic });
-          buf = '';
-        }
-        const meta = maths[idx++];
-        if (meta) {
-          out.push({
-            text: MATH_PLACEHOLDER,
-            bold: span.bold,
-            italic: span.italic,
-            math: meta,
-          });
-        }
-      } else {
-        buf += ch;
-      }
-    }
-    if (buf.length > 0) {
-      out.push({ text: buf, bold: span.bold, italic: span.italic });
-    }
-  }
-  return out;
+  return injectPlaceholderSpans(spans, maths, MATH_PLACEHOLDER, (meta, bold, italic) => ({
+    text: MATH_PLACEHOLDER,
+    bold,
+    italic,
+    math: meta,
+  }));
 }
 
 /** Overwrite `sourceMap[i]` entries corresponding to math placeholders with

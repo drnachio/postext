@@ -21,7 +21,7 @@ import {
 import { extractFrontmatter } from '../frontmatter';
 import { initHyphenator } from '../measure';
 import type { MeasurementCache } from '../measure';
-import { resolveAllConfig, computeBaselineGrid } from './config';
+import { resolveAllConfig, computeBaselineGrid, buildHeadingLevelMap } from './config';
 import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
 import {
   computeLevelIndentsPx,
@@ -81,6 +81,15 @@ export class BuildCancelledError extends Error {
   }
 }
 
+/** Page-number formats accepted by the `::numbering` directive. */
+const ALLOWED_PAGE_FORMATS: ReadonlySet<NumeralStyle> = new Set<NumeralStyle>([
+  'decimal',
+  'lower-roman',
+  'upper-roman',
+  'lower-alpha',
+  'upper-alpha',
+]);
+
 export function buildDocument(
   content: PostextContent,
   config?: PostextConfig,
@@ -88,6 +97,7 @@ export function buildDocument(
   options?: BuildDocumentOptions,
 ): VDTDocument {
   const resolved = resolveAllConfig(config);
+  const headingLevelByNumber = buildHeadingLevelMap(resolved);
   const dpi = resolved.page.dpi;
 
   // Initialize hyphenator if needed
@@ -258,7 +268,6 @@ export function buildDocument(
 
       const built = buildFloatBlock(f.resourceId, xLeft, width);
       if (!built) return 'skip';
-      const need = built.height + floatGapPx;
 
       let minAvail = Infinity;
       let anyReserved = false;
@@ -266,6 +275,47 @@ export function buildDocument(
         minAvail = Math.min(minAvail, page.columns[c]!.availableHeight);
         if (topUsed[c]! > 0 || botUsed[c]! > 0) anyReserved = true;
       }
+
+      // Both band kinds are corrected against the baseline grid so the text
+      // around them — and the facing page — stays on the global rhythm:
+      //  - top: the band pushes the column start (`col.bbox.y`) downward, and
+      //    all grid snapping inside the column is anchored at that start. The
+      //    band height is rounded up to a grid multiple (growing the gap
+      //    below the float) or every line in the displaced column would land
+      //    off-grid, visibly misaligned with neighbouring columns.
+      //  - bottom: the float is anchored so its visual bottom sits on the
+      //    grid — the caption's last line shares its baseline with the last
+      //    text line of the other columns (captionless content aligns its
+      //    bottom edge to the last grid slot). Pages then end at the same
+      //    height across columns and across facing pages.
+      let need: number;
+      let floatY = 0;
+      if (f.position === 'top') {
+        const rawNeed = built.height + floatGapPx;
+        need = Math.ceil((rawNeed - 0.01) / baselineGrid) * baselineGrid;
+      } else {
+        const bottomLimit = Math.min(...targetCols.map((c) => {
+          const cb = page.columns[c]!.bbox;
+          return cb.y + cb.height;
+        }));
+        const gridAlignedBottom = contentArea.y
+          + Math.floor((bottomLimit - contentArea.y + 0.01) / baselineGrid) * baselineGrid;
+        const capLines = built.block.resourceBlock!.captionLines;
+        if (capLines.length > 0) {
+          // Body baselines sit at 0.2 × grid above each slot bottom; anchor
+          // the caption's last baseline there.
+          const lastBaseline = capLines[capLines.length - 1]!.baseline; // block-relative
+          floatY = gridAlignedBottom - 0.2 * baselineGrid - lastBaseline;
+        } else {
+          floatY = gridAlignedBottom - built.height;
+        }
+        need = 0;
+        for (const c of targetCols) {
+          const col = page.columns[c]!;
+          need = Math.max(need, col.bbox.height - (floatY - floatGapPx - col.bbox.y));
+        }
+      }
+
       // Keep some text room, unless this band is still all-text (then a
       // dominating / oversized float is force-placed so the queue progresses).
       if (need > minAvail - minTextPx && anyReserved) return 'defer';
@@ -277,13 +327,16 @@ export function buildDocument(
           y = col.bbox.y;            // float sits at the current top edge
           col.bbox.y += need;        // push column content below the band
           col.bbox.height = Math.max(0, col.bbox.height - need);
+          col.availableHeight = Math.max(0, col.availableHeight - need);
           topUsed[c]! += need;
         } else {
-          col.bbox.height = Math.max(0, col.bbox.height - need);
-          y = col.bbox.y + col.bbox.height + floatGapPx; // flush toward the bottom
-          botUsed[c]! += need;
+          y = floatY;
+          const newHeight = Math.max(0, floatY - floatGapPx - col.bbox.y);
+          const reserved = col.bbox.height - newHeight;
+          col.bbox.height = newHeight;
+          col.availableHeight = Math.max(0, col.availableHeight - reserved);
+          botUsed[c]! += reserved;
         }
-        col.availableHeight = Math.max(0, col.availableHeight - need);
       }
 
       offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
@@ -366,14 +419,6 @@ export function buildDocument(
     }
   };
 
-  const ALLOWED_PAGE_FORMATS: ReadonlySet<NumeralStyle> = new Set<NumeralStyle>([
-    'decimal',
-    'lower-roman',
-    'upper-roman',
-    'lower-alpha',
-    'upper-alpha',
-  ]);
-
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
     const rawBlock = contentBlocks[blockIdx]!;
@@ -417,7 +462,7 @@ export function buildDocument(
 
     // --- Heading `breakBefore` ----------------------------------------
     if (rawBlock.type === 'heading' && rawBlock.level) {
-      const level = resolved.headings.levels.find((l) => l.level === rawBlock.level);
+      const level = headingLevelByNumber.get(rawBlock.level);
       const bb = level?.breakBefore;
       if (bb && bb.enabled) {
         pendingSpacing = 0;
@@ -520,26 +565,20 @@ export function buildDocument(
       // `placeBlockInColumn` (inside placeResourceBlock) shifts `blk.lines`; the
       // resource's own caption/table lines live on `resourceBlock` and must be
       // offset to absolute page coordinates here using the placed bbox origin.
-      const ox = blk.bbox.x;
-      const oy = blk.bbox.y;
-      for (const ln of resourceBlock.captionLines) {
-        ln.bbox.x += ox;
-        ln.bbox.y += oy;
-        ln.baseline += oy;
-      }
-      if (resourceBlock.table) {
-        for (const cell of resourceBlock.table.cells) {
-          cell.rect.x += ox;
-          cell.rect.y += oy;
-          for (const cl of cell.lines) {
-            cl.bbox.x += ox;
-            cl.bbox.y += oy;
-            cl.baseline += oy;
-          }
-        }
-      }
+      offsetResourceBlockToAbsolute(resourceBlock, blk.bbox.x, blk.bbox.y);
       doc.blocks.push(blk);
-      pendingSpacing = style.marginBottomPx;
+      // Snap the flow position after the resource to the baseline grid (the
+      // group height is arbitrary), baking in at least marginBottom — same
+      // convention as snapped headings — so the following text lands back on
+      // the global grid instead of inheriting the resource's offset.
+      {
+        const rCol = currentColumn(doc, cursor);
+        const usedHeight = rCol.bbox.height - rCol.availableHeight;
+        const naturalBottom = usedHeight + style.marginBottomPx;
+        const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
+        rCol.availableHeight = Math.max(0, rCol.bbox.height - snappedBottom);
+      }
+      pendingSpacing = 0;
       flushPendingNumberingAtBoundary();
       continue;
     }
@@ -716,7 +755,7 @@ export function buildDocument(
       // subsequent marginBottom + grid snap) starts from there.
       let effectiveRemainHeight = totalRemainHeight;
       if (vdtType === 'heading' && headingLevel !== undefined && partIndex === 0) {
-        const lvl = resolved.headings.levels.find((l) => l.level === headingLevel);
+        const lvl = headingLevelByNumber.get(headingLevel);
         if (lvl) {
           const full = remainingLines
             .map((ln) => (ln.segments ?? []).map((s) => s.text).join(''))
@@ -923,7 +962,7 @@ export function buildDocument(
         // other column on this page so body text under the opener band
         // starts below it in ALL columns, not just the one it was placed in.
         if (vdtType === 'heading' && headingLevel !== undefined) {
-          const lvl = resolved.headings.levels.find((l) => l.level === headingLevel);
+          const lvl = headingLevelByNumber.get(headingLevel);
           if (lvl?.span === 'page') {
             const page = doc.pages[cursor.pageIndex]!;
             for (const otherCol of page.columns) {

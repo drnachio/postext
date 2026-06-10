@@ -11,6 +11,18 @@ export interface ParsedFontString {
  * mirrors `html-backend.ts` so exactly the same shapes are accepted.
  */
 export function parseFontString(fs: string): ParsedFontString | null {
+  const cached = parsedFontStrings.get(fs);
+  if (cached !== undefined) return cached;
+  const parsed = parseFontStringUncached(fs);
+  parsedFontStrings.set(fs, parsed);
+  return parsed;
+}
+
+// Memoized: parsing runs per rendered text segment but a document only uses
+// a handful of distinct font strings. Results are treated as read-only.
+const parsedFontStrings = new Map<string, ParsedFontString | null>();
+
+function parseFontStringUncached(fs: string): ParsedFontString | null {
   const m = fs.match(/^(.*?)(\d+(?:\.\d+)?)px\s+(.+)$/);
   if (!m) return null;
   const prefix = (m[1] ?? '').trim();

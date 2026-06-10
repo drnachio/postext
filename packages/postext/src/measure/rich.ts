@@ -38,6 +38,20 @@ export interface RichToken {
   captionLabel?: boolean;
 }
 
+function pickSpanFont(
+  bold: boolean,
+  italic: boolean,
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+): string {
+  if (bold && italic) return boldItalicFont;
+  if (bold) return boldFont;
+  if (italic) return italicFont;
+  return normalFont;
+}
+
 /**
  * Tokenize inline spans into word/space tokens with bold/italic flags and measured widths.
  */
@@ -57,13 +71,7 @@ function tokenizeSpans(
     // generic layout/renderers treating it like a word; `refResourceId` flows
     // onto the segment for link colouring / PDF link annotations.
     if (span.ref) {
-      const refFont = span.bold && span.italic
-        ? boldItalicFont
-        : span.bold
-          ? boldFont
-          : span.italic
-            ? italicFont
-            : normalFont;
+      const refFont = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
       tokens.push({
         text: span.text,
         bold: span.bold,
@@ -91,13 +99,7 @@ function tokenizeSpans(
       continue;
     }
     const text = shouldHyphenate ? hyphenateText(span.text) : span.text;
-    const font = span.bold && span.italic
-      ? boldItalicFont
-      : span.bold
-        ? boldFont
-        : span.italic
-          ? italicFont
-          : normalFont;
+    const font = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
 
     // Split on word boundaries while preserving spaces
     const parts = text.match(/\S+|\s+/g);

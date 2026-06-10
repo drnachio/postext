@@ -156,3 +156,141 @@ describe('float placement in the build pipeline', () => {
     expect(ids).toContain('bot');
   });
 });
+
+const tableRes = (id: string, placement?: Resource['placement']): Resource => ({
+  id,
+  typeId: 'table',
+  kind: 'table',
+  caption: `Table ${id}.`,
+  createdAt: 0,
+  updatedAt: 0,
+  table: { model: { rows: [
+    [{ content: 'Stage' }, { content: 'Cost' }],
+    [{ content: 'Parse' }, { content: 'O(n)' }],
+  ] } },
+  ...(placement ? { placement } : {}),
+});
+
+/** Smallest distance from `value` to a multiple of `step`. */
+const offGrid = (value: number, step: number) => {
+  const r = ((value % step) + step) % step;
+  return Math.min(r, step - r);
+};
+
+describe('baseline-grid alignment around float bands', () => {
+  const doubleCol = { ...smallPage, layout: { layoutType: 'double' as const } };
+
+  /** First text baseline of each column on a page, by column index. */
+  const firstBaselines = (page: { columns: Array<{ blocks: Array<{ lines: Array<{ baseline: number }> }> }> }) =>
+    page.columns.map((col) => {
+      for (const block of col.blocks) {
+        if (block.lines.length > 0) return block.lines[0]!.baseline;
+      }
+      return null;
+    });
+
+  /** Assert that on the page carrying the float every column's first baseline
+   *  sits on the same global grid, and bbox.y shifts are grid multiples. */
+  const expectColumnsCongruent = (resources: Resource[]) => {
+    const doc = buildDocument({
+      markdown: `Lead :ref{id="${resources[0]!.id}"} paragraph.\n\n${filler(30)}`,
+      resources,
+    }, doubleCol);
+
+    const grid = doc.baselineGrid;
+    expect(grid).toBeGreaterThan(0);
+    const floatPage = doc.pages.find((p) => (p.floats ?? []).length > 0);
+    expect(floatPage).toBeDefined();
+
+    const baselines = firstBaselines(floatPage!).filter((b): b is number => b !== null);
+    expect(baselines.length).toBeGreaterThan(0);
+    // Congruent with the document-wide grid origin: page 0 column 0's first
+    // baseline is the reference (all pages share the content-area top).
+    const ref = firstBaselines(doc.pages[0]!).find((b): b is number => b !== null)!;
+    for (const b of baselines) {
+      expect(offGrid(b - ref, grid)).toBeLessThan(0.02);
+    }
+    for (const col of floatPage!.columns) {
+      const minY = Math.min(...floatPage!.columns.map((cc) => cc.bbox.y));
+      expect(offGrid(col.bbox.y - minY, grid)).toBeLessThan(0.02);
+    }
+    return doc;
+  };
+
+  it('keeps the displaced column on the global grid for a top column figure', () => {
+    expectColumnsCongruent([figure('f1', { position: 'top', span: 'column' })]);
+  });
+
+  it('keeps the displaced column on the global grid for a top column table', () => {
+    expectColumnsCongruent([tableRes('t1', { position: 'top', span: 'column' })]);
+  });
+
+  it('keeps all columns on the global grid for a full-width (span:page) top float', () => {
+    expectColumnsCongruent([figure('f1', { position: 'top', span: 'page' })]);
+  });
+
+  it('anchors a bottom float caption baseline to the grid shared with the other column', () => {
+    const doc = buildDocument({
+      markdown: `Lead :ref{id="f1"} paragraph.\n\n${filler(30)}`,
+      resources: [figure('f1', { position: 'bottom', span: 'column' })],
+    }, doubleCol);
+
+    const grid = doc.baselineGrid;
+    const floatPage = doc.pages.find((p) => (p.floats ?? []).length > 0);
+    expect(floatPage).toBeDefined();
+    const fb = floatPage!.floats![0]!;
+    const capLines = fb.resourceBlock!.captionLines;
+    expect(capLines.length).toBeGreaterThan(0);
+
+    // The caption's last baseline must land on a body baseline: congruent
+    // with contentTop + 0.8 × grid (the body baseline convention), i.e. on
+    // the same line a full opposite column would end on.
+    const contentTop = Math.min(...floatPage!.columns.map((c) => c.bbox.y));
+    const lastBaseline = capLines[capLines.length - 1]!.baseline;
+    expect(offGrid(lastBaseline - contentTop - 0.8 * grid, grid)).toBeLessThan(0.02);
+
+    // The float stays within the original content area (bounded by the
+    // tallest column, which carries no bottom band) and below its own
+    // column's shrunk text area.
+    const maxColBottom = Math.max(...floatPage!.columns.map((c) => c.bbox.y + c.bbox.height));
+    const ownCol = floatPage!.columns[fb.columnIndex]!;
+    expect(fb.bbox.y + fb.bbox.height).toBeLessThanOrEqual(maxColBottom + 0.01);
+    expect(fb.bbox.y).toBeGreaterThan(ownCol.bbox.y + ownCol.bbox.height);
+  });
+
+  it('anchors a full-width bottom float caption to the grid as well', () => {
+    const doc = buildDocument({
+      markdown: `Lead :ref{id="f1"} paragraph.\n\n${filler(30)}`,
+      resources: [figure('f1', { position: 'bottom', span: 'page' })],
+    }, doubleCol);
+
+    const grid = doc.baselineGrid;
+    const floatPage = doc.pages.find((p) => (p.floats ?? []).length > 0);
+    expect(floatPage).toBeDefined();
+    const fb = floatPage!.floats![0]!;
+    const capLines = fb.resourceBlock!.captionLines;
+    const contentTop = Math.min(...floatPage!.columns.map((c) => c.bbox.y));
+    const lastBaseline = capLines[capLines.length - 1]!.baseline;
+    expect(offGrid(lastBaseline - contentTop - 0.8 * grid, grid)).toBeLessThan(0.02);
+  });
+
+  it('returns the flow to the grid after an inline (position:here) resource', () => {
+    const doc = buildDocument({
+      markdown: `Intro paragraph.\n\nSee :ref{id="f1"}.\n\n::resource{id="f1"}\n\n${filler(6)}`,
+      resources: [figure('f1', { position: 'here' })],
+    }, doubleCol);
+
+    const grid = doc.baselineGrid;
+    // Reference: very first text baseline of the document (on-grid by construction).
+    const ref = firstBaselines(doc.pages[0]!).find((b): b is number => b !== null)!;
+    // Every text baseline AFTER the inline resource must still be on the grid.
+    for (const page of doc.pages) {
+      for (const col of page.columns) {
+        for (const block of col.blocks) {
+          if (block.type === 'resource' || block.lines.length === 0) continue;
+          expect(offGrid(block.lines[0]!.baseline - ref, grid)).toBeLessThan(0.02);
+        }
+      }
+    }
+  });
+});

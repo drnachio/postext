@@ -29,14 +29,14 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
     e.target.value = '';
   };
 
-  const isDefault = state.markdown === state.defaultMarkdown;
-
-  // Reset restores the default document and re-seeds the example resources it
-  // references (upserting by id so any user-added resources are preserved).
+  // Reset restores the default document and replaces the whole resource set
+  // with the example resources it references, in the sandbox locale. A full
+  // replace (not an upsert) so stale resources from earlier sessions don't
+  // linger and trigger unused-resource warnings after a reset.
   const handleReset = () => {
     dispatch({ type: 'SET_MARKDOWN', payload: state.defaultMarkdown });
-    void buildDefaultResources().then((rs) => {
-      for (const r of rs) dispatch({ type: 'UPSERT_RESOURCE', payload: r });
+    void buildDefaultResources(state.locale).then((rs) => {
+      dispatch({ type: 'SET_RESOURCES', payload: rs });
     });
   };
 
@@ -53,28 +53,29 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
           {state.labels.markdownEditor}
         </h2>
         <div className="flex items-center gap-1">
-          {!isDefault && (
-            <ConfirmPopover
-              message={state.labels.resetMarkdownConfirm}
-              onConfirm={handleReset}
-            >
-              {({ open }) => (
-                <Tooltip content={state.labels.reset} side="bottom">
-                  <button
-                    type="button"
-                    onClick={open}
-                    aria-label={state.labels.reset}
-                    className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-                    style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-                  >
-                    <RotateCcw size={13} aria-hidden="true" />
-                  </button>
-                </Tooltip>
-              )}
-            </ConfirmPopover>
-          )}
+          {/* Always available: even with the default markdown, the resource
+              set can have drifted (stale or foreign-language examples), and
+              reset is the way to restore it. */}
+          <ConfirmPopover
+            message={state.labels.resetMarkdownConfirm}
+            onConfirm={handleReset}
+          >
+            {({ open }) => (
+              <Tooltip content={state.labels.reset} side="bottom">
+                <button
+                  type="button"
+                  onClick={open}
+                  aria-label={state.labels.reset}
+                  className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+                  style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
+                >
+                  <RotateCcw size={13} aria-hidden="true" />
+                </button>
+              </Tooltip>
+            )}
+          </ConfirmPopover>
           <Tooltip content={state.labels.exportFile} side="bottom">
             <button
               type="button"

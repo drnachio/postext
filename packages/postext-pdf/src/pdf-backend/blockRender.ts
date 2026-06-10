@@ -1,10 +1,10 @@
-import type { Color } from 'pdf-lib';
+import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
 import { type PageCtx, drawLinePx, drawTextPx, colorFromHex } from './primitives';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
-import { renderDesignSlot } from './headerFooter';
+import { renderHeaderFooterSlot } from './headerFooter';
 import {
   renderResourceBlock,
   type ResourceImageMap,
@@ -47,6 +47,46 @@ function renderMathSegment(
   renderMathRender(ctx, seg.mathRender, xPx, baselinePx - seg.mathRender.ascentPx, fallbackColor);
 }
 
+/**
+ * Paint a line's segments left to right starting at `startX`. When
+ * `justifiedSpaceWidth` is set, spaces advance by it instead of their
+ * measured width.
+ */
+function renderSegments(
+  ctx: PageCtx,
+  segments: VDTLineSegment[],
+  startX: number,
+  baseline: number,
+  block: VDTBlock,
+  blockFont: PDFFont,
+  blockSize: number,
+  blockColor: Color,
+  fontCache: FontCache,
+  justifiedSpaceWidth?: number,
+): void {
+  let x = startX;
+  for (const seg of segments) {
+    if (seg.kind === 'space') {
+      x += justifiedSpaceWidth ?? seg.width;
+      continue;
+    }
+    if (seg.kind === 'math') {
+      renderMathSegment(ctx, seg, x, baseline, blockColor);
+      x += seg.width;
+      continue;
+    }
+    const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
+    const font = fontCache.get(fontStr) ?? blockFont;
+    const size = parseFontString(fontStr)?.sizePx ?? blockSize;
+    const colorHex = seg.refResourceId !== undefined && block.refColor
+      ? block.refColor
+      : pickSegmentColor(!!seg.bold, !!seg.italic, block);
+    const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
+    drawTextPx(ctx, seg.text, x, baseline, font, size, color);
+    x += seg.width;
+  }
+}
+
 function renderLine(
   ctx: PageCtx,
   line: VDTLine,
@@ -60,90 +100,37 @@ function renderLine(
   const blockSize = parseFontString(block.fontString)?.sizePx ?? 0;
   const blockColor = colorFromHex(block.color, ctx.colorSpace);
 
-  const hasRichSegments =
-    !!line.segments && line.segments.some((s) => s.bold || s.italic);
-
   const lineIndent = line.bbox.x - columnX;
   const effectiveWidth = columnWidth - lineIndent;
+  const segments = line.segments;
 
-  if (block.textAlign === 'justify' && !line.isLastLine && line.segments && line.segments.length > 0) {
+  if (block.textAlign === 'justify' && !line.isLastLine && segments && segments.length > 0) {
     let wordWidth = 0;
     let spaceCount = 0;
-    for (const seg of line.segments) {
+    for (const seg of segments) {
       if (seg.kind === 'space') spaceCount++;
       else wordWidth += seg.width;
     }
     if (spaceCount > 0) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      let x = line.bbox.x;
-      for (const seg of line.segments) {
-        if (seg.kind === 'space') {
-          x += justifiedSpaceWidth;
-        } else if (seg.kind === 'math') {
-          renderMathSegment(ctx, seg, x, line.baseline, blockColor);
-          x += seg.width;
-        } else {
-          const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
-          const font = fontCache.get(fontStr) ?? blockFont;
-          const size = parseFontString(fontStr)?.sizePx ?? blockSize;
-          const colorHex = seg.refResourceId !== undefined && block.refColor
-          ? block.refColor
-          : pickSegmentColor(!!seg.bold, !!seg.italic, block);
-          const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
-          drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
-          x += seg.width;
-        }
-      }
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, block, blockFont, blockSize, blockColor, fontCache, justifiedSpaceWidth);
       return;
     }
   }
 
-  if (block.textAlign === 'center' && line.segments) {
-    const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
-    let x = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
-    for (const seg of line.segments) {
-      if (seg.kind === 'space') {
-        x += seg.width;
-      } else if (seg.kind === 'math') {
-        renderMathSegment(ctx, seg, x, line.baseline, blockColor);
-        x += seg.width;
-      } else {
-        const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
-        const font = fontCache.get(fontStr) ?? blockFont;
-        const size = parseFontString(fontStr)?.sizePx ?? blockSize;
-        const colorHex = seg.refResourceId !== undefined && block.refColor
-          ? block.refColor
-          : pickSegmentColor(!!seg.bold, !!seg.italic, block);
-        const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
-        drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
-        x += seg.width;
-      }
-    }
+  if (block.textAlign === 'center' && segments) {
+    let contentWidth = 0;
+    for (const seg of segments) contentWidth += seg.width;
+    const startX = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
+    renderSegments(ctx, segments, startX, line.baseline, block, blockFont, blockSize, blockColor, fontCache);
     return;
   }
 
-  const hasMathSegments = line.segments && line.segments.some((s) => s.kind === 'math');
-  const hasRefSegments = line.segments && line.segments.some((s) => s.refResourceId !== undefined);
-  if ((hasRichSegments || hasMathSegments || hasRefSegments) && line.segments) {
-    let x = line.bbox.x;
-    for (const seg of line.segments) {
-      if (seg.kind === 'space') {
-        x += seg.width;
-      } else if (seg.kind === 'math') {
-        renderMathSegment(ctx, seg, x, line.baseline, blockColor);
-        x += seg.width;
-      } else {
-        const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
-        const font = fontCache.get(fontStr) ?? blockFont;
-        const size = parseFontString(fontStr)?.sizePx ?? blockSize;
-        const colorHex = seg.refResourceId !== undefined && block.refColor
-          ? block.refColor
-          : pickSegmentColor(!!seg.bold, !!seg.italic, block);
-        const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
-        drawTextPx(ctx, seg.text, x, line.baseline, font, size, color);
-        x += seg.width;
-      }
-    }
+  // Ragged (left-aligned) rendering — also used for last lines of justified
+  // blocks. Segments are needed when any of them styles differently from the
+  // block (bold/italic/math/ref); otherwise one drawTextPx paints the line.
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined)) {
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, block, blockFont, blockSize, blockColor, fontCache);
     return;
   }
 
@@ -197,7 +184,7 @@ export function renderBlock(
 ): void {
   if (block.hidden) return;
   if (block.designOverlay) {
-    renderDesignSlot(ctx, block.designOverlay, fontCache);
+    renderHeaderFooterSlot(ctx, block.designOverlay, fontCache);
     return;
   }
   if (block.type === 'resource') {

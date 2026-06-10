@@ -474,7 +474,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   reset: 'Reset',
   resetConfigConfirm: 'Reset all configuration to defaults?',
   resetSectionConfirm: 'Reset this section to defaults?',
-  resetMarkdownConfirm: 'Replace content with the default example?',
+  resetMarkdownConfirm: 'Replace the content and resources with the default example?',
   customFonts: 'Custom Fonts',
   customFontsTooltip: 'Upload your own font files and reference them by name anywhere a Google Font can be used.',
   customFontsNone: 'No custom fonts yet.',

@@ -12,6 +12,7 @@ import {
 } from '../vdt';
 import { computeChapterTitles, computeChapterNumbers } from './placeholders';
 import { computePageMetrics } from './buildHelpers';
+import { buildHeadingLevelMap } from './config';
 import {
   layoutDesignSlot,
   type ResolvedPrimitive,
@@ -198,12 +199,12 @@ function openerContainerBbox(
  *  a default slot from the heading level typography. */
 function findOpenerHeading(
   page: VDTPage,
-  doc: VDTDocument,
+  headingLevelByNumber: Map<number, ResolvedHeadingLevelConfig>,
 ): { block: VDTBlock; level: number; titleText: string; numberPrefix: string } | undefined {
   for (const col of page.columns) {
     for (const block of col.blocks) {
       if (block.type !== 'heading' || !block.headingLevel) continue;
-      const lvl = doc.config.headings.levels.find((l) => l.level === block.headingLevel);
+      const lvl = headingLevelByNumber.get(block.headingLevel);
       if (!lvl) continue;
       if (lvl.span !== 'page') continue;
       const full = block.lines
@@ -258,6 +259,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
 
   const chapterTitleByPageIndex = computeChapterTitles(doc.blocks, doc.pages.length, doc.pages);
   const chapterNumberByPageIndex = computeChapterNumbers(doc.blocks, doc.pages.length, doc.pages);
+  const headingLevelByNumber = buildHeadingLevelMap(resolved);
 
   for (const page of doc.pages) {
     if (resolved.header.elements.length > 0) {
@@ -276,9 +278,9 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         dpi,
       );
     }
-    const opener = findOpenerHeading(page, doc);
+    const opener = findOpenerHeading(page, headingLevelByNumber);
     if (opener) {
-      const level = resolved.headings.levels.find((l) => l.level === opener.level);
+      const level = headingLevelByNumber.get(opener.level);
       if (level) {
         const slot = level.advancedDesign.enabled && level.advancedDesign.slot.elements.length > 0
           ? level.advancedDesign.slot
@@ -316,7 +318,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
       for (const block of col.blocks) {
         if (block.hidden) continue;
         if (block.type !== 'heading' || !block.headingLevel) continue;
-        const lvl = resolved.headings.levels.find((l) => l.level === block.headingLevel);
+        const lvl = headingLevelByNumber.get(block.headingLevel);
         if (!lvl) continue;
         if (lvl.span === 'page') continue;
         if (!lvl.advancedDesign.enabled) continue;

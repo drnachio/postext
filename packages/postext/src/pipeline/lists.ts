@@ -1,4 +1,4 @@
-import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat } from '../types';
+import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension } from '../types';
 import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
@@ -44,27 +44,41 @@ interface OpenRun {
   itemIdxs: number[];
 }
 
+/** Shared shape of list-level configs consumed by the indent cascade. */
+interface IndentCascadeLevel {
+  indent?: Dimension;
+  fontFamily: string;
+  fontSize: Dimension;
+  fontWeight: number;
+  italic: boolean;
+}
+
 /**
- * Compute the effective indent in px for each unordered list level.
- * User-overridden `indent` is honored directly. Otherwise level 1 falls back to
- * the general indent, and deeper levels cascade from the previous level's
- * text-start position (prev indent + prev bullet width + gap).
+ * Compute the effective indent in px for each list level. User-overridden
+ * `indent` is honored directly. Otherwise level 1 falls back to the general
+ * indent, and deeper levels cascade from the previous level's text-start
+ * position (prev indent + prev marker width + gap). The marker width is
+ * supplied by `prevMarkerWidthPx` so unordered (bullet glyph) and ordered
+ * (number column) lists share the cascade.
  */
-export function computeLevelIndentsPx(resolved: ResolvedConfig, bodyFontSizePx: number): number[] {
-  const dpi = resolved.page.dpi;
-  const lists = resolved.unorderedLists;
-  const gapPx = dimensionToPx(lists.gap, dpi, bodyFontSizePx);
-  const generalIndentPx = dimensionToPx(lists.indent, dpi, bodyFontSizePx);
+function computeIndentCascade<T extends IndentCascadeLevel>(
+  levels: T[],
+  generalIndentPx: number,
+  gapPx: number,
+  dpi: number,
+  bodyFontSizePx: number,
+  prevMarkerWidthPx: (prev: T, prevFontString: string, prevIndex: number) => number,
+): number[] {
   const result: number[] = [];
-  for (let i = 0; i < lists.levels.length; i++) {
-    const level = lists.levels[i]!;
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i]!;
     let indentPx: number;
     if (level.indent !== undefined) {
       indentPx = dimensionToPx(level.indent, dpi, bodyFontSizePx);
     } else if (i === 0) {
       indentPx = generalIndentPx;
     } else {
-      const prev = lists.levels[i - 1]!;
+      const prev = levels[i - 1]!;
       const prevFontSizePx = dimensionToPx(prev.fontSize, dpi, bodyFontSizePx);
       const prevFontString = buildFontString(
         prev.fontFamily,
@@ -72,18 +86,31 @@ export function computeLevelIndentsPx(resolved: ResolvedConfig, bodyFontSizePx: 
         prev.fontWeight.toString(),
         prev.italic ? 'italic' : 'normal',
       );
-      const prevBulletWidthPx = measureGlyphWidth(prev.bulletChar, prevFontString);
-      indentPx = result[i - 1]! + prevBulletWidthPx + gapPx;
+      indentPx = result[i - 1]! + prevMarkerWidthPx(prev, prevFontString, i - 1) + gapPx;
     }
     result.push(indentPx);
   }
   return result;
 }
 
+/** Indent cascade for unordered list levels (marker = bullet glyph). */
+export function computeLevelIndentsPx(resolved: ResolvedConfig, bodyFontSizePx: number): number[] {
+  const dpi = resolved.page.dpi;
+  const lists = resolved.unorderedLists;
+  return computeIndentCascade(
+    lists.levels,
+    dimensionToPx(lists.indent, dpi, bodyFontSizePx),
+    dimensionToPx(lists.gap, dpi, bodyFontSizePx),
+    dpi,
+    bodyFontSizePx,
+    (prev, prevFontString) => measureGlyphWidth(prev.bulletChar, prevFontString),
+  );
+}
+
 /**
- * Same as computeLevelIndentsPx but for ordered lists. The cascade uses the
- * per-depth max number width observed in the document (falling back to a
- * width approximation based on "99." when no runs exist at that depth).
+ * Indent cascade for ordered list levels. The marker width is the per-depth
+ * max number width observed in the document (falling back to a width
+ * approximation based on "99." when no runs exist at that depth).
  */
 export function computeOrderedLevelIndentsPx(
   resolved: ResolvedConfig,
@@ -92,34 +119,17 @@ export function computeOrderedLevelIndentsPx(
 ): number[] {
   const dpi = resolved.page.dpi;
   const lists = resolved.orderedLists;
-  const gapPx = dimensionToPx(lists.gap, dpi, bodyFontSizePx);
-  const generalIndentPx = dimensionToPx(lists.indent, dpi, bodyFontSizePx);
-  const result: number[] = [];
-  for (let i = 0; i < lists.levels.length; i++) {
-    const level = lists.levels[i]!;
-    let indentPx: number;
-    if (level.indent !== undefined) {
-      indentPx = dimensionToPx(level.indent, dpi, bodyFontSizePx);
-    } else if (i === 0) {
-      indentPx = generalIndentPx;
-    } else {
-      const prevLevel = i; // 1-based depth of previous = i
-      const prev = lists.levels[i - 1]!;
-      const prevFontSizePx = dimensionToPx(prev.fontSize, dpi, bodyFontSizePx);
-      const prevFontString = buildFontString(
-        prev.fontFamily,
-        prevFontSizePx,
-        prev.fontWeight.toString(),
-        prev.italic ? 'italic' : 'normal',
-      );
-      const fallbackWidthPx = measureGlyphWidth('99' + prev.separator, prevFontString);
-      const observedMax = maxNumberWidthByDepth.get(prevLevel);
-      const prevNumberWidthPx = observedMax ?? fallbackWidthPx;
-      indentPx = result[i - 1]! + prevNumberWidthPx + gapPx;
-    }
-    result.push(indentPx);
-  }
-  return result;
+  return computeIndentCascade(
+    lists.levels,
+    dimensionToPx(lists.indent, dpi, bodyFontSizePx),
+    dimensionToPx(lists.gap, dpi, bodyFontSizePx),
+    dpi,
+    bodyFontSizePx,
+    // 1-based depth of the previous level = prevIndex + 1.
+    (prev, prevFontString, prevIndex) =>
+      maxNumberWidthByDepth.get(prevIndex + 1)
+        ?? measureGlyphWidth('99' + prev.separator, prevFontString),
+  );
 }
 
 function toRoman(n: number): string {

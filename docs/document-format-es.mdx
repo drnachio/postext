@@ -385,6 +385,8 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
 
 Un flotante se coloca en la siguiente página que se abre tras su primera referencia, cerca de ella en orden de lectura. Si no cabe en la banda de esa página, **se difiere a la página siguiente** (nunca se reduce ni se parte). Los flotantes mantienen el orden de primera referencia, de modo que las figuras no se reordenan respecto a donde se mencionan.
 
+Las bandas de flotantes se corrigen contra la rejilla base para que el texto circundante mantenga el ritmo vertical de toda la página. Una banda **superior** amplía su margen inferior hasta la siguiente línea de la rejilla, de modo que el texto bajo el flotante queda alineado con las columnas vecinas y con la página enfrentada. Un flotante **inferior** se ancla de forma que la última línea de su leyenda comparta línea base con la última línea de texto de las demás columnas (el contenido sin leyenda alinea su borde inferior con la última celda de la rejilla) — así, las páginas llenas terminan a la misma altura entre columnas y entre páginas enfrentadas.
+
 > **Nota:** el visor HTML aún no renderiza recursos; la previsualización en canvas y el backend PDF sí.
 
 

@@ -41,6 +41,8 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Encabezados](#encabezados) — valores generales y sobrescrituras H1–H6.
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
 - [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
+- [Tipos de recurso](#tipos-de-recurso) — numeración tipada para figuras, tablas y tipos personalizados.
+- [Estilo de tablas](#estilo-de-tablas) y [Estilo de pies](#estilo-de-pies) — tipografía y decoración de las tablas-recurso y sus pies.
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
 - [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
@@ -140,7 +142,7 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
 
 ### Rejilla base
 
-La rejilla base dibuja líneas horizontales a intervalos que coinciden con la altura de línea del texto de cuerpo. Es una ayuda visual para asegurar el ritmo vertical — cuando está activada, el motor ajusta los bloques de encabezado a la rejilla para que el texto de cuerpo en columnas adyacentes se mantenga alineado.
+La rejilla base dibuja líneas horizontales a intervalos que coinciden con la altura de línea del texto de cuerpo. Es una ayuda visual para asegurar el ritmo vertical — cuando está activada, el motor ajusta los bloques de encabezado a la rejilla para que el texto de cuerpo en columnas adyacentes se mantenga alineado. Las líneas cubren solo el texto real de la página — desde la primera línea de texto hasta la última — de modo que las bandas de flotantes, las páginas en blanco por paridad y el espacio sobrante al final no muestran rejilla.
 
 <table>
   <thead>
@@ -716,6 +718,24 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td>Color aplicado a los fragmentos en cursiva. Mismo enlace a la paleta que <code>boldColor</code>.</td>
     </tr>
     <tr>
+      <td><code>referenceColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>Color principal (<code>#295AA3</code>)</td>
+      <td>Color aplicado a las etiquetas de <code>:ref</code> en línea (referencias a recursos). Mismo enlace a la paleta que <code>boldColor</code>.</td>
+    </tr>
+    <tr>
+      <td><code>referenceBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Renderizar las etiquetas de <code>:ref</code> en línea con la fuente en negrita.</td>
+    </tr>
+    <tr>
+      <td><code>referenceItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderizar las etiquetas de <code>:ref</code> en línea en cursiva.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
@@ -760,7 +780,7 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
     <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>2</code></td>
+      <td><code>1.9</code></td>
       <td>Límite superior del espaciado entre palabras en texto justificado, expresado como multiplicador del ancho del espacio normal. Las líneas que superan esta proporción se consideran "flojas".</td>
     </tr>
     <tr>
@@ -1702,6 +1722,214 @@ Cualquier otro texto es literal. Una barra invertida escapa un `{`, `}` o `\` li
 El número que produce un tipo de recurso es lo que imprime `:ref` y lo que precede el prefijo del pie. La gramática del lado del documento — la inserción en bloque `::resource{id}` y la referencia en línea `:ref{id}`, junto con sus opciones `style` y `text` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
 
 Esto refleja la numeración de encabezados: igual que un nivel de encabezado lleva un `numberingTemplate`, un tipo de recurso también lo lleva — pero el contador del recurso (`{n}`) avanza por primera referencia en lugar de por encabezado, y `resetOn` lo ata de vuelta a la jerarquía de encabezados.
+
+
+## Estilo de tablas
+
+La propiedad `tableStyle` controla la tipografía y la decoración de las tablas-recurso. Las celdas de cuerpo y de cabecera se estilizan de forma independiente. La familia tipográfica, el tamaño y los colores heredan del texto de cuerpo resuelto cuando no se indican, de modo que un documento sin `tableStyle` renderiza las tablas con la tipografía del cuerpo.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    headerBold: true,
+    headerBackground: { hex: '#f0f0f0', model: 'hex' },
+    borders: true,
+    borderWidth: { value: 0.75, unit: 'pt' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Propiedad</th>
+      <th style={{ width: '140px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bodyFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>fuente del cuerpo</td>
+      <td>Familia tipográfica de las celdas de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>tamaño del cuerpo</td>
+      <td>Tamaño de fuente de las celdas de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del texto de las celdas de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>headerFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>fuente del cuerpo</td>
+      <td>Familia tipográfica de las celdas de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>headerFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>tamaño del cuerpo</td>
+      <td>Tamaño de fuente de las celdas de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>headerColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del texto de las celdas de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>headerBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Renderizar las celdas de cabecera en negrita.</td>
+    </tr>
+    <tr>
+      <td><code>headerItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderizar las celdas de cabecera en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>headerBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pintar un relleno tras la fila de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>headerBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#f0f0f0</code></td>
+      <td>Color de relleno de la fila de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pintar un relleno tras las filas de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffffff</code></td>
+      <td>Color de relleno de las filas de cuerpo (solo se pinta cuando está activado).</td>
+    </tr>
+    <tr>
+      <td><code>borders</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibujar los bordes de las celdas.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del trazo de los bordes.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75pt</code></td>
+      <td>Grosor del trazo de los bordes (≈1px a 96 DPI; escala con los DPI de la página).</td>
+    </tr>
+    <tr>
+      <td><code>cellPadding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.375em</code></td>
+      <td>Relleno interior de cada celda.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Estilo de pies
+
+La propiedad `captionStyle` controla los pies de recurso (la línea `Figura 1 — …` bajo imágenes, SVG y tablas). La etiqueta numerada y la descripción comparten tipografía y tamaño — una limitación del motor — pero la etiqueta puede llevar su propio peso, cursiva y color. La familia tipográfica, el tamaño y el color heredan del texto de cuerpo cuando no se indican.
+
+```ts
+const config: PostextConfig = {
+  captionStyle: {
+    align: 'center',
+    labelBold: true,
+    labelColor: { hex: '#295AA3', model: 'hex' },
+    descriptionItalic: true,
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>fuente del cuerpo</td>
+      <td>Familia tipográfica del pie (etiqueta y descripción).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>tamaño del cuerpo</td>
+      <td>Tamaño de fuente del pie (etiqueta y descripción).</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del texto de la descripción.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>Alineación horizontal del pie bajo el recurso.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>Separación vertical entre el recurso y su pie.</td>
+    </tr>
+    <tr>
+      <td><code>labelBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Renderizar la etiqueta numerada (p. ej. <code>Figura 1</code>) en negrita.</td>
+    </tr>
+    <tr>
+      <td><code>labelItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderizar la etiqueta numerada en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>labelColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>color</code> del pie</td>
+      <td>Color de la etiqueta numerada.</td>
+    </tr>
+    <tr>
+      <td><code>descriptionItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderizar el texto de la descripción en cursiva.</td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## Unidades y colores

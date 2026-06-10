@@ -6,6 +6,7 @@ export type { RenderPageOptions, ResourceImageSource } from './canvas-backend';
 export { renderToHtml, renderToHtmlIndexed } from './html-backend';
 export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage } from './html-backend';
 export { dimensionToPx } from './units';
+export { computePageTextExtent } from './vdt';
 export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache, createMeasurementCache, cachedMeasureBlock, cachedMeasureRichBlock } from './measure';
 export type { MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure';
 export { hyphenateText, setHyphenationLocale } from './hyphenate';

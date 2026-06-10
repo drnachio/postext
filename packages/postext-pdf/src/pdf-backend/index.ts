@@ -4,7 +4,7 @@ import {
 } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import type { PdfColorSpace, VDTDocument, VDTPage } from 'postext';
-import { dimensionToPx } from 'postext';
+import { computePageTextExtent, dimensionToPx } from 'postext';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import {
   type PageCtx,
@@ -86,25 +86,24 @@ function renderPage(
   }
 
   if (doc.config.page.baselineGrid.enabled) {
-    const contentArea = computeContentArea(vdtPage, doc);
-    const isLastPage = vdtPage.index === doc.pages.length - 1;
-    if (!isLastPage && vdtPage.columns.length > 0) {
-      const maxUsed = Math.max(
-        ...vdtPage.columns.map((col) => col.bbox.height - col.availableHeight),
+    // Bound the grid to the page's actual text: from the first text line to
+    // the last (mirrors the canvas backend). Pages with no text draw no grid.
+    const textExtent = computePageTextExtent(vdtPage);
+    if (textExtent) {
+      const contentArea = computeContentArea(vdtPage, doc);
+      const gridLineWidthPx = dimensionToPx(
+        doc.config.page.baselineGrid.lineWidth,
+        doc.config.page.dpi,
       );
-      contentArea.height = maxUsed;
+      renderBaselineGrid(
+        ctx,
+        contentArea,
+        doc.baselineGrid,
+        doc.config.page.baselineGrid.color.hex,
+        gridLineWidthPx,
+        textExtent,
+      );
     }
-    const gridLineWidthPx = dimensionToPx(
-      doc.config.page.baselineGrid.lineWidth,
-      doc.config.page.dpi,
-    );
-    renderBaselineGrid(
-      ctx,
-      contentArea,
-      doc.baselineGrid,
-      doc.config.page.baselineGrid.color.hex,
-      gridLineWidthPx,
-    );
   }
 
   if (doc.config.layout.columnRule.enabled && vdtPage.columns.length > 1) {

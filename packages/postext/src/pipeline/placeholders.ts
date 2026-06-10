@@ -57,53 +57,7 @@ export function computeChapterTitles(
   totalPages: number,
   pages?: ChapterTitlePageInfo[],
 ): string[] {
-  const out = new Array<string>(totalPages).fill('');
-  const byPage = new Map<number, string>();
-  let current = '';
-  // Walk blocks in page/column order. The VDT `doc.blocks` array is already
-  // insertion-ordered by placement, so pages are in increasing index.
-  let lastPageIndex = -1;
-  // Track H1 page-indices so we can reassign any parity-padding pages
-  // that precede them.
-  const h1PageIndices: Array<{ pageIndex: number; title: string }> = [];
-  for (const b of blocks) {
-    if (b.pageIndex < 0) continue;
-    while (lastPageIndex < b.pageIndex) {
-      lastPageIndex++;
-      byPage.set(lastPageIndex, current);
-    }
-    if (b.headingLevel === 1) {
-      current = plainTextOfBlock(b);
-      byPage.set(b.pageIndex, current);
-      h1PageIndices.push({ pageIndex: b.pageIndex, title: current });
-    }
-  }
-  // Fill any trailing pages (past the last block) with current value.
-  for (let p = 0; p < totalPages; p++) {
-    if (byPage.has(p)) {
-      out[p] = byPage.get(p)!;
-    } else if (p > 0) {
-      out[p] = out[p - 1]!;
-    }
-  }
-  // Reassign parity-padding pages preceding each H1 to the upcoming
-  // chapter's title. The blank page was inserted solely to push the
-  // chapter onto the correct parity — conceptually it belongs to the
-  // chapter it precedes. `blankForForce` pages (the mandatory leading
-  // separator of `always-*` modes) stop the walk: they belong to the
-  // previous chapter.
-  if (pages) {
-    for (const { pageIndex, title } of h1PageIndices) {
-      for (let p = pageIndex - 1; p >= 0; p--) {
-        const info = pages[p];
-        if (!info) break;
-        if (info.blankForForce) break;
-        if (!info.blankForParity) break;
-        out[p] = title;
-      }
-    }
-  }
-  return out;
+  return computeChapterValues(blocks, totalPages, pages, plainTextOfBlock);
 }
 
 /**
@@ -116,11 +70,26 @@ export function computeChapterNumbers(
   totalPages: number,
   pages?: ChapterTitlePageInfo[],
 ): string[] {
+  return computeChapterValues(blocks, totalPages, pages, (b) => b.numberPrefix ?? '');
+}
+
+/** Shared walker behind `computeChapterTitles` / `computeChapterNumbers`:
+ *  tracks the most recent H1's extracted value per page. */
+function computeChapterValues(
+  blocks: VDTBlock[],
+  totalPages: number,
+  pages: ChapterTitlePageInfo[] | undefined,
+  extract: (block: VDTBlock) => string,
+): string[] {
   const out = new Array<string>(totalPages).fill('');
   const byPage = new Map<number, string>();
   let current = '';
+  // Walk blocks in page/column order. The VDT `doc.blocks` array is already
+  // insertion-ordered by placement, so pages are in increasing index.
   let lastPageIndex = -1;
-  const h1PageIndices: Array<{ pageIndex: number; number: string }> = [];
+  // Track H1 page-indices so we can reassign any parity-padding pages
+  // that precede them.
+  const h1PageIndices: Array<{ pageIndex: number; value: string }> = [];
   for (const b of blocks) {
     if (b.pageIndex < 0) continue;
     while (lastPageIndex < b.pageIndex) {
@@ -128,23 +97,33 @@ export function computeChapterNumbers(
       byPage.set(lastPageIndex, current);
     }
     if (b.headingLevel === 1) {
-      current = b.numberPrefix ?? '';
+      current = extract(b);
       byPage.set(b.pageIndex, current);
-      h1PageIndices.push({ pageIndex: b.pageIndex, number: current });
+      h1PageIndices.push({ pageIndex: b.pageIndex, value: current });
     }
   }
+  // Fill any trailing pages (past the last block) with current value.
   for (let p = 0; p < totalPages; p++) {
-    if (byPage.has(p)) out[p] = byPage.get(p)!;
-    else if (p > 0) out[p] = out[p - 1]!;
+    if (byPage.has(p)) {
+      out[p] = byPage.get(p)!;
+    } else if (p > 0) {
+      out[p] = out[p - 1]!;
+    }
   }
+  // Reassign parity-padding pages preceding each H1 to the upcoming
+  // chapter's value. The blank page was inserted solely to push the
+  // chapter onto the correct parity — conceptually it belongs to the
+  // chapter it precedes. `blankForForce` pages (the mandatory leading
+  // separator of `always-*` modes) stop the walk: they belong to the
+  // previous chapter.
   if (pages) {
-    for (const { pageIndex, number } of h1PageIndices) {
+    for (const { pageIndex, value } of h1PageIndices) {
       for (let p = pageIndex - 1; p >= 0; p--) {
         const info = pages[p];
         if (!info) break;
         if (info.blankForForce) break;
         if (!info.blankForParity) break;
-        out[p] = number;
+        out[p] = value;
       }
     }
   }
