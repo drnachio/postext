@@ -712,4 +712,11 @@ export const DEFAULT_LABELS: SandboxLabels = {
   captionGap: 'Gap above',
   captionLabelGroup: 'Numbered label',
   captionDescriptionGroup: 'Description',
+  // Diagram styling section
+  diagramStyleSection: 'Diagrams',
+  diagramSingleInk: 'Single-ink diagrams',
+  diagramSingleInkTooltip:
+    'Recolor SVG diagrams to tints of one ink so they reproduce faithfully when printing with a single color',
+  diagramInkColor: 'Ink color',
+  diagramInkColorTooltip: 'The ink diagrams are recolored with. Defaults to the main color of the palette',
 };

@@ -69,7 +69,13 @@ export async function preloadResourceImages(
 ): Promise<ResourceImageMap> {
   const out: ResourceImageMap = new Map();
   if (!bytesProvider) return out;
-  for (const block of doc.blocks) {
+  // Inline resources live in doc.blocks; floated resources only exist on
+  // their page's float band (page.floats), so both must be walked.
+  const blocks: VDTBlock[] = [...doc.blocks];
+  for (const page of doc.pages) {
+    if (page.floats) blocks.push(...page.floats);
+  }
+  for (const block of blocks) {
     const rb = block.resourceBlock;
     if (!rb || !rb.fileId || out.has(rb.fileId)) continue;
     if (rb.kind !== 'bitmap' && rb.kind !== 'svg') continue;

@@ -120,6 +120,10 @@ export function applyPaletteToResolvedConfig(
       color: resolveRequired(resolved.captionStyle.color, palette),
       labelColor: resolveRequired(resolved.captionStyle.labelColor, palette),
     },
+    diagramStyle: {
+      ...resolved.diagramStyle,
+      inkColor: resolveRequired(resolved.diagramStyle.inkColor, palette),
+    },
   };
 }
 
@@ -200,6 +204,13 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
       ...config.captionStyle,
       color: resolveColor(config.captionStyle.color, palette),
       labelColor: resolveColor(config.captionStyle.labelColor, palette),
+    };
+  }
+
+  if (config.diagramStyle) {
+    next.diagramStyle = {
+      ...config.diagramStyle,
+      inkColor: resolveColor(config.diagramStyle.inkColor, palette),
     };
   }
 

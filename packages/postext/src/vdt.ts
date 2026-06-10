@@ -10,6 +10,7 @@ import type {
   ResolvedHeadingsConfig,
   ResolvedTableStyleConfig,
   ResolvedCaptionStyleConfig,
+  ResolvedDiagramStyleConfig,
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
@@ -40,6 +41,7 @@ export interface ResolvedConfig {
   headings: ResolvedHeadingsConfig;
   tableStyle: ResolvedTableStyleConfig;
   captionStyle: ResolvedCaptionStyleConfig;
+  diagramStyle: ResolvedDiagramStyleConfig;
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;

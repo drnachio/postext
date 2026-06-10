@@ -804,4 +804,10 @@ export interface SandboxLabels {
   captionGap: string;
   captionLabelGroup: string;
   captionDescriptionGroup: string;
+  // --- Diagram styling section ---
+  diagramStyleSection: string;
+  diagramSingleInk: string;
+  diagramSingleInkTooltip: string;
+  diagramInkColor: string;
+  diagramInkColorTooltip: string;
 }

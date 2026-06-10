@@ -6,12 +6,19 @@
 // bitmap/SVG blob from the sandbox blob store, decodes it once, and registers
 // it. Decoded fileIds are remembered so repeated calls are cheap; the registry
 // itself is module-level in `postext`, shared across all viewports.
+//
+// SVGs are ink-aware: when the document's diagramStyle requests single-ink
+// reproduction, the SVG markup is recoloured (applySingleInkToSvg) before
+// decode. The per-file variant key records which ink a decode used, so
+// toggling the setting re-decodes and re-registers the affected SVGs.
 
 import type { Resource } from 'postext';
-import { registerResourceImage } from 'postext';
+import { applySingleInkToSvg, registerResourceImage } from 'postext';
 import { getBlob, type BlobRecord } from '../storage/blobStore';
 
-const decoded = new Set<string>();
+/** fileId → variant key of the registered decode (`''` plain, ink hex when
+ *  single-ink recolouring was applied). */
+const decoded = new Map<string, string>();
 
 /** The blob fileId backing a resource's image payload, if any. */
 function imageFileId(r: Resource): string | undefined {
@@ -21,12 +28,14 @@ function imageFileId(r: Resource): string | undefined {
 }
 
 /** Decode a blob into something the canvas backend can `drawImage`. SVGs load
- *  through an `<img>` (scaled to the requested box at draw time); rasters decode
- *  via `createImageBitmap`. */
-async function decodeImage(rec: BlobRecord): Promise<CanvasImageSource | null> {
+ *  through an `<img>` (scaled to the requested box at draw time, recoloured
+ *  first when `inkHex` is set); rasters decode via `createImageBitmap`. */
+async function decodeImage(rec: BlobRecord, inkHex: string | null): Promise<CanvasImageSource | null> {
   if (typeof document === 'undefined') return null;
   if (rec.contentType === 'image/svg+xml') {
-    const blob = new Blob([rec.bytes], { type: 'image/svg+xml' });
+    let svgText = new TextDecoder().decode(rec.bytes);
+    if (inkHex) svgText = applySingleInkToSvg(svgText, inkHex);
+    const blob = new Blob([svgText], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     try {
       const img = new Image();
@@ -44,20 +53,33 @@ async function decodeImage(rec: BlobRecord): Promise<CanvasImageSource | null> {
   return createImageBitmap(blob);
 }
 
-/** Ensure every image-bearing resource has its decoded image registered.
- *  Returns true if at least one new image was registered, so the caller can
- *  trigger a repaint. Safe to call repeatedly. */
-export async function ensureResourceImages(resources: Resource[]): Promise<boolean> {
+/** Drop a fileId's decode record so the next `ensureResourceImages` call
+ *  re-reads and re-registers it (used when a blob is overwritten in place). */
+export function invalidateResourceImage(fileId: string): void {
+  decoded.delete(fileId);
+}
+
+/** Ensure every image-bearing resource has its decoded image registered,
+ *  recolouring SVGs to `inkHex` when set (single-ink diagrams). Returns true
+ *  if at least one image was (re)registered, so the caller can trigger a
+ *  repaint. Safe to call repeatedly. */
+export async function ensureResourceImages(
+  resources: Resource[],
+  inkHex: string | null = null,
+): Promise<boolean> {
   let changed = false;
   for (const r of resources) {
     const fileId = imageFileId(r);
-    if (!fileId || decoded.has(fileId)) continue;
+    if (!fileId) continue;
+    // Ink only affects SVG decodes; bitmap registrations never go stale.
+    const variant = r.kind === 'svg' && inkHex ? inkHex.toLowerCase() : '';
+    if (decoded.get(fileId) === variant) continue;
     const rec = await getBlob(fileId).catch(() => null);
     if (!rec) continue;
-    const img = await decodeImage(rec).catch(() => null);
+    const img = await decodeImage(rec, variant || null).catch(() => null);
     if (!img) continue;
     registerResourceImage(fileId, img);
-    decoded.add(fileId);
+    decoded.set(fileId, variant);
     changed = true;
   }
   return changed;

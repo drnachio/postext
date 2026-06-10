@@ -103,6 +103,9 @@ describe("package exports", () => {
       "stripTableStyleDefaults",
       "resolveCaptionStyleConfig",
       "stripCaptionStyleDefaults",
+      "DEFAULT_DIAGRAM_STYLE_CONFIG",
+      "resolveDiagramStyleConfig",
+      "stripDiagramStyleDefaults",
       "DEFAULT_UNORDERED_LISTS_STATIC",
       "resolveUnorderedListsConfig",
       "stripUnorderedListsDefaults",
@@ -167,6 +170,7 @@ describe("package exports", () => {
       "renderMath",
       "placeholderRender",
       "clearMathCache",
+      "applySingleInkToSvg",
     ]);
   });
 });

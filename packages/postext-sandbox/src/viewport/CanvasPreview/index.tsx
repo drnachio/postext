@@ -2,7 +2,7 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandboxDispatch, useSandboxDocRef, useSandboxSelector } from '../../context/SandboxContext';
-import { renderPageToCanvas, resolveDebugConfig } from 'postext';
+import { renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { drawOverlay } from './overlay';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
@@ -278,13 +278,21 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     };
   }, [deferredMarkdown, deferredResources, deferredConfig, rebuildKey, dispatch, sharedDocRef, layoutWorker]);
 
+  // Single-ink diagram colour: when diagramStyle.singleInk is on, SVG resources
+  // decode through a recolouring pass keyed on the resolved ink hex.
+  const diagramInkHex = useMemo((): string | null => {
+    const ds = resolveDiagramStyleConfig(deferredConfig.diagramStyle);
+    if (!ds.singleInk) return null;
+    return resolveColorValue(ds.inkColor, deferredConfig.colorPalette, ds.inkColor).hex;
+  }, [deferredConfig]);
+
   // Decode resource image payloads (bitmaps/SVGs) from IndexedDB and register
   // them with the canvas backend, then force a repaint — mirrors the
   // font-load → rebuildKey pattern above. The worker lays out from the resource
   // metadata (intrinsic dims); the actual pixels are drawn on the main thread.
   useEffect(() => {
     let cancelled = false;
-    ensureResourceImages(deferredResources)
+    ensureResourceImages(deferredResources, diagramInkHex)
       .then((changed) => {
         if (!cancelled && changed) setRebuildKey((k) => k + 1);
       })
@@ -292,7 +300,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     return () => {
       cancelled = true;
     };
-  }, [deferredResources]);
+  }, [deferredResources, diagramInkHex]);
 
   // LAYOUT effect — (re)builds the page DOM and repaints visible pages.
   // Runs when a new doc is produced, or when view mode changes. Resize is

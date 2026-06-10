@@ -604,6 +604,23 @@ export interface ResolvedCaptionStyleConfig {
   descriptionItalic: boolean;
 }
 
+/** Styling for embedded SVG diagrams (`kind: 'svg'` resources). When
+ *  {@link singleInk} is on, every colour in the SVG is remapped to a tint of
+ *  {@link inkColor} by luminance — light fills become light tints, dark
+ *  strokes and text approach the full ink — so figures reproduce faithfully
+ *  when a document is printed with a single spot colour. */
+export interface DiagramStyleConfig {
+  /** Recolour diagrams to tints of a single ink. Default `false`. */
+  singleInk?: boolean;
+  /** The ink. Defaults to the document's main palette colour. */
+  inkColor?: ColorValue;
+}
+
+export interface ResolvedDiagramStyleConfig {
+  singleInk: boolean;
+  inkColor: ColorValue;
+}
+
 /** Parity constraint for a forced page break.
  *
  *  - `'any'` — no constraint; the break just opens a new page.
@@ -1203,6 +1220,8 @@ export interface PostextConfig {
   tableStyle?: TableStyleConfig;
   /** Styling for resource captions (numbered label + description). */
   captionStyle?: CaptionStyleConfig;
+  /** Styling for embedded SVG diagrams (single-ink reproduction). */
+  diagramStyle?: DiagramStyleConfig;
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;

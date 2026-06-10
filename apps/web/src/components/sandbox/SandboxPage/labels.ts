@@ -695,5 +695,10 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     captionGap: t("captionGap"),
     captionLabelGroup: t("captionLabelGroup"),
     captionDescriptionGroup: t("captionDescriptionGroup"),
+    diagramStyleSection: t("diagramStyleSection"),
+    diagramSingleInk: t("diagramSingleInk"),
+    diagramSingleInkTooltip: t("diagramSingleInkTooltip"),
+    diagramInkColor: t("diagramInkColor"),
+    diagramInkColorTooltip: t("diagramInkColorTooltip"),
   };
 }
