@@ -10,15 +10,10 @@
     "publish-postext": "pnpm --filter postext publish --access public"
   },
   "devDependencies": {
-    "turbo": "2.9.6"
+    "turbo": "2.9.17"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.5",
     "mathjax-full": "^3.2.2"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "wawoff2": "patches/wawoff2.patch"
-    }
   }
 }

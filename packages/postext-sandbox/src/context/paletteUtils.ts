@@ -52,6 +52,8 @@ export function findPaletteUsages(
     });
   }
 
+  if (isLinked(config.diagramStyle?.inkColor, paletteId)) usages.push(labels.diagramInkColor);
+
   if (config.debug) {
     if (isLinked(config.debug.cursorSync?.color, paletteId)) usages.push(labels.debugCursorSyncColor);
     if (isLinked(config.debug.selectionSync?.color, paletteId)) usages.push(labels.debugSelectionSyncColor);
@@ -114,6 +116,13 @@ export function unlinkPaletteRefs(config: PostextConfig, paletteId: string): Pos
       ...config.orderedLists,
       color: unlinkColor(config.orderedLists.color, paletteId),
       levels: config.orderedLists.levels?.map((l) => ({ ...l, color: unlinkColor(l.color, paletteId) })),
+    };
+  }
+
+  if (config.diagramStyle) {
+    next.diagramStyle = {
+      ...config.diagramStyle,
+      inkColor: unlinkColor(config.diagramStyle.inkColor, paletteId),
     };
   }
 

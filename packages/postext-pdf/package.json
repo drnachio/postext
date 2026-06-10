@@ -35,9 +35,9 @@
   },
   "devDependencies": {
     "@postext/typescript-config": "workspace:*",
-    "eslint": "^9",
+    "eslint": "^9.39.4",
     "postext": "workspace:*",
     "typescript": "latest",
-    "typescript-eslint": "^8.58.0"
+    "typescript-eslint": "^8.61.0"
   }
 }

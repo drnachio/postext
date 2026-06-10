@@ -11,10 +11,6 @@ export interface SandboxLabels {
   html: string;
   pdf: string;
 
-  // Placeholders
-  comingSoon: string;
-  resourcesComingSoonDescription: string;
-
   // Shared toolbar pin + dirty indicator
   toolbarPin: string;
   toolbarUnpin: string;
@@ -461,6 +457,10 @@ export interface SandboxLabels {
   columnRuleColorTooltip: string;
   columnRuleLineWidth: string;
   columnRuleLineWidthTooltip: string;
+  balanceColumns: string;
+  balanceColumnsTooltip: string;
+  balanceColumnsMaxLines: string;
+  balanceColumnsMaxLinesTooltip: string;
 
   // Canvas viewport toolbar
   zoomIn: string;
@@ -804,4 +804,10 @@ export interface SandboxLabels {
   captionGap: string;
   captionLabelGroup: string;
   captionDescriptionGroup: string;
+  // --- Diagram styling section ---
+  diagramStyleSection: string;
+  diagramSingleInk: string;
+  diagramSingleInkTooltip: string;
+  diagramInkColor: string;
+  diagramInkColorTooltip: string;
 }

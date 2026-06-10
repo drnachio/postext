@@ -32,16 +32,27 @@ export function whiteColor(colorSpace: PdfColorSpace): Color {
   return rgb(1, 1, 1);
 }
 
+// Memoized: called per text segment during rendering, while a document only
+// uses a handful of colors. pdf-lib Color objects are plain immutable
+// descriptors, so sharing instances is safe.
+const colorCache = new Map<string, Color>();
+
 export function colorFromHex(hex: string, colorSpace: PdfColorSpace): Color {
+  const key = `${colorSpace}|${hex}`;
+  const cached = colorCache.get(key);
+  if (cached) return cached;
   const c = hexToRgb(hex);
+  let color: Color;
   if (colorSpace === 'cmyk') {
     const k = rgbToCmyk(c);
-    return cmyk(k.c, k.m, k.y, k.k);
+    color = cmyk(k.c, k.m, k.y, k.k);
+  } else if (colorSpace === 'grayscale') {
+    color = grayscale(rgbToGrayscale(c));
+  } else {
+    color = rgb(c.r, c.g, c.b);
   }
-  if (colorSpace === 'grayscale') {
-    return grayscale(rgbToGrayscale(c));
-  }
-  return rgb(c.r, c.g, c.b);
+  colorCache.set(key, color);
+  return color;
 }
 
 /** Back-compat alias — defaults to RGB. */

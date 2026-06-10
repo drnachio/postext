@@ -1,7 +1,7 @@
 import type { VDTBlock, VDTLine, VDTLineSegment, TextAlign } from '../vdt';
 import type { MathRender } from '../math/types';
 import { getMathRaster } from '../math/rasterCache';
-import { renderDesignSlot } from './headerFooter';
+import { renderHeaderFooterSlot } from './headerFooter';
 import { renderResourceBlock } from './renderResourceBlock';
 
 function pickSegmentFont(
@@ -30,6 +30,19 @@ function pickSegmentColor(
   return color;
 }
 
+/** Parsed Path2D objects per math render, so repeated paints of the same
+ *  formula don't re-parse the SVG path data. */
+const mathPathCache = new WeakMap<MathRender, Path2D[]>();
+
+function getMathPaths(render: MathRender): Path2D[] {
+  let paths = mathPathCache.get(render);
+  if (!paths) {
+    paths = render.paths.map((p) => new Path2D(p.d));
+    mathPathCache.set(render, paths);
+  }
+  return paths;
+}
+
 function renderMathRender(
   ctx: CanvasRenderingContext2D,
   render: MathRender,
@@ -53,13 +66,14 @@ function renderMathRender(
   }
   const sx = widthPx / viewBox.width;
   const sy = heightPx / viewBox.height;
+  const path2ds = getMathPaths(render);
   ctx.save();
   ctx.translate(topLeftX, topLeftY);
   ctx.scale(sx, sy);
   ctx.translate(-viewBox.minX, -viewBox.minY);
-  for (const path of paths) {
-    ctx.fillStyle = path.fill === 'currentColor' ? fallbackColor : path.fill;
-    ctx.fill(new Path2D(path.d));
+  for (let i = 0; i < paths.length; i++) {
+    ctx.fillStyle = paths[i]!.fill === 'currentColor' ? fallbackColor : paths[i]!.fill;
+    ctx.fill(path2ds[i]!);
   }
   ctx.restore();
 }
@@ -75,110 +89,121 @@ function renderMathSegment(
   renderMathRender(ctx, seg.mathRender, x, baselineY - seg.mathRender.ascentPx, fallbackColor);
 }
 
+/** Per-block text styling shared by every line. Built once in renderBlock. */
+interface BlockTextStyle {
+  font: string;
+  boldFont: string | undefined;
+  italicFont: string | undefined;
+  boldItalicFont: string | undefined;
+  color: string;
+  boldColor: string | undefined;
+  italicColor: string | undefined;
+  refColor: string | undefined;
+}
+
+/**
+ * Paint a line's segments left to right starting at `startX`. When
+ * `justifiedSpaceWidth` is set, spaces advance by it instead of their
+ * measured width. Tracks the current canvas font/fillStyle to skip
+ * redundant state changes (segments overwhelmingly share styling).
+ */
+function renderSegments(
+  ctx: CanvasRenderingContext2D,
+  segments: VDTLineSegment[],
+  startX: number,
+  baseline: number,
+  style: BlockTextStyle,
+  justifiedSpaceWidth?: number,
+): void {
+  let x = startX;
+  let currentFont = '';
+  let currentFill = '';
+  for (const seg of segments) {
+    if (seg.kind === 'space') {
+      x += justifiedSpaceWidth ?? seg.width;
+      continue;
+    }
+    if (seg.kind === 'math') {
+      renderMathSegment(ctx, seg, x, baseline, style.color);
+      x += seg.width;
+      // Math painting touches canvas state; force re-set on the next text segment.
+      currentFont = '';
+      currentFill = '';
+      continue;
+    }
+    const font = pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
+    if (font !== currentFont) {
+      ctx.font = font;
+      currentFont = font;
+    }
+    const fill = seg.refResourceId !== undefined && style.refColor
+      ? style.refColor
+      : pickSegmentColor(!!seg.bold, !!seg.italic, style.color, style.boldColor, style.italicColor);
+    if (fill !== currentFill) {
+      ctx.fillStyle = fill;
+      currentFill = fill;
+    }
+    ctx.fillText(seg.text, x, baseline);
+    x += seg.width;
+  }
+}
+
 function renderLine(
   ctx: CanvasRenderingContext2D,
   line: VDTLine,
-  font: string,
-  boldFont: string | undefined,
-  italicFont: string | undefined,
-  boldItalicFont: string | undefined,
-  color: string,
-  boldColor: string | undefined,
-  italicColor: string | undefined,
-  refColor: string | undefined,
+  style: BlockTextStyle,
   textAlign: TextAlign,
   columnWidth: number,
   columnX: number,
 ): void {
-  ctx.fillStyle = color;
   ctx.textBaseline = 'alphabetic';
-
-  const hasRichSegments =
-    line.segments && line.segments.some((s) => s.bold || s.italic);
 
   // Effective width accounts for line-level indent (e.g. first-line or hanging indent)
   const lineIndent = line.bbox.x - columnX;
   const effectiveWidth = columnWidth - lineIndent;
+  const segments = line.segments;
 
-  // Justified rendering with per-segment spacing
-  if (textAlign === 'justify' && !line.isLastLine && line.segments && line.segments.length > 0) {
+  // Justified rendering with per-segment spacing. Last lines render ragged at
+  // natural width — except when overfull: Knuth-Plass may accept a final line
+  // wider than the measure on the assumption that its inter-word glue shrinks
+  // (TeX glue-setting semantics), so honor that by compressing the spaces to
+  // fit the measure exactly instead of overflowing into the clip.
+  if (textAlign === 'justify' && segments && segments.length > 0) {
     let wordWidth = 0;
+    let naturalWidth = 0;
     let spaceCount = 0;
-    for (const seg of line.segments) {
+    for (const seg of segments) {
       if (seg.kind === 'space') spaceCount++;
       else wordWidth += seg.width;
+      naturalWidth += seg.width;
     }
-
-    if (spaceCount > 0) {
+    if (spaceCount > 0 && (!line.isLastLine || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      let x = line.bbox.x;
-      for (const seg of line.segments) {
-        if (seg.kind === 'space') {
-          x += justifiedSpaceWidth;
-        } else if (seg.kind === 'math') {
-          renderMathSegment(ctx, seg, x, line.baseline, color);
-          x += seg.width;
-        } else {
-          ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-          ctx.fillStyle = seg.refResourceId !== undefined && refColor
-          ? refColor
-          : pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
-          ctx.fillText(seg.text, x, line.baseline);
-          x += seg.width;
-        }
-      }
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth);
       return;
     }
   }
 
   // Centred alignment — used by math display blocks. Distribute remaining
   // space equally on either side.
-  if (textAlign === 'center' && line.segments) {
-    const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
-    let x = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
-    for (const seg of line.segments) {
-      if (seg.kind === 'space') {
-        x += seg.width;
-      } else if (seg.kind === 'math') {
-        renderMathSegment(ctx, seg, x, line.baseline, color);
-        x += seg.width;
-      } else {
-        ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-        ctx.fillStyle = seg.refResourceId !== undefined && refColor
-          ? refColor
-          : pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
-        ctx.fillText(seg.text, x, line.baseline);
-        x += seg.width;
-      }
-    }
+  if (textAlign === 'center' && segments) {
+    let contentWidth = 0;
+    for (const seg of segments) contentWidth += seg.width;
+    const startX = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
+    renderSegments(ctx, segments, startX, line.baseline, style);
     return;
   }
 
-  // Ragged (left-aligned) rendering — also used for last lines of justified blocks
-  // If there are bold/italic segments, render per-segment to apply correct fonts
-  const hasMathSegments = line.segments && line.segments.some((s) => s.kind === 'math');
-  const hasRefSegments = line.segments && line.segments.some((s) => s.refResourceId !== undefined);
-  if ((hasRichSegments || hasMathSegments || hasRefSegments) && line.segments) {
-    let x = line.bbox.x;
-    for (const seg of line.segments) {
-      if (seg.kind === 'space') {
-        x += seg.width;
-      } else if (seg.kind === 'math') {
-        renderMathSegment(ctx, seg, x, line.baseline, color);
-        x += seg.width;
-      } else {
-        ctx.font = pickSegmentFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-        ctx.fillStyle = seg.refResourceId !== undefined && refColor
-          ? refColor
-          : pickSegmentColor(!!seg.bold, !!seg.italic, color, boldColor, italicColor);
-        ctx.fillText(seg.text, x, line.baseline);
-        x += seg.width;
-      }
-    }
+  // Ragged (left-aligned) rendering — also used for last lines of justified
+  // blocks. Segments are needed when any of them styles differently from the
+  // block (bold/italic/math/ref); otherwise one fillText paints the line.
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined)) {
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, style);
     return;
   }
 
-  ctx.font = font;
+  ctx.font = style.font;
+  ctx.fillStyle = style.color;
   ctx.fillText(line.text, line.bbox.x, line.baseline);
 }
 
@@ -219,7 +244,7 @@ export function renderBlock(
 ): void {
   if (block.hidden) return;
   if (block.designOverlay) {
-    renderDesignSlot(ctx, block.designOverlay);
+    renderHeaderFooterSlot(ctx, block.designOverlay);
     return;
   }
   if (block.type === 'resource') {
@@ -229,22 +254,18 @@ export function renderBlock(
   if (block.type === 'listItem') {
     renderBullet(ctx, block);
   }
+  const style: BlockTextStyle = {
+    font: block.fontString,
+    boldFont: block.boldFontString,
+    italicFont: block.italicFontString,
+    boldItalicFont: block.boldItalicFontString,
+    color: block.color,
+    boldColor: block.boldColor,
+    italicColor: block.italicColor,
+    refColor: block.refColor,
+  };
   for (const line of block.lines) {
-    renderLine(
-      ctx,
-      line,
-      block.fontString,
-      block.boldFontString,
-      block.italicFontString,
-      block.boldItalicFontString,
-      block.color,
-      block.boldColor,
-      block.italicColor,
-      block.refColor,
-      block.textAlign,
-      columnWidth,
-      columnX,
-    );
+    renderLine(ctx, line, style, block.textAlign, columnWidth, columnX);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

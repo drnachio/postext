@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Hyphenation & Justification',
   description: 'How Postext breaks lines, justifies text, and controls word spacing using the Knuth-Plass algorithm',
   lang: 'en',
-  lastUpdated: '2026-04-21',
-  readingTime: '20 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '12 min',
   order: 4,
 };
 
@@ -21,7 +21,7 @@ Postext solves it with the same algorithm that TeX has used since 1981: **Knuth-
 
 ## The Problem
 
-When text is set with `textAlign: 'justify'`, every line (except the last) must be stretched or compressed to fill the exact column width. The engine distributes the difference between the natural content width and the column width across the inter-word spaces on that line.
+When text is set with `textAlign: 'justify'`, every line except the last must be stretched or compressed to fill the exact column width. The engine distributes the difference between the natural content width and the column width across the inter-word spaces on that line. (The last line is left ragged at its natural width — with one exception covered in [The Final Line](#the-final-line).)
 
 If a line has many words, each space absorbs a tiny adjustment — invisible to the reader. But if a line has few words (because one long word forced an early break), each space must stretch dramatically. The result is a **loose line**: a line where the word spacing is so wide that it disrupts reading rhythm and creates ugly visual gaps.
 
@@ -90,13 +90,15 @@ The algorithm uses dynamic programming. It maintains a set of **active nodes** �
 
 2. **Badness**: a measure of how uneven the spacing is, computed as `100 × |r|³`. The cubic growth means that a slightly loose line is tolerable, but a very loose line is severely penalized. A line with `r = 2` has badness 800; a line with `r = 0.5` has badness 12.
 
-3. **Demerits**: the total cost of breaking here, combining badness, any penalty at the break point, and two additional penalties:
+3. **Fitness class**: each line is classified as tight (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), loose (`0.5 ≤ r < 1.0`), or very loose (`r ≥ 1.0`). If a tight line sits next to a very loose line, the contrast is jarring — so adjacent lines whose classes are more than one step apart are penalized.
+
+4. **Demerits**: the total cost of breaking here. Following TeX, badness and the break-point penalty are combined in a squared formula — `demerits = (1 + badness + penalty)²` when the penalty is non-negative; a negative penalty (a *desirable* break) instead subtracts its square: `(1 + badness)² − penalty²`. Two flat demerits are then added on top:
    - **Consecutive hyphen demerit** (default 3000): penalizes two hyphenated lines in a row, because stacked hyphens are visually distracting.
-   - **Fitness class demerit** (default 100): penalizes adjacent lines of very different tightness. If a tight line sits next to a very loose line, the contrast is jarring.
+   - **Fitness class demerit** (default 100): added when this line's fitness class is more than one step away from the previous line's.
 
-4. **Fitness class**: each line is classified as tight (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), loose (`0.5 ≤ r < 1.0`), or very loose (`r ≥ 1.0`). Adjacent lines with fitness classes more than one step apart incur the fitness demerit.
+   The runt penalty described below also enters this formula, injected as extra badness; the orphan and widow penalties act at a later stage, when a paragraph is split across columns.
 
-The four costs are summed into a single number per candidate break, and the algorithm picks the sequence with the lowest total cost across the whole paragraph — that is the entire advantage over greedy.
+The algorithm picks the sequence of breaks with the lowest total demerits across the whole paragraph — that is the entire advantage over greedy.
 
 <Illustration name="BadnessCurve" data='{"title": "Badness as a function of adjustment ratio", "desc": "Badness grows as 100 times the absolute value of r cubed. Small stretches or compressions are cheap, but extreme stretches become extremely costly, which is why the algorithm avoids them.", "caption": "Badness grows cubically: slightly uneven is tolerable, very uneven is punished hard.", "xAxis": "r", "yAxis": "badness", "zero": "0", "tight": "tight (r < 0)", "loose": "loose (r > 0)", "formula": "badness(r) = 100 · |r|³"}' />
 
@@ -106,13 +108,13 @@ The algorithm traces back through the active nodes to find the path with the low
 
 #### Orphan, widow, and runt penalties
 
-Postext extends the standard demerit set with three editorial penalties that push the line breaker away from break sets that would leave visually poor paragraph ends:
+Postext extends the standard cost model with three editorial penalties that steer the engine away from layouts with visually poor paragraph and column ends:
 
-- **Orphan penalty** applies when choosing this break would leave fewer than `orphanMinLines` lines at the top of the next column. Default `orphanPenalty` is `1000`.
-- **Widow penalty** applies when the break would leave fewer than `widowMinLines` lines at the bottom of the current column. Default `widowPenalty` is `1000`.
+- **Orphan penalty** applies when a candidate split would leave fewer than `orphanMinLines` lines at the top of the next column. Default `orphanPenalty` is `1000`.
+- **Widow penalty** applies when the split would leave fewer than `widowMinLines` lines at the bottom of the current column. Default `widowPenalty` is `1000`.
 - **Runt penalty** applies when the paragraph's final line would be shorter than roughly `runtMinCharacters × normalSpaceWidth` pixels. Default `runtPenalty` is `1000`. Unlike orphan/widow (which add linearly to the split demerit), runt is injected as equivalent *badness* inside the Knuth–Plass squared formula so it competes on the same scale as line badness (which saturates at 10000) rather than being dwarfed by it.
 
-All three are added to the candidate node's demerits before the algorithm selects the globally optimal path. Because they live inside the same optimisation, the solver is free to trade a slightly looser line for the elimination of a widow, and it will naturally prefer break sets that avoid all three whenever possible. Tune the trade-off by adjusting `orphanPenalty`, `widowPenalty`, or `runtPenalty`; set any of them to `0` to disable that rule entirely. List items opt in via `avoidOrphansInLists`, `avoidWidowsInLists`, and `avoidRuntsInLists` (all `true` by default).
+The runt penalty is added to the candidate node's demerits inside the line breaker, so the solver is free to trade a slightly looser line for a longer final one. Orphan and widow penalties enter a separate optimisation that runs when a paragraph crosses a column boundary: every candidate split is scored — slack, orphan, and widow demerits summed — and the cheapest split wins, so the engine will naturally prefer splits that avoid both whenever possible. Tune the trade-off by adjusting `orphanPenalty`, `widowPenalty`, or `runtPenalty`; set any of them to `0` to disable that rule entirely. List items opt in via `avoidOrphansInLists`, `avoidWidowsInLists`, and `avoidRuntsInLists` (all `true` by default).
 
 ### Why It Matters
 
@@ -122,12 +124,16 @@ The practical difference is visible. In a greedy layout, you will find paragraph
 
 ### Postext's Implementation
 
-Postext implements the full Knuth-Plass algorithm in `knuthPlass.ts` (approximately 860 lines). Two adapter paths convert text into the box-glue-penalty model:
+Postext implements the full Knuth-Plass algorithm in the core package's `knuthPlass/` module: a dynamic-programming core (active nodes, demerits, traceback) plus two adapter paths that convert text into the box-glue-penalty model:
 
 - **Plain text path**: uses `@chenglou/pretext` for DOM-free text measurement. Pretext provides segment widths and discretionary-hyphen widths; Postext converts them to KP items.
 - **Rich text path**: handles bold and italic spans using Canvas-based measurement. Each styled token becomes one or more boxes, with hyphenation break points inserted as penalties.
 
-Both paths compute per-line `justifiedSpaceRatio` — the actual space width divided by the natural space width — which feeds into the loose-line debug system described below.
+Both paths compute per-line `justifiedSpaceRatio` — the actual space width divided by the natural space width — which feeds into the loose-line debug system described below. The ratio is only computed for non-last lines; how the final line is set is covered in [The Final Line](#the-final-line).
+
+Around the line breaker, text measurement lives in the `measure/` module — the plain and rich measurement paths, Canvas glyph metrics, and font-string handling — behind an explicit measurement cache. `clearMeasurementCache` also clears the underlying text-width cache, so measurements stay accurate after web fonts finish loading. Parsing, the stage that turns source text into blocks and inline spans, lives in the `parse/` module. See the [Architecture](/en/docs/architecture) page for the file-level layout of these modules.
+
+Line breaking also interacts with the newer content kinds. Resource floats claim the top or bottom band of a column or page, shortening the column extents that the orphan, widow, and slack penalties react to. Captions and table cells are measured as wrapped rich-text runs using the caption and table fonts. Display math lines are centred and atomic — never justified or broken. See [Document format › Resources](/en/docs/document-format#resources) and [Configuration › Table style](/en/docs/configuration#table-style) / [Caption style](/en/docs/configuration#caption-style) for details.
 
 **Fallback behavior**: if Knuth-Plass produces no valid breaks (which can happen with extremely narrow columns or very long words), the engine falls back to Pretext's greedy `layoutNextLine()`. This ensures the layout always completes.
 
@@ -241,8 +247,8 @@ The glue model gives the engine explicit bounds on how much inter-word spaces ca
   <tbody>
     <tr>
       <td><code>maxWordSpacing</code></td>
-      <td><code>2</code></td>
-      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 200% of their natural width.</td>
+      <td><code>1.9</code></td>
+      <td>Upper bound for word spacing, as a multiplier of the normal space width. At the default value, spaces can stretch up to 190% of their natural width.</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
@@ -259,13 +265,19 @@ stretchPerSpace = normalSpaceWidth × (maxWordSpacing - 1)
 shrinkPerSpace  = normalSpaceWidth × (1 - minWordSpacing)
 ```
 
-At the defaults (2 / 0.6), if the normal space width is 4 px:
-- Each space can stretch by 4 px (from 4 px to 8 px)
+At the defaults (1.9 / 0.6), if the normal space width is 4 px:
+- Each space can stretch by 3.6 px (from 4 px to 7.6 px)
 - Each space can shrink by 1.6 px (from 4 px to 2.4 px)
 
 **Tighter bounds** (e.g., `maxWordSpacing: 1.2`) produce more uniform spacing but give the algorithm less room to maneuver, which may result in more hyphenation or, in extreme cases, overflow. **Looser bounds** (e.g., `maxWordSpacing: 2.5`) give the algorithm more flexibility but allow visibly uneven spacing on some lines.
 
-The defaults of 2 and 0.6 favor the algorithm's flexibility — giving Knuth-Plass enough room to avoid overflow, hyphenation, and runts across narrow columns, while still being well within ranges typographic literature considers acceptable.
+The defaults of 1.9 and 0.6 favor the algorithm's flexibility — giving Knuth-Plass enough room to avoid overflow, hyphenation, and runts across narrow columns, while still being well within ranges typographic literature considers acceptable.
+
+### The Final Line
+
+In the box-glue-penalty model, every paragraph ends with a width-0, infinitely stretchable glue followed by a forced break. That trailing glue absorbs whatever space remains on the last line at zero cost, so last lines come out naturally ragged: they are rendered at their natural width, and `justifiedSpaceRatio` is only computed for non-last lines.
+
+There is one exception. Knuth-Plass may accept a final line whose natural content is *wider* than the measure, on the assumption that its inter-word glue will shrink — this is standard TeX glue-setting semantics. All three backends detect this case (the line's natural content width exceeds the effective measure) and compress the inter-word spaces of that last line so it fits the measure exactly instead of overflowing. The check is applied identically in the canvas, PDF, and HTML backends.
 
 ### Optimal vs. Greedy Line Breaking
 
@@ -358,7 +370,7 @@ When you enable loose-line highlighting and see red bands across certain lines, 
     </tr>
     <tr>
       <td>Word spacing bounds are too tight</td>
-      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 2 to 2.5). This gives the algorithm more room.</td>
+      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 1.9 to 2.4). This gives the algorithm more room.</td>
     </tr>
     <tr>
       <td>Language has long compound words (e.g., German)</td>
@@ -391,7 +403,7 @@ const vdt = buildDocument(content, {
     },
 
     // Word spacing bounds (multipliers of normal space width)
-    maxWordSpacing: 2,     // spaces stretch up to 200%
+    maxWordSpacing: 1.9,   // spaces stretch up to 190%
     minWordSpacing: 0.6,   // spaces shrink down to 60%
   },
 

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Introducción',
   description: 'Qué es Postext, por qué existe y el problema que resuelve',
   lang: 'es',
-  lastUpdated: '2026-04-21',
-  readingTime: '12 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '7 min',
   order: 1,
 };
 
@@ -24,11 +24,12 @@ imágenes. Las columnas se desbordan o quedan a medio llenar. Las notas al pie d
 de la página en vez de quedarse cerca de las palabras que las referencian. La web nos dio
 maquetación responsiva, sí — pero nunca nos dio maquetación *editorial*.
 
-Postext cierra esa brecha. Es un motor de composición que recibe tu contenido — markdown
-enriquecido con imágenes, notas al pie, citas destacadas y figuras — y aplica las mismas reglas
-que aplicaría un tipógrafo profesional: prevención de huérfanas y viudas, equilibrado de columnas,
-flujo de texto alrededor de obstáculos, espaciado deliberado. El resultado es geometría de
-composición con calidad editorial, tanto para HTML como para PDF.
+Postext cierra esa brecha. Es un motor de composición que recibe tu contenido — prosa en markdown
+más recursos declarados (imágenes de mapa de bits, diagramas SVG y tablas) que se incorporan por
+referencia — y aplica las mismas reglas que aplicaría un tipógrafo profesional: prevención de
+huérfanas y viudas, equilibrado de columnas, flujo de texto alrededor de obstáculos, espaciado
+deliberado. El resultado es geometría de composición con calidad editorial, tanto para HTML como
+para PDF.
 
 Construido sobre [`@chenglou/pretext`](https://github.com/chenglou/pretext) para medición de texto
 sin DOM, a velocidades que hacen todo esto posible.
@@ -49,10 +50,8 @@ periódicos y revistas:
 - Espaciado consistente y deliberado alrededor de encabezados, citas y figuras.
 - Separación silábica que evita ríos de espacio en blanco y bordes irregulares.
 
-Dos de estas reglas son tan fundamentales que merecen atención especial — porque la web las viola
-en prácticamente todas las páginas.
-
-Dos datos concretos bastan para medir la distancia:
+Más allá de estas reglas, dos dimensiones concretas y medibles muestran cuánto se aleja la web de
+la imprenta:
 
 - **Ancho de carro.** Bringhurst sitúa el rango cómodo entre **45 y 75 caracteres** para una
   columna (y entre **40 y 50** en multicolumna); la guía de accesibilidad
@@ -76,7 +75,7 @@ adaptan a cualquier pantalla. Lo que nunca ha tenido es maquetación *editorial*
 en el que el contenido refluye inteligentemente a través de columnas, alrededor de imágenes, más
 allá de notas al pie, obedeciendo las reglas que hacen que el texto sea *agradable de leer*.
 
-<Illustration name="CssGapVsEditorial" data='{"title": "La brecha entre CSS multicolumna y la maquetación editorial", "desc": "CSS ofrece column-count y poco más; la maquetación editorial necesita control de huérfanas y viudas, flujo alrededor de obstáculos, equilibrado de columnas, colocación de notas al pie y refinamiento por convergencia.", "caption": "Lo que CSS ofrece frente a lo que la maquetación editorial realmente necesita.", "cssTitle": "Lo que CSS ofrece", "cssLead": "column-count", "cssMore": "...y poco más.", "cssCons": ["Sin control de huérfanas/viudas", "Sin flujo alrededor de obstáculos", "Sin equilibrado de columnas", "Sin colocación de notas al pie", "Sin convergencia/refinamiento"], "gap": "la brecha", "editorialTitle": "Lo que necesita la edición", "editorialPros": ["Prevención de huérfanas y viudas", "Flujo de texto alrededor de recursos", "Columnas equilibradas", "Colocación de notas al pie", "Control de separación silábica", "Refinamiento por convergencia"], "equals": "= Postext"}' />
+<Illustration name="CssGapVsEditorial" data='{"title": "La brecha entre CSS multicolumna y la maquetación editorial", "desc": "CSS ofrece column-count y poco más; la maquetación editorial necesita control de huérfanas y viudas, flujo alrededor de obstáculos, equilibrado de columnas, colocación de notas al pie y refinamiento por convergencia.", "caption": "Lo que CSS ofrece frente a lo que la maquetación editorial realmente necesita.", "cssTitle": "Lo que CSS ofrece", "cssLead": "column-count", "cssMore": "...y poco más.", "cssCons": ["Sin control de huérfanas/viudas", "Sin flujo alrededor de obstáculos", "Sin equilibrado de columnas", "Sin colocación de notas al pie", "Sin convergencia/refinamiento"], "gap": "la brecha", "editorialTitle": "Lo que necesita la maquetación editorial", "editorialPros": ["Prevención de huérfanas y viudas", "Flujo de texto alrededor de recursos", "Columnas equilibradas", "Colocación de notas al pie", "Control de separación silábica", "Refinamiento por convergencia"], "equals": "= Postext"}' />
 
 
 ## Una década buscando la pieza que faltaba
@@ -84,7 +83,7 @@ allá de notas al pie, obedeciendo las reglas que hacen que el texto sea *agrada
 El proyecto
 [Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)
 arrancó en 2014 como un intento temprano de llevar la calidad de la composición editorial a la
-web. Maquetaciones en columnas, algoritmos de flujo de texto, prototipos sucesivos — y siempre el
+web. Maquetaciones en columnas, experimentos de flujo de texto, prototipos sucesivos — y siempre el
 mismo muro: **no puedes tomar buenas decisiones de composición sin saber exactamente cuánto
 espacio va a ocupar el texto.**
 
@@ -95,7 +94,7 @@ para este tipo de medición especulativa — probar diez anchos de columna difer
 el mejor, comprobar dónde romper un párrafo, verificar si una imagen cabe aquí o necesita moverse
 a la siguiente columna.
 
-Necesitaba una forma de medir texto lo bastante rápida para experimentar libremente, sin bloquear
+Faltaba una forma de medir texto lo bastante rápida para experimentar libremente, sin bloquear
 el hilo principal. Durante una década, esa herramienta no existió.
 
 
@@ -160,16 +159,23 @@ Pretext proporciona las medidas. Postext proporciona la composición.
 
 El proceso tiene tres etapas:
 
-1. **Tú proporcionas el contenido.** Markdown enriquecido con recursos referenciados — imágenes,
-   tablas, figuras, notas al pie, citas destacadas. El contenido es puramente semántico: describe
-   *qué* presentar, no *cómo*. Las decisiones de composición nunca están escritas a fuego en el
-   código fuente.
+1. **Tú proporcionas el contenido.** Prosa en markdown más recursos declarados — imágenes de mapa
+   de bits, diagramas SVG y tablas. Una referencia en línea `:ref{id="..."}` numera el recurso y, a
+   la vez, lo hace flotar a una banda superior o inferior cerca de su primera referencia, igual que
+   un tipógrafo de imprenta coloca las figuras. El contenido sigue siendo puramente semántico:
+   describe *qué* presentar, no *cómo*; las decisiones de composición nunca quedan grabadas a fuego
+   en el documento de origen. La sección de Recursos del
+   [formato de documento](/es/docs/document-format) recoge la sintaxis completa.
 
 2. **El motor toma las decisiones.** Postext analiza el contenido, llama a Pretext para la
-   medición de texto pixel-perfect sin tocar el DOM, y después ejecuta siete pasadas de
-   composición: equilibrado de columnas, colocación de recursos, prevención de viudas y huérfanas,
-   alineación de líneas base, refinamiento del espaciado. Cada decisión la controla la
-   configuración — tú defines las reglas, el motor las aplica.
+   medición de texto pixel-perfect sin tocar el DOM, y después ejecuta un pipeline de composición
+   multipasada: equilibrado de columnas, numeración y flotado de recursos, prevención de viudas y
+   huérfanas, alineación de líneas base, refinamiento del espaciado. Cada decisión la controla la
+   configuración — geometría de página y maquetación, cuerpo de texto y encabezados, más
+   `tableStyle` para la tipografía de las celdas de tabla, `captionStyle` para los pies de figura
+   y `diagramStyle` con `singleInk`, que recolorea los diagramas SVG a matices de una sola tinta
+   mapeados por luminancia, pensado para impresión con un único color directo. Tú defines las
+   reglas, el motor las aplica.
 
 3. **Obtienes una composición completa.** Coordenadas y dimensiones precisas para cada elemento en
    cada página. Los renderizadores traducen esta geometría al formato de destino — **canvas** para
@@ -179,13 +185,15 @@ El proceso tiene tres etapas:
    (`renderToPdf`, desde el paquete `postext-pdf`). El mismo contenido, las mismas reglas, tres
    salidas intercambiables.
 
-<Illustration name="LayoutProcess" data='{"title": "Proceso de composición en tres etapas", "desc": "Markdown enriquecido más configuración entra en el motor, que ejecuta siete pasadas de composición con medición de Pretext dentro, y genera HTML o PDF renderizado.", "caption": "Contenido dentro, geometría fuera — después renderizada al formato de destino.", "inputTitle": "Markdown enriquecido", "inputSubtitle": "+ configuración", "parse": "parsear", "engineTitle": "motor Postext", "engineSub1": "medición vía Pretext", "engineSub2": "7 pasadas de composición", "render": "renderizar", "outputTitle": "HTML / PDF", "outputSubtitle": "salida renderizada"}' />
+<Illustration name="LayoutProcess" data='{"title": "Proceso de composición en tres etapas", "desc": "Markdown enriquecido más configuración entra en el motor, que ejecuta un pipeline de composición multipasada con medición de Pretext dentro, y genera HTML o PDF renderizado.", "caption": "Contenido dentro, geometría fuera — después renderizada al formato de destino.", "inputTitle": "Markdown enriquecido", "inputSubtitle": "+ configuración", "parse": "parsear", "engineTitle": "motor Postext", "engineSub1": "medición vía Pretext", "engineSub2": "composición multipasada", "render": "renderizar", "outputTitle": "HTML / PDF", "outputSubtitle": "salida renderizada"}' />
 
 Para una mirada detallada a los mecanismos internos del motor — el Árbol Virtual del Documento,
-el pipeline de siete pasadas y el bucle de convergencia — consulta el documento de
+el pipeline multipasada y el bucle de convergencia — consulta el documento de
 [Arquitectura](/es/docs/architecture). Para una referencia completa de todas las opciones de
-configuración y sus valores por defecto, consulta la página de
-[Configuración](/es/docs/configuration).
+configuración — desde la geometría de página hasta los estilos de tabla, pie de figura y
+diagrama — consulta la página de [Configuración](/es/docs/configuration). Y para probarlo todo
+en vivo — editor de markdown, panel de recursos con editor de tablas y subida de imágenes y SVG,
+y previsualizaciones en vivo en canvas, HTML y PDF — abre el [Sandbox](/es/docs/sandbox).
 
 
 ## Reconocimientos

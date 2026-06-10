@@ -1,11 +1,14 @@
 'use client';
 
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, useDeferredValue } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, useDeferredValue } from 'react';
 import {
   renderToHtmlIndexed,
   dimensionToPx,
   resolveHtmlViewerConfig,
   resolveDebugConfig,
+  resolveDiagramStyleConfig,
+  resolveColorValue,
+  resolveLayoutConfig,
 } from 'postext';
 import type {
   VDTDocument,
@@ -14,6 +17,7 @@ import type {
 import { useSandbox } from '../../context/SandboxContext';
 import { useShadowDom } from '../../hooks/useShadowDom';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
+import { ensureResourceImageUrls, getResourceImageUrl } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { createOverlaySvg } from '../CanvasPreview/dom';
 import { drawOverlay, drawBaselines } from '../CanvasPreview/overlay';
@@ -58,10 +62,12 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const viewportSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const relayoutTimerRef = useRef<number | null>(null);
   const renderSeqRef = useRef(0);
-  // Column geometry captured by the last successful relayout. Used by the
-  // column-scroll imperative API and the current-column emitter so they read
-  // the same values doRelayout decided on, without recomputing them.
-  const columnGeomRef = useRef<{ columnWidthPx: number; columnGapPx: number }>({ columnWidthPx: 0, columnGapPx: 0 });
+  // Page geometry captured by the last successful relayout. Used by the
+  // column-scroll imperative API and the scroll-bounds emitter so they read
+  // the same values doRelayout decided on, without recomputing them. A "page"
+  // is the horizontal scroll unit; in multi mode it hosts the document's real
+  // column structure (one, two, or one-and-a-half text columns).
+  const columnGeomRef = useRef<{ pageWidthPx: number; columnGapPx: number }>({ pageWidthPx: 0, columnGapPx: 0 });
   const onGeneratingChangeRef = useRef(onGeneratingChange);
   onGeneratingChangeRef.current = onGeneratingChange;
   const onScrollBoundsChangeRef = useRef(onScrollBoundsChange);
@@ -138,6 +144,21 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     [deferredMarkdown, deferredConfig, fontScale, columnMode, state.locale],
   );
 
+  // Stable scheduler: subscribers (font listener, ResizeObserver, the
+  // imperative handle) depend on it without re-subscribing every render; the
+  // latest doRelayout closure is reached through a ref.
+  const doRelayoutRef = useRef<() => Promise<void>>(async () => {});
+  doRelayoutRef.current = doRelayout;
+  const scheduleRelayout = useCallback((delay: number) => {
+    if (relayoutTimerRef.current !== null) {
+      window.clearTimeout(relayoutTimerRef.current);
+    }
+    relayoutTimerRef.current = window.setTimeout(() => {
+      relayoutTimerRef.current = null;
+      void doRelayoutRef.current();
+    }, delay);
+  }, []);
+
   // Font-loading awareness: rebuild when fonts land so measurements aren't
   // taken against fallbacks. Glyph widths may differ once the real font
   // arrives, so invalidate the measurement caches before the next relayout.
@@ -151,8 +172,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     };
     document.fonts.addEventListener('loadingdone', onLoadingDone);
     return () => document.fonts.removeEventListener('loadingdone', onLoadingDone);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [scheduleRelayout]);
 
   // ResizeObserver on the host div → debounced relayout.
   useEffect(() => {
@@ -167,18 +187,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     });
     observer.observe(host);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function scheduleRelayout(delay: number) {
-    if (relayoutTimerRef.current !== null) {
-      window.clearTimeout(relayoutTimerRef.current);
-    }
-    relayoutTimerRef.current = window.setTimeout(() => {
-      relayoutTimerRef.current = null;
-      void doRelayout();
-    }, delay);
-  }
+  }, [hostRef, scheduleRelayout]);
 
   async function doRelayout() {
     const seq = ++renderSeqRef.current;
@@ -233,26 +242,42 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       bodyFontWeight,
     );
 
-    // Decide column geometry.
+    // Decide page geometry. Single-scroll mode flattens to one continuous
+    // column; multi mode honours the document's own column structure, so a
+    // viewer page may span two text columns (or one-and-a-half) plus gutter.
+    const layoutResolved = resolveLayoutConfig(currentConfig.layout);
+    const docLayoutType = currentColumnMode === 'single' ? 'single' : layoutResolved.layoutType;
+    const gutterPx = dimensionToPx(layoutResolved.gutterWidth, HTML_DPI);
+    const sideFraction = layoutResolved.sideColumnPercent / 100;
+
+    // Page width that gives each main text column the target measure.
+    const pageTargetPx =
+      docLayoutType === 'double'
+        ? targetColumnPx * 2 + gutterPx
+        : docLayoutType === 'oneAndHalf'
+          ? (targetColumnPx + gutterPx) / Math.max(1 - sideFraction, 0.5)
+          : targetColumnPx;
+
     const innerViewportW = Math.max(viewportWidth - PADDING_PX * 2, 100);
-    let columnWidthPx: number;
+    let pageWidthPx: number;
     if (currentColumnMode === 'single') {
-      columnWidthPx = Math.min(targetColumnPx, innerViewportW);
+      pageWidthPx = Math.min(targetColumnPx, innerViewportW);
     } else {
       const maxVisible = Math.max(
         1,
-        Math.floor((innerViewportW + columnGapPx) / (targetColumnPx + columnGapPx)),
+        Math.floor((innerViewportW + columnGapPx) / (pageTargetPx + columnGapPx)),
       );
-      columnWidthPx =
+      pageWidthPx =
         (innerViewportW - columnGapPx * (maxVisible - 1)) / maxVisible;
     }
-    columnWidthPx = Math.max(Math.floor(columnWidthPx), 80);
-    columnGeomRef.current = { columnWidthPx, columnGapPx };
+    pageWidthPx = Math.max(Math.floor(pageWidthPx), 80);
+    columnGeomRef.current = { pageWidthPx, columnGapPx };
 
     const configOverride = buildHtmlConfigOverride(currentConfig, {
       fontScale: currentFontScale,
       columnMode: currentColumnMode,
-      columnWidthPx,
+      pageWidthPx,
+      layoutType: docLayoutType,
       viewportHeightPx: viewportHeight,
       locale: currentLocale,
       optimalLineBreaking: htmlViewer.optimalLineBreaking,
@@ -265,12 +290,22 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       );
       if (seq !== renderSeqRef.current) return;
 
+      // Resource images render as <img> via object URLs; build them up front,
+      // recoloured to the single-ink colour when diagramStyle requests it.
+      const ds = resolveDiagramStyleConfig(currentConfig.diagramStyle);
+      const inkHex = ds.singleInk
+        ? resolveColorValue(ds.inkColor, currentConfig.colorPalette, ds.inkColor).hex
+        : null;
+      await ensureResourceImageUrls(resourcesRef.current, inkHex).catch(() => false);
+      if (seq !== renderSeqRef.current) return;
+
       const mode = currentColumnMode === 'single' ? 'single' : 'multi';
       const indexed = renderToHtmlIndexed(doc, {
         mode,
         columnGap: columnGapPx,
         padding: PADDING_PX,
         background: 'transparent',
+        resourceImageUrl: getResourceImageUrl,
       });
 
       scroll.dataset.mode = currentColumnMode;
@@ -401,6 +436,14 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       lastRenderRef.current = indexed;
       lastRenderSigRef.current = sig;
 
+      // Multi mode pages always fit the viewport height; clear any vertical
+      // scroll left over from single mode (overflow-y:hidden clips visually
+      // but a clamped scrollTop survives the mode switch and pins the text
+      // against the top edge).
+      if (currentColumnMode === 'multi' && scroll.scrollTop !== 0) {
+        scroll.scrollTop = 0;
+      }
+
       // Baseline grid visibility is a pure-overlay concern: toggling it leaves
       // block HTML unchanged, so the patch path above may not touch any
       // overlay. Refresh baselines for every live overlay so the setting
@@ -422,8 +465,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   // Relayout on any real input change.
   useEffect(() => {
     scheduleRelayout(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [renderKey]);
+  }, [renderKey, scheduleRelayout]);
 
   // Draw cursor/selection overlays whenever selection, focus, or the document
   // itself changes. Mirrors the effect in CanvasPreview so behavior is shared.
@@ -498,15 +540,15 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       const scroll = scrollHostRef.current;
       if (!scroll) return;
       if (columnModeRef.current === 'multi') {
-        const { columnWidthPx, columnGapPx } = columnGeomRef.current;
-        if (columnWidthPx <= 0) return;
-        const step = columnWidthPx + columnGapPx;
+        const { pageWidthPx, columnGapPx } = columnGeomRef.current;
+        if (pageWidthPx <= 0) return;
+        const step = pageWidthPx + columnGapPx;
         scroll.scrollBy({ left: delta * step, behavior: 'smooth' });
       } else {
         scroll.scrollBy({ top: delta * scroll.clientHeight, behavior: 'smooth' });
       }
     },
-  }), []);
+  }), [scheduleRelayout]);
 
   // Scroll-bounds emitter. Rather than computing column indices (which is
   // ambiguous when several columns are visible per page and pages snap

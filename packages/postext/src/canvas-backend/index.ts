@@ -1,4 +1,5 @@
 import type { VDTDocument, VDTPage } from '../vdt';
+import { computePageTextExtent } from '../vdt';
 import { dimensionToPx } from '../units';
 import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentArea } from './decorations';
 import { renderBlock } from './blockRender';
@@ -51,27 +52,22 @@ export function renderPageToCanvas(
   }
 
   if (doc.config.page.baselineGrid.enabled) {
-    const contentArea = computeContentArea(page, doc);
-    const isLastPage = page.index === doc.pages.length - 1;
-
-    // On non-last pages, limit the grid to the height actually used by
-    // placed blocks so that no "phantom" baselines appear at the bottom
-    // when the split / orphan-control algorithm leaves unused space.
-    if (!isLastPage && page.columns.length > 0) {
-      const maxUsed = Math.max(
-        ...page.columns.map((col) => col.bbox.height - col.availableHeight),
+    // Bound the grid to the page's actual text: from the first text line to
+    // the last. Pages with no text (blank parity pages) draw no grid, and
+    // float bands at the top show no phantom baselines.
+    const textExtent = computePageTextExtent(page);
+    if (textExtent) {
+      const contentArea = computeContentArea(page, doc);
+      const gridLineWidthPx = dimensionToPx(doc.config.page.baselineGrid.lineWidth, doc.config.page.dpi);
+      renderBaselineGrid(
+        ctx,
+        contentArea,
+        doc.baselineGrid,
+        doc.config.page.baselineGrid.color.hex,
+        gridLineWidthPx,
+        textExtent,
       );
-      contentArea.height = maxUsed;
     }
-
-    const gridLineWidthPx = dimensionToPx(doc.config.page.baselineGrid.lineWidth, doc.config.page.dpi);
-    renderBaselineGrid(
-      ctx,
-      contentArea,
-      doc.baselineGrid,
-      doc.config.page.baselineGrid.color.hex,
-      gridLineWidthPx,
-    );
   }
 
   if (doc.config.layout.columnRule.enabled && page.columns.length > 1) {

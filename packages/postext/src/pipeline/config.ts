@@ -1,4 +1,4 @@
-import type { PostextConfig } from '../types';
+import type { PostextConfig, ResolvedHeadingLevelConfig } from '../types';
 import {
   resolvePageConfig,
   resolveLayoutConfig,
@@ -6,6 +6,7 @@ import {
   resolveHeadingsConfig,
   resolveTableStyleConfig,
   resolveCaptionStyleConfig,
+  resolveDiagramStyleConfig,
   resolveUnorderedListsConfig,
   resolveOrderedListsConfig,
   resolveMathConfig,
@@ -26,6 +27,7 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
     headings: resolveHeadingsConfig(config?.headings),
     tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText),
     captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText),
+    diagramStyle: resolveDiagramStyleConfig(config?.diagramStyle),
     unorderedLists: resolveUnorderedListsConfig(config?.unorderedLists, bodyText),
     orderedLists: resolveOrderedListsConfig(config?.orderedLists, bodyText),
     math: resolveMathConfig(config?.math),
@@ -33,6 +35,16 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
     footer: resolveHeaderFooterConfig(config?.footer, 'footer'),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
+}
+
+/** Index heading-level configs by level so per-block lookups in the
+ *  placement loop are O(1) instead of a linear `.find()`. */
+export function buildHeadingLevelMap(
+  resolved: ResolvedConfig,
+): Map<number, ResolvedHeadingLevelConfig> {
+  const map = new Map<number, ResolvedHeadingLevelConfig>();
+  for (const lvl of resolved.headings.levels) map.set(lvl.level, lvl);
+  return map;
 }
 
 export function computeBaselineGrid(resolved: ResolvedConfig): number {

@@ -21,7 +21,7 @@ import { loadResources, saveResource, deleteResource } from '../storage/resource
 import { buildDefaultResources } from '../defaultResources';
 import { setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
-import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
+import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 
 export interface EditorSelection {
   from: number;
@@ -308,12 +308,25 @@ export function SandboxProvider({
         // document's `::resource`/`:ref` directives resolve out-of-the-box.
         // The persistence effect below diffs against the empty snapshot and
         // writes them to IndexedDB.
-        if (loaded.length === 0) {
+        //
+        // Storage is shared across locales, so a pristine default document
+        // persisted in *another* language gets the same treatment: swap to
+        // this locale's default markdown and reseed the examples, so entering
+        // the Spanish sandbox shows Spanish resources instead of whichever
+        // language seeded the store first. Any markdown edit opts out.
+        const md = stateRef.current.markdown;
+        const pristineOtherLocale =
+          md !== defaultMd && (md === DEFAULT_MARKDOWN_EN || md === DEFAULT_MARKDOWN_ES);
+        if (loaded.length === 0 || pristineOtherLocale) {
           const seeded = await buildDefaultResources(locale ?? 'en').catch(() => []);
           if (cancelled) return;
-          resourcesLoadedRef.current = true;
-          if (seeded.length > 0) dispatch({ type: 'SET_RESOURCES', payload: seeded });
-          return;
+          if (seeded.length > 0) {
+            if (pristineOtherLocale) dispatch({ type: 'SET_MARKDOWN', payload: defaultMd });
+            prevResourcesRef.current = loaded;
+            resourcesLoadedRef.current = true;
+            dispatch({ type: 'SET_RESOURCES', payload: seeded });
+            return;
+          }
         }
         prevResourcesRef.current = loaded;
         resourcesLoadedRef.current = true;

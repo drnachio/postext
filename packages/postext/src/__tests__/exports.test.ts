@@ -59,6 +59,7 @@ describe("package exports", () => {
       "renderToHtml",
       "renderToHtmlIndexed",
       "dimensionToPx",
+      "computePageTextExtent",
       "buildFontString",
       "measureBlock",
       "measureRichBlock",
@@ -88,6 +89,7 @@ describe("package exports", () => {
       "resolvePageConfig",
       "DEFAULT_LAYOUT_CONFIG",
       "DEFAULT_COLUMN_RULE",
+      "DEFAULT_COLUMN_BALANCING",
       "resolveLayoutConfig",
       "stripLayoutDefaults",
       "DEFAULT_BODY_TEXT_CONFIG",
@@ -102,6 +104,9 @@ describe("package exports", () => {
       "stripTableStyleDefaults",
       "resolveCaptionStyleConfig",
       "stripCaptionStyleDefaults",
+      "DEFAULT_DIAGRAM_STYLE_CONFIG",
+      "resolveDiagramStyleConfig",
+      "stripDiagramStyleDefaults",
       "DEFAULT_UNORDERED_LISTS_STATIC",
       "resolveUnorderedListsConfig",
       "stripUnorderedListsDefaults",
@@ -166,6 +171,7 @@ describe("package exports", () => {
       "renderMath",
       "placeholderRender",
       "clearMathCache",
+      "applySingleInkToSvg",
     ]);
   });
 });

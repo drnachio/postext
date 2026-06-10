@@ -11,6 +11,7 @@ import { renderToPdf } from 'postext-pdf';
 import { useSandboxSelector } from '../context/SandboxContext';
 import { ensureConfigFontsLoaded } from '../controls/fontLoader';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
+import { buildPdfResourceBytes } from './pdfResourceBytes';
 import { PdfPreview } from './PdfPreview';
 import { PdfToolbar } from './PdfToolbar';
 import { createPdfFontProvider } from './pdfFontProvider';
@@ -69,11 +70,13 @@ export function PdfViewport() {
       );
       const debug = resolveDebugConfig(snapshotConfig.debug);
       const pdfGen = resolvePdfGenerationConfig(snapshotConfig.pdfGeneration);
+      const resourceBytes = await buildPdfResourceBytes(snapshotResources, snapshotConfig);
       const bytes = await renderToPdf(doc, {
         fontProvider: providerRef.current,
         pageNegative: debug.pageNegative.enabled,
         outlines: pdfGen.outlines,
         colorSpace: pdfGen.forceColorSpace ? pdfGen.colorSpace : 'rgb',
+        resourceBytes: (fileId) => resourceBytes.get(fileId),
       });
       bytesRef.current = bytes;
       const copy = bytes.slice();

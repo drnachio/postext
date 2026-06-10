@@ -56,13 +56,13 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
   } = options;
   const terminalBreakPosition = items.length - 1;
 
-  // Running totals up to current item
+  // Prefix sums over box/glue widths and glue stretch/shrink.
+  // sumWidthAt has length items.length + 1: sumWidthAt[k] covers items 0..k-1,
+  // so a penalty at position i (which adds no width) satisfies
+  // sumWidthAt[i] === sumWidthAt[i + 1].
   let sumWidth = 0;
   let sumStretch = 0;
   let sumShrink = 0;
-
-  // Prefix sums: sumWidthAt[i] = sum of widths of items 0..i-1
-  // We build these incrementally and store for the range computations.
   const sumWidthAt: number[] = [0];
   const sumStretchAt: number[] = [0];
   const sumShrinkAt: number[] = [0];
@@ -75,7 +75,6 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
       sumStretch += item.stretch;
       sumShrink += item.shrink;
     }
-    // Penalties don't contribute to running width/stretch/shrink
     sumWidthAt.push(sumWidth);
     sumStretchAt.push(sumStretch);
     sumShrinkAt.push(sumShrink);
@@ -93,13 +92,20 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
     previous: null,
   }];
 
+  // Candidate nodes for the current breakpoint, deduplicated on the fly by
+  // (line, fitnessClass): only the lowest-demerit node per key survives.
+  // Nodes at different breakpoint positions are never merged — every entry
+  // here shares the current position `i`. Hoisted out of the loop and
+  // cleared per breakpoint to avoid one Map allocation per legal break.
+  const bestNewNodeByKey = new Map<number, ActiveNode>();
+
   for (let i = 0; i < items.length; i++) {
     const item = items[i]!;
 
-    // Determine if this position is a legal breakpoint
+    // Determine if this position is a legal breakpoint: glue preceded by a
+    // box, or a penalty below infinity.
     let isLegalBreak = false;
     if (item.type === 'glue') {
-      // Glue breaks if preceded by a box
       if (i > 0 && items[i - 1]!.type === 'box') {
         isLegalBreak = true;
       }
@@ -111,59 +117,26 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
 
     if (!isLegalBreak) continue;
 
-    // Width contribution of breaking at this item
+    // A glue break excludes the glue itself from the line; a penalty break
+    // adds the penalty's width (e.g. a discretionary hyphen).
     const breakWidth = item.type === 'penalty' ? item.width : 0;
     const isFlagged = item.type === 'penalty' && item.flagged;
 
-    // For glue breakpoints, the line content goes up to (but excluding) this glue.
-    // For penalty breakpoints, the line content goes up to this penalty.
-    // The content width from after active node a to break at i:
-    //   If glue: sumWidthAt[i] - a.totalWidth  (excludes glue itself)
-    //   If penalty: sumWidthAt[i] - a.totalWidth  (sumWidthAt doesn't include penalty width)
-    // Plus breakWidth for penalties.
+    bestNewNodeByKey.clear();
 
-    // Compute the content width from the items between a.position and i.
-    // After the break at active node a.position:
-    //   - If a.position was a glue break, the next line starts at the item AFTER the glue
-    //   - If a.position was a penalty break, the next line starts at the item AFTER the penalty
-    //   - For the sentinel (-1), the line starts at item 0
-    // Total width from start to just before item i (excluding this glue/penalty's own width):
-    //   For a glue at i: line content = sumWidthAt[i] (which includes all box+glue widths before i)
-    //     but we need to subtract the width of glues/boxes after the previous break.
-    //     Actually sumWidthAt[i] already accounts for that.
-    //   We subtract a.totalWidth which is sumWidthAt at the point right after a's break.
-
-    const newNodes: ActiveNode[] = [];
-    const toDeactivate = new Set<number>();
-
+    // Iterate the active set, compacting it in place: nodes whose line can
+    // no longer shrink enough to fit (r < -1) are dropped permanently.
+    let keepCount = 0;
     for (let ai = 0; ai < activeNodes.length; ai++) {
       const a = activeNodes[ai]!;
 
-      // Line content width: width of boxes and glues from after a's break to this break.
-      // For glue break: content is items from (a.position+1) to (i-1) inclusive + breakWidth
-      //   = sumWidthAt[i] - a.totalWidth
-      // For penalty break: content is items from (a.position+1) to (i-1) inclusive + penalty.width
-      //   = sumWidthAt[i] - a.totalWidth + breakWidth
-      // Note: sumWidthAt[i] does NOT include item i if it's a penalty.
-      // sumWidthAt[i] includes item i's width only for box/glue through the push.
-      // Wait — re-examine: sumWidthAt[i] is the prefix sum BEFORE item i is processed.
-      // Actually, sumWidthAt has length items.length + 1. sumWidthAt[0] = 0, sumWidthAt[k+1] includes item k.
-      // So sumWidthAt[i] includes items 0..i-1, and sumWidthAt[i+1] includes items 0..i.
-
-      // For a glue break at position i:
-      //   The line goes from after a's break to just before this glue.
-      //   Content width = sumWidthAt[i] - a.totalWidth
-      //   (sumWidthAt[i] includes items 0..i-1, which covers everything up to but not including the glue)
-      //
-      // For a penalty break at position i:
-      //   The line includes everything up to but not including the penalty, plus breakWidth
-      //   Content width = sumWidthAt[i] - a.totalWidth + breakWidth
-
+      // Line content from after a's break up to this break. a.totalWidth is
+      // the prefix sum at the start of a's line, so the subtraction excludes
+      // everything already consumed (including a broken-at glue).
       const contentWidth = sumWidthAt[i]! - a.totalWidth + breakWidth;
       const available = lineWidth(a.line);
       const slack = available - contentWidth;
 
-      // Stretch/shrink from the items on this line
       const lineStretch = sumStretchAt[i]! - a.totalStretch;
       const lineShrink = sumShrinkAt[i]! - a.totalShrink;
 
@@ -174,16 +147,15 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
         r = lineShrink > 0 ? slack / lineShrink : -KP_INFINITY;
       }
 
-      // Deactivate nodes that are too far behind (line too wide, can't shrink enough)
+      // Too far behind: the line is overfull beyond shrinkability. Drop the
+      // node (do not copy it into the surviving prefix).
       if (r < -1) {
-        toDeactivate.add(ai);
         continue;
       }
+      activeNodes[keepCount++] = a;
 
-      // Feasibility: don't allow extreme stretching
-      // We allow r up to a generous threshold; the demerits will naturally penalize loose lines
+      // Infeasible — too few items to fill the line.
       if (r > KP_INFINITY) {
-        // Infeasible — too few items to fill the line
         continue;
       }
 
@@ -227,65 +199,30 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
 
       const totalDemerits = a.totalDemerits + d;
 
-      // The total width/stretch/shrink after this break:
-      // After a glue break: the glue is consumed. Next line starts at item i+1.
-      //   totalWidth = sumWidthAt[i+1] (includes the glue's width — but we DON'T want it on the next line)
-      //   Actually, for the "totalWidth" tracked in active nodes, it represents the cumulative
-      //   width at the START of the next line. After a glue break at i, the next line starts at i+1.
-      //   So totalWidth should be sumWidthAt[i+1], which includes the glue.
-      //   When computing content width for the next line: sumWidthAt[j] - totalWidth
-      //   This correctly excludes the consumed glue.
-      //
-      // After a penalty break: the penalty is not consumed as content on the next line.
-      //   totalWidth = sumWidthAt[i+1] (which for penalties is same as sumWidthAt[i] since penalties
-      //   don't add to sumWidth). Wait — let me re-check: penalties don't contribute to sumWidth,
-      //   so sumWidthAt[i+1] == sumWidthAt[i] for a penalty at position i.
-      //   But the next line starts at i+1. So totalWidth = sumWidthAt[i+1].
+      const key = (a.line + 1) * 4 + fc;
+      const existing = bestNewNodeByKey.get(key);
+      if (existing && existing.totalDemerits <= totalDemerits) {
+        continue;
+      }
 
-      const newTotalWidth = sumWidthAt[i + 1]!;
-      const newTotalStretch = sumStretchAt[i + 1]!;
-      const newTotalShrink = sumShrinkAt[i + 1]!;
-
-      newNodes.push({
+      // Cumulative totals at the START of the next line. The next line begins
+      // at item i+1, so sumWidthAt[i + 1] is correct for both break kinds: it
+      // includes a broken-at glue (consumed, excluded by the subtraction
+      // above) and adds nothing for a penalty.
+      bestNewNodeByKey.set(key, {
         position: i,
         line: a.line + 1,
         fitnessClass: fc,
-        totalWidth: newTotalWidth,
-        totalStretch: newTotalStretch,
-        totalShrink: newTotalShrink,
-        totalDemerits: totalDemerits,
+        totalWidth: sumWidthAt[i + 1]!,
+        totalStretch: sumStretchAt[i + 1]!,
+        totalShrink: sumShrinkAt[i + 1]!,
+        totalDemerits,
         previous: a,
       });
     }
+    activeNodes.length = keepCount;
 
-    // Remove deactivated nodes
-    if (toDeactivate.size > 0) {
-      activeNodes = activeNodes.filter((_, idx) => !toDeactivate.has(idx));
-    }
-
-    // Deduplicate new nodes by (line, fitnessClass): keep best demerits.
-    // Different breakpoint positions must NOT be merged — only nodes at the
-    // same position (which all newNodes share) can be compared.
-    const deduped: ActiveNode[] = [];
-    for (const node of newNodes) {
-      const key = node.line * 4 + node.fitnessClass;
-      let found = false;
-      for (let di = 0; di < deduped.length; di++) {
-        const existing = deduped[di]!;
-        if (existing.line * 4 + existing.fitnessClass === key) {
-          if (node.totalDemerits < existing.totalDemerits) {
-            deduped[di] = node;
-          }
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        deduped.push(node);
-      }
-    }
-    // Append all deduplicated nodes to the active set
-    for (const node of deduped) {
+    for (const node of bestNewNodeByKey.values()) {
       activeNodes.push(node);
     }
 

@@ -604,6 +604,23 @@ export interface ResolvedCaptionStyleConfig {
   descriptionItalic: boolean;
 }
 
+/** Styling for embedded SVG diagrams (`kind: 'svg'` resources). When
+ *  {@link singleInk} is on, every colour in the SVG is remapped to a tint of
+ *  {@link inkColor} by luminance — light fills become light tints, dark
+ *  strokes and text approach the full ink — so figures reproduce faithfully
+ *  when a document is printed with a single spot colour. */
+export interface DiagramStyleConfig {
+  /** Recolour diagrams to tints of a single ink. Default `false`. */
+  singleInk?: boolean;
+  /** The ink. Defaults to the document's main palette colour. */
+  inkColor?: ColorValue;
+}
+
+export interface ResolvedDiagramStyleConfig {
+  singleInk: boolean;
+  inkColor: ColorValue;
+}
+
 /** Parity constraint for a forced page break.
  *
  *  - `'any'` — no constraint; the break just opens a new page.
@@ -698,7 +715,19 @@ export interface HeadingsConfig {
    *  heading, the heading is pushed to the next column/page so it stays joined
    *  to its text. Default true. */
   keepWithNext?: boolean;
+  /** Vertical column balancing — editorial bottom alignment. When a column
+   *  ends short of its bottom, extra baseline-grid lines are added above the
+   *  column's headings so every column ends flush with the page bottom.
+   *  Extra lines are distributed across the column's headings, favouring the
+   *  most important (lowest-level) heading. Default enabled. */
+  balancing?: ColumnBalancingConfig;
   levels?: HeadingLevelConfig[];
+}
+
+export interface ColumnBalancingConfig {
+  enabled?: boolean;
+  /** Maximum extra grid lines that may be added above a single heading. */
+  maxLinesPerHeading?: number;
 }
 
 export interface ResolvedHeadingsConfig {
@@ -710,6 +739,7 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepWithNext: boolean;
+  balancing: { enabled: boolean; maxLinesPerHeading: number };
   levels: ResolvedHeadingLevelConfig[];
 }
 
@@ -1203,6 +1233,8 @@ export interface PostextConfig {
   tableStyle?: TableStyleConfig;
   /** Styling for resource captions (numbered label + description). */
   captionStyle?: CaptionStyleConfig;
+  /** Styling for embedded SVG diagrams (single-ink reproduction). */
+  diagramStyle?: DiagramStyleConfig;
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;

@@ -52,7 +52,15 @@ pnpm check-types
 pnpm lint
 ```
 
-Turborepo handles the dependency graph: `packages/postext` builds first, then `apps/web` picks up the changes.
+The repository is a pnpm + Turborepo monorepo with four packages plus the web app:
+
+- `packages/postext` — the core layout engine (parse, measurement, Knuth-Plass line breaking, pipeline, HTML/canvas backends).
+- `packages/postext-pdf` — the PDF rendering backend.
+- `packages/postext-sandbox` — the interactive sandbox UI (configuration controls and live viewports).
+- `packages/typescript-config` — shared strict TypeScript configuration.
+- `apps/web` — the Next.js documentation site, landing page, and hosted sandbox.
+
+Turborepo handles the dependency graph: the packages build first, then `apps/web` picks up the changes.
 
 ## Making Changes
 
@@ -70,6 +78,36 @@ Turborepo handles the dependency graph: `packages/postext` builds first, then `a
 - TypeScript strict mode is enforced across all packages.
 - ESM-only — no CommonJS.
 - Run `pnpm lint` before submitting. The CI pipeline will reject PRs that fail linting.
+
+### Documentation Convention
+
+The documentation lives in the top-level `docs/` folder as bilingual MDX pairs: `<topic>-en.mdx` and `<topic>-es.mdx` (e.g. `configuration-en.mdx` / `configuration-es.mdx`). The two languages must be updated in lockstep — never change one without the other. Each file starts with an exported metadata object:
+
+```ts
+export const metadata = {
+  title: '…',
+  sidebarTitle: '…',
+  description: '…',
+  lang: 'en', // or 'es'
+  lastUpdated: '2026-06-10',
+  readingTime: '8 min',
+  order: 3,
+};
+```
+
+When you edit a doc, recalculate `readingTime` (roughly 200 words per minute) and keep the Spanish version in natural, orthographically correct Spanish.
+
+### Sandbox i18n Convention
+
+Every new user-facing string in the sandbox UI must be wired in **five places**:
+
+1. `packages/postext-sandbox/src/types/labels.ts` — the labels type.
+2. `packages/postext-sandbox/src/types/defaultLabels.ts` — the English fallback values.
+3. The web app's labels bridge (`apps/web/src/components/sandbox/SandboxPage/labels.ts`) — maps translated messages into the sandbox labels object.
+4. `apps/web/messages/en.json` — the English translation.
+5. `apps/web/messages/es.json` — the Spanish translation.
+
+Dynamic strings use `__token__` placeholders (e.g. `"Page __current__ of __total__"`) rather than ICU message syntax.
 
 ### Commit Messages
 

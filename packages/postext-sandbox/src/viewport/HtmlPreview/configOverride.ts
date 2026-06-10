@@ -3,7 +3,7 @@ import {
   measureGlyphWidth,
   resolveHeadingsConfig,
 } from 'postext';
-import type { PostextConfig } from 'postext';
+import type { LayoutType, PostextConfig } from 'postext';
 import { HTML_DPI, LOCALE_TO_HYPHENATION, PADDING_PX, type ColumnMode } from './constants';
 
 export function buildHtmlConfigOverride(
@@ -11,7 +11,13 @@ export function buildHtmlConfigOverride(
   opts: {
     fontScale: number;
     columnMode: ColumnMode;
-    columnWidthPx: number;
+    /** Width of one viewer page. In multi mode this hosts the document's
+     *  real column structure (`layoutType`), so it may span several text
+     *  columns plus gutters. */
+    pageWidthPx: number;
+    /** Column structure each viewer page lays out with. Single-scroll mode
+     *  passes 'single'; multi mode passes the document's own layout type. */
+    layoutType: LayoutType;
     viewportHeightPx: number;
     locale: string;
     optimalLineBreaking: boolean;
@@ -20,7 +26,8 @@ export function buildHtmlConfigOverride(
   const {
     fontScale,
     columnMode,
-    columnWidthPx,
+    pageWidthPx,
+    layoutType,
     viewportHeightPx,
     locale,
     optimalLineBreaking,
@@ -60,7 +67,7 @@ export function buildHtmlConfigOverride(
     page: {
       ...base.page,
       dpi: HTML_DPI,
-      width: { value: columnWidthPx, unit: 'px' },
+      width: { value: pageWidthPx, unit: 'px' },
       height: { value: pageHeightPx, unit: 'px' },
       margins: {
         top: { value: 0, unit: 'px' },
@@ -76,7 +83,7 @@ export function buildHtmlConfigOverride(
     },
     layout: {
       ...base.layout,
-      layoutType: 'single',
+      layoutType,
     },
     bodyText: {
       ...base.bodyText,

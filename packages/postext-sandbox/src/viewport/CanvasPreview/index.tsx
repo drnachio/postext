@@ -1,8 +1,8 @@
 'use client';
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState, useDeferredValue, useMemo } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useDeferredValue, useMemo } from 'react';
 import { useSandboxDispatch, useSandboxDocRef, useSandboxSelector } from '../../context/SandboxContext';
-import { renderPageToCanvas, resolveDebugConfig } from 'postext';
+import { renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { drawOverlay } from './overlay';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
@@ -101,7 +101,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   const [layoutKey, setLayoutKey] = useState(0);
   const [docVersion, setDocVersion] = useState(0);
 
-  const applyDisplaySize = (displayWidth: number, displayHeight: number) => {
+  // Stable (only touches refs and DOM), so effects can depend on it without
+  // re-running every render.
+  const applyDisplaySize = useCallback((displayWidth: number, displayHeight: number) => {
     const container = containerRef.current;
     if (!container) return;
     const prev = lastGeomRef.current;
@@ -136,7 +138,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       prev.displayWidth = displayWidth;
       prev.displayHeight = displayHeight;
     }
-  };
+  }, []);
 
   const computeDisplaySize = (containerW: number, containerH: number) => {
     const isSpread = viewMode === 'spread';
@@ -198,17 +200,17 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       observer.disconnect();
       if (rafId !== 0) cancelAnimationFrame(rafId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [applyDisplaySize]);
 
-  // When zoom or fit mode change, recompute display size imperatively.
+  // When zoom or fit mode change, recompute display size imperatively. Reads
+  // computeDisplaySize through its ref mirror — the props it closes over
+  // (zoom/fitMode) are already in the dependency list.
   useEffect(() => {
     const { width, height } = containerSizeRef.current;
     if (width === 0) return;
-    const { displayWidth, displayHeight } = computeDisplaySize(width, height);
+    const { displayWidth, displayHeight } = computeDisplaySizeRef.current(width, height);
     applyDisplaySize(displayWidth, displayHeight);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoom, fitMode]);
+  }, [zoom, fitMode, applyDisplaySize]);
 
   // Rebuild when any font finishes loading after the initial layout.
   // document.fonts.ready only waits for *currently pending* faces; a face
@@ -278,13 +280,21 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     };
   }, [deferredMarkdown, deferredResources, deferredConfig, rebuildKey, dispatch, sharedDocRef, layoutWorker]);
 
+  // Single-ink diagram colour: when diagramStyle.singleInk is on, SVG resources
+  // decode through a recolouring pass keyed on the resolved ink hex.
+  const diagramInkHex = useMemo((): string | null => {
+    const ds = resolveDiagramStyleConfig(deferredConfig.diagramStyle);
+    if (!ds.singleInk) return null;
+    return resolveColorValue(ds.inkColor, deferredConfig.colorPalette, ds.inkColor).hex;
+  }, [deferredConfig]);
+
   // Decode resource image payloads (bitmaps/SVGs) from IndexedDB and register
   // them with the canvas backend, then force a repaint — mirrors the
   // font-load → rebuildKey pattern above. The worker lays out from the resource
   // metadata (intrinsic dims); the actual pixels are drawn on the main thread.
   useEffect(() => {
     let cancelled = false;
-    ensureResourceImages(deferredResources)
+    ensureResourceImages(deferredResources, diagramInkHex)
       .then((changed) => {
         if (!cancelled && changed) setRebuildKey((k) => k + 1);
       })
@@ -292,7 +302,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     return () => {
       cancelled = true;
     };
-  }, [deferredResources]);
+  }, [deferredResources, diagramInkHex]);
 
   // LAYOUT effect — (re)builds the page DOM and repaints visible pages.
   // Runs when a new doc is produced, or when view mode changes. Resize is
@@ -316,7 +326,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     }
 
     const firstPage = doc.pages[0]!;
-    const { displayWidth, displayHeight } = computeDisplaySize(containerW, containerH);
+    // Through the ref mirror: the props it closes over (zoom/viewMode/fitMode)
+    // are already dependencies of this effect.
+    const { displayWidth, displayHeight } = computeDisplaySizeRef.current(containerW, containerH);
 
     const debugConfig = resolveDebugConfig(deferredConfig.debug);
     const renderOpts: RenderPageOptions = { pageNegative: debugConfig.pageNegative.enabled };
@@ -415,7 +427,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     observerRef.current = observer;
     for (const slot of allSlots) observer.observe(slot);
     lastGeomRef.current = geom;
-  }, [docVersion, layoutKey, zoom, viewMode, fitMode, deferredConfig]);
+  }, [docVersion, layoutKey, zoom, viewMode, fitMode, deferredConfig, applyDisplaySize]);
 
   // Draw cursor/selection overlays whenever selection or debug config changes
   useEffect(() => {

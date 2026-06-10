@@ -104,5 +104,3 @@ export function renderHeaderFooterSlot(
     else renderBoxBlock(ctx, block);
   }
 }
-
-export const renderDesignSlot = renderHeaderFooterSlot;

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Entorno interactivo para experimentar con el motor de maquetación de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-23',
-  readingTime: '6 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '10 min',
   order: 7,
 };
 
@@ -14,68 +14,120 @@ export const metadata = {
 
 **Un entorno interactivo para el motor de maquetación de Postext.**
 
-El Sandbox ofrece una interfaz estilo VS Code donde puedes escribir markdown, ajustar la configuración de maquetación y ver los resultados renderizados en tiempo real a través de tres modos de salida sincronizados — **canvas**, **HTML** y **PDF**. Está pensado para la experimentación: afina los ajustes de tipografía, cambia el número de columnas, prueba estrategias de colocación de recursos y observa cómo responde el motor.
+El Sandbox ofrece una interfaz estilo VS Code donde puedes escribir markdown, gestionar recursos y fuentes, ajustar la configuración de maquetación y ver los resultados renderizados en tiempo real a través de tres modos de salida sincronizados — **canvas**, **HTML** y **PDF**. Está pensado para la experimentación: afina los ajustes de tipografía, cambia el número de columnas, prueba estrategias de colocación de recursos y observa cómo responde el motor.
 
 ## Disposición de la interfaz
 
-El Sandbox sigue un paradigma IDE familiar con tres áreas principales: una **barra de actividad** estrecha para cambiar de panel, un **panel lateral** redimensionable con el editor o la configuración, y un **viewport** a la derecha con las tres pestañas de salida.
+El Sandbox sigue un paradigma IDE familiar con tres áreas principales: una **barra de actividad** estrecha para cambiar de panel, una **barra lateral** redimensionable con el panel activo, y un **viewport** a la derecha con las tres pestañas de salida.
 
-<Illustration name="SandboxLayout" data='{"title": "Interfaz del Sandbox", "desc": "Barra de actividad de 48 px a la izquierda, panel lateral redimensionable en el centro y viewport a la derecha con pestañas Canvas, HTML y PDF.", "caption": "Tres áreas: barra de actividad, panel lateral redimensionable y viewport con pestañas.", "activityBar": "Actividad", "activityIcons": ["MD", "⚙", "📁", "⇣", "⇡"], "sidebarTitle": "Panel lateral", "sidebarSubtitle": "editor o configuración", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "arrastra para redimensionar"}' />
+<Illustration name="SandboxLayout" data='{"title": "Interfaz del Sandbox", "desc": "Barra de actividad de 56 px a la izquierda, barra lateral redimensionable en el centro y viewport a la derecha con pestañas Canvas, HTML y PDF.", "caption": "Tres áreas: barra de actividad, barra lateral redimensionable y viewport con pestañas.", "activityBar": "Actividad", "activityIcons": ["MD", "📁", "T", "⚙", "⚠"], "sidebarTitle": "Barra lateral", "sidebarSubtitle": "panel activo", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "arrastra para redimensionar"}' />
 
 ### Barra de actividad
 
-Una tira estrecha en el borde izquierdo (48 px de ancho) contiene botones con iconos para navegar entre paneles. La sección superior aloja tres interruptores de panel:
+Una tira estrecha en el borde izquierdo contiene botones con iconos para navegar entre paneles. La sección superior aloja cinco interruptores de panel, de arriba abajo:
 
 - **Editor de markdown** (icono `FileCode`) — Abre el panel de edición de markdown
+- **Recursos** (icono `FolderOpen`) — Abre el panel de gestión de recursos
+- **Fuentes** (icono `Type`) — Abre el panel de gestión de fuentes personalizadas
 - **Configuración** (icono `Settings2`) — Abre el panel de configuración de la maquetación
-- **Recursos** (icono `FolderOpen`) — Abre el panel de gestión de recursos (próximamente)
+- **Avisos** (icono `AlertTriangle`) — Abre el panel de diagnósticos; el icono muestra una insignia con el recuento de avisos actuales, limitada a `99+`
 
 Pulsar el icono del panel activo colapsa la barra lateral. Pulsar un icono distinto cambia a ese panel.
 
-La sección inferior de la barra de actividad contiene:
-
-- **Exportar** — Descarga el estado actual del sandbox (markdown + configuración) como archivo JSON
-- **Importar** — Carga un archivo JSON exportado previamente
-- **Conmutador de tema** — Alterna entre modo oscuro y claro
-- **Selector de idioma** — Cambia el idioma de la interfaz
+La barra también aloja huecos que inyecta la aplicación anfitriona: un **enlace con el logo de inicio** opcional en la parte superior (mediante las props `homeUrl` o `homeLink`), más un **conmutador de tema** y un **selector de idioma** en la parte inferior. Los botones de Exportar e Importar que antes vivían aquí han desaparecido — exportar e importar están ahora en las cabeceras de los paneles de Markdown y Configuración (consulta [Exportar e importar](#exportar-e-importar)).
 
 ### Paneles laterales
 
-La barra lateral es redimensionable: arrastra el separador entre la barra lateral y el viewport para ajustar su anchura (rango 240 px–480 px). La barra lateral se colapsa por completo cuando no hay ningún panel activo.
-
-#### Panel de configuración
-
-Un editor basado en formulario para `PostextConfig`. Los ajustes se agrupan en secciones colapsables, cada una con un botón de restablecer para recuperar los valores por defecto:
-
-| Sección | Ajustes |
-|---------|---------|
-| **Página** | Color de fondo, tamaño predefinido (o ancho/alto personalizados), márgenes (superior, inferior, izquierdo, derecho), DPI, líneas de corte, rejilla de línea base (con color y grosor de línea) y una subsección **Numeración** (formato + valor inicial) para las etiquetas de página |
-| **Maquetación** | Tipo de maquetación (una columna, doble, columna y media), ancho del medianil, porcentaje de columna lateral |
-| **Texto de cuerpo** | Familia tipográfica (con búsqueda de Google Fonts), tamaño de fuente, interlineado, color de texto, alineación, peso de fuente, peso de la negrita, separación silábica (interruptor + locale) |
-| **Encabezados** | Valores por defecto generales (familia tipográfica, interlineado, color, alineación, peso, márgenes) más sobrecargas por nivel (H1–H6) para tamaño de fuente, interlineado, familia tipográfica, peso, color, márgenes, un interruptor **Romper antes** con selector de paridad opcional, un selector **Span** (`column` o `page`), y un interruptor **Diseño avanzado** que abre un editor de ranura de diseño por nivel (elementos de texto, línea y caja con posicionamiento por anclaje, modos de desbordamiento, separación silábica y marcadores `{titleText}` / `{number}` / `{numberRoman}`) |
-| **Encabezado y pie** | Listas por bloque de elementos de texto, línea y caja. Cada elemento de texto expone su contenido (con marcadores `{title}`, `{chapterTitle}`, `{pageNumber}`, `{totalPages}`), controles de fuente y color, paridad (todas las páginas / impares / pares), un selector de **Desbordamiento** (envolver, elipsis al principio/centro/final, recortar), un interruptor de **Separación silábica** y un editor de posicionamiento por anclaje + desplazamiento + tamaño para ajuste fino |
-
-Los controles son contextuales: el ancho del medianil solo aparece en maquetaciones multicolumna, los ajustes de separación silábica solo aparecen cuando el texto está justificado, y el porcentaje de columna lateral solo se muestra en la maquetación de columna y media. Los cambios surten efecto inmediatamente en la vista previa del viewport. Para una referencia completa de todas las opciones de configuración y sus valores por defecto, consulta la página de [Configuración](/es/docs/configuration).
+La barra lateral es redimensionable: arrastra el separador entre la barra lateral y el viewport para ajustar su anchura (el viewport siempre conserva al menos 200 px para sí). La barra lateral se colapsa por completo cuando no hay ningún panel activo, y su anchura se recuerda entre sesiones.
 
 #### Editor de markdown
 
 Un editor basado en CodeMirror 6 con:
 
-- **Resaltado de sintaxis** — Encabezados, énfasis, enlaces, bloques de código y citas quedan visualmente diferenciados
+- **Resaltado de sintaxis** — Encabezados, énfasis, enlaces, bloques de código y citas quedan visualmente diferenciados, con resaltado dedicado para las regiones de **frontmatter YAML** y de **matemáticas LaTeX**
 - **Números de línea** y resaltado de la línea activa
 - **Ajuste de línea** para párrafos largos
-- **Barra de herramientas** con botones para acciones markdown habituales:
-  - Negrita, cursiva
-  - Niveles de encabezado 1–3
-  - Enlace, código en línea
-  - Cita
-  - Listas ordenadas y no ordenadas
+- **Barra de herramientas** — Comienza con **Deshacer / Rehacer**, seguidos de negrita, cursiva, niveles de encabezado 1–3, enlace, código en línea, cita, listas ordenadas y no ordenadas, más dos insertadores de directivas:
+  - `:::pagebreak`
+  - `:::numbering{format="decimal" startAt=1}` — se inserta con atributos de ejemplo listos para ajustar
 
-La barra de herramientas es extensible: pueden añadirse acciones personalizadas para micro-formatos específicos de postext a medida que evoluciona la especificación de markdown enriquecido.
+Las aplicaciones anfitrionas pueden ampliar la barra de herramientas con sus propias `extraActions`. El editor también comunica su cursor y su selección a las vistas previas, habilitando la sincronización clic-a-cursor: hacer clic en el texto de la salida renderizada mueve el cursor a la posición correspondiente del markdown, y las vistas previas pueden resaltar la selección actual.
+
+La cabecera del panel ofrece tres acciones:
+
+- **Restablecer** (popover de confirmación) — Restaura el documento por defecto del idioma **y** reemplaza el conjunto de recursos con los recursos de ejemplo de ese idioma
+- **Exportar** — Descarga el markdown como `postext-markdown.json`
+- **Importar** — Carga un archivo de markdown exportado previamente
 
 #### Panel de recursos
 
-*Próximamente en una versión futura.* Este panel gestionará los recursos (imágenes, tablas, figuras, citas destacadas) referenciados desde el contenido markdown.
+Gestiona los recursos del documento — imágenes de mapa de bits, figuras SVG y tablas — referenciados desde el markdown mediante bloques `::resource{id="…"}` y referencias en línea `:ref{id="…"}`. Para la sintaxis de referencia y el modelo de flotado, consulta [Formato de documento → Recursos](/es/docs/document-format#recursos).
+
+**Vista de lista.** Los recursos se agrupan por el nombre de su tipo de recurso; los recursos cuyo `typeId` ya no coincide con ningún tipo configurado caen en un grupo *Sin tipo* para que sigan siendo accesibles. Cada elemento muestra una miniatura de 36 px — una vista previa real para mapas de bits y SVG, un glifo para tablas — junto a su leyenda y su id. Un desplegable **Nuevo** ofrece tres puntos de entrada:
+
+- **Subir imagen** — PNG, JPEG, WebP o GIF
+- **Subir SVG**
+- **Nueva tabla** — comienza como una cuadrícula de 2×2 con una fila de cabecera
+
+Todo el panel es además una zona de arrastrar y soltar: suelta archivos desde el disco y se suben en lote, con ids generados como slugs a partir de sus nombres de archivo. Los archivos no soportados se omiten, y una nota breve indica cuántos se añadieron y cuántos se omitieron.
+
+**Vista de detalle.** Seleccionar un recurso abre su editor:
+
+- **ID** — Editable y validado como slug; los ids duplicados se señalan y nunca se confirman, y un id vacío recibe una sugerencia derivada de la leyenda. Renombrar conserva el contenido binario almacenado.
+- **Tipo** — Selección entre los tipos de recurso configurados
+- **Leyenda** — Admite Markdown en línea (negrita, cursiva, código y `:ref`)
+- **Texto alternativo** — Descripción de accesibilidad para la salida HTML
+- **Colocación** — Posición (`top` / `bottom` / `here`) más extensión (`column` / `page`, deshabilitada cuando la posición es `here`), coincidiendo con los valores por defecto del motor: `top` + `column`
+- **Contenido** — Cargadores de reemplazo para el archivo de mapa de bits o SVG
+- **Vista previa** — Una maqueta en vivo de cómo se verá el recurso, con `#` como marcador del número (los números reales dependen de dónde caiga el recurso en el documento)
+- **Eliminar** — Protegido por un popover de confirmación que advierte cuántas referencias `::resource` / `:ref` del markdown quedarían colgando
+
+**Editor de tablas.** Los recursos de tabla abren un editor de cuadrícula interactivo:
+
+- Barra de herramientas con añadir/quitar fila y columna, combinar/dividir celdas, interruptores de fila y columna de cabecera, y alineación por celda
+- **Pegar como tabla** — Pegar TSV (o CSV simple con comillas) rellena la cuadrícula
+- **Deshacer/rehacer** — Cmd/Ctrl+Z y Mayús+Cmd/Ctrl+Z
+- **Navegación con teclado** — Tab / Mayús-Tab (con salto de fila) y las teclas de flecha mueven entre celdas
+
+Todas las ediciones pasan por funciones puras de modelo exportadas por el núcleo de postext — `addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment`, `parseTSV` — de modo que el mismo modelo de tabla se comporta idénticamente dentro y fuera del sandbox.
+
+#### Panel de fuentes
+
+Gestiona familias tipográficas personalizadas junto al catálogo integrado de Google Fonts:
+
+- **Añadir, renombrar y eliminar familias**
+- **Subir archivos de variante** por peso (100–900) y estilo (normal / cursiva). Los formatos aceptados son WOFF2, WOFF, TTF y OTF, detectados por la extensión del archivo; los archivos se almacenan en el IndexedDB del navegador.
+- Las familias personalizadas aparecen en todos los selectores de fuente bajo un grupo **Personalizadas**, junto a los resultados de Google Fonts, y una familia personalizada **tiene prioridad** sobre una Google Font con el mismo nombre.
+- Los archivos de fuente huérfanos — subidas que ya no referencia ninguna familia — se eliminan de IndexedDB automáticamente.
+
+#### Panel de configuración
+
+Un editor basado en formulario para `PostextConfig`. Renderiza 17 secciones colapsables, en este orden:
+
+- **Diseño** — *Paleta de color* (colores con nombre reutilizados por todos los selectores de color), *Página* (tamaño, márgenes, DPI, líneas de corte, rejilla de línea base, numeración de páginas), *Maquetación* (una columna, doble o columna y media, medianil, columna lateral), *Encabezado y pie* (elementos de texto, línea y caja por bloque con marcadores, paridad, desbordamiento y posicionamiento por anclaje)
+- **Texto** — *Texto de cuerpo* (fuente, tamaño, interlineado, alineación, separación silábica), *Encabezados* (valores generales más ajustes por nivel H1–H6, salto previo con paridad, extensión y un editor avanzado de ranura de diseño por nivel), *Listas no ordenadas*, *Listas ordenadas*, *Matemáticas*
+- **Recursos** — *Tablas* (`tableStyle`), *Leyendas* (`captionStyle`), *Diagramas* (`diagramStyle`: un interruptor de **tinta única** que recolorea los diagramas SVG a tintes de una sola tinta para impresión monocolor, más un selector del color de tinta que por defecto usa el color principal de la paleta), *Tipos de recurso* (nombres por tipo, etiquetas cortas, plantillas de numeración con marcadores `{n}` y `{h1}`…`{h6}`, formato y reinicio del contador, prefijo de leyenda y una vista previa en vivo estilo «Fig. 1.7»)
+- **Salida y utilidades** — *Visor HTML*, *Generación de PDF*, *Depuración*, *Avisos* (umbrales para el panel de diagnósticos)
+
+El panel sigue un **modelo de sustituciones** coherente: cada sección recuerda su estado abierto/cerrado entre sesiones; la cabecera de una sección muestra un botón de restablecer (con confirmación) solo mientras contiene ajustes personalizados; y cada control muestra un pequeño restablecedor por campo que aparece cuando su valor difiere del valor por defecto. Solo se guarda o exporta el subárbol personalizado — los valores por defecto se eliminan, así que un sandbox intacto almacena una configuración vacía.
+
+Los controles son contextuales: el ancho del medianil solo aparece en maquetaciones multicolumna, los ajustes de separación silábica solo aparecen cuando el texto está justificado, y el porcentaje de columna lateral solo se muestra en la maquetación de columna y media. Los cambios surten efecto inmediatamente en la vista previa del viewport. Para una referencia completa de todas las opciones de configuración y sus valores por defecto, consulta la página de [Configuración](/es/docs/configuration).
+
+La cabecera del panel ofrece **Restablecer** (popover de confirmación; solo visible cuando existen ajustes personalizados), **Exportar** e **Importar** — consulta [Exportar e importar](#exportar-e-importar).
+
+#### Panel de avisos
+
+Diagnósticos en vivo recalculados a partir del markdown, la configuración, los recursos y la última composición — el mismo recuento que muestra la insignia de la barra de actividad. Tipos representativos:
+
+- **Fuentes** — Familia tipográfica ausente; variantes de peso/estilo ausentes o duplicadas en una familia personalizada
+- **Tipografía** — Líneas flojas (espaciado entre palabras estirado más allá del umbral configurado); saltos en la jerarquía de encabezados (p. ej. H1 → H3); encabezados consecutivos sin texto de cuerpo entre ellos
+- **Matemáticas** — Fórmulas `$…$` / `$$…$$` inválidas o sin cerrar
+- **Directivas** — Nombres de directiva desconocidos; atributos de numeración o paridad inválidos
+- **Encabezados y pies** — Nombres de marcador desconocidos; marcadores cuyos metadatos del documento faltan
+- **Diseño** — Anclajes cíclicos o colgantes entre elementos de diseño; elementos de texto cuyo desbordamiento por recorte siempre trunca
+- **Recursos** — Id de recurso desconocido en un `::resource` / `:ref`; recursos sin usar; ids de recurso duplicados; referencias colgantes a tipos de recurso; mapas de bits renderizados bastante más grandes que su tamaño en píxeles; almacenamiento no disponible (falta IndexedDB)
+
+Cada entrada muestra un icono, un título, un detalle de una línea y — cuando procede — la línea de origen; hacer clic en una entrada con ubicación de origen enfoca el editor en ese punto.
 
 ### Viewport principal
 
@@ -110,7 +162,7 @@ La geometría de las columnas está controlada por la sección **Visor HTML** de
 
 #### Pestaña PDF
 
-Genera un PDF real del documento actual mediante el paquete `postext-pdf` y lo muestra dentro del visor PDF integrado del navegador. El PDF se reconstruye automáticamente al montar la pestaña por primera vez y en cada regeneración posterior, usando el mismo VDT que alimenta a las pestañas de canvas y HTML — de modo que los saltos de línea, las fronteras entre páginas y la colocación de recursos coinciden al píxel entre los tres backends.
+Genera un PDF real del documento actual mediante el paquete `postext-pdf` y lo muestra dentro del visor PDF integrado del navegador. El PDF se reconstruye automáticamente al montar la pestaña por primera vez y en cada regeneración posterior, usando el mismo VDT que alimenta a las pestañas de canvas y HTML — de modo que los saltos de línea, las fronteras entre páginas y la colocación de recursos coinciden al píxel entre los tres backends, incluida la compresión de las líneas finales sobrellenas que Knuth–Plass acepta ocasionalmente.
 
 Una barra de herramientas flotante en la esquina inferior derecha del viewport proporciona:
 
@@ -122,29 +174,39 @@ Internamente el sandbox usa un helper `createPdfFontProvider()` que descarga los
 
 ## Persistencia
 
-El Sandbox guarda automáticamente tu trabajo en el `localStorage` del navegador:
+El Sandbox guarda automáticamente tu trabajo en el navegador:
 
-- **Guardado automático** — El contenido markdown y la configuración se guardan tras 1 segundo de inactividad
-- **Carga automática** — Al cargar la página, el contenido de la sesión anterior se restaura automáticamente
-- **Estado del viewport** — El modo de vista del canvas (única/doble página) y el modo de ajuste (ninguno/ancho/alto) se conservan entre sesiones
-- **Estado de secciones** — Se recuerda qué secciones de configuración están expandidas o colapsadas
+- **Markdown y configuración** — Se guardan automáticamente en `localStorage` tras 1 segundo de inactividad, con los valores por defecto de la configuración eliminados para que solo se almacenen tus ajustes personalizados
+- **Estado de la interfaz** — El panel y la pestaña de viewport activos, el ancho de la barra lateral, el estado abierto/cerrado de las secciones de configuración, los modos de zoom/ajuste/vista del canvas, la escala de fuente y el modo de columnas del HTML, y el estado de anclaje de las barras de herramientas se conservan en `localStorage`
+- **Recursos y fuentes** — Los registros de recursos, sus blobs binarios (mapas de bits y SVG) y los archivos de fuentes personalizadas persisten en **IndexedDB**; cuando IndexedDB no está disponible (p. ej. algunos modos de navegación privada), aparece un aviso de *almacenamiento no disponible* en el panel de avisos
+
+El almacenamiento se **comparte entre los idiomas de la interfaz**. Un documento por defecto intacto cambia al markdown por defecto del idioma actual y vuelve a sembrar los recursos de ejemplo cuando cambia el idioma — así, abrir el sandbox en español muestra ejemplos en español. Cualquier edición del usuario desactiva este comportamiento. Todas las vistas previas derivan además la configuración regional de separación silábica del idioma de la interfaz cuando no se ha establecido ninguna.
 
 ### Exportar e importar
 
-Para transferir tu trabajo entre dispositivos o compartir configuraciones:
+Para transferir tu trabajo entre dispositivos o compartirlo, el markdown y la configuración se exportan por separado desde las cabeceras de sus paneles.
 
-- **Exportar** (icono `Download` en la barra de actividad) — Descarga un archivo `postext-sandbox.json` que contiene tanto el contenido markdown como la configuración completa
-- **Importar** (icono `Upload` en la barra de actividad) — Abre un selector de archivos para cargar un `.json` exportado previamente
-
-El formato de exportación está versionado por compatibilidad hacia adelante:
+La cabecera del **panel de configuración** descarga `postext-config.json` con los valores por defecto eliminados:
 
 ```json
 {
+  "type": "postext-config",
   "version": 1,
-  "config": { ... },
+  "config": { ... }
+}
+```
+
+La cabecera del **panel de markdown** descarga `postext-markdown.json`:
+
+```json
+{
+  "type": "postext-markdown",
+  "version": 1,
   "markdown": "# Tu contenido..."
 }
 ```
+
+El botón **Importar** de cada cabecera abre un selector de archivos `.json`; las importaciones se validan contra el `type` y la `version` esperados, y los archivos inválidos se ignoran silenciosamente. El formato combinado `postext-sandbox.json` de versiones anteriores ya no existe.
 
 ## Uso standalone
 
@@ -176,11 +238,14 @@ function App() {
 | `initialMarkdown` | `string` | Contenido markdown inicial |
 | `initialConfig` | `PostextConfig` | Configuración de maquetación inicial |
 | `className` | `string` | Clase CSS para el contenedor raíz |
-| `labels` | `Partial<SandboxLabels>` | Sobrecargas de etiquetas i18n (por defecto en inglés) |
+| `labels` | `Partial<SandboxLabels>` | Sustituciones de las etiquetas de la interfaz, combinadas sobre los valores por defecto en inglés — pasa etiquetas traducidas junto con `locale` al embeber en otro idioma |
+| `locale` | `string` | Idioma de la interfaz (`'en'` por defecto). Selecciona los tipos de recurso y los recursos de ejemplo localizados, y proporciona la configuración regional de separación silábica que usan las vistas previas cuando no hay ninguna configurada |
 | `onConfigChange` | `(config) => void` | Callback cuando cambia la configuración |
 | `onMarkdownChange` | `(markdown) => void` | Callback cuando cambia el markdown |
-| `themeToggle` | `ReactNode` | Componente personalizado para el conmutador de tema |
-| `languageSwitcher` | `ReactNode` | Componente personalizado para el selector de idioma |
+| `themeToggle` | `ReactNode` | Componente personalizado para el conmutador de tema, alojado en la parte inferior de la barra de actividad |
+| `languageSwitcher` | `ReactNode` | Componente personalizado para el selector de idioma, alojado en la parte inferior de la barra de actividad |
+| `homeUrl` | `string` | Si se establece, renderiza un enlace con el logo de inicio en la parte superior de la barra de actividad apuntando a esta URL |
+| `homeLink` | `ReactNode` | Nodo personalizado para el hueco de inicio, que sustituye al enlace con logo por defecto (tiene prioridad sobre `homeUrl`) |
 
 ### Requisitos de CSS
 
@@ -198,7 +263,5 @@ El paquete usa clases utilitarias de Tailwind CSS que hacen referencia a variabl
 
 Las siguientes características están planificadas para versiones futuras:
 
-- **Gestión de recursos** — Subir, gestionar y referenciar imágenes, tablas y figuras desde el editor de markdown
 - **Edición colaborativa** — Compartir sesiones del sandbox mediante URL
 - **Configuraciones predefinidas** — Plantillas de arranque rápido para escenarios de maquetación habituales (periódico, artículo académico, capítulo de libro)
-- **Extensiones personalizadas de la barra de herramientas** — Añadir botones para la sintaxis de markdown enriquecido específica de postext a medida que evolucione la especificación

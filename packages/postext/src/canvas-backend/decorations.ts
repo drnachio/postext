@@ -7,18 +7,27 @@ export function renderBaselineGrid(
   baselineIncrement: number,
   color: string,
   lineWidth: number,
+  textExtent: { top: number; bottom: number },
 ): void {
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
 
-  // Draw one baseline per line that actually fits in the content area.
-  // Must match the placement logic: Math.floor(height / lineHeight) lines.
-  const maxLines = Math.floor(contentArea.height / baselineIncrement);
-  let y = contentArea.y + baselineIncrement * 0.8;
+  // Baselines live on the global grid anchored at the content-area top
+  // (first baseline at 0.8 × increment, matching line placement). The drawn
+  // range is bounded by where text actually sits — from the first text line
+  // to the last — so float bands and unused tail space show no lines.
+  // `k0` may be negative: when column 0 carries a top float band,
+  // `contentArea.y` (derived from that column) sits below the global top
+  // while another column's text starts at it; band heights are grid
+  // multiples, so those earlier baselines still lie on the global grid.
+  const eps = 0.5;
+  const firstBaseline = contentArea.y + baselineIncrement * 0.8;
+  const k0 = Math.ceil((textExtent.top - eps - firstBaseline) / baselineIncrement);
+  let y = firstBaseline + k0 * baselineIncrement;
   const right = contentArea.x + contentArea.width;
 
-  for (let i = 0; i < maxLines; i++) {
+  while (y <= textExtent.bottom + eps) {
     ctx.beginPath();
     ctx.moveTo(contentArea.x, y);
     ctx.lineTo(right, y);

@@ -10,6 +10,7 @@ import type {
   ResolvedHeadingsConfig,
   ResolvedTableStyleConfig,
   ResolvedCaptionStyleConfig,
+  ResolvedDiagramStyleConfig,
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
@@ -40,6 +41,7 @@ export interface ResolvedConfig {
   headings: ResolvedHeadingsConfig;
   tableStyle: ResolvedTableStyleConfig;
   captionStyle: ResolvedCaptionStyleConfig;
+  diagramStyle: ResolvedDiagramStyleConfig;
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;
@@ -207,6 +209,10 @@ export interface VDTBlock {
   dirty: boolean;
   snappedToGrid: boolean;
   headingLevel?: number;
+  /** Index of the originating content block in the parsed markdown block
+   *  list. Stable across layout passes — used by column balancing to key
+   *  extra-spacing adjustments to headings. */
+  contentIndex?: number;
   numberPrefix?: string;
   fontString: string;
   boldFontString?: string;
@@ -465,4 +471,34 @@ export function createVDTBlock(
     color,
     textAlign,
   };
+}
+
+/** Vertical extent actually covered by text on a page: from the top of the
+ *  first text line to the bottom of the last, across all columns. Resource
+ *  captions count as text — both on inline resource blocks and on floats —
+ *  since bottom-band floats anchor their caption baseline to the grid and
+ *  the grid should visibly reach it. Hidden blocks and design slots don't
+ *  count. Returns `null` for pages with no text (e.g. blank parity pages).
+ *  Used to bound debug decorations like the baseline grid. */
+export function computePageTextExtent(page: VDTPage): { top: number; bottom: number } | null {
+  let top = Infinity;
+  let bottom = -Infinity;
+  const expand = (lines: VDTLine[]): void => {
+    for (const line of lines) {
+      if (line.bbox.y < top) top = line.bbox.y;
+      const lineBottom = line.bbox.y + line.bbox.height;
+      if (lineBottom > bottom) bottom = lineBottom;
+    }
+  };
+  for (const col of page.columns) {
+    for (const block of col.blocks) {
+      if (block.hidden) continue;
+      expand(block.lines);
+      if (block.resourceBlock) expand(block.resourceBlock.captionLines);
+    }
+  }
+  for (const fb of page.floats ?? []) {
+    if (fb.resourceBlock) expand(fb.resourceBlock.captionLines);
+  }
+  return top === Infinity ? null : { top, bottom };
 }

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Formato del documento',
   description: 'El subconjunto de markdown que parsea Postext y las normas para escribir los documentos fuente',
   lang: 'es',
-  lastUpdated: '2026-04-23',
-  readingTime: '9 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '10 min',
   order: 5,
 };
 
@@ -42,9 +42,9 @@ El frontmatter se parsea con [`gray-matter`](https://github.com/jonschlinkert/gr
 
 ## Construcciones de bloque
 
-Postext reconoce siete tipos de bloque. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
+Postext reconoce siete tipos de bloque de prosa, además de las directivas y las inserciones de recursos que se describen más adelante en esta página. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
 
-<Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de un vistazo", "desc": "Los siete tipos de bloque que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada, lista de tareas y fórmula en display, cada uno con su sintaxis markdown.", "caption": "Cada tipo de bloque y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}, {"name": "Fórmula display", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
+<Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de prosa de un vistazo", "desc": "Los siete tipos de bloque de prosa que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada, lista de tareas y fórmula en display, cada uno con su sintaxis markdown. Las directivas y las inserciones de recursos se describen por separado.", "caption": "Cada tipo de bloque de prosa y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}, {"name": "Fórmula display", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
 <table>
   <thead>
@@ -88,7 +88,7 @@ Postext reconoce siete tipos de bloque. Los bloques siempre terminan al encontra
     <tr>
       <td>Fórmula display</td>
       <td><code>$$ … $$</code></td>
-      <td>Una fórmula LaTeX, bien en una única línea (<code>$$\int_0^1 x^2\,dx$$</code>) o vallada en varias líneas con marcadores <code>$$</code> en sus propias líneas. Se renderiza centrada en la columna, ajustada a la rejilla de línea base como una cabecera, y se mantiene vectorial en el PDF.</td>
+      <td>Una fórmula LaTeX compuesta como bloque propio. Se renderiza centrada en la columna, ajustada a la rejilla de línea base como una cabecera, y se mantiene vectorial en el PDF. Las formas de una sola línea y de valla multilínea se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -96,6 +96,8 @@ Postext reconoce siete tipos de bloque. Los bloques siempre terminan al encontra
 Se tolera una única línea en blanco entre dos elementos de lista — la lista se mantiene unida. Dos o más líneas en blanco consecutivas terminan la lista.
 
 Se aceptan listas de tipos mixtos a la misma profundidad (puedes pasar de no ordenada a ordenada a mitad de recorrido), pero el motor trata cada tramo por separado a efectos de numeración. En la práctica, conviene mantener un único tipo por profundidad salvo que haya un motivo claro para mezclarlos.
+
+<Illustration name="ListNesting" data='{"title": "Profundidad de anidamiento de listas", "desc": "Las listas se anidan usando exactamente dos espacios por nivel, hasta una profundidad máxima de cinco. Cada nivel sangra más y puede usar un estilo de viñeta diferente.", "caption": "Dos espacios por nivel. Profundidad máxima: cinco.", "level1": "Nivel 1", "level2": "Nivel 2 — dos espacios", "level3": "Nivel 3 — cuatro espacios", "indentNote": "Exactamente dos espacios por nivel. Profundidad máxima: 5."}' />
 
 
 ## Directivas
@@ -157,6 +159,7 @@ El capítulo anterior termina aquí.
 
 El atributo `parity` acepta los mismos cinco valores que `headings.levels[*].breakBefore.parity`:
 
+- `'any'` — el valor por defecto: sin restricción de paridad; el salto simplemente abre una página nueva.
 - `'odd'` / `'even'` — la nueva página abre en el lado solicitado del pliego; solo se inserta una página en blanco cuando la siguiente página natural cae en el lado equivocado.
 - `'always-odd'` / `'always-even'` — garantizan al menos una página separadora en blanco obligatoria entre el contenido anterior y la nueva página, y después fuerzan la paridad. La separadora pertenece al capítulo **anterior**; cualquier relleno de paridad adicional pertenece a lo que viene después.
 
@@ -193,8 +196,6 @@ title: "Un libro con páginas preliminares"
 Las páginas del prefacio se etiquetan `i`, `ii`, `iii`, …; el primer capítulo se abre en una página derecha etiquetada `1`.
 
 Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil para, por ejemplo, pasar de `lower-alpha` a `upper-alpha` sin reiniciar.
-
-<Illustration name="ListNesting" data='{"title": "Profundidad de anidamiento de listas", "desc": "Las listas se anidan usando exactamente dos espacios por nivel, hasta una profundidad máxima de cinco. Cada nivel sangra más y puede usar un estilo de viñeta diferente.", "caption": "Dos espacios por nivel. Profundidad máxima: cinco.", "level1": "Nivel 1", "level2": "Nivel 2 — dos espacios", "level3": "Nivel 3 — cuatro espacios", "indentNote": "Exactamente dos espacios por nivel. Profundidad máxima: 5."}' />
 
 
 ## Formato en línea
@@ -245,7 +246,7 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     <tr>
       <td>Matemáticas en línea</td>
       <td><code>$…$</code></td>
-      <td>Una fórmula LaTeX que fluye con el texto que la rodea, p. ej. <code>$e^{'{i\\pi}'}+1=0$</code>. Se compone con MathJax y se renderiza como trazos vectoriales en todos los backends. Las fórmulas cuya ascendente o descendente se salga de la caja de línea se escalan hacia abajo para no romper la rejilla vertical. Usa <code>\\$</code> para un signo de dólar literal.</td>
+      <td>Una fórmula LaTeX que fluye con el texto que la rodea, p. ej. <code>$e^{'{i\\pi}'}+1=0$</code>. Se compone con MathJax y se renderiza como trazos vectoriales en todos los backends. Usa <code>\\$</code> para un signo de dólar literal. El escalado, la forma display (<code>$$ … $$</code>) y el manejo de errores se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -272,7 +273,7 @@ $$
 
 ## Recursos
 
-Las imágenes, los SVG y las tablas no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el panel de Recursos del sandbox) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla a una banda en la parte superior o inferior de la página, cerca de esa referencia, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
+Las imágenes, los SVG y las tablas no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el [panel de Recursos](/es/docs/sandbox#panel-de-recursos) del sandbox, que ofrece subida de imágenes y SVG, un editor interactivo de tablas y edición de pies y de colocación) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla a una banda en la parte superior o inferior de la página, cerca de esa referencia, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
 
 Ambas formas de abajo son sintaxis completamente nueva que no choca con CommonMark, por lo que un documento que las use sigue leyéndose como texto plano en cualquier otro visor de markdown.
 
@@ -286,7 +287,7 @@ Como se ve en :ref{id="lighthouse-diagram"}, la sala de la linterna queda sobre 
 
 se renderiza como: *Como se ve en Fig. 1.7, la sala de la linterna queda sobre la galería.* — y el propio diagrama flota a la parte superior (o inferior) de la página, mientras esta frase y el texto posterior siguen fluyendo sin interrupción.
 
-El texto nunca se corta en el punto de la referencia. Dónde aterriza el recurso —arriba o abajo de la página, en una sola columna o a todo el ancho— lo decide su **colocación** (ver [Colocación](#colocacion-de-recursos) más abajo), no el lugar donde lo mencionas.
+El texto nunca se corta en el punto de la referencia. Dónde aterriza el recurso —arriba o abajo de la página, en una sola columna o a todo el ancho— lo decide su **colocación** (ver [Colocación](#colocación) más abajo), no el lugar donde lo mencionas.
 
 ### Inserción en bloque (opcional, colocación en línea explícita)
 
@@ -302,7 +303,11 @@ Las dependencias del farero ocupan el ala este.
 
 Para un recurso que flota, la directiva `::resource` es innecesaria —el `:ref` ya lo colocó, y un `::resource` redundante para el mismo id se trata como otra referencia, no como una segunda copia. Un `::resource` solo renderiza el recurso en línea cuando su colocación resuelta es `"here"`.
 
-El `id` debe coincidir con un recurso definido en el panel de Recursos. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.**
+El `id` debe coincidir con un recurso definido en el panel de Recursos. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.** Su tipografía se controla desde [Configuración › Estilo de pies](/es/docs/configuration#estilo-de-pies): la etiqueta y la descripción comparten tipografía y tamaño, mientras que la etiqueta conserva sus propios ajustes de negrita/cursiva/color; la separación sobre el pie es por defecto `0.75em` y la alineación, a la izquierda.
+
+Los recursos de tabla dibujan su propia rejilla, con estilo definido en [Configuración › Estilo de tablas](/es/docs/configuration#estilo-de-tablas): las celdas de cuerpo y de cabecera tienen tipografía totalmente independiente, el fondo de la cabecera es por defecto `#f0f0f0`, los bordes `0.75pt` y el `cellPadding` `0.375em` — cualquier campo sin definir hereda del texto del cuerpo.
+
+Los recursos SVG pueden además recolorearse para impresión a una sola tinta plana mediante `diagramStyle.singleInk` (por defecto `false`). Al activarlo, cada color del diagrama SVG se reasigna a un matiz de `diagramStyle.inkColor` según su luminancia (por defecto el color principal de la paleta, `#295AA3`) — el blanco se asigna al papel y el negro a la tinta plena — de modo que las figuras se reproducen con fidelidad cuando el documento se imprime con una única tinta plana. Ver [Configuración › Estilo de diagramas](/es/docs/configuration#estilo-de-diagramas).
 
 Una inserción mal formada (sin `id`, con `id` vacío o con atributos de más) no se promueve a bloque de recurso; recae en el parseo de párrafo normal y sigue siendo visible en la salida, y el sandbox muestra un aviso.
 
@@ -310,7 +315,7 @@ Las referencias en línea se reconocen dentro de cualquier bloque de texto — p
 
 #### Opciones de la referencia
 
-La directiva `:ref` admite dos atributos opcionales:
+La directiva `:ref` admite dos atributos opcionales. `style` selecciona cómo se renderiza la etiqueta calculada: `style="number"` imprime el número a secas (`1.7`), `style="full"` imprime el nombre completo del tipo seguido del número (`Figura 1.7`), y cuando `style` se omite se usa la etiqueta corta (`shortLabel`) del tipo seguida del número (`Fig. 1.7`). `text` es una anulación literal que sustituye cualquier etiqueta calculada y tiene prioridad sobre `style`. Los cuatro estilos de renderizado, lado a lado:
 
 <table>
   <thead>
@@ -385,7 +390,9 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
 
 Un flotante se coloca en la siguiente página que se abre tras su primera referencia, cerca de ella en orden de lectura. Si no cabe en la banda de esa página, **se difiere a la página siguiente** (nunca se reduce ni se parte). Los flotantes mantienen el orden de primera referencia, de modo que las figuras no se reordenan respecto a donde se mencionan.
 
-> **Nota:** el visor HTML aún no renderiza recursos; la previsualización en canvas y el backend PDF sí.
+Las bandas de flotantes se corrigen contra la rejilla base para que el texto circundante mantenga el ritmo vertical de toda la página. Una banda **superior** amplía su margen inferior hasta la siguiente línea de la rejilla, de modo que el texto bajo el flotante queda alineado con las columnas vecinas y con la página enfrentada. Un flotante **inferior** se ancla de forma que la última línea de su leyenda comparta línea base con la última línea de texto de las demás columnas (el contenido sin leyenda alinea su borde inferior con la última celda de la rejilla) — así, las páginas llenas terminan a la misma altura entre columnas y entre páginas enfrentadas.
+
+Los tres backends — la previsualización en canvas, el visor HTML y la salida PDF — renderizan recursos. En el backend HTML, las imágenes viven fuera del documento, así que el anfitrión las suministra mediante la opción de resolución `resourceImageUrl(fileId)`; cuando falta el resolutor (o no devuelve nada para un fichero), el recurso se renderiza como una caja neutra de relleno para que la maquetación se mantenga estable.
 
 
 ## Qué NO se soporta

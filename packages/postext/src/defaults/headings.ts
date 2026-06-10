@@ -1,4 +1,4 @@
-import type { HeadingsConfig, HeadingLevelConfig, HeadingBreakBeforeConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ResolvedHeadingBreakBeforeConfig, HeadingAdvancedDesignConfig, ResolvedHeadingAdvancedDesignConfig, ColorValue, Dimension } from '../types';
+import type { HeadingsConfig, HeadingLevelConfig, HeadingBreakBeforeConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ResolvedHeadingBreakBeforeConfig, HeadingAdvancedDesignConfig, ResolvedHeadingAdvancedDesignConfig, ColumnBalancingConfig, ColorValue, Dimension } from '../types';
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
 import { resolveDesignSlot } from './headerFooter';
 
@@ -29,6 +29,11 @@ const DEFAULT_HEADING_FONT = 'Open Sans';
 const DEFAULT_HEADING_LINE_HEIGHT: Dimension = { value: 1.2, unit: 'em' };
 const DEFAULT_HEADING_COLOR: ColorValue = { ...DEFAULT_MAIN_COLOR };
 const DEFAULT_HEADING_FONT_WEIGHT = 700;
+export const DEFAULT_COLUMN_BALANCING = {
+  enabled: true,
+  maxLinesPerHeading: 4,
+};
+
 const DEFAULT_HEADING_MARGIN_TOP: Dimension = { value: 1.5, unit: 'em' };
 const DEFAULT_HEADING_MARGIN_BOTTOM: Dimension = { value: 0.5, unit: 'em' };
 
@@ -50,11 +55,18 @@ export const DEFAULT_HEADINGS_CONFIG: ResolvedHeadingsConfig = {
   marginTop: DEFAULT_HEADING_MARGIN_TOP,
   marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM,
   keepWithNext: true,
+  balancing: { ...DEFAULT_COLUMN_BALANCING },
   levels: DEFAULT_HEADING_LEVELS,
 };
 
 export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeadingsConfig {
-  if (!partial) return { ...DEFAULT_HEADINGS_CONFIG, levels: DEFAULT_HEADING_LEVELS.map((l) => ({ ...l })) };
+  if (!partial) {
+    return {
+      ...DEFAULT_HEADINGS_CONFIG,
+      balancing: { ...DEFAULT_COLUMN_BALANCING },
+      levels: DEFAULT_HEADING_LEVELS.map((l) => ({ ...l })),
+    };
+  }
 
   const generalFont = partial.fontFamily ?? DEFAULT_HEADINGS_CONFIG.fontFamily;
   const generalLineHeight = partial.lineHeight ?? DEFAULT_HEADINGS_CONFIG.lineHeight;
@@ -64,6 +76,13 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   const generalMarginTop = partial.marginTop ?? DEFAULT_HEADINGS_CONFIG.marginTop;
   const generalMarginBottom = partial.marginBottom ?? DEFAULT_HEADINGS_CONFIG.marginBottom;
   const generalKeepWithNext = partial.keepWithNext ?? DEFAULT_HEADINGS_CONFIG.keepWithNext;
+  const balancing = partial.balancing
+    ? {
+        enabled: partial.balancing.enabled ?? DEFAULT_COLUMN_BALANCING.enabled,
+        maxLinesPerHeading:
+          partial.balancing.maxLinesPerHeading ?? DEFAULT_COLUMN_BALANCING.maxLinesPerHeading,
+      }
+    : { ...DEFAULT_COLUMN_BALANCING };
 
   const levels: ResolvedHeadingLevelConfig[] = DEFAULT_HEADING_LEVELS.map((def) => {
     const override = partial.levels?.find((l) => l.level === def.level);
@@ -84,7 +103,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
     };
   });
 
-  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, levels };
+  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, balancing, levels };
 }
 
 export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig | undefined {
@@ -124,6 +143,25 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
   if (headings.keepWithNext !== undefined && headings.keepWithNext !== DEFAULT_HEADINGS_CONFIG.keepWithNext) {
     result.keepWithNext = headings.keepWithNext;
     hasOverride = true;
+  }
+  if (headings.balancing) {
+    const b: ColumnBalancingConfig = {};
+    let hasBOverride = false;
+    if (headings.balancing.enabled !== undefined && headings.balancing.enabled !== DEFAULT_COLUMN_BALANCING.enabled) {
+      b.enabled = headings.balancing.enabled;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.maxLinesPerHeading !== undefined
+      && headings.balancing.maxLinesPerHeading !== DEFAULT_COLUMN_BALANCING.maxLinesPerHeading
+    ) {
+      b.maxLinesPerHeading = headings.balancing.maxLinesPerHeading;
+      hasBOverride = true;
+    }
+    if (hasBOverride) {
+      result.balancing = b;
+      hasOverride = true;
+    }
   }
   if (headings.levels && headings.levels.length > 0) {
     const strippedLevels: HeadingLevelConfig[] = [];

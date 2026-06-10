@@ -1,6 +1,7 @@
 import { clearCache } from '@chenglou/pretext';
 import type { HyphenationLocale } from '../types';
 import { setHyphenationLocale } from '../hyphenate';
+import { clearTextWidthCache } from './canvas';
 import type { MeasurementCache } from './types';
 
 /**
@@ -30,11 +31,13 @@ export function initHyphenator(locale: HyphenationLocale): void {
 }
 
 /**
- * Clear pretext's internal measurement caches.
- * Call this after fonts finish loading to ensure accurate measurements.
+ * Clear pretext's internal measurement caches and the engine's own
+ * text-width cache. Call this after fonts finish loading (or are removed)
+ * to ensure accurate measurements.
  */
 export function clearMeasurementCache(): void {
   clearCache();
+  clearTextWidthCache();
 }
 
 export function createMeasurementCache(): MeasurementCache {

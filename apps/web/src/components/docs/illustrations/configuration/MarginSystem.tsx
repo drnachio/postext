@@ -1,5 +1,5 @@
 import { Figure } from "../Figure";
-import { Label, colorTokens } from "../primitives";
+import { Label, DropShadowDef, colorTokens } from "../primitives";
 
 export interface MarginSystemLabels {
   title: string;
@@ -13,35 +13,83 @@ export interface MarginSystemLabels {
   left: string;
 }
 
+/**
+ * One idea: every side of the page has its OWN margin.
+ * The four margins are drawn deliberately asymmetric (1 / 1.5 / 2 / 2.5 cm),
+ * each annotated with a dimension arrow inside its hatched margin band,
+ * so the independence of the four values is visible at a glance.
+ */
 export function MarginSystem({ labels }: { labels: MarginSystemLabels }) {
-  const pageX = 180;
-  const pageY = 30;
-  const pageW = 400;
-  const pageH = 260;
-  const mT = 40;
-  const mR = 50;
-  const mB = 55;
-  const mL = 60;
+  // Page sheet
+  const pX = 60;
+  const pY = 44;
+  const pW = 420;
+  const pH = 280;
+
+  // Asymmetric margins (px), annotated with proportional mock values
+  const mT = 36; //   1 cm
+  const mR = 56; // 1.5 cm
+  const mB = 72; //   2 cm
+  const mL = 96; // 2.5 cm
+
+  // Content area
+  const cX = pX + mL;
+  const cY = pY + mT;
+  const cW = pW - mL - mR;
+  const cH = pH - mT - mB;
+  const cMidX = cX + cW / 2; // 290
+  const cMidY = cY + cH / 2; // 166
+
+  const orange = colorTokens.orange;
+  const blue = colorTokens.blue;
+
   return (
-    <Figure title={labels.title} desc={labels.desc} caption={labels.caption} viewBox="0 0 760 320" maxWidth={760}>
-      <rect x={pageX} y={pageY} width={pageW} height={pageH} fill={colorTokens.blue.fill} stroke={colorTokens.blue.stroke} strokeWidth={2} rx={4} />
-      <Label x={pageX + pageW / 2} y={pageY - 8} anchor="middle" size={10} color="blue">{labels.page}</Label>
+    <Figure title={labels.title} desc={labels.desc} caption={labels.caption} viewBox="0 0 540 348" maxWidth={540}>
+      <defs>
+        <DropShadowDef id="ms-shadow" />
+        <pattern id="ms-hatch" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1={0} y1={0} x2={0} y2={6} stroke={orange.stroke} strokeWidth={1} opacity={0.25} />
+        </pattern>
+        <marker id="ms-arrow" markerWidth={9} markerHeight={7} refX={9} refY={3.5} orient="auto-start-reverse">
+          <polygon points="0 0, 9 3.5, 0 7" fill={orange.stroke} />
+        </marker>
+      </defs>
 
-      <rect x={pageX + mL} y={pageY + mT} width={pageW - mL - mR} height={pageH - mT - mB} fill={colorTokens.orange.fill} stroke={colorTokens.orange.stroke} strokeWidth={1.5} rx={3} strokeDasharray="4,3" />
-      <Label x={pageX + pageW / 2} y={pageY + pageH / 2 + 4} anchor="middle" size={11} bold color="orange">{labels.content}</Label>
+      {/* Page label */}
+      <Label x={pX} y={pY - 12} size={10} color="mid">{labels.page}</Label>
 
-      {/* Top arrow */}
-      <line x1={pageX + pageW / 2} y1={pageY} x2={pageX + pageW / 2} y2={pageY + mT} stroke={colorTokens.pink.stroke} strokeWidth={1.5} />
-      <Label x={pageX + pageW / 2 + 10} y={pageY + mT / 2 + 3} size={9} color="pink">{labels.top}</Label>
-      {/* Right */}
-      <line x1={pageX + pageW - mR} y1={pageY + pageH / 2} x2={pageX + pageW} y2={pageY + pageH / 2} stroke={colorTokens.pink.stroke} strokeWidth={1.5} />
-      <Label x={pageX + pageW - mR / 2} y={pageY + pageH / 2 - 6} anchor="middle" size={9} color="pink">{labels.right}</Label>
-      {/* Bottom */}
-      <line x1={pageX + pageW / 2} y1={pageY + pageH - mB} x2={pageX + pageW / 2} y2={pageY + pageH} stroke={colorTokens.pink.stroke} strokeWidth={1.5} />
-      <Label x={pageX + pageW / 2 + 10} y={pageY + pageH - mB / 2 + 3} size={9} color="pink">{labels.bottom}</Label>
-      {/* Left */}
-      <line x1={pageX} y1={pageY + pageH / 2} x2={pageX + mL} y2={pageY + pageH / 2} stroke={colorTokens.pink.stroke} strokeWidth={1.5} />
-      <Label x={pageX + mL / 2} y={pageY + pageH / 2 - 6} anchor="middle" size={9} color="pink">{labels.left}</Label>
+      {/* Page sheet */}
+      <rect x={pX} y={pY} width={pW} height={pH} fill="var(--svg-legend-fill)" stroke="var(--svg-stroke)" strokeWidth={1.5} filter="url(#ms-shadow)" />
+
+      {/* Margin bands (hatched = blank space) */}
+      <rect x={pX} y={pY} width={pW} height={mT} fill="url(#ms-hatch)" />
+      <rect x={pX} y={cY + cH} width={pW} height={mB} fill="url(#ms-hatch)" />
+      <rect x={pX} y={cY} width={mL} height={cH} fill="url(#ms-hatch)" />
+      <rect x={cX + cW} y={cY} width={mR} height={cH} fill="url(#ms-hatch)" />
+
+      {/* Content area */}
+      <rect x={cX} y={cY} width={cW} height={cH} fill={blue.fill} stroke={blue.stroke} strokeWidth={1.5} />
+      <Label x={cMidX} y={cMidY + 4} anchor="middle" size={11} bold color="blue">{labels.content}</Label>
+
+      {/* Top margin: 1cm */}
+      <line x1={cMidX} y1={pY} x2={cMidX} y2={cY} stroke={orange.stroke} strokeWidth={1.5} markerStart="url(#ms-arrow)" markerEnd="url(#ms-arrow)" />
+      <Label x={cMidX - 8} y={pY + mT / 2 + 3} anchor="end" size={10} bold color="orange">{labels.top}</Label>
+      <Label x={cMidX + 8} y={pY + mT / 2 + 3} size={9} color="faint">1cm</Label>
+
+      {/* Bottom margin: 2cm */}
+      <line x1={cMidX} y1={cY + cH} x2={cMidX} y2={pY + pH} stroke={orange.stroke} strokeWidth={1.5} markerStart="url(#ms-arrow)" markerEnd="url(#ms-arrow)" />
+      <Label x={cMidX - 8} y={cY + cH + mB / 2 + 3} anchor="end" size={10} bold color="orange">{labels.bottom}</Label>
+      <Label x={cMidX + 8} y={cY + cH + mB / 2 + 3} size={9} color="faint">2cm</Label>
+
+      {/* Left margin: 2.5cm */}
+      <line x1={pX} y1={cMidY} x2={cX} y2={cMidY} stroke={orange.stroke} strokeWidth={1.5} markerStart="url(#ms-arrow)" markerEnd="url(#ms-arrow)" />
+      <Label x={pX + mL / 2} y={cMidY - 12} anchor="middle" size={10} bold color="orange">{labels.left}</Label>
+      <Label x={pX + mL / 2} y={cMidY + 19} anchor="middle" size={9} color="faint">2.5cm</Label>
+
+      {/* Right margin: 1.5cm */}
+      <line x1={cX + cW} y1={cMidY} x2={pX + pW} y2={cMidY} stroke={orange.stroke} strokeWidth={1.5} markerStart="url(#ms-arrow)" markerEnd="url(#ms-arrow)" />
+      <Label x={cX + cW + mR / 2} y={cMidY - 12} anchor="middle" size={10} bold color="orange">{labels.right}</Label>
+      <Label x={cX + cW + mR / 2} y={cMidY + 19} anchor="middle" size={9} color="faint">1.5cm</Label>
     </Figure>
   );
 }

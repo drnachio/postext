@@ -1,9 +1,9 @@
 {
   "Metadata": {
     "title": "Postext — Programmable Typesetter for the Web",
-    "description": "A layout engine that bridges centuries-old print typesetting craft with modern web technology. Semantic markdown in, publication-grade React components out.",
+    "description": "A layout engine that bridges centuries-old print typesetting craft with modern web technology. Semantic markdown in, publication-grade pages out — rendered to HTML, canvas, and print-ready PDF.",
     "ogTitle": "Postext — Programmable Typesetter for the Web",
-    "ogDescription": "Semantic markdown in, publication-grade React components out.",
+    "ogDescription": "Semantic markdown in, publication-grade pages out — rendered to HTML, canvas, and print-ready PDF.",
     "ogImageAlt": "Postext — Programmable Typesetter for the Web",
     "keywords": "typesetter, typography, layout engine, react, markdown, pretext, editorial layout, column balancing, orphan widow prevention, hyphenation, pdf, web typography, justification, knuth-plass"
   },
@@ -45,7 +45,7 @@
   },
   "Hero": {
     "title": "The Programmable Typesetter for the Web",
-    "subtitle": "Postext takes semantic markdown and applies centuries-old editorial layout rules — orphan prevention, column balancing, figure placement — producing publication-grade React components.",
+    "subtitle": "Postext takes semantic markdown and applies centuries-old editorial layout rules — Knuth-Plass justification, orphan prevention, figure placement — producing publication-grade pages rendered to HTML, canvas, or print-ready PDF.",
     "getStarted": "Get Started",
     "viewOnGitHub": "View on GitHub"
   },
@@ -56,7 +56,7 @@
     "paragraph1": "CSS gives you responsive layout — flexbox, grid, columns. But it cannot balance columns, prevent orphans, flow text around figures, or place footnotes at the bottom of a column. These are editorial decisions that have been refined over centuries of print typesetting.",
     "paragraph2prefix": "Postext bridges that gap. Feed it semantic markdown and a configuration object. It measures text 300–600× faster than the DOM using ",
     "pretextLink": "@chenglou/pretext",
-    "paragraph2suffix": ", then returns React components laid out to professional typographic standards.",
+    "paragraph2suffix": ", then computes the complete page geometry — every line, float, and caption — and renders it through HTML, canvas, or print-ready PDF backends.",
     "inputLabel": "Input",
     "outputLabel": "Output",
     "inputAriaLabel": "Example markdown input",
@@ -65,23 +65,23 @@
   "Features": {
     "eyebrow": "Capabilities",
     "title": "What Print Typesetters Knew All Along",
-    "orphanTitle": "Orphan & Widow Prevention",
-    "orphanDescription": "No single lines stranded at the top or bottom of a column. Postext enforces typographic rules that CSS cannot express.",
-    "columnTitle": "Column Balancing",
-    "columnDescription": "Content distributed evenly across columns so they end at the same height — the way a professional typesetter would set them.",
-    "flowTitle": "Text Flow Around Figures",
-    "flowDescription": "Images, pull quotes, and tables placed inline, floated, or in margins with text flowing naturally around them.",
-    "footnotesTitle": "Footnotes & Margin Notes",
-    "footnotesDescription": "Footnotes anchored to column bottoms. Margin notes aligned with the paragraph that references them. Endnotes collected at section end.",
-    "hyphenationTitle": "Hyphenation & Rag Optimization",
-    "hyphenationDescription": "Intelligent word breaking and right-edge smoothing that prevents rivers of whitespace and produces even text blocks.",
-    "outputTitle": "Web & PDF Output",
-    "outputDescription": "One layout engine, two renderers. Generate React components for the web or PDF output for print — from the same source."
+    "justificationTitle": "Knuth-Plass Justification",
+    "justificationDescription": "The same optimal line-breaking algorithm TeX uses, with TeX-pattern hyphenation and orphan control — evenly set text blocks with no rivers of whitespace, beyond anything CSS can express.",
+    "resourcesTitle": "Resources & Cross-References",
+    "resourcesDescription": "Figures, SVG diagrams, and tables float to the top or bottom of columns and pages — the way print floats work — with typed numbering and :ref cross-references that always stay in sync.",
+    "tablesTitle": "Table & Caption Styling",
+    "tablesDescription": "Tables typeset with independent body and header typography, and captions that follow your configuration — numbered, styled, and placed alongside the resource they describe.",
+    "singleInkTitle": "Single-Ink Diagrams",
+    "singleInkDescription": "Recolor SVG diagrams to tints of one ink by luminance, so every illustration matches your design — ready for spot-colour printing.",
+    "mathTitle": "LaTeX Math",
+    "mathDescription": "Inline and display equations written in LaTeX, measured and typeset by the engine so they sit on the baseline grid alongside the text.",
+    "outputTitle": "Web & Print-Ready PDF",
+    "outputDescription": "One layout engine, three renderers. The same computed pages render to HTML, canvas, or print-ready PDF — with bookmarks and CMYK colour."
   },
   "ApiPreview": {
     "eyebrow": "API",
     "title": "One Function, Full Control",
-    "description": "Call <code>createLayout</code> with your content and a configuration object. Get back a React component laid out to your specifications."
+    "description": "Call <code>buildDocument</code> with your content and a configuration object. Get back the complete page geometry, ready to render with <code>renderToHtml</code> — or the canvas and PDF backends."
   },
   "HowItWorks": {
     "eyebrow": "Workflow",
@@ -90,8 +90,8 @@
     "step1Description": "Author your content in enriched markdown with resource references and footnote markers. No layout concerns — just content.",
     "step2Title": "Configure Layout Rules",
     "step2Description": "Define columns, typography rules, resource placement strategies, and section overrides in a PostextConfig object.",
-    "step3Title": "Render React Components",
-    "step3Description": "Call createLayout and receive a React component with pixel-perfect editorial layout — ready for the web or PDF."
+    "step3Title": "Render to HTML, Canvas, or PDF",
+    "step3Description": "Call buildDocument and receive the complete layout geometry — then render it with the HTML, canvas, or print-ready PDF backend."
   },
   "Install": {
     "eyebrow": "Installation",
@@ -204,7 +204,7 @@
   },
   "Sandbox": {
     "metaTitle": "Sandbox — Postext",
-    "metaDescription": "Experiment with the Postext layout engine in a live sandbox.",
+    "metaDescription": "Try the Postext typesetting engine live: edit markdown, manage figures and tables, tune Knuth-Plass justification, and export print-ready PDF — in the browser.",
     "configuration": "Configuration",
     "resources": "Resources",
     "markdownEditor": "Markdown Editor",
@@ -213,8 +213,6 @@
     "canvas": "Canvas",
     "html": "HTML",
     "pdf": "PDF",
-    "comingSoon": "Coming soon",
-    "resourcesComingSoonDescription": "Resource management will be available in a future version.",
     "toolbarPin": "Pin toolbar",
     "toolbarUnpin": "Unpin toolbar",
     "pdfDirty": "Changes pending — click to recalculate",
@@ -612,6 +610,10 @@
     "columnRuleColorTooltip": "Color of the column rule line",
     "columnRuleLineWidth": "Rule Width",
     "columnRuleLineWidthTooltip": "Thickness of the column rule line",
+    "balanceColumns": "Balance Columns",
+    "balanceColumnsTooltip": "Add baseline-grid lines above headings so columns end flush with the page bottom",
+    "balanceColumnsMaxLines": "Max Lines per Heading",
+    "balanceColumnsMaxLinesTooltip": "Maximum extra grid lines that may be added above a single heading",
     "zoomIn": "Zoom In",
     "zoomOut": "Zoom Out",
     "fitWidth": "Fit to Page Width",
@@ -661,7 +663,7 @@
     "reset": "Reset",
     "resetConfigConfirm": "Reset all configuration to defaults?",
     "resetSectionConfirm": "Reset this section to defaults?",
-    "resetMarkdownConfirm": "Replace content with the default example?",
+    "resetMarkdownConfirm": "Replace the content and resources with the default example?",
     "customFonts": "Custom Fonts",
     "customFontsTooltip": "Upload your own font files and reference them by name anywhere a Google Font can be used.",
     "customFontsNone": "No custom fonts yet.",
@@ -893,7 +895,12 @@
     "captionStyleSection": "Captions",
     "captionGap": "Gap above",
     "captionLabelGroup": "Numbered label",
-    "captionDescriptionGroup": "Description"
+    "captionDescriptionGroup": "Description",
+    "diagramStyleSection": "Diagrams",
+    "diagramSingleInk": "Single-ink diagrams",
+    "diagramSingleInkTooltip": "Recolor SVG diagrams to tints of one ink so they reproduce faithfully when printing with a single color",
+    "diagramInkColor": "Ink color",
+    "diagramInkColorTooltip": "The ink diagrams are recolored with. Defaults to the main color of the palette"
   },
   "Accessibility": {
     "skipToContent": "Skip to main content"

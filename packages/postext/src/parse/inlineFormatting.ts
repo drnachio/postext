@@ -1,4 +1,5 @@
 import type { InlineSpan } from './types';
+import { injectPlaceholderSpans } from './injectSpans';
 
 /** Atomic plain-text placeholder for an inline reference span. One code unit
  *  per `:ref{…}` so `sourceMap` stays 1-to-1 (mirroring the inline-math
@@ -66,37 +67,12 @@ export function extractInlineRefs(
  *  ref span is its own entry (carrying the ambient bold/italic). Mirrors
  *  `injectMathSpans`. */
 export function injectRefSpans(spans: InlineSpan[], refs: RefMeta[]): InlineSpan[] {
-  if (refs.length === 0) return spans;
-  const out: InlineSpan[] = [];
-  let idx = 0;
-  for (const span of spans) {
-    if (span.text.indexOf(REF_PLACEHOLDER) < 0) {
-      out.push(span);
-      continue;
-    }
-    let buf = '';
-    for (const ch of span.text) {
-      if (ch === REF_PLACEHOLDER) {
-        if (buf.length > 0) {
-          out.push({ text: buf, bold: span.bold, italic: span.italic });
-          buf = '';
-        }
-        const meta = refs[idx++];
-        if (meta) {
-          const ref: InlineSpan['ref'] = { resourceId: meta.resourceId };
-          if (meta.style !== undefined) ref.style = meta.style;
-          if (meta.text !== undefined) ref.text = meta.text;
-          out.push({ text: REF_PLACEHOLDER, bold: span.bold, italic: span.italic, ref });
-        }
-      } else {
-        buf += ch;
-      }
-    }
-    if (buf.length > 0) {
-      out.push({ text: buf, bold: span.bold, italic: span.italic });
-    }
-  }
-  return out;
+  return injectPlaceholderSpans(spans, refs, REF_PLACEHOLDER, (meta, bold, italic) => {
+    const ref: InlineSpan['ref'] = { resourceId: meta.resourceId };
+    if (meta.style !== undefined) ref.style = meta.style;
+    if (meta.text !== undefined) ref.text = meta.text;
+    return { text: REF_PLACEHOLDER, bold, italic, ref };
+  });
 }
 
 /**
