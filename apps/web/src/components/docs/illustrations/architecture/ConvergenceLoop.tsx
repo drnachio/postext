@@ -10,45 +10,147 @@ export interface ConvergenceLoopLabels {
   loopCondition: string;
 }
 
-const passColors: ColorKey[] = ["orange", "purple", "blue", "blue", "green", "green", "green"];
+// Geometry (all derived from a 112px pitch grid)
+const BOX_W = 88;
+const BOX_H = 46;
+const PITCH = 112; // box + 24px arrow gap
+const START_X = 20;
+const BOX_Y = 44;
+const LOOP_START = 2; // index of the first pass inside the convergence loop (Pass 3)
 
 export function ConvergenceLoop({ labels }: { labels: ConvergenceLoopLabels }) {
-  const boxW = 80;
-  const startX = 20;
-  const gap = 20;
+  const n = labels.passBadges.length;
+  const boxX = (i: number) => START_X + i * PITCH;
+  const boxCx = (i: number) => boxX(i) + BOX_W / 2;
+
+  // Loop container wraps passes LOOP_START..n-1 with 14px side padding
+  const loopX = boxX(LOOP_START) - 14;
+  const loopRight = boxX(n - 1) + BOX_W + 14;
+  const loopW = loopRight - loopX;
+  const loopCx = (loopX + loopRight) / 2;
+
+  const vbW = loopRight + 20;
+  const vbH = 160;
+
+  // Return path: down from last pass, back under the row, up into Pass 3
+  const returnY = 116;
+  const returnPath = `M ${boxCx(n - 1)} ${BOX_Y + BOX_H} V ${returnY} H ${boxCx(LOOP_START)} V ${BOX_Y + BOX_H + 4}`;
+
   return (
-    <Figure title={labels.title} desc={labels.desc} caption={labels.caption} viewBox="0 0 760 140" maxWidth={760}>
+    <Figure
+      title={labels.title}
+      desc={labels.desc}
+      caption={labels.caption}
+      viewBox={`0 0 ${vbW} ${vbH}`}
+      maxWidth={vbW}
+    >
       <defs>
         <ArrowMarker id="clArrow" />
-        <marker id="clArrowYellow" markerWidth="8" markerHeight="6" refX="4" refY="0" orient="auto">
-          <polygon points="0 6, 4 0, 8 6" fill="var(--svg-yellow-stroke)" />
-        </marker>
+        <ArrowMarker id="clArrowLoop" color="var(--svg-yellow-stroke)" />
         <DropShadowDef id="clShadow" />
       </defs>
 
-      {/* loop bracket */}
-      <rect x={218} y={25} width={530} height={70} fill="none" stroke="var(--svg-yellow-stroke)" strokeWidth={2} rx={6} strokeDasharray="6,3" />
-      <Label x={485} y={20} anchor="middle" size={10} bold color="yellow">{labels.loopBadge}</Label>
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .cl-flowline {
+            stroke-dasharray: 9 6;
+            animation: cl-flow 2.8s linear infinite;
+          }
+          .cl-pulse {
+            animation: cl-pulse-k 5.6s linear infinite;
+          }
+          @keyframes cl-flow {
+            to { stroke-dashoffset: -30; }
+          }
+          @keyframes cl-pulse-k {
+            0%, 100% { opacity: 0; }
+            4% { opacity: 0.28; }
+            10% { opacity: 0; }
+          }
+        }
+      `}</style>
 
+      {/* Convergence-loop container around passes 3..7 */}
+      <rect
+        x={loopX}
+        y={12}
+        width={loopW}
+        height={136}
+        fill="var(--svg-yellow-fill)"
+        stroke="var(--svg-yellow-stroke)"
+        strokeWidth={1.5}
+        strokeDasharray="5,4"
+        rx={6}
+      />
+      <Label x={loopCx} y={30} anchor="middle" size={10} bold color="yellow">
+        {labels.loopBadge}
+      </Label>
+
+      {/* Pass boxes: purple = run once (parse, measure); blue = inside the loop */}
       {labels.passBadges.map((p, i) => {
-        const x = startX + i * (boxW + gap);
-        const color = passColors[i] ?? "blue";
+        const x = boxX(i);
+        const inLoop = i >= LOOP_START;
+        const color: ColorKey = inLoop ? "blue" : "purple";
         const t = colorTokens[color];
         return (
           <g key={i}>
-            <rect x={x} y={40} width={boxW} height={40} fill={t.fill} stroke={t.stroke} strokeWidth={2} rx={4} filter="url(#clShadow)" />
-            <text x={x + boxW / 2} y={58} textAnchor="middle" fontSize="10" fontWeight="bold" fill={t.text}>{p.num}</text>
-            <text x={x + boxW / 2} y={70} textAnchor="middle" fontSize="8" fill={t.text}>{p.name}</text>
-            {i < labels.passBadges.length - 1 ? (
-              <line x1={x + boxW} y1={60} x2={x + boxW + gap} y2={60} stroke="var(--svg-stroke)" strokeWidth={1.5} markerEnd="url(#clArrow)" />
+            <rect
+              x={x}
+              y={BOX_Y}
+              width={BOX_W}
+              height={BOX_H}
+              fill={t.fill}
+              stroke={t.stroke}
+              strokeWidth={1.5}
+              rx={6}
+              filter="url(#clShadow)"
+            />
+            {inLoop ? (
+              <rect
+                x={x}
+                y={BOX_Y}
+                width={BOX_W}
+                height={BOX_H}
+                fill={t.stroke}
+                opacity={0}
+                rx={6}
+                className="cl-pulse"
+                style={{ animationDelay: `${(i - LOOP_START) * 0.7}s` }}
+              />
+            ) : null}
+            <text x={x + BOX_W / 2} y={63} textAnchor="middle" fontSize="10" fontWeight="bold" fill={t.text}>
+              {p.num}
+            </text>
+            <text x={x + BOX_W / 2} y={79} textAnchor="middle" fontSize="9" fill={t.text}>
+              {p.name}
+            </text>
+            {i < n - 1 ? (
+              <line
+                x1={x + BOX_W}
+                y1={67}
+                x2={x + PITCH}
+                y2={67}
+                stroke="var(--svg-stroke)"
+                strokeWidth={1.5}
+                markerEnd="url(#clArrow)"
+              />
             ) : null}
           </g>
         );
       })}
 
-      {/* Loop-back arrow — curves above the row from pass 7 back to pass 3 */}
-      <path d="M 680 82 L 680 115 L 270 115 L 270 82" fill="none" stroke="var(--svg-yellow-stroke)" strokeWidth={2} markerEnd="url(#clArrowYellow)" />
-      <Label x={475} y={128} anchor="middle" size={9} color="yellow">{labels.loopCondition}</Label>
+      {/* Loop-back: Pass 7 → Pass 3 while dirty blocks remain */}
+      <path
+        d={returnPath}
+        fill="none"
+        stroke="var(--svg-yellow-stroke)"
+        strokeWidth={2}
+        markerEnd="url(#clArrowLoop)"
+        className="cl-flowline"
+      />
+      <Label x={loopCx} y={136} anchor="middle" size={9.5} color="yellow">
+        {labels.loopCondition}
+      </Label>
     </Figure>
   );
 }

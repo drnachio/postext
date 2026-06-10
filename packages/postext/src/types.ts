@@ -715,7 +715,19 @@ export interface HeadingsConfig {
    *  heading, the heading is pushed to the next column/page so it stays joined
    *  to its text. Default true. */
   keepWithNext?: boolean;
+  /** Vertical column balancing — editorial bottom alignment. When a column
+   *  ends short of its bottom, extra baseline-grid lines are added above the
+   *  column's headings so every column ends flush with the page bottom.
+   *  Extra lines are distributed across the column's headings, favouring the
+   *  most important (lowest-level) heading. Default enabled. */
+  balancing?: ColumnBalancingConfig;
   levels?: HeadingLevelConfig[];
+}
+
+export interface ColumnBalancingConfig {
+  enabled?: boolean;
+  /** Maximum extra grid lines that may be added above a single heading. */
+  maxLinesPerHeading?: number;
 }
 
 export interface ResolvedHeadingsConfig {
@@ -727,6 +739,7 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepWithNext: boolean;
+  balancing: { enabled: boolean; maxLinesPerHeading: number };
   levels: ResolvedHeadingLevelConfig[];
 }
 

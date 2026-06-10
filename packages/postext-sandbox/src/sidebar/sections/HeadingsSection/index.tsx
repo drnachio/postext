@@ -2,13 +2,14 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
-import { resolveHeadingsConfig, DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
+import { resolveHeadingsConfig, DEFAULT_HEADINGS_CONFIG, DEFAULT_COLUMN_BALANCING, dimensionsEqual, colorsEqual } from 'postext';
 import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
   DimensionInput,
   FontPicker,
+  NestedGroup,
   NumberInput,
   SelectInput,
   ToggleSwitch,
@@ -37,6 +38,17 @@ export const HeadingsSection = memo(function HeadingsSection() {
     dispatch({
       type: 'UPDATE_CONFIG',
       payload: { headings: undefined },
+    });
+  };
+
+  const resetBalancingField = (field: 'enabled' | 'maxLinesPerHeading') => {
+    if (!raw?.balancing) return;
+    const next = { ...raw.balancing };
+    delete next[field];
+    const hasKeys = Object.keys(next).length > 0;
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { headings: { ...raw, balancing: hasKeys ? next : undefined } },
     });
   };
 
@@ -114,6 +126,8 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isMarginBottomDefault = dimensionsEqual(headings.marginBottom, D.marginBottom);
   const isTextAlignDefault = headings.textAlign === D.textAlign;
   const isKeepWithNextDefault = headings.keepWithNext === D.keepWithNext;
+  const isBalEnabledDefault = headings.balancing.enabled === DEFAULT_COLUMN_BALANCING.enabled;
+  const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.headingsTextAlignLeft },
@@ -217,6 +231,35 @@ export const HeadingsSection = memo(function HeadingsSection() {
         isDefault={isKeepWithNextDefault}
         onReset={() => resetField('keepWithNext')}
       />
+
+      <ToggleSwitch
+        label={labels.balanceColumns}
+        checked={headings.balancing.enabled}
+        onChange={(v) =>
+          updateHeadings({ balancing: { ...raw?.balancing, enabled: v } })
+        }
+        tooltip={labels.balanceColumnsTooltip}
+        isDefault={isBalEnabledDefault}
+        onReset={() => resetBalancingField('enabled')}
+      />
+
+      {headings.balancing.enabled && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.balanceColumnsMaxLines}
+            value={headings.balancing.maxLinesPerHeading}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, maxLinesPerHeading: v } })
+            }
+            min={1}
+            max={8}
+            step={1}
+            tooltip={labels.balanceColumnsMaxLinesTooltip}
+            isDefault={isBalMaxLinesDefault}
+            onReset={() => resetBalancingField('maxLinesPerHeading')}
+          />
+        </NestedGroup>
+      )}
 
       {headings.levels.map((resolved) => (
         <HeadingLevelSection

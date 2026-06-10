@@ -63,6 +63,7 @@ import {
 } from './resourceNumbering';
 import { defaultResourceTypes } from '../defaults/resourceTypes';
 import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
+import { totalGapLines, proposeBalanceLines, MAX_BALANCING_PASSES } from './columnBalancing';
 
 export interface BuildDocumentOptions {
   /**
@@ -90,12 +91,20 @@ const ALLOWED_PAGE_FORMATS: ReadonlySet<NumeralStyle> = new Set<NumeralStyle>([
   'upper-alpha',
 ]);
 
-export function buildDocument(
+/**
+ * Single placement pass. `balanceExtraPx` carries the column-balancing
+ * adjustments (extra top spacing per heading, keyed by content-block index);
+ * `forcedBreakPages` reports the pages whose break into the next page was
+ * explicit (`:::pagebreak`, heading `breakBefore`, chapter opener) rather
+ * than natural content overflow — those pages keep their short last column.
+ */
+function buildDocumentPass(
   content: PostextContent,
   config?: PostextConfig,
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
-): VDTDocument {
+  balanceExtraPx?: ReadonlyMap<number, number>,
+): { doc: VDTDocument; forcedBreakPages: Set<number> } {
   const resolved = resolveAllConfig(config);
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
   const dpi = resolved.page.dpi;
@@ -389,6 +398,17 @@ export function buildDocument(
   let blockIdCounter = 0;
   let pendingSpacing = 0;
 
+  // Pages whose break into the next page is explicit rather than natural
+  // overflow. Column balancing leaves their last column short (a chapter's
+  // closing page legitimately ends early).
+  const forcedBreakPages = new Set<number>();
+  const markForcedBreak = (): void => {
+    const curPage = doc.pages[cursor.pageIndex]!;
+    if (curPage.columns.some((c) => c.blocks.length > 0)) {
+      forcedBreakPages.add(cursor.pageIndex);
+    }
+  };
+
   // Page-numbering segments. The implicit first segment comes from
   // `cfg.page.pageNumbering`; `:::numbering` directives append more,
   // each applied at the next page boundary.
@@ -436,6 +456,7 @@ export function buildDocument(
       const attrs = rawBlock.directiveAttrs ?? {};
       if (name === 'pagebreak') {
         pendingSpacing = 0;
+        markForcedBreak();
         advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
         const parity = attrs.parity;
         if (
@@ -466,6 +487,7 @@ export function buildDocument(
       const bb = level?.breakBefore;
       if (bb && bb.enabled) {
         pendingSpacing = 0;
+        markForcedBreak();
         advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
         if (bb.parity !== 'any') {
           enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, bb.parity);
@@ -478,6 +500,7 @@ export function buildDocument(
       // have their availableHeight reduced symmetrically after placement.
       if (level?.span === 'page') {
         pendingSpacing = 0;
+        markForcedBreak();
         advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
         cursor.columnIndex = 0;
         flushPendingNumberingAtBoundary();
@@ -542,6 +565,7 @@ export function buildDocument(
       }
       const groupHeight = measured.totalHeight;
       const blk = createVDTBlock(id, 'resource', style.fontString, style.color, style.textAlign);
+      blk.contentIndex = blockIdx;
       blk.resourceBlock = resourceBlock;
       blk.dirty = false;
       blk.snappedToGrid = false;
@@ -733,6 +757,16 @@ export function buildDocument(
         spacingBefore = pendingSpacing;
         if (vdtType === 'heading' || vdtType === 'mathDisplay') {
           spacingBefore = Math.max(spacingBefore, style.marginTopPx);
+          // Column balancing: extra whole grid lines above this heading so
+          // the column it sits in ends flush with the page bottom. Applied
+          // after margin collapsing — the heading's effective top margin
+          // grows by the assigned lines. Suppressed for first-in-column
+          // headings (no top margin there), keeping columns starting at the
+          // page top.
+          if (vdtType === 'heading') {
+            const extraPx = balanceExtraPx?.get(blockIdx);
+            if (extraPx) spacingBefore += extraPx;
+          }
         } else if (vdtType === 'listItem') {
           const prevWasList = blockIdx > 0 && contentBlocks[blockIdx - 1]!.type === 'listItem';
           if (!prevWasList) {
@@ -808,6 +842,7 @@ export function buildDocument(
             const splitLines = remainingLines.slice(0, splitAt);
             const blk = createVDTBlock(id, vdtType, style.fontString, style.color, style.textAlign);
             applyStyleAttrs(blk, style);
+            blk.contentIndex = blockIdx;
             blk.headingLevel = headingLevel;
             if (numberPrefix) blk.numberPrefix = numberPrefix;
             blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
@@ -917,6 +952,7 @@ export function buildDocument(
         const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
         const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
         applyStyleAttrs(blk, style);
+        blk.contentIndex = blockIdx;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         if (vdtType === 'mathDisplay' && mathDisplayRender) {
           blk.mathRender = mathDisplayRender;
@@ -1009,6 +1045,7 @@ export function buildDocument(
 
           const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
           applyStyleAttrs(blk, style);
+          blk.contentIndex = blockIdx;
           if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
           blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
           blk.dirty = false;
@@ -1058,6 +1095,7 @@ export function buildDocument(
       const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
       const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
       applyStyleAttrs(blk, style);
+      blk.contentIndex = blockIdx;
       if (partIndex === 0) blk.headingLevel = headingLevel;
       blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
       blk.dirty = false;
@@ -1103,5 +1141,62 @@ export function buildDocument(
   doc.converged = true;
   doc.iterationCount = 1;
 
-  return doc;
+  return { doc, forcedBreakPages };
+}
+
+export function buildDocument(
+  content: PostextContent,
+  config?: PostextConfig,
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
+): VDTDocument {
+  let best = buildDocumentPass(content, config, cache, options);
+
+  // --- Column balancing (vertical justification) ------------------------
+  // Iteratively re-place the document with extra grid lines above headings
+  // until every balanceable column ends flush with the page bottom (or no
+  // further adjustment is possible). Each retry recomputes the remaining
+  // gaps on the freshly placed document, so split/keep-with-next decisions
+  // that shift under the new spacing are accounted for. The best layout
+  // (fewest leftover gap lines) always wins — a retry that regresses is
+  // discarded.
+  const balancing = best.doc.config.headings.balancing;
+  if (!balancing.enabled) return best.doc;
+
+  let bestScore = totalGapLines(best.doc, best.forcedBreakPages);
+  let appliedLines = new Map<number, number>();
+  let passCount = 1;
+  let converged = bestScore === 0;
+
+  while (!converged && passCount < MAX_BALANCING_PASSES) {
+    const proposal = proposeBalanceLines(
+      best.doc,
+      best.forcedBreakPages,
+      appliedLines,
+      balancing.maxLinesPerHeading,
+    );
+    if (!proposal.changed) {
+      // No heading can absorb the remaining gaps — stable.
+      converged = true;
+      break;
+    }
+    const extraPx = new Map<number, number>();
+    for (const [idx, n] of proposal.lines) extraPx.set(idx, n * best.doc.baselineGrid);
+    const next = buildDocumentPass(content, config, cache, options, extraPx);
+    passCount++;
+    const score = totalGapLines(next.doc, next.forcedBreakPages);
+    if (score < bestScore) {
+      best = next;
+      bestScore = score;
+      appliedLines = proposal.lines;
+      converged = score === 0;
+    } else {
+      // Plateau or regression — keep the best layout found so far.
+      break;
+    }
+  }
+
+  best.doc.iterationCount = passCount;
+  best.doc.converged = converged || bestScore === 0;
+  return best.doc;
 }

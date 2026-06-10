@@ -16,71 +16,122 @@ export interface VdtStructureLabels {
   linesAttrs: string[];
 }
 
+/*
+ * Layout grid (viewBox 608 x 364)
+ *
+ * Level 0  Document   y 16..52   center x 364
+ * Level 1  Pages      y 88..122  centers 228 / 364 / 500
+ * Level 2  Columns    y 158..192 centers 160 / 296   (children of page 0)
+ * Level 3  Blocks     y 228..258 centers  66 / 160 / 254 (children of column 0)
+ * Level 4  Lines      y 294..322 centers 123 / 197   (children of the paragraph)
+ * Legend cards        x 372..584, y 170..266 and y 280..344
+ */
+
+const STROKE = "var(--svg-stroke)";
+
 export function VdtStructure({ labels }: { labels: VdtStructureLabels }) {
   return (
-    <Figure title={labels.title} desc={labels.desc} caption={labels.caption} viewBox="0 0 700 320" maxWidth={700}>
+    <Figure title={labels.title} desc={labels.desc} caption={labels.caption} viewBox="0 0 608 364" maxWidth={640}>
       <defs>
-        <DropShadowDef id="vdtShadow" />
+        <DropShadowDef id="vdtstr-shadow" />
       </defs>
 
-      <g>
-        <Box x={270} y={15} width={160} height={40} color="green" filter="url(#vdtShadow)" />
-        <Label x={350} y={40} anchor="middle" size={12} bold color="green">{labels.document}</Label>
-      </g>
+      {/* ── Elbow connectors (drawn first, under the boxes) ── */}
+      {/* document → pages */}
+      <path
+        d="M364 52 V70 M228 70 H500 M228 70 V88 M364 70 V88 M500 70 V88"
+        fill="none"
+        stroke={STROKE}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      {/* page[0] → columns */}
+      <path
+        d="M228 122 V140 M160 140 H296 M160 140 V158 M296 140 V158"
+        fill="none"
+        stroke={STROKE}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      {/* column[0] → blocks */}
+      <path
+        d="M160 192 V210 M66 210 H254 M66 210 V228 M160 210 V228 M254 210 V228"
+        fill="none"
+        stroke={STROKE}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      {/* paragraph block → lines */}
+      <path
+        d="M160 258 V276 M123 276 H197 M123 276 V294 M197 276 V294"
+        fill="none"
+        stroke={STROKE}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      {/* collapsed-subtree hints under page[1] and page[n] */}
+      <path d="M364 122 V131 M500 122 V131" fill="none" stroke={STROKE} strokeWidth={1.5} strokeLinecap="round" opacity={0.55} />
+      {[364, 500].map((cx) =>
+        [139, 146, 153].map((cy) => (
+          <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={1.6} fill="var(--svg-faint-text)" />
+        )),
+      )}
 
-      <g>
-        <line x1={310} y1={55} x2={200} y2={85} stroke="var(--svg-stroke)" strokeWidth={1.5} />
-        <line x1={350} y1={55} x2={350} y2={85} stroke="var(--svg-stroke)" strokeWidth={1.5} />
-        <line x1={390} y1={55} x2={500} y2={85} stroke="var(--svg-stroke)" strokeWidth={1.5} />
-        <Box x={130} y={85} width={140} height={35} color="blue" />
-        <Label x={200} y={107} anchor="middle" size={11} bold color="blue">{labels.pageLabels[0]}</Label>
-        <Box x={280} y={85} width={140} height={35} color="blue" />
-        <Label x={350} y={107} anchor="middle" size={11} bold color="blue">{labels.pageLabels[1]}</Label>
-        <rect x={430} y={85} width={140} height={35} fill="var(--svg-blue-fill)" stroke="var(--svg-blue-stroke)" strokeWidth={1.5} rx={6} strokeDasharray="4,3" />
-        <Label x={500} y={107} anchor="middle" size={11} color="blue">{labels.pageLabels[2]}</Label>
-      </g>
+      {/* ── Level 0: document root (focal point, only elevated node) ── */}
+      <Box x={289} y={16} width={150} height={36} color="green" strokeWidth={1.5} filter="url(#vdtstr-shadow)" />
+      <Label x={364} y={38} anchor="middle" size={12} bold color="green">{labels.document}</Label>
 
-      <g>
-        <line x1={170} y1={120} x2={100} y2={155} stroke="var(--svg-stroke)" strokeWidth={1.5} />
-        <line x1={230} y1={120} x2={250} y2={155} stroke="var(--svg-stroke)" strokeWidth={1.5} />
-        <Box x={30} y={155} width={140} height={35} color="purple" />
-        <Label x={100} y={177} anchor="middle" size={11} bold color="purple">{labels.columnLabels[0]}</Label>
-        <Box x={180} y={155} width={140} height={35} color="purple" />
-        <Label x={250} y={177} anchor="middle" size={11} bold color="purple">{labels.columnLabels[1]}</Label>
-      </g>
+      {/* ── Level 1: pages ── */}
+      <Box x={168} y={88} width={120} height={34} color="blue" strokeWidth={1.5} />
+      <Label x={228} y={109} anchor="middle" size={11} bold color="blue">{labels.pageLabels[0]}</Label>
+      <Box x={304} y={88} width={120} height={34} color="blue" strokeWidth={1.5} />
+      <Label x={364} y={109} anchor="middle" size={11} bold color="blue">{labels.pageLabels[1]}</Label>
+      <rect
+        x={440}
+        y={88}
+        width={120}
+        height={34}
+        rx={6}
+        fill="var(--svg-blue-fill)"
+        stroke="var(--svg-blue-stroke)"
+        strokeWidth={1.5}
+        strokeDasharray="5 4"
+      />
+      <Label x={500} y={109} anchor="middle" size={11} color="blue">{labels.pageLabels[2]}</Label>
 
-      <g>
-        <line x1={70} y1={190} x2={40} y2={220} stroke="var(--svg-stroke)" strokeWidth={1.5} />
-        <line x1={100} y1={190} x2={100} y2={220} stroke="var(--svg-stroke)" strokeWidth={1.5} />
-        <line x1={130} y1={190} x2={160} y2={220} stroke="var(--svg-stroke)" strokeWidth={1.5} />
-        <Box x={5} y={220} width={70} height={30} color="orange" rx={4} strokeWidth={1.5} />
-        <Label x={40} y={239} anchor="middle" size={9} color="orange">{labels.blockLabels[0]}</Label>
-        <Box x={80} y={220} width={70} height={30} color="orange" rx={4} strokeWidth={1.5} />
-        <Label x={115} y={239} anchor="middle" size={9} color="orange">{labels.blockLabels[1]}</Label>
-        <Box x={155} y={220} width={70} height={30} color="orange" rx={4} strokeWidth={1.5} />
-        <Label x={190} y={239} anchor="middle" size={9} color="orange">{labels.blockLabels[2]}</Label>
-      </g>
+      {/* ── Level 2: columns of page[0] ── */}
+      <Box x={98} y={158} width={124} height={34} color="purple" strokeWidth={1.5} />
+      <Label x={160} y={179} anchor="middle" size={11} bold color="purple">{labels.columnLabels[0]}</Label>
+      <Box x={234} y={158} width={124} height={34} color="purple" strokeWidth={1.5} />
+      <Label x={296} y={179} anchor="middle" size={11} bold color="purple">{labels.columnLabels[1]}</Label>
 
-      <g>
-        <line x1={105} y1={250} x2={80} y2={275} stroke="var(--svg-stroke)" strokeWidth={1} />
-        <line x1={115} y1={250} x2={115} y2={275} stroke="var(--svg-stroke)" strokeWidth={1} />
-        <line x1={125} y1={250} x2={150} y2={275} stroke="var(--svg-stroke)" strokeWidth={1} />
-        <Box x={55} y={275} width={50} height={25} color="teal" rx={4} strokeWidth={1.5} />
-        <Label x={80} y={292} anchor="middle" size={9} color="teal">{labels.lineLabels[0]}</Label>
-        <Box x={110} y={275} width={50} height={25} color="teal" rx={4} strokeWidth={1.5} />
-        <Label x={135} y={292} anchor="middle" size={9} color="teal">{labels.lineLabels[1]}</Label>
-      </g>
+      {/* ── Level 3: blocks of column[0] ── */}
+      <Box x={24} y={228} width={84} height={30} color="orange" strokeWidth={1.5} />
+      <Label x={66} y={247} anchor="middle" size={10} color="orange">{labels.blockLabels[0]}</Label>
+      <Box x={118} y={228} width={84} height={30} color="orange" strokeWidth={1.5} />
+      <Label x={160} y={247} anchor="middle" size={10} color="orange">{labels.blockLabels[1]}</Label>
+      <Box x={212} y={228} width={84} height={30} color="orange" strokeWidth={1.5} />
+      <Label x={254} y={247} anchor="middle" size={10} color="orange">{labels.blockLabels[2]}</Label>
 
-      <g>
-        <Label x={420} y={160} color="mid">{labels.legendHeader}</Label>
-        {labels.legendAttrs.map((a, i) => (
-          <text key={i} x={420} y={178 + i * 18} fontSize="10" fill="var(--svg-mid-text)" fontFamily="monospace">{a}</text>
-        ))}
-        <Label x={420} y={260} color="light">{labels.linesHeader}</Label>
-        {labels.linesAttrs.map((a, i) => (
-          <text key={i} x={420} y={278 + i * 18} fontSize="10" fill="var(--svg-light-text)" fontFamily="monospace">{a}</text>
-        ))}
-      </g>
+      {/* ── Level 4: measured lines of the paragraph ── */}
+      <Box x={91} y={294} width={64} height={28} color="teal" strokeWidth={1.5} />
+      <Label x={123} y={312} anchor="middle" size={10} color="teal">{labels.lineLabels[0]}</Label>
+      <Box x={165} y={294} width={64} height={28} color="teal" strokeWidth={1.5} />
+      <Label x={197} y={312} anchor="middle" size={10} color="teal">{labels.lineLabels[1]}</Label>
+
+      {/* ── Legend card: attributes carried by every node ── */}
+      <rect x={372} y={170} width={212} height={96} rx={6} fill="var(--svg-legend-fill)" stroke="var(--svg-legend-stroke)" strokeWidth={1} />
+      <Label x={384} y={189} size={11} bold color="dark">{labels.legendHeader}</Label>
+      {labels.legendAttrs.map((a, i) => (
+        <Label key={i} x={384} y={207 + i * 16} size={10} color="mid">{a}</Label>
+      ))}
+
+      {/* ── Legend card: extra attributes on lines (teal = lines level) ── */}
+      <rect x={372} y={280} width={212} height={64} rx={6} fill="var(--svg-legend-fill)" stroke="var(--svg-legend-stroke)" strokeWidth={1} />
+      <Label x={384} y={299} size={11} bold color="teal">{labels.linesHeader}</Label>
+      {labels.linesAttrs.map((a, i) => (
+        <Label key={i} x={384} y={317 + i * 16} size={10} color="mid">{a}</Label>
+      ))}
     </Figure>
   );
 }

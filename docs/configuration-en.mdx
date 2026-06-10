@@ -1004,6 +1004,41 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
       <td><code>true</code></td>
       <td>When <code>true</code>, a heading is never placed as the last element of a column or page. If the following block would not have at least <code>bodyText.widowMinLines</code> lines of room after the heading (or one line when <code>bodyText.avoidWidows</code> is <code>false</code>), the heading is pushed forward so it stays joined to its text. Interacts with <code>bodyText.keepColonWithList</code>: if that rule has to push a colon-paragraph whole, any trailing heading(s) in the column travel with it rather than being left stranded.</td>
     </tr>
+    <tr>
+      <td><code>balancing</code></td>
+      <td><code>ColumnBalancingConfig</code></td>
+      <td>enabled</td>
+      <td>Vertical column balancing — extra space above headings so columns end flush with the page bottom. See below.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Column balancing
+
+Publishers expect every column to start at the top of the page and end flush with its bottom. Break rules (orphan/widow protection, headings kept with their text, unsplittable figures) naturally leave short columns — one or more empty baseline-grid lines at the bottom. When balancing is enabled, the engine does what a compositor would: it adds whole grid lines to the top margin of the headings inside the short column until it ends on the last grid slot. When several lines are needed and the column holds several headings, the lines are distributed among them, always giving the largest share to the most important heading (an `h2` receives more than an `h3`). Headings sitting at the very top of a column never receive extra space, so columns keep starting at the page top. The last column of a page is only balanced when the page flows naturally into the next one — a chapter's closing page legitimately ends short.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Property</th>
+      <th style={{ width: '150px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether to balance column bottoms.</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesPerHeading</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>Maximum extra grid lines that may be added above a single heading.</td>
+    </tr>
   </tbody>
 </table>
 

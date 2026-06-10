@@ -209,6 +209,10 @@ export interface VDTBlock {
   dirty: boolean;
   snappedToGrid: boolean;
   headingLevel?: number;
+  /** Index of the originating content block in the parsed markdown block
+   *  list. Stable across layout passes — used by column balancing to key
+   *  extra-spacing adjustments to headings. */
+  contentIndex?: number;
   numberPrefix?: string;
   fontString: string;
   boldFontString?: string;

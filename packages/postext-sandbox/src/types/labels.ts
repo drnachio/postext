@@ -457,6 +457,10 @@ export interface SandboxLabels {
   columnRuleColorTooltip: string;
   columnRuleLineWidth: string;
   columnRuleLineWidthTooltip: string;
+  balanceColumns: string;
+  balanceColumnsTooltip: string;
+  balanceColumnsMaxLines: string;
+  balanceColumnsMaxLinesTooltip: string;
 
   // Canvas viewport toolbar
   zoomIn: string;
