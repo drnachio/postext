@@ -1,5 +1,132 @@
 import type { VDTDocument } from 'postext';
 
+type VDTBlock = VDTDocument['blocks'][number];
+type VDTLine = VDTBlock['lines'][number];
+
+/** Page-space position of a resource embed (inline block or float band). */
+export interface ResourceLocation {
+  pageIndex: number;
+  x: number;
+  y: number;
+}
+
+/**
+ * Find where a resource ended up in the laid-out document. Inline embeds live
+ * in `doc.blocks`; floated resources only exist in their page's float band.
+ */
+export function findResourceLocation(
+  doc: VDTDocument,
+  resourceId: string,
+): ResourceLocation | null {
+  for (const b of doc.blocks) {
+    if (b.resourceBlock?.resource.id === resourceId) {
+      return { pageIndex: b.pageIndex, x: b.bbox.x, y: b.bbox.y };
+    }
+  }
+  for (const page of doc.pages) {
+    for (const fb of page.floats ?? []) {
+      if (fb.resourceBlock?.resource.id === resourceId) {
+        return { pageIndex: page.index, x: fb.bbox.x, y: fb.bbox.y };
+      }
+    }
+  }
+  return null;
+}
+
+/** Walk already-positioned resource lines (caption / table cells): segments
+ *  paint sequentially from the line origin at natural widths. */
+function refInResourceLines(
+  lines: VDTLine[],
+  xPage: number,
+  yPage: number,
+): string | null {
+  for (const line of lines) {
+    if (yPage < line.bbox.y || yPage > line.bbox.y + line.bbox.height) continue;
+    if (!line.segments) continue;
+    let x = line.bbox.x;
+    for (const seg of line.segments) {
+      if (xPage >= x && xPage <= x + seg.width) {
+        return seg.refResourceId ?? null;
+      }
+      x += seg.width;
+    }
+  }
+  return null;
+}
+
+/** Walk a body-text line mirroring the renderers' justify-fill math. */
+function refInBlockLine(
+  block: VDTBlock,
+  line: VDTLine,
+  xPage: number,
+): string | null {
+  const segs = line.segments;
+  if (!segs || segs.length === 0) return null;
+  const blockRight = block.bbox.x + block.bbox.width;
+  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false;
+  let naturalWidth = 0;
+  let spaceCount = 0;
+  for (const seg of segs) {
+    naturalWidth += seg.width;
+    if (seg.kind === 'space') spaceCount++;
+  }
+  const renderedWidth = justifyFill
+    ? Math.max(naturalWidth, blockRight - line.bbox.x)
+    : naturalWidth;
+  const extraPerSpace = justifyFill && spaceCount > 0
+    ? Math.max(0, (renderedWidth - naturalWidth) / spaceCount)
+    : 0;
+  let x = line.bbox.x;
+  for (const seg of segs) {
+    const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
+    if (xPage >= x && xPage <= x + segRendered) {
+      return seg.refResourceId ?? null;
+    }
+    x += segRendered;
+  }
+  return null;
+}
+
+/**
+ * Hit-test a `:ref` segment at page-space pixel coordinates. Checks body-text
+ * blocks plus resource captions / table cells (including float bands).
+ * Returns the referenced resource id, or null when the click isn't on a ref.
+ */
+export function refResourceIdAtPixel(
+  doc: VDTDocument,
+  pageIndex: number,
+  xPage: number,
+  yPage: number,
+): string | null {
+  const page = doc.pages[pageIndex];
+  const candidates: VDTBlock[] = doc.blocks.filter((b) => b.pageIndex === pageIndex);
+  for (const fb of page?.floats ?? []) candidates.push(fb);
+
+  for (const b of candidates) {
+    if (b.hidden) continue;
+    if (xPage < b.bbox.x || xPage > b.bbox.x + b.bbox.width) continue;
+    if (yPage < b.bbox.y || yPage > b.bbox.y + b.bbox.height) continue;
+    const rb = b.resourceBlock;
+    if (rb) {
+      const inCaption = refInResourceLines(rb.captionLines, xPage, yPage);
+      if (inCaption !== null) return inCaption;
+      if (rb.table) {
+        for (const cell of rb.table.cells) {
+          const inCell = refInResourceLines(cell.lines, xPage, yPage);
+          if (inCell !== null) return inCell;
+        }
+      }
+      continue;
+    }
+    for (const line of b.lines) {
+      if (yPage < line.bbox.y || yPage > line.bbox.y + line.bbox.height) continue;
+      const hit = refInBlockLine(b, line, xPage);
+      if (hit !== null) return hit;
+    }
+  }
+  return null;
+}
+
 /**
  * Convert an absolute source offset (in the original markdown) to a plain-text
  * character index within the given block's plain text. Returns null if the

@@ -436,6 +436,14 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       lastRenderRef.current = indexed;
       lastRenderSigRef.current = sig;
 
+      // Multi mode pages always fit the viewport height; clear any vertical
+      // scroll left over from single mode (overflow-y:hidden clips visually
+      // but a clamped scrollTop survives the mode switch and pins the text
+      // against the top edge).
+      if (currentColumnMode === 'multi' && scroll.scrollTop !== 0) {
+        scroll.scrollTop = 0;
+      }
+
       // Baseline grid visibility is a pure-overlay concern: toggling it leaves
       // block HTML unchanged, so the patch path above may not touch any
       // overlay. Refresh baselines for every live overlay so the setting

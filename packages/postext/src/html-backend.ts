@@ -43,6 +43,16 @@ function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => HTML_ESCAPE[c] ?? c);
 }
 
+/** Element id for a resource embed's in-document anchor. `:ref` segments link
+ *  to it with `#<id>` so references navigate in standalone HTML output. */
+function resourceAnchorId(resourceId: string): string {
+  return `pt-res-${resourceId}`;
+}
+
+function refAnchorHref(resourceId: string): string {
+  return `#${encodeURIComponent(resourceAnchorId(resourceId))}`;
+}
+
 function quoteFontString(fontString: string): string {
   // Canvas accepts unquoted multi-word families; CSS is stricter. Wrap family in
   // single quotes (double quotes would collide with the outer HTML attribute
@@ -151,9 +161,16 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
     const color = pickSegmentColor(seg, block);
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
     const colorDecl = color !== block.color ? `color:${color};` : '';
-    parts.push(
-      `<span style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
-    );
+    if (seg.refResourceId !== undefined) {
+      // Anchors carry an explicit color so the UA link blue never leaks in.
+      parts.push(
+        `<a href="${refAnchorHref(seg.refResourceId)}" style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;text-decoration:none;${fontDecl}color:${color};">${esc(seg.text)}</a>`,
+      );
+    } else {
+      parts.push(
+        `<span style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
+      );
+    }
     x += seg.width;
   }
   return parts.join('');
@@ -253,9 +270,15 @@ function renderResourceLine(
           : color;
       const fontDecl = font !== baseFont ? `font:${font};` : '';
       const colorDecl = segColor !== color ? `color:${segColor};` : '';
-      parts.push(
-        `<span style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
-      );
+      if (seg.refResourceId !== undefined) {
+        parts.push(
+          `<a href="${refAnchorHref(seg.refResourceId)}" style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;text-decoration:none;${fontDecl}color:${segColor};">${esc(seg.text)}</a>`,
+        );
+      } else {
+        parts.push(
+          `<span style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
+        );
+      }
       x += seg.width;
     }
   } else {
@@ -332,6 +355,14 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
   const by = block.bbox.y + rb.bodyRect.y;
   const bw = rb.bodyRect.width;
   const bh = rb.bodyRect.height;
+
+  // Zero-size anchor at the embed's top-left — the target of `:ref` links.
+  if (rb.resource.id) {
+    parts.push(
+      `<span id="${esc(resourceAnchorId(rb.resource.id))}" style="position:absolute;` +
+      `left:${block.bbox.x}px;top:${block.bbox.y}px;width:0;height:0;"></span>`,
+    );
+  }
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
     const url = rb.fileId ? options.resourceImageUrl?.(rb.fileId) : undefined;

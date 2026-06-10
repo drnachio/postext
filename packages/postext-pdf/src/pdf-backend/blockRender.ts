@@ -50,18 +50,21 @@ function renderMathSegment(
 /**
  * Paint a line's segments left to right starting at `startX`. When
  * `justifiedSpaceWidth` is set, spaces advance by it instead of their
- * measured width.
+ * measured width. `:ref` segments record a link annotation rectangle so the
+ * reference is clickable in the final PDF.
  */
 function renderSegments(
   ctx: PageCtx,
   segments: VDTLineSegment[],
   startX: number,
   baseline: number,
+  line: VDTLine,
   block: VDTBlock,
   blockFont: PDFFont,
   blockSize: number,
   blockColor: Color,
   fontCache: FontCache,
+  linkRegistry: LinkRegistry | undefined,
   justifiedSpaceWidth?: number,
 ): void {
   let x = startX;
@@ -83,6 +86,14 @@ function renderSegments(
       : pickSegmentColor(!!seg.bold, !!seg.italic, block);
     const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
     drawTextPx(ctx, seg.text, x, baseline, font, size, color);
+    if (seg.refResourceId !== undefined && linkRegistry) {
+      const { scale, pageHeightPt } = ctx;
+      const x1 = x * scale;
+      const x2 = (x + seg.width) * scale;
+      const y2 = pageHeightPt - line.bbox.y * scale;
+      const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
+      linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], seg.refResourceId);
+    }
     x += seg.width;
   }
 }
@@ -94,6 +105,7 @@ function renderLine(
   columnWidth: number,
   columnX: number,
   fontCache: FontCache,
+  linkRegistry: LinkRegistry | undefined,
 ): void {
   const blockFont = fontCache.get(block.fontString);
   if (!blockFont) return;
@@ -119,7 +131,7 @@ function renderLine(
     }
     if (spaceCount > 0 && (!line.isLastLine || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, block, blockFont, blockSize, blockColor, fontCache, justifiedSpaceWidth);
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, justifiedSpaceWidth);
       return;
     }
   }
@@ -128,7 +140,7 @@ function renderLine(
     let contentWidth = 0;
     for (const seg of segments) contentWidth += seg.width;
     const startX = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
-    renderSegments(ctx, segments, startX, line.baseline, block, blockFont, blockSize, blockColor, fontCache);
+    renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry);
     return;
   }
 
@@ -136,7 +148,7 @@ function renderLine(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref); otherwise one drawTextPx paints the line.
   if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined)) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, block, blockFont, blockSize, blockColor, fontCache);
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry);
     return;
   }
 
@@ -207,7 +219,7 @@ export function renderBlock(
     renderBullet(ctx, block, fontCache);
   }
   for (const line of block.lines) {
-    renderLine(ctx, line, block, columnWidth, columnX, fontCache);
+    renderLine(ctx, line, block, columnWidth, columnX, fontCache, resourceCtx?.linkRegistry);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);
