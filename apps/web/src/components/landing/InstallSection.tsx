@@ -24,19 +24,19 @@ export async function InstallSection() {
           <span className="text-foreground">pnpm add postext</span>
         </CodeBlock>
 
-        <CodeBlock code={`import { createLayout } from "postext";\n\nconst Page = createLayout({\n  markdown: "# Hello World\\n\\nYour content here.",\n});\n\nexport default Page;`}>
+        <CodeBlock code={`import { buildDocument, renderToHtml } from "postext";\n\nconst doc = buildDocument({\n  markdown: "# Hello World\\n\\nYour content here.",\n});\n\nconst html = renderToHtml(doc);`}>
           <span className="syntax-comment">{t("commentQuickStart")}</span>
           {"\n"}
           <span className="syntax-keyword">import</span>{" "}
-          {"{ createLayout }"}{" "}
+          {"{ buildDocument, renderToHtml }"}{" "}
           <span className="syntax-keyword">from</span>{" "}
           <span className="syntax-string">{'"postext"'}</span>;{"\n"}
           {"\n"}
-          <span className="syntax-keyword">const</span> Page = createLayout({"{"}{"\n"}
+          <span className="syntax-keyword">const</span> doc = buildDocument({"{"}{"\n"}
           {"  "}markdown: <span className="syntax-string">{'"# Hello World\\n\\nYour content here."'}</span>,{"\n"}
           {"}"});{"\n"}
           {"\n"}
-          <span className="syntax-keyword">export default</span> Page;
+          <span className="syntax-keyword">const</span> html = renderToHtml(doc);
         </CodeBlock>
       </div>
     </section>

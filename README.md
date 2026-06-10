@@ -107,51 +107,53 @@ pretext gives you the measurements. postext gives you the layout.
 
 ## Features
 
-### Column-based layouts `[Planned]`
+Everything below ships today — see the [Roadmap](#roadmap) for what's still in progress.
 
-- Multi-column text flow with configurable column count, gutter width, and column rules.
-- Column balancing — equalize height across columns for a polished spread.
-- Dynamic reflow on viewport resize, recalculating layout in real time.
-- Mixed column structures within a single document (e.g., full-width intro, then three columns, then two).
+### Column-based layouts
 
-### Resource placement `[Planned]`
+- Single, double, and one-and-a-half column layouts (`layoutType: 'single' | 'double' | 'oneAndHalf'`) with configurable gutter width and an optional column rule (line width and color).
+- Headings can span a single column or the full page width, with parity-aware page breaks (`'odd'`, `'even'`, `'always-odd'`, …) for chapter openings.
 
-- Images, tables, figures, and pull quotes placed within columnar content.
-- Text flows around resources using pretext's variable-width `layoutNextLine` API.
-- Configurable placement strategies: top-of-column, inline, float left/right, full-width break, margin.
-- Automatic sizing and aspect ratio preservation.
-- Deferred placement — if a resource doesn't fit in the current column, the engine finds the next viable position.
+### Optimal justification
 
-### Typographic quality rules `[Planned]`
+- Knuth-Plass optimal line breaking — whole paragraphs are broken globally, not greedily line by line.
+- TeX-pattern hyphenation in 8 locales (English, Spanish, French, German, Italian, Portuguese, Catalan, Dutch).
+- Orphan, widow, and runt control: no stranded first or last lines across column breaks, and a tunable penalty against very short final lines.
 
-- **Orphan prevention.** Never leave a single line at the top of a column.
-- **Widow prevention.** Never leave a single line at the bottom of a column.
-- **Balanced line lengths.** Avoid extreme variation in line length within a paragraph.
-- **Hyphenation support.** Integration with hyphenation dictionaries for clean breaks.
-- **Spacing rules.** Configurable space before/after headings, figures, block quotes, and section breaks.
-- **Keep-together rules.** Headings stay with their first paragraph; figures stay with their captions.
-- **Rag optimization.** Minimize the jaggedness of right-aligned edges in left-aligned text.
+### Resources as first-class citizens
 
-### Reference systems `[Planned]`
+- Bitmaps, SVGs, and tables are declared once alongside the content and incorporated by inline `:ref{id="…"}` references — the first reference floats the resource to a top or bottom band, spanning either the column or the full page.
+- An explicit `::resource{id="…"}` block embed is available as an inline placement override.
+- Typed first-reference numbering: `Figure` and `Table` built-ins plus custom resource types, with configurable reference styles and caption prefixes.
+- In PDF output every `:ref` becomes a clickable cross-reference link that jumps to the resource.
 
-- **Footnotes.** Placed at the bottom of the column where they are referenced, with proper numbering and back-references.
-- **Endnotes.** Collected at the end of a section or document.
-- **Figure and table numbering.** Automatic sequential numbering with cross-reference support.
-- **Margin notes.** Aligned with the referencing paragraph in a dedicated margin column.
-- **Configurable reference marks.** Superscript numbers, symbols, or custom markers.
+### Styling configuration
 
-### Multi-format output `[Planned]`
+- `tableStyle` — table body and header typography fully independent of body text.
+- `captionStyle` — caption typeface, weight, and color.
+- `diagramStyle.singleInk` — recolors SVG diagrams to luminance-mapped tints of a single ink, so diagrams survive single-spot-colour printing.
 
-- **Web renderer.** HTML/CSS output with precise positioning, ready for any modern browser.
-- **PDF renderer.** Same layout geometry rendered to PDF for print-quality output.
-- **Format-agnostic core.** The layout engine computes geometry — renderers are pluggable.
+### Math
 
-### Configuration-driven `[Planned]`
+- LaTeX math, inline (`$…$`) and display (`$$…$$`), rendered to crisp SVG via MathJax in every backend.
 
-- Layout rules defined in configuration files (column structures, spacing scales, placement strategies).
-- Themeable — swap configuration to change the entire layout personality.
-- Per-section overrides — different layout rules for different parts of a document.
-- Sensible defaults — works out of the box, customizable when you need it.
+### Headers & footers
+
+- Design slots composed of text, rule, and box elements with precise placement.
+- Placeholders resolve page numbers, chapter titles, and document metadata at layout time.
+- Page-parity control — different designs for odd and even pages.
+
+### Multi-format output
+
+- **Canvas renderer.** Rasterize any page for previews and thumbnails (`renderPage`, `renderPageToCanvas`).
+- **HTML renderer.** Precise absolutely-positioned markup; `renderToHtmlIndexed` returns a per-block index so viewers can patch only the DOM nodes that changed between builds.
+- **PDF renderer.** Print-ready output with document outlines (bookmarks), clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf), and RGB, CMYK, or grayscale color spaces.
+- **Format-agnostic core.** The engine computes geometry; renderers translate it.
+
+### Configuration-driven
+
+- Every behavior above is driven by a single configuration object with sensible defaults — an empty config produces a well-typeset document, and each section (page, layout, body text, headings, lists, math, resource types, …) can be overridden independently.
+- Color palettes let a whole document re-ink from one place.
 
 ---
 
@@ -160,10 +162,13 @@ pretext gives you the measurements. postext gives you the layout.
 ```
 postext/
 ├── apps/
-│   └── web/                      # Next.js 16 demo & interactive playground
+│   └── web/                      # Next.js docs site, landing page & hosted sandbox
 ├── packages/
 │   ├── postext/                  # Core layout engine library
+│   ├── postext-pdf/              # PDF rendering backend
+│   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
+├── docs/                         # Bilingual MDX documentation (<topic>-en.mdx / <topic>-es.mdx)
 ├── turbo.json                    # Turborepo task pipeline
 ├── pnpm-workspace.yaml           # pnpm workspace definition
 └── package.json                  # Root scripts (delegate to turbo)
@@ -171,9 +176,13 @@ postext/
 
 | Package | Purpose |
 |---|---|
-| `packages/postext` | The core library. Semantic content in, layout geometry out. Zero DOM dependencies. Publishable to npm as `postext`. |
-| `apps/web` | Next.js 16 + Tailwind CSS 4 application. Will become the interactive documentation site and layout playground. |
+| `packages/postext` | The core library. Semantic content in, layout geometry out. Zero DOM dependencies. Published to npm as `postext`. |
+| `packages/postext-pdf` | The PDF backend: renders the layout geometry to print-ready PDF (outlines, links, font embedding, color spaces). |
+| `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live HTML/canvas/PDF viewports — embedded by the web app. |
+| `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, and hosted sandbox at [postext.dev](https://postext.dev). |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |
+
+Documentation lives in the top-level `docs/` folder as bilingual MDX pairs (`<topic>-en.mdx` / `<topic>-es.mdx`) rendered by `apps/web`.
 
 **Tech stack:** pnpm workspaces, Turborepo 2.9, TypeScript 5.9, ESM-only, Node.js 20+, Next.js 16, Tailwind CSS 4.
 
@@ -214,12 +223,13 @@ Turborepo handles the dependency graph: `packages/postext` builds first, then `a
 
 ### Using postext in your project
 
-> **Note:** postext is not yet published to npm. The API is under active design.
-
 ```bash
-# Once published:
 npm install postext
+# or
+pnpm add postext
 ```
+
+`buildDocument` takes content plus a configuration object and returns the laid-out document — plain layout geometry, not framework components — which any backend can then render. The quickest path is the HTML string renderer:
 
 ```ts
 import { buildDocument, renderToHtml } from 'postext';
@@ -229,7 +239,7 @@ const doc = buildDocument(
   {
     page: { sizePreset: '17x24' },
     layout: { layoutType: 'double', gutterWidth: { value: 0.75, unit: 'cm' } },
-    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 8, unit: 'pt' } },
     // ...see docs/configuration for the full reference
   },
 );
@@ -287,14 +297,17 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#inte
 
 - [x] Multi-column layout engine
 - [ ] Column balancing algorithm
-- [ ] Resource placement within columns (images, figures, tables)
+- [x] Resource placement within columns (images, figures, tables — floats with column or page span)
 - [ ] Text flow around obstacles (using pretext's `layoutNextLine`)
 - [x] Orphan and widow prevention
-- [ ] Keep-together rules (headings + first paragraph, figures + captions)
+- [x] Keep-together rules (headings + first paragraph, colons + lists)
 
 ### Phase 3: Professional Typography
 
-- [x] Hyphenation dictionary integration
+- [x] Hyphenation dictionary integration (TeX patterns, 8 locales)
+- [x] Typed resource numbering and cross-references (figures, tables, custom types)
+- [x] LaTeX math rendering (inline and display, MathJax SVG)
+- [x] Custom font loading and embedding (woff2/woff/ttf/otf)
 - [ ] Footnote and endnote systems
 - [ ] Pull quotes and margin notes
 - [x] Fine-grained spacing rules (configurable spacing scale)
@@ -304,7 +317,7 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#inte
 ### Phase 4: Output Targets
 
 - [x] Web renderer (HTML/CSS with precise positioning)
-- [x] PDF renderer
+- [x] PDF renderer (outlines, clickable cross-reference links, RGB/CMYK/grayscale)
 - [x] Interactive playground in `apps/web`
 - [x] Visual configuration editor (stretch goal)
 - [x] Asynchronous layout worker (off-main-thread `buildDocument` with last-wins cancellation)

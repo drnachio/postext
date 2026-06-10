@@ -9,8 +9,6 @@ export const DEFAULT_LABELS: SandboxLabels = {
   canvas: 'Canvas',
   html: 'HTML',
   pdf: 'PDF',
-  comingSoon: 'Coming soon',
-  resourcesComingSoonDescription: 'Resource management will be available in a future version.',
   toolbarPin: 'Pin toolbar',
   toolbarUnpin: 'Unpin toolbar',
   pdfDirty: 'Changes pending — click to recalculate',

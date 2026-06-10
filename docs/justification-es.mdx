@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Separación silábica y justificación',
   description: 'Cómo Postext corta líneas, justifica texto y controla el espaciado entre palabras usando el algoritmo Knuth-Plass',
   lang: 'es',
-  lastUpdated: '2026-04-21',
-  readingTime: '20 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '12 min',
   order: 4,
 };
 
@@ -16,12 +16,12 @@ export const metadata = {
 
 Abre cualquier novela de bolsillo. El texto está justificado — los dos bordes de cada párrafo están perfectamente alineados. Pero mira más de cerca. Los espacios entre palabras son casi uniformes, línea tras línea. No hay ríos de espacio en blanco bajando por la página. No hay líneas donde dos palabras flotan con un océano enorme entre ellas. Conseguir esto es mucho más difícil de lo que parece, y es el problema que más esfuerzo de ingeniería tipográfica ha consumido en la historia.
 
-Postext lo resuelve con el mismo algoritmo que TeX lleva usando desde 1981: **Knuth-Plass para ruptura óptima de líneas**. Combinado con patrones de separación silábica de calidad TeX, límites configurables de espaciado entre palabras y un sistema visual de depuración para identificar líneas problemáticas, el motor produce texto justificado con estándares de publicación.
+Postext lo resuelve con el mismo algoritmo que TeX lleva usando desde 1981: **Knuth-Plass para corte óptimo de líneas**. Combinado con patrones de separación silábica de calidad TeX, límites configurables de espaciado entre palabras y un sistema visual de depuración para identificar líneas problemáticas, el motor produce texto justificado con estándares de publicación.
 
 
 ## El problema
 
-Cuando el texto se configura con `textAlign: 'justify'`, cada línea (excepto la última) debe estirarse o comprimirse para llenar exactamente el ancho de la columna. El motor distribuye la diferencia entre el ancho natural del contenido y el ancho de la columna a través de los espacios entre palabras de esa línea.
+Cuando el texto se configura con `textAlign: 'justify'`, cada línea excepto la última debe estirarse o comprimirse para llenar exactamente el ancho de la columna. El motor distribuye la diferencia entre el ancho natural del contenido y el ancho de la columna a través de los espacios entre palabras de esa línea. (La última línea se deja irregular en su ancho natural — con una excepción que se explica en [La última línea](#la-última-línea).)
 
 Si una línea tiene muchas palabras, cada espacio absorbe un ajuste mínimo — invisible para el lector. Pero si una línea tiene pocas palabras (porque una palabra larga forzó un corte prematuro), cada espacio debe estirarse dramáticamente. El resultado es una **línea floja**: una línea donde el espaciado entre palabras es tan amplio que rompe el ritmo de lectura y crea huecos visuales feos.
 
@@ -59,8 +59,8 @@ Knuth-Plass no piensa en términos de palabras y espacios. Modela el texto como 
     </tr>
     <tr>
       <td><strong>Penalización (Penalty)</strong></td>
-      <td>Un punto de ruptura potencial</td>
-      <td>Tiene un coste. Penalización baja = ruptura barata. Penalización alta = ruptura cara. Una penalización <em>marcada</em> (flagged) indica un punto de separación silábica (añade un guión visible si se usa).</td>
+      <td>Un punto de corte potencial</td>
+      <td>Tiene un coste. Penalización baja = corte barato. Penalización alta = corte caro. Una penalización <em>marcada</em> (flagged) indica un punto de separación silábica (añade un guion visible si se usa).</td>
     </tr>
   </tbody>
 </table>
@@ -69,7 +69,7 @@ Un párrafo se convierte en una secuencia como:
 
 ```
 [caja "El"] [cola] [caja "rápido"] [cola] [caja "zorro"] [cola] [caja "marrón"]
-[penalización -∞]  ← ruptura forzada al final del párrafo
+[penalización -∞]  ← corte forzado al final del párrafo
 ```
 
 Cuando la separación silábica está activa, las palabras largas se dividen en fragmentos separados por penalizaciones:
@@ -80,69 +80,75 @@ Cuando la separación silábica está activa, las palabras largas se dividen en 
 
 Cada penalización marcada tiene un coste de 50 — no es gratis, pero es más barato que producir una línea floja.
 
-<Illustration name="BoxGluePenalty" data='{"title": "Primitivas caja-cola-penalización", "desc": "Clave visual de las tres primitivas: caja para un fragmento de palabra, cola para el espacio entre palabras, penalización para un posible punto de ruptura. El párrafo de ejemplo muestra cómo un punto de separación silábica se convierte en una penalización marcada.", "caption": "Cada párrafo se convierte en una secuencia de cajas, colas y penalizaciones.", "box": "Caja", "glue": "Cola", "penalty": "Penalización", "boxDesc": "palabra fija", "glueDesc": "espacio elástico", "penaltyDesc": "posible ruptura", "exampleLabel": "Ejemplo: “El arte de la tipografía es antiguo.”"}' />
+<Illustration name="BoxGluePenalty" data='{"title": "Primitivas caja-cola-penalización", "desc": "Clave visual de las tres primitivas: caja para un fragmento de palabra, cola para el espacio entre palabras, penalización para un posible punto de corte. El párrafo de ejemplo muestra cómo un punto de separación silábica se convierte en una penalización marcada.", "caption": "Cada párrafo se convierte en una secuencia de cajas, colas y penalizaciones.", "box": "Caja", "glue": "Cola", "penalty": "Penalización", "boxDesc": "palabra fija", "glueDesc": "espacio elástico", "penaltyDesc": "posible corte", "exampleLabel": "Ejemplo: “El arte de la tipografía es antiguo.”"}' />
 
 ### Cómo encuentra el óptimo
 
-El algoritmo utiliza programación dinámica. Mantiene un conjunto de **nodos activos** — puntos de ruptura potenciales que podrían iniciar nuevas líneas — y evalúa cada ruptura factible desde cada nodo activo. Para cada ruptura candidata, calcula:
+El algoritmo utiliza programación dinámica. Mantiene un conjunto de **nodos activos** — puntos de corte potenciales que podrían iniciar nuevas líneas — y evalúa cada corte factible desde cada nodo activo. Para cada corte candidato, calcula:
 
 1. **Ratio de ajuste (r)**: cuánto necesita estirarse o comprimirse la cola en esta línea. `r = 0` significa que la línea encaja perfectamente. `r > 0` significa estiramiento (floja). `r < 0` significa compresión (apretada).
 
 2. **Fealdad (badness)**: una medida de lo desigual que es el espaciado, calculada como `100 × |r|³`. El crecimiento cúbico significa que una línea ligeramente floja es tolerable, pero una muy floja se penaliza severamente. Una línea con `r = 2` tiene fealdad 800; una con `r = 0.5` tiene fealdad 12.
 
-3. **Deméritos (demerits)**: el coste total de romper aquí, combinando fealdad, cualquier penalización en el punto de ruptura, y dos penalizaciones adicionales:
-   - **Demérito por guiones consecutivos** (por defecto 3000): penaliza dos líneas con guión seguidas, porque los guiones apilados son visualmente molestos.
-   - **Demérito por clase de ajuste** (por defecto 100): penaliza líneas adyacentes de tensión muy diferente. Si una línea apretada está junto a una muy floja, el contraste resulta chocante.
+3. **Clase de ajuste (fitness class)**: cada línea se clasifica como apretada (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), floja (`0.5 ≤ r < 1.0`) o muy floja (`r ≥ 1.0`). Si una línea apretada está junto a una muy floja, el contraste resulta chocante — por eso las líneas adyacentes cuyas clases distan más de un paso se penalizan.
 
-4. **Clase de ajuste (fitness class)**: cada línea se clasifica como apretada (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), floja (`0.5 ≤ r < 1.0`) o muy floja (`r ≥ 1.0`). Las líneas adyacentes con clases de ajuste separadas por más de un paso incurren en el demérito de clase.
+4. **Deméritos (demerits)**: el coste total de cortar aquí. Siguiendo a TeX, la fealdad y la penalización del punto de corte se combinan en una fórmula cuadrática — `deméritos = (1 + fealdad + penalización)²` cuando la penalización no es negativa; una penalización negativa (un corte *deseable*) resta en cambio su cuadrado: `(1 + fealdad)² − penalización²`. Después se suman dos deméritos planos:
+   - **Demérito por guiones consecutivos** (por defecto 3000): penaliza dos líneas con guion seguidas, porque los guiones apilados son visualmente molestos.
+   - **Demérito por clase de ajuste** (por defecto 100): se añade cuando la clase de ajuste de esta línea dista más de un paso de la de la línea anterior.
 
-Los cuatro costes se suman en un único número por corte candidato, y el algoritmo elige la secuencia con el coste total más bajo en todo el párrafo — ahí está toda su ventaja sobre el voraz.
+   La penalización de *runt* descrita más abajo también entra en esta fórmula, inyectada como fealdad adicional; las penalizaciones de huérfanas y viudas actúan en una etapa posterior, cuando un párrafo se divide entre columnas.
+
+El algoritmo elige la secuencia de cortes con los deméritos totales más bajos en todo el párrafo — ahí está toda su ventaja sobre el voraz.
 
 <Illustration name="BadnessCurve" data='{"title": "Fealdad en función del ratio de ajuste", "desc": "La fealdad crece como 100 por el valor absoluto de r al cubo. Estiramientos o compresiones pequeños son baratos, pero los extremos se vuelven extremadamente costosos, y por eso el algoritmo los evita.", "caption": "La fealdad crece cúbicamente: algo desigual se tolera, muy desigual se penaliza duro.", "xAxis": "r", "yAxis": "fealdad", "zero": "0", "tight": "apretada (r < 0)", "loose": "floja (r > 0)", "formula": "badness(r) = 100 · |r|³"}' />
 
 <Illustration name="FitnessClasses" data='{"title": "Clases de ajuste", "desc": "Cada línea se clasifica como apretada, normal, floja o muy floja según su ratio de ajuste. Las líneas adyacentes cuyas clases difieren en más de un paso se penalizan.", "caption": "Las líneas contiguas separadas por más de una clase incurren en el demérito de clase.", "classes": [{"name": "Apretada", "range": "r < -0.5", "example": "comprimida"}, {"name": "Normal", "range": "-0.5 ≤ r < 0.5", "example": "justo"}, {"name": "Floja", "range": "0.5 ≤ r < 1.0", "example": "algo aireada"}, {"name": "Muy floja", "range": "r ≥ 1.0", "example": "muy aireada"}], "adjacentNote": "El demérito de clase se aplica cuando líneas vecinas distan en más de una clase."}' />
 
-El algoritmo traza hacia atrás a través de los nodos activos para encontrar la ruta con los deméritos totales más bajos — el conjunto de puntos de ruptura globalmente óptimo para todo el párrafo.
+El algoritmo traza hacia atrás a través de los nodos activos para encontrar la ruta con los deméritos totales más bajos — el conjunto de puntos de corte globalmente óptimo para todo el párrafo.
 
 #### Penalizaciones de huérfanas, viudas y *runts*
 
-Postext amplía el conjunto estándar de deméritos con tres penalizaciones editoriales que alejan al divisor de líneas de conjuntos de cortes que producirían finales de párrafo visualmente pobres:
+Postext amplía el modelo de costes estándar con tres penalizaciones editoriales que alejan al motor de composiciones con finales de párrafo y de columna visualmente pobres:
 
-- La **penalización de huérfana** se aplica cuando elegir este corte dejaría menos de `orphanMinLines` líneas en la parte superior de la siguiente columna. El valor por defecto de `orphanPenalty` es `1000`.
-- La **penalización de viuda** se aplica cuando el corte dejaría menos de `widowMinLines` líneas al final de la columna actual. El valor por defecto de `widowPenalty` es `1000`.
+- La **penalización de huérfana** se aplica cuando una división candidata dejaría menos de `orphanMinLines` líneas en la parte superior de la siguiente columna. El valor por defecto de `orphanPenalty` es `1000`.
+- La **penalización de viuda** se aplica cuando la división dejaría menos de `widowMinLines` líneas al final de la columna actual. El valor por defecto de `widowPenalty` es `1000`.
 - La **penalización de *runt*** se aplica cuando la última línea del párrafo sería más corta que aproximadamente `runtMinCharacters × normalSpaceWidth` píxeles. El valor por defecto de `runtPenalty` es `1000`. A diferencia de huérfana/viuda (que suman linealmente al demerit del corte), el *runt* se inyecta como *badness* equivalente dentro de la fórmula cuadrática de Knuth–Plass, de modo que compite en la misma escala que el *badness* de línea (que satura en 10000) en lugar de quedar aplastado por él.
 
-Las tres se suman a los deméritos del nodo candidato antes de que el algoritmo seleccione la ruta globalmente óptima. Como viven dentro de la misma optimización, el solver puede sacrificar una línea ligeramente más holgada a cambio de eliminar una viuda, y preferirá de forma natural conjuntos de cortes que eviten las tres siempre que sea posible. Ajusta el trade-off mediante `orphanPenalty`, `widowPenalty` o `runtPenalty`; ajustar cualquiera a `0` desactiva esa regla. Los ítems de lista se apuntan mediante `avoidOrphansInLists`, `avoidWidowsInLists` y `avoidRuntsInLists` (todos a `true` por defecto).
+La penalización de *runt* se suma a los deméritos del nodo candidato dentro del divisor de líneas, así que el solver puede sacrificar una línea ligeramente más holgada a cambio de una línea final más larga. Las penalizaciones de huérfanas y viudas entran en una optimización aparte que se ejecuta cuando un párrafo cruza un límite de columna: cada división candidata se puntúa — sumando los deméritos de holgura, huérfana y viuda — y gana la división más barata, de modo que el motor preferirá de forma natural divisiones que eviten ambas siempre que sea posible. Ajusta el trade-off mediante `orphanPenalty`, `widowPenalty` o `runtPenalty`; ajustar cualquiera a `0` desactiva esa regla. Los ítems de lista se apuntan mediante `avoidOrphansInLists`, `avoidWidowsInLists` y `avoidRuntsInLists` (todos a `true` por defecto).
 
 ### Por qué importa
 
-<Illustration name="GreedyVsKnuthPlass" data='{"title": "Primer ajuste voraz frente a Knuth-Plass óptimo", "desc": "Ilustración lado a lado: el algoritmo voraz toma la primera línea que cabe y envenena las líneas siguientes, produciendo párrafos desiguales con espaciado irregular. Knuth-Plass evalúa el párrafo completo globalmente y produce líneas parejas.", "caption": "Una decisión voraz local pierde donde un plan globalmente óptimo gana.", "greedyTitle": "Primer ajuste voraz", "greedyLead": "Decide línea a línea, sin mirar adelante", "greedyCons": ["Un mal corte envenena la siguiente línea", "Espaciado desigual en el párrafo", "Ríos de espacio en blanco", "Sin modelo de coste entre líneas adyacentes"], "greedyEquals": "= Lo que hace CSS", "kpTitle": "Knuth-Plass óptimo", "kpLead": "Evalúa cada conjunto de cortes posible", "kpPros": ["Deméritos globalmente mínimos", "Espaciado parejo en todo el párrafo", "Penalización de guiones consecutivos", "Suavidad de clases de aptitud"], "kpEquals": "= Lo que hace Postext"}' />
+<Illustration name="GreedyVsKnuthPlass" data='{"title": "Primer ajuste voraz frente a Knuth-Plass óptimo", "desc": "Ilustración lado a lado: el algoritmo voraz toma la primera línea que cabe y envenena las líneas siguientes, produciendo párrafos desiguales con espaciado irregular. Knuth-Plass evalúa el párrafo completo globalmente y produce líneas parejas.", "caption": "Una decisión voraz local pierde donde un plan globalmente óptimo gana.", "greedyTitle": "Primer ajuste voraz", "greedyLead": "Decide línea a línea, sin mirar adelante", "greedyCons": ["Un mal corte envenena la siguiente línea", "Espaciado desigual en el párrafo", "Ríos de espacio en blanco", "Sin modelo de coste entre líneas adyacentes"], "greedyEquals": "= Lo que hace CSS", "kpTitle": "Knuth-Plass óptimo", "kpLead": "Evalúa cada conjunto de cortes posible", "kpPros": ["Deméritos globalmente mínimos", "Espaciado parejo en todo el párrafo", "Penalización de guiones consecutivos", "Suavidad de clases de ajuste"], "kpEquals": "= Lo que hace Postext"}' />
 
 La diferencia práctica es visible. En una composición voraz, encontrarás párrafos donde una línea es notablemente más floja que sus vecinas — y si miras con cuidado, verás que ocurrió porque la línea *anterior* tomó una palabra de más. Knuth-Plass evita esto intercambiando una línea actual ligeramente peor por una siguiente mucho mejor, porque puede ver las consecuencias.
 
 ### Implementación de Postext
 
-Postext implementa el algoritmo Knuth-Plass completo en `knuthPlass.ts` (aproximadamente 860 líneas). Dos caminos adaptadores convierten el texto al modelo caja-cola-penalización:
+Postext implementa el algoritmo Knuth-Plass completo en el módulo `knuthPlass/` del paquete principal: un núcleo de programación dinámica (nodos activos, deméritos, trazado hacia atrás) más dos caminos adaptadores que convierten el texto al modelo caja-cola-penalización:
 
 - **Camino de texto plano**: usa `@chenglou/pretext` para medición de texto sin DOM. Pretext proporciona anchos de segmento y anchos de guiones discrecionales; Postext los convierte en ítems KP.
 - **Camino de texto enriquecido**: maneja tramos en negrita y cursiva usando medición basada en Canvas. Cada token con estilo se convierte en una o más cajas, con puntos de separación silábica insertados como penalizaciones.
 
-Ambos caminos calculan el `justifiedSpaceRatio` por línea — el ancho real del espacio dividido entre el ancho natural — que alimenta el sistema de depuración de líneas flojas descrito más adelante.
+Ambos caminos calculan el `justifiedSpaceRatio` por línea — el ancho real del espacio dividido entre el ancho natural — que alimenta el sistema de depuración de líneas flojas descrito más adelante. La proporción solo se calcula para las líneas que no son finales; cómo se compone la línea final se explica en [La última línea](#la-última-línea).
 
-**Comportamiento de respaldo**: si Knuth-Plass no produce rupturas válidas (lo que puede ocurrir con columnas extremadamente estrechas o palabras más largas que el ancho de columna), el motor recurre al corte voraz de Pretext (`layoutNextLine()`). Esto garantiza que la composición siempre se complete.
+Alrededor del divisor de líneas, la medición de texto vive en el módulo `measure/` — los caminos de medición plano y enriquecido, las métricas de glifos por Canvas y el manejo de cadenas de fuente — detrás de una caché de medición explícita. `clearMeasurementCache` también limpia la caché subyacente de anchos de texto, de modo que las mediciones siguen siendo precisas después de que terminen de cargar las fuentes web. El análisis sintáctico, la etapa que convierte el texto fuente en bloques y tramos en línea, vive en el módulo `parse/`. Consulta la página de [Arquitectura](/es/docs/architecture) para ver la organización a nivel de archivo de estos módulos.
+
+El corte de líneas también interactúa con los tipos de contenido más recientes. Los recursos flotantes ocupan la banda superior o inferior de una columna o página, acortando las extensiones de columna a las que reaccionan las penalizaciones de huérfanas, viudas y holgura (*slack*). Los pies y las celdas de tabla se miden como secuencias de texto enriquecido con salto de línea usando las fuentes de pies y tablas. Las líneas de matemáticas en bloque se centran y son atómicas — nunca se justifican ni se cortan. Consulta [Formato de documento › Recursos](/es/docs/document-format#recursos) y [Configuración › Estilo de tablas](/es/docs/configuration#estilo-de-tablas) / [Estilo de pies de recurso](/es/docs/configuration#estilo-de-pies-de-recurso) para más detalle.
+
+**Comportamiento de respaldo**: si Knuth-Plass no produce cortes válidos (lo que puede ocurrir con columnas extremadamente estrechas o palabras más largas que el ancho de columna), el motor recurre al corte voraz de Pretext (`layoutNextLine()`). Esto garantiza que la composición siempre se complete.
 
 
 ## Separación silábica
 
-<Illustration name="HyphenationExample" data='{"title": "Texto justificado con y sin separación silábica", "desc": "La columna izquierda no usa separación silábica: los anchos de línea varían mucho porque el motor solo puede mover palabras completas. La columna derecha usa separación: los anchos son casi uniformes y una palabra se parte con guion.", "caption": "La separación silábica reduce drásticamente la variación de espaciado en texto justificado.", "withoutTitle": "Sin separación silábica", "withTitle": "Con separación silábica", "withoutCaption": "Líneas desiguales, huecos largos, ríos visibles.", "withCaption": "Líneas parejas, un guion absorbe la variación."}' />
+La separación silábica y la justificación son inseparables. Sin separación silábica, la única forma que tiene el motor de evitar una línea floja es mover una palabra a la línea siguiente — lo que muchas veces solo desplaza el problema. La separación silábica le da al motor un conjunto mucho mayor de puntos de corte, mejorando drásticamente la calidad del texto justificado.
 
-La separación silábica y la justificación son inseparables. Sin separación silábica, la única forma que tiene el motor de evitar una línea floja es mover una palabra a la línea siguiente — lo que muchas veces solo desplaza el problema. La separación silábica le da al motor un conjunto mucho mayor de puntos de ruptura, mejorando drásticamente la calidad del texto justificado.
+<Illustration name="HyphenationExample" data='{"title": "Texto justificado con y sin separación silábica", "desc": "La columna izquierda no usa separación silábica: los anchos de línea varían mucho porque el motor solo puede mover palabras completas. La columna derecha usa separación: los anchos son casi uniformes y una palabra se parte con guion.", "caption": "La separación silábica reduce drásticamente la variación de espaciado en texto justificado.", "withoutTitle": "Sin separación silábica", "withTitle": "Con separación silábica", "withoutCaption": "Líneas desiguales, huecos largos, ríos visibles.", "withCaption": "Líneas parejas, un guion absorbe la variación."}' />
 
 ### Patrones de calidad TeX
 
 Postext usa **Hypher** (`hypher` v0.2.5) para la separación silábica, alimentado por **patrones de separación TeX/Liang**. Son los mismos patrones que TeX usa desde 1983 — una representación compacta de reglas de límites silábicos derivada por el algoritmo de generación de patrones de Frank Liang a partir de grandes corpus de palabras.
 
-Los patrones codifican un conjunto de reglas numeradas que, al superponerse sobre una palabra, indican dónde se permiten las rupturas (números impares) y dónde se prohíben (números pares). Los parámetros `leftmin` y `rightmin` en el archivo de patrones de cada idioma aseguran un número mínimo de caracteres antes y después de cualquier punto de ruptura. Para el inglés (`en-us`), típicamente son 2 y 3 respectivamente — una palabra debe tener al menos 2 caracteres antes del guión y 3 después.
+Los patrones codifican un conjunto de reglas numeradas que, al superponerse sobre una palabra, indican dónde se permiten los cortes (números impares) y dónde se prohíben (números pares). Los parámetros `leftmin` y `rightmin` en el archivo de patrones de cada idioma aseguran un número mínimo de caracteres antes y después de cualquier punto de corte. Para el inglés (`en-us`), típicamente son 2 y 3 respectivamente — una palabra debe tener al menos 2 caracteres antes del guion y 3 después.
 
 ### Idiomas soportados
 
@@ -182,7 +188,7 @@ El sistema original de separación silábica de Postext usaba una **heurística 
   <tbody>
     <tr>
       <td><strong>Precisión</strong></td>
-      <td>Buena para palabras comunes, poco fiable para las inusuales. La detección por vocales omite muchos puntos de ruptura válidos y crea otros inválidos.</td>
+      <td>Buena para palabras comunes, poco fiable para las inusuales. La detección por vocales omite muchos puntos de corte válidos y crea otros inválidos.</td>
       <td>Casi perfecta. Los patrones se generan a partir de grandes corpus y se han refinado durante más de 40 años.</td>
     </tr>
     <tr>
@@ -217,9 +223,9 @@ El compromiso es claro: un bundle más grande a cambio de una corrección drást
 
 ### Cómo se integra la separación silábica con Knuth-Plass
 
-Antes de que el texto entre en el algoritmo Knuth-Plass, el motor lo preprocesa con Hypher, insertando **guiones blandos** (Unicode `\u00AD`) en cada punto de ruptura legal. Estos caracteres invisibles se mapean luego a **penalizaciones** KP con un coste de 50 y `flagged: true`.
+Antes de que el texto entre en el algoritmo Knuth-Plass, el motor lo preprocesa con Hypher, insertando **guiones blandos** (Unicode `\u00AD`) en cada punto de corte legal. Estos caracteres invisibles se mapean luego a **penalizaciones** KP con un coste de 50 y `flagged: true`.
 
-El algoritmo trata las rupturas por separación silábica como una opción más a evaluar junto con los límites naturales de palabras (donde la cola permite una ruptura). Si usar un guión produce unos deméritos totales menores que dejar la línea floja, el algoritmo toma el guión. Si no, deja la palabra intacta.
+El algoritmo trata los cortes por separación silábica como una opción más a evaluar junto con los límites naturales de palabras (donde la cola permite un corte). Si usar un guion produce unos deméritos totales menores que dejar la línea floja, el algoritmo toma el guion. Si no, deja la palabra intacta.
 
 El demérito por guiones consecutivos (por defecto 3000) asegura que el algoritmo evite firmemente colocar guiones en dos líneas adyacentes — una convención tipográfica que prácticamente todas las guías de estilo imponen.
 
@@ -241,8 +247,8 @@ El modelo de cola le da al motor límites explícitos sobre cuánto pueden estir
   <tbody>
     <tr>
       <td><code>maxWordSpacing</code></td>
-      <td><code>2</code></td>
-      <td>Límite superior del espaciado entre palabras, como multiplicador del ancho normal del espacio. Con el valor por defecto, los espacios pueden estirarse hasta el 200% de su ancho natural.</td>
+      <td><code>1.9</code></td>
+      <td>Límite superior del espaciado entre palabras, como multiplicador del ancho normal del espacio. Con el valor por defecto, los espacios pueden estirarse hasta el 190% de su ancho natural.</td>
     </tr>
     <tr>
       <td><code>minWordSpacing</code></td>
@@ -259,22 +265,28 @@ estiramientoPorEspacio = anchoNormalEspacio × (maxWordSpacing - 1)
 compresiónPorEspacio   = anchoNormalEspacio × (1 - minWordSpacing)
 ```
 
-Con los valores por defecto (2 / 0.6), si el ancho normal del espacio es 4 px:
-- Cada espacio puede estirarse 4 px (de 4 px a 8 px)
+Con los valores por defecto (1.9 / 0.6), si el ancho normal del espacio es 4 px:
+- Cada espacio puede estirarse 3.6 px (de 4 px a 7.6 px)
 - Cada espacio puede comprimirse 1.6 px (de 4 px a 2.4 px)
 
 **Límites más estrictos** (por ej., `maxWordSpacing: 1.2`) producen un espaciado más uniforme pero dan menos margen al algoritmo, lo que puede resultar en más separación silábica o, en casos extremos, desbordamiento. **Límites más amplios** (por ej., `maxWordSpacing: 2.5`) dan más flexibilidad al algoritmo pero permiten un espaciado visiblemente desigual en algunas líneas.
 
-Los valores por defecto de 2 y 0.6 priorizan la flexibilidad del algoritmo — dan a Knuth-Plass margen suficiente para evitar desbordamientos, separaciones silábicas y *runts* en columnas estrechas, manteniéndose dentro del rango que la literatura tipográfica considera aceptable.
+Los valores por defecto de 1.9 y 0.6 priorizan la flexibilidad del algoritmo — dan a Knuth-Plass margen suficiente para evitar desbordamientos, separaciones silábicas y *runts* en columnas estrechas, manteniéndose dentro del rango que la literatura tipográfica considera aceptable.
 
-### Ruptura óptima vs. voraz
+### La última línea
 
-La propiedad `bodyText.optimalLineBreaking` (por defecto: `true`) controla qué algoritmo de ruptura de líneas usa el motor:
+En el modelo caja-cola-penalización, cada párrafo termina con una cola de ancho 0 e infinitamente estirable seguida de un corte forzado. Esa cola final absorbe a coste cero todo el espacio que quede en la última línea, así que las últimas líneas salen irregulares de forma natural: se renderizan en su ancho natural, y el `justifiedSpaceRatio` solo se calcula para las líneas que no son finales.
 
-- **`true`**: Algoritmo de programación dinámica Knuth-Plass. Evalúa todos los conjuntos de ruptura posibles y elige el globalmente óptimo. Es la configuración recomendada para cualquier texto justificado.
+Hay una excepción. Knuth-Plass puede aceptar una línea final cuyo contenido natural es *más ancho* que la medida, asumiendo que su cola entre palabras se comprimirá — esta es la semántica estándar de ajuste de cola (*glue-setting*) de TeX. Los tres backends detectan este caso (el ancho natural del contenido de la línea supera la medida efectiva) y comprimen los espacios entre palabras de esa última línea para que encaje exactamente en la medida en lugar de desbordarla. La comprobación se aplica de forma idéntica en los backends de canvas, PDF y HTML.
+
+### Corte óptimo vs. voraz
+
+La propiedad `bodyText.optimalLineBreaking` (por defecto: `true`) controla qué algoritmo de corte de líneas usa el motor:
+
+- **`true`**: Algoritmo de programación dinámica Knuth-Plass. Evalúa todos los conjuntos de cortes posibles y elige el globalmente óptimo. Es la configuración recomendada para cualquier texto justificado.
 - **`false`**: Voraz de primer ajuste, alimentado por `layoutNextLine()` de Pretext. Más rápido pero produce resultados de menor calidad. Úsalo solo cuando el rendimiento importa más que la calidad tipográfica (por ej., vista previa en tiempo real con conteos de caracteres muy altos).
 
-Cuando Knuth-Plass está activo y no produce rupturas válidas (algo que puede ocurrir con columnas extremadamente estrechas o palabras más largas que el ancho de columna), el motor recurre automáticamente a la ruptura voraz para ese párrafo.
+Cuando Knuth-Plass está activo y no produce cortes válidos (algo que puede ocurrir con columnas extremadamente estrechas o palabras más largas que el ancho de columna), el motor recurre automáticamente al corte voraz para ese párrafo.
 
 
 ## Depuración de líneas flojas
@@ -350,7 +362,7 @@ Cuando activas el resaltado de líneas flojas y ves bandas rojas en ciertas lín
     </tr>
     <tr>
       <td>Palabras largas con pocos puntos de separación</td>
-      <td>Verifica que la separación silábica esté activada y que el idioma correcto esté configurado. Algunos términos técnicos o nombres propios no tienen puntos de ruptura válidos.</td>
+      <td>Verifica que la separación silábica esté activada y que el idioma correcto esté configurado. Algunos términos técnicos o nombres propios no tienen puntos de corte válidos.</td>
     </tr>
     <tr>
       <td>La separación silábica está desactivada</td>
@@ -358,7 +370,7 @@ Cuando activas el resaltado de líneas flojas y ves bandas rojas en ciertas lín
     </tr>
     <tr>
       <td>Los límites de espaciado son demasiado estrictos</td>
-      <td>Aumenta <code>maxWordSpacing</code> ligeramente (por ej., de 2 a 2.5). Esto le da más espacio al algoritmo.</td>
+      <td>Aumenta <code>maxWordSpacing</code> ligeramente (por ej., de 1.9 a 2.4). Esto le da más espacio al algoritmo.</td>
     </tr>
     <tr>
       <td>El idioma tiene palabras compuestas largas (por ej., alemán)</td>
@@ -381,7 +393,7 @@ const vdt = buildDocument(content, {
     fontSize: { value: 9, unit: 'pt' },
     textAlign: 'justify',
 
-    // Ruptura óptima de líneas Knuth-Plass (por defecto: true)
+    // Corte óptimo de líneas Knuth-Plass (por defecto: true)
     optimalLineBreaking: true,
 
     // Separación silábica
@@ -391,7 +403,7 @@ const vdt = buildDocument(content, {
     },
 
     // Límites de espaciado entre palabras (multiplicadores del ancho normal)
-    maxWordSpacing: 2,     // los espacios se estiran hasta el 200%
+    maxWordSpacing: 1.9,   // los espacios se estiran hasta el 190%
     minWordSpacing: 0.6,   // los espacios se comprimen hasta el 60%
   },
 
@@ -406,4 +418,4 @@ const vdt = buildDocument(content, {
 });
 ```
 
-Para la lista completa de opciones de configuración del cuerpo de texto, consulta la página de [Configuración](/es/docs/configuration#cuerpo-de-texto). Para ver cómo el pipeline de composición usa estos ajustes durante la medición de texto, consulta la página de [Arquitectura](/es/docs/architecture).
+Para la lista completa de opciones de configuración del cuerpo de texto, consulta la página de [Configuración](/es/docs/configuration#texto-de-cuerpo). Para ver cómo el pipeline de composición usa estos ajustes durante la medición de texto, consulta la página de [Arquitectura](/es/docs/architecture).

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-04-23',
-  readingTime: '6 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '10 min',
   order: 7,
 };
 
@@ -14,68 +14,120 @@ export const metadata = {
 
 **An interactive playground for the Postext layout engine.**
 
-The Sandbox provides a VS Code-like interface where you can write markdown, adjust layout configuration, and see the results rendered in real time through three synchronized output modes — **canvas**, **HTML** and **PDF**. It is designed for experimentation: tweak typography settings, change column counts, test resource placement strategies, and watch how the engine responds.
+The Sandbox provides a VS Code-like interface where you can write markdown, manage resources and fonts, adjust layout configuration, and see the results rendered in real time through three synchronized output modes — **canvas**, **HTML** and **PDF**. It is designed for experimentation: tweak typography settings, change column counts, test resource placement strategies, and watch how the engine responds.
 
 ## Interface layout
 
-The Sandbox follows a familiar IDE paradigm with three main areas: a narrow **activity bar** for switching panels, a resizable **sidebar** hosting the editor or configuration, and a **viewport** on the right with the three output tabs.
+The Sandbox follows a familiar IDE paradigm with three main areas: a narrow **activity bar** for switching panels, a resizable **sidebar** hosting the active panel, and a **viewport** on the right with the three output tabs.
 
-<Illustration name="SandboxLayout" data='{"title": "Sandbox interface", "desc": "48px activity bar on the left, resizable sidebar in the middle, and viewport on the right with Canvas, HTML, and PDF tabs.", "caption": "Three areas: activity bar, resizable sidebar, and viewport with output tabs.", "activityBar": "Activity", "activityIcons": ["MD", "⚙", "📁", "⇣", "⇡"], "sidebarTitle": "Sidebar", "sidebarSubtitle": "editor or config", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "drag to resize"}' />
+<Illustration name="SandboxLayout" data='{"title": "Sandbox interface", "desc": "56px activity bar on the left, resizable sidebar in the middle, and viewport on the right with Canvas, HTML, and PDF tabs.", "caption": "Three areas: activity bar, resizable sidebar, and viewport with output tabs.", "activityBar": "Activity", "activityIcons": ["MD", "📁", "T", "⚙", "⚠"], "sidebarTitle": "Sidebar", "sidebarSubtitle": "active panel", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "drag to resize"}' />
 
 ### Activity bar
 
-A narrow strip on the left edge (48px wide) contains icon buttons for navigating between panels. The top section holds three panel toggles:
+A narrow strip on the left edge contains icon buttons for navigating between panels. The top section holds five panel toggles, top to bottom:
 
 - **Markdown Editor** (`FileCode` icon) — Opens the markdown editing panel
+- **Resources** (`FolderOpen` icon) — Opens the resource management panel
+- **Fonts** (`Type` icon) — Opens the custom font management panel
 - **Configuration** (`Settings2` icon) — Opens the layout configuration panel
-- **Resources** (`FolderOpen` icon) — Opens the resource management panel (coming soon)
+- **Warnings** (`AlertTriangle` icon) — Opens the diagnostics panel; the icon carries a live count badge of current warnings, capped at `99+`
 
 Clicking the active panel's icon collapses the sidebar. Clicking a different icon switches to that panel.
 
-The bottom section of the activity bar contains:
-
-- **Export** — Downloads the current sandbox state (markdown + config) as a JSON file
-- **Import** — Loads a previously exported JSON file
-- **Theme toggle** — Switches between dark and light mode
-- **Language switcher** — Changes the interface language
+The bar also hosts slots injected by the host application: an optional **home logo link** at the very top (via the `homeUrl` or `homeLink` props), plus a **theme toggle** and a **language switcher** at the bottom. The Export and Import buttons that used to live here are gone — export and import now sit in the headers of the Markdown and Configuration panels (see [Export and import](#export-and-import)).
 
 ### Sidebar panels
 
-The sidebar is resizable: drag the separator between the sidebar and the viewport to adjust its width (240px–480px range). The sidebar collapses entirely when no panel is active.
-
-#### Configuration panel
-
-A form-based editor for `PostextConfig`. Settings are grouped into collapsible sections, each with a reset button to restore defaults:
-
-| Section | Settings |
-|---------|----------|
-| **Page** | Background color, size preset (or custom width/height), margins (top, bottom, left, right), DPI, cut lines, baseline grid (with color and line width), and a **Numbering** subsection (format + start-at) for page labels |
-| **Layout** | Layout type (single, double, column-and-a-half), gutter width, side column percentage |
-| **Body Text** | Font family (with Google Fonts search), font size, line height, text color, text alignment, font weight, bold font weight, hyphenation (toggle + locale) |
-| **Headings** | General defaults (font family, line height, color, alignment, weight, margins) plus per-level overrides (H1–H6) for font size, line height, font family, weight, color, margins, a **Break before** toggle with an optional parity selector, a **Span** selector (`column` or `page`), and an **Advanced design** toggle that opens a per-level design slot editor (text, rule, and box elements with anchored placement, overflow modes, hyphenation toggle, and `{titleText}` / `{number}` / `{numberRoman}` placeholders) |
-| **Headers & footers** | Per-slot lists of text, rule and box elements. Each text element exposes content (with `{title}`, `{chapterTitle}`, `{pageNumber}`, `{totalPages}` placeholders), font + color controls, parity (all / odd / even pages), an **Overflow** selector (wrap, ellipsis at start/middle/end, clip), a **Hyphenation** toggle, and an anchor + offset + size placement editor for fine positioning |
-
-Controls are context-aware: gutter width only appears for multi-column layouts, hyphenation settings only appear when text is justified, and side column percentage only shows for the column-and-a-half layout. Changes take effect immediately in the viewport preview. For a full reference of all configuration options and their defaults, see the [Configuration](/en/docs/configuration) page.
+The sidebar is resizable: drag the separator between the sidebar and the viewport to adjust its width (the viewport always keeps at least 200 px for itself). The sidebar collapses entirely when no panel is active, and its width is remembered between sessions.
 
 #### Markdown editor
 
 A CodeMirror 6-based editor with:
 
-- **Syntax highlighting** — Headings, emphasis, links, code blocks, and blockquotes are visually distinct
+- **Syntax highlighting** — Headings, emphasis, links, code blocks, and blockquotes are visually distinct, with dedicated highlighting for **YAML frontmatter** and **LaTeX math** regions
 - **Line numbers** and active line highlighting
 - **Line wrapping** for long paragraphs
-- **Toolbar** with buttons for common markdown actions:
-  - Bold, Italic
-  - Heading levels 1–3
-  - Link, Inline code
-  - Blockquote
-  - Ordered and unordered lists
+- **Toolbar** — Starts with **Undo / Redo**, followed by bold, italic, heading levels 1–3, link, inline code, blockquote, ordered and unordered lists, plus two directive inserters:
+  - `:::pagebreak`
+  - `:::numbering{format="decimal" startAt=1}` — inserted with example attributes ready to adjust
 
-The toolbar is extensible: custom actions can be added for postext-specific micro-formats as the enriched markdown specification evolves.
+Host applications can extend the toolbar with their own `extraActions`. The editor also reports its cursor and selection to the previews, enabling click-to-caret sync: clicking text in the rendered output moves the caret to the matching markdown position, and the previews can highlight the current selection.
+
+The panel header offers three actions:
+
+- **Reset** (confirm popover) — Restores the locale's default document **and** replaces the resource set with the locale's example resources
+- **Export** — Downloads the markdown as `postext-markdown.json`
+- **Import** — Loads a previously exported markdown file
 
 #### Resources panel
 
-*Coming in a future version.* This panel will manage the resources (images, tables, figures, pull quotes) referenced from the markdown content.
+Manages the document's resources — bitmap images, SVG figures, and tables — referenced from the markdown via `::resource{id="…"}` blocks and `:ref{id="…"}` inline references. For the reference syntax and the float model, see [Document format → Resources](/en/docs/document-format#resources).
+
+**List view.** Resources are grouped by their resource-type name; resources whose `typeId` no longer matches a configured type fall into an *Untyped* group so they stay reachable. Each item shows a 36 px thumbnail — a real preview for bitmaps and SVGs, a glyph for tables — next to its caption and id. A **New** dropdown offers three entry points:
+
+- **Upload image** — PNG, JPEG, WebP, or GIF
+- **Upload SVG**
+- **New table** — starts as a 2×2 grid with one header row
+
+The whole panel is also a drag-and-drop target: drop files from disk and they upload in bulk, with ids slugified from their filenames. Unsupported files are skipped, and a short note reports how many were added and how many skipped.
+
+**Detail view.** Selecting a resource opens its editor:
+
+- **ID** — Editable and slug-validated; duplicate ids are flagged and never committed, and an empty id gets a suggestion derived from the caption. Renaming preserves the stored binary payload.
+- **Type** — Select among the configured resource types
+- **Caption** — Supports inline Markdown (bold, italic, code, and `:ref`)
+- **Alt text** — Accessibility description for the HTML output
+- **Placement** — Position (`top` / `bottom` / `here`) plus span (`column` / `page`, disabled when the position is `here`), matching the engine defaults of `top` + `column`
+- **Payload** — Replace uploaders for the bitmap or SVG file
+- **Preview** — A live mock embed showing how the resource will look, with `#` standing in for the number (real numbers depend on where the resource lands in the document)
+- **Delete** — Guarded by a confirm popover that warns how many `::resource` / `:ref` references in the markdown would be left dangling
+
+**Table editor.** Table resources open an interactive grid editor:
+
+- Toolbar with add/remove row and column, merge/split cells, header-row and header-column toggles, and per-cell alignment
+- **Paste-as-table** — Pasting TSV (or simple quoted CSV) fills the grid
+- **Undo/redo** — Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z
+- **Keyboard navigation** — Tab / Shift-Tab (with row wrap) and arrow keys move between cells
+
+All edits go through pure model functions exported by the postext core — `addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment`, `parseTSV` — so the same table model behaves identically inside and outside the sandbox.
+
+#### Fonts panel
+
+Manages custom font families alongside the built-in Google Fonts catalogue:
+
+- **Add, rename, and delete families**
+- **Upload variant files** per weight (100–900) and style (normal / italic). Accepted formats are WOFF2, WOFF, TTF, and OTF, detected by file extension; the files are stored in the browser's IndexedDB.
+- Custom families appear in every font picker under a **Custom** group alongside the Google Fonts results, and a custom family **takes precedence** over a Google Font with the same name.
+- Orphaned font files — uploads no longer referenced by any family — are pruned from IndexedDB automatically.
+
+#### Configuration panel
+
+A form-based editor for `PostextConfig`. It renders 17 collapsible sections, in order:
+
+- **Design** — *Color Palette* (named colors reused by every color picker), *Page* (size, margins, DPI, cut lines, baseline grid, page numbering), *Layout* (single, double, or column-and-a-half, gutter, side column), *Header & Footer* (per-slot text, rule, and box elements with placeholders, parity, overflow, and anchored placement)
+- **Text** — *Body Text* (font, size, line height, alignment, hyphenation), *Headings* (general defaults plus per-level H1–H6 settings, break-before with parity, span, and an advanced per-level design slot editor), *Unordered Lists*, *Ordered Lists*, *Math*
+- **Resources** — *Tables* (`tableStyle`), *Captions* (`captionStyle`), *Diagrams* (`diagramStyle`: a **single-ink** toggle that recolors SVG diagrams to tints of one ink for single-colour printing, plus an ink-colour picker defaulting to the palette's main colour), *Resource Types* (per-type names, short labels, numbering templates with `{n}` and `{h1}`…`{h6}` placeholders, counter format and reset level, caption prefix, and a live "Fig. 1.7"-style preview)
+- **Output and tooling** — *HTML Viewer*, *PDF Generation*, *Debug*, *Warnings* (thresholds for the diagnostics panel)
+
+The panel follows a consistent **override model**: each section remembers its open/closed state across sessions; a section header shows a reset button (with confirm) only while it contains overrides; and every control grows a small per-field reset that appears whenever its value differs from the default. Only the overridden subtree is ever saved or exported — defaults are stripped, so a pristine sandbox stores an empty configuration.
+
+Controls are context-aware: gutter width only appears for multi-column layouts, hyphenation settings only appear when text is justified, and side column percentage only shows for the column-and-a-half layout. Changes take effect immediately in the viewport preview. For a full reference of all configuration options and their defaults, see the [Configuration](/en/docs/configuration) page.
+
+The panel header offers **Reset** (confirm popover; only shown when overrides exist), **Export**, and **Import** — see [Export and import](#export-and-import).
+
+#### Warnings panel
+
+Live diagnostics recomputed from the markdown, the configuration, the resources, and the last build — the same count that badges the activity bar icon. Representative kinds:
+
+- **Fonts** — Missing font family; missing or duplicate weight/style variants in a custom family
+- **Typography** — Loose lines (interword spacing stretched past the configured threshold); heading-hierarchy skips (e.g. H1 → H3); consecutive headings with no body text between them
+- **Math** — Invalid or unclosed `$…$` / `$$…$$` formulas
+- **Directives** — Unknown directive names; invalid numbering or parity attributes
+- **Headers & footers** — Unknown placeholder names; placeholders whose document metadata is missing
+- **Design** — Cyclic or dangling anchors between design elements; text elements whose clip overflow always truncates
+- **Resources** — Unknown resource id in a `::resource` / `:ref`; unused resources; duplicate resource ids; dangling resource-type references; bitmaps rendered substantially larger than their pixel size; storage unavailable (IndexedDB missing)
+
+Each entry shows an icon, a title, a one-line detail, and — where applicable — the source line; clicking an entry with a source location focuses the editor at that spot.
 
 ### Main viewport
 
@@ -110,7 +162,7 @@ Column geometry is driven by the **HTML Viewer** section of the configuration si
 
 #### PDF tab
 
-Generates a real PDF of the current document via the `postext-pdf` package and displays it inside an embedded browser PDF viewer. The PDF is rebuilt automatically on first mount and on every subsequent regeneration, using the same VDT that feeds the canvas and HTML tabs — so line breaks, page boundaries, and resource placement match pixel-for-pixel across the three backends.
+Generates a real PDF of the current document via the `postext-pdf` package and displays it inside an embedded browser PDF viewer. The PDF is rebuilt automatically on first mount and on every subsequent regeneration, using the same VDT that feeds the canvas and HTML tabs — so line breaks, page boundaries, and resource placement match pixel-for-pixel across the three backends, down to the compression of overfull final lines that Knuth–Plass occasionally accepts.
 
 A floating toolbar at the bottom-right of the viewport provides:
 
@@ -122,29 +174,39 @@ Under the hood the sandbox uses a `createPdfFontProvider()` helper that fetches 
 
 ## Persistence
 
-The Sandbox automatically saves your work to the browser's `localStorage`:
+The Sandbox automatically saves your work to the browser:
 
-- **Auto-save** — Markdown content and configuration are saved after 1 second of inactivity
-- **Auto-load** — On page load, the previous session's content is restored automatically
-- **Viewport state** — Canvas view mode (single/spread) and fit mode (none/width/height) are persisted between sessions
-- **Section state** — Which configuration sections are expanded or collapsed is remembered
+- **Markdown and configuration** — Auto-saved to `localStorage` after 1 second of inactivity, with configuration defaults stripped so only your overrides are stored
+- **UI state** — The active panel and viewport tab, sidebar width, configuration section open states, canvas zoom/fit/view modes, HTML font scale and column mode, and toolbar pin states are all persisted in `localStorage`
+- **Resources and fonts** — Resource records, their binary blobs (bitmaps and SVGs), and custom font files persist in **IndexedDB**; when IndexedDB is unavailable (e.g. some private-browsing modes), a *storage unavailable* warning appears in the Warnings panel
+
+Storage is **shared across UI locales**. A pristine default document swaps to the current locale's default markdown and reseeds the example resources when the locale changes — so opening the Spanish sandbox shows Spanish examples. Any user edit opts the document out of this behavior. All previews also derive a hyphenation locale from the UI locale when none is set in the configuration.
 
 ### Export and import
 
-For transferring your work between devices or sharing configurations:
+For transferring your work between devices or sharing it, markdown and configuration export separately from their panel headers.
 
-- **Export** (`Download` icon in the activity bar) — Downloads a `postext-sandbox.json` file containing both the markdown content and the full configuration
-- **Import** (`Upload` icon in the activity bar) — Opens a file picker to load a previously exported `.json` file
-
-The export format is versioned for forward compatibility:
+The **Configuration panel** header downloads `postext-config.json` with defaults stripped:
 
 ```json
 {
+  "type": "postext-config",
   "version": 1,
-  "config": { ... },
+  "config": { ... }
+}
+```
+
+The **Markdown panel** header downloads `postext-markdown.json`:
+
+```json
+{
+  "type": "postext-markdown",
+  "version": 1,
   "markdown": "# Your content..."
 }
 ```
+
+Each header's **Import** button opens a file picker for `.json` files; imports are validated against the expected `type` and `version`, and invalid files are silently ignored. The combined `postext-sandbox.json` format from earlier versions no longer exists.
 
 ## Standalone usage
 
@@ -176,11 +238,14 @@ function App() {
 | `initialMarkdown` | `string` | Starting markdown content |
 | `initialConfig` | `PostextConfig` | Starting layout configuration |
 | `className` | `string` | CSS class for the root container |
-| `labels` | `Partial<SandboxLabels>` | i18n label overrides (defaults to English) |
+| `labels` | `Partial<SandboxLabels>` | UI label replacements, merged over the built-in English defaults — pass translated labels together with `locale` when embedding in another language |
+| `locale` | `string` | UI locale (defaults to `'en'`). Selects the localized default resource types and example resources, and provides the hyphenation locale the previews use when none is configured |
 | `onConfigChange` | `(config) => void` | Callback when config changes |
 | `onMarkdownChange` | `(markdown) => void` | Callback when markdown changes |
-| `themeToggle` | `ReactNode` | Custom theme toggle component |
-| `languageSwitcher` | `ReactNode` | Custom language switcher component |
+| `themeToggle` | `ReactNode` | Custom theme toggle component, slotted at the bottom of the activity bar |
+| `languageSwitcher` | `ReactNode` | Custom language switcher component, slotted at the bottom of the activity bar |
+| `homeUrl` | `string` | When set, renders a home logo link at the top of the activity bar pointing to this URL |
+| `homeLink` | `ReactNode` | Custom node for the home slot, replacing the default logo link (takes precedence over `homeUrl`) |
 
 ### CSS requirements
 
@@ -198,7 +263,5 @@ The package uses Tailwind CSS utility classes that reference CSS custom properti
 
 The following features are planned for future versions:
 
-- **Resource management** — Upload, manage, and reference images, tables, and figures from the markdown editor
 - **Collaborative editing** — Share sandbox sessions via URL
 - **Preset configurations** — Quick-start templates for common layout scenarios (newspaper, academic paper, book chapter)
-- **Custom micro-format toolbar extensions** — Add buttons for postext-specific enriched markdown syntax as the specification evolves

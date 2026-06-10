@@ -1,9 +1,9 @@
 {
   "Metadata": {
     "title": "Postext — Tipógrafo Programable para la Web",
-    "description": "Un motor de maquetación que conecta la tradición tipográfica con la web moderna. Recibe markdown semántico, devuelve componentes React con calidad editorial.",
+    "description": "Un motor de maquetación que conecta la tradición tipográfica con la web moderna. Recibe markdown semántico, devuelve páginas con calidad editorial — renderizadas a HTML, canvas y PDF listo para imprenta.",
     "ogTitle": "Postext — Tipógrafo Programable para la Web",
-    "ogDescription": "Recibe markdown semántico, devuelve componentes React con calidad editorial.",
+    "ogDescription": "Recibe markdown semántico, devuelve páginas con calidad editorial — renderizadas a HTML, canvas y PDF listo para imprenta.",
     "ogImageAlt": "Postext — Tipógrafo Programable para la Web",
     "keywords": "tipógrafo, tipografía, motor de maquetación, react, markdown, pretext, maquetación editorial, balanceo de columnas, huérfanas, viudas, separación silábica, pdf, justificación, knuth-plass"
   },
@@ -45,7 +45,7 @@
   },
   "Hero": {
     "title": "El Tipógrafo Programable para la Web",
-    "subtitle": "Postext parte de markdown semántico y aplica reglas de maquetación con siglos de historia — prevención de huérfanas, balanceo de columnas, colocación de figuras — para generar componentes React con calidad editorial.",
+    "subtitle": "Postext parte de markdown semántico y aplica reglas de maquetación con siglos de historia — justificación Knuth-Plass, prevención de huérfanas, colocación de figuras — para generar páginas con calidad editorial renderizadas a HTML, canvas o PDF listo para imprenta.",
     "getStarted": "Empezar",
     "viewOnGitHub": "Ver en GitHub"
   },
@@ -56,7 +56,7 @@
     "paragraph1": "CSS ofrece maquetación responsiva — flexbox, grid, columnas. Pero no sabe balancear columnas, evitar huérfanas, ajustar texto alrededor de figuras ni colocar notas al pie en la base de una columna. Son decisiones editoriales depuradas durante siglos de tipografía impresa.",
     "paragraph2prefix": "Postext cubre ese vacío. Pásale markdown semántico y un objeto de configuración. Mide texto entre 300 y 600 veces más rápido que el DOM gracias a ",
     "pretextLink": "@chenglou/pretext",
-    "paragraph2suffix": ", y devuelve componentes React compuestos según estándares tipográficos profesionales.",
+    "paragraph2suffix": ", calcula la geometría completa de cada página — cada línea, flotante y pie de figura — y la renderiza mediante los backends de HTML, canvas o PDF listo para imprenta.",
     "inputLabel": "Entrada",
     "outputLabel": "Salida",
     "inputAriaLabel": "Ejemplo de entrada markdown",
@@ -65,23 +65,23 @@
   "Features": {
     "eyebrow": "Capacidades",
     "title": "Lo que los Tipógrafos Siempre Han Sabido",
-    "orphanTitle": "Prevención de Huérfanas y Viudas",
-    "orphanDescription": "Ni una sola línea suelta al inicio o al final de una columna. Postext aplica reglas tipográficas que CSS no puede expresar.",
-    "columnTitle": "Balanceo de Columnas",
-    "columnDescription": "Contenido repartido entre columnas para que acaben a la misma altura, tal como lo haría un tipógrafo profesional.",
-    "flowTitle": "Flujo de Texto Alrededor de Figuras",
-    "flowDescription": "Imágenes, citas destacadas y tablas en línea, flotantes o en márgenes, con el texto ajustándose a su alrededor de forma natural.",
-    "footnotesTitle": "Notas al Pie y Notas Marginales",
-    "footnotesDescription": "Notas al pie ancladas al fondo de columna. Notas marginales alineadas con el párrafo que las referencia. Notas finales recopiladas al final de sección.",
-    "hyphenationTitle": "Separación Silábica y Ajuste de Bandera",
-    "hyphenationDescription": "División inteligente de palabras y control del margen derecho que evita ríos de blanco y produce bloques de texto homogéneos.",
-    "outputTitle": "Salida Web y PDF",
-    "outputDescription": "Un motor de maquetación, dos renderizadores. Genera componentes React para la web o salida PDF para impresión — desde la misma fuente."
+    "justificationTitle": "Justificación Knuth-Plass",
+    "justificationDescription": "El mismo algoritmo óptimo de partición de líneas que usa TeX, con separación silábica por patrones de TeX y control de huérfanas — bloques de texto homogéneos sin ríos de blanco, más allá de lo que CSS puede expresar.",
+    "resourcesTitle": "Recursos y Referencias Cruzadas",
+    "resourcesDescription": "Figuras, diagramas SVG y tablas que flotan al inicio o al final de columnas y páginas — como los flotantes en imprenta — con numeración tipada y referencias :ref que siempre se mantienen sincronizadas.",
+    "tablesTitle": "Estilo de Tablas y Pies de Figura",
+    "tablesDescription": "Tablas compuestas con tipografía independiente para cuerpo y cabecera, y pies de figura que siguen tu configuración — numerados, con estilo propio y colocados junto al recurso que describen.",
+    "singleInkTitle": "Diagramas a una Tinta",
+    "singleInkDescription": "Recolorea los diagramas SVG a matices de una sola tinta según su luminancia, para que cada ilustración encaje con tu diseño — listos para impresión con tinta directa.",
+    "mathTitle": "Matemáticas en LaTeX",
+    "mathDescription": "Ecuaciones en línea y en bloque escritas en LaTeX, medidas y compuestas por el motor para que se asienten en la retícula base junto al texto.",
+    "outputTitle": "Web y PDF Listo para Imprenta",
+    "outputDescription": "Un motor de maquetación, tres renderizadores. Las mismas páginas calculadas se renderizan a HTML, canvas o PDF listo para imprenta — con marcadores y color CMYK."
   },
   "ApiPreview": {
     "eyebrow": "API",
     "title": "Una Función, Control Total",
-    "description": "Llama a <code>createLayout</code> con tu contenido y un objeto de configuración. Recibes un componente React compuesto a tu medida."
+    "description": "Llama a <code>buildDocument</code> con tu contenido y un objeto de configuración. Recibes la geometría completa de las páginas, lista para renderizar con <code>renderToHtml</code> — o con los backends de canvas y PDF."
   },
   "HowItWorks": {
     "eyebrow": "Flujo de Trabajo",
@@ -90,8 +90,8 @@
     "step1Description": "Escribe tu contenido en markdown enriquecido con referencias a recursos y marcadores de notas al pie. Sin pensar en maquetación — solo contenido.",
     "step2Title": "Configura las Reglas de Maquetación",
     "step2Description": "Define columnas, reglas tipográficas, estrategias de colocación de recursos y ajustes por sección en un objeto PostextConfig.",
-    "step3Title": "Renderiza Componentes React",
-    "step3Description": "Llama a createLayout y obtén un componente React con maquetación editorial al píxel — listo para web o PDF."
+    "step3Title": "Renderiza a HTML, Canvas o PDF",
+    "step3Description": "Llama a buildDocument y obtén la geometría completa de la maquetación — y renderízala con el backend de HTML, canvas o PDF listo para imprenta."
   },
   "Install": {
     "eyebrow": "Instalación",
@@ -341,7 +341,7 @@
     "diagramInkColor": "Color de tinta",
     "diagramInkColorTooltip": "La tinta con la que se recolorean los diagramas. Por defecto, el color principal de la paleta",
     "metaTitle": "Sandbox — Postext",
-    "metaDescription": "Experimenta con el motor de maquetación Postext en un sandbox interactivo.",
+    "metaDescription": "Prueba el tipógrafo Postext en vivo: edita markdown, gestiona figuras y tablas, ajusta la justificación Knuth-Plass y exporta PDF de imprenta — en el navegador.",
     "configuration": "Configuración",
     "resources": "Recursos",
     "markdownEditor": "Editor Markdown",
@@ -350,8 +350,6 @@
     "canvas": "Canvas",
     "html": "HTML",
     "pdf": "PDF",
-    "comingSoon": "Próximamente",
-    "resourcesComingSoonDescription": "La gestión de recursos estará disponible en una versión futura.",
     "toolbarPin": "Fijar barra de herramientas",
     "toolbarUnpin": "Desfijar barra de herramientas",
     "pdfDirty": "Cambios pendientes — haz clic para recalcular",

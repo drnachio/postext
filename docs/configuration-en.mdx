@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-04-23',
-  readingTime: '18 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '30 min',
   order: 3,
 };
 
@@ -22,7 +22,7 @@ import { buildDocument } from 'postext';
 const document = buildDocument(content, {
   page: { sizePreset: '21x28', dpi: 300 },
   layout: { layoutType: 'double', gutterWidth: { value: 0.5, unit: 'cm' } },
-  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt overrides the 8 pt default
   headings: { fontFamily: 'Open Sans' },
 });
 ```
@@ -43,15 +43,16 @@ This reference is long. These are the main blocks:
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
 - [Resource types](#resource-types) — typed numbering for figures, tables, and custom kinds.
 - [Table style](#table-style) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
+- [Diagram style](#diagram-style) — single-ink recolouring of embedded SVG diagrams for spot-colour printing.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
-- [PDF generation](#pdf-generation) — outlines, forced colour space for the PDF backend.
+- [PDF generation (config)](#pdf-generation-config) — outlines, forced colour space for the PDF backend.
 - [Debug](#debug) — visual overlays and authoring warnings for the editor.
 - [Advanced configuration](#advanced-configuration) — declared types, future support.
-- [Programmatic use](#programmatic-use) — `buildDocument`, resolvers, caches.
+- [Programmatic use](#programmatic-usage) — `buildDocument`, resolvers, caches.
 - [Running layout in a Web Worker](#running-layout-in-a-web-worker) — off-main-thread builds with cancellation.
-- [Integrating the HTML viewer](#integrating-the-html-viewer) and [PDF generation](#pdf-generation) — end-to-end recipes.
+- [Integrating the HTML viewer](#integrating-the-html-viewer) and [Generating PDFs](#generating-pdfs) — end-to-end recipes.
 
 
 ## Page
@@ -355,7 +356,7 @@ Draws a thin vertical line in the gutter to visually separate columns.
 - **`'oneAndHalf'`** — An asymmetric layout with a main column and a narrower side column. The side column (controlled by `sideColumnPercent`) is ideal for margin notes, small figures, or supporting content. Values between 25–40% work well.
 
 
-## Headers & Footers
+## Headers & footers
 
 The `header` and `footer` properties control per-page header and footer slots. Headers and footers render **inside the existing page margins** — they do not reserve additional space and do not shrink the content area.
 
@@ -383,7 +384,7 @@ To opt out of the built-in defaults, set `header: { elements: [] }` (or `footer:
     <tr>
       <td><code>elements</code></td>
       <td><code>HeaderFooterElement[]</code></td>
-      <td><code>[]</code></td>
+      <td>built-in defaults when <code>undefined</code>; <code>[]</code> disables</td>
       <td>Ordered list of text and rule elements.</td>
     </tr>
   </tbody>
@@ -657,7 +658,7 @@ Each element has a stable `id` (auto-assigned by the sandbox; you can also set i
 
 The legacy `align` + `marginFromBody` + `marginFromEdge` shape is parsed on input and rewritten into a placement at config-resolution time, so existing configs keep working unchanged.
 
-## Body Text
+## Body text
 
 The `bodyText` property controls the typography of all paragraph text.
 
@@ -679,7 +680,7 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>fontFamily</code></td>
       <td><code>string</code></td>
       <td><code>'EB Garamond'</code></td>
-      <td>Font family for body text. Any Google Font, system font, or custom family declared in <a href="#custom-fonts"><code>customFonts</code></a>.</td>
+      <td>Font family for body text. Any Google Font, system font, or custom family declared in [`customFonts`](#custom-fonts).</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>
@@ -739,7 +740,7 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
-      <td>Text alignment. Justified text distributes spacing across each line for even edges.</td>
+      <td>Text alignment. Justified text distributes spacing across each line for even edges. Last lines of justified paragraphs render ragged at their natural width — except when Knuth-Plass accepted an overfull final line relying on glue shrink, in which case the inter-word spaces compress so the line fits the measure exactly (TeX glue-setting semantics, applied identically in the canvas, HTML, and PDF backends).</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -911,7 +912,7 @@ Beyond hyphenation and spacing bounds, the body-text configuration exposes the s
       <td><code>runtPenalty</code></td>
       <td><code>number</code></td>
       <td><code>1000</code></td>
-      <td>Equivalent-badness injected into the Knuth–Plass squared demerit formula (same scale as line <em>badness</em>, which saturates at 10000). At 1000 it dominates alternatives requiring up to roughly r≈2.15 word-spacing stretch. <code>0</code> disables the penalty.</td>
+      <td>Equivalent-badness injected into the Knuth–Plass squared demerit formula (same scale as line <em>badness</em>, which saturates at 10000). <code>0</code> disables the penalty.</td>
     </tr>
     <tr>
       <td><code>avoidRuntsInLists</code></td>
@@ -934,7 +935,7 @@ Beyond hyphenation and spacing bounds, the body-text configuration exposes the s
   </tbody>
 </table>
 
-**About runts.** A runt is a paragraph whose last line is too short to feel like a proper line of text — typically one or two short words marooned at the end of a paragraph. Because the check is based on the pixel length of the line relative to the normal space width, `runtMinCharacters` adapts automatically to the current font size. A short word that is visually wider than `runtMinCharacters × spaceWidth` is fine; a word that is narrower than that (or truly alone) attracts the runt penalty.
+**About runts.** A runt is a paragraph whose last line is too short to feel like a proper line of text — typically one or two short words marooned at the end of a paragraph. Because the check is based on the pixel length of the line relative to the normal space width, `runtMinCharacters` adapts automatically to the current font size. A short word that is visually wider than `runtMinCharacters × spaceWidth` is fine; a word that is narrower than that (or truly alone) attracts the runt penalty. For the mathematically curious: at the default `runtPenalty` of 1000, avoiding a runt dominates any alternative break set requiring up to roughly r≈2.15 word-spacing stretch.
 
 **Soft, not hard.** None of these rules can *prevent* a break — the engine will always produce a layout. They are demerits: the algorithm trades off badness, hyphenation cost, fitness-class smoothness, and these structural penalties in a single global optimisation and picks the break set with the lowest total cost. If you need a harder guarantee, raise the penalty; if a given document reads better with the penalty relaxed, lower it.
 
@@ -1190,7 +1191,8 @@ Example — a minimalist chapter opener that shows "Chapter N" above the title:
                 "fontSize": { "value": 24, "unit": "pt" },
                 "fontWeight": 700,
                 "align": "center",
-                "overflow": "wrap"
+                "overflow": "wrap",
+                "hyphenate": true
               }
             ]
           }
@@ -1606,6 +1608,17 @@ A **resource type** is a user-definable category — *Figure*, *Table*, *Diagram
 
 When `config.resourceTypes` is unset, Postext ships two built-in defaults: **Figure** and **Table**, both numbered `{h1}.{n}` (resetting on every level-1 heading) with decimal counters.
 
+The built-in defaults are locale-aware. The exported `defaultResourceTypes(locale = 'en')` localizes the type names, short labels, and caption prefixes to the document's locale — English yields *Figure*/*Fig.* and *Table*/*Tab.*; Spanish yields *Figura*/*Fig.* and *Tabla*/*Tabla*. Regional tags such as `es-ES` resolve by language, and any locale without translations falls back to English. The numbering behaviour (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, decimal counters) is language-independent. Each call returns fresh objects, so you can mutate the result freely:
+
+```ts
+import { defaultResourceTypes } from 'postext';
+
+const types = defaultResourceTypes('es');
+// => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
+//       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+```
+
 ```ts
 type ResourceCounterFormat =
   | 'decimal'
@@ -1616,6 +1629,11 @@ type ResourceCounterFormat =
 
 type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
+interface ResourcePlacement {
+  position?: 'top' | 'bottom' | 'here'; // float band, or inline at the ::resource directive
+  span?: 'column' | 'page';             // single column or full content width
+}
+
 interface ResourceType {
   id: string;                          // stable id, referenced by Resource.typeId
   name: string;                        // singular display name, e.g. "Figure"
@@ -1625,6 +1643,7 @@ interface ResourceType {
   resetOn: ResourceCounterReset;       // when the {n} counter resets
   counterFormat: ResourceCounterFormat;// how {n} is formatted
   captionPrefix: string;               // prepended to the caption, e.g. "Figure"
+  defaultPlacement?: ResourcePlacement;// fallback placement for this type's resources
 }
 ```
 
@@ -1677,6 +1696,11 @@ interface ResourceType {
       <td><code>string</code></td>
       <td>Text prepended to the figure/table caption. The computed number follows the prefix — a caption renders as <code>{'{captionPrefix}'} {'{number}'}. {'{caption text}'}</code>, e.g. <strong>Figure 1.7. The original plan.</strong></td>
     </tr>
+    <tr>
+      <td><code>defaultPlacement</code></td>
+      <td><code>ResourcePlacement</code> (optional)</td>
+      <td>Placement used by resources of this type that do not set their own <code>placement</code>. When unset, the built-in <code>top</code> / <code>column</code> default applies. See <a href="#numbering-and-references">Numbering and references</a> below for the full resolution chain.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1718,7 +1742,7 @@ Any other text is literal. A backslash escapes a literal `{`, `}`, or `\`. When 
 
 ### Numbering and references
 
-The number a resource type produces is what `:ref` prints and what the caption prefix precedes. The document-side grammar — the `::resource{id}` block embed and the `:ref{id}` inline reference, plus its `style` and `text` options — is documented in [Document format › Resources](/en/docs/document-format#resources), including how first-reference order drives the count.
+The number a resource type produces is what `:ref` prints and what the caption prefix precedes. `:ref{id}` is the primary form: the first reference in reading order **incorporates** the resource, which floats to a band at the top or bottom of the column or page (per its resolved placement — `position: 'top' | 'bottom' | 'here'` and `span: 'column' | 'page'`, resolved per resource, then the type's `defaultPlacement`, then the built-in `top` / `column`). The `::resource{id}` block embed is optional and only needed for `placement.position: 'here'` — an inline, non-floating embed at an exact point in the flow. The full document-side grammar — both forms plus `:ref`'s `style` and `text` options — is documented in [Document format › Resources](/en/docs/document-format#resources), including how first-reference order drives the count.
 
 This mirrors heading numbering: just as a heading level carries a `numberingTemplate`, a resource type carries one too — but the resource counter (`{n}`) advances per first-reference rather than per heading, and `resetOn` ties it back to the heading hierarchy.
 
@@ -1931,7 +1955,84 @@ const config: PostextConfig = {
 </table>
 
 
-## Units and Colors
+## Diagram style
+
+The `diagramStyle` property controls how embedded SVG diagrams (`kind: 'svg'` resources) are coloured. Its single feature today is **single-ink mode**: a recolouring pass that maps every colour in a diagram to a tint of one ink, so figures reproduce faithfully when the document is printed with a single spot colour.
+
+```ts
+const config: PostextConfig = {
+  diagramStyle: {
+    singleInk: true,
+    inkColor: { hex: '#295AA3', model: 'hex' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '200px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>singleInk</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Recolour every embedded SVG diagram to tints of a single ink.</td>
+    </tr>
+    <tr>
+      <td><code>inkColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>Main Color (<code>#295AA3</code>)</td>
+      <td>The ink. Defaults to the document's main palette colour (palette-linked via <code>paletteId: 'main-color'</code>), so swapping the palette swatch retints the diagrams along with headings and bold runs.</td>
+    </tr>
+  </tbody>
+</table>
+
+### How single ink works
+
+When `singleInk` is enabled, every colour in the SVG markup is rewritten to a tint of `inkColor` whose strength is **1 − relative luminance** (Rec. 709 coefficients applied to the gamma-encoded channels — a perceptual approximation that is plenty for tint mapping). The mapping preserves perceived value: white maps to paper white, black maps to the full ink, and light fills stay light regardless of their original hue. A pale yellow background becomes a pale tint of the ink; a dark stroke approaches the full ink.
+
+The recolouring is performed by the exported `applySingleInkToSvg(svgText, inkHex)`, which operates DOM-free on the SVG markup as text:
+
+- `#rgb` / `#rgba` / `#rrggbb` / `#rrggbbaa` hex literals and `rgb()` / `rgba()` functions are rewritten wherever they appear — presentation attributes, inline `style`, gradients, `<defs>`.
+- The `white` and `black` keywords are replaced only where they appear as paint values (`fill`, `stroke`, `stop-color`, `flood-color`, `color` — as attributes or inline-style properties), never inside text content or labels.
+- `none`, `transparent`, and `currentColor` are left untouched.
+- Alpha channels are preserved (`#rgba` / `#rrggbbaa` nibbles and `rgba(…)` alpha components ride along unchanged).
+- When `inkHex` cannot be parsed, the input is returned unchanged.
+
+```ts
+import { applySingleInkToSvg } from 'postext';
+
+const recoloured = applySingleInkToSvg(svgText, '#295AA3');
+```
+
+Single ink applies in all three backends: the canvas viewport and the HTML viewer recolour the SVG markup before rasterising it, and the PDF backend re-rasterizes the SVG resource bytes with the ink applied, so the exported PDF matches the on-screen preview.
+
+Resolver and stripper match the other sections, alongside the `DiagramStyleConfig` / `ResolvedDiagramStyleConfig` types:
+
+```ts
+import {
+  DEFAULT_DIAGRAM_STYLE_CONFIG,
+  resolveDiagramStyleConfig,
+  stripDiagramStyleDefaults,
+  applySingleInkToSvg,
+} from 'postext';
+import type { DiagramStyleConfig, ResolvedDiagramStyleConfig } from 'postext';
+
+const resolved = resolveDiagramStyleConfig(config.diagramStyle);
+// => { singleInk: false, inkColor: { hex: '#295AA3', model: 'hex', paletteId: 'main-color' } }
+
+const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
+// => undefined when everything matches the defaults
+```
+
+
+## Units and colors
 
 ### Dimensions
 
@@ -2010,7 +2111,7 @@ Open the **Fonts** panel from the left activity bar (between Resources and Confi
 3. **Duplicate variants are allowed.** If two files land on the same (weight, style) slot, both are kept and a **Duplicate font variant** warning appears so you know to disambiguate the settings of the extras.
 4. **Delete variant** or **Delete family** — removes the entry from the config *and* the stored bytes from IndexedDB.
 
-Once a family is declared, every [`FontPicker`](#font-picker) groups it under **Custom**, above the Google Fonts list. Selecting it wires the family into every font-family field you apply it to.
+Once a family is declared, every font picker groups it under **Custom**, above the Google Fonts list. Selecting it wires the family into every font-family field you apply it to.
 
 ### Rendering behaviour
 
@@ -2177,7 +2278,7 @@ const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 See [Integrating the HTML viewer](#integrating-the-html-viewer) below for an end-to-end example.
 
 
-## PDF Generation
+## PDF generation (config)
 
 The `pdfGeneration` property controls how the PDF backend emits the final document. These settings are consumed by the `postext-pdf` package at export time; the canvas and HTML viewers ignore them.
 
@@ -2314,6 +2415,7 @@ interface WarningsToggleConfig {
   headingHierarchy?: boolean;
   consecutiveHeadings?: boolean;
   listAfterHeading?: boolean;
+  designIssues?: boolean;
 }
 ```
 
@@ -2357,6 +2459,12 @@ interface WarningsToggleConfig {
       <td><code>false</code></td>
       <td>Report when a list starts immediately after a heading without an introductory paragraph. Off by default because reference material routinely does this; turn on for narrative writing where every list should be framed by prose.</td>
     </tr>
+    <tr>
+      <td><code>designIssues</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Report integrity problems in design slots — page headers, footers, and heading advanced-design slots. Covers cyclic anchor chains and dangling anchor references (an element anchored to a <code>#id</code> that no longer exists), a page-span heading whose <code>breakBefore</code> is disabled, and an enabled advanced design whose elements never render <code>{'{titleText}'}</code>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -2368,38 +2476,40 @@ debug: {
     headingHierarchy: true,
     consecutiveHeadings: true,
     listAfterHeading: false,
+    designIssues: true,
   },
 }
 ```
 
 
-## Advanced Configuration
+## Advanced configuration
 
-The following configuration sections are defined in the type system and will be supported by the layout engine as it evolves. They are included here for reference.
+The following configuration sections exist in the type system only — the layout engine does not read them yet. They are included here as a signpost for where the configuration surface is heading.
+
+Two stubs that used to live here have shipped as real features and moved out of this section:
+
+- **Resource placement** is no longer a future enum (`'topOfColumn'`, `'floatLeft'`, `'fullWidthBreak'`, …). The shipped float model uses `position: 'top' | 'bottom' | 'here'` and `span: 'column' | 'page'`, resolved per resource, then the type's `defaultPlacement`, then the built-in `top` / `column`. See [Resource types](#resource-types) above and [Document format › Resources](/en/docs/document-format#resources).
+- **Automatic figure/table numbering** shipped as typed first-reference numbering — see [Resource types](#resource-types).
 
 ### Column Config
 
-Fine-grained column control: explicit column count, gutter size, column rules (visual separators), and column balancing.
-
-### Resource Placement
-
-Controls how images, tables, figures, and pull quotes are positioned: `'topOfColumn'`, `'inline'`, `'floatLeft'`, `'floatRight'`, `'fullWidthBreak'`, or `'margin'`. Options for deferred placement and aspect ratio preservation.
+*Type-system only.* Fine-grained column control: explicit column count, gutter size, column rules (visual separators), and column balancing.
 
 ### Typography
 
-Advanced typographic controls: orphan/widow minimum line counts, rag optimization, spacing around headings and figures, and keep-together rules for headings with paragraphs and figures with captions.
+*Type-system only.* Advanced typographic controls: orphan/widow minimum line counts, rag optimization, spacing around headings and figures, and keep-together rules for headings with paragraphs and figures with captions.
 
 ### References
 
-Footnote placement (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), marker style (`'number'`, `'symbol'`, `'custom'`), automatic figure/table numbering, and margin notes.
+*Type-system only.* Footnote placement (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), marker style (`'number'`, `'symbol'`, `'custom'`), and margin notes. (Automatic figure/table numbering, formerly listed here, has shipped — see [Resource types](#resource-types).)
 
 ### Section Overrides
 
-Apply different column, typography, or resource placement settings to specific sections of the document, matched by CSS-like selectors.
+*Type-system only.* Apply different column, typography, or resource placement settings to specific sections of the document, matched by CSS-like selectors.
 
 ### Renderer
 
-Target output format: `'web'` for HTML/canvas rendering, `'pdf'` for print output.
+*Type-system only.* Target output format: `'web'` for HTML/canvas rendering, `'pdf'` for print output.
 
 
 ## Programmatic Usage
@@ -2420,7 +2530,7 @@ const content = {
 const config = {
   page: { sizePreset: '17x24' },
   layout: { layoutType: 'double' },
-  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt overrides the 8 pt default
 };
 
 // Build the layout — produces a VDT with one entry per page in `vdt.pages`
@@ -2481,10 +2591,10 @@ const fullPage = resolvePageConfig({ sizePreset: '21x28' });
 //      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: { enabled: false, ... }, ... }
 
 const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
-// => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
+// => { fontFamily: 'Inter', fontSize: { value: 8, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`. Color palettes are applied separately through `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)`, and `resolveColorValue(value, palette, fallback)` — see [Color Palette](#color-palette).
+Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveTableStyleConfig`, `resolveCaptionStyleConfig`, `resolveDiagramStyleConfig`, `resolveHeaderFooterConfig`, `resolveMathConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`, `resolvePdfGenerationConfig`. Color palettes are applied separately through `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)`, and `resolveColorValue(value, palette, fallback)` — see [Color Palette](#color-palette).
 
 `resolveUnorderedListsConfig` and `resolveOrderedListsConfig` are the only resolvers that take a second argument — the already-resolved `ResolvedBodyTextConfig` — because list defaults for `fontFamily` and `color` cascade from body text:
 
@@ -2496,7 +2606,7 @@ const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
 // => lists.fontFamily === 'Inter' (inherited)
 ```
 
-Static default bundles — the values used when no cascade is involved — are exported too: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`.
+Static default bundles — the values used when no cascade is involved — are exported too: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `DEFAULT_PAGE_NUMBERING`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_MATH_CONFIG`, `DEFAULT_DIAGRAM_STYLE_CONFIG`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_PDF_GENERATION_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`, plus the header/footer element defaults (`DEFAULT_HEADER_FOOTER_SLOT`, `DEFAULT_HEADER_SLOT`, `DEFAULT_FOOTER_SLOT`, `DEFAULT_TEXT_ELEMENT`, `DEFAULT_RULE_ELEMENT`) and the locale-aware `defaultResourceTypes(locale)` (see [Resource types](#resource-types)).
 
 ### Stripping defaults
 
@@ -2509,7 +2619,7 @@ const minimal = stripConfigDefaults(fullConfig);
 // Only properties that differ from defaults remain
 ```
 
-Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`.
+Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripHeaderFooterDefaults`, `stripMathDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
 
 ### Parsing
 
@@ -2937,7 +3047,7 @@ The example above is intentionally flat. Production integrations usually add:
 - **Incremental patching** — `renderToHtmlIndexed` returns `pages[i].blocks`, each with a stable `id` and the block's outer HTML. When only a few blocks differ between two renders you can replace those block wrappers in place instead of rebuilding `innerHTML`.
 - **Overlays** — layering an absolutely-positioned SVG on top of each `.pt-page` for cursors, selections, or baseline grids.
 
-The sandbox's `HtmlPreview` component (`packages/postext-sandbox/src/viewport/HtmlPreview.tsx`) implements all of these on top of the same API shown here and can be used as a reference. It also routes every build through a shared layout worker (see [Running layout in a Web Worker](#running-layout-in-a-web-worker)) so that live edits and resizes never block the main thread — swap the direct `buildDocument(...)` call in the snippet above for `layoutWorker.build(...)` when you are ready to move layout off the main thread.
+The sandbox's `HtmlPreview` component (`packages/postext-sandbox/src/viewport/HtmlPreview/index.tsx`) implements all of these on top of the same API shown here and can be used as a reference. It also routes every build through a shared layout worker (see [Running layout in a Web Worker](#running-layout-in-a-web-worker)) so that live edits and resizes never block the main thread — swap the direct `buildDocument(...)` call in the snippet above for `layoutWorker.build(...)` when you are ready to move layout off the main thread.
 
 
 ## Generating PDFs
@@ -2972,7 +3082,7 @@ const vdt = buildDocument(
   {
     page: { sizePreset: '17x24' },
     layout: { layoutType: 'double' },
-    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt overrides the 8 pt default
   },
 );
 
@@ -3104,7 +3214,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**Important:** call `ensureConfigFontsLoaded(config)` (or equivalent) *before* `buildDocument` when your config references web fonts. Layout is measured against whatever font metrics the browser currently has for that family — if the real font has not landed yet, the VDT is measured against a fallback and the PDF will not match the canvas or HTML output. The sandbox does this explicitly before every render (`PdfViewport.tsx:51`).
+**Important:** call `ensureConfigFontsLoaded(config)` (or equivalent) *before* `buildDocument` when your config references web fonts. Layout is measured against whatever font metrics the browser currently has for that family — if the real font has not landed yet, the VDT is measured against a fallback and the PDF will not match the canvas or HTML output. The sandbox does this explicitly before every render (see `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
 
 ### Print-ready PDFs
 

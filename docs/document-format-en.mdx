@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-04-23',
-  readingTime: '9 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '10 min',
   order: 5,
 };
 
@@ -42,9 +42,9 @@ Frontmatter is parsed with [`gray-matter`](https://github.com/jonschlinkert/gray
 
 ## Block constructs
 
-Postext recognises seven block types. Blocks are always terminated by a blank line or by the start of another block.
+Postext recognises seven prose block types, plus the directives and resource embeds covered later on this page. Blocks are always terminated by a blank line or by the start of another block.
 
-<Illustration name="BlockTypesGallery" data='{"title": "Block constructs at a glance", "desc": "The seven block types Postext recognises: heading, paragraph, blockquote, unordered list, ordered list, task list, and display math, each with its markdown syntax.", "caption": "Every block type and its markdown entry point.", "blocks": [{"name": "Heading", "syntax": "# Title", "color": "blue"}, {"name": "Paragraph", "syntax": "Plain text lines", "color": "orange"}, {"name": "Blockquote", "syntax": "> quoted text", "color": "green"}, {"name": "Unordered list", "syntax": "- item", "color": "purple"}, {"name": "Ordered list", "syntax": "1. item", "color": "pink"}, {"name": "Task list", "syntax": "- [x] done", "color": "teal"}, {"name": "Display math", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
+<Illustration name="BlockTypesGallery" data='{"title": "Prose block constructs at a glance", "desc": "The seven prose block types Postext recognises: heading, paragraph, blockquote, unordered list, ordered list, task list, and display math, each with its markdown syntax. Directives and resource embeds are covered separately.", "caption": "Every prose block type and its markdown entry point.", "blocks": [{"name": "Heading", "syntax": "# Title", "color": "blue"}, {"name": "Paragraph", "syntax": "Plain text lines", "color": "orange"}, {"name": "Blockquote", "syntax": "> quoted text", "color": "green"}, {"name": "Unordered list", "syntax": "- item", "color": "purple"}, {"name": "Ordered list", "syntax": "1. item", "color": "pink"}, {"name": "Task list", "syntax": "- [x] done", "color": "teal"}, {"name": "Display math", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
 <table>
   <thead>
@@ -88,7 +88,7 @@ Postext recognises seven block types. Blocks are always terminated by a blank li
     <tr>
       <td>Display math</td>
       <td><code>$$ … $$</code></td>
-      <td>A LaTeX formula either on a single line (<code>$$\int_0^1 x^2\,dx$$</code>) or fenced across multiple lines with <code>$$</code> markers on their own lines. Rendered centred on the column, snapped to the baseline grid like a heading, and kept vectorial in the PDF output.</td>
+      <td>A LaTeX formula set as its own block. Rendered centred on the column, snapped to the baseline grid like a heading, and kept vectorial in the PDF output. The single-line and fenced multi-line forms are described under <a href="#mathematical-formulas">Mathematical formulas</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -96,6 +96,8 @@ Postext recognises seven block types. Blocks are always terminated by a blank li
 A single blank line between two list items is tolerated — the list stays together. Two or more blank lines terminate the list.
 
 Lists of mixed kinds at the same depth are accepted (you can switch from unordered to ordered mid-run), but the engine treats the runs as separate for numbering purposes. In practice, keep one kind per depth unless you have a reason to mix them.
+
+<Illustration name="ListNesting" data='{"title": "List nesting depth", "desc": "Lists nest using exactly two spaces per level, up to a maximum depth of five. Each level indents further and may use different bullet styling.", "caption": "Two spaces per level. Max depth: five.", "level1": "Level 1", "level2": "Level 2 — two spaces in", "level3": "Level 3 — four spaces in", "indentNote": "Exactly two spaces per nesting level. Max depth: 5."}' />
 
 
 ## Directives
@@ -105,7 +107,7 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
 <table>
   <thead>
     <tr>
-      <th style={{ width: '200px' }}>Syntax</th>
+      <th style={{ width: '220px' }}>Syntax</th>
       <th>Effect</th>
     </tr>
   </thead>
@@ -157,6 +159,7 @@ The old chapter ends here.
 
 The `parity` attribute accepts the same five values as `headings.levels[*].breakBefore.parity`:
 
+- `'any'` — the default: no parity constraint; the break simply opens a new page.
 - `'odd'` / `'even'` — the new page opens on the requested side of the spread; a single blank is inserted only when the natural next page is on the wrong side.
 - `'always-odd'` / `'always-even'` — guarantee at least one mandatory blank separator page between the previous content and the new page, then enforce parity. The separator blank belongs to the **previous** chapter; any further parity padding belongs to whatever follows.
 
@@ -193,8 +196,6 @@ title: "A Book With Front Matter"
 Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a right-hand page labelled `1`.
 
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
-
-<Illustration name="ListNesting" data='{"title": "List nesting depth", "desc": "Lists nest using exactly two spaces per level, up to a maximum depth of five. Each level indents further and may use different bullet styling.", "caption": "Two spaces per level. Max depth: five.", "level1": "Level 1", "level2": "Level 2 — two spaces in", "level3": "Level 3 — four spaces in", "indentNote": "Exactly two spaces per nesting level. Max depth: 5."}' />
 
 
 ## Inline formatting
@@ -245,7 +246,7 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     <tr>
       <td>Inline math</td>
       <td><code>$…$</code></td>
-      <td>A LaTeX formula that flows with the surrounding text, e.g. <code>$e^{'{i\\pi}'}+1=0$</code>. Typeset by MathJax and rendered as vector paths on every backend. Formulas whose ascent or depth would overflow the body line box are scaled down so they stay on the baseline grid. Use <code>\\$</code> for a literal dollar sign.</td>
+      <td>A LaTeX formula that flows with the surrounding text, e.g. <code>$e^{'{i\\pi}'}+1=0$</code>. Typeset by MathJax and rendered as vector paths on every backend. Use <code>\\$</code> for a literal dollar sign. Scaling, the display (<code>$$ … $$</code>) form, and error handling are covered under <a href="#mathematical-formulas">Mathematical formulas</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -272,7 +273,7 @@ $$
 
 ## Resources
 
-Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's Resources panel) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table to a band at the top or bottom of the page near that reference, just as a print typesetter would. You do not place it a second time.
+Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table to a band at the top or bottom of the page near that reference, just as a print typesetter would. You do not place it a second time.
 
 Both forms below are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
 
@@ -286,7 +287,7 @@ As shown in :ref{id="lighthouse-diagram"}, the lantern room sits above the galle
 
 renders as: *As shown in Fig. 1.7, the lantern room sits above the gallery.* — and the diagram itself floats to the top (or bottom) of the page, while this sentence and the text after it flow on uninterrupted.
 
-The running text is never broken at the reference point. Where the resource lands — top or bottom of the page, within a single column or across the full width — is governed by its **placement** (see [Placement](#resource-placement) below), not by where you mention it.
+The running text is never broken at the reference point. Where the resource lands — top or bottom of the page, within a single column or across the full width — is governed by its **placement** (see [Placement](#placement) below), not by where you mention it.
 
 ### Block embed (optional, explicit inline placement)
 
@@ -302,7 +303,11 @@ The keeper's quarters occupy the eastern wing.
 
 For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`.
 
-The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.**
+The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left.
+
+Table resources draw their own grid, styled through [Configuration › Table style](/en/docs/configuration#table-style): body and header cells have fully independent typography, the header background defaults to `#f0f0f0`, borders to `0.75pt`, and `cellPadding` to `0.375em` — any field left unset inherits from the body text.
+
+SVG resources can additionally be recoloured for single-spot-colour printing via `diagramStyle.singleInk` (default `false`). When enabled, every colour in an SVG diagram is remapped to a luminance-mapped tint of `diagramStyle.inkColor` (which defaults to the main palette colour, `#295AA3`) — white maps to paper, black to the full ink — so figures reproduce faithfully when the document is printed with a single spot colour. See [Configuration › Diagram style](/en/docs/configuration#diagram-style).
 
 A malformed embed (missing or empty `id`, extra attributes) is not promoted to a resource block; it falls through to ordinary paragraph parsing and remains visible in the output, and the sandbox surfaces a warning.
 
@@ -310,7 +315,7 @@ Inline references are recognised inside any text block — paragraphs, headings,
 
 #### Reference options
 
-The `:ref` directive accepts two optional attributes:
+The `:ref` directive accepts two optional attributes. `style` selects how the computed label is rendered: `style="number"` prints the bare number (`1.7`), `style="full"` prints the type's full name plus the number (`Figure 1.7`), and when `style` is unset the type's `shortLabel` plus the number is used (`Fig. 1.7`). `text` is a verbatim override that replaces any computed label and takes precedence over `style`. The four rendering styles side by side:
 
 <table>
   <thead>
@@ -387,7 +392,7 @@ A float is placed on the next page opened after its first reference, near it in 
 
 Float bands are corrected against the baseline grid so the surrounding text keeps the page-wide vertical rhythm. A **top** band grows its bottom margin to the next grid line, so the text below the float stays aligned with the neighbouring columns and the facing page. A **bottom** float is anchored so its caption's last line shares a baseline with the last text line of the other columns (captionless content aligns its bottom edge to the last grid slot) — full pages therefore end at the same height across columns and across facing pages.
 
-> **Note:** the HTML viewer does not yet render resources; the canvas preview and the PDF backend do.
+All three backends — the canvas preview, the HTML viewer, and the PDF output — render resources. In the HTML backend, image payloads live out-of-band, so the host supplies them through the `resourceImageUrl(fileId)` resolver option; when the resolver is missing (or returns nothing for a file), the resource renders as a neutral placeholder box so the layout stays stable.
 
 
 ## What is NOT supported

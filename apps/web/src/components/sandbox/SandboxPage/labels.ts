@@ -13,8 +13,6 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     canvas: t("canvas"),
     html: t("html"),
     pdf: t("pdf"),
-    comingSoon: t("comingSoon"),
-    resourcesComingSoonDescription: t("resourcesComingSoonDescription"),
     toolbarPin: t("toolbarPin"),
     toolbarUnpin: t("toolbarUnpin"),
     pdfDirty: t("pdfDirty"),

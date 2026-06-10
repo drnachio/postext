@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-04-23',
-  readingTime: '18 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '30 min',
   order: 3,
 };
 
@@ -22,7 +22,7 @@ import { buildDocument } from 'postext';
 const document = buildDocument(content, {
   page: { sizePreset: '21x28', dpi: 300 },
   layout: { layoutType: 'double', gutterWidth: { value: 0.5, unit: 'cm' } },
-  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt sobrescribe el valor por defecto de 8 pt
   headings: { fontFamily: 'Open Sans' },
 });
 ```
@@ -42,7 +42,8 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
 - [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
 - [Tipos de recurso](#tipos-de-recurso) — numeración tipada para figuras, tablas y tipos personalizados.
-- [Estilo de tablas](#estilo-de-tablas) y [Estilo de pies](#estilo-de-pies) — tipografía y decoración de las tablas-recurso y sus pies.
+- [Estilo de tablas](#estilo-de-tablas) y [Estilo de pies de recurso](#estilo-de-pies-de-recurso) — tipografía y decoración de las tablas-recurso y sus pies.
+- [Estilo de diagramas](#estilo-de-diagramas) — recoloreado a una sola tinta de los diagramas SVG incrustados para impresión con tinta plana.
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
 - [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
@@ -268,11 +269,11 @@ La etiqueta calculada se almacena en cada `VDTPage` como `pageLabel` y es el val
 
 ## Disposición
 
+La propiedad `layout` controla cómo se organizan las columnas dentro del área de contenido.
+
 <Illustration name="ColumnGutter" data='{"title": "Columnas, medianil y margen", "desc": "Una página dividida en tres columnas: cada columna es el área de contenido para el texto, los medianiles son los huecos verticales entre columnas, y el margen es el borde en blanco entre los límites de la página y la primera columna.", "caption": "Las columnas contienen el texto. Los medianiles las separan. Los márgenes enmarcan el contenido.", "pageLabel": "Página", "gutterLabel": "Medianil", "columnLabel": "Columna", "marginLabel": "Margen"}' />
 
 <Illustration name="MarginSystem" data='{"title": "Sistema de márgenes", "desc": "Una página con márgenes independientes superior, derecho, inferior e izquierdo alrededor del área de contenido.", "caption": "Cada lado de la página puede tener su propio margen.", "page": "Página", "content": "Área de contenido", "top": "sup.", "right": "der.", "bottom": "inf.", "left": "izq."}' />
-
-La propiedad `layout` controla cómo se organizan las columnas dentro del área de contenido.
 
 <table>
   <thead>
@@ -383,7 +384,7 @@ Para renunciar a los valores por defecto, establece `header: { elements: [] }` (
     <tr>
       <td><code>elements</code></td>
       <td><code>HeaderFooterElement[]</code></td>
-      <td><code>[]</code></td>
+      <td>valores por defecto integrados cuando es <code>undefined</code>; <code>[]</code> los desactiva</td>
       <td>Lista ordenada de elementos de texto y línea.</td>
     </tr>
   </tbody>
@@ -659,11 +660,11 @@ La forma heredada `align` + `marginFromBody` + `marginFromEdge` se interpreta a 
 
 ## Texto de cuerpo
 
+La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
+
 <Illustration name="TypographyScale" data='{"title": "Escala tipográfica", "desc": "Jerarquía tipográfica desde H1 hasta texto pequeño, mostrando tamaños relativos de encabezados, texto de cuerpo y pies.", "caption": "Una escala consistente mantiene la jerarquía legible de un vistazo.", "rows": [{"role": "H1", "sample": "Encabezado 1", "size": "32px"}, {"role": "H2", "sample": "Encabezado 2", "size": "24px"}, {"role": "H3", "sample": "Encabezado 3", "size": "20px"}, {"role": "Cuerpo", "sample": "Texto de cuerpo", "size": "16px"}, {"role": "Pequeño", "sample": "Pie / nota", "size": "13px"}]}' />
 
 <Illustration name="SpacingScale" data='{"title": "Escala de espaciado", "desc": "Una escala de espaciado por pasos con valores crecientes usados en márgenes, rellenos y huecos.", "caption": "Los pasos de espaciado construyen un ritmo predecible en la maquetación.", "steps": [{"name": "xs", "value": "4 px", "px": 4}, {"name": "sm", "value": "8 px", "px": 8}, {"name": "md", "value": "16 px", "px": 16}, {"name": "lg", "value": "24 px", "px": 24}, {"name": "xl", "value": "40 px", "px": 40}, {"name": "2xl", "value": "64 px", "px": 64}]}' />
-
-La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
 
 <table>
   <thead>
@@ -679,7 +680,7 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>fontFamily</code></td>
       <td><code>string</code></td>
       <td><code>'EB Garamond'</code></td>
-      <td>Familia tipográfica para el cuerpo de texto. Cualquier fuente de Google Fonts, del sistema, o declarada como <a href="#fuentes-personalizadas">fuente personalizada</a>.</td>
+      <td>Familia tipográfica para el cuerpo de texto. Cualquier fuente de Google Fonts, del sistema, o declarada como [fuente personalizada](#fuentes-personalizadas).</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>
@@ -739,7 +740,7 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
-      <td>Alineación del texto. El texto justificado distribuye el espaciado a lo largo de cada línea para bordes uniformes.</td>
+      <td>Alineación del texto. El texto justificado distribuye el espaciado a lo largo de cada línea para bordes uniformes. Las últimas líneas de los párrafos justificados se componen en bandera, a su ancho natural — salvo cuando Knuth-Plass aceptó una línea final sobrellenada confiando en la compresión del pegamento (glue): en ese caso los espacios entre palabras se comprimen para que la línea encaje exactamente en la medida (semántica de glue-setting de TeX, aplicada de forma idéntica en los backends canvas, HTML y PDF).</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -911,7 +912,7 @@ Más allá de la separación silábica y los límites de espaciado, la configura
       <td><code>runtPenalty</code></td>
       <td><code>number</code></td>
       <td><code>1000</code></td>
-      <td>Penalización equivalente a <em>badness</em> (se inyecta en la fórmula cuadrática de Knuth–Plass, en la misma escala que el <em>badness</em> de línea, que satura en 10000). Al nivel 1000 domina sobre alternativas que supondrían un estiramiento de espacio de hasta aproximadamente r≈2,15. <code>0</code> desactiva la penalización.</td>
+      <td>Penalización equivalente a <em>badness</em> (se inyecta en la fórmula cuadrática de Knuth–Plass, en la misma escala que el <em>badness</em> de línea, que satura en 10000). <code>0</code> desactiva la penalización.</td>
     </tr>
     <tr>
       <td><code>avoidRuntsInLists</code></td>
@@ -934,7 +935,7 @@ Más allá de la separación silábica y los límites de espaciado, la configura
   </tbody>
 </table>
 
-**Sobre los *runts*.** Un *runt* es un párrafo cuya última línea es demasiado corta para sentirse como una línea de texto propiamente dicha — típicamente una o dos palabras cortas varadas al final del párrafo. Como la comprobación se basa en el ancho en píxeles de la línea relativo al ancho del espacio normal, `runtMinCharacters` se adapta automáticamente al tamaño de fuente actual. Una palabra corta visualmente más ancha que `runtMinCharacters × anchoDeEspacio` es válida; una palabra más estrecha que eso (o verdaderamente sola) dispara la penalización.
+**Sobre los *runts*.** Un *runt* es un párrafo cuya última línea es demasiado corta para sentirse como una línea de texto propiamente dicha — típicamente una o dos palabras cortas varadas al final del párrafo. Como la comprobación se basa en el ancho en píxeles de la línea relativo al ancho del espacio normal, `runtMinCharacters` se adapta automáticamente al tamaño de fuente actual. Una palabra corta visualmente más ancha que `runtMinCharacters × anchoDeEspacio` es válida; una palabra más estrecha que eso (o verdaderamente sola) dispara la penalización. Para quien sienta curiosidad matemática: con el `runtPenalty` por defecto de 1000, evitar un *runt* domina sobre cualquier alternativa que exigiera un estiramiento del espacio entre palabras de hasta aproximadamente r≈2,15.
 
 **Blandas, no duras.** Ninguna de estas reglas puede *impedir* una ruptura — el motor siempre produce una maquetación. Son deméritos: el algoritmo combina en una única optimización global la "badness" (desigualdad), el coste de la separación silábica, la suavidad de clase de encaje y estas penalizaciones estructurales, y elige el conjunto de rupturas con el coste total más bajo. Si necesitas una garantía más dura, sube la penalización; si un documento concreto se lee mejor con la penalización relajada, bájala.
 
@@ -1140,13 +1141,13 @@ Cada nivel de encabezado admite dos campos adicionales que controlan cómo se re
       <td><code>span</code></td>
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
-      <td>Cuando es <code>'page'</code>, el encabezado se trata como apertura de capítulo y su diseño avanzado (si está habilitado) se adjunta a la página como una banda de apertura por encima del cuerpo. Combínese con <code>breakBefore.enabled: true</code> para que la apertura comience fiablemente en una nueva página.</td>
+      <td>Cuando es <code>'page'</code>, el encabezado se trata como apertura de capítulo y su diseño avanzado (si está habilitado) se adjunta a la página como una banda de apertura por encima del cuerpo. Combínalo con <code>breakBefore.enabled: true</code> para que la apertura comience fiablemente en una nueva página.</td>
     </tr>
     <tr>
       <td><code>advancedDesign</code></td>
       <td><code>HeadingAdvancedDesignConfig</code></td>
       <td><code>{'{ enabled: false, slot: { elements: [] } }'}</code></td>
-      <td>Ranura de diseño de composición libre para este nivel. Cuando está <code>enabled</code>, los elementos de la ranura componen la apertura. Utilice <code>{'{titleText}'}</code> dentro de un elemento de texto para renderizar el texto del título; <code>{'{number}'}</code>, <code>{'{numberRoman}'}</code>, etc. para insertar el número del encabezado.</td>
+      <td>Ranura de diseño de composición libre para este nivel. Cuando está <code>enabled</code>, los elementos de la ranura componen la apertura. Utiliza <code>{'{titleText}'}</code> dentro de un elemento de texto para renderizar el texto del título; <code>{'{number}'}</code>, <code>{'{numberRoman}'}</code>, etc. para insertar el número del encabezado.</td>
     </tr>
   </tbody>
 </table>
@@ -1607,6 +1608,17 @@ Un **tipo de recurso** es una categoría definible por el usuario — *Figura*, 
 
 Cuando `config.resourceTypes` no está definido, Postext incluye dos valores por defecto integrados: **Figura** y **Tabla**, ambos numerados como `{h1}.{n}` (reiniciando en cada encabezado de nivel 1) con contadores decimales.
 
+Los valores por defecto integrados se adaptan al idioma. La función exportada `defaultResourceTypes(locale = 'en')` localiza los nombres de tipo, las etiquetas cortas y los prefijos de pie al idioma del documento — el inglés produce *Figure*/*Fig.* y *Table*/*Tab.*; el español produce *Figura*/*Fig.* y *Tabla*/*Tabla*. Las etiquetas regionales como `es-ES` se resuelven por idioma, y cualquier idioma sin traducción cae al inglés. El comportamiento de numeración (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, contadores decimales) es independiente del idioma. Cada llamada devuelve objetos nuevos, así que puedes mutar el resultado libremente:
+
+```ts
+import { defaultResourceTypes } from 'postext';
+
+const types = defaultResourceTypes('es');
+// => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
+//       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+```
+
 ```ts
 type ResourceCounterFormat =
   | 'decimal'
@@ -1617,6 +1629,11 @@ type ResourceCounterFormat =
 
 type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
+interface ResourcePlacement {
+  position?: 'top' | 'bottom' | 'here'; // banda flotante, o en línea en la directiva ::resource
+  span?: 'column' | 'page';             // una sola columna o todo el ancho de contenido
+}
+
 interface ResourceType {
   id: string;                          // id estable, referenciado por Resource.typeId
   name: string;                        // nombre singular, p. ej. "Figura"
@@ -1626,6 +1643,7 @@ interface ResourceType {
   resetOn: ResourceCounterReset;       // cuándo se reinicia el contador {n}
   counterFormat: ResourceCounterFormat;// cómo se formatea {n}
   captionPrefix: string;               // prefijo del pie, p. ej. "Figura"
+  defaultPlacement?: ResourcePlacement;// colocación de respaldo para los recursos de este tipo
 }
 ```
 
@@ -1678,6 +1696,11 @@ interface ResourceType {
       <td><code>string</code></td>
       <td>Texto que se antepone al pie de figura/tabla. El número calculado sigue al prefijo — un pie se renderiza como <code>{'{captionPrefix}'} {'{número}'}. {'{texto del pie}'}</code>, p. ej. <strong>Figura 1.7. El plano original.</strong></td>
     </tr>
+    <tr>
+      <td><code>defaultPlacement</code></td>
+      <td><code>ResourcePlacement</code> (opcional)</td>
+      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>. Si tampoco está definida, se aplica el valor integrado <code>top</code> / <code>column</code>. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución completa.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1719,7 +1742,7 @@ Cualquier otro texto es literal. Una barra invertida escapa un `{`, `}` o `\` li
 
 ### Numeración y referencias
 
-El número que produce un tipo de recurso es lo que imprime `:ref` y lo que precede el prefijo del pie. La gramática del lado del documento — la inserción en bloque `::resource{id}` y la referencia en línea `:ref{id}`, junto con sus opciones `style` y `text` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
+El número que produce un tipo de recurso es lo que imprime `:ref` y lo que sigue al prefijo del pie. `:ref{id}` es la forma principal: la primera referencia en orden de lectura **incorpora** el recurso, que flota a una banda en la parte superior o inferior de la columna o de la página (según su colocación resuelta — `position: 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resuelta por recurso, luego por el `defaultPlacement` de su tipo, y por último el valor integrado `top` / `column`). La inserción en bloque `::resource{id}` es opcional y solo se necesita para `placement.position: 'here'` — una inserción en línea, sin flotado, en un punto exacto del flujo. La gramática completa del lado del documento — ambas formas más las opciones `style` y `text` de `:ref` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
 
 Esto refleja la numeración de encabezados: igual que un nivel de encabezado lleva un `numberingTemplate`, un tipo de recurso también lo lleva — pero el contador del recurso (`{n}`) avanza por primera referencia en lugar de por encabezado, y `resetOn` lo ata de vuelta a la jerarquía de encabezados.
 
@@ -1849,7 +1872,7 @@ const config: PostextConfig = {
 </table>
 
 
-## Estilo de pies
+## Estilo de pies de recurso
 
 La propiedad `captionStyle` controla los pies de recurso (la línea `Figura 1 — …` bajo imágenes, SVG y tablas). La etiqueta numerada y la descripción comparten tipografía y tamaño — una limitación del motor — pero la etiqueta puede llevar su propio peso, cursiva y color. La familia tipográfica, el tamaño y el color heredan del texto de cuerpo cuando no se indican.
 
@@ -1930,6 +1953,83 @@ const config: PostextConfig = {
     </tr>
   </tbody>
 </table>
+
+
+## Estilo de diagramas
+
+La propiedad `diagramStyle` controla cómo se colorean los diagramas SVG incrustados (recursos con `kind: 'svg'`). Su única función hoy es el **modo a una sola tinta**: una pasada de recoloreado que convierte cada color del diagrama en un matiz de una única tinta, de modo que las figuras se reproduzcan fielmente cuando el documento se imprime con una sola tinta plana.
+
+```ts
+const config: PostextConfig = {
+  diagramStyle: {
+    singleInk: true,
+    inkColor: { hex: '#295AA3', model: 'hex' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '200px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>singleInk</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Recolorear todos los diagramas SVG incrustados a matices de una única tinta.</td>
+    </tr>
+    <tr>
+      <td><code>inkColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>Color principal (<code>#295AA3</code>)</td>
+      <td>La tinta. Por defecto es el color principal de la paleta del documento (enlazado mediante <code>paletteId: 'main-color'</code>), de modo que cambiar la muestra de la paleta retintea los diagramas junto con los encabezados y las negritas.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Cómo funciona la tinta única
+
+Cuando `singleInk` está activado, cada color del marcado SVG se reescribe como un matiz de `inkColor` cuya intensidad es **1 − luminancia relativa** (coeficientes Rec. 709 aplicados a los canales con codificación gamma — una aproximación perceptual más que suficiente para el mapeo de matices). El mapeo preserva el valor percibido: el blanco se convierte en el blanco del papel, el negro en la tinta plena, y los rellenos claros siguen siendo claros con independencia de su tono original. Un fondo amarillo pálido pasa a ser un matiz pálido de la tinta; un trazo oscuro se acerca a la tinta plena.
+
+El recoloreado lo realiza la función exportada `applySingleInkToSvg(svgText, inkHex)`, que opera sin DOM, directamente sobre el marcado SVG como texto:
+
+- Los literales hexadecimales `#rgb` / `#rgba` / `#rrggbb` / `#rrggbbaa` y las funciones `rgb()` / `rgba()` se reescriben dondequiera que aparezcan — atributos de presentación, `style` en línea, degradados, `<defs>`.
+- Las palabras clave `white` y `black` solo se sustituyen cuando aparecen como valores de pintado (`fill`, `stroke`, `stop-color`, `flood-color`, `color` — como atributos o propiedades de estilo en línea), nunca dentro del contenido de texto ni de las etiquetas.
+- `none`, `transparent` y `currentColor` se dejan intactos.
+- Los canales alfa se preservan (los dígitos de `#rgba` / `#rrggbbaa` y el componente alfa de `rgba(…)` viajan sin cambios).
+- Cuando `inkHex` no se puede interpretar, la entrada se devuelve sin cambios.
+
+```ts
+import { applySingleInkToSvg } from 'postext';
+
+const recoloreado = applySingleInkToSvg(svgText, '#295AA3');
+```
+
+La tinta única se aplica en los tres backends: el viewport canvas y el visor HTML recolorean el marcado SVG antes de rasterizarlo, y el backend PDF vuelve a rasterizar los bytes del recurso SVG con la tinta aplicada, de modo que el PDF exportado coincide con la previsualización en pantalla.
+
+El resolver y el stripper siguen el mismo patrón que las demás secciones, junto con los tipos `DiagramStyleConfig` / `ResolvedDiagramStyleConfig`:
+
+```ts
+import {
+  DEFAULT_DIAGRAM_STYLE_CONFIG,
+  resolveDiagramStyleConfig,
+  stripDiagramStyleDefaults,
+  applySingleInkToSvg,
+} from 'postext';
+import type { DiagramStyleConfig, ResolvedDiagramStyleConfig } from 'postext';
+
+const resolved = resolveDiagramStyleConfig(config.diagramStyle);
+// => { singleInk: false, inkColor: { hex: '#295AA3', model: 'hex', paletteId: 'main-color' } }
+
+const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
+// => undefined cuando todo coincide con los valores por defecto
+```
 
 
 ## Unidades y colores
@@ -2315,6 +2415,7 @@ interface WarningsToggleConfig {
   headingHierarchy?: boolean;
   consecutiveHeadings?: boolean;
   listAfterHeading?: boolean;
+  designIssues?: boolean;
 }
 ```
 
@@ -2358,6 +2459,12 @@ interface WarningsToggleConfig {
       <td><code>false</code></td>
       <td>Avisa cuando una lista empieza inmediatamente después de un encabezado, sin párrafo introductorio. Desactivado por defecto porque el material de referencia suele hacerlo; actívalo en escritura narrativa donde cada lista debería estar encuadrada por prosa.</td>
     </tr>
+    <tr>
+      <td><code>designIssues</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de problemas de integridad en las ranuras de diseño — encabezados de página, pies de página y ranuras de diseño avanzado de los encabezados. Cubre cadenas de anclaje cíclicas y referencias de anclaje colgantes (un elemento anclado a un <code>#id</code> que ya no existe), un encabezado con span de página cuyo <code>breakBefore</code> está desactivado, y un diseño avanzado habilitado cuyos elementos nunca renderizan <code>{'{titleText}'}</code>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -2369,6 +2476,7 @@ debug: {
     headingHierarchy: true,
     consecutiveHeadings: true,
     listAfterHeading: false,
+    designIssues: true,
   },
 }
 ```
@@ -2376,31 +2484,32 @@ debug: {
 
 ## Configuración avanzada
 
-Las siguientes secciones de configuración están definidas en el sistema de tipos y serán soportadas por el motor de composición a medida que evolucione. Se incluyen aquí como referencia.
+Las siguientes secciones de configuración existen solo en el sistema de tipos — el motor de composición todavía no las lee. Se incluyen aquí como señal de hacia dónde va la superficie de configuración.
+
+Dos apartados que vivían aquí ya se han implementado como funcionalidades reales y han salido de esta sección:
+
+- **La colocación de recursos** ya no es un enum futuro (`'topOfColumn'`, `'floatLeft'`, `'fullWidthBreak'`, …). El modelo de flotado implementado usa `position: 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resueltos por recurso, luego por el `defaultPlacement` de su tipo y por último el valor integrado `top` / `column`. Consulta [Tipos de recurso](#tipos-de-recurso) más arriba y [Formato del documento › Recursos](/es/docs/document-format#recursos).
+- **La numeración automática de figuras/tablas** se implementó como numeración tipada por primera referencia — consulta [Tipos de recurso](#tipos-de-recurso).
 
 ### Configuración de columnas
 
-Control granular de columnas: número de columnas explícito, tamaño del medianil, filetes de columna (separadores visuales) y equilibrado de columnas.
-
-### Colocación de recursos
-
-Controla cómo se posicionan imágenes, tablas, figuras y citas destacadas: `'topOfColumn'`, `'inline'`, `'floatLeft'`, `'floatRight'`, `'fullWidthBreak'` o `'margin'`. Opciones para colocación diferida y preservación de la relación de aspecto.
+*Solo en el sistema de tipos.* Control granular de columnas: número de columnas explícito, tamaño del medianil, filetes de columna (separadores visuales) y equilibrado de columnas.
 
 ### Tipografía
 
-Controles tipográficos avanzados: mínimos de líneas para huérfanas/viudas, optimización de bordes irregulares, espaciado alrededor de encabezados y figuras, y reglas de agrupación para encabezados con párrafos y figuras con pies de foto.
+*Solo en el sistema de tipos.* Controles tipográficos avanzados: mínimos de líneas para huérfanas/viudas, optimización de bordes irregulares, espaciado alrededor de encabezados y figuras, y reglas de agrupación para encabezados con párrafos y figuras con pies de foto.
 
 ### Referencias
 
-Colocación de notas al pie (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), estilo de marcador (`'number'`, `'symbol'`, `'custom'`), numeración automática de figuras/tablas y notas al margen.
+*Solo en el sistema de tipos.* Colocación de notas al pie (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), estilo de marcador (`'number'`, `'symbol'`, `'custom'`) y notas al margen. (La numeración automática de figuras/tablas, que antes figuraba aquí, ya está implementada — consulta [Tipos de recurso](#tipos-de-recurso).)
 
 ### Configuraciones por sección
 
-Aplica diferentes ajustes de columnas, tipografía o colocación de recursos a secciones específicas del documento, identificadas mediante selectores tipo CSS.
+*Solo en el sistema de tipos.* Aplica diferentes ajustes de columnas, tipografía o colocación de recursos a secciones específicas del documento, identificadas mediante selectores tipo CSS.
 
 ### Renderizador
 
-Formato de salida objetivo: `'web'` para renderizado HTML/canvas, `'pdf'` para salida de impresión.
+*Solo en el sistema de tipos.* Formato de salida objetivo: `'web'` para renderizado HTML/canvas, `'pdf'` para salida de impresión.
 
 
 ## Uso programático
@@ -2421,7 +2530,7 @@ const content = {
 const config = {
   page: { sizePreset: '17x24' },
   layout: { layoutType: 'double' },
-  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt sobrescribe el valor por defecto de 8 pt
 };
 
 // Construir la composición — produce un VDT con una entrada por página en `vdt.pages`
@@ -2482,10 +2591,10 @@ const fullPage = resolvePageConfig({ sizePreset: '21x28' });
 //      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: { enabled: false, ... }, ... }
 
 const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
-// => { fontFamily: 'Inter', fontSize: { value: 9, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
+// => { fontFamily: 'Inter', fontSize: { value: 8, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`. Las paletas de color se aplican por separado con `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)` y `resolveColorValue(value, palette, fallback)` — ver [Paleta de colores](#paleta-de-colores).
+Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveTableStyleConfig`, `resolveCaptionStyleConfig`, `resolveDiagramStyleConfig`, `resolveHeaderFooterConfig`, `resolveMathConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`, `resolvePdfGenerationConfig`. Las paletas de color se aplican por separado con `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)` y `resolveColorValue(value, palette, fallback)` — ver [Paleta de colores](#paleta-de-colores).
 
 `resolveUnorderedListsConfig` y `resolveOrderedListsConfig` son los únicos resolvers que aceptan un segundo argumento — el `ResolvedBodyTextConfig` ya resuelto — porque las listas heredan `fontFamily` y `color` del cuerpo de texto:
 
@@ -2497,7 +2606,7 @@ const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
 // => lists.fontFamily === 'Inter' (heredado)
 ```
 
-También se exportan los paquetes de valores por defecto estáticos — los que se usan cuando no hay herencia: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`.
+También se exportan los paquetes de valores por defecto estáticos — los que se usan cuando no hay herencia: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `DEFAULT_PAGE_NUMBERING`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_MATH_CONFIG`, `DEFAULT_DIAGRAM_STYLE_CONFIG`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_PDF_GENERATION_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`, además de los valores por defecto de los elementos de encabezado/pie (`DEFAULT_HEADER_FOOTER_SLOT`, `DEFAULT_HEADER_SLOT`, `DEFAULT_FOOTER_SLOT`, `DEFAULT_TEXT_ELEMENT`, `DEFAULT_RULE_ELEMENT`) y la función sensible al idioma `defaultResourceTypes(locale)` (ver [Tipos de recurso](#tipos-de-recurso)).
 
 ### Eliminar valores por defecto
 
@@ -2510,7 +2619,7 @@ const minimal = stripConfigDefaults(fullConfig);
 // Solo permanecen las propiedades que difieren de los valores por defecto
 ```
 
-También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`.
+También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripHeaderFooterDefaults`, `stripMathDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
 
 ### Parseo
 
@@ -2940,7 +3049,7 @@ El ejemplo de arriba es deliberadamente plano. Las integraciones en producción 
 - **Parcheo incremental** — `renderToHtmlIndexed` devuelve `pages[i].blocks`, cada uno con un `id` estable y el HTML externo del bloque. Cuando solo unos cuantos bloques difieren entre dos renders puedes reemplazar esos envoltorios en el sitio en lugar de reconstruir `innerHTML`.
 - **Superposiciones** — apila un SVG absoluto sobre cada `.pt-page` para cursores, selecciones o la rejilla base.
 
-El componente `HtmlPreview` del sandbox (`packages/postext-sandbox/src/viewport/HtmlPreview.tsx`) implementa todo esto sobre la misma API que se muestra aquí y puede servirte de referencia. Además enruta cada build a través de un worker de layout compartido (consulta [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker)) para que las ediciones en vivo y los resizes nunca bloqueen el hilo principal — sustituye la llamada directa `buildDocument(...)` del snippet anterior por `layoutWorker.build(...)` cuando quieras mover la composición fuera del hilo principal.
+El componente `HtmlPreview` del sandbox (`packages/postext-sandbox/src/viewport/HtmlPreview/index.tsx`) implementa todo esto sobre la misma API que se muestra aquí y puede servirte de referencia. Además enruta cada build a través de un worker de layout compartido (consulta [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker)) para que las ediciones en vivo y los resizes nunca bloqueen el hilo principal — sustituye la llamada directa `buildDocument(...)` del snippet anterior por `layoutWorker.build(...)` cuando quieras mover la composición fuera del hilo principal.
 
 
 ## Generación de PDF
@@ -2975,7 +3084,7 @@ const vdt = buildDocument(
   {
     page: { sizePreset: '17x24' },
     layout: { layoutType: 'double' },
-    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } },
+    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt sobrescribe el valor por defecto de 8 pt
   },
 );
 
@@ -3107,15 +3216,15 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**Importante:** llama a `ensureConfigFontsLoaded(config)` (o equivalente) *antes* de `buildDocument` cuando tu configuración referencie web fonts. La maquetación se mide contra las métricas de fuente que el navegador tenga en ese momento para esa familia — si la fuente real aún no ha llegado, el VDT se mide contra una de reserva y el PDF no coincidirá con la salida de canvas o HTML. El sandbox lo hace explícitamente antes de cada render (`PdfViewport.tsx:51`).
+**Importante:** llama a `ensureConfigFontsLoaded(config)` (o equivalente) *antes* de `buildDocument` cuando tu configuración referencie web fonts. La maquetación se mide contra las métricas de fuente que el navegador tenga en ese momento para esa familia — si la fuente real aún no ha llegado, el VDT se mide contra una de reserva y el PDF no coincidirá con la salida de canvas o HTML. El sandbox lo hace explícitamente antes de cada render (ver `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
 
 ### PDFs listos para imprenta
 
 Para flujos de trabajo de impresión en producción, ajusta estas opciones de configuración antes de renderizar:
 
-- **`page.cutLines.enabled: true`** — añade área de sangre y marcas de corte alrededor del trim. Ver [Líneas de corte](#líneas-de-corte).
+- **`page.cutLines.enabled: true`** — añade área de sangrado y marcas de corte alrededor del trim. Ver [Marcas de corte](#marcas-de-corte).
 - **`page.dpi: 300`** (o superior) — los puntos PDF están fijos a 72/pulgada, pero la aritmética de maquetación de Postext corre en píxeles; un DPI mayor da una subdivisión más fina para elementos medidos en `mm` o `cm`.
-- **`colors.model: 'cmyk'`** — preserva la intención de que los colores se autoraron en espacio CMYK. El fallback `hex` sigue siendo el que se usa para dibujar realmente al PDF hoy; `model` se documenta aquí porque viaja junto al VDT para herramientas aguas abajo.
+- **`colors.model: 'cmyk'`** — preserva la intención de que los colores se definieron en espacio CMYK. El fallback `hex` sigue siendo el que se usa para dibujar realmente al PDF hoy; `model` se documenta aquí porque viaja junto al VDT para herramientas aguas abajo.
 - **`{ pageNegative: true }`** en `RenderToPdfOptions` — invierte el área de trim usando un blend mode de tipo Difference (las marcas de corte quedan sin invertir). Útil para comprobaciones de preflight sobre tipografía oscura-sobre-claro.
 
 ### Implementación de referencia

@@ -11,10 +11,6 @@ export interface SandboxLabels {
   html: string;
   pdf: string;
 
-  // Placeholders
-  comingSoon: string;
-  resourcesComingSoonDescription: string;
-
   // Shared toolbar pin + dirty indicator
   toolbarPin: string;
   toolbarUnpin: string;

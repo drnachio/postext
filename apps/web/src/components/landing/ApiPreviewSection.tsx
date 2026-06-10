@@ -1,31 +1,20 @@
 import { getTranslations } from "next-intl/server";
 import { CodeBlock } from "./CodeBlock";
 
-const codeRaw = `import { createLayout } from "postext";
+const codeRaw = `import { buildDocument, renderToHtml } from "postext";
 
-const Article = createLayout(
+const doc = buildDocument(
+  { markdown },
   {
-    markdown: content,
-    resources: [
-      { id: "hero", type: "image", src: "/hero.jpg", width: 800, height: 400 },
-    ],
-    notes: [
-      { id: "1", type: "footnote", content: "Additional context." },
-    ],
-  },
-  {
-    columns: 2,
-    gutter: "2rem",
-    typography: {
-      orphans: 2,
-      widows: 2,
-      hyphenation: true,
-    },
-    references: {
-      footnotes: { placement: "columnBottom" },
+    layout: { layoutType: "double" },
+    bodyText: {
+      textAlign: "justify",
+      hyphenation: { enabled: true, locale: "en-us" },
     },
   }
-);`;
+);
+
+const html = renderToHtml(doc);`;
 
 export async function ApiPreviewSection() {
   const t = await getTranslations("ApiPreview");
@@ -51,36 +40,22 @@ export async function ApiPreviewSection() {
       <div className="mt-10 2xl:mt-12 4xl:mt-16">
         <CodeBlock code={codeRaw}>
           <span className="syntax-keyword">import</span>{" "}
-          {"{ createLayout }"}{" "}
+          {"{ buildDocument, renderToHtml }"}{" "}
           <span className="syntax-keyword">from</span>{" "}
           <span className="syntax-string">{'"postext"'}</span>;{"\n"}
           {"\n"}
-          <span className="syntax-keyword">const</span> Article = createLayout({"\n"}
+          <span className="syntax-keyword">const</span> doc = buildDocument({"\n"}
+          {"  "}{"{"} markdown {"}"},{"\n"}
           {"  "}{"{"}{"\n"}
-          {"    "}markdown: content,{"\n"}
-          {"    "}resources: [{"\n"}
-          {"      "}{"{"} id: <span className="syntax-string">{'"hero"'}</span>, type: <span className="syntax-string">{'"image"'}</span>, src: <span className="syntax-string">{'"hero.jpg"'}</span>, width: <span className="syntax-value">800</span>, height: <span className="syntax-value">400</span> {"}"},
-{"\n"}
-          {"    "}],{"\n"}
-          {"    "}notes: [{"\n"}
-          {"      "}{"{"} id: <span className="syntax-string">{'"1"'}</span>, type: <span className="syntax-string">{'"footnote"'}</span>, content: <span className="syntax-string">{'"Additional context."'}</span> {"}"},
-{"\n"}
-          {"    "}],{"\n"}
-          {"  "}{"}"},{"\n"}
-          {"  "}{"{"}{"\n"}
-          {"    "}columns: <span className="syntax-value">2</span>,{"\n"}
-          {"    "}gutter: <span className="syntax-string">{'"2rem"'}</span>,{"\n"}
-          {"    "}typography: {"{"}{"\n"}
-          {"      "}orphans: <span className="syntax-value">2</span>,{"\n"}
-          {"      "}widows: <span className="syntax-value">2</span>,{"\n"}
-          {"      "}hyphenation: <span className="syntax-value">true</span>,{"\n"}
-          {"    "}{"}"},{"\n"}
-          {"    "}references: {"{"}{"\n"}
-          {"      "}footnotes: {"{"} placement: <span className="syntax-string">{'"columnBottom"'}</span> {"}"},
-{"\n"}
+          {"    "}layout: {"{"} layoutType: <span className="syntax-string">{'"double"'}</span> {"}"},{"\n"}
+          {"    "}bodyText: {"{"}{"\n"}
+          {"      "}textAlign: <span className="syntax-string">{'"justify"'}</span>,{"\n"}
+          {"      "}hyphenation: {"{"} enabled: <span className="syntax-value">true</span>, locale: <span className="syntax-string">{'"en-us"'}</span> {"}"},{"\n"}
           {"    "}{"}"},{"\n"}
           {"  "}{"}"}{"\n"}
-          );
+          );{"\n"}
+          {"\n"}
+          <span className="syntax-keyword">const</span> html = renderToHtml(doc);
         </CodeBlock>
       </div>
     </section>

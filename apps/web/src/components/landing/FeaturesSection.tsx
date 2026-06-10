@@ -1,19 +1,28 @@
 import { getTranslations } from "next-intl/server";
 
+/** Key prefixes of the feature cards, in display order. Each entry expects a
+ *  `<key>Title` and `<key>Description` pair in the `Features` namespace of
+ *  both message files — adding a card only touches the message files. */
+const FEATURE_KEYS = [
+  "justification",
+  "resources",
+  "tables",
+  "singleInk",
+  "math",
+  "output",
+] as const;
+
 export async function FeaturesSection() {
   const t = await getTranslations("Features");
 
-  const features = [
-    { title: t("orphanTitle"), description: t("orphanDescription") },
-    { title: t("columnTitle"), description: t("columnDescription") },
-    { title: t("flowTitle"), description: t("flowDescription") },
-    { title: t("footnotesTitle"), description: t("footnotesDescription") },
-    { title: t("hyphenationTitle"), description: t("hyphenationDescription") },
-    { title: t("outputTitle"), description: t("outputDescription") },
-  ];
+  const features = FEATURE_KEYS.map((key) => ({
+    title: t(`${key}Title`),
+    description: t(`${key}Description`),
+  }));
 
-  const leftColumn = features.slice(0, 3);
-  const rightColumn = features.slice(3, 6);
+  const splitAt = Math.ceil(features.length / 2);
+  const leftColumn = features.slice(0, splitAt);
+  const rightColumn = features.slice(splitAt);
 
   return (
     <section aria-labelledby="features-heading" className="mx-auto w-full max-w-5xl px-6 py-24 2xl:max-w-6xl 2xl:px-8 2xl:py-32 4xl:max-w-7xl 4xl:px-12 4xl:py-40">

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Introduction',
   description: 'What Postext is, why it exists, and the problem it solves',
   lang: 'en',
-  lastUpdated: '2026-04-21',
-  readingTime: '12 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '7 min',
   order: 1,
 };
 
@@ -22,10 +22,11 @@ Now open a webpage. Even the best ones feel different. Text slams into images. C
 sit half-empty. Footnotes vanish to the bottom of the page instead of staying near the words that
 reference them. The web gave us responsive layout — but it never gave us *editorial* layout.
 
-Postext closes that gap. It is a layout engine that takes your content — enriched markdown with
-images, footnotes, pull quotes, and figures — and applies the same rules a professional typesetter
-would: orphan and widow prevention, column balancing, text flowing around obstacles, deliberate
-spacing. The output is publication-grade layout geometry for both HTML and PDF.
+Postext closes that gap. It is a layout engine that takes your content — markdown prose plus
+declared resources (bitmap images, SVG diagrams, and tables) incorporated by reference — and
+applies the same rules a professional typesetter would: orphan and widow prevention, column
+balancing, text flowing around obstacles, deliberate spacing. The output is publication-grade
+layout geometry for both HTML and PDF.
 
 Built on [`@chenglou/pretext`](https://github.com/chenglou/pretext) for DOM-free text measurement
 at speeds that make all of this possible.
@@ -46,10 +47,7 @@ newspapers, and magazines:
 - Consistent and deliberate spacing around headings, block quotes, and figures.
 - Hyphenation that avoids rivers and excessive rag.
 
-Two of these rules are so fundamental that they deserve special attention — because the web violates
-them on virtually every page.
-
-Two concrete numbers are enough to measure the distance:
+Beyond these rules, two concrete, measurable dimensions show how far the web drifts from print:
 
 - **Line measure.** Bringhurst puts the comfortable range at **45–75 characters** per line in a
   single column (and **40–50** in multi-column); the
@@ -89,7 +87,7 @@ complex multi-column document and the page freezes. The browser was never design
 of speculative measurement — trying ten different column widths to find the best one, testing where
 to break a paragraph, checking if an image fits here or needs to move to the next column.
 
-I needed a way to measure text that was fast enough to experiment freely, without locking up
+What was missing was a way to measure text fast enough to experiment freely, without locking up
 the main thread. For a decade, that tool did not exist.
 
 
@@ -152,14 +150,21 @@ Pretext gives you the measurements. Postext gives you the layout.
 
 The process has three stages:
 
-1. **You provide the content.** Enriched markdown with referenced resources — images, tables,
-   figures, footnotes, pull quotes. The content is purely semantic: it describes *what* to present,
-   not *how*. Layout decisions are never hardcoded into the source.
+1. **You provide the content.** Markdown prose plus declared resources — bitmap images, SVG
+   diagrams, and tables. An inline `:ref{id="..."}` both numbers a resource and floats it to a top
+   or bottom band near its first reference, the way a print typesetter places figures. The content
+   stays purely semantic: it describes *what* to present, not *how*; layout decisions are never
+   hardcoded into the source. The Resources section of the
+   [Document format](/en/docs/document-format) doc covers the full syntax.
 
 2. **The engine makes the decisions.** Postext parses the content, calls Pretext for pixel-perfect
-   text measurement without touching the DOM, and then runs seven layout passes: balancing columns,
-   placing resources, preventing widows and orphans, aligning baselines, refining spacing. Every
-   decision is driven by configuration — you control the rules, the engine applies them.
+   text measurement without touching the DOM, and then runs a multi-pass layout pipeline: balancing
+   columns, numbering and floating resources, preventing widows and orphans, aligning baselines,
+   refining spacing. Every decision is driven by configuration — page and layout geometry, body
+   text and headings, plus `tableStyle` for table cell typography, `captionStyle` for figure
+   captions, and `diagramStyle` with `singleInk`, which recolors SVG diagrams to luminance-mapped
+   tints of a single ink for single-spot-color printing. You control the rules, the engine applies
+   them.
 
 3. **You get a complete layout.** Precise coordinates and dimensions for every element on every
    page. Renderers translate this geometry to the target format — **canvas** for a pixel-accurate
@@ -168,12 +173,14 @@ The process has three stages:
    embedded fonts (`renderToPdf`, from the `postext-pdf` package). The same content, the same
    rules, three interchangeable outputs.
 
-<Illustration name="LayoutProcess" data='{"title": "Three-stage layout process", "desc": "Enriched markdown plus config enters the engine, which runs seven layout passes with Pretext measurement inside, and outputs rendered HTML or PDF.", "caption": "Content in, geometry out — then rendered to the target format.", "inputTitle": "Enriched Markdown", "inputSubtitle": "+ config", "parse": "parse", "engineTitle": "Postext engine", "engineSub1": "Pretext measurement inside", "engineSub2": "7 layout passes", "render": "render", "outputTitle": "HTML / PDF", "outputSubtitle": "rendered output"}' />
+<Illustration name="LayoutProcess" data='{"title": "Three-stage layout process", "desc": "Enriched markdown plus config enters the engine, which runs a multi-pass layout pipeline with Pretext measurement inside, and outputs rendered HTML or PDF.", "caption": "Content in, geometry out — then rendered to the target format.", "inputTitle": "Enriched Markdown", "inputSubtitle": "+ config", "parse": "parse", "engineTitle": "Postext engine", "engineSub1": "Pretext measurement inside", "engineSub2": "multi-pass layout", "render": "render", "outputTitle": "HTML / PDF", "outputSubtitle": "rendered output"}' />
 
-For a detailed look at the engine internals — the Virtual Document Tree, the seven-pass pipeline,
+For a detailed look at the engine internals — the Virtual Document Tree, the multi-pass pipeline,
 and the convergence loop — see the [Architecture](/en/docs/architecture) document. For a complete
-reference of all configuration options and their defaults, see the
-[Configuration](/en/docs/configuration) page.
+reference of every configuration option — from page geometry to table, caption, and diagram
+styling — see the [Configuration](/en/docs/configuration) page. And to try everything live — a
+markdown editor, a resources panel with a table editor and image/SVG upload, and live canvas,
+HTML, and PDF previews — open the [Sandbox](/en/docs/sandbox).
 
 
 ## Acknowledgments

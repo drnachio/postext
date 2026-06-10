@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Contributing',
   description: 'How to join the Postext community and contribute to the project',
   lang: 'en',
-  lastUpdated: '2026-04-21',
-  readingTime: '8 min',
+  lastUpdated: '2026-06-10',
+  readingTime: '5 min',
   order: 6,
 };
 
@@ -18,9 +18,10 @@ Postext is a community-driven open-source project. It aims to solve a problem th
 for decades: bringing professional editorial layout to the web. That is a large ambition, and it
 requires more than one person.
 
-The project is in its early stages, and this is the best time to get involved. The architecture is
-being defined, design decisions are still open, and early contributors have genuine influence on the
-direction the project takes. If you have been waiting for a good moment to join — this is it.
+The project is young, but it is no longer a blank page: the core layout pipeline, the document
+format, and the configuration system have all shipped. Plenty of design decisions remain open,
+though, and contributors who join now have genuine influence on the direction the project takes. If
+you have been waiting for a good moment to join — this is it.
 
 You do not need to be a programmer to contribute. Whether you write code, design editorial layouts,
 understand typography, test across browsers, write documentation, translate content, or simply have
@@ -34,10 +35,9 @@ editorial layout. There is no native support for column balancing, orphan and wi
 flowing around obstacles, or footnote placement. Every team solves these problems from scratch,
 building fragile, one-off solutions that are expensive to maintain and impossible to share.
 
-Postext aims to change that. Not as a proprietary tool, but as a shared open standard — a common
-foundation that publishers, magazines, newspapers, book platforms, and development teams worldwide
-can adopt and build upon. A single, high-quality layout engine that encodes centuries of typographic
-knowledge and makes it accessible to everyone.
+Postext aims to change that. Not as a proprietary tool, but as a shared open standard — a single,
+high-quality layout engine that publishers, magazines, newspapers, book platforms, and development
+teams worldwide can adopt and build upon.
 
 That kind of standard cannot be built by one person or one company. It needs the perspective of
 typographers from different traditions, PDF specialists, accessibility experts, developers who work
@@ -59,9 +59,8 @@ decisions made behind closed doors. Everything is public, searchable, and open t
   conversations, questions, and anything that is not a specific bug or task. This is the place to
   think out loud.
 
-This is deliberate. When everything lives in one place, anyone can find the context behind any
-decision. New contributors can read the history. No one is left out of a conversation that happened
-in a channel they were not in.
+This is deliberate: when everything lives in one place, anyone can find the context behind any
+decision, and new contributors can read the history.
 
 <Illustration name="ContributionWorkflow" data='{"title": "A typical contribution flow", "desc": "An idea starts as an Issue or Discussion, gets discussed, becomes a Pull Request that is reviewed, and is finally merged. Issues labelled good first issue are the entry point for newcomers.", "caption": "From idea to merge: four stages, all public on GitHub.", "steps": [{"name": "Issue", "sub": "problem or idea"}, {"name": "Discussion", "sub": "approach & design"}, {"name": "Pull Request", "sub": "code review"}, {"name": "Merge", "sub": "into develop"}], "branchLabel": "good first issue", "branchSub": "best entry point"}' />
 
@@ -72,17 +71,25 @@ The project needs many different kinds of expertise. Here are some areas where c
 especially valuable:
 
 ### Code and algorithms
-- **Typographic layout algorithms** — Knuth-Plass line breaking, column balancing, optimal paragraph
-  breaking, resource placement strategies.
-- **PDF generation** — low-level PDF construction, font embedding, color management.
-- **Text rendering** — canvas-based rendering, SVG output, font metrics.
-- **Performance optimization** — making the layout engine fast enough for real-time use on every
-  resize.
+- **Typographic layout algorithms** — the Knuth-Plass justification engine, column balancing,
+  optimal paragraph breaking, typed resource numbering, and float placement.
+- **PDF generation** — low-level PDF construction, font embedding, color management, and resource
+  byte handling for single-ink figures.
+- **Text rendering** — canvas-based rendering, SVG output, single-ink SVG recoloring
+  (`diagramStyle.singleInk`), font metrics.
+- **Performance optimization** — the measurement cache layer, and keeping the layout engine fast
+  enough for real-time use on every resize.
+
+### Sandbox and UI
+The [sandbox](/en/docs/sandbox) has grown into a substantial React surface in its own right: a
+resources panel with an interactive table editor and image/SVG upload, a fonts panel, and
+configuration sections covering every corner of the engine. Every UI string follows a strict i18n
+convention, wired through labels across five files spanning the sandbox package and the web app's
+locale catalogs. If you contribute frontend or UX work, this is where it lands.
 
 ### Design and typography
 - **Editorial design expertise** — if you have experience laying out magazines, newspapers, or
-  books, your knowledge of what makes a layout work (or fail) is invaluable. You do not need to
-  write code to contribute design knowledge.
+  books, your knowledge of what makes a layout work (or fail) is invaluable — no code required.
 - **Typographic traditions** — the project should respect typographic conventions from different
   languages and writing systems, not just Latin scripts.
 
@@ -95,12 +102,16 @@ especially valuable:
   break is just as valuable as building the ones that work.
 
 ### Format and schema design
-- **Enriched markdown format** — defining how authors express editorial intent in their content.
-  This is a design problem as much as a technical one.
-- **Configuration schema** — designing how users control layout rules. The configuration system
-  needs to be powerful enough for professionals and simple enough for newcomers.
+The format is no longer a blank slate: `::resource` blocks, `:ref` inline references, and the
+`tableStyle`, `captionStyle`, and `diagramStyle` configuration sections have all shipped. The work
+now is evolving an established format without breaking it:
 
-<Illustration name="ContributionAreas" data='{"title": "Four areas where you can help", "desc": "Four quadrants with concrete examples in each: code and algorithms, design and typography, documentation and community, format and schema.", "caption": "No need to touch code: four fronts where a contribution makes a real difference.", "areas": [{"name": "Code & algorithms", "items": ["Knuth-Plass, columns", "PDF generation", "Rendering & metrics", "Performance"]}, {"name": "Design & typography", "items": ["Editorial design", "Typographic traditions", "Magazines & newspapers", "Non-Latin scripts"]}, {"name": "Docs & community", "items": ["Improve docs", "Translations", "Cross-browser testing", "Onboarding newcomers"]}, {"name": "Format & schema", "items": ["Enriched markdown", "Config schema", "Editorial semantics", "Public APIs"]}]}' />
+- **Document grammar** — footnotes, margin notes, and cross-references beyond resources are still
+  open questions, each as much a design problem as a technical one.
+- **Configuration schema** — keeping the system powerful enough for professionals and simple enough
+  for newcomers as it grows.
+
+<Illustration name="ContributionAreas" data='{"title": "Where you can help, at a glance", "desc": "Four quadrants with concrete examples in each: code and the sandbox UI, design and typography, documentation and community, format and schema.", "caption": "No need to touch code: a contribution makes a real difference on many fronts.", "areas": [{"name": "Code & sandbox UI", "items": ["Knuth-Plass & floats", "PDF & rendering", "Measurement cache", "Sandbox UI & i18n"]}, {"name": "Design & typography", "items": ["Editorial design", "Typographic traditions", "Magazines & newspapers", "Non-Latin scripts"]}, {"name": "Docs & community", "items": ["Improve docs", "Translations", "Cross-browser testing", "Onboarding newcomers"]}, {"name": "Format & schema", "items": ["::resource & :ref directives", "Config schema", "Footnotes & margin notes", "Cross-references"]}]}' />
 
 
 ## Getting Started
@@ -109,21 +120,35 @@ The practical setup — cloning the repo, installing dependencies, running tests
 [CONTRIBUTING.md](https://github.com/drnachio/postext/blob/develop/CONTRIBUTING.md). Start there for
 the mechanical steps.
 
-Once you are set up:
+Once you are set up, three concrete actions, from lightest to heaviest commitment:
 
-1. **Browse open issues.** Look for issues labeled `good first issue` for a guided entry point, or
-   explore the broader issue list for something that matches your interests.
-2. **Join a Discussion.** If you have an idea or want to understand a design decision, open a thread
-   in [Discussions](https://github.com/drnachio/postext/discussions). No question is too basic.
-3. **Open an issue before writing code.** This avoids duplicate work and ensures your approach
-   aligns with the project direction. A quick conversation upfront saves everyone time.
+1. **Introduce yourself in [Discussions](https://github.com/drnachio/postext/discussions)** —
+   say what you work on and what brought you here. No question is too basic, and it is the fastest
+   way for the community to know you have arrived.
+2. **Pick up a [good first issue](https://github.com/drnachio/postext/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** —
+   curated to be a realistic entry point, with no hidden historical context required.
+3. **Translate the docs into a new language** — today the documentation is in English and
+   Spanish. Any third language is a gift for readers who are currently left out.
+
+If you plan to write code, open an issue first to discuss the approach — it avoids duplicate work,
+and a quick conversation upfront saves everyone time.
+
+### What to read next
+
+To get your bearings before diving in:
+
+- **[Architecture](/en/docs/architecture)** — how the layout pipeline is structured and where each
+  subsystem lives.
+- **[Document format](/en/docs/document-format)** — the enriched markdown grammar contributors
+  extend.
+- **[Sandbox](/en/docs/sandbox)** — the playground where most changes are easiest to see and test.
 
 
 ## The Community
 
-An active community of contributors is growing around Postext. It is still early — and that is
-precisely what makes this moment special. Early contributors are not just writing code; they are
-shaping the architecture, the conventions, the culture.
+Postext is still early — and that is precisely what makes this moment special. Contributors who
+join now are not just writing code; they are shaping the conventions, the priorities, and the
+culture.
 
 The project values:
 
@@ -144,23 +169,5 @@ Postext aims to become the standard layout engine for editorial content on the w
 publishers, magazines, newspapers, and book platforms reach for when they need professional
 typography.
 
-That kind of ambition requires a community. No single person can cover typographic layout, PDF
-internals, accessibility, internationalization, performance, and every editorial tradition. This
-project is designed to be built together — by the people who understand the problems best, wherever
-they are in the world.
-
 If you work in editorial development and have been solving these layout problems alone, this is your
 invitation to solve them once, properly, with others.
-
-
-## Where to Start Today
-
-Three concrete actions, from lightest to heaviest commitment:
-
-1. **Introduce yourself in [Discussions](https://github.com/drnachio/postext/discussions)** —
-   say what you work on and what brought you here. It is the fastest way for the community to
-   know you have arrived.
-2. **Pick up a [good first issue](https://github.com/drnachio/postext/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** —
-   curated to be a realistic entry point, with no hidden historical context required.
-3. **Translate the docs into a new language** — today the documentation is in English and
-   Spanish. Any third language is a gift for readers who are currently left out.
