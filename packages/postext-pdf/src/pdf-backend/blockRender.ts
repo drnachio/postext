@@ -104,14 +104,20 @@ function renderLine(
   const effectiveWidth = columnWidth - lineIndent;
   const segments = line.segments;
 
-  if (block.textAlign === 'justify' && !line.isLastLine && segments && segments.length > 0) {
+  // Last lines render ragged at natural width — except when overfull:
+  // Knuth-Plass may accept a final line wider than the measure on the
+  // assumption that its inter-word glue shrinks (TeX glue-setting semantics),
+  // so honor that by compressing the spaces to fit the measure exactly.
+  if (block.textAlign === 'justify' && segments && segments.length > 0) {
     let wordWidth = 0;
+    let naturalWidth = 0;
     let spaceCount = 0;
     for (const seg of segments) {
       if (seg.kind === 'space') spaceCount++;
       else wordWidth += seg.width;
+      naturalWidth += seg.width;
     }
-    if (spaceCount > 0) {
+    if (spaceCount > 0 && (!line.isLastLine || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
       renderSegments(ctx, segments, line.bbox.x, line.baseline, block, blockFont, blockSize, blockColor, fontCache, justifiedSpaceWidth);
       return;

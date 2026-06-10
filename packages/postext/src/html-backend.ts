@@ -111,16 +111,21 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
     if (seg.kind === 'space') spaceCount++;
     else wordWidth += seg.width;
   }
+  const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
 
+  // Last lines render ragged at natural width — except when overfull:
+  // Knuth-Plass may accept a final line wider than the measure on the
+  // assumption that its inter-word glue shrinks (TeX glue-setting semantics),
+  // so honor that by compressing the spaces to fit the measure exactly.
   const useJustify =
-    block.textAlign === 'justify' && !line.isLastLine && spaceCount > 0;
+    block.textAlign === 'justify' && spaceCount > 0 &&
+    (!line.isLastLine || contentWidth > effectiveWidth);
   const justifiedSpaceWidth = useJustify
     ? (effectiveWidth - wordWidth) / spaceCount
     : 0;
 
   // Centred alignment — used by math display blocks. Distribute leading gap.
   const useCenter = block.textAlign === 'center';
-  const contentWidth = line.segments.reduce((s, seg) => s + seg.width, 0);
   const centerLeft = useCenter ? Math.max(0, (effectiveWidth - contentWidth) / 2) : 0;
 
   const parts: string[] = [];
