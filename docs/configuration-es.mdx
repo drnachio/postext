@@ -1015,7 +1015,13 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
 
 ### Equilibrado de columnas
 
-Las editoriales esperan que cada columna empiece en la parte superior de la página y termine alineada con su parte inferior. Las reglas de ruptura (protección de huérfanas y viudas, títulos unidos a su texto, figuras indivisibles) dejan columnas cortas de forma natural — una o más líneas de rejilla base vacías al final. Con el equilibrado activado, el motor hace lo que haría un maquetista: añade líneas completas de rejilla al margen superior de los encabezados de la columna corta hasta que esta termina en la última línea de la rejilla. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten entre ellos, dejando siempre la mayor parte al encabezado más importante (un `h2` recibe más que un `h3`). Los encabezados situados al principio de una columna nunca reciben espacio adicional, de modo que las columnas siguen empezando en la parte superior. La última columna de una página solo se equilibra cuando la página fluye de forma natural hacia la siguiente — la página final de un capítulo termina corta de forma legítima.
+Las editoriales esperan que cada columna empiece en la parte superior de la página y termine alineada con su parte inferior. Las reglas de ruptura (protección de huérfanas y viudas, títulos unidos a su texto, figuras indivisibles) dejan columnas cortas de forma natural — una o más líneas de rejilla base vacías al final. Con el equilibrado activado, el motor hace lo que haría un maquetista, aplicando tres palancas en orden de prioridad editorial:
+
+1. **Encabezados** — se añaden líneas completas de rejilla al margen superior de los encabezados de la columna corta. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten entre ellos, dejando siempre la mayor parte al encabezado más importante (un `h2` recibe más que un `h3`). Los encabezados situados al principio de una columna nunca reciben espacio adicional, de modo que las columnas siguen empezando en la parte superior.
+2. **Finales de lista** — cuando los encabezados no pueden absorber todo el hueco, se añade una línea de rejilla donde termina una lista o enumeración (el aire tras una lista se lee con naturalidad), con un máximo por lista.
+3. **Párrafos corridos** — como último recurso, se recompone un párrafo de la columna con una línea más (el `\looseness=+1` de TeX), eligiendo el párrafo más largo para que el espaciado adicional se diluya de forma invisible. La solución corrida solo se acepta cuando todas sus líneas quedan **por debajo de `bodyText.maxWordSpacing`** — el color tipográfico nunca supera el límite que ya tengas configurado. Requiere `bodyText.optimalLineBreaking`.
+
+La última columna de una página solo se equilibra cuando la página fluye de forma natural hacia la siguiente — la página final de un capítulo termina corta de forma legítima.
 
 <table>
   <thead>
@@ -1038,6 +1044,24 @@ Las editoriales esperan que cada columna empiece en la parte superior de la pág
       <td><code>number</code></td>
       <td><code>4</code></td>
       <td>Número máximo de líneas de rejilla adicionales que pueden añadirse sobre un mismo encabezado.</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Permite líneas de rejilla adicionales donde termina una lista, cuando los encabezados no pueden absorber todo el hueco.</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterList</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Número máximo de líneas de rejilla adicionales tras el final de una misma lista.</td>
+    </tr>
+    <tr>
+      <td><code>looseParagraphs</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Último recurso: recompone un párrafo por columna corta con una línea más, sin superar <code>bodyText.maxWordSpacing</code>.</td>
     </tr>
   </tbody>
 </table>

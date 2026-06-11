@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/build';
 import { createMeasurementCache } from '../measure';
-import { collectColumnGaps, proposeBalanceLines } from '../pipeline/columnBalancing';
-import { createVDTPage, type VDTDocument, type VDTColumn, type VDTBlock } from '../vdt';
+import {
+  collectColumnGaps,
+  proposeBalanceLines,
+  type BalanceState,
+  type BalanceProposalOptions,
+} from '../pipeline/columnBalancing';
+import { createVDTPage, type VDTDocument, type VDTColumn, type VDTBlock, type VDTLine } from '../vdt';
 import type { PostextConfig } from '../types';
 
 // Deterministic text measurement stub (no DOM in the node test env).
@@ -117,6 +122,78 @@ describe('column balancing (vertical justification)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// New levers, end to end: list-end stretch and loose paragraphs.
+// ---------------------------------------------------------------------------
+
+describe('stretch levers (e2e)', () => {
+  /** Paragraph/list mix without any heading — gaps can only be absorbed by
+   *  the list-end and loose-paragraph levers. */
+  const listMarkdown = (): string => {
+    const parts: string[] = [];
+    for (let i = 0; i < 14; i++) {
+      parts.push(paragraph(4 + (i % 4)), '');
+      parts.push(`- Primer punto de la lista ${i} con un texto razonablemente largo`, `- Segundo punto de la lista ${i}`, `- Tercer punto con algo más de desarrollo para ocupar línea y media ${i}`, '');
+      parts.push(paragraph(3 + ((i + 2) % 3)), '');
+    }
+    return parts.join('\n');
+  };
+
+  /** Mostly short, split-resistant paragraphs (widow/orphan rules leave
+   *  bottom slack) with periodic long ones — the loose-lever candidates. */
+  const paragraphsMarkdown = (): string => {
+    const parts: string[] = [];
+    for (let i = 0; i < 30; i++) parts.push(paragraph(i % 5 === 0 ? 7 : 2), '');
+    return parts.join('\n');
+  };
+
+  const build = (markdown: string, balancing: Record<string, boolean | number>): VDTDocument =>
+    buildDocument(
+      { markdown },
+      { headings: { balancing: balancing as never } },
+      createMeasurementCache(),
+    );
+
+  it('fills gaps after list ends when no heading is available', () => {
+    const md = listMarkdown();
+    const off = build(md, { enabled: true, stretchAfterLists: false, looseParagraphs: false });
+    const on = build(md, { enabled: true, stretchAfterLists: true, looseParagraphs: false });
+
+    // Non-vacuous: the lever-less layout must expose at least one gap with a
+    // list-end stretch point.
+    const offGaps = collectColumnGaps(off, NO_FORCED);
+    expect(offGaps.some((g) => g.candidates.some((c) => c.kind === 'listEnd'))).toBe(true);
+
+    expect(totalGaps(on)).toBeLessThan(totalGaps(off));
+  }, LONG);
+
+  it('runs a paragraph one line long as a last resort', () => {
+    const md = paragraphsMarkdown();
+    const off = build(md, { enabled: true, stretchAfterLists: false, looseParagraphs: false });
+    const on = build(md, { enabled: true, stretchAfterLists: false, looseParagraphs: true });
+
+    const offGaps = collectColumnGaps(off, NO_FORCED);
+    expect(offGaps.some((g) => g.candidates.some((c) => c.kind === 'looseParagraph'))).toBe(true);
+
+    expect(totalGaps(on)).toBeLessThan(totalGaps(off));
+
+    // Loosened text must stay on the baseline grid.
+    const grid = on.baselineGrid;
+    for (const page of on.pages) {
+      for (const col of page.columns) {
+        for (const block of col.blocks) {
+          if (block.type !== 'paragraph') continue;
+          for (const line of block.lines) {
+            const offset = (line.baseline - col.bbox.y - 0.8 * grid) % grid;
+            const dist = Math.min(offset, grid - offset);
+            expect(dist).toBeLessThan(0.01);
+          }
+        }
+      }
+    }
+  }, LONG);
+});
+
+// ---------------------------------------------------------------------------
 // Distribution rule — unit-tested over a synthetic VDT so the share each
 // heading receives is exact: round-robin in importance order, the most
 // important heading (lowest level) takes the largest share.
@@ -154,6 +231,22 @@ function fakeDoc(columns: Array<{ blocks: VDTBlock[]; availableHeight: number }>
   return { pages, baselineGrid: 24 } as VDTDocument;
 }
 
+function fakeLine(): VDTLine {
+  return { text: 'x', bbox: { x: 0, y: 0, width: 100, height: 24 }, baseline: 19, hyphenated: false };
+}
+
+const baseOptions = (over?: Partial<BalanceProposalOptions>): BalanceProposalOptions => ({
+  maxLinesPerHeading: 2,
+  stretchAfterLists: true,
+  maxLinesAfterList: 1,
+  looseParagraphs: true,
+  optimalLineBreaking: true,
+  failedLoose: new Set<number>(),
+  ...over,
+});
+
+const emptyState = (): BalanceState => ({ lines: new Map(), loose: new Map() });
+
 describe('proposeBalanceLines distribution', () => {
   const para = () => fakeBlock({ type: 'paragraph' });
   const heading = (contentIndex: number, level: number) =>
@@ -169,7 +262,7 @@ describe('proposeBalanceLines distribution', () => {
       ],
       [[{ blocks: [para()], availableHeight: 0 }], []].flat() as never,
     ]);
-    const proposal = proposeBalanceLines(doc, NO_FORCED, new Map(), 2);
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
     expect(proposal.changed).toBe(true);
     expect(proposal.lines.get(10)).toBe(2); // h2 — main heading, larger share
     expect(proposal.lines.get(20)).toBe(1); // h3
@@ -183,7 +276,7 @@ describe('proposeBalanceLines distribution', () => {
       ],
       [{ blocks: [para()], availableHeight: 0 }],
     ]);
-    const proposal = proposeBalanceLines(doc, NO_FORCED, new Map(), 2);
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
     expect(proposal.lines.get(10)).toBe(1);
     expect(proposal.lines.get(20)).toBe(1);
   });
@@ -198,7 +291,7 @@ describe('proposeBalanceLines distribution', () => {
       ],
       [{ blocks: [para()], availableHeight: 0 }],
     ]);
-    const proposal = proposeBalanceLines(doc, NO_FORCED, new Map(), 2);
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
     expect(proposal.lines.get(1)).toBeUndefined();
     expect(proposal.lines.get(30)).toBeUndefined();
     expect(proposal.lines.get(10)).toBe(2);
@@ -214,9 +307,140 @@ describe('proposeBalanceLines distribution', () => {
     ]);
     // Page 1 is the last content page: its column is never balanced. With
     // page 0 forced, only its NON-last column (col 0) remains balanceable.
-    const proposal = proposeBalanceLines(doc, new Set([0]), new Map(), 2);
+    const proposal = proposeBalanceLines(doc, new Set([0]), emptyState(), baseOptions());
     expect(proposal.lines.get(10)).toBe(2);
     expect(proposal.lines.get(20)).toBeUndefined();
     expect(proposal.lines.get(40)).toBeUndefined();
+  });
+});
+
+describe('list-end and loose-paragraph levers', () => {
+  const para = () => fakeBlock({ type: 'paragraph' });
+  const heading = (contentIndex: number, level: number) =>
+    fakeBlock({ type: 'heading', headingLevel: level, contentIndex });
+  const listItem = () => fakeBlock({ type: 'listItem', listDepth: 1, listKind: 'unordered' });
+  const afterListPara = (contentIndex: number) =>
+    fakeBlock({ type: 'paragraph', contentIndex, id: `p-${contentIndex}` });
+  const justPara = (contentIndex: number, lineCount: number, id = `p-${contentIndex}`) =>
+    fakeBlock({
+      type: 'paragraph',
+      textAlign: 'justify',
+      contentIndex,
+      id,
+      lines: Array.from({ length: lineCount }, fakeLine),
+    });
+
+  it('assigns a line to the block after a list end, capped at maxLinesAfterList', () => {
+    const doc = fakeDoc([
+      [
+        { blocks: [para(), listItem(), listItem(), afterListPara(50)], availableHeight: 2 * 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
+    expect(proposal.lines.get(50)).toBe(1); // cap 1 even though the gap is 2
+  });
+
+  it('exhausts heading capacity before touching list ends', () => {
+    const doc = fakeDoc([
+      [
+        {
+          blocks: [para(), heading(10, 2), para(), listItem(), listItem(), afterListPara(50)],
+          availableHeight: 3 * 24,
+        },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
+    expect(proposal.lines.get(10)).toBe(2); // heading first, up to its cap
+    expect(proposal.lines.get(50)).toBe(1); // then the list end
+  });
+
+  it('skips list ends when stretchAfterLists is disabled', () => {
+    const doc = fakeDoc([
+      [
+        { blocks: [para(), listItem(), afterListPara(50)], availableHeight: 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const proposal = proposeBalanceLines(
+      doc, NO_FORCED, emptyState(), baseOptions({ stretchAfterLists: false }),
+    );
+    expect(proposal.lines.get(50)).toBeUndefined();
+  });
+
+  it('falls back to one loose paragraph per column — the longest one', () => {
+    const doc = fakeDoc([
+      [
+        { blocks: [justPara(60, 3), justPara(61, 8), justPara(62, 5)], availableHeight: 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
+    expect([...proposal.loose.keys()]).toEqual([61]); // most lines wins
+    expect(proposal.lines.size).toBe(0);
+  });
+
+  it('skips failed loose candidates and never adds a second one per column', () => {
+    const doc = fakeDoc([
+      [
+        { blocks: [justPara(60, 3), justPara(61, 8), justPara(62, 5)], availableHeight: 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const afterFailure = proposeBalanceLines(
+      doc, NO_FORCED, emptyState(), baseOptions({ failedLoose: new Set([61]) }),
+    );
+    expect([...afterFailure.loose.keys()]).toEqual([62]); // next longest
+
+    const alreadyLoose = proposeBalanceLines(
+      doc, NO_FORCED,
+      { lines: new Map(), loose: new Map([[60, 1]]) },
+      baseOptions(),
+    );
+    expect(alreadyLoose.loose.size).toBe(1); // no second loose paragraph
+    expect(alreadyLoose.changed).toBe(false);
+  });
+
+  it('excludes split paragraphs and non-justified blocks from loosening', () => {
+    const splitPart1 = justPara(70, 4, 'p-70');
+    const splitPart2 = justPara(70, 4, 'p-70-cont-1');
+    const leftAligned = fakeBlock({
+      type: 'paragraph', textAlign: 'left', contentIndex: 71,
+      lines: Array.from({ length: 6 }, fakeLine),
+    });
+    const doc = fakeDoc([
+      [
+        { blocks: [splitPart1, leftAligned], availableHeight: 24 },
+        { blocks: [splitPart2], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
+    expect(proposal.loose.size).toBe(0);
+    expect(proposal.changed).toBe(false);
+  });
+
+  it('disables loosening without optimal line breaking or when turned off', () => {
+    const doc = fakeDoc([
+      [
+        { blocks: [justPara(60, 6), justPara(61, 4)], availableHeight: 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const noOptimal = proposeBalanceLines(
+      doc, NO_FORCED, emptyState(), baseOptions({ optimalLineBreaking: false }),
+    );
+    expect(noOptimal.loose.size).toBe(0);
+    const turnedOff = proposeBalanceLines(
+      doc, NO_FORCED, emptyState(), baseOptions({ looseParagraphs: false }),
+    );
+    expect(turnedOff.loose.size).toBe(0);
   });
 });

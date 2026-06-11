@@ -77,6 +77,68 @@ describe('runt penalty option', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Looseness (TeX \looseness=+1) — column balancing's "run a paragraph long"
+// ---------------------------------------------------------------------------
+
+describe('looseness option', () => {
+  /** Six 25px words. Natural fit at lineWidth 100 is 3+3 words (two lines,
+   *  r ≈ 0.1). With generous glue stretch a 2+2+2 split (three lines,
+   *  r ≈ 0.89 < 1) is feasible — the looseness target. */
+  const sixWords = (stretch: number): KPItem[] => [
+    box(25, 0), glue(10, stretch, 3, 1),
+    box(25, 2), glue(10, stretch, 3, 3),
+    box(25, 4), glue(10, stretch, 3, 5),
+    box(25, 6), glue(10, stretch, 3, 7),
+    box(25, 8), glue(10, stretch, 3, 9),
+    box(25, 10),
+    ...finalItems(),
+  ];
+
+  it('produces exactly one more line when feasible within the stretch limit', () => {
+    const natural = computeBreakpoints(sixWords(45), defaultOptions);
+    const loose = computeBreakpoints(sixWords(45), { ...defaultOptions, looseness: 1 });
+    expect(natural.length).toBe(2);
+    expect(loose.length).toBe(3);
+  });
+
+  it('keeps every loose line within the available glue stretch', () => {
+    const items = sixWords(45);
+    const breaks = computeBreakpoints(items, { ...defaultOptions, looseness: 1 });
+    expect(breaks.length).toBe(3);
+    // Reconstruct line content widths and assert slack ≤ stretch for every
+    // line except the ragged last one.
+    let start = 0;
+    for (let li = 0; li < breaks.length - 1; li++) {
+      const end = breaks[li]!;
+      let content = 0;
+      let stretch = 0;
+      for (let i = start; i < end; i++) {
+        const it = items[i]!;
+        if (it.type === 'box') content += it.width;
+        else if (it.type === 'glue') { content += it.width; stretch += it.stretch; }
+      }
+      const slack = 100 - content;
+      expect(slack).toBeGreaterThanOrEqual(0);
+      expect(slack).toBeLessThan(stretch); // r < 1 — below the user's limit
+      start = end + 1;
+    }
+  });
+
+  it('falls back to the natural break count when the extra line would over-stretch', () => {
+    // Tight glue: any 3-line chain needs a line with r ≥ 1 (class 3) — vetoed.
+    const natural = computeBreakpoints(sixWords(12), defaultOptions);
+    const loose = computeBreakpoints(sixWords(12), { ...defaultOptions, looseness: 1 });
+    expect(loose).toEqual(natural);
+  });
+
+  it('looseness 0 / omitted produces identical breaks (regression guard)', () => {
+    const withZero = computeBreakpoints(sixWords(45), { ...defaultOptions, looseness: 0 });
+    const without = computeBreakpoints(sixWords(45), defaultOptions);
+    expect(withZero).toEqual(without);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Core algorithm tests
 // ---------------------------------------------------------------------------
 

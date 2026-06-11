@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Hyphenation & Justification',
   description: 'How Postext breaks lines, justifies text, and controls word spacing using the Knuth-Plass algorithm',
   lang: 'en',
-  lastUpdated: '2026-06-10',
-  readingTime: '12 min',
+  lastUpdated: '2026-06-11',
+  readingTime: '14 min',
   order: 4,
 };
 
@@ -379,6 +379,44 @@ When you enable loose-line highlighting and see red bands across certain lines, 
   </tbody>
 </table>
 
+
+## Vertical Justification: Column Balancing
+
+Knuth-Plass solves the *horizontal* problem — where each line breaks. Column balancing solves its *vertical* counterpart: where each column ends. Publishers expect every column of a page to start at the top and end flush with the page bottom, line for line across the whole spread. The very rules that protect text quality work against this: orphan/widow protection, `keepWithNext` headings, and unsplittable figures all push content to the next column before the current one is completely full, leaving one or more empty baseline-grid lines at its bottom.
+
+When `headings.balancing` is enabled (the default), the engine closes those gaps the way a human compositor would, applying three levers in strict editorial priority order — each lever only acts on what the previous one could not absorb:
+
+1. **Space above headings.** Whole baseline-grid lines are added to the top margin of the headings inside the short column. When several lines are needed and the column holds several headings, the lines are distributed round-robin in importance order, so the most important heading always receives the largest share — 3 lines over an `h2` and an `h3` become +2 above the `h2` and +1 above the `h3`. Headings at the very top of a column never receive extra space (columns keep starting at the page top), and a trailing heading is never pushed toward the column bottom.
+2. **Space after list ends.** A grid line is added where a list or enumeration ends — air after a list reads naturally. Capped per list end (`maxLinesAfterList`, default 1).
+3. **Loose paragraphs.** As a last resort, **one** paragraph of the column is re-broken one line longer — TeX's `\looseness=+1`. The breaker re-runs Knuth-Plass asking for exactly one extra line and accepts the result only when **every line of the loose solution stays below `maxWordSpacing`**: type colour never exceeds the limit you already configured. The engine prefers the longest paragraph in the column, where the extra space dilutes across the most inter-word glue and becomes invisible. Requires `optimalLineBreaking` (the default); paragraphs split across columns are excluded.
+
+### Why the fix is local
+
+Column breaks are *element-bound*: the element that opens the next column is there because it did not fit in the gap. Pushing a column's tail down by at most its own gap therefore never moves content into the next column or page — each column is fixed in place, without cascading reflows. The engine still verifies this empirically: it re-runs placement with the proposed adjustments (up to 7 passes), measures the total leftover gap, and always keeps the best layout found. A loose paragraph that fails to gain its line within the spacing limit is blacklisted and the next candidate is tried.
+
+### When a short column is left alone
+
+A short column is sometimes the *correct* output, and balancing knows to step aside:
+
+- The **last column of a page** is only balanced when the page flows naturally into the next one. Pages ended by `:::pagebreak`, a heading's `breakBefore`, or a chapter opener keep their short last column — a chapter legitimately ends mid-page.
+- The **last page of the document** is never balanced.
+- A column with **no usable stretch point** (no eligible heading, list end, or loosenable paragraph) keeps its gap rather than degrade the typography.
+
+```js
+const layout = createLayout({
+  headings: {
+    balancing: {
+      enabled: true,            // default
+      maxLinesPerHeading: 4,    // cap per heading
+      stretchAfterLists: true,  // lever 2
+      maxLinesAfterList: 1,     // cap per list end
+      looseParagraphs: true,    // lever 3 — bounded by bodyText.maxWordSpacing
+    },
+  },
+});
+```
+
+In the sandbox these live in the **Headings** section ("Balance Columns", with "Stretch After Lists" and "Loose Paragraphs" nested under it). Turn on the baseline grid in the Canvas view to see the effect: with balancing off, short columns end above the last grid line; with it on, every balanceable column closes on the same line. See the [Configuration](/en/docs/configuration#column-balancing) page for the full option reference.
 
 ## Complete Example
 

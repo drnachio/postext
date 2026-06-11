@@ -26,6 +26,10 @@ export interface MeasureBlockOptions {
   /** Approximate minimum characters on the final line before runt penalty
    *  applies. Converted internally to a pixel threshold via normal space width. */
   runtMinCharacters?: number;
+  /** Knuth-Plass looseness: re-break the paragraph with this many extra lines
+   *  when feasible within the stretch limit (column balancing's "run a
+   *  paragraph long" lever). Ignored on the greedy path. */
+  looseness?: number;
 }
 
 export const SOFT_HYPHEN = '\u00AD';

@@ -55,6 +55,13 @@ export interface KPOptions {
   /** Minimum content width (in px) the final line must have to avoid the runt
    *  penalty. Typically `runtMinCharacters * normalSpaceWidth`. */
   runtMinWidth?: number;
+  /** TeX-style \looseness: prefer a final break sequence with exactly
+   *  (natural + looseness) lines, but only when every line of that sequence
+   *  stays within the configured stretch limit (adjustment ratio < 1.0, i.e.
+   *  word spacing below `maxStretchRatio`). Falls back silently to the
+   *  natural solution otherwise. Only positive values are supported.
+   *  Default 0 (off). */
+  looseness?: number;
 }
 
 // ---------------------------------------------------------------------------
