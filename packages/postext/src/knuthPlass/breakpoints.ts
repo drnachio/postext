@@ -46,6 +46,18 @@ function computeBadness(r: number): number {
   return Math.min(b, BADNESS_CAP);
 }
 
+/** Quality gate for the looseness target: every line in the chain must stay
+ *  within the stretch limit (fitness class ≤ 2, i.e. adjustment ratio < 1.0
+ *  — word spacing strictly below `maxStretchRatio`). The paragraph's last
+ *  line never trips this: its closing glue has near-infinite stretch, so its
+ *  ratio is ≈ 0. */
+function chainWithinStretchLimit(node: ActiveNode): boolean {
+  for (let n: ActiveNode | null = node; n !== null && n.position >= 0; n = n.previous) {
+    if (n.fitnessClass === 3) return false;
+  }
+  return true;
+}
+
 export function computeBreakpoints(items: KPItem[], options: KPOptions): number[] {
   const {
     lineWidth,
@@ -256,6 +268,25 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
     if (best === null || a.totalDemerits < best.totalDemerits) {
       best = a;
     }
+  }
+
+  // Looseness (TeX \looseness): among the surviving final nodes, prefer the
+  // lowest-demerit sequence with exactly (natural + looseness) lines — used
+  // by column balancing to run a paragraph one line long. The DP never
+  // merges nodes with different line counts, so when such a sequence is
+  // feasible a final node for it exists here. Gated on chain quality so the
+  // loose solution never stretches any line beyond the user's limit; when no
+  // acceptable node matches, the natural solution stands.
+  const looseness = options.looseness ?? 0;
+  if (looseness > 0 && best) {
+    const targetLine = best.line + looseness;
+    let loose: ActiveNode | null = null;
+    for (const a of activeNodes) {
+      if (a.position !== lastBreakPosition || a.line !== targetLine) continue;
+      if (!chainWithinStretchLimit(a)) continue;
+      if (loose === null || a.totalDemerits < loose.totalDemerits) loose = a;
+    }
+    if (loose) best = loose;
   }
   // Fallback: if no node reached the final position, take any node with the
   // highest position (nearest to the end).

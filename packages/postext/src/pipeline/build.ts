@@ -63,7 +63,12 @@ import {
 } from './resourceNumbering';
 import { defaultResourceTypes } from '../defaults/resourceTypes';
 import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
-import { totalGapLines, proposeBalanceLines, MAX_BALANCING_PASSES } from './columnBalancing';
+import {
+  totalGapLines,
+  proposeBalanceLines,
+  MAX_BALANCING_PASSES,
+  type BalanceState,
+} from './columnBalancing';
 
 export interface BuildDocumentOptions {
   /**
@@ -104,6 +109,7 @@ function buildDocumentPass(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
   balanceExtraPx?: ReadonlyMap<number, number>,
+  balanceLooseness?: ReadonlyMap<number, number>,
 ): { doc: VDTDocument; forcedBreakPages: Set<number> } {
   const resolved = resolveAllConfig(config);
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
@@ -670,6 +676,9 @@ function buildDocumentPass(
       minShrinkRatio: resolved.bodyText.minWordSpacing,
       runtPenalty: runtActive ? resolved.bodyText.runtPenalty : 0,
       runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
+      // Column balancing "run a paragraph long": stays undefined for the
+      // common case so existing measurement cache keys are preserved.
+      looseness: balanceLooseness?.get(blockIdx),
     };
     const useRich = !!(hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString);
 
@@ -772,6 +781,13 @@ function buildDocumentPass(
           if (!prevWasList) {
             spacingBefore = Math.max(spacingBefore, style.marginTopPx);
           }
+        }
+        // Column balancing: extra grid lines above a non-heading balance
+        // target — the first block after a list end. Heading targets are
+        // handled inside the heading branch above (after margin collapsing).
+        if (vdtType !== 'heading' && vdtType !== 'mathDisplay' && partIndex === 0) {
+          const extraPx = balanceExtraPx?.get(blockIdx);
+          if (extraPx) spacingBefore += extraPx;
         }
       }
 
@@ -1164,34 +1180,46 @@ export function buildDocument(
   if (!balancing.enabled) return best.doc;
 
   let bestScore = totalGapLines(best.doc, best.forcedBreakPages);
-  let appliedLines = new Map<number, number>();
+  let applied: BalanceState = { lines: new Map(), loose: new Map() };
+  const failedLoose = new Set<number>();
   let passCount = 1;
   let converged = bestScore === 0;
 
   while (!converged && passCount < MAX_BALANCING_PASSES) {
-    const proposal = proposeBalanceLines(
-      best.doc,
-      best.forcedBreakPages,
-      appliedLines,
-      balancing.maxLinesPerHeading,
-    );
+    const proposal = proposeBalanceLines(best.doc, best.forcedBreakPages, applied, {
+      maxLinesPerHeading: balancing.maxLinesPerHeading,
+      stretchAfterLists: balancing.stretchAfterLists,
+      maxLinesAfterList: balancing.maxLinesAfterList,
+      looseParagraphs: balancing.looseParagraphs,
+      optimalLineBreaking: best.doc.config.bodyText.optimalLineBreaking,
+      failedLoose,
+    });
     if (!proposal.changed) {
-      // No heading can absorb the remaining gaps — stable.
+      // No stretch point can absorb the remaining gaps — stable.
       converged = true;
       break;
     }
     const extraPx = new Map<number, number>();
     for (const [idx, n] of proposal.lines) extraPx.set(idx, n * best.doc.baselineGrid);
-    const next = buildDocumentPass(content, config, cache, options, extraPx);
+    const next = buildDocumentPass(content, config, cache, options, extraPx, proposal.loose);
     passCount++;
     const score = totalGapLines(next.doc, next.forcedBreakPages);
     if (score < bestScore) {
       best = next;
       bestScore = score;
-      appliedLines = proposal.lines;
+      applied = { lines: proposal.lines, loose: proposal.loose };
       converged = score === 0;
     } else {
-      // Plateau or regression — keep the best layout found so far.
+      // Plateau or regression. When this attempt introduced NEW loose
+      // paragraphs, the K-P looseness fallback may simply have failed to
+      // gain a line within the stretch limit — blacklist them and retry so
+      // the proposer falls through to the next candidate. A pure spacing
+      // plateau means we're done: keep the best layout found so far.
+      const newlyLoose = [...proposal.loose.keys()].filter((k) => !applied.loose.has(k));
+      if (newlyLoose.length > 0) {
+        for (const k of newlyLoose) failedLoose.add(k);
+        continue;
+      }
       break;
     }
   }

@@ -41,7 +41,9 @@ export const HeadingsSection = memo(function HeadingsSection() {
     });
   };
 
-  const resetBalancingField = (field: 'enabled' | 'maxLinesPerHeading') => {
+  const resetBalancingField = (
+    field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'looseParagraphs',
+  ) => {
     if (!raw?.balancing) return;
     const next = { ...raw.balancing };
     delete next[field];
@@ -128,6 +130,8 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isKeepWithNextDefault = headings.keepWithNext === D.keepWithNext;
   const isBalEnabledDefault = headings.balancing.enabled === DEFAULT_COLUMN_BALANCING.enabled;
   const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
+  const isBalAfterListsDefault = headings.balancing.stretchAfterLists === DEFAULT_COLUMN_BALANCING.stretchAfterLists;
+  const isBalLooseDefault = headings.balancing.looseParagraphs === DEFAULT_COLUMN_BALANCING.looseParagraphs;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.headingsTextAlignLeft },
@@ -257,6 +261,26 @@ export const HeadingsSection = memo(function HeadingsSection() {
             tooltip={labels.balanceColumnsMaxLinesTooltip}
             isDefault={isBalMaxLinesDefault}
             onReset={() => resetBalancingField('maxLinesPerHeading')}
+          />
+          <ToggleSwitch
+            label={labels.balanceAfterLists}
+            checked={headings.balancing.stretchAfterLists}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, stretchAfterLists: v } })
+            }
+            tooltip={labels.balanceAfterListsTooltip}
+            isDefault={isBalAfterListsDefault}
+            onReset={() => resetBalancingField('stretchAfterLists')}
+          />
+          <ToggleSwitch
+            label={labels.balanceLooseParagraphs}
+            checked={headings.balancing.looseParagraphs}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, looseParagraphs: v } })
+            }
+            tooltip={labels.balanceLooseParagraphsTooltip}
+            isDefault={isBalLooseDefault}
+            onReset={() => resetBalancingField('looseParagraphs')}
           />
         </NestedGroup>
       )}

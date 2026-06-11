@@ -32,6 +32,9 @@ const DEFAULT_HEADING_FONT_WEIGHT = 700;
 export const DEFAULT_COLUMN_BALANCING = {
   enabled: true,
   maxLinesPerHeading: 4,
+  stretchAfterLists: true,
+  maxLinesAfterList: 1,
+  looseParagraphs: true,
 };
 
 const DEFAULT_HEADING_MARGIN_TOP: Dimension = { value: 1.5, unit: 'em' };
@@ -81,6 +84,12 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
         enabled: partial.balancing.enabled ?? DEFAULT_COLUMN_BALANCING.enabled,
         maxLinesPerHeading:
           partial.balancing.maxLinesPerHeading ?? DEFAULT_COLUMN_BALANCING.maxLinesPerHeading,
+        stretchAfterLists:
+          partial.balancing.stretchAfterLists ?? DEFAULT_COLUMN_BALANCING.stretchAfterLists,
+        maxLinesAfterList:
+          partial.balancing.maxLinesAfterList ?? DEFAULT_COLUMN_BALANCING.maxLinesAfterList,
+        looseParagraphs:
+          partial.balancing.looseParagraphs ?? DEFAULT_COLUMN_BALANCING.looseParagraphs,
       }
     : { ...DEFAULT_COLUMN_BALANCING };
 
@@ -156,6 +165,27 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       && headings.balancing.maxLinesPerHeading !== DEFAULT_COLUMN_BALANCING.maxLinesPerHeading
     ) {
       b.maxLinesPerHeading = headings.balancing.maxLinesPerHeading;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.stretchAfterLists !== undefined
+      && headings.balancing.stretchAfterLists !== DEFAULT_COLUMN_BALANCING.stretchAfterLists
+    ) {
+      b.stretchAfterLists = headings.balancing.stretchAfterLists;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.maxLinesAfterList !== undefined
+      && headings.balancing.maxLinesAfterList !== DEFAULT_COLUMN_BALANCING.maxLinesAfterList
+    ) {
+      b.maxLinesAfterList = headings.balancing.maxLinesAfterList;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.looseParagraphs !== undefined
+      && headings.balancing.looseParagraphs !== DEFAULT_COLUMN_BALANCING.looseParagraphs
+    ) {
+      b.looseParagraphs = headings.balancing.looseParagraphs;
       hasBOverride = true;
     }
     if (hasBOverride) {

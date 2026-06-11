@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Separación silábica y justificación',
   description: 'Cómo Postext corta líneas, justifica texto y controla el espaciado entre palabras usando el algoritmo Knuth-Plass',
   lang: 'es',
-  lastUpdated: '2026-06-10',
-  readingTime: '12 min',
+  lastUpdated: '2026-06-11',
+  readingTime: '14 min',
   order: 4,
 };
 
@@ -379,6 +379,44 @@ Cuando activas el resaltado de líneas flojas y ves bandas rojas en ciertas lín
   </tbody>
 </table>
 
+
+## Justificación vertical: equilibrado de columnas
+
+Knuth-Plass resuelve el problema *horizontal* — dónde corta cada línea. El equilibrado de columnas resuelve su equivalente *vertical*: dónde termina cada columna. Las editoriales esperan que cada columna de una página empiece arriba y termine alineada con el pie de página, línea a línea en todo el pliego. Las mismas reglas que protegen la calidad del texto juegan en contra: la protección de huérfanas y viudas, los encabezados con `keepWithNext` y las figuras indivisibles empujan contenido a la siguiente columna antes de que la actual esté completamente llena, dejando una o más líneas de rejilla base vacías en su parte inferior.
+
+Con `headings.balancing` activado (el valor por defecto), el motor cierra esos huecos como lo haría un maquetista, aplicando tres palancas en orden estricto de prioridad editorial — cada palanca actúa solo sobre lo que la anterior no pudo absorber:
+
+1. **Espacio sobre los encabezados.** Se añaden líneas completas de rejilla al margen superior de los encabezados de la columna corta. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten en rondas por orden de importancia, de modo que el encabezado más importante recibe siempre la mayor parte — 3 líneas sobre un `h2` y un `h3` se convierten en +2 sobre el `h2` y +1 sobre el `h3`. Los encabezados situados al principio de una columna nunca reciben espacio adicional (las columnas siguen empezando en la parte superior), y un encabezado final nunca se empuja hacia el pie de la columna.
+2. **Espacio tras el final de las listas.** Se añade una línea de rejilla donde termina una lista o enumeración — el aire tras una lista se lee con naturalidad. Con un máximo por lista (`maxLinesAfterList`, por defecto 1).
+3. **Párrafos corridos.** Como último recurso, se recompone **un** párrafo de la columna con una línea más — el `\looseness=+1` de TeX. El partidor vuelve a ejecutar Knuth-Plass pidiendo exactamente una línea adicional y acepta el resultado solo cuando **todas las líneas de la solución corrida quedan por debajo de `maxWordSpacing`**: el color tipográfico nunca supera el límite que ya tengas configurado. El motor prefiere el párrafo más largo de la columna, donde el espacio extra se diluye entre más espacios y resulta invisible. Requiere `optimalLineBreaking` (el valor por defecto); los párrafos partidos entre columnas quedan excluidos.
+
+### Por qué el ajuste es local
+
+Los saltos de columna están *ligados a elementos*: el elemento que abre la siguiente columna está allí porque no cabía en el hueco. Empujar la cola de una columna hacia abajo como máximo su propio hueco nunca mueve contenido a la siguiente columna o página — cada columna se corrige en su sitio, sin recomposiciones en cascada. Aun así, el motor lo verifica empíricamente: vuelve a ejecutar la colocación con los ajustes propuestos (hasta 7 pasadas), mide el hueco restante total y conserva siempre la mejor maquetación encontrada. Un párrafo corrido que no consigue ganar su línea dentro del límite de espaciado se descarta y se prueba con el siguiente candidato.
+
+### Cuándo se respeta una columna corta
+
+Una columna corta es a veces el resultado *correcto*, y el equilibrado sabe apartarse:
+
+- La **última columna de una página** solo se equilibra cuando la página fluye de forma natural hacia la siguiente. Las páginas terminadas con `:::pagebreak`, con el `breakBefore` de un encabezado o con un inicio de capítulo conservan su última columna corta — un capítulo termina legítimamente a media página.
+- La **última página del documento** nunca se equilibra.
+- Una columna **sin ningún punto elástico utilizable** (sin encabezado elegible, final de lista ni párrafo recomponible) conserva su hueco antes que degradar la tipografía.
+
+```js
+const layout = createLayout({
+  headings: {
+    balancing: {
+      enabled: true,            // por defecto
+      maxLinesPerHeading: 4,    // máximo por encabezado
+      stretchAfterLists: true,  // palanca 2
+      maxLinesAfterList: 1,     // máximo por final de lista
+      looseParagraphs: true,    // palanca 3 — acotada por bodyText.maxWordSpacing
+    },
+  },
+});
+```
+
+En el sandbox estas opciones viven en la sección de **Títulos** ("Equilibrar columnas", con "Estirar tras listas" y "Párrafos corridos" anidados debajo). Activa la rejilla base en la vista Canvas para ver el efecto: con el equilibrado apagado, las columnas cortas terminan por encima de la última línea de la rejilla; con él encendido, todas las columnas equilibrables cierran en la misma línea. Consulta la página de [Configuración](/es/docs/configuration#equilibrado-de-columnas) para la referencia completa de opciones.
 
 ## Ejemplo completo
 

@@ -728,6 +728,15 @@ export interface ColumnBalancingConfig {
   enabled?: boolean;
   /** Maximum extra grid lines that may be added above a single heading. */
   maxLinesPerHeading?: number;
+  /** Allow extra grid lines where a list/enumeration ends, when the column's
+   *  headings cannot absorb the whole gap. Default true. */
+  stretchAfterLists?: boolean;
+  /** Maximum extra grid lines after a single list end. Default 1. */
+  maxLinesAfterList?: number;
+  /** Last resort: re-break one paragraph per short column one line looser
+   *  (TeX \looseness=+1), within the configured `bodyText.maxWordSpacing`.
+   *  Requires `bodyText.optimalLineBreaking`. Default true. */
+  looseParagraphs?: boolean;
 }
 
 export interface ResolvedHeadingsConfig {
@@ -739,7 +748,13 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepWithNext: boolean;
-  balancing: { enabled: boolean; maxLinesPerHeading: number };
+  balancing: {
+    enabled: boolean;
+    maxLinesPerHeading: number;
+    stretchAfterLists: boolean;
+    maxLinesAfterList: number;
+    looseParagraphs: boolean;
+  };
   levels: ResolvedHeadingLevelConfig[];
 }
 

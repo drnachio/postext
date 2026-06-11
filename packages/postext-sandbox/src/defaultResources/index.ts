@@ -55,7 +55,26 @@ const isEs = (locale: string): boolean => locale.toLowerCase().startsWith('es');
 // reserved for points of attention. Differences are encoded by value
 // (light/dark) and pattern as well as hue, so every figure also reads
 // correctly in greyscale or single-ink reproduction (diagramStyle.singleInk).
+//
+// Unit system: every figure is drawn on a shared physical scale. Column-span
+// canvases are COLUMN_VW (300) units wide and page-span canvases are PAGE_VW
+// (634) units wide — 300 × the default page/column width ratio (a 14 cm text
+// area against 6.625 cm columns ≈ 2.113). Both spans therefore render at the
+// same units-per-point factor (1 unit ≈ 0.63 pt), so the FS type scale,
+// stroke widths, and arrowhead markers come out the same physical size in
+// every figure, regardless of where the float lands.
 // ───────────────────────────────────────────────────────────────────────────
+
+/** Canvas width (in SVG user units) for figures placed at column span. */
+const COLUMN_VW = 300;
+/** Canvas width for figures placed at page span: COLUMN_VW × the default
+ *  page/column width ratio, so both spans share one physical unit scale. */
+const PAGE_VW = 634;
+
+/** Shared type scale, in canvas units (≈0.63 pt per unit at the default page
+ *  geometry, against an 8 pt body): primary labels, secondary annotations,
+ *  and the single emphasised metric. */
+const FS = { label: 11.5, small: 10, strong: 13 };
 
 /** Typeface stack for all diagram labels. Single quotes only — these strings
  *  land inside double-quoted SVG attributes. */
@@ -102,7 +121,7 @@ interface TextOpts {
 }
 
 function text(x: number, y: number, content: string, o: TextOpts = {}): string {
-  const { size = 12, color = P.text, weight = 400, anchor = 'middle', italic = false } = o;
+  const { size = FS.label, color = P.text, weight = 400, anchor = 'middle', italic = false } = o;
   const weightDecl = weight !== 400 ? ` font-weight="${weight}"` : '';
   const italicDecl = italic ? ' font-style="italic"' : '';
   return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="${FONT}" font-size="${size}"${weightDecl}${italicDecl} fill="${color}">${content}</text>`;
@@ -118,7 +137,7 @@ const NODE_TONES: Record<NodeTone, { fill: string; stroke: string; label: string
 };
 
 /** A rounded node with a centred single-line label. */
-function node(x: number, y: number, w: number, h: number, label: string, tone: NodeTone, size = 12.5): string {
+function node(x: number, y: number, w: number, h: number, label: string, tone: NodeTone, size = FS.label): string {
   const t = NODE_TONES[tone];
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${t.fill}" stroke="${t.stroke}" stroke-width="1.4" />
   ${text(x + w / 2, y + h / 2 + size * 0.36, label, { size, color: t.label, weight: 600 })}`;
@@ -137,30 +156,31 @@ function bar(x: number, y: number, w: number, color = P.barSoft, h = 5): string 
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h / 2}" fill="${color}" />`;
 }
 
-/** The Postext pipeline: Markdown → parse → layout → three renderers. The
- *  stage fills deepen left to right (source → engine), and the three output
- *  targets render as pill chips fed by a fan-out. */
+/** The Postext pipeline: Markdown → parse → layout → three renderers. A
+ *  column-span figure, so the stages stack vertically and fan out to the
+ *  three output chips at the foot. The stage fills deepen top to bottom
+ *  (source → engine). */
 function pipelineSvg(es: boolean): string {
   const parse = es ? 'Análisis' : 'Parse';
   const layout = es ? 'Maquetación' : 'Layout';
   const ariaLabel = es ? 'tubería de Postext' : 'Postext pipeline';
-  const chip = (y: number, label: string, dot: string): string =>
-    `<rect x="394" y="${y}" width="74" height="28" rx="14" fill="${P.paper}" stroke="${P.edgeSoft}" stroke-width="1.2" />
-  <circle cx="${394 + 15}" cy="${y + 14}" r="3.5" fill="${dot}" />
-  ${text(394 + 26, y + 18, label, { size: 11.5, weight: 600, anchor: 'start' })}`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 140" role="img" aria-label="${ariaLabel}">
+  const chip = (x: number, label: string, dot: string): string =>
+    `<rect x="${x}" y="186" width="82" height="26" rx="13" fill="${P.paper}" stroke="${P.edgeSoft}" stroke-width="1.2" />
+  <circle cx="${x + 13}" cy="199" r="3.5" fill="${dot}" />
+  ${text(x + 22, 203, label, { size: FS.label, weight: 600, anchor: 'start' })}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN_VW} 225" role="img" aria-label="${ariaLabel}">
   ${DEFS}
-  ${node(10, 50, 94, 40, 'Markdown', 'neutral')}
-  ${node(138, 50, 94, 40, parse, 'tint')}
-  ${node(266, 50, 96, 40, layout, 'solid')}
-  ${chip(16, 'Canvas', P.blue)}
-  ${chip(56, 'PDF', P.amber)}
-  ${chip(96, 'HTML', P.muted)}
-  ${edge('M106,70 L132,70')}
-  ${edge('M234,70 L260,70')}
-  ${edge('M364,70 C380,70 378,30 390,30')}
-  ${edge('M364,70 L390,70')}
-  ${edge('M364,70 C380,70 378,110 390,110')}
+  ${node(95, 14, 110, 32, 'Markdown', 'neutral')}
+  ${node(95, 70, 110, 32, parse, 'tint')}
+  ${node(95, 126, 110, 32, layout, 'solid')}
+  ${chip(12, 'Canvas', P.blue)}
+  ${chip(109, 'PDF', P.amber)}
+  ${chip(206, 'HTML', P.muted)}
+  ${edge('M150,46 L150,66')}
+  ${edge('M150,102 L150,122')}
+  ${edge('M150,158 C150,172 53,168 53,182')}
+  ${edge('M150,158 L150,182')}
+  ${edge('M150,158 C150,172 247,168 247,182')}
 </svg>`;
 }
 
@@ -177,20 +197,20 @@ function convergenceLoopSvg(es: boolean): string {
   const iters = es ? '≤ 5 iteraciones' : '≤ 5 iterations';
   const ariaLabel = es ? 'bucle de convergencia de la maquetación' : 'layout convergence loop';
   const itersWidth = es ? 96 : 100;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 170" role="img" aria-label="${ariaLabel}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 170" role="img" aria-label="${ariaLabel}">
   ${DEFS}
-  ${node(26, 46, 104, 42, place, 'tint')}
-  ${node(188, 46, 104, 42, check, 'tint')}
-  ${node(350, 46, 104, 42, done, 'solid')}
-  ${node(188, 118, 104, 36, adjust, 'accent', 12)}
-  ${edge('M130,67 L184,67')}
-  ${edge('M292,67 L346,67', { marker: 'ahBlue', color: P.blue })}
-  ${text(319, 59, ok, { size: 10, color: P.blueDark, italic: true })}
-  ${edge('M240,88 L240,114', { color: P.amber, marker: 'ahAmber' })}
-  ${text(248, 105, conflict, { size: 10, color: P.amberDark, italic: true, anchor: 'start' })}
-  ${edge('M184,136 L86,136 Q78,136 78,128 L78,94', { dash: '5 4' })}
-  <rect x="${134 - itersWidth / 2}" y="127" width="${itersWidth}" height="18" rx="9" fill="${P.paper}" stroke="${P.hair}" />
-  ${text(134, 139.5, iters, { size: 10, color: P.muted })}
+  ${node(36, 46, 120, 40, place, 'tint')}
+  ${node(257, 46, 120, 40, check, 'tint')}
+  ${node(478, 46, 120, 40, done, 'solid')}
+  ${node(257, 118, 120, 36, adjust, 'accent')}
+  ${edge('M160,66 L253,66')}
+  ${edge('M381,66 L474,66', { marker: 'ahBlue', color: P.blue })}
+  ${text(427, 58, ok, { size: FS.small, color: P.blueDark, italic: true })}
+  ${edge('M317,90 L317,114', { color: P.amber, marker: 'ahAmber' })}
+  ${text(325, 106, conflict, { size: FS.small, color: P.amberDark, italic: true, anchor: 'start' })}
+  ${edge('M253,136 L132,136 Q124,136 124,128 L124,92', { dash: '5 4' })}
+  <rect x="${188 - itersWidth / 2}" y="127" width="${itersWidth}" height="18" rx="9" fill="${P.paper}" stroke="${P.hair}" />
+  ${text(188, 139.5, iters, { size: FS.small, color: P.muted })}
 </svg>`;
 }
 
@@ -210,18 +230,18 @@ function measurementSpeedSvg(es: boolean): string {
   const gridlines = [54, 86, 118]
     .map((y) => `<line x1="36" y1="${y}" x2="276" y2="${y}" stroke="${P.hair}" stroke-width="1" />`)
     .join('\n  ');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 190" role="img" aria-label="${ariaLabel}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN_VW} 190" role="img" aria-label="${ariaLabel}">
   ${DEFS}
   ${gridlines}
-  ${text(30, 40, timeAxis, { size: 9.5, color: P.muted, anchor: 'end', italic: true })}
+  ${text(33, 40, timeAxis, { size: FS.small, color: P.muted, anchor: 'end', italic: true })}
   ${roundTopBar(64, 32, 60, '#c9d4df', '#9aaaba')}
   ${roundTopBar(192, 143, 60, P.blue, P.blueDark)}
   <line x1="36" y1="150" x2="276" y2="150" stroke="#9aaaba" stroke-width="1.5" />
   ${edge('M128,38 C168,52 186,94 210,136', { marker: 'ahBlue', color: P.blue })}
-  ${text(230, 106, '300–600×', { size: 13.5, color: P.blueDark, weight: 700 })}
-  ${text(230, 121, fasterWord, { size: 10.5, color: P.muted })}
-  ${text(94, 169, withDom, { size: 11.5, weight: 600 })}
-  ${text(222, 169, withoutDom, { size: 11.5, weight: 600 })}
+  ${text(230, 106, '300–600×', { size: FS.strong, color: P.blueDark, weight: 700 })}
+  ${text(230, 121, fasterWord, { size: FS.small, color: P.muted })}
+  ${text(94, 169, withDom, { size: FS.label, weight: 600 })}
+  ${text(222, 169, withoutDom, { size: FS.label, weight: 600 })}
 </svg>`;
 }
 
@@ -238,14 +258,14 @@ function orphanWidowSvg(es: boolean): string {
   const leftLines = leftWidths.map((w, i) => bar(26, 32 + i * 12, w)).join('\n  ');
   const rightWidths = [92, 96, 86, 96, 90, 96, 84, 94];
   const rightLines = rightWidths.map((w, i) => bar(178, 56 + i * 12, w)).join('\n  ');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 180" role="img" aria-label="${ariaLabel}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN_VW} 180" role="img" aria-label="${ariaLabel}">
   <rect x="16" y="20" width="116" height="140" rx="6" fill="${P.paper}" stroke="${P.edgeSoft}" />
   <rect x="168" y="20" width="116" height="140" rx="6" fill="${P.paper}" stroke="${P.edgeSoft}" />
   ${leftLines}
   ${bar(26, 144, 56, P.amber)}
-  ${text(74, 175, widow, { size: 10.5, color: P.amberDark, weight: 600 })}
+  ${text(74, 175, widow, { size: FS.label, color: P.amberDark, weight: 600 })}
   ${bar(178, 32, 96, P.amber)}
-  ${text(226, 13, orphan, { size: 10.5, color: P.amberDark, weight: 600 })}
+  ${text(226, 13, orphan, { size: FS.label, color: P.amberDark, weight: 600 })}
   ${rightLines}
 </svg>`;
 }
@@ -267,21 +287,21 @@ function knuthPlassSvg(es: boolean): string {
     `<rect x="${x}" y="30" width="${w}" height="32" rx="4" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.3" />`;
   const hyphen = (x: number, y: number, w: number): string =>
     `<path d="M${x},${y} l${w},0" stroke="${P.amber}" stroke-width="2.5" stroke-linecap="round" />`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 130" role="img" aria-label="${ariaLabel}">
-  ${wordBox(24, 64)}
-  ${spring(96, 46)}
-  ${wordBox(128, 88)}
-  ${spring(224, 46)}
-  ${wordBox(256, 110)}
-  ${hyphen(374, 46, 12)}
-  <rect x="394" y="30" width="62" height="32" rx="4" fill="#f3f7fb" stroke="${P.blueMid}" stroke-width="1.3" stroke-dasharray="4 3" />
-  <line x1="24" y1="86" x2="456" y2="86" stroke="${P.hair}" stroke-width="1" />
-  <rect x="24" y="100" width="18" height="13" rx="3" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.2" />
-  ${text(50, 110.5, box, { size: 11.5, anchor: 'start' })}
-  ${spring(130, 106.5)}
-  ${text(166, 110.5, glue, { size: 11.5, anchor: 'start' })}
-  ${hyphen(246, 106.5, 14)}
-  ${text(268, 110.5, penalty, { size: 11.5, anchor: 'start' })}
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 130" role="img" aria-label="${ariaLabel}">
+  ${wordBox(32, 84)}
+  ${spring(126, 46)}
+  ${wordBox(160, 116)}
+  ${spring(288, 46)}
+  ${wordBox(322, 146)}
+  ${hyphen(480, 46, 12)}
+  <rect x="506" y="30" width="82" height="32" rx="4" fill="#f3f7fb" stroke="${P.blueMid}" stroke-width="1.3" stroke-dasharray="4 3" />
+  <line x1="32" y1="86" x2="600" y2="86" stroke="${P.hair}" stroke-width="1" />
+  <rect x="32" y="100" width="18" height="13" rx="3" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.2" />
+  ${text(58, 110.5, box, { size: FS.label, anchor: 'start' })}
+  ${spring(150, 106.5)}
+  ${text(186, 110.5, glue, { size: FS.label, anchor: 'start' })}
+  ${hyphen(286, 106.5, 14)}
+  ${text(308, 110.5, penalty, { size: FS.label, anchor: 'start' })}
 </svg>`;
 }
 
@@ -299,14 +319,14 @@ function baselineGridSvg(es: boolean): string {
   const rightWidths = [96, 100, 90, 100, 94, 100];
   const left = gridYs.map((y, i) => bar(26, y - 7, leftWidths[i]!, '#b3c2d1', 5.5)).join('\n  ');
   const right = gridYs.map((y, i) => bar(174, y - 7, rightWidths[i]!, '#b3c2d1', 5.5)).join('\n  ');
-  const pillW = es ? 140 : 96;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 170" role="img" aria-label="${ariaLabel}">
+  const pillW = es ? 144 : 100;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN_VW} 170" role="img" aria-label="${ariaLabel}">
   ${grid}
   ${left}
   ${right}
   <line x1="18" y1="88" x2="282" y2="88" stroke="${P.blue}" stroke-width="1.4" stroke-dasharray="5 4" />
   <rect x="${150 - pillW / 2}" y="142" width="${pillW}" height="20" rx="10" fill="${P.blueTint}" stroke="${P.blueMid}" stroke-width="1" />
-  ${text(150, 155.5, label, { size: 11, color: P.blueDark, weight: 600 })}
+  ${text(150, 155.5, label, { size: FS.label, color: P.blueDark, weight: 600 })}
 </svg>`;
 }
 
@@ -320,24 +340,24 @@ function columnLayoutsSvg(es: boolean): string {
   // Each thumbnail is a page card; columns render as faux text-line bars so
   // the structures read as flowing text rather than solid slabs.
   const page = (x: number, inner: string): string =>
-    `<rect x="${x}" y="14" width="92" height="94" rx="5" fill="${P.paper}" stroke="${P.edgeSoft}" />${inner}`;
+    `<rect x="${x}" y="14" width="108" height="106" rx="5" fill="${P.paper}" stroke="${P.edgeSoft}" />${inner}`;
   const col = (x: number, w: number): string => {
     const lines: string[] = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 9; i++) {
       const lw = i % 4 === 3 ? w * 0.72 : w;
-      lines.push(`<rect x="${x}" y="${22 + i * 10}" width="${lw.toFixed(1)}" height="4.5" rx="2.25" fill="#bcd0e8" />`);
+      lines.push(`<rect x="${x}" y="${24 + i * 10}" width="${lw.toFixed(1)}" height="4.5" rx="2.25" fill="#bcd0e8" />`);
     }
     return lines.join('');
   };
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 140" role="img" aria-label="${ariaLabel}">
-  ${page(18, col(28, 72))}
-  ${page(136, col(146, 33) + col(185, 33))}
-  ${page(254, col(264, 20.5) + col(290, 20.5) + col(315.5, 20.5))}
-  ${page(372, col(382, 46) + col(434, 20))}
-  ${text(64, 126, one, { size: 11 })}
-  ${text(182, 126, two, { size: 11 })}
-  ${text(300, 126, three, { size: 11 })}
-  ${text(418, 126, half, { size: 11 })}
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 150" role="img" aria-label="${ariaLabel}">
+  ${page(41, col(53, 84))}
+  ${page(189, col(201, 37) + col(248, 37))}
+  ${page(337, col(349, 22) + col(380, 22) + col(411, 22))}
+  ${page(485, col(497, 52) + col(557, 24))}
+  ${text(95, 138, one, { size: FS.label })}
+  ${text(243, 138, two, { size: FS.label })}
+  ${text(391, 138, three, { size: FS.label })}
+  ${text(539, 138, half, { size: FS.label })}
 </svg>`;
 }
 
@@ -349,71 +369,72 @@ function placementStrategiesSvg(es: boolean): string {
   const margin = es ? 'Margen' : 'Margin';
   const ariaLabel = es ? 'estrategias de colocación de recursos' : 'resource placement strategies';
   // Text lines in two columns, kept clear of the regions used by resources.
-  const leftWidths = [126, 120, 126, 114];
-  const rightWidths = [126, 118, 126, 110, 126, 122, 126, 116, 124, 126];
-  const left = leftWidths.map((w, i) => bar(42, 92 + i * 12, w)).join('\n  ');
-  const right = rightWidths.map((w, i) => bar(180, 28 + i * 12, w)).join('\n  ');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 200" role="img" aria-label="${ariaLabel}">
-  <rect x="26" y="14" width="296" height="172" rx="7" fill="${P.paper}" stroke="${P.edgeSoft}" />
-  <rect x="42" y="26" width="126" height="50" rx="5" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.3" />
-  ${text(105, 54.5, top, { size: 10.5, color: P.blueDark, weight: 600 })}
+  const leftWidths = [174, 165, 174, 157];
+  const rightWidths = [174, 163, 174, 152, 174, 168, 174, 160, 171, 174];
+  const left = leftWidths.map((w, i) => bar(58, 92 + i * 12, w)).join('\n  ');
+  const right = rightWidths.map((w, i) => bar(248, 28 + i * 12, w)).join('\n  ');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 200" role="img" aria-label="${ariaLabel}">
+  <rect x="36" y="14" width="408" height="172" rx="7" fill="${P.paper}" stroke="${P.edgeSoft}" />
+  <rect x="58" y="26" width="174" height="50" rx="5" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.3" />
+  ${text(145, 54.5, top, { size: FS.label, color: P.blueDark, weight: 600 })}
   ${left}
   ${right}
-  <rect x="42" y="148" width="264" height="26" rx="5" fill="${P.blue}" stroke="${P.blueDark}" stroke-width="1" />
-  ${text(174, 164.5, full, { size: 10.5, color: '#ffffff', weight: 600 })}
-  <line x1="322" y1="49" x2="336" y2="49" stroke="${P.muted}" stroke-width="1.2" stroke-dasharray="3 3" />
-  <rect x="336" y="26" width="102" height="46" rx="5" fill="${P.amberTint}" stroke="${P.amber}" stroke-width="1.3" />
-  ${text(387, 52.5, margin, { size: 10.5, color: P.amberDark, weight: 600 })}
+  <rect x="58" y="148" width="364" height="26" rx="5" fill="${P.blue}" stroke="${P.blueDark}" stroke-width="1" />
+  ${text(240, 164.5, full, { size: FS.label, color: '#ffffff', weight: 600 })}
+  <line x1="444" y1="49" x2="463" y2="49" stroke="${P.muted}" stroke-width="1.2" stroke-dasharray="3 3" />
+  <rect x="463" y="26" width="141" height="46" rx="5" fill="${P.amberTint}" stroke="${P.amber}" stroke-width="1.3" />
+  ${text(533, 52.5, margin, { size: FS.label, color: P.amberDark, weight: 600 })}
 </svg>`;
 }
 
 /** The Sandbox interface: activity bar, sidebar editor, and a three-tab
  *  viewport. */
 function sandboxUiSvg(es: boolean): string {
-  const editor = es ? 'Editor' : 'Editor';
   const ariaLabel = es ? 'disposición de la interfaz del Sandbox' : 'Sandbox interface layout';
   // Activity bar icons (first one active), editor card with markdown-ish
   // lines, and a viewport card with a tab bar and a miniature rendered page.
-  const icons = [26, 50, 74]
-    .map((y, i) => `<rect x="20" y="${y}" width="16" height="16" rx="4" fill="${i === 0 ? P.blue : '#c9d4df'}" />`)
+  const icons = [46, 88, 130]
+    .map((y, i) => `<rect x="35" y="${y}" width="28" height="28" rx="7" fill="${i === 0 ? P.blue : '#c9d4df'}" />`)
     .join('\n  ');
-  const editorWidths = [58, 88, 82, 88, 70, 88, 84, 50, 88, 78];
+  const editorWidths = [102, 155, 144, 155, 123, 155, 148, 88, 155, 137];
   const editorLines = editorWidths
-    .map((w, i) => bar(60, 46 + i * 11, w, i === 0 ? '#9fb0c2' : P.barSoft, 4.5))
+    .map((w, i) => bar(106, 84 + i * 19, w, i === 0 ? '#9fb0c2' : P.barSoft, 8))
     .join('\n  ');
-  const pageLines = [70, 79, 88, 124, 133, 142]
-    .map((y) => bar(224, y, 58, '#dbe3ea', 3.5))
+  const pageLines = [123, 139, 155, 218, 234, 250]
+    .map((y) => bar(394, y, 102, '#dbe3ea', 6))
     .join('\n  ');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" role="img" aria-label="${ariaLabel}">
-  <rect x="10" y="12" width="340" height="166" rx="8" fill="${P.panel}" stroke="${P.edgeSoft}" />
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 335" role="img" aria-label="${ariaLabel}">
+  <rect x="18" y="21" width="599" height="292" rx="14" fill="${P.panel}" stroke="${P.edgeSoft}" />
   ${icons}
-  <rect x="48" y="22" width="108" height="146" rx="6" fill="${P.paper}" stroke="${P.hair}" />
-  ${text(60, 37, editor, { size: 10, color: P.muted, weight: 600, anchor: 'start' })}
+  <rect x="85" y="39" width="190" height="257" rx="11" fill="${P.paper}" stroke="${P.hair}" />
+  ${text(106, 65, 'Editor', { size: FS.small, color: P.muted, weight: 600, anchor: 'start' })}
   ${editorLines}
-  <rect x="164" y="22" width="176" height="146" rx="6" fill="${P.paper}" stroke="${P.hair}" />
-  ${text(196, 40, 'Canvas', { size: 10, color: P.blueDark, weight: 600 })}
-  <rect x="180" y="45" width="32" height="2.5" rx="1.25" fill="${P.blue}" />
-  ${text(252, 40, 'HTML', { size: 10, color: P.muted })}
-  ${text(306, 40, 'PDF', { size: 10, color: P.muted })}
-  <line x1="165" y1="50" x2="339" y2="50" stroke="${P.hair}" stroke-width="1" />
-  <rect x="216" y="60" width="74" height="96" rx="3" fill="${P.paper}" stroke="${P.edgeSoft}" />
+  <rect x="289" y="39" width="310" height="257" rx="11" fill="${P.paper}" stroke="${P.hair}" />
+  ${text(345, 70, 'Canvas', { size: FS.label, color: P.blueDark, weight: 600 })}
+  <rect x="317" y="79" width="56" height="4" rx="2" fill="${P.blue}" />
+  ${text(444, 70, 'HTML', { size: FS.label, color: P.muted })}
+  ${text(539, 70, 'PDF', { size: FS.label, color: P.muted })}
+  <line x1="290" y1="88" x2="598" y2="88" stroke="${P.hair}" stroke-width="1" />
+  <rect x="380" y="106" width="130" height="169" rx="5" fill="${P.paper}" stroke="${P.edgeSoft}" />
   ${pageLines}
-  <rect x="224" y="96" width="58" height="22" rx="2" fill="${P.blueTint}" />
+  <rect x="394" y="169" width="102" height="39" rx="3" fill="${P.blueTint}" />
 </svg>`;
 }
 
 /** All SVG figures, keyed by the deterministic blob fileId used to persist them.
- *  fileIds are prefixed `default-` to avoid clashing with user uploads. */
-const SVG_FIGURES: Record<string, { generate: (es: boolean) => string; width: number; height: number }> = {
-  'default-layout-pipeline': { generate: pipelineSvg, width: 480, height: 140 },
-  'default-convergence-loop': { generate: convergenceLoopSvg, width: 480, height: 170 },
-  'default-measurement-speed': { generate: measurementSpeedSvg, width: 300, height: 190 },
-  'default-orphan-widow': { generate: orphanWidowSvg, width: 300, height: 180 },
-  'default-knuth-plass': { generate: knuthPlassSvg, width: 480, height: 130 },
-  'default-baseline-grid': { generate: baselineGridSvg, width: 300, height: 170 },
-  'default-column-layouts': { generate: columnLayoutsSvg, width: 480, height: 140 },
-  'default-placement-strategies': { generate: placementStrategiesSvg, width: 460, height: 200 },
-  'default-sandbox-ui': { generate: sandboxUiSvg, width: 360, height: 190 },
+ *  fileIds are prefixed `default-` to avoid clashing with user uploads.
+ *  Widths follow the shared unit system: COLUMN_VW for column-span figures,
+ *  PAGE_VW for page-span ones (see FIGURE_SPECS placements). */
+export const SVG_FIGURES: Record<string, { generate: (es: boolean) => string; width: number; height: number }> = {
+  'default-layout-pipeline': { generate: pipelineSvg, width: COLUMN_VW, height: 225 },
+  'default-convergence-loop': { generate: convergenceLoopSvg, width: PAGE_VW, height: 170 },
+  'default-measurement-speed': { generate: measurementSpeedSvg, width: COLUMN_VW, height: 190 },
+  'default-orphan-widow': { generate: orphanWidowSvg, width: COLUMN_VW, height: 180 },
+  'default-knuth-plass': { generate: knuthPlassSvg, width: PAGE_VW, height: 130 },
+  'default-baseline-grid': { generate: baselineGridSvg, width: COLUMN_VW, height: 170 },
+  'default-column-layouts': { generate: columnLayoutsSvg, width: PAGE_VW, height: 150 },
+  'default-placement-strategies': { generate: placementStrategiesSvg, width: PAGE_VW, height: 200 },
+  'default-sandbox-ui': { generate: sandboxUiSvg, width: PAGE_VW, height: 335 },
 };
 
 // ───────────────────────────────────────────────────────────────────────────

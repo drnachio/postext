@@ -148,6 +148,7 @@ export function measureBlock(
       minShrinkRatio,
       runtPenalty,
       runtMinWidth,
+      looseness: options.looseness ?? 0,
     });
     if (breaks.length > 0) {
       const kpLines = reconstructPretextLines(

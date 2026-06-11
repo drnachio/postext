@@ -1015,7 +1015,13 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
 
 ### Column balancing
 
-Publishers expect every column to start at the top of the page and end flush with its bottom. Break rules (orphan/widow protection, headings kept with their text, unsplittable figures) naturally leave short columns — one or more empty baseline-grid lines at the bottom. When balancing is enabled, the engine does what a compositor would: it adds whole grid lines to the top margin of the headings inside the short column until it ends on the last grid slot. When several lines are needed and the column holds several headings, the lines are distributed among them, always giving the largest share to the most important heading (an `h2` receives more than an `h3`). Headings sitting at the very top of a column never receive extra space, so columns keep starting at the page top. The last column of a page is only balanced when the page flows naturally into the next one — a chapter's closing page legitimately ends short.
+Publishers expect every column to start at the top of the page and end flush with its bottom. Break rules (orphan/widow protection, headings kept with their text, unsplittable figures) naturally leave short columns — one or more empty baseline-grid lines at the bottom. When balancing is enabled, the engine does what a compositor would, applying three levers in editorial priority order:
+
+1. **Headings** — whole grid lines are added to the top margin of the headings inside the short column. When several lines are needed and the column holds several headings, the lines are distributed among them, always giving the largest share to the most important heading (an `h2` receives more than an `h3`). Headings sitting at the very top of a column never receive extra space, so columns keep starting at the page top.
+2. **List ends** — when the headings cannot absorb the whole gap, a grid line is added where a list/enumeration ends (space after a list reads naturally), capped per list end.
+3. **Loose paragraphs** — as a last resort, one paragraph of the column is re-broken one line longer (TeX's `\looseness=+1`), choosing the longest paragraph so the extra word spacing dilutes invisibly. The loose solution is only accepted when every line stays **below `bodyText.maxWordSpacing`** — type colour never exceeds the limit you already configured. Requires `bodyText.optimalLineBreaking`.
+
+The last column of a page is only balanced when the page flows naturally into the next one — a chapter's closing page legitimately ends short.
 
 <table>
   <thead>
@@ -1038,6 +1044,24 @@ Publishers expect every column to start at the top of the page and end flush wit
       <td><code>number</code></td>
       <td><code>4</code></td>
       <td>Maximum extra grid lines that may be added above a single heading.</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Allow extra grid lines where a list ends, when headings cannot absorb the whole gap.</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterList</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Maximum extra grid lines after a single list end.</td>
+    </tr>
+    <tr>
+      <td><code>looseParagraphs</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Last resort: re-break one paragraph per short column one line looser, within <code>bodyText.maxWordSpacing</code>.</td>
     </tr>
   </tbody>
 </table>
