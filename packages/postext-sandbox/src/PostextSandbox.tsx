@@ -11,6 +11,7 @@ import { ResourcesPanel } from './sidebar/ResourcesPanel';
 import { MarkdownPanel } from './sidebar/MarkdownPanel';
 import { WarningsPanel } from './sidebar/WarningsPanel';
 import { FontsPanel } from './sidebar/FontsPanel';
+import { PresetsPanel } from './sidebar/PresetsPanel';
 import { ResizableHandle } from './panels/ResizableHandle';
 import { ViewportTabs } from './viewport/ViewportTabs';
 import { CanvasViewport } from './viewport/CanvasViewport';
@@ -105,6 +106,8 @@ function SandboxLayout({
         return <WarningsPanel />;
       case 'fonts':
         return <FontsPanel />;
+      case 'presets':
+        return <PresetsPanel />;
       default:
         return null;
     }
@@ -176,6 +179,7 @@ export function PostextSandbox({
   className,
   labels,
   locale,
+  presetSources,
   onConfigChange,
   onMarkdownChange,
   themeToggle,
@@ -194,6 +198,7 @@ export function PostextSandbox({
         initialConfig={initialConfig}
         labels={labels}
         locale={locale}
+        presetSources={presetSources}
         onConfigChange={onConfigChange}
         onMarkdownChange={onMarkdownChange}
       >

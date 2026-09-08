@@ -3,11 +3,10 @@
 import { useRef } from 'react';
 import { Download, Upload, RotateCcw } from 'lucide-react';
 import { MarkdownEditor } from '../editor/MarkdownEditor';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandbox, useSandboxPresets } from '../context/SandboxContext';
 import { exportMarkdownToJson, importMarkdownFromJson } from '../storage/persistence';
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
-import { buildDefaultResources } from '../defaultResources';
 
 interface MarkdownPanelProps {
   isDark?: boolean;
@@ -15,6 +14,7 @@ interface MarkdownPanelProps {
 
 export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
   const { state, dispatch } = useSandbox();
+  const { reload } = useSandboxPresets();
   const importRef = useRef<HTMLInputElement>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,15 +29,12 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
     e.target.value = '';
   };
 
-  // Reset restores the default document and replaces the whole resource set
-  // with the example resources it references, in the sandbox locale. A full
-  // replace (not an upsert) so stale resources from earlier sessions don't
-  // linger and trigger unused-resource warnings after a reset.
+  // Reset restores the active preset's document and replaces the whole
+  // resource set with the resources it references. A full replace (not an
+  // upsert) so stale resources from earlier sessions don't linger and trigger
+  // unused-resource warnings after a reset.
   const handleReset = () => {
-    dispatch({ type: 'SET_MARKDOWN', payload: state.defaultMarkdown });
-    void buildDefaultResources(state.locale).then((rs) => {
-      dispatch({ type: 'SET_RESOURCES', payload: rs });
-    });
+    void reload('document');
   };
 
   return (

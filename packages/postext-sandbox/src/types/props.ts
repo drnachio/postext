@@ -1,8 +1,9 @@
 import type { PostextConfig } from 'postext';
 import type { ReactNode } from 'react';
 import type { SandboxLabels } from './labels';
+import type { PresetSourceSpec } from '../presets/types';
 
-export type PanelId = 'markdown' | 'config' | 'resources' | 'fonts' | 'warnings';
+export type PanelId = 'markdown' | 'presets' | 'config' | 'resources' | 'fonts' | 'warnings';
 export type ViewportTab = 'canvas' | 'html' | 'pdf';
 
 export interface PostextSandboxProps {
@@ -11,6 +12,9 @@ export interface PostextSandboxProps {
   className?: string;
   labels?: Partial<SandboxLabels>;
   locale?: string;
+  /** Remote preset sources (base URLs serving `index.json`), tried in order
+   *  after the built-in preset. */
+  presetSources?: PresetSourceSpec[];
   onConfigChange?: (config: PostextConfig) => void;
   onMarkdownChange?: (markdown: string) => void;
   themeToggle?: ReactNode;

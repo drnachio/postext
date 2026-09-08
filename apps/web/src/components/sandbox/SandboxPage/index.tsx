@@ -7,6 +7,11 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { CompactLanguageSwitcher } from "@/components/sandbox/CompactLanguageSwitcher";
 import { buildSandboxLabels } from "./labels";
 
+// Private preset bundles are served by /api/private-presets only in local dev
+// (POSTEXT_PRIVATE_PRESETS_DIR); production never advertises the source.
+const PRESET_SOURCES: { url: string; private?: boolean }[] =
+  process.env.NODE_ENV === "production" ? [] : [{ url: "/api/private-presets", private: true }];
+
 export function SandboxPage() {
   const t = useTranslations("Sandbox");
   const locale = useLocale();
@@ -18,6 +23,7 @@ export function SandboxPage() {
       initialMarkdown={initialMarkdown}
       labels={labels}
       locale={locale}
+      presetSources={PRESET_SOURCES}
       themeToggle={<ThemeToggle />}
       languageSwitcher={<CompactLanguageSwitcher />}
       homeLink={

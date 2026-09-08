@@ -13,15 +13,30 @@ import {
   type MutableRefObject,
 } from 'react';
 import type { PostextConfig, VDTDocument, Resource } from 'postext';
-import { cloneDefaultColorPalette, defaultResourceTypes } from 'postext';
+import { defaultResourceTypes } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
-import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
+import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, loadPresetId, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
-import { buildDefaultResources } from '../defaultResources';
 import { setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
+import { createDefaultConfig } from './defaultConfig';
+import {
+  BUILTIN_PRESET_ID,
+  applyPreset,
+  createPostextGuidePreset,
+  findDefaultPrivatePreset,
+  listPresets,
+} from '../presets';
+import type {
+  PresetApplyParts,
+  PresetProvider,
+  PresetSourceSpec,
+  PresetSummary,
+} from '../presets';
+
+export { createDefaultConfig } from './defaultConfig';
 
 export interface EditorSelection {
   from: number;
@@ -49,6 +64,16 @@ export interface SandboxState {
    *  `docRef`. Consumers (e.g. WarningsPanel) listen to this counter to
    *  recompute derived data. */
   docVersion: number;
+  /** Id of the preset the current document came from (`BUILTIN_PRESET_ID`
+   *  until a preset is loaded). Reset actions restore this preset. */
+  activePresetId: string;
+  presetStatus: 'idle' | 'loading' | 'error';
+  presetError?: string;
+  /** Config as last applied from the active preset, when known. Used to tell
+   *  whether the current config has overrides worth resetting. */
+  presetConfig?: PostextConfig;
+  /** Every preset the sandbox knows about, in display order. */
+  presetSummaries: PresetSummary[];
 }
 
 export type SandboxAction =
@@ -66,7 +91,10 @@ export type SandboxAction =
   | { type: 'BUMP_DOC_VERSION' }
   | { type: 'SET_RESOURCES'; payload: Resource[] }
   | { type: 'UPSERT_RESOURCE'; payload: Resource }
-  | { type: 'DELETE_RESOURCE'; payload: string };
+  | { type: 'DELETE_RESOURCE'; payload: string }
+  | { type: 'SET_PRESET'; payload: { id: string; markdown?: string; config?: PostextConfig } }
+  | { type: 'SET_PRESET_STATUS'; payload: { status: 'idle' | 'loading' | 'error'; error?: string } }
+  | { type: 'SET_PRESET_LIST'; payload: PresetSummary[] };
 
 function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
@@ -125,6 +153,19 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
     }
     case 'DELETE_RESOURCE':
       return { ...state, resources: state.resources.filter((r) => r.id !== action.payload) };
+    case 'SET_PRESET':
+      return {
+        ...state,
+        activePresetId: action.payload.id,
+        defaultMarkdown: action.payload.markdown ?? state.defaultMarkdown,
+        presetConfig: action.payload.config ?? state.presetConfig,
+        presetStatus: 'idle',
+        presetError: undefined,
+      };
+    case 'SET_PRESET_STATUS':
+      return { ...state, presetStatus: action.payload.status, presetError: action.payload.error };
+    case 'SET_PRESET_LIST':
+      return { ...state, presetSummaries: action.payload };
     default:
       return state;
   }
@@ -139,6 +180,10 @@ interface SandboxStore {
    *  last rendered. Null until the first successful build. Updated together
    *  with a `BUMP_DOC_VERSION` dispatch so consumers can react. */
   docRef: MutableRefObject<VDTDocument | null>;
+  /** Load a preset by id (all parts). No-op for unknown/unavailable ids. */
+  loadPreset: (id: string) => Promise<void>;
+  /** Re-fetch the active preset and re-apply the given parts. */
+  reloadPreset: (parts: PresetApplyParts) => Promise<void>;
 }
 
 export interface SandboxContextValue {
@@ -208,6 +253,26 @@ export function useSandboxResources(): Resource[] {
   return useSandboxSelector((s) => s.resources);
 }
 
+export interface SandboxPresetsValue {
+  presets: PresetSummary[];
+  activePresetId: string;
+  status: SandboxState['presetStatus'];
+  error?: string;
+  load: (id: string) => Promise<void>;
+  reload: (parts: PresetApplyParts) => Promise<void>;
+}
+
+/** Preset list plus load/reload actions. Re-renders on preset state changes
+ *  only. */
+export function useSandboxPresets(): SandboxPresetsValue {
+  const store = useStore();
+  const presets = useSandboxSelector((s) => s.presetSummaries);
+  const activePresetId = useSandboxSelector((s) => s.activePresetId);
+  const status = useSandboxSelector((s) => s.presetStatus);
+  const error = useSandboxSelector((s) => s.presetError);
+  return { presets, activePresetId, status, error, load: store.loadPreset, reload: store.reloadPreset };
+}
+
 /** Stable ref to the most recently built VDT document. Does not subscribe
  *  to state changes — read inside effects/handlers via `.current`. */
 export function useSandboxDocRef(): MutableRefObject<VDTDocument | null> {
@@ -217,10 +282,6 @@ export function useSandboxDocRef(): MutableRefObject<VDTDocument | null> {
 /** Stable ref for the editor state, mirroring useSandboxDocRef. */
 export function useSandboxEditorStateRef(): MutableRefObject<unknown | null> {
   return useStore().editorStateRef;
-}
-
-export function createDefaultConfig(locale = 'en'): PostextConfig {
-  return { colorPalette: cloneDefaultColorPalette(), resourceTypes: defaultResourceTypes(locale) };
 }
 
 /** Ensure `config.resourceTypes` is populated, falling back to the built-in
@@ -240,9 +301,14 @@ interface SandboxProviderProps {
   initialConfig?: PostextConfig;
   labels?: Partial<SandboxLabels>;
   locale?: string;
+  /** Remote preset sources (index.json base URLs), tried in order after the
+   *  built-in preset. Defaults to none. */
+  presetSources?: PresetSourceSpec[];
   onConfigChange?: (config: PostextConfig) => void;
   onMarkdownChange?: (markdown: string) => void;
 }
+
+const NO_SOURCES: PresetSourceSpec[] = [];
 
 export function SandboxProvider({
   children,
@@ -250,12 +316,26 @@ export function SandboxProvider({
   initialConfig,
   labels,
   locale,
+  presetSources = NO_SOURCES,
   onConfigChange,
   onMarkdownChange,
 }: SandboxProviderProps) {
   const mergedLabels: SandboxLabels = { ...DEFAULT_LABELS, ...labels };
 
   const defaultMd = initialMarkdown ?? DEFAULT_MARKDOWN;
+
+  // The built-in preset wraps the host's initial markdown/config so Reset
+  // restores exactly what the host handed us. Built once per prop change;
+  // the provider list below is refreshed on mount only.
+  const builtinPreset = useMemo(
+    () => createPostextGuidePreset({
+      markdownOverride: initialMarkdown,
+      configOverride: initialConfig,
+      name: mergedLabels.presetPostextGuideName,
+      description: mergedLabels.presetPostextGuideDescription,
+    }),
+    [initialMarkdown, initialConfig, mergedLabels.presetPostextGuideName, mergedLabels.presetPostextGuideDescription],
+  );
 
   const [state, dispatch] = useReducer(sandboxReducer, undefined, () => {
     const savedMarkdown = loadMarkdown();
@@ -282,6 +362,10 @@ export function SandboxProvider({
       editorFocused: false,
       pendingEditorFocus: null,
       docVersion: 0,
+      activePresetId: loadPresetId() ?? BUILTIN_PRESET_ID,
+      presetStatus: 'idle' as const,
+      presetConfig: undefined,
+      presetSummaries: [builtinPreset.summary],
     };
   });
 
@@ -299,38 +383,90 @@ export function SandboxProvider({
   const prevResourcesRef = useRef<Resource[]>([]);
   const resourcesLoadedRef = useRef(false);
 
+  // Preset providers, discovered on mount. Kept in a ref (not state): only
+  // their summaries are rendered, and load/reload read the live list.
+  const presetProvidersRef = useRef<PresetProvider[]>([builtinPreset]);
+  const builtinPresetRef = useRef(builtinPreset);
+  builtinPresetRef.current = builtinPreset;
+  // Monotonic token so an older in-flight load never clobbers a newer one.
+  const presetLoadSeqRef = useRef(0);
+
+  const runPreset = async (provider: PresetProvider, parts: PresetApplyParts): Promise<void> => {
+    const seq = ++presetLoadSeqRef.current;
+    dispatch({ type: 'SET_PRESET_STATUS', payload: { status: 'loading' } });
+    try {
+      const loaded = await provider.load(stateRef.current.locale);
+      if (seq !== presetLoadSeqRef.current) return;
+      await applyPreset(loaded, dispatch, { parts });
+    } catch (err) {
+      if (seq !== presetLoadSeqRef.current) return;
+      const message = err instanceof Error ? err.message : String(err);
+      dispatch({ type: 'SET_PRESET_STATUS', payload: { status: 'error', error: message } });
+    }
+  };
+  const runPresetRef = useRef(runPreset);
+  runPresetRef.current = runPreset;
+
   useEffect(() => {
     let cancelled = false;
-    loadResources()
-      .then(async (loaded) => {
+    const loc = locale ?? 'en';
+    Promise.all([
+      loadResources(),
+      listPresets({ sources: presetSources, builtin: builtinPresetRef.current }).catch(
+        () => [builtinPresetRef.current],
+      ),
+    ])
+      .then(async ([loaded, providers]) => {
         if (cancelled) return;
-        // First entry (empty store): seed the example resources so the default
-        // document's `::resource`/`:ref` directives resolve out-of-the-box.
-        // The persistence effect below diffs against the empty snapshot and
-        // writes them to IndexedDB.
-        //
-        // Storage is shared across locales, so a pristine default document
-        // persisted in *another* language gets the same treatment: swap to
-        // this locale's default markdown and reseed the examples, so entering
-        // the Spanish sandbox shows Spanish resources instead of whichever
-        // language seeded the store first. Any markdown edit opts out.
+        presetProvidersRef.current = providers;
+
         const md = stateRef.current.markdown;
+        const savedMarkdown = loadMarkdown();
+        const savedId = loadPresetId();
+        // Pristine: the user has never edited the document (nothing saved, or
+        // exactly one of the built-in samples). Any markdown edit opts out.
+        const pristine =
+          savedMarkdown === null || savedMarkdown === DEFAULT_MARKDOWN_EN || savedMarkdown === DEFAULT_MARKDOWN_ES;
+        // Storage is shared across locales, so a pristine default document
+        // persisted in *another* language gets swapped to this locale's
+        // default and its examples reseeded, so entering the Spanish sandbox
+        // shows Spanish resources instead of whichever language seeded first.
         const pristineOtherLocale =
           md !== defaultMd && (md === DEFAULT_MARKDOWN_EN || md === DEFAULT_MARKDOWN_ES);
-        if (loaded.length === 0 || pristineOtherLocale) {
-          const seeded = await buildDefaultResources(locale ?? 'en').catch(() => []);
-          if (cancelled) return;
-          if (seeded.length > 0) {
-            if (pristineOtherLocale) dispatch({ type: 'SET_MARKDOWN', payload: defaultMd });
-            prevResourcesRef.current = loaded;
-            resourcesLoadedRef.current = true;
-            dispatch({ type: 'SET_RESOURCES', payload: seeded });
-            return;
-          }
+        const onBuiltin = savedId === null || savedId === BUILTIN_PRESET_ID;
+
+        // Summaries: every provider, plus a placeholder for a previously
+        // active preset whose source is gone (content is kept; Reset falls
+        // back to the built-in preset).
+        const summaries = providers.map((p) => p.summary);
+        if (savedId && !providers.some((p) => p.summary.id === savedId)) {
+          summaries.push({ id: savedId, name: savedId, source: 'private', available: false });
         }
+        dispatch({ type: 'SET_PRESET_LIST', payload: summaries });
+
+        // The persistence effect diffs against this snapshot, so whatever a
+        // preset applies below gets written (and stale records deleted).
         prevResourcesRef.current = loaded;
         resourcesLoadedRef.current = true;
+
+        const privateDefault = findDefaultPrivatePreset(providers, loc);
+        if (pristine && onBuiltin && privateDefault) {
+          await runPresetRef.current(privateDefault, 'all');
+          return;
+        }
+        if (loaded.length === 0 || pristineOtherLocale) {
+          // First entry (empty store) or locale switch: seed the built-in
+          // preset. A pristine document takes the sample markdown too (and a
+          // fresh config only when none was ever saved); an edited document
+          // with an emptied store just gets its example resources back.
+          const parts: PresetApplyParts = !pristine
+            ? 'resources'
+            : loadConfig() === null ? 'all' : 'document';
+          await runPresetRef.current(builtinPresetRef.current, parts);
+          return;
+        }
         dispatch({ type: 'SET_RESOURCES', payload: loaded });
+        dispatch({ type: 'SET_PRESET', payload: { id: savedId ?? BUILTIN_PRESET_ID } });
       })
       .catch(() => {
         if (cancelled) return;
@@ -339,8 +475,8 @@ export function SandboxProvider({
     return () => {
       cancelled = true;
     };
-    // Mount-only seed: `locale` is read once to pick the example resources'
-    // language and must not re-trigger seeding if it changes later.
+    // Mount-only seed: `locale`/`presetSources` are read once to pick the
+    // preset and must not re-trigger seeding if they change later.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -455,6 +591,17 @@ export function SandboxProvider({
     dispatch,
     editorStateRef,
     docRef,
+    loadPreset: async (id) => {
+      const provider = presetProvidersRef.current.find((p) => p.summary.id === id);
+      if (!provider) return;
+      await runPresetRef.current(provider, 'all');
+    },
+    reloadPreset: async (parts) => {
+      const activeId = stateRef.current.activePresetId;
+      const provider =
+        presetProvidersRef.current.find((p) => p.summary.id === activeId) ?? builtinPresetRef.current;
+      await runPresetRef.current(provider, parts);
+    },
   }), [dispatch]);
 
   return (

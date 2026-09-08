@@ -5,6 +5,7 @@ export interface SandboxLabels {
   markdownEditor: string;
   warnings: string;
   fonts: string;
+  presets: string;
 
   // Viewport tabs
   canvas: string;
@@ -525,6 +526,20 @@ export interface SandboxLabels {
   resetConfigConfirm: string;
   resetSectionConfirm: string;
   resetMarkdownConfirm: string;
+
+  // Presets panel
+  presetPostextGuideName: string;
+  presetPostextGuideDescription: string;
+  presetLoad: string;
+  presetLoadConfirm: string;
+  presetReload: string;
+  presetReloadConfirm: string;
+  presetActive: string;
+  presetPrivate: string;
+  presetDefault: string;
+  presetLoading: string;
+  presetLoadError: string;
+  presetUnavailable: string;
 
   // Custom fonts section
   customFonts: string;

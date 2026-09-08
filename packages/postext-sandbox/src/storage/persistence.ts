@@ -6,6 +6,7 @@ const MARKDOWN_KEY = 'postext-sandbox-markdown';
 const VIEWPORT_KEY = 'postext-sandbox-viewport';
 const SIDEBAR_WIDTH_KEY = 'postext-sandbox-sidebar-width';
 const PANEL_KEY = 'postext-sandbox-panel';
+const PRESET_KEY = 'postext-sandbox-preset';
 const SECTIONS_KEY = 'postext-sandbox-sections';
 const COLOR_MODES_KEY = 'postext-sandbox-color-modes';
 const CANVAS_VIEW_MODE_KEY = 'postext-sandbox-canvas-view-mode';
@@ -64,6 +65,16 @@ export function loadPanel(): string | null | undefined {
   if (raw == null) return undefined;
   if (raw === '__closed__') return null;
   return raw;
+}
+
+/** Remember which preset the current document came from, so Reset restores
+ *  that preset (not the built-in sample) on the next visit. */
+export function savePresetId(id: string): void {
+  getStorage()?.setItem(PRESET_KEY, id);
+}
+
+export function loadPresetId(): string | null {
+  return getStorage()?.getItem(PRESET_KEY) ?? null;
 }
 
 export function saveSidebarPercent(percent: number): void {
@@ -187,6 +198,7 @@ export function clearStorage(): void {
   storage?.removeItem(VIEWPORT_KEY);
   storage?.removeItem(SIDEBAR_WIDTH_KEY);
   storage?.removeItem(PANEL_KEY);
+  storage?.removeItem(PRESET_KEY);
   storage?.removeItem(SECTIONS_KEY);
   storage?.removeItem(COLOR_MODES_KEY);
   storage?.removeItem(CANVAS_VIEW_MODE_KEY);
