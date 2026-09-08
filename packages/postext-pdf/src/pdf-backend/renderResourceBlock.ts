@@ -75,14 +75,13 @@ export async function preloadResourceImages(
   for (const page of doc.pages) {
     if (page.floats) blocks.push(...page.floats);
   }
-  for (const block of blocks) {
-    const rb = block.resourceBlock;
-    if (!rb || !rb.fileId || out.has(rb.fileId)) continue;
-    if (rb.kind !== 'bitmap' && rb.kind !== 'svg') continue;
-    const bytes = bytesProvider(rb.fileId);
-    if (!bytes) continue;
+  /** Embed one image by `fileId` (format hint from the resource when known). */
+  const embed = async (fileId: string, format: string | undefined): Promise<void> => {
+    if (out.has(fileId)) return;
+    const bytes = bytesProvider(fileId);
+    if (!bytes) return;
     try {
-      const fmt = (rb.format ?? '').toLowerCase();
+      const fmt = (format ?? '').toLowerCase();
       let image: PDFImage | null = null;
       if (fmt === 'jpeg' || fmt === 'jpg') {
         image = await pdfDoc.embedJpg(bytes);
@@ -93,10 +92,19 @@ export async function preloadResourceImages(
         // png / gif-first-frame / svg-rasterised-to-png all go through embedPng.
         image = await pdfDoc.embedPng(bytes);
       }
-      if (image) out.set(rb.fileId, image);
+      if (image) out.set(fileId, image);
     } catch {
       // Undecodable — leave absent; renderer falls back to a placeholder.
     }
+  };
+  for (const block of blocks) {
+    const rb = block.resourceBlock;
+    if (rb && rb.fileId && (rb.kind === 'bitmap' || rb.kind === 'svg')) {
+      await embed(rb.fileId, rb.format);
+    }
+    // Callout icons (`icon.kind: 'resource'`) draw through the same map.
+    const iconFileId = block.callout?.iconFileId;
+    if (iconFileId) await embed(iconFileId, block.callout?.iconFormat);
   }
   return out;
 }

@@ -119,6 +119,10 @@ function renderPage(
     );
   }
 
+  // Opener / part bands go under the columns so their backgrounds sit
+  // beneath the body text (mirrors the canvas backend).
+  if (vdtPage.openerBand) renderHeaderFooterSlot(ctx, vdtPage.openerBand, fontCache);
+
   const clipOverhang = dimensionToPx({ value: 2, unit: 'pt' }, doc.config.page.dpi);
   for (const col of vdtPage.columns) {
     pushClipRect(
@@ -142,7 +146,6 @@ function renderPage(
     }
   }
 
-  if (vdtPage.openerBand) renderHeaderFooterSlot(ctx, vdtPage.openerBand, fontCache);
   if (vdtPage.header) renderHeaderFooterSlot(ctx, vdtPage.header, fontCache);
   if (vdtPage.footer) renderHeaderFooterSlot(ctx, vdtPage.footer, fontCache);
 

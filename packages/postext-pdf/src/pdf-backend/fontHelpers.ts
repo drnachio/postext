@@ -9,6 +9,12 @@ export function collectFontStrings(doc: VDTDocument): string[] {
     if (page.floats) blocks.push(...page.floats);
   }
   for (const block of blocks) {
+    // Design overlays (advanced heading designs, callout titles/icons).
+    if (block.designOverlay) {
+      for (const b of block.designOverlay.blocks) {
+        if (b.kind === 'text') out.add(b.fontString);
+      }
+    }
     if (block.fontString) out.add(block.fontString);
     if (block.boldFontString) out.add(block.boldFontString);
     if (block.italicFontString) out.add(block.italicFontString);

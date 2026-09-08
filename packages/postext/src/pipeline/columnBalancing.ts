@@ -125,6 +125,8 @@ export function collectColumnGaps(
       const col = page.columns[c]!;
       if (col.blocks.length === 0) continue;
       if (c === lastNonEmpty && !pageFlowsOn) continue;
+      // A `:::columnbreak` ended this column on purpose — leave its gap.
+      if (col.forcedBreak) continue;
 
       const gapLines = Math.floor((col.availableHeight + EPS) / doc.baselineGrid);
       if (gapLines < 1) continue;
@@ -133,6 +135,9 @@ export function collectColumnGaps(
       for (let i = 0; i < col.blocks.length; i++) {
         const b = col.blocks[i]!;
         if (b.hidden || b.contentIndex === undefined) continue;
+        // Callout frames and their children form one unbreakable unit whose
+        // interior is off-grid by design — never a stretch point.
+        if (b.containerId !== undefined) continue;
 
         if (
           b.type === 'heading'
@@ -150,6 +155,7 @@ export function collectColumnGaps(
         } else if (
           i >= 1
           && col.blocks[i - 1]!.type === 'listItem'
+          && col.blocks[i - 1]!.containerId === undefined
           && b.type !== 'listItem'
           && b.type !== 'heading' // a heading after a list is a heading candidate
           && !b.id.includes('-cont-')

@@ -99,6 +99,15 @@ Se aceptan listas de tipos mixtos a la misma profundidad (puedes pasar de no ord
 
 <Illustration name="ListNesting" data='{"title": "Profundidad de anidamiento de listas", "desc": "Las listas se anidan usando exactamente dos espacios por nivel, hasta una profundidad máxima de cinco. Cada nivel sangra más y puede usar un estilo de viñeta diferente.", "caption": "Dos espacios por nivel. Profundidad máxima: cinco.", "level1": "Nivel 1", "level2": "Nivel 2 — dos espacios", "level3": "Nivel 3 — cuatro espacios", "indentNote": "Exactamente dos espacios por nivel. Profundidad máxima: 5."}' />
 
+### Atributos de encabezado
+
+Una línea de encabezado puede terminar con un bloque de atributos entre llaves — la misma sintaxis `clave="valor"` de las directivas:
+
+```markdown
+# El largo camino {author="I. Zango Martín" year=1998}
+```
+
+Las llaves y su contenido se eliminan del texto del encabezado (el título anterior se renderiza como *El largo camino*) y se guardan en el encabezado como `attrs`. Se exponen a las ranuras de diseño como marcadores `{attr.<clave>}`: en la ranura de diseño avanzado del propio encabezado, y en los encabezados y pies de página, donde se resuelven a partir del H1 del capítulo actual. Solo se reconoce un bloque equilibrado y sin llaves anidadas al final de la línea; un `{}` suelto o una llave sin cerrar permanece en el texto. Ver **Configuración → Encabezados y pies**.
 
 ## Directivas
 
@@ -136,19 +145,23 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
       <td><code>:::numbering&#123;format="decimal" startAt=1&#125;</code></td>
       <td>En el siguiente límite de página, cambia la secuencia de numeración. Ambos atributos son opcionales — omite <code>format</code> para mantener el formato, omite <code>startAt</code> para continuar el contador.</td>
     </tr>
+    <tr>
+      <td><code>:::columnbreak</code></td>
+      <td>Termina aquí la columna actual: el siguiente bloque comienza en la siguiente columna de la misma página (o en una página nueva cuando la directiva cae en la última columna). No hace nada en una columna vacía, así que nunca genera una columna o página en blanco. La columna que termina conserva su hueco inferior — el equilibrado de columnas no la estira.</td>
+    </tr>
   </tbody>
 </table>
 
 Los valores de los atributos pueden ir entre comillas dobles (<code>"…"</code>), comillas simples (<code>'…'</code>) o sin comillas (<code>startAt=17</code>). Una clave sin `=` se trata como una bandera presente con valor vacío.
 
-Hoy solo se reconocen `pagebreak` y `numbering` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox.
+Hoy solo se reconocen `pagebreak`, `numbering` y `columnbreak` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox.
 
 ### Contenedores
 
 Un contenedor envuelve una serie de bloques entre dos vallas: una línea de apertura `:::nombre` o `:::nombre{atributos}`, luego cualquier contenido normal — párrafos, encabezados, listas, citas, fórmulas, incluso otras directivas — y una línea de cierre con un `:::` a secas. Los contenedores pueden anidarse; cada `:::` de cierre cierra el más interno de los abiertos.
 
 ```
-:::callout{style="note"}
+:::callout{type="note"}
 Mantén la linterna encendida **todas** las noches.
 
 - Revisa la mecha.
@@ -181,7 +194,16 @@ Se reconocen tres nombres de contenedor. Lo que renderiza cada uno se define en 
   </tbody>
 </table>
 
-Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en [Configuración](/es/docs/configuration). Los valores de los atributos siguen la misma gramática que las directivas. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
+Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en [Configuración](/es/docs/configuration). Los valores de los atributos siguen la misma gramática que las directivas. Una valla `:::callout` admite `type` (el id de un estilo de aviso configurado — los tipos desconocidos o ausentes usan el primer estilo), `title` (sobrescribe el título por defecto del estilo) y `span` / `placement` (`column` o `page`; `here`, `top` o `bottom`) para sobrescribir la extensión y la posición del estilo en esa caja:
+
+```
+:::callout{type="objectives" title="Qué aprenderás" span="page" placement="top"}
+- Nombrar las partes de la linterna.
+- Recortar la mecha sin tocar el cristal.
+:::
+```
+
+Un aviso se compone como una caja indivisible — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo — y pasa entero a la columna o página siguiente cuando no cabe. Las cajas a ancho completo (`span="page"`) y flotantes (`placement="top"` / `"bottom"`) se registran pero en esta versión todavía se colocan en línea. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
 
 Una valla no necesita una línea en blanco delante: una valla de apertura o de cierre pegada justo debajo de un párrafo, una lista o una cita termina ese bloque. Un contenedor que queda abierto al final del documento se cierra automáticamente ahí, y el sandbox emite un aviso **Contenedor sin cerrar** que señala la línea de apertura. Un `:::` suelto sin ningún contenedor abierto se deja en el texto como un párrafo visible en lugar de descartarse en silencio.
 

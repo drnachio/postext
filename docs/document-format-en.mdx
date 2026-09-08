@@ -99,6 +99,15 @@ Lists of mixed kinds at the same depth are accepted (you can switch from unorder
 
 <Illustration name="ListNesting" data='{"title": "List nesting depth", "desc": "Lists nest using exactly two spaces per level, up to a maximum depth of five. Each level indents further and may use different bullet styling.", "caption": "Two spaces per level. Max depth: five.", "level1": "Level 1", "level2": "Level 2 — two spaces in", "level3": "Level 3 — four spaces in", "indentNote": "Exactly two spaces per nesting level. Max depth: 5."}' />
 
+### Heading attributes
+
+A heading line may end with an attribute block in braces — the same `key="value"` syntax directives use:
+
+```markdown
+# The Long Road {author="I. Zango Martín" year=1998}
+```
+
+The braces and their content are removed from the heading text (the title above renders as *The Long Road*) and stored on the heading as `attrs`. They are exposed to design slots as `{attr.<key>}` placeholders: in the heading's own advanced-design slot, and in page headers and footers, where they resolve from the current chapter's H1. Only a balanced, brace-free block at the very end of the line is recognised; a lone `{}` or an unbalanced brace stays in the text. See **Configuration → Headers & footers**.
 
 ## Directives
 
@@ -136,19 +145,23 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td><code>:::numbering&#123;format="decimal" startAt=1&#125;</code></td>
       <td>At the next page boundary, switch the page-numbering sequence. Both attributes are optional — omit <code>format</code> to keep the format, omit <code>startAt</code> to continue the counter.</td>
     </tr>
+    <tr>
+      <td><code>:::columnbreak</code></td>
+      <td>End the current column here: the next block opens in the next column of the same page (or on a new page when the directive lands in the last column). A no-op in an empty column, so it never produces a blank column or page. The column it ends keeps its bottom gap — column balancing does not stretch it.</td>
+    </tr>
   </tbody>
 </table>
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak` and `numbering` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
+Only `pagebreak`, `numbering` and `columnbreak` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
 
 ### Containers
 
 A container wraps a run of blocks in a fence: an opening line `:::name` or `:::name{attrs}`, then any ordinary content — paragraphs, headings, lists, blockquotes, formulas, even other directives — and a closing line holding a bare `:::`. Containers may nest; each closing `:::` closes the innermost open one.
 
 ```
-:::callout{style="note"}
+:::callout{type="note"}
 Keep the lantern lit **every** night.
 
 - Check the wick.
@@ -181,7 +194,16 @@ Three container names are recognized. What each one renders is set in its own se
   </tbody>
 </table>
 
-The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
+The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. A `:::callout` fence takes `type` (the id of a configured callout style — unknown or missing types fall back to the first style), `title` (overrides the style's default title), and `span` / `placement` (`column` or `page`; `here`, `top` or `bottom`) to override the style's extent and position for that box:
+
+```
+:::callout{type="objectives" title="What you will learn" span="page" placement="top"}
+- Name the parts of the lantern.
+- Trim the wick without touching the glass.
+:::
+```
+
+A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width (`span="page"`) and floating (`placement="top"` / `"bottom"`) boxes are recorded but still placed inline in this version. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
 
 A fence does not need a blank line before it: an opening or closing fence glued directly under a paragraph, list or blockquote ends that block. A container left open at the end of the document is closed automatically there, and the sandbox reports an **Unclosed container** warning pointing at the opening line. A stray `:::` with no container open is left in the text as a visible paragraph rather than dropped silently.
 

@@ -80,7 +80,11 @@ export function renderCutLines(ctx: PageCtx, page: VDTPage, doc: VDTDocument): v
   }
 }
 
+/** The page's content area: `page.contentArea` when the pipeline set it
+ *  (per page, so mirrored margins are honoured), else inferred from the
+ *  column bboxes (hand-built pages). */
 export function computeContentArea(page: VDTPage, doc: VDTDocument): BoundingBox {
+  if (page.contentArea) return page.contentArea;
   const { dpi, margins } = doc.config.page;
   const pxPerCm = dpi / 2.54;
   const marginTop = margins.top.unit === 'cm' ? margins.top.value * pxPerCm : margins.top.value;

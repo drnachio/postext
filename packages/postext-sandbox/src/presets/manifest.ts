@@ -176,8 +176,8 @@ export function resourceFromSpec(
 ): Resource {
   const now = Date.now();
   const { file, width, height, ...rest } = spec;
-  // Authoring notes don't belong on the stored resource.
-  delete (rest as { note?: string }).note;
+  // `note` is a real resource field (rendered under the figure), so it is
+  // kept on the stored resource like the caption.
   const base: Resource = { ...rest, createdAt: now, updatedAt: now };
   if (!file) return base;
 

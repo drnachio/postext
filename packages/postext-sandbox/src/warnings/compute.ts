@@ -3,10 +3,13 @@ import type {
   VDTDocument,
   ResolvedDebugConfig,
   ContentBlock,
+  ParseIssue,
   Resource,
   ResourceType,
 } from 'postext';
 import {
+  KNOWN_CONTAINERS,
+  KNOWN_DIRECTIVES,
   parseMarkdownWithIssues,
   resolveDebugConfig,
   resolveHeaderFooterConfig,
@@ -119,6 +122,13 @@ function collectConsecutiveHeadingsWarnings(blocks: ContentBlock[], markdown: st
 }
 
 const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\b/;
+/** Every `:::name` the parser understands: leaf directives plus fenced
+ *  containers (`callout`, `paragraphs`, `part`). Widened to `string` so
+ *  arbitrary names scanned from the source can be tested. */
+const KNOWN_FENCE_NAMES: ReadonlySet<string> = new Set<string>([
+  ...KNOWN_DIRECTIVES,
+  ...KNOWN_CONTAINERS,
+]);
 const ALLOWED_PAGE_FORMATS = new Set([
   'decimal',
   'lower-roman',
@@ -144,7 +154,7 @@ function collectDirectiveWarnings(
     const m = rawLine.trim().match(DIRECTIVE_RE);
     if (m) {
       const name = m[1]!;
-      if (name !== 'pagebreak' && name !== 'numbering') {
+      if (!KNOWN_FENCE_NAMES.has(name)) {
         out.push({
           id: `directive-unknown-${idx++}-${offset}`,
           payload: { kind: 'unknownDirective', name },
@@ -194,6 +204,76 @@ function collectDirectiveWarnings(
         out.push({
           id: `pagebreak-parity-${idx++}-${b.sourceStart}`,
           payload: { kind: 'pagebreakInvalidParity', value: attrs.parity },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/** A config that may carry `calloutStyles` once the engine exports it. */
+// TODO(engine): replace with `PostextConfig['calloutStyles']` once postext
+// exports the callout style type; until then the list is read defensively.
+type ConfigWithCalloutStyles = PostextConfig & { calloutStyles?: { id: string }[] };
+
+/**
+ * Fenced-container warnings:
+ *   - unclosedContainer: a `:::name` fence still open at end of input (from
+ *     the parser's issue list); points at the opening line.
+ *   - unknownParagraphStyle: `:::paragraphs{style="x"}` where `x` is not a
+ *     configured paragraph style id.
+ *   - unknownCalloutType: `:::callout{type="x"}` where `x` is not a
+ *     configured callout style id. Skipped while the config declares no
+ *     callout styles at all (the engine then falls back to its default look).
+ */
+function collectContainerWarnings(
+  markdown: string,
+  blocks: ContentBlock[],
+  issues: ParseIssue[],
+  config: PostextConfig,
+): Warning[] {
+  const out: Warning[] = [];
+  let idx = 0;
+
+  for (const issue of issues) {
+    if (issue.kind !== 'unclosedContainer') continue;
+    out.push({
+      id: `container-unclosed-${idx++}-${issue.sourceStart}`,
+      payload: { kind: 'unclosedContainer', name: issue.containerName },
+      sourceStart: issue.sourceStart,
+      sourceEnd: issue.sourceEnd,
+      line: lineNumberForOffset(markdown, issue.sourceStart),
+    });
+  }
+
+  const paragraphStyleIds = new Set((config.paragraphStyles ?? []).map((s) => s.id));
+  const calloutStyleIds = new Set(
+    ((config as ConfigWithCalloutStyles).calloutStyles ?? []).map((s) => s.id),
+  );
+
+  for (const b of blocks) {
+    if (b.type !== 'containerStart') continue;
+    const attrs = b.containerAttrs ?? {};
+    if (b.containerName === 'paragraphs') {
+      const style = attrs.style;
+      if (style !== undefined && !paragraphStyleIds.has(style)) {
+        out.push({
+          id: `paragraphs-style-${idx++}-${b.sourceStart}`,
+          payload: { kind: 'unknownParagraphStyle', style },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    } else if (b.containerName === 'callout' && calloutStyleIds.size > 0) {
+      const type = attrs.type;
+      if (type !== undefined && !calloutStyleIds.has(type)) {
+        out.push({
+          id: `callout-type-${idx++}-${b.sourceStart}`,
+          payload: { kind: 'unknownCalloutType', type },
           sourceStart: b.sourceStart,
           sourceEnd: b.sourceEnd,
           line: lineNumberForOffset(markdown, b.sourceStart),
@@ -614,6 +694,7 @@ export function computeWarnings(params: {
 
   warnings.push(...collectHeaderFooterWarnings(config, doc));
   warnings.push(...collectDirectiveWarnings(markdown, blocks));
+  warnings.push(...collectContainerWarnings(markdown, blocks, issues, config));
   warnings.push(...collectHeadingBreakParityWarnings(config));
   warnings.push(...collectParityCascadeWarnings(doc));
   warnings.push(...collectAlphaOverflowWarnings(doc));

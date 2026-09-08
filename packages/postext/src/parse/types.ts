@@ -16,7 +16,7 @@ export type DirectiveAttrs = Record<string, string>;
 
 /** Recognized directive names. Unknown names are not parsed as directives —
  *  they fall through to the paragraph branch and surface via warnings. */
-export type DirectiveName = 'pagebreak' | 'numbering';
+export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak';
 
 /** Recognized fenced-container names. A container opens with a
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
@@ -114,6 +114,11 @@ export interface ContentBlock {
   text: string;
   spans: InlineSpan[];
   level?: number; // heading level 1-6
+  /** For `heading` blocks: attributes parsed from a trailing
+   *  `{key="value" other=bare}` on the heading line (e.g.
+   *  `# Title {author="I. Zango"}`). The braces and their content are
+   *  removed from `text`. Absent when the heading carries no attributes. */
+  attrs?: DirectiveAttrs;
   /** Depth (1-based) for listItem blocks. Level 1 = outermost. */
   depth?: number;
   /** Discriminator for listItem blocks. Defaults to 'unordered' when absent. */

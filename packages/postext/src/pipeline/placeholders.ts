@@ -20,6 +20,10 @@ export interface PlaceholderContext {
   metadata: DocumentMetadata;
   /** Chapter title per page index (most recent H1 at or before each page). */
   chapterTitleByPageIndex: string[];
+  /** Heading attributes of the current chapter's H1 per page index (see
+   *  `computeChapterAttrs`). Backs `{attr.<key>}` in header/footer slots. A
+   *  missing entry or key resolves to `''`. */
+  chapterAttrsByPageIndex?: Record<string, string>[];
 }
 
 export interface PlaceholderResult {
@@ -40,6 +44,20 @@ const PLACEHOLDER_NAMES = new Set([
 
 const METADATA_PLACEHOLDERS = new Set(['title', 'subtitle', 'author', 'publishDate']);
 
+/** Placeholder grammar: `name` or `name.key` — the dotted form is reserved
+ *  for namespaced lookups such as `{attr.author}` (heading attributes). */
+export const PLACEHOLDER_NAME_RE = /^[a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z_][a-zA-Z0-9_-]*)?$/;
+
+/** Namespace of the heading-attribute placeholders (`{attr.<key>}`). */
+export const ATTR_PLACEHOLDER_PREFIX = 'attr.';
+
+/** When `name` is an `attr.<key>` placeholder, returns `<key>`. */
+export function attrPlaceholderKey(name: string): string | undefined {
+  if (!name.startsWith(ATTR_PLACEHOLDER_PREFIX)) return undefined;
+  const key = name.slice(ATTR_PLACEHOLDER_PREFIX.length);
+  return key.length > 0 ? key : undefined;
+}
+
 /**
  * Precompute chapter titles (most recent H1 text) for each page index by
  * walking blocks once. Returns an array where `result[pageIndex]` is the plain
@@ -57,7 +75,7 @@ export function computeChapterTitles(
   totalPages: number,
   pages?: ChapterTitlePageInfo[],
 ): string[] {
-  return computeChapterValues(blocks, totalPages, pages, plainTextOfBlock);
+  return computeChapterValues(blocks, totalPages, pages, plainTextOfBlock, '');
 }
 
 /**
@@ -70,26 +88,41 @@ export function computeChapterNumbers(
   totalPages: number,
   pages?: ChapterTitlePageInfo[],
 ): string[] {
-  return computeChapterValues(blocks, totalPages, pages, (b) => b.numberPrefix ?? '');
+  return computeChapterValues(blocks, totalPages, pages, (b) => b.numberPrefix ?? '', '');
 }
 
-/** Shared walker behind `computeChapterTitles` / `computeChapterNumbers`:
- *  tracks the most recent H1's extracted value per page. */
-function computeChapterValues(
+/**
+ * Precompute the heading attributes (`# Title {key="value"}`) of the most
+ * recent H1 per page. Backs `{attr.<key>}` in header/footer slots; pages
+ * before the first H1 get an empty record.
+ */
+export function computeChapterAttrs(
+  blocks: VDTBlock[],
+  totalPages: number,
+  pages?: ChapterTitlePageInfo[],
+): Record<string, string>[] {
+  return computeChapterValues(blocks, totalPages, pages, (b) => b.attrs ?? {}, {});
+}
+
+/** Shared walker behind `computeChapterTitles` / `computeChapterNumbers` /
+ *  `computeChapterAttrs`: tracks the most recent H1's extracted value per
+ *  page, starting from `empty` before the first H1. */
+function computeChapterValues<T>(
   blocks: VDTBlock[],
   totalPages: number,
   pages: ChapterTitlePageInfo[] | undefined,
-  extract: (block: VDTBlock) => string,
-): string[] {
-  const out = new Array<string>(totalPages).fill('');
-  const byPage = new Map<number, string>();
-  let current = '';
+  extract: (block: VDTBlock) => T,
+  empty: T,
+): T[] {
+  const out = new Array<T>(totalPages).fill(empty);
+  const byPage = new Map<number, T>();
+  let current: T = empty;
   // Walk blocks in page/column order. The VDT `doc.blocks` array is already
   // insertion-ordered by placement, so pages are in increasing index.
   let lastPageIndex = -1;
   // Track H1 page-indices so we can reassign any parity-padding pages
   // that precede them.
-  const h1PageIndices: Array<{ pageIndex: number; value: string }> = [];
+  const h1PageIndices: Array<{ pageIndex: number; value: T }> = [];
   for (const b of blocks) {
     if (b.pageIndex < 0) continue;
     while (lastPageIndex < b.pageIndex) {
@@ -141,7 +174,9 @@ function plainTextOfBlock(block: VDTBlock): string {
 
 /**
  * Resolve placeholder templates. Grammar:
- *   - `{name}` with name matching `[a-zA-Z][a-zA-Z0-9]*` is a placeholder.
+ *   - `{name}` with name matching `[a-zA-Z][a-zA-Z0-9]*` is a placeholder;
+ *   - `{name.key}` is a namespaced placeholder — `{attr.<key>}` reads the
+ *     current chapter's heading attributes (missing → `''`, no warning);
  *   - `{{` and `}}` are literal braces.
  */
 export function resolvePlaceholders(
@@ -173,8 +208,14 @@ export function resolvePlaceholders(
         continue;
       }
       const name = template.slice(i + 1, end);
-      if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) {
+      if (!PLACEHOLDER_NAME_RE.test(name)) {
         out += template.slice(i, end + 1);
+        i = end + 1;
+        continue;
+      }
+      const attrKey = attrPlaceholderKey(name);
+      if (attrKey !== undefined) {
+        out += ctx.chapterAttrsByPageIndex?.[ctx.page.index]?.[attrKey] ?? '';
         i = end + 1;
         continue;
       }
@@ -233,7 +274,7 @@ export function collectPlaceholderNames(template: string): string[] {
       const end = template.indexOf('}', i + 1);
       if (end === -1) break;
       const name = template.slice(i + 1, end);
-      if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) names.add(name);
+      if (PLACEHOLDER_NAME_RE.test(name)) names.add(name);
       i = end + 1;
       continue;
     }
@@ -243,7 +284,7 @@ export function collectPlaceholderNames(template: string): string[] {
 }
 
 export function isKnownPlaceholder(name: string): boolean {
-  return PLACEHOLDER_NAMES.has(name);
+  return PLACEHOLDER_NAMES.has(name) || attrPlaceholderKey(name) !== undefined;
 }
 
 export function isMetadataPlaceholder(name: string): boolean {

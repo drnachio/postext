@@ -12,6 +12,9 @@ export type WarningKind =
   | 'headerFooterUnknownPlaceholder'
   | 'headerFooterMetadataMissing'
   | 'unknownDirective'
+  | 'unclosedContainer'
+  | 'unknownParagraphStyle'
+  | 'unknownCalloutType'
   | 'numberingInvalidFormat'
   | 'numberingInvalidStartAt'
   | 'pagebreakInvalidParity'
@@ -70,6 +73,15 @@ export type WarningPayload =
       name: string;
     }
   | { kind: 'unknownDirective'; name: string }
+  /** A `:::name` container fence was still open at the end of the document;
+   *  the parser auto-closed it. Points at the opening fence. */
+  | { kind: 'unclosedContainer'; name: string }
+  /** A `:::paragraphs{style="…"}` container names a style id that is not in
+   *  `config.paragraphStyles`; the paragraphs render as body text. */
+  | { kind: 'unknownParagraphStyle'; style: string }
+  /** A `:::callout{type="…"}` container names a type that is not in
+   *  `config.calloutStyles`. */
+  | { kind: 'unknownCalloutType'; type: string }
   | { kind: 'numberingInvalidFormat'; value: string }
   | { kind: 'numberingInvalidStartAt'; value: string }
   | { kind: 'pagebreakInvalidParity'; value: string }

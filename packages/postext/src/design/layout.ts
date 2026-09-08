@@ -7,6 +7,8 @@ import type {
   ElementSize,
   HAlign,
   PageParity,
+  PageRole,
+  PageRoleFilter,
   ResolvedDesignBoxElement,
   ResolvedDesignElement,
   ResolvedDesignRuleElement,
@@ -110,10 +112,24 @@ export interface LayoutIssue {
   targetId?: string;
 }
 
+/** Page-level reference frames (absolute page px) that elements may anchor
+ *  to instead of the slot container: `page` is the trim box, `bleed` the
+ *  trim box grown by the bleed (equal to `page` when cut lines are off). */
+export interface DesignFrames {
+  page: { x: number; y: number; width: number; height: number };
+  bleed: { x: number; y: number; width: number; height: number };
+}
+
 export interface LayoutContext {
   container: { x: number; y: number; width: number; height: number };
   dpi: number;
   placeholders: DesignPlaceholderContext;
+  /** Page/bleed frames for `anchor.to: 'page' | 'bleed'`. When absent those
+   *  anchors fall back to the container. */
+  frames?: DesignFrames;
+  /** Role of the page being laid out, for the per-element `pages` filter.
+   *  When absent every element passes the filter. */
+  pageRole?: PageRole;
 }
 
 function pageMatchesParity(pageIndex: number, parity: PageParity): boolean {
@@ -121,6 +137,14 @@ function pageMatchesParity(pageIndex: number, parity: PageParity): boolean {
   const pageNumber = pageIndex + 1;
   const isOdd = pageNumber % 2 === 1;
   return parity === 'odd' ? isOdd : !isOdd;
+}
+
+/** Whether an element with page filter `filter` renders on a page of role
+ *  `role`. An unknown role (not yet classified) admits everything. */
+export function pageMatchesRole(filter: PageRoleFilter | undefined, role: PageRole | undefined): boolean {
+  if (filter === undefined || filter === 'all') return true;
+  if (role === undefined) return true;
+  return filter === role;
 }
 
 function dimPx(d: Dimension | undefined, dpi: number, baseFontSizePx?: number): number {
@@ -165,8 +189,19 @@ function colorHex(c: ColorValue | undefined): string {
 // ---------------------------------------------------------------------------
 
 function anchorTargetId(placement: ElementPlacement): string | undefined {
-  if (placement.anchor.to === 'container') return undefined;
-  return placement.anchor.to.slice(1);
+  const to = placement.anchor.to;
+  if (to === 'container' || to === 'page' || to === 'bleed') return undefined;
+  return to.slice(1);
+}
+
+/** The page-level frame an element anchors to, or `undefined` for
+ *  container / element anchors (and when no frames were supplied). */
+function frameFor(placement: ElementPlacement, frames: DesignFrames | undefined): AnchorReference | undefined {
+  if (!frames) return undefined;
+  const to = placement.anchor.to;
+  if (to === 'page') return frames.page;
+  if (to === 'bleed') return frames.bleed;
+  return undefined;
 }
 
 function topoSort(
@@ -613,8 +648,10 @@ export function layoutDesignSlot(
     height: context.container.height,
   };
 
-  // Filter by parity first.
-  const candidates = slot.elements.filter((el) => pageMatchesParity(pageIndex, el.parity));
+  // Filter by parity and page role first.
+  const candidates = slot.elements.filter(
+    (el) => pageMatchesParity(pageIndex, el.parity) && pageMatchesRole(el.pages, context.pageRole),
+  );
 
   // Topologically sort (dependencies first).
   const ordered = topoSort(candidates, issues);
@@ -634,8 +671,16 @@ export function layoutDesignSlot(
   for (const el of ordered) {
     const target = anchorTargetId(el.placement);
     let refGeo: AnchorReference = containerRef;
+    // Page/bleed anchors use that frame both as the anchor reference and as
+    // the bounds for `size: 'fill'` / auto-width clamping, so a band can run
+    // edge to edge regardless of the slot container.
+    let fillRef: AnchorReference = containerRef;
     let useElementEdge = false;
-    if (target) {
+    const frame = frameFor(el.placement, context.frames);
+    if (frame) {
+      refGeo = frame;
+      fillRef = frame;
+    } else if (target) {
       const dep = resolvedGeo.get(target);
       if (dep) {
         refGeo = { x: dep.x, y: dep.y, width: dep.width, height: dep.height };
@@ -657,7 +702,7 @@ export function layoutDesignSlot(
         anchorY,
         pinX: anchor.pinX,
         pinY: anchor.pinY,
-      }, containerRef, context.dpi, useElementEdge);
+      }, fillRef, context.dpi, useElementEdge);
       resolvedGeo.set(el.id, prim);
       primitives.push(prim);
     } else if (el.kind === 'rule') {
@@ -666,7 +711,7 @@ export function layoutDesignSlot(
         anchorY,
         pinX: anchor.pinX,
         pinY: anchor.pinY,
-      }, containerRef, context.dpi);
+      }, fillRef, context.dpi);
       resolvedGeo.set(el.id, prim);
       primitives.push(prim);
     } else {
@@ -675,7 +720,7 @@ export function layoutDesignSlot(
         anchorY,
         pinX: anchor.pinX,
         pinY: anchor.pinY,
-      }, containerRef, context.dpi);
+      }, fillRef, context.dpi);
       resolvedGeo.set(el.id, prim);
       primitives.push(prim);
     }

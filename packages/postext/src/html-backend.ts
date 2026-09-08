@@ -9,6 +9,7 @@ import type {
   VDTDesignTextBlock,
   VDTDesignRuleBlock,
   VDTDesignBoxBlock,
+  VDTDesignImageBlock,
   VDTDesignBoxStyle,
   BoundingBox,
   ResolvedResourceBlock,
@@ -504,21 +505,42 @@ function renderDesignBoxBlock(block: VDTDesignBoxBlock): string {
   return renderBoxAt(block.bbox, block.box);
 }
 
-function renderDesignBlock(block: VDTDesignBlock): string {
+/** Image block (e.g. a callout icon): `<img>` from `resourceImageUrl`, or a
+ *  neutral placeholder box when the host cannot supply the image. */
+function renderDesignImageBlock(block: VDTDesignImageBlock, options?: RenderHtmlOptions): string {
+  const { x, y, width, height } = block.bbox;
+  if (width <= 0 || height <= 0) return '';
+  const url = options?.resourceImageUrl?.(block.fileId);
+  if (url) {
+    return (
+      `<img src="${esc(url)}" alt="" style="position:absolute;` +
+      `left:${x}px;top:${y}px;width:${width}px;height:${height}px;" />`
+    );
+  }
+  return (
+    `<div aria-hidden="true" style="position:absolute;` +
+    `left:${x}px;top:${y}px;width:${width}px;height:${height}px;` +
+    `background:rgba(160,160,160,0.12);border:1px solid rgba(160,160,160,0.5);box-sizing:border-box;` +
+    `"></div>`
+  );
+}
+
+function renderDesignBlock(block: VDTDesignBlock, options?: RenderHtmlOptions): string {
   if (block.kind === 'text') return renderDesignTextBlock(block);
   if (block.kind === 'rule') return renderDesignRuleBlock(block);
+  if (block.kind === 'image') return renderDesignImageBlock(block, options);
   return renderDesignBoxBlock(block);
 }
 
-function renderDesignSlot(slot: VDTDesignSlot): string {
+function renderDesignSlot(slot: VDTDesignSlot, options?: RenderHtmlOptions): string {
   const parts: string[] = [];
-  for (const block of slot.blocks) parts.push(renderDesignBlock(block));
+  for (const block of slot.blocks) parts.push(renderDesignBlock(block, options));
   return parts.join('');
 }
 
 function renderBlockInner(block: VDTBlock, options: RenderHtmlOptions): string {
   if (block.hidden) return '';
-  if (block.designOverlay) return renderDesignSlot(block.designOverlay);
+  if (block.designOverlay) return renderDesignSlot(block.designOverlay, options);
   // Resource embeds carry their own measured geometry (image/table + caption);
   // the block's single placeholder line renders nothing useful.
   if (block.resourceBlock) return renderResourceBlockHtml(block, options);

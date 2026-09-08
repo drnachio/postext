@@ -3,8 +3,10 @@ import type {
   VDTDesignTextBlock,
   VDTDesignRuleBlock,
   VDTDesignBoxBlock,
+  VDTDesignImageBlock,
   VDTDesignBoxStyle,
 } from '../vdt';
+import { getResourceImage } from './renderResourceBlock';
 
 function drawRoundedRectPath(
   ctx: CanvasRenderingContext2D,
@@ -94,6 +96,25 @@ function renderBoxBlock(ctx: CanvasRenderingContext2D, block: VDTDesignBoxBlock)
   drawBoxBackground(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
 }
 
+/** Image block (e.g. a callout icon): drawn from the resource image
+ *  registry, with a neutral placeholder when the image is not decoded yet. */
+function renderImageBlock(ctx: CanvasRenderingContext2D, block: VDTDesignImageBlock): void {
+  const { x, y, width, height } = block.bbox;
+  if (width <= 0 || height <= 0) return;
+  const image = getResourceImage(block.fileId);
+  ctx.save();
+  if (image) {
+    ctx.drawImage(image, x, y, width, height);
+  } else {
+    ctx.fillStyle = 'rgba(160,160,160,0.12)';
+    ctx.fillRect(x, y, width, height);
+    ctx.strokeStyle = 'rgba(160,160,160,0.5)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+  }
+  ctx.restore();
+}
+
 export function renderHeaderFooterSlot(
   ctx: CanvasRenderingContext2D,
   slot: VDTDesignSlot,
@@ -101,6 +122,7 @@ export function renderHeaderFooterSlot(
   for (const block of slot.blocks) {
     if (block.kind === 'text') renderTextBlock(ctx, block);
     else if (block.kind === 'rule') renderRuleBlock(ctx, block);
+    else if (block.kind === 'image') renderImageBlock(ctx, block);
     else renderBoxBlock(ctx, block);
   }
 }

@@ -45,6 +45,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Estilo de tablas](#estilo-de-tablas) y [Estilo de pies de recurso](#estilo-de-pies-de-recurso) — tipografía y decoración de las tablas-recurso y sus pies.
 - [Estilo de diagramas](#estilo-de-diagramas) — recoloreado a una sola tinta de los diagramas SVG incrustados para impresión con tinta plana.
 - [Estilos de párrafo](#estilos-de-párrafo) — estilos con nombre para contenedores `:::paragraphs`: bibliografías, glosarios, notas.
+- [Estilos de aviso](#estilos-de-aviso) — notas, consejos y objetivos en caja para contenedores `:::callout`.
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
 - [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
@@ -92,7 +93,7 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
       <td><code>margins</code></td>
       <td><code>PageMargins</code></td>
       <td><code>2 cm</code> todos los lados</td>
-      <td>Espacio entre el borde de la página y el área de contenido. Cada lado (superior, inferior, izquierdo, derecho) se configura independientemente.</td>
+      <td>Espacio entre el borde de la página y el área de contenido. Cada lado (superior, inferior, izquierdo, derecho) se configura independientemente. Con <code>mirror: true</code> los márgenes son márgenes <em>de páginas enfrentadas</em>: <code>left</code> es el margen interior (del lomo) y <code>right</code> el exterior; las páginas impares (la página 1 es impar) los mantienen tal cual y las pares los intercambian, de modo que el área de contenido — y con ella las columnas, las bandas de flotantes, los contenedores de encabezado/pie y las bandas de apertura — se desplaza a lo largo del pliego. Por defecto <code>false</code>. Ver más abajo.</td>
     </tr>
     <tr>
       <td><code>backgroundColor</code></td>
@@ -120,6 +121,26 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
     </tr>
   </tbody>
 </table>
+
+### Márgenes simétricos (espejo)
+
+Los libros se leen por pliegos, y el margen interior suele diferir del exterior. `margins.mirror` convierte los cuatro márgenes en márgenes de páginas enfrentadas:
+
+```json
+{
+  "page": {
+    "margins": {
+      "top": { "value": 2, "unit": "cm" },
+      "bottom": { "value": 2.5, "unit": "cm" },
+      "left": { "value": 2.2, "unit": "cm" },
+      "right": { "value": 1.4, "unit": "cm" },
+      "mirror": true
+    }
+  }
+}
+```
+
+Con esta configuración toda página impar tiene 2,2 cm de margen a la izquierda (el lomo) y 1,4 cm a la derecha (el corte delantero); toda página par tiene 1,4 cm a la izquierda (el corte delantero) y 2,2 cm a la derecha (el lomo). Cada página compuesta lleva su propio `contentArea` en la `VDTPage`, así que todo lo que deriva de él — columnas, bandas de flotantes a todo el ancho, contenedores de encabezado y pie, y bandas de apertura con `span: 'page'` — sigue automáticamente la geometría espejada. Los marcos de página y sangre que usan los elementos de diseño anclados a `'page'` / `'bleed'` no se ven afectados: describen el pliego físico, no los márgenes.
 
 ### Tamaños de página predefinidos
 
@@ -415,7 +436,7 @@ Los elementos de texto renderizan una plantilla con sustitución de marcadores. 
       <td><code>content</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Plantilla. Admite los marcadores listados más abajo.</td>
+      <td>Plantilla. Admite los marcadores listados más abajo, además de <code>{'{attr.<clave>}'}</code> — un atributo escrito en la línea del H1 del capítulo actual (<code># Título {'{author="I. Zango"}'}</code>). Un atributo ausente se resuelve como cadena vacía sin aviso.</td>
     </tr>
     <tr>
       <td><code>align</code></td>
@@ -428,6 +449,12 @@ Los elementos de texto renderizan una plantilla con sustitución de marcadores. 
       <td><code>'all' | 'odd' | 'even'</code></td>
       <td><code>'all'</code></td>
       <td>En qué páginas aparece el elemento (paridad por número de página: la página 1 es impar).</td>
+    </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>En qué <em>roles</em> de página aparece el elemento, combinado con <code>parity</code>. Tras la colocación cada página se clasifica como <code>'blank'</code> (relleno de paridad o separador, o sin contenido), <code>'part'</code> (página divisoria de parte), <code>'opener'</code> (su primer bloque es un encabezado cuyo nivel abarca la página o fuerza un salto de página antes — la primera página de un capítulo) o <code>'body'</code> (el resto). <code>pages: 'body'</code> oculta una cabecera corriente en las aperturas de capítulo; <code>pages: 'opener'</code> muestra un folio solo allí.</td>
     </tr>
     <tr>
       <td><code>fontFamily</code></td>
@@ -570,6 +597,12 @@ Los elementos de línea dibujan una línea horizontal dentro del bloque.
       <td><code>'all'</code></td>
       <td>En qué páginas aparece la línea.</td>
     </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>Roles de página en los que aparece la línea (ver el campo <code>pages</code> de los elementos de texto).</td>
+    </tr>
   </tbody>
 </table>
 
@@ -629,6 +662,12 @@ Los elementos de caja pintan un rectángulo redondeado dentro del bloque — út
       <td><code>'all'</code></td>
       <td>En qué páginas aparece la caja.</td>
     </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>Roles de página en los que aparece la caja (ver el campo <code>pages</code> de los elementos de texto).</td>
+    </tr>
   </tbody>
 </table>
 
@@ -640,7 +679,7 @@ Los elementos de caja pintan un rectángulo redondeado dentro del bloque — út
 interface ElementPlacement {
   /** A qué ancla este elemento y a qué borde de ese destino. */
   anchor: {
-    to: 'container' | `#${string}`; // container = el bloque; #id = otro elemento del mismo bloque
+    to: 'container' | 'page' | 'bleed' | `#${string}`; // container = el bloque; page = caja de corte; bleed = caja de corte + sangre; #id = otro elemento
     edge: AnchorEdge;
   };
   /** Distancia desde el punto de anclaje. */
@@ -652,8 +691,16 @@ interface ElementPlacement {
 
 `AnchorEdge` admite:
 
-- **Bordes del contenedor** (cuando `anchor.to === 'container'`): `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
+- **Bordes del contenedor** (cuando `anchor.to` es `'container'`, `'page'` o `'bleed'`): `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
 - **Bordes relativos a otro elemento** (cuando `anchor.to === '#someId'`): `right-of`, `left-of`, `below`, `above`, `align-top`, `align-bottom`, `align-left`, `align-right`.
+
+`anchor.to: 'page'` ancla el elemento a la **caja de corte** (la página física una vez cortada) y `'bleed'` a la caja de corte ampliada por `cutLines.bleed` en todos los lados (idéntica a la caja de corte mientras las marcas de corte estén desactivadas). Ambos marcos pasan a ser también la referencia de `size: 'fill'` y del recorte automático de anchura, de modo que una banda de color puede ir de borde a borde independientemente de los márgenes de página:
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "value": 6, "unit": "cm" } } }, "style": { "backgroundColor": { "hex": "#1d3557", "model": "hex" } } }
+```
+
+Dentro de la ranura de diseño avanzado de un encabezado, los elementos anclados a la página o a la sangre no aumentan la altura reservada para el encabezado salvo que se extiendan por debajo de su borde superior (una banda en la parte superior de la página queda detrás de la apertura; una banda que baje más allá del encabezado empuja el cuerpo hacia abajo). Usa `advancedDesign.minHeight` para reservar una altura fija de apertura en cualquier caso.
 
 Cada elemento tiene un `id` estable (que asigna automáticamente el sandbox; también puedes establecerlo a mano). Los elementos anclados a otros elementos forman un pequeño grafo de dependencias que el motor resuelve antes de medir, así un elemento puede encadenarse a otro sin coordenadas manuales.
 
@@ -1110,6 +1157,12 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td>Renderiza el encabezado en cursiva. Se combina con el <code>fontWeight</code>.</td>
     </tr>
     <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Pasa a mayúsculas el título del encabezado (el prefijo de numeración se conserva tal cual). Conserva la longitud del texto para que el mapa de origen del editor siga siendo 1:1: los caracteres cuya mayúscula se expande (<code>ß</code> → <code>SS</code>) se dejan como están. El título transformado alimenta también el marcador <code>&#123;titleText&#125;</code> de los diseños avanzados y los abridores de capítulo.</td>
+    </tr>
+    <tr>
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
@@ -1209,6 +1262,12 @@ Cada nivel de encabezado admite dos campos adicionales que controlan cómo se re
       <td><code>{'{ enabled: false, slot: { elements: [] } }'}</code></td>
       <td>Ranura de diseño de composición libre para este nivel. Cuando está <code>enabled</code>, los elementos de la ranura componen la apertura. Utiliza <code>{'{titleText}'}</code> dentro de un elemento de texto para renderizar el texto del título; <code>{'{number}'}</code>, <code>{'{numberRoman}'}</code>, etc. para insertar el número del encabezado.</td>
     </tr>
+    <tr>
+      <td><code>advancedDesign.minHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>—</td>
+      <td>Altura mínima reservada para el encabezado en el flujo de la columna. La altura reservada es <code>max(fondo del contenido del diseño, minHeight)</code>, así que una apertura puede empujar el cuerpo hacia abajo (o reclamar la página entera) aunque sus elementos sean bajos o estén anclados a los marcos de página/sangre por encima del encabezado. Se aplica siempre que <code>enabled</code> sea true, incluso con la ranura vacía.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1269,6 +1328,7 @@ Marcadores disponibles dentro de una ranura de diseño de encabezado:
 - `{number}` — número formateado según `numberingTemplate`.
 - `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` — formatos alternativos.
 - `{chapterNumber}`, `{chapterTitle}`, `{pageNumber}`, `{totalPages}`, `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — metadatos compartidos.
+- `{attr.<clave>}` — un atributo escrito en la propia línea del encabezado (`# Título {author="I. Zango Martín"}`), con el atributo del H1 del capítulo actual como respaldo. Los atributos ausentes se resuelven como cadena vacía sin aviso.
 
 
 ## Listas no ordenadas
@@ -2322,6 +2382,183 @@ const resolved = resolveParagraphStylesConfig(config.paragraphStyles, resolvedBo
 
 const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
 // => undefined cuando la lista está vacía; se eliminan los márgenes a cero y `name === id`
+```
+
+
+## Estilos de aviso
+
+La propiedad `calloutStyles` declara los estilos de caja con nombre que el documento aplica mediante un contenedor `:::callout{type="…"}` — notas, consejos, advertencias, objetivos de aprendizaje, cualquier contenido separado del texto corrido en una caja tintada o con borde. Por defecto se incluye un estilo neutro, `note` (fondo gris claro, sin borde, sin franja, sin icono, sin título), de modo que `:::callout` funciona sin configuración alguna; declarar `calloutStyles` sustituye esa lista por defecto.
+
+```ts
+const config: PostextConfig = {
+  calloutStyles: [
+    { id: 'note', name: 'Nota' },
+    {
+      id: 'objectives',
+      name: 'Objetivos de aprendizaje',
+      title: 'Objetivos',
+      stripe: { enabled: true, side: 'left' },
+      icon: { kind: 'glyph', glyph: '✓' },
+      titleStyle: { textTransform: 'uppercase' },
+      lists: { bulletChar: '–' },
+    },
+    {
+      id: 'warning',
+      title: 'Advertencia',
+      backgroundEnabled: false,
+      border: { enabled: true, color: { hex: '#AA0000', model: 'hex' }, width: { value: 1, unit: 'pt' } },
+      borderRadius: { value: 1, unit: 'mm' },
+      titleStyle: { color: { hex: '#AA0000', model: 'hex' } },
+    },
+  ],
+};
+```
+
+```md
+:::callout{type="objectives"}
+- Describir las partes de la linterna.
+- Recortar la mecha al anochecer.
+:::
+
+:::callout{type="warning" title="No toques la lente"}
+El cristal sigue caliente una hora después de apagar la llama.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '220px' }}>Tipo</th>
+      <th style={{ width: '150px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identificador que selecciona <code>:::callout&#123;type="…"&#125;</code>. Una valla con un <code>type</code> desconocido o ausente usa el primer estilo configurado (el sandbox avisa de los tipos desconocidos).</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nombre legible (solo para la interfaz del editor).</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Texto de título por defecto; vacío significa sin título. El atributo <code>title</code> de la valla lo sobrescribe en cada instancia.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>Extensión horizontal: la columna o el ancho completo del área de contenido. Se puede sobrescribir por instancia con el atributo <code>span</code>. Se registra en el VDT; en disposiciones multicolumna <code>'page'</code> se compone por ahora en línea al ancho de columna (fase de paginación pendiente).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'here' | 'top' | 'bottom'</code></td>
+      <td><code>'here'</code></td>
+      <td>En línea en el flujo, o flotando a una banda superior / inferior de la página como un recurso. Se puede sobrescribir por instancia con el atributo <code>placement</code>. Las colocaciones flotantes se registran pero por ahora se colocan en línea (fase de paginación pendiente).</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>'fill' | 'auto'</code></td>
+      <td><code>'fill'</code></td>
+      <td><code>'fill'</code> ocupa todo el ancho disponible; <code>'auto'</code> se ajusta al título (uso como etiqueta) e ignora los hijos.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>Relleno de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td><code>false</code>, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>Contorno de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Radio de las esquinas del fondo / borde.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.75em</code> cada uno</td>
+      <td>Margen interior entre el borde de la caja y su contenido. Los valores en <code>em</code> son relativos al tamaño del cuerpo del aviso.</td>
+    </tr>
+    <tr>
+      <td><code>stripe</code></td>
+      <td><code>&#123; enabled, side, width, color &#125;</code></td>
+      <td><code>false</code>, <code>'left'</code>, <code>1.5em</code>, color principal</td>
+      <td>Franja sólida a lo largo de un lado. Una franja <code>'left'</code> / <code>'right'</code> estrecha el contenido; una franja <code>'top'</code> lo desplaza hacia abajo.</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align &#125;</code></td>
+      <td><code>'none'</code>, fuente de encabezados, <code>400</code>, <code>1.5em</code>, color principal, <code>'top'</code></td>
+      <td>Un glifo de texto (<code>kind: 'glyph'</code>) o un recurso bitmap / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) junto al contenido. Con franja lateral el icono se centra sobre la franja; si no, reserva su propia columna (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> lo centra verticalmente sobre el contenido.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap &#125;</code></td>
+      <td>fuente de encabezados, tamaño del cuerpo, <code>700</code>, <code>false</code>, color principal, <code>'none'</code>, <code>0.5em</code></td>
+      <td>Tipografía del título. <code>gap</code> es el espacio entre el título y el primer hijo (y el hueco de la columna del icono). <code>textTransform: 'uppercase'</code> conserva la longitud del texto.</td>
+    </tr>
+    <tr>
+      <td><code>body</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td>hereda de <code>bodyText</code></td>
+      <td>Tipografía de los párrafos dentro de la caja. Cada campo hereda del texto de cuerpo cuando no se indica.</td>
+    </tr>
+    <tr>
+      <td><code>lists</code></td>
+      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing &#125;</code></td>
+      <td>hereda de <code>unorderedLists</code></td>
+      <td>Tipografía de las listas dentro de la caja (<code>color</code>, <code>indent</code>, <code>gap</code> e <code>itemSpacing</code> se aplican también a las listas ordenadas).</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code> / <code>0.75em</code></td>
+      <td>Espacio sobre la caja (se funde con el margen del bloque anterior) y espacio mínimo bajo ella.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Siempre <code>true</code> en esta versión: un aviso nunca se parte entre columnas o páginas.</td>
+    </tr>
+  </tbody>
+</table>
+
+### El contenedor `:::callout`
+
+Una línea `:::callout{type="<id>"}` abre la caja y una línea `:::` a solas la cierra. La valla admite cuatro atributos — `type` (el id del estilo), `title` (sobrescribe el título del estilo), `span` y `placement` (sobrescriben los valores del estilo) — y el contenido intermedio se compone dentro de la caja: un título opcional y después los párrafos, listas, citas, fórmulas o recursos incrustados, cada uno con la tipografía `body` / `lists` del estilo (los encabezados conservan sus estilos habituales). Los márgenes entre hijos se funden como en el texto corrido; el interior abandona la rejilla base y el flujo vuelve a ella tras la caja garantizando al menos `marginBottom` por debajo (la rejilla manda; el margen es un mínimo — la misma convención que siguen los recursos). Un encabezado inmediatamente anterior a un aviso se mantiene unido a él.
+
+Límites de esta versión:
+
+- Un aviso es indivisible. Cuando no cabe en el espacio restante de la columna pasa entero a la columna o página siguiente; una caja más alta que una columna vacía se coloca de todos modos y desborda (el sandbox avisa).
+- `span: 'page'` en disposiciones multicolumna y `placement: 'top' | 'bottom'` se registran en el VDT (`VDTBlock.callout`) pero todavía se colocan en línea al ancho de columna — las cajas a ancho completo y flotantes llegan con la fase de paginación.
+- `width: 'auto'` se ajusta solo al título; los hijos se ignoran.
+- Un `:::callout` anidado dentro de otro aviso se aplana en la caja exterior.
+
+En el VDT la caja es un bloque marco de `type: 'callout'` cuya decoración (fondo, franja, icono, título) vive en `designOverlay`, seguido de sus bloques hijos en la misma columna; el marco y cada hijo llevan el `containerId` de la valla. Las imágenes de icono se resuelven como las de los recursos: el registro de imágenes del canvas, la opción `resourceImageUrl` del HTML y el proveedor `resourceBytes` del PDF.
+
+```ts
+const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyText, resolvedHeadings, resolvedUnorderedLists);
+// => cada campo heredado se rellena desde las secciones resueltas
+
+const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
+// => undefined para el `note` por defecto; se eliminan los valores estáticos por defecto
 ```
 
 

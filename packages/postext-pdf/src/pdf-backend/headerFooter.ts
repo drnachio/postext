@@ -3,8 +3,10 @@ import type {
   VDTDesignTextBlock,
   VDTDesignRuleBlock,
   VDTDesignBoxBlock,
+  VDTDesignImageBlock,
   VDTDesignBoxStyle,
 } from 'postext';
+import type { ResourceImageMap } from './renderResourceBlock';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
 import {
@@ -133,14 +135,35 @@ function renderBoxBlock(ctx: PageCtx, block: VDTDesignBoxBlock): void {
   drawRoundedBox(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
 }
 
+/** Image block (e.g. a callout icon): drawn from the preloaded resource
+ *  image map, with a neutral placeholder when the image is absent. */
+function renderImageBlock(ctx: PageCtx, block: VDTDesignImageBlock, images: ResourceImageMap | undefined): void {
+  const { x, y, width, height } = block.bbox;
+  if (width <= 0 || height <= 0) return;
+  const image = images?.get(block.fileId);
+  const { scale, pageHeightPt } = ctx;
+  if (image) {
+    ctx.page.drawImage(image, {
+      x: x * scale,
+      y: pageHeightPt - (y + height) * scale,
+      width: width * scale,
+      height: height * scale,
+    });
+  } else {
+    fillRectPx(ctx, x, y, width, height, colorFromHex('#e8e8e8', ctx.colorSpace));
+  }
+}
+
 export function renderHeaderFooterSlot(
   ctx: PageCtx,
   slot: VDTDesignSlot,
   fontCache: FontCache,
+  images?: ResourceImageMap,
 ): void {
   for (const block of slot.blocks) {
     if (block.kind === 'text') renderTextBlock(ctx, block, fontCache);
     else if (block.kind === 'rule') renderRuleBlock(ctx, block);
+    else if (block.kind === 'image') renderImageBlock(ctx, block, images);
     else renderBoxBlock(ctx, block);
   }
 }

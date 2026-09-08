@@ -125,7 +125,11 @@ export function renderCutLines(
   ctx.restore();
 }
 
+/** The page's content area. Pages built by the pipeline carry it directly
+ *  (`page.contentArea` — per page, so mirrored margins are honoured); the
+ *  column-bbox inference below only serves hand-built pages. */
 export function computeContentArea(page: VDTPage, doc: VDTDocument): BoundingBox {
+  if (page.contentArea) return page.contentArea;
   const { dpi, margins } = doc.config.page;
 
   // We can derive content area from page dimensions and margins

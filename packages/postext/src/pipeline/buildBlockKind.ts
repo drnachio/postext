@@ -55,6 +55,20 @@ export interface BlockKindContext {
   paragraphStyleOverride?: BlockStyle;
 }
 
+/** Upper-case `text` one UTF-16 code unit at a time, keeping any character
+ *  whose upper-case form is not exactly one code unit (`ß` → `SS`, ligatures)
+ *  so the result has the same length as the input and per-character source
+ *  maps remain valid. */
+export function uppercasePreservingLength(text: string): string {
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    const up = ch.toLocaleUpperCase();
+    out += up.length === 1 ? up : ch;
+  }
+  return out;
+}
+
 export function resolveBlockKind(
   rawBlock: ContentBlock,
   ctx: BlockKindContext,
@@ -80,16 +94,27 @@ export function resolveBlockKind(
       };
     }
     case 'heading': {
-      const style = resolveHeadingStyle(rawBlock.level ?? 1, resolved);
+      const level = rawBlock.level ?? 1;
+      const style = resolveHeadingStyle(level, resolved);
       const numberPrefix = headingPrefixes[blockIdx];
       let contentBlock: ContentBlock = rawBlock;
+      // Letter-case transform on the title text (the numbering prefix, added
+      // below, is kept as written). Length-preserving so `sourceMap` stays 1:1.
+      const levelCfg = resolved.headings.levels.find((l) => l.level === level);
+      if (levelCfg?.textTransform === 'uppercase') {
+        contentBlock = {
+          ...contentBlock,
+          text: uppercasePreservingLength(contentBlock.text),
+          spans: contentBlock.spans.map((s) => (s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })),
+        };
+      }
       if (numberPrefix) {
         const sep = `${numberPrefix} `;
-        const firstSpan = rawBlock.spans[0];
+        const firstSpan = contentBlock.spans[0];
         const newSpans = firstSpan
-          ? [{ text: sep + firstSpan.text, bold: firstSpan.bold, italic: firstSpan.italic }, ...rawBlock.spans.slice(1)]
+          ? [{ ...firstSpan, text: sep + firstSpan.text }, ...contentBlock.spans.slice(1)]
           : [{ text: sep, bold: false, italic: false }];
-        contentBlock = { ...rawBlock, text: sep + rawBlock.text, spans: newSpans };
+        contentBlock = { ...contentBlock, text: sep + contentBlock.text, spans: newSpans };
       }
       return {
         style,

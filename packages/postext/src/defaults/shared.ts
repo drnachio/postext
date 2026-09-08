@@ -130,6 +130,16 @@ export function applyPaletteToResolvedConfig(
       inkColor: resolveRequired(resolved.diagramStyle.inkColor, palette),
     },
     paragraphStyles: resolved.paragraphStyles.map((s) => ({ ...s, color: resolveRequired(s.color, palette) })),
+    calloutStyles: resolved.calloutStyles.map((s) => ({
+      ...s,
+      background: resolveRequired(s.background, palette),
+      border: { ...s.border, color: resolveRequired(s.border.color, palette) },
+      stripe: { ...s.stripe, color: resolveRequired(s.stripe.color, palette) },
+      icon: { ...s.icon, color: resolveRequired(s.icon.color, palette) },
+      titleStyle: { ...s.titleStyle, color: resolveRequired(s.titleStyle.color, palette) },
+      body: { ...s.body, color: resolveRequired(s.body.color, palette) },
+      lists: { ...s.lists, color: resolveRequired(s.lists.color, palette) },
+    })),
   };
 }
 
@@ -241,6 +251,19 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
 
   if (config.paragraphStyles) {
     next.paragraphStyles = config.paragraphStyles.map((s) => ({ ...s, color: resolveColor(s.color, palette) }));
+  }
+
+  if (config.calloutStyles) {
+    next.calloutStyles = config.calloutStyles.map((s) => ({
+      ...s,
+      background: resolveColor(s.background, palette),
+      border: s.border ? { ...s.border, color: resolveColor(s.border.color, palette) } : s.border,
+      stripe: s.stripe ? { ...s.stripe, color: resolveColor(s.stripe.color, palette) } : s.stripe,
+      icon: s.icon ? { ...s.icon, color: resolveColor(s.icon.color, palette) } : s.icon,
+      titleStyle: s.titleStyle ? { ...s.titleStyle, color: resolveColor(s.titleStyle.color, palette) } : s.titleStyle,
+      body: s.body ? { ...s.body, color: resolveColor(s.body.color, palette) } : s.body,
+      lists: s.lists ? { ...s.lists, color: resolveColor(s.lists.color, palette) } : s.lists,
+    }));
   }
 
   if (config.debug) {

@@ -21,6 +21,7 @@ import {
 import { useSandboxLabels } from '../../../context/SandboxContext';
 import { TableEditorCell, type CellNav } from './TableEditorCell';
 import { TableEditorToolbar } from './TableEditorToolbar';
+import { ColumnWidthsEditor } from './ColumnWidthsEditor';
 
 // ---------------------------------------------------------------------------
 // TableEditor — interactive grid editor for table resources. All model edits
@@ -438,6 +439,8 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
           </tbody>
         </table>
       </div>
+
+      <ColumnWidthsEditor model={model} columnCount={cols} onModelChange={commit} />
 
       <div className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--slate)' }}>
         <button

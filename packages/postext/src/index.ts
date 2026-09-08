@@ -15,13 +15,14 @@ export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, se
 export type { CellPos, CellRange } from './table/model';
 export { extractFrontmatter } from './frontmatter';
 export type { ParsedFrontmatter } from './frontmatter';
-export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, DEFAULT_PAGE_NUMBERING, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, DEFAULT_COLUMN_BALANCING, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, resolveTableStyleConfig, stripTableStyleDefaults, resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle, DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults, DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults, DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults, DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults, DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults, dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults, DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults, DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults, DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults, defaultResourceTypes } from './defaults';
-export { resolvePlaceholders, computeChapterTitles, collectPlaceholderNames, isKnownPlaceholder, isMetadataPlaceholder } from './pipeline/placeholders';
+export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, DEFAULT_PAGE_NUMBERING, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, DEFAULT_COLUMN_BALANCING, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, resolveTableStyleConfig, stripTableStyleDefaults, resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle, DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults, DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults, DEFAULT_CALLOUT_STYLES, DEFAULT_CALLOUT_STYLE_STATIC, resolveCalloutStylesConfig, stripCalloutStylesDefaults, DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults, DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults, DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults, dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults, DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults, DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults, DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults, defaultResourceTypes } from './defaults';
+export { resolvePlaceholders, computeChapterTitles, collectPlaceholderNames, isKnownPlaceholder, isMetadataPlaceholder, computeChapterAttrs } from './pipeline/placeholders';
 export type { PlaceholderContext, PlaceholderResult, ChapterTitlePageInfo } from './pipeline/placeholders';
-export { resolveDesignPlaceholders, allowedPlaceholdersFor } from './design/placeholders';
+export { resolveDesignPlaceholders, allowedPlaceholdersFor, isAllowedPlaceholder } from './design/placeholders';
 export type { DesignPlaceholderContext, DesignContextKind, HeadingPlaceholderInfo } from './design/placeholders';
 export { layoutDesignSlot } from './design/layout';
-export type { DesignSlotLayout, LayoutContext, LayoutIssue, ResolvedPrimitive, ResolvedTextPrimitive, ResolvedRulePrimitive, ResolvedBoxPrimitive, WrappedLine } from './design/layout';
+export type { DesignSlotLayout, LayoutContext, LayoutIssue, ResolvedPrimitive, ResolvedTextPrimitive, ResolvedRulePrimitive, ResolvedBoxPrimitive, WrappedLine, DesignFrames } from './design/layout';
+export { classifyPages } from './pipeline/pageRoles';
 export { migrateLegacyHeaderFooterConfig, isLegacyHeaderFooterSlot, resolveDesignSlot, stripDesignSlotDefaults, DEFAULT_BOX_ELEMENT } from './defaults/headerFooter';
 export type {
   PostextContent,
@@ -92,6 +93,23 @@ export type {
   ResolvedDiagramStyleConfig,
   ParagraphStyleConfig,
   ResolvedParagraphStyleConfig,
+  CalloutStyleConfig,
+  ResolvedCalloutStyleConfig,
+  CalloutSpan,
+  CalloutPlacement,
+  CalloutWidth,
+  CalloutStripeSide,
+  CalloutIconKind,
+  CalloutIconAlign,
+  CalloutTextTransform,
+  CalloutBorderConfig,
+  CalloutPaddingConfig,
+  CalloutStripeConfig,
+  CalloutIconConfig,
+  CalloutTitleStyleConfig,
+  CalloutBodyStyleConfig,
+  CalloutListStyleConfig,
+  HeadingTextTransform,
   UnorderedListLevelConfig,
   ResolvedUnorderedListLevelConfig,
   UnorderedListsConfig,
@@ -118,6 +136,8 @@ export type {
   CustomFontVariant,
   CustomFontFamily,
   PageParity,
+  PageRole,
+  PageRoleFilter,
   HeaderFooterHAlign,
   HeaderFooterTextElement,
   HeaderFooterRuleElement,
@@ -174,8 +194,10 @@ export type {
   VDTDesignTextLine,
   VDTDesignRuleBlock,
   VDTDesignBoxBlock,
+  VDTDesignImageBlock,
   VDTDesignBoxStyle,
   ResolvedResourceBlock,
+  ResolvedCalloutBlock,
   VDTCaptionBar,
   VDTResourceTableCell,
   VDTResourceTableLayout,

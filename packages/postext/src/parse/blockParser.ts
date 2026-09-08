@@ -21,7 +21,12 @@ const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
-export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering']);
+export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak']);
+/** Trailing `{key="value" …}` attribute block on a heading line, e.g.
+ *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
+ *  braces) and be the last thing on the line; a lone `{}` or a blob that
+ *  parses to no attribute keys is left in the heading text verbatim. */
+const HEADING_ATTRS_RE = /\s+\{([^{}]*)\}\s*$/;
 /** Set of fenced-container names recognized today. A `:::name` line whose
  *  name is a known container opens a block that runs until a bare `:::`. */
 export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 'paragraphs', 'part']);
@@ -270,12 +275,26 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
     // Heading
     const headingMatch = trimmed.match(HEADING_RE);
     if (headingMatch) {
-      const headingRawContent = headingMatch[2]!;
+      let headingRawContent = headingMatch[2]!;
       const srcStart = lineOffsets[i]!;
-      const srcEnd = lineEndOffset(i);
+      let srcEnd = lineEndOffset(i);
       // Absolute offset of the first content char (after the `# `).
       const prefixLen = line.indexOf(headingRawContent);
       const contentAbsStart = srcStart + (prefixLen >= 0 ? prefixLen : 0);
+      // Trailing `{key="value" …}` heading attributes. Stripped from the
+      // heading text before inline processing, and the block's source range
+      // is shortened to the visible content so `sourceMap` stays aligned
+      // (the map is a greedy plain-char → source walk bounded by `srcEnd`).
+      let attrs: ReturnType<typeof parseDirectiveAttrs> | undefined;
+      const attrsMatch = headingRawContent.match(HEADING_ATTRS_RE);
+      if (attrsMatch && attrsMatch.index !== undefined) {
+        const parsed = parseDirectiveAttrs(attrsMatch[1]!);
+        if (Object.keys(parsed).length > 0) {
+          attrs = parsed;
+          headingRawContent = headingRawContent.slice(0, attrsMatch.index);
+          srcEnd = contentAbsStart + headingRawContent.length;
+        }
+      }
       // Inline pre-passes run refs -> math -> formatting so a ref's `text="…"`
       // attribute is shielded from the later math/formatting scanners.
       const refExtract = extractInlineRefs(headingRawContent, contentAbsStart);
@@ -301,6 +320,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
         text: mapping.text,
         spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
         level: headingMatch[1]!.length,
+        ...(attrs ? { attrs } : {}),
         sourceStart: srcStart,
         sourceEnd: srcEnd,
         sourceMap: mapping.sourceMap,

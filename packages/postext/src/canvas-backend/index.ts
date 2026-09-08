@@ -75,6 +75,10 @@ export function renderPageToCanvas(
     renderColumnRule(ctx, page.columns, doc.config.layout.columnRule.color.hex, crLineWidthPx);
   }
 
+  // Opener / part bands are painted before the columns so their backgrounds
+  // sit under the body text rather than over it.
+  if (page.openerBand) renderHeaderFooterSlot(ctx, page.openerBand);
+
   // Clip to column bounds, widened horizontally by a small buffer so that
   // glyph ink extending past its advance width (e.g. the tail of an "s" at the
   // column edge) is not chopped. Between-column gutters absorb the buffer.
@@ -102,7 +106,6 @@ export function renderPageToCanvas(
     for (const fb of page.floats) renderResourceBlock(ctx, fb);
   }
 
-  if (page.openerBand) renderHeaderFooterSlot(ctx, page.openerBand);
   if (page.header) renderHeaderFooterSlot(ctx, page.header);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer);
 

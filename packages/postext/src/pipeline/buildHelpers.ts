@@ -25,7 +25,16 @@ export interface PageMetrics {
   pageWidthPx: number;
   pageHeightPx: number;
   trimOffset: number;
+  /** Content area of an odd (recto) page — the trim box inset by the
+   *  margins as written. Use `contentAreaForPage` for a specific page so
+   *  mirrored margins swap on even pages. */
   contentArea: BoundingBox;
+  /** The trim box (the final page after cutting) in page px. */
+  trimBox: BoundingBox;
+  /** The trim box expanded by `cutLines.bleed` on every side when cut lines
+   *  are enabled; equals `trimBox` otherwise. Design elements anchored to
+   *  `'bleed'` run to this frame. */
+  bleedBox: BoundingBox;
 }
 
 export function computePageMetrics(resolved: ResolvedConfig): PageMetrics {
@@ -35,8 +44,9 @@ export function computePageMetrics(resolved: ResolvedConfig): PageMetrics {
 
   // Cut lines expansion: canvas grows to fit bleed + mark offset + mark length
   let trimOffset = 0;
+  let bleedPx = 0;
   if (resolved.page.cutLines.enabled) {
-    const bleedPx = dimensionToPx(resolved.page.cutLines.bleed, dpi);
+    bleedPx = dimensionToPx(resolved.page.cutLines.bleed, dpi);
     const markOffsetPx = dimensionToPx(resolved.page.cutLines.markOffset, dpi);
     const markLengthPx = dimensionToPx(resolved.page.cutLines.markLength, dpi);
     trimOffset = bleedPx + markOffsetPx + markLengthPx;
@@ -57,7 +67,47 @@ export function computePageMetrics(resolved: ResolvedConfig): PageMetrics {
     trimHeightPx - marginTop - marginBottom,
   );
 
-  return { trimWidthPx, trimHeightPx, pageWidthPx, pageHeightPx, trimOffset, contentArea };
+  const trimBox = createBoundingBox(trimOffset, trimOffset, trimWidthPx, trimHeightPx);
+  const bleedBox = createBoundingBox(
+    trimOffset - bleedPx,
+    trimOffset - bleedPx,
+    trimWidthPx + bleedPx * 2,
+    trimHeightPx + bleedPx * 2,
+  );
+
+  return { trimWidthPx, trimHeightPx, pageWidthPx, pageHeightPx, trimOffset, contentArea, trimBox, bleedBox };
+}
+
+/** Mirror a content area horizontally about the page's vertical centre line:
+ *  the inner margin becomes the outer one and vice versa. Vertical extent is
+ *  unchanged. */
+export function mirrorContentArea(area: BoundingBox, pageWidthPx: number): BoundingBox {
+  return createBoundingBox(
+    pageWidthPx - (area.x + area.width),
+    area.y,
+    area.width,
+    area.height,
+  );
+}
+
+/** Content area for the page at `pageIndex` (position in `doc.pages`). With
+ *  `margins.mirror`, even pages (page number = index + 1) swap the inner and
+ *  outer margins so the inner margin always faces the spine. */
+export function contentAreaForPage(
+  metrics: Pick<PageMetrics, 'contentArea' | 'pageWidthPx'>,
+  resolved: ResolvedConfig,
+  pageIndex: number,
+): BoundingBox {
+  const isEvenPage = (pageIndex + 1) % 2 === 0;
+  if (resolved.page.margins.mirror && isEvenPage) {
+    return mirrorContentArea(metrics.contentArea, metrics.pageWidthPx);
+  }
+  return createBoundingBox(
+    metrics.contentArea.x,
+    metrics.contentArea.y,
+    metrics.contentArea.width,
+    metrics.contentArea.height,
+  );
 }
 
 // ---------------------------------------------------------------------------

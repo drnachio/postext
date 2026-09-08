@@ -8,6 +8,7 @@ import {
   resolveCaptionStyleConfig,
   resolveDiagramStyleConfig,
   resolveParagraphStylesConfig,
+  resolveCalloutStylesConfig,
   resolveUnorderedListsConfig,
   resolveOrderedListsConfig,
   resolveMathConfig,
@@ -21,16 +22,19 @@ import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt
 export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
   const config = applyPaletteToConfig(rawConfig);
   const bodyText = resolveBodyTextConfig(config?.bodyText);
+  const headings = resolveHeadingsConfig(config?.headings);
+  const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
   const resolved: ResolvedConfig = {
     page: resolvePageConfig(config?.page),
     layout: resolveLayoutConfig(config?.layout),
     bodyText,
-    headings: resolveHeadingsConfig(config?.headings),
+    headings,
     tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText),
     captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText),
     diagramStyle: resolveDiagramStyleConfig(config?.diagramStyle),
     paragraphStyles: resolveParagraphStylesConfig(config?.paragraphStyles, bodyText),
-    unorderedLists: resolveUnorderedListsConfig(config?.unorderedLists, bodyText),
+    calloutStyles: resolveCalloutStylesConfig(config?.calloutStyles, bodyText, headings, unorderedLists),
+    unorderedLists,
     orderedLists: resolveOrderedListsConfig(config?.orderedLists, bodyText),
     math: resolveMathConfig(config?.math),
     header: resolveHeaderFooterConfig(config?.header, 'header'),

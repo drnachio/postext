@@ -16,6 +16,7 @@ const DEFAULT_PAGE_MARGINS: Required<PageMargins> = {
   bottom: { value: 2, unit: 'cm' },
   left: { value: 1.5, unit: 'cm' },
   right: { value: 1.5, unit: 'cm' },
+  mirror: false,
 };
 
 export const DEFAULT_CUT_LINES = {
@@ -80,6 +81,7 @@ export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
           bottom: partial.margins.bottom ?? DEFAULT_PAGE_MARGINS.bottom,
           left: partial.margins.left ?? DEFAULT_PAGE_MARGINS.left,
           right: partial.margins.right ?? DEFAULT_PAGE_MARGINS.right,
+          mirror: partial.margins.mirror ?? DEFAULT_PAGE_MARGINS.mirror,
         }
       : { ...DEFAULT_PAGE_MARGINS },
     dpi: partial.dpi ?? DEFAULT_PAGE_CONFIG.dpi,
@@ -125,6 +127,10 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
         m[side] = page.margins[side];
         hasMarginOverride = true;
       }
+    }
+    if (page.margins.mirror !== undefined && page.margins.mirror !== DEFAULT_PAGE_MARGINS.mirror) {
+      m.mirror = page.margins.mirror;
+      hasMarginOverride = true;
     }
     if (hasMarginOverride) {
       result.margins = m;

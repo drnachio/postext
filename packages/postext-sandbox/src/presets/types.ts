@@ -51,7 +51,7 @@ export type PresetResourceSpec = Omit<Resource, 'createdAt' | 'updatedAt' | 'bit
   file?: string;
   width?: number;
   height?: number;
-  /** Free-form authoring note; passed through untouched. */
+  /** Source line / credits set under the resource (`Resource.note`). */
   note?: string;
 };
 

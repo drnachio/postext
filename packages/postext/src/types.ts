@@ -280,8 +280,15 @@ export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'custom';
 export interface PageMargins {
   top?: Dimension;
   bottom?: Dimension;
+  /** Inner (spine-side) margin when `mirror` is on; left margin otherwise. */
   left?: Dimension;
+  /** Outer margin when `mirror` is on; right margin otherwise. */
   right?: Dimension;
+  /** Mirrored (facing-page) margins: `left` is the inner margin and `right`
+   *  the outer one. Odd pages (page 1 = odd) keep them as written; even
+   *  pages swap them so the inner margin always faces the spine. Default
+   *  `false`. */
+  mirror?: boolean;
 }
 
 export interface BaselineGridConfig {
@@ -738,6 +745,194 @@ export interface ResolvedParagraphStyleConfig {
   marginBottom: Dimension;
 }
 
+// ---------------------------------------------------------------------------
+// Callout styles — boxed content for `:::callout{type="…"}` containers.
+// ---------------------------------------------------------------------------
+
+/** Horizontal extent of a callout: its column, or the full content width. */
+export type CalloutSpan = 'column' | 'page';
+/** Where a callout lands: inline in the flow (`'here'`), or floated to the
+ *  top / bottom band of a page like a resource. */
+export type CalloutPlacement = 'here' | 'top' | 'bottom';
+/** `'fill'` spans the available width; `'auto'` shrink-wraps the title
+ *  (badge use — children are ignored). */
+export type CalloutWidth = 'fill' | 'auto';
+export type CalloutStripeSide = 'left' | 'right' | 'top';
+export type CalloutIconKind = 'none' | 'glyph' | 'resource';
+export type CalloutIconAlign = 'top' | 'center';
+export type CalloutTextTransform = 'none' | 'uppercase';
+
+export interface CalloutBorderConfig {
+  enabled?: boolean;
+  color?: ColorValue;
+  width?: Dimension;
+}
+
+export interface CalloutPaddingConfig {
+  top?: Dimension;
+  right?: Dimension;
+  bottom?: Dimension;
+  left?: Dimension;
+}
+
+/** Solid band along one edge of the box. A side stripe reduces the inner
+ *  width; a top stripe reduces the inner height. */
+export interface CalloutStripeConfig {
+  enabled?: boolean;
+  side?: CalloutStripeSide;
+  width?: Dimension;
+  color?: ColorValue;
+}
+
+/** Icon drawn beside the title/body: a text glyph or a resource image. When
+ *  the style has a side stripe the icon is centred over the stripe;
+ *  otherwise it reserves its own column (`size` + `titleStyle.gap`). */
+export interface CalloutIconConfig {
+  kind?: CalloutIconKind;
+  /** Glyph text for `kind: 'glyph'` (e.g. `'!'`, `'✎'`). */
+  glyph?: string;
+  /** Resource id (bitmap / svg) for `kind: 'resource'`. */
+  resourceId?: string;
+  /** Glyph font family. Defaults to the headings font. */
+  fontFamily?: string;
+  fontWeight?: number;
+  /** Icon box size (square). Default `1.5em` of the callout body size. */
+  size?: Dimension;
+  color?: ColorValue;
+  align?: CalloutIconAlign;
+}
+
+export interface CalloutTitleStyleConfig {
+  /** Defaults to the headings font family. */
+  fontFamily?: string;
+  /** Defaults to the body font size. */
+  fontSize?: Dimension;
+  fontWeight?: number;
+  italic?: boolean;
+  color?: ColorValue;
+  textTransform?: CalloutTextTransform;
+  /** Vertical gap between the title and the first child block (also the
+   *  horizontal gap between the icon column and the content). */
+  gap?: Dimension;
+}
+
+/** Body typography inside the callout. Every field inherits `bodyText`. */
+export interface CalloutBodyStyleConfig {
+  fontFamily?: string;
+  fontSize?: Dimension;
+  lineHeight?: Dimension;
+  color?: ColorValue;
+  textAlign?: 'left' | 'justify';
+  hyphenation?: boolean;
+  paragraphSpacing?: boolean;
+  firstLineIndent?: Dimension;
+}
+
+/** List typography inside the callout. Every field inherits
+ *  `unorderedLists` (`color`, `indent`, `gap`, `itemSpacing` also apply to
+ *  ordered lists). */
+export interface CalloutListStyleConfig {
+  bulletChar?: string;
+  color?: ColorValue;
+  indent?: Dimension;
+  gap?: Dimension;
+  itemSpacing?: Dimension;
+}
+
+/** A named callout style, selected by `:::callout{type="<id>"}`. */
+export interface CalloutStyleConfig {
+  id: string;
+  /** Human-readable name (editor UI only). Defaults to {@link id}. */
+  name?: string;
+  /** Default title text; empty / unset = no title. The fence `title`
+   *  attribute overrides it per instance. */
+  title?: string;
+  /** Default `'column'`. Overridable per instance with the `span` attribute. */
+  span?: CalloutSpan;
+  /** Default `'here'`. Overridable per instance with the `placement` attribute. */
+  placement?: CalloutPlacement;
+  /** Default `'fill'`. */
+  width?: CalloutWidth;
+  /** Default `true`. */
+  backgroundEnabled?: boolean;
+  /** Default `#f4f4f4`. */
+  background?: ColorValue;
+  /** Default off, `#cccccc`, `0.5pt`. */
+  border?: CalloutBorderConfig;
+  /** Default `0`. */
+  borderRadius?: Dimension;
+  /** Default `0.75em` on every side. */
+  padding?: CalloutPaddingConfig;
+  /** Default off, `left`, `1.5em`, main colour. */
+  stripe?: CalloutStripeConfig;
+  /** Default `kind: 'none'`. */
+  icon?: CalloutIconConfig;
+  titleStyle?: CalloutTitleStyleConfig;
+  body?: CalloutBodyStyleConfig;
+  lists?: CalloutListStyleConfig;
+  /** Space above the box. Default `0.75em`. */
+  marginTop?: Dimension;
+  /** Minimum space below the box; the flow snaps back to the baseline grid
+   *  after it. Default `0.75em`. */
+  marginBottom?: Dimension;
+  /** Always `true` in v1: callouts never split across columns or pages. */
+  keepTogether?: boolean;
+}
+
+export interface ResolvedCalloutStyleConfig {
+  id: string;
+  name: string;
+  title: string;
+  span: CalloutSpan;
+  placement: CalloutPlacement;
+  width: CalloutWidth;
+  backgroundEnabled: boolean;
+  background: ColorValue;
+  border: { enabled: boolean; color: ColorValue; width: Dimension };
+  borderRadius: Dimension;
+  padding: { top: Dimension; right: Dimension; bottom: Dimension; left: Dimension };
+  stripe: { enabled: boolean; side: CalloutStripeSide; width: Dimension; color: ColorValue };
+  icon: {
+    kind: CalloutIconKind;
+    glyph: string;
+    resourceId: string;
+    fontFamily: string;
+    fontWeight: number;
+    size: Dimension;
+    color: ColorValue;
+    align: CalloutIconAlign;
+  };
+  titleStyle: {
+    fontFamily: string;
+    fontSize: Dimension;
+    fontWeight: number;
+    italic: boolean;
+    color: ColorValue;
+    textTransform: CalloutTextTransform;
+    gap: Dimension;
+  };
+  body: {
+    fontFamily: string;
+    fontSize: Dimension;
+    lineHeight: Dimension;
+    color: ColorValue;
+    textAlign: 'left' | 'justify';
+    hyphenation: boolean;
+    paragraphSpacing: boolean;
+    firstLineIndent: Dimension;
+  };
+  lists: {
+    bulletChar: string;
+    color: ColorValue;
+    indent: Dimension;
+    gap: Dimension;
+    itemSpacing: Dimension;
+  };
+  marginTop: Dimension;
+  marginBottom: Dimension;
+  keepTogether: boolean;
+}
+
 /** Parity constraint for a forced page break.
  *
  *  - `'any'` — no constraint; the break just opens a new page.
@@ -778,11 +973,17 @@ export type HeadingSpan = 'column' | 'page';
 export interface HeadingAdvancedDesignConfig {
   enabled: boolean;
   slot: DesignSlot;
+  /** Minimum height reserved for the heading in the column flow. The
+   *  reserved height is `max(design content bottom, minHeight)`, so an
+   *  opener can push body text down even when its elements are short (or
+   *  anchored to the page/bleed frames above the heading). */
+  minHeight?: Dimension;
 }
 
 export interface ResolvedHeadingAdvancedDesignConfig {
   enabled: boolean;
   slot: ResolvedDesignSlot;
+  minHeight?: Dimension;
 }
 
 export interface HeadingLevelConfig {
@@ -801,7 +1002,14 @@ export interface HeadingLevelConfig {
   span?: HeadingSpan;
   /** When enabled, the heading renders as a design slot. */
   advancedDesign?: HeadingAdvancedDesignConfig;
+  /** Letter-case transform applied to the heading title (after any
+   *  numbering prefix, which is kept as written). Length-preserving so the
+   *  editor's source map stays 1:1 — characters whose upper-case form
+   *  expands (`ß` → `SS`) are left unchanged. Default `'none'`. */
+  textTransform?: HeadingTextTransform;
 }
+
+export type HeadingTextTransform = 'none' | 'uppercase';
 
 export interface ResolvedHeadingLevelConfig {
   level: number;
@@ -817,6 +1025,7 @@ export interface ResolvedHeadingLevelConfig {
   breakBefore: ResolvedHeadingBreakBeforeConfig;
   span: HeadingSpan;
   advancedDesign: ResolvedHeadingAdvancedDesignConfig;
+  textTransform: HeadingTextTransform;
 }
 
 export interface HeadingsConfig {
@@ -1159,6 +1368,19 @@ export interface CustomFontFamily {
 export type PageParity = 'all' | 'odd' | 'even';
 export type HeaderFooterHAlign = 'left' | 'center' | 'right';
 
+/** Classification of a laid-out page, computed after placement
+ *  (`pipeline/pageRoles.ts`):
+ *  - `'blank'` — parity / force-blank padding, or a page with no content;
+ *  - `'part'` — a part-divider page (`partInfo` set);
+ *  - `'opener'` — the first block in reading order is a heading whose level
+ *    spans the page or forces a page break before it (a chapter opener);
+ *  - `'body'` — everything else. */
+export type PageRole = 'body' | 'opener' | 'part' | 'blank';
+
+/** Which page roles a design element renders on. `'all'` (default) renders
+ *  on every page the parity filter admits. */
+export type PageRoleFilter = 'all' | PageRole;
+
 // ---------------------------------------------------------------------------
 // Unified design slot primitives — shared by header, footer, and advanced
 // heading designs. Each element is placed by an anchor (container-relative
@@ -1179,8 +1401,13 @@ export type AnchorEdge =
   | 'align-top' | 'align-bottom' | 'align-left' | 'align-right';
 
 export interface ElementAnchor {
-  /** `'container'` or `'#elementId'` reference to another element in the slot. */
-  to: 'container' | `#${string}`;
+  /** `'container'` (the slot's own container), `'page'` (the trim box),
+   *  `'bleed'` (the trim box expanded by `cutLines.bleed` when cut lines are
+   *  enabled, otherwise the trim box) or `'#elementId'` — a reference to
+   *  another element in the slot. Page/bleed anchoring also makes that frame
+   *  the reference for `size: 'fill'` and auto-width clamping, so a band can
+   *  run edge to edge regardless of the page margins. */
+  to: 'container' | 'page' | 'bleed' | `#${string}`;
   edge: AnchorEdge;
 }
 
@@ -1211,6 +1438,9 @@ export interface DesignTextElement {
   id: string;
   /** Header/footer only; ignored by heading designs. */
   parity?: PageParity;
+  /** Page roles this element renders on (see `PageRoleFilter`). Default
+   *  `'all'`. */
+  pages?: PageRoleFilter;
   placement: ElementPlacement;
   /** Template with placeholders (see design/placeholders.ts). Use `{{`/`}}`
    *  for literal braces. */
@@ -1237,6 +1467,8 @@ export interface DesignRuleElement {
   kind: 'rule';
   id: string;
   parity?: PageParity;
+  /** Page roles this element renders on. Default `'all'`. */
+  pages?: PageRoleFilter;
   placement: ElementPlacement;
   direction: 'horizontal' | 'vertical';
   color: ColorValue;
@@ -1247,6 +1479,8 @@ export interface DesignBoxElement {
   kind: 'box';
   id: string;
   parity?: PageParity;
+  /** Page roles this element renders on. Default `'all'`. */
+  pages?: PageRoleFilter;
   placement: ElementPlacement;
   style: ElementBoxStyle;
 }
@@ -1369,6 +1603,9 @@ export interface PostextConfig {
   diagramStyle?: DiagramStyleConfig;
   /** Named paragraph styles for `:::paragraphs{style="…"}` containers. */
   paragraphStyles?: ParagraphStyleConfig[];
+  /** Named callout styles for `:::callout{type="…"}` containers. Defaults
+   *  to a single neutral `note` style when unset. */
+  calloutStyles?: CalloutStyleConfig[];
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;

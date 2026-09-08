@@ -10,11 +10,15 @@ import {
   type VDTDesignBoxBlock,
   type VDTPage,
 } from '../vdt';
-import { computeChapterTitles, computeChapterNumbers } from './placeholders';
+import { computeChapterTitles, computeChapterNumbers, computeChapterAttrs } from './placeholders';
 import { computePageMetrics } from './buildHelpers';
 import { buildHeadingLevelMap } from './config';
+import { classifyPages } from './pageRoles';
+import { dimensionToPx } from '../units';
+import type { PageRole } from '../types';
 import {
   layoutDesignSlot,
+  type DesignFrames,
   type ResolvedPrimitive,
   type ResolvedTextPrimitive,
   type ResolvedRulePrimitive,
@@ -34,7 +38,7 @@ import type { DesignPlaceholderContext } from '../design/placeholders';
  *  This matches the legacy semantics: `marginFromBody` was "distance from
  *  body edge" — the migration translates that to an offset of the same
  *  magnitude from the body-facing edge. */
-function headerContainerBbox(contentArea: { x: number; y: number; width: number }, _pageHeight: number) {
+function headerContainerBbox(contentArea: { x: number; y: number; width: number }) {
   // Header: spans from top of page to body top.
   return { x: contentArea.x, y: 0, width: contentArea.width, height: contentArea.y };
 }
@@ -136,14 +140,26 @@ function boxPrimitiveToBlock(prim: ResolvedBoxPrimitive): VDTDesignBoxBlock {
  *  full content area; passed in by the caller). */
 export function measureHeadingAdvancedDesignHeight(
   level: ResolvedHeadingLevelConfig,
-  heading: { titleText: string; formattedNumber: string; chapterNumber: string },
+  heading: { titleText: string; formattedNumber: string; chapterNumber: string; attrs?: Record<string, string> },
   width: number,
   dpi: number,
   metadata: DocumentMetadata,
   pageIndex: number,
+  /** Page/bleed frames in absolute page px, for `anchor.to: 'page' |
+   *  'bleed'` elements. Translated into the stub coordinate system (the
+   *  heading container's top-left at `origin`) so a band anchored above the
+   *  heading does not grow the reserved height, while anything extending
+   *  below the heading's top does. */
+  frames?: DesignFrames,
+  /** Absolute page position of the heading container's top-left. Defaults
+   *  to the frames' page origin when omitted. */
+  origin?: { x: number; y: number },
 ): number {
   if (!level.advancedDesign.enabled) return 0;
-  if (level.advancedDesign.slot.elements.length === 0) return 0;
+  const minHeightPx = level.advancedDesign.minHeight
+    ? dimensionToPx(level.advancedDesign.minHeight, dpi)
+    : 0;
+  if (level.advancedDesign.slot.elements.length === 0) return minHeightPx;
   const stubPage = { index: pageIndex, pageLabel: '1' } as unknown as VDTPage;
   const placeholders: DesignPlaceholderContext = {
     kind: 'heading',
@@ -153,16 +169,29 @@ export function measureHeadingAdvancedDesignHeight(
     chapterTitleByPageIndex: [],
     heading,
   };
+  let stubFrames: DesignFrames | undefined;
+  if (frames) {
+    const ox = origin?.x ?? frames.page.x;
+    const oy = origin?.y ?? frames.page.y;
+    const shift = (f: DesignFrames['page']) => ({ x: f.x - ox, y: f.y - oy, width: f.width, height: f.height });
+    stubFrames = { page: shift(frames.page), bleed: shift(frames.bleed) };
+  }
   const result = layoutDesignSlot(
     level.advancedDesign.slot,
-    { container: { x: 0, y: 0, width, height: 1e6 }, dpi, placeholders },
+    { container: { x: 0, y: 0, width, height: 1e6 }, dpi, placeholders, frames: stubFrames },
     pageIndex,
   );
   let bottom = 0;
   for (const prim of result.primitives) {
     bottom = Math.max(bottom, prim.y + prim.height);
   }
-  return bottom;
+  return Math.max(bottom, minHeightPx);
+}
+
+/** Optional page-level inputs for `layoutSlotToVdt`. */
+export interface SlotLayoutExtras {
+  frames?: DesignFrames;
+  pageRole?: PageRole;
 }
 
 export function layoutSlotToVdt(
@@ -171,8 +200,13 @@ export function layoutSlotToVdt(
   pageIndex: number,
   placeholders: DesignPlaceholderContext,
   dpi: number,
+  extras?: SlotLayoutExtras,
 ): VDTDesignSlot | undefined {
-  const result = layoutDesignSlot(slot, { container, dpi, placeholders }, pageIndex);
+  const result = layoutDesignSlot(
+    slot,
+    { container, dpi, placeholders, frames: extras?.frames, pageRole: extras?.pageRole },
+    pageIndex,
+  );
   if (result.primitives.length === 0) return undefined;
   const blocks = result.primitives.map(primitiveToBlock);
   return {
@@ -229,6 +263,7 @@ function synthesiseDefaultOpenerSlot(level: ResolvedHeadingLevelConfig, hasNumbe
     kind: 'text',
     id: 'defaultHeadingOpener',
     parity: 'all',
+    pages: 'all',
     placement: {
       anchor: { to: 'container', edge: 'top-left' },
       offset: { x: { value: 0, unit: 'pt' }, y: { value: 0, unit: 'pt' } },
@@ -255,13 +290,21 @@ function synthesiseDefaultOpenerSlot(level: ResolvedHeadingLevelConfig, hasNumbe
 export function buildHeadersAndFooters(doc: VDTDocument): void {
   const resolved = doc.config;
   const dpi = resolved.page.dpi;
-  const { contentArea } = computePageMetrics(resolved);
+  const metrics = computePageMetrics(resolved);
+  const frames: DesignFrames = { page: metrics.trimBox, bleed: metrics.bleedBox };
+
+  // Page roles drive the per-element `pages` filter of every slot below.
+  classifyPages(doc, resolved);
 
   const chapterTitleByPageIndex = computeChapterTitles(doc.blocks, doc.pages.length, doc.pages);
   const chapterNumberByPageIndex = computeChapterNumbers(doc.blocks, doc.pages.length, doc.pages);
+  const chapterAttrsByPageIndex = computeChapterAttrs(doc.blocks, doc.pages.length, doc.pages);
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
 
   for (const page of doc.pages) {
+    // Per-page content area: mirrored margins swap inner/outer on even pages.
+    const contentArea = page.contentArea;
+    const extras: SlotLayoutExtras = { frames, pageRole: page.role };
     if (resolved.header.elements.length > 0) {
       const placeholders: DesignPlaceholderContext = {
         kind: 'header',
@@ -269,13 +312,15 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         allPages: doc.pages,
         metadata: doc.metadata,
         chapterTitleByPageIndex,
+        chapterAttrsByPageIndex,
       };
       page.header = layoutSlotToVdt(
         resolved.header,
-        headerContainerBbox(contentArea, page.height),
+        headerContainerBbox(contentArea),
         page.index,
         placeholders,
         dpi,
+        extras,
       );
     }
     const opener = findOpenerHeading(page, headingLevelByNumber);
@@ -291,10 +336,12 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           allPages: doc.pages,
           metadata: doc.metadata,
           chapterTitleByPageIndex,
+          chapterAttrsByPageIndex,
           heading: {
             titleText: opener.titleText,
             formattedNumber: opener.numberPrefix,
             chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
+            attrs: opener.block.attrs,
           },
         };
         page.openerBand = layoutSlotToVdt(
@@ -303,6 +350,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           page.index,
           placeholders,
           dpi,
+          extras,
         );
         if (page.openerBand) {
           opener.block.hidden = true;
@@ -334,10 +382,12 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           allPages: doc.pages,
           metadata: doc.metadata,
           chapterTitleByPageIndex,
+          chapterAttrsByPageIndex,
           heading: {
             titleText: title,
             formattedNumber: pref,
             chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
+            attrs: block.attrs,
           },
         };
         const overlay = layoutSlotToVdt(
@@ -346,6 +396,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           page.index,
           placeholders,
           dpi,
+          extras,
         );
         if (overlay) block.designOverlay = overlay;
       }
@@ -357,6 +408,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         allPages: doc.pages,
         metadata: doc.metadata,
         chapterTitleByPageIndex,
+        chapterAttrsByPageIndex,
       };
       page.footer = layoutSlotToVdt(
         resolved.footer,
@@ -364,6 +416,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         page.index,
         placeholders,
         dpi,
+        extras,
       );
     }
   }

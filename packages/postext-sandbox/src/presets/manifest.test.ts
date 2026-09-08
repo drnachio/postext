@@ -121,13 +121,13 @@ describe('resourceFromSpec', () => {
   it('maps an SVG file', () => {
     const r = resourceFromSpec('brochure', {
       id: 'pipeline', typeId: 'figure', kind: 'svg', file: 'figures/pipeline.svg', caption: 'Pipeline',
-      note: 'authoring note',
+      note: 'Source: field survey',
     }, { width: 300, height: 120 });
     expect(r.kind).toBe('svg');
     expect(r.svg).toEqual({ fileId: 'preset:brochure:figures-pipeline-svg', width: 300, height: 120 });
     expect(r.bitmap).toBeUndefined();
     expect(r.caption).toBe('Pipeline');
-    expect((r as unknown as { note?: string }).note).toBeUndefined();
+    expect(r.note).toBe('Source: field survey');
     expect((r as unknown as { file?: string }).file).toBeUndefined();
     expect(typeof r.createdAt).toBe('number');
     expect(r.updatedAt).toBe(r.createdAt);

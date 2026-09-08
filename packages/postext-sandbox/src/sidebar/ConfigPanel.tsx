@@ -18,6 +18,7 @@ import { OrderedListsSection } from './sections/OrderedListsSection';
 import { MathSection } from './sections/MathSection';
 import { TableStyleSection } from './sections/TableStyleSection';
 import { CaptionStyleSection } from './sections/CaptionStyleSection';
+import { ParagraphStylesSection } from './sections/ParagraphStylesSection';
 import { DiagramStyleSection } from './sections/DiagramStyleSection';
 import { ResourceTypesSection } from './sections/ResourceTypesSection';
 import { HtmlViewerSection } from './sections/HtmlViewerSection';
@@ -136,6 +137,7 @@ export function ConfigPanel() {
         <MathSection />
         <TableStyleSection />
         <CaptionStyleSection />
+        <ParagraphStylesSection />
         <DiagramStyleSection />
         <ResourceTypesSection />
         <HtmlViewerSection />

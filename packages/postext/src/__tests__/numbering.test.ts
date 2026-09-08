@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { parseTemplate, formatNumeral, computeHeadingNumbers } from '../numbering';
-import type { ContentBlock } from '../parse';
+import { parseMarkdown, type ContentBlock } from '../parse';
+import { resolveBlockKind, uppercasePreservingLength } from '../pipeline/buildBlockKind';
+import { resolveAllConfig } from '../pipeline/config';
+import { resolveBodyStyle, resolveBlockquoteStyle } from '../pipeline/styles';
 
 describe('formatNumeral', () => {
   it('formats decimal', () => {
@@ -95,5 +98,56 @@ describe('computeHeadingNumbers', () => {
     const blocks = [h(1), p(), h(1)];
     const out = computeHeadingNumbers(blocks, { 1: '{1}' });
     expect(out).toEqual(['1', undefined, '2']);
+  });
+});
+
+describe('heading textTransform', () => {
+  it('heading textTransform uppercase keeps length and sourceMap (ß)', () => {
+    const md = '## Straße *und* Fluss $x$';
+    const [raw] = parseMarkdown(md);
+    const resolved = resolveAllConfig({
+      headings: { levels: [{ level: 2, textTransform: 'uppercase', numberingTemplate: 'Chapter {2}' }] },
+    });
+    const kind = resolveBlockKind(raw!, {
+      resolved,
+      bodyStyle: resolveBodyStyle(resolved),
+      blockquoteStyle: resolveBlockquoteStyle(resolved),
+      headingPrefixes: ['Chapter 1'],
+      blockIdx: 0,
+      listLevelIndentsPx: [],
+      orderedLevelIndentsPx: [],
+      orderedMetrics: { perBlock: new Map(), maxWidthByDepth: new Map() },
+      resourceById: new Map(),
+      resourceTypeById: new Map(),
+      resourceNumberById: new Map(),
+    });
+    const text = kind.contentBlock.text;
+    // The numbering prefix is kept as written; the title is upper-cased with
+    // `ß` left alone (its upper-case form `SS` would change the length).
+    expect(text).toBe('Chapter 1 STRAßE UND FLUSS \uFFFC');
+    expect(text.length - 'Chapter 1 '.length).toBe(raw!.text.length);
+    expect(raw!.sourceMap.length).toBe(raw!.text.length);
+    // Spans are transformed in step; the math placeholder is untouched.
+    expect(kind.contentBlock.spans.map((s) => s.text).join('')).toBe(text);
+    const mathSpan = kind.contentBlock.spans[kind.contentBlock.spans.length - 1]!;
+    expect(mathSpan.math).toBeDefined();
+    expect(mathSpan.text).toBe('\uFFFC');
+    // Levels without the transform are unchanged.
+    const plain = resolveBlockKind(raw!, {
+      resolved: resolveAllConfig(),
+      bodyStyle: resolveBodyStyle(resolveAllConfig()),
+      blockquoteStyle: resolveBlockquoteStyle(resolveAllConfig()),
+      headingPrefixes: [],
+      blockIdx: 0,
+      listLevelIndentsPx: [],
+      orderedLevelIndentsPx: [],
+      orderedMetrics: { perBlock: new Map(), maxWidthByDepth: new Map() },
+      resourceById: new Map(),
+      resourceTypeById: new Map(),
+      resourceNumberById: new Map(),
+    });
+    expect(plain.contentBlock.text).toBe(raw!.text);
+    expect(uppercasePreservingLength('ﬁn ß é')).toBe('ﬁN ß É');
+    expect(uppercasePreservingLength('ﬁn ß é').length).toBe('ﬁn ß é'.length);
   });
 });

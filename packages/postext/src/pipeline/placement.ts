@@ -12,6 +12,7 @@ import {
 } from '../vdt';
 import type { HeadingBreakParity } from '../types';
 import { computeColumnBboxes } from './config';
+import { contentAreaForPage } from './buildHelpers';
 
 export interface PlacementCursor {
   pageIndex: number;
@@ -36,8 +37,12 @@ export function createPageWithColumns(
   pageWidthPx: number,
   pageHeightPx: number,
 ): VDTPage {
-  const page = createVDTPage(pageIndex, pageWidthPx, pageHeightPx);
-  const colBboxes = computeColumnBboxes(contentArea, resolved);
+  // `contentArea` is the recto (odd-page) area; mirrored margins swap the
+  // inner/outer margins on even pages. `pageIndex` is the page's position in
+  // `doc.pages`, so page number = index + 1.
+  const pageArea = contentAreaForPage({ contentArea, pageWidthPx }, resolved, pageIndex);
+  const page = createVDTPage(pageIndex, pageWidthPx, pageHeightPx, pageArea);
+  const colBboxes = computeColumnBboxes(pageArea, resolved);
   for (let i = 0; i < colBboxes.length; i++) {
     page.columns.push(createVDTColumn(i, colBboxes[i]!));
   }
@@ -161,18 +166,19 @@ export function enforcePageParity(
 }
 
 /**
- * Place a resource block (image / svg / table + caption) keeping it together as
- * one atomic unit (issue #49 §7 — Placement). Resources never split mid-content
- * for v1: if the group's combined height fits the remaining column space it is
- * placed there; otherwise the cursor advances to the next column/page (without
- * emitting a leading blank page when the current column is empty), and the
- * resource is force-placed there even when it exceeds a single column's height.
+ * Place an atomic block — a resource group (image / svg / table + caption,
+ * issue #49 §7) or a callout frame — keeping it together as one unit. Atomic
+ * blocks never split mid-content for v1: if the group's combined height fits
+ * the remaining column space it is placed there; otherwise the cursor advances
+ * to the next column/page (without emitting a leading blank page when the
+ * current column is empty), and the block is force-placed there even when it
+ * exceeds a single column's height.
  *
  * `spacingBefore` is consumed from the target column's available height before
  * placement (collapsed against the previous block's bottom margin by the
  * caller). Returns the height actually reserved for the block.
  */
-export function placeResourceBlock(
+export function placeAtomicBlock(
   block: VDTBlock,
   groupHeight: number,
   spacingBefore: number,
@@ -201,6 +207,9 @@ export function placeResourceBlock(
   placeBlockInColumn(block, groupHeight, col, cursor);
   return groupHeight;
 }
+
+/** @deprecated Use {@link placeAtomicBlock}. */
+export const placeResourceBlock = placeAtomicBlock;
 
 export function placeBlockInColumn(
   block: VDTBlock,

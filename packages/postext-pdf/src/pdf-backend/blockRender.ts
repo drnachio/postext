@@ -202,7 +202,7 @@ export function renderBlock(
 ): void {
   if (block.hidden) return;
   if (block.designOverlay) {
-    renderHeaderFooterSlot(ctx, block.designOverlay, fontCache);
+    renderHeaderFooterSlot(ctx, block.designOverlay, fontCache, resourceCtx?.images);
     return;
   }
   if (block.type === 'resource') {

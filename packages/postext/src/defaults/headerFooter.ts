@@ -308,6 +308,7 @@ function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignT
     kind: 'text',
     id: el.id ?? `text-${idx + 1}`,
     parity: el.parity ?? 'all',
+    pages: el.pages ?? 'all',
     placement: {
       anchor: el.placement.anchor,
       offset: el.placement.offset ?? {},
@@ -334,6 +335,7 @@ function resolveRuleElement(el: DesignRuleElement, idx: number): ResolvedDesignR
     kind: 'rule',
     id: el.id ?? `rule-${idx + 1}`,
     parity: el.parity ?? 'all',
+    pages: el.pages ?? 'all',
     placement: {
       anchor: el.placement.anchor,
       offset: el.placement.offset ?? {},
@@ -350,6 +352,7 @@ function resolveBoxElement(el: DesignBoxElement, idx: number): ResolvedDesignBox
     kind: 'box',
     id: el.id ?? `box-${idx + 1}`,
     parity: el.parity ?? 'all',
+    pages: el.pages ?? 'all',
     placement: {
       anchor: el.placement.anchor,
       offset: el.placement.offset ?? {},

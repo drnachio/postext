@@ -37,7 +37,7 @@ import {
   advanceToNextPageBoundary,
   enforcePageParity,
   placeBlockInColumn,
-  placeResourceBlock,
+  placeAtomicBlock,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
 import {
@@ -49,6 +49,13 @@ import {
 } from './buildHelpers';
 import { measureContentBlock, type BlockMeasureContext } from './measureContentBlock';
 import { planParagraphContainers } from './paragraphContainers';
+import {
+  layoutCallout,
+  offsetCalloutToAbsolute,
+  pickCalloutStyle,
+  planCallouts,
+  type PlannedCallout,
+} from './calloutLayout';
 import { layoutResourceBlock } from './resourceLayout';
 import {
   computeFloatPlan,
@@ -129,7 +136,10 @@ function buildDocumentPass(
   // Create document
   const doc = createVDTDocument(resolved, baselineGrid);
 
-  const { pageWidthPx, pageHeightPx, trimOffset, contentArea } = computePageMetrics(resolved);
+  const pageMetrics = computePageMetrics(resolved);
+  const { pageWidthPx, pageHeightPx, trimOffset, contentArea } = pageMetrics;
+  // Page/bleed frames for design elements anchored to `'page'` / `'bleed'`.
+  const designFrames = { page: pageMetrics.trimBox, bleed: pageMetrics.bleedBox };
   doc.trimOffset = trimOffset;
 
   // Create first page
@@ -185,6 +195,8 @@ function buildDocumentPass(
   );
   // `:::paragraphs{style="…"}` containers, resolved per content-block index.
   const paragraphContainers = planParagraphContainers(contentBlocks, resolved);
+  // `:::callout` ranges keyed by their start marker index (same rationale).
+  const calloutPlan = planCallouts(contentBlocks);
 
   // --- Float planning (issue #49 — resources float to page bands) ----------
   // A resource is incorporated by its first reference (an inline `:ref` or a
@@ -287,8 +299,8 @@ function buildDocumentPass(
         targetCols = [best];
       }
       const firstCol = page.columns[targetCols[0]!]!;
-      const width = pageSpan ? contentArea.width : firstCol.bbox.width;
-      const xLeft = pageSpan ? contentArea.x : firstCol.bbox.x;
+      const width = pageSpan ? page.contentArea.width : firstCol.bbox.width;
+      const xLeft = pageSpan ? page.contentArea.x : firstCol.bbox.x;
 
       const built = buildFloatBlock(f.resourceId, xLeft, width);
       if (!built) return 'skip';
@@ -322,8 +334,8 @@ function buildDocumentPass(
           const cb = page.columns[c]!.bbox;
           return cb.y + cb.height;
         }));
-        const gridAlignedBottom = contentArea.y
-          + Math.floor((bottomLimit - contentArea.y + 0.01) / baselineGrid) * baselineGrid;
+        const gridAlignedBottom = page.contentArea.y
+          + Math.floor((bottomLimit - page.contentArea.y + 0.01) / baselineGrid) * baselineGrid;
         const capLines = built.block.resourceBlock!.captionLines;
         if (capLines.length > 0) {
           // Body baselines sit at 0.2 × grid above each slot bottom; anchor
@@ -475,6 +487,115 @@ function buildDocumentPass(
     }
   };
 
+  /** Heading blocks that are not part of a callout — the only ones the
+   *  keep-with-next rollbacks may pull along (a callout is one unbreakable
+   *  unit; its children never leave it). */
+  const isFreeHeading = (b: VDTBlock): boolean => b.type === 'heading' && b.containerId === undefined;
+
+  /**
+   * Place a `:::callout` inline at the current column width as one atomic
+   * unit: the frame block followed by its children in the same column. The
+   * box's `marginTop` collapses with the pending spacing; `marginBottom` is
+   * baked into the post-box grid snap. A box that does not fit moves to the
+   * next column/page (like a resource), pulling a run of trailing headings
+   * along (keep-with-next); a box taller than an empty column is placed
+   * anyway and overflows (the sandbox warns). Returns the content index to
+   * rewind the main loop to when headings were rolled back, else `undefined`.
+   *
+   * TODO(spanBlocks): `span: 'page'` in multi-column layouts and
+   * `placement: 'top' | 'bottom'` fall back to this inline placement for v1.
+   * The pagination phase should branch BEFORE calling this function to lay
+   * the box out at page width / float it into a page band — the frame's
+   * `callout.span` / `callout.placement` already record the request.
+   */
+  const placeCalloutInline = (startIdx: number, plan: PlannedCallout): number | undefined => {
+    const style = pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!;
+    const children = contentBlocks.slice(startIdx + 1, plan.endIdx);
+    const frameId = `block-${blockIdCounter++}`;
+    const layoutAt = (width: number) => {
+      let n = 0;
+      return layoutCallout({
+        style,
+        attrs: plan.attrs,
+        children,
+        childStartIdx: startIdx + 1,
+        width,
+        ctx: measureCtx,
+        resolved,
+        containerId: plan.containerId,
+        frameId,
+        nextChildId: () => `${frameId}-c${n++}`,
+        paragraphStyleFor: (idx) => paragraphContainers.byBlock[idx]?.style,
+      });
+    };
+
+    let curCol = currentColumn(doc, cursor);
+    let result = layoutAt(curCol.bbox.width);
+    if (curCol.blocks.length > 0) {
+      const spacingBefore = Math.max(pendingSpacing, result.marginTopPx);
+      if (result.totalHeight > curCol.availableHeight - spacingBefore) {
+        // Keep-with-next: a run of headings at the column's tail travels
+        // with the box. Skipped when the column holds nothing else (rolling
+        // back again would loop) — the headings stay, orphaned.
+        let run = 0;
+        for (let j = curCol.blocks.length - 1; j >= 0; j--) {
+          if (isFreeHeading(curCol.blocks[j]!)) run++;
+          else break;
+        }
+        pendingSpacing = 0;
+        if (resolved.headings.keepWithNext && run > 0 && run < curCol.blocks.length) {
+          const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
+          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+          return (rolledBack[0]!.contentIndex ?? startIdx - rolledBack.length) - 1;
+        }
+        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        curCol = currentColumn(doc, cursor);
+        // Columns of different widths (oneAndHalf): re-lay out for the new one.
+        if (Math.abs(curCol.bbox.width - result.width) > 0.01 && style.width !== 'auto') {
+          result = layoutAt(curCol.bbox.width);
+        }
+      }
+    }
+
+    // Floats first-referenced inside the box still enqueue in reading order
+    // (only once the box is committed, so a keep-with-next replay does not
+    // enqueue them twice).
+    for (let i = startIdx + 1; i <= plan.endIdx; i++) {
+      const fl = floatsByFirstBlock.get(i);
+      if (fl) pendingFloats.push(...fl);
+    }
+    const frame = result.frame;
+    const startBlock = contentBlocks[startIdx]!;
+    const endBlock = contentBlocks[plan.endIdx]!;
+    frame.contentIndex = startIdx;
+    frame.sourceStart = startBlock.sourceStart + bodyOffset;
+    frame.sourceEnd = endBlock.sourceEnd + bodyOffset;
+    const spacing = curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, result.marginTopPx);
+    placeAtomicBlock(
+      frame, result.totalHeight, spacing, cursor, doc, resolved,
+      contentArea, pageWidthPx, pageHeightPx,
+    );
+    curCol = currentColumn(doc, cursor);
+    offsetCalloutToAbsolute(result, frame.bbox.x, frame.bbox.y);
+    doc.blocks.push(frame);
+    for (const child of result.children) {
+      child.pageIndex = frame.pageIndex;
+      child.columnIndex = frame.columnIndex;
+      curCol.blocks.push(child);
+      doc.blocks.push(child);
+    }
+    // Snap the flow after the box to the baseline grid, baking in at least
+    // `marginBottom` (grid wins, margin is a minimum — the resource rule).
+    {
+      const usedHeight = curCol.bbox.height - curCol.availableHeight;
+      const naturalBottom = usedHeight + result.marginBottomPx;
+      const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
+      curCol.availableHeight = Math.max(0, curCol.bbox.height - snappedBottom);
+    }
+    pendingSpacing = 0;
+    return undefined;
+  };
+
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
     const rawBlock = contentBlocks[blockIdx]!;
@@ -504,6 +625,20 @@ function buildDocumentPass(
           enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, parity);
         }
         flushPendingNumberingAtBoundary();
+      } else if (name === 'columnbreak') {
+        // Explicit column break: end the current column here (its bottom
+        // gap is intentional, so balancing skips it) and continue in the
+        // next column. A no-op in an empty column, so it never opens a
+        // blank column or page.
+        pendingSpacing = 0;
+        const col = currentColumn(doc, cursor);
+        if (col.blocks.length > 0) {
+          col.forcedBreak = true;
+          const page = doc.pages[cursor.pageIndex]!;
+          if (cursor.columnIndex === page.columns.length - 1) markForcedBreak();
+          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+          flushPendingNumberingAtBoundary();
+        }
       } else if (name === 'numbering') {
         const change: { format?: NumeralStyle; startAt?: number } = {};
         const fmt = attrs.format as NumeralStyle | undefined;
@@ -525,6 +660,19 @@ function buildDocumentPass(
     // that end with a non-paragraph block. `callout` and `part` are layout
     // no-ops for now. Replaying a marker after a keep-with-next rewind is
     // harmless: the container plan is index-based, and `max` is idempotent.
+    if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
+      const plan = calloutPlan.get(blockIdx);
+      if (plan && pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)) {
+        // TODO(spanBlocks): branch here for `span: 'page'` (multi-column) and
+        // `placement: 'top' | 'bottom'` before the inline fallback.
+        const rewind = placeCalloutInline(blockIdx, plan);
+        // Children were laid out inside the box — skip them in the main loop
+        // (the for-loop's `++` lands just past the closing marker).
+        blockIdx = rewind !== undefined ? rewind : plan.endIdx;
+        flushPendingNumberingAtBoundary();
+        continue;
+      }
+    }
     if (rawBlock.type === 'containerStart' || rawBlock.type === 'containerEnd') {
       const pc = rawBlock.containerId !== undefined
         ? paragraphContainers.byId.get(rawBlock.containerId)
@@ -614,11 +762,11 @@ function buildDocumentPass(
         isLastLine: true,
       }];
       const spacingBefore = pendingSpacing;
-      placeResourceBlock(
+      placeAtomicBlock(
         blk, groupHeight, spacingBefore, cursor, doc, resolved,
         contentArea, pageWidthPx, pageHeightPx,
       );
-      // `placeBlockInColumn` (inside placeResourceBlock) shifts `blk.lines`; the
+      // `placeBlockInColumn` (inside placeAtomicBlock) shifts `blk.lines`; the
       // resource's own caption/table lines live on `resourceBlock` and must be
       // offset to absolute page coordinates here using the placed bbox origin.
       offsetResourceBlockToAbsolute(resourceBlock, blk.bbox.x, blk.bbox.y);
@@ -759,14 +907,20 @@ function buildDocumentPass(
           const title = pref && full.startsWith(`${pref} `) ? full.slice(pref.length + 1) : full;
           // Span-page openers lay out across the full content area (both
           // columns); in-column headings use just the column width.
-          const measureWidth = lvl.span === 'page' ? contentArea.width : curCol.bbox.width;
+          const pageArea = doc.pages[cursor.pageIndex]!.contentArea;
+          const measureWidth = lvl.span === 'page' ? pageArea.width : curCol.bbox.width;
           const designBottom = measureHeadingAdvancedDesignHeight(
             lvl,
-            { titleText: title, formattedNumber: pref, chapterNumber: pref },
+            { titleText: title, formattedNumber: pref, chapterNumber: pref, attrs: rawBlock.attrs },
             measureWidth,
             resolved.page.dpi,
             doc.metadata,
             cursor.pageIndex,
+            designFrames,
+            {
+              x: lvl.span === 'page' ? pageArea.x : curCol.bbox.x,
+              y: curCol.bbox.y + (curCol.bbox.height - curCol.availableHeight) + spacingBefore,
+            },
           );
           if (designBottom > effectiveRemainHeight) effectiveRemainHeight = designBottom;
         }
@@ -832,7 +986,7 @@ function buildDocumentPass(
           let headingRunCount = 0;
           if (resolved.headings.keepWithNext) {
             for (let j = curCol.blocks.length - 1; j >= 0; j--) {
-              if (curCol.blocks[j]!.type === 'heading') headingRunCount++;
+              if (curCol.blocks[j]!.type === 'heading' && curCol.blocks[j]!.containerId === undefined) headingRunCount++;
               else break;
             }
           }
@@ -892,7 +1046,7 @@ function buildDocumentPass(
           if (remainAfterHeading < minSpaceAfter) {
             // Roll back any immediately-preceding heading blocks in this
             // column so they travel with this one.
-            const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, (b) => b.type === 'heading');
+            const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
             if (rolledBack.length > 0) {
               // Rewind so the for-loop's blockIdx++ lands on the first
               // rolled-back heading (marker blocks in between are replayed).
@@ -917,6 +1071,7 @@ function buildDocumentPass(
         applyStyleAttrs(blk, style);
         blk.contentIndex = blockIdx;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
+        if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
         if (vdtType === 'mathDisplay' && mathDisplayRender) {
           blk.mathRender = mathDisplayRender;
           blk.tex = rawBlock.tex;
@@ -1041,7 +1196,7 @@ function buildDocumentPass(
         // pull those headings along so they don't remain stranded as orphans
         // at the column's bottom. Mirrors the rollback inside the "fits" path.
         if (vdtType === 'heading' && resolved.headings.keepWithNext) {
-          const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, (b) => b.type === 'heading');
+          const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
           if (rolledBack.length > 0) {
             blockIdx = (rolledBack[0]!.contentIndex ?? blockIdx - rolledBack.length) - 1;
             pendingSpacing = 0;
@@ -1060,6 +1215,7 @@ function buildDocumentPass(
       applyStyleAttrs(blk, style);
       blk.contentIndex = blockIdx;
       if (partIndex === 0) blk.headingLevel = headingLevel;
+      if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
       blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
       blk.dirty = false;
       blk.snappedToGrid = false;
