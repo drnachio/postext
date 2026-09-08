@@ -831,7 +831,7 @@ The `bodyText` property controls the typography of all paragraph text.
     <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>1.9</code></td>
+      <td><code>2</code></td>
       <td>Upper bound for word spacing in justified text, expressed as a multiplier of the normal space width. Lines exceeding this ratio are considered "loose".</td>
     </tr>
     <tr>
@@ -1111,7 +1111,25 @@ The last column of a page is only balanced when the page flows naturally into th
       <td><code>looseParagraphs</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Last resort: re-break one paragraph per short column one line looser, within <code>bodyText.maxWordSpacing</code>.</td>
+      <td>Last resort: re-break paragraphs of a short column one line looser (one extra line each), within <code>bodyText.maxWordSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxLooseParagraphs</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>How many paragraphs of one short column may run a line long, longest first.</td>
+    </tr>
+    <tr>
+      <td><code>trackParagraphs</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When word spacing alone cannot gain the line, a loose paragraph may also take the smallest positive tracking (letter spacing) that does.</td>
+    </tr>
+    <tr>
+      <td><code>maxTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>Upper limit for that tracking, in thousandths of an em per character (10 = 0.01 em).</td>
     </tr>
   </tbody>
 </table>

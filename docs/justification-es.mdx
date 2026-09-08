@@ -114,7 +114,7 @@ Postext amplía el modelo de costes estándar con tres penalizaciones editoriale
 - La **penalización de viuda** se aplica cuando la división dejaría menos de `widowMinLines` líneas al final de la columna actual. El valor por defecto de `widowPenalty` es `1000`.
 - La **penalización de *runt*** se aplica cuando la última línea del párrafo sería más corta que aproximadamente `runtMinCharacters × normalSpaceWidth` píxeles. El valor por defecto de `runtPenalty` es `1000`. A diferencia de huérfana/viuda (que suman linealmente al demerit del corte), el *runt* se inyecta como *badness* equivalente dentro de la fórmula cuadrática de Knuth–Plass, de modo que compite en la misma escala que el *badness* de línea (que satura en 10000) en lugar de quedar aplastado por él.
 
-La penalización de *runt* se suma a los deméritos del nodo candidato dentro del divisor de líneas, así que el solver puede sacrificar una línea ligeramente más holgada a cambio de una línea final más larga. Las penalizaciones de huérfanas y viudas entran en una optimización aparte que se ejecuta cuando un párrafo cruza un límite de columna: cada división candidata se puntúa — sumando los deméritos de holgura, huérfana y viuda — y gana la división más barata, de modo que el motor preferirá de forma natural divisiones que eviten ambas siempre que sea posible. Ajusta el trade-off mediante `orphanPenalty`, `widowPenalty` o `runtPenalty`; ajustar cualquiera a `0` desactiva esa regla. Los ítems de lista se apuntan mediante `avoidOrphansInLists`, `avoidWidowsInLists` y `avoidRuntsInLists` (todos a `true` por defecto).
+La penalización de *runt* se suma a los deméritos del nodo candidato dentro del divisor de líneas, así que el solver puede sacrificar una línea ligeramente más holgada a cambio de una línea final más larga — pero solo dentro de `maxWordSpacing`: una línea estirada más allá de ese límite lleva un *badness* adicional mayor que cualquier penalización de *runt* o de guion, de modo que el divisor prefiere una última línea corta, o una última palabra partida, antes que un espaciado entre palabras que supere el límite. Las penalizaciones de huérfanas y viudas entran en una optimización aparte que se ejecuta cuando un párrafo cruza un límite de columna: cada división candidata se puntúa — sumando los deméritos de holgura, huérfana y viuda — y gana la división más barata, de modo que el motor preferirá de forma natural divisiones que eviten ambas siempre que sea posible. Ajusta el trade-off mediante `orphanPenalty`, `widowPenalty` o `runtPenalty`; ajustar cualquiera a `0` desactiva esa regla. Los ítems de lista se apuntan mediante `avoidOrphansInLists`, `avoidWidowsInLists` y `avoidRuntsInLists` (todos a `true` por defecto).
 
 ### Por qué importa
 
@@ -271,7 +271,7 @@ Con los valores por defecto (1.9 / 0.6), si el ancho normal del espacio es 4 px:
 
 **Límites más estrictos** (por ej., `maxWordSpacing: 1.2`) producen un espaciado más uniforme pero dan menos margen al algoritmo, lo que puede resultar en más separación silábica o, en casos extremos, desbordamiento. **Límites más amplios** (por ej., `maxWordSpacing: 2.5`) dan más flexibilidad al algoritmo pero permiten un espaciado visiblemente desigual en algunas líneas.
 
-Los valores por defecto de 1.9 y 0.6 priorizan la flexibilidad del algoritmo — dan a Knuth-Plass margen suficiente para evitar desbordamientos, separaciones silábicas y *runts* en columnas estrechas, manteniéndose dentro del rango que la literatura tipográfica considera aceptable.
+Los valores por defecto de 2 y 0.6 priorizan la flexibilidad del algoritmo — dan a Knuth-Plass margen suficiente para evitar desbordamientos, separaciones silábicas y *runts* en columnas estrechas, manteniéndose dentro del rango que la literatura tipográfica considera aceptable.
 
 ### La última línea
 
@@ -370,7 +370,7 @@ Cuando activas el resaltado de líneas flojas y ves bandas rojas en ciertas lín
     </tr>
     <tr>
       <td>Los límites de espaciado son demasiado estrictos</td>
-      <td>Aumenta <code>maxWordSpacing</code> ligeramente (por ej., de 1.9 a 2.4). Esto le da más espacio al algoritmo.</td>
+      <td>Aumenta <code>maxWordSpacing</code> ligeramente (por ej., de 2 a 2.4). Esto le da más espacio al algoritmo.</td>
     </tr>
     <tr>
       <td>El idioma tiene palabras compuestas largas (por ej., alemán)</td>
@@ -388,11 +388,13 @@ Con `headings.balancing` activado (el valor por defecto), el motor cierra esos h
 
 1. **Espacio sobre los encabezados.** Se añaden líneas completas de rejilla al margen superior de los encabezados de la columna corta. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten en rondas por orden de importancia, de modo que el encabezado más importante recibe siempre la mayor parte — 3 líneas sobre un `h2` y un `h3` se convierten en +2 sobre el `h2` y +1 sobre el `h3`. Los encabezados situados al principio de una columna nunca reciben espacio adicional (las columnas siguen empezando en la parte superior), y un encabezado final nunca se empuja hacia el pie de la columna.
 2. **Espacio tras el final de las listas.** Se añade una línea de rejilla donde termina una lista o enumeración — el aire tras una lista se lee con naturalidad. Con un máximo por lista (`maxLinesAfterList`, por defecto 1).
-3. **Párrafos corridos.** Como último recurso, se recompone **un** párrafo de la columna con una línea más — el `\looseness=+1` de TeX. El partidor vuelve a ejecutar Knuth-Plass pidiendo exactamente una línea adicional y acepta el resultado solo cuando **todas las líneas de la solución corrida quedan por debajo de `maxWordSpacing`**: el color tipográfico nunca supera el límite que ya tengas configurado. El motor prefiere el párrafo más largo de la columna, donde el espacio extra se diluye entre más espacios y resulta invisible. Requiere `optimalLineBreaking` (el valor por defecto); los párrafos partidos entre columnas quedan excluidos.
+3. **Párrafos corridos.** Como último recurso, se recomponen párrafos de la columna con una línea más — el `\looseness=+1` de TeX — hasta `maxLooseParagraphs` de ellos (dos por defecto), una línea extra cada uno. El partidor vuelve a ejecutar Knuth-Plass pidiendo exactamente una línea adicional y acepta el resultado solo cuando **todas las líneas de la solución corrida quedan por debajo de `maxWordSpacing`**: el color tipográfico nunca supera el límite que ya tengas configurado. El motor prefiere los párrafos más largos de la columna, donde el espacio extra se diluye entre más espacios y resulta invisible. Requiere `optimalLineBreaking` (el valor por defecto); los párrafos partidos entre columnas quedan excluidos.
+
+   Cuando el espaciado entre palabras no basta para ganar la línea, el párrafo puede tomar además un poco de **tracking** positivo — el recurso clásico del compositor. El motor prueba primero la cantidad más pequeña (la mitad de `maxTracking` y después `maxTracking`, en milésimas de eme por carácter; 10 = 0,01 em por defecto) y se queda con la primera que gana la línea, siempre bajo el mismo límite de espaciado entre palabras. El tracking se mide en las líneas del párrafo y lo pintan todos los backends (`letterSpacing` en canvas, `letter-spacing` en CSS, espaciado de caracteres en PDF). Se desactiva con `trackParagraphs: false`.
 
 ### Por qué el ajuste es local
 
-Los saltos de columna están *ligados a elementos*: el elemento que abre la siguiente columna está allí porque no cabía en el hueco. Empujar la cola de una columna hacia abajo como máximo su propio hueco nunca mueve contenido a la siguiente columna o página — cada columna se corrige en su sitio, sin recomposiciones en cascada. Aun así, el motor lo verifica empíricamente: vuelve a ejecutar la colocación con los ajustes propuestos (hasta 7 pasadas), mide el hueco restante total y conserva siempre la mejor maquetación encontrada. Un párrafo corrido que no consigue ganar su línea dentro del límite de espaciado se descarta y se prueba con el siguiente candidato.
+Los saltos de columna están *ligados a elementos*: el elemento que abre la siguiente columna está allí porque no cabía en el hueco. Empujar la cola de una columna hacia abajo como máximo su propio hueco nunca mueve contenido a la siguiente columna o página — cada columna se corrige en su sitio, sin recomposiciones en cascada. Aun así, el motor lo verifica empíricamente: vuelve a ejecutar la colocación con los ajustes propuestos (hasta 8 pasadas), mide el hueco restante total y conserva siempre la mejor maquetación encontrada. Un párrafo corrido que no consigue ganar su línea dentro del límite de espaciado, con ningún tracking, se descarta y se prueba con el siguiente candidato.
 
 ### Cuándo se respeta una columna corta
 
@@ -411,6 +413,9 @@ const layout = createLayout({
       stretchAfterLists: true,  // palanca 2
       maxLinesAfterList: 1,     // máximo por final de lista
       looseParagraphs: true,    // palanca 3 — acotada por bodyText.maxWordSpacing
+      maxLooseParagraphs: 2,    // párrafos corridos por columna corta
+      trackParagraphs: true,    // permite algo de tracking en un párrafo corrido
+      maxTracking: 10,          // ‰ de eme por carácter (0,01 em)
     },
   },
 });
@@ -441,7 +446,7 @@ const vdt = buildDocument(content, {
     },
 
     // Límites de espaciado entre palabras (multiplicadores del ancho normal)
-    maxWordSpacing: 1.9,   // los espacios se estiran hasta el 190%
+    maxWordSpacing: 2,     // los espacios se estiran hasta el 200%
     minWordSpacing: 0.6,   // los espacios se comprimen hasta el 60%
   },
 

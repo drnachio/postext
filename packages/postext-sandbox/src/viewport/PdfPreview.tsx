@@ -1,8 +1,9 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { FileText } from 'lucide-react';
 import { useSandboxLabels } from '../context/SandboxContext';
+import { pdfPageFragment, readPageHash } from '../storage/pageHash';
 
 interface PdfPreviewProps {
   bytesUrl: string | null;
@@ -12,6 +13,12 @@ interface PdfPreviewProps {
 
 export const PdfPreview = memo(function PdfPreview({ bytesUrl, generating, error }: PdfPreviewProps) {
   const labels = useSandboxLabels();
+  // Open the viewer at the page carried by the URL fragment (`#page=N`, the
+  // one the canvas / HTML viewers keep), re-read for every new document.
+  const src = useMemo(
+    () => (bytesUrl ? bytesUrl + pdfPageFragment(readPageHash()) : null),
+    [bytesUrl],
+  );
 
   if (error && !generating) {
     return (
@@ -42,11 +49,11 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, generating, error
       className="relative h-full w-full"
       style={{ backgroundColor: 'var(--surface)' }}
     >
-      {bytesUrl && (
+      {src && (
         <iframe
           data-postext-pdf="true"
           title={labels.pdf}
-          src={bytesUrl}
+          src={src}
           style={{
             position: 'absolute',
             inset: 0,

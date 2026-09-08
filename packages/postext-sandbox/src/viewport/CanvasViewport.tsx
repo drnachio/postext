@@ -4,6 +4,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { CanvasPreview, type CanvasPreviewHandle } from './CanvasPreview';
 import { CanvasToolbar } from './CanvasToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
+import { usePageHashSync } from './usePageHashSync';
 import { loadCanvasViewMode, saveCanvasViewMode, loadCanvasFitMode, saveCanvasFitMode, loadCanvasZoom, saveCanvasZoom } from '../storage/persistence';
 
 type ViewMode = 'single' | 'spread';
@@ -90,6 +91,14 @@ export function CanvasViewport() {
     previewRef.current?.jumpToPage(pageIndex);
   }, []);
 
+  // `#page=N` in the URL: restored once the document is laid out, written
+  // back as the reader scrolls.
+  const syncPageHash = usePageHashSync(pageCount, handleJumpToPage);
+  const handleCurrentPageChange = useCallback((pageIndex: number) => {
+    setCurrentPage(pageIndex);
+    syncPageHash(pageIndex);
+  }, [syncPageHash]);
+
   const shell = useFloatingToolbarShell('canvas', generating);
 
   return (
@@ -101,7 +110,7 @@ export function CanvasViewport() {
         fitMode={fitMode}
         onGeneratingChange={setGenerating}
         onPageCountChange={setPageCount}
-        onCurrentPageChange={setCurrentPage}
+        onCurrentPageChange={handleCurrentPageChange}
       />
       <div {...shell.hoverStripProps} />
       <CanvasToolbar

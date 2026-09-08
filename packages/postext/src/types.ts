@@ -1063,6 +1063,17 @@ export interface ColumnBalancingConfig {
    *  (TeX \looseness=+1), within the configured `bodyText.maxWordSpacing`.
    *  Requires `bodyText.optimalLineBreaking`. Default true. */
   looseParagraphs?: boolean;
+  /** How many paragraphs of one short column may be run a line long (one
+   *  extra line each, longest paragraphs first). Default 2. */
+  maxLooseParagraphs?: number;
+  /** Let a loose paragraph also take a little positive tracking (letter
+   *  spacing) when word spacing alone cannot gain the line — the compositor's
+   *  classic fix. Only the smallest tracking that gains the line is used, and
+   *  never more than `maxTracking`. Default true. */
+  trackParagraphs?: boolean;
+  /** Maximum tracking for a loose paragraph, in thousandths of an em (the
+   *  InDesign unit: 10 = 0.01 em per character). Default 10. */
+  maxTracking?: number;
 }
 
 export interface ResolvedHeadingsConfig {
@@ -1080,6 +1091,9 @@ export interface ResolvedHeadingsConfig {
     stretchAfterLists: boolean;
     maxLinesAfterList: number;
     looseParagraphs: boolean;
+    maxLooseParagraphs: number;
+    trackParagraphs: boolean;
+    maxTracking: number;
   };
   levels: ResolvedHeadingLevelConfig[];
 }

@@ -276,9 +276,14 @@ export function renderBlock(
   // column, so this is identical for them.
   void columnWidth;
   void columnX;
+  // Column-balancing tracking: the block was measured with this much extra
+  // advance after every glyph, so paint it the same way.
+  const tracked = block.letterSpacing !== undefined && block.letterSpacing > 0;
+  if (tracked) ctx.letterSpacing = `${block.letterSpacing}px`;
   for (const line of block.lines) {
     renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x);
   }
+  if (tracked) ctx.letterSpacing = '0px';
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);
   }

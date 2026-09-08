@@ -114,7 +114,7 @@ Postext extends the standard cost model with three editorial penalties that stee
 - **Widow penalty** applies when the split would leave fewer than `widowMinLines` lines at the bottom of the current column. Default `widowPenalty` is `1000`.
 - **Runt penalty** applies when the paragraph's final line would be shorter than roughly `runtMinCharacters × normalSpaceWidth` pixels. Default `runtPenalty` is `1000`. Unlike orphan/widow (which add linearly to the split demerit), runt is injected as equivalent *badness* inside the Knuth–Plass squared formula so it competes on the same scale as line badness (which saturates at 10000) rather than being dwarfed by it.
 
-The runt penalty is added to the candidate node's demerits inside the line breaker, so the solver is free to trade a slightly looser line for a longer final one. Orphan and widow penalties enter a separate optimisation that runs when a paragraph crosses a column boundary: every candidate split is scored — slack, orphan, and widow demerits summed — and the cheapest split wins, so the engine will naturally prefer splits that avoid both whenever possible. Tune the trade-off by adjusting `orphanPenalty`, `widowPenalty`, or `runtPenalty`; set any of them to `0` to disable that rule entirely. List items opt in via `avoidOrphansInLists`, `avoidWidowsInLists`, and `avoidRuntsInLists` (all `true` by default).
+The runt penalty is added to the candidate node's demerits inside the line breaker, so the solver is free to trade a slightly looser line for a longer final one — but only within `maxWordSpacing`: a line stretched beyond that limit carries an extra badness larger than any runt or hyphen penalty, so the breaker prefers a short last line, or a hyphenated last word, over word spacing that overshoots the limit. Orphan and widow penalties enter a separate optimisation that runs when a paragraph crosses a column boundary: every candidate split is scored — slack, orphan, and widow demerits summed — and the cheapest split wins, so the engine will naturally prefer splits that avoid both whenever possible. Tune the trade-off by adjusting `orphanPenalty`, `widowPenalty`, or `runtPenalty`; set any of them to `0` to disable that rule entirely. List items opt in via `avoidOrphansInLists`, `avoidWidowsInLists`, and `avoidRuntsInLists` (all `true` by default).
 
 ### Why It Matters
 
@@ -271,7 +271,7 @@ At the defaults (1.9 / 0.6), if the normal space width is 4 px:
 
 **Tighter bounds** (e.g., `maxWordSpacing: 1.2`) produce more uniform spacing but give the algorithm less room to maneuver, which may result in more hyphenation or, in extreme cases, overflow. **Looser bounds** (e.g., `maxWordSpacing: 2.5`) give the algorithm more flexibility but allow visibly uneven spacing on some lines.
 
-The defaults of 1.9 and 0.6 favor the algorithm's flexibility — giving Knuth-Plass enough room to avoid overflow, hyphenation, and runts across narrow columns, while still being well within ranges typographic literature considers acceptable.
+The defaults of 2 and 0.6 favor the algorithm's flexibility — giving Knuth-Plass enough room to avoid overflow, hyphenation, and runts across narrow columns, while still being well within ranges typographic literature considers acceptable.
 
 ### The Final Line
 
@@ -370,7 +370,7 @@ When you enable loose-line highlighting and see red bands across certain lines, 
     </tr>
     <tr>
       <td>Word spacing bounds are too tight</td>
-      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 1.9 to 2.4). This gives the algorithm more room.</td>
+      <td>Increase <code>maxWordSpacing</code> slightly (e.g., from 2 to 2.4). This gives the algorithm more room.</td>
     </tr>
     <tr>
       <td>Language has long compound words (e.g., German)</td>
@@ -388,11 +388,13 @@ When `headings.balancing` is enabled (the default), the engine closes those gaps
 
 1. **Space above headings.** Whole baseline-grid lines are added to the top margin of the headings inside the short column. When several lines are needed and the column holds several headings, the lines are distributed round-robin in importance order, so the most important heading always receives the largest share — 3 lines over an `h2` and an `h3` become +2 above the `h2` and +1 above the `h3`. Headings at the very top of a column never receive extra space (columns keep starting at the page top), and a trailing heading is never pushed toward the column bottom.
 2. **Space after list ends.** A grid line is added where a list or enumeration ends — air after a list reads naturally. Capped per list end (`maxLinesAfterList`, default 1).
-3. **Loose paragraphs.** As a last resort, **one** paragraph of the column is re-broken one line longer — TeX's `\looseness=+1`. The breaker re-runs Knuth-Plass asking for exactly one extra line and accepts the result only when **every line of the loose solution stays below `maxWordSpacing`**: type colour never exceeds the limit you already configured. The engine prefers the longest paragraph in the column, where the extra space dilutes across the most inter-word glue and becomes invisible. Requires `optimalLineBreaking` (the default); paragraphs split across columns are excluded.
+3. **Loose paragraphs.** As a last resort, paragraphs of the column are re-broken one line longer — TeX's `\looseness=+1` — up to `maxLooseParagraphs` of them (two by default), one extra line each. The breaker re-runs Knuth-Plass asking for exactly one extra line and accepts the result only when **every line of the loose solution stays below `maxWordSpacing`**: type colour never exceeds the limit you already configured. The engine prefers the longest paragraphs in the column, where the extra space dilutes across the most inter-word glue and becomes invisible. Requires `optimalLineBreaking` (the default); paragraphs split across columns are excluded.
+
+   When word spacing alone cannot gain the line, the paragraph may also take a little positive **tracking** — the compositor's classic fix. The engine tries the smallest amount first (half of `maxTracking`, then `maxTracking`, in thousandths of an em per character; 10 = 0.01 em by default) and keeps the first that gains the line, still under the same word-spacing gate. The tracking is measured into the paragraph's lines and painted by every backend (canvas `letterSpacing`, CSS `letter-spacing`, PDF character spacing). Turn it off with `trackParagraphs: false`.
 
 ### Why the fix is local
 
-Column breaks are *element-bound*: the element that opens the next column is there because it did not fit in the gap. Pushing a column's tail down by at most its own gap therefore never moves content into the next column or page — each column is fixed in place, without cascading reflows. The engine still verifies this empirically: it re-runs placement with the proposed adjustments (up to 7 passes), measures the total leftover gap, and always keeps the best layout found. A loose paragraph that fails to gain its line within the spacing limit is blacklisted and the next candidate is tried.
+Column breaks are *element-bound*: the element that opens the next column is there because it did not fit in the gap. Pushing a column's tail down by at most its own gap therefore never moves content into the next column or page — each column is fixed in place, without cascading reflows. The engine still verifies this empirically: it re-runs placement with the proposed adjustments (up to 8 passes), measures the total leftover gap, and always keeps the best layout found. A loose paragraph that fails to gain its line within the spacing limit, at any tracking, is blacklisted and the next candidate is tried.
 
 ### When a short column is left alone
 
@@ -411,6 +413,9 @@ const layout = createLayout({
       stretchAfterLists: true,  // lever 2
       maxLinesAfterList: 1,     // cap per list end
       looseParagraphs: true,    // lever 3 — bounded by bodyText.maxWordSpacing
+      maxLooseParagraphs: 2,    // loose paragraphs per short column
+      trackParagraphs: true,    // let a loose paragraph take a little tracking
+      maxTracking: 10,          // ‰ em per character (0.01 em)
     },
   },
 });
@@ -441,7 +446,7 @@ const vdt = buildDocument(content, {
     },
 
     // Word spacing bounds (multipliers of normal space width)
-    maxWordSpacing: 1.9,   // spaces stretch up to 190%
+    maxWordSpacing: 2,     // spaces stretch up to 200%
     minWordSpacing: 0.6,   // spaces shrink down to 60%
   },
 

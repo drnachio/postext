@@ -1,3 +1,4 @@
+import { setCharacterSpacing } from 'pdf-lib';
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
@@ -98,7 +99,25 @@ function renderSegments(
   }
 }
 
+/** Column-balancing tracking: the block was measured with extra advance
+ *  after every glyph, so paint it with the matching character spacing
+ *  (`Tc`, in points at the page scale) and reset it afterwards. */
 function renderLine(
+  ctx: PageCtx,
+  line: VDTLine,
+  block: VDTBlock,
+  columnWidth: number,
+  columnX: number,
+  fontCache: FontCache,
+  linkRegistry: LinkRegistry | undefined,
+): void {
+  const tracked = block.letterSpacing !== undefined && block.letterSpacing > 0;
+  if (tracked) ctx.page.pushOperators(setCharacterSpacing(block.letterSpacing! * ctx.scale));
+  renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry);
+  if (tracked) ctx.page.pushOperators(setCharacterSpacing(0));
+}
+
+function renderLineText(
   ctx: PageCtx,
   line: VDTLine,
   block: VDTBlock,
