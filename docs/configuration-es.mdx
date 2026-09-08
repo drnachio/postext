@@ -831,7 +831,7 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
     <tr>
       <td><code>maxWordSpacing</code></td>
       <td><code>number</code></td>
-      <td><code>1.9</code></td>
+      <td><code>2</code></td>
       <td>Límite superior del espaciado entre palabras en texto justificado, expresado como multiplicador del ancho del espacio normal. Las líneas que superan esta proporción se consideran "flojas".</td>
     </tr>
     <tr>
@@ -1111,7 +1111,25 @@ La última columna de una página solo se equilibra cuando la página fluye de f
       <td><code>looseParagraphs</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Último recurso: recompone un párrafo por columna corta con una línea más, sin superar <code>bodyText.maxWordSpacing</code>.</td>
+      <td>Último recurso: recompone párrafos de una columna corta con una línea más (una línea extra cada uno), sin superar <code>bodyText.maxWordSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxLooseParagraphs</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Cuántos párrafos de una misma columna corta pueden ganar una línea, los más largos primero.</td>
+    </tr>
+    <tr>
+      <td><code>trackParagraphs</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Cuando el espaciado entre palabras no basta para ganar la línea, el párrafo corrido puede tomar además el menor tracking positivo (interletrado) que lo consiga.</td>
+    </tr>
+    <tr>
+      <td><code>maxTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>Límite de ese tracking, en milésimas de eme por carácter (10 = 0,01 em).</td>
     </tr>
   </tbody>
 </table>

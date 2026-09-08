@@ -240,6 +240,7 @@ const baseOptions = (over?: Partial<BalanceProposalOptions>): BalanceProposalOpt
   stretchAfterLists: true,
   maxLinesAfterList: 1,
   looseParagraphs: true,
+  maxLooseParagraphs: 1,
   optimalLineBreaking: true,
   failedLoose: new Set<number>(),
   ...over,
@@ -381,7 +382,10 @@ describe('list-end and loose-paragraph levers', () => {
       [{ blocks: [para()], availableHeight: 0 }],
     ]);
     const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
-    expect([...proposal.loose.keys()]).toEqual([61]); // most lines wins
+    // Every candidate is offered, most lines first; the pass stops after the
+    // first one that gains its line (budget of 1).
+    expect([...proposal.loose.keys()]).toEqual([61, 62, 60]);
+    expect(proposal.looseBudget.get(61)!.need).toBe(1);
     expect(proposal.lines.size).toBe(0);
   });
 
@@ -396,7 +400,7 @@ describe('list-end and loose-paragraph levers', () => {
     const afterFailure = proposeBalanceLines(
       doc, NO_FORCED, emptyState(), baseOptions({ failedLoose: new Set([61]) }),
     );
-    expect([...afterFailure.loose.keys()]).toEqual([62]); // next longest
+    expect([...afterFailure.loose.keys()]).toEqual([62, 60]); // next longest first
 
     const alreadyLoose = proposeBalanceLines(
       doc, NO_FORCED,
@@ -405,6 +409,43 @@ describe('list-end and loose-paragraph levers', () => {
     );
     expect(alreadyLoose.loose.size).toBe(1); // no second loose paragraph
     expect(alreadyLoose.changed).toBe(false);
+  });
+
+  it('loosens up to maxLooseParagraphs per column, longest first, never more than the gap', () => {
+    const twoShort = fakeDoc([
+      [
+        { blocks: [justPara(60, 3), justPara(61, 8), justPara(62, 5)], availableHeight: 48 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const two = proposeBalanceLines(twoShort, NO_FORCED, emptyState(), baseOptions({ maxLooseParagraphs: 2 }));
+    // Every candidate is offered, longest first, sharing a budget of 2.
+    expect([...two.loose.keys()]).toEqual([61, 62, 60]);
+    expect(two.looseBudget.get(61)!.need).toBe(2);
+    expect(two.looseBudget.get(60)).toBe(two.looseBudget.get(61)); // same column
+
+    // Gap of one line: a second paragraph would overshoot — only one.
+    const oneShort = fakeDoc([
+      [
+        { blocks: [justPara(60, 3), justPara(61, 8), justPara(62, 5)], availableHeight: 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const one = proposeBalanceLines(oneShort, NO_FORCED, emptyState(), baseOptions({ maxLooseParagraphs: 2 }));
+    expect([...one.loose.keys()]).toEqual([61, 62, 60]);
+    expect(one.looseBudget.get(61)!.need).toBe(1);
+
+    // One already loose and one failed: the third candidate fills the cap.
+    const next = proposeBalanceLines(
+      twoShort, NO_FORCED,
+      { lines: new Map(), loose: new Map([[61, 1]]) },
+      baseOptions({ maxLooseParagraphs: 2, failedLoose: new Set([62]) }),
+    );
+    expect([...next.loose.keys()].sort()).toEqual([60, 61]);
+    expect(next.looseBudget.get(60)!.need).toBe(1);
+    expect(next.looseBudget.has(61)).toBe(false); // already applied, no new budget
   });
 
   it('excludes split paragraphs and non-justified blocks from loosening', () => {

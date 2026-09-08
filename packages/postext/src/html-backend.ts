@@ -217,6 +217,9 @@ function renderBullet(block: VDTBlock): string {
 function renderLine(line: VDTLine, block: VDTBlock): string {
   const font = quoteFontString(block.fontString);
   const strikethroughDecl = block.strikethroughText ? 'text-decoration:line-through;' : '';
+  // Column-balancing tracking: measured into the segment widths, so the
+  // glyphs must spread the same way.
+  const trackingDecl = block.letterSpacing ? `letter-spacing:${block.letterSpacing}px;` : '';
   return (
     `<div class="pt-line" data-block="${esc(block.id)}" style="` +
     `position:absolute;` +
@@ -226,6 +229,7 @@ function renderLine(line: VDTLine, block: VDTBlock): string {
     `font:${font};` +
     `color:${block.color};` +
     strikethroughDecl +
+    trackingDecl +
     `">${renderSegments(line, block)}</div>`
   );
 }

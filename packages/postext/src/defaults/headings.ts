@@ -36,6 +36,9 @@ export const DEFAULT_COLUMN_BALANCING = {
   stretchAfterLists: true,
   maxLinesAfterList: 1,
   looseParagraphs: true,
+  maxLooseParagraphs: 2,
+  trackParagraphs: true,
+  maxTracking: 10,
 };
 
 const DEFAULT_HEADING_MARGIN_TOP: Dimension = { value: 1.5, unit: 'em' };
@@ -91,6 +94,12 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
           partial.balancing.maxLinesAfterList ?? DEFAULT_COLUMN_BALANCING.maxLinesAfterList,
         looseParagraphs:
           partial.balancing.looseParagraphs ?? DEFAULT_COLUMN_BALANCING.looseParagraphs,
+        maxLooseParagraphs:
+          partial.balancing.maxLooseParagraphs ?? DEFAULT_COLUMN_BALANCING.maxLooseParagraphs,
+        trackParagraphs:
+          partial.balancing.trackParagraphs ?? DEFAULT_COLUMN_BALANCING.trackParagraphs,
+        maxTracking:
+          partial.balancing.maxTracking ?? DEFAULT_COLUMN_BALANCING.maxTracking,
       }
     : { ...DEFAULT_COLUMN_BALANCING };
 
@@ -188,6 +197,27 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       && headings.balancing.looseParagraphs !== DEFAULT_COLUMN_BALANCING.looseParagraphs
     ) {
       b.looseParagraphs = headings.balancing.looseParagraphs;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.maxLooseParagraphs !== undefined
+      && headings.balancing.maxLooseParagraphs !== DEFAULT_COLUMN_BALANCING.maxLooseParagraphs
+    ) {
+      b.maxLooseParagraphs = headings.balancing.maxLooseParagraphs;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.trackParagraphs !== undefined
+      && headings.balancing.trackParagraphs !== DEFAULT_COLUMN_BALANCING.trackParagraphs
+    ) {
+      b.trackParagraphs = headings.balancing.trackParagraphs;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.maxTracking !== undefined
+      && headings.balancing.maxTracking !== DEFAULT_COLUMN_BALANCING.maxTracking
+    ) {
+      b.maxTracking = headings.balancing.maxTracking;
       hasBOverride = true;
     }
     if (hasBOverride) {

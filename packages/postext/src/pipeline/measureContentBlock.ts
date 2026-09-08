@@ -54,12 +54,18 @@ export interface MeasuredContentBlock {
   mathDisplayRender?: ReturnType<typeof renderMath>;
   /** Present for `resource` kinds: the laid-out image/table + caption group. */
   resourceBlock?: ResolvedResourceBlock;
+  /** Tracking the text was measured with (px per glyph), when column
+   *  balancing asked for it — renderers must paint the block with it. */
+  letterSpacingPx?: number;
 }
 
 export interface MeasureContentBlockOptions {
   /** Column-balancing "run a paragraph long" — Knuth-Plass looseness. Left
    *  undefined for the common case so measurement cache keys are unchanged. */
   looseness?: number;
+  /** Column-balancing tracking for a loose paragraph, in em per glyph
+   *  (`headings.balancing.maxTracking / 1000` at most). Rich path only. */
+  trackingEm?: number;
   /** Paragraph style forced by an enclosing `:::paragraphs` container. */
   styleOverride?: BlockStyle;
 }
@@ -166,6 +172,10 @@ export function measureContentBlock(
   const runtActive = resolved.bodyText.avoidRunts
     && (vdtType === 'paragraph'
       || (vdtType === 'listItem' && resolved.bodyText.avoidRuntsInLists));
+  // Tracking is measured on the rich path (per-token canvas widths); left
+  // undefined when unused so the common-case cache keys stay unchanged.
+  const hasRichFonts = !!(style.boldFontString && style.italicFontString && style.boldItalicFontString);
+  const letterSpacingPx = hasRichFonts && opts?.trackingEm ? opts.trackingEm * style.fontSizePx : 0;
   const measureOptions = {
     textAlign: style.textAlign,
     hyphenate: style.hyphenate,
@@ -177,8 +187,11 @@ export function measureContentBlock(
     runtPenalty: runtActive ? resolved.bodyText.runtPenalty : 0,
     runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     looseness: opts?.looseness,
+    letterSpacingPx: letterSpacingPx > 0 ? letterSpacingPx : undefined,
   };
-  const useRich = !!(hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString);
+  // URLs / DOIs get their bare break opportunities on the rich path only.
+  const hasUrl = /(?:^|\s)(?:(?:https?|ftp):\/\/|www\.|10\.\d{4,}\/)\S/i.test(contentBlock.text);
+  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx > 0 || hasUrl);
 
   const { measured, mathDisplayRender } = runMeasurement({
     vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
@@ -196,5 +209,8 @@ export function measureContentBlock(
   // Accounts for heading numbering prefix which prepends chars with no source.
   const { prefixLen, absoluteSourceMap } = stampSourceRanges(measured, rawBlock, contentBlock, bodyOffset);
 
-  return { kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender };
+  return {
+    kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender,
+    ...(letterSpacingPx > 0 ? { letterSpacingPx } : {}),
+  };
 }

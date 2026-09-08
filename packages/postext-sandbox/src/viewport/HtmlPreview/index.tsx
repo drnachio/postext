@@ -42,15 +42,22 @@ interface HtmlPreviewProps {
   // bounds rather than column indices — the viewer may show several columns
   // per viewport, so reporting a single "current column" is ambiguous.
   onScrollBoundsChange?: (info: { canPrev: boolean; canNext: boolean }) => void;
+  /** Page count of the last laid-out document. */
+  onPageCountChange?: (count: number) => void;
+  /** The page the reader is on: the first page snapped into view in multi
+   *  mode, the page nearest the viewport centre in single mode. */
+  onCurrentPageChange?: (pageIndex: number) => void;
 }
 
 export interface HtmlPreviewHandle {
   regenerate: () => void;
   scrollColumn: (delta: number) => void;
+  /** Scroll so the given page starts at the viewer's leading edge. */
+  jumpToPage: (pageIndex: number) => void;
 }
 
 export const HtmlPreview = forwardRef<HtmlPreviewHandle, HtmlPreviewProps>(
-function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBoundsChange }, ref) {
+function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBoundsChange, onPageCountChange, onCurrentPageChange }, ref) {
   const { state, dispatch, docRef: sharedDocRef } = useSandbox();
   const { hostRef, shadowRef } = useShadowDom();
   const deferredMarkdown = useDeferredValue(state.markdown);
@@ -72,6 +79,10 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   onGeneratingChangeRef.current = onGeneratingChange;
   const onScrollBoundsChangeRef = useRef(onScrollBoundsChange);
   onScrollBoundsChangeRef.current = onScrollBoundsChange;
+  const onPageCountChangeRef = useRef(onPageCountChange);
+  onPageCountChangeRef.current = onPageCountChange;
+  const onCurrentPageChangeRef = useRef(onCurrentPageChange);
+  onCurrentPageChangeRef.current = onCurrentPageChange;
 
   // Refs for click-handler plumbing — same pattern as CanvasPreview so the
   // reused attachSlotClickHandler can dispatch and detect the active panel
@@ -453,6 +464,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         drawBaselines(overlay, doc, pageIndex, bOffset);
       }
 
+      onPageCountChangeRef.current?.(doc.pages.length);
       setDocVersion((v) => v + 1);
     } catch (err) {
       if ((err as { name?: string } | null)?.name === 'AbortError') return;
@@ -536,6 +548,19 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   //   mode we fall back to a viewport-height vertical scroll (one "screen").
   useImperativeHandle(ref, () => ({
     regenerate: () => scheduleRelayout(0),
+    jumpToPage: (pageIndex: number) => {
+      const scroll = scrollHostRef.current;
+      if (!scroll) return;
+      const pageEl = scroll.querySelector<HTMLElement>(`.pt-page[data-page="${pageIndex}"]`);
+      if (!pageEl) return;
+      const pageRect = pageEl.getBoundingClientRect();
+      const scrollRect = scroll.getBoundingClientRect();
+      if (columnModeRef.current === 'multi') {
+        scroll.scrollLeft += pageRect.left - scrollRect.left - PADDING_PX;
+      } else {
+        scroll.scrollTop += pageRect.top - scrollRect.top - PADDING_PX;
+      }
+    },
     scrollColumn: (delta: number) => {
       const scroll = scrollHostRef.current;
       if (!scroll) return;
@@ -583,6 +608,48 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     return () => {
       scroll.removeEventListener('scroll', onScroll);
       cancelAnimationFrame(id);
+      if (rafId !== 0) cancelAnimationFrame(rafId);
+    };
+  }, [docVersion, columnMode]);
+
+  // Current-page emitter (mirrors the canvas viewer). Multi mode snaps pages
+  // to the leading edge, so the current page is the one whose left edge sits
+  // nearest that edge; single mode scrolls vertically, so it's the page whose
+  // centre is nearest the viewport centre. Emits on scroll and after every
+  // relayout.
+  useEffect(() => {
+    const scroll = scrollHostRef.current;
+    if (!scroll) return;
+    let rafId = 0;
+    const compute = () => {
+      rafId = 0;
+      const pages = scroll.querySelectorAll<HTMLElement>('.pt-page[data-page]');
+      if (pages.length === 0) return;
+      const sRect = scroll.getBoundingClientRect();
+      const multi = columnModeRef.current === 'multi';
+      const viewportCenter = sRect.top + sRect.height / 2;
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      pages.forEach((pageEl) => {
+        const r = pageEl.getBoundingClientRect();
+        const dist = multi
+          ? Math.abs(r.left - sRect.left - PADDING_PX)
+          : Math.abs(r.top + r.height / 2 - viewportCenter);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIdx = Number(pageEl.dataset.page);
+        }
+      });
+      onCurrentPageChangeRef.current?.(bestIdx);
+    };
+    const onScroll = () => {
+      if (rafId !== 0) return;
+      rafId = requestAnimationFrame(compute);
+    };
+    scroll.addEventListener('scroll', onScroll, { passive: true });
+    compute();
+    return () => {
+      scroll.removeEventListener('scroll', onScroll);
       if (rafId !== 0) cancelAnimationFrame(rafId);
     };
   }, [docVersion, columnMode]);
