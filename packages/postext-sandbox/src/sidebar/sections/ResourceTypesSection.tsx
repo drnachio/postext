@@ -3,11 +3,18 @@
 import { memo } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import type {
+  CaptionStyleConfig,
   ResourceType,
   ResourceCounterFormat,
   ResourceCounterReset,
 } from 'postext';
-import { defaultResourceTypes, formatNumeral } from 'postext';
+import {
+  defaultResourceTypes,
+  formatNumeral,
+  mergeCaptionStyle,
+  resolveBodyTextConfig,
+  resolveCaptionStyleConfig,
+} from 'postext';
 import {
   useSandboxDispatch,
   useSandboxLabels,
@@ -17,6 +24,7 @@ import {
 import type { SandboxLabels } from '../../types/labels';
 import { CollapsibleSection } from '../../controls';
 import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { CaptionStyleFields } from './CaptionStyleFields';
 
 function newTypeId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -119,6 +127,12 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const resources = useSandboxResources();
   const types: ResourceType[] = config.resourceTypes ?? defaultResourceTypes(locale);
   const isDefault = config.resourceTypes === undefined;
+  // Per-type caption overrides are shown merged over the resolved global
+  // caption style so every control displays the value that will render.
+  const globalCaption = resolveCaptionStyleConfig(
+    config.captionStyle,
+    resolveBodyTextConfig(config.bodyText),
+  );
   const counterFormats = counterFormatOptions(labels);
   const resetOns = resetOnOptions(labels);
 
@@ -151,6 +165,17 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const removeType = (id: string) => {
     const next = types.filter((t) => t.id !== id);
     writeTypes(next);
+  };
+
+  /** Merge into a type's partial `captionStyle`, keeping untouched keys unset. */
+  const updateTypeCaptionStyle = (type: ResourceType, partial: Partial<CaptionStyleConfig>) => {
+    updateType(type.id, { captionStyle: { ...type.captionStyle, ...partial } });
+  };
+  const resetTypeCaptionField = (type: ResourceType, field: keyof CaptionStyleConfig) => {
+    if (!type.captionStyle) return;
+    const next = { ...type.captionStyle };
+    delete next[field];
+    updateType(type.id, { captionStyle: Object.keys(next).length > 0 ? next : undefined });
   };
 
   return (
@@ -313,6 +338,30 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
+            </div>
+
+            <div className="mt-2">
+              <CollapsibleSection
+                title={labels.resourceTypeCaptionStyleGroup}
+                sectionId={`resource-types.${type.id}.captionStyle`}
+                variant="subsection"
+                hasOverrides={type.captionStyle !== undefined && Object.keys(type.captionStyle).length > 0}
+                onReset={() => updateType(type.id, { captionStyle: undefined })}
+                resetLabel={labels.reset}
+                resetConfirmMessage={labels.resourceTypeCaptionStyleResetConfirm}
+              >
+                <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }}>
+                  {labels.resourceTypeCaptionStyleHint}
+                </p>
+                <CaptionStyleFields
+                  raw={type.captionStyle}
+                  resolved={mergeCaptionStyle(globalCaption, type.captionStyle, config.colorPalette)}
+                  update={(partial) => updateTypeCaptionStyle(type, partial)}
+                  resetField={(field) => resetTypeCaptionField(type, field)}
+                  sectionIdPrefix={`resource-types.${type.id}.captionStyle`}
+                  fieldIdPrefix={`resourceType-${type.id}-caption`}
+                />
+              </CollapsibleSection>
             </div>
 
             <div

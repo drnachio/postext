@@ -10,23 +10,31 @@
  *  - bitmap / svg: scale to the column width, preserving aspect ratio. The
  *    height follows from the intrinsic dimensions; svgs without intrinsic
  *    dimensions fall back to a 4:3 box at column width.
- *  - table: equal column split; each cell measured via the shared rich-text
- *    measurer; row height = max cell height (rowspans distribute across rows).
+ *  - table: columns split by `TableModel.columnWidths` weights (equal split
+ *    when unset); each cell measured via the shared rich-text measurer; row
+ *    height = max cell height (rowspans distribute across rows).
  *  - caption: measured via the rich-text measurer with the caption font, with
  *    the type's caption prefix + number prepended. Inline `:ref` spans resolve
  *    to their computed label and are tagged so renderers can colour / link them.
+ *    Sits below the body by default or above it (`captionStyle.position`),
+ *    optionally on a background bar spanning the block width. A resource type
+ *    may override the caption style partially (`ResourceType.captionStyle`).
+ *  - note: an optional smaller run (`Resource.note`) placed under the body when
+ *    the caption is above, otherwise under the caption.
  *
- * Resource + caption are measured as one group; `totalHeight` is what goes to
- * placement (resources paginate atomically — no mid-split for v1).
+ * Resource + caption + note are measured as one group; `totalHeight` is what
+ * goes to placement (resources paginate atomically — no mid-split for v1).
  */
 
-import type { InlineSpan } from '../parse';
+import type { InlineSpan, RefCase } from '../parse';
 import type {
+  ResolvedCaptionStyleConfig,
   Resource,
   ResourceType,
   TableModel,
   TableCellAlign,
   TableCellVerticalAlign,
+  TableRules,
 } from '../types';
 import type {
   ResolvedConfig,
@@ -39,6 +47,7 @@ import { createBoundingBox } from '../vdt';
 import { measureRichBlock, buildFontString } from '../measure';
 import { dimensionToPx } from '../units';
 import { extractInlineRefs, injectRefSpans, parseInlineFormatting } from '../parse/inlineFormatting';
+import { mergeCaptionStyle } from '../defaults/captionStyle';
 import { resolveBodyStyle } from './styles';
 import type { ResourceNumberingMap } from './resourceNumbering';
 
@@ -74,12 +83,29 @@ export function resolveRefLabel(
   const resource = resources.find((r) => r.id === ref.resourceId);
   const type = resource ? resourceTypes.find((t) => t.id === resource.typeId) : undefined;
   if (ref.style === 'full') {
-    const name = type?.name ?? type?.shortLabel ?? '';
+    const name = applyRefCase(type?.name ?? type?.shortLabel ?? '', ref.case);
     return name ? `${name}${NBSP}${number}` : number;
   }
   // default: short label + number (e.g. "Fig. 1.7")
-  const short = type?.shortLabel ?? type?.name ?? '';
+  const short = applyRefCase(type?.shortLabel ?? type?.name ?? '', ref.case);
   return short ? `${short}${NBSP}${number}` : number;
+}
+
+/** Apply a `:ref{case=…}` transform to the label part of a computed
+ *  reference (`Fig.` / `Figure`). The number is never touched — the caller
+ *  joins it afterwards — and `text=` overrides bypass this entirely. */
+function applyRefCase(label: string, refCase: RefCase | undefined): string {
+  if (refCase === undefined || label.length === 0) return label;
+  switch (refCase) {
+    case 'lower':
+      return label.toLocaleLowerCase();
+    case 'upper':
+      return label.toLocaleUpperCase();
+    case 'capitalize': {
+      const first = [...label][0]!;
+      return first.toLocaleUpperCase() + label.slice(first.length);
+    }
+  }
 }
 
 /** Parse caption / table-cell content into inline spans, recognising the same
@@ -160,11 +186,49 @@ interface TableLayoutStyle {
   headerBackground?: string;
   /** Body fill (hex), or undefined when disabled. */
   bodyBackground?: string;
+  /** Which rules to stroke. */
+  rules: TableRules;
 }
 
-/** Lay out an HTML-table resource: equal column split, per-cell rich-text
- *  measurement, row height = max measured cell height. Rowspans reserve their
- *  primary cell's full vertical extent. */
+/** Smallest border thickness (px) we let through: thinner rules would vanish
+ *  on screen, but 0.5pt (≈0.67px at 96dpi) hairlines must survive intact —
+ *  the previous `max(1, round(px))` rounded them up to a full pixel. */
+const MIN_BORDER_PX = 0.25;
+
+/**
+ * Column x-edges (length = columnCount + 1) for a table model laid out at
+ * `columnWidth`. `TableModel.columnWidths` are relative weights, normalised so
+ * they always fill the width exactly; a missing array, a wrong length, or any
+ * non-positive / non-finite weight falls back to an equal split.
+ */
+export function computeColumnEdges(model: TableModel, columnWidth: number): number[] {
+  const colCount = model.rows.length > 0 ? Math.max(...model.rows.map((r) => r.length)) : 0;
+  const weights = model.columnWidths;
+  const valid = weights !== undefined
+    && weights.length === colCount
+    && weights.every((w) => Number.isFinite(w) && w > 0);
+  const edges: number[] = [0];
+  if (colCount === 0) return edges;
+  if (!valid) {
+    const colWidth = columnWidth / colCount;
+    for (let c = 1; c <= colCount; c++) edges.push(c * colWidth);
+    return edges;
+  }
+  const total = weights.reduce((sum, w) => sum + w, 0);
+  let acc = 0;
+  for (let c = 0; c < colCount; c++) {
+    acc += (weights[c]! / total) * columnWidth;
+    edges.push(acc);
+  }
+  // Snap the last edge so floating-point drift never leaves a sliver.
+  edges[colCount] = columnWidth;
+  return edges;
+}
+
+/** Lay out an HTML-table resource: weighted column split (see
+ *  {@link computeColumnEdges}), per-cell rich-text measurement, row height =
+ *  max measured cell height. Rowspans reserve their primary cell's full
+ *  vertical extent. */
 function layoutTable(
   model: TableModel,
   columnWidth: number,
@@ -177,10 +241,9 @@ function layoutTable(
   const { body, header, borderColor, borderWidthPx, cellPaddingPx } = style;
   const rowCount = model.rows.length;
   const colCount = rowCount > 0 ? Math.max(...model.rows.map((r) => r.length)) : 0;
-  const colWidth = colCount > 0 ? columnWidth / colCount : columnWidth;
-
-  const columnEdges: number[] = [];
-  for (let c = 0; c <= colCount; c++) columnEdges.push(c * colWidth);
+  const columnEdges = computeColumnEdges(model, columnWidth);
+  const spanWidth = (col: number, colSpan: number): number =>
+    (columnEdges[Math.min(col + colSpan, colCount)] ?? columnWidth) - (columnEdges[col] ?? 0);
 
   // First pass: measure each primary cell's content height (single-row span
   // contribution); rowspan cells are distributed after row heights are known.
@@ -207,7 +270,7 @@ function layoutTable(
       const rowSpan = Math.max(1, cell.rowSpan ?? 1);
       const isHeader = cell.isHeader ?? r < (model.headerRowCount ?? 0);
       const set = isHeader ? header : body;
-      const cellWidth = colSpan * colWidth - cellPaddingPx * 2;
+      const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
       const spans = resolveRefSpans(
         parseRefAwareSpans(cell.content),
         resourceNumbering,
@@ -301,6 +364,7 @@ function layoutTable(
     cells,
     columnEdges,
     rowEdges,
+    rules: style.rules,
   };
   return { layout, height: tableHeight };
 }
@@ -388,10 +452,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
         lineHeightPx: headerFontPx * lineHeightRatio,
       },
       borderColor: ts.borderColor.hex,
-      borderWidthPx: ts.borders ? Math.max(1, Math.round(dimensionToPx(ts.borderWidth, dpi))) : 0,
+      borderWidthPx: ts.borders && ts.rules !== 'none'
+        ? Math.max(MIN_BORDER_PX, dimensionToPx(ts.borderWidth, dpi))
+        : 0,
       cellPaddingPx: dimensionToPx(ts.cellPadding, dpi, bodyFontPx),
       headerBackground: ts.headerBackgroundEnabled ? ts.headerBackground.hex : undefined,
       bodyBackground: ts.bodyBackgroundEnabled ? ts.bodyBackground.hex : undefined,
+      rules: ts.rules,
     };
     const { layout, height } = layoutTable(
       resource.table.model,
@@ -407,13 +474,16 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     bodyHeight = height;
   }
 
-  const bodyRect = createBoundingBox(0, 0, bodyWidth, bodyHeight);
-
   // --- Caption -----------------------------------------------------------
-  const cs = resolved.captionStyle;
+  const cs: ResolvedCaptionStyleConfig = mergeCaptionStyle(
+    resolved.captionStyle,
+    resourceType?.captionStyle,
+    resolved.colorPalette,
+  );
   const captionFontPx = dimensionToPx(cs.fontSize, dpi);
   const captionLineHeightPx = captionFontPx * lineHeightRatio;
   const captionGapPx = dimensionToPx(cs.gap, dpi, captionFontPx);
+  const captionPaddingPx = cs.backgroundEnabled ? dimensionToPx(cs.padding, dpi, captionFontPx) : 0;
   // Caption font set (label + description share one typeface/size; weight and
   // slant vary per span).
   const captionFontString = buildFontString(cs.fontFamily, captionFontPx, normalWeight);
@@ -425,7 +495,8 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // Inline `:ref` labels render in the configured reference colour (defaults to
   // the emphasis/bold colour).
   const linkColor = resolved.bodyText.referenceColor.hex;
-  let captionLines: VDTLine[] = [];
+  // Caption lines measured at the block origin (y = 0); positioned below.
+  let measuredCaption: VDTLine[] = [];
   const captionText = resource.caption ?? '';
   const hasCaption = captionText.trim().length > 0 || captionPrefix.length > 0;
   if (hasCaption) {
@@ -453,17 +524,85 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       captionBoldFontString,
       captionItalicFontString,
       captionBoldItalicFontString,
-      Math.max(1, columnWidth),
+      Math.max(1, columnWidth - captionPaddingPx * 2),
       captionLineHeightPx,
       { textAlign: cs.align },
     );
-    captionLines = shiftLines(measured.lines, 0, bodyHeight + captionGapPx);
+    measuredCaption = measured.lines;
   }
-
-  const captionHeight = captionLines.length > 0
-    ? captionLines.length * captionLineHeightPx + captionGapPx
+  const captionTextHeight = measuredCaption.length * captionLineHeightPx;
+  // Height of the caption band: the text plus the bar padding on both sides.
+  const captionBandHeight = measuredCaption.length > 0
+    ? captionTextHeight + captionPaddingPx * 2
     : 0;
-  const totalHeight = bodyHeight + captionHeight;
+  const captionHeight = captionBandHeight > 0 ? captionBandHeight + captionGapPx : 0;
+
+  // --- Note --------------------------------------------------------------
+  const noteFontPx = dimensionToPx(cs.note.fontSize, dpi);
+  const noteLineHeightPx = noteFontPx * lineHeightRatio;
+  const noteGapPx = dimensionToPx(cs.note.gap, dpi, noteFontPx);
+  const noteFontString = buildFontString(cs.fontFamily, noteFontPx, normalWeight);
+  const noteBoldFontString = buildFontString(cs.fontFamily, noteFontPx, boldWeight);
+  const noteItalicFontString = buildFontString(cs.fontFamily, noteFontPx, normalWeight, 'italic');
+  const noteBoldItalicFontString = buildFontString(cs.fontFamily, noteFontPx, boldWeight, 'italic');
+  let measuredNote: VDTLine[] = [];
+  const noteText = resource.note ?? '';
+  if (noteText.trim().length > 0) {
+    const noteSpans = resolveRefSpans(
+      parseRefAwareSpans(noteText),
+      resourceNumbering,
+      resourceTypes,
+      resources,
+      refStyle,
+    );
+    const slanted: InlineSpan[] = cs.note.italic
+      ? noteSpans.map((s) => ({ ...s, italic: s.italic || true }))
+      : noteSpans;
+    const measured = measureRichBlock(
+      slanted,
+      noteFontString,
+      noteBoldFontString,
+      noteItalicFontString,
+      noteBoldItalicFontString,
+      Math.max(1, columnWidth),
+      noteLineHeightPx,
+      { textAlign: cs.note.align },
+    );
+    measuredNote = measured.lines;
+  }
+  const noteHeight = measuredNote.length > 0
+    ? measuredNote.length * noteLineHeightPx + noteGapPx
+    : 0;
+
+  // --- Vertical stacking -------------------------------------------------
+  // above: [caption band] gap [body] noteGap [note]
+  // below: [body] gap [caption band] noteGap [note]
+  const captionAbove = cs.position === 'above' && captionBandHeight > 0;
+  const captionBandY = captionAbove ? 0 : bodyHeight + (captionBandHeight > 0 ? captionGapPx : 0);
+  const bodyY = captionAbove ? captionHeight : 0;
+  const bodyRect = createBoundingBox(0, bodyY, bodyWidth, bodyHeight);
+  // Table cells were laid out with the table's top at y = 0; when the caption
+  // sits above, move them down with the body (block-relative, like captions).
+  if (table && bodyY > 0) {
+    table = {
+      ...table,
+      cells: table.cells.map((cell) => ({
+        ...cell,
+        rect: createBoundingBox(cell.rect.x, cell.rect.y + bodyY, cell.rect.width, cell.rect.height),
+        lines: shiftLines(cell.lines, 0, bodyY),
+      })),
+    };
+  }
+  const captionLines = shiftLines(measuredCaption, captionPaddingPx, captionBandY + captionPaddingPx);
+  const captionBar = cs.backgroundEnabled && captionBandHeight > 0
+    ? {
+        rect: createBoundingBox(0, captionBandY, columnWidth, captionBandHeight),
+        background: cs.background.hex,
+      }
+    : undefined;
+  const noteY = (captionAbove ? bodyY + bodyHeight : bodyHeight + captionHeight) + noteGapPx;
+  const noteLines = shiftLines(measuredNote, 0, noteY);
+  const totalHeight = bodyHeight + captionHeight + noteHeight;
 
   const block: ResolvedResourceBlock = {
     resource,
@@ -482,6 +621,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     captionLabelColor: cs.labelColor.hex,
     linkColor,
     table,
+    captionBar,
+    noteLines,
+    noteFontString,
+    noteBoldFontString,
+    noteItalicFontString,
+    noteBoldItalicFontString,
+    noteColor: cs.note.color.hex,
   };
 
   return { block, totalHeight };

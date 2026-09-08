@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-06-10',
-  readingTime: '10 min',
+  lastUpdated: '2026-09-08',
+  readingTime: '12 min',
   order: 7,
 };
 
@@ -24,9 +24,10 @@ The Sandbox follows a familiar IDE paradigm with three main areas: a narrow **ac
 
 ### Activity bar
 
-A narrow strip on the left edge contains icon buttons for navigating between panels. The top section holds five panel toggles, top to bottom:
+A narrow strip on the left edge contains icon buttons for navigating between panels. The top section holds six panel toggles, top to bottom:
 
 - **Markdown Editor** (`FileCode` icon) — Opens the markdown editing panel
+- **Presets** (`LayoutTemplate` icon) — Opens the preset bundles panel
 - **Resources** (`FolderOpen` icon) — Opens the resource management panel
 - **Fonts** (`Type` icon) — Opens the custom font management panel
 - **Configuration** (`Settings2` icon) — Opens the layout configuration panel
@@ -55,9 +56,36 @@ Host applications can extend the toolbar with their own `extraActions`. The edit
 
 The panel header offers three actions:
 
-- **Reset** (confirm popover) — Restores the locale's default document **and** replaces the resource set with the locale's example resources
+- **Reset** (confirm popover) — Reloads the **document part** of the active preset: the markdown and the whole resource set are replaced with the preset's (for the built-in preset, the locale's sample document and example resources); the configuration is left alone except for the preset's custom fonts. See [Presets panel](#presets-panel).
 - **Export** — Downloads the markdown as `postext-markdown.json`
 - **Import** — Loads a previously exported markdown file
+
+#### Presets panel
+
+A **preset bundle** is a whole starting point loaded as one unit: a markdown document, a `PostextConfig`, the resources (with their bitmap/SVG payloads and table models), and the custom font files the config refers to. The panel lists every preset the sandbox can reach and marks the active one:
+
+- **Built-in preset** — *Postext guide*, the default sample document shipped with the package, always available and always first in the list. It is a **public** preset.
+- **Remote presets** — Bundles served over HTTP from the base URLs passed in the `presetSources` prop (see [Props](#props)). Each source is either public or **private**; private presets are tagged *Private* in the list and are meant for material that must not leave a machine — the public website only advertises a private source in local development, where the Next.js app serves the folder named by `POSTEXT_PRIVATE_PRESETS_DIR` through `/api/private-presets`. Production never lists it.
+- **`default: true`** — A private preset flagged as default is loaded automatically the first time a *pristine* sandbox (untouched built-in document) opens; when several are flagged, the one whose `locale` matches the UI locale wins. Public presets are never auto-loaded.
+
+Each row shows the preset's name, an optional description, its locale tag and its *Private* / *Default* tags. Clicking a row (confirm popover) loads the preset **in full** — document, resources, configuration and fonts — after writing the font files and resource blobs to IndexedDB, so the viewports never see a half-applied document. The active row carries a **Reload** text button and the panel header a matching icon; both reload the active preset in full. Loading a *different* preset always asks for confirmation; reloading the active one only asks when the document has local changes (an untouched document makes the reload idempotent).
+
+**Live presets.** Remote presets are followed automatically: whenever a preset is applied the sandbox records the bundle's *fingerprint* along with hashes of the markdown, configuration and resource set it applied. While the page is visible it polls the fingerprint every 3 seconds (and immediately when the tab becomes visible or the window regains focus). When the fingerprint changes:
+
+- If the document is **untouched** — markdown, configuration and resources still hash to what the preset applied — the preset is re-applied in full and a brief *Preset updated from disk* notice appears in the panel.
+- If there are **local changes**, they are kept: a persistent banner at the top of the panel (*The preset has changed on disk. Your local changes are kept.*) offers a **Reload** button, and the Presets icon in the activity bar shows a dot until the preset is reloaded.
+
+The same check runs on load, so editing a bundle and then opening the sandbox picks the new version up when the document was untouched. The fingerprint comes from `<preset-dir>/fingerprint.json`, a virtual file the development route answers with a metadata-only hash of the directory (see the [Preset bundle format](#preset-bundle-format) appendix); sources that do not serve it simply are not followed.
+
+The active preset also defines what the other panels' **Reset** buttons restore:
+
+| Panel | Reset restores |
+|-------|----------------|
+| Markdown editor | The preset's markdown and its resource set (the document part) |
+| Configuration | The preset's configuration, custom fonts included |
+| Presets (Reload) | Everything: document, resources, configuration and fonts |
+
+A preset that was active in an earlier session but is no longer listed by any source (typically a private preset in a build that does not serve it) still appears, greyed out as *Not available in this build*, so the sandbox keeps the loaded content instead of silently swapping it for the built-in one. The active preset id is persisted under the `postext-sandbox-preset` key (see [Persistence](#persistence)); the bundle format is described in the [Preset bundle format](#preset-bundle-format) appendix.
 
 #### Resources panel
 
@@ -76,6 +104,7 @@ The whole panel is also a drag-and-drop target: drop files from disk and they up
 - **ID** — Editable and slug-validated; duplicate ids are flagged and never committed, and an empty id gets a suggestion derived from the caption. Renaming preserves the stored binary payload.
 - **Type** — Select among the configured resource types
 - **Caption** — Supports inline Markdown (bold, italic, code, and `:ref`)
+- **Note** — An optional source line, credit, or remark set in a smaller run under the resource (same inline formatting as the caption); styled by the *Note* group of the *Captions* configuration section
 - **Alt text** — Accessibility description for the HTML output
 - **Placement** — Position (`top` / `bottom` / `here`) plus span (`column` / `page`, disabled when the position is `here`), matching the engine defaults of `top` + `column`
 - **Payload** — Replace uploaders for the bitmap or SVG file
@@ -85,6 +114,7 @@ The whole panel is also a drag-and-drop target: drop files from disk and they up
 **Table editor.** Table resources open an interactive grid editor:
 
 - Toolbar with add/remove row and column, merge/split cells, header-row and header-column toggles, and per-cell alignment
+- **Column widths** — One numeric weight per column under the grid (`2, 1, 1` gives the first column half the width; empty means equal widths), written to `table.model.columnWidths`. Adding or removing a column keeps the weights aligned; an *Equal widths* link clears them
 - **Paste-as-table** — Pasting TSV (or simple quoted CSV) fills the grid
 - **Undo/redo** — Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z
 - **Keyboard navigation** — Tab / Shift-Tab (with row wrap) and arrow keys move between cells
@@ -102,18 +132,18 @@ Manages custom font families alongside the built-in Google Fonts catalogue:
 
 #### Configuration panel
 
-A form-based editor for `PostextConfig`. It renders 17 collapsible sections, in order:
+A form-based editor for `PostextConfig`. It renders 19 collapsible sections, in order:
 
-- **Design** — *Color Palette* (named colors reused by every color picker), *Page* (size, margins, DPI, cut lines, baseline grid, page numbering), *Layout* (single, double, or column-and-a-half, gutter, side column), *Header & Footer* (per-slot text, rule, and box elements with placeholders, parity, overflow, and anchored placement)
-- **Text** — *Body Text* (font, size, line height, alignment, hyphenation), *Headings* (general defaults plus per-level H1–H6 settings, break-before with parity, span, and an advanced per-level design slot editor), *Unordered Lists*, *Ordered Lists*, *Math*
-- **Resources** — *Tables* (`tableStyle`), *Captions* (`captionStyle`), *Diagrams* (`diagramStyle`: a **single-ink** toggle that recolors SVG diagrams to tints of one ink for single-colour printing, plus an ink-colour picker defaulting to the palette's main colour), *Resource Types* (per-type names, short labels, numbering templates with `{n}` and `{h1}`…`{h6}` placeholders, counter format and reset level, caption prefix, and a live "Fig. 1.7"-style preview)
+- **Design** — *Color Palette* (named colors reused by every color picker), *Page* (size, margins — with a **mirrored** toggle that turns left/right into inner/outer margins for facing pages — DPI, cut lines, baseline grid, page numbering), *Layout* (single, double, or column-and-a-half, gutter, side column), *Header & Footer* (per-slot text, rule, and box elements with placeholders picked from the engine allow-list — page number, total pages, title, subtitle, author, publish date, chapter title and number, part title and number, and `{attr.key}` for a chapter attribute — parity, a **pages** filter — all, body, chapter openers, part dividers or blank pages — overflow, and anchored placement to the container, to a sibling element, or to the **page** / **bleed** frame for edge-to-edge bands)
+- **Text** — *Body Text* (font, size, line height, alignment, hyphenation), *Headings* (general defaults plus per-level H1–H6 settings, letter case, break-before with parity, span, and an advanced per-level design slot editor with a minimum opener height), *Parts* (`parts`: the parity of the page a `:::part` opens on, an optional break after the part with its own parity, the margins of the part page — inheriting the page margins, with the same mirrored inner/outer labels — an **opener design** slot laid out against the page trim box whose placeholder picker adds the heading set: current title and its number in decimal, roman or alphabetic form; and a **body style** for the blocks inside the part that inherits the body text and the list colours), *Unordered Lists*, *Ordered Lists*, *Math*
+- **Resources** — *Tables* (`tableStyle`: body and header typography, fills, borders with a **rules** pattern — full grid, horizontal only, outer frame, or none — and cell padding), *Captions* (`captionStyle`: typeface, size, alignment, **position** above or below the resource, an optional **background bar** with its colour and padding, independent label and description styling, and a **Note** group for the resource note's size, colour, slant, alignment and gap), *Paragraph Styles* (`paragraphStyles`: named styles for `:::paragraphs{style="…"}` containers — add, remove, and rename ids, then set font, size, line height, colour, alignment, hyphenation, first-line and hanging indents, space between paragraphs, and margins; unset fields inherit the body text), *Callout Styles* (`calloutStyles`: named styles for `:::callout{type="…"}` — add, duplicate, remove, and rename ids, then set the default title, span, placement, width, background, border, corner radius, padding, an edge **stripe**, an **icon** that is either a text glyph or an SVG/bitmap picked from the Resources panel, title typography, and body and list overrides that inherit the document text), *Diagrams* (`diagramStyle`: a **single-ink** toggle that recolors SVG diagrams to tints of one ink for single-colour printing, plus an ink-colour picker defaulting to the palette's main colour), *Resource Types* (per-type names, short labels, numbering templates with `{n}` and `{h1}`…`{h6}` placeholders, counter format and reset level, caption prefix, a live "Fig. 1.7"-style preview, and a collapsible **caption style override** that replaces only the caption fields you set for that type — position, bar, colours, typeface — and inherits the rest)
 - **Output and tooling** — *HTML Viewer*, *PDF Generation*, *Debug*, *Warnings* (thresholds for the diagnostics panel)
 
 The panel follows a consistent **override model**: each section remembers its open/closed state across sessions; a section header shows a reset button (with confirm) only while it contains overrides; and every control grows a small per-field reset that appears whenever its value differs from the default. Only the overridden subtree is ever saved or exported — defaults are stripped, so a pristine sandbox stores an empty configuration.
 
 Controls are context-aware: gutter width only appears for multi-column layouts, hyphenation settings only appear when text is justified, and side column percentage only shows for the column-and-a-half layout. Changes take effect immediately in the viewport preview. For a full reference of all configuration options and their defaults, see the [Configuration](/en/docs/configuration) page.
 
-The panel header offers **Reset** (confirm popover; only shown when overrides exist), **Export**, and **Import** — see [Export and import](#export-and-import).
+The panel header offers **Reset** (confirm popover; only shown when the configuration differs from the active preset's — it restores that preset's configuration, custom fonts included), **Export**, and **Import** — see [Export and import](#export-and-import).
 
 #### Warnings panel
 
@@ -122,8 +152,8 @@ Live diagnostics recomputed from the markdown, the configuration, the resources,
 - **Fonts** — Missing font family; missing or duplicate weight/style variants in a custom family
 - **Typography** — Loose lines (interword spacing stretched past the configured threshold); heading-hierarchy skips (e.g. H1 → H3); consecutive headings with no body text between them
 - **Math** — Invalid or unclosed `$…$` / `$$…$$` formulas
-- **Directives** — Unknown directive names; invalid numbering or parity attributes
-- **Headers & footers** — Unknown placeholder names; placeholders whose document metadata is missing
+- **Directives and containers** — Unknown directive names (every name the parser knows — `pagebreak`, `numbering`, `callout`, `paragraphs`, `part` — is accepted); invalid numbering or parity attributes; a `:::` container fence left unclosed at the end of the document (click focuses its opening line); a `:::paragraphs{style="…"}` whose style id is not configured; a `:::callout{type="…"}` whose type is not among the configured callout styles
+- **Headers & footers** — Placeholder names outside the engine allow-list (`{attr.…}` and the part placeholders are accepted); placeholders whose document metadata is missing
 - **Design** — Cyclic or dangling anchors between design elements; text elements whose clip overflow always truncates
 - **Resources** — Unknown resource id in a `::resource` / `:ref`; unused resources; duplicate resource ids; dangling resource-type references; bitmaps rendered substantially larger than their pixel size; storage unavailable (IndexedDB missing)
 
@@ -178,6 +208,7 @@ The Sandbox automatically saves your work to the browser:
 
 - **Markdown and configuration** — Auto-saved to `localStorage` after 1 second of inactivity, with configuration defaults stripped so only your overrides are stored
 - **UI state** — The active panel and viewport tab, sidebar width, configuration section open states, canvas zoom/fit/view modes, HTML font scale and column mode, and toolbar pin states are all persisted in `localStorage`
+- **Active preset** — The id of the last loaded preset is stored in `localStorage` under `postext-sandbox-preset`, so the panels' Reset buttons keep restoring that preset across sessions (a preset that is no longer served shows as unavailable). What that preset applied — its bundle fingerprint plus hashes of the markdown, configuration and resource set — is stored under `postext-sandbox-preset-applied`, which is how the next visit tells an untouched document from an edited one
 - **Resources and fonts** — Resource records, their binary blobs (bitmaps and SVGs), and custom font files persist in **IndexedDB**; when IndexedDB is unavailable (e.g. some private-browsing modes), a *storage unavailable* warning appears in the Warnings panel
 
 Storage is **shared across UI locales**. A pristine default document swaps to the current locale's default markdown and reseeds the example resources when the locale changes — so opening the Spanish sandbox shows Spanish examples. Any user edit opts the document out of this behavior. All previews also derive a hyphenation locale from the UI locale when none is set in the configuration.
@@ -240,6 +271,7 @@ function App() {
 | `className` | `string` | CSS class for the root container |
 | `labels` | `Partial<SandboxLabels>` | UI label replacements, merged over the built-in English defaults — pass translated labels together with `locale` when embedding in another language |
 | `locale` | `string` | UI locale (defaults to `'en'`). Selects the localized default resource types and example resources, and provides the hyphenation locale the previews use when none is configured |
+| `presetSources` | `{ url: string; private?: boolean }[]` | Remote preset sources, tried in order after the built-in preset. Each `url` is a base URL serving an `index.json` (see [Preset bundle format](#preset-bundle-format)); `private: true` tags the source's presets as private and makes their `default` flag eligible for auto-loading. Sources that fail to respond simply contribute nothing |
 | `onConfigChange` | `(config) => void` | Callback when config changes |
 | `onMarkdownChange` | `(markdown) => void` | Callback when markdown changes |
 | `themeToggle` | `ReactNode` | Custom theme toggle component, slotted at the bottom of the activity bar |
@@ -259,9 +291,99 @@ The package uses Tailwind CSS utility classes that reference CSS custom properti
 - `--accent-blue` — Link/accent color
 - `--font-mono` — Monospace font family (for the code editor)
 
+## Preset bundle format
+
+Appendix. A preset source is a directory (served over HTTP) whose root holds an `index.json` listing preset directories; each directory holds a `preset.json` manifest plus the markdown, resource and font files it refers to. The `scripts/presets/` tooling in the repository scaffolds bundles in exactly this shape.
+
+```
+<presets-root>/
+  index.json
+  <preset-dir>/
+    preset.json
+    <document>.md          (one per locale if needed)
+    resources/             figures: .svg / .png / .jpg / .jpeg / .webp / .gif
+    fonts/                 .otf / .ttf / .woff2 single faces
+```
+
+### `index.json`
+
+```jsonc
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "acme-journal",          // stable id, [a-z0-9-]
+      "dir": "acme-journal",         // directory name relative to index.json
+      "name": "Acme Journal",
+      "description": "Two-column journal article",   // optional
+      "locale": "en",                 // optional
+      "default": true                 // optional, at most one
+    }
+  ]
+}
+```
+
+### `preset.json`
+
+```jsonc
+{
+  "version": 1,
+  "id": "acme-journal",
+  "name": "Acme Journal",
+  "description": "Two-column journal article",       // optional
+  "locale": "en",                                     // optional
+  "default": true,                                    // optional
+
+  // A single file, or one per locale
+  "markdown": "article.md",
+  // "markdown": { "en": "article.en.md", "es": "article.es.md" },
+
+  // Optional PostextConfig JSON (page, margins, columns, typography...).
+  // Do NOT put customFonts here: fonts come from the `fonts` array below.
+  "config": { },
+
+  "resources": [
+    {
+      "id": "fig-1-1",                 // referenced from markdown (:ref)
+      "typeId": "figure",              // resource type id (figure, table, ...)
+      "kind": "svg",                   // "svg" | "bitmap" | "table"
+      "file": "resources/fig-1-1.svg", // svg/bitmap only, relative to preset.json
+      "width": 240.5,                  // optional, pt (svg) / px (bitmap)
+      "height": 180,                   // optional
+      "caption": "Caption text",
+      "altText": "Accessible description",            // optional
+      "placement": { "position": "top", "span": "column" },  // optional
+      "note": "Source: ...",                          // optional
+      "table": { "model": { "rows": [[{ "content": "A", "isHeader": true }]], "headerRowCount": 1 } }
+                                                      // kind "table" only
+    }
+  ],
+
+  "fonts": [
+    {
+      "name": "Some Family",           // family name used by the config
+      "variants": [
+        { "weight": 400, "style": "normal", "file": "fonts/SomeFamily-Regular.otf" },
+        { "weight": 400, "style": "italic", "file": "fonts/SomeFamily-Italic.otf" },
+        { "weight": 700, "style": "normal", "file": "fonts/SomeFamily-Bold.otf" }
+      ]
+    }
+  ]
+}
+```
+
+Notes:
+
+- `id` in `preset.json` must match the `index.json` entry; `description`, `locale` and `default` in the manifest override the index values once the preset is loaded.
+- `markdown` is a file name or a locale → file map; the sandbox picks the entry matching the UI locale (exact tag, then base language, then the preset's own `locale`, then the first entry).
+- `width` / `height` are optional for `svg` and `bitmap` resources — when missing they are read from the file at load time.
+- `table.model` is a Postext `TableModel`: `rows` is a row-major array of cells (`content`, optional `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` the number of leading header rows, and `columnWidths` an optional array of relative column weights.
+- Font files are stored in IndexedDB under ids derived from the preset id and file path, and the families are appended to `config.customFonts` when the preset is applied; a missing or malformed `index.json` yields no presets rather than an error.
+- `<preset-dir>/fingerprint.json` is optional and, on the development route, **virtual**: when no such file exists, `GET` answers `{ "fingerprint": "<sha1 hex>", "files": <n> }` computed from the directory's file metadata (relative path, modification time and size of every file up to four levels deep, dotfiles and `node_modules` skipped), never from file contents, with `Cache-Control: no-store`. The sandbox polls it to follow edits to the bundle (see [Presets panel](#presets-panel)). A static host can serve a real `fingerprint.json` with the same shape, or none at all, in which case its presets are not followed.
+
 ## Roadmap
 
 The following features are planned for future versions:
 
 - **Collaborative editing** — Share sandbox sessions via URL
-- **Preset configurations** — Quick-start templates for common layout scenarios (newspaper, academic paper, book chapter)
+- **Public preset gallery** — Ready-made public bundles for common layout scenarios (newspaper, academic paper, book chapter) served from the website

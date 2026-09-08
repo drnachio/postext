@@ -44,6 +44,9 @@ This reference is long. These are the main blocks:
 - [Resource types](#resource-types) — typed numbering for figures, tables, and custom kinds.
 - [Table style](#table-style) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
 - [Diagram style](#diagram-style) — single-ink recolouring of embedded SVG diagrams for spot-colour printing.
+- [Paragraph styles](#paragraph-styles) — named styles for `:::paragraphs` containers: bibliographies, glossaries, notes.
+- [Callout styles](#callout-styles) — boxed notes, tips and objectives for `:::callout` containers.
+- [Parts](#parts) — part-divider pages for `:::part` containers: parity, body area, opener design, body typography.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
@@ -79,19 +82,19 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>width</code></td>
       <td><code>Dimension</code></td>
       <td><code>17 cm</code></td>
-      <td>Page width. Only used when <code>sizePreset</code> is <code>'custom'</code>.</td>
+      <td>Page width. Taken from <code>sizePreset</code> when omitted; an explicit value always wins (use <code>sizePreset: 'custom'</code> for fully custom sizes).</td>
     </tr>
     <tr>
       <td><code>height</code></td>
       <td><code>Dimension</code></td>
       <td><code>24 cm</code></td>
-      <td>Page height. Only used when <code>sizePreset</code> is <code>'custom'</code>.</td>
+      <td>Page height. Taken from <code>sizePreset</code> when omitted; an explicit value always wins.</td>
     </tr>
     <tr>
       <td><code>margins</code></td>
       <td><code>PageMargins</code></td>
       <td><code>2 cm</code> all sides</td>
-      <td>Space between the page edge and the content area. Each side (top, bottom, left, right) is set independently.</td>
+      <td>Space between the page edge and the content area. Each side (top, bottom, left, right) is set independently. With <code>mirror: true</code> the margins are <em>facing-page</em> margins: <code>left</code> is the inner (spine-side) margin and <code>right</code> the outer one; odd pages (page 1 is odd) keep them as written and even pages swap them, so the content area — and with it the columns, float bands, header/footer containers and opener bands — moves across the spread. Default <code>false</code>. See below.</td>
     </tr>
     <tr>
       <td><code>backgroundColor</code></td>
@@ -119,6 +122,26 @@ The `page` property controls the physical dimensions and appearance of the page.
     </tr>
   </tbody>
 </table>
+
+### Mirrored margins
+
+Books are read as spreads, and the inner margin usually differs from the outer one. `margins.mirror` turns the four margins into facing-page margins:
+
+```json
+{
+  "page": {
+    "margins": {
+      "top": { "value": 2, "unit": "cm" },
+      "bottom": { "value": 2.5, "unit": "cm" },
+      "left": { "value": 2.2, "unit": "cm" },
+      "right": { "value": 1.4, "unit": "cm" },
+      "mirror": true
+    }
+  }
+}
+```
+
+With this configuration every odd page has a 2.2 cm margin on the left (the spine) and 1.4 cm on the right (the fore-edge); every even page has 1.4 cm on the left (the fore-edge) and 2.2 cm on the right (the spine). Each laid-out page carries its own `contentArea` on the `VDTPage`, so everything derived from it — columns, full-width float bands, header and footer containers, and `span: 'page'` opener bands — follows the mirrored geometry automatically. Page and bleed frames used by design elements anchored to `'page'` / `'bleed'` are not affected: they describe the physical sheet, not the margins.
 
 ### Page size presets
 
@@ -414,7 +437,7 @@ Text elements render a template string with placeholder substitution. Placeholde
       <td><code>content</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Template string. Supports placeholders listed below.</td>
+      <td>Template string. Supports placeholders listed below, plus <code>{'{attr.<key>}'}</code> — an attribute written on the current chapter's H1 line (<code># Title {'{author="I. Zango"}'}</code>). A missing attribute resolves to an empty string without a warning.</td>
     </tr>
     <tr>
       <td><code>align</code></td>
@@ -427,6 +450,12 @@ Text elements render a template string with placeholder substitution. Placeholde
       <td><code>'all' | 'odd' | 'even'</code></td>
       <td><code>'all'</code></td>
       <td>Which pages the element appears on (page number parity: page 1 is odd).</td>
+    </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>Which page <em>roles</em> the element appears on, combined with <code>parity</code>. After placement every page is classified as <code>'blank'</code> (parity / separator padding, or no content), <code>'part'</code> (a part-divider page), <code>'opener'</code> (its first block is a heading whose level spans the page or forces a page break before it — the first page of a chapter) or <code>'body'</code> (everything else). <code>pages: 'body'</code> hides a running head on chapter openers; <code>pages: 'opener'</code> shows a folio only there.</td>
     </tr>
     <tr>
       <td><code>fontFamily</code></td>
@@ -497,6 +526,7 @@ Available placeholders:
 - `{totalPages}` — total page count for the document.
 - `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — values read from `content.metadata`. Unknown or empty metadata renders as an empty string (and raises a warning in the sandbox).
 - `{chapterTitle}` — text of the most recent H1 on or before the current page.
+- `{partTitle}`, `{partNumber}` — title and number of the current part (the most recent `:::part` page on or before the current page; blank parity pages just before a part page already belong to it). Empty before the first part.
 
 #### Edge-implied alignment
 
@@ -569,6 +599,12 @@ Rule elements render a horizontal line across the slot.
       <td><code>'all'</code></td>
       <td>Which pages the rule appears on.</td>
     </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>Page roles the rule appears on (see the text-element <code>pages</code> field).</td>
+    </tr>
   </tbody>
 </table>
 
@@ -628,6 +664,12 @@ Box elements paint a rounded rectangle inside the slot — useful as a backdrop 
       <td><code>'all'</code></td>
       <td>Which pages the box appears on.</td>
     </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>Page roles the box appears on (see the text-element <code>pages</code> field).</td>
+    </tr>
   </tbody>
 </table>
 
@@ -639,7 +681,7 @@ Box elements paint a rounded rectangle inside the slot — useful as a backdrop 
 interface ElementPlacement {
   /** What this element anchors to and which edge of that target. */
   anchor: {
-    to: 'container' | `#${string}`; // container = the slot; #id = another element in the slot
+    to: 'container' | 'page' | 'bleed' | `#${string}`; // container = the slot; page = trim box; bleed = trim box + bleed; #id = another element
     edge: AnchorEdge;
   };
   /** Distance from the anchor point. */
@@ -651,8 +693,16 @@ interface ElementPlacement {
 
 `AnchorEdge` accepts:
 
-- **Container edges** (when `anchor.to === 'container'`): `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
+- **Container edges** (when `anchor.to` is `'container'`, `'page'` or `'bleed'`): `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
 - **Element-relative edges** (when `anchor.to === '#someId'`): `right-of`, `left-of`, `below`, `above`, `align-top`, `align-bottom`, `align-left`, `align-right`.
+
+`anchor.to: 'page'` anchors the element to the **trim box** (the physical page after cutting) and `'bleed'` to the trim box grown by `cutLines.bleed` on every side (identical to the trim box while cut lines are disabled). Both frames also become the reference for `size: 'fill'` and for the automatic width clamp, so a coloured band can run edge to edge regardless of the page margins:
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "value": 6, "unit": "cm" } } }, "style": { "backgroundColor": { "hex": "#1d3557", "model": "hex" } } }
+```
+
+Inside a heading's advanced-design slot, page- and bleed-anchored elements do not grow the height reserved for the heading unless they extend below the heading's top edge (a band across the top of the page sits behind the opener; a band reaching below the heading pushes the body text down). Use `advancedDesign.minHeight` to reserve a fixed opener height regardless.
 
 Each element has a stable `id` (auto-assigned by the sandbox; you can also set it by hand). Elements anchored to other elements form a small dependency graph that the engine resolves before measuring, so an element can chain off another without manual coordinates.
 
@@ -1109,6 +1159,12 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td>Render the heading in italic. Applied on top of <code>fontWeight</code>.</td>
     </tr>
     <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Upper-cases the heading title (a numbering prefix is kept as written). Length-preserving so the editor's source map stays 1:1: characters whose upper-case form expands (<code>ß</code> → <code>SS</code>) are left as they are. The transformed title also feeds the <code>&#123;titleText&#125;</code> placeholder of advanced designs and chapter openers.</td>
+    </tr>
+    <tr>
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
@@ -1208,6 +1264,12 @@ Each heading level accepts two additional fields that control how the heading re
       <td><code>{'{ enabled: false, slot: { elements: [] } }'}</code></td>
       <td>Free-composition design slot for this level. When <code>enabled</code>, the slot's elements compose the opener. Use <code>{'{titleText}'}</code> inside a text element to render the heading's title text; use <code>{'{number}'}</code>, <code>{'{numberRoman}'}</code>, etc. to insert the formatted heading number.</td>
     </tr>
+    <tr>
+      <td><code>advancedDesign.minHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>—</td>
+      <td>Minimum height reserved for the heading in the column flow. The reserved height is <code>max(design content bottom, minHeight)</code>, so an opener can push the body text down (or claim the whole page) even when its elements are short or anchored to the page/bleed frames above the heading. Applies whenever <code>enabled</code> is true, even with an empty slot.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1268,6 +1330,7 @@ Heading placeholders available inside a level's design slot:
 - `{number}` — the formatted number per the level's `numberingTemplate`.
 - `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` — alternative numeral formats.
 - `{chapterNumber}`, `{chapterTitle}`, `{pageNumber}`, `{totalPages}`, `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — shared metadata placeholders.
+- `{attr.<key>}` — an attribute written on the heading line itself (`# Title {author="I. Zango Martín"}`), falling back to the current chapter's H1 attribute. Missing attributes resolve to an empty string with no warning.
 
 
 ## Unordered Lists
@@ -1500,6 +1563,36 @@ The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to fi
       <td>Character placed between the number and the text — typically <code>'.'</code> or <code>')'</code>.</td>
     </tr>
     <tr>
+      <td><code>separatorFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>inherits <code>fontFamily</code></td>
+      <td>Font of the separator. When any separator style differs from the number's, the separator is drawn as its own run after the (right-aligned) number — e.g. <code>1</code> in Optima Bold black followed by <code>•</code> in DIN Pro Bold blue.</td>
+    </tr>
+    <tr>
+      <td><code>separatorFontWeight</code></td>
+      <td><code>number</code></td>
+      <td>inherits <code>fontWeight</code></td>
+      <td>Weight of the separator (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>separatorItalic</code></td>
+      <td><code>boolean</code></td>
+      <td>inherits <code>italic</code></td>
+      <td>Render the separator in italic.</td>
+    </tr>
+    <tr>
+      <td><code>separatorColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits <code>color</code></td>
+      <td>Colour of the separator. Palette references are honoured.</td>
+    </tr>
+    <tr>
+      <td><code>separatorGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Space between the number and the separator. The item text still starts <code>gap</code> after the separator.</td>
+    </tr>
+    <tr>
       <td><code>numberFontSize</code></td>
       <td><code>Dimension</code></td>
       <td><code>1 em</code></td>
@@ -1552,7 +1645,7 @@ The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to fi
 
 ### Ordered per-level overrides
 
-Each entry in `levels` can override `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, and `verticalOffset` — the same indent cascade as unordered lists applies.
+Each entry in `levels` can override `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, `verticalOffset` and the separator style (`separatorFontFamily`, `separatorFontWeight`, `separatorItalic`, `separatorColor`, `separatorGap`) — the same indent cascade as unordered lists applies. A level's separator style inherits its own number style unless the list-wide separator setting is given.
 
 **Right alignment.** The pipeline measures the widest formatted number within a run and indents all items in that run so the number markers line up on their right edge. A list of ten items rendered as `1.` – `10.` has the single-digit numbers right-padded so the separator stays in the same column.
 
@@ -1760,6 +1853,11 @@ interface ResourceType {
       <td><code>ResourcePlacement</code> (optional)</td>
       <td>Placement used by resources of this type that do not set their own <code>placement</code>. When unset, the built-in <code>top</code> / <code>column</code> default applies. See <a href="#numbering-and-references">Numbering and references</a> below for the full resolution chain.</td>
     </tr>
+    <tr>
+      <td><code>captionStyle</code></td>
+      <td><code>CaptionStyleConfig</code> (optional)</td>
+      <td>Partial <a href="#caption-style">caption style</a> override for resources of this type. Only the keys you set replace the global <code>captionStyle</code>; everything else is inherited (an overridden <code>color</code> also drives the label and note colours unless those are set explicitly). Typical use: tables captioned <em>above</em> on a coloured bar while figures keep their caption below. Palette references resolve like any other colour.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1927,13 +2025,23 @@ const config: PostextConfig = {
       <td><code>0.375em</code></td>
       <td>Inner padding of every cell.</td>
     </tr>
+    <tr>
+      <td><code>rules</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid'</code></td>
+      <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, or none.</td>
+    </tr>
   </tbody>
 </table>
+
+Border widths are kept fractional: a `0.5pt` rule is stroked as a hairline in the PDF and on screen rather than being rounded up to a full pixel (the floor is 0.25px).
+
+Column widths belong to the table model, not the style: `TableModel.columnWidths` is an optional array of relative weights, one per column, normalised at layout time — `[2, 1, 1]` gives the first column half the width. A missing array, a wrong length, or a non-positive weight falls back to an equal split. The table editor keeps the array aligned when columns are added or removed.
 
 
 ## Caption style
 
-The `captionStyle` property controls resource captions (the `Figure 1 — …` line under images, SVGs, and tables). The numbered label and the description share the same typeface and size — an engine constraint — but the label can carry its own weight, italics, and color. Font family, size, and color inherit the body text when unset.
+The `captionStyle` property controls resource captions (the `Figure 1 — …` line under — or above — images, SVGs, and tables). The numbered label and the description share the same typeface and size — an engine constraint — but the label can carry its own weight, italics, and color. Font family, size, and color inherit the body text when unset. The caption can sit **above** the resource (the usual convention for tables) and be set on a coloured **bar** spanning the block width; an optional smaller **note** (source line, credits — `Resource.note`) is styled through the `note` sub-object. A resource type can override any of these fields for its own resources via `ResourceType.captionStyle` (see [Resource types](#resource-types)).
 
 ```ts
 const config: PostextConfig = {
@@ -1942,6 +2050,10 @@ const config: PostextConfig = {
     labelBold: true,
     labelColor: { hex: '#295AA3', model: 'hex' },
     descriptionItalic: true,
+    position: 'above',
+    backgroundEnabled: true,
+    padding: { value: 0.35, unit: 'em' },
+    note: { italic: true, align: 'left' },
   },
 };
 ```
@@ -2010,8 +2122,85 @@ const config: PostextConfig = {
       <td><code>false</code></td>
       <td>Render the description text in italics.</td>
     </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'above' | 'below'</code></td>
+      <td><code>'below'</code></td>
+      <td>Where the caption sits. With <code>'above'</code> the caption (and its bar) comes first and the resource body moves down by the caption height plus <code>gap</code>; the note then goes under the body.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Paint a bar behind the caption. The bar spans the full block width and encloses the caption lines plus <code>padding</code> on every side.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>main palette color</td>
+      <td>Bar fill color (only painted when enabled).</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>Inner padding between the bar edge and the caption text. Ignored when the bar is off.</td>
+    </tr>
+    <tr>
+      <td><code>note</code></td>
+      <td><code>object</code></td>
+      <td>—</td>
+      <td>Styling of the resource note — see the sub-table below.</td>
+    </tr>
   </tbody>
 </table>
+
+The `note` sub-object styles `Resource.note`, a short run (source, credits, a remark) set under the resource in a smaller size. It accepts the same inline formatting and `:ref` marks as the caption and inherits the caption typeface. It is placed under the caption when the caption is below, and under the resource body when the caption is above; its height counts towards the block, so a resource with a note floats as one unit.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>note.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>0.85 × caption size</td>
+      <td>Note font size.</td>
+    </tr>
+    <tr>
+      <td><code>note.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>caption <code>color</code></td>
+      <td>Note text color.</td>
+    </tr>
+    <tr>
+      <td><code>note.italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render the note in italics.</td>
+    </tr>
+    <tr>
+      <td><code>note.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>Gap between the note and what precedes it (caption or body).</td>
+    </tr>
+    <tr>
+      <td><code>note.align</code></td>
+      <td><code>'left' | 'center'</code></td>
+      <td><code>'left'</code></td>
+      <td>Horizontal alignment of the note.</td>
+    </tr>
+  </tbody>
+</table>
+
+Per-type overrides are merged with `mergeCaptionStyle(resolvedCaptionStyle, override, palette?)`, exported for hosts that need the same resolution outside the pipeline.
 
 
 ## Diagram style
@@ -2088,6 +2277,456 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
+```
+
+
+## Paragraph styles
+
+The `paragraphStyles` property declares named styles that a document applies to a run of paragraphs with a `:::paragraphs{style="…"}` container — bibliographies, glossaries, notes, any block of entries that wants its own face, size, leading, or a hanging indent. Every typographic field is optional and inherits the body text when unset, so a style only spells out what differs from running text.
+
+```ts
+const config: PostextConfig = {
+  paragraphStyles: [
+    {
+      id: 'bibliography',
+      name: 'Bibliography',
+      fontSize: { value: 7, unit: 'pt' },
+      lineHeight: { value: 1.2, unit: 'em' },
+      hangingIndent: { value: 2, unit: 'em' },
+      spaceBetween: { value: 0.25, unit: 'em' },
+      marginTop: { value: 1, unit: 'em' },
+      marginBottom: { value: 1, unit: 'em' },
+    },
+  ],
+};
+```
+
+```md
+## References
+
+:::paragraphs{style="bibliography"}
+Knuth, D. E. (1984). *The TeXbook*. Addison-Wesley.
+
+Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Identifier referenced from <code>:::paragraphs&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name, for editor UIs only.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>body text font</td>
+      <td>Font family. Weights (regular and bold) follow the body text.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>body text size</td>
+      <td>Font size.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>body line height</td>
+      <td>Leading. <code>em</code>/<code>rem</code> are relative to the style's own font size, so an inherited <code>1.5em</code> tightens along with a smaller size.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body text color</td>
+      <td>Text color. Bold and italic runs keep the body emphasis colors.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify'</code></td>
+      <td>body alignment</td>
+      <td>Horizontal alignment.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td>body hyphenation</td>
+      <td>Hyphenate when justified (uses the document locale).</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td>body first-line indent</td>
+      <td>Indent of the first line. Ignored when <code>hangingIndent</code> is non-zero.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent applied to every line except the first — the classic bibliography or glossary shape.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Vertical gap between consecutive paragraphs inside the container. <code>0</code> makes entries abut.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Space above the container's first paragraph. Collapses with the spacing already pending and vanishes at the top of a column, like any other margin.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Minimum space below the container's last paragraph.</td>
+    </tr>
+  </tbody>
+</table>
+
+### The `:::paragraphs` container
+
+A `:::paragraphs{style="<id>"}` line opens the container and a bare `:::` line closes it; every paragraph in between takes the named style, while headings, lists, and other blocks inside keep their usual styling. Containers may be nested inside other fenced containers. An unknown `style` id is not an error: the paragraphs render as plain body text.
+
+Inside the container the flow leaves the baseline grid — a 7pt entry with 1.2em leading cannot sit on an 8pt/1.5em grid — and the last paragraph snaps the flow back onto it, baking in at least `marginBottom` below the text (the grid wins; the margin is a minimum, the same convention headings follow). Entries split across columns and pages like body paragraphs, with the same orphan and widow protection; a heading immediately before the container keeps with its first paragraph.
+
+```ts
+const resolved = resolveParagraphStylesConfig(config.paragraphStyles, resolvedBodyText);
+// => every unset field filled from the resolved body text
+
+const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
+// => undefined when the list is empty; zero margins and `name === id` dropped
+```
+
+
+## Callout styles
+
+The `calloutStyles` property declares the named box styles a document applies with a `:::callout{type="…"}` container — notes, tips, warnings, learning objectives, any content set apart from the running text in a tinted or bordered box. One neutral style, `note`, ships by default (light grey background, no border, no stripe, no icon, no title), so `:::callout` works without any configuration; declaring `calloutStyles` replaces that default list.
+
+```ts
+const config: PostextConfig = {
+  calloutStyles: [
+    { id: 'note', name: 'Note' },
+    {
+      id: 'objectives',
+      name: 'Learning objectives',
+      title: 'Objectives',
+      stripe: { enabled: true, side: 'left' },
+      icon: { kind: 'glyph', glyph: '✓' },
+      titleStyle: { textTransform: 'uppercase' },
+      lists: { bulletChar: '–' },
+    },
+    {
+      id: 'warning',
+      title: 'Warning',
+      backgroundEnabled: false,
+      border: { enabled: true, color: { hex: '#AA0000', model: 'hex' }, width: { value: 1, unit: 'pt' } },
+      borderRadius: { value: 1, unit: 'mm' },
+      titleStyle: { color: { hex: '#AA0000', model: 'hex' } },
+    },
+  ],
+};
+```
+
+```md
+:::callout{type="objectives"}
+- Describe the parts of the lantern.
+- Trim the wick at dusk.
+:::
+
+:::callout{type="warning" title="Do not touch the lens"}
+The glass stays hot for an hour after the flame is out.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '150px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identifier selected by <code>:::callout&#123;type="…"&#125;</code>. A fence with an unknown or missing <code>type</code> uses the first configured style (the sandbox flags unknown types).</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name (editor UI only).</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Default title text; empty means no title. The fence <code>title</code> attribute overrides it per instance.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>Horizontal extent: the column, or the full content width. Overridable per instance with the <code>span</code> attribute. In multi-column layouts a <code>'page'</code> box becomes a <em>span block</em>: it splits the page into column bands and sits in its own full-width column (see the container section below).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'here' | 'top' | 'bottom'</code></td>
+      <td><code>'here'</code></td>
+      <td>Inline in the flow, or floated to a top / bottom page band like a resource. Overridable per instance with the <code>placement</code> attribute. Floating placements are recorded on the VDT but still placed inline at column width for now.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>'fill' | 'auto'</code></td>
+      <td><code>'fill'</code></td>
+      <td><code>'fill'</code> spans the available width; <code>'auto'</code> shrink-wraps the title (badge use) and ignores the children.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>Box fill.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td><code>false</code>, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>Box outline.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Corner radius of the background / border.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.75em</code> each</td>
+      <td>Inset between the box edge and its content. <code>em</code> values are relative to the callout body size.</td>
+    </tr>
+    <tr>
+      <td><code>stripe</code></td>
+      <td><code>&#123; enabled, side, width, color &#125;</code></td>
+      <td><code>false</code>, <code>'left'</code>, <code>1.5em</code>, main colour</td>
+      <td>Solid band along one edge. A <code>'left'</code> / <code>'right'</code> stripe narrows the content; a <code>'top'</code> stripe pushes it down.</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align &#125;</code></td>
+      <td><code>'none'</code>, headings font, <code>400</code>, <code>1.5em</code>, main colour, <code>'top'</code></td>
+      <td>A text glyph (<code>kind: 'glyph'</code>) or a bitmap / SVG resource (<code>kind: 'resource'</code> + <code>resourceId</code>) beside the content. With a side stripe the icon is centred over the stripe; otherwise it reserves its own column (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> centres it vertically on the content.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap &#125;</code></td>
+      <td>headings font, body size, <code>700</code>, <code>false</code>, main colour, <code>'none'</code>, <code>0.5em</code></td>
+      <td>Title typography. <code>gap</code> is the space between the title and the first child (and the icon column gap). <code>textTransform: 'uppercase'</code> is length-preserving.</td>
+    </tr>
+    <tr>
+      <td><code>body</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td>inherits <code>bodyText</code></td>
+      <td>Typography of the paragraphs inside the box. Every field inherits the body text when unset.</td>
+    </tr>
+    <tr>
+      <td><code>lists</code></td>
+      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing &#125;</code></td>
+      <td>inherits <code>unorderedLists</code></td>
+      <td>List typography inside the box (<code>color</code>, <code>indent</code>, <code>gap</code> and <code>itemSpacing</code> also apply to ordered lists).</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code> / <code>0.75em</code></td>
+      <td>Space above the box (collapses with the previous block's margin) and minimum space below it.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Always <code>true</code> in this version: a callout never splits across columns or pages.</td>
+    </tr>
+  </tbody>
+</table>
+
+### The `:::callout` container
+
+A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. The fence accepts four attributes — `type` (the style id), `title` (overrides the style's title), `span` and `placement` (override the style's values) — and the content in between is laid out inside the box: an optional title, then the paragraphs, lists, blockquotes, formulas or resource embeds, each typeset with the style's `body` / `lists` typography (headings keep their usual styles). Margins between children collapse as in the running text; the interior leaves the baseline grid, and the flow snaps back onto it after the box with at least `marginBottom` below (the grid wins; the margin is a minimum — the same convention resources follow). A heading immediately before a callout keeps with it.
+
+Limits in this version:
+
+- A callout is unbreakable. When it does not fit the remaining column space it moves whole to the next column or page; a box taller than an empty column is placed anyway and overflows (the sandbox warns).
+- `span: 'page'` in a multi-column layout makes the box a **span block**: it is laid out at the full content width and splits the page into column bands — the text columns above it are closed at the cut line, the box takes its own full-width column, and a fresh band of text columns opens below it, so the flow continues under the box in every column. Where the columns are *level* — at the top of a page, right below a `span: 'page'` opener heading, right below another span block, or right below a top float band — the box simply cuts there. Arriving mid-page, with the columns uneven, it is set the way a compositor would: the text above it is cut level across all columns (the engine re-runs placement with the band's columns shortened to the same number of grid lines, so the text overflows from column to column naturally and every orphan, widow and keep-with-next rule still applies), the box spans the page, and the columns resume below it. The cut takes a couple of extra placement passes; when the cut line would leave no room for the box plus the widow minimum of body lines below it, or no arrangement fits after a few attempts, the box moves to the top of the next page — without forcing a page break, so the page it leaves is still balanced. A heading right before a span block does not travel with it. In single-column layouts `span: 'page'` is simply inline.
+- `placement: 'top' | 'bottom'` is recorded on the VDT (`VDTBlock.callout`) but still placed inline at column width — floating boxes arrive with the next stage.
+- `width: 'auto'` shrink-wraps the title only; children are ignored.
+- A `:::callout` nested inside another callout is flattened into the outer box.
+
+In the VDT the box is a `type: 'callout'` frame block whose decoration (background, stripe, icon, title) lives on `designOverlay`, followed by its child blocks in the same column; the frame and every child carry the fence's `containerId`. Icon images resolve like resource images: the canvas image registry, the HTML `resourceImageUrl` option and the PDF `resourceBytes` provider.
+
+```ts
+const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyText, resolvedHeadings, resolvedUnorderedLists);
+// => every inherited field filled from the resolved sections
+
+const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
+// => undefined for the built-in `note` default; static defaults dropped
+```
+
+
+## Parts
+
+The `parts` property configures the part-divider pages a document opens with a `:::part{number="…" title="…"}` container — the “Part I — Foundations” page that groups a run of chapters. A part always occupies a page of its own: the container breaks to a fresh page of the configured parity, converts it into a single-column page whose body area comes from `parts.margins`, lays the opener design over the whole page, and breaks again after the closing fence so the next chapter (with its own `breakBefore.parity`) starts clean — with the default H1 settings that yields the classic recto part page, blank verso, chapter on the next recto.
+
+```ts
+const config: PostextConfig = {
+  parts: {
+    breakBefore: { parity: 'odd' },
+    breakAfter: { enabled: true, parity: 'any' },
+    margins: { top: { value: 9, unit: 'cm' }, left: { value: 3, unit: 'cm' }, right: { value: 3, unit: 'cm' } },
+    design: {
+      elements: [
+        {
+          kind: 'text', id: 'number', content: 'Part {numberRoman}',
+          fontSize: { value: 12, unit: 'pt' }, fontWeight: 600, align: 'left',
+          placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 3, unit: 'cm' }, y: { value: 5, unit: 'cm' } }, size: { width: 'auto', height: 'auto' } },
+        },
+        {
+          kind: 'text', id: 'title', content: '{titleText}',
+          fontSize: { value: 28, unit: 'pt' }, fontWeight: 700, align: 'left', overflow: 'wrap',
+          placement: { anchor: { to: '#number', edge: 'below' }, size: { width: { value: 15, unit: 'cm' }, height: 'auto' } },
+        },
+      ],
+    },
+    bodyStyle: { fontSize: { value: 11, unit: 'pt' }, numberColor: { hex: '#AA0000', model: 'hex' } },
+  },
+};
+```
+
+```md
+:::part{number="I" title="Foundations"}
+1. The lantern and its parts
+2. Trimming the wick
+3. Reading the weather
+:::
+
+# The lantern and its parts
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>breakBefore.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'odd'</code></td>
+      <td>Parity of the page the part opens on. Same values and blank-page ownership rules as the heading <a href="#break-before">breakBefore</a>: a blank inserted to reach the parity belongs to the part (its <code>{'{partTitle}'}</code> already resolves to the new part); the mandatory separator of <code>'always-*'</code> belongs to the previous content.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Move the content after the closing fence to a fresh page. When <code>false</code> it continues in the part page's single column.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'any'</code></td>
+      <td>Parity of that fresh page. Leave it at <code>'any'</code> and let the next chapter's own <code>breakBefore.parity</code> decide whether a blank verso follows. The break is applied when the next block is placed, so a part that closes the document leaves no trailing empty page.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>page margins</td>
+      <td>Body area of the part page — the single column the blocks inside the fence flow in. Each side inherits the page margin when unset; <code>mirror</code> swaps inner/outer on even pages exactly like the page margins.</td>
+    </tr>
+    <tr>
+      <td><code>design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>empty</td>
+      <td>Opener design. Its container is the page <strong>trim box</strong>, so container anchors and <code>'page'</code> anchors coincide and <code>'bleed'</code> runs to the bleed when cut lines are on. Purely decorative: it never reserves body space — raise <code>margins.top</code> to keep the body clear of it. When empty, a default <code>{'{number} {titleText}'}</code> text in the H1 typography is synthesised at the top-left of the body area.</td>
+    </tr>
+    <tr>
+      <td><code>versoDesign</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>empty</td>
+      <td>Design of the blank verso that follows a part page (the back of the divider leaf): same container and placeholders as <code>design</code>. Leave empty for a plain verso.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>color</code>, <code>textAlign</code></td>
+      <td>as in <code>bodyText</code></td>
+      <td>inherit <code>bodyText</code></td>
+      <td>Typography of the paragraphs, blockquotes and list items inside the fence. Weights, emphasis colours and hyphenation come from the body text.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.bulletColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>unorderedLists.color</code></td>
+      <td>Bullet colour of unordered lists inside the part.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.numberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>orderedLists.color</code></td>
+      <td>Number colour of ordered lists inside the part. Numbers are always set in the body's bold weight, so a chapter list reads as a table of contents.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.unorderedLists</code></td>
+      <td><code>UnorderedListsConfig</code></td>
+      <td>—</td>
+      <td>Partial overrides applied on top of the document's <code>unorderedLists</code> inside the part, after <code>bulletColor</code>. List-wide values propagate to the levels that inherited them; <code>levels</code> entries apply to their level only.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.orderedLists</code></td>
+      <td><code>OrderedListsConfig</code></td>
+      <td>—</td>
+      <td>Partial overrides applied on top of the document's <code>orderedLists</code> inside the part, after <code>numberColor</code> and the bold weight — e.g. a <code>separator</code> of <code>'•'</code> with its own <code>separatorFontFamily</code> and <code>separatorColor</code> for a part opener's chapter list.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Part design placeholders
+
+The design slot resolves the heading placeholder set with the part's own values: `{titleText}` is the fence's `title`; `{number}` the `number` exactly as written; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` re-format it — the number is parsed as a decimal or a roman numeral (`"IV"`, `"iv"` and `"4"` all give `{numberDecimal}` = `4`), and resolve to `''` for anything else. `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (the chapter before the part), `{pageNumber}`, `{totalPages}` and the metadata placeholders are available too. `{attr.<key>}` reads the current chapter's H1 attributes.
+
+### The `:::part` container
+
+A `:::part{number="…" title="…"}` line opens the part and a bare `:::` closes it; both attributes are optional (they default to `''`). The blocks in between — typically the chapter list — flow in the part page's single column with `bodyStyle`, starting at `margins.top`; a body longer than the page continues on ordinary pages. The page is classified `role: 'part'` (`VDTPage.partInfo` carries the number and title), so header and footer elements can target or skip it with `pages: 'part'` / `pages: 'body'`; the PDF backend adds the part to the outline above its chapters. An empty body (`:::part{…}` directly followed by `:::`) is the common case and still produces the page — consecutive parts never share one. A `:::part` nested in another part is flattened into the outer one.
+
+```ts
+const resolved = resolvePartsConfig(config.parts, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => margins filled from the page, bodyStyle from the body / list configs
+
+const minimal = stripPartsDefaults(config.parts);
+// => undefined when only static defaults remain
 ```
 
 

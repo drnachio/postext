@@ -26,6 +26,7 @@ const STATIC_DEFAULTS = {
   borderWidth: { value: 0.75, unit: 'pt' as const },
   // 0.375em ≈ 0.25 × the 1.5em line height — matches the previous padding.
   cellPadding: { value: 0.375, unit: 'em' as const },
+  rules: 'grid' as const,
 } satisfies Partial<ResolvedTableStyleConfig>;
 
 /** Resolve a partial table-style config into a fully-specified one. Font
@@ -53,6 +54,7 @@ export function resolveTableStyleConfig(
     borderColor: p.borderColor ?? bodyText.color,
     borderWidth: p.borderWidth ?? STATIC_DEFAULTS.borderWidth,
     cellPadding: p.cellPadding ?? STATIC_DEFAULTS.cellPadding,
+    rules: p.rules ?? STATIC_DEFAULTS.rules,
   };
 }
 
@@ -92,6 +94,7 @@ export function stripTableStyleDefaults(
   if (tableStyle.borders !== undefined && tableStyle.borders !== STATIC_DEFAULTS.borders) { r.borders = tableStyle.borders; has = true; }
   if (tableStyle.borderWidth !== undefined && !dimensionsEqual(tableStyle.borderWidth, STATIC_DEFAULTS.borderWidth)) { r.borderWidth = tableStyle.borderWidth; has = true; }
   if (tableStyle.cellPadding !== undefined && !dimensionsEqual(tableStyle.cellPadding, STATIC_DEFAULTS.cellPadding)) { r.cellPadding = tableStyle.cellPadding; has = true; }
+  if (tableStyle.rules !== undefined && tableStyle.rules !== STATIC_DEFAULTS.rules) { r.rules = tableStyle.rules; has = true; }
 
   return has ? r : undefined;
 }

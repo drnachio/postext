@@ -1,5 +1,5 @@
 import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from 'postext';
-import { dimensionToPx } from 'postext';
+import { dimensionToPx, columnRuleSegments } from 'postext';
 import { type PageCtx, drawLinePx, colorFromHex } from './primitives';
 
 export function renderBaselineGrid(
@@ -34,14 +34,13 @@ export function renderColumnRule(
   lineWidthPx: number,
 ): void {
   if (columns.length < 2) return;
+  // One segment per gutter of each column band; span columns interrupt the
+  // rule (mirrors the canvas backend via `columnRuleSegments`).
+  const segments = columnRuleSegments(columns);
+  if (segments.length === 0) return;
   const color = colorFromHex(colorHex, ctx.colorSpace);
-  for (let i = 0; i < columns.length - 1; i++) {
-    const left = columns[i]!.bbox;
-    const right = columns[i + 1]!.bbox;
-    const x = (left.x + left.width + right.x) / 2;
-    const top = Math.min(left.y, right.y);
-    const bottom = Math.max(left.y + left.height, right.y + right.height);
-    drawLinePx(ctx, x, top, x, bottom, color, lineWidthPx);
+  for (const seg of segments) {
+    drawLinePx(ctx, seg.x, seg.top, seg.x, seg.bottom, color, lineWidthPx);
   }
 }
 
@@ -80,7 +79,11 @@ export function renderCutLines(ctx: PageCtx, page: VDTPage, doc: VDTDocument): v
   }
 }
 
+/** The page's content area: `page.contentArea` when the pipeline set it
+ *  (per page, so mirrored margins are honoured), else inferred from the
+ *  column bboxes (hand-built pages). */
 export function computeContentArea(page: VDTPage, doc: VDTDocument): BoundingBox {
+  if (page.contentArea) return page.contentArea;
   const { dpi, margins } = doc.config.page;
   const pxPerCm = dpi / 2.54;
   const marginTop = margins.top.unit === 'cm' ? margins.top.value * pxPerCm : margins.top.value;

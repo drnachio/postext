@@ -8,7 +8,8 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "env": ["POSTEXT_PRIVATE_PRESETS_DIR"]
     },
     "test": {
       "dependsOn": ["^build"]

@@ -217,6 +217,12 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   ctx.font = block.bulletFontString;
   const y = block.bulletY ?? firstLine.baseline;
   ctx.fillText(block.bulletText, block.bulletOffsetX, y);
+  // Ordered-list separator styled apart from the number (own font/colour).
+  if (block.separatorText && block.separatorX !== undefined) {
+    ctx.fillStyle = block.separatorColor ?? block.bulletColor ?? block.color;
+    ctx.font = block.separatorFontString ?? block.bulletFontString;
+    ctx.fillText(block.separatorText, block.separatorX, y);
+  }
   ctx.restore();
 }
 
@@ -264,8 +270,14 @@ export function renderBlock(
     italicColor: block.italicColor,
     refColor: block.refColor,
   };
+  // Justify against the block's own measure, not the column: a block inside a
+  // callout (or any narrower container) was laid out for its inner width,
+  // and the HTML backend already does the same. Flow blocks fill their
+  // column, so this is identical for them.
+  void columnWidth;
+  void columnX;
   for (const line of block.lines) {
-    renderLine(ctx, line, style, block.textAlign, columnWidth, columnX);
+    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

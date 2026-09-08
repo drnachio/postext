@@ -2,8 +2,8 @@
 
 import { useRef } from 'react';
 import { Download, Upload, RotateCcw } from 'lucide-react';
-import { isDefaultColorPalette } from 'postext';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, createDefaultConfig } from '../context/SandboxContext';
+import { isDefaultColorPalette, stripConfigDefaults } from 'postext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxPresets, useSandboxSelector } from '../context/SandboxContext';
 import { exportConfigToJson, importConfigFromJson } from '../storage/persistence';
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
@@ -13,11 +13,14 @@ import { LayoutSection } from './sections/LayoutSection';
 import { HeaderFooterSection } from './sections/HeaderFooterSection';
 import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
+import { PartsSection } from './sections/PartsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
 import { MathSection } from './sections/MathSection';
 import { TableStyleSection } from './sections/TableStyleSection';
 import { CaptionStyleSection } from './sections/CaptionStyleSection';
+import { ParagraphStylesSection } from './sections/ParagraphStylesSection';
+import { CalloutStylesSection } from './sections/CalloutStylesSection';
 import { DiagramStyleSection } from './sections/DiagramStyleSection';
 import { ResourceTypesSection } from './sections/ResourceTypesSection';
 import { HtmlViewerSection } from './sections/HtmlViewerSection';
@@ -29,6 +32,8 @@ export function ConfigPanel() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
+  const presetConfig = useSandboxSelector((s) => s.presetConfig);
+  const { reload } = useSandboxPresets();
   const importRef = useRef<HTMLInputElement>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,8 +48,13 @@ export function ConfigPanel() {
     e.target.value = '';
   };
 
+  // "Overrides" means the config differs from the active preset's. When the
+  // preset config is unknown (hydrated from an earlier session), fall back
+  // to comparing against the engine defaults.
   const otherKeys = Object.keys(config).filter((k) => k !== 'colorPalette');
-  const hasAnyOverrides = otherKeys.length > 0 || !isDefaultColorPalette(config.colorPalette);
+  const hasAnyOverrides = presetConfig
+    ? JSON.stringify(stripConfigDefaults(config)) !== JSON.stringify(stripConfigDefaults(presetConfig))
+    : otherKeys.length > 0 || !isDefaultColorPalette(config.colorPalette);
 
   return (
     <div className="flex h-full flex-col">
@@ -62,7 +72,7 @@ export function ConfigPanel() {
           {hasAnyOverrides && (
             <ConfirmPopover
               message={labels.resetConfigConfirm}
-              onConfirm={() => dispatch({ type: 'SET_CONFIG', payload: createDefaultConfig() })}
+              onConfirm={() => { void reload('config'); }}
             >
               {({ open }) => (
                 <Tooltip content={labels.reset} side="bottom">
@@ -124,11 +134,14 @@ export function ConfigPanel() {
         <HeaderFooterSection />
         <BodyTextSection />
         <HeadingsSection />
+        <PartsSection />
         <UnorderedListsSection />
         <OrderedListsSection />
         <MathSection />
         <TableStyleSection />
         <CaptionStyleSection />
+        <ParagraphStylesSection />
+        <CalloutStylesSection />
         <DiagramStyleSection />
         <ResourceTypesSection />
         <HtmlViewerSection />

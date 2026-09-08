@@ -1,3 +1,4 @@
+import { TITLE_BREAK_RE } from '../parse/inlineFormatting';
 import type { DocumentMetadata } from '../types';
 import type { VDTBlock, VDTPage } from '../vdt';
 
@@ -20,6 +21,17 @@ export interface PlaceholderContext {
   metadata: DocumentMetadata;
   /** Chapter title per page index (most recent H1 at or before each page). */
   chapterTitleByPageIndex: string[];
+  /** Heading attributes of the current chapter's H1 per page index (see
+   *  `computeChapterAttrs`). Backs `{attr.<key>}` in header/footer slots. A
+   *  missing entry or key resolves to `''`. */
+  chapterAttrsByPageIndex?: Record<string, string>[];
+  /** Current part title / number per page index (see `computePartValues`).
+   *  Back `{partTitle}` / `{partNumber}`; a missing entry resolves to `''`. */
+  partTitleByPageIndex?: string[];
+  partNumberByPageIndex?: string[];
+  /** Current chapter number per page index (see `computeChapterNumbers`).
+   *  Backs `{chapterNumber}` in header/footer slots. */
+  chapterNumberByPageIndex?: string[];
 }
 
 export interface PlaceholderResult {
@@ -36,9 +48,26 @@ const PLACEHOLDER_NAMES = new Set([
   'author',
   'publishDate',
   'chapterTitle',
+  'chapterNumber',
+  'partTitle',
+  'partNumber',
 ]);
 
 const METADATA_PLACEHOLDERS = new Set(['title', 'subtitle', 'author', 'publishDate']);
+
+/** Placeholder grammar: `name` or `name.key` — the dotted form is reserved
+ *  for namespaced lookups such as `{attr.author}` (heading attributes). */
+export const PLACEHOLDER_NAME_RE = /^[a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z_][a-zA-Z0-9_-]*)?$/;
+
+/** Namespace of the heading-attribute placeholders (`{attr.<key>}`). */
+export const ATTR_PLACEHOLDER_PREFIX = 'attr.';
+
+/** When `name` is an `attr.<key>` placeholder, returns `<key>`. */
+export function attrPlaceholderKey(name: string): string | undefined {
+  if (!name.startsWith(ATTR_PLACEHOLDER_PREFIX)) return undefined;
+  const key = name.slice(ATTR_PLACEHOLDER_PREFIX.length);
+  return key.length > 0 ? key : undefined;
+}
 
 /**
  * Precompute chapter titles (most recent H1 text) for each page index by
@@ -57,7 +86,7 @@ export function computeChapterTitles(
   totalPages: number,
   pages?: ChapterTitlePageInfo[],
 ): string[] {
-  return computeChapterValues(blocks, totalPages, pages, plainTextOfBlock);
+  return computeChapterValues(blocks, totalPages, pages, plainTextOfBlock, '');
 }
 
 /**
@@ -70,26 +99,58 @@ export function computeChapterNumbers(
   totalPages: number,
   pages?: ChapterTitlePageInfo[],
 ): string[] {
-  return computeChapterValues(blocks, totalPages, pages, (b) => b.numberPrefix ?? '');
+  // Without a level-1 numbering template the prefix is empty; fall back to
+  // the chapter's ordinal so `{chapterNumber}` still counts chapters.
+  let ordinal = 0;
+  let lastContentIndex: number | undefined;
+  return computeChapterValues(
+    blocks,
+    totalPages,
+    pages,
+    (b) => {
+      // A heading split across columns yields several blocks with the same
+      // content index; count the chapter once.
+      if (b.contentIndex === undefined || b.contentIndex !== lastContentIndex) ordinal++;
+      lastContentIndex = b.contentIndex;
+      const prefix = b.numberPrefix?.trim() ?? '';
+      return prefix.length > 0 ? prefix : String(ordinal);
+    },
+    '',
+  );
 }
 
-/** Shared walker behind `computeChapterTitles` / `computeChapterNumbers`:
- *  tracks the most recent H1's extracted value per page. */
-function computeChapterValues(
+/**
+ * Precompute the heading attributes (`# Title {key="value"}`) of the most
+ * recent H1 per page. Backs `{attr.<key>}` in header/footer slots; pages
+ * before the first H1 get an empty record.
+ */
+export function computeChapterAttrs(
+  blocks: VDTBlock[],
+  totalPages: number,
+  pages?: ChapterTitlePageInfo[],
+): Record<string, string>[] {
+  return computeChapterValues(blocks, totalPages, pages, (b) => b.attrs ?? {}, {});
+}
+
+/** Shared walker behind `computeChapterTitles` / `computeChapterNumbers` /
+ *  `computeChapterAttrs`: tracks the most recent H1's extracted value per
+ *  page, starting from `empty` before the first H1. */
+function computeChapterValues<T>(
   blocks: VDTBlock[],
   totalPages: number,
   pages: ChapterTitlePageInfo[] | undefined,
-  extract: (block: VDTBlock) => string,
-): string[] {
-  const out = new Array<string>(totalPages).fill('');
-  const byPage = new Map<number, string>();
-  let current = '';
+  extract: (block: VDTBlock) => T,
+  empty: T,
+): T[] {
+  const out = new Array<T>(totalPages).fill(empty);
+  const byPage = new Map<number, T>();
+  let current: T = empty;
   // Walk blocks in page/column order. The VDT `doc.blocks` array is already
   // insertion-ordered by placement, so pages are in increasing index.
   let lastPageIndex = -1;
   // Track H1 page-indices so we can reassign any parity-padding pages
   // that precede them.
-  const h1PageIndices: Array<{ pageIndex: number; value: string }> = [];
+  const h1PageIndices: Array<{ pageIndex: number; value: T }> = [];
   for (const b of blocks) {
     if (b.pageIndex < 0) continue;
     while (lastPageIndex < b.pageIndex) {
@@ -130,6 +191,44 @@ function computeChapterValues(
   return out;
 }
 
+/** The page fields `computePartValues` reads. */
+export interface PartPageInfo extends ChapterTitlePageInfo {
+  partInfo?: { number: string; title: string };
+}
+
+/**
+ * Precompute the current part title and number per page index. A page with
+ * `partInfo` (a `:::part` divider page) starts a new part that runs until
+ * the next one; pages before the first part get `''`. Blank parity pages
+ * immediately preceding a part page belong to the upcoming part (they exist
+ * only to push it onto the right parity); a `blankForForce` page stops the
+ * walk — it belongs to the previous part, the same rule as chapters.
+ */
+export function computePartValues(
+  pages: readonly PartPageInfo[],
+): { partTitleByPageIndex: string[]; partNumberByPageIndex: string[] } {
+  const partTitleByPageIndex = new Array<string>(pages.length).fill('');
+  const partNumberByPageIndex = new Array<string>(pages.length).fill('');
+  let title = '';
+  let number = '';
+  for (let p = 0; p < pages.length; p++) {
+    const info = pages[p]!.partInfo;
+    if (info) {
+      title = info.title.replace(TITLE_BREAK_RE, ' ');
+      number = info.number;
+      for (let q = p - 1; q >= 0; q--) {
+        const prev = pages[q]!;
+        if (prev.blankForForce || !prev.blankForParity) break;
+        partTitleByPageIndex[q] = title;
+        partNumberByPageIndex[q] = number;
+      }
+    }
+    partTitleByPageIndex[p] = title;
+    partNumberByPageIndex[p] = number;
+  }
+  return { partTitleByPageIndex, partNumberByPageIndex };
+}
+
 function plainTextOfBlock(block: VDTBlock): string {
   // Strip any numbering prefix that was prepended during build.
   const lines = block.lines.map((l) => l.text).join(' ');
@@ -141,7 +240,9 @@ function plainTextOfBlock(block: VDTBlock): string {
 
 /**
  * Resolve placeholder templates. Grammar:
- *   - `{name}` with name matching `[a-zA-Z][a-zA-Z0-9]*` is a placeholder.
+ *   - `{name}` with name matching `[a-zA-Z][a-zA-Z0-9]*` is a placeholder;
+ *   - `{name.key}` is a namespaced placeholder — `{attr.<key>}` reads the
+ *     current chapter's heading attributes (missing → `''`, no warning);
  *   - `{{` and `}}` are literal braces.
  */
 export function resolvePlaceholders(
@@ -173,8 +274,14 @@ export function resolvePlaceholders(
         continue;
       }
       const name = template.slice(i + 1, end);
-      if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) {
+      if (!PLACEHOLDER_NAME_RE.test(name)) {
         out += template.slice(i, end + 1);
+        i = end + 1;
+        continue;
+      }
+      const attrKey = attrPlaceholderKey(name);
+      if (attrKey !== undefined) {
+        out += ctx.chapterAttrsByPageIndex?.[ctx.page.index]?.[attrKey] ?? '';
         i = end + 1;
         continue;
       }
@@ -213,6 +320,12 @@ function resolveName(name: string, ctx: PlaceholderContext): string {
       return typeof ctx.metadata.publishDate === 'string' ? ctx.metadata.publishDate : '';
     case 'chapterTitle':
       return ctx.chapterTitleByPageIndex[ctx.page.index] ?? '';
+    case 'partTitle':
+      return ctx.partTitleByPageIndex?.[ctx.page.index] ?? '';
+    case 'partNumber':
+      return ctx.partNumberByPageIndex?.[ctx.page.index] ?? '';
+    case 'chapterNumber':
+      return ctx.chapterNumberByPageIndex?.[ctx.page.index] ?? '';
     default:
       return '';
   }
@@ -233,7 +346,7 @@ export function collectPlaceholderNames(template: string): string[] {
       const end = template.indexOf('}', i + 1);
       if (end === -1) break;
       const name = template.slice(i + 1, end);
-      if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) names.add(name);
+      if (PLACEHOLDER_NAME_RE.test(name)) names.add(name);
       i = end + 1;
       continue;
     }
@@ -243,7 +356,7 @@ export function collectPlaceholderNames(template: string): string[] {
 }
 
 export function isKnownPlaceholder(name: string): boolean {
-  return PLACEHOLDER_NAMES.has(name);
+  return PLACEHOLDER_NAMES.has(name) || attrPlaceholderKey(name) !== undefined;
 }
 
 export function isMetadataPlaceholder(name: string): boolean {

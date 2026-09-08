@@ -183,9 +183,16 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       rafId = 0;
       const rect = container.getBoundingClientRect();
       if (rect.width === containerSizeRef.current.width && rect.height === containerSizeRef.current.height) return;
+      const hadNoSize = containerSizeRef.current.width === 0;
       containerSizeRef.current = { width: rect.width, height: rect.height };
       const { displayWidth, displayHeight } = computeDisplaySizeRef.current(rect.width, rect.height);
       applyDisplaySize(displayWidth, displayHeight);
+      // The LAYOUT effect bails out while the container has no size, so a
+      // document that arrived before the first real measurement would never
+      // get its page DOM. Re-run the layout once the size is known.
+      if (rect.width > 0 && (hadNoSize || (docRef.current && lastGeomRef.current === null))) {
+        setLayoutKey((k) => k + 1);
+      }
     };
     const observer = new ResizeObserver(() => {
       if (rafId !== 0) return;

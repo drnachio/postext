@@ -1,6 +1,6 @@
 import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
-import { REF_PLACEHOLDER } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, REF_PLACEHOLDER } from './inlineFormatting';
 
 /**
  * Build a per-character map from plain text to absolute source offsets.
@@ -61,6 +61,17 @@ function computeSourceMap(
       while (j < blockSrcEnd && markdown[j] !== '}') j++;
       if (j < blockSrcEnd) j++; // consume the closing `}`
       r = j;
+      continue;
+    }
+    if (ch === BREAK_PLACEHOLDER) {
+      // Title break: the plain char stands for the `\\` pair in the source.
+      while (r < blockSrcEnd && !(markdown[r] === '\\' && markdown[r + 1] === '\\')) r++;
+      if (r >= blockSrcEnd) {
+        map[p] = blockSrcEnd;
+        continue;
+      }
+      map[p] = r;
+      r += 2;
       continue;
     }
     const isSpace = ch === ' ';

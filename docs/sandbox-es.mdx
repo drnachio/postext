@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Entorno interactivo para experimentar con el motor de maquetación de Postext',
   lang: 'es',
-  lastUpdated: '2026-06-10',
-  readingTime: '10 min',
+  lastUpdated: '2026-09-08',
+  readingTime: '12 min',
   order: 7,
 };
 
@@ -24,9 +24,10 @@ El Sandbox sigue un paradigma IDE familiar con tres áreas principales: una **ba
 
 ### Barra de actividad
 
-Una tira estrecha en el borde izquierdo contiene botones con iconos para navegar entre paneles. La sección superior aloja cinco interruptores de panel, de arriba abajo:
+Una tira estrecha en el borde izquierdo contiene botones con iconos para navegar entre paneles. La sección superior aloja seis interruptores de panel, de arriba abajo:
 
 - **Editor de markdown** (icono `FileCode`) — Abre el panel de edición de markdown
+- **Presets** (icono `LayoutTemplate`) — Abre el panel de paquetes predefinidos
 - **Recursos** (icono `FolderOpen`) — Abre el panel de gestión de recursos
 - **Fuentes** (icono `Type`) — Abre el panel de gestión de fuentes personalizadas
 - **Configuración** (icono `Settings2`) — Abre el panel de configuración de la maquetación
@@ -55,9 +56,36 @@ Las aplicaciones anfitrionas pueden ampliar la barra de herramientas con sus pro
 
 La cabecera del panel ofrece tres acciones:
 
-- **Restablecer** (popover de confirmación) — Restaura el documento por defecto del idioma **y** reemplaza el conjunto de recursos con los recursos de ejemplo de ese idioma
+- **Restablecer** (popover de confirmación) — Recarga la **parte de documento** del preset activo: el markdown y todo el conjunto de recursos se reemplazan por los del preset (para el preset integrado, el documento de ejemplo del idioma y sus recursos de ejemplo); la configuración no se toca, salvo las fuentes personalizadas del preset. Consulta [Panel de presets](#panel-de-presets).
 - **Exportar** — Descarga el markdown como `postext-markdown.json`
 - **Importar** — Carga un archivo de markdown exportado previamente
+
+#### Panel de presets
+
+Un **paquete predefinido** (preset) es un punto de partida completo que se carga como una unidad: un documento markdown, un `PostextConfig`, los recursos (con sus contenidos de mapa de bits/SVG y sus modelos de tabla) y los archivos de fuentes personalizadas a los que se refiere la configuración. El panel lista todos los presets que el sandbox puede alcanzar y marca el activo:
+
+- **Preset integrado** — *Guía de Postext*, el documento de ejemplo por defecto que acompaña al paquete, siempre disponible y siempre el primero de la lista. Es un preset **público**.
+- **Presets remotos** — Paquetes servidos por HTTP desde las URL base pasadas en la prop `presetSources` (consulta [Props](#props)). Cada fuente es pública o **privada**; los presets privados llevan la etiqueta *Privado* en la lista y están pensados para material que no debe salir de una máquina — el sitio web público solo anuncia una fuente privada en desarrollo local, donde la aplicación Next.js sirve la carpeta indicada por `POSTEXT_PRIVATE_PRESETS_DIR` a través de `/api/private-presets`. En producción nunca se lista.
+- **`default: true`** — Un preset privado marcado como predeterminado se carga automáticamente la primera vez que se abre un sandbox *intacto* (con el documento integrado sin editar); si hay varios marcados, gana el que tenga un `locale` coincidente con el idioma de la interfaz. Los presets públicos nunca se cargan automáticamente.
+
+Cada fila muestra el nombre del preset, una descripción opcional, su etiqueta de idioma y sus etiquetas *Privado* / *Por defecto*. Pulsar una fila (popover de confirmación) carga el preset **completo** — documento, recursos, configuración y fuentes — tras escribir los archivos de fuente y los blobs de recursos en IndexedDB, de modo que los viewports nunca ven un documento a medio aplicar. La fila activa lleva un botón de texto **Recargar** y la cabecera del panel el icono equivalente; ambos recargan el preset activo por completo. Cargar un preset *distinto* siempre pide confirmación; recargar el activo solo la pide cuando el documento tiene cambios locales (con un documento intacto la recarga es idempotente).
+
+**Presets en vivo.** Los presets remotos se siguen automáticamente: cada vez que se aplica un preset, el sandbox registra la *huella* (fingerprint) del paquete junto con los hashes del markdown, la configuración y el conjunto de recursos que aplicó. Mientras la página está visible consulta la huella cada 3 segundos (e inmediatamente cuando la pestaña vuelve a ser visible o la ventana recupera el foco). Cuando la huella cambia:
+
+- Si el documento está **intacto** — markdown, configuración y recursos siguen produciendo los hashes que aplicó el preset — el preset se vuelve a aplicar por completo y en el panel aparece brevemente el aviso *Preset actualizado desde disco*.
+- Si hay **cambios locales**, se conservan: una franja persistente en la parte superior del panel (*El preset ha cambiado en disco. Tus cambios locales se conservan.*) ofrece un botón **Recargar**, y el icono de Presets de la barra de actividad muestra un punto hasta que el preset se recarga.
+
+La misma comprobación se ejecuta al cargar, de modo que editar un paquete y abrir después el sandbox recoge la nueva versión si el documento estaba intacto. La huella procede de `<directorio-del-preset>/fingerprint.json`, un archivo virtual que la ruta de desarrollo responde con un hash del directorio basado solo en metadatos (consulta el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset)); las fuentes que no lo sirven simplemente no se siguen.
+
+El preset activo determina además qué restauran los botones **Restablecer** de los otros paneles:
+
+| Panel | Restablecer restaura |
+|-------|----------------------|
+| Editor de markdown | El markdown del preset y su conjunto de recursos (la parte de documento) |
+| Configuración | La configuración del preset, fuentes personalizadas incluidas |
+| Presets (Recargar) | Todo: documento, recursos, configuración y fuentes |
+
+Un preset que estuvo activo en una sesión anterior pero que ya no lista ninguna fuente (normalmente un preset privado en una compilación que no lo sirve) sigue apareciendo, atenuado como *No disponible en esta compilación*, para que el sandbox conserve el contenido cargado en lugar de cambiarlo silenciosamente por el integrado. El id del preset activo se conserva bajo la clave `postext-sandbox-preset` (consulta [Persistencia](#persistencia)); el formato del paquete se describe en el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset).
 
 #### Panel de recursos
 
@@ -76,6 +104,7 @@ Todo el panel es además una zona de arrastrar y soltar: suelta archivos desde e
 - **ID** — Editable y validado como slug; los ids duplicados se señalan y nunca se confirman, y un id vacío recibe una sugerencia derivada de la leyenda. Renombrar conserva el contenido binario almacenado.
 - **Tipo** — Selección entre los tipos de recurso configurados
 - **Leyenda** — Admite Markdown en línea (negrita, cursiva, código y `:ref`)
+- **Nota** — Una línea de fuente, crédito u observación opcional compuesta en un cuerpo menor bajo el recurso (mismo formato en línea que la leyenda); se estiliza con el grupo *Nota* de la sección de configuración *Leyendas*
 - **Texto alternativo** — Descripción de accesibilidad para la salida HTML
 - **Colocación** — Posición (`top` / `bottom` / `here`) más extensión (`column` / `page`, deshabilitada cuando la posición es `here`), coincidiendo con los valores por defecto del motor: `top` + `column`
 - **Contenido** — Cargadores de reemplazo para el archivo de mapa de bits o SVG
@@ -85,6 +114,7 @@ Todo el panel es además una zona de arrastrar y soltar: suelta archivos desde e
 **Editor de tablas.** Los recursos de tabla abren un editor de cuadrícula interactivo:
 
 - Barra de herramientas con añadir/quitar fila y columna, combinar/dividir celdas, interruptores de fila y columna de cabecera, y alineación por celda
+- **Anchos de columna** — Un peso numérico por columna bajo la cuadrícula (`2, 1, 1` da a la primera columna la mitad del ancho; vacío significa anchos iguales), escrito en `table.model.columnWidths`. Añadir o quitar una columna mantiene los pesos alineados; un enlace *Anchos iguales* los borra
 - **Pegar como tabla** — Pegar TSV (o CSV simple con comillas) rellena la cuadrícula
 - **Deshacer/rehacer** — Cmd/Ctrl+Z y Mayús+Cmd/Ctrl+Z
 - **Navegación con teclado** — Tab / Mayús-Tab (con salto de fila) y las teclas de flecha mueven entre celdas
@@ -102,18 +132,18 @@ Gestiona familias tipográficas personalizadas junto al catálogo integrado de G
 
 #### Panel de configuración
 
-Un editor basado en formulario para `PostextConfig`. Renderiza 17 secciones colapsables, en este orden:
+Un editor basado en formulario para `PostextConfig`. Renderiza 19 secciones colapsables, en este orden:
 
-- **Diseño** — *Paleta de color* (colores con nombre reutilizados por todos los selectores de color), *Página* (tamaño, márgenes, DPI, líneas de corte, rejilla de línea base, numeración de páginas), *Maquetación* (una columna, doble o columna y media, medianil, columna lateral), *Encabezado y pie* (elementos de texto, línea y caja por bloque con marcadores, paridad, desbordamiento y posicionamiento por anclaje)
-- **Texto** — *Texto de cuerpo* (fuente, tamaño, interlineado, alineación, separación silábica), *Encabezados* (valores generales más ajustes por nivel H1–H6, salto previo con paridad, extensión y un editor avanzado de ranura de diseño por nivel), *Listas no ordenadas*, *Listas ordenadas*, *Matemáticas*
-- **Recursos** — *Tablas* (`tableStyle`), *Leyendas* (`captionStyle`), *Diagramas* (`diagramStyle`: un interruptor de **tinta única** que recolorea los diagramas SVG a tintes de una sola tinta para impresión monocolor, más un selector del color de tinta que por defecto usa el color principal de la paleta), *Tipos de recurso* (nombres por tipo, etiquetas cortas, plantillas de numeración con marcadores `{n}` y `{h1}`…`{h6}`, formato y reinicio del contador, prefijo de leyenda y una vista previa en vivo estilo «Fig. 1.7»)
+- **Diseño** — *Paleta de color* (colores con nombre reutilizados por todos los selectores de color), *Página* (tamaño, márgenes — con un interruptor de **márgenes simétricos** que convierte izquierdo/derecho en interior/exterior para páginas enfrentadas — DPI, líneas de corte, rejilla de línea base, numeración de páginas), *Maquetación* (una columna, doble o columna y media, medianil, columna lateral), *Encabezado y pie* (elementos de texto, línea y caja por bloque con marcadores tomados de la lista permitida del motor — número de página, total de páginas, título, subtítulo, autor, fecha de publicación, título y número de capítulo, título y número de parte, y `{attr.key}` para un atributo del capítulo — paridad, un filtro de **páginas** — todas, cuerpo, aperturas de capítulo, separadores de parte o páginas en blanco — desbordamiento y posicionamiento por anclaje al contenedor, a un elemento hermano o al marco de **página** / **sangre** para bandas de borde a borde)
+- **Texto** — *Texto de cuerpo* (fuente, tamaño, interlineado, alineación, separación silábica), *Encabezados* (valores generales más ajustes por nivel H1–H6, caja del texto, salto previo con paridad, extensión y un editor avanzado de ranura de diseño por nivel con altura mínima de apertura), *Partes* (`parts`: la paridad de la página en la que se abre un `:::part`, un salto opcional tras la parte con su propia paridad, los márgenes de la página de parte — que heredan los de página, con las mismas etiquetas interior/exterior en modo simétrico — una ranura de **diseño de apertura** dispuesta sobre la caja de corte de la página cuyo selector de marcadores añade el juego de títulos: título actual y su número en forma decimal, romana o alfabética; y un **estilo del cuerpo** para los bloques dentro de la parte que hereda el texto de cuerpo y los colores de las listas), *Listas no ordenadas*, *Listas ordenadas*, *Matemáticas*
+- **Recursos** — *Tablas* (`tableStyle`: tipografía de cuerpo y cabecera, rellenos, bordes con un patrón de **filetes** — cuadrícula completa, solo horizontales, marco exterior o ninguno — y relleno de celda), *Leyendas* (`captionStyle`: tipografía, tamaño, alineación, **posición** encima o debajo del recurso, una **barra de fondo** opcional con su color y relleno, estilo independiente para etiqueta y descripción, y un grupo **Nota** con tamaño, color, cursiva, alineación y separación de la nota del recurso), *Estilos de párrafo* (`paragraphStyles`: estilos con nombre para los contenedores `:::paragraphs{style="…"}` — añade, elimina y renombra ids, y define fuente, tamaño, interlineado, color, alineación, separación silábica, sangría de primera línea y francesa, espacio entre párrafos y márgenes; los campos sin definir heredan el texto de cuerpo), *Estilos de recuadro* (`calloutStyles`: estilos con nombre para `:::callout{type="…"}` — añade, duplica, elimina y renombra ids, y define el título por defecto, extensión, colocación, anchura, fondo, borde, radio de esquina, relleno, una **franja** lateral, un **icono** que puede ser un glifo de texto o un SVG/bitmap elegido del panel de recursos, la tipografía del título y sustituciones de cuerpo y listas que heredan el texto del documento), *Diagramas* (`diagramStyle`: un interruptor de **tinta única** que recolorea los diagramas SVG a tintes de una sola tinta para impresión monocolor, más un selector del color de tinta que por defecto usa el color principal de la paleta), *Tipos de recurso* (nombres por tipo, etiquetas cortas, plantillas de numeración con marcadores `{n}` y `{h1}`…`{h6}`, formato y reinicio del contador, prefijo de leyenda, una vista previa en vivo estilo «Fig. 1.7» y una **sustitución del estilo de leyenda** colapsable que reemplaza solo los campos de leyenda que definas para ese tipo — posición, barra, colores, tipografía — y hereda el resto)
 - **Salida y utilidades** — *Visor HTML*, *Generación de PDF*, *Depuración*, *Avisos* (umbrales para el panel de diagnósticos)
 
 El panel sigue un **modelo de sustituciones** coherente: cada sección recuerda su estado abierto/cerrado entre sesiones; la cabecera de una sección muestra un botón de restablecer (con confirmación) solo mientras contiene ajustes personalizados; y cada control muestra un pequeño restablecedor por campo que aparece cuando su valor difiere del valor por defecto. Solo se guarda o exporta el subárbol personalizado — los valores por defecto se eliminan, así que un sandbox intacto almacena una configuración vacía.
 
 Los controles son contextuales: el ancho del medianil solo aparece en maquetaciones multicolumna, los ajustes de separación silábica solo aparecen cuando el texto está justificado, y el porcentaje de columna lateral solo se muestra en la maquetación de columna y media. Los cambios surten efecto inmediatamente en la vista previa del viewport. Para una referencia completa de todas las opciones de configuración y sus valores por defecto, consulta la página de [Configuración](/es/docs/configuration).
 
-La cabecera del panel ofrece **Restablecer** (popover de confirmación; solo visible cuando existen ajustes personalizados), **Exportar** e **Importar** — consulta [Exportar e importar](#exportar-e-importar).
+La cabecera del panel ofrece **Restablecer** (popover de confirmación; solo visible cuando la configuración difiere de la del preset activo — restaura la configuración de ese preset, fuentes personalizadas incluidas), **Exportar** e **Importar** — consulta [Exportar e importar](#exportar-e-importar).
 
 #### Panel de avisos
 
@@ -122,8 +152,8 @@ Diagnósticos en vivo recalculados a partir del markdown, la configuración, los
 - **Fuentes** — Familia tipográfica ausente; variantes de peso/estilo ausentes o duplicadas en una familia personalizada
 - **Tipografía** — Líneas flojas (espaciado entre palabras estirado más allá del umbral configurado); saltos en la jerarquía de encabezados (p. ej. H1 → H3); encabezados consecutivos sin texto de cuerpo entre ellos
 - **Matemáticas** — Fórmulas `$…$` / `$$…$$` inválidas o sin cerrar
-- **Directivas** — Nombres de directiva desconocidos; atributos de numeración o paridad inválidos
-- **Encabezados y pies** — Nombres de marcador desconocidos; marcadores cuyos metadatos del documento faltan
+- **Directivas y contenedores** — Nombres de directiva desconocidos (se acepta cualquier nombre que conozca el parser — `pagebreak`, `numbering`, `callout`, `paragraphs`, `part`); atributos de numeración o paridad inválidos; una valla de contenedor `:::` sin cerrar al final del documento (el clic enfoca su línea de apertura); un `:::paragraphs{style="…"}` cuyo id de estilo no está configurado; un `:::callout{type="…"}` cuyo tipo no figura entre los estilos de recuadro configurados
+- **Encabezados y pies** — Nombres de marcador fuera de la lista permitida del motor (se aceptan `{attr.…}` y los marcadores de parte); marcadores cuyos metadatos del documento faltan
 - **Diseño** — Anclajes cíclicos o colgantes entre elementos de diseño; elementos de texto cuyo desbordamiento por recorte siempre trunca
 - **Recursos** — Id de recurso desconocido en un `::resource` / `:ref`; recursos sin usar; ids de recurso duplicados; referencias colgantes a tipos de recurso; mapas de bits renderizados bastante más grandes que su tamaño en píxeles; almacenamiento no disponible (falta IndexedDB)
 
@@ -178,6 +208,7 @@ El Sandbox guarda automáticamente tu trabajo en el navegador:
 
 - **Markdown y configuración** — Se guardan automáticamente en `localStorage` tras 1 segundo de inactividad, con los valores por defecto de la configuración eliminados para que solo se almacenen tus ajustes personalizados
 - **Estado de la interfaz** — El panel y la pestaña de viewport activos, el ancho de la barra lateral, el estado abierto/cerrado de las secciones de configuración, los modos de zoom/ajuste/vista del canvas, la escala de fuente y el modo de columnas del HTML, y el estado de anclaje de las barras de herramientas se conservan en `localStorage`
+- **Preset activo** — El id del último preset cargado se guarda en `localStorage` bajo `postext-sandbox-preset`, de modo que los botones Restablecer de los paneles siguen restaurando ese preset entre sesiones (un preset que ya no se sirve aparece como no disponible). Lo que ese preset aplicó — la huella del paquete más los hashes del markdown, la configuración y el conjunto de recursos — se guarda bajo `postext-sandbox-preset-applied`, que es como la siguiente visita distingue un documento intacto de uno editado
 - **Recursos y fuentes** — Los registros de recursos, sus blobs binarios (mapas de bits y SVG) y los archivos de fuentes personalizadas persisten en **IndexedDB**; cuando IndexedDB no está disponible (p. ej. algunos modos de navegación privada), aparece un aviso de *almacenamiento no disponible* en el panel de avisos
 
 El almacenamiento se **comparte entre los idiomas de la interfaz**. Un documento por defecto intacto cambia al markdown por defecto del idioma actual y vuelve a sembrar los recursos de ejemplo cuando cambia el idioma — así, abrir el sandbox en español muestra ejemplos en español. Cualquier edición del usuario desactiva este comportamiento. Todas las vistas previas derivan además la configuración regional de separación silábica del idioma de la interfaz cuando no se ha establecido ninguna.
@@ -240,6 +271,7 @@ function App() {
 | `className` | `string` | Clase CSS para el contenedor raíz |
 | `labels` | `Partial<SandboxLabels>` | Sustituciones de las etiquetas de la interfaz, combinadas sobre los valores por defecto en inglés — pasa etiquetas traducidas junto con `locale` al embeber en otro idioma |
 | `locale` | `string` | Idioma de la interfaz (`'en'` por defecto). Selecciona los tipos de recurso y los recursos de ejemplo localizados, y proporciona la configuración regional de separación silábica que usan las vistas previas cuando no hay ninguna configurada |
+| `presetSources` | `{ url: string; private?: boolean }[]` | Fuentes de presets remotas, consultadas en orden tras el preset integrado. Cada `url` es una URL base que sirve un `index.json` (consulta [Formato de paquete de preset](#formato-de-paquete-de-preset)); `private: true` etiqueta los presets de la fuente como privados y hace que su marca `default` pueda cargarse automáticamente. Las fuentes que no responden simplemente no aportan nada |
 | `onConfigChange` | `(config) => void` | Callback cuando cambia la configuración |
 | `onMarkdownChange` | `(markdown) => void` | Callback cuando cambia el markdown |
 | `themeToggle` | `ReactNode` | Componente personalizado para el conmutador de tema, alojado en la parte inferior de la barra de actividad |
@@ -259,9 +291,99 @@ El paquete usa clases utilitarias de Tailwind CSS que hacen referencia a variabl
 - `--accent-blue` — Color de enlace/acento
 - `--font-mono` — Familia monoespaciada (para el editor de código)
 
+## Formato de paquete de preset
+
+Apéndice. Una fuente de presets es un directorio (servido por HTTP) cuya raíz contiene un `index.json` que lista directorios de preset; cada directorio contiene un manifiesto `preset.json` más los archivos de markdown, recursos y fuentes a los que se refiere. Las herramientas de `scripts/presets/` del repositorio generan paquetes exactamente con esta forma.
+
+```
+<raíz-de-presets>/
+  index.json
+  <directorio-del-preset>/
+    preset.json
+    <documento>.md         (uno por idioma si hace falta)
+    resources/             figuras: .svg / .png / .jpg / .jpeg / .webp / .gif
+    fonts/                 .otf / .ttf / .woff2, una cara por archivo
+```
+
+### `index.json`
+
+```jsonc
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "acme-journal",          // id estable, [a-z0-9-]
+      "dir": "acme-journal",         // nombre del directorio relativo a index.json
+      "name": "Acme Journal",
+      "description": "Artículo de revista a dos columnas",   // opcional
+      "locale": "es",                 // opcional
+      "default": true                 // opcional, como máximo uno
+    }
+  ]
+}
+```
+
+### `preset.json`
+
+```jsonc
+{
+  "version": 1,
+  "id": "acme-journal",
+  "name": "Acme Journal",
+  "description": "Artículo de revista a dos columnas",       // opcional
+  "locale": "es",                                     // opcional
+  "default": true,                                    // opcional
+
+  // Un único archivo, o uno por idioma
+  "markdown": "article.md",
+  // "markdown": { "en": "article.en.md", "es": "article.es.md" },
+
+  // JSON de PostextConfig opcional (página, márgenes, columnas, tipografía...).
+  // NO incluyas customFonts aquí: las fuentes vienen del array `fonts` de abajo.
+  "config": { },
+
+  "resources": [
+    {
+      "id": "fig-1-1",                 // referenciado desde el markdown (:ref)
+      "typeId": "figure",              // id del tipo de recurso (figure, table, ...)
+      "kind": "svg",                   // "svg" | "bitmap" | "table"
+      "file": "resources/fig-1-1.svg", // solo svg/bitmap, relativo a preset.json
+      "width": 240.5,                  // opcional, pt (svg) / px (bitmap)
+      "height": 180,                   // opcional
+      "caption": "Texto de la leyenda",
+      "altText": "Descripción accesible",             // opcional
+      "placement": { "position": "top", "span": "column" },  // opcional
+      "note": "Fuente: ...",                          // opcional
+      "table": { "model": { "rows": [[{ "content": "A", "isHeader": true }]], "headerRowCount": 1 } }
+                                                      // solo kind "table"
+    }
+  ],
+
+  "fonts": [
+    {
+      "name": "Some Family",           // nombre de familia usado por la configuración
+      "variants": [
+        { "weight": 400, "style": "normal", "file": "fonts/SomeFamily-Regular.otf" },
+        { "weight": 400, "style": "italic", "file": "fonts/SomeFamily-Italic.otf" },
+        { "weight": 700, "style": "normal", "file": "fonts/SomeFamily-Bold.otf" }
+      ]
+    }
+  ]
+}
+```
+
+Notas:
+
+- El `id` de `preset.json` debe coincidir con la entrada de `index.json`; `description`, `locale` y `default` del manifiesto prevalecen sobre los valores del índice una vez cargado el preset.
+- `markdown` es un nombre de archivo o un mapa idioma → archivo; el sandbox elige la entrada que coincide con el idioma de la interfaz (etiqueta exacta, luego idioma base, luego el `locale` del propio preset y, por último, la primera entrada).
+- `width` / `height` son opcionales para los recursos `svg` y `bitmap` — si faltan, se leen del archivo al cargar.
+- `table.model` es un `TableModel` de Postext: `rows` es un array de celdas por filas (`content` y, opcionalmente, `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` el número de filas de cabecera iniciales y `columnWidths` un array opcional de pesos relativos de columna.
+- Los archivos de fuente se guardan en IndexedDB con ids derivados del id del preset y la ruta del archivo, y las familias se añaden a `config.customFonts` al aplicar el preset; un `index.json` ausente o mal formado no produce ningún preset en lugar de un error.
+- `<directorio-del-preset>/fingerprint.json` es opcional y, en la ruta de desarrollo, **virtual**: cuando no existe tal archivo, `GET` responde `{ "fingerprint": "<sha1 hex>", "files": <n> }` calculado a partir de los metadatos de los archivos del directorio (ruta relativa, fecha de modificación y tamaño de cada archivo hasta cuatro niveles de profundidad, omitiendo los archivos ocultos y `node_modules`), nunca a partir de su contenido, con `Cache-Control: no-store`. El sandbox lo consulta para seguir las ediciones del paquete (consulta [Panel de presets](#panel-de-presets)). Un servidor estático puede servir un `fingerprint.json` real con la misma forma, o ninguno, en cuyo caso sus presets no se siguen.
+
 ## Roadmap
 
 Las siguientes características están planificadas para versiones futuras:
 
 - **Edición colaborativa** — Compartir sesiones del sandbox mediante URL
-- **Configuraciones predefinidas** — Plantillas de arranque rápido para escenarios de maquetación habituales (periódico, artículo académico, capítulo de libro)
+- **Galería pública de presets** — Paquetes públicos listos para escenarios de maquetación habituales (periódico, artículo académico, capítulo de libro) servidos desde el sitio web

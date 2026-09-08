@@ -89,6 +89,68 @@ describe('inline :ref rendering in body text', () => {
     expect(seg!.text).toBe('the diagram');
   });
 
+  it('case=lower lowercases the label but not the number', () => {
+    const seg = paragraphSegments({
+      markdown: 'See :ref{id="fig-a" case="lower"}.',
+      resources: [figure('fig-a')],
+    }).find((s) => s.refResourceId === 'fig-a');
+    // Label lowercased, NBSP kept, number untouched.
+    expect(seg!.text).toBe('fig.\u00A01');
+
+    const full = paragraphSegments({
+      markdown: 'See :ref{id="fig-a" style="full" case="lower"}.',
+      resources: [figure('fig-a')],
+    }).find((s) => s.refResourceId === 'fig-a');
+    expect(full!.text).toBe('figure\u00A01');
+  });
+
+  it('case=upper uppercases the label but not the number', () => {
+    const seg = paragraphSegments({
+      markdown: 'See :ref{id="fig-a" style="full" case="upper"}.',
+      resources: [figure('fig-a')],
+    }).find((s) => s.refResourceId === 'fig-a');
+    expect(seg!.text).toBe('FIGURE\u00A01');
+  });
+
+  it('case=capitalize capitalizes the label', () => {
+    // A lower-case type so the transform is observable on the label.
+    const doc = buildDocument(
+      { markdown: 'See :ref{id="fig-a" case="capitalize"}.', resources: [figure('fig-a')] },
+      {
+        resourceTypes: [
+          {
+            id: 'figure',
+            name: 'figure',
+            shortLabel: 'fig.',
+            numberingTemplate: '{n}',
+            resetOn: 'never',
+            counterFormat: 'decimal',
+            captionPrefix: 'Figure',
+          },
+        ],
+      },
+    );
+    const para = doc.blocks.find((b) => b.type === 'paragraph')!;
+    const seg = (para.lines[0]!.segments ?? []).find((s) => s.refResourceId === 'fig-a');
+    expect(seg!.text).toBe('Fig.\u00A01');
+  });
+
+  it('case has no effect on style="number"', () => {
+    const seg = paragraphSegments({
+      markdown: 'See :ref{id="fig-a" style="number" case="upper"}.',
+      resources: [figure('fig-a')],
+    }).find((s) => s.refResourceId === 'fig-a');
+    expect(seg!.text).toBe('1');
+  });
+
+  it('text override ignores case', () => {
+    const seg = paragraphSegments({
+      markdown: 'See :ref{id="fig-a" text="the Diagram" case="upper"}.',
+      resources: [figure('fig-a')],
+    }).find((s) => s.refResourceId === 'fig-a');
+    expect(seg!.text).toBe('the Diagram');
+  });
+
   it('styles references bold + emphasis colour by default, and honours overrides', () => {
     const md = 'See :ref{id="fig-a"} now.';
     // Default: emphasis colour (#295AA3) on the block, ref segment bold.

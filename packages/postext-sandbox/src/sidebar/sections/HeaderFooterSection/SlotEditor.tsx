@@ -113,6 +113,9 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
       )}
       {currentRaw.map((rawEl, idx) => {
         const resolvedEl = resolvedElements[idx];
+        const siblings = currentRaw
+          .map((s, i) => ({ id: s.id, kind: s.kind, index: i }))
+          .filter((s) => s.id !== rawEl.id);
         const isFirst = idx === 0;
         const isLast = idx === currentRaw.length - 1;
         return (
@@ -151,7 +154,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
                   raw={rawEl}
                   resolved={resolvedEl}
                   slotKind={slotKey}
-                  siblings={currentRaw.map((s, i) => ({ id: s.id, kind: s.kind, index: i })).filter((s) => s.id !== rawEl.id)}
+                  siblings={siblings}
                   onChange={(next) => updateAt(idx, next)}
                 />
               ) : rawEl.kind === 'rule' && resolvedEl?.kind === 'rule' ? (
@@ -159,6 +162,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
                   raw={rawEl}
                   resolved={resolvedEl}
                   slotKind={slotKey}
+                  siblings={siblings}
                   onChange={(next) => updateAt(idx, next)}
                 />
               ) : rawEl.kind === 'box' && resolvedEl?.kind === 'box' ? (
@@ -166,6 +170,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
                   raw={rawEl}
                   resolved={resolvedEl}
                   slotKind={slotKey}
+                  siblings={siblings}
                   onChange={(next) => updateAt(idx, next)}
                 />
               ) : null}

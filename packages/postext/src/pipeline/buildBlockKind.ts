@@ -1,3 +1,4 @@
+import { flattenTitleBreaks } from '../parse/inlineFormatting';
 /**
  * Resolve a parsed markdown block into its placement-ready metadata:
  * style, VDT type, heading/list attributes, and a `contentBlock` that may
@@ -50,6 +51,23 @@ export interface BlockKindContext {
   resourceTypeById: Map<string, ResourceType>;
   /** Computed resource number strings keyed by resource id. */
   resourceNumberById: Map<string, string>;
+  /** Style forced onto `paragraph` blocks by an enclosing `:::paragraphs`
+   *  container; the body style applies when unset. */
+  paragraphStyleOverride?: BlockStyle;
+}
+
+/** Upper-case `text` one UTF-16 code unit at a time, keeping any character
+ *  whose upper-case form is not exactly one code unit (`ß` → `SS`, ligatures)
+ *  so the result has the same length as the input and per-character source
+ *  maps remain valid. */
+export function uppercasePreservingLength(text: string): string {
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    const up = ch.toLocaleUpperCase();
+    out += up.length === 1 ? up : ch;
+  }
+  return out;
 }
 
 export function resolveBlockKind(
@@ -58,7 +76,7 @@ export function resolveBlockKind(
 ): BlockKind {
   const { resolved, bodyStyle, blockquoteStyle, headingPrefixes, blockIdx,
     listLevelIndentsPx, orderedLevelIndentsPx, orderedMetrics,
-    resourceById, resourceTypeById, resourceNumberById } = ctx;
+    resourceById, resourceTypeById, resourceNumberById, paragraphStyleOverride } = ctx;
 
   switch (rawBlock.type) {
     case 'resourceBlock': {
@@ -77,16 +95,36 @@ export function resolveBlockKind(
       };
     }
     case 'heading': {
-      const style = resolveHeadingStyle(rawBlock.level ?? 1, resolved);
+      const level = rawBlock.level ?? 1;
+      const style = resolveHeadingStyle(level, resolved);
       const numberPrefix = headingPrefixes[blockIdx];
       let contentBlock: ContentBlock = rawBlock;
+      // Letter-case transform on the title text (the numbering prefix, added
+      // below, is kept as written). Length-preserving so `sourceMap` stays 1:1.
+      const levelCfg = resolved.headings.levels.find((l) => l.level === level);
+      if (levelCfg?.textTransform === 'uppercase') {
+        contentBlock = {
+          ...contentBlock,
+          text: uppercasePreservingLength(contentBlock.text),
+          spans: contentBlock.spans.map((s) => (s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })),
+        };
+      }
+      // Forced title breaks render as spaces in the column; opener designs
+      // re-insert them from `titleBreaks` (see flattenTitleBreaks).
+      if (contentBlock.titleBreaks && contentBlock.titleBreaks.length > 0) {
+        contentBlock = {
+          ...contentBlock,
+          text: flattenTitleBreaks(contentBlock.text),
+          spans: contentBlock.spans.map((s) => (s.math ? s : { ...s, text: flattenTitleBreaks(s.text) })),
+        };
+      }
       if (numberPrefix) {
         const sep = `${numberPrefix} `;
-        const firstSpan = rawBlock.spans[0];
+        const firstSpan = contentBlock.spans[0];
         const newSpans = firstSpan
-          ? [{ text: sep + firstSpan.text, bold: firstSpan.bold, italic: firstSpan.italic }, ...rawBlock.spans.slice(1)]
+          ? [{ ...firstSpan, text: sep + firstSpan.text }, ...contentBlock.spans.slice(1)]
           : [{ text: sep, bold: false, italic: false }];
-        contentBlock = { ...rawBlock, text: sep + rawBlock.text, spans: newSpans };
+        contentBlock = { ...contentBlock, text: sep + contentBlock.text, spans: newSpans };
       }
       return {
         style,
@@ -145,7 +183,7 @@ export function resolveBlockKind(
     }
     default:
       return {
-        style: bodyStyle,
+        style: rawBlock.type === 'paragraph' && paragraphStyleOverride ? paragraphStyleOverride : bodyStyle,
         vdtType: 'paragraph',
         contentBlock: rawBlock,
         bulletXOffsetInColumn: 0,

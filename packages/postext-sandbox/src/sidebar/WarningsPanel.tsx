@@ -2,11 +2,17 @@
 
 import { useMemo } from 'react';
 import { AlertTriangle, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database } from 'lucide-react';
+import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES } from 'postext';
 import { useSandbox } from '../context/SandboxContext';
 import { computeWarnings } from '../warnings/compute';
 import { hasIndexedDB } from '../storage/blobStore';
 import type { Warning, WarningPayload } from '../warnings/types';
 import type { SandboxLabels } from '../types';
+
+/** Human tag for the design slot a warning points at. */
+function slotWhere(slot: string, level?: number): string {
+  return slot === 'heading' ? `H${level ?? ''}` : slot;
+}
 
 function iconFor(kind: WarningPayload['kind']) {
   switch (kind) {
@@ -30,6 +36,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'headerFooterMetadataMissing':
       return FileText;
     case 'unknownDirective':
+    case 'unclosedContainer':
+    case 'unknownParagraphStyle':
+    case 'unknownCalloutType':
     case 'numberingInvalidFormat':
     case 'numberingInvalidStartAt':
     case 'pagebreakInvalidParity':
@@ -85,6 +94,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeaderFooterMetadataMissingTitle;
     case 'unknownDirective':
       return labels.warningsUnknownDirectiveTitle;
+    case 'unclosedContainer':
+      return labels.warningsUnclosedContainerTitle;
+    case 'unknownParagraphStyle':
+      return labels.warningsUnknownParagraphStyleTitle;
+    case 'unknownCalloutType':
+      return labels.warningsUnknownCalloutTypeTitle;
     case 'numberingInvalidFormat':
       return labels.warningsNumberingInvalidFormatTitle;
     case 'numberingInvalidStartAt':
@@ -121,6 +136,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
   }
 }
 
+/** `pagebreak`, `numbering`, `callout`, … — every fence name the parser
+ *  accepts, for the unknown-directive detail string. */
+const KNOWN_FENCE_NAMES = [...KNOWN_DIRECTIVES, ...KNOWN_CONTAINERS]
+  .map((n) => `\`${n}\``)
+  .join(', ');
+
 function formatVariantList(
   variants: Array<{ weight: number; style: 'normal' | 'italic' }>,
 ): string {
@@ -154,11 +175,17 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'unclosedMath':
       return `${payload.delimiter}${payload.tex.slice(0, 40)}…`;
     case 'headerFooterUnknownPlaceholder':
-      return `${payload.slot} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
+      return `${slotWhere(payload.slot, payload.level)} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
     case 'headerFooterMetadataMissing':
-      return `${payload.slot} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
+      return `${slotWhere(payload.slot, payload.level)} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
     case 'unknownDirective':
-      return `:::${payload.name} — ${labels.warningsUnknownDirectiveDetail}`;
+      return `:::${payload.name} — ${labels.warningsUnknownDirectiveDetail.replace('__names__', KNOWN_FENCE_NAMES)}`;
+    case 'unclosedContainer':
+      return `:::${payload.name} — ${labels.warningsUnclosedContainerDetail}`;
+    case 'unknownParagraphStyle':
+      return `:::paragraphs{style="${payload.style}"} — ${labels.warningsUnknownParagraphStyleDetail}`;
+    case 'unknownCalloutType':
+      return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;
     case 'numberingInvalidFormat':
       return `format="${payload.value}" — ${labels.warningsNumberingInvalidFormatDetail}`;
     case 'numberingInvalidStartAt':
@@ -172,15 +199,15 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'alphaPdfOverflow':
       return labels.warningsAlphaPdfOverflowDetail;
     case 'designCyclicAnchor': {
-      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      const where = slotWhere(payload.slot, payload.level);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail ?? 'anchor chain loops back to this element'}`;
     }
     case 'designDanglingAnchor': {
-      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      const where = slotWhere(payload.slot, payload.level);
       return `${where} · #${payload.elementId} → #${payload.referencedId} — ${labels.warningsDesignDanglingAnchorDetail ?? 'referenced element does not exist'}`;
     }
     case 'designTextClipAlwaysTruncates': {
-      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      const where = slotWhere(payload.slot, payload.level);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignTextClipAlwaysTruncatesDetail ?? 'overflow clip with a small box always truncates'}`;
     }
     case 'headingSpanWithoutBreak':

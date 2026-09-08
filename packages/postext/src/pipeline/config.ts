@@ -7,10 +7,13 @@ import {
   resolveTableStyleConfig,
   resolveCaptionStyleConfig,
   resolveDiagramStyleConfig,
+  resolveParagraphStylesConfig,
+  resolveCalloutStylesConfig,
   resolveUnorderedListsConfig,
   resolveOrderedListsConfig,
   resolveMathConfig,
   resolveHeaderFooterConfig,
+  resolvePartsConfig,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
 } from '../defaults';
@@ -20,19 +23,31 @@ import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt
 export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
   const config = applyPaletteToConfig(rawConfig);
   const bodyText = resolveBodyTextConfig(config?.bodyText);
+  const headings = resolveHeadingsConfig(config?.headings);
+  const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
+  const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText);
+  const page = resolvePageConfig(config?.page);
   const resolved: ResolvedConfig = {
-    page: resolvePageConfig(config?.page),
+    page,
     layout: resolveLayoutConfig(config?.layout),
     bodyText,
-    headings: resolveHeadingsConfig(config?.headings),
+    headings,
     tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText),
     captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText),
     diagramStyle: resolveDiagramStyleConfig(config?.diagramStyle),
-    unorderedLists: resolveUnorderedListsConfig(config?.unorderedLists, bodyText),
-    orderedLists: resolveOrderedListsConfig(config?.orderedLists, bodyText),
+    paragraphStyles: resolveParagraphStylesConfig(config?.paragraphStyles, bodyText),
+    calloutStyles: resolveCalloutStylesConfig(config?.calloutStyles, bodyText, headings, unorderedLists),
+    unorderedLists,
+    orderedLists,
     math: resolveMathConfig(config?.math),
     header: resolveHeaderFooterConfig(config?.header, 'header'),
     footer: resolveHeaderFooterConfig(config?.footer, 'footer'),
+    parts: resolvePartsConfig(config?.parts, page, bodyText, unorderedLists, orderedLists),
+    // Kept for per-resource-type caption overrides, which resolve their
+    // palette colours at layout time (see `mergeCaptionStyle`).
+    ...(rawConfig?.colorPalette && rawConfig.colorPalette.length > 0
+      ? { colorPalette: rawConfig.colorPalette }
+      : {}),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }

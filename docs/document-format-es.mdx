@@ -99,6 +99,15 @@ Se aceptan listas de tipos mixtos a la misma profundidad (puedes pasar de no ord
 
 <Illustration name="ListNesting" data='{"title": "Profundidad de anidamiento de listas", "desc": "Las listas se anidan usando exactamente dos espacios por nivel, hasta una profundidad máxima de cinco. Cada nivel sangra más y puede usar un estilo de viñeta diferente.", "caption": "Dos espacios por nivel. Profundidad máxima: cinco.", "level1": "Nivel 1", "level2": "Nivel 2 — dos espacios", "level3": "Nivel 3 — cuatro espacios", "indentNote": "Exactamente dos espacios por nivel. Profundidad máxima: 5."}' />
 
+### Atributos de encabezado
+
+Una línea de encabezado puede terminar con un bloque de atributos entre llaves — la misma sintaxis `clave="valor"` de las directivas:
+
+```markdown
+# El largo camino {author="I. Zango Martín" year=1998}
+```
+
+Las llaves y su contenido se eliminan del texto del encabezado (el título anterior se renderiza como *El largo camino*) y se guardan en el encabezado como `attrs`. Se exponen a las ranuras de diseño como marcadores `{attr.<clave>}`: en la ranura de diseño avanzado del propio encabezado, y en los encabezados y pies de página, donde se resuelven a partir del H1 del capítulo actual. Solo se reconoce un bloque equilibrado y sin llaves anidadas al final de la línea; un `{}` suelto o una llave sin cerrar permanece en el texto. Ver **Configuración → Encabezados y pies**.
 
 ## Directivas
 
@@ -136,12 +145,80 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
       <td><code>:::numbering&#123;format="decimal" startAt=1&#125;</code></td>
       <td>En el siguiente límite de página, cambia la secuencia de numeración. Ambos atributos son opcionales — omite <code>format</code> para mantener el formato, omite <code>startAt</code> para continuar el contador.</td>
     </tr>
+    <tr>
+      <td><code>:::columnbreak</code></td>
+      <td>Termina aquí la columna actual: el siguiente bloque comienza en la siguiente columna de la misma página (o en una página nueva cuando la directiva cae en la última columna). No hace nada en una columna vacía, así que nunca genera una columna o página en blanco. La columna que termina conserva su hueco inferior — el equilibrado de columnas no la estira.</td>
+    </tr>
   </tbody>
 </table>
 
 Los valores de los atributos pueden ir entre comillas dobles (<code>"…"</code>), comillas simples (<code>'…'</code>) o sin comillas (<code>startAt=17</code>). Una clave sin `=` se trata como una bandera presente con valor vacío.
 
-Hoy solo se reconocen `pagebreak` y `numbering` — cualquier otra línea `:::nombre` se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox.
+Hoy solo se reconocen `pagebreak`, `numbering` y `columnbreak` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox.
+
+### Contenedores
+
+Un contenedor envuelve una serie de bloques entre dos vallas: una línea de apertura `:::nombre` o `:::nombre{atributos}`, luego cualquier contenido normal — párrafos, encabezados, listas, citas, fórmulas, incluso otras directivas — y una línea de cierre con un `:::` a secas. Los contenedores pueden anidarse; cada `:::` de cierre cierra el más interno de los abiertos.
+
+```
+:::callout{type="note"}
+Mantén la linterna encendida **todas** las noches.
+
+- Revisa la mecha.
+- Recórtala al anochecer.
+:::
+```
+
+Se reconocen tres nombres de contenedor. Lo que renderiza cada uno se define en su propia sección de la configuración:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Sintaxis</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>:::callout&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Contenido en caja — una nota, un consejo o un aviso separado del cuerpo en una caja con borde o fondo tintado.</td>
+    </tr>
+    <tr>
+      <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Una serie de párrafos compuesta con un estilo de párrafo con nombre (una entradilla, un epígrafe, unas notas en letra pequeña) en lugar del estilo del cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Un abridor de parte o sección: el encabezado y el texto que encierra forman la página de apertura de una división mayor.</td>
+    </tr>
+  </tbody>
+</table>
+
+Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en [Configuración](/es/docs/configuration). Los valores de los atributos siguen la misma gramática que las directivas. Una valla `:::callout` admite `type` (el id de un estilo de aviso configurado — los tipos desconocidos o ausentes usan el primer estilo), `title` (sobrescribe el título por defecto del estilo) y `span` / `placement` (`column` o `page`; `here`, `top` o `bottom`) para sobrescribir la extensión y la posición del estilo en esa caja:
+
+```
+:::callout{type="objectives" title="Qué aprenderás" span="page" placement="top"}
+- Nombrar las partes de la linterna.
+- Recortar la mecha sin tocar el cristal.
+:::
+```
+
+Un aviso se compone como una caja indivisible — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo — y pasa entero a la columna o página siguiente cuando no cabe. Las cajas a ancho completo (`span="page"`) y flotantes (`placement="top"` / `"bottom"`) se registran pero en esta versión todavía se colocan en línea. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
+
+Una valla `:::part` admite `number` (tal como quieras imprimirlo — `"I"`, `"IV"`, `"3"`; además se interpreta para que el diseño pueda reformatearlo) y `title`; los dos son opcionales. El contenedor abre siempre una página propia: un salto de página con la paridad configurada antes, una columna única de cuerpo en los `parts.margins`, el diseño de apertura sobre la página entera y otro salto de página tras la valla de cierre. El cuerpo — normalmente la lista de los capítulos que agrupa la parte, o nada en absoluto — se compone con `parts.bodyStyle`:
+
+```
+:::part{number="I" title="Fundamentos"}
+1. El farol y sus partes
+2. Recortar la mecha
+:::
+
+# El farol y sus partes
+```
+
+Con los valores por defecto de los encabezados esto produce la secuencia clásica: página de parte en página derecha, página izquierda en blanco, capítulo en la siguiente página derecha. La página se notifica como `role: 'part'` para que los encabezados y pies puedan saltársela, y `{partTitle}` / `{partNumber}` resuelven a la parte actual en todas las páginas siguientes. Consulta [Partes](/es/docs/configuration#partes) en la referencia de configuración.
+
+Una valla no necesita una línea en blanco delante: una valla de apertura o de cierre pegada justo debajo de un párrafo, una lista o una cita termina ese bloque. Un contenedor que queda abierto al final del documento se cierra automáticamente ahí, y el sandbox emite un aviso **Contenedor sin cerrar** que señala la línea de apertura. Un `:::` suelto sin ningún contenedor abierto se deja en el texto como un párrafo visible en lugar de descartarse en silencio.
 
 ### `:::pagebreak`
 
@@ -197,6 +274,14 @@ Las páginas del prefacio se etiquetan `i`, `ii`, `iii`, …; el primer capítul
 
 Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil para, por ejemplo, pasar de `lower-alpha` a `upper-alpha` sin reiniciar.
 
+
+### Saltos de línea en los títulos
+
+Escribe `\\` dentro de un encabezado (o dentro del atributo `title` de una parte) para forzar un salto de línea allí donde el título se muestra como tal: el encabezado en columna sigue fluyendo y muestra un espacio, mientras que el `{titleText}` de un diseño de apertura salta de línea en ese punto. Las cabeceras de página, `{chapterTitle}`, `{partTitle}` y el índice del PDF siempre componen el título en una sola línea.
+
+```md
+# Concepto de salud y enfermedad. \\ Salud comunitaria {author="I. Zango Martín"}
+```
 
 ## Formato en línea
 
@@ -303,9 +388,9 @@ Las dependencias del farero ocupan el ala este.
 
 Para un recurso que flota, la directiva `::resource` es innecesaria —el `:ref` ya lo colocó, y un `::resource` redundante para el mismo id se trata como otra referencia, no como una segunda copia. Un `::resource` solo renderiza el recurso en línea cuando su colocación resuelta es `"here"`.
 
-El `id` debe coincidir con un recurso definido en el panel de Recursos. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.** Su tipografía se controla desde [Configuración › Estilo de pies](/es/docs/configuration#estilo-de-pies): la etiqueta y la descripción comparten tipografía y tamaño, mientras que la etiqueta conserva sus propios ajustes de negrita/cursiva/color; la separación sobre el pie es por defecto `0.75em` y la alineación, a la izquierda.
+El `id` debe coincidir con un recurso definido en el panel de Recursos. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.** Su tipografía se controla desde [Configuración › Estilo de pies](/es/docs/configuration#estilo-de-pies): la etiqueta y la descripción comparten tipografía y tamaño, mientras que la etiqueta conserva sus propios ajustes de negrita/cursiva/color; la separación sobre el pie es por defecto `0.75em` y la alineación, a la izquierda. El pie puede situarse en cambio encima del recurso (`captionStyle.position: 'above'`, de forma global o por tipo de recurso), opcionalmente sobre una barra de color. Un recurso puede llevar además una `note` — una línea breve de fuente o créditos, con el mismo formato en línea y las mismas marcas `:ref` que el pie — compuesta en un tamaño menor bajo el recurso (bajo el pie cuando este va debajo, bajo el cuerpo cuando va encima) y estilizada mediante `captionStyle.note`.
 
-Los recursos de tabla dibujan su propia rejilla, con estilo definido en [Configuración › Estilo de tablas](/es/docs/configuration#estilo-de-tablas): las celdas de cuerpo y de cabecera tienen tipografía totalmente independiente, el fondo de la cabecera es por defecto `#f0f0f0`, los bordes `0.75pt` y el `cellPadding` `0.375em` — cualquier campo sin definir hereda del texto del cuerpo.
+Los recursos de tabla dibujan su propia rejilla, con estilo definido en [Configuración › Estilo de tablas](/es/docs/configuration#estilo-de-tablas): las celdas de cuerpo y de cabecera tienen tipografía totalmente independiente, el fondo de la cabecera es por defecto `#f0f0f0`, los bordes `0.75pt` y el `cellPadding` `0.375em` — cualquier campo sin definir hereda del texto del cuerpo. Los anchos de columna forman parte de la propia tabla: `TableModel.columnWidths` guarda un peso relativo por columna (`[2, 1, 1]` da a la primera columna la mitad del ancho); si no se indica, las columnas se reparten el ancho a partes iguales.
 
 Los recursos SVG pueden además recolorearse para impresión a una sola tinta plana mediante `diagramStyle.singleInk` (por defecto `false`). Al activarlo, cada color del diagrama SVG se reasigna a un matiz de `diagramStyle.inkColor` según su luminancia (por defecto el color principal de la paleta, `#295AA3`) — el blanco se asigna al papel y el negro a la tinta plena — de modo que las figuras se reproducen con fidelidad cuando el documento se imprime con una única tinta plana. Ver [Configuración › Estilo de diagramas](/es/docs/configuration#estilo-de-diagramas).
 
@@ -315,7 +400,7 @@ Las referencias en línea se reconocen dentro de cualquier bloque de texto — p
 
 #### Opciones de la referencia
 
-La directiva `:ref` admite dos atributos opcionales. `style` selecciona cómo se renderiza la etiqueta calculada: `style="number"` imprime el número a secas (`1.7`), `style="full"` imprime el nombre completo del tipo seguido del número (`Figura 1.7`), y cuando `style` se omite se usa la etiqueta corta (`shortLabel`) del tipo seguida del número (`Fig. 1.7`). `text` es una anulación literal que sustituye cualquier etiqueta calculada y tiene prioridad sobre `style`. Los cuatro estilos de renderizado, lado a lado:
+La directiva `:ref` admite tres atributos opcionales, en cualquier orden. `style` selecciona cómo se renderiza la etiqueta calculada: `style="number"` imprime el número a secas (`1.7`), `style="full"` imprime el nombre completo del tipo seguido del número (`Figura 1.7`), y cuando `style` se omite se usa la etiqueta corta (`shortLabel`) del tipo seguida del número (`Fig. 1.7`). `case` cambia las mayúsculas y minúsculas solo de la parte de la etiqueta — `lower`, `upper` o `capitalize` — sin tocar el número. `text` es una anulación literal que sustituye cualquier etiqueta calculada y tiene prioridad tanto sobre `style` como sobre `case`. Las opciones de renderizado, lado a lado:
 
 <table>
   <thead>
@@ -342,9 +427,14 @@ La directiva `:ref` admite dos atributos opcionales. `style` selecciona cómo se
       <td>El nombre completo (<code>name</code>) del tipo seguido del número. Útil al inicio de una frase o donde la abreviatura se lea mal.</td>
     </tr>
     <tr>
+      <td><code>:ref&#123;id="…" case="lower"&#125;</code></td>
+      <td><code>fig. 1.7</code></td>
+      <td>Cambia la caja solo de la etiqueta: <code>lower</code> (<code>fig. 1.7</code>), <code>upper</code> (<code>FIG. 1.7</code>) o <code>capitalize</code> (primera letra en mayúscula). Se combina con <code>style="full"</code> (<code>figura 1.7</code>); el número nunca se toca, y un valor no reconocido se ignora.</td>
+    </tr>
+    <tr>
       <td><code>:ref&#123;id="…" text="ver el plano"&#125;</code></td>
       <td><code>ver el plano</code></td>
-      <td>Una anulación explícita. El texto dado se usa literalmente en lugar de cualquier etiqueta calculada — útil para enlaces de prosa como "como vimos antes". Cuando está presente, <code>text</code> tiene prioridad sobre <code>style</code>.</td>
+      <td>Una anulación explícita. El texto dado se usa literalmente en lugar de cualquier etiqueta calculada — útil para enlaces de prosa como "como vimos antes". Cuando está presente, <code>text</code> tiene prioridad sobre <code>style</code> y <code>case</code>.</td>
     </tr>
   </tbody>
 </table>

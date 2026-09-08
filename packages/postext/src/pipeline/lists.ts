@@ -17,6 +17,13 @@ export interface ListBulletStyle {
   itemSpacingPx: number;
   textFontSizePx: number;
   verticalOffsetPx: number;
+  /** Ordered-list separator drawn as its own run (only when its style
+   *  differs from the number's). `separatorOffsetPx` is measured from the
+   *  bullet's left edge. */
+  separatorText?: string;
+  separatorFontString?: string;
+  separatorColor?: string;
+  separatorOffsetPx?: number;
 }
 
 export interface ListItemResolved {
@@ -28,9 +35,59 @@ export interface ListItemResolved {
 }
 
 export interface OrderedRunMetric {
+  /** Formatted number; includes the separator unless a distinct separator
+   *  run exists (`separatorText` set). */
   numberText: string;
   numberWidthPx: number;
   maxNumberWidthPx: number;
+  /** Distinct separator run (style differs from the number's). */
+  separatorText?: string;
+  separatorFontString?: string;
+  separatorColor?: string;
+  separatorGapPx?: number;
+  separatorWidthPx?: number;
+}
+
+/** Style of the separator run when it must be drawn apart from the number. */
+interface SeparatorRunStyle {
+  fontString: string;
+  color: string;
+  gapPx: number;
+}
+
+function levelNumberFontString(level: ResolvedOrderedListLevelConfig, dpi: number, bodyFontSizePx: number): string {
+  const fontSizePx = dimensionToPx(level.fontSize, dpi, bodyFontSizePx);
+  return buildFontString(
+    level.fontFamily,
+    fontSizePx,
+    level.fontWeight.toString(),
+    level.italic ? 'italic' : 'normal',
+  );
+}
+
+/**
+ * The separator becomes its own run only when its resolved style differs
+ * from the number's (font, colour or a positive gap). With the defaults the
+ * marker stays a single `number + separator` text run.
+ */
+function resolveSeparatorRun(
+  level: ResolvedOrderedListLevelConfig,
+  numberFontString: string,
+  dpi: number,
+  bodyFontSizePx: number,
+): SeparatorRunStyle | undefined {
+  if (level.separator.length === 0) return undefined;
+  const fontSizePx = dimensionToPx(level.fontSize, dpi, bodyFontSizePx);
+  const fontString = buildFontString(
+    level.separatorFontFamily,
+    fontSizePx,
+    level.separatorFontWeight.toString(),
+    level.separatorItalic ? 'italic' : 'normal',
+  );
+  const gapPx = dimensionToPx(level.separatorGap, dpi, bodyFontSizePx);
+  const color = level.separatorColor.hex;
+  if (fontString === numberFontString && color === level.color.hex && gapPx === 0) return undefined;
+  return { fontString, color, gapPx };
 }
 
 export interface OrderedListMetrics {
@@ -126,9 +183,13 @@ export function computeOrderedLevelIndentsPx(
     dpi,
     bodyFontSizePx,
     // 1-based depth of the previous level = prevIndex + 1.
-    (prev, prevFontString, prevIndex) =>
-      maxNumberWidthByDepth.get(prevIndex + 1)
-        ?? measureGlyphWidth('99' + prev.separator, prevFontString),
+    (prev, prevFontString, prevIndex) => {
+      const measured = maxNumberWidthByDepth.get(prevIndex + 1);
+      if (measured !== undefined) return measured;
+      const sep = resolveSeparatorRun(prev, prevFontString, dpi, bodyFontSizePx);
+      if (!sep) return measureGlyphWidth('99' + prev.separator, prevFontString);
+      return measureGlyphWidth('99', prevFontString) + sep.gapPx + measureGlyphWidth(prev.separator, sep.fontString);
+    },
   );
 }
 
@@ -188,16 +249,12 @@ export function computeOrderedListRunMetrics(
   const maxWidthByDepth = new Map<number, number>();
   const runsByDepth = new Map<number, OpenRun>();
 
-  // Pre-compute per-level font strings (used to measure number widths).
-  const levelFontStrings: string[] = lists.levels.map((lvl) => {
-    const fontSizePx = dimensionToPx(lvl.fontSize, dpi, bodyFontSizePx);
-    return buildFontString(
-      lvl.fontFamily,
-      fontSizePx,
-      lvl.fontWeight.toString(),
-      lvl.italic ? 'italic' : 'normal',
-    );
-  });
+  // Pre-compute per-level font strings (used to measure number widths) and
+  // the separator run style when it differs from the number's.
+  const levelFontStrings: string[] = lists.levels.map((lvl) => levelNumberFontString(lvl, dpi, bodyFontSizePx));
+  const levelSeparatorRuns: Array<SeparatorRunStyle | undefined> = lists.levels.map((lvl, i) =>
+    resolveSeparatorRun(lvl, levelFontStrings[i]!, dpi, bodyFontSizePx),
+  );
 
   const closeRun = (depth: number): void => {
     const run = runsByDepth.get(depth);
@@ -207,6 +264,10 @@ export function computeOrderedListRunMetrics(
     }
     const levelIdx = Math.max(0, Math.min(levelFontStrings.length - 1, depth - 1));
     const fontString = levelFontStrings[levelIdx]!;
+    const sepRun = levelSeparatorRuns[levelIdx];
+    const separator = lists.levels[levelIdx]!.separator;
+    // The separator is the same string in the same font for the whole run.
+    const separatorWidthPx = sepRun ? measureGlyphWidth(separator, sepRun.fontString) : 0;
     let maxWidth = 0;
     const widths = new Map<number, number>();
     for (const idx of run.itemIdxs) {
@@ -221,9 +282,12 @@ export function computeOrderedListRunMetrics(
       if (!entry) continue;
       entry.numberWidthPx = widths.get(idx) ?? 0;
       entry.maxNumberWidthPx = maxWidth;
+      if (sepRun) entry.separatorWidthPx = separatorWidthPx;
     }
+    // Marker column = right-aligned numbers (+ gap + separator when split).
+    const markerWidth = sepRun ? maxWidth + sepRun.gapPx + separatorWidthPx : maxWidth;
     const prevDepthMax = maxWidthByDepth.get(depth) ?? 0;
-    if (maxWidth > prevDepthMax) maxWidthByDepth.set(depth, maxWidth);
+    if (markerWidth > prevDepthMax) maxWidthByDepth.set(depth, markerWidth);
     runsByDepth.delete(depth);
   };
 
@@ -263,8 +327,20 @@ export function computeOrderedListRunMetrics(
       run.itemIdxs.push(i);
       const levelIdx = Math.max(0, Math.min(lists.levels.length - 1, depth - 1));
       const levelCfg = lists.levels[levelIdx]!;
-      const numberText = formatListNumber(counter, levelCfg.numberFormat) + levelCfg.separator;
-      perBlock.set(i, { numberText, numberWidthPx: 0, maxNumberWidthPx: 0 });
+      const sepRun = levelSeparatorRuns[levelIdx];
+      const number = formatListNumber(counter, levelCfg.numberFormat);
+      perBlock.set(i, sepRun
+        ? {
+            numberText: number,
+            numberWidthPx: 0,
+            maxNumberWidthPx: 0,
+            separatorText: levelCfg.separator,
+            separatorFontString: sepRun.fontString,
+            separatorColor: sepRun.color,
+            separatorGapPx: sepRun.gapPx,
+            separatorWidthPx: 0,
+          }
+        : { numberText: number + levelCfg.separator, numberWidthPx: 0, maxNumberWidthPx: 0 });
     }
   }
   closeAllRuns();
@@ -351,10 +427,7 @@ export function resolveOrderedListItemStyle(
   const levelIdx = Math.max(0, Math.min(lists.levels.length - 1, depth - 1));
   const levelConfig: ResolvedOrderedListLevelConfig = lists.levels[levelIdx]!;
 
-  const numberFontSizePx = dimensionToPx(levelConfig.fontSize, dpi, bodyStyle.fontSizePx);
-  const numberWeight = levelConfig.fontWeight.toString();
-  const numberStyle = levelConfig.italic ? 'italic' : 'normal';
-  const numberFontString = buildFontString(levelConfig.fontFamily, numberFontSizePx, numberWeight, numberStyle);
+  const numberFontString = levelNumberFontString(levelConfig, dpi, bodyStyle.fontSizePx);
 
   const indentPx = levelIndentsPx[levelIdx] ?? 0;
   const gapPx = dimensionToPx(lists.gap, dpi, bodyStyle.fontSizePx);
@@ -366,6 +439,14 @@ export function resolveOrderedListItemStyle(
   // Right-align: reserve max width so text starts after `indent + maxWidth + gap`.
   // The individual number is drawn at `indent + (maxWidth - thisWidth)`.
   const rightAlignOffsetPx = Math.max(0, metric.maxNumberWidthPx - metric.numberWidthPx);
+  // A distinct separator run follows the (right-aligned) number column, so
+  // it lands in the same column for every item of the run.
+  const separatorGapPx = metric.separatorGapPx ?? 0;
+  const separatorWidthPx = metric.separatorWidthPx ?? 0;
+  const hasSeparatorRun = metric.separatorText !== undefined;
+  const markerWidthPx = hasSeparatorRun
+    ? metric.maxNumberWidthPx + separatorGapPx + separatorWidthPx
+    : metric.maxNumberWidthPx;
 
   const text: BlockStyle = {
     ...bodyStyle,
@@ -382,13 +463,19 @@ export function resolveOrderedListItemStyle(
     bulletColor: levelConfig.color.hex,
     // Report the MAX width so the common text-shift math (`indent + bulletWidth + gap`)
     // still carves out the full numbered column for every item in the run.
-    bulletWidthPx: metric.maxNumberWidthPx,
+    bulletWidthPx: markerWidthPx,
     gapPx,
     hangingIndent: lists.hangingIndent,
     itemSpacingPx,
     textFontSizePx: bodyStyle.fontSizePx,
     verticalOffsetPx,
   };
+  if (hasSeparatorRun) {
+    bullet.separatorText = metric.separatorText;
+    bullet.separatorFontString = metric.separatorFontString;
+    bullet.separatorColor = metric.separatorColor;
+    bullet.separatorOffsetPx = metric.numberWidthPx + separatorGapPx;
+  }
 
   return {
     text,

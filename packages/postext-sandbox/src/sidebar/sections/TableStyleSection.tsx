@@ -3,12 +3,13 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveBodyTextConfig, resolveTableStyleConfig } from 'postext';
-import type { TableStyleConfig, DimensionUnit } from 'postext';
+import type { TableStyleConfig, TableRules, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
   DimensionInput,
   FontPicker,
+  SelectInput,
   ToggleSwitch,
 } from '../../controls';
 
@@ -45,6 +46,13 @@ export const TableStyleSection = memo(function TableStyleSection() {
   const unset = (field: keyof TableStyleConfig) => raw?.[field] === undefined;
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
+
+  const rulesOptions = [
+    { value: 'grid', label: labels.tableRulesGrid },
+    { value: 'horizontal', label: labels.tableRulesHorizontal },
+    { value: 'outer', label: labels.tableRulesOuter },
+    { value: 'none', label: labels.tableRulesNone },
+  ];
 
   return (
     <CollapsibleSection
@@ -167,6 +175,15 @@ export const TableStyleSection = memo(function TableStyleSection() {
         />
         {ts.borders && (
           <>
+            <SelectInput
+              label={labels.tableRules}
+              value={ts.rules}
+              options={rulesOptions}
+              onChange={(v) => update({ rules: v as TableRules })}
+              tooltip={labels.tableRulesTooltip}
+              isDefault={unset('rules')}
+              onReset={() => resetField('rules')}
+            />
             <ColorPicker
               label={labels.tableBorderColor}
               value={ts.borderColor}

@@ -299,6 +299,8 @@ interface VDTColumn {
   blocks: VDTBlock[];
   availableHeight: number;    // espacio vertical restante
   baselineOffset: number;     // posición y actual de la línea base
+  band?: number;              // banda de columnas (0 salvo que un bloque a ancho de página parta la página)
+  kind?: 'text' | 'span';     // 'span' = columna a todo el ancho con un bloque a ancho de página
 }
 
 // Un bloque de contenido (párrafo, encabezado, recurso, etc.)
@@ -414,6 +416,8 @@ const { height } = layout(prepared, columnWidth, 24); // line-height de 24px
 Este es el momento en que el VDT se convierte en un documento de verdad. Antes de esta pasada, los bloques son solo una lista plana con dimensiones pero sin dirección. La Pasada 3 los recorre y asigna cada uno a una página y columna, como verter agua en una cuadrícula de recipientes: llenar la columna 1 hasta que se desborde, pasar a la columna 2, y cuando la página esté llena empezar una nueva.
 
 Antes de que aterrice ningún bloque de contenido, la pasada reserva espacio para elementos estructurales — cabeceras y pies de página (compuestos como slots de diseño a partir de `config.header` / `config.footer`) y las bandas de flotados ya pendientes para la página recién abierta. Estas reservas reducen el `availableHeight` de cada columna, así que cuando los bloques de contenido empiezan a fluir, el motor ya sabe exactamente cuánto espacio hay disponible.
+
+**Bandas de columnas y columnas a ancho de página.** `page.columns` es un array plano en orden de lectura, pero una página no siempre es una única fila de columnas. Un bloque en línea a ancho de página — hoy un `:::callout` con `span: 'page'` en una disposición multicolumna — corta la página en *bandas* apiladas: las columnas de texto de la banda actual se cierran en la línea de corte (su altura se recorta y `availableHeight` queda a cero), el bloque recibe su propia columna a todo el ancho con `kind: 'span'`, y debajo se añade una banda nueva de columnas de texto (`band + 1`, con la misma x y anchura y el mismo fondo que la banda a la que sustituye). Las columnas solo se añaden al final, así que `columnIndex` sigue apuntando a `page.columns[i]`, y los renderizadores no necesitan ningún trazado especial: cada columna recorta a su propio bbox, y el filete entre columnas se dibuja por banda entre columnas de texto adyacentes. El equilibrado de columnas ignora las columnas a ancho de página y las bandas de altura cero. Un bloque a ancho de página corta directamente donde la banda está nivelada (inicio de página, justo después de un encabezado de apertura, de otro bloque a ancho de página o de una banda de flotantes superior); si llega a una banda desigual propone en su lugar un *tope de banda* (`packages/postext/src/pipeline/bandCaps.ts`) — las columnas de la banda que abre un bloque de contenido dado se acortan a `ceil(Σ usado / N / rejilla)` líneas — y `buildDocument` repite la pasada de colocación con ese tope (agrandándolo línea a línea cuando la banda acortada desborda, como mucho unas pocas pasadas adicionales, y pasando después a la página siguiente), de modo que el texto llena las columnas acortadas bajo todas las reglas de colocación, termina nivelado en el corte, y las columnas cerradas conservan la holgura que quede como `availableHeight` para que el equilibrado la absorba.
 
 ### Pasada 4: Colocación de recursos
 

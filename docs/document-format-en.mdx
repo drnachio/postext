@@ -99,6 +99,15 @@ Lists of mixed kinds at the same depth are accepted (you can switch from unorder
 
 <Illustration name="ListNesting" data='{"title": "List nesting depth", "desc": "Lists nest using exactly two spaces per level, up to a maximum depth of five. Each level indents further and may use different bullet styling.", "caption": "Two spaces per level. Max depth: five.", "level1": "Level 1", "level2": "Level 2 — two spaces in", "level3": "Level 3 — four spaces in", "indentNote": "Exactly two spaces per nesting level. Max depth: 5."}' />
 
+### Heading attributes
+
+A heading line may end with an attribute block in braces — the same `key="value"` syntax directives use:
+
+```markdown
+# The Long Road {author="I. Zango Martín" year=1998}
+```
+
+The braces and their content are removed from the heading text (the title above renders as *The Long Road*) and stored on the heading as `attrs`. They are exposed to design slots as `{attr.<key>}` placeholders: in the heading's own advanced-design slot, and in page headers and footers, where they resolve from the current chapter's H1. Only a balanced, brace-free block at the very end of the line is recognised; a lone `{}` or an unbalanced brace stays in the text. See **Configuration → Headers & footers**.
 
 ## Directives
 
@@ -136,12 +145,80 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td><code>:::numbering&#123;format="decimal" startAt=1&#125;</code></td>
       <td>At the next page boundary, switch the page-numbering sequence. Both attributes are optional — omit <code>format</code> to keep the format, omit <code>startAt</code> to continue the counter.</td>
     </tr>
+    <tr>
+      <td><code>:::columnbreak</code></td>
+      <td>End the current column here: the next block opens in the next column of the same page (or on a new page when the directive lands in the last column). A no-op in an empty column, so it never produces a blank column or page. The column it ends keeps its bottom gap — column balancing does not stretch it.</td>
+    </tr>
   </tbody>
 </table>
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak` and `numbering` are recognized today — any other `:::name` line is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
+Only `pagebreak`, `numbering` and `columnbreak` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
+
+### Containers
+
+A container wraps a run of blocks in a fence: an opening line `:::name` or `:::name{attrs}`, then any ordinary content — paragraphs, headings, lists, blockquotes, formulas, even other directives — and a closing line holding a bare `:::`. Containers may nest; each closing `:::` closes the innermost open one.
+
+```
+:::callout{type="note"}
+Keep the lantern lit **every** night.
+
+- Check the wick.
+- Trim it at dusk.
+:::
+```
+
+Three container names are recognized. What each one renders is set in its own section of the configuration:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Syntax</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>:::callout&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Boxed content — a note, tip or warning set apart from the body in a bordered or tinted box.</td>
+    </tr>
+    <tr>
+      <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
+      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style.</td>
+    </tr>
+    <tr>
+      <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
+      <td>A part or section opener: the enclosed heading and prose form the opener page of a major division.</td>
+    </tr>
+  </tbody>
+</table>
+
+The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. A `:::callout` fence takes `type` (the id of a configured callout style — unknown or missing types fall back to the first style), `title` (overrides the style's default title), and `span` / `placement` (`column` or `page`; `here`, `top` or `bottom`) to override the style's extent and position for that box:
+
+```
+:::callout{type="objectives" title="What you will learn" span="page" placement="top"}
+- Name the parts of the lantern.
+- Trim the wick without touching the glass.
+:::
+```
+
+A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width (`span="page"`) and floating (`placement="top"` / `"bottom"`) boxes are recorded but still placed inline in this version. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
+
+A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
+
+```
+:::part{number="I" title="Foundations"}
+1. The lantern and its parts
+2. Trimming the wick
+:::
+
+# The lantern and its parts
+```
+
+With the default heading settings this produces the classic sequence: part page on a right-hand page, blank left-hand page, chapter on the next right-hand page. The page is reported as `role: 'part'` so headers and footers can skip it, and `{partTitle}` / `{partNumber}` resolve to the current part on every following page. See [Parts](/en/docs/configuration#parts) in the configuration reference.
+
+A fence does not need a blank line before it: an opening or closing fence glued directly under a paragraph, list or blockquote ends that block. A container left open at the end of the document is closed automatically there, and the sandbox reports an **Unclosed container** warning pointing at the opening line. A stray `:::` with no container open is left in the text as a visible paragraph rather than dropped silently.
 
 ### `:::pagebreak`
 
@@ -197,6 +274,14 @@ Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a r
 
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
 
+
+### Line breaks in titles
+
+Write `\\` inside a heading (or inside a part's `title` attribute) to force a line break where the title is displayed as a title: the in-column heading keeps flowing and shows a space there, while an opener design's `{titleText}` breaks the line at that point. Running heads, `{chapterTitle}`, `{partTitle}` and the PDF outline always render the title on one line.
+
+```md
+# Concepts of health and illness. \\ Community health {author="I. Zango Martín"}
+```
 
 ## Inline formatting
 
@@ -303,9 +388,9 @@ The keeper's quarters occupy the eastern wing.
 
 For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`.
 
-The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left.
+The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
 
-Table resources draw their own grid, styled through [Configuration › Table style](/en/docs/configuration#table-style): body and header cells have fully independent typography, the header background defaults to `#f0f0f0`, borders to `0.75pt`, and `cellPadding` to `0.375em` — any field left unset inherits from the body text.
+Table resources draw their own grid, styled through [Configuration › Table style](/en/docs/configuration#table-style): body and header cells have fully independent typography, the header background defaults to `#f0f0f0`, borders to `0.75pt`, and `cellPadding` to `0.375em` — any field left unset inherits from the body text. Column widths are part of the table itself: `TableModel.columnWidths` holds one relative weight per column (`[2, 1, 1]` gives the first column half the width); when unset, columns split the width equally.
 
 SVG resources can additionally be recoloured for single-spot-colour printing via `diagramStyle.singleInk` (default `false`). When enabled, every colour in an SVG diagram is remapped to a luminance-mapped tint of `diagramStyle.inkColor` (which defaults to the main palette colour, `#295AA3`) — white maps to paper, black to the full ink — so figures reproduce faithfully when the document is printed with a single spot colour. See [Configuration › Diagram style](/en/docs/configuration#diagram-style).
 
@@ -315,7 +400,7 @@ Inline references are recognised inside any text block — paragraphs, headings,
 
 #### Reference options
 
-The `:ref` directive accepts two optional attributes. `style` selects how the computed label is rendered: `style="number"` prints the bare number (`1.7`), `style="full"` prints the type's full name plus the number (`Figure 1.7`), and when `style` is unset the type's `shortLabel` plus the number is used (`Fig. 1.7`). `text` is a verbatim override that replaces any computed label and takes precedence over `style`. The four rendering styles side by side:
+The `:ref` directive accepts three optional attributes, in any order. `style` selects how the computed label is rendered: `style="number"` prints the bare number (`1.7`), `style="full"` prints the type's full name plus the number (`Figure 1.7`), and when `style` is unset the type's `shortLabel` plus the number is used (`Fig. 1.7`). `case` changes the letter case of the label part only — `lower`, `upper` or `capitalize` — leaving the number untouched. `text` is a verbatim override that replaces any computed label and takes precedence over both `style` and `case`. The rendering options side by side:
 
 <table>
   <thead>
@@ -342,9 +427,14 @@ The `:ref` directive accepts two optional attributes. `style` selects how the co
       <td>The type's full <code>name</code> followed by the number. Use at the start of a sentence or where the abbreviation reads poorly.</td>
     </tr>
     <tr>
+      <td><code>:ref&#123;id="…" case="lower"&#125;</code></td>
+      <td><code>fig. 1.7</code></td>
+      <td>Recases the label only: <code>lower</code> (<code>fig. 1.7</code>), <code>upper</code> (<code>FIG. 1.7</code>) or <code>capitalize</code> (first letter upper-cased). Combines with <code>style="full"</code> (<code>figure 1.7</code>); the number is never touched, and an unrecognised value is ignored.</td>
+    </tr>
+    <tr>
       <td><code>:ref&#123;id="…" text="see the plan"&#125;</code></td>
       <td><code>see the plan</code></td>
-      <td>An explicit override. The given text is used verbatim instead of any computed label — useful for prose links like "as we saw earlier". When present, <code>text</code> takes precedence over <code>style</code>.</td>
+      <td>An explicit override. The given text is used verbatim instead of any computed label — useful for prose links like "as we saw earlier". When present, <code>text</code> takes precedence over <code>style</code> and <code>case</code>.</td>
     </tr>
   </tbody>
 </table>

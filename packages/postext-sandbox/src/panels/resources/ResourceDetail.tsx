@@ -234,6 +234,16 @@ export function ResourceDetail({
           />
         </Field>
 
+        <Field label={labels.resourceNoteLabel} hint={labels.resourceNoteHint}>
+          <InlineMarkdownInput
+            value={resource.note ?? ''}
+            onChange={(value) => onChange(touch({ note: value.length > 0 ? value : undefined }))}
+            ariaLabel={labels.resourceNoteAria}
+            placeholder={labels.resourceNotePlaceholder}
+            multiline
+          />
+        </Field>
+
         <Field label={labels.resourceAltLabel} hint={labels.resourceAltHint}>
           <input
             type="text"

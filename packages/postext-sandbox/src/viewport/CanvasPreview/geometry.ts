@@ -1,4 +1,5 @@
 import type { VDTDocument } from 'postext';
+import { bandCharAtX, bandLineBoxes, bandPlainToSource, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
 
 type VDTBlock = VDTDocument['blocks'][number];
 type VDTLine = VDTBlock['lines'][number];
@@ -220,10 +221,36 @@ export function pixelToSourceOffset(
   xPage: number,
   yPage: number,
 ): number | null {
+  // 0. Opener bands render the heading / part title through a design slot.
+  //    Those text blocks carry the title's source map, so a click on them
+  //    lands the cursor on the clicked glyph — and takes precedence over the
+  //    heading's invisible lines hidden under the band.
+  const bandTitles = bandTitleBlocks(doc, pageIndex);
+  for (const b of bandTitles) {
+    const boxes = bandLineBoxes(b);
+    // Hit either the element box or any of its line boxes (a small author
+    // line has a thin element box; the line box covers the full leading).
+    const inside = (r: { x: number; y: number; width: number; height: number }) =>
+      xPage >= r.x && xPage <= r.x + r.width && yPage >= r.y && yPage <= r.y + r.height;
+    if (!inside(b.bbox) && !boxes.some(inside)) continue;
+    if (boxes.length === 0) return b.sourceStart ?? null;
+    let box = boxes[0]!;
+    let best = Infinity;
+    for (const candidate of boxes) {
+      const dy = yPage < candidate.y ? candidate.y - yPage : yPage > candidate.y + candidate.height ? yPage - candidate.y - candidate.height : 0;
+      if (dy < best) { best = dy; box = candidate; }
+    }
+    return bandPlainToSource(b, box.plainStart + bandCharAtX(box, xPage));
+  }
+
   // 1. Find a block on this page whose bbox contains the click.
   let hitBlock: VDTDocument['blocks'][number] | undefined;
   for (const b of doc.blocks) {
     if (b.pageIndex !== pageIndex) continue;
+    if (isHiddenUnderBand(b, bandTitles)) continue;
+    // A callout frame spans its whole box but carries no text of its own;
+    // its children follow in `doc.blocks` and own the clickable glyphs.
+    if (b.type === 'callout') continue;
     const bx = b.bbox.x;
     const by = b.bbox.y;
     if (xPage < bx || xPage > bx + b.bbox.width) continue;

@@ -3,11 +3,15 @@ import type { VDTPage } from '../vdt';
 import { formatNumeral } from '../numbering';
 import {
   resolvePlaceholders as legacyResolvePlaceholders,
+  attrPlaceholderKey,
+  PLACEHOLDER_NAME_RE,
   type PlaceholderContext as LegacyPlaceholderContext,
   type PlaceholderResult,
 } from '../pipeline/placeholders';
 
-export type DesignContextKind = 'header' | 'footer' | 'heading';
+/** `'part'` is the opener design of a `:::part` page: it resolves the
+ *  heading placeholder set with the part's number and title. */
+export type DesignContextKind = 'header' | 'footer' | 'heading' | 'part';
 
 /** Heading-specific fields for placeholder resolution. */
 export interface HeadingPlaceholderInfo {
@@ -18,6 +22,8 @@ export interface HeadingPlaceholderInfo {
   numericValue?: number;
   chapterNumber?: string;
   chapterTitle?: string;
+  /** Heading attributes (`# Title {key="value"}`), for `{attr.<key>}`. */
+  attrs?: Record<string, string>;
 }
 
 export interface DesignPlaceholderContext {
@@ -26,7 +32,17 @@ export interface DesignPlaceholderContext {
   allPages: VDTPage[];
   metadata: DocumentMetadata;
   chapterTitleByPageIndex: string[];
-  /** Only present in heading contexts. */
+  /** Current chapter's H1 attributes per page index; backs `{attr.<key>}`
+   *  in header/footer slots (and as a fallback in heading slots). */
+  chapterAttrsByPageIndex?: Record<string, string>[];
+  /** Current part title / number per page index (`{partTitle}` /
+   *  `{partNumber}`); see `computePartValues`. */
+  partTitleByPageIndex?: string[];
+  partNumberByPageIndex?: string[];
+  /** Current chapter number per page index; backs `{chapterNumber}` in
+   *  header/footer slots (heading slots use `heading.chapterNumber`). */
+  chapterNumberByPageIndex?: string[];
+  /** Only present in heading and part contexts. */
   heading?: HeadingPlaceholderInfo;
 }
 
@@ -38,6 +54,9 @@ const HEADER_FOOTER_PLACEHOLDERS = new Set([
   'author',
   'publishDate',
   'chapterTitle',
+  'chapterNumber',
+  'partTitle',
+  'partNumber',
 ]);
 
 const HEADING_PLACEHOLDERS = new Set([
@@ -48,6 +67,8 @@ const HEADING_PLACEHOLDERS = new Set([
   'author',
   'publishDate',
   'chapterTitle',
+  'partTitle',
+  'partNumber',
   'chapterNumber',
   'titleText',
   'number',
@@ -59,7 +80,21 @@ const HEADING_PLACEHOLDERS = new Set([
 ]);
 
 export function allowedPlaceholdersFor(kind: DesignContextKind): Set<string> {
-  return kind === 'heading' ? HEADING_PLACEHOLDERS : HEADER_FOOTER_PLACEHOLDERS;
+  return kind === 'heading' || kind === 'part' ? HEADING_PLACEHOLDERS : HEADER_FOOTER_PLACEHOLDERS;
+}
+
+/** Whether `name` is a valid placeholder in a slot of the given kind. Covers
+ *  the fixed sets above plus the open-ended `attr.<key>` namespace. */
+export function isAllowedPlaceholder(name: string, kind: DesignContextKind): boolean {
+  return allowedPlaceholdersFor(kind).has(name) || attrPlaceholderKey(name) !== undefined;
+}
+
+/** `{attr.<key>}`: the heading's own attribute first (heading contexts),
+ *  then the current chapter's H1 attribute. Missing → `''`. */
+function resolveAttrPlaceholder(key: string, ctx: DesignPlaceholderContext): string {
+  const own = ctx.heading?.attrs?.[key];
+  if (own !== undefined) return own;
+  return ctx.chapterAttrsByPageIndex?.[ctx.page.index]?.[key] ?? '';
 }
 
 function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string {
@@ -80,9 +115,13 @@ function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string
     case 'numberAlphaLower':
       return h?.numericValue !== undefined ? formatNumeral(h.numericValue, 'lower-alpha') : '';
     case 'chapterNumber':
-      return h?.chapterNumber ?? '';
+      return h?.chapterNumber ?? ctx.chapterNumberByPageIndex?.[ctx.page.index] ?? '';
     case 'chapterTitle':
       return h?.chapterTitle ?? ctx.chapterTitleByPageIndex[ctx.page.index] ?? '';
+    case 'partTitle':
+      return ctx.partTitleByPageIndex?.[ctx.page.index] ?? '';
+    case 'partNumber':
+      return ctx.partNumberByPageIndex?.[ctx.page.index] ?? '';
     case 'pageNumber':
       return ctx.page.pageLabel;
     case 'totalPages':
@@ -101,18 +140,21 @@ function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string
 }
 
 /** Resolve placeholders for a design slot. The header/footer context
- *  reuses the legacy resolver (same placeholder set). Heading contexts
- *  use the extended heading-aware resolver. */
+ *  reuses the legacy resolver (same placeholder set). Heading and part
+ *  contexts use the extended heading-aware resolver. */
 export function resolveDesignPlaceholders(
   template: string,
   ctx: DesignPlaceholderContext,
 ): PlaceholderResult {
-  if (ctx.kind !== 'heading') {
+  if (ctx.kind !== 'heading' && ctx.kind !== 'part') {
     const legacy: LegacyPlaceholderContext = {
       page: ctx.page,
       allPages: ctx.allPages,
       metadata: ctx.metadata,
       chapterTitleByPageIndex: ctx.chapterTitleByPageIndex,
+      chapterAttrsByPageIndex: ctx.chapterAttrsByPageIndex,
+      partTitleByPageIndex: ctx.partTitleByPageIndex,
+      partNumberByPageIndex: ctx.partNumberByPageIndex,
     };
     return legacyResolvePlaceholders(template, legacy);
   }
@@ -129,8 +171,14 @@ export function resolveDesignPlaceholders(
       const end = template.indexOf('}', i + 1);
       if (end === -1) { out += ch; i++; continue; }
       const name = template.slice(i + 1, end);
-      if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) {
+      if (!PLACEHOLDER_NAME_RE.test(name)) {
         out += template.slice(i, end + 1);
+        i = end + 1;
+        continue;
+      }
+      const attrKey = attrPlaceholderKey(name);
+      if (attrKey !== undefined) {
+        out += resolveAttrPlaceholder(attrKey, ctx);
         i = end + 1;
         continue;
       }

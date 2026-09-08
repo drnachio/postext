@@ -1,5 +1,7 @@
 'use client';
 
+import { allowedPlaceholdersFor } from 'postext';
+import type { DesignContextKind } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext';
 import type { SlotKind } from './placementAdapter';
 
@@ -11,23 +13,34 @@ interface Props {
 export function PlaceholderPicker({ onInsert, slotKind = 'header' }: Props) {
   const labels = useSandboxLabels();
 
-  const BASE_ITEMS: { name: string; label: string }[] = [
-    { name: 'pageNumber', label: labels.headerFooterPlaceholderPageNumber },
-    { name: 'totalPages', label: labels.headerFooterPlaceholderTotalPages },
-    { name: 'title', label: labels.headerFooterPlaceholderTitle },
-    { name: 'subtitle', label: labels.headerFooterPlaceholderSubtitle },
-    { name: 'author', label: labels.headerFooterPlaceholderAuthor },
-    { name: 'publishDate', label: labels.headerFooterPlaceholderPublishDate },
-    { name: 'chapterTitle', label: labels.headerFooterPlaceholderChapterTitle },
-  ];
+  // Human labels for the names the engine knows. The list itself comes from
+  // the engine allow-list for this slot kind, so a placeholder added there
+  // shows up here (falling back to its raw name until a label exists).
+  const LABELS: Record<string, string | undefined> = {
+    pageNumber: labels.headerFooterPlaceholderPageNumber,
+    totalPages: labels.headerFooterPlaceholderTotalPages,
+    title: labels.headerFooterPlaceholderTitle,
+    subtitle: labels.headerFooterPlaceholderSubtitle,
+    author: labels.headerFooterPlaceholderAuthor,
+    publishDate: labels.headerFooterPlaceholderPublishDate,
+    chapterTitle: labels.headerFooterPlaceholderChapterTitle,
+    chapterNumber: labels.headerFooterPlaceholderChapterNumber,
+    partTitle: labels.headerFooterPlaceholderPartTitle,
+    partNumber: labels.headerFooterPlaceholderPartNumber,
+    titleText: labels.headerFooterPlaceholderHeadingTitle,
+    number: labels.headerFooterPlaceholderHeadingNumber,
+    numberDecimal: labels.headerFooterPlaceholderNumberDecimal,
+    numberRoman: labels.headerFooterPlaceholderNumberRoman,
+    numberRomanLower: labels.headerFooterPlaceholderNumberRomanLower,
+    numberAlpha: labels.headerFooterPlaceholderNumberAlpha,
+    numberAlphaLower: labels.headerFooterPlaceholderNumberAlphaLower,
+  };
 
-  const HEADING_ITEMS: { name: string; label: string }[] = [
-    { name: 'titleText', label: labels.headerFooterPlaceholderHeadingTitle ?? 'Current title' },
-    { name: 'number', label: labels.headerFooterPlaceholderHeadingNumber ?? 'Numbering' },
-    { name: 'chapterNumber', label: labels.headerFooterPlaceholderChapterNumber ?? 'Chapter number' },
-  ];
-
-  const ITEMS = slotKind === 'heading' ? [...BASE_ITEMS, ...HEADING_ITEMS] : BASE_ITEMS;
+  const kind: DesignContextKind = slotKind;
+  const items = Array.from(allowedPlaceholdersFor(kind)).map((name) => ({
+    name,
+    label: LABELS[name] ?? name,
+  }));
 
   return (
     <div className="mb-2">
@@ -35,7 +48,7 @@ export function PlaceholderPicker({ onInsert, slotKind = 'header' }: Props) {
         {labels.headerFooterPlaceholdersLabel}
       </div>
       <div className="flex flex-wrap gap-1">
-        {ITEMS.map((item) => (
+        {items.map((item) => (
           <button
             key={item.name}
             type="button"
@@ -54,6 +67,11 @@ export function PlaceholderPicker({ onInsert, slotKind = 'header' }: Props) {
             {item.label}
           </button>
         ))}
+      </div>
+      <div className="mt-1 text-xs" style={{ color: 'var(--slate)' }}>
+        <code>{'{attr.key}'}</code>
+        {' — '}
+        {labels.headerFooterPlaceholderAttrHint}
       </div>
     </div>
   );

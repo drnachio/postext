@@ -1,4 +1,5 @@
 import type {
+  ColorPaletteEntry,
   DocumentMetadata,
   PostextResource,
   Resource,
@@ -9,12 +10,19 @@ import type {
   ResolvedBodyTextConfig,
   ResolvedHeadingsConfig,
   ResolvedTableStyleConfig,
+  TableRules,
   ResolvedCaptionStyleConfig,
   ResolvedDiagramStyleConfig,
+  ResolvedParagraphStyleConfig,
+  ResolvedCalloutStyleConfig,
+  CalloutSpan,
+  CalloutPlacement,
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
   ResolvedDesignSlot,
+  ResolvedPartsConfig,
+  PageRole,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -42,11 +50,19 @@ export interface ResolvedConfig {
   tableStyle: ResolvedTableStyleConfig;
   captionStyle: ResolvedCaptionStyleConfig;
   diagramStyle: ResolvedDiagramStyleConfig;
+  paragraphStyles: ResolvedParagraphStyleConfig[];
+  calloutStyles: ResolvedCalloutStyleConfig[];
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;
   header: ResolvedDesignSlot;
   footer: ResolvedDesignSlot;
+  /** Part dividers (`:::part` containers). */
+  parts: ResolvedPartsConfig;
+  /** The document's colour palette, kept so per-resource-type caption
+   *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
+   *  layout time. Absent when the config defines no palette. */
+  colorPalette?: ColorPaletteEntry[];
 }
 
 // ---------------------------------------------------------------------------
@@ -60,7 +76,8 @@ export type VDTBlockType =
   | 'blockquote'
   | 'listItem'
   | 'footnoteRef'
-  | 'mathDisplay';
+  | 'mathDisplay'
+  | 'callout';
 
 export type TextAlign = 'left' | 'justify' | 'center';
 
@@ -158,6 +175,16 @@ export interface VDTResourceTableLayout {
   columnEdges: number[];
   /** Row y-edges (length = rowCount + 1) relative to the table's top. */
   rowEdges: number[];
+  /** Which rules to stroke with `borderWidthPx` (`'grid'` when absent). */
+  rules?: TableRules;
+}
+
+/** Background bar painted behind a resource caption (issue #49 §7). */
+export interface VDTCaptionBar {
+  /** Bar rect — block-relative until placement offsets it, like caption lines. */
+  rect: BoundingBox;
+  /** Fill colour (hex). */
+  background: string;
 }
 
 /** The resolved, measured content of a resource block. */
@@ -193,6 +220,19 @@ export interface ResolvedResourceBlock {
   linkColor: string;
   /** Table geometry, present only when `kind === 'table'`. */
   table?: VDTResourceTableLayout;
+  /** Bar behind the caption, present when `captionStyle.backgroundEnabled`
+   *  and the block has a caption. Painted before the caption lines. */
+  captionBar?: VDTCaptionBar;
+  /** Measured note lines (`Resource.note`), placed under the body when the
+   *  caption sits above, otherwise under the caption. Empty when no note. */
+  noteLines: VDTLine[];
+  /** Font strings used to render the note (normal / bold / italic / bold+italic). */
+  noteFontString: string;
+  noteBoldFontString: string;
+  noteItalicFontString: string;
+  noteBoldItalicFontString: string;
+  /** Note text colour (hex). */
+  noteColor: string;
 }
 
 export interface VDTBlock {
@@ -209,6 +249,17 @@ export interface VDTBlock {
   dirty: boolean;
   snappedToGrid: boolean;
   headingLevel?: number;
+  /** Heading attributes parsed from a trailing `{key="value" …}` on the
+   *  heading line (first part of a heading only). Exposed to design slots
+   *  as `{attr.key}` placeholders. */
+  attrs?: Record<string, string>;
+  /** Source range of each quoted heading attribute value. */
+  attrSources?: Record<string, { start: number; end: number }>;
+  /** Forced title breaks (plain-text indices, prefix excluded) and the parsed
+   *  title length, so opener designs can re-insert the line breaks that the
+   *  in-column rendering shows as spaces. */
+  titleBreaks?: number[];
+  titleLength?: number;
   /** Index of the originating content block in the parsed markdown block
    *  list. Stable across layout passes — used by column balancing to key
    *  extra-spacing adjustments to headings. */
@@ -244,6 +295,15 @@ export interface VDTBlock {
   bulletOffsetX?: number;
   /** Absolute page Y coordinate for the bullet's vertical midpoint (paired with textBaseline='middle') */
   bulletY?: number;
+  /** Ordered-list separator drawn as its own run after the number (only when
+   *  its style differs from the number's; otherwise `bulletText` carries it). */
+  separatorText?: string;
+  /** Font string of the separator run */
+  separatorFontString?: string;
+  /** Separator colour (hex) */
+  separatorColor?: string;
+  /** Absolute page X coordinate where the separator run starts (shares `bulletY`) */
+  separatorX?: number;
   /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
   listKind?: 'unordered' | 'ordered' | 'task';
   /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */
@@ -262,6 +322,33 @@ export interface VDTBlock {
    *  `advancedDesign.enabled` and (for `span: 'column'`) at least one
    *  element. Renderers render this instead of `lines` when present. */
   designOverlay?: VDTDesignSlot;
+  /** Present on `type === 'callout'` frame blocks: the resolved callout
+   *  geometry. The frame has no text lines of its own — its decoration
+   *  (background, stripe, icon, title) is carried on `designOverlay`, and
+   *  its content blocks follow it in the column with `containerId` set. */
+  callout?: ResolvedCalloutBlock;
+  /** Id of the enclosing `:::callout` container (the parser's
+   *  `containerId`), set on the frame block and on every block laid out
+   *  inside it. Column balancing and keep-with-next rollbacks treat such
+   *  blocks as part of one unbreakable unit. */
+  containerId?: number;
+}
+
+/** Resolved geometry of a `:::callout` frame block (see `VDTBlock.callout`). */
+export interface ResolvedCalloutBlock {
+  /** Id of the `CalloutStyleConfig` that styled the box. */
+  styleId: string;
+  span: CalloutSpan;
+  placement: CalloutPlacement;
+  /** Content area inside padding / stripe / icon column, relative to the
+   *  frame's `bbox` origin. Children are laid out inside it. */
+  innerRect: BoundingBox;
+  /** Ids of the child blocks (in reading order). */
+  childIds: string[];
+  /** `fileId` of the icon resource image when `icon.kind === 'resource'`. */
+  iconFileId?: string;
+  /** Bitmap format of the icon image (`'png'`, `'jpeg'`, …) when known. */
+  iconFormat?: string;
 }
 
 export interface VDTColumn {
@@ -270,6 +357,16 @@ export interface VDTColumn {
   blocks: VDTBlock[];
   availableHeight: number;
   baselineOffset: number;
+  /** Vertical band this column belongs to when a page is split into
+   *  stacked bands (e.g. a full-width span above a multi-column flow).
+   *  Absent for the plain single-band layout. */
+  band?: number;
+  /** `'text'` for a regular flow column, `'span'` for a full-width column
+   *  that hosts page-spanning content. Absent means `'text'`. */
+  kind?: 'text' | 'span';
+  /** True when a `:::columnbreak` directive ended this column: its bottom
+   *  gap is intentional, so column balancing leaves it alone. */
+  forcedBreak?: boolean;
 }
 
 export interface VDTFootnoteArea {
@@ -308,6 +405,15 @@ export interface VDTDesignTextBlock {
   box?: VDTDesignBoxStyle;
   /** Whether rendering should clip to `bbox`. */
   clip: boolean;
+  /** Source range of the text this block displays when it mirrors document
+   *  text (an opener's `{titleText}`), so editors can map clicks on the
+   *  band back to the markdown. */
+  sourceStart?: number;
+  sourceEnd?: number;
+  /** The exact title text the block renders (lines joined by `\n`) and its
+   *  per-character source offsets, when the text mirrors document text. */
+  sourceText?: string;
+  sourceMap?: number[];
 }
 
 /** Rendered rule inside a design slot. */
@@ -326,7 +432,20 @@ export interface VDTDesignBoxBlock {
   box: VDTDesignBoxStyle;
 }
 
-export type VDTDesignBlock = VDTDesignTextBlock | VDTDesignRuleBlock | VDTDesignBoxBlock;
+/** Image drawn from the resource image registry (e.g. a callout icon). */
+export interface VDTDesignImageBlock {
+  kind: 'image';
+  bbox: BoundingBox;
+  /** Out-of-band binary id resolved at render time (canvas registry, HTML
+   *  `resourceImageUrl`, PDF resource image map). */
+  fileId: string;
+}
+
+export type VDTDesignBlock =
+  | VDTDesignTextBlock
+  | VDTDesignRuleBlock
+  | VDTDesignBoxBlock
+  | VDTDesignImageBlock;
 
 export interface VDTDesignSlot {
   bbox: BoundingBox;
@@ -346,6 +465,19 @@ export interface VDTPage {
   index: number;
   width: number;
   height: number;
+  /** The page's own content area (px, page coordinates): the trim box inset
+   *  by the margins, mirrored on even pages when `margins.mirror` is on.
+   *  Columns, float bands, header/footer containers and opener bands all
+   *  derive from it — renderers read it instead of inferring the area from
+   *  the column bboxes. */
+  contentArea: BoundingBox;
+  /** Page classification (see `PageRole`), stamped after placement by
+   *  `classifyPages`. Drives the per-element `pages` filter of design
+   *  slots. Absent until headers/footers are built. */
+  role?: PageRole;
+  /** Present on part-divider pages: the part number and title. Marks the
+   *  page as `role: 'part'`. */
+  partInfo?: { number: string; title: string; titleSourceStart?: number; titleSourceEnd?: number };
   columns: VDTColumn[];
   header?: VDTDesignSlot;
   footer?: VDTDesignSlot;
@@ -425,11 +557,13 @@ export function createVDTPage(
   index: number,
   width: number,
   height: number,
+  contentArea?: BoundingBox,
 ): VDTPage {
   return {
     index,
     width,
     height,
+    contentArea: contentArea ?? { x: 0, y: 0, width, height },
     columns: [],
     marginNotes: [],
     pageNumberValue: index + 1,

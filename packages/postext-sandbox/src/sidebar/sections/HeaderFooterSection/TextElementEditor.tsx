@@ -7,8 +7,6 @@ import type {
   DesignTextElement,
   ResolvedDesignTextElement,
   ElementBoxStyle,
-  AnchorEdge,
-  HAlign,
   PageParity,
   Dimension,
   DimensionUnit,
@@ -24,31 +22,19 @@ import {
   ColorPicker,
 } from '../../../controls';
 import { PlaceholderPicker } from './PlaceholderPicker';
+import { PlacementFields, PagesSelect, type Sibling } from './PlacementFields';
 import {
   type SlotKind,
   alignFromPlacement,
-  applyAlign,
   applyMarginFromBody,
   applyMarginFromEdge,
   marginFromBody,
   marginFromEdge,
-  isElementAnchor,
-  anchorTargetId,
-  applyAnchorTarget,
-  applyElementEdge,
-  applyOffsetX,
-  applyOffsetY,
-  alignForElementEdge,
+  isContainerAnchor,
 } from './placementAdapter';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const ZERO: Dimension = { value: 0, unit: 'pt' };
-
-interface Sibling {
-  id: string;
-  kind: 'text' | 'rule' | 'box';
-  index: number;
-}
 
 interface Props {
   raw: DesignTextElement;
@@ -66,11 +52,6 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
     onChange({ ...raw, ...partial });
   };
 
-  const ALIGN_OPTIONS = [
-    { value: 'left', label: labels.headerFooterElementAlignLeft },
-    { value: 'center', label: labels.headerFooterElementAlignCenter },
-    { value: 'right', label: labels.headerFooterElementAlignRight },
-  ];
   const PARITY_OPTIONS = [
     { value: 'all', label: labels.headerFooterElementParityAll },
     { value: 'odd', label: labels.headerFooterElementParityOdd },
@@ -107,94 +88,29 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         onBlur={() => { setTimeout(() => setShowPicker(false), 150); }}
       />
       {showPicker && <PlaceholderPicker onInsert={insertAtCursor} slotKind={slotKind} />}
-      {(() => {
-        const anchoredToElement = isElementAnchor(resolved.placement);
-        const targetId = anchorTargetId(resolved.placement);
-        const targetOptions = [
-          { value: 'container', label: labels.headerFooterElementAnchorContainer ?? 'Contenedor' },
-          ...siblings.map((s) => ({
-            value: s.id,
-            label: `${s.kind === 'text' ? (labels.headerFooterElementText ?? 'Texto') : s.kind === 'rule' ? (labels.headerFooterElementRule ?? 'Línea') : (labels.headerFooterElementBox ?? 'Caja')} #${s.index + 1}`,
-          })),
-        ];
-        const EDGE_OPTIONS: { value: AnchorEdge; label: string }[] = [
-          { value: 'right-of', label: labels.headerFooterElementEdgeRightOf ?? 'A la derecha de' },
-          { value: 'left-of', label: labels.headerFooterElementEdgeLeftOf ?? 'A la izquierda de' },
-          { value: 'below', label: labels.headerFooterElementEdgeBelow ?? 'Debajo de' },
-          { value: 'above', label: labels.headerFooterElementEdgeAbove ?? 'Encima de' },
-          { value: 'align-top', label: labels.headerFooterElementEdgeAlignTop ?? 'Alinear arriba' },
-          { value: 'align-bottom', label: labels.headerFooterElementEdgeAlignBottom ?? 'Alinear abajo' },
-          { value: 'align-left', label: labels.headerFooterElementEdgeAlignLeft ?? 'Alinear izquierda' },
-          { value: 'align-right', label: labels.headerFooterElementEdgeAlignRight ?? 'Alinear derecha' },
-        ];
-        return (
-          <>
-            {siblings.length > 0 && (
-              <SelectInput
-                label={labels.headerFooterElementAnchorTo ?? 'Anclar a'}
-                value={targetId}
-                options={targetOptions}
-                onChange={(v) => {
-                  const nextPlacement = applyAnchorTarget(resolved.placement, slotKind, v);
-                  const impliedAlign = alignForElementEdge(nextPlacement.anchor.edge);
-                  update({
-                    placement: nextPlacement,
-                    ...(impliedAlign ? { align: impliedAlign } : {}),
-                  });
-                }}
-                tooltip={labels.headerFooterElementAnchorToTooltip ?? 'Ancla el elemento al contenedor o a otro elemento hermano. Cuando se ancla a un elemento, su posición se calcula relativamente a éste — así una caja puede empujar a la de al lado cuando crezca.'}
-              />
-            )}
-            {anchoredToElement ? (
-              <>
-                <SelectInput
-                  label={labels.headerFooterElementEdge ?? 'Posición relativa'}
-                  value={resolved.placement.anchor.edge}
-                  options={EDGE_OPTIONS}
-                  onChange={(v) => {
-                    const edge = v as AnchorEdge;
-                    const nextPlacement = applyElementEdge(resolved.placement, edge);
-                    const impliedAlign = alignForElementEdge(edge);
-                    update({
-                      placement: nextPlacement,
-                      ...(impliedAlign ? { align: impliedAlign } : {}),
-                    });
-                  }}
-                  tooltip={labels.headerFooterElementEdgeTooltip ?? 'Arista del elemento de referencia a la que se engancha este bloque: a la derecha, izquierda, encima, debajo, o alineando una de las esquinas.'}
-                />
-                <DimensionInput
-                  label={labels.headerFooterElementOffsetX ?? 'Desplazamiento X'}
-                  value={resolved.placement.offset?.x ?? { value: 0, unit: 'pt' }}
-                  onChange={(dim: Dimension) => update({ placement: applyOffsetX(resolved.placement, dim) })}
-                  step={1}
-                  tooltip={labels.headerFooterElementOffsetXTooltip ?? 'Separación horizontal desde la arista de referencia. Valores positivos alejan hacia la derecha; negativos, hacia la izquierda.'}
-                />
-                <DimensionInput
-                  label={labels.headerFooterElementOffsetY ?? 'Desplazamiento Y'}
-                  value={resolved.placement.offset?.y ?? { value: 0, unit: 'pt' }}
-                  onChange={(dim: Dimension) => update({ placement: applyOffsetY(resolved.placement, dim) })}
-                  step={1}
-                  tooltip={labels.headerFooterElementOffsetYTooltip ?? 'Separación vertical desde la arista de referencia. Valores positivos alejan hacia abajo; negativos, hacia arriba.'}
-                />
-              </>
-            ) : (
-              <SelectInput
-                label={labels.headerFooterElementAlign}
-                value={align}
-                options={ALIGN_OPTIONS}
-                onChange={(v) => update({ placement: applyAlign(resolved.placement, slotKind, v as HAlign) })}
-                tooltip={labels.headerFooterElementAlignTooltip ?? 'Alineación horizontal del elemento dentro del contenedor: izquierda, centro o derecha.'}
-              />
-            )}
-          </>
-        );
-      })()}
+      <PlacementFields
+        placement={resolved.placement}
+        slotKind={slotKind}
+        siblings={siblings}
+        onChange={(placement, impliedAlign) =>
+          update({ placement, ...(impliedAlign ? { align: impliedAlign } : {}) })
+        }
+      />
       <SelectInput
         label={labels.headerFooterElementParity}
         value={raw.parity ?? 'all'}
         options={PARITY_OPTIONS}
         onChange={(v) => update({ parity: v as PageParity })}
         tooltip={labels.headerFooterElementParityTooltip ?? 'Páginas en las que este elemento se renderiza: todas, solo pares (lado izquierdo en doble página) o solo impares (lado derecho).'}
+      />
+      <PagesSelect
+        value={raw.pages}
+        onChange={(pages) => {
+          const next: DesignTextElement = { ...raw };
+          if (pages === undefined) delete next.pages;
+          else next.pages = pages;
+          onChange(next);
+        }}
       />
       <FontPicker
         label={labels.headerFooterElementFontFamily}
@@ -390,7 +306,7 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
           </>
         );
       })()}
-      {!isElementAnchor(resolved.placement) && (
+      {isContainerAnchor(resolved.placement) && (
         <>
           <DimensionInput
             label={labels.headerFooterElementMarginFromBody}

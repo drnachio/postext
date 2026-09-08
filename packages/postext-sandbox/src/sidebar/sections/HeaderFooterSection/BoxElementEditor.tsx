@@ -5,7 +5,6 @@ import { DEFAULT_BOX_ELEMENT, colorsEqual, dimensionsEqual } from 'postext';
 import type {
   DesignBoxElement,
   ResolvedDesignBoxElement,
-  HAlign,
   PageParity,
   Dimension,
   ColorValue,
@@ -16,12 +15,13 @@ import {
   DimensionInput,
   ColorPicker,
 } from '../../../controls';
+import { PlacementFields, PagesSelect, type Sibling } from './PlacementFields';
 import {
   type SlotKind,
   alignFromPlacement,
-  applyAlign,
   applyMarginFromBody,
   applyMarginFromEdge,
+  isContainerAnchor,
   marginFromBody,
   marginFromEdge,
 } from './placementAdapter';
@@ -38,21 +38,17 @@ interface Props {
   raw: DesignBoxElement;
   resolved: ResolvedDesignBoxElement;
   slotKind: SlotKind;
+  siblings?: Sibling[];
   onChange: (next: DesignBoxElement) => void;
 }
 
-export function BoxElementEditor({ raw, resolved, slotKind, onChange }: Props) {
+export function BoxElementEditor({ raw, resolved, slotKind, siblings = [], onChange }: Props) {
   const labels = useSandboxLabels();
 
   const update = (partial: Partial<DesignBoxElement>) => {
     onChange({ ...raw, ...partial });
   };
 
-  const ALIGN_OPTIONS = [
-    { value: 'left', label: labels.headerFooterElementAlignLeft },
-    { value: 'center', label: labels.headerFooterElementAlignCenter },
-    { value: 'right', label: labels.headerFooterElementAlignRight },
-  ];
   const PARITY_OPTIONS = [
     { value: 'all', label: labels.headerFooterElementParityAll },
     { value: 'odd', label: labels.headerFooterElementParityOdd },
@@ -62,6 +58,7 @@ export function BoxElementEditor({ raw, resolved, slotKind, onChange }: Props) {
   const width = sizeDim(resolved.placement.size?.width, DEFAULT_SIZE_DIM);
   const height = sizeDim(resolved.placement.size?.height, DEFAULT_SIZE_DIM);
   const align = alignFromPlacement(resolved.placement);
+  const inContainer = isContainerAnchor(resolved.placement);
   const resolvedMarginFromBody = marginFromBody(resolved.placement, slotKind);
   const resolvedMarginFromEdge = marginFromEdge(resolved.placement);
   const defaultMarginFromBody = marginFromBody(DEFAULT_BOX_ELEMENT.placement, slotKind);
@@ -145,29 +142,41 @@ export function BoxElementEditor({ raw, resolved, slotKind, onChange }: Props) {
         isDefault={isBorderRadiusDefault}
         onReset={() => updateStyle({ borderRadius: DEFAULT_BOX_ELEMENT.style.borderRadius })}
       />
-      <SelectInput
-        label={labels.headerFooterElementAlign}
-        value={align}
-        options={ALIGN_OPTIONS}
-        onChange={(v) => update({ placement: applyAlign(resolved.placement, slotKind, v as HAlign) })}
+      <PlacementFields
+        placement={resolved.placement}
+        slotKind={slotKind}
+        siblings={siblings}
+        onChange={(placement) => update({ placement })}
       />
       <SelectInput
         label={labels.headerFooterElementParity}
         value={raw.parity ?? 'all'}
         options={PARITY_OPTIONS}
         onChange={(v) => update({ parity: v as PageParity })}
+        tooltip={labels.headerFooterElementParityTooltip}
       />
-      <DimensionInput
-        label={labels.headerFooterElementMarginFromBody}
-        value={resolvedMarginFromBody}
-        onChange={(dim: Dimension) => update({ placement: applyMarginFromBody(resolved.placement, slotKind, dim) })}
-        min={0}
-        step={1}
-        tooltip={labels.headerFooterElementMarginFromBodyTooltip}
-        isDefault={isMarginFromBodyDefault}
-        onReset={() => update({ placement: applyMarginFromBody(resolved.placement, slotKind, ZERO) })}
+      <PagesSelect
+        value={raw.pages}
+        onChange={(pages) => {
+          const next: DesignBoxElement = { ...raw };
+          if (pages === undefined) delete next.pages;
+          else next.pages = pages;
+          onChange(next);
+        }}
       />
-      {align !== 'center' && (
+      {inContainer && (
+        <DimensionInput
+          label={labels.headerFooterElementMarginFromBody}
+          value={resolvedMarginFromBody}
+          onChange={(dim: Dimension) => update({ placement: applyMarginFromBody(resolved.placement, slotKind, dim) })}
+          min={0}
+          step={1}
+          tooltip={labels.headerFooterElementMarginFromBodyTooltip}
+          isDefault={isMarginFromBodyDefault}
+          onReset={() => update({ placement: applyMarginFromBody(resolved.placement, slotKind, ZERO) })}
+        />
+      )}
+      {inContainer && align !== 'center' && (
         <DimensionInput
           label={labels.headerFooterElementMarginFromEdge}
           value={resolvedMarginFromEdge}

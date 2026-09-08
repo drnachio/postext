@@ -6,6 +6,8 @@ import { stripHeadingsDefaults } from './headings';
 import { stripTableStyleDefaults } from './tableStyle';
 import { stripCaptionStyleDefaults } from './captionStyle';
 import { stripDiagramStyleDefaults } from './diagramStyle';
+import { stripParagraphStylesDefaults } from './paragraphStyles';
+import { stripCalloutStylesDefaults } from './calloutStyles';
 import { stripUnorderedListsDefaults } from './unorderedLists';
 import { stripOrderedListsDefaults } from './orderedLists';
 import { stripMathDefaults } from './math';
@@ -13,6 +15,7 @@ import { stripDebugDefaults } from './debug';
 import { stripHtmlViewerDefaults } from './htmlViewer';
 import { stripPdfGenerationDefaults } from './pdfGeneration';
 import { stripHeaderFooterDefaults } from './headerFooter';
+import { stripPartsDefaults } from './parts';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
@@ -20,8 +23,10 @@ export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripL
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, hyphenationEqual, resolveBodyTextConfig, stripBodyTextDefaults } from './bodyText';
 export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
 export { resolveTableStyleConfig, stripTableStyleDefaults } from './tableStyle';
-export { resolveCaptionStyleConfig, stripCaptionStyleDefaults } from './captionStyle';
+export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle } from './captionStyle';
 export { DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults } from './diagramStyle';
+export { DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults } from './paragraphStyles';
+export { DEFAULT_CALLOUT_STYLES, DEFAULT_CALLOUT_STYLE_STATIC, resolveCalloutStylesConfig, stripCalloutStylesDefaults } from './calloutStyles';
 export { DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults } from './unorderedLists';
 export { DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults } from './orderedLists';
 export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './math';
@@ -31,6 +36,7 @@ export { DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGene
 export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults } from './headerFooter';
 export type { HeaderFooterSlotKind } from './headerFooter';
 export { defaultResourceTypes } from './resourceTypes';
+export { DEFAULT_PARTS_CONFIG, resolvePartsConfig, stripPartsDefaults } from './parts';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
@@ -75,6 +81,18 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.diagramStyle = strippedDiagramStyle;
   } else {
     delete result.diagramStyle;
+  }
+  const strippedParagraphStyles = stripParagraphStylesDefaults(config.paragraphStyles);
+  if (strippedParagraphStyles) {
+    result.paragraphStyles = strippedParagraphStyles;
+  } else {
+    delete result.paragraphStyles;
+  }
+  const strippedCalloutStyles = stripCalloutStylesDefaults(config.calloutStyles);
+  if (strippedCalloutStyles) {
+    result.calloutStyles = strippedCalloutStyles;
+  } else {
+    delete result.calloutStyles;
   }
   const strippedLists = stripUnorderedListsDefaults(config.unorderedLists);
   if (strippedLists) {
@@ -123,6 +141,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.footer = strippedFooter;
   } else {
     delete result.footer;
+  }
+  const strippedParts = stripPartsDefaults(config.parts);
+  if (strippedParts) {
+    result.parts = strippedParts;
+  } else {
+    delete result.parts;
   }
   return result;
 }

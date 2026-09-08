@@ -158,7 +158,22 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
   families.add(lists.fontFamily);
   for (const level of lists.levels) families.add(level.fontFamily);
   families.add(ordered.fontFamily);
-  for (const level of ordered.levels) families.add(level.fontFamily);
+  families.add(ordered.separatorFontFamily);
+  for (const level of ordered.levels) {
+    families.add(level.fontFamily);
+    families.add(level.separatorFontFamily);
+  }
+  // Part list overrides (partial configs applied inside `:::part`).
+  const partLists = [config.parts?.bodyStyle?.unorderedLists, config.parts?.bodyStyle?.orderedLists];
+  for (const lists of partLists) {
+    if (!lists) continue;
+    if (lists.fontFamily) families.add(lists.fontFamily);
+    if ('separatorFontFamily' in lists && lists.separatorFontFamily) families.add(lists.separatorFontFamily);
+    for (const level of lists.levels ?? []) {
+      if (level.fontFamily) families.add(level.fontFamily);
+      if ('separatorFontFamily' in level && level.separatorFontFamily) families.add(level.separatorFontFamily);
+    }
+  }
   return Array.from(families);
 }
 
@@ -321,7 +336,13 @@ export async function collectFontPayloadsForFamilies(
         return payloads.map((p) => ({ ...p, buffer: p.buffer.slice(0) }));
       });
     }
-    const promise = fetchFamilyPayloads(family);
+    const promise = fetchFamilyPayloads(family).then((payloads) => {
+      // An empty face list means the family could not be fetched (or was
+      // looked up before its custom definition landed): don't cache it, so
+      // the next build retries instead of measuring with a fallback forever.
+      if (payloads.length === 0 && facePayloadCache.get(family) === promise) facePayloadCache.delete(family);
+      return payloads;
+    });
     facePayloadCache.set(family, promise);
     return promise;
   }));

@@ -9,6 +9,7 @@ import type {
   VDTDesignTextBlock,
   VDTDesignRuleBlock,
   VDTDesignBoxBlock,
+  VDTDesignImageBlock,
   VDTDesignBoxStyle,
   BoundingBox,
   ResolvedResourceBlock,
@@ -193,17 +194,24 @@ function renderBullet(block: VDTBlock): string {
   // Canvas uses `textBaseline='middle'` at `bulletY` to center the em square
   // on the x-height; in HTML we get the equivalent alignment naturally when
   // both bullet and line share top/height and font metrics.
-  return (
-    `<div class="pt-bullet" aria-hidden="true" style="` +
+  const markerDiv = (cls: string, x: number, font: string, color: string, text: string): string =>
+    `<div class="${cls}" aria-hidden="true" style="` +
     `position:absolute;` +
-    `left:${block.bulletOffsetX}px;` +
+    `left:${x}px;` +
     `top:${firstLine.bbox.y}px;` +
     `height:${firstLine.bbox.height}px;` +
-    `font:${bulletFont};` +
-    `color:${bulletColor};` +
+    `font:${font};` +
+    `color:${color};` +
     `white-space:pre;` +
-    `">${esc(block.bulletText)}</div>`
-  );
+    `">${esc(text)}</div>`;
+  let html = markerDiv('pt-bullet', block.bulletOffsetX, bulletFont, bulletColor, block.bulletText);
+  // Ordered-list separator styled apart from the number (own font/colour).
+  if (block.separatorText && block.separatorX !== undefined) {
+    const separatorFont = quoteFontString(block.separatorFontString ?? block.bulletFontString ?? block.fontString);
+    const separatorColor = block.separatorColor ?? bulletColor;
+    html += markerDiv('pt-separator', block.separatorX, separatorFont, separatorColor, block.separatorText);
+  }
+  return html;
 }
 
 function renderLine(line: VDTLine, block: VDTBlock): string {
@@ -296,7 +304,7 @@ function renderResourceLine(
   );
 }
 
-function renderResourceTable(rb: ResolvedResourceBlock): string {
+function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number): string {
   const t = rb.table;
   if (!t) return '';
   const parts: string[] = [];
@@ -316,13 +324,25 @@ function renderResourceTable(rb: ResolvedResourceBlock): string {
     // Border boxes are inflated by half the stroke so the border centres on
     // the cell edge — adjacent cells overlap exactly, like canvas strokeRect.
     const bw = t.borderWidthPx;
-    for (const cell of t.cells) {
-      parts.push(
-        `<div aria-hidden="true" style="position:absolute;` +
-        `left:${cell.rect.x - bw / 2}px;top:${cell.rect.y - bw / 2}px;` +
-        `width:${cell.rect.width + bw}px;height:${cell.rect.height + bw}px;` +
-        `border:${bw}px solid ${t.borderColor};box-sizing:border-box;"></div>`,
-      );
+    const rules = t.rules ?? 'grid';
+    const borderBox = (x: number, y: number, w: number, h: number, sides: string): string =>
+      `<div aria-hidden="true" style="position:absolute;` +
+      `left:${x - bw / 2}px;top:${y - bw / 2}px;` +
+      `width:${w + bw}px;height:${h + bw}px;` +
+      `${sides}box-sizing:border-box;"></div>`;
+    if (rules === 'grid') {
+      for (const cell of t.cells) {
+        parts.push(borderBox(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height,
+          `border:${bw}px solid ${t.borderColor};`));
+      }
+    } else if (rules === 'horizontal') {
+      for (const cell of t.cells) {
+        parts.push(borderBox(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height,
+          `border-top:${bw}px solid ${t.borderColor};border-bottom:${bw}px solid ${t.borderColor};`));
+      }
+    } else if (rules === 'outer') {
+      const tableHeight = t.rowEdges[t.rowEdges.length - 1] ?? rb.bodyRect.height;
+      parts.push(borderBox(bx, by, rb.bodyRect.width, tableHeight, `border:${bw}px solid ${t.borderColor};`));
     }
   }
   const bodyFonts: ResourceLineFonts = {
@@ -385,9 +405,18 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
       );
     }
   } else if (rb.kind === 'table') {
-    parts.push(renderResourceTable(rb));
+    parts.push(renderResourceTable(rb, bx, by));
   }
 
+  // Caption bar (behind the caption lines), like other absolute decorations.
+  if (rb.captionBar) {
+    const { rect, background } = rb.captionBar;
+    parts.push(
+      `<div aria-hidden="true" style="position:absolute;` +
+      `left:${rect.x}px;top:${rect.y}px;width:${rect.width}px;height:${rect.height}px;` +
+      `background:${background};"></div>`,
+    );
+  }
   const captionFonts: ResourceLineFonts = {
     normal: rb.captionFontString,
     bold: rb.captionBoldFontString,
@@ -396,6 +425,15 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
   };
   for (const line of rb.captionLines) {
     parts.push(renderResourceLine(line, captionFonts, rb.captionColor, rb.linkColor, rb.captionLabelColor));
+  }
+  const noteFonts: ResourceLineFonts = {
+    normal: rb.noteFontString,
+    bold: rb.noteBoldFontString,
+    italic: rb.noteItalicFontString,
+    boldItalic: rb.noteBoldItalicFontString,
+  };
+  for (const line of rb.noteLines) {
+    parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor));
   }
   return parts.join('');
 }
@@ -474,21 +512,42 @@ function renderDesignBoxBlock(block: VDTDesignBoxBlock): string {
   return renderBoxAt(block.bbox, block.box);
 }
 
-function renderDesignBlock(block: VDTDesignBlock): string {
+/** Image block (e.g. a callout icon): `<img>` from `resourceImageUrl`, or a
+ *  neutral placeholder box when the host cannot supply the image. */
+function renderDesignImageBlock(block: VDTDesignImageBlock, options?: RenderHtmlOptions): string {
+  const { x, y, width, height } = block.bbox;
+  if (width <= 0 || height <= 0) return '';
+  const url = options?.resourceImageUrl?.(block.fileId);
+  if (url) {
+    return (
+      `<img src="${esc(url)}" alt="" style="position:absolute;` +
+      `left:${x}px;top:${y}px;width:${width}px;height:${height}px;" />`
+    );
+  }
+  return (
+    `<div aria-hidden="true" style="position:absolute;` +
+    `left:${x}px;top:${y}px;width:${width}px;height:${height}px;` +
+    `background:rgba(160,160,160,0.12);border:1px solid rgba(160,160,160,0.5);box-sizing:border-box;` +
+    `"></div>`
+  );
+}
+
+function renderDesignBlock(block: VDTDesignBlock, options?: RenderHtmlOptions): string {
   if (block.kind === 'text') return renderDesignTextBlock(block);
   if (block.kind === 'rule') return renderDesignRuleBlock(block);
+  if (block.kind === 'image') return renderDesignImageBlock(block, options);
   return renderDesignBoxBlock(block);
 }
 
-function renderDesignSlot(slot: VDTDesignSlot): string {
+function renderDesignSlot(slot: VDTDesignSlot, options?: RenderHtmlOptions): string {
   const parts: string[] = [];
-  for (const block of slot.blocks) parts.push(renderDesignBlock(block));
+  for (const block of slot.blocks) parts.push(renderDesignBlock(block, options));
   return parts.join('');
 }
 
 function renderBlockInner(block: VDTBlock, options: RenderHtmlOptions): string {
   if (block.hidden) return '';
-  if (block.designOverlay) return renderDesignSlot(block.designOverlay);
+  if (block.designOverlay) return renderDesignSlot(block.designOverlay, options);
   // Resource embeds carry their own measured geometry (image/table + caption);
   // the block's single placeholder line renders nothing useful.
   if (block.resourceBlock) return renderResourceBlockHtml(block, options);

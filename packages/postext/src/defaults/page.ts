@@ -16,6 +16,7 @@ const DEFAULT_PAGE_MARGINS: Required<PageMargins> = {
   bottom: { value: 2, unit: 'cm' },
   left: { value: 1.5, unit: 'cm' },
   right: { value: 1.5, unit: 'cm' },
+  mirror: false,
 };
 
 export const DEFAULT_CUT_LINES = {
@@ -68,18 +69,24 @@ function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cu
 
 export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
   if (!partial) return { ...DEFAULT_PAGE_CONFIG };
+  const sizePreset = partial.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset;
+  const presetSize = sizePreset === 'custom' ? undefined : PAGE_SIZE_PRESETS[sizePreset];
 
   return {
     backgroundColor: partial.backgroundColor ?? DEFAULT_PAGE_CONFIG.backgroundColor,
-    sizePreset: partial.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset,
-    width: partial.width ?? DEFAULT_PAGE_CONFIG.width,
-    height: partial.height ?? DEFAULT_PAGE_CONFIG.height,
+    sizePreset,
+    // A named preset supplies the physical size when the config does not
+    // spell out width/height, so `sizePreset: '21x28'` alone lays out at
+    // 21 × 28 cm. Explicit dimensions always win.
+    width: partial.width ?? presetSize?.width ?? DEFAULT_PAGE_CONFIG.width,
+    height: partial.height ?? presetSize?.height ?? DEFAULT_PAGE_CONFIG.height,
     margins: partial.margins
       ? {
           top: partial.margins.top ?? DEFAULT_PAGE_MARGINS.top,
           bottom: partial.margins.bottom ?? DEFAULT_PAGE_MARGINS.bottom,
           left: partial.margins.left ?? DEFAULT_PAGE_MARGINS.left,
           right: partial.margins.right ?? DEFAULT_PAGE_MARGINS.right,
+          mirror: partial.margins.mirror ?? DEFAULT_PAGE_MARGINS.mirror,
         }
       : { ...DEFAULT_PAGE_MARGINS },
     dpi: partial.dpi ?? DEFAULT_PAGE_CONFIG.dpi,
@@ -125,6 +132,10 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
         m[side] = page.margins[side];
         hasMarginOverride = true;
       }
+    }
+    if (page.margins.mirror !== undefined && page.margins.mirror !== DEFAULT_PAGE_MARGINS.mirror) {
+      m.mirror = page.margins.mirror;
+      hasMarginOverride = true;
     }
     if (hasMarginOverride) {
       result.margins = m;

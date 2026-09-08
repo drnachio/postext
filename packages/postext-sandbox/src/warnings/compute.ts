@@ -3,16 +3,22 @@ import type {
   VDTDocument,
   ResolvedDebugConfig,
   ContentBlock,
+  ParseIssue,
   Resource,
   ResourceType,
+  ResolvedDesignSlot,
+  DesignContextKind,
 } from 'postext';
 import {
+  KNOWN_CONTAINERS,
+  KNOWN_DIRECTIVES,
   parseMarkdownWithIssues,
   resolveDebugConfig,
   resolveHeaderFooterConfig,
   resolveHeadingsConfig,
+  resolveDesignSlot,
   collectPlaceholderNames,
-  isKnownPlaceholder,
+  isAllowedPlaceholder,
   isMetadataPlaceholder,
 } from 'postext';
 import {
@@ -119,6 +125,13 @@ function collectConsecutiveHeadingsWarnings(blocks: ContentBlock[], markdown: st
 }
 
 const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\b/;
+/** Every `:::name` the parser understands: leaf directives plus fenced
+ *  containers (`callout`, `paragraphs`, `part`). Widened to `string` so
+ *  arbitrary names scanned from the source can be tested. */
+const KNOWN_FENCE_NAMES: ReadonlySet<string> = new Set<string>([
+  ...KNOWN_DIRECTIVES,
+  ...KNOWN_CONTAINERS,
+]);
 const ALLOWED_PAGE_FORMATS = new Set([
   'decimal',
   'lower-roman',
@@ -144,7 +157,7 @@ function collectDirectiveWarnings(
     const m = rawLine.trim().match(DIRECTIVE_RE);
     if (m) {
       const name = m[1]!;
-      if (name !== 'pagebreak' && name !== 'numbering') {
+      if (!KNOWN_FENCE_NAMES.has(name)) {
         out.push({
           id: `directive-unknown-${idx++}-${offset}`,
           payload: { kind: 'unknownDirective', name },
@@ -194,6 +207,71 @@ function collectDirectiveWarnings(
         out.push({
           id: `pagebreak-parity-${idx++}-${b.sourceStart}`,
           payload: { kind: 'pagebreakInvalidParity', value: attrs.parity },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Fenced-container warnings:
+ *   - unclosedContainer: a `:::name` fence still open at end of input (from
+ *     the parser's issue list); points at the opening line.
+ *   - unknownParagraphStyle: `:::paragraphs{style="x"}` where `x` is not a
+ *     configured paragraph style id.
+ *   - unknownCalloutType: `:::callout{type="x"}` where `x` is not a
+ *     configured callout style id. Mirrors `pickCalloutStyle` in the engine:
+ *     with no configured styles every type resolves to the built-in `note`
+ *     look (nothing to warn about); with a non-empty list an unknown type
+ *     silently falls back to the first style, which is worth flagging.
+ */
+function collectContainerWarnings(
+  markdown: string,
+  blocks: ContentBlock[],
+  issues: ParseIssue[],
+  config: PostextConfig,
+): Warning[] {
+  const out: Warning[] = [];
+  let idx = 0;
+
+  for (const issue of issues) {
+    if (issue.kind !== 'unclosedContainer') continue;
+    out.push({
+      id: `container-unclosed-${idx++}-${issue.sourceStart}`,
+      payload: { kind: 'unclosedContainer', name: issue.containerName },
+      sourceStart: issue.sourceStart,
+      sourceEnd: issue.sourceEnd,
+      line: lineNumberForOffset(markdown, issue.sourceStart),
+    });
+  }
+
+  const paragraphStyleIds = new Set((config.paragraphStyles ?? []).map((s) => s.id));
+  const calloutStyleIds = new Set((config.calloutStyles ?? []).map((s) => s.id));
+
+  for (const b of blocks) {
+    if (b.type !== 'containerStart') continue;
+    const attrs = b.containerAttrs ?? {};
+    if (b.containerName === 'paragraphs') {
+      const style = attrs.style;
+      if (style !== undefined && !paragraphStyleIds.has(style)) {
+        out.push({
+          id: `paragraphs-style-${idx++}-${b.sourceStart}`,
+          payload: { kind: 'unknownParagraphStyle', style },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    } else if (b.containerName === 'callout' && calloutStyleIds.size > 0) {
+      const type = attrs.type;
+      if (type !== undefined && !calloutStyleIds.has(type)) {
+        out.push({
+          id: `callout-type-${idx++}-${b.sourceStart}`,
+          payload: { kind: 'unknownCalloutType', type },
           sourceStart: b.sourceStart,
           sourceEnd: b.sourceEnd,
           line: lineNumberForOffset(markdown, b.sourceStart),
@@ -261,6 +339,24 @@ function collectDesignWarnings(config: PostextConfig): Warning[] {
       out.push({
         id: `design-dangling-${slot}-${d.id}-${d.target}`,
         payload: { kind: 'designDanglingAnchor', slot, elementId: d.id, referencedId: d.target },
+      });
+    }
+  }
+
+  // Part opener anchor integrity
+  {
+    const part = resolveDesignSlot(config.parts?.design, 'header');
+    const { cyclic, dangling } = detectAnchorIssues(part.elements);
+    for (const id of cyclic) {
+      out.push({
+        id: `design-cyclic-part-${id}`,
+        payload: { kind: 'designCyclicAnchor', slot: 'part', elementId: id },
+      });
+    }
+    for (const d of dangling) {
+      out.push({
+        id: `design-dangling-part-${d.id}-${d.target}`,
+        payload: { kind: 'designDanglingAnchor', slot: 'part', elementId: d.id, referencedId: d.target },
       });
     }
   }
@@ -403,6 +499,9 @@ function collectResourceWarnings(
   resources: Resource[],
   resourceTypes: ResourceType[],
   doc: VDTDocument | null,
+  /** Resource ids consumed by the configuration itself (callout icons),
+   *  which count as used even though the document never references them. */
+  configUsedIds: ReadonlySet<string> = new Set(),
 ): Warning[] {
   const out: Warning[] = [];
   let idx = 0;
@@ -415,8 +514,9 @@ function collectResourceWarnings(
   const knownIds = new Set(idCounts.keys());
   const knownTypeIds = new Set(resourceTypes.map((t) => t.id));
 
-  // Track which resource ids are actually used (embedded or referenced).
-  const usedIds = new Set<string>();
+  // Track which resource ids are actually used (embedded, referenced, or
+  // consumed by the configuration).
+  const usedIds = new Set<string>(configUsedIds);
 
   // 1. Walk blocks for embeds (`::resource`) and inline `:ref`s, flagging
   //    unknown ids and recording usage with source positions for navigation.
@@ -614,6 +714,7 @@ export function computeWarnings(params: {
 
   warnings.push(...collectHeaderFooterWarnings(config, doc));
   warnings.push(...collectDirectiveWarnings(markdown, blocks));
+  warnings.push(...collectContainerWarnings(markdown, blocks, issues, config));
   warnings.push(...collectHeadingBreakParityWarnings(config));
   warnings.push(...collectParityCascadeWarnings(doc));
   warnings.push(...collectAlphaOverflowWarnings(doc));
@@ -622,7 +723,18 @@ export function computeWarnings(params: {
   }
 
   warnings.push(
-    ...collectResourceWarnings(blocks, markdown, resources, config.resourceTypes ?? [], doc),
+    ...collectResourceWarnings(
+      blocks,
+      markdown,
+      resources,
+      config.resourceTypes ?? [],
+      doc,
+      new Set(
+        (config.calloutStyles ?? [])
+          .map((style) => (style.icon?.kind === 'resource' ? style.icon.resourceId : undefined))
+          .filter((id): id is string => typeof id === 'string' && id.length > 0),
+      ),
+    ),
   );
   if (storageUnavailable) {
     warnings.push({ id: 'resource-storage-unavailable', payload: { kind: 'storageUnavailable' } });
@@ -643,28 +755,35 @@ function collectHeaderFooterWarnings(
     return typeof val === 'string' && val.length > 0;
   };
 
-  const check = (slot: 'header' | 'footer', raw: PostextConfig['header'] | PostextConfig['footer']) => {
-    const resolved = resolveHeaderFooterConfig(raw, slot);
-    resolved.elements.forEach((el, elementIndex) => {
+  // Every design slot is validated against the engine allow-list for its
+  // own kind (fixed names per kind plus the open-ended `attr.<key>`
+  // namespace), so new placeholders never need a sandbox-side copy. Heading
+  // and part slots accept the heading set (`{titleText}`, `{number}`…).
+  const check = (slot: DesignContextKind, elements: ResolvedDesignSlot['elements'], level?: number) => {
+    const tag = level !== undefined ? `${slot}${level}` : slot;
+    elements.forEach((el, elementIndex) => {
       if (el.kind !== 'text') return;
-      const names = collectPlaceholderNames(el.content);
-      for (const name of names) {
-        if (!isKnownPlaceholder(name)) {
+      for (const name of collectPlaceholderNames(el.content)) {
+        if (!isAllowedPlaceholder(name, slot)) {
           out.push({
-            id: `hf-unknown-${slot}-${elementIndex}-${name}`,
-            payload: { kind: 'headerFooterUnknownPlaceholder', slot, elementIndex, name },
+            id: `hf-unknown-${tag}-${elementIndex}-${name}`,
+            payload: { kind: 'headerFooterUnknownPlaceholder', slot, level, elementIndex, name },
           });
         } else if (!hasMetadata(name)) {
           out.push({
-            id: `hf-metadata-${slot}-${elementIndex}-${name}`,
-            payload: { kind: 'headerFooterMetadataMissing', slot, elementIndex, name },
+            id: `hf-metadata-${tag}-${elementIndex}-${name}`,
+            payload: { kind: 'headerFooterMetadataMissing', slot, level, elementIndex, name },
           });
         }
       }
     });
   };
-  check('header', config.header);
-  check('footer', config.footer);
+  check('header', resolveHeaderFooterConfig(config.header, 'header').elements);
+  check('footer', resolveHeaderFooterConfig(config.footer, 'footer').elements);
+  for (const lvl of resolveHeadingsConfig(config.headings).levels) {
+    if (lvl.advancedDesign.enabled) check('heading', lvl.advancedDesign.slot.elements, lvl.level);
+  }
+  check('part', resolveDesignSlot(config.parts?.design, 'header').elements);
 
   return out;
 }

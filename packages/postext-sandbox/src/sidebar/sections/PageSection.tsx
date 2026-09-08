@@ -55,7 +55,7 @@ export const PageSection = memo(function PageSection() {
     });
   };
 
-  const resetMargin = (side: 'top' | 'bottom' | 'left' | 'right') => {
+  const resetMargin = (side: 'top' | 'bottom' | 'left' | 'right' | 'mirror') => {
     if (!raw?.margins) return;
     const next = { ...raw.margins };
     delete next[side];
@@ -131,6 +131,8 @@ export const PageSection = memo(function PageSection() {
   const isMarginBottomDefault = dimensionsEqual(page.margins.bottom, D.margins.bottom);
   const isMarginLeftDefault = dimensionsEqual(page.margins.left, D.margins.left);
   const isMarginRightDefault = dimensionsEqual(page.margins.right, D.margins.right);
+  const marginsMirror = page.margins.mirror ?? false;
+  const isMarginsMirrorDefault = marginsMirror === (D.margins.mirror ?? false);
   const isDpiDefault = page.dpi === D.dpi;
   const isCutLinesEnabledDefault = page.cutLines.enabled === D.cutLines.enabled;
   const isCutLinesBleedDefault = dimensionsEqual(page.cutLines.bleed, DEFAULT_CUT_LINES.bleed);
@@ -229,8 +231,16 @@ export const PageSection = memo(function PageSection() {
         isDefault={isMarginBottomDefault}
         onReset={() => resetMargin('bottom')}
       />
+      <ToggleSwitch
+        label={labels.pageMarginsMirror}
+        checked={marginsMirror}
+        onChange={(v) => updatePage({ margins: { ...raw?.margins, mirror: v } })}
+        tooltip={labels.pageMarginsMirrorTooltip}
+        isDefault={isMarginsMirrorDefault}
+        onReset={() => resetMargin('mirror')}
+      />
       <DimensionInput
-        label={labels.marginLeft}
+        label={marginsMirror ? labels.pageMarginsInner : labels.marginLeft}
         value={page.margins.left}
         onChange={(dim) => handleMarginChange('left', dim)}
         min={0}
@@ -239,7 +249,7 @@ export const PageSection = memo(function PageSection() {
         onReset={() => resetMargin('left')}
       />
       <DimensionInput
-        label={labels.marginRight}
+        label={marginsMirror ? labels.pageMarginsOuter : labels.marginRight}
         value={page.margins.right}
         onChange={(dim) => handleMarginChange('right', dim)}
         min={0}

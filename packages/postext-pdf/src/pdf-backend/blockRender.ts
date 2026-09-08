@@ -177,6 +177,16 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache): void
   const midY = block.bulletY ?? firstLine.baseline;
   const baselinePx = midY + size * 0.3;
   drawTextPx(ctx, block.bulletText, block.bulletOffsetX, baselinePx, font, size, color);
+
+  // Ordered-list separator styled apart from the number (own font/colour).
+  if (block.separatorText && block.separatorX !== undefined) {
+    const sepFontString = block.separatorFontString ?? block.bulletFontString;
+    const sepFont = fontCache.get(sepFontString);
+    if (!sepFont) return;
+    const sepSize = parseFontString(sepFontString)?.sizePx ?? size;
+    const sepColor = colorFromHex(block.separatorColor ?? colorHex, ctx.colorSpace);
+    drawTextPx(ctx, block.separatorText, block.separatorX, midY + sepSize * 0.3, sepFont, sepSize, sepColor);
+  }
 }
 
 function renderStrikethrough(ctx: PageCtx, block: VDTBlock): void {
@@ -202,7 +212,7 @@ export function renderBlock(
 ): void {
   if (block.hidden) return;
   if (block.designOverlay) {
-    renderHeaderFooterSlot(ctx, block.designOverlay, fontCache);
+    renderHeaderFooterSlot(ctx, block.designOverlay, fontCache, resourceCtx?.images);
     return;
   }
   if (block.type === 'resource') {
@@ -218,8 +228,12 @@ export function renderBlock(
   if (block.type === 'listItem') {
     renderBullet(ctx, block, fontCache);
   }
+  // Justify against the block's own measure (see the canvas backend): blocks
+  // inside callouts are narrower than their column.
+  void columnWidth;
+  void columnX;
   for (const line of block.lines) {
-    renderLine(ctx, line, block, columnWidth, columnX, fontCache, resourceCtx?.linkRegistry);
+    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, resourceCtx?.linkRegistry);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

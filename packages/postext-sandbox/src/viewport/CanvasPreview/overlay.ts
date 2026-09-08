@@ -1,6 +1,7 @@
-import type { VDTDocument, ResolvedDebugConfig } from 'postext';
+import type { VDTBlock, VDTDocument, ResolvedDebugConfig } from 'postext';
 import { SVG_NS } from './dom';
 import { sourceToPlainIndex, xForPlainInLine } from './geometry';
+import { bandLineBoxes, bandPrefixX, bandSourceToPlain, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
 
 /**
  * Paint the baseline grid for a single page into the overlay SVG's
@@ -49,10 +50,13 @@ export function drawBaselines(
 
   const isLastPage = pageIndex === doc.pages.length - 1;
   if (!isLastPage && page.columns.length > 0) {
-    const maxUsed = Math.max(
-      ...page.columns.map((col) => col.bbox.height - col.availableHeight),
+    // Columns may sit in several vertical bands (page-span blocks split the
+    // page), so measure the used extent from the page top rather than from
+    // each column's own top.
+    const maxUsedBottom = Math.max(
+      ...page.columns.map((col) => col.bbox.y + col.bbox.height - col.availableHeight),
     );
-    contentH = maxUsed;
+    contentH = maxUsedBottom - contentY;
   }
 
   const maxLines = Math.floor(contentH / baselineIncrement);
@@ -126,10 +130,31 @@ export function drawOverlay(
   // active end). When the selection is collapsed this coincides with the
   // visible caret; when it isn't, the rect is still positioned but kept
   // invisible so callers can scroll it into view without drawing anything.
+  const bandTitles = bandTitleBlocks(doc, pageIndex);
+  const hiddenUnderBand = (b: VDTBlock): boolean => isHiddenUnderBand(b, bandTitles);
   const caretBlock = doc.blocks[caretBlockIdx];
   let cursorPositioned = false;
 
-  if (caretBlock && caretBlock.pageIndex === pageIndex) {
+  const bandCaretBlock = bandTitles.find((t) => head >= t.sourceStart! && head <= t.sourceEnd!);
+  if (bandCaretBlock) {
+    const boxes = bandLineBoxes(bandCaretBlock);
+    const plainCaret = bandSourceToPlain(bandCaretBlock, head);
+    const box = boxes.find((b) => plainCaret >= b.plainStart && plainCaret <= b.plainStart + b.text.length)
+      ?? boxes[boxes.length - 1];
+    if (box) {
+      const x = bandPrefixX(box, plainCaret - box.plainStart);
+      cursorRect.setAttribute('x', String(x - 1.5));
+      cursorRect.setAttribute('y', String(box.y));
+      cursorRect.setAttribute('width', '3');
+      cursorRect.setAttribute('height', String(box.height));
+      cursorRect.setAttribute('fill', debug.cursorSync.color.hex);
+      cursorRect.style.display = '';
+      cursorRect.style.visibility = cursorActive ? '' : 'hidden';
+      cursorPositioned = true;
+    }
+  }
+
+  if (!cursorPositioned && caretBlock && caretBlock.pageIndex === pageIndex && !hiddenUnderBand(caretBlock)) {
     const prefixLen = caretBlock.plainPrefixLen ?? 0;
     const plainLen = prefixLen + (caretBlock.sourceMap?.length ?? 0);
     let plainCaret: number;
@@ -167,7 +192,32 @@ export function drawOverlay(
 
   if (!selectionActive) return cursorPositioned ? cursorRect : null;
 
-  const blocks = doc.blocks.filter((b) => b.pageIndex === pageIndex);
+  for (const title of bandTitles) {
+    const tStart = title.sourceStart!;
+    const tEnd = title.sourceEnd!;
+    if (tEnd <= from || tStart > to) continue;
+    const plainFrom = bandSourceToPlain(title, from);
+    const plainTo = bandSourceToPlain(title, to);
+    for (const box of bandLineBoxes(title)) {
+      const lineStart = box.plainStart;
+      const lineEnd = box.plainStart + box.text.length;
+      const lo = Math.max(plainFrom, lineStart);
+      const hi = Math.min(plainTo, lineEnd);
+      if (hi > lo && box.text.length > 0) {
+        const x1 = bandPrefixX(box, lo - lineStart);
+        const x2 = bandPrefixX(box, hi - lineStart);
+        const rect = document.createElementNS(SVG_NS, 'rect');
+        rect.setAttribute('x', String(x1));
+        rect.setAttribute('y', String(box.y));
+        rect.setAttribute('width', String(Math.max(1, x2 - x1)));
+        rect.setAttribute('height', String(box.height));
+        rect.setAttribute('fill', debug.selectionSync.color.hex);
+        selectionGroup.appendChild(rect);
+      }
+    }
+  }
+
+  const blocks = doc.blocks.filter((b) => b.pageIndex === pageIndex && !hiddenUnderBand(b));
   for (const block of blocks) {
     if (block.sourceStart === undefined || block.sourceEnd === undefined) continue;
     if (block.sourceEnd <= from) continue;

@@ -75,14 +75,13 @@ export async function preloadResourceImages(
   for (const page of doc.pages) {
     if (page.floats) blocks.push(...page.floats);
   }
-  for (const block of blocks) {
-    const rb = block.resourceBlock;
-    if (!rb || !rb.fileId || out.has(rb.fileId)) continue;
-    if (rb.kind !== 'bitmap' && rb.kind !== 'svg') continue;
-    const bytes = bytesProvider(rb.fileId);
-    if (!bytes) continue;
+  /** Embed one image by `fileId` (format hint from the resource when known). */
+  const embed = async (fileId: string, format: string | undefined): Promise<void> => {
+    if (out.has(fileId)) return;
+    const bytes = bytesProvider(fileId);
+    if (!bytes) return;
     try {
-      const fmt = (rb.format ?? '').toLowerCase();
+      const fmt = (format ?? '').toLowerCase();
       let image: PDFImage | null = null;
       if (fmt === 'jpeg' || fmt === 'jpg') {
         image = await pdfDoc.embedJpg(bytes);
@@ -93,10 +92,19 @@ export async function preloadResourceImages(
         // png / gif-first-frame / svg-rasterised-to-png all go through embedPng.
         image = await pdfDoc.embedPng(bytes);
       }
-      if (image) out.set(rb.fileId, image);
+      if (image) out.set(fileId, image);
     } catch {
       // Undecodable — leave absent; renderer falls back to a placeholder.
     }
+  };
+  for (const block of blocks) {
+    const rb = block.resourceBlock;
+    if (rb && rb.fileId && (rb.kind === 'bitmap' || rb.kind === 'svg')) {
+      await embed(rb.fileId, rb.format);
+    }
+    // Callout icons (`icon.kind: 'resource'`) draw through the same map.
+    const iconFileId = block.callout?.iconFileId;
+    if (iconFileId) await embed(iconFileId, block.callout?.iconFormat);
   }
   return out;
 }
@@ -165,6 +173,8 @@ function paintLine(
 function renderTable(
   ctx: PageCtx,
   rb: ResolvedResourceBlock,
+  bx: number,
+  by: number,
   fontCache: FontCache,
   linkColor: Color,
   linkRegistry: LinkRegistry | undefined,
@@ -194,14 +204,29 @@ function renderTable(
     const fill = cell.isHeader ? headerBg : bodyBg;
     if (fill) fillRectPx(ctx, cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height, fill);
   }
-  // Borders (per-cell rectangle outline).
+  // Borders: the full cell grid, horizontal rules only, or the outer frame.
+  // `drawLinePx` strokes exactly `borderWidthPx` (scaled to pt), so fractional
+  // hairlines such as 0.5pt survive.
   if (t.borderWidthPx > 0) {
-    for (const cell of t.cells) {
-      const { x, y, width, height } = cell.rect;
-      drawLinePx(ctx, x, y, x + width, y, borderColor, t.borderWidthPx);
-      drawLinePx(ctx, x, y + height, x + width, y + height, borderColor, t.borderWidthPx);
-      drawLinePx(ctx, x, y, x, y + height, borderColor, t.borderWidthPx);
-      drawLinePx(ctx, x + width, y, x + width, y + height, borderColor, t.borderWidthPx);
+    const rules = t.rules ?? 'grid';
+    const bw = t.borderWidthPx;
+    if (rules === 'outer') {
+      const tableHeight = t.rowEdges[t.rowEdges.length - 1] ?? rb.bodyRect.height;
+      const x = bx, y = by, width = rb.bodyRect.width, height = tableHeight;
+      drawLinePx(ctx, x, y, x + width, y, borderColor, bw);
+      drawLinePx(ctx, x, y + height, x + width, y + height, borderColor, bw);
+      drawLinePx(ctx, x, y, x, y + height, borderColor, bw);
+      drawLinePx(ctx, x + width, y, x + width, y + height, borderColor, bw);
+    } else {
+      for (const cell of t.cells) {
+        const { x, y, width, height } = cell.rect;
+        drawLinePx(ctx, x, y, x + width, y, borderColor, bw);
+        drawLinePx(ctx, x, y + height, x + width, y + height, borderColor, bw);
+        if (rules === 'grid') {
+          drawLinePx(ctx, x, y, x, y + height, borderColor, bw);
+          drawLinePx(ctx, x + width, y, x + width, y + height, borderColor, bw);
+        }
+      }
     }
   }
   // Cell content.
@@ -248,13 +273,19 @@ export function renderResourceBlock(
       drawPlaceholder(ctx, rb, bx, by);
     }
   } else if (rb.kind === 'table') {
-    renderTable(ctx, rb, fontCache, linkColor, linkRegistry);
+    renderTable(ctx, rb, bx, by, fontCache, linkColor, linkRegistry);
   }
 
   // Named destination for inline refs: top-left of the placed block.
   if (linkRegistry && rb.resource.id) {
     const destTop = pageHeightPt - block.bbox.y * scale;
     linkRegistry.addDestination(rb.resource.id, ctx.page, block.bbox.x * scale, destTop);
+  }
+
+  // Caption bar (behind the caption lines).
+  if (rb.captionBar) {
+    const { rect, background } = rb.captionBar;
+    fillRectPx(ctx, rect.x, rect.y, rect.width, rect.height, colorFromHex(background, ctx.colorSpace));
   }
 
   // Caption.
@@ -268,5 +299,17 @@ export function renderResourceBlock(
   };
   for (const line of rb.captionLines) {
     paintLine(ctx, line, captionFonts, fontCache, captionColor, linkColor, linkRegistry, (seg) => seg.refResourceId, captionLabelColor);
+  }
+
+  // Note.
+  const noteColor = colorFromHex(rb.noteColor, ctx.colorSpace);
+  const noteFonts: PaintFonts = {
+    normal: rb.noteFontString,
+    bold: rb.noteBoldFontString,
+    italic: rb.noteItalicFontString,
+    boldItalic: rb.noteBoldItalicFontString,
+  };
+  for (const line of rb.noteLines) {
+    paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, (seg) => seg.refResourceId);
   }
 }
