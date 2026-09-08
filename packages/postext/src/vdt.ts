@@ -253,6 +253,8 @@ export interface VDTBlock {
    *  heading line (first part of a heading only). Exposed to design slots
    *  as `{attr.key}` placeholders. */
   attrs?: Record<string, string>;
+  /** Source range of each quoted heading attribute value. */
+  attrSources?: Record<string, { start: number; end: number }>;
   /** Forced title breaks (plain-text indices, prefix excluded) and the parsed
    *  title length, so opener designs can re-insert the line breaks that the
    *  in-column rendering shows as spaces. */
@@ -408,6 +410,10 @@ export interface VDTDesignTextBlock {
    *  band back to the markdown. */
   sourceStart?: number;
   sourceEnd?: number;
+  /** The exact title text the block renders (lines joined by `\n`) and its
+   *  per-character source offsets, when the text mirrors document text. */
+  sourceText?: string;
+  sourceMap?: number[];
 }
 
 /** Rendered rule inside a design slot. */

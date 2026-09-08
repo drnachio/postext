@@ -197,7 +197,11 @@ export interface SlotLayoutExtras {
   pageRole?: PageRole;
   /** Source range of the text `{titleText}` renders; stamped on the text
    *  blocks whose element content mentions the placeholder. */
-  titleSource?: { start: number; end: number };
+  titleSource?: { start: number; end: number; text?: string; sourceMap?: number[] };
+  /** Source ranges of heading attribute values; a text element whose
+   *  content is exactly `{attr.<key>}` maps back to that value. */
+  attrSources?: Record<string, { start: number; end: number }>;
+  attrs?: Record<string, string>;
 }
 
 export function layoutSlotToVdt(
@@ -217,11 +221,36 @@ export function layoutSlotToVdt(
   const titleElementIds = extras?.titleSource
     ? new Set(slot.elements.filter((el) => el.kind === 'text' && el.content.includes('{titleText}')).map((el) => el.id))
     : undefined;
+  const attrElementKeys = new Map<string, string>();
+  if (extras?.attrSources) {
+    for (const el of slot.elements) {
+      if (el.kind !== 'text') continue;
+      const m = /^\s*\{attr\.([A-Za-z_][A-Za-z0-9_-]*)\}\s*$/.exec(el.content);
+      if (m && extras.attrSources[m[1]!]) attrElementKeys.set(el.id, m[1]!);
+    }
+  }
   const blocks = result.primitives.map((prim) => {
     const block = primitiveToBlock(prim);
+    const attrKey = attrElementKeys.get(prim.id);
+    if (block.kind === 'text' && attrKey !== undefined && extras?.attrSources?.[attrKey]) {
+      const range = extras.attrSources[attrKey]!;
+      const value = extras.attrs?.[attrKey] ?? '';
+      block.sourceStart = range.start;
+      block.sourceEnd = range.end;
+      if (value.length === range.end - range.start) {
+        block.sourceText = value;
+        block.sourceMap = Array.from({ length: value.length }, (_, i) => range.start + i);
+      }
+      return block;
+    }
     if (block.kind === 'text' && titleElementIds?.has(prim.id) && extras?.titleSource) {
       block.sourceStart = extras.titleSource.start;
       block.sourceEnd = extras.titleSource.end;
+      if (extras.titleSource.text !== undefined && extras.titleSource.sourceMap
+        && extras.titleSource.sourceMap.length === extras.titleSource.text.length) {
+        block.sourceText = extras.titleSource.text;
+        block.sourceMap = extras.titleSource.sourceMap;
+      }
     }
     return block;
   });
@@ -229,6 +258,24 @@ export function layoutSlotToVdt(
     bbox: createBoundingBox(container.x, container.y, container.width, container.height),
     blocks,
   };
+}
+
+/** Plain title text of a part (`\\` rendered as a line break) and the
+ *  source offset of every character of it, for editor cursor mapping. */
+function partTitleSourceMap(rawTitle: string, sourceStart: number): { text: string; sourceMap: number[] } {
+  let text = '';
+  const sourceMap: number[] = [];
+  const re = /[ \t]*\\\\[ \t]*/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(rawTitle)) !== null) {
+    for (let i = last; i < m.index; i++) { text += rawTitle[i]; sourceMap.push(sourceStart + i); }
+    text += '\n';
+    sourceMap.push(sourceStart + m.index);
+    last = m.index + m[0].length;
+  }
+  for (let i = last; i < rawTitle.length; i++) { text += rawTitle[i]; sourceMap.push(sourceStart + i); }
+  return { text, sourceMap };
 }
 
 /** Container bbox for a page-spanning heading opener band: occupies the
@@ -449,7 +496,11 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         },
       };
       const partTitleSource = page.partInfo.titleSourceStart !== undefined && page.partInfo.titleSourceEnd !== undefined
-        ? { start: page.partInfo.titleSourceStart, end: page.partInfo.titleSourceEnd }
+        ? {
+            start: page.partInfo.titleSourceStart,
+            end: page.partInfo.titleSourceEnd,
+            ...partTitleSourceMap(title, page.partInfo.titleSourceStart),
+          }
         : undefined;
       page.openerBand = layoutSlotToVdt(
         slot,
@@ -486,7 +537,12 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         };
         const headingMap = opener.block.sourceMap;
         const headingTitleSource = headingMap && headingMap.length > 0
-          ? { start: headingMap[0]!, end: headingMap[headingMap.length - 1]! + 1 }
+          ? {
+              start: headingMap[0]!,
+              end: headingMap[headingMap.length - 1]! + 1,
+              text: opener.titleText,
+              sourceMap: headingMap,
+            }
           : opener.block.sourceStart !== undefined && opener.block.sourceEnd !== undefined
             ? { start: opener.block.sourceStart, end: opener.block.sourceEnd }
             : undefined;
@@ -496,7 +552,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           page.index,
           placeholders,
           dpi,
-          { ...extras, titleSource: headingTitleSource },
+          { ...extras, titleSource: headingTitleSource, attrSources: opener.block.attrSources, attrs: opener.block.attrs },
         );
         if (page.openerBand) {
           opener.block.hidden = true;

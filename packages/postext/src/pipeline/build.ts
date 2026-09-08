@@ -1412,6 +1412,12 @@ export function buildDocumentPass(
         blk.contentIndex = blockIdx;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
+        if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrSources) {
+          // Parser ranges are body-relative; VDT source offsets are absolute.
+          blk.attrSources = Object.fromEntries(
+            Object.entries(rawBlock.attrSources).map(([k, r]) => [k, { start: r.start + bodyOffset, end: r.end + bodyOffset }]),
+          );
+        }
       if (partIndex === 0 && vdtType === 'heading' && rawBlock.titleBreaks) {
         blk.titleBreaks = rawBlock.titleBreaks;
         blk.titleLength = rawBlock.text.length;
@@ -1564,6 +1570,12 @@ export function buildDocumentPass(
       blk.contentIndex = blockIdx;
       if (partIndex === 0) blk.headingLevel = headingLevel;
       if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
+        if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrSources) {
+          // Parser ranges are body-relative; VDT source offsets are absolute.
+          blk.attrSources = Object.fromEntries(
+            Object.entries(rawBlock.attrSources).map(([k, r]) => [k, { start: r.start + bodyOffset, end: r.end + bodyOffset }]),
+          );
+        }
       if (partIndex === 0 && vdtType === 'heading' && rawBlock.titleBreaks) {
         blk.titleBreaks = rawBlock.titleBreaks;
         blk.titleLength = rawBlock.text.length;

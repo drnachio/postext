@@ -286,11 +286,22 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       // is shortened to the visible content so `sourceMap` stays aligned
       // (the map is a greedy plain-char → source walk bounded by `srcEnd`).
       let attrs: ReturnType<typeof parseDirectiveAttrs> | undefined;
+      let attrSources: Record<string, { start: number; end: number }> | undefined;
       const attrsMatch = headingRawContent.match(HEADING_ATTRS_RE);
       if (attrsMatch && attrsMatch.index !== undefined) {
         const parsed = parseDirectiveAttrs(attrsMatch[1]!);
         if (Object.keys(parsed).length > 0) {
           attrs = parsed;
+          // Where each quoted value sits in the source (for `{attr.<key>}`).
+          const attrsRaw = attrsMatch[1]!;
+          const attrsAbsStart = contentAbsStart + attrsMatch.index + attrsMatch[0].indexOf('{') + 1;
+          const valueRe = /([A-Za-z_][A-Za-z0-9_-]*)\s*=\s*(["'])(.*?)\2/g;
+          let vm: RegExpExecArray | null;
+          while ((vm = valueRe.exec(attrsRaw)) !== null) {
+            const valueStart = attrsAbsStart + vm.index + vm[0].indexOf(vm[2]!) + 1;
+            attrSources ??= {};
+            attrSources[vm[1]!] = { start: valueStart, end: valueStart + vm[3]!.length };
+          }
           headingRawContent = headingRawContent.slice(0, attrsMatch.index);
           srcEnd = contentAbsStart + headingRawContent.length;
         }
@@ -324,6 +335,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
         spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
         level: headingMatch[1]!.length,
         ...(attrs ? { attrs } : {}),
+        ...(attrSources ? { attrSources } : {}),
         ...(titleBreaks.length > 0 ? { titleBreaks } : {}),
         sourceStart: srcStart,
         sourceEnd: srcEnd,

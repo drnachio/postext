@@ -1,6 +1,7 @@
-import type { VDTDesignTextBlock, VDTBlock, VDTDocument, ResolvedDebugConfig } from 'postext';
+import type { VDTBlock, VDTDocument, ResolvedDebugConfig } from 'postext';
 import { SVG_NS } from './dom';
 import { sourceToPlainIndex, xForPlainInLine } from './geometry';
+import { bandLineBoxes, bandPrefixX, bandSourceToPlain, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
 
 /**
  * Paint the baseline grid for a single page into the overlay SVG's
@@ -77,83 +78,6 @@ export function drawBaselines(
   }
 }
 
-/** Design-band text blocks that mirror document text (`{titleText}` of an
- *  opener or part page) and therefore carry a source range. */
-function bandTitleBlocks(doc: VDTDocument, pageIndex: number): VDTDesignTextBlock[] {
-  const band = doc.pages[pageIndex]?.openerBand;
-  if (!band) return [];
-  return band.blocks.filter(
-    (b): b is VDTDesignTextBlock => b.kind === 'text' && b.sourceStart !== undefined && b.sourceEnd !== undefined,
-  );
-}
-
-/** Approximate line boxes for a design text block: the band layout only
- *  keeps baselines, so derive the line pitch from consecutive baselines (or
- *  the block height for a single line). */
-interface BandLineBox { x: number; y: number; width: number; height: number; chars: number; text: string; font: string }
-
-let measureCtx: CanvasRenderingContext2D | null | undefined;
-function bandMeasureContext(): CanvasRenderingContext2D | null {
-  if (measureCtx !== undefined) return measureCtx;
-  measureCtx = typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d');
-  return measureCtx;
-}
-
-/** X offset of the first `chars` characters of a band line, measured with the
- *  line's font and scaled so the full text spans the line's laid-out width
- *  (this absorbs letter-spacing or kerning the layout applied). Falls back
- *  to a proportional split when no canvas context is available. */
-function bandPrefixX(box: BandLineBox, chars: number): number {
-  const n = Math.max(0, Math.min(box.chars, chars));
-  if (box.chars === 0) return box.x;
-  const ctx = bandMeasureContext();
-  if (!ctx) return box.x + (n / box.chars) * box.width;
-  ctx.font = box.font;
-  const full = ctx.measureText(box.text).width;
-  if (!(full > 0)) return box.x + (n / box.chars) * box.width;
-  const prefix = ctx.measureText(box.text.slice(0, n)).width;
-  return box.x + (prefix / full) * box.width;
-}
-
-function bandLineBoxes(block: VDTDesignTextBlock): BandLineBox[] {
-  const lines = block.lines;
-  // Design lines carry absolute baselines (the renderer draws at
-  // `bbox.x + xOffset`, `baselineY`); the line box is the design layout's
-  // lineHeight × fontSize with the baseline at 80% of it.
-  const fontPx = /(\d+(?:\.\d+)?)px/.exec(block.fontString);
-  const fontSizePx = fontPx ? Number(fontPx[1]) : block.bbox.height;
-  const pitch = lines.length > 1 ? lines[1]!.baselineY - lines[0]!.baselineY : fontSizePx * 1.2;
-  const ascent = pitch * 0.8;
-  return lines.map((l) => ({
-    x: block.bbox.x + l.xOffset,
-    y: l.baselineY - ascent,
-    width: l.width,
-    height: pitch,
-    chars: l.text.length,
-    text: l.text,
-    font: block.fontString,
-  }));
-}
-
-/** Map a source offset inside a band title to (line, x): characters are
- *  spread proportionally over each line's measured width. */
-function bandCaretPosition(block: VDTDesignTextBlock, offset: number): { line: BandLineBox; x: number } | null {
-  const boxes = bandLineBoxes(block);
-  if (boxes.length === 0) return null;
-  const total = boxes.reduce((n, b) => n + b.chars, 0);
-  let rel = Math.max(0, Math.min(total, offset - (block.sourceStart ?? 0)));
-  for (let i = 0; i < boxes.length; i++) {
-    const box = boxes[i]!;
-    // Lines are joined by a space in the source; count it against the line.
-    const span = box.chars + (i < boxes.length - 1 ? 1 : 0);
-    if (rel <= box.chars || i === boxes.length - 1) {
-      return { line: box, x: bandPrefixX(box, rel) };
-    }
-    rel -= span;
-  }
-  return null;
-}
-
 export function drawOverlay(
   svg: SVGSVGElement,
   doc: VDTDocument,
@@ -207,25 +131,22 @@ export function drawOverlay(
   // visible caret; when it isn't, the rect is still positioned but kept
   // invisible so callers can scroll it into view without drawing anything.
   const bandTitles = bandTitleBlocks(doc, pageIndex);
-  // A flow heading rendered through an opener band keeps invisible lines
-  // under the band; its text is drawn by the band, so route caret and
-  // selection through the band block instead.
-  const hiddenUnderBand = (b: VDTBlock): boolean =>
-    b.type === 'heading'
-    && b.sourceStart !== undefined
-    && b.sourceEnd !== undefined
-    && bandTitles.some((t) => b.sourceStart! <= t.sourceStart! && b.sourceEnd! >= t.sourceEnd!);
+  const hiddenUnderBand = (b: VDTBlock): boolean => isHiddenUnderBand(b, bandTitles);
   const caretBlock = doc.blocks[caretBlockIdx];
   let cursorPositioned = false;
 
   const bandCaretBlock = bandTitles.find((t) => head >= t.sourceStart! && head <= t.sourceEnd!);
   if (bandCaretBlock) {
-    const pos = bandCaretPosition(bandCaretBlock, head);
-    if (pos) {
-      cursorRect.setAttribute('x', String(pos.x - 1.5));
-      cursorRect.setAttribute('y', String(pos.line.y));
+    const boxes = bandLineBoxes(bandCaretBlock);
+    const plainCaret = bandSourceToPlain(bandCaretBlock, head);
+    const box = boxes.find((b) => plainCaret >= b.plainStart && plainCaret <= b.plainStart + b.text.length)
+      ?? boxes[boxes.length - 1];
+    if (box) {
+      const x = bandPrefixX(box, plainCaret - box.plainStart);
+      cursorRect.setAttribute('x', String(x - 1.5));
+      cursorRect.setAttribute('y', String(box.y));
       cursorRect.setAttribute('width', '3');
-      cursorRect.setAttribute('height', String(pos.line.height));
+      cursorRect.setAttribute('height', String(box.height));
       cursorRect.setAttribute('fill', debug.cursorSync.color.hex);
       cursorRect.style.display = '';
       cursorRect.style.visibility = cursorActive ? '' : 'hidden';
@@ -275,15 +196,14 @@ export function drawOverlay(
     const tStart = title.sourceStart!;
     const tEnd = title.sourceEnd!;
     if (tEnd <= from || tStart > to) continue;
-    const boxes = bandLineBoxes(title);
-    let cursor = tStart;
-    for (let i = 0; i < boxes.length; i++) {
-      const box = boxes[i]!;
-      const lineStart = cursor;
-      const lineEnd = cursor + box.chars;
-      const lo = Math.max(from, lineStart);
-      const hi = Math.min(to, lineEnd);
-      if (hi > lo && box.chars > 0) {
+    const plainFrom = bandSourceToPlain(title, from);
+    const plainTo = bandSourceToPlain(title, to);
+    for (const box of bandLineBoxes(title)) {
+      const lineStart = box.plainStart;
+      const lineEnd = box.plainStart + box.text.length;
+      const lo = Math.max(plainFrom, lineStart);
+      const hi = Math.min(plainTo, lineEnd);
+      if (hi > lo && box.text.length > 0) {
         const x1 = bandPrefixX(box, lo - lineStart);
         const x2 = bandPrefixX(box, hi - lineStart);
         const rect = document.createElementNS(SVG_NS, 'rect');
@@ -294,7 +214,6 @@ export function drawOverlay(
         rect.setAttribute('fill', debug.selectionSync.color.hex);
         selectionGroup.appendChild(rect);
       }
-      cursor = lineEnd + 1; // joining space
     }
   }
 

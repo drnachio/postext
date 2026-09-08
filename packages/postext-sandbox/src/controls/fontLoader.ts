@@ -336,7 +336,13 @@ export async function collectFontPayloadsForFamilies(
         return payloads.map((p) => ({ ...p, buffer: p.buffer.slice(0) }));
       });
     }
-    const promise = fetchFamilyPayloads(family);
+    const promise = fetchFamilyPayloads(family).then((payloads) => {
+      // An empty face list means the family could not be fetched (or was
+      // looked up before its custom definition landed): don't cache it, so
+      // the next build retries instead of measuring with a fallback forever.
+      if (payloads.length === 0 && facePayloadCache.get(family) === promise) facePayloadCache.delete(family);
+      return payloads;
+    });
     facePayloadCache.set(family, promise);
     return promise;
   }));

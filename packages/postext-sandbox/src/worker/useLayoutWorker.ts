@@ -90,6 +90,11 @@ export function useLayoutWorker(): LayoutWorkerApi {
         if (payloads.length > 0) {
           await bundle.handle.registerFonts(payloads);
         }
+        // Families that produced no face (fetch failed, or a custom family
+        // looked up before its definition landed) must be retried by the
+        // next build rather than sit in the worker as "registered".
+        const delivered = new Set(payloads.map((p) => p.family));
+        for (const f of missing) if (!delivered.has(f)) bundle.registeredFamilies.delete(f);
       } catch (err) {
         // Failed registration: free the family slots so a retry can fetch
         // them again on the next build.

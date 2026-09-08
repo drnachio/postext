@@ -2,6 +2,7 @@ import type { Dispatch } from 'react';
 import { clearMeasurementCache } from 'postext';
 import type { SandboxAction } from '../context/SandboxContext';
 import { invalidateResourceImage } from '../controls/resourceImages';
+import { setCustomFonts } from '../controls/fontLoader';
 import { putBlobAt } from '../storage/blobStore';
 import { putFontFile } from '../storage/fontStorage';
 import { savePresetApplied, savePresetId } from '../storage/persistence';
@@ -77,6 +78,12 @@ export async function applyPreset(
   }
 
   const { id } = loaded.summary;
+  // Register the preset's custom families before any state change: the
+  // viewports' build effects run before the provider's font effect, and a
+  // build that starts with a stale registry measures with fallback glyphs.
+  if (parts === 'all' || parts === 'config' || (parts === 'document' && loaded.config.customFonts !== undefined)) {
+    setCustomFonts(loaded.config.customFonts);
+  }
   dispatch({ type: 'SET_PRESET', payload: { id, markdown: loaded.markdown, config: loaded.config } });
   if (parts === 'all' || parts === 'config') {
     dispatch({ type: 'SET_CONFIG', payload: loaded.config });
