@@ -1,3 +1,4 @@
+import { flattenTitleBreaks } from '../parse/inlineFormatting';
 /**
  * Resolve a parsed markdown block into its placement-ready metadata:
  * style, VDT type, heading/list attributes, and a `contentBlock` that may
@@ -106,6 +107,15 @@ export function resolveBlockKind(
           ...contentBlock,
           text: uppercasePreservingLength(contentBlock.text),
           spans: contentBlock.spans.map((s) => (s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })),
+        };
+      }
+      // Forced title breaks render as spaces in the column; opener designs
+      // re-insert them from `titleBreaks` (see flattenTitleBreaks).
+      if (contentBlock.titleBreaks && contentBlock.titleBreaks.length > 0) {
+        contentBlock = {
+          ...contentBlock,
+          text: flattenTitleBreaks(contentBlock.text),
+          spans: contentBlock.spans.map((s) => (s.math ? s : { ...s, text: flattenTitleBreaks(s.text) })),
         };
       }
       if (numberPrefix) {

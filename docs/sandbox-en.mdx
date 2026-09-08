@@ -68,7 +68,14 @@ A **preset bundle** is a whole starting point loaded as one unit: a markdown doc
 - **Remote presets** — Bundles served over HTTP from the base URLs passed in the `presetSources` prop (see [Props](#props)). Each source is either public or **private**; private presets are tagged *Private* in the list and are meant for material that must not leave a machine — the public website only advertises a private source in local development, where the Next.js app serves the folder named by `POSTEXT_PRIVATE_PRESETS_DIR` through `/api/private-presets`. Production never lists it.
 - **`default: true`** — A private preset flagged as default is loaded automatically the first time a *pristine* sandbox (untouched built-in document) opens; when several are flagged, the one whose `locale` matches the UI locale wins. Public presets are never auto-loaded.
 
-Each row shows the preset's name, an optional description, its locale tag and its *Private* / *Default* tags. Clicking a row (confirm popover) loads the preset **in full** — document, resources, configuration and fonts — after writing the font files and resource blobs to IndexedDB, so the viewports never see a half-applied document. The panel header's **Reload** button reloads the active preset in full.
+Each row shows the preset's name, an optional description, its locale tag and its *Private* / *Default* tags. Clicking a row (confirm popover) loads the preset **in full** — document, resources, configuration and fonts — after writing the font files and resource blobs to IndexedDB, so the viewports never see a half-applied document. The active row carries a **Reload** text button and the panel header a matching icon; both reload the active preset in full. Loading a *different* preset always asks for confirmation; reloading the active one only asks when the document has local changes (an untouched document makes the reload idempotent).
+
+**Live presets.** Remote presets are followed automatically: whenever a preset is applied the sandbox records the bundle's *fingerprint* along with hashes of the markdown, configuration and resource set it applied. While the page is visible it polls the fingerprint every 3 seconds (and immediately when the tab becomes visible or the window regains focus). When the fingerprint changes:
+
+- If the document is **untouched** — markdown, configuration and resources still hash to what the preset applied — the preset is re-applied in full and a brief *Preset updated from disk* notice appears in the panel.
+- If there are **local changes**, they are kept: a persistent banner at the top of the panel (*The preset has changed on disk. Your local changes are kept.*) offers a **Reload** button, and the Presets icon in the activity bar shows a dot until the preset is reloaded.
+
+The same check runs on load, so editing a bundle and then opening the sandbox picks the new version up when the document was untouched. The fingerprint comes from `<preset-dir>/fingerprint.json`, a virtual file the development route answers with a metadata-only hash of the directory (see the [Preset bundle format](#preset-bundle-format) appendix); sources that do not serve it simply are not followed.
 
 The active preset also defines what the other panels' **Reset** buttons restore:
 
@@ -201,7 +208,7 @@ The Sandbox automatically saves your work to the browser:
 
 - **Markdown and configuration** — Auto-saved to `localStorage` after 1 second of inactivity, with configuration defaults stripped so only your overrides are stored
 - **UI state** — The active panel and viewport tab, sidebar width, configuration section open states, canvas zoom/fit/view modes, HTML font scale and column mode, and toolbar pin states are all persisted in `localStorage`
-- **Active preset** — The id of the last loaded preset is stored in `localStorage` under `postext-sandbox-preset`, so the panels' Reset buttons keep restoring that preset across sessions (a preset that is no longer served shows as unavailable)
+- **Active preset** — The id of the last loaded preset is stored in `localStorage` under `postext-sandbox-preset`, so the panels' Reset buttons keep restoring that preset across sessions (a preset that is no longer served shows as unavailable). What that preset applied — its bundle fingerprint plus hashes of the markdown, configuration and resource set — is stored under `postext-sandbox-preset-applied`, which is how the next visit tells an untouched document from an edited one
 - **Resources and fonts** — Resource records, their binary blobs (bitmaps and SVGs), and custom font files persist in **IndexedDB**; when IndexedDB is unavailable (e.g. some private-browsing modes), a *storage unavailable* warning appears in the Warnings panel
 
 Storage is **shared across UI locales**. A pristine default document swaps to the current locale's default markdown and reseeds the example resources when the locale changes — so opening the Spanish sandbox shows Spanish examples. Any user edit opts the document out of this behavior. All previews also derive a hyphenation locale from the UI locale when none is set in the configuration.
@@ -372,6 +379,7 @@ Notes:
 - `width` / `height` are optional for `svg` and `bitmap` resources — when missing they are read from the file at load time.
 - `table.model` is a Postext `TableModel`: `rows` is a row-major array of cells (`content`, optional `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` the number of leading header rows, and `columnWidths` an optional array of relative column weights.
 - Font files are stored in IndexedDB under ids derived from the preset id and file path, and the families are appended to `config.customFonts` when the preset is applied; a missing or malformed `index.json` yields no presets rather than an error.
+- `<preset-dir>/fingerprint.json` is optional and, on the development route, **virtual**: when no such file exists, `GET` answers `{ "fingerprint": "<sha1 hex>", "files": <n> }` computed from the directory's file metadata (relative path, modification time and size of every file up to four levels deep, dotfiles and `node_modules` skipped), never from file contents, with `Cache-Control: no-store`. The sandbox polls it to follow edits to the bundle (see [Presets panel](#presets-panel)). A static host can serve a real `fingerprint.json` with the same shape, or none at all, in which case its presets are not followed.
 
 ## Roadmap
 

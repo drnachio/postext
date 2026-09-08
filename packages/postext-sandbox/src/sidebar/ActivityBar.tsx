@@ -2,7 +2,7 @@
 
 import { FileCode, Settings2, FolderOpen, AlertTriangle, Type, LayoutTemplate } from 'lucide-react';
 import { useMemo, useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
-import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
+import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxPresetStale, useSandboxSelector } from '../context/SandboxContext';
 import type { PanelId } from '../types';
 import { Tooltip } from '../panels/Tooltip';
 import { computeWarnings } from '../warnings/compute';
@@ -32,6 +32,7 @@ function PanelNav() {
   const config = useSandboxSelector((s) => s.config);
   const docVersion = useSandboxSelector((s) => s.docVersion);
   const resources = useSandboxSelector((s) => s.resources);
+  const presetStale = useSandboxPresetStale();
   const docRef = useSandboxDocRef();
   const navRef = useRef<HTMLElement>(null);
   const buttonRefs = useRef<Map<PanelId, HTMLButtonElement>>(new Map());
@@ -101,13 +102,21 @@ function PanelNav() {
         const label = labels[labelKey];
         const showBadge = id === 'warnings' && warningCount > 0;
         const badgeText = warningCount > 99 ? '99+' : String(warningCount);
+        // A dot (no count) when the active preset changed on disk and local
+        // edits keep it from being re-applied automatically.
+        const showDot = id === 'presets' && presetStale;
+        const ariaLabel = showBadge
+          ? `${label} (${warningCount})`
+          : showDot
+            ? `${label} (${labels.presetStaleBanner})`
+            : label;
         return (
           <Tooltip key={id} content={label} side="right">
             <button
               ref={(el) => { if (el) buttonRefs.current.set(id, el); }}
               type="button"
               onClick={() => dispatch({ type: 'TOGGLE_PANEL', payload: id })}
-              aria-label={showBadge ? `${label} (${warningCount})` : label}
+              aria-label={ariaLabel}
               aria-pressed={isActive}
               className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
               style={{
@@ -146,6 +155,22 @@ function PanelNav() {
                 >
                   {badgeText}
                 </span>
+              )}
+              {showDot && (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: 6,
+                    right: 6,
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: 'var(--gilt)',
+                    boxShadow: '0 0 0 2px var(--background)',
+                    pointerEvents: 'none',
+                  }}
+                />
               )}
             </button>
           </Tooltip>

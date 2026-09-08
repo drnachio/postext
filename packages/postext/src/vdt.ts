@@ -253,6 +253,11 @@ export interface VDTBlock {
    *  heading line (first part of a heading only). Exposed to design slots
    *  as `{attr.key}` placeholders. */
   attrs?: Record<string, string>;
+  /** Forced title breaks (plain-text indices, prefix excluded) and the parsed
+   *  title length, so opener designs can re-insert the line breaks that the
+   *  in-column rendering shows as spaces. */
+  titleBreaks?: number[];
+  titleLength?: number;
   /** Index of the originating content block in the parsed markdown block
    *  list. Stable across layout passes — used by column balancing to key
    *  extra-spacing adjustments to headings. */

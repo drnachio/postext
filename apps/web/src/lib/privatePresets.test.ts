@@ -1,9 +1,14 @@
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  FINGERPRINT_MAX_DEPTH,
   PRIVATE_PRESET_EXTENSIONS,
   contentTypeFor,
   extensionOf,
+  fingerprintDirectory,
   resolvePresetFile,
 } from "./privatePresets";
 
@@ -136,5 +141,105 @@ describe("contentTypeFor", () => {
     expect(contentTypeFor("woff")).toBe("application/octet-stream");
     expect(contentTypeFor("js")).toBe("application/octet-stream");
     expect(contentTypeFor("")).toBe("application/octet-stream");
+  });
+});
+
+describe("fingerprintDirectory", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "postext-fp-"));
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(dir, { recursive: true, force: true });
+  });
+
+  const write = async (rel: string, content: string) => {
+    const abs = path.join(dir, rel);
+    await fs.promises.mkdir(path.dirname(abs), { recursive: true });
+    await fs.promises.writeFile(abs, content);
+  };
+
+  it("is a 40-hex sha1 that is stable across calls", async () => {
+    await write("preset.json", "{}");
+    await write("resources/fig.svg", "<svg/>");
+    const a = await fingerprintDirectory(dir);
+    const b = await fingerprintDirectory(dir);
+    expect(a.fingerprint).toMatch(/^[0-9a-f]{40}$/);
+    expect(a).toEqual(b);
+    expect(a.files).toBe(2);
+  });
+
+  it("hashes the sorted relative paths with mtime and size", async () => {
+    await write("b.md", "bb");
+    await write("sub/a.svg", "<svg/>");
+    const [b, a] = await Promise.all([
+      fs.promises.stat(path.join(dir, "b.md")),
+      fs.promises.stat(path.join(dir, "sub/a.svg")),
+    ]);
+    const expected = createHash("sha1")
+      .update(`b.md:${b.mtimeMs}:${b.size}\n`)
+      .update(`sub/a.svg:${a.mtimeMs}:${a.size}\n`)
+      .digest("hex");
+    expect((await fingerprintDirectory(dir)).fingerprint).toBe(expected);
+  });
+
+  it("changes when a file's size or mtime changes", async () => {
+    await write("markdown.es.md", "hola");
+    const before = await fingerprintDirectory(dir);
+    await write("markdown.es.md", "hola mundo");
+    const bigger = await fingerprintDirectory(dir);
+    expect(bigger.fingerprint).not.toBe(before.fingerprint);
+
+    const file = path.join(dir, "markdown.es.md");
+    const stat = await fs.promises.stat(file);
+    await fs.promises.utimes(file, stat.atime, new Date(stat.mtimeMs + 5000));
+    const touched = await fingerprintDirectory(dir);
+    expect(touched.fingerprint).not.toBe(bigger.fingerprint);
+    expect(touched.files).toBe(1);
+  });
+
+  it("changes when files are added, removed or renamed", async () => {
+    await write("preset.json", "{}");
+    const one = await fingerprintDirectory(dir);
+    await write("fonts/Body.woff2", "font");
+    const two = await fingerprintDirectory(dir);
+    expect(two.files).toBe(2);
+    expect(two.fingerprint).not.toBe(one.fingerprint);
+    await fs.promises.rename(path.join(dir, "fonts/Body.woff2"), path.join(dir, "fonts/Body-Regular.woff2"));
+    const renamed = await fingerprintDirectory(dir);
+    expect(renamed.fingerprint).not.toBe(two.fingerprint);
+    await fs.promises.rm(path.join(dir, "fonts"), { recursive: true });
+    expect((await fingerprintDirectory(dir)).fingerprint).toBe(one.fingerprint);
+  });
+
+  it("ignores dotfiles, dot-directories and node_modules", async () => {
+    await write("preset.json", "{}");
+    const clean = await fingerprintDirectory(dir);
+    await write(".DS_Store", "x");
+    await write(".git/HEAD", "ref");
+    await write("node_modules/pkg/index.json", "{}");
+    const noisy = await fingerprintDirectory(dir);
+    expect(noisy).toEqual(clean);
+  });
+
+  it("stops descending below the maximum depth", async () => {
+    await write("preset.json", "{}");
+    const shallow = await fingerprintDirectory(dir);
+    // depth 5 (a/b/c/d/e/file) is beyond FINGERPRINT_MAX_DEPTH = 4 ...
+    const deep = Array.from({ length: FINGERPRINT_MAX_DEPTH + 1 }, (_, i) => `d${i}`).join("/");
+    await write(`${deep}/deep.md`, "deep");
+    expect(await fingerprintDirectory(dir)).toEqual(shallow);
+    // ... while depth 4 still counts.
+    const edge = Array.from({ length: FINGERPRINT_MAX_DEPTH }, (_, i) => `d${i}`).join("/");
+    await write(`${edge}/edge.md`, "edge");
+    expect((await fingerprintDirectory(dir)).files).toBe(2);
+  });
+
+  it("returns the empty-input hash for a missing or empty directory", async () => {
+    const empty = createHash("sha1").digest("hex");
+    expect(await fingerprintDirectory(dir)).toEqual({ fingerprint: empty, files: 0 });
+    expect(await fingerprintDirectory(path.join(dir, "nope"))).toEqual({ fingerprint: empty, files: 0 });
   });
 });

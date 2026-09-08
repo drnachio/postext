@@ -1,3 +1,4 @@
+import { applyTitleBreaks } from '../parse/inlineFormatting';
 import type { PostextContent, PostextConfig, Resource, ResourceType, HeadingBreakParity } from '../types';
 import type { ListKind } from '../parse';
 import { dimensionToPx } from '../units';
@@ -1239,7 +1240,11 @@ export function buildDocumentPass(
             .map((ln) => (ln.segments ?? []).map((s) => s.text).join(''))
             .join(' ');
           const pref = numberPrefix ?? '';
-          const title = pref && full.startsWith(`${pref} `) ? full.slice(pref.length + 1) : full;
+          const title = applyTitleBreaks(
+            pref && full.startsWith(`${pref} `) ? full.slice(pref.length + 1) : full,
+            rawBlock.titleBreaks,
+            rawBlock.text.length,
+          );
           // Span-page openers lay out across the full content area (both
           // columns); in-column headings use just the column width.
           const pageArea = doc.pages[cursor.pageIndex]!.contentArea;
@@ -1407,6 +1412,14 @@ export function buildDocumentPass(
         blk.contentIndex = blockIdx;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
+      if (partIndex === 0 && vdtType === 'heading' && rawBlock.titleBreaks) {
+        blk.titleBreaks = rawBlock.titleBreaks;
+        blk.titleLength = rawBlock.text.length;
+      }
+        if (partIndex === 0 && vdtType === 'heading' && rawBlock.titleBreaks) {
+          blk.titleBreaks = rawBlock.titleBreaks;
+          blk.titleLength = rawBlock.text.length;
+        }
         if (vdtType === 'mathDisplay' && mathDisplayRender) {
           blk.mathRender = mathDisplayRender;
           blk.tex = rawBlock.tex;
@@ -1551,6 +1564,10 @@ export function buildDocumentPass(
       blk.contentIndex = blockIdx;
       if (partIndex === 0) blk.headingLevel = headingLevel;
       if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
+      if (partIndex === 0 && vdtType === 'heading' && rawBlock.titleBreaks) {
+        blk.titleBreaks = rawBlock.titleBreaks;
+        blk.titleLength = rawBlock.text.length;
+      }
       blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
       blk.dirty = false;
       blk.snappedToGrid = false;

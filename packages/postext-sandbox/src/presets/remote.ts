@@ -27,6 +27,9 @@ import type {
   PresetSummary,
 } from './types';
 
+/** Virtual file whose GET yields `{ fingerprint }` for a preset directory. */
+export const FINGERPRINT_FILE = 'fingerprint.json';
+
 function trimSlashes(s: string): string {
   return s.replace(/\/+$/, '');
 }
@@ -106,6 +109,21 @@ export function createRemotePreset(
 
   return {
     summary,
+    // `<dir>/fingerprint.json` is served by the source (a virtual file on the
+    // dev route) and changes whenever any bundle file does. Every failure —
+    // static hosts without it, network errors, malformed body — is "unknown".
+    async fingerprint(): Promise<string | null> {
+      if (typeof fetch === 'undefined') return null;
+      try {
+        const res = await fetch(fileUrl(FINGERPRINT_FILE), { cache: 'no-store' });
+        if (!res.ok) return null;
+        const data: unknown = await res.json();
+        const fp = (data as { fingerprint?: unknown } | null)?.fingerprint;
+        return typeof fp === 'string' && fp.length > 0 ? fp : null;
+      } catch {
+        return null;
+      }
+    },
     async load(locale: string): Promise<LoadedPreset> {
       const manifestRes = await fetchOk(fileUrl('preset.json'));
       const manifest: unknown = await manifestRes.json();

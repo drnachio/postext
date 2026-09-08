@@ -1,3 +1,4 @@
+import { TITLE_BREAK_RE } from '../parse/inlineFormatting';
 import type { DocumentMetadata } from '../types';
 import type { VDTBlock, VDTPage } from '../vdt';
 
@@ -213,7 +214,7 @@ export function computePartValues(
   for (let p = 0; p < pages.length; p++) {
     const info = pages[p]!.partInfo;
     if (info) {
-      title = info.title;
+      title = info.title.replace(TITLE_BREAK_RE, ' ');
       number = info.number;
       for (let q = p - 1; q >= 0; q--) {
         const prev = pages[q]!;

@@ -9,6 +9,36 @@ import { parseDirectiveAttrs } from './attrs';
  *  apart even when a paragraph mixes refs and math. */
 export const REF_PLACEHOLDER = '⁣';
 
+/** Forced line break inside a title: `\\` in a heading (or a part `title`)
+ *  becomes this LINE SEPARATOR in the plain text. Opener designs render it
+ *  as a real line break; the in-column heading, running heads, outlines and
+ *  `{chapterTitle}` show a space instead. */
+export const BREAK_PLACEHOLDER = '\u2028';
+/** `\\` with optional surrounding spaces. */
+export const TITLE_BREAK_RE = /[ \t]*\\\\[ \t]*/g;
+
+/** Positions of the break placeholder in a plain text. */
+export function titleBreakIndices(text: string): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < text.length; i++) if (text[i] === BREAK_PLACEHOLDER) out.push(i);
+  return out;
+}
+
+/** Replace the break placeholder with a space (single-line contexts). */
+export function flattenTitleBreaks(text: string): string {
+  return text.replace(/\u2028/g, ' ');
+}
+
+/** Insert `\n` at the recorded break indices when the (possibly uppercased
+ *  or otherwise length-preserving transformed) title still has the parsed
+ *  length; otherwise the title is returned unchanged. */
+export function applyTitleBreaks(title: string, breaks: readonly number[] | undefined, parsedLength: number): string {
+  if (!breaks || breaks.length === 0 || title.length !== parsedLength) return title;
+  const chars = title.split('');
+  for (const i of breaks) if (i < chars.length) chars[i] = '\n';
+  return chars.join('').replace(/[ \t]*\n[ \t]*/g, '\n');
+}
+
 /** Resolved metadata for an inline `:ref{…}` directive. The owning span's
  *  `text` is a single `REF_PLACEHOLDER`; the pipeline later resolves the
  *  reference to its computed number/label. */

@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, RotateCcw } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useSandboxLabels, useSandboxPresets } from '../context/SandboxContext';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
 import { Tooltip } from '../panels/Tooltip';
@@ -23,13 +24,36 @@ function Tag({ children }: { children: React.ReactNode }) {
   return <span style={TAG_STYLE}>{children}</span>;
 }
 
+/** Wraps `children` in a confirm popover only when confirmation is wanted;
+ *  otherwise the trigger fires `onConfirm` directly. Reloading an untouched
+ *  preset is idempotent, so it needs no confirmation. */
+function MaybeConfirm({
+  confirm,
+  message,
+  onConfirm,
+  children,
+}: {
+  confirm: boolean;
+  message: ReactNode;
+  onConfirm: () => void;
+  children: (open: () => void) => ReactNode;
+}) {
+  if (!confirm) return <>{children(onConfirm)}</>;
+  return (
+    <ConfirmPopover message={message} onConfirm={onConfirm}>
+      {({ open }) => children(open)}
+    </ConfirmPopover>
+  );
+}
+
 export function PresetsPanel() {
   const labels = useSandboxLabels();
-  const { presets, activePresetId, status, error, load, reload } = useSandboxPresets();
+  const { presets, activePresetId, status, error, untouched, stale, updatedAt, load, reload } = useSandboxPresets();
 
   const loading = status === 'loading';
   const active = presets.find((p) => p.id === activePresetId);
   const canReload = !loading && (active?.available ?? false);
+  const reloadAll = () => { void reload('all'); };
 
   return (
     <div className="flex h-full flex-col">
@@ -41,11 +65,8 @@ export function PresetsPanel() {
           {labels.presets}
         </h2>
         <div className="flex items-center gap-1">
-          <ConfirmPopover
-            message={labels.presetReloadConfirm}
-            onConfirm={() => { void reload('all'); }}
-          >
-            {({ open }) => (
+          <MaybeConfirm confirm={!untouched} message={labels.presetReloadConfirm} onConfirm={reloadAll}>
+            {(open) => (
               <Tooltip content={labels.presetReload} side="bottom">
                 <button
                   type="button"
@@ -61,13 +82,38 @@ export function PresetsPanel() {
                 </button>
               </Tooltip>
             )}
-          </ConfirmPopover>
+          </MaybeConfirm>
         </div>
       </div>
+      {stale && (
+        <div
+          role="status"
+          className="flex shrink-0 items-start gap-2 border-b px-3 py-2 text-xs"
+          style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)', color: 'var(--foreground)' }}
+        >
+          <span className="min-w-0 flex-1">{labels.presetStaleBanner}</span>
+          <button
+            type="button"
+            onClick={reloadAll}
+            disabled={!canReload}
+            className="shrink-0 rounded border px-2 py-0.5 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:opacity-40"
+            style={{ borderColor: 'var(--gilt)', color: 'var(--gilt)', background: 'none', outlineColor: 'var(--gilt-hover)' }}
+            onMouseEnter={(e) => { if (canReload) e.currentTarget.style.backgroundColor = 'var(--background)'; }}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+          >
+            {labels.presetStaleReload}
+          </button>
+        </div>
+      )}
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
         {loading && (
           <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }} role="status">
             {labels.presetLoading}
+          </p>
+        )}
+        {!loading && updatedAt !== null && (
+          <p className="mb-2 text-xs" style={{ color: 'var(--gilt)' }} role="status" aria-live="polite">
+            {labels.presetUpdatedFromDisk}
           </p>
         )}
         {status === 'error' && (
@@ -83,7 +129,9 @@ export function PresetsPanel() {
               preset={preset}
               isActive={preset.id === activePresetId}
               disabled={loading || !preset.available}
+              untouched={untouched}
               onLoad={() => { void load(preset.id); }}
+              onReload={reloadAll}
             />
           ))}
         </ul>
@@ -96,10 +144,12 @@ interface PresetRowProps {
   preset: PresetSummary;
   isActive: boolean;
   disabled: boolean;
+  untouched: boolean;
   onLoad: () => void;
+  onReload: () => void;
 }
 
-function PresetRow({ preset, isActive, disabled, onLoad }: PresetRowProps) {
+function PresetRow({ preset, isActive, disabled, untouched, onLoad, onReload }: PresetRowProps) {
   const labels = useSandboxLabels();
   const confirmMessage = labels.presetLoadConfirm.replace('__name__', preset.name);
 
@@ -157,14 +207,39 @@ function PresetRow({ preset, isActive, disabled, onLoad }: PresetRowProps) {
     </button>
   );
 
+  // Loading a *different* preset always asks; reloading the active one only
+  // when there are local edits to lose.
+  const content = isActive || disabled ? (
+    body()
+  ) : (
+    <ConfirmPopover message={confirmMessage} onConfirm={onLoad}>
+      {({ open }) => body(open)}
+    </ConfirmPopover>
+  );
+
   return (
     <li className="mb-1 rounded border" style={{ borderColor: isActive ? 'var(--gilt)' : 'var(--rule)' }}>
-      {isActive || disabled ? (
-        body()
-      ) : (
-        <ConfirmPopover message={confirmMessage} onConfirm={onLoad}>
-          {({ open }) => body(open)}
-        </ConfirmPopover>
+      {content}
+      {isActive && preset.available && (
+        <div className="flex justify-end px-2 pb-1.5">
+          <MaybeConfirm confirm={!untouched} message={labels.presetReloadConfirm} onConfirm={onReload}>
+            {(open) => (
+              <button
+                type="button"
+                onClick={open}
+                disabled={disabled}
+                aria-label={`${labels.presetReloadActive}: ${preset.name}`}
+                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:opacity-40"
+                style={{ color: 'var(--slate)', background: 'none', border: 'none', outlineColor: 'var(--gilt-hover)' }}
+                onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.color = 'var(--foreground)'; }}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
+              >
+                <RotateCcw size={11} aria-hidden="true" />
+                {labels.presetReloadActive}
+              </button>
+            )}
+          </MaybeConfirm>
+        </div>
       )}
     </li>
   );

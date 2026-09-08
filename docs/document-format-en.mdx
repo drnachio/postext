@@ -275,6 +275,14 @@ Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a r
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
 
 
+### Line breaks in titles
+
+Write `\\` inside a heading (or inside a part's `title` attribute) to force a line break where the title is displayed as a title: the in-column heading keeps flowing and shows a space there, while an opener design's `{titleText}` breaks the line at that point. Running heads, `{chapterTitle}`, `{partTitle}` and the PDF outline always render the title on one line.
+
+```md
+# Concepts of health and illness. \\ Community health {author="I. Zango Martín"}
+```
+
 ## Inline formatting
 
 Inline markup is recognised inside any text block (headings, paragraphs, blockquotes, list items).

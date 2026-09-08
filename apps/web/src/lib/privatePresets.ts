@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import fs from "node:fs";
 import path from "node:path";
 
 /** File extensions a private preset bundle may expose. Anything else is refused. */
@@ -84,4 +86,67 @@ export function resolvePresetFile(root: string, segments: string[]): string | nu
 /** MIME type for an allow-listed extension; falls back to a generic binary type. */
 export function contentTypeFor(ext: string): string {
   return CONTENT_TYPES[ext.toLowerCase()] ?? "application/octet-stream";
+}
+
+/** Virtual file name whose GET returns a fingerprint of its preset directory
+ *  instead of a file (see the `/api/private-presets` route). */
+export const FINGERPRINT_FILE = "fingerprint.json";
+
+/** Maximum directory depth walked by `fingerprintDirectory` (the preset
+ *  directory itself is depth 0). */
+export const FINGERPRINT_MAX_DEPTH = 4;
+
+export interface DirectoryFingerprint {
+  /** sha1 (hex) over the sorted `"<relpath>:<mtimeMs>:<size>\n"` lines. */
+  fingerprint: string;
+  /** Number of files that contributed to the hash. */
+  files: number;
+}
+
+async function collectFiles(
+  dir: string,
+  rel: string,
+  depth: number,
+  out: { rel: string; mtimeMs: number; size: number }[],
+): Promise<void> {
+  let entries: fs.Dirent[];
+  try {
+    entries = await fs.promises.readdir(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    const name = entry.name;
+    if (name.startsWith(".") || name === "node_modules") continue;
+    const abs = path.join(dir, name);
+    const relPath = rel ? `${rel}/${name}` : name;
+    if (entry.isDirectory()) {
+      if (depth < FINGERPRINT_MAX_DEPTH) await collectFiles(abs, relPath, depth + 1, out);
+      continue;
+    }
+    if (!entry.isFile()) continue;
+    try {
+      const stat = await fs.promises.stat(abs);
+      out.push({ rel: relPath, mtimeMs: stat.mtimeMs, size: stat.size });
+    } catch {
+      // Vanished between readdir and stat — the next poll will notice.
+    }
+  }
+}
+
+/**
+ * Fingerprint a preset directory from file metadata only: walk it
+ * recursively (depth <= `FINGERPRINT_MAX_DEPTH`, skipping dotfiles and
+ * `node_modules`), sort the relative paths and sha1 one
+ * `"<relpath>:<mtimeMs>:<size>"` line per file. Any change to a file's
+ * modification time or size, or a file added/removed/renamed, changes the
+ * result; nothing is read from the files themselves.
+ */
+export async function fingerprintDirectory(dir: string): Promise<DirectoryFingerprint> {
+  const files: { rel: string; mtimeMs: number; size: number }[] = [];
+  await collectFiles(dir, "", 0, files);
+  files.sort((a, b) => (a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0));
+  const hash = createHash("sha1");
+  for (const f of files) hash.update(`${f.rel}:${f.mtimeMs}:${f.size}\n`);
+  return { fingerprint: hash.digest("hex"), files: files.length };
 }

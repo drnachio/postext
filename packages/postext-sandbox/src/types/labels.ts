@@ -567,6 +567,10 @@ export interface SandboxLabels {
   presetLoading: string;
   presetLoadError: string;
   presetUnavailable: string;
+  presetUpdatedFromDisk: string;
+  presetStaleBanner: string;
+  presetStaleReload: string;
+  presetReloadActive: string;
 
   // Custom fonts section
   customFonts: string;

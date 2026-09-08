@@ -275,6 +275,14 @@ Las páginas del prefacio se etiquetan `i`, `ii`, `iii`, …; el primer capítul
 Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil para, por ejemplo, pasar de `lower-alpha` a `upper-alpha` sin reiniciar.
 
 
+### Saltos de línea en los títulos
+
+Escribe `\\` dentro de un encabezado (o dentro del atributo `title` de una parte) para forzar un salto de línea allí donde el título se muestra como tal: el encabezado en columna sigue fluyendo y muestra un espacio, mientras que el `{titleText}` de un diseño de apertura salta de línea en ese punto. Las cabeceras de página, `{chapterTitle}`, `{partTitle}` y el índice del PDF siempre componen el título en una sola línea.
+
+```md
+# Concepto de salud y enfermedad. \\ Salud comunitaria {author="I. Zango Martín"}
+```
+
 ## Formato en línea
 
 El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezados, párrafos, citas, elementos de lista).

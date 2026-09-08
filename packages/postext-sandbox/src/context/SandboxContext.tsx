@@ -16,7 +16,7 @@ import type { PostextConfig, VDTDocument, Resource } from 'postext';
 import { defaultResourceTypes } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
-import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, loadPresetId, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel } from '../storage/persistence';
+import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel, savePresetApplied } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
@@ -26,10 +26,13 @@ import {
   BUILTIN_PRESET_ID,
   applyPreset,
   createPostextGuidePreset,
+  decidePresetUpdate,
   findDefaultPrivatePreset,
+  isDocumentUntouched,
   listPresets,
 } from '../presets';
 import type {
+  AppliedPresetSnapshot,
   PresetApplyParts,
   PresetProvider,
   PresetSourceSpec,
@@ -74,6 +77,17 @@ export interface SandboxState {
   presetConfig?: PostextConfig;
   /** Every preset the sandbox knows about, in display order. */
   presetSummaries: PresetSummary[];
+  /** Fingerprint and content hashes recorded when the active preset was last
+   *  applied (null until then). Persisted so the next visit can tell an
+   *  untouched document from an edited one. */
+  presetApplied: AppliedPresetSnapshot | null;
+  /** The active preset changed on its source while the document has local
+   *  edits: they are kept and the Presets panel offers a reload. */
+  presetStale: boolean;
+  /** Set (to a timestamp) right after the active preset was re-applied
+   *  automatically because its bundle changed; cleared a few seconds later.
+   *  Drives the brief "updated from disk" notice in the Presets panel. */
+  presetUpdatedAt: number | null;
 }
 
 export type SandboxAction =
@@ -94,7 +108,10 @@ export type SandboxAction =
   | { type: 'DELETE_RESOURCE'; payload: string }
   | { type: 'SET_PRESET'; payload: { id: string; markdown?: string; config?: PostextConfig } }
   | { type: 'SET_PRESET_STATUS'; payload: { status: 'idle' | 'loading' | 'error'; error?: string } }
-  | { type: 'SET_PRESET_LIST'; payload: PresetSummary[] };
+  | { type: 'SET_PRESET_LIST'; payload: PresetSummary[] }
+  | { type: 'SET_PRESET_APPLIED'; payload: AppliedPresetSnapshot | null }
+  | { type: 'SET_PRESET_STALE'; payload: boolean }
+  | { type: 'SET_PRESET_UPDATED_AT'; payload: number | null };
 
 function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
@@ -166,6 +183,15 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
       return { ...state, presetStatus: action.payload.status, presetError: action.payload.error };
     case 'SET_PRESET_LIST':
       return { ...state, presetSummaries: action.payload };
+    case 'SET_PRESET_APPLIED':
+      // A fresh apply is by definition up to date with its source.
+      return { ...state, presetApplied: action.payload, presetStale: false };
+    case 'SET_PRESET_STALE':
+      if (state.presetStale === action.payload) return state;
+      return { ...state, presetStale: action.payload };
+    case 'SET_PRESET_UPDATED_AT':
+      if (state.presetUpdatedAt === action.payload) return state;
+      return { ...state, presetUpdatedAt: action.payload };
     default:
       return state;
   }
@@ -258,19 +284,49 @@ export interface SandboxPresetsValue {
   activePresetId: string;
   status: SandboxState['presetStatus'];
   error?: string;
+  /** True while the document, configuration and resources still match what
+   *  the active preset applied (reloading it is then a no-op worth no
+   *  confirmation). */
+  untouched: boolean;
+  /** The active preset's bundle changed on its source while there are local
+   *  edits; `reload('all')` picks the new version up and clears this. */
+  stale: boolean;
+  /** Non-null for a few seconds after the preset was re-applied automatically
+   *  because its bundle changed. */
+  updatedAt: number | null;
   load: (id: string) => Promise<void>;
   reload: (parts: PresetApplyParts) => Promise<void>;
 }
 
 /** Preset list plus load/reload actions. Re-renders on preset state changes
- *  only. */
+ *  only (`untouched` is a boolean projection, so document edits re-render
+ *  consumers only when it flips). */
 export function useSandboxPresets(): SandboxPresetsValue {
   const store = useStore();
   const presets = useSandboxSelector((s) => s.presetSummaries);
   const activePresetId = useSandboxSelector((s) => s.activePresetId);
   const status = useSandboxSelector((s) => s.presetStatus);
   const error = useSandboxSelector((s) => s.presetError);
-  return { presets, activePresetId, status, error, load: store.loadPreset, reload: store.reloadPreset };
+  const untouched = useSandboxSelector((s) => isDocumentUntouched(s, s.presetApplied));
+  const stale = useSandboxSelector((s) => s.presetStale);
+  const updatedAt = useSandboxSelector((s) => s.presetUpdatedAt);
+  return {
+    presets,
+    activePresetId,
+    status,
+    error,
+    untouched,
+    stale,
+    updatedAt,
+    load: store.loadPreset,
+    reload: store.reloadPreset,
+  };
+}
+
+/** Whether the active preset changed on its source while local edits exist
+ *  (for the activity-bar badge). */
+export function useSandboxPresetStale(): boolean {
+  return useSandboxSelector((s) => s.presetStale);
 }
 
 /** Stable ref to the most recently built VDT document. Does not subscribe
@@ -309,6 +365,12 @@ interface SandboxProviderProps {
 }
 
 const NO_SOURCES: PresetSourceSpec[] = [];
+
+/** How often the active remote preset's fingerprint is polled while the
+ *  page is visible. */
+const PRESET_WATCH_INTERVAL_MS = 3000;
+/** How long the "preset updated from disk" notice stays up. */
+const PRESET_NOTICE_MS = 4000;
 
 export function SandboxProvider({
   children,
@@ -366,6 +428,9 @@ export function SandboxProvider({
       presetStatus: 'idle' as const,
       presetConfig: undefined,
       presetSummaries: [builtinPreset.summary],
+      presetApplied: loadPresetApplied(),
+      presetStale: false,
+      presetUpdatedAt: null,
     };
   });
 
@@ -395,9 +460,14 @@ export function SandboxProvider({
     const seq = ++presetLoadSeqRef.current;
     dispatch({ type: 'SET_PRESET_STATUS', payload: { status: 'loading' } });
     try {
+      // Fingerprint first: a bundle edit that lands while `load()` is running
+      // then still differs from the snapshot and gets picked up by the watch.
+      const fingerprint = provider.fingerprint ? await provider.fingerprint() : null;
+      if (seq !== presetLoadSeqRef.current) return;
       const loaded = await provider.load(stateRef.current.locale);
       if (seq !== presetLoadSeqRef.current) return;
-      await applyPreset(loaded, dispatch, { parts });
+      const { markdown, config, resources } = stateRef.current;
+      await applyPreset(loaded, dispatch, { parts, fingerprint, current: { markdown, config, resources } });
     } catch (err) {
       if (seq !== presetLoadSeqRef.current) return;
       const message = err instanceof Error ? err.message : String(err);
@@ -479,6 +549,83 @@ export function SandboxProvider({
     // preset and must not re-trigger seeding if they change later.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Live presets: while the page is visible, poll the active preset's source
+  // fingerprint and follow bundle edits — re-apply when the document is
+  // untouched, otherwise flag it stale and keep the user's work. Restarts
+  // (with an immediate check) when the active preset or the provider list
+  // changes, which also covers "edited the bundle, then opened the sandbox".
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    let disposed = false;
+    let inFlight = false;
+
+    const tick = async (): Promise<void> => {
+      if (disposed || inFlight) return;
+      if (document.visibilityState !== 'visible') return;
+      if (!resourcesLoadedRef.current) return;
+      const before = stateRef.current;
+      if (before.presetStatus === 'loading') return;
+      const provider = presetProvidersRef.current.find((p) => p.summary.id === before.activePresetId);
+      if (!provider?.fingerprint) return;
+
+      inFlight = true;
+      try {
+        const live = await provider.fingerprint();
+        if (disposed) return;
+        const s = stateRef.current;
+        if (s.activePresetId !== provider.summary.id || s.presetStatus === 'loading') return;
+        const snapshot = s.presetApplied?.presetId === provider.summary.id ? s.presetApplied : null;
+
+        if (snapshot && snapshot.fingerprint === null && live !== null) {
+          // The apply could not read a fingerprint (source briefly down):
+          // adopt the live one as the baseline rather than re-applying.
+          const adopted = { ...snapshot, fingerprint: live };
+          dispatch({ type: 'SET_PRESET_APPLIED', payload: adopted });
+          savePresetApplied(adopted);
+          return;
+        }
+
+        const differs = live !== null && snapshot?.fingerprint != null && live !== snapshot.fingerprint;
+        const untouched = differs ? isDocumentUntouched(s, snapshot) : true;
+        const decision = decidePresetUpdate({ liveFingerprint: live, snapshot, untouched });
+        if (decision === 'apply') {
+          await runPresetRef.current(provider, 'all');
+          if (disposed || stateRef.current.presetStatus === 'error') return;
+          dispatch({ type: 'SET_PRESET_UPDATED_AT', payload: Date.now() });
+        } else if (decision === 'stale') {
+          dispatch({ type: 'SET_PRESET_STALE', payload: true });
+        } else if (s.presetStale && live !== null && snapshot?.fingerprint === live) {
+          // The source went back to what was applied (e.g. an undone edit).
+          dispatch({ type: 'SET_PRESET_STALE', payload: false });
+        }
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    const onVisible = () => { if (document.visibilityState === 'visible') void tick(); };
+    const interval = window.setInterval(() => { void tick(); }, PRESET_WATCH_INTERVAL_MS);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    void tick();
+    return () => {
+      disposed = true;
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, [state.activePresetId, state.presetSummaries]);
+
+  // Auto-hide the "updated from disk" notice.
+  useEffect(() => {
+    if (state.presetUpdatedAt === null) return;
+    const timer = window.setTimeout(
+      () => dispatch({ type: 'SET_PRESET_UPDATED_AT', payload: null }),
+      PRESET_NOTICE_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [state.presetUpdatedAt]);
 
   // Persist resource changes to IndexedDB by diffing against the previous
   // snapshot. Skips until the initial async load completes so the load itself

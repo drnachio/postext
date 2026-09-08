@@ -1,3 +1,4 @@
+import { TITLE_BREAK_RE, applyTitleBreaks } from '../parse/inlineFormatting';
 import type { DocumentMetadata, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig } from '../types';
 import {
   createBoundingBox,
@@ -260,7 +261,11 @@ function findOpenerHeading(
         .map((ln) => (ln.segments ?? []).map((s) => s.text).join(''))
         .join(' ');
       const pref = block.numberPrefix ?? '';
-      const title = pref && full.startsWith(`${pref} `) ? full.slice(pref.length + 1) : full;
+      const title = applyTitleBreaks(
+        pref && full.startsWith(`${pref} `) ? full.slice(pref.length + 1) : full,
+        block.titleBreaks,
+        block.titleLength ?? -1,
+      );
       return { block, level: block.headingLevel, titleText: title, numberPrefix: pref };
     }
   }
@@ -404,7 +409,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         partTitleByPageIndex,
         partNumberByPageIndex,
         heading: {
-          titleText: title,
+          titleText: title.replace(TITLE_BREAK_RE, '\n'),
           formattedNumber: number,
           numericValue: parsePartNumber(number),
           chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
@@ -437,7 +442,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         partTitleByPageIndex,
         partNumberByPageIndex,
         heading: {
-          titleText: title,
+          titleText: title.replace(TITLE_BREAK_RE, '\n'),
           formattedNumber: number,
           numericValue: parsePartNumber(number),
           chapterNumber: chapterNumberByPageIndex[page.index] ?? '',

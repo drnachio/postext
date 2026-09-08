@@ -119,6 +119,8 @@ export interface ContentBlock {
    *  `# Title {author="I. Zango"}`). The braces and their content are
    *  removed from `text`. Absent when the heading carries no attributes. */
   attrs?: DirectiveAttrs;
+  /** Plain-text indices of forced title breaks (`\\` in the source). */
+  titleBreaks?: number[];
   /** Depth (1-based) for listItem blocks. Level 1 = outermost. */
   depth?: number;
   /** Discriminator for listItem blocks. Defaults to 'unordered' when absent. */

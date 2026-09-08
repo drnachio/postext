@@ -109,6 +109,23 @@ export interface LoadedPreset {
 export interface PresetProvider {
   summary: PresetSummary;
   load(locale: string): Promise<LoadedPreset>;
+  /** Cheap identity of the bundle's current contents on its source (for
+   *  remote presets, the server-side `fingerprint.json`). Resolves to null
+   *  when unknown or unreachable; providers that cannot change (built-in)
+   *  leave it undefined. The sandbox polls it to follow edits on disk. */
+  fingerprint?: () => Promise<string | null>;
+}
+
+/** What the sandbox recorded when it last applied a preset: the bundle's
+ *  fingerprint at that moment plus hashes of the document, configuration and
+ *  resource set as applied, so later edits can be told apart from a bundle
+ *  that changed underneath (see hash.ts / watch.ts). */
+export interface AppliedPresetSnapshot {
+  presetId: string;
+  fingerprint: string | null;
+  markdownHash: string;
+  configHash: string;
+  resourcesHash: string;
 }
 
 /** Which slice of a loaded preset to apply. `resources` only replaces the

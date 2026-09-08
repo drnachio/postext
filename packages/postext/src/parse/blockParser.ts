@@ -8,7 +8,7 @@
 import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { extractInlineRefs, injectRefSpans, parseInlineFormatting, stripInlineFormatting } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineRefs, injectRefSpans, parseInlineFormatting, stripInlineFormatting, titleBreakIndices } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
 export { parseDirectiveAttrs } from './attrs';
@@ -295,6 +295,8 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
           srcEnd = contentAbsStart + headingRawContent.length;
         }
       }
+      // `\\` marks a forced line break in the title (see BREAK_PLACEHOLDER).
+      headingRawContent = headingRawContent.replace(TITLE_BREAK_RE, BREAK_PLACEHOLDER);
       // Inline pre-passes run refs -> math -> formatting so a ref's `text="…"`
       // attribute is shielded from the later math/formatting scanners.
       const refExtract = extractInlineRefs(headingRawContent, contentAbsStart);
@@ -315,12 +317,14 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       );
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
+      const titleBreaks = titleBreakIndices(mapping.text);
       blocks.push({
         type: 'heading',
         text: mapping.text,
         spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
         level: headingMatch[1]!.length,
         ...(attrs ? { attrs } : {}),
+        ...(titleBreaks.length > 0 ? { titleBreaks } : {}),
         sourceStart: srcStart,
         sourceEnd: srcEnd,
         sourceMap: mapping.sourceMap,

@@ -92,11 +92,16 @@ function bandTitleBlocks(doc: VDTDocument, pageIndex: number): VDTDesignTextBloc
  *  the block height for a single line). */
 function bandLineBoxes(block: VDTDesignTextBlock): { x: number; y: number; width: number; height: number; chars: number }[] {
   const lines = block.lines;
-  const pitch = lines.length > 1 ? lines[1]!.baselineY - lines[0]!.baselineY : block.bbox.height;
+  // Design lines carry absolute baselines (the renderer draws at
+  // `bbox.x + xOffset`, `baselineY`); the line box is the design layout's
+  // lineHeight × fontSize with the baseline at 80% of it.
+  const fontPx = /(\d+(?:\.\d+)?)px/.exec(block.fontString);
+  const fontSizePx = fontPx ? Number(fontPx[1]) : block.bbox.height;
+  const pitch = lines.length > 1 ? lines[1]!.baselineY - lines[0]!.baselineY : fontSizePx * 1.2;
   const ascent = pitch * 0.8;
   return lines.map((l) => ({
     x: block.bbox.x + l.xOffset,
-    y: block.bbox.y + l.baselineY - ascent,
+    y: l.baselineY - ascent,
     width: l.width,
     height: pitch,
     chars: l.text.length,

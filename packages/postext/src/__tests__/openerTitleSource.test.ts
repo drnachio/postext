@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline';
+import { parseMarkdown } from '../parse';
+import { computeChapterTitles } from '../pipeline/placeholders';
 import type { PostextConfig } from '../types';
 import type { VDTDesignTextBlock } from '../vdt';
 
@@ -57,5 +59,27 @@ describe('opener band title source mapping', () => {
     const withSource = texts.filter((b) => b.sourceStart !== undefined);
     expect(withSource).toHaveLength(1);
     expect(markdown.slice(withSource[0]!.sourceStart, withSource[0]!.sourceEnd)).toBe('Health and Illness');
+  });
+});
+
+describe('forced title breaks (\\\\)', () => {
+  const markdown = '# Health and illness. \\\\ Community health {author="J. Doe"}\n\nBody text after the opener.';
+
+  it('parses the marker into a single break char mapped to the backslashes', () => {
+    const [h] = parseMarkdown(markdown);
+    expect(h!.text).toBe('Health and illness.\u2028Community health');
+    expect(h!.titleBreaks).toEqual([19]);
+    expect(markdown.slice(h!.sourceMap![19]!, h!.sourceMap![19]! + 2)).toBe('\\\\');
+  });
+
+  it('breaks the opener title into two lines and flattens it elsewhere', () => {
+    const doc = buildDocument({ markdown }, config);
+    const band = doc.pages[0]!.openerBand!;
+    const title = band.blocks.find((b): b is VDTDesignTextBlock => b.kind === 'text' && b.sourceStart !== undefined)!;
+    expect(title.lines.map((l) => l.text)).toEqual(['Health and illness.', 'Community health']);
+    // The in-column heading and the running-head title show a plain space.
+    const heading = doc.blocks.find((b) => b.type === 'heading')!;
+    expect(heading.lines.map((l) => l.text).join(' ')).not.toContain('\u2028');
+    expect(computeChapterTitles(doc.blocks, doc.pages.length, doc.pages)[0]).toBe('Health and illness. Community health');
   });
 });

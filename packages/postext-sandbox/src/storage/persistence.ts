@@ -1,5 +1,6 @@
 import type { PostextConfig } from 'postext';
 import { stripConfigDefaults } from 'postext';
+import type { AppliedPresetSnapshot } from '../presets/types';
 
 const CONFIG_KEY = 'postext-sandbox-config';
 const MARKDOWN_KEY = 'postext-sandbox-markdown';
@@ -7,6 +8,7 @@ const VIEWPORT_KEY = 'postext-sandbox-viewport';
 const SIDEBAR_WIDTH_KEY = 'postext-sandbox-sidebar-width';
 const PANEL_KEY = 'postext-sandbox-panel';
 const PRESET_KEY = 'postext-sandbox-preset';
+const PRESET_APPLIED_KEY = 'postext-sandbox-preset-applied';
 const SECTIONS_KEY = 'postext-sandbox-sections';
 const COLOR_MODES_KEY = 'postext-sandbox-color-modes';
 const CANVAS_VIEW_MODE_KEY = 'postext-sandbox-canvas-view-mode';
@@ -75,6 +77,34 @@ export function savePresetId(id: string): void {
 
 export function loadPresetId(): string | null {
   return getStorage()?.getItem(PRESET_KEY) ?? null;
+}
+
+function isAppliedPresetSnapshot(data: unknown): data is AppliedPresetSnapshot {
+  if (typeof data !== 'object' || data === null) return false;
+  const d = data as Record<string, unknown>;
+  return typeof d.presetId === 'string'
+    && (d.fingerprint === null || typeof d.fingerprint === 'string')
+    && typeof d.markdownHash === 'string'
+    && typeof d.configHash === 'string'
+    && typeof d.resourcesHash === 'string';
+}
+
+/** Remember what the last applied preset looked like (bundle fingerprint and
+ *  content hashes), so the next visit can tell an untouched document from an
+ *  edited one and follow bundle changes on disk. */
+export function savePresetApplied(snapshot: AppliedPresetSnapshot): void {
+  getStorage()?.setItem(PRESET_APPLIED_KEY, JSON.stringify(snapshot));
+}
+
+export function loadPresetApplied(): AppliedPresetSnapshot | null {
+  const raw = getStorage()?.getItem(PRESET_APPLIED_KEY);
+  if (!raw) return null;
+  try {
+    const data: unknown = JSON.parse(raw);
+    return isAppliedPresetSnapshot(data) ? data : null;
+  } catch {
+    return null;
+  }
 }
 
 export function saveSidebarPercent(percent: number): void {
@@ -199,6 +229,7 @@ export function clearStorage(): void {
   storage?.removeItem(SIDEBAR_WIDTH_KEY);
   storage?.removeItem(PANEL_KEY);
   storage?.removeItem(PRESET_KEY);
+  storage?.removeItem(PRESET_APPLIED_KEY);
   storage?.removeItem(SECTIONS_KEY);
   storage?.removeItem(COLOR_MODES_KEY);
   storage?.removeItem(CANVAS_VIEW_MODE_KEY);
