@@ -248,6 +248,9 @@ export function pixelToSourceOffset(
   for (const b of doc.blocks) {
     if (b.pageIndex !== pageIndex) continue;
     if (isHiddenUnderBand(b, bandTitles)) continue;
+    // A callout frame spans its whole box but carries no text of its own;
+    // its children follow in `doc.blocks` and own the clickable glyphs.
+    if (b.type === 'callout') continue;
     const bx = b.bbox.x;
     const by = b.bbox.y;
     if (xPage < bx || xPage > bx + b.bbox.width) continue;
