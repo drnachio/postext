@@ -49,10 +49,13 @@ export function drawBaselines(
 
   const isLastPage = pageIndex === doc.pages.length - 1;
   if (!isLastPage && page.columns.length > 0) {
-    const maxUsed = Math.max(
-      ...page.columns.map((col) => col.bbox.height - col.availableHeight),
+    // Columns may sit in several vertical bands (page-span blocks split the
+    // page), so measure the used extent from the page top rather than from
+    // each column's own top.
+    const maxUsedBottom = Math.max(
+      ...page.columns.map((col) => col.bbox.y + col.bbox.height - col.availableHeight),
     );
-    contentH = maxUsed;
+    contentH = maxUsedBottom - contentY;
   }
 
   const maxLines = Math.floor(contentH / baselineIncrement);

@@ -205,6 +205,19 @@ The attributes accepted by each container, and how it is styled, are documented 
 
 A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width (`span="page"`) and floating (`placement="top"` / `"bottom"`) boxes are recorded but still placed inline in this version. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
 
+A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
+
+```
+:::part{number="I" title="Foundations"}
+1. The lantern and its parts
+2. Trimming the wick
+:::
+
+# The lantern and its parts
+```
+
+With the default heading settings this produces the classic sequence: part page on a right-hand page, blank left-hand page, chapter on the next right-hand page. The page is reported as `role: 'part'` so headers and footers can skip it, and `{partTitle}` / `{partNumber}` resolve to the current part on every following page. See [Parts](/en/docs/configuration#parts) in the configuration reference.
+
 A fence does not need a blank line before it: an opening or closing fence glued directly under a paragraph, list or blockquote ends that block. A container left open at the end of the document is closed automatically there, and the sandbox reports an **Unclosed container** warning pointing at the opening line. A stray `:::` with no container open is left in the text as a visible paragraph rather than dropped silently.
 
 ### `:::pagebreak`

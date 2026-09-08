@@ -24,6 +24,13 @@ export interface PlaceholderContext {
    *  `computeChapterAttrs`). Backs `{attr.<key>}` in header/footer slots. A
    *  missing entry or key resolves to `''`. */
   chapterAttrsByPageIndex?: Record<string, string>[];
+  /** Current part title / number per page index (see `computePartValues`).
+   *  Back `{partTitle}` / `{partNumber}`; a missing entry resolves to `''`. */
+  partTitleByPageIndex?: string[];
+  partNumberByPageIndex?: string[];
+  /** Current chapter number per page index (see `computeChapterNumbers`).
+   *  Backs `{chapterNumber}` in header/footer slots. */
+  chapterNumberByPageIndex?: string[];
 }
 
 export interface PlaceholderResult {
@@ -40,6 +47,9 @@ const PLACEHOLDER_NAMES = new Set([
   'author',
   'publishDate',
   'chapterTitle',
+  'chapterNumber',
+  'partTitle',
+  'partNumber',
 ]);
 
 const METADATA_PLACEHOLDERS = new Set(['title', 'subtitle', 'author', 'publishDate']);
@@ -163,6 +173,44 @@ function computeChapterValues<T>(
   return out;
 }
 
+/** The page fields `computePartValues` reads. */
+export interface PartPageInfo extends ChapterTitlePageInfo {
+  partInfo?: { number: string; title: string };
+}
+
+/**
+ * Precompute the current part title and number per page index. A page with
+ * `partInfo` (a `:::part` divider page) starts a new part that runs until
+ * the next one; pages before the first part get `''`. Blank parity pages
+ * immediately preceding a part page belong to the upcoming part (they exist
+ * only to push it onto the right parity); a `blankForForce` page stops the
+ * walk — it belongs to the previous part, the same rule as chapters.
+ */
+export function computePartValues(
+  pages: readonly PartPageInfo[],
+): { partTitleByPageIndex: string[]; partNumberByPageIndex: string[] } {
+  const partTitleByPageIndex = new Array<string>(pages.length).fill('');
+  const partNumberByPageIndex = new Array<string>(pages.length).fill('');
+  let title = '';
+  let number = '';
+  for (let p = 0; p < pages.length; p++) {
+    const info = pages[p]!.partInfo;
+    if (info) {
+      title = info.title;
+      number = info.number;
+      for (let q = p - 1; q >= 0; q--) {
+        const prev = pages[q]!;
+        if (prev.blankForForce || !prev.blankForParity) break;
+        partTitleByPageIndex[q] = title;
+        partNumberByPageIndex[q] = number;
+      }
+    }
+    partTitleByPageIndex[p] = title;
+    partNumberByPageIndex[p] = number;
+  }
+  return { partTitleByPageIndex, partNumberByPageIndex };
+}
+
 function plainTextOfBlock(block: VDTBlock): string {
   // Strip any numbering prefix that was prepended during build.
   const lines = block.lines.map((l) => l.text).join(' ');
@@ -254,6 +302,12 @@ function resolveName(name: string, ctx: PlaceholderContext): string {
       return typeof ctx.metadata.publishDate === 'string' ? ctx.metadata.publishDate : '';
     case 'chapterTitle':
       return ctx.chapterTitleByPageIndex[ctx.page.index] ?? '';
+    case 'partTitle':
+      return ctx.partTitleByPageIndex?.[ctx.page.index] ?? '';
+    case 'partNumber':
+      return ctx.partNumberByPageIndex?.[ctx.page.index] ?? '';
+    case 'chapterNumber':
+      return ctx.chapterNumberByPageIndex?.[ctx.page.index] ?? '';
     default:
       return '';
   }

@@ -12,7 +12,8 @@ import {
 } from '../vdt';
 import type { HeadingBreakParity } from '../types';
 import { computeColumnBboxes } from './config';
-import { contentAreaForPage } from './buildHelpers';
+import { contentAreaForPage, mirrorContentArea, type PageMetrics } from './buildHelpers';
+import { dimensionToPx } from '../units';
 
 export interface PlacementCursor {
   pageIndex: number;
@@ -49,8 +50,158 @@ export function createPageWithColumns(
   return page;
 }
 
+/** Turn a freshly opened (empty) page into a part-divider page: a single
+ *  body column inset from the trim box by `parts.margins` (mirrored on even
+ *  pages when `parts.margins.mirror` is on), `page.contentArea` set to that
+ *  area, `partInfo` stamped and the role fixed to `'part'`. The opener
+ *  design is laid out later by `buildHeadersAndFooters` against the full
+ *  trim box and never reserves body space. */
+export function createPartPage(
+  page: VDTPage,
+  metrics: Pick<PageMetrics, 'trimBox' | 'pageWidthPx'>,
+  resolved: ResolvedConfig,
+  info: { number: string; title: string },
+): VDTPage {
+  const dpi = resolved.page.dpi;
+  const m = resolved.parts.margins;
+  const trim = metrics.trimBox;
+  const top = dimensionToPx(m.top, dpi);
+  const bottom = dimensionToPx(m.bottom, dpi);
+  const left = dimensionToPx(m.left, dpi);
+  const right = dimensionToPx(m.right, dpi);
+  let area = createBoundingBox(
+    trim.x + left,
+    trim.y + top,
+    Math.max(0, trim.width - left - right),
+    Math.max(0, trim.height - top - bottom),
+  );
+  const isEvenPage = (page.index + 1) % 2 === 0;
+  if (m.mirror && isEvenPage) area = mirrorContentArea(area, metrics.pageWidthPx);
+  page.contentArea = area;
+  page.columns = [createVDTColumn(0, area)];
+  page.partInfo = { number: info.number, title: info.title };
+  page.role = 'part';
+  return page;
+}
+
 export function currentColumn(doc: VDTDocument, cursor: PlacementCursor): VDTColumn {
   return doc.pages[cursor.pageIndex]!.columns[cursor.columnIndex]!;
+}
+
+/** Whether any column of the page — text or span — holds a placed block.
+ *  Floats live outside the columns and do not count. */
+export function pageHasContent(page: VDTPage): boolean {
+  return page.columns.some((c) => c.blocks.length > 0);
+}
+
+// ---------------------------------------------------------------------------
+// Column bands (page-span blocks, stage 1)
+//
+// `page.columns` stays a flat array in reading order. A page-span inline
+// block occupies its own full-width column (`kind: 'span'`); the text
+// columns of the band it interrupts are closed at the cut line and a fresh
+// band of text columns (`band + 1`) is appended below it with the same
+// x / width and the same bottom as the closed band. Column indices are
+// monotonic — columns are only ever appended — so `block.columnIndex` keeps
+// addressing `page.columns[i]` and renderers need no drawing changes: each
+// column clips to its own bbox.
+// ---------------------------------------------------------------------------
+
+/** Text columns of `band` in reading order (span columns excluded). */
+export function bandColumns(page: VDTPage, band: number): VDTColumn[] {
+  return page.columns.filter((c) => c.kind !== 'span' && (c.band ?? 0) === band);
+}
+
+/** Band the cursor's column belongs to (`0` for the plain single-band page). */
+export function currentBand(page: VDTPage, cursor: PlacementCursor): number {
+  return page.columns[cursor.columnIndex]?.band ?? 0;
+}
+
+/** True when every column of the band has consumed the same height (within
+ *  0.5px) — the page top, right after an opener heading (which reserves its
+ *  band in every column), right after another span block, or right after a
+ *  top float band. Used height = `bbox.height − availableHeight`. */
+export function isBandLevel(cols: readonly VDTColumn[]): boolean {
+  if (cols.length === 0) return false;
+  const used0 = cols[0]!.bbox.height - cols[0]!.availableHeight;
+  return cols.every((c) => Math.abs((c.bbox.height - c.availableHeight) - used0) <= 0.5);
+}
+
+/** Lowest used bottom (absolute y) across the band's columns — where a
+ *  full-width block can start without covering placed content. */
+export function bandUsedBottom(cols: readonly VDTColumn[]): number {
+  let bottom = -Infinity;
+  for (const c of cols) {
+    bottom = Math.max(bottom, c.bbox.y + (c.bbox.height - c.availableHeight));
+  }
+  return bottom;
+}
+
+/**
+ * Close the band formed by `cols` at `cutY`, insert a full-width span column
+ * holding `block` right below the cut, and open a fresh band of text columns
+ * under it. The band's columns are clamped to `cutY` (`availableHeight = 0`)
+ * — a column whose top already sits at the cut becomes zero-height. The span
+ * column is `{ kind: 'span', band }` at `contentArea.x / width`, `needPx`
+ * tall (the block plus its spacing, already rounded to the grid by the
+ * caller); `block` is placed inside it at `spacingBefore` below the cut with
+ * height `blockHeight` (default: the rest of the band), so `block.pageIndex`
+ * / `columnIndex` address the span column.
+ *
+ * The new text columns (`band + 1`) copy each closed column's x / width and
+ * keep its original bottom (so a bottom float band reserved on one column
+ * still constrains its successor). A column with no room left (bottom
+ * within 0.5px of the new band's top) is not created; when none is, the
+ * cursor stays on the span column — which is full — so the next placement
+ * advances to a new page. Otherwise the cursor moves to the first new
+ * column. Returns the span column.
+ */
+export function closeBandAndInsertSpan(
+  page: VDTPage,
+  cols: readonly VDTColumn[],
+  cutY: number,
+  block: VDTBlock,
+  needPx: number,
+  cursor: PlacementCursor,
+  spacingBefore = 0,
+  blockHeight = needPx - spacingBefore,
+): VDTColumn {
+  const band = cols[0]?.band ?? 0;
+  const bottoms = cols.map((c) => c.bbox.y + c.bbox.height);
+  for (const c of cols) {
+    c.band = band;
+    c.bbox.height = Math.max(0, cutY - c.bbox.y);
+    c.availableHeight = 0;
+  }
+
+  const spanCol = createVDTColumn(
+    page.columns.length,
+    createBoundingBox(page.contentArea.x, cutY, page.contentArea.width, needPx),
+  );
+  spanCol.kind = 'span';
+  spanCol.band = band;
+  page.columns.push(spanCol);
+  cursor.pageIndex = page.index;
+  cursor.columnIndex = spanCol.index;
+  if (spacingBefore > 0) spanCol.availableHeight -= spacingBefore;
+  placeBlockInColumn(block, blockHeight, spanCol, cursor);
+  spanCol.availableHeight = 0;
+
+  const newTop = cutY + needPx;
+  let firstNew: VDTColumn | undefined;
+  cols.forEach((c, i) => {
+    const height = bottoms[i]! - newTop;
+    if (height < 0.5) return;
+    const next = createVDTColumn(
+      page.columns.length,
+      createBoundingBox(c.bbox.x, newTop, c.bbox.width, height),
+    );
+    next.band = band + 1;
+    page.columns.push(next);
+    if (!firstNew) firstNew = next;
+  });
+  if (firstNew) cursor.columnIndex = firstNew.index;
+  return spanCol;
 }
 
 export function advanceToNextColumn(
@@ -98,9 +249,9 @@ export function advanceToNextPageBoundary(
   pageHeightPx: number,
   onNewPage?: (page: VDTPage) => void,
 ): void {
-  const curPage = doc.pages[cursor.pageIndex]!;
-  const curPageEmpty = curPage.columns.every((c) => c.blocks.length === 0);
-  if (curPageEmpty) return;
+  // Span columns hold their block like any other column, so a page whose
+  // only content is a page-span block counts as non-empty here.
+  if (!pageHasContent(doc.pages[cursor.pageIndex]!)) return;
   const startPageIndex = cursor.pageIndex;
   do {
     advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);

@@ -75,3 +75,31 @@ describe('fenced-container warnings', () => {
     expect(kinds(md, known)).not.toContain('unknownCalloutType');
   });
 });
+
+describe('header/footer placeholder warnings', () => {
+  const header = (content: string): PostextConfig => ({
+    header: {
+      elements: [
+        {
+          kind: 'text',
+          id: 'text1',
+          content,
+          fontSize: { value: 8, unit: 'pt' },
+          overflow: 'wrap',
+          placement: { anchor: { to: 'container', edge: 'bottom' } },
+        },
+      ],
+    },
+  });
+
+  it('flags names outside the engine allow-list', () => {
+    const found = find('', 'headerFooterUnknownPlaceholder', header('{bogus} {pageNumber}'));
+    expect(found.map((w) => w.payload.name)).toEqual(['bogus']);
+  });
+
+  it('accepts the open-ended attr namespace', () => {
+    expect(kinds('', header('{attr.edition} — {chapterTitle}'))).not.toContain(
+      'headerFooterUnknownPlaceholder',
+    );
+  });
+});

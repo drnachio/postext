@@ -46,6 +46,7 @@ This reference is long. These are the main blocks:
 - [Diagram style](#diagram-style) — single-ink recolouring of embedded SVG diagrams for spot-colour printing.
 - [Paragraph styles](#paragraph-styles) — named styles for `:::paragraphs` containers: bibliographies, glossaries, notes.
 - [Callout styles](#callout-styles) — boxed notes, tips and objectives for `:::callout` containers.
+- [Parts](#parts) — part-divider pages for `:::part` containers: parity, body area, opener design, body typography.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
@@ -525,6 +526,7 @@ Available placeholders:
 - `{totalPages}` — total page count for the document.
 - `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — values read from `content.metadata`. Unknown or empty metadata renders as an empty string (and raises a warning in the sandbox).
 - `{chapterTitle}` — text of the most recent H1 on or before the current page.
+- `{partTitle}`, `{partNumber}` — title and number of the current part (the most recent `:::part` page on or before the current page; blank parity pages just before a part page already belong to it). Empty before the first part.
 
 #### Edge-implied alignment
 
@@ -2457,13 +2459,13 @@ The glass stays hot for an hour after the flame is out.
       <td><code>span</code></td>
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
-      <td>Horizontal extent: the column, or the full content width. Overridable per instance with the <code>span</code> attribute. Recorded on the VDT; in multi-column layouts <code>'page'</code> is laid out inline at column width for now (pagination phase pending).</td>
+      <td>Horizontal extent: the column, or the full content width. Overridable per instance with the <code>span</code> attribute. In multi-column layouts a <code>'page'</code> box becomes a <em>span block</em>: it splits the page into column bands and sits in its own full-width column (see the container section below).</td>
     </tr>
     <tr>
       <td><code>placement</code></td>
       <td><code>'here' | 'top' | 'bottom'</code></td>
       <td><code>'here'</code></td>
-      <td>Inline in the flow, or floated to a top / bottom page band like a resource. Overridable per instance with the <code>placement</code> attribute. Floating placements are recorded but placed inline for now (pagination phase pending).</td>
+      <td>Inline in the flow, or floated to a top / bottom page band like a resource. Overridable per instance with the <code>placement</code> attribute. Floating placements are recorded on the VDT but still placed inline at column width for now.</td>
     </tr>
     <tr>
       <td><code>width</code></td>
@@ -2547,7 +2549,8 @@ A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. 
 Limits in this version:
 
 - A callout is unbreakable. When it does not fit the remaining column space it moves whole to the next column or page; a box taller than an empty column is placed anyway and overflows (the sandbox warns).
-- `span: 'page'` in multi-column layouts and `placement: 'top' | 'bottom'` are recorded on the VDT (`VDTBlock.callout`) but still placed inline at column width — full-width and floating boxes arrive with the pagination phase.
+- `span: 'page'` in a multi-column layout makes the box a **span block**: it is laid out at the full content width and splits the page into column bands — the text columns above it are closed at the cut line, the box takes its own full-width column, and a fresh band of text columns opens below it, so the flow continues under the box in every column. In this first stage a span block is placed only where the columns are *level*: at the top of a page, right below a `span: 'page'` opener heading, right below another span block, or right below a top float band. Anywhere else (the columns already uneven, or no room for the box plus the widow minimum of body lines below it) the box moves to the top of the next page — without forcing a page break, so the page it leaves is still balanced. Inserting a span block mid-page, with the columns uneven, is the next stage. A heading right before a span block does not travel with it. In single-column layouts `span: 'page'` is simply inline.
+- `placement: 'top' | 'bottom'` is recorded on the VDT (`VDTBlock.callout`) but still placed inline at column width — floating boxes arrive with the next stage.
 - `width: 'auto'` shrink-wraps the title only; children are ignored.
 - A `:::callout` nested inside another callout is flattened into the outer box.
 
@@ -2559,6 +2562,123 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined for the built-in `note` default; static defaults dropped
+```
+
+
+## Parts
+
+The `parts` property configures the part-divider pages a document opens with a `:::part{number="…" title="…"}` container — the “Part I — Foundations” page that groups a run of chapters. A part always occupies a page of its own: the container breaks to a fresh page of the configured parity, converts it into a single-column page whose body area comes from `parts.margins`, lays the opener design over the whole page, and breaks again after the closing fence so the next chapter (with its own `breakBefore.parity`) starts clean — with the default H1 settings that yields the classic recto part page, blank verso, chapter on the next recto.
+
+```ts
+const config: PostextConfig = {
+  parts: {
+    breakBefore: { parity: 'odd' },
+    breakAfter: { enabled: true, parity: 'any' },
+    margins: { top: { value: 9, unit: 'cm' }, left: { value: 3, unit: 'cm' }, right: { value: 3, unit: 'cm' } },
+    design: {
+      elements: [
+        {
+          kind: 'text', id: 'number', content: 'Part {numberRoman}',
+          fontSize: { value: 12, unit: 'pt' }, fontWeight: 600, align: 'left',
+          placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 3, unit: 'cm' }, y: { value: 5, unit: 'cm' } }, size: { width: 'auto', height: 'auto' } },
+        },
+        {
+          kind: 'text', id: 'title', content: '{titleText}',
+          fontSize: { value: 28, unit: 'pt' }, fontWeight: 700, align: 'left', overflow: 'wrap',
+          placement: { anchor: { to: '#number', edge: 'below' }, size: { width: { value: 15, unit: 'cm' }, height: 'auto' } },
+        },
+      ],
+    },
+    bodyStyle: { fontSize: { value: 11, unit: 'pt' }, numberColor: { hex: '#AA0000', model: 'hex' } },
+  },
+};
+```
+
+```md
+:::part{number="I" title="Foundations"}
+1. The lantern and its parts
+2. Trimming the wick
+3. Reading the weather
+:::
+
+# The lantern and its parts
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>breakBefore.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'odd'</code></td>
+      <td>Parity of the page the part opens on. Same values and blank-page ownership rules as the heading <a href="#break-before">breakBefore</a>: a blank inserted to reach the parity belongs to the part (its <code>{'{partTitle}'}</code> already resolves to the new part); the mandatory separator of <code>'always-*'</code> belongs to the previous content.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Move the content after the closing fence to a fresh page. When <code>false</code> it continues in the part page's single column.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'any'</code></td>
+      <td>Parity of that fresh page. Leave it at <code>'any'</code> and let the next chapter's own <code>breakBefore.parity</code> decide whether a blank verso follows. The break is applied when the next block is placed, so a part that closes the document leaves no trailing empty page.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>page margins</td>
+      <td>Body area of the part page — the single column the blocks inside the fence flow in. Each side inherits the page margin when unset; <code>mirror</code> swaps inner/outer on even pages exactly like the page margins.</td>
+    </tr>
+    <tr>
+      <td><code>design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>empty</td>
+      <td>Opener design. Its container is the page <strong>trim box</strong>, so container anchors and <code>'page'</code> anchors coincide and <code>'bleed'</code> runs to the bleed when cut lines are on. Purely decorative: it never reserves body space — raise <code>margins.top</code> to keep the body clear of it. When empty, a default <code>{'{number} {titleText}'}</code> text in the H1 typography is synthesised at the top-left of the body area.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>color</code>, <code>textAlign</code></td>
+      <td>as in <code>bodyText</code></td>
+      <td>inherit <code>bodyText</code></td>
+      <td>Typography of the paragraphs, blockquotes and list items inside the fence. Weights, emphasis colours and hyphenation come from the body text.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.bulletColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>unorderedLists.color</code></td>
+      <td>Bullet colour of unordered lists inside the part.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.numberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>orderedLists.color</code></td>
+      <td>Number colour of ordered lists inside the part. Numbers are always set in the body's bold weight, so a chapter list reads as a table of contents.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Part design placeholders
+
+The design slot resolves the heading placeholder set with the part's own values: `{titleText}` is the fence's `title`; `{number}` the `number` exactly as written; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` re-format it — the number is parsed as a decimal or a roman numeral (`"IV"`, `"iv"` and `"4"` all give `{numberDecimal}` = `4`), and resolve to `''` for anything else. `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (the chapter before the part), `{pageNumber}`, `{totalPages}` and the metadata placeholders are available too. `{attr.<key>}` reads the current chapter's H1 attributes.
+
+### The `:::part` container
+
+A `:::part{number="…" title="…"}` line opens the part and a bare `:::` closes it; both attributes are optional (they default to `''`). The blocks in between — typically the chapter list — flow in the part page's single column with `bodyStyle`, starting at `margins.top`; a body longer than the page continues on ordinary pages. The page is classified `role: 'part'` (`VDTPage.partInfo` carries the number and title), so header and footer elements can target or skip it with `pages: 'part'` / `pages: 'body'`; the PDF backend adds the part to the outline above its chapters. An empty body (`:::part{…}` directly followed by `:::`) is the common case and still produces the page — consecutive parts never share one. A `:::part` nested in another part is flattened into the outer one.
+
+```ts
+const resolved = resolvePartsConfig(config.parts, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => margins filled from the page, bodyStyle from the body / list configs
+
+const minimal = stripPartsDefaults(config.parts);
+// => undefined when only static defaults remain
 ```
 
 

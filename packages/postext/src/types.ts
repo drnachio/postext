@@ -1590,6 +1590,82 @@ export type ResolvedHeaderFooterTextElement = ResolvedDesignTextElement;
 /** @deprecated Use `ResolvedDesignRuleElement`. */
 export type ResolvedHeaderFooterRuleElement = ResolvedDesignRuleElement;
 
+// ---------------------------------------------------------------------------
+// Parts — `:::part{number="…" title="…"}` dividers. A part opens a dedicated
+// single-column page whose opener design is laid out against the full trim
+// box; the blocks inside the fence (typically the chapter list) flow in that
+// column with their own typography.
+// ---------------------------------------------------------------------------
+
+export interface PartsBreakBeforeConfig {
+  /** Parity of the page the part opens on. Default `'odd'`. */
+  parity?: HeadingBreakParity;
+}
+
+export interface PartsBreakAfterConfig {
+  /** Whether the content after the part moves to a fresh page. Default `true`. */
+  enabled?: boolean;
+  /** Parity of that fresh page. Default `'any'` — the next chapter's own
+   *  `breakBefore.parity` then decides whether a blank verso follows. */
+  parity?: HeadingBreakParity;
+}
+
+/** Typography of the blocks inside a `:::part` container. Every field
+ *  inherits `bodyText` / the list configs when unset. */
+export interface PartsBodyStyleConfig {
+  fontFamily?: string;
+  fontSize?: Dimension;
+  lineHeight?: Dimension;
+  color?: ColorValue;
+  textAlign?: TextAlign;
+  /** Bullet colour of unordered lists inside the part. */
+  bulletColor?: ColorValue;
+  /** Number colour of ordered lists inside the part (numbers are set bold). */
+  numberColor?: ColorValue;
+}
+
+export interface PartsConfig {
+  breakBefore?: PartsBreakBeforeConfig;
+  breakAfter?: PartsBreakAfterConfig;
+  /** Body area of the part page. Defaults to the page margins (`mirror`
+   *  honoured). */
+  margins?: PageMargins;
+  /** Opener design. Its container is the page trim box, so `'page'` /
+   *  `'bleed'` anchors and container anchors coincide. Purely decorative —
+   *  it never reserves body space; raise `margins.top` to leave room for
+   *  it. When empty, `{number} {titleText}` is synthesised from the H1
+   *  typography. */
+  design?: DesignSlot;
+  bodyStyle?: PartsBodyStyleConfig;
+}
+
+export interface ResolvedPartsBreakBeforeConfig {
+  parity: HeadingBreakParity;
+}
+
+export interface ResolvedPartsBreakAfterConfig {
+  enabled: boolean;
+  parity: HeadingBreakParity;
+}
+
+export interface ResolvedPartsBodyStyleConfig {
+  fontFamily: string;
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  color: ColorValue;
+  textAlign: TextAlign;
+  bulletColor: ColorValue;
+  numberColor: ColorValue;
+}
+
+export interface ResolvedPartsConfig {
+  breakBefore: ResolvedPartsBreakBeforeConfig;
+  breakAfter: ResolvedPartsBreakAfterConfig;
+  margins: Required<PageMargins>;
+  design: ResolvedDesignSlot;
+  bodyStyle: ResolvedPartsBodyStyleConfig;
+}
+
 export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;
@@ -1606,6 +1682,9 @@ export interface PostextConfig {
   /** Named callout styles for `:::callout{type="…"}` containers. Defaults
    *  to a single neutral `note` style when unset. */
   calloutStyles?: CalloutStyleConfig[];
+  /** Part dividers (`:::part` containers): page breaks, body area,
+   *  opener design and body typography. */
+  parts?: PartsConfig;
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;

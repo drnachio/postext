@@ -15,7 +15,7 @@ import {
   resolveHeaderFooterConfig,
   resolveHeadingsConfig,
   collectPlaceholderNames,
-  isKnownPlaceholder,
+  isAllowedPlaceholder,
   isMetadataPlaceholder,
 } from 'postext';
 import {
@@ -214,11 +214,6 @@ function collectDirectiveWarnings(
   return out;
 }
 
-/** A config that may carry `calloutStyles` once the engine exports it. */
-// TODO(engine): replace with `PostextConfig['calloutStyles']` once postext
-// exports the callout style type; until then the list is read defensively.
-type ConfigWithCalloutStyles = PostextConfig & { calloutStyles?: { id: string }[] };
-
 /**
  * Fenced-container warnings:
  *   - unclosedContainer: a `:::name` fence still open at end of input (from
@@ -226,8 +221,10 @@ type ConfigWithCalloutStyles = PostextConfig & { calloutStyles?: { id: string }[
  *   - unknownParagraphStyle: `:::paragraphs{style="x"}` where `x` is not a
  *     configured paragraph style id.
  *   - unknownCalloutType: `:::callout{type="x"}` where `x` is not a
- *     configured callout style id. Skipped while the config declares no
- *     callout styles at all (the engine then falls back to its default look).
+ *     configured callout style id. Mirrors `pickCalloutStyle` in the engine:
+ *     with no configured styles every type resolves to the built-in `note`
+ *     look (nothing to warn about); with a non-empty list an unknown type
+ *     silently falls back to the first style, which is worth flagging.
  */
 function collectContainerWarnings(
   markdown: string,
@@ -250,9 +247,7 @@ function collectContainerWarnings(
   }
 
   const paragraphStyleIds = new Set((config.paragraphStyles ?? []).map((s) => s.id));
-  const calloutStyleIds = new Set(
-    ((config as ConfigWithCalloutStyles).calloutStyles ?? []).map((s) => s.id),
-  );
+  const calloutStyleIds = new Set((config.calloutStyles ?? []).map((s) => s.id));
 
   for (const b of blocks) {
     if (b.type !== 'containerStart') continue;
@@ -730,7 +725,10 @@ function collectHeaderFooterWarnings(
       if (el.kind !== 'text') return;
       const names = collectPlaceholderNames(el.content);
       for (const name of names) {
-        if (!isKnownPlaceholder(name)) {
+        // The engine owns the allow-list (fixed names per slot kind plus the
+        // open-ended `attr.<key>` namespace), so new placeholders never need
+        // a sandbox-side copy.
+        if (!isAllowedPlaceholder(name, slot)) {
           out.push({
             id: `hf-unknown-${slot}-${elementIndex}-${name}`,
             payload: { kind: 'headerFooterUnknownPlaceholder', slot, elementIndex, name },

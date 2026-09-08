@@ -1,4 +1,4 @@
-import type { PostextContent, PostextConfig, Resource, ResourceType } from '../types';
+import type { PostextContent, PostextConfig, Resource, ResourceType, HeadingBreakParity } from '../types';
 import type { ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import {
@@ -7,6 +7,7 @@ import {
   createBoundingBox,
   type VDTDocument,
   type VDTBlock,
+  type VDTColumn,
   type VDTPage,
   type ResolvedResourceBlock,
 } from '../vdt';
@@ -38,6 +39,13 @@ import {
   enforcePageParity,
   placeBlockInColumn,
   placeAtomicBlock,
+  createPartPage,
+  pageHasContent,
+  bandColumns,
+  currentBand,
+  isBandLevel,
+  bandUsedBottom,
+  closeBandAndInsertSpan,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
 import {
@@ -49,11 +57,14 @@ import {
 } from './buildHelpers';
 import { measureContentBlock, type BlockMeasureContext } from './measureContentBlock';
 import { planParagraphContainers } from './paragraphContainers';
+import { planParts, derivePartMeasureContext } from './parts';
 import {
   layoutCallout,
   offsetCalloutToAbsolute,
   pickCalloutStyle,
   planCallouts,
+  resolveCalloutAttrs,
+  type CalloutLayoutResult,
   type PlannedCallout,
 } from './calloutLayout';
 import { layoutResourceBlock } from './resourceLayout';
@@ -197,6 +208,8 @@ function buildDocumentPass(
   const paragraphContainers = planParagraphContainers(contentBlocks, resolved);
   // `:::callout` ranges keyed by their start marker index (same rationale).
   const calloutPlan = planCallouts(contentBlocks);
+  // `:::part` ranges: start/end marker indices and the enclosed blocks.
+  const partPlan = planParts(contentBlocks);
 
   // --- Float planning (issue #49 — resources float to page bands) ----------
   // A resource is incorporated by its first reference (an inline `:ref` or a
@@ -439,6 +452,10 @@ function buildDocumentPass(
     resourceNumbering,
     floatedIds,
   };
+  // Blocks inside a `:::part` measure with the part body typography.
+  const partMeasureCtx: BlockMeasureContext = partPlan.byStart.size > 0
+    ? derivePartMeasureContext(measureCtx)
+    : measureCtx;
 
   // Placement cursor
   const cursor: PlacementCursor = { pageIndex: 0, columnIndex: 0 };
@@ -455,6 +472,25 @@ function buildDocumentPass(
     if (curPage.columns.some((c) => c.blocks.length > 0)) {
       forcedBreakPages.add(cursor.pageIndex);
     }
+  };
+
+  /** Parity of the page break a closed `:::part` still owes (applied before
+   *  the next placed block). */
+  let pendingPartBreak: HeadingBreakParity | null = null;
+
+  /** `advanceToNextPageBoundary`, except that an empty part page is left
+   *  behind too (its opener design is content). No floats are reserved on
+   *  the page opened this way — parity padding may still follow it. */
+  const leaveCurrentPage = (): void => {
+    const curPage = doc.pages[cursor.pageIndex]!;
+    if (curPage.partInfo && !pageHasContent(curPage)) {
+      const startPageIndex = cursor.pageIndex;
+      do {
+        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+      } while (cursor.pageIndex === startPageIndex);
+      return;
+    }
+    advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
   };
 
   // Page-numbering segments. The implicit first segment comes from
@@ -492,6 +528,125 @@ function buildDocumentPass(
    *  unit; its children never leave it). */
   const isFreeHeading = (b: VDTBlock): boolean => b.type === 'heading' && b.containerId === undefined;
 
+  /** Shared tail of callout placement: stamp the frame's source range,
+   *  convert the laid-out box to absolute coordinates at the frame's placed
+   *  origin, and push frame + children — in that order — to `doc.blocks`
+   *  and to the column the frame landed in. */
+  const commitCallout = (
+    result: CalloutLayoutResult,
+    startIdx: number,
+    plan: PlannedCallout,
+    col: VDTColumn,
+  ): void => {
+    const frame = result.frame;
+    const startBlock = contentBlocks[startIdx]!;
+    const endBlock = contentBlocks[plan.endIdx]!;
+    frame.contentIndex = startIdx;
+    frame.sourceStart = startBlock.sourceStart + bodyOffset;
+    frame.sourceEnd = endBlock.sourceEnd + bodyOffset;
+    offsetCalloutToAbsolute(result, frame.bbox.x, frame.bbox.y);
+    doc.blocks.push(frame);
+    for (const child of result.children) {
+      child.pageIndex = frame.pageIndex;
+      child.columnIndex = frame.columnIndex;
+      col.blocks.push(child);
+      doc.blocks.push(child);
+    }
+  };
+
+  /**
+   * Place a `span: 'page'` `:::callout` in a multi-column layout as a span
+   * block (stage 1): the box is laid out at the page's content width and
+   * gets its own full-width `kind: 'span'` column; the text columns of the
+   * current band are closed at the cut line and a fresh band of text columns
+   * opens below the box, so the flow continues under it in every column.
+   *
+   * The band must be LEVEL — every column has consumed the same height:
+   * the page top, right after a `span: 'page'` opener heading, right after
+   * another span block, or right after a top float band — and leave room
+   * for the box plus at least the widow minimum of body lines below it.
+   * Otherwise the box moves to the top of the next page (a fresh page is
+   * trivially level) WITHOUT marking a forced break, so the page it left
+   * stays balanceable. Inserting a span block mid-page, with the columns
+   * uneven, is the next stage. Keep-with-next does not apply here: a heading
+   * right before a page-span box stays in its text column.
+   *
+   * Geometry stays on the baseline grid: the cut line is the band's used
+   * bottom snapped UP to the next grid line (anchored at the content-area
+   * top, like every column start), and the span column's height is the
+   * box plus its collapsed top spacing and `marginBottom`, rounded up to a
+   * grid multiple — so the new band's columns start on the grid. Floats
+   * stay in the outer page bands: the band inherits the float-reduced top
+   * / bottom of the page's columns, so a span column never overlaps a float.
+   */
+  const placeCalloutSpan = (
+    startIdx: number,
+    plan: PlannedCallout,
+    layoutAt: (width: number) => CalloutLayoutResult,
+  ): boolean => {
+    let page = doc.pages[cursor.pageIndex]!;
+    let result = layoutAt(page.contentArea.width);
+    const minLines = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
+    const minRoomPx = minLines * bodyStyle.lineHeightPx;
+
+    interface SpanFit { cols: VDTColumn[]; cutY: number; need: number; spacing: number; room: boolean }
+    /** Where the box would cut the current band, and whether it fits. Null
+     *  when the band is not level (or the cursor sits on a span column with
+     *  no band below it) and `requireLevel` is set. */
+    const measureBand = (requireLevel: boolean): SpanFit | null => {
+      const cols = bandColumns(page, currentBand(page, cursor));
+      if (cols.length === 0 || (requireLevel && !isBandLevel(cols))) return null;
+      const usedBottom = bandUsedBottom(cols);
+      const cutY = page.contentArea.y
+        + Math.ceil((usedBottom - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid;
+      const bandHasContent = cols.some((c) => c.blocks.length > 0);
+      const spacing = bandHasContent ? Math.max(pendingSpacing, result.marginTopPx) : 0;
+      const need = Math.ceil((spacing + result.totalHeight + result.marginBottomPx - 0.01) / baselineGrid) * baselineGrid;
+      const bandBottom = Math.min(...cols.map((c) => c.bbox.y + c.bbox.height));
+      const room = cutY + need + minRoomPx <= bandBottom + 0.01;
+      return { cols, cutY, need, spacing, room };
+    };
+
+    let fit = measureBand(true);
+    if (!fit || !fit.room) {
+      // Open the next page (flushing pending floats into its bands). A page
+      // holding only floats counts as occupied here — its float band is what
+      // left no room — but a truly empty page is kept: the box then simply
+      // does not fit a page and is force-placed (overflowing, like inline).
+      const curPage = doc.pages[cursor.pageIndex]!;
+      if (pageHasContent(curPage) || (curPage.floats?.length ?? 0) > 0) {
+        pendingSpacing = 0;
+        const startPageIndex = cursor.pageIndex;
+        do {
+          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        } while (cursor.pageIndex === startPageIndex);
+        page = doc.pages[cursor.pageIndex]!;
+        if (Math.abs(page.contentArea.width - result.width) > 0.01) {
+          result = layoutAt(page.contentArea.width);
+        }
+      }
+      // A freshly opened page is level; force-place (overflow) when the box
+      // is taller than the page.
+      fit = measureBand(true) ?? measureBand(false);
+      if (!fit) return false; // no text column to cut — leave it to the inline path
+    }
+
+    const spanCol = closeBandAndInsertSpan(
+      page, fit.cols, fit.cutY, result.frame, fit.need, cursor, fit.spacing, result.totalHeight,
+    );
+    commitCallout(result, startIdx, plan, spanCol);
+    // Floats first-referenced inside the box enqueue once it is committed,
+    // in reading order (same as the inline path).
+    for (let i = startIdx + 1; i <= plan.endIdx; i++) {
+      const fl = floatsByFirstBlock.get(i);
+      if (fl) pendingFloats.push(...fl);
+    }
+    // The new band starts on the grid right below the span column; nothing
+    // to snap — `need` already bakes in `marginBottom`.
+    pendingSpacing = 0;
+    return true;
+  };
+
   /**
    * Place a `:::callout` inline at the current column width as one atomic
    * unit: the frame block followed by its children in the same column. The
@@ -502,16 +657,16 @@ function buildDocumentPass(
    * anyway and overflows (the sandbox warns). Returns the content index to
    * rewind the main loop to when headings were rolled back, else `undefined`.
    *
-   * TODO(spanBlocks): `span: 'page'` in multi-column layouts and
-   * `placement: 'top' | 'bottom'` fall back to this inline placement for v1.
-   * The pagination phase should branch BEFORE calling this function to lay
-   * the box out at page width / float it into a page band — the frame's
-   * `callout.span` / `callout.placement` already record the request.
+   * `span: 'page'` boxes in multi-column layouts take the span-block path
+   * (`placeCalloutSpan`) instead; `placement: 'top' | 'bottom'` (floating
+   * boxes) still fall back to this inline placement for v1 — the frame's
+   * `callout.placement` records the request.
    */
   const placeCalloutInline = (startIdx: number, plan: PlannedCallout): number | undefined => {
     const style = pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!;
     const children = contentBlocks.slice(startIdx + 1, plan.endIdx);
     const frameId = `block-${blockIdCounter++}`;
+    const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
     const layoutAt = (width: number) => {
       let n = 0;
       return layoutCallout({
@@ -528,6 +683,20 @@ function buildDocumentPass(
         paragraphStyleFor: (idx) => paragraphContainers.byBlock[idx]?.style,
       });
     };
+
+    // Page-span boxes split a multi-column page into column bands (stage 1
+    // of span blocks). Floating placements keep the inline fallback.
+    {
+      const page = doc.pages[cursor.pageIndex]!;
+      if (
+        span === 'page'
+        && placement === 'here'
+        && bandColumns(page, currentBand(page, cursor)).length > 1
+        && placeCalloutSpan(startIdx, plan, layoutAt)
+      ) {
+        return undefined;
+      }
+    }
 
     let curCol = currentColumn(doc, cursor);
     let result = layoutAt(curCol.bbox.width);
@@ -565,25 +734,13 @@ function buildDocumentPass(
       if (fl) pendingFloats.push(...fl);
     }
     const frame = result.frame;
-    const startBlock = contentBlocks[startIdx]!;
-    const endBlock = contentBlocks[plan.endIdx]!;
-    frame.contentIndex = startIdx;
-    frame.sourceStart = startBlock.sourceStart + bodyOffset;
-    frame.sourceEnd = endBlock.sourceEnd + bodyOffset;
     const spacing = curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, result.marginTopPx);
     placeAtomicBlock(
       frame, result.totalHeight, spacing, cursor, doc, resolved,
       contentArea, pageWidthPx, pageHeightPx,
     );
     curCol = currentColumn(doc, cursor);
-    offsetCalloutToAbsolute(result, frame.bbox.x, frame.bbox.y);
-    doc.blocks.push(frame);
-    for (const child of result.children) {
-      child.pageIndex = frame.pageIndex;
-      child.columnIndex = frame.columnIndex;
-      curCol.blocks.push(child);
-      doc.blocks.push(child);
-    }
+    commitCallout(result, startIdx, plan, curCol);
     // Snap the flow after the box to the baseline grid, baking in at least
     // `marginBottom` (grid wins, margin is a minimum — the resource rule).
     {
@@ -657,14 +814,52 @@ function buildDocumentPass(
     // pending-spacing mechanism (collapses like any margin, vanishes at a
     // column top). Its bottom margin is normally baked into the last
     // paragraph's grid snap; the pending-spacing fallback covers containers
-    // that end with a non-paragraph block. `callout` and `part` are layout
-    // no-ops for now. Replaying a marker after a keep-with-next rewind is
+    // that end with a non-paragraph block. Replaying a marker after a keep-with-next rewind is
     // harmless: the container plan is index-based, and `max` is idempotent.
+    // `:::part`: the opener lives on a dedicated single-column page. On
+    // entry, break to a fresh page of the configured parity and convert it
+    // into a part page; on exit, break again so the following content (and
+    // the next chapter's own parity rule) starts clean. A part page counts
+    // as content even with an empty body — its opener design fills it — so
+    // consecutive parts never share a page.
+    if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'part') {
+      const plan = partPlan.byStart.get(blockIdx);
+      if (plan) {
+        pendingSpacing = 0;
+        markForcedBreak();
+        leaveCurrentPage();
+        enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, resolved.parts.breakBefore.parity);
+        cursor.columnIndex = 0;
+        createPartPage(doc.pages[cursor.pageIndex]!, pageMetrics, resolved, { number: plan.number, title: plan.title });
+        flushPendingNumberingAtBoundary();
+        continue;
+      }
+    }
+    if (rawBlock.type === 'containerEnd' && rawBlock.containerName === 'part') {
+      const plan = partPlan.byEnd.get(blockIdx);
+      if (plan) {
+        pendingSpacing = 0;
+        // Deferred until the next placed block so a part that closes the
+        // document leaves no trailing empty page behind.
+        if (resolved.parts.breakAfter.enabled) pendingPartBreak = resolved.parts.breakAfter.parity;
+        continue;
+      }
+    }
+    if (pendingPartBreak !== null) {
+      const parity = pendingPartBreak;
+      pendingPartBreak = null;
+      pendingSpacing = 0;
+      markForcedBreak();
+      leaveCurrentPage();
+      enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, parity);
+      flushPendingNumberingAtBoundary();
+    }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
       const plan = calloutPlan.get(blockIdx);
       if (plan && pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)) {
-        // TODO(spanBlocks): branch here for `span: 'page'` (multi-column) and
-        // `placement: 'top' | 'bottom'` before the inline fallback.
+        // `span: 'page'` boxes in multi-column layouts branch to the
+        // span-block path inside; `placement: 'top' | 'bottom'` still
+        // falls back to inline placement (floating boxes pending).
         const rewind = placeCalloutInline(blockIdx, plan);
         // Children were laid out inside the box — skip them in the main loop
         // (the for-loop's `++` lands just past the closing marker).
@@ -727,7 +922,8 @@ function buildDocumentPass(
     // Measure against the current column width. `null` means there is nothing
     // to place inline (empty text, unknown resource id, floated resource).
     const col = currentColumn(doc, cursor);
-    const measuredBlock = measureContentBlock(rawBlock, blockIdx, col.bbox.width, measureCtx, {
+    const blockMeasureCtx = partPlan.byBlock[blockIdx] ? partMeasureCtx : measureCtx;
+    const measuredBlock = measureContentBlock(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, {
       // Column balancing "run a paragraph long": stays undefined for the
       // common case so existing measurement cache keys are preserved.
       looseness: balanceLooseness?.get(blockIdx),

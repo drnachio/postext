@@ -140,6 +140,15 @@ export function applyPaletteToResolvedConfig(
       body: { ...s.body, color: resolveRequired(s.body.color, palette) },
       lists: { ...s.lists, color: resolveRequired(s.lists.color, palette) },
     })),
+    parts: {
+      ...resolved.parts,
+      bodyStyle: {
+        ...resolved.parts.bodyStyle,
+        color: resolveRequired(resolved.parts.bodyStyle.color, palette),
+        bulletColor: resolveRequired(resolved.parts.bodyStyle.bulletColor, palette),
+        numberColor: resolveRequired(resolved.parts.bodyStyle.numberColor, palette),
+      },
+    },
   };
 }
 
@@ -264,6 +273,18 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
       body: s.body ? { ...s.body, color: resolveColor(s.body.color, palette) } : s.body,
       lists: s.lists ? { ...s.lists, color: resolveColor(s.lists.color, palette) } : s.lists,
     }));
+  }
+
+  if (config.parts?.bodyStyle) {
+    next.parts = {
+      ...config.parts,
+      bodyStyle: {
+        ...config.parts.bodyStyle,
+        color: resolveColor(config.parts.bodyStyle.color, palette),
+        bulletColor: resolveColor(config.parts.bodyStyle.bulletColor, palette),
+        numberColor: resolveColor(config.parts.bodyStyle.numberColor, palette),
+      },
+    };
   }
 
   if (config.debug) {

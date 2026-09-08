@@ -10,11 +10,13 @@ import {
   type VDTDesignBoxBlock,
   type VDTPage,
 } from '../vdt';
-import { computeChapterTitles, computeChapterNumbers, computeChapterAttrs } from './placeholders';
+import { computeChapterTitles, computeChapterNumbers, computeChapterAttrs, computePartValues } from './placeholders';
+import { parsePartNumber } from './parts';
 import { computePageMetrics } from './buildHelpers';
 import { buildHeadingLevelMap } from './config';
 import { classifyPages } from './pageRoles';
 import { dimensionToPx } from '../units';
+import type { ResolvedConfig } from '../vdt';
 import type { PageRole } from '../types';
 import {
   layoutDesignSlot,
@@ -284,6 +286,47 @@ function synthesiseDefaultOpenerSlot(level: ResolvedHeadingLevelConfig, hasNumbe
   return { elements: [textEl] };
 }
 
+/** Default opener design of a `:::part` page when `parts.design` is empty:
+ *  `{number} {titleText}` (or just `{titleText}` without a number) in the
+ *  H1 typography, anchored at the top-left of the part's body area — the
+ *  container is the trim box, so the offset is the part margins. Purely
+ *  decorative: raise `parts.margins.top` to keep the body clear of it. */
+function synthesiseDefaultPartSlot(
+  resolved: ResolvedConfig,
+  page: VDTPage,
+  trimBox: { x: number; y: number },
+  hasNumber: boolean,
+): ResolvedDesignSlot {
+  const level = resolved.headings.levels.find((l) => l.level === 1) ?? resolved.headings.levels[0]!;
+  const content = hasNumber ? '{number} {titleText}' : '{titleText}';
+  const textEl: ResolvedDesignTextElement = {
+    kind: 'text',
+    id: 'defaultPartOpener',
+    parity: 'all',
+    pages: 'all',
+    placement: {
+      anchor: { to: 'container', edge: 'top-left' },
+      offset: {
+        x: { value: page.contentArea.x - trimBox.x, unit: 'px' },
+        y: { value: page.contentArea.y - trimBox.y, unit: 'px' },
+      },
+      size: { width: { value: page.contentArea.width, unit: 'px' }, height: 'auto' },
+    },
+    content,
+    fontFamily: level.fontFamily,
+    fontSize: level.fontSize,
+    fontWeight: level.fontWeight,
+    italic: level.italic,
+    color: level.color,
+    align: 'left',
+    verticalAlign: 'top',
+    lineHeight: level.lineHeight.unit === 'em' ? level.lineHeight.value : 1.2,
+    overflow: 'wrap',
+    hyphenate: true,
+  };
+  return { elements: [textEl] };
+}
+
 /**
  * After body placement finishes, attach header/footer slots to every page.
  */
@@ -299,6 +342,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
   const chapterTitleByPageIndex = computeChapterTitles(doc.blocks, doc.pages.length, doc.pages);
   const chapterNumberByPageIndex = computeChapterNumbers(doc.blocks, doc.pages.length, doc.pages);
   const chapterAttrsByPageIndex = computeChapterAttrs(doc.blocks, doc.pages.length, doc.pages);
+  const { partTitleByPageIndex, partNumberByPageIndex } = computePartValues(doc.pages);
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
 
   for (const page of doc.pages) {
@@ -312,11 +356,47 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         allPages: doc.pages,
         metadata: doc.metadata,
         chapterTitleByPageIndex,
+        chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
+        partTitleByPageIndex,
+        partNumberByPageIndex,
       };
       page.header = layoutSlotToVdt(
         resolved.header,
         headerContainerBbox(contentArea),
+        page.index,
+        placeholders,
+        dpi,
+        extras,
+      );
+    }
+    // Part-divider page: the opener design covers the full trim box and is
+    // purely decorative (the body column already comes from `parts.margins`).
+    if (page.partInfo) {
+      const { number, title } = page.partInfo;
+      const slot = resolved.parts.design.elements.length > 0
+        ? resolved.parts.design
+        : synthesiseDefaultPartSlot(resolved, page, frames.page, number.length > 0);
+      const placeholders: DesignPlaceholderContext = {
+        kind: 'part',
+        page,
+        allPages: doc.pages,
+        metadata: doc.metadata,
+        chapterTitleByPageIndex,
+        chapterNumberByPageIndex,
+        chapterAttrsByPageIndex,
+        partTitleByPageIndex,
+        partNumberByPageIndex,
+        heading: {
+          titleText: title,
+          formattedNumber: number,
+          numericValue: parsePartNumber(number),
+          chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
+        },
+      };
+      page.openerBand = layoutSlotToVdt(
+        slot,
+        { x: frames.page.x, y: frames.page.y, width: frames.page.width, height: frames.page.height },
         page.index,
         placeholders,
         dpi,
@@ -336,7 +416,10 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           allPages: doc.pages,
           metadata: doc.metadata,
           chapterTitleByPageIndex,
+          chapterNumberByPageIndex,
           chapterAttrsByPageIndex,
+          partTitleByPageIndex,
+          partNumberByPageIndex,
           heading: {
             titleText: opener.titleText,
             formattedNumber: opener.numberPrefix,
@@ -382,7 +465,10 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           allPages: doc.pages,
           metadata: doc.metadata,
           chapterTitleByPageIndex,
+          chapterNumberByPageIndex,
           chapterAttrsByPageIndex,
+          partTitleByPageIndex,
+          partNumberByPageIndex,
           heading: {
             titleText: title,
             formattedNumber: pref,
@@ -408,7 +494,10 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         allPages: doc.pages,
         metadata: doc.metadata,
         chapterTitleByPageIndex,
+        chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
+        partTitleByPageIndex,
+        partNumberByPageIndex,
       };
       page.footer = layoutSlotToVdt(
         resolved.footer,

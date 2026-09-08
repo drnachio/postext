@@ -31,7 +31,7 @@
  *    exceeds the user's limit.
  */
 
-import type { VDTDocument, VDTPage } from '../vdt';
+import type { VDTColumn, VDTDocument, VDTPage } from '../vdt';
 
 /** Tolerance against FP drift when converting free space to grid lines. */
 const EPS = 0.01;
@@ -65,6 +65,12 @@ interface ColumnGap {
 
 function pageHasBodyContent(page: VDTPage): boolean {
   return page.columns.some((c) => c.blocks.length > 0);
+}
+
+/** Regular flow column with a usable height — never a page-span block's
+ *  full-width column, nor a band closed at its own top. */
+function isTextColumn(col: VDTColumn): boolean {
+  return col.kind !== 'span' && col.bbox.height > 0.5;
 }
 
 /**
@@ -113,9 +119,16 @@ export function collectColumnGaps(
     const page = doc.pages[p]!;
     if (page.blankForParity || page.blankForForce) continue;
 
+    // Only text columns balance. A page-span block's full-width column is
+    // exactly as tall as its content, and a band closed before any text
+    // landed in it is zero-height — neither has a gap to absorb. The "last
+    // column of the page" is likewise the last non-empty TEXT column: a
+    // trailing span column must not turn a chapter's real closing column
+    // into a balanceable one.
     let lastNonEmpty = -1;
     for (let c = 0; c < page.columns.length; c++) {
-      if (page.columns[c]!.blocks.length > 0) lastNonEmpty = c;
+      const col = page.columns[c]!;
+      if (isTextColumn(col) && col.blocks.length > 0) lastNonEmpty = c;
     }
     if (lastNonEmpty === -1) continue;
 
@@ -123,7 +136,7 @@ export function collectColumnGaps(
 
     for (let c = 0; c <= lastNonEmpty; c++) {
       const col = page.columns[c]!;
-      if (col.blocks.length === 0) continue;
+      if (!isTextColumn(col) || col.blocks.length === 0) continue;
       if (c === lastNonEmpty && !pageFlowsOn) continue;
       // A `:::columnbreak` ended this column on purpose — leave its gap.
       if (col.forcedBreak) continue;

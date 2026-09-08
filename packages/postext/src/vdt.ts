@@ -21,6 +21,7 @@ import type {
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
   ResolvedDesignSlot,
+  ResolvedPartsConfig,
   PageRole,
 } from './types';
 import type { NumeralStyle } from './numbering';
@@ -56,6 +57,8 @@ export interface ResolvedConfig {
   math: ResolvedMathConfig;
   header: ResolvedDesignSlot;
   footer: ResolvedDesignSlot;
+  /** Part dividers (`:::part` containers). */
+  parts: ResolvedPartsConfig;
   /** The document's colour palette, kept so per-resource-type caption
    *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
    *  layout time. Absent when the config defines no palette. */

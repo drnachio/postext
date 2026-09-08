@@ -31,6 +31,12 @@ function extractBlockText(block: VDTBlock): string {
 function collectHeadings(doc: VDTDocument): OutlineEntry[] {
   const entries: OutlineEntry[] = [];
   for (const page of doc.pages) {
+    // Part-divider pages sit above the chapters: level 0 so `buildTree`
+    // nests the following H1s (level 1) under them.
+    if (page.partInfo) {
+      const title = `${page.partInfo.number} ${page.partInfo.title}`.trim();
+      if (title) entries.push({ title, level: 0, pageIndex: page.index, y: 0 });
+    }
     for (const col of page.columns) {
       for (const block of col.blocks) {
         if (block.type !== 'heading') continue;

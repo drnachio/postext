@@ -19,6 +19,7 @@ import { MathSection } from './sections/MathSection';
 import { TableStyleSection } from './sections/TableStyleSection';
 import { CaptionStyleSection } from './sections/CaptionStyleSection';
 import { ParagraphStylesSection } from './sections/ParagraphStylesSection';
+import { CalloutStylesSection } from './sections/CalloutStylesSection';
 import { DiagramStyleSection } from './sections/DiagramStyleSection';
 import { ResourceTypesSection } from './sections/ResourceTypesSection';
 import { HtmlViewerSection } from './sections/HtmlViewerSection';
@@ -138,6 +139,7 @@ export function ConfigPanel() {
         <TableStyleSection />
         <CaptionStyleSection />
         <ParagraphStylesSection />
+        <CalloutStylesSection />
         <DiagramStyleSection />
         <ResourceTypesSection />
         <HtmlViewerSection />

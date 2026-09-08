@@ -205,6 +205,19 @@ Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en 
 
 Un aviso se compone como una caja indivisible — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo — y pasa entero a la columna o página siguiente cuando no cabe. Las cajas a ancho completo (`span="page"`) y flotantes (`placement="top"` / `"bottom"`) se registran pero en esta versión todavía se colocan en línea. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
 
+Una valla `:::part` admite `number` (tal como quieras imprimirlo — `"I"`, `"IV"`, `"3"`; además se interpreta para que el diseño pueda reformatearlo) y `title`; los dos son opcionales. El contenedor abre siempre una página propia: un salto de página con la paridad configurada antes, una columna única de cuerpo en los `parts.margins`, el diseño de apertura sobre la página entera y otro salto de página tras la valla de cierre. El cuerpo — normalmente la lista de los capítulos que agrupa la parte, o nada en absoluto — se compone con `parts.bodyStyle`:
+
+```
+:::part{number="I" title="Fundamentos"}
+1. El farol y sus partes
+2. Recortar la mecha
+:::
+
+# El farol y sus partes
+```
+
+Con los valores por defecto de los encabezados esto produce la secuencia clásica: página de parte en página derecha, página izquierda en blanco, capítulo en la siguiente página derecha. La página se notifica como `role: 'part'` para que los encabezados y pies puedan saltársela, y `{partTitle}` / `{partNumber}` resuelven a la parte actual en todas las páginas siguientes. Consulta [Partes](/es/docs/configuration#partes) en la referencia de configuración.
+
 Una valla no necesita una línea en blanco delante: una valla de apertura o de cierre pegada justo debajo de un párrafo, una lista o una cita termina ese bloque. Un contenedor que queda abierto al final del documento se cierra automáticamente ahí, y el sandbox emite un aviso **Contenedor sin cerrar** que señala la línea de apertura. Un `:::` suelto sin ningún contenedor abierto se deja en el texto como un párrafo visible en lugar de descartarse en silencio.
 
 ### `:::pagebreak`

@@ -225,7 +225,9 @@ describe(':::callout placement', () => {
     expect(after.fontString).toBe(intro.fontString);
   });
 
-  it('falls back to inline placement for span/page and floating placements (v1)', () => {
+  it('falls back to inline placement for floating placements (top / bottom)', () => {
+    // `span: 'page'` alone is a span block in multi-column layouts (see
+    // spanBlocks.test.ts); a floating placement keeps the inline fallback.
     const doc = build([
       'Intro.',
       '',
@@ -238,7 +240,7 @@ describe(':::callout placement', () => {
     const [frame] = frames(doc);
     expect(frame!.callout!.span).toBe('page');
     expect(frame!.callout!.placement).toBe('top');
-    // Still placed inline at the column width for now.
+    // Still placed inline at the column width for now (floating boxes pending).
     expect(frame!.bbox.width).toBeCloseTo(columnOf(doc, frame!).bbox.width, 5);
     expect(columnOf(doc, frame!).blocks).toContain(frame);
   });

@@ -56,7 +56,12 @@ export function applyAlign(
       : currentMargin;
   return {
     ...placement,
-    anchor: { to: 'container', edge: edgeFor(slotKind, align) },
+    // Keep a page/bleed frame target; element anchors fall back to the
+    // container (align is only meaningful against a frame).
+    anchor: {
+      to: isElementAnchor(placement) ? 'container' : placement.anchor.to,
+      edge: edgeFor(slotKind, align),
+    },
     offset: {
       x: signedX,
       y: placement.offset?.y ?? ZERO,
@@ -100,18 +105,46 @@ export function applyMarginFromEdge(
   };
 }
 
-const ELEMENT_EDGES: AnchorEdge[] = [
+/** Edges valid when anchoring to another element (`#id`). */
+export const ELEMENT_EDGES: AnchorEdge[] = [
   'right-of', 'left-of', 'below', 'above',
   'align-top', 'align-bottom', 'align-left', 'align-right',
 ];
 
-export function isElementAnchor(placement: ElementPlacement): boolean {
-  return placement.anchor.to !== 'container';
+/** Edges valid when anchoring to a frame (container, page or bleed). */
+export const CONTAINER_EDGES: AnchorEdge[] = [
+  'top-left', 'top', 'top-right',
+  'left', 'center', 'right',
+  'bottom-left', 'bottom', 'bottom-right',
+];
+
+/** Anchor targets that are frames rather than sibling elements. */
+export type FrameTarget = 'container' | 'page' | 'bleed';
+
+export function isFrameTarget(to: string): to is FrameTarget {
+  return to === 'container' || to === 'page' || to === 'bleed';
 }
 
+/** Anchored to a sibling element (`#id`). */
+export function isElementAnchor(placement: ElementPlacement): boolean {
+  return !isFrameTarget(placement.anchor.to);
+}
+
+/** Anchored to the page or bleed frame (edge-to-edge bands). */
+export function isPageFrameAnchor(placement: ElementPlacement): boolean {
+  const to = placement.anchor.to;
+  return to === 'page' || to === 'bleed';
+}
+
+/** Anchored to the slot's own container — the align / margin controls apply. */
+export function isContainerAnchor(placement: ElementPlacement): boolean {
+  return placement.anchor.to === 'container';
+}
+
+/** Value shown in the anchor-target picker: a frame name or a bare element id. */
 export function anchorTargetId(placement: ElementPlacement): string {
   const to = placement.anchor.to;
-  return to === 'container' ? 'container' : to.slice(1);
+  return isFrameTarget(to) ? to : to.slice(1);
 }
 
 export function applyAnchorTarget(
@@ -124,6 +157,20 @@ export function applyAnchorTarget(
       ...placement,
       anchor: { to: 'container', edge: edgeFor(slotKind, 'center') },
       offset: { x: ZERO, y: ZERO },
+    };
+  }
+  if (target === 'page' || target === 'bleed') {
+    // Moving between frames keeps the edge and offsets; coming from an
+    // element anchor starts centred on the slot's natural edge.
+    const prev = placement.anchor.edge;
+    const fromFrame = !isElementAnchor(placement);
+    const edge = fromFrame && (CONTAINER_EDGES as string[]).includes(prev)
+      ? (prev as AnchorEdge)
+      : edgeFor(slotKind, 'center');
+    return {
+      ...placement,
+      anchor: { to: target, edge },
+      offset: fromFrame ? (placement.offset ?? { x: ZERO, y: ZERO }) : { x: ZERO, y: ZERO },
     };
   }
   const prev = placement.anchor.edge;

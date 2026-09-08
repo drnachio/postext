@@ -15,6 +15,7 @@ import { stripDebugDefaults } from './debug';
 import { stripHtmlViewerDefaults } from './htmlViewer';
 import { stripPdfGenerationDefaults } from './pdfGeneration';
 import { stripHeaderFooterDefaults } from './headerFooter';
+import { stripPartsDefaults } from './parts';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
@@ -35,6 +36,7 @@ export { DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGene
 export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults } from './headerFooter';
 export type { HeaderFooterSlotKind } from './headerFooter';
 export { defaultResourceTypes } from './resourceTypes';
+export { DEFAULT_PARTS_CONFIG, resolvePartsConfig, stripPartsDefaults } from './parts';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
@@ -139,6 +141,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.footer = strippedFooter;
   } else {
     delete result.footer;
+  }
+  const strippedParts = stripPartsDefaults(config.parts);
+  if (strippedParts) {
+    result.parts = strippedParts;
+  } else {
+    delete result.parts;
   }
   return result;
 }

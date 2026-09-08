@@ -1,5 +1,6 @@
 import type { VDTDocument, VDTPage, VDTColumn, BoundingBox } from '../vdt';
 import { dimensionToPx } from '../units';
+import { columnRuleSegments } from '../columnRule';
 
 export function renderBaselineGrid(
   ctx: CanvasRenderingContext2D,
@@ -46,20 +47,19 @@ export function renderColumnRule(
 ): void {
   if (columns.length < 2) return;
 
+  // One segment per gutter of each column band; span columns interrupt the
+  // rule (see `columnRuleSegments`).
+  const segments = columnRuleSegments(columns);
+  if (segments.length === 0) return;
+
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
 
-  for (let i = 0; i < columns.length - 1; i++) {
-    const left = columns[i]!.bbox;
-    const right = columns[i + 1]!.bbox;
-    const x = (left.x + left.width + right.x) / 2;
-    const top = Math.min(left.y, right.y);
-    const bottom = Math.max(left.y + left.height, right.y + right.height);
-
+  for (const seg of segments) {
     ctx.beginPath();
-    ctx.moveTo(x, top);
-    ctx.lineTo(x, bottom);
+    ctx.moveTo(seg.x, seg.top);
+    ctx.lineTo(seg.x, seg.bottom);
     ctx.stroke();
   }
 

@@ -46,6 +46,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Estilo de diagramas](#estilo-de-diagramas) — recoloreado a una sola tinta de los diagramas SVG incrustados para impresión con tinta plana.
 - [Estilos de párrafo](#estilos-de-párrafo) — estilos con nombre para contenedores `:::paragraphs`: bibliografías, glosarios, notas.
 - [Estilos de aviso](#estilos-de-aviso) — notas, consejos y objetivos en caja para contenedores `:::callout`.
+- [Partes](#partes) — páginas separadoras de parte para contenedores `:::part`: paridad, área de cuerpo, diseño de apertura, tipografía del cuerpo.
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
 - [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
@@ -525,6 +526,7 @@ Marcadores disponibles:
 - `{totalPages}` — total de páginas del documento.
 - `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — valores leídos desde `content.metadata`. Los metadatos desconocidos o vacíos se renderizan como cadena vacía (y generan un aviso en el sandbox).
 - `{chapterTitle}` — texto del H1 más reciente en o antes de la página actual.
+- `{partTitle}`, `{partNumber}` — título y número de la parte actual (la página `:::part` más reciente en o antes de la página actual; las páginas en blanco de paridad justo antes de una página de parte ya pertenecen a ella). Vacíos antes de la primera parte.
 
 #### Alineación implícita por borde
 
@@ -2457,13 +2459,13 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>span</code></td>
       <td><code>'column' | 'page'</code></td>
       <td><code>'column'</code></td>
-      <td>Extensión horizontal: la columna o el ancho completo del área de contenido. Se puede sobrescribir por instancia con el atributo <code>span</code>. Se registra en el VDT; en disposiciones multicolumna <code>'page'</code> se compone por ahora en línea al ancho de columna (fase de paginación pendiente).</td>
+      <td>Extensión horizontal: la columna o el ancho completo del área de contenido. Se puede sobrescribir por instancia con el atributo <code>span</code>. En disposiciones multicolumna una caja <code>'page'</code> se convierte en un <em>bloque a ancho de página</em>: divide la página en bandas de columnas y ocupa su propia columna a todo el ancho (ver la sección del contenedor más abajo).</td>
     </tr>
     <tr>
       <td><code>placement</code></td>
       <td><code>'here' | 'top' | 'bottom'</code></td>
       <td><code>'here'</code></td>
-      <td>En línea en el flujo, o flotando a una banda superior / inferior de la página como un recurso. Se puede sobrescribir por instancia con el atributo <code>placement</code>. Las colocaciones flotantes se registran pero por ahora se colocan en línea (fase de paginación pendiente).</td>
+      <td>En línea en el flujo, o flotando a una banda superior / inferior de la página como un recurso. Se puede sobrescribir por instancia con el atributo <code>placement</code>. Las colocaciones flotantes se registran en el VDT pero por ahora se colocan en línea al ancho de columna.</td>
     </tr>
     <tr>
       <td><code>width</code></td>
@@ -2547,7 +2549,8 @@ Una línea `:::callout{type="<id>"}` abre la caja y una línea `:::` a solas la 
 Límites de esta versión:
 
 - Un aviso es indivisible. Cuando no cabe en el espacio restante de la columna pasa entero a la columna o página siguiente; una caja más alta que una columna vacía se coloca de todos modos y desborda (el sandbox avisa).
-- `span: 'page'` en disposiciones multicolumna y `placement: 'top' | 'bottom'` se registran en el VDT (`VDTBlock.callout`) pero todavía se colocan en línea al ancho de columna — las cajas a ancho completo y flotantes llegan con la fase de paginación.
+- `span: 'page'` en una disposición multicolumna convierte la caja en un **bloque a ancho de página**: se compone al ancho completo del área de contenido y divide la página en bandas de columnas — las columnas de texto que hay encima se cierran en la línea de corte, la caja ocupa su propia columna a todo el ancho y debajo se abre una banda nueva de columnas de texto, de modo que el flujo continúa bajo la caja en todas las columnas. En esta primera etapa un bloque a ancho de página solo se coloca donde las columnas están *niveladas*: al inicio de una página, justo debajo de un encabezado de apertura con `span: 'page'`, justo debajo de otro bloque a ancho de página o justo debajo de una banda de flotantes superior. En cualquier otro punto (columnas ya desiguales, o sin sitio para la caja más el mínimo de líneas viudas de cuerpo por debajo) la caja pasa al inicio de la página siguiente — sin forzar un salto de página, así que la página que deja sigue equilibrándose. Insertar un bloque a ancho de página a mitad de página, con las columnas desiguales, es la siguiente etapa. Un encabezado justo antes de un bloque a ancho de página no viaja con él. En disposiciones de una columna `span: 'page'` es simplemente en línea.
+- `placement: 'top' | 'bottom'` se registra en el VDT (`VDTBlock.callout`) pero todavía se coloca en línea al ancho de columna — las cajas flotantes llegan con la siguiente etapa.
 - `width: 'auto'` se ajusta solo al título; los hijos se ignoran.
 - Un `:::callout` anidado dentro de otro aviso se aplana en la caja exterior.
 
@@ -2559,6 +2562,123 @@ const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyTe
 
 const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
 // => undefined para el `note` por defecto; se eliminan los valores estáticos por defecto
+```
+
+
+## Partes
+
+La propiedad `parts` configura las páginas separadoras de parte que un documento abre con un contenedor `:::part{number="…" title="…"}` — la página «Parte I — Fundamentos» que agrupa una serie de capítulos. Una parte ocupa siempre una página propia: el contenedor salta a una página nueva con la paridad configurada, la convierte en una página de una sola columna cuya área de cuerpo sale de `parts.margins`, compone el diseño de apertura sobre la página entera y vuelve a saltar tras la valla de cierre para que el siguiente capítulo (con su propio `breakBefore.parity`) empiece limpio — con los valores por defecto de H1 eso produce la secuencia clásica: página de parte en recto, verso en blanco, capítulo en el siguiente recto.
+
+```ts
+const config: PostextConfig = {
+  parts: {
+    breakBefore: { parity: 'odd' },
+    breakAfter: { enabled: true, parity: 'any' },
+    margins: { top: { value: 9, unit: 'cm' }, left: { value: 3, unit: 'cm' }, right: { value: 3, unit: 'cm' } },
+    design: {
+      elements: [
+        {
+          kind: 'text', id: 'number', content: 'Parte {numberRoman}',
+          fontSize: { value: 12, unit: 'pt' }, fontWeight: 600, align: 'left',
+          placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 3, unit: 'cm' }, y: { value: 5, unit: 'cm' } }, size: { width: 'auto', height: 'auto' } },
+        },
+        {
+          kind: 'text', id: 'title', content: '{titleText}',
+          fontSize: { value: 28, unit: 'pt' }, fontWeight: 700, align: 'left', overflow: 'wrap',
+          placement: { anchor: { to: '#number', edge: 'below' }, size: { width: { value: 15, unit: 'cm' }, height: 'auto' } },
+        },
+      ],
+    },
+    bodyStyle: { fontSize: { value: 11, unit: 'pt' }, numberColor: { hex: '#AA0000', model: 'hex' } },
+  },
+};
+```
+
+```md
+:::part{number="I" title="Fundamentos"}
+1. El farol y sus partes
+2. Recortar la mecha
+3. Leer el tiempo
+:::
+
+# El farol y sus partes
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>breakBefore.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'odd'</code></td>
+      <td>Paridad de la página en la que se abre la parte. Mismos valores y mismas reglas de pertenencia de las páginas en blanco que el <a href="#saltar-antes">breakBefore</a> de los encabezados: un blanco insertado para alcanzar la paridad pertenece a la parte (su <code>{'{partTitle}'}</code> ya resuelve a la parte nueva); el separador obligatorio de <code>'always-*'</code> pertenece al contenido anterior.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pasa el contenido posterior a la valla de cierre a una página nueva. Con <code>false</code> continúa en la columna única de la página de parte.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'any'</code></td>
+      <td>Paridad de esa página nueva. Déjalo en <code>'any'</code> y deja que el propio <code>breakBefore.parity</code> del siguiente capítulo decida si sigue un verso en blanco. El salto se aplica al colocar el siguiente bloque, así que una parte que cierra el documento no deja una página vacía al final.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>márgenes de página</td>
+      <td>Área de cuerpo de la página de parte — la columna única en la que fluyen los bloques de dentro de la valla. Cada lado hereda el margen de página cuando no se define; <code>mirror</code> intercambia interior/exterior en las páginas pares exactamente como los márgenes de página.</td>
+    </tr>
+    <tr>
+      <td><code>design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>vacío</td>
+      <td>Diseño de apertura. Su contenedor es la <strong>caja de corte</strong> de la página, así que los anclajes al contenedor y a <code>'page'</code> coinciden, y <code>'bleed'</code> llega hasta el sangrado cuando las marcas de corte están activas. Puramente decorativo: nunca reserva espacio de cuerpo — sube <code>margins.top</code> para que el cuerpo no lo pise. Cuando está vacío se sintetiza un texto <code>{'{number} {titleText}'}</code> por defecto con la tipografía del H1 en la esquina superior izquierda del área de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>color</code>, <code>textAlign</code></td>
+      <td>como en <code>bodyText</code></td>
+      <td>heredan de <code>bodyText</code></td>
+      <td>Tipografía de los párrafos, citas y elementos de lista de dentro de la valla. Los pesos, los colores de énfasis y la separación silábica vienen del texto de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.bulletColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>unorderedLists.color</code></td>
+      <td>Color de las viñetas de las listas no ordenadas de dentro de la parte.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.numberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>orderedLists.color</code></td>
+      <td>Color de los números de las listas ordenadas de dentro de la parte. Los números van siempre en el peso de negrita del cuerpo, para que una lista de capítulos se lea como un índice.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Marcadores del diseño de parte
+
+El diseño resuelve el conjunto de marcadores de encabezado con los valores propios de la parte: `{titleText}` es el `title` de la valla; `{number}` el `number` tal como se escribió; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` lo reformatean — el número se interpreta como decimal o como numeral romano (`"IV"`, `"iv"` y `"4"` dan `{numberDecimal}` = `4`) y resuelven a `''` para cualquier otra cosa. También están disponibles `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (el capítulo anterior a la parte), `{pageNumber}`, `{totalPages}` y los marcadores de metadatos. `{attr.<key>}` lee los atributos del H1 del capítulo actual.
+
+### El contenedor `:::part`
+
+Una línea `:::part{number="…" title="…"}` abre la parte y un `:::` a solas la cierra; los dos atributos son opcionales (por defecto `''`). Los bloques intermedios — normalmente la lista de capítulos — fluyen en la columna única de la página de parte con `bodyStyle`, empezando en `margins.top`; un cuerpo más largo que la página continúa en páginas normales. La página se clasifica como `role: 'part'` (`VDTPage.partInfo` lleva el número y el título), de modo que los elementos de encabezado y pie pueden dirigirse a ella o saltársela con `pages: 'part'` / `pages: 'body'`; el backend PDF añade la parte al esquema por encima de sus capítulos. Un cuerpo vacío (`:::part{…}` seguido directamente de `:::`) es el caso habitual y también produce la página — dos partes consecutivas nunca comparten una. Un `:::part` anidado dentro de otra parte se aplana en la exterior.
+
+```ts
+const resolved = resolvePartsConfig(config.parts, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => márgenes rellenados desde la página, bodyStyle desde el cuerpo / las listas
+
+const minimal = stripPartsDefaults(config.parts);
+// => undefined cuando solo quedan valores estáticos por defecto
 ```
 
 

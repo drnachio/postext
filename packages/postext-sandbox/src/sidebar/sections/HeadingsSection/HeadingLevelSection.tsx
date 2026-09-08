@@ -2,7 +2,7 @@
 
 import type { useSandboxLabels } from '../../../context/SandboxContext';
 import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual, resolveDesignSlot } from 'postext';
-import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, HeadingSpan, HeadingAdvancedDesignConfig, ColorValue, Dimension, DimensionUnit, DesignSlot, ResolvedDesignSlot } from 'postext';
+import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, HeadingSpan, HeadingTextTransform, HeadingAdvancedDesignConfig, ResolvedHeadingLevelConfig, ColorValue, Dimension, DimensionUnit, DesignSlot, ResolvedDesignSlot } from 'postext';
 import { SlotEditor } from '../HeaderFooterSection/SlotEditor';
 import {
   CollapsibleSection,
@@ -19,6 +19,8 @@ import {
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+const MIN_HEIGHT_UNITS: DimensionUnit[] = ['pt', 'mm', 'cm', 'in', 'em', 'px'];
+const ZERO_PT: Dimension = { value: 0, unit: 'pt' };
 
 const D = DEFAULT_HEADINGS_CONFIG;
 
@@ -37,7 +39,7 @@ export function HeadingLevelSection({
   labels,
 }: {
   level: number;
-  resolved: { fontSize: Dimension; lineHeight: Dimension; fontFamily: string; color: ColorValue; fontWeight: number; marginTop: Dimension; marginBottom: Dimension; numberingTemplate: string; italic: boolean; breakBefore: { enabled: boolean; parity: HeadingBreakParity }; span: HeadingSpan; advancedDesign: { enabled: boolean; slot: { elements: unknown[] } } };
+  resolved: ResolvedHeadingLevelConfig;
   raw: HeadingLevelConfig | undefined;
   generalFont: string;
   generalLineHeight: Dimension;
@@ -60,6 +62,22 @@ export function HeadingLevelSection({
   const isMarginBottomDefault = dimensionsEqual(resolved.marginBottom, generalMarginBottom);
   const isNumberingDefault = (resolved.numberingTemplate ?? '') === '';
   const isItalicDefault = resolved.italic === false;
+  const isTextTransformDefault = resolved.textTransform === 'none';
+  const rawAdvanced = raw?.advancedDesign;
+  const minHeight = resolved.advancedDesign.minHeight ?? ZERO_PT;
+  const isMinHeightDefault = rawAdvanced?.minHeight === undefined;
+
+  /** Merge into `advancedDesign`, keeping the slot and minHeight already set. */
+  const updateAdvanced = (partial: Partial<HeadingAdvancedDesignConfig>) => {
+    const base: HeadingAdvancedDesignConfig = {
+      enabled: rawAdvanced?.enabled ?? resolved.advancedDesign.enabled,
+      slot: rawAdvanced?.slot ?? { elements: [] },
+      ...(rawAdvanced?.minHeight ? { minHeight: rawAdvanced.minHeight } : {}),
+    };
+    const next: HeadingAdvancedDesignConfig = { ...base, ...partial };
+    if (partial.minHeight === undefined && 'minHeight' in partial) delete next.minHeight;
+    onUpdate(level, { advancedDesign: next });
+  };
   const isBreakBeforeEnabledDefault = resolved.breakBefore.enabled === false;
   const isBreakBeforeParityDefault = resolved.breakBefore.parity === 'any';
   const hasOverrides = raw !== undefined && Object.keys(raw).filter((k) => k !== 'level').length > 0;
@@ -156,6 +174,18 @@ export function HeadingLevelSection({
         isDefault={isItalicDefault}
         onReset={() => onReset(level, 'italic')}
       />
+      <SelectInput
+        label={labels.headingTextTransform}
+        value={resolved.textTransform}
+        options={[
+          { value: 'none', label: labels.headingTextTransformNone },
+          { value: 'uppercase', label: labels.headingTextTransformUppercase },
+        ]}
+        onChange={(v) => onUpdate(level, { textTransform: v as HeadingTextTransform })}
+        tooltip={labels.headingTextTransformTooltip}
+        isDefault={isTextTransformDefault}
+        onReset={() => onReset(level, 'textTransform')}
+      />
       <TextInput
         label={labels.headingNumberingTemplate}
         value={resolved.numberingTemplate ?? ''}
@@ -211,16 +241,10 @@ export function HeadingLevelSection({
       <ToggleSwitch
         label={labels.headingAdvancedDesign ?? 'Advanced design'}
         checked={resolved.advancedDesign.enabled}
-        onChange={(v) => {
-          const next: HeadingAdvancedDesignConfig = {
-            enabled: v,
-            slot: { elements: [] },
-          };
-          onUpdate(level, { advancedDesign: next });
-        }}
+        onChange={(v) => updateAdvanced({ enabled: v })}
         tooltip={labels.headingAdvancedDesignTooltip}
         isDefault={resolved.advancedDesign.enabled === false}
-        onReset={() => onUpdate(level, { advancedDesign: { enabled: false, slot: { elements: [] } } })}
+        onReset={() => onReset(level, 'advancedDesign')}
       />
       {resolved.advancedDesign.enabled && (
         <NestedGroup>
@@ -228,14 +252,23 @@ export function HeadingLevelSection({
             {labels.headingAdvancedDesignInfo ??
               'Compose text, rules, and boxes. Include a text element with {titleText} to render the heading.'}
           </p>
+          <DimensionInput
+            label={labels.headingAdvancedMinHeight}
+            value={minHeight}
+            onChange={(dim) => updateAdvanced({ minHeight: dim })}
+            min={0}
+            step={1}
+            tooltip={labels.headingAdvancedMinHeightTooltip}
+            isDefault={isMinHeightDefault}
+            onReset={() => updateAdvanced({ minHeight: undefined })}
+            units={MIN_HEIGHT_UNITS}
+          />
           <SlotEditor
             slotKey="heading"
-            raw={raw?.advancedDesign?.slot}
-            resolved={(resolveDesignSlot(raw?.advancedDesign?.slot, 'header') as ResolvedDesignSlot)}
+            raw={rawAdvanced?.slot}
+            resolved={(resolveDesignSlot(rawAdvanced?.slot, 'header') as ResolvedDesignSlot)}
             onUpdate={(slot: DesignSlot | undefined) => {
-              onUpdate(level, {
-                advancedDesign: { enabled: true, slot: slot ?? { elements: [] } },
-              });
+              updateAdvanced({ enabled: true, slot: slot ?? { elements: [] } });
             }}
           />
         </NestedGroup>
