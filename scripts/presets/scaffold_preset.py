@@ -5,7 +5,8 @@ the sibling `index.json`.
 Expected layout:
 
     <presets-root>/
-      index.json                 (upserted by this script)
+      index.json                 (upserted by this script; --index FILE for a
+                                  nested <root>/<publisher>/<format>/ layout)
       <preset-dir>/
         preset.json              (written here; preset.scaffold.json if it exists)
         <name>.md                (the document markdown)
@@ -297,6 +298,13 @@ def main(argv: list[str] | None = None) -> int:
         "--markdown", metavar="FILE", help="markdown file (relative to the preset dir; default: first *.md)"
     )
     parser.add_argument("--force", action="store_true", help="overwrite an existing preset.json")
+    parser.add_argument(
+        "--index",
+        metavar="FILE",
+        help="index.json to register the preset in (default: the sibling of the preset dir); "
+        "`dir` is written relative to it, so nested layouts such as "
+        "<root>/<publisher>/<format> work",
+    )
     args = parser.parse_args(argv)
 
     preset_dir = os.path.abspath(args.preset_dir)
@@ -355,7 +363,15 @@ def main(argv: list[str] | None = None) -> int:
     entry["locale"] = args.locale
     if args.default:
         entry["default"] = True
-    index_path = os.path.join(os.path.dirname(preset_dir), "index.json")
+    index_path = (
+        os.path.abspath(args.index) if args.index else os.path.join(os.path.dirname(preset_dir), "index.json")
+    )
+    index_root = os.path.dirname(index_path)
+    rel_dir = os.path.relpath(preset_dir, index_root).replace(os.sep, "/")
+    if rel_dir.startswith(".."):
+        print(f"preset dir {preset_dir} is not below the index directory {index_root}", file=sys.stderr)
+        return 1
+    entry["dir"] = rel_dir
     upsert_index(index_path, entry)
     print(f"updated {index_path}")
     return 0

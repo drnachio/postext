@@ -172,11 +172,14 @@ Exit code 2 when fontTools is missing.
 ```
 scaffold_preset.py <preset-dir> [--id ID] [--name NAME] [--description TEXT]
                    [--locale en] [--default] [--markdown FILE] [--force]
+                   [--index FILE]
 ```
 
 Scans `resources/*` and `fonts/*`, writes `preset.json` (or
 `preset.scaffold.json` if one already exists, unless `--force`) and upserts the
-entry in `<preset-dir>/../index.json`. Resource ids are slugs of the file stems;
+entry in `<preset-dir>/../index.json` (or in `--index FILE`, with `dir` written
+relative to that file, for a nested `<root>/<publisher>/<format>/` layout).
+Resource ids are slugs of the file stems;
 figures get `typeId: "figure"`, empty `caption`/`altText` and a
 `{ top, column }` placement. Font families are grouped by the family name in
 the font (`name` ID 16, then ID 1) with weight from `OS/2.usWeightClass` and
