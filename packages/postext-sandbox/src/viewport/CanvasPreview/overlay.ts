@@ -90,7 +90,32 @@ function bandTitleBlocks(doc: VDTDocument, pageIndex: number): VDTDesignTextBloc
 /** Approximate line boxes for a design text block: the band layout only
  *  keeps baselines, so derive the line pitch from consecutive baselines (or
  *  the block height for a single line). */
-function bandLineBoxes(block: VDTDesignTextBlock): { x: number; y: number; width: number; height: number; chars: number }[] {
+interface BandLineBox { x: number; y: number; width: number; height: number; chars: number; text: string; font: string }
+
+let measureCtx: CanvasRenderingContext2D | null | undefined;
+function bandMeasureContext(): CanvasRenderingContext2D | null {
+  if (measureCtx !== undefined) return measureCtx;
+  measureCtx = typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d');
+  return measureCtx;
+}
+
+/** X offset of the first `chars` characters of a band line, measured with the
+ *  line's font and scaled so the full text spans the line's laid-out width
+ *  (this absorbs letter-spacing or kerning the layout applied). Falls back
+ *  to a proportional split when no canvas context is available. */
+function bandPrefixX(box: BandLineBox, chars: number): number {
+  const n = Math.max(0, Math.min(box.chars, chars));
+  if (box.chars === 0) return box.x;
+  const ctx = bandMeasureContext();
+  if (!ctx) return box.x + (n / box.chars) * box.width;
+  ctx.font = box.font;
+  const full = ctx.measureText(box.text).width;
+  if (!(full > 0)) return box.x + (n / box.chars) * box.width;
+  const prefix = ctx.measureText(box.text.slice(0, n)).width;
+  return box.x + (prefix / full) * box.width;
+}
+
+function bandLineBoxes(block: VDTDesignTextBlock): BandLineBox[] {
   const lines = block.lines;
   // Design lines carry absolute baselines (the renderer draws at
   // `bbox.x + xOffset`, `baselineY`); the line box is the design layout's
@@ -105,12 +130,14 @@ function bandLineBoxes(block: VDTDesignTextBlock): { x: number; y: number; width
     width: l.width,
     height: pitch,
     chars: l.text.length,
+    text: l.text,
+    font: block.fontString,
   }));
 }
 
 /** Map a source offset inside a band title to (line, x): characters are
  *  spread proportionally over each line's measured width. */
-function bandCaretPosition(block: VDTDesignTextBlock, offset: number): { line: ReturnType<typeof bandLineBoxes>[number]; x: number } | null {
+function bandCaretPosition(block: VDTDesignTextBlock, offset: number): { line: BandLineBox; x: number } | null {
   const boxes = bandLineBoxes(block);
   if (boxes.length === 0) return null;
   const total = boxes.reduce((n, b) => n + b.chars, 0);
@@ -120,8 +147,7 @@ function bandCaretPosition(block: VDTDesignTextBlock, offset: number): { line: R
     // Lines are joined by a space in the source; count it against the line.
     const span = box.chars + (i < boxes.length - 1 ? 1 : 0);
     if (rel <= box.chars || i === boxes.length - 1) {
-      const ratio = box.chars > 0 ? Math.min(1, rel / box.chars) : 0;
-      return { line: box, x: box.x + ratio * box.width };
+      return { line: box, x: bandPrefixX(box, rel) };
     }
     rel -= span;
   }
@@ -258,8 +284,8 @@ export function drawOverlay(
       const lo = Math.max(from, lineStart);
       const hi = Math.min(to, lineEnd);
       if (hi > lo && box.chars > 0) {
-        const x1 = box.x + ((lo - lineStart) / box.chars) * box.width;
-        const x2 = box.x + ((hi - lineStart) / box.chars) * box.width;
+        const x1 = bandPrefixX(box, lo - lineStart);
+        const x2 = bandPrefixX(box, hi - lineStart);
         const rect = document.createElementNS(SVG_NS, 'rect');
         rect.setAttribute('x', String(x1));
         rect.setAttribute('y', String(box.y));
