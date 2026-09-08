@@ -44,6 +44,7 @@ This reference is long. These are the main blocks:
 - [Resource types](#resource-types) — typed numbering for figures, tables, and custom kinds.
 - [Table style](#table-style) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
 - [Diagram style](#diagram-style) — single-ink recolouring of embedded SVG diagrams for spot-colour printing.
+- [Paragraph styles](#paragraph-styles) — named styles for `:::paragraphs` containers: bibliographies, glossaries, notes.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
@@ -1760,6 +1761,11 @@ interface ResourceType {
       <td><code>ResourcePlacement</code> (optional)</td>
       <td>Placement used by resources of this type that do not set their own <code>placement</code>. When unset, the built-in <code>top</code> / <code>column</code> default applies. See <a href="#numbering-and-references">Numbering and references</a> below for the full resolution chain.</td>
     </tr>
+    <tr>
+      <td><code>captionStyle</code></td>
+      <td><code>CaptionStyleConfig</code> (optional)</td>
+      <td>Partial <a href="#caption-style">caption style</a> override for resources of this type. Only the keys you set replace the global <code>captionStyle</code>; everything else is inherited (an overridden <code>color</code> also drives the label and note colours unless those are set explicitly). Typical use: tables captioned <em>above</em> on a coloured bar while figures keep their caption below. Palette references resolve like any other colour.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1927,13 +1933,23 @@ const config: PostextConfig = {
       <td><code>0.375em</code></td>
       <td>Inner padding of every cell.</td>
     </tr>
+    <tr>
+      <td><code>rules</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid'</code></td>
+      <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, or none.</td>
+    </tr>
   </tbody>
 </table>
+
+Border widths are kept fractional: a `0.5pt` rule is stroked as a hairline in the PDF and on screen rather than being rounded up to a full pixel (the floor is 0.25px).
+
+Column widths belong to the table model, not the style: `TableModel.columnWidths` is an optional array of relative weights, one per column, normalised at layout time — `[2, 1, 1]` gives the first column half the width. A missing array, a wrong length, or a non-positive weight falls back to an equal split. The table editor keeps the array aligned when columns are added or removed.
 
 
 ## Caption style
 
-The `captionStyle` property controls resource captions (the `Figure 1 — …` line under images, SVGs, and tables). The numbered label and the description share the same typeface and size — an engine constraint — but the label can carry its own weight, italics, and color. Font family, size, and color inherit the body text when unset.
+The `captionStyle` property controls resource captions (the `Figure 1 — …` line under — or above — images, SVGs, and tables). The numbered label and the description share the same typeface and size — an engine constraint — but the label can carry its own weight, italics, and color. Font family, size, and color inherit the body text when unset. The caption can sit **above** the resource (the usual convention for tables) and be set on a coloured **bar** spanning the block width; an optional smaller **note** (source line, credits — `Resource.note`) is styled through the `note` sub-object. A resource type can override any of these fields for its own resources via `ResourceType.captionStyle` (see [Resource types](#resource-types)).
 
 ```ts
 const config: PostextConfig = {
@@ -1942,6 +1958,10 @@ const config: PostextConfig = {
     labelBold: true,
     labelColor: { hex: '#295AA3', model: 'hex' },
     descriptionItalic: true,
+    position: 'above',
+    backgroundEnabled: true,
+    padding: { value: 0.35, unit: 'em' },
+    note: { italic: true, align: 'left' },
   },
 };
 ```
@@ -2010,8 +2030,85 @@ const config: PostextConfig = {
       <td><code>false</code></td>
       <td>Render the description text in italics.</td>
     </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'above' | 'below'</code></td>
+      <td><code>'below'</code></td>
+      <td>Where the caption sits. With <code>'above'</code> the caption (and its bar) comes first and the resource body moves down by the caption height plus <code>gap</code>; the note then goes under the body.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Paint a bar behind the caption. The bar spans the full block width and encloses the caption lines plus <code>padding</code> on every side.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>main palette color</td>
+      <td>Bar fill color (only painted when enabled).</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>Inner padding between the bar edge and the caption text. Ignored when the bar is off.</td>
+    </tr>
+    <tr>
+      <td><code>note</code></td>
+      <td><code>object</code></td>
+      <td>—</td>
+      <td>Styling of the resource note — see the sub-table below.</td>
+    </tr>
   </tbody>
 </table>
+
+The `note` sub-object styles `Resource.note`, a short run (source, credits, a remark) set under the resource in a smaller size. It accepts the same inline formatting and `:ref` marks as the caption and inherits the caption typeface. It is placed under the caption when the caption is below, and under the resource body when the caption is above; its height counts towards the block, so a resource with a note floats as one unit.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>note.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>0.85 × caption size</td>
+      <td>Note font size.</td>
+    </tr>
+    <tr>
+      <td><code>note.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>caption <code>color</code></td>
+      <td>Note text color.</td>
+    </tr>
+    <tr>
+      <td><code>note.italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Render the note in italics.</td>
+    </tr>
+    <tr>
+      <td><code>note.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>Gap between the note and what precedes it (caption or body).</td>
+    </tr>
+    <tr>
+      <td><code>note.align</code></td>
+      <td><code>'left' | 'center'</code></td>
+      <td><code>'left'</code></td>
+      <td>Horizontal alignment of the note.</td>
+    </tr>
+  </tbody>
+</table>
+
+Per-type overrides are merged with `mergeCaptionStyle(resolvedCaptionStyle, override, palette?)`, exported for hosts that need the same resolution outside the pipeline.
 
 
 ## Diagram style
@@ -2088,6 +2185,143 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
+```
+
+
+## Paragraph styles
+
+The `paragraphStyles` property declares named styles that a document applies to a run of paragraphs with a `:::paragraphs{style="…"}` container — bibliographies, glossaries, notes, any block of entries that wants its own face, size, leading, or a hanging indent. Every typographic field is optional and inherits the body text when unset, so a style only spells out what differs from running text.
+
+```ts
+const config: PostextConfig = {
+  paragraphStyles: [
+    {
+      id: 'bibliography',
+      name: 'Bibliography',
+      fontSize: { value: 7, unit: 'pt' },
+      lineHeight: { value: 1.2, unit: 'em' },
+      hangingIndent: { value: 2, unit: 'em' },
+      spaceBetween: { value: 0.25, unit: 'em' },
+      marginTop: { value: 1, unit: 'em' },
+      marginBottom: { value: 1, unit: 'em' },
+    },
+  ],
+};
+```
+
+```md
+## References
+
+:::paragraphs{style="bibliography"}
+Knuth, D. E. (1984). *The TeXbook*. Addison-Wesley.
+
+Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Identifier referenced from <code>:::paragraphs&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name, for editor UIs only.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>body text font</td>
+      <td>Font family. Weights (regular and bold) follow the body text.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>body text size</td>
+      <td>Font size.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>body line height</td>
+      <td>Leading. <code>em</code>/<code>rem</code> are relative to the style's own font size, so an inherited <code>1.5em</code> tightens along with a smaller size.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body text color</td>
+      <td>Text color. Bold and italic runs keep the body emphasis colors.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify'</code></td>
+      <td>body alignment</td>
+      <td>Horizontal alignment.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td>body hyphenation</td>
+      <td>Hyphenate when justified (uses the document locale).</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td>body first-line indent</td>
+      <td>Indent of the first line. Ignored when <code>hangingIndent</code> is non-zero.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent applied to every line except the first — the classic bibliography or glossary shape.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Vertical gap between consecutive paragraphs inside the container. <code>0</code> makes entries abut.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Space above the container's first paragraph. Collapses with the spacing already pending and vanishes at the top of a column, like any other margin.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Minimum space below the container's last paragraph.</td>
+    </tr>
+  </tbody>
+</table>
+
+### The `:::paragraphs` container
+
+A `:::paragraphs{style="<id>"}` line opens the container and a bare `:::` line closes it; every paragraph in between takes the named style, while headings, lists, and other blocks inside keep their usual styling. Containers may be nested inside other fenced containers. An unknown `style` id is not an error: the paragraphs render as plain body text.
+
+Inside the container the flow leaves the baseline grid — a 7pt entry with 1.2em leading cannot sit on an 8pt/1.5em grid — and the last paragraph snaps the flow back onto it, baking in at least `marginBottom` below the text (the grid wins; the margin is a minimum, the same convention headings follow). Entries split across columns and pages like body paragraphs, with the same orphan and widow protection; a heading immediately before the container keeps with its first paragraph.
+
+```ts
+const resolved = resolveParagraphStylesConfig(config.paragraphStyles, resolvedBodyText);
+// => every unset field filled from the resolved body text
+
+const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
+// => undefined when the list is empty; zero margins and `name === id` dropped
 ```
 
 

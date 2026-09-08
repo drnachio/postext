@@ -296,7 +296,7 @@ function renderResourceLine(
   );
 }
 
-function renderResourceTable(rb: ResolvedResourceBlock): string {
+function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number): string {
   const t = rb.table;
   if (!t) return '';
   const parts: string[] = [];
@@ -316,13 +316,25 @@ function renderResourceTable(rb: ResolvedResourceBlock): string {
     // Border boxes are inflated by half the stroke so the border centres on
     // the cell edge — adjacent cells overlap exactly, like canvas strokeRect.
     const bw = t.borderWidthPx;
-    for (const cell of t.cells) {
-      parts.push(
-        `<div aria-hidden="true" style="position:absolute;` +
-        `left:${cell.rect.x - bw / 2}px;top:${cell.rect.y - bw / 2}px;` +
-        `width:${cell.rect.width + bw}px;height:${cell.rect.height + bw}px;` +
-        `border:${bw}px solid ${t.borderColor};box-sizing:border-box;"></div>`,
-      );
+    const rules = t.rules ?? 'grid';
+    const borderBox = (x: number, y: number, w: number, h: number, sides: string): string =>
+      `<div aria-hidden="true" style="position:absolute;` +
+      `left:${x - bw / 2}px;top:${y - bw / 2}px;` +
+      `width:${w + bw}px;height:${h + bw}px;` +
+      `${sides}box-sizing:border-box;"></div>`;
+    if (rules === 'grid') {
+      for (const cell of t.cells) {
+        parts.push(borderBox(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height,
+          `border:${bw}px solid ${t.borderColor};`));
+      }
+    } else if (rules === 'horizontal') {
+      for (const cell of t.cells) {
+        parts.push(borderBox(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height,
+          `border-top:${bw}px solid ${t.borderColor};border-bottom:${bw}px solid ${t.borderColor};`));
+      }
+    } else if (rules === 'outer') {
+      const tableHeight = t.rowEdges[t.rowEdges.length - 1] ?? rb.bodyRect.height;
+      parts.push(borderBox(bx, by, rb.bodyRect.width, tableHeight, `border:${bw}px solid ${t.borderColor};`));
     }
   }
   const bodyFonts: ResourceLineFonts = {
@@ -385,9 +397,18 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
       );
     }
   } else if (rb.kind === 'table') {
-    parts.push(renderResourceTable(rb));
+    parts.push(renderResourceTable(rb, bx, by));
   }
 
+  // Caption bar (behind the caption lines), like other absolute decorations.
+  if (rb.captionBar) {
+    const { rect, background } = rb.captionBar;
+    parts.push(
+      `<div aria-hidden="true" style="position:absolute;` +
+      `left:${rect.x}px;top:${rect.y}px;width:${rect.width}px;height:${rect.height}px;` +
+      `background:${background};"></div>`,
+    );
+  }
   const captionFonts: ResourceLineFonts = {
     normal: rb.captionFontString,
     bold: rb.captionBoldFontString,
@@ -396,6 +417,15 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
   };
   for (const line of rb.captionLines) {
     parts.push(renderResourceLine(line, captionFonts, rb.captionColor, rb.linkColor, rb.captionLabelColor));
+  }
+  const noteFonts: ResourceLineFonts = {
+    normal: rb.noteFontString,
+    bold: rb.noteBoldFontString,
+    italic: rb.noteItalicFontString,
+    boldItalic: rb.noteBoldItalicFontString,
+  };
+  for (const line of rb.noteLines) {
+    parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor));
   }
   return parts.join('');
 }

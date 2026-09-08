@@ -1,5 +1,6 @@
-import type { InlineSpan } from './types';
+import type { InlineSpan, RefCase } from './types';
 import { injectPlaceholderSpans } from './injectSpans';
+import { parseDirectiveAttrs } from './attrs';
 
 /** Atomic plain-text placeholder for an inline reference span. One code unit
  *  per `:ref{…}` so `sourceMap` stays 1-to-1 (mirroring the inline-math
@@ -15,15 +16,20 @@ export interface RefMeta {
   resourceId: string;
   style?: 'default' | 'number' | 'full';
   text?: string;
+  case?: RefCase;
   /** Absolute source offset of the leading `:` of `:ref{…}`. */
   sourceStart: number;
   /** Absolute source offset just past the closing `}`. */
   sourceEnd: number;
 }
 
-/** `:ref{id="…"}` with optional `style=` and `text=` attributes. */
-const INLINE_REF_RE =
-  /:ref\{id="([^"]+)"(?:\s+style="(default|number|full)")?(?:\s+text="([^"]*)")?\}/g;
+/** `:ref{…}` — the attribute blob is parsed with the shared directive
+ *  attribute grammar, so attributes may come in any order and use either
+ *  quote style. A ref without an `id` is not a reference (left as text). */
+const INLINE_REF_RE = /:ref\{([^}]*)\}/g;
+
+const REF_STYLES: ReadonlySet<string> = new Set(['default', 'number', 'full']);
+const REF_CASES: ReadonlySet<string> = new Set(['lower', 'upper', 'capitalize']);
 
 /**
  * Extract inline `:ref{…}` references from a line's text.
@@ -46,14 +52,25 @@ export function extractInlineRefs(
   INLINE_REF_RE.lastIndex = 0;
   let m: RegExpExecArray | null;
   while ((m = INLINE_REF_RE.exec(text)) !== null) {
+    const attrs = parseDirectiveAttrs(m[1]!);
+    const id = attrs.id;
+    // Malformed (no id): keep the literal text so the author sees it.
+    if (id === undefined || id.length === 0) continue;
     out += text.slice(last, m.index);
     const meta: RefMeta = {
-      resourceId: m[1]!,
+      resourceId: id,
       sourceStart: fallbackStart + m.index,
       sourceEnd: fallbackStart + m.index + m[0].length,
     };
-    if (m[2] !== undefined) meta.style = m[2] as RefMeta['style'];
-    if (m[3] !== undefined) meta.text = m[3];
+    // Unknown `style` / `case` values are ignored rather than rejected so a
+    // typo degrades to the default rendering instead of a literal `:ref{`.
+    if (attrs.style !== undefined && REF_STYLES.has(attrs.style)) {
+      meta.style = attrs.style as RefMeta['style'];
+    }
+    if (attrs.text !== undefined) meta.text = attrs.text;
+    if (attrs.case !== undefined && REF_CASES.has(attrs.case)) {
+      meta.case = attrs.case as RefCase;
+    }
     refs.push(meta);
     out += REF_PLACEHOLDER;
     last = m.index + m[0].length;
@@ -71,6 +88,7 @@ export function injectRefSpans(spans: InlineSpan[], refs: RefMeta[]): InlineSpan
     const ref: InlineSpan['ref'] = { resourceId: meta.resourceId };
     if (meta.style !== undefined) ref.style = meta.style;
     if (meta.text !== undefined) ref.text = meta.text;
+    if (meta.case !== undefined) ref.case = meta.case;
     return { text: REF_PLACEHOLDER, bold, italic, ref };
   });
 }

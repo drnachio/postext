@@ -5,31 +5,31 @@
  * positions back into the original markdown.
  */
 
-import type { ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue } from './types';
+import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
+import { parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
 import { extractInlineRefs, injectRefSpans, parseInlineFormatting, stripInlineFormatting } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
+export { parseDirectiveAttrs } from './attrs';
+
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
-/** `:::name` or `:::name{attrs}` on its own line. */
+/** `:::name` or `:::name{attrs}` on its own line. Shared by single-line
+ *  directives and container opening fences. */
 const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
+/** A bare `:::` line: closes the innermost open container. */
+const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
-const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering']);
+export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering']);
+/** Set of fenced-container names recognized today. A `:::name` line whose
+ *  name is a known container opens a block that runs until a bare `:::`. */
+export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 'paragraphs', 'part']);
 
-/** Parse the attribute blob inside a `:::name{ ... }` directive.
- *  Supports `key="quoted"`, `key='quoted'`, `key=bare`, and bare `key`. */
-export function parseDirectiveAttrs(raw: string): DirectiveAttrs {
-  const out: DirectiveAttrs = {};
-  // Token forms: key="..." | key='...' | key=bare | bare
-  const tokenRe = /([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s]+)))?/g;
-  let m: RegExpExecArray | null;
-  while ((m = tokenRe.exec(raw)) !== null) {
-    const key = m[1]!;
-    const value = m[2] ?? m[3] ?? m[4] ?? '';
-    out[key] = value;
-  }
-  return out;
+/** True for lines that end a paragraph run even without a blank line: any
+ *  `:::name` directive/container fence and the bare `:::` closing fence. */
+function isFenceLine(trimmed: string): boolean {
+  return DIRECTIVE_RE.test(trimmed) || CONTAINER_CLOSE_RE.test(trimmed);
 }
 const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
 const ORDERED_LIST_ITEM_RE = /^(\s*)(\d+)([.)])\s+(.*)$/;
@@ -102,6 +102,12 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
 
   const lineEndOffset = (k: number): number =>
     lineOffsets[k]! + rawLines[k]!.length;
+
+  // Open fenced containers, innermost last. Each entry remembers what it
+  // needs to emit the matching `containerEnd` (or an `unclosedContainer`
+  // issue pointing at the opening line when EOF arrives first).
+  const containerStack: { id: number; name: ContainerName; sourceStart: number; sourceEnd: number }[] = [];
+  let nextContainerId = 1;
 
   let i = 0;
   while (i < rawLines.length) {
@@ -190,11 +196,58 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       continue;
     }
 
+    // Container closing fence — a bare `:::` while a container is open pops
+    // it and emits the matching `containerEnd` marker. With nothing open the
+    // line is not special and falls through to paragraph parsing so the
+    // stray fence stays visible instead of vanishing silently.
+    if (containerStack.length > 0 && CONTAINER_CLOSE_RE.test(trimmed)) {
+      const open = containerStack.pop()!;
+      const srcStart = lineOffsets[i]!;
+      const srcEnd = lineEndOffset(i);
+      blocks.push({
+        type: 'containerEnd',
+        text: '',
+        spans: [],
+        containerName: open.name,
+        containerId: open.id,
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: [],
+      });
+      i++;
+      continue;
+    }
+
+    // Container opening fence — `:::name` / `:::name{attrs}` whose name is a
+    // known container. Emits a `containerStart` marker; the blocks that
+    // follow are parsed as usual until the matching closing fence.
+    const directiveMatch = trimmed.match(DIRECTIVE_RE);
+    if (directiveMatch && KNOWN_CONTAINERS.has(directiveMatch[1] as ContainerName)) {
+      const name = directiveMatch[1] as ContainerName;
+      const attrsRaw = directiveMatch[2] ?? '';
+      const srcStart = lineOffsets[i]!;
+      const srcEnd = lineEndOffset(i);
+      const id = nextContainerId++;
+      containerStack.push({ id, name, sourceStart: srcStart, sourceEnd: srcEnd });
+      blocks.push({
+        type: 'containerStart',
+        text: '',
+        spans: [],
+        containerName: name,
+        containerAttrs: parseDirectiveAttrs(attrsRaw),
+        containerId: id,
+        sourceStart: srcStart,
+        sourceEnd: srcEnd,
+        sourceMap: [],
+      });
+      i++;
+      continue;
+    }
+
     // Directive — `:::name` or `:::name{attrs}` on its own line. Only known
     // directive names are promoted to a `directive` block; unknown names
     // fall through to paragraph parsing so they remain visible in the
     // output (and downstream warnings surface the typo).
-    const directiveMatch = trimmed.match(DIRECTIVE_RE);
     if (directiveMatch && KNOWN_DIRECTIVES.has(directiveMatch[1] as DirectiveName)) {
       const name = directiveMatch[1] as DirectiveName;
       const attrsRaw = directiveMatch[2] ?? '';
@@ -376,7 +429,10 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       continue;
     }
 
-    // Paragraph — collect consecutive non-blank, non-special lines
+    // Paragraph — collect consecutive non-blank, non-special lines. The first
+    // line is always taken (it may itself be an unknown `:::name` or a stray
+    // `:::` that fell through); after that, any fence line ends the run so a
+    // directive or container fence glued under a paragraph is not swallowed.
     const paraLines: string[] = [];
     const startIdx = i;
     let lastIdx = i;
@@ -384,6 +440,7 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       const rawLine = rawLines[i]!;
       const pl = rawLine.trim();
       if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>') || rawLine.match(LIST_ITEM_RE)) break;
+      if (i > startIdx && isFenceLine(pl)) break;
       paraLines.push(pl);
       lastIdx = i;
       i++;
@@ -409,6 +466,31 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
         sourceMap: mapping.sourceMap,
       });
     }
+  }
+
+  // EOF with containers still open: auto-close innermost-first with
+  // zero-length end markers at the end of input, and report each one so the
+  // sandbox can point at the fence that never got its `:::`.
+  while (containerStack.length > 0) {
+    const open = containerStack.pop()!;
+    blocks.push({
+      type: 'containerEnd',
+      text: '',
+      spans: [],
+      containerName: open.name,
+      containerId: open.id,
+      sourceStart: markdown.length,
+      sourceEnd: markdown.length,
+      sourceMap: [],
+    });
+    issues.push({
+      kind: 'unclosedContainer',
+      delimiter: ':::',
+      containerName: open.name,
+      containerId: open.id,
+      sourceStart: open.sourceStart,
+      sourceEnd: open.sourceEnd,
+    });
   }
 
   return { blocks, issues };

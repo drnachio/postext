@@ -42,15 +42,14 @@ import {
 import { chooseParagraphSplit } from './orphanWidow';
 import {
   applyStyleAttrs,
-  computeMeasureViewport,
   computePageMetrics,
-  enrichMathSpans,
+  nextNonMarkerBlock,
+  prevNonMarkerBlock,
   rollbackTrailingBlocks,
-  stampSourceRanges,
 } from './buildHelpers';
-import { resolveBlockKind } from './buildBlockKind';
-import { runMeasurement } from './buildMeasurement';
-import { resolveRefSpans, layoutResourceBlock } from './resourceLayout';
+import { measureContentBlock, type BlockMeasureContext } from './measureContentBlock';
+import { planParagraphContainers } from './paragraphContainers';
+import { layoutResourceBlock } from './resourceLayout';
 import {
   computeFloatPlan,
   floatedResourceIds,
@@ -115,8 +114,12 @@ function buildDocumentPass(
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
   const dpi = resolved.page.dpi;
 
-  // Initialize hyphenator if needed
-  if (resolved.bodyText.hyphenation.enabled && resolved.bodyText.textAlign === 'justify') {
+  // Initialize hyphenator if needed (body text, or any justified paragraph
+  // style that hyphenates — they share the document locale).
+  const needsHyphenator =
+    (resolved.bodyText.hyphenation.enabled && resolved.bodyText.textAlign === 'justify')
+    || resolved.paragraphStyles.some((s) => s.hyphenation && s.textAlign === 'justify');
+  if (needsHyphenator) {
     initHyphenator(resolved.bodyText.hyphenation.locale);
   }
 
@@ -180,6 +183,8 @@ function buildDocumentPass(
     bodyStyle.fontSizePx,
     orderedMetrics.maxWidthByDepth,
   );
+  // `:::paragraphs{style="…"}` containers, resolved per content-block index.
+  const paragraphContainers = planParagraphContainers(contentBlocks, resolved);
 
   // --- Float planning (issue #49 — resources float to page bands) ----------
   // A resource is incorporated by its first reference (an inline `:ref` or a
@@ -212,6 +217,10 @@ function buildDocumentPass(
     for (const ln of rb.captionLines) {
       ln.bbox.x += ox; ln.bbox.y += oy; ln.baseline += oy;
     }
+    for (const ln of rb.noteLines) {
+      ln.bbox.x += ox; ln.bbox.y += oy; ln.baseline += oy;
+    }
+    if (rb.captionBar) { rb.captionBar.rect.x += ox; rb.captionBar.rect.y += oy; }
     if (rb.table) {
       for (const cell of rb.table.cells) {
         cell.rect.x += ox; cell.rect.y += oy;
@@ -398,6 +407,27 @@ function buildDocumentPass(
    *  content-flow column advances — parity / force-blank pages never get it. */
   const onNewPage = (page: VDTPage): void => flushFloatsIntoPage(page);
 
+  // Everything per-block measurement needs that is constant for this pass.
+  const measureCtx: BlockMeasureContext = {
+    resolved,
+    bodyStyle,
+    blockquoteStyle,
+    headingPrefixes,
+    listLevelIndentsPx,
+    orderedLevelIndentsPx,
+    orderedMetrics,
+    resourceById,
+    resourceTypeById,
+    resourceNumberById,
+    contentBlocks,
+    cache,
+    bodyOffset,
+    resources,
+    resourceTypes,
+    resourceNumbering,
+    floatedIds,
+  };
+
   // Placement cursor
   const cursor: PlacementCursor = { pageIndex: 0, columnIndex: 0 };
 
@@ -487,6 +517,28 @@ function buildDocumentPass(
       continue;
     }
 
+    // --- Container markers ---------------------------------------------
+    // `:::paragraphs` applies its style's top margin on entry through the
+    // pending-spacing mechanism (collapses like any margin, vanishes at a
+    // column top). Its bottom margin is normally baked into the last
+    // paragraph's grid snap; the pending-spacing fallback covers containers
+    // that end with a non-paragraph block. `callout` and `part` are layout
+    // no-ops for now. Replaying a marker after a keep-with-next rewind is
+    // harmless: the container plan is index-based, and `max` is idempotent.
+    if (rawBlock.type === 'containerStart' || rawBlock.type === 'containerEnd') {
+      const pc = rawBlock.containerId !== undefined
+        ? paragraphContainers.byId.get(rawBlock.containerId)
+        : undefined;
+      if (pc) {
+        if (rawBlock.type === 'containerStart') {
+          pendingSpacing = Math.max(pendingSpacing, pc.marginTopPx);
+        } else if (contentBlocks[blockIdx - 1]?.type !== 'paragraph') {
+          pendingSpacing = Math.max(pendingSpacing, pc.marginBottomPx);
+        }
+      }
+      continue;
+    }
+
     // --- Heading `breakBefore` ----------------------------------------
     if (rawBlock.type === 'heading' && rawBlock.level) {
       const level = headingLevelByNumber.get(rawBlock.level);
@@ -515,60 +567,34 @@ function buildDocumentPass(
 
     const id = `block-${blockIdCounter++}`;
 
-    const kind = resolveBlockKind(rawBlock, {
-      resolved,
-      bodyStyle,
-      blockquoteStyle,
-      headingPrefixes,
-      blockIdx,
-      listLevelIndentsPx,
-      orderedLevelIndentsPx,
-      orderedMetrics,
-      resourceById,
-      resourceTypeById,
-      resourceNumberById,
+    // Enclosing `:::paragraphs` container (if any). Its last paragraph — the
+    // one directly before the closing marker — carries the tail style and
+    // snaps the flow back onto the baseline grid.
+    const paragraphContainer = paragraphContainers.byBlock[blockIdx];
+    const nextRaw = contentBlocks[blockIdx + 1];
+    const isContainerTail = paragraphContainer !== undefined
+      && nextRaw?.type === 'containerEnd'
+      && nextRaw.containerId === paragraphContainer.id;
+
+    // Measure against the current column width. `null` means there is nothing
+    // to place inline (empty text, unknown resource id, floated resource).
+    const col = currentColumn(doc, cursor);
+    const measuredBlock = measureContentBlock(rawBlock, blockIdx, col.bbox.width, measureCtx, {
+      // Column balancing "run a paragraph long": stays undefined for the
+      // common case so existing measurement cache keys are preserved.
+      looseness: balanceLooseness?.get(blockIdx),
+      styleOverride: paragraphContainer
+        ? (isContainerTail ? paragraphContainer.tailStyle : paragraphContainer.style)
+        : undefined,
     });
+    if (!measuredBlock) continue;
+    const { kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender } = measuredBlock;
     const { style, vdtType, headingLevel, numberPrefix, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
-    let contentBlock = kind.contentBlock;
 
     // --- Resource blocks (image / svg / table + caption) -----------------
-    // Measured and placed atomically (kept-together) — no mid-content split
-    // for v1. An unknown resource id produces no output (warnings handle it).
+    // Placed atomically (kept-together) — no mid-content split for v1.
     if (vdtType === 'resource') {
-      if (!kind.resource) {
-        flushPendingNumberingAtBoundary();
-        continue;
-      }
-      // Floated resources are not placed inline at their `::resource`
-      // directive — the directive is just an anchor (already enqueued above);
-      // the float lands in a page band. Only `position: 'here'` resources fall
-      // through to inline placement.
-      if (floatedIds.has(kind.resource.id)) {
-        flushPendingNumberingAtBoundary();
-        continue;
-      }
-      const rCol = currentColumn(doc, cursor);
-      const { resourceBlock, measured } = runMeasurement({
-        vdtType,
-        rawBlock,
-        contentBlock,
-        style,
-        measureMaxWidth: rCol.bbox.width,
-        measureOptions: { textAlign: style.textAlign },
-        mathEnabled: resolved.math.enabled,
-        useRich: false,
-        resolved,
-        resources,
-        resourceTypes,
-        resourceNumbering,
-        resource: kind.resource,
-        resourceType: kind.resourceType,
-        resourceNumber: kind.resourceNumber,
-      });
-      if (!resourceBlock) {
-        flushPendingNumberingAtBoundary();
-        continue;
-      }
+      const resourceBlock = measuredBlock.resourceBlock!;
       const groupHeight = measured.totalHeight;
       const blk = createVDTBlock(id, 'resource', style.fontString, style.color, style.textAlign);
       blk.contentIndex = blockIdx;
@@ -613,91 +639,6 @@ function buildDocumentPass(
       continue;
     }
 
-    // Measure text — use rich measurement for blocks with bold spans
-    const col = currentColumn(doc, cursor);
-
-    // Resolve inline math on spans (no-op when the block has no math).
-    const mathEnabled = resolved.math.enabled;
-    contentBlock = enrichMathSpans(contentBlock, style, resolved);
-
-    // Resolve inline `:ref{…}` spans to their computed label so references
-    // print their number in the running text. Each label becomes one atomic,
-    // non-breaking token tagged with its `refResourceId` (handled by the
-    // rich-text measurer), so we always take the rich path for ref blocks.
-    if (contentBlock.spans.some((s) => s.ref)) {
-      contentBlock = {
-        ...contentBlock,
-        spans: resolveRefSpans(contentBlock.spans, resourceNumbering, resourceTypes, resources, {
-          bold: bodyStyle.referenceBold ?? true,
-          italic: bodyStyle.referenceItalic ?? false,
-        }),
-      };
-    }
-
-    const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref);
-
-    // List items reserve horizontal space for indent + bullet + gap.
-    const {
-      measureMaxWidth,
-      lineXShift,
-      measureFirstLineIndent,
-      measureHangingIndent,
-    } = computeMeasureViewport(col.bbox.width, style, listBullet);
-
-    // First-paragraph-after-heading: typographic convention used in many
-    // scientific publications and book styles where the paragraph that
-    // immediately follows a heading is rendered without first-line indent.
-    // Only applies to regular paragraphs without hanging indent; list items
-    // and hanging-indent paragraphs are unaffected.
-    let effectiveFirstLineIndent = measureFirstLineIndent;
-    if (
-      vdtType === 'paragraph'
-      && !resolved.bodyText.indentAfterHeading
-      && !resolved.bodyText.hangingIndent
-      && blockIdx > 0
-    ) {
-      let prevIdx = blockIdx - 1;
-      while (prevIdx >= 0 && contentBlocks[prevIdx]!.type === 'directive') prevIdx--;
-      if (prevIdx >= 0 && contentBlocks[prevIdx]!.type === 'heading') {
-        effectiveFirstLineIndent = 0;
-      }
-    }
-
-    const runtActive = resolved.bodyText.avoidRunts
-      && (vdtType === 'paragraph'
-        || (vdtType === 'listItem' && resolved.bodyText.avoidRuntsInLists));
-    const measureOptions = {
-      textAlign: style.textAlign,
-      hyphenate: style.hyphenate,
-      firstLineIndentPx: effectiveFirstLineIndent,
-      hangingIndent: measureHangingIndent,
-      optimal: resolved.bodyText.optimalLineBreaking,
-      maxStretchRatio: resolved.bodyText.maxWordSpacing,
-      minShrinkRatio: resolved.bodyText.minWordSpacing,
-      runtPenalty: runtActive ? resolved.bodyText.runtPenalty : 0,
-      runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
-      // Column balancing "run a paragraph long": stays undefined for the
-      // common case so existing measurement cache keys are preserved.
-      looseness: balanceLooseness?.get(blockIdx),
-    };
-    const useRich = !!(hasRichSpans && style.boldFontString && style.italicFontString && style.boldItalicFontString);
-
-    const { measured, mathDisplayRender } = runMeasurement({
-      vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
-    });
-
-    if (measured.lines.length === 0) continue;
-
-
-    if (lineXShift > 0) {
-      for (const line of measured.lines) {
-        line.bbox.x += lineXShift;
-      }
-    }
-
-    // Per-line source-range mapping using the block's plain→source map.
-    // Accounts for heading numbering prefix which prepends chars with no source.
-    const { prefixLen, absoluteSourceMap } = stampSourceRanges(measured, rawBlock, contentBlock, bodyOffset);
 
     const finalizeListItem = (blk: VDTBlock, isFirstPart: boolean) => {
       if (!listBullet) return;
@@ -723,19 +664,23 @@ function buildDocumentPass(
       }
     };
 
-    const nextIsListItem = blockIdx + 1 < contentBlocks.length && contentBlocks[blockIdx + 1]!.type === 'listItem';
+    // Neighbour lookaheads see through container markers.
+    const nextBlock = nextNonMarkerBlock(contentBlocks, blockIdx) ?? null;
+    const nextIsListItem = nextBlock?.type === 'listItem';
 
     // For headings, only snap to baseline grid if the next block is NOT a heading.
     // Consecutive headings flow without grid snapping; the last heading in the
     // group snaps so that the following body text realigns with the grid.
     // Same rule for list items: the LAST item of a list snaps so that text
     // after the list realigns with the baseline grid, even when non-grid
-    // spacings (itemSpacing, marginTop/Bottom) were chosen.
-    const nextBlock = blockIdx + 1 < contentBlocks.length ? contentBlocks[blockIdx + 1] : null;
+    // spacings (itemSpacing, marginTop/Bottom) were chosen. And for the last
+    // paragraph of a `:::paragraphs` container, whose leading and spacing
+    // are off-grid by design.
     const nextIsHeading = nextBlock?.type === 'heading';
     const shouldSnapToGrid =
       (vdtType === 'heading' && !nextIsHeading) ||
       (vdtType === 'listItem' && !nextIsListItem) ||
+      (vdtType === 'paragraph' && isContainerTail) ||
       vdtType === 'mathDisplay';
 
     // Place block, splitting across columns/pages if needed.
@@ -777,7 +722,7 @@ function buildDocumentPass(
             if (extraPx) spacingBefore += extraPx;
           }
         } else if (vdtType === 'listItem') {
-          const prevWasList = blockIdx > 0 && contentBlocks[blockIdx - 1]!.type === 'listItem';
+          const prevWasList = prevNonMarkerBlock(contentBlocks, blockIdx)?.type === 'listItem';
           if (!prevWasList) {
             spacingBefore = Math.max(spacingBefore, style.marginTopPx);
           }
@@ -898,7 +843,9 @@ function buildDocumentPass(
               if (idx !== -1) doc.blocks.splice(idx, 1);
               curCol.availableHeight += p.bbox.height;
             }
-            blockIdx -= headingRunCount + 1;
+            // Rewind so the for-loop's blockIdx++ lands on the first
+            // rolled-back heading (marker blocks in between are replayed).
+            blockIdx = (popped[0]!.contentIndex ?? blockIdx - headingRunCount) - 1;
             pendingSpacing = 0;
             advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             break;
@@ -945,11 +892,11 @@ function buildDocumentPass(
           if (remainAfterHeading < minSpaceAfter) {
             // Roll back any immediately-preceding heading blocks in this
             // column so they travel with this one.
-            const rollbackCount = rollbackTrailingBlocks(curCol, doc.blocks, (b) => b.type === 'heading');
-            if (rollbackCount > 0) {
+            const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, (b) => b.type === 'heading');
+            if (rolledBack.length > 0) {
               // Rewind so the for-loop's blockIdx++ lands on the first
-              // rolled-back heading.
-              blockIdx -= rollbackCount + 1;
+              // rolled-back heading (marker blocks in between are replayed).
+              blockIdx = (rolledBack[0]!.contentIndex ?? blockIdx - rolledBack.length) - 1;
               pendingSpacing = 0;
               advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
               break;
@@ -1094,9 +1041,9 @@ function buildDocumentPass(
         // pull those headings along so they don't remain stranded as orphans
         // at the column's bottom. Mirrors the rollback inside the "fits" path.
         if (vdtType === 'heading' && resolved.headings.keepWithNext) {
-          const rollbackCount = rollbackTrailingBlocks(curCol, doc.blocks, (b) => b.type === 'heading');
-          if (rollbackCount > 0) {
-            blockIdx -= rollbackCount + 1;
+          const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, (b) => b.type === 'heading');
+          if (rolledBack.length > 0) {
+            blockIdx = (rolledBack[0]!.contentIndex ?? blockIdx - rolledBack.length) - 1;
             pendingSpacing = 0;
             advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             break;

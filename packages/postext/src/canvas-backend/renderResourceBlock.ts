@@ -121,6 +121,8 @@ function drawPlaceholder(
 function renderTable(
   ctx: CanvasRenderingContext2D,
   rb: ResolvedResourceBlock,
+  bx: number,
+  by: number,
 ): void {
   const t = rb.table;
   if (!t) return;
@@ -136,8 +138,23 @@ function renderTable(
     ctx.save();
     ctx.strokeStyle = t.borderColor;
     ctx.lineWidth = t.borderWidthPx;
-    for (const cell of t.cells) {
-      ctx.strokeRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
+    const rules = t.rules ?? 'grid';
+    if (rules === 'grid') {
+      for (const cell of t.cells) {
+        ctx.strokeRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
+      }
+    } else if (rules === 'horizontal') {
+      // Top + bottom edge of every cell — i.e. of every row — no verticals.
+      ctx.beginPath();
+      for (const cell of t.cells) {
+        const { x, y, width, height } = cell.rect;
+        ctx.moveTo(x, y); ctx.lineTo(x + width, y);
+        ctx.moveTo(x, y + height); ctx.lineTo(x + width, y + height);
+      }
+      ctx.stroke();
+    } else if (rules === 'outer') {
+      const tableHeight = t.rowEdges[t.rowEdges.length - 1] ?? rb.bodyRect.height;
+      ctx.strokeRect(bx, by, rb.bodyRect.width, tableHeight);
     }
     ctx.restore();
   }
@@ -172,17 +189,30 @@ export function renderResourceBlock(
       drawPlaceholder(ctx, bx, by, bw, bh, rb.kind === 'svg' ? 'SVG' : 'Image');
     }
   } else if (rb.kind === 'table') {
-    renderTable(ctx, rb);
+    renderTable(ctx, rb, bx, by);
   }
 
-  // Caption (already positioned in absolute page coords during placement).
+  // Caption bar (behind the caption lines), then caption + note lines — all
+  // already positioned in absolute page coords during placement.
   ctx.save();
+  if (rb.captionBar) {
+    const { rect, background } = rb.captionBar;
+    ctx.fillStyle = background;
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+  }
   ctx.textAlign = 'left';
   for (const line of rb.captionLines) {
     paintLine(
       ctx, line,
       rb.captionFontString, rb.captionBoldFontString, rb.captionItalicFontString, rb.captionBoldItalicFontString,
       rb.captionColor, rb.linkColor, rb.captionLabelColor,
+    );
+  }
+  for (const line of rb.noteLines) {
+    paintLine(
+      ctx, line,
+      rb.noteFontString, rb.noteBoldFontString, rb.noteItalicFontString, rb.noteBoldItalicFontString,
+      rb.noteColor, rb.linkColor,
     );
   }
   ctx.restore();

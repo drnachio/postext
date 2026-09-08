@@ -50,6 +50,9 @@ export interface BlockKindContext {
   resourceTypeById: Map<string, ResourceType>;
   /** Computed resource number strings keyed by resource id. */
   resourceNumberById: Map<string, string>;
+  /** Style forced onto `paragraph` blocks by an enclosing `:::paragraphs`
+   *  container; the body style applies when unset. */
+  paragraphStyleOverride?: BlockStyle;
 }
 
 export function resolveBlockKind(
@@ -58,7 +61,7 @@ export function resolveBlockKind(
 ): BlockKind {
   const { resolved, bodyStyle, blockquoteStyle, headingPrefixes, blockIdx,
     listLevelIndentsPx, orderedLevelIndentsPx, orderedMetrics,
-    resourceById, resourceTypeById, resourceNumberById } = ctx;
+    resourceById, resourceTypeById, resourceNumberById, paragraphStyleOverride } = ctx;
 
   switch (rawBlock.type) {
     case 'resourceBlock': {
@@ -145,7 +148,7 @@ export function resolveBlockKind(
     }
     default:
       return {
-        style: bodyStyle,
+        style: rawBlock.type === 'paragraph' && paragraphStyleOverride ? paragraphStyleOverride : bodyStyle,
         vdtType: 'paragraph',
         contentBlock: rawBlock,
         bulletXOffsetInColumn: 0,

@@ -54,8 +54,15 @@ const cloneRows = (m: TableModel): TableCell[][] =>
 const withRows = (m: TableModel, rows: TableCell[][]): TableModel => {
   const next: TableModel = { rows };
   if (m.headerRowCount !== undefined) next.headerRowCount = m.headerRowCount;
+  if (m.columnWidths !== undefined) next.columnWidths = [...m.columnWidths];
   return next;
 };
+
+/** Weight for a freshly inserted column: the mean of the existing weights, so
+ *  the new column takes an "average" share whatever scale the author used
+ *  (`1` for an empty or absent array). */
+const averageWeight = (weights: number[]): number =>
+  weights.length > 0 ? weights.reduce((sum, w) => sum + w, 0) / weights.length : 1;
 
 const inBounds = (rows: TableCell[][], pos: CellPos): boolean =>
   pos.row >= 0 &&
@@ -118,7 +125,11 @@ export const addColumn = (m: TableModel, at: number): TableModel => {
     row.splice(insertAt, 0, makeEmptyCell(isHeaderRow));
     return row;
   });
-  return withRows(m, rows);
+  const next = withRows(m, rows);
+  if (next.columnWidths !== undefined) {
+    next.columnWidths.splice(index, 0, averageWeight(m.columnWidths ?? []));
+  }
+  return next;
 };
 
 /** Remove the row at `at`. Out-of-range indices leave the model unchanged. */
@@ -141,7 +152,11 @@ export const removeColumn = (m: TableModel, at: number): TableModel => {
     if (at < row.length) row.splice(at, 1);
     return row;
   });
-  return withRows(m, rows);
+  const next = withRows(m, rows);
+  if (next.columnWidths !== undefined && at < next.columnWidths.length) {
+    next.columnWidths.splice(at, 1);
+  }
+  return next;
 };
 
 // ---------------------------------------------------------------------------

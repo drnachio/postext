@@ -213,27 +213,54 @@ export function stampSourceRanges(
 
 // ---------------------------------------------------------------------------
 // Column rollback helper: remove the tail of `curCol.blocks` and also drop
-// them from `doc.blocks`, refunding `availableHeight`. Returns the count
-// actually popped so callers can compute a `blockIdx` rewind.
+// them from `doc.blocks`, refunding `availableHeight`. Returns the popped
+// blocks (in column order) so callers can rewind `blockIdx` to the first
+// one's `contentIndex`.
 // ---------------------------------------------------------------------------
 
 export function rollbackTrailingBlocks(
   curCol: { blocks: VDTBlock[]; availableHeight: number; bbox: BoundingBox },
   docBlocks: VDTBlock[],
   predicate: (b: VDTBlock) => boolean,
-): number {
+): VDTBlock[] {
   let count = 0;
   for (let j = curCol.blocks.length - 1; j >= 0; j--) {
     if (predicate(curCol.blocks[j]!)) count++;
     else break;
   }
-  if (count === 0) return 0;
+  if (count === 0) return [];
   const popped = curCol.blocks.splice(curCol.blocks.length - count);
   for (const p of popped) {
     const idx = docBlocks.indexOf(p);
     if (idx !== -1) docBlocks.splice(idx, 1);
     curCol.availableHeight += p.bbox.height;
   }
-  return count;
+  return popped;
+}
+
+// ---------------------------------------------------------------------------
+// Neighbour lookups that see through container markers. `containerStart` /
+// `containerEnd` carry no text and must not break heading runs, list runs,
+// keep-with-next, or the "first paragraph after a heading" rule.
+// ---------------------------------------------------------------------------
+
+export function isMarkerBlock(block: ContentBlock | undefined): boolean {
+  return block?.type === 'containerStart' || block?.type === 'containerEnd';
+}
+
+/** The next non-marker block after `idx`, or `undefined` at the end. */
+export function nextNonMarkerBlock(blocks: readonly ContentBlock[], idx: number): ContentBlock | undefined {
+  for (let i = idx + 1; i < blocks.length; i++) {
+    if (!isMarkerBlock(blocks[i])) return blocks[i];
+  }
+  return undefined;
+}
+
+/** The previous non-marker block before `idx`, or `undefined` at the start. */
+export function prevNonMarkerBlock(blocks: readonly ContentBlock[], idx: number): ContentBlock | undefined {
+  for (let i = idx - 1; i >= 0; i--) {
+    if (!isMarkerBlock(blocks[i])) return blocks[i];
+  }
+  return undefined;
 }
 

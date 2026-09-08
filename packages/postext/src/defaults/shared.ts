@@ -1,4 +1,4 @@
-import type { ColorValue, ColorPaletteEntry, Dimension, PostextConfig } from '../types';
+import type { CaptionStyleConfig, ColorValue, ColorPaletteEntry, Dimension, PostextConfig } from '../types';
 import type { ResolvedConfig } from '../vdt';
 
 export const DEFAULT_MAIN_COLOR_ID = 'main-color';
@@ -119,11 +119,34 @@ export function applyPaletteToResolvedConfig(
       ...resolved.captionStyle,
       color: resolveRequired(resolved.captionStyle.color, palette),
       labelColor: resolveRequired(resolved.captionStyle.labelColor, palette),
+      background: resolveRequired(resolved.captionStyle.background, palette),
+      note: {
+        ...resolved.captionStyle.note,
+        color: resolveRequired(resolved.captionStyle.note.color, palette),
+      },
     },
     diagramStyle: {
       ...resolved.diagramStyle,
       inkColor: resolveRequired(resolved.diagramStyle.inkColor, palette),
     },
+    paragraphStyles: resolved.paragraphStyles.map((s) => ({ ...s, color: resolveRequired(s.color, palette) })),
+  };
+}
+
+/** Resolve palette references inside a (partial) caption style — used for the
+ *  global `captionStyle` and for per-resource-type overrides alike. */
+function applyPaletteToCaptionStyle(
+  captionStyle: CaptionStyleConfig,
+  palette: ColorPaletteEntry[],
+): CaptionStyleConfig {
+  return {
+    ...captionStyle,
+    color: resolveColor(captionStyle.color, palette),
+    labelColor: resolveColor(captionStyle.labelColor, palette),
+    background: resolveColor(captionStyle.background, palette),
+    note: captionStyle.note
+      ? { ...captionStyle.note, color: resolveColor(captionStyle.note.color, palette) }
+      : captionStyle.note,
   };
 }
 
@@ -200,11 +223,13 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
   }
 
   if (config.captionStyle) {
-    next.captionStyle = {
-      ...config.captionStyle,
-      color: resolveColor(config.captionStyle.color, palette),
-      labelColor: resolveColor(config.captionStyle.labelColor, palette),
-    };
+    next.captionStyle = applyPaletteToCaptionStyle(config.captionStyle, palette);
+  }
+
+  if (config.resourceTypes) {
+    next.resourceTypes = config.resourceTypes.map((t) =>
+      t.captionStyle ? { ...t, captionStyle: applyPaletteToCaptionStyle(t.captionStyle, palette) } : t,
+    );
   }
 
   if (config.diagramStyle) {
@@ -212,6 +237,10 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
       ...config.diagramStyle,
       inkColor: resolveColor(config.diagramStyle.inkColor, palette),
     };
+  }
+
+  if (config.paragraphStyles) {
+    next.paragraphStyles = config.paragraphStyles.map((s) => ({ ...s, color: resolveColor(s.color, palette) }));
   }
 
   if (config.debug) {

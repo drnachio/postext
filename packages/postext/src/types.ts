@@ -76,6 +76,10 @@ export interface ResourceType {
   /** Default placement for resources of this type, used when a resource does
    *  not specify its own `placement`. Falls back to `top` / `column`. */
   defaultPlacement?: ResourcePlacement;
+  /** Optional partial caption-style override for resources of this type.
+   *  Only the keys set here replace the resolved global `captionStyle`; the
+   *  rest is inherited (see `mergeCaptionStyle`). */
+  captionStyle?: CaptionStyleConfig;
 }
 
 /** The concrete payload kind a `Resource` carries. */
@@ -115,6 +119,10 @@ export interface TableModel {
   rows: TableCell[][];
   /** Number of leading rows that form the table header. Default 0. */
   headerRowCount?: number;
+  /** Relative column weights (one per column), normalised at layout time —
+   *  `[2, 1, 1]` gives the first column half the width. Unset, a wrong
+   *  length, or any non-positive weight falls back to an equal split. */
+  columnWidths?: number[];
 }
 
 /** A user-managed resource instance. Binary payloads (bitmaps, SVGs) are
@@ -128,6 +136,10 @@ export interface Resource {
   kind: ResourceKind;
   /** Optional caption text (the type prefix + number are computed). */
   caption?: string;
+  /** Optional note (source line, credits, footnote-like remark) set in a
+   *  smaller run under the resource. Accepts the same inline formatting and
+   *  `:ref` marks as the caption. Styled by `captionStyle.note`. */
+  note?: string;
   /** Accessibility alt text. */
   altText?: string;
   /** Creation timestamp (ms since epoch). */
@@ -545,7 +557,13 @@ export interface TableStyleConfig {
   borderWidth?: Dimension;
   /** Inner padding inside each cell. Default `0.375em`. */
   cellPadding?: Dimension;
+  /** Which rules to stroke when {@link borders} is on. Default `'grid'`. */
+  rules?: TableRules;
 }
+
+/** Rule pattern of a table: the full cell grid, horizontal rules only (top
+ *  and bottom edge of every row), the outer frame only, or none. */
+export type TableRules = 'grid' | 'horizontal' | 'outer' | 'none';
 
 export interface ResolvedTableStyleConfig {
   bodyFontFamily: string;
@@ -564,6 +582,34 @@ export interface ResolvedTableStyleConfig {
   borderColor: ColorValue;
   borderWidth: Dimension;
   cellPadding: Dimension;
+  rules: TableRules;
+}
+
+/** Where a resource caption sits relative to the figure body. */
+export type CaptionPosition = 'above' | 'below';
+
+/** Styling of the optional resource note (`Resource.note`) — a smaller run
+ *  set under the resource (source line, credits). Inherits the caption
+ *  typeface; every field is optional. */
+export interface CaptionNoteStyleConfig {
+  /** Note font size. Default 0.85 × the caption size. */
+  fontSize?: Dimension;
+  /** Note text colour. Defaults to the caption {@link CaptionStyleConfig.color}. */
+  color?: ColorValue;
+  /** Render the note italic. Default `false`. */
+  italic?: boolean;
+  /** Gap between the note and what precedes it (body or caption). Default `0.35em`. */
+  gap?: Dimension;
+  /** Horizontal alignment of the note. Default `'left'`. */
+  align?: TextAlign;
+}
+
+export interface ResolvedCaptionNoteStyleConfig {
+  fontSize: Dimension;
+  color: ColorValue;
+  italic: boolean;
+  gap: Dimension;
+  align: TextAlign;
 }
 
 /** User-facing styling for resource captions (the numbered label such as
@@ -590,6 +636,17 @@ export interface CaptionStyleConfig {
   labelColor?: ColorValue;
   /** Render the description italic. Default `false`. */
   descriptionItalic?: boolean;
+  /** Caption placement: under the figure body (`'below'`, default) or on top
+   *  of it (`'above'`), as a table heading. */
+  position?: CaptionPosition;
+  /** Paint a bar behind the caption spanning the block width. Default `false`. */
+  backgroundEnabled?: boolean;
+  /** Bar colour. Defaults to the document's main palette colour. */
+  background?: ColorValue;
+  /** Inner padding between the bar edge and the caption text. Default `0.35em`. */
+  padding?: Dimension;
+  /** Styling of the optional resource note (`Resource.note`). */
+  note?: CaptionNoteStyleConfig;
 }
 
 export interface ResolvedCaptionStyleConfig {
@@ -602,6 +659,11 @@ export interface ResolvedCaptionStyleConfig {
   labelItalic: boolean;
   labelColor: ColorValue;
   descriptionItalic: boolean;
+  position: CaptionPosition;
+  backgroundEnabled: boolean;
+  background: ColorValue;
+  padding: Dimension;
+  note: ResolvedCaptionNoteStyleConfig;
 }
 
 /** Styling for embedded SVG diagrams (`kind: 'svg'` resources). When
@@ -619,6 +681,61 @@ export interface DiagramStyleConfig {
 export interface ResolvedDiagramStyleConfig {
   singleInk: boolean;
   inkColor: ColorValue;
+}
+
+/** A named paragraph style, applied to the paragraphs inside a
+ *  `:::paragraphs{style="<id>"}` container. Every typographic field is
+ *  optional and inherits the body text when unset, so a style only needs to
+ *  spell out what differs from running text. See
+ *  {@link ResolvedParagraphStyleConfig}. */
+export interface ParagraphStyleConfig {
+  /** Identifier referenced from `:::paragraphs{style="…"}`. */
+  id: string;
+  /** Human-readable name (editor UI only). Defaults to {@link id}. */
+  name?: string;
+  /** Defaults to the body font family. */
+  fontFamily?: string;
+  /** Defaults to the body font size. */
+  fontSize?: Dimension;
+  /** Leading. `em`/`rem` are relative to the style's own font size.
+   *  Defaults to the body line height. */
+  lineHeight?: Dimension;
+  /** Defaults to the body text colour. */
+  color?: ColorValue;
+  /** Defaults to the body alignment (`center` is not available here). */
+  textAlign?: 'left' | 'justify';
+  /** Hyphenate when justified. Defaults to the body hyphenation setting. */
+  hyphenation?: boolean;
+  /** Defaults to the body first-line indent. Ignored when
+   *  {@link hangingIndent} is non-zero. */
+  firstLineIndent?: Dimension;
+  /** Indent applied to every line except the first (bibliographies,
+   *  glossaries). Non-zero replaces {@link firstLineIndent}. Default `0`. */
+  hangingIndent?: Dimension;
+  /** Vertical gap between consecutive paragraphs in the container. Default
+   *  `0` — entries abut, off the baseline grid until the container closes. */
+  spaceBetween?: Dimension;
+  /** Space above the container's first block. Default `0`. */
+  marginTop?: Dimension;
+  /** Minimum space below the container's last block; the flow snaps back
+   *  to the baseline grid after it. Default `0`. */
+  marginBottom?: Dimension;
+}
+
+export interface ResolvedParagraphStyleConfig {
+  id: string;
+  name: string;
+  fontFamily: string;
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  color: ColorValue;
+  textAlign: 'left' | 'justify';
+  hyphenation: boolean;
+  firstLineIndent: Dimension;
+  hangingIndent: Dimension;
+  spaceBetween: Dimension;
+  marginTop: Dimension;
+  marginBottom: Dimension;
 }
 
 /** Parity constraint for a forced page break.
@@ -1250,6 +1367,8 @@ export interface PostextConfig {
   captionStyle?: CaptionStyleConfig;
   /** Styling for embedded SVG diagrams (single-ink reproduction). */
   diagramStyle?: DiagramStyleConfig;
+  /** Named paragraph styles for `:::paragraphs{style="…"}` containers. */
+  paragraphStyles?: ParagraphStyleConfig[];
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;

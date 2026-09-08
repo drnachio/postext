@@ -15,7 +15,7 @@ export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, se
 export type { CellPos, CellRange } from './table/model';
 export { extractFrontmatter } from './frontmatter';
 export type { ParsedFrontmatter } from './frontmatter';
-export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, DEFAULT_PAGE_NUMBERING, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, DEFAULT_COLUMN_BALANCING, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, resolveTableStyleConfig, stripTableStyleDefaults, resolveCaptionStyleConfig, stripCaptionStyleDefaults, DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults, DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults, DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults, DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults, dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults, DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults, DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults, DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults, defaultResourceTypes } from './defaults';
+export { DEFAULT_PAGE_CONFIG, DEFAULT_CUT_LINES, DEFAULT_PAGE_NUMBERING, PAGE_SIZE_PRESETS, resolvePageConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, DEFAULT_COLUMN_BALANCING, resolveLayoutConfig, stripLayoutDefaults, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults, resolveTableStyleConfig, stripTableStyleDefaults, resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle, DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults, DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults, DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults, DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults, DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults, dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette, stripPageDefaults, stripConfigDefaults, DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults, DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults, DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults, DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults, defaultResourceTypes } from './defaults';
 export { resolvePlaceholders, computeChapterTitles, collectPlaceholderNames, isKnownPlaceholder, isMetadataPlaceholder } from './pipeline/placeholders';
 export type { PlaceholderContext, PlaceholderResult, ChapterTitlePageInfo } from './pipeline/placeholders';
 export { resolveDesignPlaceholders, allowedPlaceholdersFor } from './design/placeholders';
@@ -82,10 +82,16 @@ export type {
   ResolvedHeadingsConfig,
   TableStyleConfig,
   ResolvedTableStyleConfig,
+  TableRules,
   CaptionStyleConfig,
   ResolvedCaptionStyleConfig,
+  CaptionPosition,
+  CaptionNoteStyleConfig,
+  ResolvedCaptionNoteStyleConfig,
   DiagramStyleConfig,
   ResolvedDiagramStyleConfig,
+  ParagraphStyleConfig,
+  ResolvedParagraphStyleConfig,
   UnorderedListLevelConfig,
   ResolvedUnorderedListLevelConfig,
   UnorderedListsConfig,
@@ -170,11 +176,13 @@ export type {
   VDTDesignBoxBlock,
   VDTDesignBoxStyle,
   ResolvedResourceBlock,
+  VDTCaptionBar,
   VDTResourceTableCell,
   VDTResourceTableLayout,
 } from './vdt';
-export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, InlineSpan, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue } from './parse';
-export { parseMarkdownWithIssues, MATH_PLACEHOLDER } from './parse';
+export { computeColumnEdges } from './pipeline/resourceLayout';
+export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue } from './parse';
+export { parseMarkdownWithIssues, MATH_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS } from './parse';
 export { buildPageLabels, collectPageLabelRuns, formatNumeral } from './numbering';
 export type { NumeralStyle, PageNumberSegment, PageLabelInfo, PageLabelRun } from './numbering';
 export type { MathRender, MathPath, MathViewBox } from './math/types';

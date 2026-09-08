@@ -56,6 +56,38 @@ describe('inline :ref directive', () => {
     });
   });
 
+  it('parses case attribute', () => {
+    for (const c of ['lower', 'upper', 'capitalize'] as const) {
+      const spans = allSpans(`See :ref{id="x" case="${c}"}.\n`);
+      expect(refSpans(spans)[0]!.ref).toEqual({ resourceId: 'x', case: c });
+    }
+  });
+
+  it('accepts attributes in any order', () => {
+    const spans = allSpans('See :ref{case="upper" style="full" id="x"}.\n');
+    expect(refSpans(spans)[0]!.ref).toEqual({ resourceId: 'x', style: 'full', case: 'upper' });
+
+    const withText = allSpans('See :ref{text="the chart" id=\'x\'}.\n');
+    expect(refSpans(withText)[0]!.ref).toEqual({ resourceId: 'x', text: 'the chart' });
+  });
+
+  it('ignores an invalid case value', () => {
+    const spans = allSpans('See :ref{id="x" case="title"}.\n');
+    expect(refSpans(spans)).toHaveLength(1);
+    expect(refSpans(spans)[0]!.ref).toEqual({ resourceId: 'x' });
+  });
+
+  it('ignores an invalid style value', () => {
+    const spans = allSpans('See :ref{id="x" style="loud"}.\n');
+    expect(refSpans(spans)[0]!.ref).toEqual({ resourceId: 'x' });
+  });
+
+  it('leaves a ref without id as literal text', () => {
+    const blocks = parseMarkdown('See :ref{style="number"} here.\n');
+    expect(refSpans(blocks.flatMap((b) => b.spans))).toHaveLength(0);
+    expect(blocks[0]!.text).toBe('See :ref{style="number"} here.');
+  });
+
   it('represents each ref as a single-placeholder span', () => {
     const spans = allSpans('See :ref{id="x"}.\n');
     const ref = refSpans(spans)[0]!;

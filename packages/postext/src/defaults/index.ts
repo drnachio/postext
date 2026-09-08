@@ -6,6 +6,7 @@ import { stripHeadingsDefaults } from './headings';
 import { stripTableStyleDefaults } from './tableStyle';
 import { stripCaptionStyleDefaults } from './captionStyle';
 import { stripDiagramStyleDefaults } from './diagramStyle';
+import { stripParagraphStylesDefaults } from './paragraphStyles';
 import { stripUnorderedListsDefaults } from './unorderedLists';
 import { stripOrderedListsDefaults } from './orderedLists';
 import { stripMathDefaults } from './math';
@@ -20,8 +21,9 @@ export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripL
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, hyphenationEqual, resolveBodyTextConfig, stripBodyTextDefaults } from './bodyText';
 export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
 export { resolveTableStyleConfig, stripTableStyleDefaults } from './tableStyle';
-export { resolveCaptionStyleConfig, stripCaptionStyleDefaults } from './captionStyle';
+export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle } from './captionStyle';
 export { DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults } from './diagramStyle';
+export { DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults } from './paragraphStyles';
 export { DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults } from './unorderedLists';
 export { DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults } from './orderedLists';
 export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './math';
@@ -75,6 +77,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.diagramStyle = strippedDiagramStyle;
   } else {
     delete result.diagramStyle;
+  }
+  const strippedParagraphStyles = stripParagraphStylesDefaults(config.paragraphStyles);
+  if (strippedParagraphStyles) {
+    result.paragraphStyles = strippedParagraphStyles;
+  } else {
+    delete result.paragraphStyles;
   }
   const strippedLists = stripUnorderedListsDefaults(config.unorderedLists);
   if (strippedLists) {

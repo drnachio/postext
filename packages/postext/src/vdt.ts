@@ -1,4 +1,5 @@
 import type {
+  ColorPaletteEntry,
   DocumentMetadata,
   PostextResource,
   Resource,
@@ -9,8 +10,10 @@ import type {
   ResolvedBodyTextConfig,
   ResolvedHeadingsConfig,
   ResolvedTableStyleConfig,
+  TableRules,
   ResolvedCaptionStyleConfig,
   ResolvedDiagramStyleConfig,
+  ResolvedParagraphStyleConfig,
   ResolvedUnorderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
@@ -42,11 +45,16 @@ export interface ResolvedConfig {
   tableStyle: ResolvedTableStyleConfig;
   captionStyle: ResolvedCaptionStyleConfig;
   diagramStyle: ResolvedDiagramStyleConfig;
+  paragraphStyles: ResolvedParagraphStyleConfig[];
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;
   header: ResolvedDesignSlot;
   footer: ResolvedDesignSlot;
+  /** The document's colour palette, kept so per-resource-type caption
+   *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
+   *  layout time. Absent when the config defines no palette. */
+  colorPalette?: ColorPaletteEntry[];
 }
 
 // ---------------------------------------------------------------------------
@@ -158,6 +166,16 @@ export interface VDTResourceTableLayout {
   columnEdges: number[];
   /** Row y-edges (length = rowCount + 1) relative to the table's top. */
   rowEdges: number[];
+  /** Which rules to stroke with `borderWidthPx` (`'grid'` when absent). */
+  rules?: TableRules;
+}
+
+/** Background bar painted behind a resource caption (issue #49 §7). */
+export interface VDTCaptionBar {
+  /** Bar rect — block-relative until placement offsets it, like caption lines. */
+  rect: BoundingBox;
+  /** Fill colour (hex). */
+  background: string;
 }
 
 /** The resolved, measured content of a resource block. */
@@ -193,6 +211,19 @@ export interface ResolvedResourceBlock {
   linkColor: string;
   /** Table geometry, present only when `kind === 'table'`. */
   table?: VDTResourceTableLayout;
+  /** Bar behind the caption, present when `captionStyle.backgroundEnabled`
+   *  and the block has a caption. Painted before the caption lines. */
+  captionBar?: VDTCaptionBar;
+  /** Measured note lines (`Resource.note`), placed under the body when the
+   *  caption sits above, otherwise under the caption. Empty when no note. */
+  noteLines: VDTLine[];
+  /** Font strings used to render the note (normal / bold / italic / bold+italic). */
+  noteFontString: string;
+  noteBoldFontString: string;
+  noteItalicFontString: string;
+  noteBoldItalicFontString: string;
+  /** Note text colour (hex). */
+  noteColor: string;
 }
 
 export interface VDTBlock {

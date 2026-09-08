@@ -3,7 +3,12 @@ import type { VDTDocument, VDTBlock } from 'postext';
 /** Collect every fontString referenced anywhere in the VDT. */
 export function collectFontStrings(doc: VDTDocument): string[] {
   const out = new Set<string>();
-  for (const block of doc.blocks) {
+  // Floated resources live on their page's float band, not in doc.blocks.
+  const blocks: VDTBlock[] = [...doc.blocks];
+  for (const page of doc.pages) {
+    if (page.floats) blocks.push(...page.floats);
+  }
+  for (const block of blocks) {
     if (block.fontString) out.add(block.fontString);
     if (block.boldFontString) out.add(block.boldFontString);
     if (block.italicFontString) out.add(block.italicFontString);
@@ -16,6 +21,10 @@ export function collectFontStrings(doc: VDTDocument): string[] {
       out.add(rb.captionBoldFontString);
       out.add(rb.captionItalicFontString);
       out.add(rb.captionBoldItalicFontString);
+      out.add(rb.noteFontString);
+      out.add(rb.noteBoldFontString);
+      out.add(rb.noteItalicFontString);
+      out.add(rb.noteBoldItalicFontString);
       if (rb.table) {
         out.add(rb.table.fontString);
         out.add(rb.table.boldFontString);

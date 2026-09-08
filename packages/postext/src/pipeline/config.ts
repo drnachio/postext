@@ -7,6 +7,7 @@ import {
   resolveTableStyleConfig,
   resolveCaptionStyleConfig,
   resolveDiagramStyleConfig,
+  resolveParagraphStylesConfig,
   resolveUnorderedListsConfig,
   resolveOrderedListsConfig,
   resolveMathConfig,
@@ -28,11 +29,17 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
     tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText),
     captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText),
     diagramStyle: resolveDiagramStyleConfig(config?.diagramStyle),
+    paragraphStyles: resolveParagraphStylesConfig(config?.paragraphStyles, bodyText),
     unorderedLists: resolveUnorderedListsConfig(config?.unorderedLists, bodyText),
     orderedLists: resolveOrderedListsConfig(config?.orderedLists, bodyText),
     math: resolveMathConfig(config?.math),
     header: resolveHeaderFooterConfig(config?.header, 'header'),
     footer: resolveHeaderFooterConfig(config?.footer, 'footer'),
+    // Kept for per-resource-type caption overrides, which resolve their
+    // palette colours at layout time (see `mergeCaptionStyle`).
+    ...(rawConfig?.colorPalette && rawConfig.colorPalette.length > 0
+      ? { colorPalette: rawConfig.colorPalette }
+      : {}),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }

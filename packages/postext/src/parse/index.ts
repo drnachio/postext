@@ -2,6 +2,10 @@ export type {
   ContentBlockType,
   DirectiveName,
   DirectiveAttrs,
+  ContainerName,
+  RefCase,
+  UnclosedMathIssue,
+  UnclosedContainerIssue,
   MathMeta,
   InlineSpan,
   TextSpan,
@@ -17,4 +21,6 @@ export {
   parseMarkdownWithIssuesMemo,
   parseMarkdown,
   parseMarkdownWithIssues,
+  KNOWN_DIRECTIVES,
+  KNOWN_CONTAINERS,
 } from './blockParser';

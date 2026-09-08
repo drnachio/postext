@@ -85,6 +85,33 @@ describe('table model — row/col structure', () => {
     expect(addRow(m, 2).headerRowCount).toBe(1);
     expect(removeRow(m, 0).headerRowCount).toBe(0);
   });
+
+  it('addColumn keeps columnWidths aligned (inserts the mean weight)', () => {
+    const m: TableModel = { ...grid(2, 3), columnWidths: [2, 1, 3] };
+    const next = addColumn(m, 1);
+    expect(colCount(next)).toBe(4);
+    expect(next.columnWidths).toEqual([2, 2, 1, 3]);
+    // Appending clamps to the end; the original array is untouched.
+    expect(addColumn(m, 99).columnWidths).toEqual([2, 1, 3, 2]);
+    expect(m.columnWidths).toEqual([2, 1, 3]);
+  });
+
+  it('removeColumn splices the matching columnWidths entry', () => {
+    const m: TableModel = { ...grid(2, 3), columnWidths: [2, 1, 3] };
+    const next = removeColumn(m, 1);
+    expect(colCount(next)).toBe(2);
+    expect(next.columnWidths).toEqual([2, 3]);
+    expect(m.columnWidths).toEqual([2, 1, 3]);
+    // Out-of-range removal is a no-op clone that still carries the weights.
+    expect(removeColumn(m, 7).columnWidths).toEqual([2, 1, 3]);
+  });
+
+  it('leaves columnWidths absent when the model has none', () => {
+    const m = grid(2, 2);
+    expect(addColumn(m, 0).columnWidths).toBeUndefined();
+    expect(removeColumn(m, 0).columnWidths).toBeUndefined();
+    expect(addRow(m, 0).columnWidths).toBeUndefined();
+  });
 });
 
 describe('table model — content & alignment', () => {

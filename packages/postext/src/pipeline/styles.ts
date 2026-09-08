@@ -1,4 +1,4 @@
-import type { ResolvedHeadingLevelConfig, TextAlign } from '../types';
+import type { ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../types';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString } from '../measure';
@@ -115,4 +115,58 @@ export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
   const firstLineIndentPx = dimensionToPx(resolved.bodyText.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = resolved.bodyText.hangingIndent;
   return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: '#666666', textAlign, hyphenate, marginTopPx: 0, marginBottomPx: 0, firstLineIndentPx, hangingIndent };
+}
+
+/** Block style for paragraphs inside a `:::paragraphs{style="…"}` container.
+ *  Mirrors {@link resolveBodyStyle} (weights, emphasis and reference colours
+ *  come from the body text) with the style's own face, size, leading,
+ *  alignment and indents. A non-zero `hangingIndent` turns into the
+ *  measurer's hanging mode (lines 2+ indented); `spaceBetween` lands in
+ *  `marginBottomPx`, the same slot body `paragraphSpacing` uses, so the gap
+ *  flows through pending spacing and the grid snap like any other margin. */
+export function resolveParagraphStyle(
+  style: ResolvedParagraphStyleConfig,
+  resolved: ResolvedConfig,
+): BlockStyle {
+  const dpi = resolved.page.dpi;
+  const body = resolved.bodyText;
+  const fontSizePx = dimensionToPx(style.fontSize, dpi);
+  const lh = style.lineHeight;
+  const lineHeightPx = lh.unit === 'em' || lh.unit === 'rem'
+    ? fontSizePx * lh.value
+    : dimensionToPx(lh, dpi, fontSizePx);
+  const weight = body.fontWeight.toString();
+  const boldWeight = body.boldFontWeight.toString();
+  const fontString = buildFontString(style.fontFamily, fontSizePx, weight);
+  const boldFontString = buildFontString(style.fontFamily, fontSizePx, boldWeight);
+  const italicFontString = buildFontString(style.fontFamily, fontSizePx, weight, 'italic');
+  const boldItalicFontString = buildFontString(style.fontFamily, fontSizePx, boldWeight, 'italic');
+  const textAlign = style.textAlign;
+  const hyphenate = style.hyphenation && textAlign === 'justify';
+  const hangingIndentPx = dimensionToPx(style.hangingIndent, dpi, fontSizePx);
+  const hangingIndent = hangingIndentPx > 0;
+  const firstLineIndentPx = hangingIndent
+    ? hangingIndentPx
+    : dimensionToPx(style.firstLineIndent, dpi, fontSizePx);
+  const marginBottomPx = dimensionToPx(style.spaceBetween, dpi, fontSizePx);
+  return {
+    fontString,
+    boldFontString,
+    italicFontString,
+    boldItalicFontString,
+    fontSizePx,
+    lineHeightPx,
+    color: style.color.hex,
+    boldColor: body.boldColor?.hex,
+    italicColor: body.italicColor?.hex,
+    referenceColor: body.referenceColor.hex,
+    referenceBold: body.referenceBold,
+    referenceItalic: body.referenceItalic,
+    textAlign,
+    hyphenate,
+    marginTopPx: 0,
+    marginBottomPx,
+    firstLineIndentPx,
+    hangingIndent,
+  };
 }
