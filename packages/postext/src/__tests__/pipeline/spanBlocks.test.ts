@@ -350,7 +350,7 @@ describe('page-span callouts (span blocks, stage 1)', () => {
     // Text after the box flows into band 1 on the same page.
     const after = doc.blocks.find((b) => b.type === 'paragraph' && b.containerId === undefined && b.pageIndex === 1)!;
     expect(columnOf(doc, after)).toBe(band1[0]);
-  });
+  }, 30_000); // lays out a full two-float page: ~2 s locally, ~8 s on the CI runner
 
   it('columnBalancing: collectColumnGaps ignores span columns and treats the last text column as the page end', () => {
     const resolved = resolveAllConfig();
