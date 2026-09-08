@@ -30,6 +30,10 @@ export interface MeasureBlockOptions {
    *  when feasible within the stretch limit (column balancing's "run a
    *  paragraph long" lever). Ignored on the greedy path. */
   looseness?: number;
+  /** Tracking: extra advance added after every character (px). Column
+   *  balancing uses a little positive tracking on a loose paragraph when
+   *  word spacing alone cannot gain the line. Rich path only. */
+  letterSpacingPx?: number;
 }
 
 export const SOFT_HYPHEN = '\u00AD';

@@ -493,6 +493,12 @@ export interface SandboxLabels {
   balanceAfterListsTooltip: string;
   balanceLooseParagraphs: string;
   balanceLooseParagraphsTooltip: string;
+  balanceMaxLooseParagraphs: string;
+  balanceMaxLooseParagraphsTooltip: string;
+  balanceTrackParagraphs: string;
+  balanceTrackParagraphsTooltip: string;
+  balanceMaxTracking: string;
+  balanceMaxTrackingTooltip: string;
 
   // Canvas viewport toolbar
   zoomIn: string;

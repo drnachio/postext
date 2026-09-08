@@ -26,6 +26,8 @@ interface RichToken {
   hyphenWidth?: number;
   mathRender?: import('../math/types').MathRender;
   refResourceId?: string;
+  /** Bare break points (URL joints): no hyphen is appended at the break. */
+  bareBreaks?: boolean;
 }
 
 export function richTokensToItems(
@@ -190,12 +192,12 @@ export function reconstructRichLines(
       textParts.pop();
     }
 
-    // If hyphenated, append '-' to the last text segment
-    if (hyphenated && lineSegments.length > 0) {
-      const breakMeta = breakItem.meta as RichTokenMeta | undefined;
-      const hyphenW = breakMeta
-        ? (tokens[breakMeta.originalTokenIndex]?.hyphenWidth ?? 0)
-        : 0;
+    // If hyphenated, append '-' to the last text segment — unless the break
+    // is a bare one inside a URL, which ends the line as it is.
+    const breakMeta = breakItem.meta as RichTokenMeta | undefined;
+    const breakToken = breakMeta ? tokens[breakMeta.originalTokenIndex] : undefined;
+    if (hyphenated && lineSegments.length > 0 && !breakToken?.bareBreaks) {
+      const hyphenW = breakToken?.hyphenWidth ?? 0;
       const lastIdx = lineSegments.length - 1;
       const last = lineSegments[lastIdx]!;
       if (last.kind === 'text' && last.refResourceId === undefined) {

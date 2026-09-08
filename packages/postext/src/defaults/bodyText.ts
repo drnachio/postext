@@ -26,7 +26,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   firstLineIndent: { value: 1.5, unit: 'em' },
   hangingIndent: false,
   indentAfterHeading: true,
-  maxWordSpacing: 1.9,
+  maxWordSpacing: 2,
   minWordSpacing: 0.6,
   optimalLineBreaking: true,
   avoidOrphans: true,

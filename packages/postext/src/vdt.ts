@@ -275,6 +275,10 @@ export interface VDTBlock {
   /** Colour for inline `:ref` segments (`refResourceId` set). */
   refColor?: string;
   textAlign: TextAlign;
+  /** Tracking applied to this block's text (px added after every glyph).
+   *  Set by column balancing on a loose paragraph; renderers paint it via
+   *  canvas `letterSpacing`, CSS `letter-spacing` or PDF `Tc`. */
+  letterSpacing?: number;
   /** Character offset in the original markdown where the source content for this block starts */
   sourceStart?: number;
   /** Character offset just past the last source character for this block */

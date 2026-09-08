@@ -25,10 +25,13 @@
  * levers apply in editorial priority order:
  *  - extra grid lines where a list/enumeration ends (space after a list
  *    reads naturally), capped per list end;
- *  - as a last resort, ONE paragraph of the column is re-broken one line
- *    looser (TeX \looseness=+1) via the Knuth-Plass `looseness` option —
- *    always within the configured `maxWordSpacing`, so type colour never
- *    exceeds the user's limit.
+ *  - as a last resort, up to `maxLooseParagraphs` paragraphs of the column
+ *    are each re-broken one line looser (TeX \looseness=+1) via the
+ *    Knuth-Plass `looseness` option — always within the configured
+ *    `maxWordSpacing`, so type colour never exceeds the user's limit. When
+ *    word spacing alone cannot gain the line, the placement pass also tries
+ *    a little positive tracking on that paragraph (the compositor's classic
+ *    fix), keeping the smallest value that works, never above `maxTracking`.
  */
 
 import type { VDTColumn, VDTDocument, VDTPage } from '../vdt';
@@ -37,7 +40,7 @@ import type { VDTColumn, VDTDocument, VDTPage } from '../vdt';
 const EPS = 0.01;
 
 /** Maximum number of placement passes (initial + balancing retries). */
-export const MAX_BALANCING_PASSES = 7;
+export const MAX_BALANCING_PASSES = 8;
 
 export type BalanceCandidateKind = 'heading' | 'listEnd' | 'looseParagraph';
 
@@ -225,10 +228,22 @@ export interface BalanceProposalOptions {
   stretchAfterLists: boolean;
   maxLinesAfterList: number;
   looseParagraphs: boolean;
+  /** Loose paragraphs allowed per short column (one extra line each). */
+  maxLooseParagraphs: number;
   /** `bodyText.optimalLineBreaking` — the loose lever needs the K-P path. */
   optimalLineBreaking: boolean;
   /** Loose candidates that failed to gain a line in a previous attempt. */
   failedLoose: ReadonlySet<number>;
+}
+
+/** Budget shared by the loose candidates of one column: the placement pass
+ *  tries them in order and stops loosening once `need` of them gained
+ *  their line, so offering every candidate at once costs no extra pass. */
+export interface LooseBudget {
+  /** Column identity (page × columns + column). */
+  group: number;
+  /** Lines the column still needs from loose paragraphs. */
+  need: number;
 }
 
 export interface BalanceProposal {
@@ -236,6 +251,8 @@ export interface BalanceProposal {
   lines: Map<number, number>;
   /** Loose paragraphs per content index (cumulative across passes). */
   loose: Map<number, number>;
+  /** Budget of the loose candidates newly offered by this proposal. */
+  looseBudget: Map<number, LooseBudget>;
   /** Whether the proposal adds anything over `current`. */
   changed: boolean;
 }
@@ -248,9 +265,11 @@ export interface BalanceProposal {
  *     order), capped at `maxLinesPerHeading`;
  *  2. list ends — round-robin in reading order, capped at
  *     `maxLinesAfterList`;
- *  3. one loose paragraph per column (cumulative across passes) — the one
- *     with the most lines (most glue = least visible loosening), skipping
- *     candidates that already failed to gain a line.
+ *  3. loose paragraphs — every eligible candidate of the column is offered,
+ *     longest first (most glue = least visible loosening), with a shared
+ *     budget: the pass stops loosening once the column has gained what it
+ *     needs, capped at `maxLooseParagraphs` (cumulative across passes).
+ *     Candidates that already failed to gain a line are skipped.
  */
 export function proposeBalanceLines(
   doc: VDTDocument,
@@ -260,6 +279,7 @@ export function proposeBalanceLines(
 ): BalanceProposal {
   const lines = new Map(current.lines);
   const loose = new Map(current.loose);
+  const looseBudget = new Map<number, LooseBudget>();
   let changed = false;
 
   /** Round-robin one extra line at a time over `cands` until the gap is
@@ -302,18 +322,24 @@ export function proposeBalanceLines(
       && options.optimalLineBreaking
     ) {
       const columnLoose = gap.candidates.filter((c) => c.kind === 'looseParagraph');
-      // One loose paragraph per column, cumulative across passes.
-      const alreadyLoose = columnLoose.some((c) => loose.has(c.contentIndex));
-      if (!alreadyLoose) {
-        const pick = columnLoose
-          .filter((c) => !options.failedLoose.has(c.contentIndex))
-          .sort((a, b) => b.lineCount - a.lineCount || a.order - b.order)[0];
-        if (pick) {
+      // Each loose paragraph gains one line. The gap already reflects the
+      // paragraphs loosened in earlier passes, so only the capacity left
+      // under `maxLooseParagraphs` — and only as many as the gap needs —
+      // are added now.
+      const alreadyLoose = columnLoose.filter((c) => loose.has(c.contentIndex)).length;
+      const need = Math.min(options.maxLooseParagraphs - alreadyLoose, remaining);
+      if (need > 0) {
+        const budget: LooseBudget = { group: gap.pageIndex * 1024 + gap.columnIndex, need };
+        const picks = columnLoose
+          .filter((c) => !loose.has(c.contentIndex) && !options.failedLoose.has(c.contentIndex))
+          .sort((a, b) => b.lineCount - a.lineCount || a.order - b.order);
+        for (const pick of picks) {
           loose.set(pick.contentIndex, 1);
+          looseBudget.set(pick.contentIndex, budget);
           changed = true;
         }
       }
     }
   }
-  return { lines, loose, changed };
+  return { lines, loose, looseBudget, changed };
 }

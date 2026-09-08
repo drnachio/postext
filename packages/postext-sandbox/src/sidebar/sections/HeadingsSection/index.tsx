@@ -42,7 +42,8 @@ export const HeadingsSection = memo(function HeadingsSection() {
   };
 
   const resetBalancingField = (
-    field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'looseParagraphs',
+    field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'looseParagraphs'
+      | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking',
   ) => {
     if (!raw?.balancing) return;
     const next = { ...raw.balancing };
@@ -132,6 +133,9 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
   const isBalAfterListsDefault = headings.balancing.stretchAfterLists === DEFAULT_COLUMN_BALANCING.stretchAfterLists;
   const isBalLooseDefault = headings.balancing.looseParagraphs === DEFAULT_COLUMN_BALANCING.looseParagraphs;
+  const isBalMaxLooseDefault = headings.balancing.maxLooseParagraphs === DEFAULT_COLUMN_BALANCING.maxLooseParagraphs;
+  const isBalTrackDefault = headings.balancing.trackParagraphs === DEFAULT_COLUMN_BALANCING.trackParagraphs;
+  const isBalMaxTrackingDefault = headings.balancing.maxTracking === DEFAULT_COLUMN_BALANCING.maxTracking;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.headingsTextAlignLeft },
@@ -282,6 +286,48 @@ export const HeadingsSection = memo(function HeadingsSection() {
             isDefault={isBalLooseDefault}
             onReset={() => resetBalancingField('looseParagraphs')}
           />
+          {headings.balancing.looseParagraphs && (
+            <>
+              <NumberInput
+                label={labels.balanceMaxLooseParagraphs}
+                value={headings.balancing.maxLooseParagraphs}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, maxLooseParagraphs: v } })
+                }
+                min={1}
+                max={6}
+                step={1}
+                tooltip={labels.balanceMaxLooseParagraphsTooltip}
+                isDefault={isBalMaxLooseDefault}
+                onReset={() => resetBalancingField('maxLooseParagraphs')}
+              />
+              <ToggleSwitch
+                label={labels.balanceTrackParagraphs}
+                checked={headings.balancing.trackParagraphs}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, trackParagraphs: v } })
+                }
+                tooltip={labels.balanceTrackParagraphsTooltip}
+                isDefault={isBalTrackDefault}
+                onReset={() => resetBalancingField('trackParagraphs')}
+              />
+              {headings.balancing.trackParagraphs && (
+                <NumberInput
+                  label={labels.balanceMaxTracking}
+                  value={headings.balancing.maxTracking}
+                  onChange={(v) =>
+                    updateHeadings({ balancing: { ...raw?.balancing, maxTracking: v } })
+                  }
+                  min={1}
+                  max={50}
+                  step={1}
+                  tooltip={labels.balanceMaxTrackingTooltip}
+                  isDefault={isBalMaxTrackingDefault}
+                  onReset={() => resetBalancingField('maxTracking')}
+                />
+              )}
+            </>
+          )}
         </NestedGroup>
       )}
 

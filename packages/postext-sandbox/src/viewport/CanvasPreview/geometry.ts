@@ -3,6 +3,21 @@ import { bandCharAtX, bandLineBoxes, bandPlainToSource, bandTitleBlocks, isHidde
 
 type VDTBlock = VDTDocument['blocks'][number];
 type VDTLine = VDTBlock['lines'][number];
+type VDTSegment = NonNullable<VDTLine['segments']>[number];
+
+/**
+ * Plain-text chars a rendered segment occupies in the block's `text` /
+ * `sourceMap`. An inline `:ref` renders its resolved label ("tabla 1.1") but
+ * is a single placeholder char in the plain text, so it must count as 1 or
+ * every glyph after it on the line maps to the wrong source offset. Mirrors
+ * the line-length math in `stampSourceRanges`. A trailing soft hyphen on a
+ * hyphenated line's last segment has no source char either.
+ */
+function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean): number {
+  if (seg.refResourceId !== undefined) return 1;
+  if (dropTrailingHyphen && seg.text.endsWith('-')) return Math.max(0, seg.text.length - 1);
+  return seg.text.length;
+}
 
 /** Page-space position of a resource embed (inline block or float band). */
 export interface ResourceLocation {
@@ -195,9 +210,7 @@ export function xForPlainInLine(
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
     const isLastSeg = i === lastIdx;
-    const segPlainLen = (isLastSeg && line.hyphenated && seg.text.endsWith('-'))
-      ? Math.max(0, seg.text.length - 1)
-      : seg.text.length;
+    const segPlainLen = segmentPlainLength(seg, isLastSeg && line.hyphenated === true);
     const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
     if (inLineOffset <= cum + segPlainLen) {
       const within = inLineOffset - cum;
@@ -320,9 +333,7 @@ export function pixelToSourceOffset(
     for (let i = 0; i < segs.length; i++) {
       const seg = segs[i]!;
       const isLastSeg = i === lastIdx;
-      const segPlainLen = (isLastSeg && hitLine.hyphenated && seg.text.endsWith('-'))
-        ? Math.max(0, seg.text.length - 1)
-        : seg.text.length;
+      const segPlainLen = segmentPlainLength(seg, isLastSeg && hitLine.hyphenated === true);
       const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
       if (clampedX <= x + segRendered) {
         const within = clampedX - x;

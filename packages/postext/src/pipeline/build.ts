@@ -24,7 +24,7 @@ import { extractFrontmatter } from '../frontmatter';
 import { initHyphenator } from '../measure';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, buildHeadingLevelMap } from './config';
-import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
+import { resolveBodyStyle, resolveBlockquoteStyle, type BlockStyle } from './styles';
 import {
   computeLevelIndentsPx,
   computeOrderedLevelIndentsPx,
@@ -56,7 +56,7 @@ import {
   prevNonMarkerBlock,
   rollbackTrailingBlocks,
 } from './buildHelpers';
-import { measureContentBlock, type BlockMeasureContext } from './measureContentBlock';
+import { measureContentBlock, type BlockMeasureContext, type MeasuredContentBlock } from './measureContentBlock';
 import { planParagraphContainers } from './paragraphContainers';
 import { planParts, derivePartMeasureContext } from './parts';
 import {
@@ -84,6 +84,7 @@ import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './he
 import {
   totalGapLines,
   proposeBalanceLines,
+  type LooseBudget,
   MAX_BALANCING_PASSES,
   type BalanceState,
 } from './columnBalancing';
@@ -130,6 +131,9 @@ export interface PassHints {
   balanceExtraPx?: ReadonlyMap<number, number>;
   /** Column balancing: K-P looseness per paragraph re-broken one line longer. */
   balanceLooseness?: ReadonlyMap<number, number>;
+  /** Column balancing: shared budget of the loose candidates offered together
+   *  (the pass stops loosening a column once it gained what it needs). */
+  balanceLooseBudget?: ReadonlyMap<number, LooseBudget>;
   /** Band caps keyed by the span block's content index (see `bandCaps.ts`). */
   bandCaps?: ReadonlyMap<number, BandCap>;
 }
@@ -143,6 +147,48 @@ export interface PassResult extends BandPassReport {
   bandCapProposals: Map<number, BandCap>;
   spanPlacedInBand: Set<number>;
   bandCapsApplied: Set<number>;
+  /** Column balancing: per loose paragraph tried in this pass, the tracking
+   *  (thousandths of an em) that gained its extra line — `null` when no rung
+   *  of the ladder did, so the driver can blacklist it. Candidates left
+   *  untried because their column's budget was already met are absent. */
+  looseOutcome: Map<number, number | null>;
+}
+
+/**
+ * Column balancing: measure a paragraph asked to run `extraLines` long.
+ * Walks the tracking ladder — no tracking first, then a little positive
+ * tracking up to `maxTracking` — and keeps the first measurement that gains
+ * exactly the requested lines within the word-spacing limit (a rung that
+ * gains the line on its own, without needing the looseness target, counts
+ * too). Falls back to the plain measurement when no rung works, recording
+ * the outcome either way.
+ */
+function measureLooseParagraph(
+  rawBlock: Parameters<typeof measureContentBlock>[0],
+  blockIdx: number,
+  columnWidth: number,
+  ctx: BlockMeasureContext,
+  styleOverride: BlockStyle | undefined,
+  extraLines: number,
+  trackingLadder: readonly number[],
+  looseOutcome: Map<number, number | null>,
+): MeasuredContentBlock | null {
+  const base = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride });
+  if (!base) return null;
+  const target = base.measured.lines.length + extraLines;
+  for (const tracking of trackingLadder) {
+    const loose = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, {
+      styleOverride,
+      looseness: extraLines,
+      trackingEm: tracking > 0 ? tracking / 1000 : undefined,
+    });
+    if (loose && loose.measured.lines.length === target) {
+      looseOutcome.set(blockIdx, tracking);
+      return loose;
+    }
+  }
+  looseOutcome.set(blockIdx, null);
+  return base;
 }
 
 /**
@@ -162,8 +208,21 @@ export function buildDocumentPass(
   options?: BuildDocumentOptions,
   hints: PassHints = {},
 ): PassResult {
-  const { balanceExtraPx, balanceLooseness, bandCaps } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps } = hints;
   const resolved = resolveAllConfig(config);
+  // Tracking rungs a loose paragraph may climb: none, then 5‰ steps up to
+  // the cap (`headings.balancing.maxTracking`, thousandths of an em), the
+  // cap itself always included. Only the smallest rung that gains the line
+  // is ever kept; each rung costs one cached paragraph measurement.
+  const balancingCfg = resolved.headings.balancing;
+  const trackingLadder: number[] = [0];
+  if (balancingCfg.trackParagraphs && balancingCfg.maxTracking > 0) {
+    for (let t = 5; t < balancingCfg.maxTracking; t += 5) trackingLadder.push(t);
+    trackingLadder.push(balancingCfg.maxTracking);
+  }
+  const looseOutcome = new Map<number, number | null>();
+  // Lines gained so far per column budget group (see `LooseBudget`).
+  const looseGained = new Map<number, number>();
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
   const dpi = resolved.page.dpi;
 
@@ -1054,16 +1113,30 @@ export function buildDocumentPass(
     // to place inline (empty text, unknown resource id, floated resource).
     const col = currentColumn(doc, cursor);
     const blockMeasureCtx = partPlan.byBlock[blockIdx] ? partMeasureCtx : measureCtx;
-    const measuredBlock = measureContentBlock(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, {
-      // Column balancing "run a paragraph long": stays undefined for the
-      // common case so existing measurement cache keys are preserved.
-      looseness: balanceLooseness?.get(blockIdx),
-      styleOverride: paragraphContainer
-        ? (isContainerTail ? paragraphContainer.tailStyle : paragraphContainer.style)
-        : undefined,
-    });
+    const styleOverride = paragraphContainer
+      ? (isContainerTail ? paragraphContainer.tailStyle : paragraphContainer.style)
+      : undefined;
+    // Column balancing "run a paragraph long": the loose path is taken only
+    // for the paragraphs the driver asked for, so the common case keeps its
+    // existing measurement cache keys.
+    const looseLines = balanceLooseness?.get(blockIdx);
+    const budget = balanceLooseBudget?.get(blockIdx);
+    // A candidate already known to have gained its line (from an earlier
+    // measurement in this pass) keeps it; one whose column met its budget
+    // is left as it is. Others walk the ladder and report their outcome.
+    const knownOutcome = looseOutcome.get(blockIdx);
+    const budgetMet = budget !== undefined
+      && knownOutcome === undefined
+      && (looseGained.get(budget.group) ?? 0) >= budget.need;
+    const tryLoose = looseLines !== undefined && !budgetMet && knownOutcome !== null;
+    const measuredBlock = tryLoose
+      ? measureLooseParagraph(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome)
+      : measureContentBlock(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, { styleOverride });
+    if (tryLoose && budget !== undefined && knownOutcome === undefined && typeof looseOutcome.get(blockIdx) === 'number') {
+      looseGained.set(budget.group, (looseGained.get(budget.group) ?? 0) + 1);
+    }
     if (!measuredBlock) continue;
-    const { kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender } = measuredBlock;
+    const { kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender, letterSpacingPx } = measuredBlock;
     const { style, vdtType, headingLevel, numberPrefix, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
 
     // --- Resource blocks (image / svg / table + caption) -----------------
@@ -1297,6 +1370,7 @@ export function buildDocumentPass(
             const splitLines = remainingLines.slice(0, splitAt);
             const blk = createVDTBlock(id, vdtType, style.fontString, style.color, style.textAlign);
             applyStyleAttrs(blk, style);
+            if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
             blk.contentIndex = blockIdx;
             blk.headingLevel = headingLevel;
             if (numberPrefix) blk.numberPrefix = numberPrefix;
@@ -1409,6 +1483,7 @@ export function buildDocumentPass(
         const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
         const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
         applyStyleAttrs(blk, style);
+            if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
         blk.contentIndex = blockIdx;
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
@@ -1517,6 +1592,7 @@ export function buildDocumentPass(
 
           const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
           applyStyleAttrs(blk, style);
+            if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
           blk.contentIndex = blockIdx;
           if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
           blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
@@ -1567,6 +1643,7 @@ export function buildDocumentPass(
       const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
       const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
       applyStyleAttrs(blk, style);
+            if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
       blk.contentIndex = blockIdx;
       if (partIndex === 0) blk.headingLevel = headingLevel;
       if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
@@ -1624,7 +1701,7 @@ export function buildDocumentPass(
   doc.converged = true;
   doc.iterationCount = 1;
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome };
 }
 
 export function buildDocument(
@@ -1669,6 +1746,7 @@ export function buildDocument(
       stretchAfterLists: balancing.stretchAfterLists,
       maxLinesAfterList: balancing.maxLinesAfterList,
       looseParagraphs: balancing.looseParagraphs,
+      maxLooseParagraphs: balancing.maxLooseParagraphs,
       optimalLineBreaking: best.doc.config.bodyText.optimalLineBreaking,
       failedLoose,
     });
@@ -1682,6 +1760,7 @@ export function buildDocument(
     const next = buildDocumentPass(content, config, cache, options, {
       balanceExtraPx: extraPx,
       balanceLooseness: proposal.loose,
+      balanceLooseBudget: proposal.looseBudget,
       bandCaps,
     });
     passCount++;
@@ -1690,20 +1769,30 @@ export function buildDocument(
     // capped columns without their box are not a layout we may keep.
     const capsDelivered = [...bandCaps.keys()].every((i) => next.spanPlacedInBand.has(i));
     const score = capsDelivered ? totalGapLines(next.doc, next.forcedBreakPages) : Infinity;
+    // Loose paragraphs that gained no line at any tracking rung are
+    // blacklisted whatever the score did, and never counted as applied.
+    // Candidates the pass never tried (their column's budget was met
+    // first) stay eligible for a later proposal.
+    const newlyLoose = [...proposal.loose.keys()].filter((k) => !applied.loose.has(k));
+    const looseFailed = newlyLoose.filter((k) => next.looseOutcome.get(k) === null);
+    for (const k of looseFailed) failedLoose.add(k);
+    const looseWon = newlyLoose.filter((k) => typeof next.looseOutcome.get(k) === 'number');
     if (score < bestScore) {
       best = next;
       bestScore = score;
-      applied = { lines: proposal.lines, loose: proposal.loose };
+      applied = {
+        lines: proposal.lines,
+        loose: new Map([...proposal.loose].filter(([k]) => applied.loose.has(k) || looseWon.includes(k))),
+      };
       converged = score === 0;
     } else {
-      // Plateau or regression. When this attempt introduced NEW loose
-      // paragraphs, the K-P looseness fallback may simply have failed to
-      // gain a line within the stretch limit — blacklist them and retry so
-      // the proposer falls through to the next candidate. A pure spacing
+      // Plateau or regression. Retry when a loose candidate was just
+      // blacklisted (the proposer falls through to the next one), or when
+      // the new loose paragraphs gained their lines yet the layout did not
+      // improve (the gain landed elsewhere — drop them too). A pure spacing
       // plateau means we're done: keep the best layout found so far.
-      const newlyLoose = [...proposal.loose.keys()].filter((k) => !applied.loose.has(k));
-      if (newlyLoose.length > 0) {
-        for (const k of newlyLoose) failedLoose.add(k);
+      if (looseFailed.length > 0 || looseWon.length > 0) {
+        for (const k of looseWon) failedLoose.add(k);
         continue;
       }
       break;

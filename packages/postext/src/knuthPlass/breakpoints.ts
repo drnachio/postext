@@ -8,6 +8,7 @@ import {
   DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT,
   DEFAULT_FITNESS_CLASS_DEMERIT,
   KP_INFINITY,
+  OVER_STRETCH_BADNESS,
 } from './constants';
 
 // ---------------------------------------------------------------------------
@@ -184,7 +185,9 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
         i === terminalBreakPosition &&
         contentWidth > 0 &&
         contentWidth < runtMinWidth;
-      const effectiveBadness = isRunt ? badness + runtPenalty : badness;
+      // Beyond the stretch limit: a soft preference must never buy this.
+      const overStretch = r > 1 ? Math.max(OVER_STRETCH_BADNESS, 2 * runtPenalty) : 0;
+      const effectiveBadness = badness + overStretch + (isRunt ? runtPenalty : 0);
 
       let d: number;
       if (pen >= 0) {
