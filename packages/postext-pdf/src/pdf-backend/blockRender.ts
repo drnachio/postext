@@ -228,8 +228,12 @@ export function renderBlock(
   if (block.type === 'listItem') {
     renderBullet(ctx, block, fontCache);
   }
+  // Justify against the block's own measure (see the canvas backend): blocks
+  // inside callouts are narrower than their column.
+  void columnWidth;
+  void columnX;
   for (const line of block.lines) {
-    renderLine(ctx, line, block, columnWidth, columnX, fontCache, resourceCtx?.linkRegistry);
+    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, resourceCtx?.linkRegistry);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

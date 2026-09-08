@@ -270,8 +270,14 @@ export function renderBlock(
     italicColor: block.italicColor,
     refColor: block.refColor,
   };
+  // Justify against the block's own measure, not the column: a block inside a
+  // callout (or any narrower container) was laid out for its inner width,
+  // and the HTML backend already does the same. Flow blocks fill their
+  // column, so this is identical for them.
+  void columnWidth;
+  void columnX;
   for (const line of block.lines) {
-    renderLine(ctx, line, style, block.textAlign, columnWidth, columnX);
+    renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);
