@@ -1101,6 +1101,8 @@
     "partsMarginsTooltip": "Área de cuerpo de la página de parte. Hereda los márgenes de página hasta que se sustituyan",
     "partsDesign": "Diseño de apertura",
     "partsDesignInfo": "Texto, líneas y cajas dispuestos sobre la caja de corte de la página. Solo decorativo — sube el margen superior para dejarle sitio. Si está vacío, '{number}' '{titleText}' se compone con la tipografía del H1.",
+    "partsVersoDesign": "Diseño del verso",
+    "partsVersoDesignInfo": "Diseño de la página en blanco que sigue a la página de parte (el reverso de la hoja separadora). Mismo contenedor y marcadores que el diseño de apertura; déjalo vacío para un verso liso.",
     "partsBodyStyle": "Estilo del cuerpo",
     "partsBodyFont": "Fuente",
     "partsBodyFontTooltip": "Tipografía de los bloques dentro de la parte. Hereda la fuente del texto de cuerpo",

@@ -906,6 +906,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     partsMarginsTooltip: t("partsMarginsTooltip"),
     partsDesign: t("partsDesign"),
     partsDesignInfo: t("partsDesignInfo"),
+    partsVersoDesign: t("partsVersoDesign"),
+    partsVersoDesignInfo: t("partsVersoDesignInfo"),
     partsBodyStyle: t("partsBodyStyle"),
     partsBodyFont: t("partsBodyFont"),
     partsBodyFontTooltip: t("partsBodyFontTooltip"),

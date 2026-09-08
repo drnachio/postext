@@ -2675,6 +2675,12 @@ const config: PostextConfig = {
       <td>Opener design. Its container is the page <strong>trim box</strong>, so container anchors and <code>'page'</code> anchors coincide and <code>'bleed'</code> runs to the bleed when cut lines are on. Purely decorative: it never reserves body space — raise <code>margins.top</code> to keep the body clear of it. When empty, a default <code>{'{number} {titleText}'}</code> text in the H1 typography is synthesised at the top-left of the body area.</td>
     </tr>
     <tr>
+      <td><code>versoDesign</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>empty</td>
+      <td>Design of the blank verso that follows a part page (the back of the divider leaf): same container and placeholders as <code>design</code>. Leave empty for a plain verso.</td>
+    </tr>
+    <tr>
       <td><code>bodyStyle.fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>color</code>, <code>textAlign</code></td>
       <td>as in <code>bodyText</code></td>
       <td>inherit <code>bodyText</code></td>

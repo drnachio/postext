@@ -1016,6 +1016,8 @@ export interface SandboxLabels {
   partsMarginsTooltip: string;
   partsDesign: string;
   partsDesignInfo: string;
+  partsVersoDesign: string;
+  partsVersoDesignInfo: string;
   partsBodyStyle: string;
   partsBodyFont: string;
   partsBodyFontTooltip: string;

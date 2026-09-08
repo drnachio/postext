@@ -383,6 +383,42 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         extras,
       );
     }
+    // Back of a part divider: a blank page right after a part page takes the
+    // part's verso design (the model book tints the whole leaf).
+    const prevPage = page.index > 0 ? doc.pages[page.index - 1] : undefined;
+    if (
+      !page.partInfo
+      && prevPage?.partInfo
+      && resolved.parts.versoDesign.elements.length > 0
+      && page.columns.every((c) => c.blocks.length === 0)
+    ) {
+      const { number, title } = prevPage.partInfo;
+      const placeholders: DesignPlaceholderContext = {
+        kind: 'part',
+        page,
+        allPages: doc.pages,
+        metadata: doc.metadata,
+        chapterTitleByPageIndex,
+        chapterNumberByPageIndex,
+        chapterAttrsByPageIndex,
+        partTitleByPageIndex,
+        partNumberByPageIndex,
+        heading: {
+          titleText: title,
+          formattedNumber: number,
+          numericValue: parsePartNumber(number),
+          chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
+        },
+      };
+      page.openerBand = layoutSlotToVdt(
+        resolved.parts.versoDesign,
+        { x: frames.page.x, y: frames.page.y, width: frames.page.width, height: frames.page.height },
+        page.index,
+        placeholders,
+        dpi,
+        extras,
+      );
+    }
     // Part-divider page: the opener design covers the full trim box and is
     // purely decorative (the body column already comes from `parts.margins`).
     if (page.partInfo) {

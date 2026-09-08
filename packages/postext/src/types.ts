@@ -1669,6 +1669,10 @@ export interface PartsConfig {
    *  it. When empty, `{number} {titleText}` is synthesised from the H1
    *  typography. */
   design?: DesignSlot;
+  /** Design of the blank verso that follows a part page (the back of the
+   *  divider leaf). Same container and placeholders as `design`; when
+   *  empty the verso stays plain. */
+  versoDesign?: DesignSlot;
   bodyStyle?: PartsBodyStyleConfig;
 }
 
@@ -1699,6 +1703,7 @@ export interface ResolvedPartsConfig {
   breakAfter: ResolvedPartsBreakAfterConfig;
   margins: Required<PageMargins>;
   design: ResolvedDesignSlot;
+  versoDesign: ResolvedDesignSlot;
   bodyStyle: ResolvedPartsBodyStyleConfig;
 }
 

@@ -17,6 +17,7 @@ export const DEFAULT_PARTS_CONFIG = {
   breakBefore: { parity: 'odd' as HeadingBreakParity },
   breakAfter: { enabled: true, parity: 'any' as HeadingBreakParity },
   design: { elements: [] } as ResolvedDesignSlot,
+  versoDesign: { elements: [] } as ResolvedDesignSlot,
 };
 
 export function resolvePartsConfig(
@@ -42,6 +43,7 @@ export function resolvePartsConfig(
       mirror: partial?.margins?.mirror ?? pm.mirror,
     },
     design: partial?.design ? resolveDesignSlot(partial.design, 'header') : { elements: [] },
+    versoDesign: partial?.versoDesign ? resolveDesignSlot(partial.versoDesign, 'header') : { elements: [] },
     bodyStyle: {
       fontFamily: partial?.bodyStyle?.fontFamily ?? bodyText.fontFamily,
       fontSize: partial?.bodyStyle?.fontSize ?? bodyText.fontSize,
@@ -112,6 +114,10 @@ export function stripPartsDefaults(parts: PartsConfig | undefined): PartsConfig 
   if (parts.design) {
     const slot = stripDesignSlotDefaults(parts.design, 'header');
     if (slot && slot.elements && slot.elements.length > 0) r.design = slot;
+  }
+  if (parts.versoDesign) {
+    const slot = stripDesignSlotDefaults(parts.versoDesign, 'header');
+    if (slot && slot.elements && slot.elements.length > 0) r.versoDesign = slot;
   }
   if (parts.bodyStyle) {
     const b: PartsConfig['bodyStyle'] = {};

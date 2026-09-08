@@ -1,4 +1,4 @@
-import type { VDTDocument, ResolvedDebugConfig } from 'postext';
+import type { VDTDesignTextBlock, VDTBlock, VDTDocument, ResolvedDebugConfig } from 'postext';
 import { SVG_NS } from './dom';
 import { sourceToPlainIndex, xForPlainInLine } from './geometry';
 
@@ -77,6 +77,52 @@ export function drawBaselines(
   }
 }
 
+/** Design-band text blocks that mirror document text (`{titleText}` of an
+ *  opener or part page) and therefore carry a source range. */
+function bandTitleBlocks(doc: VDTDocument, pageIndex: number): VDTDesignTextBlock[] {
+  const band = doc.pages[pageIndex]?.openerBand;
+  if (!band) return [];
+  return band.blocks.filter(
+    (b): b is VDTDesignTextBlock => b.kind === 'text' && b.sourceStart !== undefined && b.sourceEnd !== undefined,
+  );
+}
+
+/** Approximate line boxes for a design text block: the band layout only
+ *  keeps baselines, so derive the line pitch from consecutive baselines (or
+ *  the block height for a single line). */
+function bandLineBoxes(block: VDTDesignTextBlock): { x: number; y: number; width: number; height: number; chars: number }[] {
+  const lines = block.lines;
+  const pitch = lines.length > 1 ? lines[1]!.baselineY - lines[0]!.baselineY : block.bbox.height;
+  const ascent = pitch * 0.8;
+  return lines.map((l) => ({
+    x: block.bbox.x + l.xOffset,
+    y: block.bbox.y + l.baselineY - ascent,
+    width: l.width,
+    height: pitch,
+    chars: l.text.length,
+  }));
+}
+
+/** Map a source offset inside a band title to (line, x): characters are
+ *  spread proportionally over each line's measured width. */
+function bandCaretPosition(block: VDTDesignTextBlock, offset: number): { line: ReturnType<typeof bandLineBoxes>[number]; x: number } | null {
+  const boxes = bandLineBoxes(block);
+  if (boxes.length === 0) return null;
+  const total = boxes.reduce((n, b) => n + b.chars, 0);
+  let rel = Math.max(0, Math.min(total, offset - (block.sourceStart ?? 0)));
+  for (let i = 0; i < boxes.length; i++) {
+    const box = boxes[i]!;
+    // Lines are joined by a space in the source; count it against the line.
+    const span = box.chars + (i < boxes.length - 1 ? 1 : 0);
+    if (rel <= box.chars || i === boxes.length - 1) {
+      const ratio = box.chars > 0 ? Math.min(1, rel / box.chars) : 0;
+      return { line: box, x: box.x + ratio * box.width };
+    }
+    rel -= span;
+  }
+  return null;
+}
+
 export function drawOverlay(
   svg: SVGSVGElement,
   doc: VDTDocument,
@@ -129,10 +175,34 @@ export function drawOverlay(
   // active end). When the selection is collapsed this coincides with the
   // visible caret; when it isn't, the rect is still positioned but kept
   // invisible so callers can scroll it into view without drawing anything.
+  const bandTitles = bandTitleBlocks(doc, pageIndex);
+  // A flow heading rendered through an opener band keeps invisible lines
+  // under the band; its text is drawn by the band, so route caret and
+  // selection through the band block instead.
+  const hiddenUnderBand = (b: VDTBlock): boolean =>
+    b.type === 'heading'
+    && b.sourceStart !== undefined
+    && b.sourceEnd !== undefined
+    && bandTitles.some((t) => b.sourceStart! <= t.sourceStart! && b.sourceEnd! >= t.sourceEnd!);
   const caretBlock = doc.blocks[caretBlockIdx];
   let cursorPositioned = false;
 
-  if (caretBlock && caretBlock.pageIndex === pageIndex) {
+  const bandCaretBlock = bandTitles.find((t) => head >= t.sourceStart! && head <= t.sourceEnd!);
+  if (bandCaretBlock) {
+    const pos = bandCaretPosition(bandCaretBlock, head);
+    if (pos) {
+      cursorRect.setAttribute('x', String(pos.x - 1.5));
+      cursorRect.setAttribute('y', String(pos.line.y));
+      cursorRect.setAttribute('width', '3');
+      cursorRect.setAttribute('height', String(pos.line.height));
+      cursorRect.setAttribute('fill', debug.cursorSync.color.hex);
+      cursorRect.style.display = '';
+      cursorRect.style.visibility = cursorActive ? '' : 'hidden';
+      cursorPositioned = true;
+    }
+  }
+
+  if (!cursorPositioned && caretBlock && caretBlock.pageIndex === pageIndex && !hiddenUnderBand(caretBlock)) {
     const prefixLen = caretBlock.plainPrefixLen ?? 0;
     const plainLen = prefixLen + (caretBlock.sourceMap?.length ?? 0);
     let plainCaret: number;
@@ -170,7 +240,34 @@ export function drawOverlay(
 
   if (!selectionActive) return cursorPositioned ? cursorRect : null;
 
-  const blocks = doc.blocks.filter((b) => b.pageIndex === pageIndex);
+  for (const title of bandTitles) {
+    const tStart = title.sourceStart!;
+    const tEnd = title.sourceEnd!;
+    if (tEnd <= from || tStart > to) continue;
+    const boxes = bandLineBoxes(title);
+    let cursor = tStart;
+    for (let i = 0; i < boxes.length; i++) {
+      const box = boxes[i]!;
+      const lineStart = cursor;
+      const lineEnd = cursor + box.chars;
+      const lo = Math.max(from, lineStart);
+      const hi = Math.min(to, lineEnd);
+      if (hi > lo && box.chars > 0) {
+        const x1 = box.x + ((lo - lineStart) / box.chars) * box.width;
+        const x2 = box.x + ((hi - lineStart) / box.chars) * box.width;
+        const rect = document.createElementNS(SVG_NS, 'rect');
+        rect.setAttribute('x', String(x1));
+        rect.setAttribute('y', String(box.y));
+        rect.setAttribute('width', String(Math.max(1, x2 - x1)));
+        rect.setAttribute('height', String(box.height));
+        rect.setAttribute('fill', debug.selectionSync.color.hex);
+        selectionGroup.appendChild(rect);
+      }
+      cursor = lineEnd + 1; // joining space
+    }
+  }
+
+  const blocks = doc.blocks.filter((b) => b.pageIndex === pageIndex && !hiddenUnderBand(b));
   for (const block of blocks) {
     if (block.sourceStart === undefined || block.sourceEnd === undefined) continue;
     if (block.sourceEnd <= from) continue;

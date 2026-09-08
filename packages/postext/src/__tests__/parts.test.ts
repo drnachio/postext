@@ -416,3 +416,36 @@ describe(':::part list overrides', () => {
     expect(perLevel.orderedLists.levels[1]!.separator).toBe(':');
   });
 });
+
+describe(':::part verso design', () => {
+  it('decorates the blank page after a part page with parts.versoDesign', () => {
+    const config: PostextConfig = {
+      ...base,
+      parts: {
+        ...base.parts,
+        versoDesign: {
+          elements: [{
+            kind: 'box', id: 'bg',
+            placement: { anchor: { to: 'page', edge: 'top-left' }, size: { width: 'fill', height: 'fill' } },
+            style: { backgroundColor: { hex: '#e3e0d6', model: 'hex' } },
+          }],
+        },
+      },
+    };
+    const doc = buildDocument({ markdown: partDoc }, config);
+    const partIdx = doc.pages.findIndex((p) => p.partInfo);
+    const verso = doc.pages[partIdx + 1]!;
+    expect(verso.columns.every((c) => c.blocks.length === 0)).toBe(true);
+    expect(verso.openerBand).toBeDefined();
+    expect(verso.openerBand!.blocks[0]!.kind).toBe('box');
+    // Only the verso gets it: the next content page has no band.
+    const next = doc.pages[partIdx + 2];
+    expect(next?.openerBand).toBeUndefined();
+  });
+
+  it('leaves the verso plain when versoDesign is empty', () => {
+    const doc = buildDocument({ markdown: partDoc }, base);
+    const partIdx = doc.pages.findIndex((p) => p.partInfo);
+    expect(doc.pages[partIdx + 1]!.openerBand).toBeUndefined();
+  });
+});

@@ -117,6 +117,7 @@ export const PartsSection = memo(function PartsSection() {
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   const hasMarginOverrides = raw?.margins !== undefined && Object.keys(raw.margins).length > 0;
   const hasDesignOverride = raw?.design !== undefined;
+  const hasVersoDesignOverride = raw?.versoDesign !== undefined;
   const hasBodyStyleOverrides = raw?.bodyStyle !== undefined && Object.keys(raw.bodyStyle).length > 0;
 
   const mirror = parts.margins.mirror ?? false;
@@ -219,6 +220,27 @@ export const PartsSection = memo(function PartsSection() {
           resolved={resolveDesignSlot(raw?.design, 'header')}
           onUpdate={(slot: DesignSlot | undefined) => {
             setGroup('design', slot && slot.elements.length > 0 ? slot : undefined);
+          }}
+        />
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title={labels.partsVersoDesign}
+        sectionId="parts-verso-design"
+        onReset={() => setGroup('versoDesign', undefined)}
+        hasOverrides={hasVersoDesignOverride}
+        resetLabel={labels.reset}
+        resetConfirmMessage={labels.resetSectionConfirm}
+      >
+        <p className="px-2 py-1 text-xs" style={{ color: 'var(--slate)' }}>
+          {labels.partsVersoDesignInfo}
+        </p>
+        <SlotEditor
+          slotKey="part"
+          raw={raw?.versoDesign}
+          resolved={resolveDesignSlot(raw?.versoDesign, 'header')}
+          onUpdate={(slot: DesignSlot | undefined) => {
+            setGroup('versoDesign', slot && slot.elements.length > 0 ? slot : undefined);
           }}
         />
       </CollapsibleSection>

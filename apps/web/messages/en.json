@@ -835,6 +835,8 @@
     "partsMarginsTooltip": "Body area of the part page. Inherits the page margins until overridden",
     "partsDesign": "Opener design",
     "partsDesignInfo": "Text, rules and boxes laid out against the page trim box. Purely decorative — raise the top margin to leave room for it. When empty, '{number}' '{titleText}' is set in the H1 typography.",
+    "partsVersoDesign": "Verso design",
+    "partsVersoDesignInfo": "Design of the blank page that follows a part page (the back of the divider leaf). Same container and placeholders as the opener design; leave empty for a plain verso.",
     "partsBodyStyle": "Body style",
     "partsBodyFont": "Font",
     "partsBodyFontTooltip": "Typeface of the blocks inside the part. Inherits the body text font",

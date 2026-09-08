@@ -2675,6 +2675,12 @@ const config: PostextConfig = {
       <td>Diseño de apertura. Su contenedor es la <strong>caja de corte</strong> de la página, así que los anclajes al contenedor y a <code>'page'</code> coinciden, y <code>'bleed'</code> llega hasta el sangrado cuando las marcas de corte están activas. Puramente decorativo: nunca reserva espacio de cuerpo — sube <code>margins.top</code> para que el cuerpo no lo pise. Cuando está vacío se sintetiza un texto <code>{'{number} {titleText}'}</code> por defecto con la tipografía del H1 en la esquina superior izquierda del área de cuerpo.</td>
     </tr>
     <tr>
+      <td><code>versoDesign</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>vacío</td>
+      <td>Diseño del verso en blanco que sigue a la página de parte (el reverso de la hoja separadora): mismo contenedor y marcadores que <code>design</code>. Déjalo vacío para un verso liso.</td>
+    </tr>
+    <tr>
       <td><code>bodyStyle.fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>color</code>, <code>textAlign</code></td>
       <td>como en <code>bodyText</code></td>
       <td>heredan de <code>bodyText</code></td>
