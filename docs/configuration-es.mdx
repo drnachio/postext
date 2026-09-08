@@ -82,13 +82,13 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
       <td><code>width</code></td>
       <td><code>Dimension</code></td>
       <td><code>17 cm</code></td>
-      <td>Ancho de página. Solo se usa cuando <code>sizePreset</code> es <code>'custom'</code>.</td>
+      <td>Ancho de página. Se toma de <code>sizePreset</code> cuando se omite; un valor explícito siempre prevalece (usa <code>sizePreset: 'custom'</code> para tamaños totalmente personalizados).</td>
     </tr>
     <tr>
       <td><code>height</code></td>
       <td><code>Dimension</code></td>
       <td><code>24 cm</code></td>
-      <td>Alto de página. Solo se usa cuando <code>sizePreset</code> es <code>'custom'</code>.</td>
+      <td>Alto de página. Se toma de <code>sizePreset</code> cuando se omite; un valor explícito siempre prevalece.</td>
     </tr>
     <tr>
       <td><code>margins</code></td>
@@ -2549,7 +2549,7 @@ Una línea `:::callout{type="<id>"}` abre la caja y una línea `:::` a solas la 
 Límites de esta versión:
 
 - Un aviso es indivisible. Cuando no cabe en el espacio restante de la columna pasa entero a la columna o página siguiente; una caja más alta que una columna vacía se coloca de todos modos y desborda (el sandbox avisa).
-- `span: 'page'` en una disposición multicolumna convierte la caja en un **bloque a ancho de página**: se compone al ancho completo del área de contenido y divide la página en bandas de columnas — las columnas de texto que hay encima se cierran en la línea de corte, la caja ocupa su propia columna a todo el ancho y debajo se abre una banda nueva de columnas de texto, de modo que el flujo continúa bajo la caja en todas las columnas. En esta primera etapa un bloque a ancho de página solo se coloca donde las columnas están *niveladas*: al inicio de una página, justo debajo de un encabezado de apertura con `span: 'page'`, justo debajo de otro bloque a ancho de página o justo debajo de una banda de flotantes superior. En cualquier otro punto (columnas ya desiguales, o sin sitio para la caja más el mínimo de líneas viudas de cuerpo por debajo) la caja pasa al inicio de la página siguiente — sin forzar un salto de página, así que la página que deja sigue equilibrándose. Insertar un bloque a ancho de página a mitad de página, con las columnas desiguales, es la siguiente etapa. Un encabezado justo antes de un bloque a ancho de página no viaja con él. En disposiciones de una columna `span: 'page'` es simplemente en línea.
+- `span: 'page'` en una disposición multicolumna convierte la caja en un **bloque a ancho de página**: se compone al ancho completo del área de contenido y divide la página en bandas de columnas — las columnas de texto que hay encima se cierran en la línea de corte, la caja ocupa su propia columna a todo el ancho y debajo se abre una banda nueva de columnas de texto, de modo que el flujo continúa bajo la caja en todas las columnas. Donde las columnas están *niveladas* — al inicio de una página, justo debajo de un encabezado de apertura con `span: 'page'`, justo debajo de otro bloque a ancho de página o justo debajo de una banda de flotantes superior — la caja simplemente corta ahí. Si llega a mitad de página, con las columnas desiguales, se compone como lo haría un cajista: el texto que hay encima se corta nivelado en todas las columnas (el motor repite la colocación con las columnas de la banda acortadas al mismo número de líneas de rejilla, de modo que el texto desborda de columna en columna de forma natural y siguen aplicándose todas las reglas de huérfanas, viudas y encabezados unidos a su texto), la caja ocupa el ancho de la página y las columnas continúan debajo. El corte cuesta un par de pasadas de colocación adicionales; cuando la línea de corte no dejaría sitio para la caja más el mínimo de líneas viudas de cuerpo por debajo, o ninguna disposición encaja tras unos pocos intentos, la caja pasa al inicio de la página siguiente — sin forzar un salto de página, así que la página que deja sigue equilibrándose. Un encabezado justo antes de un bloque a ancho de página no viaja con él. En disposiciones de una columna `span: 'page'` es simplemente en línea.
 - `placement: 'top' | 'bottom'` se registra en el VDT (`VDTBlock.callout`) pero todavía se coloca en línea al ancho de columna — las cajas flotantes llegan con la siguiente etapa.
 - `width: 'auto'` se ajusta solo al título; los hijos se ignoran.
 - Un `:::callout` anidado dentro de otro aviso se aplana en la caja exterior.

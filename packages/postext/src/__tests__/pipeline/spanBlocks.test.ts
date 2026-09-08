@@ -204,19 +204,22 @@ describe('page-span callouts (span blocks, stage 1)', () => {
     }
   });
 
-  it('pushes a span block to the next page when the band is not level and leaves the page balanceable', () => {
-    const md = [filler(3), '', '## Sección', '', filler(2), '', SPAN_CALLOUT, '', filler(6)].join('\n');
+  it('pushes a span block to the next page when no level cut leaves room for it and leaves the page balanceable', () => {
+    // Page 0 holds ~30 lines of text across its two columns: a level cut
+    // (stage 2, `spanBands.test.ts`) would sit at line 15 and leave no room
+    // for the 7-line box plus the widow minimum below it, so the box opens
+    // page 1 at its top and page 0 keeps its plain two columns.
+    const md = [filler(16), '', '## Sección', '', filler(2), '', filler(8), '', SPAN_CALLOUT, '', filler(6)].join('\n');
     const doc = build(md);
     const [frame] = frames(doc);
-    // Column 0 of page 0 holds text, column 1 is empty: not level → the box
-    // opens page 1 at its top, and page 0 keeps its plain two columns.
+    expect(doc.iterationCount).toBe(1);
     expect(frame!.pageIndex).toBe(1);
     const page0 = doc.pages[0]!;
     const page1 = doc.pages[1]!;
     expect(spanColumns(page0)).toHaveLength(0);
     expect(page0.columns).toHaveLength(2);
     expect(page0.columns[0]!.blocks.length).toBeGreaterThan(0);
-    expect(page0.columns[1]!.blocks).toHaveLength(0);
+    expect(page0.columns[1]!.blocks.length).toBeGreaterThan(0);
     expect(columnOf(doc, frame!).kind).toBe('span');
     expect(frame!.bbox.y).toBeCloseTo(page1.contentArea.y, 5);
     // Page 0 was NOT marked as a forced break: its last column is a
@@ -315,9 +318,10 @@ describe('page-span callouts (span blocks, stage 1)', () => {
       placement: { position, span: 'page' },
     });
     // The references sit on page 0 (floats reserve bands on the NEXT page
-    // opened); page 0 is then not level, so the box opens page 1 — whose
-    // top and bottom bands are reserved first — and cuts the band between.
-    const md = ['Ver :ref{id="ft"} y :ref{id="fb"}.', '', SPAN_CALLOUT_2, '', filler(6)].join('\n');
+    // opened); page 0 is then filled past the point where a level cut could
+    // still hold the box (stage 2), so the box opens page 1 — whose top and
+    // bottom bands are reserved first — and cuts the band between.
+    const md = ['Ver :ref{id="ft"} y :ref{id="fb"}.', '', filler(40), '', SPAN_CALLOUT_2, '', filler(6)].join('\n');
     const doc = build(md, TWO_COL, [wide('ft', 'top'), wide('fb', 'bottom')]);
     const [frame] = frames(doc);
     expect(frame!.pageIndex).toBe(1);

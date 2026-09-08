@@ -6,6 +6,8 @@ import type {
   ParseIssue,
   Resource,
   ResourceType,
+  ResolvedDesignSlot,
+  DesignContextKind,
 } from 'postext';
 import {
   KNOWN_CONTAINERS,
@@ -14,6 +16,7 @@ import {
   resolveDebugConfig,
   resolveHeaderFooterConfig,
   resolveHeadingsConfig,
+  resolveDesignSlot,
   collectPlaceholderNames,
   isAllowedPlaceholder,
   isMetadataPlaceholder,
@@ -340,6 +343,24 @@ function collectDesignWarnings(config: PostextConfig): Warning[] {
     }
   }
 
+  // Part opener anchor integrity
+  {
+    const part = resolveDesignSlot(config.parts?.design, 'header');
+    const { cyclic, dangling } = detectAnchorIssues(part.elements);
+    for (const id of cyclic) {
+      out.push({
+        id: `design-cyclic-part-${id}`,
+        payload: { kind: 'designCyclicAnchor', slot: 'part', elementId: id },
+      });
+    }
+    for (const d of dangling) {
+      out.push({
+        id: `design-dangling-part-${d.id}-${d.target}`,
+        payload: { kind: 'designDanglingAnchor', slot: 'part', elementId: d.id, referencedId: d.target },
+      });
+    }
+  }
+
   // Heading-level warnings
   for (const lvl of headings.levels) {
     if (lvl.span === 'page' && !lvl.breakBefore.enabled) {
@@ -478,6 +499,9 @@ function collectResourceWarnings(
   resources: Resource[],
   resourceTypes: ResourceType[],
   doc: VDTDocument | null,
+  /** Resource ids consumed by the configuration itself (callout icons),
+   *  which count as used even though the document never references them. */
+  configUsedIds: ReadonlySet<string> = new Set(),
 ): Warning[] {
   const out: Warning[] = [];
   let idx = 0;
@@ -490,8 +514,9 @@ function collectResourceWarnings(
   const knownIds = new Set(idCounts.keys());
   const knownTypeIds = new Set(resourceTypes.map((t) => t.id));
 
-  // Track which resource ids are actually used (embedded or referenced).
-  const usedIds = new Set<string>();
+  // Track which resource ids are actually used (embedded, referenced, or
+  // consumed by the configuration).
+  const usedIds = new Set<string>(configUsedIds);
 
   // 1. Walk blocks for embeds (`::resource`) and inline `:ref`s, flagging
   //    unknown ids and recording usage with source positions for navigation.
@@ -698,7 +723,18 @@ export function computeWarnings(params: {
   }
 
   warnings.push(
-    ...collectResourceWarnings(blocks, markdown, resources, config.resourceTypes ?? [], doc),
+    ...collectResourceWarnings(
+      blocks,
+      markdown,
+      resources,
+      config.resourceTypes ?? [],
+      doc,
+      new Set(
+        (config.calloutStyles ?? [])
+          .map((style) => (style.icon?.kind === 'resource' ? style.icon.resourceId : undefined))
+          .filter((id): id is string => typeof id === 'string' && id.length > 0),
+      ),
+    ),
   );
   if (storageUnavailable) {
     warnings.push({ id: 'resource-storage-unavailable', payload: { kind: 'storageUnavailable' } });
@@ -719,31 +755,35 @@ function collectHeaderFooterWarnings(
     return typeof val === 'string' && val.length > 0;
   };
 
-  const check = (slot: 'header' | 'footer', raw: PostextConfig['header'] | PostextConfig['footer']) => {
-    const resolved = resolveHeaderFooterConfig(raw, slot);
-    resolved.elements.forEach((el, elementIndex) => {
+  // Every design slot is validated against the engine allow-list for its
+  // own kind (fixed names per kind plus the open-ended `attr.<key>`
+  // namespace), so new placeholders never need a sandbox-side copy. Heading
+  // and part slots accept the heading set (`{titleText}`, `{number}`…).
+  const check = (slot: DesignContextKind, elements: ResolvedDesignSlot['elements'], level?: number) => {
+    const tag = level !== undefined ? `${slot}${level}` : slot;
+    elements.forEach((el, elementIndex) => {
       if (el.kind !== 'text') return;
-      const names = collectPlaceholderNames(el.content);
-      for (const name of names) {
-        // The engine owns the allow-list (fixed names per slot kind plus the
-        // open-ended `attr.<key>` namespace), so new placeholders never need
-        // a sandbox-side copy.
+      for (const name of collectPlaceholderNames(el.content)) {
         if (!isAllowedPlaceholder(name, slot)) {
           out.push({
-            id: `hf-unknown-${slot}-${elementIndex}-${name}`,
-            payload: { kind: 'headerFooterUnknownPlaceholder', slot, elementIndex, name },
+            id: `hf-unknown-${tag}-${elementIndex}-${name}`,
+            payload: { kind: 'headerFooterUnknownPlaceholder', slot, level, elementIndex, name },
           });
         } else if (!hasMetadata(name)) {
           out.push({
-            id: `hf-metadata-${slot}-${elementIndex}-${name}`,
-            payload: { kind: 'headerFooterMetadataMissing', slot, elementIndex, name },
+            id: `hf-metadata-${tag}-${elementIndex}-${name}`,
+            payload: { kind: 'headerFooterMetadataMissing', slot, level, elementIndex, name },
           });
         }
       }
     });
   };
-  check('header', config.header);
-  check('footer', config.footer);
+  check('header', resolveHeaderFooterConfig(config.header, 'header').elements);
+  check('footer', resolveHeaderFooterConfig(config.footer, 'footer').elements);
+  for (const lvl of resolveHeadingsConfig(config.headings).levels) {
+    if (lvl.advancedDesign.enabled) check('heading', lvl.advancedDesign.slot.elements, lvl.level);
+  }
+  check('part', resolveDesignSlot(config.parts?.design, 'header').elements);
 
   return out;
 }

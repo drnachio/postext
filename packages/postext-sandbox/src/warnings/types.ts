@@ -1,3 +1,7 @@
+/** Which design slot a warning points at. `level` tags heading slots;
+ *  the part opener is a single slot. */
+export type WarningSlotKind = 'header' | 'footer' | 'heading' | 'part';
+
 export type WarningKind =
   | 'missingFont'
   | 'missingFontFamily'
@@ -62,13 +66,15 @@ export type WarningPayload =
   | { kind: 'unclosedMath'; delimiter: '$' | '$$'; tex: string }
   | {
       kind: 'headerFooterUnknownPlaceholder';
-      slot: 'header' | 'footer';
+      slot: WarningSlotKind;
+      level?: number;
       elementIndex: number;
       name: string;
     }
   | {
       kind: 'headerFooterMetadataMissing';
-      slot: 'header' | 'footer';
+      slot: WarningSlotKind;
+      level?: number;
       elementIndex: number;
       name: string;
     }
@@ -90,20 +96,20 @@ export type WarningPayload =
   | { kind: 'alphaPdfOverflow' }
   | {
       kind: 'designCyclicAnchor';
-      slot: 'header' | 'footer' | 'heading';
+      slot: WarningSlotKind;
       level?: number;
       elementId: string;
     }
   | {
       kind: 'designDanglingAnchor';
-      slot: 'header' | 'footer' | 'heading';
+      slot: WarningSlotKind;
       level?: number;
       elementId: string;
       referencedId: string;
     }
   | {
       kind: 'designTextClipAlwaysTruncates';
-      slot: 'header' | 'footer' | 'heading';
+      slot: WarningSlotKind;
       level?: number;
       elementId: string;
     }

@@ -4,6 +4,7 @@ import type { useSandboxLabels } from '../../../context/SandboxContext';
 import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual, resolveDesignSlot } from 'postext';
 import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, HeadingSpan, HeadingTextTransform, HeadingAdvancedDesignConfig, ResolvedHeadingLevelConfig, ColorValue, Dimension, DimensionUnit, DesignSlot, ResolvedDesignSlot } from 'postext';
 import { SlotEditor } from '../HeaderFooterSection/SlotEditor';
+import { breakParityOptions } from './breakParityOptions';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -212,13 +213,7 @@ export function HeadingLevelSection({
           <SelectInput
             label={labels.headingBreakBeforeParity}
             value={resolved.breakBefore.parity}
-            options={[
-              { value: 'any', label: labels.headingBreakBeforeParityAny },
-              { value: 'odd', label: labels.headingBreakBeforeParityOdd },
-              { value: 'even', label: labels.headingBreakBeforeParityEven },
-              { value: 'always-odd', label: labels.headingBreakBeforeParityAlwaysOdd },
-              { value: 'always-even', label: labels.headingBreakBeforeParityAlwaysEven },
-            ]}
+            options={breakParityOptions(labels)}
             onChange={(v) => onUpdate(level, { breakBefore: { enabled: true, parity: v as HeadingBreakParity } })}
             tooltip={labels.headingBreakBeforeParityTooltip}
             isDefault={isBreakBeforeParityDefault}

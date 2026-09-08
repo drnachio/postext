@@ -5,7 +5,9 @@ import type {
   HAlign,
 } from 'postext';
 
-export type SlotKind = 'header' | 'footer' | 'heading';
+/** Mirrors the engine's `DesignContextKind`: which placeholder set and
+ *  anchor conventions a slot editor works with. */
+export type SlotKind = 'header' | 'footer' | 'heading' | 'part';
 
 const ZERO: Dimension = { value: 0, unit: 'pt' };
 

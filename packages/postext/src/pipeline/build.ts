@@ -86,6 +86,15 @@ import {
   MAX_BALANCING_PASSES,
   type BalanceState,
 } from './columnBalancing';
+import {
+  applyBandCap,
+  uncapBand,
+  columnBottom,
+  bandCapLines,
+  resolveBandCaps,
+  type BandCap,
+  type BandPassReport,
+} from './bandCaps';
 
 export interface BuildDocumentOptions {
   /**
@@ -113,21 +122,46 @@ const ALLOWED_PAGE_FORMATS: ReadonlySet<NumeralStyle> = new Set<NumeralStyle>([
   'upper-alpha',
 ]);
 
+/** Cross-pass hints a placement pass consumes. All keyed by content-block
+ *  index; every map is optional so the plain first pass carries none. */
+export interface PassHints {
+  /** Column balancing: extra top spacing (px) per heading / list-end target. */
+  balanceExtraPx?: ReadonlyMap<number, number>;
+  /** Column balancing: K-P looseness per paragraph re-broken one line longer. */
+  balanceLooseness?: ReadonlyMap<number, number>;
+  /** Band caps keyed by the span block's content index (see `bandCaps.ts`). */
+  bandCaps?: ReadonlyMap<number, BandCap>;
+}
+
+export interface PassResult extends BandPassReport {
+  doc: VDTDocument;
+  /** Pages whose break into the next page was explicit (`:::pagebreak`,
+   *  heading `breakBefore`, chapter opener) rather than natural content
+   *  overflow — those pages keep their short last column. */
+  forcedBreakPages: Set<number>;
+  bandCapProposals: Map<number, BandCap>;
+  spanPlacedInBand: Set<number>;
+  bandCapsApplied: Set<number>;
+}
+
 /**
- * Single placement pass. `balanceExtraPx` carries the column-balancing
- * adjustments (extra top spacing per heading, keyed by content-block index);
- * `forcedBreakPages` reports the pages whose break into the next page was
- * explicit (`:::pagebreak`, heading `breakBefore`, chapter opener) rather
- * than natural content overflow — those pages keep their short last column.
+ * Single placement pass. `hints` carries the cross-pass adjustments: the
+ * column-balancing spacing / looseness and the band caps of page-span
+ * blocks. Besides the document it reports `forcedBreakPages` (for
+ * balancing) and the band-cap bookkeeping the driver in `buildDocument`
+ * needs — new cap proposals, the span blocks that landed in their capped
+ * band, and the caps that were actually applied.
+ *
+ * @internal Exposed for tests only; use `buildDocument`.
  */
-function buildDocumentPass(
+export function buildDocumentPass(
   content: PostextContent,
   config?: PostextConfig,
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
-  balanceExtraPx?: ReadonlyMap<number, number>,
-  balanceLooseness?: ReadonlyMap<number, number>,
-): { doc: VDTDocument; forcedBreakPages: Set<number> } {
+  hints: PassHints = {},
+): PassResult {
+  const { balanceExtraPx, balanceLooseness, bandCaps } = hints;
   const resolved = resolveAllConfig(config);
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
   const dpi = resolved.page.dpi;
@@ -474,6 +508,42 @@ function buildDocumentPass(
     }
   };
 
+  // --- Column bands: opening block + band caps (span blocks, stage 2) ----
+  // The band the cursor last placed into, its opening block (content index
+  // + part: a paragraph split across pages opens the next page's band with
+  // its continuation), and the cap applied to it, if any. `enterBand` runs
+  // at every placement site right before a block is offered to the current
+  // column: the first block offered to a band is its opening block, and if
+  // a cap names it the band's columns are shortened to the cap BEFORE the
+  // block is placed, so the fit / split / keep-with-next rules see the
+  // capped height. Atomic placements that advance internally re-run it
+  // after landing (the cap then trims whatever the block left).
+  let registeredBand: { pageIndex: number; band: number } | null = null;
+  let bandStart: { contentIndex: number; part: number } | null = null;
+  let activeCap: { spanIndex: number; pageIndex: number; band: number } | null = null;
+  /** True bottoms of capped columns (restored when the span block cuts). */
+  const uncappedBottoms = new Map<VDTColumn, number>();
+  const bandCapProposals = new Map<number, BandCap>();
+  const spanPlacedInBand = new Set<number>();
+  const bandCapsApplied = new Set<number>();
+
+  const enterBand = (contentIndex: number, part: number): void => {
+    const page = doc.pages[cursor.pageIndex]!;
+    const band = currentBand(page, cursor);
+    if (registeredBand && registeredBand.pageIndex === page.index && registeredBand.band === band) return;
+    registeredBand = { pageIndex: page.index, band };
+    bandStart = { contentIndex, part };
+    activeCap = null;
+    if (!bandCaps) return;
+    for (const [spanIndex, cap] of bandCaps) {
+      if (cap.startContentIndex !== contentIndex || cap.startPart !== part) continue;
+      applyBandCap(bandColumns(page, band), cap.lines * baselineGrid, uncappedBottoms);
+      activeCap = { spanIndex, pageIndex: page.index, band };
+      bandCapsApplied.add(spanIndex);
+      break;
+    }
+  };
+
   /** Parity of the page break a closed `:::part` still owes (applied before
    *  the next placed block). */
   let pendingPartBreak: HeadingBreakParity | null = null;
@@ -567,9 +637,20 @@ function buildDocumentPass(
    * for the box plus at least the widow minimum of body lines below it.
    * Otherwise the box moves to the top of the next page (a fresh page is
    * trivially level) WITHOUT marking a forced break, so the page it left
-   * stays balanceable. Inserting a span block mid-page, with the columns
-   * uneven, is the next stage. Keep-with-next does not apply here: a heading
-   * right before a page-span box stays in its text column.
+   * stays balanceable. Keep-with-next does not apply here: a heading right
+   * before a page-span box stays in its text column.
+   *
+   * Stage 2 — mid-page bands (`bandCaps.ts`): a box arriving in an UNEVEN
+   * band with room below proposes a band cap — the band's columns cut
+   * level at `ceil(Σ used / N / grid)` lines — and falls back to the next
+   * page for this pass; the driver re-runs the pass with the cap, the
+   * capped columns fill and overflow naturally (every placement rule still
+   * applies), and when the box arrives in the band its cap was applied to
+   * it cuts there: the columns above end level (the last one may keep up
+   * to a few lines of slack, which balancing absorbs), the box spans the
+   * page and the flow resumes in the band below. When the capped band
+   * overflowed instead (the box arrives elsewhere), the driver grows or
+   * drops the cap.
    *
    * Geometry stays on the baseline grid: the cut line is the band's used
    * bottom snapped UP to the next grid line (anchored at the content-area
@@ -590,9 +671,11 @@ function buildDocumentPass(
     const minRoomPx = minLines * bodyStyle.lineHeightPx;
 
     interface SpanFit { cols: VDTColumn[]; cutY: number; need: number; spacing: number; room: boolean }
-    /** Where the box would cut the current band, and whether it fits. Null
-     *  when the band is not level (or the cursor sits on a span column with
-     *  no band below it) and `requireLevel` is set. */
+    /** Where the box would cut the current band, and whether it fits (room
+     *  is measured against the columns' TRUE bottoms — a capped band keeps
+     *  its slack below the cap). Null when the band is not level (or the
+     *  cursor sits on a span column with no band below it) and
+     *  `requireLevel` is set. */
     const measureBand = (requireLevel: boolean): SpanFit | null => {
       const cols = bandColumns(page, currentBand(page, cursor));
       if (cols.length === 0 || (requireLevel && !isBandLevel(cols))) return null;
@@ -602,12 +685,45 @@ function buildDocumentPass(
       const bandHasContent = cols.some((c) => c.blocks.length > 0);
       const spacing = bandHasContent ? Math.max(pendingSpacing, result.marginTopPx) : 0;
       const need = Math.ceil((spacing + result.totalHeight + result.marginBottomPx - 0.01) / baselineGrid) * baselineGrid;
-      const bandBottom = Math.min(...cols.map((c) => c.bbox.y + c.bbox.height));
+      const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
       const room = cutY + need + minRoomPx <= bandBottom + 0.01;
       return { cols, cutY, need, spacing, room };
     };
 
-    let fit = measureBand(true);
+    // Is this band capped for this very box? Then it cuts at the band's
+    // used bottom (at most the cap) even when the last column is short.
+    const cap = bandCaps?.get(startIdx);
+    const capActive = cap !== undefined
+      && activeCap !== null
+      && activeCap.spanIndex === startIdx
+      && activeCap.pageIndex === page.index
+      && activeCap.band === currentBand(page, cursor);
+
+    let fit = measureBand(!capActive);
+    if (fit?.room && capActive) {
+      uncapBand(fit.cols, uncappedBottoms);
+      spanPlacedInBand.add(startIdx);
+    }
+    if (!fit && cap === undefined && bandStart && registeredBand
+      && registeredBand.pageIndex === page.index
+      && registeredBand.band === currentBand(page, cursor)) {
+      // Uneven band, no cap yet: propose one when a level cut would leave
+      // room for the box plus the widow minimum of body lines below it.
+      const cols = bandColumns(page, currentBand(page, cursor));
+      const lines = bandCapLines(cols, baselineGrid);
+      const capBottom = Math.max(...cols.map((c) => c.bbox.y)) + lines * baselineGrid;
+      const spacing = Math.max(pendingSpacing, result.marginTopPx);
+      const need = Math.ceil((spacing + result.totalHeight + result.marginBottomPx - 0.01) / baselineGrid) * baselineGrid;
+      const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
+      if (capBottom + need + minRoomPx <= bandBottom + 0.01) {
+        bandCapProposals.set(startIdx, {
+          startContentIndex: bandStart.contentIndex,
+          startPart: bandStart.part,
+          lines,
+          retries: 0,
+        });
+      }
+    }
     if (!fit || !fit.room) {
       // Open the next page (flushing pending floats into its bands). A page
       // holding only floats counts as occupied here — its float band is what
@@ -735,10 +851,12 @@ function buildDocumentPass(
     }
     const frame = result.frame;
     const spacing = curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, result.marginTopPx);
+    enterBand(startIdx, 0);
     placeAtomicBlock(
       frame, result.totalHeight, spacing, cursor, doc, resolved,
       contentArea, pageWidthPx, pageHeightPx,
     );
+    enterBand(startIdx, 0);
     curCol = currentColumn(doc, cursor);
     commitCallout(result, startIdx, plan, curCol);
     // Snap the flow after the box to the baseline grid, baking in at least
@@ -958,10 +1076,12 @@ function buildDocumentPass(
         isLastLine: true,
       }];
       const spacingBefore = pendingSpacing;
+      enterBand(blockIdx, 0);
       placeAtomicBlock(
         blk, groupHeight, spacingBefore, cursor, doc, resolved,
         contentArea, pageWidthPx, pageHeightPx,
       );
+      enterBand(blockIdx, 0);
       // `placeBlockInColumn` (inside placeAtomicBlock) shifts `blk.lines`; the
       // resource's own caption/table lines live on `resourceBlock` and must be
       // offset to absolute page coordinates here using the placed bbox origin.
@@ -1045,6 +1165,7 @@ function buildDocumentPass(
       && /:\s*$/.test(contentBlock.text);
 
     while (remainingLines.length > 0) {
+      enterBand(blockIdx, partIndex);
       const curCol = currentColumn(doc, cursor);
       const isFirstInColumn = curCol.blocks.length === 0;
 
@@ -1456,7 +1577,7 @@ function buildDocumentPass(
   doc.converged = true;
   doc.iterationCount = 1;
 
-  return { doc, forcedBreakPages };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied };
 }
 
 export function buildDocument(
@@ -1465,7 +1586,19 @@ export function buildDocument(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
 ): VDTDocument {
-  let best = buildDocumentPass(content, config, cache, options);
+  // --- Band caps (page-span blocks mid-page) -----------------------------
+  // A span block that arrived in an uneven band proposes a cap; the driver
+  // re-places the document with it (and grows / drops caps whose band
+  // overflowed) before balancing runs. Documents without such blocks get
+  // their first pass back untouched — no extra pass.
+  const bands = resolveBandCaps(
+    buildDocumentPass(content, config, cache, options),
+    (bandCaps) => buildDocumentPass(content, config, cache, options, { bandCaps }),
+  );
+  let best = bands.result;
+  const bandCaps = bands.bandCaps;
+  let passCount = bands.passCount;
+  best.doc.iterationCount = passCount;
 
   // --- Column balancing (vertical justification) ------------------------
   // Iteratively re-place the document with extra grid lines above headings
@@ -1481,7 +1614,6 @@ export function buildDocument(
   let bestScore = totalGapLines(best.doc, best.forcedBreakPages);
   let applied: BalanceState = { lines: new Map(), loose: new Map() };
   const failedLoose = new Set<number>();
-  let passCount = 1;
   let converged = bestScore === 0;
 
   while (!converged && passCount < MAX_BALANCING_PASSES) {
@@ -1500,9 +1632,17 @@ export function buildDocument(
     }
     const extraPx = new Map<number, number>();
     for (const [idx, n] of proposal.lines) extraPx.set(idx, n * best.doc.baselineGrid);
-    const next = buildDocumentPass(content, config, cache, options, extraPx, proposal.loose);
+    const next = buildDocumentPass(content, config, cache, options, {
+      balanceExtraPx: extraPx,
+      balanceLooseness: proposal.loose,
+      bandCaps,
+    });
     passCount++;
-    const score = totalGapLines(next.doc, next.forcedBreakPages);
+    // Band caps ride along unchanged; a retry that unsettles one (its span
+    // block no longer lands in the capped band) counts as a regression —
+    // capped columns without their box are not a layout we may keep.
+    const capsDelivered = [...bandCaps.keys()].every((i) => next.spanPlacedInBand.has(i));
+    const score = capsDelivered ? totalGapLines(next.doc, next.forcedBreakPages) : Infinity;
     if (score < bestScore) {
       best = next;
       bestScore = score;

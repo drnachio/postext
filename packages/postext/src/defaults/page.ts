@@ -69,12 +69,17 @@ function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cu
 
 export function resolvePageConfig(partial?: PageConfig): ResolvedPageConfig {
   if (!partial) return { ...DEFAULT_PAGE_CONFIG };
+  const sizePreset = partial.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset;
+  const presetSize = sizePreset === 'custom' ? undefined : PAGE_SIZE_PRESETS[sizePreset];
 
   return {
     backgroundColor: partial.backgroundColor ?? DEFAULT_PAGE_CONFIG.backgroundColor,
-    sizePreset: partial.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset,
-    width: partial.width ?? DEFAULT_PAGE_CONFIG.width,
-    height: partial.height ?? DEFAULT_PAGE_CONFIG.height,
+    sizePreset,
+    // A named preset supplies the physical size when the config does not
+    // spell out width/height, so `sizePreset: '21x28'` alone lays out at
+    // 21 × 28 cm. Explicit dimensions always win.
+    width: partial.width ?? presetSize?.width ?? DEFAULT_PAGE_CONFIG.width,
+    height: partial.height ?? presetSize?.height ?? DEFAULT_PAGE_CONFIG.height,
     margins: partial.margins
       ? {
           top: partial.margins.top ?? DEFAULT_PAGE_MARGINS.top,

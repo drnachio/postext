@@ -82,13 +82,13 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>width</code></td>
       <td><code>Dimension</code></td>
       <td><code>17 cm</code></td>
-      <td>Page width. Only used when <code>sizePreset</code> is <code>'custom'</code>.</td>
+      <td>Page width. Taken from <code>sizePreset</code> when omitted; an explicit value always wins (use <code>sizePreset: 'custom'</code> for fully custom sizes).</td>
     </tr>
     <tr>
       <td><code>height</code></td>
       <td><code>Dimension</code></td>
       <td><code>24 cm</code></td>
-      <td>Page height. Only used when <code>sizePreset</code> is <code>'custom'</code>.</td>
+      <td>Page height. Taken from <code>sizePreset</code> when omitted; an explicit value always wins.</td>
     </tr>
     <tr>
       <td><code>margins</code></td>
@@ -2549,7 +2549,7 @@ A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. 
 Limits in this version:
 
 - A callout is unbreakable. When it does not fit the remaining column space it moves whole to the next column or page; a box taller than an empty column is placed anyway and overflows (the sandbox warns).
-- `span: 'page'` in a multi-column layout makes the box a **span block**: it is laid out at the full content width and splits the page into column bands — the text columns above it are closed at the cut line, the box takes its own full-width column, and a fresh band of text columns opens below it, so the flow continues under the box in every column. In this first stage a span block is placed only where the columns are *level*: at the top of a page, right below a `span: 'page'` opener heading, right below another span block, or right below a top float band. Anywhere else (the columns already uneven, or no room for the box plus the widow minimum of body lines below it) the box moves to the top of the next page — without forcing a page break, so the page it leaves is still balanced. Inserting a span block mid-page, with the columns uneven, is the next stage. A heading right before a span block does not travel with it. In single-column layouts `span: 'page'` is simply inline.
+- `span: 'page'` in a multi-column layout makes the box a **span block**: it is laid out at the full content width and splits the page into column bands — the text columns above it are closed at the cut line, the box takes its own full-width column, and a fresh band of text columns opens below it, so the flow continues under the box in every column. Where the columns are *level* — at the top of a page, right below a `span: 'page'` opener heading, right below another span block, or right below a top float band — the box simply cuts there. Arriving mid-page, with the columns uneven, it is set the way a compositor would: the text above it is cut level across all columns (the engine re-runs placement with the band's columns shortened to the same number of grid lines, so the text overflows from column to column naturally and every orphan, widow and keep-with-next rule still applies), the box spans the page, and the columns resume below it. The cut takes a couple of extra placement passes; when the cut line would leave no room for the box plus the widow minimum of body lines below it, or no arrangement fits after a few attempts, the box moves to the top of the next page — without forcing a page break, so the page it leaves is still balanced. A heading right before a span block does not travel with it. In single-column layouts `span: 'page'` is simply inline.
 - `placement: 'top' | 'bottom'` is recorded on the VDT (`VDTBlock.callout`) but still placed inline at column width — floating boxes arrive with the next stage.
 - `width: 'auto'` shrink-wraps the title only; children are ignored.
 - A `:::callout` nested inside another callout is flattened into the outer box.

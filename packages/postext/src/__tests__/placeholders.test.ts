@@ -4,6 +4,7 @@ import {
   collectPlaceholderNames,
   isKnownPlaceholder,
   computeChapterAttrs,
+  computeChapterNumbers,
   type PlaceholderContext,
 } from '../pipeline/placeholders';
 import { resolveDesignPlaceholders, isAllowedPlaceholder, type DesignPlaceholderContext } from '../design/placeholders';
@@ -132,5 +133,22 @@ describe('{attr.*} end to end', () => {
     expect(heading.attrs).toEqual({ author: 'I. Zango' });
     expect(heading.lines.map((l) => l.text).join(' ')).toBe('Title');
     expect(doc.pages[0]!.header?.blocks[0]).toMatchObject({ kind: 'text', lines: [{ text: 'by I. Zango' }] });
+  });
+});
+
+describe('{chapterNumber} without a numbering template', () => {
+  it('falls back to the chapter ordinal, counting a split heading once', () => {
+    const blocks = [h1(0, 'One'), h1(2, 'Two'), h1(2, 'Two (cont.)'), h1(4, 'Three')];
+    blocks[0]!.contentIndex = 0;
+    blocks[1]!.contentIndex = 5;
+    blocks[2]!.contentIndex = 5;
+    blocks[3]!.contentIndex = 9;
+    const numbers = computeChapterNumbers(blocks, 6, [0, 1, 2, 3, 4, 5].map(page));
+    expect(numbers).toEqual(['1', '1', '2', '2', '3', '3']);
+  });
+
+  it('prefers the rendered numbering prefix when present', () => {
+    const block = { ...h1(0, 'One'), numberPrefix: 'Chapter 4. ' } as VDTBlock;
+    expect(computeChapterNumbers([block], 1, [page(0)])).toEqual(['Chapter 4.']);
   });
 });

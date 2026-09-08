@@ -9,6 +9,11 @@ import { hasIndexedDB } from '../storage/blobStore';
 import type { Warning, WarningPayload } from '../warnings/types';
 import type { SandboxLabels } from '../types';
 
+/** Human tag for the design slot a warning points at. */
+function slotWhere(slot: string, level?: number): string {
+  return slot === 'heading' ? `H${level ?? ''}` : slot;
+}
+
 function iconFor(kind: WarningPayload['kind']) {
   switch (kind) {
     case 'missingFont':
@@ -170,9 +175,9 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'unclosedMath':
       return `${payload.delimiter}${payload.tex.slice(0, 40)}…`;
     case 'headerFooterUnknownPlaceholder':
-      return `${payload.slot} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
+      return `${slotWhere(payload.slot, payload.level)} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
     case 'headerFooterMetadataMissing':
-      return `${payload.slot} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
+      return `${slotWhere(payload.slot, payload.level)} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
     case 'unknownDirective':
       return `:::${payload.name} — ${labels.warningsUnknownDirectiveDetail.replace('__names__', KNOWN_FENCE_NAMES)}`;
     case 'unclosedContainer':
@@ -194,15 +199,15 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'alphaPdfOverflow':
       return labels.warningsAlphaPdfOverflowDetail;
     case 'designCyclicAnchor': {
-      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      const where = slotWhere(payload.slot, payload.level);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail ?? 'anchor chain loops back to this element'}`;
     }
     case 'designDanglingAnchor': {
-      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      const where = slotWhere(payload.slot, payload.level);
       return `${where} · #${payload.elementId} → #${payload.referencedId} — ${labels.warningsDesignDanglingAnchorDetail ?? 'referenced element does not exist'}`;
     }
     case 'designTextClipAlwaysTruncates': {
-      const where = payload.slot === 'heading' ? `H${payload.level}` : payload.slot;
+      const where = slotWhere(payload.slot, payload.level);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignTextClipAlwaysTruncatesDetail ?? 'overflow clip with a small box always truncates'}`;
     }
     case 'headingSpanWithoutBreak':

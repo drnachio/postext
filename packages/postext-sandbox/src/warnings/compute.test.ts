@@ -103,3 +103,66 @@ describe('header/footer placeholder warnings', () => {
     );
   });
 });
+
+describe('design slot placeholder warnings', () => {
+  const text = (content: string) => ({
+    kind: 'text' as const,
+    id: 'text1',
+    content,
+    fontSize: { value: 8, unit: 'pt' as const },
+    overflow: 'wrap' as const,
+    placement: { anchor: { to: 'container' as const, edge: 'top' as const } },
+  });
+
+  it('validates the part opener with the part placeholder set', () => {
+    const config: PostextConfig = {
+      parts: { design: { elements: [text('{partNumber} · {titleText} · {number} {bogus}')] } },
+    };
+    const found = find('', 'headerFooterUnknownPlaceholder', config);
+    expect(found.map((w) => [w.payload.slot, w.payload.name])).toEqual([['part', 'bogus']]);
+  });
+
+  it('keeps the heading-only names out of headers', () => {
+    const config: PostextConfig = { header: { elements: [text('{titleText} {partTitle}')] } };
+    const found = find('', 'headerFooterUnknownPlaceholder', config);
+    expect(found.map((w) => w.payload.name)).toEqual(['titleText']);
+  });
+
+  it('tags heading advanced designs with their level', () => {
+    const config: PostextConfig = {
+      headings: {
+        levels: [{ level: 2, advancedDesign: { enabled: true, slot: { elements: [text('{titleText} {nope}')] } } }],
+      },
+    };
+    const found = find('', 'headerFooterUnknownPlaceholder', config);
+    expect(found.map((w) => [w.payload.slot, w.payload.level, w.payload.name])).toEqual([['heading', 2, 'nope']]);
+  });
+
+  it('checks anchors inside the part opener', () => {
+    const config: PostextConfig = {
+      parts: {
+        design: {
+          elements: [{ ...text('{titleText}'), placement: { anchor: { to: '#ghost', edge: 'below' } } }],
+        },
+      },
+    };
+    const found = find('', 'designDanglingAnchor', config);
+    expect(found.map((w) => [w.payload.slot, w.payload.referencedId])).toEqual([['part', 'ghost']]);
+  });
+});
+
+describe('callout icon resources', () => {
+  it('does not flag a resource used as a callout icon as unused', () => {
+    const resource = {
+      id: 'icon-note', typeId: 'figure', kind: 'svg' as const, caption: '',
+      createdAt: 0, updatedAt: 0, svg: { fileId: 'f' },
+    };
+    const warnings = computeWarnings({
+      markdown: 'Hello',
+      config: { calloutStyles: [{ id: 'note', icon: { kind: 'resource', resourceId: 'icon-note' } }] },
+      resources: [resource],
+      doc: null,
+    } as never);
+    expect(warnings.some((w) => w.payload.kind === 'unusedResource')).toBe(false);
+  });
+});

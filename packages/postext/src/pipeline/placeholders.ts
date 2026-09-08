@@ -98,7 +98,24 @@ export function computeChapterNumbers(
   totalPages: number,
   pages?: ChapterTitlePageInfo[],
 ): string[] {
-  return computeChapterValues(blocks, totalPages, pages, (b) => b.numberPrefix ?? '', '');
+  // Without a level-1 numbering template the prefix is empty; fall back to
+  // the chapter's ordinal so `{chapterNumber}` still counts chapters.
+  let ordinal = 0;
+  let lastContentIndex: number | undefined;
+  return computeChapterValues(
+    blocks,
+    totalPages,
+    pages,
+    (b) => {
+      // A heading split across columns yields several blocks with the same
+      // content index; count the chapter once.
+      if (b.contentIndex === undefined || b.contentIndex !== lastContentIndex) ordinal++;
+      lastContentIndex = b.contentIndex;
+      const prefix = b.numberPrefix?.trim() ?? '';
+      return prefix.length > 0 ? prefix : String(ordinal);
+    },
+    '',
+  );
 }
 
 /**

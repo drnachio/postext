@@ -13,6 +13,7 @@ import { LayoutSection } from './sections/LayoutSection';
 import { HeaderFooterSection } from './sections/HeaderFooterSection';
 import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
+import { PartsSection } from './sections/PartsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
 import { MathSection } from './sections/MathSection';
@@ -133,6 +134,7 @@ export function ConfigPanel() {
         <HeaderFooterSection />
         <BodyTextSection />
         <HeadingsSection />
+        <PartsSection />
         <UnorderedListsSection />
         <OrderedListsSection />
         <MathSection />

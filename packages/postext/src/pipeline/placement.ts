@@ -140,8 +140,11 @@ export function bandUsedBottom(cols: readonly VDTColumn[]): number {
 /**
  * Close the band formed by `cols` at `cutY`, insert a full-width span column
  * holding `block` right below the cut, and open a fresh band of text columns
- * under it. The band's columns are clamped to `cutY` (`availableHeight = 0`)
- * — a column whose top already sits at the cut becomes zero-height. The span
+ * under it. The band's columns are clamped to `cutY` — a column whose top
+ * already sits at the cut becomes zero-height — and keep only the slack
+ * between their used bottom and the cut in `availableHeight` (zero when the
+ * band is level on the grid; whole lines when a band cap cut the band with
+ * its last column short, so column balancing can still fill them). The span
  * column is `{ kind: 'span', band }` at `contentArea.x / width`, `needPx`
  * tall (the block plus its spacing, already rounded to the grid by the
  * caller); `block` is placed inside it at `spacingBefore` below the cut with
@@ -169,9 +172,10 @@ export function closeBandAndInsertSpan(
   const band = cols[0]?.band ?? 0;
   const bottoms = cols.map((c) => c.bbox.y + c.bbox.height);
   for (const c of cols) {
+    const used = c.bbox.height - c.availableHeight;
     c.band = band;
     c.bbox.height = Math.max(0, cutY - c.bbox.y);
-    c.availableHeight = 0;
+    c.availableHeight = Math.max(0, c.bbox.height - used);
   }
 
   const spanCol = createVDTColumn(
