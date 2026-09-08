@@ -194,6 +194,9 @@ export function measureHeadingAdvancedDesignHeight(
 export interface SlotLayoutExtras {
   frames?: DesignFrames;
   pageRole?: PageRole;
+  /** Source range of the text `{titleText}` renders; stamped on the text
+   *  blocks whose element content mentions the placeholder. */
+  titleSource?: { start: number; end: number };
 }
 
 export function layoutSlotToVdt(
@@ -210,7 +213,17 @@ export function layoutSlotToVdt(
     pageIndex,
   );
   if (result.primitives.length === 0) return undefined;
-  const blocks = result.primitives.map(primitiveToBlock);
+  const titleElementIds = extras?.titleSource
+    ? new Set(slot.elements.filter((el) => el.kind === 'text' && el.content.includes('{titleText}')).map((el) => el.id))
+    : undefined;
+  const blocks = result.primitives.map((prim) => {
+    const block = primitiveToBlock(prim);
+    if (block.kind === 'text' && titleElementIds?.has(prim.id) && extras?.titleSource) {
+      block.sourceStart = extras.titleSource.start;
+      block.sourceEnd = extras.titleSource.end;
+    }
+    return block;
+  });
   return {
     bbox: createBoundingBox(container.x, container.y, container.width, container.height),
     blocks,
@@ -394,13 +407,16 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
         },
       };
+      const partTitleSource = page.partInfo.titleSourceStart !== undefined && page.partInfo.titleSourceEnd !== undefined
+        ? { start: page.partInfo.titleSourceStart, end: page.partInfo.titleSourceEnd }
+        : undefined;
       page.openerBand = layoutSlotToVdt(
         slot,
         { x: frames.page.x, y: frames.page.y, width: frames.page.width, height: frames.page.height },
         page.index,
         placeholders,
         dpi,
-        extras,
+        { ...extras, titleSource: partTitleSource },
       );
     }
     const opener = findOpenerHeading(page, headingLevelByNumber);
@@ -427,13 +443,19 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
             attrs: opener.block.attrs,
           },
         };
+        const headingMap = opener.block.sourceMap;
+        const headingTitleSource = headingMap && headingMap.length > 0
+          ? { start: headingMap[0]!, end: headingMap[headingMap.length - 1]! + 1 }
+          : opener.block.sourceStart !== undefined && opener.block.sourceEnd !== undefined
+            ? { start: opener.block.sourceStart, end: opener.block.sourceEnd }
+            : undefined;
         page.openerBand = layoutSlotToVdt(
           slot,
           openerContainerBbox(opener.block, contentArea),
           page.index,
           placeholders,
           dpi,
-          extras,
+          { ...extras, titleSource: headingTitleSource },
         );
         if (page.openerBand) {
           opener.block.hidden = true;

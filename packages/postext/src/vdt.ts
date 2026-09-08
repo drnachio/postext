@@ -389,6 +389,11 @@ export interface VDTDesignTextBlock {
   box?: VDTDesignBoxStyle;
   /** Whether rendering should clip to `bbox`. */
   clip: boolean;
+  /** Source range of the text this block displays when it mirrors document
+   *  text (an opener's `{titleText}`), so editors can map clicks on the
+   *  band back to the markdown. */
+  sourceStart?: number;
+  sourceEnd?: number;
 }
 
 /** Rendered rule inside a design slot. */
@@ -452,7 +457,7 @@ export interface VDTPage {
   role?: PageRole;
   /** Present on part-divider pages: the part number and title. Marks the
    *  page as `role: 'part'`. */
-  partInfo?: { number: string; title: string };
+  partInfo?: { number: string; title: string; titleSourceStart?: number; titleSourceEnd?: number };
   columns: VDTColumn[];
   header?: VDTDesignSlot;
   footer?: VDTDesignSlot;

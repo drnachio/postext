@@ -60,7 +60,7 @@ export function createPartPage(
   page: VDTPage,
   metrics: Pick<PageMetrics, 'trimBox' | 'pageWidthPx'>,
   resolved: ResolvedConfig,
-  info: { number: string; title: string },
+  info: { number: string; title: string; titleSourceStart?: number; titleSourceEnd?: number },
 ): VDTPage {
   const dpi = resolved.page.dpi;
   const m = resolved.parts.margins;
@@ -79,7 +79,12 @@ export function createPartPage(
   if (m.mirror && isEvenPage) area = mirrorContentArea(area, metrics.pageWidthPx);
   page.contentArea = area;
   page.columns = [createVDTColumn(0, area)];
-  page.partInfo = { number: info.number, title: info.title };
+  page.partInfo = {
+    number: info.number,
+    title: info.title,
+    titleSourceStart: info.titleSourceStart,
+    titleSourceEnd: info.titleSourceEnd,
+  };
   page.role = 'part';
   return page;
 }

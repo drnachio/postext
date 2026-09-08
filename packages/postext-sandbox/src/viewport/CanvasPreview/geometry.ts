@@ -231,7 +231,20 @@ export function pixelToSourceOffset(
     hitBlock = b;
     break;
   }
-  if (!hitBlock) return null;
+  if (!hitBlock) {
+    // Opener bands render the heading / part title through a design slot;
+    // those text blocks carry the title's source range, so a click on them
+    // still lands the cursor in the editor (proportionally along the text).
+    const band = doc.pages[pageIndex]?.openerBand;
+    for (const b of band?.blocks ?? []) {
+      if (b.kind !== 'text' || b.sourceStart === undefined || b.sourceEnd === undefined) continue;
+      const { x, y, width, height } = b.bbox;
+      if (xPage < x || xPage > x + width || yPage < y || yPage > y + height) continue;
+      const ratio = width > 0 ? Math.max(0, Math.min(1, (xPage - x) / width)) : 0;
+      return b.sourceStart + Math.round(ratio * (b.sourceEnd - b.sourceStart));
+    }
+    return null;
+  }
 
   // 2. Find the line whose vertical band contains yPage; snap to nearest if
   //    click is in the gap between lines.

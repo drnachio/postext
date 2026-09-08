@@ -948,7 +948,19 @@ export function buildDocumentPass(
         leaveCurrentPage();
         enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, resolved.parts.breakBefore.parity);
         cursor.columnIndex = 0;
-        createPartPage(doc.pages[cursor.pageIndex]!, pageMetrics, resolved, { number: plan.number, title: plan.title });
+        // Map the opener's title back to the `title="…"` attribute of the
+        // fence so the editor can place the cursor from a click on the band.
+        const fenceStart = rawBlock.sourceStart + bodyOffset;
+        const fenceText = markdownBody.slice(rawBlock.sourceStart, rawBlock.sourceEnd);
+        const titleAttr = /\btitle\s*=\s*(["'])/.exec(fenceText);
+        const titleSourceStart = titleAttr ? fenceStart + titleAttr.index + titleAttr[0].length : fenceStart;
+        const titleSourceEnd = titleAttr ? titleSourceStart + plan.title.length : rawBlock.sourceEnd + bodyOffset;
+        createPartPage(doc.pages[cursor.pageIndex]!, pageMetrics, resolved, {
+          number: plan.number,
+          title: plan.title,
+          titleSourceStart,
+          titleSourceEnd,
+        });
         flushPendingNumberingAtBoundary();
         continue;
       }
