@@ -456,6 +456,17 @@ export interface SandboxLabels {
   orderedListLevelIndentTooltip: string;
   orderedListLevelVerticalOffset: string;
   orderedListLevelVerticalOffsetTooltip: string;
+  orderedListsSeparatorStyle: string;
+  orderedListsSeparatorFont: string;
+  orderedListsSeparatorFontTooltip: string;
+  orderedListsSeparatorColor: string;
+  orderedListsSeparatorColorTooltip: string;
+  orderedListsSeparatorFontWeight: string;
+  orderedListsSeparatorFontWeightTooltip: string;
+  orderedListsSeparatorItalic: string;
+  orderedListsSeparatorItalicTooltip: string;
+  orderedListsSeparatorGap: string;
+  orderedListsSeparatorGapTooltip: string;
 
   // Layout section
   layout: string;
@@ -1021,6 +1032,10 @@ export interface SandboxLabels {
   partsBodyBulletColorTooltip: string;
   partsBodyNumberColor: string;
   partsBodyNumberColorTooltip: string;
+  partsOrderedLists: string;
+  partsOrderedListsInfo: string;
+  partsUnorderedLists: string;
+  partsUnorderedListsInfo: string;
   headerFooterPlaceholderPartTitle: string;
   headerFooterPlaceholderPartNumber: string;
   headerFooterPlaceholderNumberDecimal: string;

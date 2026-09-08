@@ -6,7 +6,9 @@
  */
 
 import type { ContentBlock } from '../parse';
+import type { ColorValue, Dimension } from '../types';
 import type { ResolvedConfig } from '../vdt';
+import { dimensionsEqual } from '../defaults/shared';
 import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
 import {
   computeLevelIndentsPx,
@@ -97,19 +99,155 @@ export function parsePartNumber(raw: string): number | undefined {
   return total;
 }
 
+type Eq = (a: unknown, b: unknown) => boolean;
+const eqStrict: Eq = (a, b) => a === b;
+const eqDim: Eq = (a, b) =>
+  a !== undefined && b !== undefined && dimensionsEqual(a as Dimension, b as Dimension);
+const eqColor: Eq = (a, b) =>
+  a !== undefined && b !== undefined && (a as ColorValue).hex === (b as ColorValue).hex;
+
+/** How one partial-config field maps onto the resolved list config. */
+interface ListFieldSpec {
+  /** Key on the list-wide config (and on the partial override). */
+  key: string;
+  /** Key on the level configs; omitted for list-wide-only fields. */
+  levelKey?: string;
+  eq: Eq;
+  /** Fields whose resolved default is this field's value (the separator
+   *  style inherits the number style); they follow it while still equal. */
+  dependents?: Array<{ key: string; levelKey: string }>;
+  /** Level key this field's resolved default comes from (the number style
+   *  for the separator fields): a level value equal to it is inherited too. */
+  inheritsFrom?: string;
+}
+
+const UNORDERED_FIELDS: ListFieldSpec[] = [
+  { key: 'fontFamily', levelKey: 'fontFamily', eq: eqStrict },
+  { key: 'color', levelKey: 'color', eq: eqColor },
+  { key: 'fontWeight', levelKey: 'fontWeight', eq: eqStrict },
+  { key: 'italic', levelKey: 'italic', eq: eqStrict },
+  { key: 'bulletChar', levelKey: 'bulletChar', eq: eqStrict },
+  { key: 'bulletFontSize', levelKey: 'fontSize', eq: eqDim },
+  { key: 'gap', eq: eqDim },
+  { key: 'indent', levelKey: 'indent', eq: eqDim },
+  { key: 'bulletVerticalOffset', levelKey: 'verticalOffset', eq: eqDim },
+  { key: 'marginTop', eq: eqDim },
+  { key: 'marginBottom', eq: eqDim },
+  { key: 'itemSpacing', eq: eqDim },
+  { key: 'hangingIndent', eq: eqStrict },
+  { key: 'taskCheckboxChar', eq: eqStrict },
+  { key: 'taskCheckedChar', eq: eqStrict },
+  { key: 'taskCompletedStrikethrough', eq: eqStrict },
+  { key: 'taskCompletedColor', eq: eqColor },
+];
+
+const ORDERED_FIELDS: ListFieldSpec[] = [
+  {
+    key: 'fontFamily', levelKey: 'fontFamily', eq: eqStrict,
+    dependents: [{ key: 'separatorFontFamily', levelKey: 'separatorFontFamily' }],
+  },
+  {
+    key: 'color', levelKey: 'color', eq: eqColor,
+    dependents: [{ key: 'separatorColor', levelKey: 'separatorColor' }],
+  },
+  {
+    key: 'fontWeight', levelKey: 'fontWeight', eq: eqStrict,
+    dependents: [{ key: 'separatorFontWeight', levelKey: 'separatorFontWeight' }],
+  },
+  {
+    key: 'italic', levelKey: 'italic', eq: eqStrict,
+    dependents: [{ key: 'separatorItalic', levelKey: 'separatorItalic' }],
+  },
+  { key: 'numberFormat', levelKey: 'numberFormat', eq: eqStrict },
+  { key: 'separator', levelKey: 'separator', eq: eqStrict },
+  { key: 'numberFontSize', levelKey: 'fontSize', eq: eqDim },
+  { key: 'gap', eq: eqDim },
+  { key: 'indent', levelKey: 'indent', eq: eqDim },
+  { key: 'numberVerticalOffset', levelKey: 'verticalOffset', eq: eqDim },
+  { key: 'marginTop', eq: eqDim },
+  { key: 'marginBottom', eq: eqDim },
+  { key: 'itemSpacing', eq: eqDim },
+  { key: 'hangingIndent', eq: eqStrict },
+  { key: 'separatorFontFamily', levelKey: 'separatorFontFamily', eq: eqStrict, inheritsFrom: 'fontFamily' },
+  { key: 'separatorFontWeight', levelKey: 'separatorFontWeight', eq: eqStrict, inheritsFrom: 'fontWeight' },
+  { key: 'separatorItalic', levelKey: 'separatorItalic', eq: eqStrict, inheritsFrom: 'italic' },
+  { key: 'separatorColor', levelKey: 'separatorColor', eq: eqColor, inheritsFrom: 'color' },
+  { key: 'separatorGap', levelKey: 'separatorGap', eq: eqDim },
+];
+
+/**
+ * Apply a partial list config on top of a resolved one. A list-wide value
+ * propagates to every level (and dependent field) whose current value still
+ * equals the value it was resolved from — a level with its own value keeps
+ * it (the same heuristic the callout overrides use). Entries in `levels`
+ * then apply directly to their level.
+ */
+function applyListOverrides<B extends { levels: L[] }, L extends { level: number }>(
+  base: B,
+  override: object | undefined,
+  specs: ListFieldSpec[],
+): B {
+  if (!override) return base;
+  const ov = override as Record<string, unknown>;
+  const out = { ...base } as Record<string, unknown>;
+  const levels = base.levels.map((l) => ({ ...l }) as Record<string, unknown>);
+  const setField = (target: Record<string, unknown>, spec: ListFieldSpec, onLevel: boolean, value: unknown) => {
+    const key = onLevel ? spec.levelKey! : spec.key;
+    const prev = target[key];
+    target[key] = value;
+    for (const dep of spec.dependents ?? []) {
+      const depKey = onLevel ? dep.levelKey : dep.key;
+      if (spec.eq(target[depKey], prev)) target[depKey] = value;
+    }
+  };
+  for (const spec of specs) {
+    const value = ov[spec.key];
+    if (value === undefined) continue;
+    const prevGeneral = out[spec.key];
+    setField(out, spec, false, value);
+    if (!spec.levelKey) continue;
+    for (const l of levels) {
+      const current = l[spec.levelKey];
+      const inherited =
+        spec.eq(current, prevGeneral) ||
+        (spec.inheritsFrom !== undefined && spec.eq(current, l[spec.inheritsFrom]));
+      if (inherited) setField(l, spec, true, value);
+    }
+  }
+  const levelOverrides = (ov.levels as Array<Record<string, unknown>> | undefined) ?? [];
+  for (const lo of levelOverrides) {
+    const target = levels.find((l) => l.level === lo.level);
+    if (!target) continue;
+    for (const spec of specs) {
+      if (!spec.levelKey) continue;
+      const value = lo[spec.levelKey];
+      if (value !== undefined) setField(target, spec, true, value);
+    }
+  }
+  out.levels = levels;
+  return out as unknown as B;
+}
+
 /** Shallow copy of `resolved` whose `bodyText` and list configs carry the
  *  `parts.bodyStyle` overrides, so the body/list resolvers yield the part
  *  typography without any part-specific branches (the callout approach).
  *  Ordered-list numbers are set bold in `numberColor`; bullets take
- *  `bulletColor`. Level-specific colours only follow the override when it
- *  differs from the general value they were resolved from. */
+ *  `bulletColor`. Level-specific values only follow an override when they
+ *  still equal the general value they were resolved from. The
+ *  `bodyStyle.unorderedLists` / `orderedLists` partials apply last. */
 export function derivePartResolvedConfig(resolved: ResolvedConfig): ResolvedConfig {
   const { bodyStyle } = resolved.parts;
-  const ul = resolved.unorderedLists;
-  const ol = resolved.orderedLists;
   const bold = resolved.bodyText.boldFontWeight;
-  const bulletOverride = bodyStyle.bulletColor.hex !== ul.color.hex;
-  const numberOverride = bodyStyle.numberColor.hex !== ol.color.hex;
+  const unorderedLists = applyListOverrides(
+    applyListOverrides(resolved.unorderedLists, { color: bodyStyle.bulletColor }, UNORDERED_FIELDS),
+    bodyStyle.unorderedLists,
+    UNORDERED_FIELDS,
+  );
+  const orderedLists = applyListOverrides(
+    applyListOverrides(resolved.orderedLists, { color: bodyStyle.numberColor, fontWeight: bold }, ORDERED_FIELDS),
+    bodyStyle.orderedLists,
+    ORDERED_FIELDS,
+  );
   return {
     ...resolved,
     bodyText: {
@@ -120,21 +258,8 @@ export function derivePartResolvedConfig(resolved: ResolvedConfig): ResolvedConf
       color: bodyStyle.color,
       textAlign: bodyStyle.textAlign,
     },
-    unorderedLists: {
-      ...ul,
-      color: bodyStyle.bulletColor,
-      levels: ul.levels.map((l) => ({ ...l, color: bulletOverride ? bodyStyle.bulletColor : l.color })),
-    },
-    orderedLists: {
-      ...ol,
-      color: bodyStyle.numberColor,
-      fontWeight: bold,
-      levels: ol.levels.map((l) => ({
-        ...l,
-        fontWeight: bold,
-        color: numberOverride ? bodyStyle.numberColor : l.color,
-      })),
-    },
+    unorderedLists,
+    orderedLists,
   };
 }
 

@@ -20,6 +20,7 @@ export function collectFontStrings(doc: VDTDocument): string[] {
     if (block.italicFontString) out.add(block.italicFontString);
     if (block.boldItalicFontString) out.add(block.boldItalicFontString);
     if (block.bulletFontString) out.add(block.bulletFontString);
+    if (block.separatorFontString) out.add(block.separatorFontString);
     // Resource caption + table cell fonts (issue #49).
     const rb = block.resourceBlock;
     if (rb) {

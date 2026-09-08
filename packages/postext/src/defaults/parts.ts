@@ -50,8 +50,27 @@ export function resolvePartsConfig(
       textAlign: partial?.bodyStyle?.textAlign ?? bodyText.textAlign,
       bulletColor: partial?.bodyStyle?.bulletColor ?? unorderedLists.color,
       numberColor: partial?.bodyStyle?.numberColor ?? orderedLists.color,
+      ...(partial?.bodyStyle?.unorderedLists ? { unorderedLists: partial.bodyStyle.unorderedLists } : {}),
+      ...(partial?.bodyStyle?.orderedLists ? { orderedLists: partial.bodyStyle.orderedLists } : {}),
     },
   };
+}
+
+/** Drop undefined fields (and empty level entries) of a part list override;
+ *  every defined value is kept since the effective default is the document's
+ *  own list config. `undefined` when nothing remains. */
+function stripPartListOverride<T extends { levels?: Array<{ level: number }> }>(lists: T | undefined): T | undefined {
+  if (!lists) return undefined;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(lists)) {
+    if (v === undefined || k === 'levels') continue;
+    out[k] = v;
+  }
+  const levels = (lists.levels ?? [])
+    .map((l) => Object.fromEntries(Object.entries(l).filter(([, v]) => v !== undefined)))
+    .filter((l) => Object.keys(l).some((k) => k !== 'level'));
+  if (levels.length > 0) out.levels = levels;
+  return Object.keys(out).length > 0 ? (out as T) : undefined;
 }
 
 function stripObject<T extends object>(obj: T): T | undefined {
@@ -103,6 +122,10 @@ export function stripPartsDefaults(parts: PartsConfig | undefined): PartsConfig 
     if (parts.bodyStyle.textAlign !== undefined) b.textAlign = parts.bodyStyle.textAlign;
     if (parts.bodyStyle.bulletColor !== undefined) b.bulletColor = parts.bodyStyle.bulletColor;
     if (parts.bodyStyle.numberColor !== undefined) b.numberColor = parts.bodyStyle.numberColor;
+    const ul = stripPartListOverride(parts.bodyStyle.unorderedLists);
+    if (ul) b.unorderedLists = ul;
+    const ol = stripPartListOverride(parts.bodyStyle.orderedLists);
+    if (ol) b.orderedLists = ol;
     const kept = stripObject(b);
     if (kept) r.bodyStyle = kept;
   }

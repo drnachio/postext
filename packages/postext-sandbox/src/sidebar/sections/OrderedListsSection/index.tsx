@@ -113,7 +113,27 @@ export const OrderedListsSection = memo(function OrderedListsSection() {
     }
   };
 
+  const SEPARATOR_FIELDS = [
+    'separatorFontFamily',
+    'separatorFontWeight',
+    'separatorItalic',
+    'separatorColor',
+    'separatorGap',
+  ] as const satisfies ReadonlyArray<keyof OrderedListsConfig>;
+
+  const resetSeparatorStyle = () => {
+    if (!raw) return;
+    const next = { ...raw };
+    for (const field of SEPARATOR_FIELDS) delete next[field];
+    const hasKeys = Object.keys(next).length > 0;
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { orderedLists: hasKeys ? next : undefined },
+    });
+  };
+
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
+  const hasSeparatorOverrides = raw !== undefined && SEPARATOR_FIELDS.some((f) => raw[f] !== undefined);
   const isFontDefault = lists.fontFamily === bodyText.fontFamily;
   const isColorDefault = colorsEqual(lists.color, bodyText.color);
   const isFontWeightDefault = lists.fontWeight === D.fontWeight;
@@ -280,6 +300,65 @@ export const OrderedListsSection = memo(function OrderedListsSection() {
         isDefault={isHangingDefault}
         onReset={() => resetField('hangingIndent')}
       />
+
+      <CollapsibleSection
+        title={labels.orderedListsSeparatorStyle}
+        sectionId="ol-separator"
+        onReset={resetSeparatorStyle}
+        hasOverrides={hasSeparatorOverrides}
+        resetLabel={labels.reset}
+        resetConfirmMessage={labels.resetSectionConfirm}
+      >
+        <FontPicker
+          label={labels.orderedListsSeparatorFont}
+          value={lists.separatorFontFamily}
+          onChange={(f) => updateLists({ separatorFontFamily: f })}
+          tooltip={labels.orderedListsSeparatorFontTooltip}
+          isDefault={raw?.separatorFontFamily === undefined}
+          onReset={() => resetField('separatorFontFamily')}
+          searchPlaceholder={labels.orderedListsFontSearch}
+          noResultsLabel={labels.orderedListsFontNoResults}
+        />
+        <ColorPicker
+          label={labels.orderedListsSeparatorColor}
+          value={lists.separatorColor}
+          onChange={(color) => updateLists({ separatorColor: color })}
+          tooltip={labels.orderedListsSeparatorColorTooltip}
+          isDefault={raw?.separatorColor === undefined}
+          onReset={() => resetField('separatorColor')}
+          fieldId="ordered-lists-separator-color"
+        />
+        <NumberInput
+          label={labels.orderedListsSeparatorFontWeight}
+          value={lists.separatorFontWeight}
+          onChange={(w) => updateLists({ separatorFontWeight: w })}
+          min={100}
+          max={900}
+          step={10}
+          tooltip={labels.orderedListsSeparatorFontWeightTooltip}
+          isDefault={raw?.separatorFontWeight === undefined}
+          onReset={() => resetField('separatorFontWeight')}
+        />
+        <ToggleSwitch
+          label={labels.orderedListsSeparatorItalic}
+          checked={lists.separatorItalic}
+          onChange={(v) => updateLists({ separatorItalic: v })}
+          tooltip={labels.orderedListsSeparatorItalicTooltip}
+          isDefault={raw?.separatorItalic === undefined}
+          onReset={() => resetField('separatorItalic')}
+        />
+        <DimensionInput
+          label={labels.orderedListsSeparatorGap}
+          value={lists.separatorGap}
+          onChange={(dim) => updateLists({ separatorGap: dim })}
+          min={0}
+          step={0.05}
+          tooltip={labels.orderedListsSeparatorGapTooltip}
+          isDefault={dimensionsEqual(lists.separatorGap, D.separatorGap)}
+          onReset={() => resetField('separatorGap')}
+          units={INDENT_UNITS}
+        />
+      </CollapsibleSection>
 
       {lists.levels.map((resolved) => (
         <OrderedListLevelSection

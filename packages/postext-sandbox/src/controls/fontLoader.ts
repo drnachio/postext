@@ -158,7 +158,22 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
   families.add(lists.fontFamily);
   for (const level of lists.levels) families.add(level.fontFamily);
   families.add(ordered.fontFamily);
-  for (const level of ordered.levels) families.add(level.fontFamily);
+  families.add(ordered.separatorFontFamily);
+  for (const level of ordered.levels) {
+    families.add(level.fontFamily);
+    families.add(level.separatorFontFamily);
+  }
+  // Part list overrides (partial configs applied inside `:::part`).
+  const partLists = [config.parts?.bodyStyle?.unorderedLists, config.parts?.bodyStyle?.orderedLists];
+  for (const lists of partLists) {
+    if (!lists) continue;
+    if (lists.fontFamily) families.add(lists.fontFamily);
+    if ('separatorFontFamily' in lists && lists.separatorFontFamily) families.add(lists.separatorFontFamily);
+    for (const level of lists.levels ?? []) {
+      if (level.fontFamily) families.add(level.fontFamily);
+      if ('separatorFontFamily' in level && level.separatorFontFamily) families.add(level.separatorFontFamily);
+    }
+  }
   return Array.from(families);
 }
 

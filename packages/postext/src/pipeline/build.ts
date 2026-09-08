@@ -1130,6 +1130,12 @@ export function buildDocumentPass(
       // `indentPx + (maxNumberWidth - thisNumberWidth)` for ordered — giving
       // the right-aligned separator.
       blk.bulletOffsetX = blk.bbox.x + bulletXOffsetInColumn;
+      if (listBullet.separatorText !== undefined) {
+        blk.separatorText = listBullet.separatorText;
+        blk.separatorFontString = listBullet.separatorFontString;
+        blk.separatorColor = listBullet.separatorColor;
+        blk.separatorX = blk.bulletOffsetX + (listBullet.separatorOffsetPx ?? 0);
+      }
       if (strikethroughText) blk.strikethroughText = true;
       // Bullet Y = x-height midpoint of the item's first text line.
       // Pairs with `textBaseline='middle'` at render so the bullet stays

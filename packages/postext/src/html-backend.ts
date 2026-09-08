@@ -194,17 +194,24 @@ function renderBullet(block: VDTBlock): string {
   // Canvas uses `textBaseline='middle'` at `bulletY` to center the em square
   // on the x-height; in HTML we get the equivalent alignment naturally when
   // both bullet and line share top/height and font metrics.
-  return (
-    `<div class="pt-bullet" aria-hidden="true" style="` +
+  const markerDiv = (cls: string, x: number, font: string, color: string, text: string): string =>
+    `<div class="${cls}" aria-hidden="true" style="` +
     `position:absolute;` +
-    `left:${block.bulletOffsetX}px;` +
+    `left:${x}px;` +
     `top:${firstLine.bbox.y}px;` +
     `height:${firstLine.bbox.height}px;` +
-    `font:${bulletFont};` +
-    `color:${bulletColor};` +
+    `font:${font};` +
+    `color:${color};` +
     `white-space:pre;` +
-    `">${esc(block.bulletText)}</div>`
-  );
+    `">${esc(text)}</div>`;
+  let html = markerDiv('pt-bullet', block.bulletOffsetX, bulletFont, bulletColor, block.bulletText);
+  // Ordered-list separator styled apart from the number (own font/colour).
+  if (block.separatorText && block.separatorX !== undefined) {
+    const separatorFont = quoteFontString(block.separatorFontString ?? block.bulletFontString ?? block.fontString);
+    const separatorColor = block.separatorColor ?? bulletColor;
+    html += markerDiv('pt-separator', block.separatorX, separatorFont, separatorColor, block.separatorText);
+  }
+  return html;
 }
 
 function renderLine(line: VDTLine, block: VDTBlock): string {

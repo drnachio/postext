@@ -217,6 +217,12 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   ctx.font = block.bulletFontString;
   const y = block.bulletY ?? firstLine.baseline;
   ctx.fillText(block.bulletText, block.bulletOffsetX, y);
+  // Ordered-list separator styled apart from the number (own font/colour).
+  if (block.separatorText && block.separatorX !== undefined) {
+    ctx.fillStyle = block.separatorColor ?? block.bulletColor ?? block.color;
+    ctx.font = block.separatorFontString ?? block.bulletFontString;
+    ctx.fillText(block.separatorText, block.separatorX, y);
+  }
   ctx.restore();
 }
 

@@ -1563,6 +1563,36 @@ La propiedad `orderedLists` controla las listas numeradas (`1.`, `2)`, etc.). Se
       <td>Carácter situado entre el número y el texto — normalmente <code>'.'</code> o <code>')'</code>.</td>
     </tr>
     <tr>
+      <td><code>separatorFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>hereda <code>fontFamily</code></td>
+      <td>Fuente del separador. Cuando algún estilo del separador difiere del número, el separador se dibuja como una tirada propia tras el número (alineado a la derecha) — p. ej. <code>1</code> en Optima Bold negro seguido de <code>•</code> en DIN Pro Bold azul.</td>
+    </tr>
+    <tr>
+      <td><code>separatorFontWeight</code></td>
+      <td><code>number</code></td>
+      <td>hereda <code>fontWeight</code></td>
+      <td>Peso del separador (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>separatorItalic</code></td>
+      <td><code>boolean</code></td>
+      <td>hereda <code>italic</code></td>
+      <td>Renderiza el separador en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>separatorColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>hereda <code>color</code></td>
+      <td>Color del separador. Se respetan las referencias a la paleta.</td>
+    </tr>
+    <tr>
+      <td><code>separatorGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Espacio entre el número y el separador. El texto del elemento sigue empezando <code>gap</code> después del separador.</td>
+    </tr>
+    <tr>
       <td><code>numberFontSize</code></td>
       <td><code>Dimension</code></td>
       <td><code>1 em</code></td>
@@ -1615,7 +1645,7 @@ La propiedad `orderedLists` controla las listas numeradas (`1.`, `2)`, etc.). Se
 
 ### Sobrescrituras por nivel (listas ordenadas)
 
-Cada entrada de `levels` puede sobrescribir `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent` y `verticalOffset` — se aplica el mismo encadenamiento de sangrías que en las listas no ordenadas.
+Cada entrada de `levels` puede sobrescribir `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, `verticalOffset` y el estilo del separador (`separatorFontFamily`, `separatorFontWeight`, `separatorItalic`, `separatorColor`, `separatorGap`) — se aplica el mismo encadenamiento de sangrías que en las listas no ordenadas. El estilo del separador de un nivel hereda el estilo de su propio número salvo que se indique el ajuste general del separador.
 
 **Alineación a la derecha.** El pipeline mide el número formateado más ancho dentro de cada recorrido e indenta todos los elementos de ese recorrido para que los marcadores queden alineados por su borde derecho. Una lista de diez elementos renderizada como `1.` – `10.` desplaza los números de un dígito a la derecha para que el separador caiga siempre en la misma columna.
 
@@ -2661,6 +2691,18 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td><code>orderedLists.color</code></td>
       <td>Color de los números de las listas ordenadas de dentro de la parte. Los números van siempre en el peso de negrita del cuerpo, para que una lista de capítulos se lea como un índice.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.unorderedLists</code></td>
+      <td><code>UnorderedListsConfig</code></td>
+      <td>—</td>
+      <td>Sobrescrituras parciales aplicadas sobre las <code>unorderedLists</code> del documento dentro de la parte, tras <code>bulletColor</code>. Los valores generales se propagan a los niveles que los heredaban; las entradas de <code>levels</code> se aplican solo a su nivel.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.orderedLists</code></td>
+      <td><code>OrderedListsConfig</code></td>
+      <td>—</td>
+      <td>Sobrescrituras parciales aplicadas sobre las <code>orderedLists</code> del documento dentro de la parte, tras <code>numberColor</code> y el peso de negrita — p. ej. un <code>separator</code> <code>'•'</code> con su propia <code>separatorFontFamily</code> y <code>separatorColor</code> para la lista de capítulos de una apertura de parte.</td>
     </tr>
   </tbody>
 </table>

@@ -14,12 +14,14 @@ import type {
   DesignSlot,
   DimensionUnit,
   HeadingBreakParity,
+  OrderedListsConfig,
   PageMargins,
   PartsBodyStyleConfig,
   PartsBreakAfterConfig,
   PartsBreakBeforeConfig,
   PartsConfig,
   TextAlign,
+  UnorderedListsConfig,
 } from 'postext';
 import {
   CollapsibleSection,
@@ -31,6 +33,7 @@ import {
   ToggleSwitch,
 } from '../../controls';
 import { SlotEditor } from './HeaderFooterSection/SlotEditor';
+import { PartsOrderedListsOverrides, PartsUnorderedListsOverrides } from './PartsListOverrides';
 import { breakParityOptions } from './HeadingsSection/breakParityOptions';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
@@ -93,6 +96,23 @@ export const PartsSection = memo(function PartsSection() {
     setGroup('margins', omit(raw?.margins, side));
   const resetBodyStyle = (field: keyof PartsBodyStyleConfig) =>
     setGroup('bodyStyle', omit(raw?.bodyStyle, field));
+
+  // List overrides inside the part: each group is a partial list config
+  // under `bodyStyle`; dropping its last field drops the group.
+  const updateOrderedOverride = (partial: Partial<OrderedListsConfig>) =>
+    updateBodyStyle({ orderedLists: { ...raw?.bodyStyle?.orderedLists, ...partial } });
+  const resetOrderedOverride = (field: keyof OrderedListsConfig) => {
+    const next = omit(raw?.bodyStyle?.orderedLists, field);
+    if (next) updateBodyStyle({ orderedLists: next });
+    else resetBodyStyle('orderedLists');
+  };
+  const updateUnorderedOverride = (partial: Partial<UnorderedListsConfig>) =>
+    updateBodyStyle({ unorderedLists: { ...raw?.bodyStyle?.unorderedLists, ...partial } });
+  const resetUnorderedOverride = (field: keyof UnorderedListsConfig) => {
+    const next = omit(raw?.bodyStyle?.unorderedLists, field);
+    if (next) updateBodyStyle({ unorderedLists: next });
+    else resetBodyStyle('unorderedLists');
+  };
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   const hasMarginOverrides = raw?.margins !== undefined && Object.keys(raw.margins).length > 0;
@@ -279,6 +299,22 @@ export const PartsSection = memo(function PartsSection() {
           isDefault={raw?.bodyStyle?.numberColor === undefined}
           onReset={() => resetBodyStyle('numberColor')}
           fieldId="parts-body-number-color"
+        />
+        <PartsOrderedListsOverrides
+          raw={raw?.bodyStyle?.orderedLists}
+          base={orderedLists}
+          onUpdate={updateOrderedOverride}
+          onReset={resetOrderedOverride}
+          onResetAll={() => resetBodyStyle('orderedLists')}
+          labels={labels}
+        />
+        <PartsUnorderedListsOverrides
+          raw={raw?.bodyStyle?.unorderedLists}
+          base={unorderedLists}
+          onUpdate={updateUnorderedOverride}
+          onReset={resetUnorderedOverride}
+          onResetAll={() => resetBodyStyle('unorderedLists')}
+          labels={labels}
         />
       </CollapsibleSection>
     </CollapsibleSection>

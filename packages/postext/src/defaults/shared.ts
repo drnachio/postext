@@ -1,4 +1,4 @@
-import type { CaptionStyleConfig, ColorValue, ColorPaletteEntry, Dimension, PostextConfig } from '../types';
+import type { CaptionStyleConfig, ColorValue, ColorPaletteEntry, Dimension, OrderedListsConfig, PartsBodyStyleConfig, PostextConfig, UnorderedListsConfig } from '../types';
 import type { ResolvedConfig } from '../vdt';
 
 export const DEFAULT_MAIN_COLOR_ID = 'main-color';
@@ -105,7 +105,12 @@ export function applyPaletteToResolvedConfig(
     orderedLists: {
       ...resolved.orderedLists,
       color: resolveRequired(resolved.orderedLists.color, palette),
-      levels: resolved.orderedLists.levels.map((l) => ({ ...l, color: resolveRequired(l.color, palette) })),
+      separatorColor: resolveRequired(resolved.orderedLists.separatorColor, palette),
+      levels: resolved.orderedLists.levels.map((l) => ({
+        ...l,
+        color: resolveRequired(l.color, palette),
+        separatorColor: resolveRequired(l.separatorColor, palette),
+      })),
     },
     tableStyle: {
       ...resolved.tableStyle,
@@ -147,9 +152,52 @@ export function applyPaletteToResolvedConfig(
         color: resolveRequired(resolved.parts.bodyStyle.color, palette),
         bulletColor: resolveRequired(resolved.parts.bodyStyle.bulletColor, palette),
         numberColor: resolveRequired(resolved.parts.bodyStyle.numberColor, palette),
+        ...applyPaletteToPartListOverrides(resolved.parts.bodyStyle, palette),
       },
     },
   };
+}
+
+/** Resolve palette references inside a (partial) unordered lists config. */
+function applyPaletteToUnorderedLists(
+  lists: UnorderedListsConfig,
+  palette: ColorPaletteEntry[] | undefined,
+): UnorderedListsConfig {
+  return {
+    ...lists,
+    color: resolveColor(lists.color, palette),
+    taskCompletedColor: resolveColor(lists.taskCompletedColor, palette),
+    levels: lists.levels?.map((l) => ({ ...l, color: resolveColor(l.color, palette) })),
+  };
+}
+
+/** Resolve palette references inside a (partial) ordered lists config. */
+function applyPaletteToOrderedLists(
+  lists: OrderedListsConfig,
+  palette: ColorPaletteEntry[] | undefined,
+): OrderedListsConfig {
+  return {
+    ...lists,
+    color: resolveColor(lists.color, palette),
+    separatorColor: resolveColor(lists.separatorColor, palette),
+    levels: lists.levels?.map((l) => ({
+      ...l,
+      color: resolveColor(l.color, palette),
+      separatorColor: resolveColor(l.separatorColor, palette),
+    })),
+  };
+}
+
+/** Palette pass over the list overrides of a part body style. Only the
+ *  overrides present are returned, so spreading the result never adds keys. */
+function applyPaletteToPartListOverrides(
+  bodyStyle: PartsBodyStyleConfig,
+  palette: ColorPaletteEntry[] | undefined,
+): Pick<PartsBodyStyleConfig, 'unorderedLists' | 'orderedLists'> {
+  const out: Pick<PartsBodyStyleConfig, 'unorderedLists' | 'orderedLists'> = {};
+  if (bodyStyle.unorderedLists) out.unorderedLists = applyPaletteToUnorderedLists(bodyStyle.unorderedLists, palette);
+  if (bodyStyle.orderedLists) out.orderedLists = applyPaletteToOrderedLists(bodyStyle.orderedLists, palette);
+  return out;
 }
 
 /** Resolve palette references inside a (partial) caption style — used for the
@@ -214,20 +262,11 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
   }
 
   if (config.unorderedLists) {
-    next.unorderedLists = {
-      ...config.unorderedLists,
-      color: resolveColor(config.unorderedLists.color, palette),
-      taskCompletedColor: resolveColor(config.unorderedLists.taskCompletedColor, palette),
-      levels: config.unorderedLists.levels?.map((l) => ({ ...l, color: resolveColor(l.color, palette) })),
-    };
+    next.unorderedLists = applyPaletteToUnorderedLists(config.unorderedLists, palette);
   }
 
   if (config.orderedLists) {
-    next.orderedLists = {
-      ...config.orderedLists,
-      color: resolveColor(config.orderedLists.color, palette),
-      levels: config.orderedLists.levels?.map((l) => ({ ...l, color: resolveColor(l.color, palette) })),
-    };
+    next.orderedLists = applyPaletteToOrderedLists(config.orderedLists, palette);
   }
 
   if (config.tableStyle) {
@@ -283,6 +322,7 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
         color: resolveColor(config.parts.bodyStyle.color, palette),
         bulletColor: resolveColor(config.parts.bodyStyle.bulletColor, palette),
         numberColor: resolveColor(config.parts.bodyStyle.numberColor, palette),
+        ...applyPaletteToPartListOverrides(config.parts.bodyStyle, palette),
       },
     };
   }

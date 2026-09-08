@@ -288,6 +288,15 @@ export interface VDTBlock {
   bulletOffsetX?: number;
   /** Absolute page Y coordinate for the bullet's vertical midpoint (paired with textBaseline='middle') */
   bulletY?: number;
+  /** Ordered-list separator drawn as its own run after the number (only when
+   *  its style differs from the number's; otherwise `bulletText` carries it). */
+  separatorText?: string;
+  /** Font string of the separator run */
+  separatorFontString?: string;
+  /** Separator colour (hex) */
+  separatorColor?: string;
+  /** Absolute page X coordinate where the separator run starts (shares `bulletY`) */
+  separatorX?: number;
   /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
   listKind?: 'unordered' | 'ordered' | 'task';
   /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */

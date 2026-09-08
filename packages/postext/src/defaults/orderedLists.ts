@@ -1,4 +1,4 @@
-import type { ResolvedBodyTextConfig, OrderedListsConfig, OrderedListLevelConfig, ResolvedOrderedListsConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, ColorValue } from '../types';
+import type { ResolvedBodyTextConfig, OrderedListsConfig, OrderedListLevelConfig, ResolvedOrderedListsConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, ColorValue, Dimension } from '../types';
 import { dimensionsEqual, DEFAULT_MAIN_COLOR } from './shared';
 import {
   DEFAULT_LIST_BULLET_FONT_SIZE,
@@ -15,6 +15,7 @@ const DEFAULT_ORDERED_NUMBER_FORMAT: OrderedListNumberFormat = 'arabic';
 const DEFAULT_ORDERED_SEPARATOR = '.';
 const DEFAULT_ORDERED_LIST_FONT_WEIGHT = 700;
 const DEFAULT_ORDERED_LIST_COLOR: ColorValue = { ...DEFAULT_MAIN_COLOR };
+const DEFAULT_ORDERED_SEPARATOR_GAP: Dimension = { value: 0, unit: 'em' };
 
 export function resolveOrderedListsConfig(
   partial: OrderedListsConfig | undefined,
@@ -29,20 +30,33 @@ export function resolveOrderedListsConfig(
   const generalFontSize = partial?.numberFontSize ?? DEFAULT_LIST_BULLET_FONT_SIZE;
   const generalIndent = partial?.indent ?? DEFAULT_LIST_INDENT;
   const generalVerticalOffset = partial?.numberVerticalOffset ?? DEFAULT_LIST_VERTICAL_OFFSET;
+  // The separator run inherits the number style unless set explicitly.
+  const generalSeparatorGap = partial?.separatorGap ?? DEFAULT_ORDERED_SEPARATOR_GAP;
 
   const levels: ResolvedOrderedListLevelConfig[] = [1, 2, 3, 4, 5].map((level) => {
     const override = partial?.levels?.find((l) => l.level === level);
+    const fontFamily = override?.fontFamily ?? generalFont;
+    const color = override?.color ?? generalColor;
+    const fontWeight = override?.fontWeight ?? generalFontWeight;
+    const italic = override?.italic ?? generalItalic;
     return {
       level,
       numberFormat: override?.numberFormat ?? generalNumberFormat,
       separator: override?.separator ?? generalSeparator,
-      fontFamily: override?.fontFamily ?? generalFont,
+      fontFamily,
       fontSize: override?.fontSize ?? generalFontSize,
-      color: override?.color ?? generalColor,
-      fontWeight: override?.fontWeight ?? generalFontWeight,
-      italic: override?.italic ?? generalItalic,
+      color,
+      fontWeight,
+      italic,
       indent: override?.indent,
       verticalOffset: override?.verticalOffset ?? generalVerticalOffset,
+      // A list-wide separator setting wins over the level's number style;
+      // otherwise the level's own number style is inherited.
+      separatorFontFamily: override?.separatorFontFamily ?? partial?.separatorFontFamily ?? fontFamily,
+      separatorFontWeight: override?.separatorFontWeight ?? partial?.separatorFontWeight ?? fontWeight,
+      separatorItalic: override?.separatorItalic ?? partial?.separatorItalic ?? italic,
+      separatorColor: override?.separatorColor ?? partial?.separatorColor ?? color,
+      separatorGap: override?.separatorGap ?? generalSeparatorGap,
     };
   });
 
@@ -62,6 +76,11 @@ export function resolveOrderedListsConfig(
     itemSpacing: partial?.itemSpacing ?? DEFAULT_LIST_ITEM_SPACING,
     hangingIndent: partial?.hangingIndent ?? DEFAULT_LIST_HANGING_INDENT,
     levels,
+    separatorFontFamily: partial?.separatorFontFamily ?? generalFont,
+    separatorFontWeight: partial?.separatorFontWeight ?? generalFontWeight,
+    separatorItalic: partial?.separatorItalic ?? generalItalic,
+    separatorColor: partial?.separatorColor ?? generalColor,
+    separatorGap: generalSeparatorGap,
   };
 }
 
@@ -78,6 +97,7 @@ export const DEFAULT_ORDERED_LISTS_STATIC = {
   marginBottom: DEFAULT_LIST_MARGIN_BOTTOM,
   itemSpacing: DEFAULT_LIST_ITEM_SPACING,
   hangingIndent: DEFAULT_LIST_HANGING_INDENT,
+  separatorGap: DEFAULT_ORDERED_SEPARATOR_GAP,
 };
 
 export function stripOrderedListsDefaults(
@@ -144,6 +164,28 @@ export function stripOrderedListsDefaults(
     result.hangingIndent = lists.hangingIndent;
     hasOverride = true;
   }
+  // Separator style fields inherit the number style, so any explicit value
+  // is an override.
+  if (lists.separatorFontFamily !== undefined) {
+    result.separatorFontFamily = lists.separatorFontFamily;
+    hasOverride = true;
+  }
+  if (lists.separatorFontWeight !== undefined) {
+    result.separatorFontWeight = lists.separatorFontWeight;
+    hasOverride = true;
+  }
+  if (lists.separatorItalic !== undefined) {
+    result.separatorItalic = lists.separatorItalic;
+    hasOverride = true;
+  }
+  if (lists.separatorColor !== undefined) {
+    result.separatorColor = lists.separatorColor;
+    hasOverride = true;
+  }
+  if (lists.separatorGap !== undefined && !dimensionsEqual(lists.separatorGap, DEFAULT_ORDERED_SEPARATOR_GAP)) {
+    result.separatorGap = lists.separatorGap;
+    hasOverride = true;
+  }
   if (lists.levels && lists.levels.length > 0) {
     const strippedLevels: OrderedListLevelConfig[] = [];
     for (const lvl of lists.levels) {
@@ -183,6 +225,26 @@ export function stripOrderedListsDefaults(
       }
       if (lvl.verticalOffset !== undefined) {
         entry.verticalOffset = lvl.verticalOffset;
+        levelHasOverride = true;
+      }
+      if (lvl.separatorFontFamily !== undefined) {
+        entry.separatorFontFamily = lvl.separatorFontFamily;
+        levelHasOverride = true;
+      }
+      if (lvl.separatorFontWeight !== undefined) {
+        entry.separatorFontWeight = lvl.separatorFontWeight;
+        levelHasOverride = true;
+      }
+      if (lvl.separatorItalic !== undefined) {
+        entry.separatorItalic = lvl.separatorItalic;
+        levelHasOverride = true;
+      }
+      if (lvl.separatorColor !== undefined) {
+        entry.separatorColor = lvl.separatorColor;
+        levelHasOverride = true;
+      }
+      if (lvl.separatorGap !== undefined) {
+        entry.separatorGap = lvl.separatorGap;
         levelHasOverride = true;
       }
       if (levelHasOverride) strippedLevels.push(entry);

@@ -47,8 +47,10 @@ export function findPaletteUsages(
 
   if (config.orderedLists) {
     if (isLinked(config.orderedLists.color, paletteId)) usages.push(labels.orderedListsColor);
+    if (isLinked(config.orderedLists.separatorColor, paletteId)) usages.push(labels.orderedListsSeparatorColor);
     config.orderedLists.levels?.forEach((l, i) => {
       if (isLinked(l.color, paletteId)) usages.push(`${labels.orderedListLevelColor} (L${i + 1})`);
+      if (isLinked(l.separatorColor, paletteId)) usages.push(`${labels.orderedListsSeparatorColor} (L${i + 1})`);
     });
   }
 
@@ -115,7 +117,12 @@ export function unlinkPaletteRefs(config: PostextConfig, paletteId: string): Pos
     next.orderedLists = {
       ...config.orderedLists,
       color: unlinkColor(config.orderedLists.color, paletteId),
-      levels: config.orderedLists.levels?.map((l) => ({ ...l, color: unlinkColor(l.color, paletteId) })),
+      separatorColor: unlinkColor(config.orderedLists.separatorColor, paletteId),
+      levels: config.orderedLists.levels?.map((l) => ({
+        ...l,
+        color: unlinkColor(l.color, paletteId),
+        separatorColor: unlinkColor(l.separatorColor, paletteId),
+      })),
     };
   }
 

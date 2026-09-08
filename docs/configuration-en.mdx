@@ -1563,6 +1563,36 @@ The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to fi
       <td>Character placed between the number and the text — typically <code>'.'</code> or <code>')'</code>.</td>
     </tr>
     <tr>
+      <td><code>separatorFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>inherits <code>fontFamily</code></td>
+      <td>Font of the separator. When any separator style differs from the number's, the separator is drawn as its own run after the (right-aligned) number — e.g. <code>1</code> in Optima Bold black followed by <code>•</code> in DIN Pro Bold blue.</td>
+    </tr>
+    <tr>
+      <td><code>separatorFontWeight</code></td>
+      <td><code>number</code></td>
+      <td>inherits <code>fontWeight</code></td>
+      <td>Weight of the separator (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>separatorItalic</code></td>
+      <td><code>boolean</code></td>
+      <td>inherits <code>italic</code></td>
+      <td>Render the separator in italic.</td>
+    </tr>
+    <tr>
+      <td><code>separatorColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>inherits <code>color</code></td>
+      <td>Colour of the separator. Palette references are honoured.</td>
+    </tr>
+    <tr>
+      <td><code>separatorGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>Space between the number and the separator. The item text still starts <code>gap</code> after the separator.</td>
+    </tr>
+    <tr>
       <td><code>numberFontSize</code></td>
       <td><code>Dimension</code></td>
       <td><code>1 em</code></td>
@@ -1615,7 +1645,7 @@ The `orderedLists` property controls numbered lists (`1.`, `2)`, etc.). Up to fi
 
 ### Ordered per-level overrides
 
-Each entry in `levels` can override `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, and `verticalOffset` — the same indent cascade as unordered lists applies.
+Each entry in `levels` can override `numberFormat`, `separator`, `fontFamily`, `fontSize`, `color`, `fontWeight`, `italic`, `indent`, `verticalOffset` and the separator style (`separatorFontFamily`, `separatorFontWeight`, `separatorItalic`, `separatorColor`, `separatorGap`) — the same indent cascade as unordered lists applies. A level's separator style inherits its own number style unless the list-wide separator setting is given.
 
 **Right alignment.** The pipeline measures the widest formatted number within a run and indents all items in that run so the number markers line up on their right edge. A list of ten items rendered as `1.` – `10.` has the single-digit numbers right-padded so the separator stays in the same column.
 
@@ -2661,6 +2691,18 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td><code>orderedLists.color</code></td>
       <td>Number colour of ordered lists inside the part. Numbers are always set in the body's bold weight, so a chapter list reads as a table of contents.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.unorderedLists</code></td>
+      <td><code>UnorderedListsConfig</code></td>
+      <td>—</td>
+      <td>Partial overrides applied on top of the document's <code>unorderedLists</code> inside the part, after <code>bulletColor</code>. List-wide values propagate to the levels that inherited them; <code>levels</code> entries apply to their level only.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.orderedLists</code></td>
+      <td><code>OrderedListsConfig</code></td>
+      <td>—</td>
+      <td>Partial overrides applied on top of the document's <code>orderedLists</code> inside the part, after <code>numberColor</code> and the bold weight — e.g. a <code>separator</code> of <code>'•'</code> with its own <code>separatorFontFamily</code> and <code>separatorColor</code> for a part opener's chapter list.</td>
     </tr>
   </tbody>
 </table>

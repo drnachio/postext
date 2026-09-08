@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline';
 import { computePartValues } from '../pipeline/placeholders';
-import { parsePartNumber, planParts } from '../pipeline/parts';
+import { derivePartResolvedConfig, parsePartNumber, planParts } from '../pipeline/parts';
 import { parseMarkdown } from '../parse';
 import { resolveAllConfig } from '../pipeline/config';
 import { dimensionToPx } from '../units';
 import { stripConfigDefaults } from '../defaults';
 import { resolvePartsConfig, stripPartsDefaults } from '../defaults/parts';
 import type { DesignElement, PostextConfig } from '../types';
+import type { VDTDesignTextBlock } from '../vdt';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -73,7 +74,14 @@ describe(':::part placement', () => {
     const doc = buildDocument({ markdown: partDoc }, base);
     const part = doc.pages.find((p) => p.partInfo);
     expect(part).toBeDefined();
-    expect(part!.partInfo).toEqual({ number: 'I', title: 'Foundations' });
+    expect(part!.partInfo).toMatchObject({ number: 'I', title: 'Foundations' });
+    // The title maps back to the `title="…"` attribute of the fence.
+    expect(partDoc.slice(part!.partInfo!.titleSourceStart, part!.partInfo!.titleSourceEnd)).toBe('Foundations');
+    const titleBlock = part!.openerBand?.blocks.find(
+      (b): b is VDTDesignTextBlock => b.kind === 'text' && b.sourceStart !== undefined,
+    );
+    expect(titleBlock).toBeDefined();
+    expect(partDoc.slice(titleBlock!.sourceStart, titleBlock!.sourceEnd)).toBe('Foundations');
     expect(part!.role).toBe('part');
     // Odd page (breakBefore.parity defaults to 'odd').
     expect((part!.index + 1) % 2).toBe(1);
@@ -157,7 +165,7 @@ describe(':::part placement', () => {
     expect(any.pages.map((p) => p.role)).toEqual(['body', 'part']);
     // A part at the document start lands on page 1 (no leading blank).
     const first = buildDocument({ markdown: `:::part{title="P"}\n:::\n\n${filler(1)}` }, base);
-    expect(first.pages[0]!.partInfo).toEqual({ number: '', title: 'P' });
+    expect(first.pages[0]!.partInfo).toMatchObject({ number: '', title: 'P' });
     expect(first.pages[0]!.role).toBe('part');
   });
 
@@ -310,5 +318,101 @@ describe('parts config defaults', () => {
     expect(stripConfigDefaults({ parts: { design: { elements: [] } } }).parts).toBeUndefined();
     expect(stripConfigDefaults({ parts: { bodyStyle: { fontFamily: 'Literata' } } }).parts)
       .toEqual({ bodyStyle: { fontFamily: 'Literata' } });
+  });
+
+  it('keeps list overrides as given and drops empty ones', () => {
+    const ol = { separator: ')', separatorColor: { hex: '#FF0000', model: 'hex' as const }, levels: [{ level: 2, separatorGap: pt(1) }] };
+    expect(stripPartsDefaults({ bodyStyle: { orderedLists: ol } })).toEqual({ bodyStyle: { orderedLists: ol } });
+    expect(stripPartsDefaults({ bodyStyle: { orderedLists: {}, unorderedLists: { levels: [{ level: 2 }] } } })).toBeUndefined();
+    const r = resolveAllConfig({ parts: { bodyStyle: { unorderedLists: { bulletChar: '–' } } } });
+    expect(r.parts.bodyStyle.unorderedLists).toEqual({ bulletChar: '–' });
+    expect(r.parts.bodyStyle.orderedLists).toBeUndefined();
+  });
+});
+
+describe(':::part list overrides', () => {
+  const RED = { hex: '#FF0000', model: 'hex' as const };
+  const cfg: PostextConfig = {
+    ...base,
+    orderedLists: { levels: [{ level: 2, color: { hex: '#123456', model: 'hex' } }] },
+    parts: {
+      ...base.parts,
+      bodyStyle: {
+        numberColor: { hex: '#FEDCBA', model: 'hex' },
+        unorderedLists: { bulletChar: '–', color: RED },
+        orderedLists: {
+          fontFamily: 'Optima',
+          separator: ')',
+          separatorFontFamily: 'DIN Pro',
+          separatorColor: RED,
+          separatorGap: pt(2),
+        },
+      },
+    },
+  };
+
+  it('applies the overrides on top of the document lists inside the part only', () => {
+    const doc = buildDocument({ markdown: partDoc }, cfg);
+    const part = doc.pages.find((p) => p.partInfo)!;
+    const blocks = part.columns[0]!.blocks;
+    const bullets = blocks.filter((b) => b.type === 'listItem' && b.listKind === 'unordered');
+    expect(bullets.length).toBe(2);
+    for (const b of bullets) {
+      expect(b.bulletText).toBe('–');
+      expect(b.bulletColor).toBe('#FF0000');
+    }
+    const numbers = blocks.filter((b) => b.type === 'listItem' && b.listKind === 'ordered');
+    expect(numbers.length).toBe(2);
+    numbers.forEach((b, i) => {
+      // Distinct separator style → number and separator are separate runs.
+      expect(b.bulletText).toBe(`${i + 1}`);
+      expect(b.bulletFontString).toContain('Optima');
+      // `numberColor` shortcut still applies (no `color` in the override).
+      expect(b.bulletColor).toBe('#FEDCBA');
+      expect(b.separatorText).toBe(')');
+      expect(b.separatorFontString).toContain('DIN Pro');
+      expect(b.separatorColor).toBe('#FF0000');
+      expect(b.separatorX).toBeGreaterThan(b.bulletOffsetX!);
+    });
+    // Outside the part the document lists are untouched.
+    const outside = doc.blocks.filter((b) => b.type === 'listItem' && b.pageIndex !== part.index);
+    for (const b of outside) {
+      expect(b.separatorText).toBeUndefined();
+      expect(b.bulletFontString).not.toContain('Optima');
+    }
+  });
+
+  it('propagates list-wide overrides to inherited levels and keeps explicit level values', () => {
+    const derived = derivePartResolvedConfig(resolveAllConfig(cfg));
+    const ol = derived.orderedLists;
+    expect(ol.fontFamily).toBe('Optima');
+    expect(ol.separator).toBe(')');
+    expect(ol.separatorFontFamily).toBe('DIN Pro');
+    expect(ol.fontWeight).toBe(derived.bodyText.boldFontWeight);
+    for (const l of ol.levels) {
+      expect(l.fontFamily).toBe('Optima');
+      expect(l.separator).toBe(')');
+      expect(l.separatorFontFamily).toBe('DIN Pro');
+      expect(l.separatorColor.hex).toBe('#FF0000');
+    }
+    // Level 2 had its own colour → keeps it; level 1 follows `numberColor`.
+    expect(ol.levels[0]!.color.hex).toBe('#FEDCBA');
+    expect(ol.levels[1]!.color.hex).toBe('#123456');
+    const ul = derived.unorderedLists;
+    expect(ul.bulletChar).toBe('–');
+    expect(ul.levels.every((l) => l.bulletChar === '–' && l.color.hex === '#FF0000')).toBe(true);
+    // A separator style that inherited the number style follows a number override.
+    const followed = derivePartResolvedConfig(
+      resolveAllConfig({ parts: { bodyStyle: { orderedLists: { fontFamily: 'Optima', italic: true } } } }),
+    );
+    expect(followed.orderedLists.separatorFontFamily).toBe('Optima');
+    expect(followed.orderedLists.separatorItalic).toBe(true);
+    expect(followed.orderedLists.levels[0]!.separatorFontFamily).toBe('Optima');
+    // Per-level entries apply to their level only.
+    const perLevel = derivePartResolvedConfig(
+      resolveAllConfig({ parts: { bodyStyle: { orderedLists: { levels: [{ level: 2, separator: ':' }] } } } }),
+    );
+    expect(perLevel.orderedLists.levels[0]!.separator).toBe('.');
+    expect(perLevel.orderedLists.levels[1]!.separator).toBe(':');
   });
 });

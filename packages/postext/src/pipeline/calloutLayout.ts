@@ -264,6 +264,7 @@ function offsetBlock(blk: VDTBlock, ox: number, oy: number): void {
     line.baseline += oy;
   }
   if (blk.bulletOffsetX !== undefined) blk.bulletOffsetX += ox;
+  if (blk.separatorX !== undefined) blk.separatorX += ox;
   if (blk.bulletY !== undefined) blk.bulletY += oy;
   if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, ox, oy);
 }
@@ -461,6 +462,12 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         blk.bulletFontString = listBullet.bulletFontString;
         blk.bulletColor = listBullet.bulletColor;
         blk.bulletOffsetX = innerX + bulletXOffsetInColumn;
+        if (listBullet.separatorText !== undefined) {
+          blk.separatorText = listBullet.separatorText;
+          blk.separatorFontString = listBullet.separatorFontString;
+          blk.separatorColor = listBullet.separatorColor;
+          blk.separatorX = blk.bulletOffsetX + (listBullet.separatorOffsetPx ?? 0);
+        }
         if (strikethroughText) blk.strikethroughText = true;
         const firstLine = blk.lines[0];
         if (firstLine) {

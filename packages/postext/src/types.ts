@@ -1176,6 +1176,13 @@ export interface OrderedListLevelConfig {
   italic?: boolean;
   indent?: Dimension;
   verticalOffset?: Dimension;
+  /** Separator run styling for this level; each field inherits the level's
+   *  number style (or the list-wide separator setting) when unset. */
+  separatorFontFamily?: string;
+  separatorFontWeight?: number;
+  separatorItalic?: boolean;
+  separatorColor?: ColorValue;
+  separatorGap?: Dimension;
 }
 
 export interface ResolvedOrderedListLevelConfig {
@@ -1190,6 +1197,11 @@ export interface ResolvedOrderedListLevelConfig {
   /** User-overridden indent for this level. Undefined => pipeline cascades. */
   indent?: Dimension;
   verticalOffset: Dimension;
+  separatorFontFamily: string;
+  separatorFontWeight: number;
+  separatorItalic: boolean;
+  separatorColor: ColorValue;
+  separatorGap: Dimension;
 }
 
 export interface OrderedListsConfig {
@@ -1208,6 +1220,16 @@ export interface OrderedListsConfig {
   itemSpacing?: Dimension;
   hangingIndent?: boolean;
   levels?: OrderedListLevelConfig[];
+  /** Font family of the separator run. Inherits the number's `fontFamily`. */
+  separatorFontFamily?: string;
+  /** Weight of the separator run. Inherits the number's `fontWeight`. */
+  separatorFontWeight?: number;
+  /** Italic separator run. Inherits the number's `italic`. */
+  separatorItalic?: boolean;
+  /** Colour of the separator run. Inherits the number's `color`. */
+  separatorColor?: ColorValue;
+  /** Space between the number and the separator. Default `0em`. */
+  separatorGap?: Dimension;
 }
 
 export interface ResolvedOrderedListsConfig {
@@ -1226,6 +1248,11 @@ export interface ResolvedOrderedListsConfig {
   itemSpacing: Dimension;
   hangingIndent: boolean;
   levels: ResolvedOrderedListLevelConfig[];
+  separatorFontFamily: string;
+  separatorFontWeight: number;
+  separatorItalic: boolean;
+  separatorColor: ColorValue;
+  separatorGap: Dimension;
 }
 
 export interface SyncIndicatorConfig {
@@ -1622,6 +1649,12 @@ export interface PartsBodyStyleConfig {
   bulletColor?: ColorValue;
   /** Number colour of ordered lists inside the part (numbers are set bold). */
   numberColor?: ColorValue;
+  /** Partial overrides applied on top of the document's `unorderedLists`
+   *  inside the part (after `bulletColor`). */
+  unorderedLists?: UnorderedListsConfig;
+  /** Partial overrides applied on top of the document's `orderedLists`
+   *  inside the part (after `numberColor` and the bold weight). */
+  orderedLists?: OrderedListsConfig;
 }
 
 export interface PartsConfig {
@@ -1656,6 +1689,9 @@ export interface ResolvedPartsBodyStyleConfig {
   textAlign: TextAlign;
   bulletColor: ColorValue;
   numberColor: ColorValue;
+  /** Kept partial: applied on top of the resolved document lists inside parts. */
+  unorderedLists?: UnorderedListsConfig;
+  orderedLists?: OrderedListsConfig;
 }
 
 export interface ResolvedPartsConfig {
