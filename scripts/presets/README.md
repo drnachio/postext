@@ -69,6 +69,8 @@ echo 'POSTEXT_PRIVATE_PRESETS_DIR=/Users/you/private/postext-presets' >> apps/we
     fonts/                 .otf / .ttf / .woff2 single faces
 ```
 
+A `.postext` file exported from the sandbox's Projects panel is one `<preset-dir>` zipped (`preset.json`, `document.md`, `resources/`, `fonts/`). To serve it as a preset, unzip it into `<presets-root>/<preset-dir>/` and add an `index.json` entry (`id`, `dir`, `name`); the sandbox also imports such files directly as local projects.
+
 ## Manifest schema (version 1)
 
 ### `index.json`

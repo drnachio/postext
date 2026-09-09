@@ -11,7 +11,7 @@ import { ResourcesPanel } from './sidebar/ResourcesPanel';
 import { MarkdownPanel } from './sidebar/MarkdownPanel';
 import { WarningsPanel } from './sidebar/WarningsPanel';
 import { FontsPanel } from './sidebar/FontsPanel';
-import { PresetsPanel } from './sidebar/PresetsPanel';
+import { ProjectsPanel } from './sidebar/ProjectsPanel';
 import { ResizableHandle } from './panels/ResizableHandle';
 import { ViewportTabs } from './viewport/ViewportTabs';
 import { CanvasViewport } from './viewport/CanvasViewport';
@@ -106,8 +106,8 @@ function SandboxLayout({
         return <WarningsPanel />;
       case 'fonts':
         return <FontsPanel />;
-      case 'presets':
-        return <PresetsPanel />;
+      case 'projects':
+        return <ProjectsPanel />;
       default:
         return null;
     }

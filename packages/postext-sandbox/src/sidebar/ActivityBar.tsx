@@ -1,6 +1,6 @@
 'use client';
 
-import { FileCode, Settings2, FolderOpen, AlertTriangle, Type, LayoutTemplate } from 'lucide-react';
+import { FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files } from 'lucide-react';
 import { useMemo, useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxPresetStale, useSandboxSelector } from '../context/SandboxContext';
 import type { PanelId } from '../types';
@@ -15,9 +15,9 @@ interface ActivityBarProps {
   homeLink?: ReactNode;
 }
 
-const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: 'markdownEditor' | 'presets' | 'configuration' | 'resources' | 'warnings' | 'fonts' }[] = [
+const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: 'markdownEditor' | 'projects' | 'configuration' | 'resources' | 'warnings' | 'fonts' }[] = [
+  { id: 'projects', Icon: Files, labelKey: 'projects' },
   { id: 'markdown', Icon: FileCode, labelKey: 'markdownEditor' },
-  { id: 'presets', Icon: LayoutTemplate, labelKey: 'presets' },
   { id: 'resources', Icon: FolderOpen, labelKey: 'resources' },
   { id: 'fonts', Icon: Type, labelKey: 'fonts' },
   { id: 'config', Icon: Settings2, labelKey: 'configuration' },
@@ -104,7 +104,7 @@ function PanelNav() {
         const badgeText = warningCount > 99 ? '99+' : String(warningCount);
         // A dot (no count) when the active preset changed on disk and local
         // edits keep it from being re-applied automatically.
-        const showDot = id === 'presets' && presetStale;
+        const showDot = id === 'projects' && presetStale;
         const ariaLabel = showBadge
           ? `${label} (${warningCount})`
           : showDot

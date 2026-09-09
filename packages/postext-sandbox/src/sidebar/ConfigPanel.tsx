@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { Download, Upload, RotateCcw } from 'lucide-react';
 import { isDefaultColorPalette, stripConfigDefaults } from 'postext';
-import { useSandboxDispatch, useSandboxLabels, useSandboxPresets, useSandboxSelector } from '../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxPresets, useSandboxProjects, useSandboxSelector } from '../context/SandboxContext';
 import { exportConfigToJson, importConfigFromJson } from '../storage/persistence';
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
@@ -34,6 +34,7 @@ export function ConfigPanel() {
   const config = useSandboxSelector((s) => s.config);
   const presetConfig = useSandboxSelector((s) => s.presetConfig);
   const { reload } = useSandboxPresets();
+  const { hasResetBaseline } = useSandboxProjects();
   const importRef = useRef<HTMLInputElement>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +70,7 @@ export function ConfigPanel() {
           {labels.configuration}
         </h2>
         <div className="flex items-center gap-1">
-          {hasAnyOverrides && (
+          {hasAnyOverrides && hasResetBaseline && (
             <ConfirmPopover
               message={labels.resetConfigConfirm}
               onConfirm={() => { void reload('config'); }}
