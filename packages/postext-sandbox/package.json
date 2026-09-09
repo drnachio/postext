@@ -40,6 +40,7 @@
     "@lezer/highlight": "^1.2.3",
     "@lezer/markdown": "^1.7.2",
     "colorjs.io": "^0.7.1",
+    "fflate": "^0.8.3",
     "lucide-react": "^1.42.0",
     "postext-pdf": "workspace:*"
   },

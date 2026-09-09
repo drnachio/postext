@@ -142,7 +142,11 @@ export interface PresetFontFiles {
 /** Turn manifest font families into `config.customFonts` entries plus the list
  *  of files to fetch. `.woff` is not supported by the PDF backend and is
  *  skipped with a warning, as is any unrecognised extension. */
-export function fontsToCustomFonts(presetId: string, fonts: PresetFontFamilySpec[]): PresetFontFiles {
+export function fontsToCustomFonts(
+  presetId: string,
+  fonts: PresetFontFamilySpec[],
+  fileIdFor: (file: string) => string = (file) => presetFontFileId(presetId, file),
+): PresetFontFiles {
   const families: CustomFontFamily[] = [];
   const files: PresetFontFiles['files'] = [];
   const warnings: string[] = [];
@@ -154,7 +158,7 @@ export function fontsToCustomFonts(presetId: string, fonts: PresetFontFamilySpec
         warnings.push(`${family.name}: unsupported font file "${v.file}"`);
         continue;
       }
-      const fileId = presetFontFileId(presetId, v.file);
+      const fileId = fileIdFor(v.file);
       const fileName = fileBasename(v.file);
       const style = v.style === 'italic' ? 'italic' : 'normal';
       variants.push({ weight: v.weight, style, fileId, format, fileName });
@@ -173,6 +177,7 @@ export function resourceFromSpec(
   presetId: string,
   spec: PresetResourceSpec,
   size?: { width: number; height: number },
+  fileIdFor: (file: string) => string = (file) => presetFileId(presetId, file),
 ): Resource {
   const now = Date.now();
   const { file, width, height, ...rest } = spec;
@@ -181,7 +186,7 @@ export function resourceFromSpec(
   const base: Resource = { ...rest, createdAt: now, updatedAt: now };
   if (!file) return base;
 
-  const fileId = presetFileId(presetId, file);
+  const fileId = fileIdFor(file);
   const w = width ?? size?.width;
   const h = height ?? size?.height;
 
@@ -201,4 +206,19 @@ export function resourceFromSpec(
     };
   }
   return base;
+}
+
+const EXT_BY_BITMAP_FORMAT: Record<string, string> = {
+  png: 'png',
+  jpeg: 'jpg',
+  webp: 'webp',
+  gif: 'gif',
+};
+
+/** File extension to write a resource's bytes under, or null for resources
+ *  without a file (tables). */
+export function extensionForResource(r: Resource): string | null {
+  if (r.kind === 'svg' && r.svg) return 'svg';
+  if (r.kind === 'bitmap' && r.bitmap) return EXT_BY_BITMAP_FORMAT[r.bitmap.format] ?? r.bitmap.format;
+  return null;
 }

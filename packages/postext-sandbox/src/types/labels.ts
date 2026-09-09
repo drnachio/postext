@@ -578,6 +578,34 @@ export interface SandboxLabels {
   presetStaleReload: string;
   presetReloadActive: string;
 
+  // Projects panel
+  projects: string;
+  presetsGroup: string;
+  projectsEmpty: string;
+  projectNewFromCurrent: string;
+  projectNewBlank: string;
+  projectUntitled: string;
+  projectCopySuffix: string;
+  projectImport: string;
+  projectExport: string;
+  projectExportActive: string;
+  projectActivate: string;
+  projectSwitchConfirm: string;
+  projectRename: string;
+  projectNameLabel: string;
+  projectDuplicate: string;
+  projectDelete: string;
+  projectDeleteConfirm: string;
+  projectBusy: string;
+  projectImportError: string;
+  projectImportInvalid: string;
+  projectExportWarnings: string;
+  projectMissingFile: string;
+  projectFontSkipped: string;
+  presetDuplicate: string;
+  presetExport: string;
+  projectNoticeDismiss: string;
+
   // Custom fonts section
   customFonts: string;
   customFontsTooltip: string;
