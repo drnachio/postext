@@ -26,8 +26,8 @@ The Sandbox follows a familiar IDE paradigm with three main areas: a narrow **ac
 
 A narrow strip on the left edge contains icon buttons for navigating between panels. The top section holds six panel toggles, top to bottom:
 
+- **Projects** (`Files` icon) — Opens the projects panel: local projects plus the read-only preset bundles
 - **Markdown Editor** (`FileCode` icon) — Opens the markdown editing panel
-- **Presets** (`LayoutTemplate` icon) — Opens the preset bundles panel
 - **Resources** (`FolderOpen` icon) — Opens the resource management panel
 - **Fonts** (`Type` icon) — Opens the custom font management panel
 - **Configuration** (`Settings2` icon) — Opens the layout configuration panel
@@ -35,7 +35,7 @@ A narrow strip on the left edge contains icon buttons for navigating between pan
 
 Clicking the active panel's icon collapses the sidebar. Clicking a different icon switches to that panel.
 
-The bar also hosts slots injected by the host application: an optional **home logo link** at the very top (via the `homeUrl` or `homeLink` props), plus a **theme toggle** and a **language switcher** at the bottom. The Export and Import buttons that used to live here are gone — export and import now sit in the headers of the Markdown and Configuration panels (see [Export and import](#export-and-import)).
+The bar also hosts slots injected by the host application: an optional **home logo link** at the very top (via the `homeUrl` or `homeLink` props), plus a **theme toggle** and a **language switcher** at the bottom. The Export and Import buttons that used to live here are gone — whole projects are exchanged as `.postext` files from the Projects panel, and the Markdown and Configuration panel headers export their own part (see [Export and import](#export-and-import)).
 
 ### Sidebar panels
 
@@ -56,11 +56,22 @@ Host applications can extend the toolbar with their own `extraActions`. The edit
 
 The panel header offers three actions:
 
-- **Reset** (confirm popover) — Reloads the **document part** of the active preset: the markdown and the whole resource set are replaced with the preset's (for the built-in preset, the locale's sample document and example resources); the configuration is left alone except for the preset's custom fonts. See [Presets panel](#presets-panel).
-- **Export** — Downloads the markdown as `postext-markdown.json`
-- **Import** — Loads a previously exported markdown file
+- **Reset** (confirm popover) — Reloads the **document part** of the active preset: the markdown and the whole resource set are replaced with the preset's (for the built-in preset, the locale's sample document and example resources); the configuration is left alone except for the preset's custom fonts. See [Projects panel](#projects-panel).
+- **Export** — Downloads the markdown as a plain `.md` file (named after the active project, or `document.md`)
+- **Import** — Replaces the document with the contents of a `.md` file
 
-#### Presets panel
+#### Projects panel
+
+The first panel in the activity bar. It has two groups:
+
+- **Projects** — Local, editable documents stored in the browser (IndexedDB). While a project is active, the working document *is* that project: every edit to the markdown, configuration, resources and fonts is saved into it automatically (with the same 1-second debounce as `localStorage`), so switching projects and back restores everything. Projects are created with the header buttons — **New from current** (copies the active document, its resources and fonts into a new project), **New blank** — or by duplicating any row. Each project row offers **Rename** (inline, Enter commits and Escape cancels; the active row also renames on double-click), **Duplicate**, **Export** and **Delete** (confirm popover). Opening a project never asks for confirmation unless a preset with unsaved edits is active. Deleting the active project falls back to the built-in preset.
+- **Presets** — Read-only starting points, listed below the projects. **Duplicate as project** turns any preset into a local project that owns its own copies of the bundle's files, so later edits to the bundle on disk never touch the project; **Export** downloads the preset as a `.postext` file.
+
+The header also carries **Import** (a `.postext` file becomes a new, active project) and **Export** (the active document, project or preset, as `.postext`). A `.postext` file is a preset bundle directory zipped (see [Export and import](#export-and-import)).
+
+Reset buttons in the Markdown and Configuration panels restore the preset a project was duplicated from; a blank or imported project has no baseline, so they are hidden while it is active.
+
+##### Presets
 
 A **preset bundle** is a whole starting point loaded as one unit: a markdown document, a `PostextConfig`, the resources (with their bitmap/SVG payloads and table models), and the custom font files the config refers to. The panel lists every preset the sandbox can reach and marks the active one:
 
@@ -73,7 +84,7 @@ Each row shows the preset's name, an optional description, its locale tag and it
 **Live presets.** Remote presets are followed automatically: whenever a preset is applied the sandbox records the bundle's *fingerprint* along with hashes of the markdown, configuration and resource set it applied. While the page is visible it polls the fingerprint every 3 seconds (and immediately when the tab becomes visible or the window regains focus). When the fingerprint changes:
 
 - If the document is **untouched** — markdown, configuration and resources still hash to what the preset applied — the preset is re-applied in full and a brief *Preset updated from disk* notice appears in the panel.
-- If there are **local changes**, they are kept: a persistent banner at the top of the panel (*The preset has changed on disk. Your local changes are kept.*) offers a **Reload** button, and the Presets icon in the activity bar shows a dot until the preset is reloaded.
+- If there are **local changes**, they are kept: a persistent banner at the top of the panel (*The preset has changed on disk. Your local changes are kept.*) offers a **Reload** button, and the Projects icon in the activity bar shows a dot until the preset is reloaded. Bundles are only followed while a preset is active; a project duplicated from one keeps its own copy.
 
 The same check runs on load, so editing a bundle and then opening the sandbox picks the new version up when the document was untouched. The fingerprint comes from `<preset-dir>/fingerprint.json`, a virtual file the development route answers with a metadata-only hash of the directory (see the [Preset bundle format](#preset-bundle-format) appendix); sources that do not serve it simply are not followed.
 
@@ -83,7 +94,7 @@ The active preset also defines what the other panels' **Reset** buttons restore:
 |-------|----------------|
 | Markdown editor | The preset's markdown and its resource set (the document part) |
 | Configuration | The preset's configuration, custom fonts included |
-| Presets (Reload) | Everything: document, resources, configuration and fonts |
+| Projects (Reload) | Everything: document, resources, configuration and fonts |
 
 A preset that was active in an earlier session but is no longer listed by any source (typically a private preset in a build that does not serve it) still appears, greyed out as *Not available in this build*, so the sandbox keeps the loaded content instead of silently swapping it for the built-in one. The active preset id is persisted under the `postext-sandbox-preset` key (see [Persistence](#persistence)); the bundle format is described in the [Preset bundle format](#preset-bundle-format) appendix.
 
@@ -208,6 +219,7 @@ The Sandbox automatically saves your work to the browser:
 
 - **Markdown and configuration** — Auto-saved to `localStorage` after 1 second of inactivity, with configuration defaults stripped so only your overrides are stored
 - **UI state** — The active panel and viewport tab, sidebar width, configuration section open states, canvas zoom/fit/view modes, HTML font scale and column mode, and toolbar pin states are all persisted in `localStorage`
+- **Active project** — The id of the active local project is stored in `localStorage` under `postext-sandbox-project`; the projects themselves (markdown, configuration and resource records) live in the `projects` store of the sandbox's IndexedDB database, and their binary payloads share the blob and font stores with the working document. Payloads are garbage-collected when neither the working document nor any project references them
 - **Active preset** — The id of the last loaded preset is stored in `localStorage` under `postext-sandbox-preset`, so the panels' Reset buttons keep restoring that preset across sessions (a preset that is no longer served shows as unavailable). What that preset applied — its bundle fingerprint plus hashes of the markdown, configuration and resource set — is stored under `postext-sandbox-preset-applied`, which is how the next visit tells an untouched document from an edited one
 - **Resources and fonts** — Resource records, their binary blobs (bitmaps and SVGs), and custom font files persist in **IndexedDB**; when IndexedDB is unavailable (e.g. some private-browsing modes), a *storage unavailable* warning appears in the Warnings panel
 
@@ -215,7 +227,9 @@ Storage is **shared across UI locales**. A pristine default document swaps to th
 
 ### Export and import
 
-For transferring your work between devices or sharing it, markdown and configuration export separately from their panel headers.
+A whole document travels as a **`.postext` file**: a zip archive with exactly the layout of a preset bundle directory — `preset.json`, `document.md`, `resources/*` and `fonts/*` (see [Preset bundle format](#preset-bundle-format)). The **Projects panel** header exports the active document and imports a file as a new project; every project and preset row has its own Export. Import accepts the files at the archive root or under one top-level folder (as produced by zipping the folder itself; `__MACOSX` entries and dotfiles are ignored). Fonts are written as separate files, never inside `config.customFonts`; `.woff` faces are skipped with a warning both ways, as are resources whose bytes are missing. Unzip an exported file into `<presets-root>/<dir>/` and add an `index.json` entry to serve it as a preset.
+
+The markdown and configuration also export separately from their panel headers.
 
 The **Configuration panel** header downloads `postext-config.json` with defaults stripped:
 
@@ -227,17 +241,7 @@ The **Configuration panel** header downloads `postext-config.json` with defaults
 }
 ```
 
-The **Markdown panel** header downloads `postext-markdown.json`:
-
-```json
-{
-  "type": "postext-markdown",
-  "version": 1,
-  "markdown": "# Your content..."
-}
-```
-
-Each header's **Import** button opens a file picker for `.json` files; imports are validated against the expected `type` and `version`, and invalid files are silently ignored. The combined `postext-sandbox.json` format from earlier versions no longer exists.
+The **Markdown panel** header downloads the document as a plain `.md` file and its **Import** button replaces the document with a `.md` file's contents. The Configuration **Import** button opens a file picker for `.json` files validated against the expected `type` and `version`; invalid files are silently ignored. The `postext-markdown.json` wrapper and the combined `postext-sandbox.json` format from earlier versions no longer exist.
 
 ## Standalone usage
 
@@ -293,7 +297,7 @@ The package uses Tailwind CSS utility classes that reference CSS custom properti
 
 ## Preset bundle format
 
-Appendix. A preset source is a directory (served over HTTP) whose root holds an `index.json` listing preset directories; each directory holds a `preset.json` manifest plus the markdown, resource and font files it refers to. The `scripts/presets/` tooling in the repository scaffolds bundles in exactly this shape.
+Appendix. A preset source is a directory (served over HTTP) whose root holds an `index.json` listing preset directories; each directory holds a `preset.json` manifest plus the markdown, resource and font files it refers to. The `scripts/presets/` tooling in the repository scaffolds bundles in exactly this shape, and a `.postext` file exported from the sandbox is one such directory zipped (without the `index.json`).
 
 ```
 <presets-root>/
@@ -379,7 +383,7 @@ Notes:
 - `width` / `height` are optional for `svg` and `bitmap` resources — when missing they are read from the file at load time.
 - `table.model` is a Postext `TableModel`: `rows` is a row-major array of cells (`content`, optional `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` the number of leading header rows, and `columnWidths` an optional array of relative column weights.
 - Font files are stored in IndexedDB under ids derived from the preset id and file path, and the families are appended to `config.customFonts` when the preset is applied; a missing or malformed `index.json` yields no presets rather than an error.
-- `<preset-dir>/fingerprint.json` is optional and, on the development route, **virtual**: when no such file exists, `GET` answers `{ "fingerprint": "<sha1 hex>", "files": <n> }` computed from the directory's file metadata (relative path, modification time and size of every file up to four levels deep, dotfiles and `node_modules` skipped), never from file contents, with `Cache-Control: no-store`. The sandbox polls it to follow edits to the bundle (see [Presets panel](#presets-panel)). A static host can serve a real `fingerprint.json` with the same shape, or none at all, in which case its presets are not followed.
+- `<preset-dir>/fingerprint.json` is optional and, on the development route, **virtual**: when no such file exists, `GET` answers `{ "fingerprint": "<sha1 hex>", "files": <n> }` computed from the directory's file metadata (relative path, modification time and size of every file up to four levels deep, dotfiles and `node_modules` skipped), never from file contents, with `Cache-Control: no-store`. The sandbox polls it to follow edits to the bundle (see [Projects panel](#projects-panel)). A static host can serve a real `fingerprint.json` with the same shape, or none at all, in which case its presets are not followed.
 
 ## Roadmap
 

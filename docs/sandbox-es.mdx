@@ -26,8 +26,8 @@ El Sandbox sigue un paradigma IDE familiar con tres áreas principales: una **ba
 
 Una tira estrecha en el borde izquierdo contiene botones con iconos para navegar entre paneles. La sección superior aloja seis interruptores de panel, de arriba abajo:
 
+- **Proyectos** (icono `Files`) — Abre el panel de proyectos: proyectos locales más los paquetes predefinidos de solo lectura
 - **Editor de markdown** (icono `FileCode`) — Abre el panel de edición de markdown
-- **Presets** (icono `LayoutTemplate`) — Abre el panel de paquetes predefinidos
 - **Recursos** (icono `FolderOpen`) — Abre el panel de gestión de recursos
 - **Fuentes** (icono `Type`) — Abre el panel de gestión de fuentes personalizadas
 - **Configuración** (icono `Settings2`) — Abre el panel de configuración de la maquetación
@@ -35,7 +35,7 @@ Una tira estrecha en el borde izquierdo contiene botones con iconos para navegar
 
 Pulsar el icono del panel activo colapsa la barra lateral. Pulsar un icono distinto cambia a ese panel.
 
-La barra también aloja huecos que inyecta la aplicación anfitriona: un **enlace con el logo de inicio** opcional en la parte superior (mediante las props `homeUrl` o `homeLink`), más un **conmutador de tema** y un **selector de idioma** en la parte inferior. Los botones de Exportar e Importar que antes vivían aquí han desaparecido — exportar e importar están ahora en las cabeceras de los paneles de Markdown y Configuración (consulta [Exportar e importar](#exportar-e-importar)).
+La barra también aloja huecos que inyecta la aplicación anfitriona: un **enlace con el logo de inicio** opcional en la parte superior (mediante las props `homeUrl` o `homeLink`), más un **conmutador de tema** y un **selector de idioma** en la parte inferior. Los botones de Exportar e Importar que antes vivían aquí han desaparecido — los proyectos completos se intercambian como archivos `.postext` desde el panel de Proyectos, y las cabeceras de los paneles de Markdown y Configuración exportan su propia parte (consulta [Exportar e importar](#exportar-e-importar)).
 
 ### Paneles laterales
 
@@ -56,11 +56,22 @@ Las aplicaciones anfitrionas pueden ampliar la barra de herramientas con sus pro
 
 La cabecera del panel ofrece tres acciones:
 
-- **Restablecer** (popover de confirmación) — Recarga la **parte de documento** del preset activo: el markdown y todo el conjunto de recursos se reemplazan por los del preset (para el preset integrado, el documento de ejemplo del idioma y sus recursos de ejemplo); la configuración no se toca, salvo las fuentes personalizadas del preset. Consulta [Panel de presets](#panel-de-presets).
-- **Exportar** — Descarga el markdown como `postext-markdown.json`
-- **Importar** — Carga un archivo de markdown exportado previamente
+- **Restablecer** (popover de confirmación) — Recarga la **parte de documento** del preset activo: el markdown y todo el conjunto de recursos se reemplazan por los del preset (para el preset integrado, el documento de ejemplo del idioma y sus recursos de ejemplo); la configuración no se toca, salvo las fuentes personalizadas del preset. Consulta [Panel de proyectos](#panel-de-proyectos).
+- **Exportar** — Descarga el markdown como un archivo `.md` (con el nombre del proyecto activo, o `document.md`)
+- **Importar** — Sustituye el documento por el contenido de un archivo `.md`
 
-#### Panel de presets
+#### Panel de proyectos
+
+El primer panel de la barra de actividad. Tiene dos grupos:
+
+- **Proyectos** — Documentos locales y editables guardados en el navegador (IndexedDB). Mientras un proyecto está activo, el documento de trabajo *es* ese proyecto: cada edición del markdown, la configuración, los recursos y las fuentes se guarda en él automáticamente (con el mismo retardo de 1 segundo que `localStorage`), de modo que cambiar de proyecto y volver restaura todo. Los proyectos se crean con los botones de la cabecera — **Nuevo a partir del documento actual** (copia el documento activo, sus recursos y sus fuentes en un proyecto nuevo), **Nuevo en blanco** — o duplicando cualquier fila. Cada fila de proyecto ofrece **Renombrar** (en línea; Intro confirma y Escape cancela; la fila activa también se renombra con doble clic), **Duplicar**, **Exportar** y **Eliminar** (popover de confirmación). Abrir un proyecto nunca pide confirmación salvo que esté activo un preset con cambios sin guardar. Eliminar el proyecto activo vuelve al preset integrado.
+- **Presets** — Puntos de partida de solo lectura, listados debajo de los proyectos. **Duplicar como proyecto** convierte cualquier preset en un proyecto local con sus propias copias de los archivos del paquete, de modo que editar después el paquete en disco nunca afecta al proyecto; **Exportar** descarga el preset como archivo `.postext`.
+
+La cabecera lleva además **Importar** (un archivo `.postext` se convierte en un proyecto nuevo y activo) y **Exportar** (el documento activo, sea proyecto o preset, como `.postext`). Un archivo `.postext` es un directorio de paquete de preset comprimido en zip (consulta [Exportar e importar](#exportar-e-importar)).
+
+Los botones Restablecer de los paneles de Markdown y Configuración restauran el preset del que se duplicó un proyecto; un proyecto en blanco o importado no tiene referencia, así que se ocultan mientras está activo.
+
+##### Presets
 
 Un **paquete predefinido** (preset) es un punto de partida completo que se carga como una unidad: un documento markdown, un `PostextConfig`, los recursos (con sus contenidos de mapa de bits/SVG y sus modelos de tabla) y los archivos de fuentes personalizadas a los que se refiere la configuración. El panel lista todos los presets que el sandbox puede alcanzar y marca el activo:
 
@@ -73,7 +84,7 @@ Cada fila muestra el nombre del preset, una descripción opcional, su etiqueta d
 **Presets en vivo.** Los presets remotos se siguen automáticamente: cada vez que se aplica un preset, el sandbox registra la *huella* (fingerprint) del paquete junto con los hashes del markdown, la configuración y el conjunto de recursos que aplicó. Mientras la página está visible consulta la huella cada 3 segundos (e inmediatamente cuando la pestaña vuelve a ser visible o la ventana recupera el foco). Cuando la huella cambia:
 
 - Si el documento está **intacto** — markdown, configuración y recursos siguen produciendo los hashes que aplicó el preset — el preset se vuelve a aplicar por completo y en el panel aparece brevemente el aviso *Preset actualizado desde disco*.
-- Si hay **cambios locales**, se conservan: una franja persistente en la parte superior del panel (*El preset ha cambiado en disco. Tus cambios locales se conservan.*) ofrece un botón **Recargar**, y el icono de Presets de la barra de actividad muestra un punto hasta que el preset se recarga.
+- Si hay **cambios locales**, se conservan: una franja persistente en la parte superior del panel (*El preset ha cambiado en disco. Tus cambios locales se conservan.*) ofrece un botón **Recargar**, y el icono de Proyectos de la barra de actividad muestra un punto hasta que el preset se recarga. Los paquetes solo se siguen mientras hay un preset activo; un proyecto duplicado a partir de uno conserva su propia copia.
 
 La misma comprobación se ejecuta al cargar, de modo que editar un paquete y abrir después el sandbox recoge la nueva versión si el documento estaba intacto. La huella procede de `<directorio-del-preset>/fingerprint.json`, un archivo virtual que la ruta de desarrollo responde con un hash del directorio basado solo en metadatos (consulta el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset)); las fuentes que no lo sirven simplemente no se siguen.
 
@@ -83,7 +94,7 @@ El preset activo determina además qué restauran los botones **Restablecer** de
 |-------|----------------------|
 | Editor de markdown | El markdown del preset y su conjunto de recursos (la parte de documento) |
 | Configuración | La configuración del preset, fuentes personalizadas incluidas |
-| Presets (Recargar) | Todo: documento, recursos, configuración y fuentes |
+| Proyectos (Recargar) | Todo: documento, recursos, configuración y fuentes |
 
 Un preset que estuvo activo en una sesión anterior pero que ya no lista ninguna fuente (normalmente un preset privado en una compilación que no lo sirve) sigue apareciendo, atenuado como *No disponible en esta compilación*, para que el sandbox conserve el contenido cargado en lugar de cambiarlo silenciosamente por el integrado. El id del preset activo se conserva bajo la clave `postext-sandbox-preset` (consulta [Persistencia](#persistencia)); el formato del paquete se describe en el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset).
 
@@ -208,6 +219,7 @@ El Sandbox guarda automáticamente tu trabajo en el navegador:
 
 - **Markdown y configuración** — Se guardan automáticamente en `localStorage` tras 1 segundo de inactividad, con los valores por defecto de la configuración eliminados para que solo se almacenen tus ajustes personalizados
 - **Estado de la interfaz** — El panel y la pestaña de viewport activos, el ancho de la barra lateral, el estado abierto/cerrado de las secciones de configuración, los modos de zoom/ajuste/vista del canvas, la escala de fuente y el modo de columnas del HTML, y el estado de anclaje de las barras de herramientas se conservan en `localStorage`
+- **Proyecto activo** — El id del proyecto local activo se guarda en `localStorage` bajo `postext-sandbox-project`; los proyectos en sí (markdown, configuración y registros de recursos) viven en el almacén `projects` de la base de datos IndexedDB del sandbox, y sus contenidos binarios comparten los almacenes de blobs y fuentes con el documento de trabajo. Los contenidos se recolectan cuando ni el documento de trabajo ni ningún proyecto los referencian
 - **Preset activo** — El id del último preset cargado se guarda en `localStorage` bajo `postext-sandbox-preset`, de modo que los botones Restablecer de los paneles siguen restaurando ese preset entre sesiones (un preset que ya no se sirve aparece como no disponible). Lo que ese preset aplicó — la huella del paquete más los hashes del markdown, la configuración y el conjunto de recursos — se guarda bajo `postext-sandbox-preset-applied`, que es como la siguiente visita distingue un documento intacto de uno editado
 - **Recursos y fuentes** — Los registros de recursos, sus blobs binarios (mapas de bits y SVG) y los archivos de fuentes personalizadas persisten en **IndexedDB**; cuando IndexedDB no está disponible (p. ej. algunos modos de navegación privada), aparece un aviso de *almacenamiento no disponible* en el panel de avisos
 
@@ -215,7 +227,9 @@ El almacenamiento se **comparte entre los idiomas de la interfaz**. Un documento
 
 ### Exportar e importar
 
-Para transferir tu trabajo entre dispositivos o compartirlo, el markdown y la configuración se exportan por separado desde las cabeceras de sus paneles.
+Un documento completo viaja como **archivo `.postext`**: un zip con exactamente la estructura de un directorio de paquete de preset — `preset.json`, `document.md`, `resources/*` y `fonts/*` (consulta [Formato de paquete de preset](#formato-de-paquete-de-preset)). La cabecera del **panel de proyectos** exporta el documento activo e importa un archivo como proyecto nuevo; cada fila de proyecto y de preset tiene su propio Exportar. La importación acepta los archivos en la raíz del zip o bajo una única carpeta de primer nivel (como al comprimir la propia carpeta; las entradas `__MACOSX` y los archivos ocultos se ignoran). Las fuentes se escriben como archivos separados, nunca dentro de `config.customFonts`; las caras `.woff` se omiten con un aviso en ambos sentidos, igual que los recursos cuyos bytes faltan. Descomprime un archivo exportado en `<raíz-de-presets>/<dir>/` y añade una entrada en `index.json` para servirlo como preset.
+
+El markdown y la configuración también se exportan por separado desde las cabeceras de sus paneles.
 
 La cabecera del **panel de configuración** descarga `postext-config.json` con los valores por defecto eliminados:
 
@@ -227,17 +241,7 @@ La cabecera del **panel de configuración** descarga `postext-config.json` con l
 }
 ```
 
-La cabecera del **panel de markdown** descarga `postext-markdown.json`:
-
-```json
-{
-  "type": "postext-markdown",
-  "version": 1,
-  "markdown": "# Tu contenido..."
-}
-```
-
-El botón **Importar** de cada cabecera abre un selector de archivos `.json`; las importaciones se validan contra el `type` y la `version` esperados, y los archivos inválidos se ignoran silenciosamente. El formato combinado `postext-sandbox.json` de versiones anteriores ya no existe.
+La cabecera del **panel de markdown** descarga el documento como un archivo `.md` y su botón **Importar** sustituye el documento por el contenido de un archivo `.md`. El botón **Importar** de Configuración abre un selector de archivos `.json` validados contra el `type` y la `version` esperados; los archivos inválidos se ignoran silenciosamente. El envoltorio `postext-markdown.json` y el formato combinado `postext-sandbox.json` de versiones anteriores ya no existen.
 
 ## Uso standalone
 
@@ -293,7 +297,7 @@ El paquete usa clases utilitarias de Tailwind CSS que hacen referencia a variabl
 
 ## Formato de paquete de preset
 
-Apéndice. Una fuente de presets es un directorio (servido por HTTP) cuya raíz contiene un `index.json` que lista directorios de preset; cada directorio contiene un manifiesto `preset.json` más los archivos de markdown, recursos y fuentes a los que se refiere. Las herramientas de `scripts/presets/` del repositorio generan paquetes exactamente con esta forma.
+Apéndice. Una fuente de presets es un directorio (servido por HTTP) cuya raíz contiene un `index.json` que lista directorios de preset; cada directorio contiene un manifiesto `preset.json` más los archivos de markdown, recursos y fuentes a los que se refiere. Las herramientas de `scripts/presets/` del repositorio generan paquetes exactamente con esta forma, y un archivo `.postext` exportado desde el sandbox es uno de estos directorios comprimido en zip (sin el `index.json`).
 
 ```
 <raíz-de-presets>/
@@ -379,7 +383,7 @@ Notas:
 - `width` / `height` son opcionales para los recursos `svg` y `bitmap` — si faltan, se leen del archivo al cargar.
 - `table.model` es un `TableModel` de Postext: `rows` es un array de celdas por filas (`content` y, opcionalmente, `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` el número de filas de cabecera iniciales y `columnWidths` un array opcional de pesos relativos de columna.
 - Los archivos de fuente se guardan en IndexedDB con ids derivados del id del preset y la ruta del archivo, y las familias se añaden a `config.customFonts` al aplicar el preset; un `index.json` ausente o mal formado no produce ningún preset en lugar de un error.
-- `<directorio-del-preset>/fingerprint.json` es opcional y, en la ruta de desarrollo, **virtual**: cuando no existe tal archivo, `GET` responde `{ "fingerprint": "<sha1 hex>", "files": <n> }` calculado a partir de los metadatos de los archivos del directorio (ruta relativa, fecha de modificación y tamaño de cada archivo hasta cuatro niveles de profundidad, omitiendo los archivos ocultos y `node_modules`), nunca a partir de su contenido, con `Cache-Control: no-store`. El sandbox lo consulta para seguir las ediciones del paquete (consulta [Panel de presets](#panel-de-presets)). Un servidor estático puede servir un `fingerprint.json` real con la misma forma, o ninguno, en cuyo caso sus presets no se siguen.
+- `<directorio-del-preset>/fingerprint.json` es opcional y, en la ruta de desarrollo, **virtual**: cuando no existe tal archivo, `GET` responde `{ "fingerprint": "<sha1 hex>", "files": <n> }` calculado a partir de los metadatos de los archivos del directorio (ruta relativa, fecha de modificación y tamaño de cada archivo hasta cuatro niveles de profundidad, omitiendo los archivos ocultos y `node_modules`), nunca a partir de su contenido, con `Cache-Control: no-store`. El sandbox lo consulta para seguir las ediciones del paquete (consulta [Panel de proyectos](#panel-de-proyectos)). Un servidor estático puede servir un `fingerprint.json` real con la misma forma, o ninguno, en cuyo caso sus presets no se siguen.
 
 ## Roadmap
 

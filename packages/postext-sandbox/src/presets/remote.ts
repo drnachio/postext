@@ -3,24 +3,10 @@
 // Loading fetches everything into memory; nothing is written to storage here
 // (see apply.ts).
 
-import type { Resource } from 'postext';
-import { svgIntrinsicSize } from '../panels/resources/svgIntrinsic';
-import { createDefaultConfig } from '../context/defaultConfig';
-import {
-  fontsToCustomFonts,
-  isBitmapFile,
-  isPresetIndex,
-  isPresetManifest,
-  isSvgFile,
-  mimeForFile,
-  pickMarkdownFile,
-  presetFileId,
-  resourceFromSpec,
-} from './manifest';
+import { parseBundle } from './bundle';
+import { isPresetIndex } from './manifest';
 import type {
   LoadedPreset,
-  LoadedPresetBlob,
-  LoadedPresetFont,
   PresetIndexEntry,
   PresetProvider,
   PresetSource,
@@ -86,19 +72,6 @@ export async function fetchPresetIndex(baseUrl: string, source: PresetSource): P
   return entries.map((e) => summaryFromEntry(e, source));
 }
 
-/** Read a bitmap's pixel size; zero when it cannot be decoded. */
-async function bitmapSize(bytes: ArrayBuffer, mime: string): Promise<{ width: number; height: number }> {
-  if (typeof createImageBitmap === 'undefined') return { width: 0, height: 0 };
-  try {
-    const bmp = await createImageBitmap(new Blob([bytes], { type: mime }));
-    const size = { width: bmp.width, height: bmp.height };
-    bmp.close();
-    return size;
-  } catch {
-    return { width: 0, height: 0 };
-  }
-}
-
 export function createRemotePreset(
   baseUrl: string,
   entry: PresetIndexEntry,
@@ -127,61 +100,15 @@ export function createRemotePreset(
     async load(locale: string): Promise<LoadedPreset> {
       const manifestRes = await fetchOk(fileUrl('preset.json'));
       const manifest: unknown = await manifestRes.json();
-      if (!isPresetManifest(manifest)) {
-        throw new Error(`Invalid preset manifest for "${entry.id}"`);
-      }
-      const presetId = manifest.id;
-
-      const markdown = await (await fetchOk(fileUrl(pickMarkdownFile(manifest, locale)))).text();
-
-      const blobs: LoadedPresetBlob[] = [];
-      const resources: Resource[] = await Promise.all(
-        (manifest.resources ?? []).map(async (spec) => {
-          if (!spec.file) return resourceFromSpec(presetId, spec);
-          const mime = mimeForFile(spec.file);
-          const bytes = await (await fetchOk(fileUrl(spec.file))).arrayBuffer();
-          blobs.push({ fileId: presetFileId(presetId, spec.file), bytes, mime });
-          let size: { width: number; height: number } | undefined;
-          if (spec.width === undefined || spec.height === undefined) {
-            if (isSvgFile(spec.file)) {
-              size = svgIntrinsicSize(new TextDecoder().decode(bytes));
-            } else if (isBitmapFile(spec.file)) {
-              size = await bitmapSize(bytes, mime);
-            }
-          }
-          return resourceFromSpec(presetId, spec, size);
-        }),
-      );
-
-      const fontSet = fontsToCustomFonts(presetId, manifest.fonts ?? []);
-      for (const w of fontSet.warnings) console.debug('[postext-sandbox] preset font skipped:', w);
-      const fonts: LoadedPresetFont[] = await Promise.all(
-        fontSet.files.map(async (f) => ({
-          fileId: f.fileId,
-          fileName: f.fileName,
-          format: f.format,
-          buffer: await (await fetchOk(fileUrl(f.file))).arrayBuffer(),
-        })),
-      );
-
-      const baseConfig = { ...createDefaultConfig(locale), ...(manifest.config ?? {}) };
-      const customFonts = [...(manifest.config?.customFonts ?? []), ...fontSet.families];
-      const config = customFonts.length > 0
-        ? { ...baseConfig, customFonts }
-        : baseConfig;
-
-      return {
-        summary: {
-          ...summary,
-          description: manifest.description ?? summary.description,
-          locale: manifest.locale ?? summary.locale,
+      return parseBundle(
+        manifest,
+        (file) => fetchOk(fileUrl(file)).then((r) => r.arrayBuffer()),
+        {
+          locale,
+          summary,
+          onWarning: (w) => console.debug('[postext-sandbox] preset font skipped:', w),
         },
-        markdown,
-        config,
-        resources,
-        blobs,
-        fonts,
-      };
+      );
     },
   };
 }

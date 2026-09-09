@@ -3,8 +3,9 @@
 import { useRef } from 'react';
 import { Download, Upload, RotateCcw } from 'lucide-react';
 import { MarkdownEditor } from '../editor/MarkdownEditor';
-import { useSandbox, useSandboxPresets } from '../context/SandboxContext';
-import { exportMarkdownToJson, importMarkdownFromJson } from '../storage/persistence';
+import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/SandboxContext';
+import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence';
+import { slugify } from '../panels/resources/slugify';
 import { Tooltip } from '../panels/Tooltip';
 import { ConfirmPopover } from '../panels/ConfirmPopover';
 
@@ -15,14 +16,16 @@ interface MarkdownPanelProps {
 export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
   const { state, dispatch } = useSandbox();
   const { reload } = useSandboxPresets();
+  const { hasResetBaseline, projects, activeProjectId } = useSandboxProjects();
   const importRef = useRef<HTMLInputElement>(null);
+  const activeName = projects.find((p) => p.id === activeProjectId)?.name ?? '';
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const data = await importMarkdownFromJson(file);
-      dispatch({ type: 'SET_MARKDOWN', payload: data.markdown });
+      const markdown = await importMarkdownFile(file);
+      dispatch({ type: 'SET_MARKDOWN', payload: markdown });
     } catch {
       // Silently ignore invalid files
     }
@@ -53,6 +56,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
           {/* Always available: even with the default markdown, the resource
               set can have drifted (stale or foreign-language examples), and
               reset is the way to restore it. */}
+          {hasResetBaseline && (
           <ConfirmPopover
             message={state.labels.resetMarkdownConfirm}
             onConfirm={handleReset}
@@ -73,10 +77,11 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
               </Tooltip>
             )}
           </ConfirmPopover>
+          )}
           <Tooltip content={state.labels.exportFile} side="bottom">
             <button
               type="button"
-              onClick={() => exportMarkdownToJson(state.markdown)}
+              onClick={() => exportMarkdownFile(state.markdown, `${slugify(activeName) || 'document'}.md`)}
               aria-label={state.labels.exportFile}
               className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
               style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
@@ -102,7 +107,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
           <input
             ref={importRef}
             type="file"
-            accept=".json"
+            accept=".md,.markdown,text/markdown"
             onChange={handleImport}
             className="hidden"
             aria-hidden="true"

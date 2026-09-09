@@ -8,10 +8,12 @@
 // consistent regardless of which module opens the DB first.
 
 export const DB_NAME = 'postext-sandbox';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export const BLOBS_STORE = 'blobs';
 export const RESOURCES_STORE = 'resources';
+/** Local projects (see projects.ts). Added in DB version 2. */
+export const PROJECTS_STORE = 'projects';
 
 export interface BlobRecord {
   fileId: string;
@@ -36,6 +38,9 @@ export function openSandboxDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(RESOURCES_STORE)) {
         db.createObjectStore(RESOURCES_STORE, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(PROJECTS_STORE)) {
+        db.createObjectStore(PROJECTS_STORE, { keyPath: 'id' });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -112,4 +117,20 @@ export function listBlobs(): Promise<BlobRecord[]> {
   return runInStore(BLOBS_STORE, 'readonly', (store) =>
     store.getAll() as IDBRequest<BlobRecord[]>,
   ).then((v) => v ?? []);
+}
+
+/** Every stored blob id, without loading the payloads. */
+export function listBlobIds(): Promise<string[]> {
+  return runInStore(BLOBS_STORE, 'readonly', (store) =>
+    store.getAllKeys() as IDBRequest<IDBValidKey[]>,
+  ).then((keys) => (keys ?? []).map(String));
+}
+
+/** Remove every blob whose id is not in `keepIds`. Safe when a blob is
+ *  already gone or IndexedDB is unavailable. */
+export async function pruneBlobs(keepIds: Set<string>): Promise<void> {
+  if (!hasIndexedDB()) return;
+  const ids = await listBlobIds().catch(() => [] as string[]);
+  const toDelete = ids.filter((id) => !keepIds.has(id));
+  await Promise.all(toDelete.map((id) => deleteBlob(id).catch(() => undefined)));
 }

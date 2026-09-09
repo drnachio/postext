@@ -13,15 +13,20 @@ import {
   type MutableRefObject,
 } from 'react';
 import type { PostextConfig, VDTDocument, Resource } from 'postext';
-import { defaultResourceTypes } from 'postext';
+import { stripConfigDefaults } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
-import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel, savePresetApplied } from '../storage/persistence';
+import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
+import { pruneBlobs } from '../storage/blobStore';
+import { collectProjectFileIds, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
+import type { ProjectSummary } from '../storage/projects';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
-import { createDefaultConfig } from './defaultConfig';
+import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
+import { createProjectActions } from './projectActions';
+import type { ProjectActions } from './projectActions';
 import {
   BUILTIN_PRESET_ID,
   applyPreset,
@@ -40,6 +45,8 @@ import type {
 } from '../presets';
 
 export { createDefaultConfig } from './defaultConfig';
+export type { ProjectSummary } from '../storage/projects';
+export type { DuplicateSource } from './projectActions';
 
 export interface EditorSelection {
   from: number;
@@ -88,6 +95,15 @@ export interface SandboxState {
    *  automatically because its bundle changed; cleared a few seconds later.
    *  Drives the brief "updated from disk" notice in the Presets panel. */
   presetUpdatedAt: number | null;
+  /** Local project the working document is mirrored into; null while a
+   *  read-only preset is active (edits then live only in the working state). */
+  activeProjectId: string | null;
+  /** Every stored project, oldest first. */
+  projects: ProjectSummary[];
+  projectStatus: 'idle' | 'busy' | 'error';
+  projectError?: string;
+  /** Transient message from the last project operation (export warnings). */
+  projectNotice: string | null;
 }
 
 export type SandboxAction =
@@ -111,9 +127,15 @@ export type SandboxAction =
   | { type: 'SET_PRESET_LIST'; payload: PresetSummary[] }
   | { type: 'SET_PRESET_APPLIED'; payload: AppliedPresetSnapshot | null }
   | { type: 'SET_PRESET_STALE'; payload: boolean }
-  | { type: 'SET_PRESET_UPDATED_AT'; payload: number | null };
+  | { type: 'SET_PRESET_UPDATED_AT'; payload: number | null }
+  | { type: 'SET_ACTIVE_PROJECT'; payload: { id: string | null; sourcePresetId?: string } }
+  | { type: 'SET_PROJECT_LIST'; payload: ProjectSummary[] }
+  | { type: 'UPSERT_PROJECT_SUMMARY'; payload: ProjectSummary }
+  | { type: 'REMOVE_PROJECT_SUMMARY'; payload: string }
+  | { type: 'SET_PROJECT_STATUS'; payload: { status: SandboxState['projectStatus']; error?: string } }
+  | { type: 'SET_PROJECT_NOTICE'; payload: string | null };
 
-function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
+export function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
     case 'SET_MARKDOWN':
       return { ...state, markdown: action.payload };
@@ -192,6 +214,41 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
     case 'SET_PRESET_UPDATED_AT':
       if (state.presetUpdatedAt === action.payload) return state;
       return { ...state, presetUpdatedAt: action.payload };
+    case 'SET_ACTIVE_PROJECT': {
+      if (action.payload.id === null) {
+        return state.activeProjectId === null ? state : { ...state, activeProjectId: null };
+      }
+      // A project's baseline is the preset it came from (Reset restores it);
+      // preset bookkeeping — applied snapshot, staleness, notices — is preset
+      // mode only and starts clean.
+      return {
+        ...state,
+        activeProjectId: action.payload.id,
+        activePresetId: action.payload.sourcePresetId ?? BUILTIN_PRESET_ID,
+        presetConfig: undefined,
+        presetApplied: null,
+        presetStale: false,
+        presetUpdatedAt: null,
+        presetStatus: 'idle',
+        presetError: undefined,
+      };
+    }
+    case 'SET_PROJECT_LIST':
+      return { ...state, projects: action.payload };
+    case 'UPSERT_PROJECT_SUMMARY': {
+      const idx = state.projects.findIndex((p) => p.id === action.payload.id);
+      const projects = idx === -1
+        ? [...state.projects, action.payload]
+        : state.projects.map((p) => (p.id === action.payload.id ? action.payload : p));
+      return { ...state, projects };
+    }
+    case 'REMOVE_PROJECT_SUMMARY':
+      return { ...state, projects: state.projects.filter((p) => p.id !== action.payload) };
+    case 'SET_PROJECT_STATUS':
+      return { ...state, projectStatus: action.payload.status, projectError: action.payload.error };
+    case 'SET_PROJECT_NOTICE':
+      if (state.projectNotice === action.payload) return state;
+      return { ...state, projectNotice: action.payload };
     default:
       return state;
   }
@@ -210,6 +267,7 @@ interface SandboxStore {
   loadPreset: (id: string) => Promise<void>;
   /** Re-fetch the active preset and re-apply the given parts. */
   reloadPreset: (parts: PresetApplyParts) => Promise<void>;
+  projectActions: ProjectActions;
 }
 
 export interface SandboxContextValue {
@@ -329,6 +387,48 @@ export function useSandboxPresetStale(): boolean {
   return useSandboxSelector((s) => s.presetStale);
 }
 
+export interface SandboxProjectsValue extends ProjectActions {
+  projects: ProjectSummary[];
+  activeProjectId: string | null;
+  status: SandboxState['projectStatus'];
+  error?: string;
+  notice: string | null;
+  /** True when the active document can be reset to a preset: preset mode, or
+   *  a project whose source preset is still available. */
+  hasResetBaseline: boolean;
+  dismissNotice: () => void;
+}
+
+/** Local projects plus their operations. */
+export function useSandboxProjects(): SandboxProjectsValue {
+  const store = useStore();
+  const projects = useSandboxSelector((s) => s.projects);
+  const activeProjectId = useSandboxSelector((s) => s.activeProjectId);
+  const status = useSandboxSelector((s) => s.projectStatus);
+  const error = useSandboxSelector((s) => s.projectError);
+  const notice = useSandboxSelector((s) => s.projectNotice);
+  const hasResetBaseline = useSandboxSelector((s) => {
+    if (s.activeProjectId === null) return true;
+    const active = s.projects.find((p) => p.id === s.activeProjectId);
+    const source = active?.sourcePresetId;
+    return source !== undefined && s.presetSummaries.some((p) => p.id === source && p.available);
+  });
+  return {
+    ...store.projectActions,
+    projects,
+    activeProjectId,
+    status,
+    error,
+    notice,
+    hasResetBaseline,
+    dismissNotice: () => store.dispatch({ type: 'SET_PROJECT_NOTICE', payload: null }),
+  };
+}
+
+export function useSandboxActiveProjectId(): string | null {
+  return useSandboxSelector((s) => s.activeProjectId);
+}
+
 /** Stable ref to the most recently built VDT document. Does not subscribe
  *  to state changes — read inside effects/handlers via `.current`. */
 export function useSandboxDocRef(): MutableRefObject<VDTDocument | null> {
@@ -338,15 +438,6 @@ export function useSandboxDocRef(): MutableRefObject<VDTDocument | null> {
 /** Stable ref for the editor state, mirroring useSandboxDocRef. */
 export function useSandboxEditorStateRef(): MutableRefObject<unknown | null> {
   return useStore().editorStateRef;
-}
-
-/** Ensure `config.resourceTypes` is populated, falling back to the built-in
- *  defaults (localised to `locale`) when unset (e.g. configs persisted before
- *  the feature existed). Returns a new config object only when a change is
- *  needed. */
-function withDefaultResourceTypes(config: PostextConfig, locale = 'en'): PostextConfig {
-  if (config.resourceTypes && config.resourceTypes.length > 0) return config;
-  return { ...config, resourceTypes: defaultResourceTypes(locale) };
 }
 
 export const DEFAULT_MARKDOWN = DEFAULT_MARKDOWN_EN;
@@ -371,6 +462,10 @@ const NO_SOURCES: PresetSourceSpec[] = [];
 const PRESET_WATCH_INTERVAL_MS = 3000;
 /** How long the "preset updated from disk" notice stays up. */
 const PRESET_NOTICE_MS = 4000;
+/** Debounce for the working-state save (localStorage + active project). */
+const WORKING_SAVE_MS = 1000;
+/** Debounce for the blob/font garbage collection sweep. */
+const GC_DEBOUNCE_MS = 2000;
 
 export function SandboxProvider({
   children,
@@ -431,6 +526,10 @@ export function SandboxProvider({
       presetApplied: loadPresetApplied(),
       presetStale: false,
       presetUpdatedAt: null,
+      activeProjectId: loadProjectId(),
+      projects: [],
+      projectStatus: 'idle' as const,
+      projectNotice: null,
     };
   });
 
@@ -455,6 +554,11 @@ export function SandboxProvider({
   builtinPresetRef.current = builtinPreset;
   // Monotonic token so an older in-flight load never clobbers a newer one.
   const presetLoadSeqRef = useRef(0);
+  // Projects are listed on mount; GC waits for both loads so it never sweeps
+  // against an empty keep-set.
+  const projectsLoadedRef = useRef(false);
+  const gcSuspendedRef = useRef(0);
+  const gcTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const runPreset = async (provider: PresetProvider, parts: PresetApplyParts): Promise<void> => {
     const seq = ++presetLoadSeqRef.current;
@@ -485,10 +589,13 @@ export function SandboxProvider({
       listPresets({ sources: presetSources, builtin: builtinPresetRef.current }).catch(
         () => [builtinPresetRef.current],
       ),
+      listProjects(),
     ])
-      .then(async ([loaded, providers]) => {
+      .then(async ([loaded, providers, projects]) => {
         if (cancelled) return;
         presetProvidersRef.current = providers;
+        dispatch({ type: 'SET_PROJECT_LIST', payload: projects.map(toSummary) });
+        projectsLoadedRef.current = true;
 
         const md = stateRef.current.markdown;
         const savedMarkdown = loadMarkdown();
@@ -519,6 +626,22 @@ export function SandboxProvider({
         prevResourcesRef.current = loaded;
         resourcesLoadedRef.current = true;
 
+        // Project mode: the working state (localStorage + resources store) is
+        // the project's live copy; the record only fills in when the store
+        // was emptied. Preset-mode seeding below does not apply.
+        const savedProjectId = stateRef.current.activeProjectId;
+        const activeProject = savedProjectId ? projects.find((p) => p.id === savedProjectId) : undefined;
+        if (activeProject) {
+          dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: activeProject.id, sourcePresetId: activeProject.sourcePresetId } });
+          dispatch({ type: 'SET_RESOURCES', payload: loaded.length > 0 ? loaded : activeProject.resources });
+          scheduleGc();
+          return;
+        }
+        if (savedProjectId) {
+          dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
+          saveProjectId(null);
+        }
+
         const privateDefault = findDefaultPrivatePreset(providers, loc);
         if (pristine && onBuiltin && privateDefault) {
           await runPresetRef.current(privateDefault, 'all');
@@ -537,6 +660,7 @@ export function SandboxProvider({
         }
         dispatch({ type: 'SET_RESOURCES', payload: loaded });
         dispatch({ type: 'SET_PRESET', payload: { id: savedId ?? BUILTIN_PRESET_ID } });
+        scheduleGc();
       })
       .catch(() => {
         if (cancelled) return;
@@ -565,6 +689,8 @@ export function SandboxProvider({
       if (document.visibilityState !== 'visible') return;
       if (!resourcesLoadedRef.current) return;
       const before = stateRef.current;
+      // Projects own their content; bundle edits only matter in preset mode.
+      if (before.activeProjectId !== null) return;
       if (before.presetStatus === 'loading') return;
       const provider = presetProvidersRef.current.find((p) => p.summary.id === before.activePresetId);
       if (!provider?.fingerprint) return;
@@ -615,7 +741,7 @@ export function SandboxProvider({
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('focus', onVisible);
     };
-  }, [state.activePresetId, state.presetSummaries]);
+  }, [state.activePresetId, state.presetSummaries, state.activeProjectId]);
 
   // Auto-hide the "updated from disk" notice.
   useEffect(() => {
@@ -645,27 +771,57 @@ export function SandboxProvider({
         saveResource(r).catch(() => { /* ignore */ });
       }
     }
+    // Records only: blobs may still be referenced by a project (a switch
+    // replaces the whole set) and are swept by the reference-based GC.
     for (const r of prev) {
       if (!nextById.has(r.id)) {
-        deleteResource(r.id, true).catch(() => { /* ignore */ });
+        deleteResource(r.id, false).catch(() => { /* ignore */ });
       }
     }
 
     prevResourcesRef.current = next;
   }, [state.resources]);
 
-  // Auto-save to localStorage (debounced, skip until hydrated)
+  // Auto-save the working state (debounced, skip until hydrated): markdown and
+  // config to localStorage always, and the three slices into the active
+  // project when there is one. Reads the live state so a flush before a
+  // switch writes exactly what is on screen.
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const persistWorking = (): Promise<void> => {
+    const s = stateRef.current;
+    saveMarkdown(s.markdown);
+    saveConfig(s.config);
+    if (!s.activeProjectId) return Promise.resolve();
+    return updateProject(s.activeProjectId, {
+      markdown: s.markdown,
+      config: stripConfigDefaults(s.config),
+      resources: s.resources,
+    }).then(() => undefined, () => undefined);
+  };
+  const flushWorkingSave = (): Promise<void> => {
+    if (saveTimerRef.current === undefined) return Promise.resolve();
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = undefined;
+    return persistWorking();
+  };
+  const discardWorkingSave = (): void => {
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = undefined;
+  };
+  const flushWorkingSaveRef = useRef(flushWorkingSave);
+  flushWorkingSaveRef.current = flushWorkingSave;
+  const discardWorkingSaveRef = useRef(discardWorkingSave);
+  discardWorkingSaveRef.current = discardWorkingSave;
 
   useEffect(() => {
     if (!hydratedRef.current) return;
     clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      saveMarkdown(state.markdown);
-      saveConfig(state.config);
-    }, 1000);
+      saveTimerRef.current = undefined;
+      void persistWorking();
+    }, WORKING_SAVE_MS);
     return () => clearTimeout(saveTimerRef.current);
-  }, [state.markdown, state.config]);
+  }, [state.markdown, state.config, state.resources, state.activeProjectId]);
 
   // Save viewport tab and active panel immediately (skip until hydrated)
   useEffect(() => {
@@ -693,16 +849,38 @@ export function SandboxProvider({
     setCustomFonts(state.config.customFonts);
   }, [state.config.customFonts]);
 
-  // Drop IndexedDB font files that are no longer referenced by any variant.
-  // Runs after hydration and any time the customFonts shape changes.
+  // Reference-based garbage collection for IndexedDB payloads: a blob or
+  // font file survives while the working state or any stored project points
+  // at it. Debounced, and paused while an operation is copying files whose
+  // records have not landed yet.
+  const runGc = async (): Promise<void> => {
+    if (gcSuspendedRef.current > 0) return;
+    if (!resourcesLoadedRef.current || !projectsLoadedRef.current) return;
+    const s = stateRef.current;
+    const live = referencedFileIds({ resources: s.resources, config: s.config });
+    const stored = await collectProjectFileIds();
+    for (const id of stored.blobIds) live.blobIds.add(id);
+    for (const id of stored.fontIds) live.fontIds.add(id);
+    if (gcSuspendedRef.current > 0) return;
+    await Promise.all([pruneFontFiles(live.fontIds), pruneBlobs(live.blobIds)]);
+  };
+  const runGcRef = useRef(runGc);
+  runGcRef.current = runGc;
+  const scheduleGc = (): void => {
+    clearTimeout(gcTimerRef.current);
+    gcTimerRef.current = setTimeout(() => {
+      runGcRef.current().catch(() => { /* ignore */ });
+    }, GC_DEBOUNCE_MS);
+  };
+  const scheduleGcRef = useRef(scheduleGc);
+  scheduleGcRef.current = scheduleGc;
+
   useEffect(() => {
     if (!hydratedRef.current) return;
-    const keep = new Set<string>();
-    for (const family of state.config.customFonts ?? []) {
-      for (const v of family.variants) keep.add(v.fileId);
-    }
-    pruneFontFiles(keep).catch(() => { /* ignore */ });
-  }, [state.config.customFonts]);
+    scheduleGcRef.current();
+  }, [state.config.customFonts, state.resources, state.activeProjectId, state.projects]);
+
+  useEffect(() => () => clearTimeout(gcTimerRef.current), []);
 
   // Notify parent of changes
   useEffect(() => {
@@ -729,6 +907,27 @@ export function SandboxProvider({
     for (const cb of listenersRef.current) cb();
   }, [state]);
 
+  const projectActions = useMemo<ProjectActions>(() => createProjectActions({
+    dispatch,
+    getState: () => stateRef.current,
+    getProviders: () => presetProvidersRef.current,
+    getBuiltin: () => builtinPresetRef.current,
+    runPreset: (provider, parts) => runPresetRef.current(provider, parts),
+    cancelPresetLoads: () => { presetLoadSeqRef.current++; },
+    flushWorkingSave: () => flushWorkingSaveRef.current(),
+    discardWorkingSave: () => discardWorkingSaveRef.current(),
+    withGcSuspended: async (fn) => {
+      gcSuspendedRef.current++;
+      try {
+        return await fn();
+      } finally {
+        gcSuspendedRef.current--;
+        scheduleGcRef.current();
+      }
+    },
+    labels: () => stateRef.current.labels,
+  }), [dispatch]);
+
   const store = useMemo<SandboxStore>(() => ({
     getSnapshot: () => stateRef.current,
     subscribe: (cb) => {
@@ -741,15 +940,27 @@ export function SandboxProvider({
     loadPreset: async (id) => {
       const provider = presetProvidersRef.current.find((p) => p.summary.id === id);
       if (!provider) return;
+      // Leaving a project: its last edits are written first, then the
+      // working state stops mirroring anything.
+      if (stateRef.current.activeProjectId !== null) {
+        await flushWorkingSaveRef.current();
+        dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
+        saveProjectId(null);
+      }
       await runPresetRef.current(provider, 'all');
     },
     reloadPreset: async (parts) => {
+      if (stateRef.current.activeProjectId !== null) {
+        await projectActions.resetToSource(parts);
+        return;
+      }
       const activeId = stateRef.current.activePresetId;
       const provider =
         presetProvidersRef.current.find((p) => p.summary.id === activeId) ?? builtinPresetRef.current;
       await runPresetRef.current(provider, parts);
     },
-  }), [dispatch]);
+    projectActions,
+  }), [dispatch, projectActions]);
 
   return (
     <SandboxStoreContext.Provider value={store}>

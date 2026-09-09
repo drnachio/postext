@@ -9,6 +9,7 @@ const SIDEBAR_WIDTH_KEY = 'postext-sandbox-sidebar-width';
 const PANEL_KEY = 'postext-sandbox-panel';
 const PRESET_KEY = 'postext-sandbox-preset';
 const PRESET_APPLIED_KEY = 'postext-sandbox-preset-applied';
+const PROJECT_KEY = 'postext-sandbox-project';
 const SECTIONS_KEY = 'postext-sandbox-sections';
 const COLOR_MODES_KEY = 'postext-sandbox-color-modes';
 const CANVAS_VIEW_MODE_KEY = 'postext-sandbox-canvas-view-mode';
@@ -66,6 +67,8 @@ export function loadPanel(): string | null | undefined {
   const raw = getStorage()?.getItem(PANEL_KEY);
   if (raw == null) return undefined;
   if (raw === '__closed__') return null;
+  // The Presets panel became the Projects panel.
+  if (raw === 'presets') return 'projects';
   return raw;
 }
 
@@ -77,6 +80,19 @@ export function savePresetId(id: string): void {
 
 export function loadPresetId(): string | null {
   return getStorage()?.getItem(PRESET_KEY) ?? null;
+}
+
+/** Remember the active local project (null when a read-only preset is
+ *  active, i.e. the working document is not mirrored anywhere). */
+export function saveProjectId(id: string | null): void {
+  const storage = getStorage();
+  if (!storage) return;
+  if (id === null) storage.removeItem(PROJECT_KEY);
+  else storage.setItem(PROJECT_KEY, id);
+}
+
+export function loadProjectId(): string | null {
+  return getStorage()?.getItem(PROJECT_KEY) ?? null;
 }
 
 function isAppliedPresetSnapshot(data: unknown): data is AppliedPresetSnapshot {
@@ -94,6 +110,10 @@ function isAppliedPresetSnapshot(data: unknown): data is AppliedPresetSnapshot {
  *  edited one and follow bundle changes on disk. */
 export function savePresetApplied(snapshot: AppliedPresetSnapshot): void {
   getStorage()?.setItem(PRESET_APPLIED_KEY, JSON.stringify(snapshot));
+}
+
+export function clearPresetApplied(): void {
+  getStorage()?.removeItem(PRESET_APPLIED_KEY);
 }
 
 export function loadPresetApplied(): AppliedPresetSnapshot | null {
@@ -230,6 +250,7 @@ export function clearStorage(): void {
   storage?.removeItem(PANEL_KEY);
   storage?.removeItem(PRESET_KEY);
   storage?.removeItem(PRESET_APPLIED_KEY);
+  storage?.removeItem(PROJECT_KEY);
   storage?.removeItem(SECTIONS_KEY);
   storage?.removeItem(COLOR_MODES_KEY);
   storage?.removeItem(CANVAS_VIEW_MODE_KEY);
@@ -239,14 +260,23 @@ export function clearStorage(): void {
   storage?.removeItem(HTML_COLUMN_MODE_KEY);
 }
 
-function downloadJson(data: unknown, filename: string): void {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+/** Trigger a browser download of `data` under `filename`. */
+export function downloadBytes(data: Uint8Array | string, filename: string, mime: string): void {
+  const blob = new Blob([data as BlobPart], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function downloadJson(data: unknown, filename: string): void {
+  downloadBytes(JSON.stringify(data, null, 2), filename, 'application/json');
+}
+
+export async function readFileBytes(file: File): Promise<Uint8Array> {
+  return new Uint8Array(await file.arrayBuffer());
 }
 
 function readJsonFile<T>(file: File, validate: (data: unknown) => data is T): Promise<T> {
@@ -293,25 +323,19 @@ export function importConfigFromJson(file: File): Promise<ConfigExport> {
   return readJsonFile(file, isConfigExport);
 }
 
-// Markdown export/import
+// Markdown export/import (plain .md files)
 
-export interface MarkdownExport {
-  type: 'postext-markdown';
-  version: 1;
-  markdown: string;
+/** Download the document as a plain markdown file. */
+export function exportMarkdownFile(markdown: string, filename = 'document.md'): void {
+  downloadBytes(markdown, filename, 'text/markdown;charset=utf-8');
 }
 
-function isMarkdownExport(data: unknown): data is MarkdownExport {
-  return typeof data === 'object' && data !== null
-    && (data as MarkdownExport).type === 'postext-markdown'
-    && (data as MarkdownExport).version === 1
-    && typeof (data as MarkdownExport).markdown === 'string';
-}
-
-export function exportMarkdownToJson(markdown: string): void {
-  downloadJson({ type: 'postext-markdown', version: 1, markdown }, 'postext-markdown.json');
-}
-
-export function importMarkdownFromJson(file: File): Promise<MarkdownExport> {
-  return readJsonFile(file, isMarkdownExport);
+/** Read a markdown file as text. Rejects when the file cannot be read. */
+export function importMarkdownFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsText(file);
+  });
 }

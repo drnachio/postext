@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { SandboxLabels } from './labels';
 import type { PresetSourceSpec } from '../presets/types';
 
-export type PanelId = 'markdown' | 'presets' | 'config' | 'resources' | 'fonts' | 'warnings';
+export type PanelId = 'projects' | 'markdown' | 'config' | 'resources' | 'fonts' | 'warnings';
 export type ViewportTab = 'canvas' | 'html' | 'pdf';
 
 export interface PostextSandboxProps {

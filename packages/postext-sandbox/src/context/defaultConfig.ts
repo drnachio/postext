@@ -8,3 +8,12 @@ import { cloneDefaultColorPalette, defaultResourceTypes } from 'postext';
 export function createDefaultConfig(locale = 'en'): PostextConfig {
   return { colorPalette: cloneDefaultColorPalette(), resourceTypes: defaultResourceTypes(locale) };
 }
+
+/** Ensure `config.resourceTypes` is populated, falling back to the built-in
+ *  defaults (localised to `locale`) when unset (e.g. configs persisted before
+ *  the feature existed). Returns a new config object only when a change is
+ *  needed. */
+export function withDefaultResourceTypes(config: PostextConfig, locale = 'en'): PostextConfig {
+  if (config.resourceTypes && config.resourceTypes.length > 0) return config;
+  return { ...config, resourceTypes: defaultResourceTypes(locale) };
+}
