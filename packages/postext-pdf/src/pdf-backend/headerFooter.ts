@@ -6,6 +6,7 @@ import type {
   VDTDesignImageBlock,
   VDTDesignBoxStyle,
 } from 'postext';
+import { setCharacterSpacing } from 'pdf-lib';
 import type { ResourceImageMap } from './renderResourceBlock';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
@@ -112,6 +113,8 @@ function renderTextBlock(
   if (clip) {
     pushClipRect(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height);
   }
+  const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx > 0;
+  if (tracked) ctx.page.pushOperators(setCharacterSpacing(block.letterSpacingPx! * ctx.scale));
   for (const line of block.lines) {
     drawTextPx(
       ctx,
@@ -123,12 +126,17 @@ function renderTextBlock(
       color,
     );
   }
+  if (tracked) ctx.page.pushOperators(setCharacterSpacing(0));
   if (clip) popClip(ctx);
 }
 
 function renderRuleBlock(ctx: PageCtx, block: VDTDesignRuleBlock): void {
   const color = colorFromHex(block.color, ctx.colorSpace);
-  fillRectPx(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.thicknessPx, color);
+  if (block.direction === 'vertical') {
+    fillRectPx(ctx, block.bbox.x, block.bbox.y, block.thicknessPx, block.bbox.height, color);
+  } else {
+    fillRectPx(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.thicknessPx, color);
+  }
 }
 
 function renderBoxBlock(ctx: PageCtx, block: VDTDesignBoxBlock): void {

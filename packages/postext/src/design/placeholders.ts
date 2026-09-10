@@ -155,6 +155,7 @@ export function resolveDesignPlaceholders(
       chapterAttrsByPageIndex: ctx.chapterAttrsByPageIndex,
       partTitleByPageIndex: ctx.partTitleByPageIndex,
       partNumberByPageIndex: ctx.partNumberByPageIndex,
+      chapterNumberByPageIndex: ctx.chapterNumberByPageIndex,
     };
     return legacyResolvePlaceholders(template, legacy);
   }

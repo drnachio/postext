@@ -487,13 +487,14 @@ function renderDesignTextBlock(block: VDTDesignTextBlock): string {
     );
   }
   const clipDecl = block.clip ? 'overflow:hidden;' : '';
+  const trackingDecl = block.letterSpacingPx ? `letter-spacing:${block.letterSpacingPx}px;` : '';
   parts.push(
     `<div style="` +
     `position:absolute;` +
     `left:${block.bbox.x}px;top:${block.bbox.y}px;` +
     `width:${block.bbox.width}px;height:${block.bbox.height}px;` +
     `font:${font};color:${block.color};` +
-    clipDecl +
+    clipDecl + trackingDecl +
     `">${lineParts.join('')}</div>`,
   );
   return parts.join('');

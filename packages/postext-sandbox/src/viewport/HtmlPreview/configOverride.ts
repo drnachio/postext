@@ -108,6 +108,11 @@ export function buildHtmlConfigOverride(
       ...base.headings,
       levels: scaledHeadingLevels,
     },
+    // The HTML viewer is a continuous reading surface, not a page: running
+    // headers and footers (folios, running titles, page-edge tabs anchored
+    // to the bleed) have no place on it.
+    header: { elements: [] },
+    footer: { elements: [] },
   };
 }
 

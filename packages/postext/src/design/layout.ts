@@ -74,6 +74,8 @@ export interface ResolvedTextPrimitive extends ResolvedElementGeometry {
   verticalAlign: VAlign;
   /** Whether the element needs a clip rect during rendering. */
   needsClip: boolean;
+  /** Tracking after every glyph, in px; 0 when the element sets none. */
+  letterSpacingPx: number;
   /** Content box (inside padding) offsets, relative to element x/y. */
   contentX: number;
   contentY: number;
@@ -332,15 +334,18 @@ function resolveElementAnchor(
 // Text layout — wrap / ellipsis / clip
 // ---------------------------------------------------------------------------
 
+/** Width of a run of text in the element's font, tracking included. */
+type TextMeasure = (text: string) => number;
+
 function ellipsize(
   text: string,
-  fontString: string,
+  measure: TextMeasure,
   maxWidth: number,
   mode: 'start' | 'end' | 'middle',
 ): string {
   const ellipsis = '…';
-  if (measureTextWidth(text, fontString) <= maxWidth) return text;
-  const ellipsisWidth = measureTextWidth(ellipsis, fontString);
+  if (measure(text) <= maxWidth) return text;
+  const ellipsisWidth = measure(ellipsis);
   if (ellipsisWidth > maxWidth) return '';
   const budget = maxWidth - ellipsisWidth;
   if (mode === 'end') {
@@ -348,7 +353,7 @@ function ellipsize(
     let hi = text.length;
     while (lo < hi) {
       const mid = Math.ceil((lo + hi) / 2);
-      if (measureTextWidth(text.slice(0, mid), fontString) <= budget) {
+      if (measure(text.slice(0, mid)) <= budget) {
         lo = mid;
       } else {
         hi = mid - 1;
@@ -361,7 +366,7 @@ function ellipsize(
     let hi = text.length;
     while (lo < hi) {
       const mid = Math.floor((lo + hi) / 2);
-      if (measureTextWidth(text.slice(mid), fontString) <= budget) {
+      if (measure(text.slice(mid)) <= budget) {
         hi = mid;
       } else {
         lo = mid + 1;
@@ -374,11 +379,11 @@ function ellipsize(
   let rightLen = 0;
   while (true) {
     const candidate = text.slice(0, leftLen + 1) + text.slice(text.length - rightLen);
-    if (measureTextWidth(candidate, fontString) + ellipsisWidth > maxWidth) break;
+    if (measure(candidate) + ellipsisWidth > maxWidth) break;
     leftLen++;
     if (leftLen + rightLen >= text.length) break;
     const candidate2 = text.slice(0, leftLen) + text.slice(text.length - (rightLen + 1));
-    if (measureTextWidth(candidate2, fontString) + ellipsisWidth > maxWidth) break;
+    if (measure(candidate2) + ellipsisWidth > maxWidth) break;
     rightLen++;
     if (leftLen + rightLen >= text.length) break;
   }
@@ -389,7 +394,7 @@ const SOFT_HYPHEN = '\u00AD';
 
 function breakWordWithHyphenation(
   word: string,
-  fontString: string,
+  measure: TextMeasure,
   maxWidth: number,
   useHyphenation: boolean,
 ): { head: string; tail: string } | undefined {
@@ -404,7 +409,7 @@ function breakWordWithHyphenation(
         const headRaw = parts.slice(0, i).join('');
         const tailRaw = parts.slice(i).join('');
         const headWithHyphen = headRaw + '-';
-        if (measureTextWidth(headWithHyphen, fontString) <= maxWidth) {
+        if (measure(headWithHyphen) <= maxWidth) {
           best = { head: headWithHyphen, tail: tailRaw };
         } else {
           break;
@@ -418,7 +423,7 @@ function breakWordWithHyphenation(
   let hi = word.length;
   while (lo < hi) {
     const mid = Math.ceil((lo + hi) / 2);
-    if (measureTextWidth(word.slice(0, mid), fontString) <= maxWidth) {
+    if (measure(word.slice(0, mid)) <= maxWidth) {
       lo = mid;
     } else {
       hi = mid - 1;
@@ -430,7 +435,7 @@ function breakWordWithHyphenation(
 
 function wrapToWidth(
   text: string,
-  fontString: string,
+  measure: TextMeasure,
   maxWidth: number,
   hyphenate: boolean,
 ): string[] {
@@ -442,17 +447,17 @@ function wrapToWidth(
     let current = '';
     for (const part of words) {
       const test = current + part;
-      if (measureTextWidth(test, fontString) <= maxWidth || (current.length === 0 && /^\s*$/.test(part))) {
+      if (measure(test) <= maxWidth || (current.length === 0 && /^\s*$/.test(part))) {
         current = test;
       } else if (current.length === 0) {
         // Single word doesn't fit — try hyphenation / char break.
         let remaining = part;
         while (remaining.length > 0) {
-          if (measureTextWidth(remaining, fontString) <= maxWidth) {
+          if (measure(remaining) <= maxWidth) {
             current = remaining;
             break;
           }
-          const split = breakWordWithHyphenation(remaining, fontString, maxWidth, hyphenate);
+          const split = breakWordWithHyphenation(remaining, measure, maxWidth, hyphenate);
           if (!split || split.head.length === 0) {
             current = remaining;
             break;
@@ -464,17 +469,17 @@ function wrapToWidth(
         out.push(current.replace(/\s+$/, ''));
         // New line starts with this part; if the part itself doesn't fit, split it.
         const trimmed = part.replace(/^\s+/, '');
-        if (measureTextWidth(trimmed, fontString) <= maxWidth) {
+        if (measure(trimmed) <= maxWidth) {
           current = trimmed;
         } else {
           let remaining = trimmed;
           current = '';
           while (remaining.length > 0) {
-            if (measureTextWidth(remaining, fontString) <= maxWidth) {
+            if (measure(remaining) <= maxWidth) {
               current = remaining;
               break;
             }
-            const split = breakWordWithHyphenation(remaining, fontString, maxWidth, hyphenate);
+            const split = breakWordWithHyphenation(remaining, measure, maxWidth, hyphenate);
             if (!split || split.head.length === 0) {
               current = remaining;
               break;
@@ -500,7 +505,7 @@ interface TextMeasurement {
 
 function layoutText(
   text: string,
-  fontString: string,
+  measure: TextMeasure,
   fontSizePx: number,
   lineHeight: number,
   overflow: TextOverflow,
@@ -511,7 +516,7 @@ function layoutText(
   const lineHeightPx = fontSizePx * lineHeight;
   if (maxContentWidth === undefined) {
     // Single natural line.
-    const width = measureTextWidth(text, fontString);
+    const width = measure(text);
     return {
       lines: [{
         text,
@@ -526,10 +531,10 @@ function layoutText(
     };
   }
   if (overflow === 'wrap') {
-    const lines = wrapToWidth(text, fontString, maxContentWidth, hyphenate ?? false);
+    const lines = wrapToWidth(text, measure, maxContentWidth, hyphenate ?? false);
     const wrapped: WrappedLine[] = lines.map((t, i) => ({
       text: t,
-      width: measureTextWidth(t, fontString),
+      width: measure(t),
       topY: i * lineHeightPx,
       baselineY: i * lineHeightPx + lineHeightPx * 0.8,
       height: lineHeightPx,
@@ -543,7 +548,7 @@ function layoutText(
     };
   }
   if (overflow === 'clip') {
-    const natural = measureTextWidth(text, fontString);
+    const natural = measure(text);
     return {
       lines: [{
         text,
@@ -562,8 +567,8 @@ function layoutText(
     overflow === 'ellipsis-start' ? 'start'
     : overflow === 'ellipsis-middle' ? 'middle'
     : 'end';
-  const visible = ellipsize(text, fontString, maxContentWidth, mode);
-  const width = measureTextWidth(visible, fontString);
+  const visible = ellipsize(text, measure, maxContentWidth, mode);
+  const width = measure(visible);
   return {
     lines: [{
       text: visible,
@@ -765,6 +770,10 @@ function layoutTextElement(
   const weight = el.fontWeight === 400 ? 'normal' : String(el.fontWeight);
   const style = el.italic ? 'italic' : 'normal';
   const fontString = buildFontString(el.fontFamily, fontSizePx, weight, style);
+  // Tracking advances every character (spaces included) by `letterSpacingPx`,
+  // exactly as canvas `letterSpacing` / CSS `letter-spacing` / PDF `Tc` do.
+  const letterSpacingPx = Math.max(0, dimPx(el.letterSpacing, dpi, fontSizePx));
+  const measure: TextMeasure = (t) => measureTextWidth(t, fontString) + letterSpacingPx * t.length;
   const box = resolveBox(el.box, dpi, fontSizePx);
   const padding: ResolvedPadding = box?.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
 
@@ -791,7 +800,7 @@ function layoutTextElement(
     contentMax = Math.max(0, elementWidth - padding.left - padding.right);
   }
 
-  const m = layoutText(text, fontString, fontSizePx, el.lineHeight, el.overflow, contentMax, el.hyphenate);
+  const m = layoutText(text, measure, fontSizePx, el.lineHeight, el.overflow, contentMax, el.hyphenate);
   const contentWidth = m.contentWidth;
   if (elementWidth === undefined) elementWidth = contentWidth + padding.left + padding.right;
   if (clampToContainer) {
@@ -834,6 +843,7 @@ function layoutTextElement(
     align: effectiveAlign,
     verticalAlign: el.verticalAlign,
     needsClip: m.needsClip || el.overflow === 'clip',
+    letterSpacingPx,
     contentX: padding.left,
     contentY: padding.top,
     contentWidth: Math.max(0, elementWidth - padding.left - padding.right),

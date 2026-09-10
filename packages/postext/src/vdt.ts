@@ -409,6 +409,9 @@ export interface VDTDesignTextBlock {
   box?: VDTDesignBoxStyle;
   /** Whether rendering should clip to `bbox`. */
   clip: boolean;
+  /** Tracking applied after every glyph, in px (canvas `letterSpacing`,
+   *  CSS `letter-spacing`, PDF `Tc`). Absent or 0 = none. */
+  letterSpacingPx?: number;
   /** Source range of the text this block displays when it mirrors document
    *  text (an opener's `{titleText}`), so editors can map clicks on the
    *  band back to the markdown. */

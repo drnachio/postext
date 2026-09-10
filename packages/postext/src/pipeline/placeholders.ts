@@ -230,12 +230,26 @@ export function computePartValues(
 }
 
 function plainTextOfBlock(block: VDTBlock): string {
-  // Strip any numbering prefix that was prepended during build.
-  const lines = block.lines.map((l) => l.text).join(' ');
-  if (block.numberPrefix && lines.startsWith(block.numberPrefix)) {
-    return lines.slice(block.numberPrefix.length).trimStart();
+  // Wrapped lines keep their trailing space token and hyphenated lines end
+  // with the break mark, so rejoin them the way the paragraph read before
+  // wrapping: a hyphenated line continues its word, every other line break
+  // is a single space. `\u2028` is the title-break placeholder.
+  let text = '';
+  for (const line of block.lines) {
+    const t = line.text.replace(/\u2028/g, ' ').trim();
+    if (t.length === 0) continue;
+    if (line.hyphenated) {
+      text += t.replace(/[-\u2010\u2011]$/, '');
+    } else {
+      text += t + ' ';
+    }
   }
-  return lines;
+  text = text.replace(/\s+/g, ' ').trim();
+  // Strip any numbering prefix that was prepended during build.
+  if (block.numberPrefix && text.startsWith(block.numberPrefix)) {
+    return text.slice(block.numberPrefix.length).trimStart();
+  }
+  return text;
 }
 
 /**

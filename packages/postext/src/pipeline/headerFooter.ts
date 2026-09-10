@@ -107,6 +107,9 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
         }
       : undefined,
     clip: prim.needsClip,
+    ...(prim.letterSpacingPx !== undefined && prim.letterSpacingPx > 0
+      ? { letterSpacingPx: prim.letterSpacingPx }
+      : {}),
   };
 }
 
