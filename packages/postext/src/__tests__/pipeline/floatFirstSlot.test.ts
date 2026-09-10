@@ -176,3 +176,35 @@ describe('chapter barriers', () => {
     expect(floatById(doc, 'f1').page).toBe(1);
   });
 });
+
+describe('band caps under a top float', () => {
+  it('a page-span box arriving mid-page cuts the band level even when one column starts under a float', () => {
+    // The float takes the top of the second column; the box then arrives
+    // with the columns uneven, so a band cap levels them: both text columns
+    // of band 0 must end at the same absolute height, and the span column
+    // must start right there.
+    const config: PostextConfig = {
+      ...PAGE,
+      calloutStyles: [{ id: 'box', span: 'page' }],
+    };
+    const md = `Intro :ref{id="f1"} text.\n\n${filler(9)}\n\n:::callout{type="box"}\nBox.\n:::\n\n${filler(3)}`;
+    const doc = build(md, [figure('f1', { placement: { position: 'top' } })], config);
+    const f = floatById(doc, 'f1');
+    expect(f.page).toBe(0);
+    expect(f.block.columnIndex).toBe(1);
+    const page = doc.pages[0]!;
+    const span = page.columns.find((c) => c.kind === 'span');
+    expect(span).toBeDefined();
+    const band0 = page.columns.filter((c) => c.kind !== 'span' && (c.band ?? 0) === 0);
+    expect(band0).toHaveLength(2);
+    const bottoms = band0.map((c) => c.bbox.y + c.bbox.height);
+    expect(Math.abs(bottoms[0]! - bottoms[1]!)).toBeLessThan(0.01);
+    expect(span!.bbox.y).toBeCloseTo(bottoms[0]!, 5);
+    // The CONTENT ends level too: no column is left short of the cut by more
+    // than a grid line (a zero-room column under the float must be skipped,
+    // not force-filled, which would push the cut down on one side only).
+    const usedBottoms = band0.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
+    for (const b of usedBottoms) expect(bottoms[0]! - b).toBeLessThanOrEqual(doc.baselineGrid + 0.5);
+    expect(band0.some((c) => c.blocks.length > 0)).toBe(true);
+  });
+});

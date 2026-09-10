@@ -61,22 +61,32 @@ export interface BandPassReport {
   bandCapsApplied: ReadonlySet<number>;
 }
 
-/** Shorten every column of a (still empty) band to `capPx`, remembering
- *  each column's true bottom in `uncappedBottoms` so the band can be
- *  restored (`uncapBand`) when the span block cuts it. Idempotent; a column
- *  already shorter than the cap (bottom float) is left alone. A column that
- *  already holds content keeps its used height — the cap then only trims
- *  what is left. */
+/** Top edge of a band: the highest column top. A column whose top was
+ *  pushed down by a float band starts below it. */
+export function bandTop(cols: readonly VDTColumn[]): number {
+  return Math.min(...cols.map((c) => c.bbox.y));
+}
+
+/** Cut every column of a (still empty) band level at `bandTop + capPx`,
+ *  remembering each column's true bottom in `uncappedBottoms` so the band
+ *  can be restored (`uncapBand`) when the span block cuts it. The cut is an
+ *  absolute line, so a column that starts lower (under a top float band)
+ *  gets a shorter height and the columns still end level. Idempotent; a
+ *  column already ending above the cut (bottom float) is left alone. A
+ *  column that already holds content keeps its used height — the cap then
+ *  only trims what is left. */
 export function applyBandCap(
   cols: readonly VDTColumn[],
   capPx: number,
   uncappedBottoms: Map<VDTColumn, number>,
 ): void {
+  const cut = bandTop(cols) + capPx;
   for (const c of cols) {
-    if (c.bbox.height <= capPx + 0.01) continue;
+    const height = Math.max(c.bbox.height - c.availableHeight, cut - c.bbox.y);
+    if (c.bbox.height <= height + 0.01) continue;
     if (!uncappedBottoms.has(c)) uncappedBottoms.set(c, c.bbox.y + c.bbox.height);
-    const trimmed = c.bbox.height - capPx;
-    c.bbox.height = capPx;
+    const trimmed = c.bbox.height - height;
+    c.bbox.height = height;
     c.availableHeight = Math.max(0, c.availableHeight - trimmed);
   }
 }
@@ -102,11 +112,14 @@ export function columnBottom(col: VDTColumn, uncappedBottoms: ReadonlyMap<VDTCol
   return uncappedBottoms.get(col) ?? col.bbox.y + col.bbox.height;
 }
 
-/** Grid lines a level cut of the band would need: the content spread over
- *  the band's columns evenly, rounded up to whole lines. */
+/** Grid lines (from the band top) a level cut of the band would need: the
+ *  content spread over the band's columns evenly, rounded up to whole
+ *  lines. A column starting under a top float band counts that offset as
+ *  used, so the cut lands at the same absolute height in every column. */
 export function bandCapLines(cols: readonly VDTColumn[], gridPx: number): number {
+  const top = bandTop(cols);
   let total = 0;
-  for (const c of cols) total += c.bbox.height - c.availableHeight;
+  for (const c of cols) total += (c.bbox.height - c.availableHeight) + (c.bbox.y - top);
   return Math.max(1, Math.ceil((total / cols.length - 0.01) / gridPx));
 }
 

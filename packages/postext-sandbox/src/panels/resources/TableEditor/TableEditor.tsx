@@ -153,15 +153,27 @@ const clampPos = (m: TableModel, pos: TableCellPos): TableCellPos => {
 };
 
 export function TableEditor({
-  model,
+  model: modelProp,
   onModelChange,
   focusRequest = null,
   onFocusConsumed,
   onCellSelectionChange,
 }: TableEditorProps) {
   const labels = useSandboxLabels();
-  // Undo/redo snapshot stacks of TableModel. The live model is the prop; these
-  // hold history only (past = older snapshots, future = redo targets).
+  // The live model mirrors the prop locally: an edit re-renders the grid at
+  // once with the new content, while the sandbox store delivers the updated
+  // resource on its own schedule. Without the mirror a controlled cell is
+  // re-rendered with the stale prop between the keystroke and the store
+  // update (the undo stack below is local state), and React resetting the
+  // textarea to the old value throws the caret to the end of the cell.
+  const [prevProp, setPrevProp] = useState(modelProp);
+  const [model, setModel] = useState(modelProp);
+  if (modelProp !== prevProp) {
+    setPrevProp(modelProp);
+    setModel(modelProp);
+  }
+  // Undo/redo snapshot stacks of TableModel: history only (past = older
+  // snapshots, future = redo targets).
   const [past, setPast] = useState<TableModel[]>([]);
   const [future, setFuture] = useState<TableModel[]>([]);
 
@@ -194,6 +206,7 @@ export function TableEditor({
     (next: TableModel) => {
       setPast((p) => [...p, model]);
       setFuture([]);
+      setModel(next);
       onModelChange(next);
     },
     [model, onModelChange],
@@ -202,8 +215,9 @@ export function TableEditor({
   const undo = useCallback(() => {
     setPast((p) => {
       if (p.length === 0) return p;
-      const previous = p[p.length - 1];
+      const previous = p[p.length - 1]!;
       setFuture((f) => [model, ...f]);
+      setModel(previous);
       onModelChange(previous);
       return p.slice(0, -1);
     });
@@ -212,8 +226,9 @@ export function TableEditor({
   const redo = useCallback(() => {
     setFuture((f) => {
       if (f.length === 0) return f;
-      const next = f[0];
+      const next = f[0]!;
       setPast((p) => [...p, model]);
+      setModel(next);
       onModelChange(next);
       return f.slice(1);
     });

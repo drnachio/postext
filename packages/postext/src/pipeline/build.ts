@@ -106,6 +106,7 @@ import {
   uncapBand,
   columnBottom,
   bandCapLines,
+  bandTop,
   resolveBandCaps,
   resolveTrailingCaps,
   type BandCap,
@@ -727,8 +728,8 @@ export function buildDocumentPass(
     if (activeCap && activeCap.pageIndex === page.index && activeCap.band === band) return;
     if (!cols.some((c) => c.blocks.length > 0)) return;
     if (!bandStart || !registeredBand || registeredBand.pageIndex !== page.index || registeredBand.band !== band) return;
-    const used = cols.map((c) => c.bbox.height - c.availableHeight);
-    if (Math.max(...used) - Math.min(...used) <= baselineGrid + 0.5) return;
+    const bottoms = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
+    if (Math.max(...bottoms) - Math.min(...bottoms) <= baselineGrid + 0.5) return;
     bandCapProposals.set(boundaryIndex, {
       kind: 'trailing',
       startContentIndex: bandStart.contentIndex,
@@ -923,7 +924,7 @@ export function buildDocumentPass(
       // room for the box plus the widow minimum of body lines below it.
       const cols = bandColumns(page, currentBand(page, cursor));
       const lines = bandCapLines(cols, baselineGrid);
-      const capBottom = Math.max(...cols.map((c) => c.bbox.y)) + lines * baselineGrid;
+      const capBottom = bandTop(cols) + lines * baselineGrid;
       const spacing = Math.max(pendingSpacing, result.marginTopPx);
       const need = Math.ceil((spacing + result.totalHeight + result.marginBottomPx - 0.01) / baselineGrid) * baselineGrid;
       const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
@@ -1963,6 +1964,15 @@ export function buildDocumentPass(
             break;
           }
         }
+        pendingSpacing = 0;
+        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        continue;
+      }
+
+      // Empty column with less than a line of room (a band cap cutting right
+      // under a float band, a column swallowed by reservations): nothing can
+      // go here — move on. The next column, or a fresh page, has room.
+      if (curCol.availableHeight < style.lineHeightPx - 0.01 && totalRemainHeight > curCol.availableHeight + 0.01) {
         pendingSpacing = 0;
         advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
         continue;
