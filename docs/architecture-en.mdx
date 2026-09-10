@@ -417,13 +417,13 @@ This is the moment the VDT becomes a real document. Before this pass, blocks are
 
 Before any content blocks land, the pass reserves space for structural elements — running headers and footers (laid out as design slots from `config.header` / `config.footer`) and any float bands already pending for the freshly opened page. These reservations reduce the `availableHeight` of each column, so when content blocks start flowing in, the engine already knows exactly how much room is available.
 
-**Column bands and span columns.** `page.columns` is a flat array in reading order, but a page is not always a single row of columns. A page-span inline block — today a `:::callout` with `span: 'page'` in a multi-column layout — cuts the page into stacked *bands*: the text columns of the current band are closed at the cut line (their height clamped, `availableHeight` zero), the block gets its own full-width column with `kind: 'span'`, and a fresh band of text columns (`band + 1`, same x and width, same bottom as the band it replaces) is appended below it. Columns are only ever appended, so `columnIndex` keeps addressing `page.columns[i]`, and renderers need no special drawing: each column clips to its own bbox, and the column rule is drawn per band between adjacent text columns. Column balancing ignores span columns and zero-height bands. A span block cuts directly where the band is level (page top, right after an opener heading, another span block or a top float band); arriving in an uneven band it proposes a *band cap* instead (`packages/postext/src/pipeline/bandCaps.ts`) — the columns of the band that opens with a given content block are shortened to `ceil(Σ used / N / grid)` lines — and `buildDocument` re-runs the placement pass with the cap (growing it one line at a time when the capped band overflows, at most a few extra passes, then falling back to the next page), so the text fills the shortened columns under every placement rule, ends level at the cut, and the closed columns keep whatever slack remains as `availableHeight` for balancing to absorb.
+**Column bands and span columns.** `page.columns` is a flat array in reading order, but a page is not always a single row of columns. A page-span inline block — today a `:::callout` with `span: 'page'` in a multi-column layout — cuts the page into stacked *bands*: the text columns of the current band are closed at the cut line (their height clamped, `availableHeight` zero), the block gets its own full-width column with `kind: 'span'`, and a fresh band of text columns (`band + 1`, same x and width, same bottom as the band it replaces) is appended below it. Columns are only ever appended, so `columnIndex` keeps addressing `page.columns[i]`, and renderers need no special drawing: each column clips to its own bbox, and the column rule is drawn per band between adjacent text columns. Column balancing ignores span columns and zero-height bands. A span block cuts directly where the band is level (page top, right after an opener heading, another span block or a top float band); arriving in an uneven band it proposes a *band cap* instead (`packages/postext/src/pipeline/bandCaps.ts`) — the columns of the band that opens with a given content block are shortened to `ceil(Σ used / N / grid)` lines — and `buildDocument` re-runs the placement pass with the cap (growing it one line at a time when the capped band overflows, at most a few extra passes, then falling back to the next page), so the text fills the shortened columns under every placement rule, ends level at the cut, and the closed columns keep whatever slack remains as `availableHeight` for balancing to absorb. The same mechanism levels the *closing* band of a chapter and of the document (`headings.balancing.trailing`): a chapter opener, a `:::part`, a chapter-closing `placement: 'fixed'` callout or the end of the document reached with the current band's columns uneven proposes a `kind: 'trailing'` cap, keyed by the boundary block; because a cap is keyed by the block that opens its band — and that block moves whenever an earlier page absorbs extra balancing lines — trailing caps are resolved *after* column balancing has settled, with the balancing hints frozen, and a short polish round then lets the levers fill what the cut left short. `placement: 'fixed'` callouts leave the flow: the box is anchored to the page content area / trim box / bleed box, the text columns it covers give up that zone (cut from the bottom or the top like a float band, moving to the next page on a conflict), and frame plus children go to `page.floats`.
 
 ### Pass 4: Resource Placement
 
 - **Input:** VDT with blocks placed in columns
-- **Action:** Float each referenced resource to a band at the top or bottom of a page near its first reference (`packages/postext/src/pipeline/floatPlacement.ts` plans the floats; the build pipeline reserves the bands)
-- **Placement resolution:** Per resource, the engine resolves `resource.placement` → the type's `resourceType.defaultPlacement` → the built-in default `{ position: 'top', span: 'column' }`
+- **Action:** Float each referenced resource into the first free slot after its first reference — the bottom of the referencing column, the top / bottom of the next empty column, or a band of the next page (`packages/postext/src/pipeline/floatPlacement.ts` plans the floats, `pipeline/floatSlots.ts` enumerates and measures the slots; the build pipeline reserves the bands)
+- **Placement resolution:** Per resource, the engine resolves `resource.placement` → the type's `resourceType.defaultPlacement` → the built-in default `{ position: 'auto', span: 'column' }`
 
 <table>
   <thead>
@@ -434,12 +434,16 @@ Before any content blocks land, the pass reserves space for structural elements 
   </thead>
   <tbody>
     <tr>
+      <td><code>position: 'auto'</code></td>
+      <td>The resource takes the first free slot after its reference, top or bottom — the default</td>
+    </tr>
+    <tr>
       <td><code>position: 'top'</code></td>
-      <td>The resource floats to a band at the top of the page, pushing the column content below it</td>
+      <td>Only top slots: a band at the top of the next empty column or page, pushing the column content below it</td>
     </tr>
     <tr>
       <td><code>position: 'bottom'</code></td>
-      <td>The resource floats to a band at the bottom of the page, shortening the columns above it</td>
+      <td>Only bottom slots: a band at the bottom of a column or page, shortening the column above it</td>
     </tr>
     <tr>
       <td><code>position: 'here'</code></td>
@@ -447,7 +451,7 @@ Before any content blocks land, the pass reserves space for structural elements 
     </tr>
     <tr>
       <td><code>span: 'column'</code></td>
-      <td>The band occupies a single column (the engine picks the column with the most room left)</td>
+      <td>The band occupies a single column (on a freshly opened page the engine picks the column with the most room left)</td>
     </tr>
     <tr>
       <td><code>span: 'page'</code></td>
@@ -456,16 +460,17 @@ Before any content blocks land, the pass reserves space for structural elements 
   </tbody>
 </table>
 
-- **Deferred placement:** A float that does not fit on the current page defers to the next page — it is never shrunk or split
+- **Deferred placement:** A float that fits in no slot of the current page waits for the next page the flow opens — it is never shrunk or split — and, at a chapter boundary, is drained onto pages opened ahead of the boundary
 - **Output:** Resources positioned in page bands (`page.floats`), with the affected columns' heights reduced so text flows around the bands
 
-Resource placement is where things get interesting, because floats do not just occupy space — they reshape the space around them. When a page opens, pending floats claim their bands first, and the columns shrink to fit between them. The text then flows through the narrowed columns uninterrupted; the reader sees the figure at the top or bottom of the page near (but not exactly at) the point where it is mentioned. This is standard practice in professional typesetting; books do it constantly.
+Resource placement is where things get interesting, because floats do not just occupy space — they reshape the space around them. Once the block holding a reference has landed, the pending float is offered the free slots of the current page after it — the bottom of that column, then the top and bottom of the next empty column (a page-span float: the page bottom, when every column still has room); what fits nowhere waits for the next page, where pending floats claim their bands before any text flows in. The columns shrink to fit between the bands, the text flows through the narrowed columns uninterrupted, and the reader sees the figure near (but not exactly at) the point where it is mentioned. This is standard practice in professional typesetting; books do it constantly.
 
 **Placement rules.** Beyond the placement dispatch, floats follow strict editorial constraints:
 
-- **After-reference rule.** A float lands on the next freshly opened page *after* its first reference in the text, never before. The reader encounters the reference first, then sees the resource. If a float does not fit, it defers forward to a later page, never backward.
-- **First-reference order.** Floats are placed in the order their first references appear in the text. When one defers, the floats queued behind it wait too, so figures never reorder relative to each other.
-- **Minimum text room.** A band is only reserved if at least 3 body lines of text still fit in the affected columns — with one exception: an oversized float may be force-placed into a band that is still all-text, so a dominating figure cannot stall the queue forever.
+- **After-reference rule.** A float lands in the first free slot *after* its first reference in the text, never before it. The reader encounters the reference first, then sees the resource. If a float does not fit, it defers forward to a later slot or page, never backward.
+- **First fit, not first-reference order.** Pending floats are offered each slot in first-reference order, but one that fits nowhere does not hold up the ones behind it — each takes the first slot it fits, so a later figure may occasionally land before an earlier one. Numbering is unaffected: it follows first-reference order in the text.
+- **Chapter barrier.** Floats never escape their chapter. At a chapter opener (a heading level with `breakBefore` or `span: 'page'`), a `:::part`, a callout style with `floatBarrier: true` and the end of the document, every pending float is placed first — in the page's free slots, then on pages opened ahead of the boundary (each force-placing at least one float) — before the boundary's own page break. A `:::pagebreak` sends pending floats to the page that follows it, after any parity padding.
+- **Minimum text room.** On a freshly opened page a band is only reserved if at least 3 body lines of text still fit in the affected columns — with one exception: an oversized float may be force-placed into a band that is still all-text, so a dominating figure cannot stall the queue forever. A slot on the current page must fit in the column's remaining height; the 3-line rule applies there only next to another float band.
 - **Breathing room.** One body-line-height gap separates a band from the text beside it.
 - **Baseline-grid alignment.** Top bands are rounded *up* to a multiple of the baseline grid (growing the gap below the float), so every displaced line still lands on the grid. Bottom floats are anchored so the caption's last baseline sits on the grid — the caption shares its baseline with the last text line of the neighbouring columns, and pages end at the same height across columns and facing pages.
 

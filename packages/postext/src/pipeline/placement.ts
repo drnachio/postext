@@ -99,6 +99,13 @@ export function pageHasContent(page: VDTPage): boolean {
   return page.columns.some((c) => c.blocks.length > 0);
 }
 
+/** Whether the page holds anything at all — column content or floats (a
+ *  page carrying only a drained float band is occupied: the next chapter
+ *  must not open on it). */
+export function pageIsOccupied(page: VDTPage): boolean {
+  return pageHasContent(page) || (page.floats?.length ?? 0) > 0;
+}
+
 // ---------------------------------------------------------------------------
 // Column bands (page-span blocks, stage 1)
 //
@@ -128,8 +135,9 @@ export function currentBand(page: VDTPage, cursor: PlacementCursor): number {
  *  top float band. Used height = `bbox.height − availableHeight`. */
 export function isBandLevel(cols: readonly VDTColumn[]): boolean {
   if (cols.length === 0) return false;
-  const used0 = cols[0]!.bbox.height - cols[0]!.availableHeight;
-  return cols.every((c) => Math.abs((c.bbox.height - c.availableHeight) - used0) <= 0.5);
+  const usedBottom = (c: VDTColumn): number => c.bbox.y + (c.bbox.height - c.availableHeight);
+  const b0 = usedBottom(cols[0]!);
+  return cols.every((c) => Math.abs(usedBottom(c) - b0) <= 0.5);
 }
 
 /** Lowest used bottom (absolute y) across the band's columns — where a
@@ -259,8 +267,9 @@ export function advanceToNextPageBoundary(
   onNewPage?: (page: VDTPage) => void,
 ): void {
   // Span columns hold their block like any other column, so a page whose
-  // only content is a page-span block counts as non-empty here.
-  if (!pageHasContent(doc.pages[cursor.pageIndex]!)) return;
+  // only content is a page-span block counts as non-empty here; so does a
+  // page holding only float bands (a drained chapter's leftover figures).
+  if (!pageIsOccupied(doc.pages[cursor.pageIndex]!)) return;
   const startPageIndex = cursor.pageIndex;
   do {
     advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
@@ -350,14 +359,18 @@ export function placeAtomicBlock(
   pageHeightPx: number,
 ): number {
   let col = currentColumn(doc, cursor);
-  const isFirstInColumn = col.blocks.length === 0;
-  const effectiveSpacing = isFirstInColumn ? 0 : spacingBefore;
-  const available = col.availableHeight - effectiveSpacing;
 
-  // Advance to the next column/page when the group does not fit and the current
-  // column already holds content. A group taller than a full column is placed
-  // anyway (no mid-split for v1) once it lands in an empty column.
-  if (groupHeight > available && col.blocks.length > 0) {
+  // Advance to the next column/page when the group does not fit and the
+  // current column already holds content — or is empty with no room at all
+  // (a band cap cutting right under a float band). A group taller than a
+  // full column is placed anyway (no mid-split for v1) once it lands in an
+  // empty column that has room. Bounded: a fresh page always has room.
+  let guard = 0;
+  for (;;) {
+    const available = col.availableHeight - (col.blocks.length === 0 ? 0 : spacingBefore);
+    if (groupHeight <= available) break;
+    if (col.blocks.length === 0 && col.availableHeight >= 0.5) break;
+    if (guard++ >= 8) break;
     advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
     col = currentColumn(doc, cursor);
   }

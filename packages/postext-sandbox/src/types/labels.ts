@@ -497,6 +497,8 @@ export interface SandboxLabels {
   balanceMaxLooseParagraphsTooltip: string;
   balanceTrackParagraphs: string;
   balanceTrackParagraphsTooltip: string;
+  balanceTrailing: string;
+  balanceTrailingTooltip: string;
   balanceMaxTracking: string;
   balanceMaxTrackingTooltip: string;
 
@@ -851,6 +853,7 @@ export interface SandboxLabels {
   resourcePositionTop: string;
   resourcePositionBottom: string;
   resourcePositionHere: string;
+  resourcePositionAuto: string;
   resourceWidthAria: string;
   resourceSpanColumn: string;
   resourceSpanPage: string;
@@ -863,6 +866,14 @@ export interface SandboxLabels {
   uploadSvgFailed: string;
   uploadSvgReplace: string;
   uploadSvgDrop: string;
+  svgSourceLabel: string;
+  svgSourceHint: string;
+  svgSourceAria: string;
+  svgSourceLoading: string;
+  svgSourceMissing: string;
+  svgSourceInvalid: string;
+  svgSourceNoText: string;
+  svgSourceSaveFailed: string;
   uploadImageInvalid: string;
   uploadImageFailed: string;
   uploadImageReplace: string;
@@ -976,6 +987,17 @@ export interface SandboxLabels {
   calloutStylePlacementHere: string;
   calloutStylePlacementTop: string;
   calloutStylePlacementBottom: string;
+  calloutStylePlacementFixed: string;
+  calloutStyleFixedAnchorTo: string;
+  calloutStyleFixedAnchorToTooltip: string;
+  calloutStyleFixedAnchorContainer: string;
+  calloutStyleFixedEdge: string;
+  calloutStyleFixedEdgeTooltip: string;
+  calloutStyleFixedOffsetX: string;
+  calloutStyleFixedOffsetY: string;
+  calloutStyleFixedOffsetTooltip: string;
+  calloutStyleFloatBarrier: string;
+  calloutStyleFloatBarrierTooltip: string;
   calloutStyleWidth: string;
   calloutStyleWidthTooltip: string;
   calloutStyleWidthFill: string;

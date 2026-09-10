@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { defaultResourceTypes } from 'postext';
 import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
 import { useSandbox } from '../context/SandboxContext';
+import type { RefCompletionContext } from './refCompletion';
 
 interface MarkdownEditorProps {
   isDark?: boolean;
@@ -11,6 +13,15 @@ interface MarkdownEditorProps {
 
 export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
   const { state, dispatch, editorStateRef } = useSandbox();
+
+  // The `@` picker reads resources through a ref so the CodeMirror extension
+  // (created once on mount) always sees the latest list without reconfiguring.
+  const types = useMemo(
+    () => state.config.resourceTypes ?? defaultResourceTypes(state.locale),
+    [state.config.resourceTypes, state.locale],
+  );
+  const refContextRef = useRef<RefCompletionContext>({ resources: [], types: [] });
+  refContextRef.current = { resources: state.resources, types };
 
   const { containerRef, viewRef } = useCodeMirror({
     initialValue: state.markdown,
@@ -20,6 +31,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     onFocusChange: (focused) => dispatch({ type: 'SET_EDITOR_FOCUSED', payload: focused }),
     isDark,
     persistedStateRef: editorStateRef,
+    getRefContext: () => refContextRef.current,
   });
 
   // If this editor unmounts (e.g. user switches to another viewport tab),

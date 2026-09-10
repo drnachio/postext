@@ -23,7 +23,8 @@
     "build": "rm -rf dist && tsc",
     "dev": "tsc --watch",
     "check-types": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "postext": ">=0.1.0"
@@ -35,9 +36,11 @@
   },
   "devDependencies": {
     "@postext/typescript-config": "workspace:*",
+    "@types/node": "^26.5.0",
     "eslint": "^9.39.4",
     "postext": "workspace:*",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.70.0"
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.0"
   }
 }

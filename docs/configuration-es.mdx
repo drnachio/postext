@@ -1131,6 +1131,12 @@ La última columna de una página solo se equilibra cuando la página fluye de f
       <td><code>10</code></td>
       <td>Límite de ese tracking, en milésimas de eme por carácter (10 = 0,01 em).</td>
     </tr>
+    <tr>
+      <td><code>trailing</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Nivela la banda de cierre de cada capítulo y del documento: cuando el flujo termina antes de llenar la página (en una apertura de capítulo, un <code>:::part</code>, una caja <code>placement: 'fixed'</code> que cierra el capítulo o el final del documento) con las columnas desiguales, se cortan a la misma altura — un tope de banda de <code>ceil(Σ usado / N / rejilla)</code> líneas, resuelto después de que las palancas anteriores hayan asentado las páginas previas —, de modo que una bibliografía corta termina a la misma altura en todas las columnas en lugar de llenar la primera y dejar la última a medias. Solo actúa cuando <code>enabled</code> es true.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1869,7 +1875,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code> (opcional)</td>
-      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>. Si tampoco está definida, se aplica el valor integrado <code>top</code> / <code>column</code>. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución completa.</td>
+      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>. Si tampoco está definida, se aplica el valor integrado <code>auto</code> / <code>column</code>. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución completa.</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
@@ -1917,7 +1923,7 @@ Cualquier otro texto es literal. Una barra invertida escapa un `{`, `}` o `\` li
 
 ### Numeración y referencias
 
-El número que produce un tipo de recurso es lo que imprime `:ref` y lo que sigue al prefijo del pie. `:ref{id}` es la forma principal: la primera referencia en orden de lectura **incorpora** el recurso, que flota a una banda en la parte superior o inferior de la columna o de la página (según su colocación resuelta — `position: 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resuelta por recurso, luego por el `defaultPlacement` de su tipo, y por último el valor integrado `top` / `column`). La inserción en bloque `::resource{id}` es opcional y solo se necesita para `placement.position: 'here'` — una inserción en línea, sin flotado, en un punto exacto del flujo. La gramática completa del lado del documento — ambas formas más las opciones `style` y `text` de `:ref` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
+El número que produce un tipo de recurso es lo que imprime `:ref` y lo que sigue al prefijo del pie. `:ref{id}` es la forma principal: la primera referencia en orden de lectura **incorpora** el recurso, que flota al primer hueco libre tras esa referencia — el final de la columna de la referencia, el principio o el final de la siguiente columna vacía, o una banda de la página siguiente (según su colocación resuelta — `position: 'auto' | 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resuelta por recurso, luego por el `defaultPlacement` de su tipo, y por último el valor integrado `auto` / `column`; `'top'` / `'bottom'` limitan la búsqueda a huecos de ese tipo). La inserción en bloque `::resource{id}` es opcional y solo se necesita para `placement.position: 'here'` — una inserción en línea, sin flotado, en un punto exacto del flujo. La gramática completa del lado del documento — ambas formas más las opciones `style` y `text` de `:ref` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
 
 Esto refleja la numeración de encabezados: igual que un nivel de encabezado lleva un `numberingTemplate`, un tipo de recurso también lo lleva — pero el contador del recurso (`{n}`) avanza por primera referencia en lugar de por encabezado, y `resetOn` lo ata de vuelta a la jerarquía de encabezados.
 
@@ -2511,9 +2517,21 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>placement</code></td>
-      <td><code>'here' | 'top' | 'bottom'</code></td>
+      <td><code>'here' | 'top' | 'bottom' | 'fixed'</code></td>
       <td><code>'here'</code></td>
-      <td>En línea en el flujo, o flotando a una banda superior / inferior de la página como un recurso. Se puede sobrescribir por instancia con el atributo <code>placement</code>. Las colocaciones flotantes se registran en el VDT pero por ahora se colocan en línea al ancho de columna.</td>
+      <td>En línea en el flujo, flotando a una banda superior / inferior de la página como un recurso, o <code>'fixed'</code>: fijada a coordenadas de página mediante <code>fixed</code>, fuera del flujo de columnas (ver la sección del contenedor). Se puede sobrescribir por instancia con el atributo <code>placement</code>. Las colocaciones flotantes se registran en el VDT pero por ahora se colocan en línea al ancho de columna.</td>
+    </tr>
+    <tr>
+      <td><code>fixed</code></td>
+      <td><code>{'{ anchor?, offset? }'}</code></td>
+      <td><code>{'{ anchor: { to: \'container\', edge: \'bottom-left\' } }'}</code></td>
+      <td>Posición de una caja <code>'fixed'</code>: un <code>ElementAnchor</code> (<code>to</code>: <code>'container'</code> = el área de contenido de la página, reflejada en las páginas pares; <code>'page'</code> = la caja de corte; <code>'bleed'</code> = la caja de sangre; <code>edge</code>: uno de los nueve bordes del contenedor) más un <code>offset</code> opcional (dimensiones <code>x</code> / <code>y</code>).</td>
+    </tr>
+    <tr>
+      <td><code>floatBarrier</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Convierte la caja en una barrera de flotantes: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja —, de modo que ningún flotante escapa más allá de la caja que cierra el capítulo (normalmente un resumen de «puntos clave»). Las aperturas de capítulo, los <code>:::part</code> y el final del documento son siempre barreras.</td>
     </tr>
     <tr>
       <td><code>width</code></td>
@@ -2598,6 +2616,7 @@ Límites de esta versión:
 
 - Un aviso es indivisible. Cuando no cabe en el espacio restante de la columna pasa entero a la columna o página siguiente; una caja más alta que una columna vacía se coloca de todos modos y desborda (el sandbox avisa).
 - `span: 'page'` en una disposición multicolumna convierte la caja en un **bloque a ancho de página**: se compone al ancho completo del área de contenido y divide la página en bandas de columnas — las columnas de texto que hay encima se cierran en la línea de corte, la caja ocupa su propia columna a todo el ancho y debajo se abre una banda nueva de columnas de texto, de modo que el flujo continúa bajo la caja en todas las columnas. Donde las columnas están *niveladas* — al inicio de una página, justo debajo de un encabezado de apertura con `span: 'page'`, justo debajo de otro bloque a ancho de página o justo debajo de una banda de flotantes superior — la caja simplemente corta ahí. Si llega a mitad de página, con las columnas desiguales, se compone como lo haría un cajista: el texto que hay encima se corta nivelado en todas las columnas (el motor repite la colocación con las columnas de la banda acortadas al mismo número de líneas de rejilla, de modo que el texto desborda de columna en columna de forma natural y siguen aplicándose todas las reglas de huérfanas, viudas y encabezados unidos a su texto), la caja ocupa el ancho de la página y las columnas continúan debajo. El corte cuesta un par de pasadas de colocación adicionales; cuando la línea de corte no dejaría sitio para la caja más el mínimo de líneas viudas de cuerpo por debajo, o ninguna disposición encaja tras unos pocos intentos, la caja pasa al inicio de la página siguiente — sin forzar un salto de página, así que la página que deja sigue equilibrándose. Un encabezado justo antes de un bloque a ancho de página no viaja con él. En disposiciones de una columna `span: 'page'` es simplemente en línea.
+- `placement: 'fixed'` saca la caja del flujo: se compone (`width: 'auto'` se ajusta al título; `'fill'` toma el ancho de la columna de texto bajo el punto de anclaje) y se fija a la página en la que aparece en el flujo, en la posición que describen `fixed.anchor` / `fixed.offset` — por defecto la esquina inferior izquierda del área de contenido. Las columnas de texto que cubre ceden esa zona (recortada por abajo, o por arriba cuando la columna aún está vacía), exactamente como una banda de flotantes; cuando la zona ya contiene texto, un flotante o un bloque a ancho de página, la caja pasa a la página siguiente. Una caja fija que cierra el capítulo (el bloque siguiente es una apertura de capítulo, un `:::part`, una caja barrera de flotantes o el final del documento) nivela primero las columnas que quedan encima (`headings.balancing.trailing`), de modo que una página de cierre corta termina nivelada con el distintivo debajo. La caja y sus hijos viven en `page.floats` y se pintan fuera del recorte de columna en todos los backends.
 - `placement: 'top' | 'bottom'` se registra en el VDT (`VDTBlock.callout`) pero todavía se coloca en línea al ancho de columna — las cajas flotantes llegan con la siguiente etapa.
 - `width: 'auto'` se ajusta solo al título; los hijos se ignoran.
 - Un `:::callout` anidado dentro de otro aviso se aplana en la caja exterior.
@@ -3204,7 +3223,7 @@ Las siguientes secciones de configuración existen solo en el sistema de tipos �
 
 Dos apartados que vivían aquí ya se han implementado como funcionalidades reales y han salido de esta sección:
 
-- **La colocación de recursos** ya no es un enum futuro (`'topOfColumn'`, `'floatLeft'`, `'fullWidthBreak'`, …). El modelo de flotado implementado usa `position: 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resueltos por recurso, luego por el `defaultPlacement` de su tipo y por último el valor integrado `top` / `column`. Consulta [Tipos de recurso](#tipos-de-recurso) más arriba y [Formato del documento › Recursos](/es/docs/document-format#recursos).
+- **La colocación de recursos** ya no es un enum futuro (`'topOfColumn'`, `'floatLeft'`, `'fullWidthBreak'`, …). El modelo de flotado implementado usa `position: 'auto' | 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resueltos por recurso, luego por el `defaultPlacement` de su tipo y por último el valor integrado `auto` / `column`. Consulta [Tipos de recurso](#tipos-de-recurso) más arriba y [Formato del documento › Recursos](/es/docs/document-format#recursos).
 - **La numeración automática de figuras/tablas** se implementó como numeración tipada por primera referencia — consulta [Tipos de recurso](#tipos-de-recurso).
 
 ### Configuración de columnas

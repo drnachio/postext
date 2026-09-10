@@ -119,6 +119,7 @@ Todo el panel es además una zona de arrastrar y soltar: suelta archivos desde e
 - **Texto alternativo** — Descripción de accesibilidad para la salida HTML
 - **Colocación** — Posición (`top` / `bottom` / `here`) más extensión (`column` / `page`, deshabilitada cuando la posición es `here`), coincidiendo con los valores por defecto del motor: `top` + `column`
 - **Contenido** — Cargadores de reemplazo para el archivo de mapa de bits o SVG
+- **Código fuente del SVG** — En las figuras SVG, un editor de código bajo el cargador en el que solo admiten ediciones los nodos de texto (el contenido de los elementos `<text>` / `<tspan>`, resaltados en el editor); escribir en cualquier otro sitio se rechaza, y los caracteres `<`, `>` y `&` tecleados dentro de un nodo de texto se escapan para que el archivo siga bien formado. Cada cambio se guarda tras una breve pausa como un archivo almacenado **nuevo** y la figura se vuelve a renderizar (también con el recoloreado a una sola tinta); el editor avisa cuando el SVG no tiene nodos de texto
 - **Vista previa** — Una maqueta en vivo de cómo se verá el recurso, con `#` como marcador del número (los números reales dependen de dónde caiga el recurso en el documento)
 - **Eliminar** — Protegido por un popover de confirmación que advierte cuántas referencias `::resource` / `:ref` del markdown quedarían colgando
 
@@ -129,6 +130,7 @@ Todo el panel es además una zona de arrastrar y soltar: suelta archivos desde e
 - **Pegar como tabla** — Pegar TSV (o CSV simple con comillas) rellena la cuadrícula
 - **Deshacer/rehacer** — Cmd/Ctrl+Z y Mayús+Cmd/Ctrl+Z
 - **Navegación con teclado** — Tab / Mayús-Tab (con salto de fila) y las teclas de flecha mueven entre celdas
+- **Edición desde la vista previa** — Hacer clic en una celda de tabla, una leyenda, una nota o un fragmento de texto de una figura SVG en cualquiera de las dos pestañas de vista previa abre el panel de Recursos en ese recurso y enfoca el campo correspondiente con el cursor en el glifo pulsado; arrastrar selecciona un rango dentro de la misma celda o campo, y el doble clic selecciona la palabra. Mientras el campo tiene el foco, su selección se refleja en la página como un resaltado (un cursor fino cuando está contraída), tanto en la pestaña Canvas como en la HTML
 
 Todas las ediciones pasan por funciones puras de modelo exportadas por el núcleo de postext — `addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment`, `parseTSV` — de modo que el mismo modelo de tabla se comporta idénticamente dentro y fuera del sandbox.
 

@@ -18,7 +18,7 @@ import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
 import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
-import { setCustomFonts } from '../controls/fontLoader';
+import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
 import { pruneBlobs } from '../storage/blobStore';
 import { collectProjectFileIds, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
@@ -54,6 +54,43 @@ export interface EditorSelection {
   head: number;
 }
 
+/** Which editable run of a resource a preview click / panel selection refers
+ *  to: a table cell, the caption, the note, or (SVG figures) a text node in
+ *  the SVG source. */
+export type ResourceFocusTarget =
+  | { kind: 'cell'; row: number; col: number }
+  | { kind: 'caption' }
+  | { kind: 'note' }
+  | { kind: 'svgText' };
+
+/** A request, raised by a preview click, to focus a resource's editor in the
+ *  Resources panel with the given selection (offsets in the run's own text —
+ *  the cell / caption / note string, or the SVG source). Consumed and cleared
+ *  by the panel, like `pendingEditorFocus` for the Markdown editor. */
+export interface PendingResourceFocus {
+  resourceId: string;
+  target: ResourceFocusTarget;
+  anchor: number;
+  head: number;
+  selectWord: boolean;
+}
+
+/** The live selection inside a resource's editor, mirrored back onto the
+ *  previews as a highlight. `null` when no resource field has focus. */
+export interface ResourceSelection {
+  resourceId: string;
+  target: ResourceFocusTarget;
+  from: number;
+  to: number;
+  head: number;
+}
+
+function sameResourceTarget(a: ResourceFocusTarget, b: ResourceFocusTarget): boolean {
+  if (a.kind !== b.kind) return false;
+  if (a.kind === 'cell' && b.kind === 'cell') return a.row === b.row && a.col === b.col;
+  return true;
+}
+
 export interface SandboxState {
   markdown: string;
   defaultMarkdown: string;
@@ -61,6 +98,12 @@ export interface SandboxState {
   /** User-managed resources (images, SVGs, tables). Loaded asynchronously on
    *  init from IndexedDB (NOT localStorage) and persisted via an effect. */
   resources: Resource[];
+  /** True once the mount-time load from IndexedDB (resources, presets,
+   *  projects) has landed and any initial preset seeding is done. Until then
+   *  `resources` is the empty placeholder, so a build would render every
+   *  `:ref` as unresolved; viewports that do not rebuild on their own (PDF)
+   *  wait for it. */
+  storeReady: boolean;
   activePanel: PanelId | null;
   sidebarPercent: number;
   sidebarDragging: boolean;
@@ -70,6 +113,14 @@ export interface SandboxState {
   selection: EditorSelection;
   editorFocused: boolean;
   pendingEditorFocus: { anchor: number; head: number; selectWord: boolean } | null;
+  /** Resource open in the Resources panel's detail view (null = list view).
+   *  Lives in shared state so a preview click can open it and so the choice
+   *  survives switching panels. */
+  activeResourceId: string | null;
+  /** Focus request for a resource editor raised by a preview click. */
+  pendingResourceFocus: PendingResourceFocus | null;
+  /** Selection inside the focused resource editor, for the preview highlight. */
+  resourceSelection: ResourceSelection | null;
   /** Incremented whenever a viewport publishes a new built VDTDocument to
    *  `docRef`. Consumers (e.g. WarningsPanel) listen to this counter to
    *  recompute derived data. */
@@ -118,8 +169,12 @@ export type SandboxAction =
   | { type: 'SET_SELECTION'; payload: EditorSelection }
   | { type: 'SET_EDITOR_FOCUSED'; payload: boolean }
   | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: { anchor: number; head: number; selectWord: boolean } | null }
+  | { type: 'SET_ACTIVE_RESOURCE'; payload: string | null }
+  | { type: 'SET_PENDING_RESOURCE_FOCUS'; payload: PendingResourceFocus | null }
+  | { type: 'SET_RESOURCE_SELECTION'; payload: ResourceSelection | null }
   | { type: 'BUMP_DOC_VERSION' }
   | { type: 'SET_RESOURCES'; payload: Resource[] }
+  | { type: 'SET_STORE_READY' }
   | { type: 'UPSERT_RESOURCE'; payload: Resource }
   | { type: 'DELETE_RESOURCE'; payload: string }
   | { type: 'SET_PRESET'; payload: { id: string; markdown?: string; config?: PostextConfig } }
@@ -178,10 +233,64 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
         state.pendingEditorFocus.selectWord === action.payload.selectWord
       ) return state;
       return { ...state, pendingEditorFocus: action.payload };
+    case 'SET_ACTIVE_RESOURCE':
+      if (state.activeResourceId === action.payload) return state;
+      // Leaving a resource drops its stale focus request / selection so the
+      // previews stop highlighting a run nobody is editing.
+      return {
+        ...state,
+        activeResourceId: action.payload,
+        pendingResourceFocus:
+          state.pendingResourceFocus && state.pendingResourceFocus.resourceId === action.payload
+            ? state.pendingResourceFocus
+            : null,
+        resourceSelection:
+          state.resourceSelection && state.resourceSelection.resourceId === action.payload
+            ? state.resourceSelection
+            : null,
+      };
+    case 'SET_PENDING_RESOURCE_FOCUS': {
+      const next = action.payload;
+      const prev = state.pendingResourceFocus;
+      if (prev === next) return state;
+      if (
+        prev && next &&
+        prev.resourceId === next.resourceId &&
+        sameResourceTarget(prev.target, next.target) &&
+        prev.anchor === next.anchor &&
+        prev.head === next.head &&
+        prev.selectWord === next.selectWord
+      ) return state;
+      return { ...state, pendingResourceFocus: next };
+    }
+    case 'SET_RESOURCE_SELECTION': {
+      const next = action.payload;
+      const prev = state.resourceSelection;
+      if (prev === next) return state;
+      if (
+        prev && next &&
+        prev.resourceId === next.resourceId &&
+        sameResourceTarget(prev.target, next.target) &&
+        prev.from === next.from &&
+        prev.to === next.to &&
+        prev.head === next.head
+      ) return state;
+      return { ...state, resourceSelection: next };
+    }
     case 'BUMP_DOC_VERSION':
       return { ...state, docVersion: state.docVersion + 1 };
-    case 'SET_RESOURCES':
-      return { ...state, resources: action.payload };
+    case 'SET_STORE_READY':
+      return state.storeReady ? state : { ...state, storeReady: true };
+    case 'SET_RESOURCES': {
+      const ids = new Set(action.payload.map((r) => r.id));
+      return {
+        ...state,
+        resources: action.payload,
+        activeResourceId: state.activeResourceId !== null && ids.has(state.activeResourceId) ? state.activeResourceId : null,
+        pendingResourceFocus: state.pendingResourceFocus && ids.has(state.pendingResourceFocus.resourceId) ? state.pendingResourceFocus : null,
+        resourceSelection: state.resourceSelection && ids.has(state.resourceSelection.resourceId) ? state.resourceSelection : null,
+      };
+    }
     case 'UPSERT_RESOURCE': {
       const idx = state.resources.findIndex((r) => r.id === action.payload.id);
       const resources =
@@ -190,8 +299,16 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
           : state.resources.map((r) => (r.id === action.payload.id ? action.payload : r));
       return { ...state, resources };
     }
-    case 'DELETE_RESOURCE':
-      return { ...state, resources: state.resources.filter((r) => r.id !== action.payload) };
+    case 'DELETE_RESOURCE': {
+      const id = action.payload;
+      return {
+        ...state,
+        resources: state.resources.filter((r) => r.id !== id),
+        activeResourceId: state.activeResourceId === id ? null : state.activeResourceId,
+        pendingResourceFocus: state.pendingResourceFocus?.resourceId === id ? null : state.pendingResourceFocus,
+        resourceSelection: state.resourceSelection?.resourceId === id ? null : state.resourceSelection,
+      };
+    }
     case 'SET_PRESET':
       return {
         ...state,
@@ -509,6 +626,7 @@ export function SandboxProvider({
         locale ?? 'en',
       ),
       resources: [],
+      storeReady: false,
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,
@@ -518,6 +636,9 @@ export function SandboxProvider({
       selection: { from: 0, to: 0, head: 0 },
       editorFocused: false,
       pendingEditorFocus: null,
+      activeResourceId: null,
+      pendingResourceFocus: null,
+      resourceSelection: null,
       docVersion: 0,
       activePresetId: loadPresetId() ?? BUILTIN_PRESET_ID,
       presetStatus: 'idle' as const,
@@ -665,6 +786,9 @@ export function SandboxProvider({
       .catch(() => {
         if (cancelled) return;
         resourcesLoadedRef.current = true;
+      })
+      .then(() => {
+        if (!cancelled) dispatch({ type: 'SET_STORE_READY' });
       });
     return () => {
       cancelled = true;
@@ -844,10 +968,15 @@ export function SandboxProvider({
 
   // Keep the fontLoader's custom-font registry in sync with the config so
   // that FontPicker, loadFont(), and the worker payload collector can all
-  // resolve custom families by name.
-  useEffect(() => {
+  // resolve custom families by name. This runs during render rather than in
+  // an effect: child effects fire before the provider's, so a viewport's
+  // first build would otherwise start against an empty registry and measure
+  // custom families with fallback glyphs (the PDF viewport never rebuilds on
+  // its own, so it would keep that layout). Comparing signatures instead of
+  // array identity also re-seeds after a hot reload empties the registry.
+  if (customFontsSignature() !== customFontsSignature(state.config.customFonts)) {
     setCustomFonts(state.config.customFonts);
-  }, [state.config.customFonts]);
+  }
 
   // Reference-based garbage collection for IndexedDB payloads: a blob or
   // font file survives while the working state or any stored project points

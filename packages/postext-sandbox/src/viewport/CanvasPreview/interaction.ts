@@ -1,13 +1,21 @@
 import type { Dispatch, MutableRefObject } from 'react';
 import type { VDTDocument } from 'postext';
-import type { SandboxAction } from '../../context/SandboxContext';
+import type { ResourceFocusTarget, SandboxAction } from '../../context/SandboxContext';
 import type { PanelId } from '../../types';
+import { getSvgTextIndex } from '../../controls/svgTextIndex';
 import {
   findResourceLocation,
   pixelToSourceOffset,
   refResourceIdAtPixel,
   type ResourceLocation,
 } from './geometry';
+import { resourceTextAtPixel, type ResourceTextHit } from './resourceHit';
+
+function sameTarget(a: ResourceFocusTarget, b: ResourceFocusTarget): boolean {
+  if (a.kind !== b.kind) return false;
+  if (a.kind === 'cell' && b.kind === 'cell') return a.row === b.row && a.col === b.col;
+  return true;
+}
 
 const REF_SCROLL_PADDING_PX = 24;
 
@@ -106,6 +114,17 @@ export function attachSlotClickHandler(
     return refResourceIdAtPixel(doc, pageIndex, pt.x, pt.y);
   };
 
+  // Editable resource text (table cells, captions, notes, SVG text nodes) is
+  // tried before the body-text mapping: an inline `::resource` block would
+  // otherwise resolve to its directive line.
+  const resolveResourceHit = (ev: MouseEvent): ResourceTextHit | null => {
+    const doc = docRef.current;
+    if (!doc) return null;
+    const pt = resolvePagePoint(ev);
+    if (!pt) return null;
+    return resourceTextAtPixel(doc, pageIndex, pt.x, pt.y, getSvgTextIndex);
+  };
+
   const focusEditor = (anchor: number, head: number, selectWord: boolean): void => {
     const dispatch = dispatchRef.current;
     if (activePanelRef.current !== 'markdown') {
@@ -114,8 +133,26 @@ export function attachSlotClickHandler(
     dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: { anchor, head, selectWord } });
   };
 
+  // Open the Resources panel on the hit resource and hand its editor the
+  // selection. The three dispatches land in one render, so `ResourceDetail`
+  // mounts with the request already present.
+  const focusResource = (hit: ResourceTextHit, anchor: number, head: number, selectWord: boolean): void => {
+    const dispatch = dispatchRef.current;
+    if (activePanelRef.current !== 'resources') {
+      dispatch({ type: 'SET_PANEL', payload: 'resources' });
+    }
+    dispatch({ type: 'SET_ACTIVE_RESOURCE', payload: hit.resourceId });
+    dispatch({
+      type: 'SET_PENDING_RESOURCE_FOCUS',
+      payload: { resourceId: hit.resourceId, target: hit.target, anchor, head, selectWord },
+    });
+  };
+
   const DRAG_THRESHOLD_PX = 3;
   let dragAnchorOffset: number | null = null;
+  // Set when the drag started on resource text: the head stays inside the
+  // same resource run (a drag that leaves the cell keeps its last head).
+  let dragResource: ResourceTextHit | null = null;
   let dragAnchorClient: { x: number; y: number } | null = null;
   let dragPointerId: number | null = null;
   let dragging = false;
@@ -124,8 +161,10 @@ export function attachSlotClickHandler(
 
   slot.addEventListener('pointerdown', (ev) => {
     if (ev.button !== 0) return;
-    const offset = resolveOffset(ev);
+    const resourceHit = resolveResourceHit(ev);
+    const offset = resourceHit ? resourceHit.offset : resolveOffset(ev);
     if (offset === null) return;
+    dragResource = resourceHit;
     dragAnchorOffset = offset;
     dragAnchorClient = { x: ev.clientX, y: ev.clientY };
     dragPointerId = ev.pointerId;
@@ -149,6 +188,14 @@ export function attachSlotClickHandler(
       dragging = true;
     }
     ev.preventDefault();
+    if (dragResource) {
+      const hit = resolveResourceHit(ev);
+      if (!hit || hit.resourceId !== dragResource.resourceId || !sameTarget(hit.target, dragResource.target)) return;
+      if (hit.offset === lastHead) return;
+      lastHead = hit.offset;
+      focusResource(dragResource, dragAnchorOffset, hit.offset, false);
+      return;
+    }
     const head = resolveOffset(ev);
     if (head === null) return;
     if (head === lastHead) return;
@@ -163,6 +210,7 @@ export function attachSlotClickHandler(
     dragPointerId = null;
     dragAnchorOffset = null;
     dragAnchorClient = null;
+    dragResource = null;
     dragging = false;
     lastHead = null;
     if (wasDragging) {
@@ -195,12 +243,24 @@ export function attachSlotClickHandler(
       if (doc && loc) scrollToResourceLocation(slot, doc, loc);
       return;
     }
+    const resourceHit = resolveResourceHit(ev);
+    if (resourceHit) {
+      ev.preventDefault();
+      focusResource(resourceHit, resourceHit.offset, resourceHit.offset, false);
+      return;
+    }
     const offset = resolveOffset(ev);
     if (offset === null) return;
     focusEditor(offset, offset, false);
   });
 
   slot.addEventListener('dblclick', (ev) => {
+    const resourceHit = resolveResourceHit(ev);
+    if (resourceHit) {
+      ev.preventDefault();
+      focusResource(resourceHit, resourceHit.offset, resourceHit.offset, true);
+      return;
+    }
     const offset = resolveOffset(ev);
     if (offset === null) return;
     ev.preventDefault();

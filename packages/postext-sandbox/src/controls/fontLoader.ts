@@ -437,6 +437,16 @@ export function setCustomFonts(list: CustomFontFamily[] | undefined): void {
   }
 }
 
+/** Signature of a custom-font list — of the registry's current contents
+ *  when `list` is omitted. Callers compare the two to detect a registry that
+ *  drifted from the config it should mirror, including a dev-server hot
+ *  reload, which re-evaluates this module (emptying the registry) while
+ *  React keeps the config it was seeded from. */
+export function customFontsSignature(list?: CustomFontFamily[]): string {
+  const source = list ?? Array.from(customFontRegistry.values());
+  return source.map(familySignature).sort().join('|');
+}
+
 export function getCustomFontFamily(name: string): CustomFontFamily | undefined {
   return customFontRegistry.get(name);
 }

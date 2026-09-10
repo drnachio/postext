@@ -1,5 +1,5 @@
 import { applyTitleBreaks } from '../parse/inlineFormatting';
-import type { PostextContent, PostextConfig, Resource, ResourceType, HeadingBreakParity } from '../types';
+import type { PostextContent, PostextConfig, Resource, ResourceType, HeadingBreakParity, ResolvedCalloutStyleConfig } from '../types';
 import type { ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import {
@@ -10,8 +10,10 @@ import {
   type VDTBlock,
   type VDTColumn,
   type VDTPage,
+  type BoundingBox,
   type ResolvedResourceBlock,
 } from '../vdt';
+import { anchorBox } from '../design/layout';
 import { parseMarkdownMemo } from '../parse';
 import {
   buildPageLabels,
@@ -42,6 +44,7 @@ import {
   placeAtomicBlock,
   createPartPage,
   pageHasContent,
+  pageIsOccupied,
   bandColumns,
   currentBand,
   isBandLevel,
@@ -75,6 +78,16 @@ import {
   type PlannedFloat,
 } from './floatPlacement';
 import {
+  enumerateCurrentPageSlots,
+  measureFloatBand,
+  columnHasFloatBand,
+  fitsStrict,
+  trueBottom,
+  type ColumnCapKind,
+  type FloatMeasure,
+  type FloatSlotPosition,
+} from './floatSlots';
+import {
   computeHeadingContext,
   computeResourceNumbering,
   type ResourceNumberingMap,
@@ -93,7 +106,9 @@ import {
   uncapBand,
   columnBottom,
   bandCapLines,
+  bandTop,
   resolveBandCaps,
+  resolveTrailingCaps,
   type BandCap,
   type BandPassReport,
 } from './bandCaps';
@@ -308,9 +323,9 @@ export function buildDocumentPass(
   // --- Float planning (issue #49 — resources float to page bands) ----------
   // A resource is incorporated by its first reference (an inline `:ref` or a
   // `::resource` directive, whichever comes first in reading order). Floated
-  // resources detach from the running text and reserve a band at the top or
-  // bottom of the next page opened after that reference; the text flows past
-  // the reference uninterrupted. `position: 'here'` resources keep inline
+  // resources detach from the running text and take the first free slot
+  // after that reference (`floatSlots.ts`); the text flows past the
+  // reference uninterrupted. `position: 'here'` resources keep inline
   // `::resource` placement and are not floated.
   const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes);
   const floatedIds = floatedResourceIds(floatPlan);
@@ -323,6 +338,19 @@ export function buildDocumentPass(
   // Floats whose first reference has been passed but which are not yet placed
   // into a page band, in reading order.
   const pendingFloats: PlannedFloat[] = [];
+  /** Resource ids already enqueued in this pass — a keep-with-next rewind
+   *  replays the loop top for the rolled-back blocks and must not enqueue
+   *  (and later place) the same float twice. */
+  const enqueuedFloatIds = new Set<string>();
+  const enqueueFloatsFor = (blockIdx: number): void => {
+    const fl = floatsByFirstBlock.get(blockIdx);
+    if (!fl) return;
+    for (const f of fl) {
+      if (enqueuedFloatIds.has(f.resourceId)) continue;
+      enqueuedFloatIds.add(f.resourceId);
+      pendingFloats.push(f);
+    }
+  };
   const floatGapPx = bodyStyle.lineHeightPx;
   const minTextPx = bodyStyle.lineHeightPx * 3;
 
@@ -348,16 +376,10 @@ export function buildDocumentPass(
     }
   };
 
-  /** Measure + build a float block at horizontal offset `x` (y = 0), or null
-   *  when the resource id is unknown. Caller offsets it to its final `y`. */
-  const buildFloatBlock = (
-    resourceId: string,
-    x: number,
-    width: number,
-  ): { block: VDTBlock; height: number } | null => {
+  const layoutFloat = (resourceId: string, width: number): { block: ResolvedResourceBlock; totalHeight: number } | null => {
     const resource = resourceById.get(resourceId);
     if (!resource) return null;
-    const { block: rb, totalHeight } = layoutResourceBlock({
+    return layoutResourceBlock({
       resource,
       resourceType: resourceTypeById.get(resource.typeId),
       number: resourceNumberById.get(resourceId) ?? '',
@@ -367,6 +389,48 @@ export function buildDocumentPass(
       resourceTypes,
       resources,
     });
+  };
+
+  /** Height (and caption baseline) of a float at a given width, memoised —
+   *  fit checks run for every pending float on every loop iteration. */
+  const floatMeasureMemo = new Map<string, FloatMeasure | null>();
+  const measureFloat = (resourceId: string, width: number): FloatMeasure | null => {
+    const key = `${resourceId}:${width.toFixed(2)}`;
+    const memo = floatMeasureMemo.get(key);
+    if (memo !== undefined) return memo;
+    const laid = layoutFloat(resourceId, width);
+    let m: FloatMeasure | null = null;
+    if (laid) {
+      // A bottom band aligns the float's LAST text line to the grid: the
+      // caption's (or the note's) last line when it sits under the body. A
+      // caption set above the body (caption bars) leaves the body's bottom
+      // edge as the visual bottom instead.
+      const rb = laid.block;
+      const bodyBottom = rb.bodyRect.y + rb.bodyRect.height;
+      let lastBaseline: number | undefined;
+      for (const ln of [...rb.captionLines, ...rb.noteLines]) {
+        if (ln.bbox.y < bodyBottom - 0.5) continue;
+        if (lastBaseline === undefined || ln.baseline > lastBaseline) lastBaseline = ln.baseline;
+      }
+      m = {
+        height: laid.totalHeight,
+        ...(lastBaseline !== undefined ? { lastCaptionBaseline: lastBaseline } : {}),
+      };
+    }
+    floatMeasureMemo.set(key, m);
+    return m;
+  };
+
+  /** Measure + build a float block at horizontal offset `x` (y = 0), or null
+   *  when the resource id is unknown. Caller offsets it to its final `y`. */
+  const buildFloatBlock = (
+    resourceId: string,
+    x: number,
+    width: number,
+  ): { block: VDTBlock; height: number } | null => {
+    const laid = layoutFloat(resourceId, width);
+    if (!laid) return null;
+    const { block: rb, totalHeight } = laid;
     const blk = createVDTBlock(`float-${resourceId}`, 'resource', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);
     blk.resourceBlock = rb;
     blk.dirty = false;
@@ -377,154 +441,184 @@ export function buildDocumentPass(
     return { block: blk, height: totalHeight };
   };
 
-  /** Reserve top/bottom bands on a freshly opened page and position as many
-   *  pending floats as fit, shrinking the affected columns so body text flows
-   *  around them. Preserves reading order: stops at the first float that does
-   *  not fit (so figures never reorder relative to their references), except
-   *  on a band that is still all-text, where a dominating/oversized float is
-   *  force-placed so the queue always makes progress. */
-  const flushFloatsIntoPage = (page: VDTPage): void => {
-    if (pendingFloats.length === 0) return;
-    const topUsed = page.columns.map(() => 0);
-    const botUsed = page.columns.map(() => 0);
-    const floats: VDTBlock[] = page.floats ?? [];
+  /** Float bands reserved per column in this pass (the fresh-page flush
+   *  sends single-column floats to the least reserved column). */
+  const floatReserved = new Map<VDTColumn, { top: number; bottom: number }>();
+  const reservedOf = (col: VDTColumn): { top: number; bottom: number } =>
+    floatReserved.get(col) ?? { top: 0, bottom: 0 };
 
-    /** Try to place one float on this page. Returns whether it was placed,
-     *  must be deferred (does not fit), or skipped (unknown id). Only mutates
-     *  page geometry when it actually places. */
-    const attemptFloat = (f: PlannedFloat): 'placed' | 'defer' | 'skip' => {
-      const pageSpan = f.span === 'page' && page.columns.length > 1;
-      let targetCols: number[];
-      if (pageSpan) {
-        targetCols = page.columns.map((_, i) => i);
-      } else {
-        // Single-column float: pick the column with the most room left.
-        let best = 0;
-        for (let i = 1; i < page.columns.length; i++) {
-          if (topUsed[i]! + botUsed[i]! < topUsed[best]! + botUsed[best]!) best = i;
-        }
-        targetCols = [best];
-      }
-      const firstCol = page.columns[targetCols[0]!]!;
-      const width = pageSpan ? page.contentArea.width : firstCol.bbox.width;
-      const xLeft = pageSpan ? page.contentArea.x : firstCol.bbox.x;
+  /** Kind of cap the column is under (`undefined` when uncapped). A cap that
+   *  cannot be attributed to the active band is treated as a span cap — the
+   *  conservative reading, which keeps the column's bottom off the slot list. */
+  const capKindOf = (col: VDTColumn): ColumnCapKind => {
+    if (!uncappedBottoms.has(col)) return undefined;
+    if (activeCap && bandCaps && activeCap.pageIndex === cursor.pageIndex && activeCap.band === (col.band ?? 0)) {
+      return bandCaps.get(activeCap.spanIndex)?.kind ?? 'span';
+    }
+    return 'span';
+  };
 
-      const built = buildFloatBlock(f.resourceId, xLeft, width);
-      if (!built) return 'skip';
+  /**
+   * Reserve a float band on `targetCols` (one column, or every text column
+   * of the band for a page-span float) and position the float there.
+   * `'fresh'` is the freshly-opened-page rule: keep three lines of text room
+   * once a band already holds a float, but force-place a dominating float
+   * on an all-text band so the queue always progresses. `'strict'` is the
+   * current-page rule: the band must fit in each column's remaining height
+   * (below its content), keeping the text room only next to another band.
+   * Only mutates page geometry when it places.
+   */
+  const placeFloatInColumns = (
+    page: VDTPage,
+    f: PlannedFloat,
+    targetCols: readonly VDTColumn[],
+    position: FloatSlotPosition,
+    pageSpan: boolean,
+    mode: 'fresh' | 'strict',
+  ): 'placed' | 'defer' | 'skip' => {
+    const first = targetCols[0]!;
+    const width = pageSpan ? page.contentArea.width : first.bbox.width;
+    const xLeft = pageSpan ? page.contentArea.x : first.bbox.x;
+    const measure = measureFloat(f.resourceId, width);
+    if (!measure) return 'skip';
+    const { need, y } = measureFloatBand(
+      position, measure, targetCols, page.contentArea, baselineGrid, floatGapPx,
+      (c) => trueBottom(c, uncappedBottoms),
+    );
 
+    if (mode === 'fresh') {
       let minAvail = Infinity;
       let anyReserved = false;
       for (const c of targetCols) {
-        minAvail = Math.min(minAvail, page.columns[c]!.availableHeight);
-        if (topUsed[c]! > 0 || botUsed[c]! > 0) anyReserved = true;
+        minAvail = Math.min(minAvail, c.availableHeight);
+        const r = reservedOf(c);
+        if (r.top > 0 || r.bottom > 0) anyReserved = true;
       }
-
-      // Both band kinds are corrected against the baseline grid so the text
-      // around them — and the facing page — stays on the global rhythm:
-      //  - top: the band pushes the column start (`col.bbox.y`) downward, and
-      //    all grid snapping inside the column is anchored at that start. The
-      //    band height is rounded up to a grid multiple (growing the gap
-      //    below the float) or every line in the displaced column would land
-      //    off-grid, visibly misaligned with neighbouring columns.
-      //  - bottom: the float is anchored so its visual bottom sits on the
-      //    grid — the caption's last line shares its baseline with the last
-      //    text line of the other columns (captionless content aligns its
-      //    bottom edge to the last grid slot). Pages then end at the same
-      //    height across columns and across facing pages.
-      let need: number;
-      let floatY = 0;
-      if (f.position === 'top') {
-        const rawNeed = built.height + floatGapPx;
-        need = Math.ceil((rawNeed - 0.01) / baselineGrid) * baselineGrid;
-      } else {
-        const bottomLimit = Math.min(...targetCols.map((c) => {
-          const cb = page.columns[c]!.bbox;
-          return cb.y + cb.height;
-        }));
-        const gridAlignedBottom = page.contentArea.y
-          + Math.floor((bottomLimit - page.contentArea.y + 0.01) / baselineGrid) * baselineGrid;
-        const capLines = built.block.resourceBlock!.captionLines;
-        if (capLines.length > 0) {
-          // Body baselines sit at 0.2 × grid above each slot bottom; anchor
-          // the caption's last baseline there.
-          const lastBaseline = capLines[capLines.length - 1]!.baseline; // block-relative
-          floatY = gridAlignedBottom - 0.2 * baselineGrid - lastBaseline;
-        } else {
-          floatY = gridAlignedBottom - built.height;
-        }
-        need = 0;
-        for (const c of targetCols) {
-          const col = page.columns[c]!;
-          need = Math.max(need, col.bbox.height - (floatY - floatGapPx - col.bbox.y));
-        }
-      }
-
-      // Keep some text room, unless this band is still all-text (then a
-      // dominating / oversized float is force-placed so the queue progresses).
       if (need > minAvail - minTextPx && anyReserved) return 'defer';
-
-      let y = 0;
+    } else {
       for (const c of targetCols) {
-        const col = page.columns[c]!;
-        if (f.position === 'top') {
-          y = col.bbox.y;            // float sits at the current top edge
-          col.bbox.y += need;        // push column content below the band
-          col.bbox.height = Math.max(0, col.bbox.height - need);
-          col.availableHeight = Math.max(0, col.availableHeight - need);
-          topUsed[c]! += need;
+        if (position === 'bottom' && uncappedBottoms.has(c)) {
+          // Trailing cap: the band must lie entirely below the level cut.
+          if (y - floatGapPx < c.bbox.y + c.bbox.height - 0.01) return 'defer';
+          continue;
+        }
+        if (!fitsStrict(need, c, columnHasFloatBand(page, c), minTextPx)) return 'defer';
+      }
+    }
+
+    const built = buildFloatBlock(f.resourceId, xLeft, width);
+    if (!built) return 'skip';
+
+    for (const col of targetCols) {
+      const r = { ...reservedOf(col) };
+      if (position === 'top') {
+        col.bbox.y += need;
+        col.bbox.height = Math.max(0, col.bbox.height - need);
+        col.availableHeight = Math.max(0, col.availableHeight - need);
+        r.top += need;
+      } else {
+        const capped = uncappedBottoms.get(col);
+        if (capped !== undefined) {
+          uncappedBottoms.set(col, capped - need);
         } else {
-          y = floatY;
-          const newHeight = Math.max(0, floatY - floatGapPx - col.bbox.y);
+          const newHeight = Math.max(0, y - floatGapPx - col.bbox.y);
           const reserved = col.bbox.height - newHeight;
           col.bbox.height = newHeight;
           col.availableHeight = Math.max(0, col.availableHeight - reserved);
-          botUsed[c]! += reserved;
         }
+        r.bottom += need;
       }
+      floatReserved.set(col, r);
+    }
 
-      offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
-      built.block.bbox = createBoundingBox(xLeft, y, width, built.height);
-      built.block.pageIndex = page.index;
-      built.block.columnIndex = targetCols[0]!;
-      floats.push(built.block);
-      return 'placed';
+    offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
+    built.block.bbox = createBoundingBox(xLeft, y, width, built.height);
+    built.block.pageIndex = page.index;
+    built.block.columnIndex = first.index;
+    (page.floats ??= []).push(built.block);
+    return 'placed';
+  };
+
+  const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
+    f.position === 'auto' ? ['top', 'bottom'] : [f.position];
+
+  /** Reserve top/bottom bands on a freshly opened page and position as many
+   *  pending floats as fit, shrinking the affected columns so body text flows
+   *  around them. Full-width (page-span) floats reserve the outermost bands
+   *  first, so a later single-column float nests inside the remaining column
+   *  space rather than overlapping a full-width band. A float that does not
+   *  fit never holds up the ones behind it: each takes the first slot it
+   *  fits (numbering follows first-reference order regardless). */
+  const flushFloatsIntoPage = (page: VDTPage): void => {
+    if (pendingFloats.length === 0) return;
+    const textCols = page.columns.filter((c) => c.kind !== 'span');
+    if (textCols.length === 0) return;
+    const leastReserved = (): VDTColumn => {
+      let best = textCols[0]!;
+      for (const c of textCols) {
+        const rb = reservedOf(best);
+        const rc = reservedOf(c);
+        if (rc.top + rc.bottom < rb.top + rb.bottom) best = c;
+      }
+      return best;
     };
-
-    // Full-width (page-span) floats reserve the outermost bands first, so a
-    // later single-column float nests inside the remaining column space rather
-    // than overlapping a full-width band. Within each pass, stop at the first
-    // float that does not fit to preserve reading order.
     for (const pageSpanPass of [true, false]) {
       let i = 0;
       while (i < pendingFloats.length) {
         const f = pendingFloats[i]!;
-        const isPageSpan = f.span === 'page' && page.columns.length > 1;
+        const isPageSpan = f.span === 'page' && textCols.length > 1;
         if (isPageSpan !== pageSpanPass) { i++; continue; }
-        const r = attemptFloat(f);
-        if (r === 'placed' || r === 'skip') pendingFloats.splice(i, 1);
-        else break; // defer: leave this and the rest of the pass for a later page
+        let r: 'placed' | 'defer' | 'skip' = 'defer';
+        for (const pos of positionsFor(f)) {
+          const cols = isPageSpan ? textCols : [leastReserved()];
+          r = placeFloatInColumns(page, f, cols, pos, isPageSpan, 'fresh');
+          if (r !== 'defer') break;
+        }
+        if (r === 'defer') i++;
+        else pendingFloats.splice(i, 1);
       }
     }
-    if (floats.length > 0) page.floats = floats;
   };
 
-  /** Drain floats still pending after body placement (referenced on the last
-   *  page, or never followed by a content-overflow page break) onto freshly
-   *  appended pages. Each new page force-places at least one float. */
-  const finalizeFloats = (): void => {
-    let guard = 0;
-    while (pendingFloats.length > 0 && guard++ < 1000) {
-      const before = pendingFloats.length;
-      const page = createPageWithColumns(doc.pages.length, resolved, contentArea, pageWidthPx, pageHeightPx);
-      doc.pages.push(page);
-      flushFloatsIntoPage(page);
-      if (pendingFloats.length === before) break; // safety: no progress
+  /** Offer every pending float the free slots of the current page after the
+   *  cursor (bottom of the referencing column, top / bottom of the next
+   *  empty columns; the band bottom for page-span floats). Runs before each
+   *  block is placed, so a float lands in the first gap after its reference. */
+  const tryPlacePendingFloatsOnCurrentPage = (): void => {
+    if (pendingFloats.length === 0) return;
+    const page = doc.pages[cursor.pageIndex]!;
+    for (let i = 0; i < pendingFloats.length;) {
+      const f = pendingFloats[i]!;
+      let r: 'placed' | 'defer' | 'skip' = 'defer';
+      for (const slot of enumerateCurrentPageSlots(page, cursor.columnIndex, f, capKindOf)) {
+        r = placeFloatInColumns(page, f, slot.cols, slot.position, slot.pageSpan, 'strict');
+        if (r !== 'defer') break;
+      }
+      if (r === 'defer') i++;
+      else pendingFloats.splice(i, 1);
     }
   };
 
   /** Reserve floats on each freshly opened content page. Passed only to the
    *  content-flow column advances — parity / force-blank pages never get it. */
   const onNewPage = (page: VDTPage): void => flushFloatsIntoPage(page);
+
+  /** Chapter barrier: place every pending float before the boundary — in
+   *  the current page's free slots, then on fresh pages opened ahead of it
+   *  (each force-places at least one float). The cursor is left on the last
+   *  float page so the boundary's own page break opens AFTER them. */
+  const drainPendingFloats = (): void => {
+    tryPlacePendingFloatsOnCurrentPage();
+    let guard = 0;
+    while (pendingFloats.length > 0 && guard++ < 1000) {
+      const before = pendingFloats.length;
+      const startPageIndex = cursor.pageIndex;
+      do {
+        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+      } while (cursor.pageIndex === startPageIndex);
+      if (pendingFloats.length === before) break; // safety: no progress
+    }
+  };
 
   // Everything per-block measurement needs that is constant for this pass.
   const measureCtx: BlockMeasureContext = {
@@ -604,6 +698,59 @@ export function buildDocumentPass(
     }
   };
 
+  /**
+   * Trailing band balance: when the flow reaches a boundary (chapter opener,
+   * `:::part`, a chapter-closing fixed box, end of document) with the
+   * current band's text columns uneven, propose a cap that cuts them level
+   * — `ceil(Σ used / N / grid)` lines — so the next pass re-places the band
+   * and its columns end at the same height, the way a compositor sets a
+   * short closing page. Keyed by the boundary block's content index
+   * (`contentBlocks.length` at EOF). In the capped pass the boundary reports
+   * the cap delivered when it is reached inside the capped band (nothing
+   * spilled past the cut); the columns are NOT uncapped afterwards, so
+   * column balancing does not stretch them back to the page bottom.
+   */
+  const proposeTrailingCap = (boundaryIndex: number): void => {
+    const balancingCfg = resolved.headings.balancing;
+    if (!balancingCfg.enabled || !balancingCfg.trailing) return;
+    const page = doc.pages[cursor.pageIndex]!;
+    if (page.columns[cursor.columnIndex]?.kind === 'span' || page.partInfo) return;
+    const band = currentBand(page, cursor);
+    const cols = bandColumns(page, band).filter((c) => c.bbox.height > 0.5);
+    if (cols.length < 2 || cols.some((c) => c.forcedBreak)) return;
+    if (bandCaps?.has(boundaryIndex)) {
+      if (activeCap && activeCap.spanIndex === boundaryIndex
+        && activeCap.pageIndex === page.index && activeCap.band === band) {
+        spanPlacedInBand.add(boundaryIndex);
+      }
+      return;
+    }
+    if (activeCap && activeCap.pageIndex === page.index && activeCap.band === band) return;
+    if (!cols.some((c) => c.blocks.length > 0)) return;
+    if (!bandStart || !registeredBand || registeredBand.pageIndex !== page.index || registeredBand.band !== band) return;
+    const bottoms = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
+    if (Math.max(...bottoms) - Math.min(...bottoms) <= baselineGrid + 0.5) return;
+    bandCapProposals.set(boundaryIndex, {
+      kind: 'trailing',
+      startContentIndex: bandStart.contentIndex,
+      startPart: bandStart.part,
+      lines: bandCapLines(cols, baselineGrid),
+      retries: 0,
+    });
+  };
+
+  /** Close the flow at a chapter-level boundary (block `boundaryIndex`):
+   *  floats take the page's free slots, the closing band is levelled, the
+   *  page is marked as an explicit break, and every float still pending is
+   *  drained onto pages opened BEFORE the boundary. The caller then opens
+   *  the boundary's own page. */
+  const closeFlowSegment = (boundaryIndex: number): void => {
+    tryPlacePendingFloatsOnCurrentPage();
+    proposeTrailingCap(boundaryIndex);
+    markForcedBreak();
+    drainPendingFloats();
+  };
+
   /** Parity of the page break a closed `:::part` still owes (applied before
    *  the next placed block). */
   let pendingPartBreak: HeadingBreakParity | null = null;
@@ -662,6 +809,16 @@ export function buildDocumentPass(
    *  convert the laid-out box to absolute coordinates at the frame's placed
    *  origin, and push frame + children — in that order — to `doc.blocks`
    *  and to the column the frame landed in. */
+  /** Stamp a callout frame's content index and source range (the whole
+   *  fence, opening to closing marker). */
+  const stampCalloutSource = (frame: VDTBlock, startIdx: number, plan: PlannedCallout): void => {
+    const startBlock = contentBlocks[startIdx]!;
+    const endBlock = contentBlocks[plan.endIdx]!;
+    frame.contentIndex = startIdx;
+    frame.sourceStart = startBlock.sourceStart + bodyOffset;
+    frame.sourceEnd = endBlock.sourceEnd + bodyOffset;
+  };
+
   const commitCallout = (
     result: CalloutLayoutResult,
     startIdx: number,
@@ -669,11 +826,7 @@ export function buildDocumentPass(
     col: VDTColumn,
   ): void => {
     const frame = result.frame;
-    const startBlock = contentBlocks[startIdx]!;
-    const endBlock = contentBlocks[plan.endIdx]!;
-    frame.contentIndex = startIdx;
-    frame.sourceStart = startBlock.sourceStart + bodyOffset;
-    frame.sourceEnd = endBlock.sourceEnd + bodyOffset;
+    stampCalloutSource(frame, startIdx, plan);
     offsetCalloutToAbsolute(result, frame.bbox.x, frame.bbox.y);
     doc.blocks.push(frame);
     for (const child of result.children) {
@@ -771,12 +924,13 @@ export function buildDocumentPass(
       // room for the box plus the widow minimum of body lines below it.
       const cols = bandColumns(page, currentBand(page, cursor));
       const lines = bandCapLines(cols, baselineGrid);
-      const capBottom = Math.max(...cols.map((c) => c.bbox.y)) + lines * baselineGrid;
+      const capBottom = bandTop(cols) + lines * baselineGrid;
       const spacing = Math.max(pendingSpacing, result.marginTopPx);
       const need = Math.ceil((spacing + result.totalHeight + result.marginBottomPx - 0.01) / baselineGrid) * baselineGrid;
       const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
       if (capBottom + need + minRoomPx <= bandBottom + 0.01) {
         bandCapProposals.set(startIdx, {
+          kind: 'span',
           startContentIndex: bandStart.contentIndex,
           startPart: bandStart.part,
           lines,
@@ -790,7 +944,7 @@ export function buildDocumentPass(
       // left no room — but a truly empty page is kept: the box then simply
       // does not fit a page and is force-placed (overflowing, like inline).
       const curPage = doc.pages[cursor.pageIndex]!;
-      if (pageHasContent(curPage) || (curPage.floats?.length ?? 0) > 0) {
+      if (pageIsOccupied(curPage)) {
         pendingSpacing = 0;
         const startPageIndex = cursor.pageIndex;
         do {
@@ -813,14 +967,176 @@ export function buildDocumentPass(
     commitCallout(result, startIdx, plan, spanCol);
     // Floats first-referenced inside the box enqueue once it is committed,
     // in reading order (same as the inline path).
-    for (let i = startIdx + 1; i <= plan.endIdx; i++) {
-      const fl = floatsByFirstBlock.get(i);
-      if (fl) pendingFloats.push(...fl);
-    }
+    for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
     // The new band starts on the grid right below the span column; nothing
     // to snap — `need` already bakes in `marginBottom`.
     pendingSpacing = 0;
     return true;
+  };
+
+  /** Whether the flow ends at a chapter-level boundary right after block
+   *  `from` (skipping container markers): a chapter opener, a `:::part`, a
+   *  float-barrier box, or the end of the document. */
+  const nextIsBarrier = (from: number): boolean => {
+    for (let i = from; i < contentBlocks.length; i++) {
+      const b = contentBlocks[i]!;
+      if (b.type === 'containerEnd') continue;
+      if (b.type === 'containerStart') {
+        if (b.containerName === 'part') return true;
+        if (b.containerName === 'callout') {
+          const plan = calloutPlan.get(i);
+          const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+          return style?.floatBarrier === true;
+        }
+        continue;
+      }
+      if (b.type === 'heading' && b.level) {
+        const level = headingLevelByNumber.get(b.level);
+        return level?.breakBefore?.enabled === true || level?.span === 'page';
+      }
+      return false;
+    }
+    return true;
+  };
+
+  const rectsOverlap = (a: BoundingBox, b: BoundingBox): boolean =>
+    a.x < b.x + b.width - 0.5 && a.x + a.width > b.x + 0.5
+    && a.y < b.y + b.height - 0.5 && a.y + a.height > b.y + 0.5;
+
+  /**
+   * Place a `placement: 'fixed'` `:::callout` at page coordinates: the box
+   * is anchored (nine-point grid + offset) to the page content area, the
+   * trim box or the bleed box of the page where it occurs in the flow, out
+   * of the column flow. Text columns whose x-range meets the box give up the
+   * zone it covers — cut from the bottom (the zone's centre in the lower
+   * half) or from the top (empty columns only) — like a float band. When the
+   * zone already meets placed content, a float or a span column, the box
+   * moves to the next page and is force-placed there. Frame and children go
+   * to `page.floats` (rendered outside the column clip) and `doc.blocks`.
+   * A box that closes the chapter first levels the band above it (trailing
+   * cap), so the closing columns end at the same height above the box.
+   */
+  const placeCalloutFixed = (
+    startIdx: number,
+    plan: PlannedCallout,
+    style: ResolvedCalloutStyleConfig,
+    layoutAt: (width: number) => CalloutLayoutResult,
+  ): void => {
+    const anchor = style.fixed.anchor;
+    const offset = {
+      x: dimensionToPx(style.fixed.offset.x, dpi, bodyStyle.fontSizePx),
+      y: dimensionToPx(style.fixed.offset.y, dpi, bodyStyle.fontSizePx),
+    };
+    const snapDown = (page: VDTPage, v: number): number =>
+      page.contentArea.y + Math.floor((v - page.contentArea.y + 0.01) / baselineGrid) * baselineGrid;
+    const snapUp = (page: VDTPage, v: number): number =>
+      page.contentArea.y + Math.ceil((v - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid;
+
+    interface Cut { col: VDTColumn; kind: 'top' | 'bottom'; edge: number }
+    interface FixedFit { rect: BoundingBox; result: CalloutLayoutResult; cuts: Cut[] }
+
+    const attempt = (page: VDTPage, force: boolean): FixedFit | null => {
+      const ref = anchor.to === 'page' ? designFrames.page
+        : anchor.to === 'bleed' ? designFrames.bleed
+        : page.contentArea;
+      const band = cursor.pageIndex === page.index ? currentBand(page, cursor) : 0;
+      const cols = bandColumns(page, band).filter((c) => c.bbox.height > 0.5);
+      let result = layoutAt(page.contentArea.width);
+      if (style.width !== 'auto') {
+        // `fill`: as wide as the text column under the anchor point.
+        const probe = anchorBox(anchor.edge, ref, result.width, result.totalHeight, offset);
+        const mid = probe.x + probe.width / 2;
+        const under = cols.find((c) => mid >= c.bbox.x - 0.5 && mid <= c.bbox.x + c.bbox.width + 0.5);
+        if (under && Math.abs(under.bbox.width - result.width) > 0.01) result = layoutAt(under.bbox.width);
+      }
+      const rect = anchorBox(anchor.edge, ref, result.width, result.totalHeight, offset);
+      const zoneTop = snapDown(page, rect.y - result.marginTopPx);
+      const zoneBottom = snapUp(page, rect.y + rect.height + result.marginBottomPx);
+      const cuts: Cut[] = [];
+      for (const col of cols) {
+        const meetsX = rect.x < col.bbox.x + col.bbox.width - 0.5 && rect.x + rect.width > col.bbox.x + 0.5;
+        if (!meetsX) continue;
+        const colTop = col.bbox.y;
+        const colBottom = trueBottom(col, uncappedBottoms);
+        if (zoneTop >= colBottom - 0.5 || zoneBottom <= colTop + 0.5) continue;
+        const centre = (zoneTop + zoneBottom) / 2;
+        if (centre >= colTop + (colBottom - colTop) / 2) {
+          const usedBottom = colTop + (col.bbox.height - col.availableHeight);
+          const capBottom = uncappedBottoms.has(col) ? colTop + col.bbox.height : usedBottom;
+          if (zoneTop < Math.max(usedBottom, capBottom) - 0.01) {
+            if (!force) return null;
+            continue;
+          }
+          cuts.push({ col, kind: 'bottom', edge: zoneTop });
+        } else {
+          if (col.blocks.length > 0) {
+            if (!force) return null;
+            continue;
+          }
+          cuts.push({ col, kind: 'top', edge: zoneBottom });
+        }
+      }
+      if (!force) {
+        for (const fb of page.floats ?? []) if (rectsOverlap(rect, fb.bbox)) return null;
+        for (const c of page.columns) if (c.kind === 'span' && rectsOverlap(rect, c.bbox)) return null;
+      }
+      return { rect, result, cuts };
+    };
+
+    // A box that closes the chapter levels the columns above it first.
+    if (nextIsBarrier(plan.endIdx + 1)) {
+      tryPlacePendingFloatsOnCurrentPage();
+      proposeTrailingCap(startIdx);
+    }
+
+    let page = doc.pages[cursor.pageIndex]!;
+    let fit = attempt(page, false);
+    if (!fit) {
+      pendingSpacing = 0;
+      const startPageIndex = cursor.pageIndex;
+      do {
+        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+      } while (cursor.pageIndex === startPageIndex);
+      page = doc.pages[cursor.pageIndex]!;
+      fit = attempt(page, false) ?? attempt(page, true)!;
+    }
+
+    for (const cut of fit.cuts) {
+      const col = cut.col;
+      if (cut.kind === 'bottom') {
+        const capped = uncappedBottoms.get(col);
+        if (capped !== undefined) {
+          uncappedBottoms.set(col, cut.edge);
+        } else {
+          const newHeight = Math.max(0, cut.edge - col.bbox.y);
+          const reserved = col.bbox.height - newHeight;
+          col.bbox.height = newHeight;
+          col.availableHeight = Math.max(0, col.availableHeight - reserved);
+        }
+      } else {
+        const shift = Math.max(0, cut.edge - col.bbox.y);
+        col.bbox.y += shift;
+        col.bbox.height = Math.max(0, col.bbox.height - shift);
+        col.availableHeight = Math.max(0, col.availableHeight - shift);
+      }
+    }
+
+    const { result, rect } = fit;
+    const frame = result.frame;
+    stampCalloutSource(frame, startIdx, plan);
+    frame.pageIndex = page.index;
+    frame.columnIndex = fit.cuts[0]?.col.index ?? (cursor.pageIndex === page.index ? cursor.columnIndex : 0);
+    offsetCalloutToAbsolute(result, rect.x, rect.y);
+    const floats = (page.floats ??= []);
+    doc.blocks.push(frame);
+    floats.push(frame);
+    for (const child of result.children) {
+      child.pageIndex = frame.pageIndex;
+      child.columnIndex = frame.columnIndex;
+      doc.blocks.push(child);
+      floats.push(child);
+    }
+    for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
   };
 
   /**
@@ -860,6 +1176,11 @@ export function buildDocumentPass(
       });
     };
 
+    // Fixed boxes leave the flow entirely.
+    if (placement === 'fixed') {
+      placeCalloutFixed(startIdx, plan, style, layoutAt);
+      return undefined;
+    }
     // Page-span boxes split a multi-column page into column bands (stage 1
     // of span blocks). Floating placements keep the inline fallback.
     {
@@ -905,10 +1226,7 @@ export function buildDocumentPass(
     // Floats first-referenced inside the box still enqueue in reading order
     // (only once the box is committed, so a keep-with-next replay does not
     // enqueue them twice).
-    for (let i = startIdx + 1; i <= plan.endIdx; i++) {
-      const fl = floatsByFirstBlock.get(i);
-      if (fl) pendingFloats.push(...fl);
-    }
+    for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
     const frame = result.frame;
     const spacing = curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, result.marginTopPx);
     enterBand(startIdx, 0);
@@ -935,12 +1253,13 @@ export function buildDocumentPass(
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
     const rawBlock = contentBlocks[blockIdx]!;
 
-    // Enqueue floats first-referenced in this block so the next page opened
-    // while placing it (or any later block) reserves their band. Done before
-    // placement so a reference near a column/page boundary still floats onto
-    // the page that follows it.
-    const floatsHere = floatsByFirstBlock.get(blockIdx);
-    if (floatsHere) pendingFloats.push(...floatsHere);
+    // Floats whose reference landed in an earlier iteration take the first
+    // free slot of the current page now — after their reference in reading
+    // order. Then enqueue the floats first-referenced in this block, so the
+    // next page opened while placing it (or any later block) reserves their
+    // band and the next iteration offers them the slots that follow.
+    tryPlacePendingFloatsOnCurrentPage();
+    enqueueFloatsFor(blockIdx);
 
     // --- Directives ----------------------------------------------------
     if (rawBlock.type === 'directive') {
@@ -959,6 +1278,9 @@ export function buildDocumentPass(
         ) {
           enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, parity);
         }
+        // Pending floats land on the page that follows the break — after
+        // parity padding, so a blank parity page never carries a float.
+        flushFloatsIntoPage(doc.pages[cursor.pageIndex]!);
         flushPendingNumberingAtBoundary();
       } else if (name === 'columnbreak') {
         // Explicit column break: end the current column here (its bottom
@@ -1004,7 +1326,7 @@ export function buildDocumentPass(
       const plan = partPlan.byStart.get(blockIdx);
       if (plan) {
         pendingSpacing = 0;
-        markForcedBreak();
+        closeFlowSegment(blockIdx);
         leaveCurrentPage();
         enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, resolved.parts.breakBefore.parity);
         cursor.columnIndex = 0;
@@ -1039,7 +1361,7 @@ export function buildDocumentPass(
       const parity = pendingPartBreak;
       pendingPartBreak = null;
       pendingSpacing = 0;
-      markForcedBreak();
+      closeFlowSegment(blockIdx);
       leaveCurrentPage();
       enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, parity);
       flushPendingNumberingAtBoundary();
@@ -1047,6 +1369,14 @@ export function buildDocumentPass(
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
       const plan = calloutPlan.get(blockIdx);
       if (plan && pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)) {
+        // A float barrier box (e.g. a chapter's closing "key points")
+        // takes every pending float first — in the current page's free
+        // slots, else on pages opened ahead of it — so no float escapes
+        // past it. The page stays balanceable (no forced break).
+        if (pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!.floatBarrier) {
+          tryPlacePendingFloatsOnCurrentPage();
+          drainPendingFloats();
+        }
         // `span: 'page'` boxes in multi-column layouts branch to the
         // span-block path inside; `placement: 'top' | 'bottom'` still
         // falls back to inline placement (floating boxes pending).
@@ -1078,7 +1408,7 @@ export function buildDocumentPass(
       const bb = level?.breakBefore;
       if (bb && bb.enabled) {
         pendingSpacing = 0;
-        markForcedBreak();
+        closeFlowSegment(blockIdx);
         advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
         if (bb.parity !== 'any') {
           enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, bb.parity);
@@ -1091,7 +1421,7 @@ export function buildDocumentPass(
       // have their availableHeight reduced symmetrically after placement.
       if (level?.span === 'page') {
         pendingSpacing = 0;
-        markForcedBreak();
+        closeFlowSegment(blockIdx);
         advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
         cursor.columnIndex = 0;
         flushPendingNumberingAtBoundary();
@@ -1639,6 +1969,15 @@ export function buildDocumentPass(
         continue;
       }
 
+      // Empty column with less than a line of room (a band cap cutting right
+      // under a float band, a column swallowed by reservations): nothing can
+      // go here — move on. The next column, or a fresh page, has room.
+      if (curCol.availableHeight < style.lineHeightPx - 0.01 && totalRemainHeight > curCol.availableHeight + 0.01) {
+        pendingSpacing = 0;
+        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        continue;
+      }
+
       // Empty column but block still doesn't fit (block taller than page) — place anyway
       const partId = partIndex === 0 ? id : `${id}-cont-${partIndex}`;
       const blk = createVDTBlock(partId, vdtType, style.fontString, style.color, style.textAlign);
@@ -1681,9 +2020,9 @@ export function buildDocumentPass(
     flushPendingNumberingAtBoundary();
   }
 
-  // Place any floats still pending (referenced on the last page, or never
-  // followed by a content-overflow page break) onto freshly appended pages.
-  finalizeFloats();
+  // End of the document: level the closing band and place any floats still
+  // pending (referenced on the last page) on pages appended after it.
+  closeFlowSegment(contentBlocks.length);
 
   // Stamp page-number info onto every page (including blank parity pages).
   const labels = buildPageLabels(doc.pages.length, pageNumberSegments);
@@ -1710,19 +2049,21 @@ export function buildDocument(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
 ): VDTDocument {
+  const runPass = (hints?: PassHints): PassResult =>
+    buildDocumentPass(content, config, cache, options, hints);
+
   // --- Band caps (page-span blocks mid-page) -----------------------------
   // A span block that arrived in an uneven band proposes a cap; the driver
   // re-places the document with it (and grows / drops caps whose band
   // overflowed) before balancing runs. Documents without such blocks get
   // their first pass back untouched — no extra pass.
-  const bands = resolveBandCaps(
-    buildDocumentPass(content, config, cache, options),
-    (bandCaps) => buildDocumentPass(content, config, cache, options, { bandCaps }),
-  );
+  const bands = resolveBandCaps(runPass(), (bandCaps) => runPass({ bandCaps }));
   let best = bands.result;
   const bandCaps = bands.bandCaps;
   let passCount = bands.passCount;
   best.doc.iterationCount = passCount;
+  /** Hints that produced `best` (replayed by the trailing-cap passes). */
+  let bestHints: PassHints = { bandCaps };
 
   // --- Column balancing (vertical justification) ------------------------
   // Iteratively re-place the document with extra grid lines above headings
@@ -1740,62 +2081,94 @@ export function buildDocument(
   const failedLoose = new Set<number>();
   let converged = bestScore === 0;
 
-  while (!converged && passCount < MAX_BALANCING_PASSES) {
-    const proposal = proposeBalanceLines(best.doc, best.forcedBreakPages, applied, {
-      maxLinesPerHeading: balancing.maxLinesPerHeading,
-      stretchAfterLists: balancing.stretchAfterLists,
-      maxLinesAfterList: balancing.maxLinesAfterList,
-      looseParagraphs: balancing.looseParagraphs,
-      maxLooseParagraphs: balancing.maxLooseParagraphs,
-      optimalLineBreaking: best.doc.config.bodyText.optimalLineBreaking,
-      failedLoose,
-    });
-    if (!proposal.changed) {
-      // No stretch point can absorb the remaining gaps — stable.
-      converged = true;
-      break;
-    }
-    const extraPx = new Map<number, number>();
-    for (const [idx, n] of proposal.lines) extraPx.set(idx, n * best.doc.baselineGrid);
-    const next = buildDocumentPass(content, config, cache, options, {
-      balanceExtraPx: extraPx,
-      balanceLooseness: proposal.loose,
-      balanceLooseBudget: proposal.looseBudget,
-      bandCaps,
-    });
-    passCount++;
-    // Band caps ride along unchanged; a retry that unsettles one (its span
-    // block no longer lands in the capped band) counts as a regression —
-    // capped columns without their box are not a layout we may keep.
-    const capsDelivered = [...bandCaps.keys()].every((i) => next.spanPlacedInBand.has(i));
-    const score = capsDelivered ? totalGapLines(next.doc, next.forcedBreakPages) : Infinity;
-    // Loose paragraphs that gained no line at any tracking rung are
-    // blacklisted whatever the score did, and never counted as applied.
-    // Candidates the pass never tried (their column's budget was met
-    // first) stay eligible for a later proposal.
-    const newlyLoose = [...proposal.loose.keys()].filter((k) => !applied.loose.has(k));
-    const looseFailed = newlyLoose.filter((k) => next.looseOutcome.get(k) === null);
-    for (const k of looseFailed) failedLoose.add(k);
-    const looseWon = newlyLoose.filter((k) => typeof next.looseOutcome.get(k) === 'number');
-    if (score < bestScore) {
-      best = next;
-      bestScore = score;
-      applied = {
-        lines: proposal.lines,
-        loose: new Map([...proposal.loose].filter(([k]) => applied.loose.has(k) || looseWon.includes(k))),
-      };
-      converged = score === 0;
-    } else {
-      // Plateau or regression. Retry when a loose candidate was just
-      // blacklisted (the proposer falls through to the next one), or when
-      // the new loose paragraphs gained their lines yet the layout did not
-      // improve (the gain landed elsewhere — drop them too). A pure spacing
-      // plateau means we're done: keep the best layout found so far.
-      if (looseFailed.length > 0 || looseWon.length > 0) {
-        for (const k of looseWon) failedLoose.add(k);
-        continue;
+  const balance = (): void => {
+    while (!converged && passCount < MAX_BALANCING_PASSES) {
+      const proposal = proposeBalanceLines(best.doc, best.forcedBreakPages, applied, {
+        maxLinesPerHeading: balancing.maxLinesPerHeading,
+        stretchAfterLists: balancing.stretchAfterLists,
+        maxLinesAfterList: balancing.maxLinesAfterList,
+        looseParagraphs: balancing.looseParagraphs,
+        maxLooseParagraphs: balancing.maxLooseParagraphs,
+        optimalLineBreaking: best.doc.config.bodyText.optimalLineBreaking,
+        failedLoose,
+      });
+      if (!proposal.changed) {
+        // No stretch point can absorb the remaining gaps — stable.
+        converged = true;
+        break;
       }
-      break;
+      const extraPx = new Map<number, number>();
+      for (const [idx, n] of proposal.lines) extraPx.set(idx, n * best.doc.baselineGrid);
+      const hints: PassHints = {
+        balanceExtraPx: extraPx,
+        balanceLooseness: proposal.loose,
+        balanceLooseBudget: proposal.looseBudget,
+        bandCaps,
+      };
+      const next = runPass(hints);
+      passCount++;
+      // Band caps ride along unchanged; a retry that unsettles one (its span
+      // block no longer lands in the capped band, or a levelled closing band
+      // spills past its cut) counts as a regression — capped columns without
+      // their box are not a layout we may keep.
+      const capsDelivered = [...bandCaps.keys()].every((i) => next.spanPlacedInBand.has(i));
+      const score = capsDelivered ? totalGapLines(next.doc, next.forcedBreakPages) : Infinity;
+      // Loose paragraphs that gained no line at any tracking rung are
+      // blacklisted whatever the score did, and never counted as applied.
+      // Candidates the pass never tried (their column's budget was met
+      // first) stay eligible for a later proposal.
+      const newlyLoose = [...proposal.loose.keys()].filter((k) => !applied.loose.has(k));
+      const looseFailed = newlyLoose.filter((k) => next.looseOutcome.get(k) === null);
+      for (const k of looseFailed) failedLoose.add(k);
+      const looseWon = newlyLoose.filter((k) => typeof next.looseOutcome.get(k) === 'number');
+      if (score < bestScore) {
+        best = next;
+        bestHints = hints;
+        bestScore = score;
+        applied = {
+          lines: proposal.lines,
+          loose: new Map([...proposal.loose].filter(([k]) => applied.loose.has(k) || looseWon.includes(k))),
+        };
+        converged = score === 0;
+      } else {
+        // Plateau or regression. Retry when a loose candidate was just
+        // blacklisted (the proposer falls through to the next one), or when
+        // the new loose paragraphs gained their lines yet the layout did not
+        // improve (the gain landed elsewhere — drop them too). A pure spacing
+        // plateau means we're done: keep the best layout found so far.
+        if (looseFailed.length > 0 || looseWon.length > 0) {
+          for (const k of looseWon) failedLoose.add(k);
+          continue;
+        }
+        break;
+      }
+    }
+  };
+
+  balance();
+
+  // --- Trailing bands (closing columns cut level) -------------------------
+  // Once the balancing levers have settled the earlier pages, level the
+  // closing band of every chapter / the document with a trailing cap. It is
+  // resolved AFTER balancing because a cap is keyed by the block that opens
+  // its band, and that block moves whenever an earlier page absorbs extra
+  // lines; with the balancing hints frozen the band opens with the same
+  // block and the cap applies. A short polish round then lets the levers
+  // fill what the cut left short (a column ending a line under the cap).
+  if (balancing.trailing) {
+    const trailing = resolveTrailingCaps(
+      best,
+      bandCaps,
+      (caps) => runPass({ ...bestHints, bandCaps: caps }),
+    );
+    passCount += trailing.passCount;
+    if (trailing.result !== best) {
+      best = trailing.result;
+      for (const [i, cap] of trailing.caps) bandCaps.set(i, cap);
+      bestHints = { ...bestHints, bandCaps };
+      bestScore = totalGapLines(best.doc, best.forcedBreakPages);
+      converged = bestScore === 0;
+      balance();
     }
   }
 

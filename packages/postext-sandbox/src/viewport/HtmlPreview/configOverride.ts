@@ -6,6 +6,10 @@ import {
 import type { LayoutType, PostextConfig } from 'postext';
 import { HTML_DPI, LOCALE_TO_HYPHENATION, PADDING_PX, type ColumnMode } from './constants';
 
+/** Layout config for one HTML viewer pass. `base` is the document config as
+ *  the viewer sees it — pass it through `applyHtmlViewerOverrides` first so
+ *  the screen-only `htmlViewer.overrides` take part in the heading scaling
+ *  and parity handling below. */
 export function buildHtmlConfigOverride(
   base: PostextConfig,
   opts: {
@@ -56,11 +60,22 @@ export function buildHtmlConfigOverride(
   // Headings use absolute pt sizes, so they don't scale through em cascades.
   // Resolve the user's partial headings config and emit explicit per-level
   // overrides with scaled fontSize so fontScale acts as a uniform multiplier.
+  // The viewer has no leaves — a "page" is a scroll unit, never a recto or a
+  // verso — so odd/even break parity (and the blank pages it pads with) is
+  // meaningless here. Chapter and part breaks keep their page break but drop
+  // the parity.
   const resolvedHeadings = resolveHeadingsConfig(base.headings);
   const scaledHeadingLevels = resolvedHeadings.levels.map((lvl) => ({
     ...lvl,
     fontSize: { value: lvl.fontSize.value * fontScale, unit: lvl.fontSize.unit },
+    breakBefore: { ...lvl.breakBefore, parity: 'any' as const },
   }));
+  const parts: PostextConfig['parts'] = {
+    ...base.parts,
+    breakBefore: { ...base.parts?.breakBefore, parity: 'any' },
+    breakAfter: { ...base.parts?.breakAfter, parity: 'any' },
+    ...(base.parts?.margins ? { margins: { ...base.parts.margins, mirror: false } } : {}),
+  };
 
   return {
     ...base,
@@ -108,6 +123,12 @@ export function buildHtmlConfigOverride(
       ...base.headings,
       levels: scaledHeadingLevels,
     },
+    parts,
+    // The HTML viewer is a continuous reading surface, not a page: running
+    // headers and footers (folios, running titles, page-edge tabs anchored
+    // to the bleed) have no place on it.
+    header: { elements: [] },
+    footer: { elements: [] },
   };
 }
 

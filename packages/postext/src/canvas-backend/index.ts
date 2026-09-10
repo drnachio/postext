@@ -4,8 +4,6 @@ import { dimensionToPx } from '../units';
 import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentArea } from './decorations';
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
-import { renderResourceBlock } from './renderResourceBlock';
-
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -99,11 +97,12 @@ export function renderPageToCanvas(
     ctx.restore();
   }
 
-  // Floated resources live outside the column clip (a `span: 'page'` float
-  // crosses the gutter) — they were positioned into reserved bands at build
-  // time, so they render straight from their absolute bbox.
+  // Out-of-flow blocks — floated resources and fixed-position callouts —
+  // live outside the column clip (a `span: 'page'` float crosses the
+  // gutter). They were positioned at build time, so they render straight
+  // from their absolute bbox.
   if (page.floats) {
-    for (const fb of page.floats) renderResourceBlock(ctx, fb);
+    for (const fb of page.floats) renderBlock(ctx, fb, fb.bbox.width, fb.bbox.x);
   }
 
   if (page.header) renderHeaderFooterSlot(ctx, page.header);

@@ -3,8 +3,10 @@
 import { memo, useState } from 'react';
 import { Copy, Plus, Trash2 } from 'lucide-react';
 import type {
+  AnchorEdge,
   CalloutBodyStyleConfig,
   CalloutBorderConfig,
+  CalloutFixedConfig,
   CalloutIconAlign,
   CalloutIconConfig,
   CalloutIconKind,
@@ -18,7 +20,9 @@ import type {
   CalloutTextTransform,
   CalloutTitleStyleConfig,
   CalloutWidth,
+  Dimension,
   DimensionUnit,
+  ElementAnchor,
   Resource,
   ResolvedCalloutStyleConfig,
 } from 'postext';
@@ -46,11 +50,13 @@ import {
   ToggleSwitch,
 } from '../../controls';
 import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { CONTAINER_EDGES } from './HeaderFooterSection/placementAdapter';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const SPACING_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const STROKE_UNITS: DimensionUnit[] = ['pt', 'px', 'mm'];
+const OFFSET_UNITS: DimensionUnit[] = ['mm', 'pt', 'px', 'em'];
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
@@ -219,7 +225,43 @@ function CalloutStyleCard({
     { value: 'here', label: labels.calloutStylePlacementHere },
     { value: 'top', label: labels.calloutStylePlacementTop },
     { value: 'bottom', label: labels.calloutStylePlacementBottom },
+    { value: 'fixed', label: labels.calloutStylePlacementFixed },
   ];
+  const fixedAnchorToOptions = [
+    { value: 'container', label: labels.calloutStyleFixedAnchorContainer },
+    { value: 'page', label: labels.headerFooterAnchorToPage },
+    { value: 'bleed', label: labels.headerFooterAnchorToBleed },
+  ];
+  const frameEdgeLabels: Record<string, string> = {
+    'top-left': labels.headerFooterFrameEdgeTopLeft,
+    top: labels.headerFooterFrameEdgeTop,
+    'top-right': labels.headerFooterFrameEdgeTopRight,
+    left: labels.headerFooterFrameEdgeLeft,
+    center: labels.headerFooterFrameEdgeCenter,
+    right: labels.headerFooterFrameEdgeRight,
+    'bottom-left': labels.headerFooterFrameEdgeBottomLeft,
+    bottom: labels.headerFooterFrameEdgeBottom,
+    'bottom-right': labels.headerFooterFrameEdgeBottomRight,
+  };
+  const fixedEdgeOptions = CONTAINER_EDGES.map((edge: AnchorEdge) => ({ value: edge, label: frameEdgeLabels[edge] ?? edge }));
+  /** `fixed.anchor` / `fixed.offset` are nested objects: merge at each level
+   *  and drop the group entirely when nothing is left set. */
+  const updateFixedAnchor = (partial: Partial<ElementAnchor>) =>
+    onChange({ fixed: { ...style.fixed, anchor: { ...resolved.fixed.anchor, ...partial } } });
+  const updateFixedOffset = (axis: 'x' | 'y', value: Dimension) =>
+    onChange({ fixed: { ...style.fixed, offset: { ...style.fixed?.offset, [axis]: value } } });
+  const resetFixed = (part: 'anchor' | 'x' | 'y') => {
+    const next: CalloutFixedConfig = { ...style.fixed };
+    if (part === 'anchor') delete next.anchor;
+    else if (next.offset) {
+      const offset = { ...next.offset };
+      delete offset[part];
+      if (Object.keys(offset).length > 0) next.offset = offset;
+      else delete next.offset;
+    }
+    if (Object.keys(next).length > 0) onChange({ fixed: next });
+    else onResetField('fixed');
+  };
   const widthOptions = [
     { value: 'fill', label: labels.calloutStyleWidthFill },
     { value: 'auto', label: labels.calloutStyleWidthAuto },
@@ -346,6 +388,58 @@ function CalloutStyleCard({
         tooltip={labels.calloutStylePlacementTooltip}
         isDefault={unset('placement')}
         onReset={() => onResetField('placement')}
+      />
+      {resolved.placement === 'fixed' && (
+        <>
+          <SelectInput
+            label={labels.calloutStyleFixedAnchorTo}
+            value={resolved.fixed.anchor.to}
+            options={fixedAnchorToOptions}
+            onChange={(v) => updateFixedAnchor({ to: v as ElementAnchor['to'] })}
+            tooltip={labels.calloutStyleFixedAnchorToTooltip}
+            isDefault={style.fixed?.anchor === undefined}
+            onReset={() => resetFixed('anchor')}
+          />
+          <SelectInput
+            label={labels.calloutStyleFixedEdge}
+            value={resolved.fixed.anchor.edge}
+            options={fixedEdgeOptions}
+            onChange={(v) => updateFixedAnchor({ edge: v as AnchorEdge })}
+            tooltip={labels.calloutStyleFixedEdgeTooltip}
+            isDefault={style.fixed?.anchor === undefined}
+            onReset={() => resetFixed('anchor')}
+          />
+          <DimensionInput
+            label={labels.calloutStyleFixedOffsetX}
+            value={resolved.fixed.offset.x}
+            onChange={(v) => updateFixedOffset('x', v)}
+            min={-500}
+            step={0.5}
+            units={OFFSET_UNITS}
+            tooltip={labels.calloutStyleFixedOffsetTooltip}
+            isDefault={style.fixed?.offset?.x === undefined}
+            onReset={() => resetFixed('x')}
+          />
+          <DimensionInput
+            label={labels.calloutStyleFixedOffsetY}
+            value={resolved.fixed.offset.y}
+            onChange={(v) => updateFixedOffset('y', v)}
+            min={-500}
+            step={0.5}
+            units={OFFSET_UNITS}
+            tooltip={labels.calloutStyleFixedOffsetTooltip}
+            isDefault={style.fixed?.offset?.y === undefined}
+            onReset={() => resetFixed('y')}
+          />
+        </>
+      )}
+      <ToggleSwitch
+        label={labels.calloutStyleFloatBarrier}
+        checked={resolved.floatBarrier}
+        onChange={(v) => onChange({ floatBarrier: v })}
+        tooltip={labels.calloutStyleFloatBarrierTooltip}
+        isDefault={unset('floatBarrier')}
+        onReset={() => onResetField('floatBarrier')}
       />
       <SelectInput
         label={labels.calloutStyleWidth}

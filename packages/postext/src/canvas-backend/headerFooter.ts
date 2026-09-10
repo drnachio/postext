@@ -79,16 +79,25 @@ function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBloc
   ctx.fillStyle = block.color;
   ctx.font = block.fontString;
   ctx.textBaseline = 'alphabetic';
+  const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx > 0;
+  if (tracked) ctx.letterSpacing = `${block.letterSpacingPx}px`;
   for (const line of block.lines) {
     ctx.fillText(line.text, block.bbox.x + line.xOffset, line.baselineY);
   }
+  if (tracked) ctx.letterSpacing = '0px';
   ctx.restore();
 }
 
 function renderRuleBlock(ctx: CanvasRenderingContext2D, block: VDTDesignRuleBlock): void {
   ctx.save();
   ctx.fillStyle = block.color;
-  ctx.fillRect(block.bbox.x, block.bbox.y, block.bbox.width, block.thicknessPx);
+  // A vertical rule is `thickness` wide and `bbox.height` tall; a horizontal
+  // one is `bbox.width` wide and `thickness` tall.
+  if (block.direction === 'vertical') {
+    ctx.fillRect(block.bbox.x, block.bbox.y, block.thicknessPx, block.bbox.height);
+  } else {
+    ctx.fillRect(block.bbox.x, block.bbox.y, block.bbox.width, block.thicknessPx);
+  }
   ctx.restore();
 }
 

@@ -9,6 +9,7 @@ import { bracketMatching } from '@codemirror/language';
 import { getEditorTheme } from './postextTheme';
 import { frontmatterHighlight, frontmatterParser, frontmatterTheme } from './frontmatterHighlight';
 import { mathHighlight, mathTheme } from './mathHighlight';
+import { refCompletion, type RefCompletionContext } from './refCompletion';
 
 interface UseCodeMirrorOptions {
   initialValue: string;
@@ -18,9 +19,12 @@ interface UseCodeMirrorOptions {
   onFocusChange?: (focused: boolean) => void;
   isDark?: boolean;
   persistedStateRef?: MutableRefObject<unknown | null>;
+  /** Live resources/types for the `@` reference picker. Read on every
+   *  keystroke, so pass a stable getter over a ref. */
+  getRefContext?: () => RefCompletionContext;
 }
 
-export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef }: UseCodeMirrorOptions) {
+export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
@@ -30,6 +34,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
   onSelectionChangeRef.current = onSelectionChange;
   const onFocusChangeRef = useRef(onFocusChange);
   onFocusChangeRef.current = onFocusChange;
+  const getRefContextRef = useRef(getRefContext);
+  getRefContextRef.current = getRefContext;
 
   // Initialize editor
   useEffect(() => {
@@ -58,6 +64,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       frontmatterHighlight,
       mathTheme,
       mathHighlight,
+      refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       themeCompartment.current.of(getEditorTheme(isDark)),
       updateListener,

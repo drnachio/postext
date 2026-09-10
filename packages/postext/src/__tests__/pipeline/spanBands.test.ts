@@ -99,7 +99,7 @@ describe('page-span blocks mid-page (span blocks, stage 2 — band caps)', () =>
     expect(pass.bandCapsApplied.size).toBe(0);
     expect([...pass.bandCapProposals.keys()]).toEqual([SPAN_INDEX]);
     const cap = pass.bandCapProposals.get(SPAN_INDEX)!;
-    expect(cap).toEqual({ startContentIndex: 0, startPart: 0, lines: 8, retries: 0 });
+    expect(cap).toEqual({ kind: 'span', startContentIndex: 0, startPart: 0, lines: 8, retries: 0 });
     const page0 = pass.doc.pages[0]!;
     const total = page0.columns.reduce((s, c) => s + usedLines(c), 0);
     expect(cap.lines).toBe(Math.ceil(total / 2));
@@ -209,7 +209,7 @@ describe('page-span blocks mid-page (span blocks, stage 2 — band caps)', () =>
 
     // Driver bound (deterministic fake passes). A cap that only delivers
     // two lines taller than proposed is retried twice…
-    const proposal: BandCap = { startContentIndex: 0, startPart: 0, lines: 5, retries: 0 };
+    const proposal: BandCap = { kind: 'span', startContentIndex: 0, startPart: 0, lines: 5, retries: 0 };
     const report = (
       proposals: [number, BandCap][],
       placed: number[],

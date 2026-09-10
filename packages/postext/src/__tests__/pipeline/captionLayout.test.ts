@@ -198,6 +198,23 @@ describe('per-type caption override', () => {
     const { block } = layout(figure(), config);
     expect(block.captionBar?.background).toBe('#abcdef');
   });
+
+  it("a table's caption bar spans the outer rule (half a stroke beyond the body on each side)", () => {
+    const config: PostextConfig = {
+      captionStyle: { position: 'above', backgroundEnabled: true },
+      tableStyle: { borders: true, rules: 'grid', borderWidth: { value: 2, unit: 'px' } },
+    };
+    const { block } = layout(tableResource(tableModel()), config);
+    const bar = block.captionBar!;
+    const half = block.table!.borderWidthPx / 2;
+    expect(half).toBeGreaterThan(0);
+    expect(bar.rect.x).toBeCloseTo(-half, 6);
+    expect(bar.rect.width).toBeCloseTo(COLUMN_WIDTH + 2 * half, 6);
+    // Figures keep the plain body width.
+    const fig = layout(figure(), config).block.captionBar!;
+    expect(fig.rect.x).toBe(0);
+    expect(fig.rect.width).toBe(COLUMN_WIDTH);
+  });
 });
 
 describe('resource note', () => {

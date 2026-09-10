@@ -9,6 +9,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     defaultMarkdown: '',
     config: {},
     resources: [],
+    storeReady: true,
     activePanel: null,
     sidebarPercent: 25,
     sidebarDragging: false,
@@ -18,6 +19,9 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     selection: { from: 0, to: 0, head: 0 },
     editorFocused: false,
     pendingEditorFocus: null,
+    activeResourceId: null,
+    pendingResourceFocus: null,
+    resourceSelection: null,
     docVersion: 0,
     activePresetId: 'remote-a',
     presetStatus: 'idle',
@@ -80,5 +84,59 @@ describe('project summaries', () => {
     s = sandboxReducer(s, { type: 'SET_PROJECT_NOTICE', payload: 'hi' });
     expect(s.projectNotice).toBe('hi');
     expect(sandboxReducer(s, { type: 'SET_PROJECT_NOTICE', payload: 'hi' })).toBe(s);
+  });
+});
+
+describe('resource selection state', () => {
+  const table = { id: 't1', typeId: 'table', kind: 'table' as const, createdAt: 0, updatedAt: 0 };
+  const focus = { resourceId: 't1', target: { kind: 'cell' as const, row: 1, col: 0 }, anchor: 2, head: 5, selectWord: false };
+  const sel = { resourceId: 't1', target: { kind: 'caption' as const }, from: 0, to: 3, head: 3 };
+
+  it('SET_ACTIVE_RESOURCE opens the detail view and is idempotent', () => {
+    const s = sandboxReducer(baseState(), { type: 'SET_ACTIVE_RESOURCE', payload: 't1' });
+    expect(s.activeResourceId).toBe('t1');
+    expect(sandboxReducer(s, { type: 'SET_ACTIVE_RESOURCE', payload: 't1' })).toBe(s);
+  });
+
+  it('switching resource drops the other resource\'s focus request and selection', () => {
+    const s = baseState({ activeResourceId: 't1', pendingResourceFocus: focus, resourceSelection: sel });
+    const next = sandboxReducer(s, { type: 'SET_ACTIVE_RESOURCE', payload: 't2' });
+    expect(next.pendingResourceFocus).toBeNull();
+    expect(next.resourceSelection).toBeNull();
+    const back = sandboxReducer(s, { type: 'SET_ACTIVE_RESOURCE', payload: null });
+    expect(back.activeResourceId).toBeNull();
+    expect(back.resourceSelection).toBeNull();
+  });
+
+  it('SET_PENDING_RESOURCE_FOCUS dedupes identical requests', () => {
+    const s = sandboxReducer(baseState(), { type: 'SET_PENDING_RESOURCE_FOCUS', payload: focus });
+    expect(s.pendingResourceFocus).toEqual(focus);
+    expect(sandboxReducer(s, { type: 'SET_PENDING_RESOURCE_FOCUS', payload: { ...focus } })).toBe(s);
+    const moved = sandboxReducer(s, { type: 'SET_PENDING_RESOURCE_FOCUS', payload: { ...focus, head: 6 } });
+    expect(moved.pendingResourceFocus?.head).toBe(6);
+    const other = sandboxReducer(s, { type: 'SET_PENDING_RESOURCE_FOCUS', payload: { ...focus, target: { kind: 'cell', row: 1, col: 1 } } });
+    expect(other).not.toBe(s);
+    expect(sandboxReducer(s, { type: 'SET_PENDING_RESOURCE_FOCUS', payload: null }).pendingResourceFocus).toBeNull();
+  });
+
+  it('SET_RESOURCE_SELECTION dedupes identical selections', () => {
+    const s = sandboxReducer(baseState(), { type: 'SET_RESOURCE_SELECTION', payload: sel });
+    expect(s.resourceSelection).toEqual(sel);
+    expect(sandboxReducer(s, { type: 'SET_RESOURCE_SELECTION', payload: { ...sel } })).toBe(s);
+    expect(sandboxReducer(s, { type: 'SET_RESOURCE_SELECTION', payload: { ...sel, to: 4 } }).resourceSelection?.to).toBe(4);
+  });
+
+  it('DELETE_RESOURCE and SET_RESOURCES clear stale ids', () => {
+    const s = baseState({ resources: [table], activeResourceId: 't1', pendingResourceFocus: focus, resourceSelection: sel });
+    const deleted = sandboxReducer(s, { type: 'DELETE_RESOURCE', payload: 't1' });
+    expect(deleted.activeResourceId).toBeNull();
+    expect(deleted.pendingResourceFocus).toBeNull();
+    expect(deleted.resourceSelection).toBeNull();
+    const kept = sandboxReducer(s, { type: 'SET_RESOURCES', payload: [table] });
+    expect(kept.activeResourceId).toBe('t1');
+    expect(kept.resourceSelection).toEqual(sel);
+    const replaced = sandboxReducer(s, { type: 'SET_RESOURCES', payload: [] });
+    expect(replaced.activeResourceId).toBeNull();
+    expect(replaced.pendingResourceFocus).toBeNull();
   });
 });

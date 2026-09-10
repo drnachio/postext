@@ -3,9 +3,11 @@
  *
  * In the revised model a resource is *incorporated by reference*: the first
  * time it is mentioned (an inline `:ref` or a `::resource` directive, whichever
- * comes first in reading order) the engine floats it to a band at the top or
- * bottom of the page near that reference. The author never places it twice and
- * the running text flows past the reference uninterrupted.
+ * comes first in reading order) the engine floats it to the first free slot
+ * after that reference — the bottom of the referencing column, the top or
+ * bottom of the next empty column, or a band of the next page. The author
+ * never places it twice and the running text flows past the reference
+ * uninterrupted.
  *
  * This module is the pure planning half: it resolves each resource's placement
  * and produces the ordered list of floats with the content-block index of their
@@ -29,22 +31,24 @@ export interface ResolvedPlacement {
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
- *  content block where it is first referenced (its anchor). */
+ *  content block where it is first referenced (its anchor). `'auto'` takes
+ *  the first free slot after the reference (top or bottom); `'top'` /
+ *  `'bottom'` restrict the search to that kind of slot. */
 export interface PlannedFloat {
   resourceId: string;
   firstBlockIdx: number;
-  position: 'top' | 'bottom';
+  position: 'auto' | 'top' | 'bottom';
   span: ResourceFloatSpan;
 }
 
 /** Resolve a resource's placement: own `placement` → its type's
- *  `defaultPlacement` → the built-in default (`top` / `column`). */
+ *  `defaultPlacement` → the built-in default (`auto` / `column`). */
 export function resolveResourcePlacement(
   resource: Resource,
   type: ResourceType | undefined,
 ): ResolvedPlacement {
   const position =
-    resource.placement?.position ?? type?.defaultPlacement?.position ?? 'top';
+    resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
   const span = resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column';
   return { position, span };
 }

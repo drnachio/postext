@@ -317,38 +317,48 @@ describe('page-span callouts (span blocks, stage 1)', () => {
       bitmap: { fileId: `${id}.png`, format: 'png', width: 1600, height: 200 },
       placement: { position, span: 'page' },
     });
-    // The references sit on page 0 (floats reserve bands on the NEXT page
-    // opened); page 0 is then filled past the point where a level cut could
-    // still hold the box (stage 2), so the box opens page 1 — whose top and
-    // bottom bands are reserved first — and cuts the band between.
+    // Both floats are referenced in the first paragraph of page 0. The
+    // bottom float takes the first free slot after its reference — the
+    // bottom band of page 0, which every column still has room for. The
+    // top float only accepts top slots, so it waits for the next page. Page
+    // 0 is then filled past the point where a level cut could still hold
+    // the box (stage 2), so the box opens page 1 — whose top band is
+    // reserved first — and cuts the band right below it.
     const md = ['Ver :ref{id="ft"} y :ref{id="fb"}.', '', filler(40), '', SPAN_CALLOUT_2, '', filler(6)].join('\n');
     const doc = build(md, TWO_COL, [wide('ft', 'top'), wide('fb', 'bottom')]);
     const [frame] = frames(doc);
     expect(frame!.pageIndex).toBe(1);
+    const page0 = doc.pages[0]!;
+    const bottom = (page0.floats ?? []).find((f) => f.resourceBlock!.resource.id === 'fb')!;
+    expect(bottom).toBeDefined();
+    // The bottom band shortens every text column of page 0.
+    for (const c of textColumns(page0, 0)) {
+      expect(c.bbox.y + c.bbox.height).toBeLessThanOrEqual(bottom.bbox.y + 1e-6);
+      expect(c.bbox.y + c.bbox.height).toBeLessThan(page0.contentArea.y + page0.contentArea.height);
+    }
     const page = doc.pages[1]!;
     const floats = page.floats ?? [];
-    expect(floats.map((f) => f.resourceBlock!.resource.id).sort()).toEqual(['fb', 'ft']);
-    const top = floats.find((f) => f.resourceBlock!.resource.id === 'ft')!;
-    const bottom = floats.find((f) => f.resourceBlock!.resource.id === 'fb')!;
+    expect(floats.map((f) => f.resourceBlock!.resource.id)).toEqual(['ft']);
+    const top = floats[0]!;
     const spanCol = columnOf(doc, frame!);
     expect(spanCol.kind).toBe('span');
-    // The cut is the float-reduced top of the band (level: nothing placed).
+    // The cut lies inside the float-reduced band: at or below the top band
+    // (a few lines spilled from page 0 may sit above it, cut level by a
+    // band cap).
     const band0 = textColumns(page, 0);
     expect(band0).toHaveLength(2);
-    expect(spanCol.bbox.y).toBeCloseTo(band0[0]!.bbox.y, 5);
+    expect(spanCol.bbox.y).toBeGreaterThanOrEqual(band0[0]!.bbox.y - 1e-6);
     expect(spanCol.bbox.y).toBeGreaterThanOrEqual(top.bbox.y + top.bbox.height - 1e-6);
     expect(spanCol.bbox.y).toBeGreaterThan(page.contentArea.y);
-    // The new band keeps the bottom float's reservation.
     const band1 = textColumns(page, 1);
     expect(band1).toHaveLength(2);
     for (const c of band1) {
       expect(c.bbox.y).toBeCloseTo(spanCol.bbox.y + spanCol.bbox.height, 5);
-      expect(c.bbox.y + c.bbox.height).toBeLessThanOrEqual(bottom.bbox.y + 1e-6);
-      expect(c.bbox.y + c.bbox.height).toBeLessThan(page.contentArea.y + page.contentArea.height);
     }
-    expect(spanCol.bbox.y + spanCol.bbox.height).toBeLessThanOrEqual(bottom.bbox.y + 1e-6);
     // Text after the box flows into band 1 on the same page.
-    const after = doc.blocks.find((b) => b.type === 'paragraph' && b.containerId === undefined && b.pageIndex === 1)!;
+    const after = doc.blocks.find((b) =>
+      b.type === 'paragraph' && b.containerId === undefined && b.pageIndex === 1
+      && (b.contentIndex ?? -1) > frame!.contentIndex!)!;
     expect(columnOf(doc, after)).toBe(band1[0]);
   }, 30_000); // lays out a full two-float page: ~2 s locally, ~8 s on the CI runner
 

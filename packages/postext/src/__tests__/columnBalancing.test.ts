@@ -77,11 +77,12 @@ describe('column balancing (vertical justification)', () => {
     expect(totalGaps(balanced)).toBeLessThan(totalGaps(plain));
 
     // Balancing is local: the set of content blocks on each page must not
-    // change — only vertical positions inside the page shift.
+    // change — only vertical positions inside the page shift (a paragraph
+    // may split differently between the columns of the levelled last page).
     expect(balanced.pages.length).toBe(plain.pages.length);
     const blocksPerPage = (doc: VDTDocument) =>
       doc.pages.map((p) =>
-        p.columns.flatMap((c) => c.blocks.map((b) => b.id)).sort().join(','),
+        [...new Set(p.columns.flatMap((c) => c.blocks.map((b) => b.contentIndex)))].sort((a, b) => a! - b!).join(','),
       );
     expect(blocksPerPage(balanced)).toEqual(blocksPerPage(plain));
 

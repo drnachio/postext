@@ -31,12 +31,14 @@ export type ResourceCounterFormat =
  *  counter whenever a heading of that level is encountered. */
 export type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
-/** Where a resource floats on the page. `'top'` / `'bottom'` detach the
- *  resource from the running text and reserve a band at the top or bottom of
- *  the next available page near its first reference (the standard editorial
- *  figure-float behaviour). `'here'` opts out of floating and embeds the
- *  resource inline at the exact `::resource` directive position. */
-export type ResourceFloatPosition = 'top' | 'bottom' | 'here';
+/** Where a resource floats on the page. `'auto'` (the default) detaches the
+ *  resource from the running text and lands it in the first free slot after
+ *  its first reference — the bottom of the referencing column, the top or
+ *  bottom of the next empty column on the same page, then the bands of the
+ *  next page. `'top'` / `'bottom'` restrict the search to top or bottom
+ *  slots. `'here'` opts out of floating and embeds the resource inline at
+ *  the exact `::resource` directive position. */
+export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here';
 
 /** How wide a floated resource is. `'column'` keeps it within a single column;
  *  `'page'` spans the full content width across all columns (a full-width
@@ -46,7 +48,7 @@ export type ResourceFloatSpan = 'column' | 'page';
 
 /** Placement of a resource on the page. Resolved per resource, falling back to
  *  its {@link ResourceType.defaultPlacement} and then the built-in default
- *  (`top` / `column`). See {@link resolveResourcePlacement}. */
+ *  (`auto` / `column`). See {@link resolveResourcePlacement}. */
 export interface ResourcePlacement {
   position?: ResourceFloatPosition;
   span?: ResourceFloatSpan;
@@ -751,9 +753,22 @@ export interface ResolvedParagraphStyleConfig {
 
 /** Horizontal extent of a callout: its column, or the full content width. */
 export type CalloutSpan = 'column' | 'page';
-/** Where a callout lands: inline in the flow (`'here'`), or floated to the
- *  top / bottom band of a page like a resource. */
-export type CalloutPlacement = 'here' | 'top' | 'bottom';
+/** Where a callout lands: inline in the flow (`'here'`), floated to the
+ *  top / bottom band of a page like a resource, or at fixed page coordinates
+ *  (`'fixed'` — anchored through {@link CalloutFixedConfig}, out of the
+ *  column flow; text columns it overlaps are shortened around it). */
+export type CalloutPlacement = 'here' | 'top' | 'bottom' | 'fixed';
+
+/** Position of a `placement: 'fixed'` callout on the page where it occurs in
+ *  the flow. The anchor's `container` is the page content area (mirrored on
+ *  even pages); `page` / `bleed` anchor to the trim / bleed frames. */
+export interface CalloutFixedConfig {
+  /** Default `{ to: 'container', edge: 'bottom-left' }`. Element-relative
+   *  edges are not meaningful here and fall back to `top-left`. */
+  anchor?: ElementAnchor;
+  /** Offset from the anchored position. Default `0` / `0`. */
+  offset?: { x?: Dimension; y?: Dimension };
+}
 /** `'fill'` spans the available width; `'auto'` shrink-wraps the title
  *  (badge use — children are ignored). */
 export type CalloutWidth = 'fill' | 'auto';
@@ -851,6 +866,14 @@ export interface CalloutStyleConfig {
   span?: CalloutSpan;
   /** Default `'here'`. Overridable per instance with the `placement` attribute. */
   placement?: CalloutPlacement;
+  /** Anchor and offset used when the placement is `'fixed'`. */
+  fixed?: CalloutFixedConfig;
+  /** Pending floats (figures / tables referenced earlier) are placed before
+   *  this box — in the current page's free slots or on pages opened ahead of
+   *  it — so no float escapes past a chapter's closing box. Default `false`.
+   *  Chapter openers, `:::part` and the end of the document always act as
+   *  barriers. */
+  floatBarrier?: boolean;
   /** Default `'fill'`. */
   width?: CalloutWidth;
   /** Default `true`. */
@@ -885,6 +908,8 @@ export interface ResolvedCalloutStyleConfig {
   title: string;
   span: CalloutSpan;
   placement: CalloutPlacement;
+  fixed: { anchor: ElementAnchor; offset: { x: Dimension; y: Dimension } };
+  floatBarrier: boolean;
   width: CalloutWidth;
   backgroundEnabled: boolean;
   background: ColorValue;
@@ -1074,6 +1099,11 @@ export interface ColumnBalancingConfig {
   /** Maximum tracking for a loose paragraph, in thousandths of an em (the
    *  InDesign unit: 10 = 0.01 em per character). Default 10. */
   maxTracking?: number;
+  /** Balance the closing band of a chapter / the document: when the flow
+   *  ends before the page is full and its columns are uneven, they are cut
+   *  level (via a band cap) so the last columns end at the same height, the
+   *  way a compositor sets a short closing page. Default true. */
+  trailing?: boolean;
 }
 
 export interface ResolvedHeadingsConfig {
@@ -1094,6 +1124,7 @@ export interface ResolvedHeadingsConfig {
     maxLooseParagraphs: number;
     trackParagraphs: boolean;
     maxTracking: number;
+    trailing: boolean;
   };
   levels: ResolvedHeadingLevelConfig[];
 }
@@ -1316,6 +1347,10 @@ export interface ResolvedDebugConfig {
   warnings: ResolvedWarningsToggleConfig;
 }
 
+/** Partial document config that applies to the HTML viewer only (see
+ *  `HtmlViewerConfig.overrides`). */
+export type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
+
 export interface HtmlViewerConfig {
   /** Target column width in characters — drives the measured width of the
    *  single or multi-column layout in the HTML viewer. */
@@ -1326,12 +1361,24 @@ export interface HtmlViewerConfig {
    *  overrides `bodyText.optimalLineBreaking` only for HTML rendering to
    *  favour performance. Default false. */
   optimalLineBreaking?: boolean;
+  /** Screen-only alternative to parts of the document config. The HTML
+   *  viewer merges it over the document config before laying out (see
+   *  `applyHtmlViewerOverrides`); canvas and PDF ignore it. Objects merge
+   *  recursively; a `levels` array (headings, lists) merges entry by entry
+   *  on `level`; every other array — a design slot's `elements`,
+   *  `calloutStyles`, `colorPalette`… — replaces the base array wholesale.
+   *  Typical use: a chapter opener without the print bands, a part page
+   *  whose title wraps against the number instead of a fixed trim-box
+   *  width. */
+  overrides?: HtmlViewerOverrides;
 }
 
 export interface ResolvedHtmlViewerConfig {
   maxCharsPerLine: number;
   columnGap: number;
   optimalLineBreaking: boolean;
+  /** Carried through unchanged; absent when the config sets none. */
+  overrides?: HtmlViewerOverrides;
 }
 
 export interface PostextSectionOverride {

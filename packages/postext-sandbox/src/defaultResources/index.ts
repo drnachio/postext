@@ -6,8 +6,8 @@
 // SVG blobs are stored under deterministic fileIds via `putBlobAt`, so
 // re-seeding overwrites the same record instead of orphaning the previous blob.
 //
-// The set deliberately spans the placement matrix (column/page span × top/bottom
-// position) and is spread across every major section of the document, so the
+// The set deliberately spans the placement matrix (column/page span × auto/top/
+// bottom position) and is spread across every major section of the document, so the
 // float engine is exercised thoroughly and the default document reads as a fully
 // illustrated publication. Every figure is a distinct illustration — no diagram
 // is reused at two different spans.
@@ -645,7 +645,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.layoutPipeline,
     fileId: 'default-layout-pipeline',
-    placement: { position: 'top', span: 'column' },
+    placement: { position: 'auto', span: 'column' },
     caption: (es) =>
       es
         ? 'La tubería de Postext: el Markdown se analiza, se maqueta y luego se renderiza a canvas, PDF y HTML.'
@@ -671,7 +671,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.measurementSpeed,
     fileId: 'default-measurement-speed',
-    placement: { position: 'top', span: 'column' },
+    placement: { position: 'auto', span: 'column' },
     caption: (es) =>
       es
         ? 'La medición sin DOM de pretext es entre 300 y 600 veces más rápida que leer dimensiones del DOM.'

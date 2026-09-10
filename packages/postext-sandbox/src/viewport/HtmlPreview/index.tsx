@@ -4,6 +4,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import {
   renderToHtmlIndexed,
   dimensionToPx,
+  applyHtmlViewerOverrides,
   resolveHtmlViewerConfig,
   resolveDebugConfig,
   resolveDiagramStyleConfig,
@@ -62,6 +63,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const { hostRef, shadowRef } = useShadowDom();
   const deferredMarkdown = useDeferredValue(state.markdown);
   const deferredConfig = useDeferredValue(state.config);
+  const deferredResources = useDeferredValue(state.resources);
 
   const layoutWorker = useLayoutWorker();
   const scrollHostRef = useRef<HTMLDivElement | null>(null);
@@ -144,15 +146,18 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   }, [shadowRef]);
 
   // Memoize a trigger key so effects run only when real inputs change.
+  // Resources are part of the key too: an edit in the Resources panel (a
+  // cell, a caption, an SVG payload) must relayout the HTML tab as well.
   const renderKey = useMemo(
     () => ({
       markdown: deferredMarkdown,
       config: deferredConfig,
+      resources: deferredResources,
       fontScale,
       columnMode,
       locale: state.locale,
     }),
-    [deferredMarkdown, deferredConfig, fontScale, columnMode, state.locale],
+    [deferredMarkdown, deferredConfig, deferredResources, fontScale, columnMode, state.locale],
   );
 
   // Stable scheduler: subscribers (font listener, ResizeObserver, the
@@ -216,7 +221,9 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     const currentFontScale = fontScaleRef.current;
     const currentColumnMode = columnModeRef.current;
     const currentMarkdown = markdownRef.current;
-    const currentConfig = configRef.current;
+    // Screen-only overrides (`htmlViewer.overrides`) merged in up front, so
+    // font loading, column measurement and layout all see the same config.
+    const currentConfig = applyHtmlViewerOverrides(configRef.current);
     const currentLocale = localeRef.current;
 
     const htmlViewer = resolveHtmlViewerConfig(currentConfig.htmlViewer);
@@ -410,8 +417,13 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           const sameBlockSkeleton =
             np.blocks.length === pp.blocks.length &&
             np.blocks.every((b, j) => b.id === pp.blocks[j]!.id);
+          // Opener bands, headers and footers live outside the block list:
+          // a design-only change (a preset reload swapping the part page
+          // design) leaves every block equal and would otherwise never
+          // reach the DOM.
+          const sameDecoration = np.decorationHtml === pp.decorationHtml;
 
-          if (!sameBlockSkeleton) {
+          if (!sameBlockSkeleton || !sameDecoration) {
             pageEl.innerHTML = np.innerHtml;
             const oldOverlay = overlayMapRef.current.get(np.index);
             if (oldOverlay && oldOverlay.parentNode === pageEl) {
@@ -510,7 +522,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     for (const [pageIndex, overlay] of overlayMapRef.current) {
       const page = doc.pages[pageIndex];
       if (!page) continue;
-      const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx);
+      const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx, state.resourceSelection);
       if (rect) activeCursorRect = rect;
     }
 
@@ -539,7 +551,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         scroll.scrollLeft += cr.right - cn.right + padding;
       }
     }
-  }, [state.selection, state.config.debug, state.editorFocused, docVersion]);
+  }, [state.selection, state.config.debug, state.editorFocused, state.resourceSelection, docVersion]);
 
   // Imperative API exposed to the viewport toolbar.
   // - regenerate: force a fresh relayout immediately.

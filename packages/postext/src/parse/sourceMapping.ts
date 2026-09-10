@@ -6,9 +6,10 @@ import { BREAK_PLACEHOLDER, REF_PLACEHOLDER } from './inlineFormatting';
  * Build a per-character map from plain text to absolute source offsets.
  * Greedy matches each plain char against the raw source (delimited by
  * [blockSrcStart, blockSrcEnd)), skipping markdown markers and treating
- * newlines/tabs as spaces for paragraph line joins.
+ * newlines/tabs as spaces for paragraph line joins. Exported so inline
+ * snippets (`inlineSnippet.ts`) share the exact same alignment rules.
  */
-function computeSourceMap(
+export function computeSourceMap(
   markdown: string,
   blockSrcStart: number,
   blockSrcEnd: number,

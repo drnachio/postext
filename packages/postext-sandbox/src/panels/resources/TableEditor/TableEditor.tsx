@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   TableCell,
   TableCellAlign,
@@ -19,6 +19,7 @@ import {
   unmergeCell,
 } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext';
+import type { InlineFocusRequest, InlineSelection } from '../../../controls/InlineMarkdownInput';
 import { TableEditorCell, type CellNav } from './TableEditorCell';
 import { TableEditorToolbar } from './TableEditorToolbar';
 import { ColumnWidthsEditor } from './ColumnWidthsEditor';
@@ -32,9 +33,20 @@ import { ColumnWidthsEditor } from './ColumnWidthsEditor';
 // the active cell.
 // ---------------------------------------------------------------------------
 
+/** A request to focus one cell with a selection inside its content. */
+export interface TableFocusRequest extends InlineFocusRequest {
+  row: number;
+  col: number;
+}
+
 interface TableEditorProps {
   model: TableModel;
   onModelChange: (next: TableModel) => void;
+  /** Pending cell focus (from a preview click); consumed once. */
+  focusRequest?: TableFocusRequest | null;
+  onFocusConsumed?: () => void;
+  /** Selection inside the focused cell (`null` when it loses focus). */
+  onCellSelectionChange?: (pos: TableCellPos, selection: InlineSelection | null) => void;
 }
 
 const columnCount = (m: TableModel): number =>
@@ -140,14 +152,36 @@ const clampPos = (m: TableModel, pos: TableCellPos): TableCellPos => {
   return { row, col };
 };
 
-export function TableEditor({ model, onModelChange }: TableEditorProps) {
+export function TableEditor({
+  model: modelProp,
+  onModelChange,
+  focusRequest = null,
+  onFocusConsumed,
+  onCellSelectionChange,
+}: TableEditorProps) {
   const labels = useSandboxLabels();
-  // Undo/redo snapshot stacks of TableModel. The live model is the prop; these
-  // hold history only (past = older snapshots, future = redo targets).
+  // The live model mirrors the prop locally: an edit re-renders the grid at
+  // once with the new content, while the sandbox store delivers the updated
+  // resource on its own schedule. Without the mirror a controlled cell is
+  // re-rendered with the stale prop between the keystroke and the store
+  // update (the undo stack below is local state), and React resetting the
+  // textarea to the old value throws the caret to the end of the cell.
+  const [prevProp, setPrevProp] = useState(modelProp);
+  const [model, setModel] = useState(modelProp);
+  if (modelProp !== prevProp) {
+    setPrevProp(modelProp);
+    setModel(modelProp);
+  }
+  // Undo/redo snapshot stacks of TableModel: history only (past = older
+  // snapshots, future = redo targets).
   const [past, setPast] = useState<TableModel[]>([]);
   const [future, setFuture] = useState<TableModel[]>([]);
 
-  const [active, setActive] = useState<TableCellPos>({ row: 0, col: 0 });
+  // Mounting with a pending focus request starts on its cell, so the default
+  // cell never grabs focus first.
+  const [active, setActive] = useState<TableCellPos>(() =>
+    focusRequest ? clampPos(model, focusRequest) : { row: 0, col: 0 },
+  );
   // Selection anchor; the range spans anchor..active. Null = single-cell.
   const [anchor, setAnchor] = useState<TableCellPos | null>(null);
 
@@ -155,11 +189,24 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
 
   const cols = columnCount(model);
 
+  // A focus request first makes its cell active (mounting/activating it),
+  // then the cell's own input consumes the selection part of the request.
+  const cellRequest = useMemo(
+    () => (focusRequest ? { target: clampPos(model, focusRequest), sel: focusRequest as InlineFocusRequest } : null),
+    [focusRequest, model],
+  );
+  useEffect(() => {
+    if (!cellRequest) return;
+    setActive(cellRequest.target);
+    setAnchor(null);
+  }, [cellRequest]);
+
   /** Commit a new model, recording the current one for undo. */
   const commit = useCallback(
     (next: TableModel) => {
       setPast((p) => [...p, model]);
       setFuture([]);
+      setModel(next);
       onModelChange(next);
     },
     [model, onModelChange],
@@ -168,8 +215,9 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
   const undo = useCallback(() => {
     setPast((p) => {
       if (p.length === 0) return p;
-      const previous = p[p.length - 1];
+      const previous = p[p.length - 1]!;
       setFuture((f) => [model, ...f]);
+      setModel(previous);
       onModelChange(previous);
       return p.slice(0, -1);
     });
@@ -178,8 +226,9 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
   const redo = useCallback(() => {
     setFuture((f) => {
       if (f.length === 0) return f;
-      const next = f[0];
+      const next = f[0]!;
       setPast((p) => [...p, model]);
+      setModel(next);
       onModelChange(next);
       return f.slice(1);
     });
@@ -420,6 +469,8 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
                 {row.map((cell, c) => {
                   if (cell.hiddenBy) return null;
                   const pos: TableCellPos = { row: r, col: c };
+                  const isRequested =
+                    cellRequest !== null && cellRequest.target.row === r && cellRequest.target.col === c;
                   return (
                     <TableEditorCell
                       key={c}
@@ -431,6 +482,9 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
                       onFocus={handleFocus}
                       onNavigate={move}
                       onPaste={handleCellPaste}
+                      focusRequest={isRequested ? cellRequest.sel : null}
+                      onFocusConsumed={isRequested ? onFocusConsumed : undefined}
+                      onSelectionChange={onCellSelectionChange}
                     />
                   );
                 })}

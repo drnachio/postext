@@ -13,7 +13,7 @@ type VDTSegment = NonNullable<VDTLine['segments']>[number];
  * the line-length math in `stampSourceRanges`. A trailing soft hyphen on a
  * hyphenated line's last segment has no source char either.
  */
-function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean): number {
+export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean): number {
   if (seg.refResourceId !== undefined) return 1;
   if (dropTrailingHyphen && seg.text.endsWith('-')) return Math.max(0, seg.text.length - 1);
   return seg.text.length;
@@ -104,6 +104,22 @@ function refInBlockLine(
 }
 
 /**
+ * Every visible resource embed painted on a page: inline `::resource` blocks
+ * from `doc.blocks` plus the page's float band(s). Float bands may carry
+ * non-resource blocks (fixed callouts); only `resourceBlock` carriers count.
+ */
+export function resourceBlocksOnPage(doc: VDTDocument, pageIndex: number): VDTBlock[] {
+  const out: VDTBlock[] = [];
+  for (const b of doc.blocks) {
+    if (b.pageIndex === pageIndex && b.resourceBlock && !b.hidden) out.push(b);
+  }
+  for (const fb of doc.pages[pageIndex]?.floats ?? []) {
+    if (fb.resourceBlock && !fb.hidden) out.push(fb);
+  }
+  return out;
+}
+
+/**
  * Hit-test a `:ref` segment at page-space pixel coordinates. Checks body-text
  * blocks plus resource captions / table cells (including float bands).
  * Returns the referenced resource id, or null when the click isn't on a ref.
@@ -114,9 +130,8 @@ export function refResourceIdAtPixel(
   xPage: number,
   yPage: number,
 ): string | null {
-  const page = doc.pages[pageIndex];
-  const candidates: VDTBlock[] = doc.blocks.filter((b) => b.pageIndex === pageIndex);
-  for (const fb of page?.floats ?? []) candidates.push(fb);
+  const candidates: VDTBlock[] = doc.blocks.filter((b) => b.pageIndex === pageIndex && !b.resourceBlock);
+  for (const rb of resourceBlocksOnPage(doc, pageIndex)) candidates.push(rb);
 
   for (const b of candidates) {
     if (b.hidden) continue;

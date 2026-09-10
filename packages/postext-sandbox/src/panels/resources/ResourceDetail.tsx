@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import type {
   Resource,
@@ -9,15 +9,16 @@ import type {
   ResourceFloatPosition as PlacementPosition,
   ResourceFloatSpan as PlacementSpan,
 } from 'postext';
-import { useSandboxLabels } from '../../context/SandboxContext';
-import { InlineMarkdownInput } from '../../controls/InlineMarkdownInput';
+import { useSandbox, type ResourceFocusTarget } from '../../context/SandboxContext';
+import { InlineMarkdownInput, type InlineSelection } from '../../controls/InlineMarkdownInput';
 import { ConfirmPopover } from '../ConfirmPopover';
 import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
-import { TableEditor } from './TableEditor/TableEditor';
+import { SvgSourceEditor, type SvgSourceCommit } from './SvgSourceEditor';
+import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor';
 import { slugify } from './slugify';
-import type { TableModel } from 'postext';
+import type { TableCellPos, TableModel } from 'postext';
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
@@ -56,6 +57,8 @@ interface ResourceDetailProps {
   onDelete: () => void;
   /** Return to the resource list. */
   onBack: () => void;
+  /** Host theme for the embedded SVG source editor. */
+  isDark?: boolean;
 }
 
 /** Detail view: editable detail for the selected resource, with a back button. */
@@ -68,9 +71,44 @@ export function ResourceDetail({
   onRename,
   onDelete,
   onBack,
+  isDark = true,
 }: ResourceDetailProps) {
-  const labels = useSandboxLabels();
+  const { state, dispatch } = useSandbox();
+  const labels = state.labels;
   const type = types.find((t) => t.id === resource.typeId);
+
+  // Preview click → panel: the pending request addressed to this resource is
+  // routed to the matching field by its target kind and cleared once applied;
+  // every field reports its selection back for the preview highlight.
+  const pending = state.pendingResourceFocus?.resourceId === resource.id ? state.pendingResourceFocus : null;
+  const captionRequest = pending?.target.kind === 'caption' ? pending : null;
+  const noteRequest = pending?.target.kind === 'note' ? pending : null;
+  const svgRequest = pending?.target.kind === 'svgText' ? pending : null;
+  const cellRequest = useMemo<TableFocusRequest | null>(() => {
+    if (!pending || pending.target.kind !== 'cell') return null;
+    const { row, col } = pending.target;
+    return { row, col, anchor: pending.anchor, head: pending.head, selectWord: pending.selectWord };
+  }, [pending]);
+  const consumeFocus = useCallback(
+    () => dispatch({ type: 'SET_PENDING_RESOURCE_FOCUS', payload: null }),
+    [dispatch],
+  );
+  const reportSelection = useCallback(
+    (target: ResourceFocusTarget, sel: InlineSelection | null) => {
+      dispatch({
+        type: 'SET_RESOURCE_SELECTION',
+        payload: sel ? { resourceId: resource.id, target, from: sel.from, to: sel.to, head: sel.head } : null,
+      });
+    },
+    [dispatch, resource.id],
+  );
+  const onCaptionSelection = useCallback((sel: InlineSelection | null) => reportSelection({ kind: 'caption' }, sel), [reportSelection]);
+  const onNoteSelection = useCallback((sel: InlineSelection | null) => reportSelection({ kind: 'note' }, sel), [reportSelection]);
+  const onSvgSelection = useCallback((sel: InlineSelection | null) => reportSelection({ kind: 'svgText' }, sel), [reportSelection]);
+  const onCellSelection = useCallback(
+    (pos: TableCellPos, sel: InlineSelection | null) => reportSelection({ kind: 'cell', row: pos.row, col: pos.col }, sel),
+    [reportSelection],
+  );
   const touch = (partial: Partial<Resource>): Resource => ({
     ...resource,
     ...partial,
@@ -79,7 +117,7 @@ export function ResourceDetail({
 
   // Placement (defaults mirror the engine: top / single column).
   const currentPlacement: ResourcePlacement = resource.placement ?? {};
-  const placementPosition: PlacementPosition = currentPlacement.position ?? 'top';
+  const placementPosition: PlacementPosition = currentPlacement.position ?? 'auto';
   const placementSpan: PlacementSpan = currentPlacement.span ?? 'column';
 
   // The id is edited locally and committed (renamed) on blur / Enter so the
@@ -119,6 +157,26 @@ export function ResourceDetail({
       }),
     );
   };
+
+  // A source edit saved as a new blob: swap the id, keep the declared size
+  // unless the source now says otherwise.
+  const applySvgSource = useCallback(
+    (c: SvgSourceCommit) => {
+      onChange(
+        touch({
+          svg: {
+            ...resource.svg,
+            fileId: c.fileId,
+            width: c.width ?? resource.svg?.width,
+            height: c.height ?? resource.svg?.height,
+          },
+        }),
+      );
+    },
+    // `touch` closes over `resource`, which is already a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onChange, resource],
+  );
 
   const deleteMessage = (
     <>
@@ -231,6 +289,9 @@ export function ResourceDetail({
             ariaLabel={labels.resourceCaptionAria}
             placeholder={labels.resourceCaptionPlaceholder}
             multiline
+            focusRequest={captionRequest}
+            onFocusConsumed={consumeFocus}
+            onSelectionChange={onCaptionSelection}
           />
         </Field>
 
@@ -241,6 +302,9 @@ export function ResourceDetail({
             ariaLabel={labels.resourceNoteAria}
             placeholder={labels.resourceNotePlaceholder}
             multiline
+            focusRequest={noteRequest}
+            onFocusConsumed={consumeFocus}
+            onSelectionChange={onNoteSelection}
           />
         </Field>
 
@@ -277,6 +341,7 @@ export function ResourceDetail({
               className={inputClass}
               style={inputStyle}
             >
+              <option value="auto">{labels.resourcePositionAuto}</option>
               <option value="top">{labels.resourcePositionTop}</option>
               <option value="bottom">{labels.resourcePositionBottom}</option>
               <option value="here">{labels.resourcePositionHere}</option>
@@ -313,6 +378,23 @@ export function ResourceDetail({
             <SvgUploader onUploaded={applySvg} compact={!!resource.svg} />
           </Field>
         )}
+        {resource.kind === 'svg' && resource.svg?.fileId && (
+          <div className="flex flex-col gap-0.5">
+            <span style={labelStyle}>{labels.svgSourceLabel}</span>
+            <SvgSourceEditor
+              key={resource.id}
+              fileId={resource.svg.fileId}
+              isDark={isDark}
+              focusRequest={svgRequest}
+              onFocusConsumed={consumeFocus}
+              onSelectionChange={onSvgSelection}
+              onCommit={applySvgSource}
+            />
+            <span style={{ ...labelStyle, color: 'var(--slate)' }} className="opacity-80">
+              {labels.svgSourceHint}
+            </span>
+          </div>
+        )}
         {resource.kind === 'table' && (
           <Field label={labels.resourceTableLabel}>
             <TableEditor
@@ -320,6 +402,9 @@ export function ResourceDetail({
               onModelChange={(model: TableModel) =>
                 onChange(touch({ table: { model } }))
               }
+              focusRequest={cellRequest}
+              onFocusConsumed={consumeFocus}
+              onCellSelectionChange={onCellSelection}
             />
           </Field>
         )}
