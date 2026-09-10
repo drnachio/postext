@@ -9,6 +9,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     defaultMarkdown: '',
     config: {},
     resources: [],
+    storeReady: true,
     activePanel: null,
     sidebarPercent: 25,
     sidebarDragging: false,

@@ -18,7 +18,7 @@ import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
 import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
-import { setCustomFonts } from '../controls/fontLoader';
+import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
 import { pruneBlobs } from '../storage/blobStore';
 import { collectProjectFileIds, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
@@ -98,6 +98,12 @@ export interface SandboxState {
   /** User-managed resources (images, SVGs, tables). Loaded asynchronously on
    *  init from IndexedDB (NOT localStorage) and persisted via an effect. */
   resources: Resource[];
+  /** True once the mount-time load from IndexedDB (resources, presets,
+   *  projects) has landed and any initial preset seeding is done. Until then
+   *  `resources` is the empty placeholder, so a build would render every
+   *  `:ref` as unresolved; viewports that do not rebuild on their own (PDF)
+   *  wait for it. */
+  storeReady: boolean;
   activePanel: PanelId | null;
   sidebarPercent: number;
   sidebarDragging: boolean;
@@ -168,6 +174,7 @@ export type SandboxAction =
   | { type: 'SET_RESOURCE_SELECTION'; payload: ResourceSelection | null }
   | { type: 'BUMP_DOC_VERSION' }
   | { type: 'SET_RESOURCES'; payload: Resource[] }
+  | { type: 'SET_STORE_READY' }
   | { type: 'UPSERT_RESOURCE'; payload: Resource }
   | { type: 'DELETE_RESOURCE'; payload: string }
   | { type: 'SET_PRESET'; payload: { id: string; markdown?: string; config?: PostextConfig } }
@@ -272,6 +279,8 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     }
     case 'BUMP_DOC_VERSION':
       return { ...state, docVersion: state.docVersion + 1 };
+    case 'SET_STORE_READY':
+      return state.storeReady ? state : { ...state, storeReady: true };
     case 'SET_RESOURCES': {
       const ids = new Set(action.payload.map((r) => r.id));
       return {
@@ -617,6 +626,7 @@ export function SandboxProvider({
         locale ?? 'en',
       ),
       resources: [],
+      storeReady: false,
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,
@@ -776,6 +786,9 @@ export function SandboxProvider({
       .catch(() => {
         if (cancelled) return;
         resourcesLoadedRef.current = true;
+      })
+      .then(() => {
+        if (!cancelled) dispatch({ type: 'SET_STORE_READY' });
       });
     return () => {
       cancelled = true;
@@ -955,10 +968,15 @@ export function SandboxProvider({
 
   // Keep the fontLoader's custom-font registry in sync with the config so
   // that FontPicker, loadFont(), and the worker payload collector can all
-  // resolve custom families by name.
-  useEffect(() => {
+  // resolve custom families by name. This runs during render rather than in
+  // an effect: child effects fire before the provider's, so a viewport's
+  // first build would otherwise start against an empty registry and measure
+  // custom families with fallback glyphs (the PDF viewport never rebuilds on
+  // its own, so it would keep that layout). Comparing signatures instead of
+  // array identity also re-seeds after a hot reload empties the registry.
+  if (customFontsSignature() !== customFontsSignature(state.config.customFonts)) {
     setCustomFonts(state.config.customFonts);
-  }, [state.config.customFonts]);
+  }
 
   // Reference-based garbage collection for IndexedDB payloads: a blob or
   // font file survives while the working state or any stored project points
