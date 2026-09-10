@@ -30,11 +30,11 @@ function drawRoundedBox(
   if (wPx <= 0 || hPx <= 0) return;
   const { scale, pageHeightPt } = ctx;
   const radius = Math.max(0, Math.min(style.borderRadiusPx, wPx / 2, hPx / 2));
-  const x = xPx * scale;
-  const y = pageHeightPt - (yPx + hPx) * scale;
   const width = wPx * scale;
   const height = hPx * scale;
   if (radius <= 0) {
+    const x = xPx * scale;
+    const y = pageHeightPt - (yPx + hPx) * scale;
     if (style.backgroundColor) {
       ctx.page.drawRectangle({
         x,
@@ -56,41 +56,34 @@ function drawRoundedBox(
     }
     return;
   }
-  // pdf-lib supports borderRadius on drawRectangle in recent versions; fall
-  // back to an SVG path approximation if unavailable.
+  // pdf-lib 1.x has no borderRadius on drawRectangle, so a rounded box is an
+  // SVG path. `drawSvgPath` interprets the path in SVG space (y grows
+  // downwards) from the origin passed as `x`/`y`, so anchor it at the top-left
+  // corner of the page and express the corners in top-down points.
   const r = radius * scale;
-  const drawRectOptions: Record<string, unknown> = {
-    x,
-    y,
-    width,
-    height,
-  };
-  if (style.backgroundColor) {
-    drawRectOptions.color = colorFromHex(style.backgroundColor, ctx.colorSpace);
-  }
-  if (style.borderColor && style.borderWidthPx > 0) {
-    drawRectOptions.borderColor = colorFromHex(style.borderColor, ctx.colorSpace);
-    drawRectOptions.borderWidth = style.borderWidthPx * scale;
-  }
-  // SVG path fallback — draws a rounded rect with four arcs.
+  const sx = xPx * scale;
+  const sy = yPx * scale;
   const path =
-    `M ${x + r} ${y + height}` +
-    ` L ${x + width - r} ${y + height}` +
-    ` A ${r} ${r} 0 0 0 ${x + width} ${y + height - r}` +
-    ` L ${x + width} ${y + r}` +
-    ` A ${r} ${r} 0 0 0 ${x + width - r} ${y}` +
-    ` L ${x + r} ${y}` +
-    ` A ${r} ${r} 0 0 0 ${x} ${y + r}` +
-    ` L ${x} ${y + height - r}` +
-    ` A ${r} ${r} 0 0 0 ${x + r} ${y + height} Z`;
+    `M ${sx + r} ${sy}` +
+    ` L ${sx + width - r} ${sy}` +
+    ` A ${r} ${r} 0 0 1 ${sx + width} ${sy + r}` +
+    ` L ${sx + width} ${sy + height - r}` +
+    ` A ${r} ${r} 0 0 1 ${sx + width - r} ${sy + height}` +
+    ` L ${sx + r} ${sy + height}` +
+    ` A ${r} ${r} 0 0 1 ${sx} ${sy + height - r}` +
+    ` L ${sx} ${sy + r}` +
+    ` A ${r} ${r} 0 0 1 ${sx + r} ${sy} Z`;
+  const origin = { x: 0, y: pageHeightPt };
 
   if (style.backgroundColor) {
     ctx.page.drawSvgPath(path, {
+      ...origin,
       color: colorFromHex(style.backgroundColor, ctx.colorSpace),
     });
   }
   if (style.borderColor && style.borderWidthPx > 0) {
     ctx.page.drawSvgPath(path, {
+      ...origin,
       borderColor: colorFromHex(style.borderColor, ctx.colorSpace),
       borderWidth: style.borderWidthPx * scale,
     });

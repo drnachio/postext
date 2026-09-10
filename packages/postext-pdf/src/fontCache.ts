@@ -2,8 +2,8 @@ import type { PDFDocument, PDFFont } from 'pdf-lib';
 import { fontKey, parseFontString } from './fontString';
 
 /** True when `bytes` starts with the `OTTO` magic identifying a CFF-flavored
- *  OpenType font. These are the ones whose subsetting is pathologically
- *  slow in pdf-lib, so we embed them whole instead. */
+ *  OpenType font — the ones pdf-lib cannot subset reliably, so they embed
+ *  whole (see `preloadFontStrings`). */
 function isCffOpenType(bytes: Uint8Array): boolean {
   return (
     bytes.length >= 4 &&
@@ -12,6 +12,35 @@ function isCffOpenType(bytes: Uint8Array): boolean {
     bytes[2] === 0x54 && // T
     bytes[3] === 0x4f    // O
   );
+}
+
+/** The fontkit face behind a pdf-lib custom font — the subset of its API
+ *  the width fix below needs. */
+interface FontkitFace {
+  numGlyphs: number;
+  unitsPerEm: number;
+  getGlyph(id: number): { advanceWidth: number };
+}
+
+/** pdf-lib builds a CID font's `W` (advance widths) array from the glyphs
+ *  reachable through the cmap, so a face embedded whole leaves every
+ *  GSUB-only glyph — the fi/fl ligatures, contextual alternates — at the
+ *  default 1000-unit advance, and viewers draw "refl eja" with a gap after
+ *  the ligature (or the next glyph overlapping it). Replace the width
+ *  computation with one that covers every glyph in the face. */
+export function coverAllGlyphWidths(font: PDFFont): void {
+  const embedder = (font as unknown as {
+    embedder: { font: FontkitFace; computeWidths: () => unknown[] };
+  }).embedder;
+  const face = embedder.font;
+  const toPdfUnits = 1000 / face.unitsPerEm;
+  embedder.computeWidths = () => {
+    const widths: number[] = [];
+    for (let gid = 0; gid < face.numGlyphs; gid++) {
+      widths.push(face.getGlyph(gid).advanceWidth * toPdfUnits);
+    }
+    return [0, widths];
+  };
 }
 
 export type PdfFontProvider = (
@@ -50,13 +79,13 @@ export class FontCache {
       Array.from(jobs.entries()).map(async ([key, spec]) => {
         try {
           const bytes = await this.provider(spec.family, spec.weight, spec.style);
-          // pdf-lib subsets CFF OpenType (.otf, signature `OTTO`) by walking
-          // every glyph at save time, which can take minutes for larger
-          // families. Disable subsetting for CFF — the full face embeds in
-          // seconds, at the cost of a somewhat larger PDF. TrueType fonts
-          // subset normally.
+          // pdf-lib's CFF subsetter emits a font stream some viewers cannot
+          // parse (macOS Preview draws the text in a fallback face), so CFF
+          // OpenType (.otf, signature `OTTO`) embeds whole — larger PDF, but
+          // every viewer reads it. TrueType fonts subset normally.
           const subset = !isCffOpenType(bytes);
           const font = await this.pdfDoc.embedFont(bytes, { subset });
+          if (!subset) coverAllGlyphWidths(font);
           this.map.set(key, font);
         } catch {
           this.failed.add(`${spec.family} ${spec.weight}${spec.style === 'italic' ? ' italic' : ''}`);
