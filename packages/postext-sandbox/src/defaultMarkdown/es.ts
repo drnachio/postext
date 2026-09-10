@@ -24,7 +24,7 @@ El CSS moderno es una herramienta notablemente potente para construir interfaces
 - **Maquetar aplicaciones** consiste en organizar componentes interactivos como botones, formularios, barras de navegación y tarjetas dentro de un viewport por el que el usuario puede desplazarse con libertad
 - **Maquetar publicaciones** consiste en organizar texto fluido, imágenes, tablas, figuras y anotaciones a lo largo de una sucesión de páginas o columnas de dimensiones fijas, siguiendo reglas tipográficas estrictas heredadas de siglos de tradición impresa
 
-El contraste de la :ref{id="feature-comparison"} resume dónde divergen ambos enfoques en documentos extensos. (Fíjate en que basta con referenciarla: la tabla flota por sí sola a la parte superior de la página; nunca se coloca dos veces.)
+El contraste de la :ref{id="feature-comparison"} resume dónde divergen ambos enfoques en documentos extensos. (Fíjate en que basta con referenciarla: la tabla flota por sí sola al primer hueco libre tras este párrafo; nunca se coloca dos veces.)
 
 CSS atiende brillantemente el primer caso. Para el segundo se queda corto en aspectos críticos que, en el fondo, la plataforma nunca ha llegado a resolver:
 
@@ -71,7 +71,7 @@ Entender la arquitectura de Postext es la forma más rápida de entender qué pu
 
 ### La tubería de procesamiento
 
-El motor de maquetación de Postext procesa el contenido a través de una tubería cuidadosamente orquestada. Cada etapa se construye sobre los resultados de la anterior, transformando de forma gradual el Markdown en bruto en una maquetación completa y medida con precisión. Comprender esta tubería es clave para asimilar la filosofía de diseño del proyecto y, además, clarifica qué partes del motor pueden sustituirse, extenderse o reutilizarse de forma aislada. El diagrama de la :ref{id="layout-pipeline"} resume el recorrido desde el texto fuente hasta la salida renderizada: una figura a columna sencilla que flota a la parte superior de la página. El coste aproximado de cada etapa se recoge en la tabla a columna sencilla :ref{id="runtime-metrics"}.
+El motor de maquetación de Postext procesa el contenido a través de una tubería cuidadosamente orquestada. Cada etapa se construye sobre los resultados de la anterior, transformando de forma gradual el Markdown en bruto en una maquetación completa y medida con precisión. Comprender esta tubería es clave para asimilar la filosofía de diseño del proyecto y, además, clarifica qué partes del motor pueden sustituirse, extenderse o reutilizarse de forma aislada. El diagrama de la :ref{id="layout-pipeline"} resume el recorrido desde el texto fuente hasta la salida renderizada: una figura a columna sencilla que flota al primer hueco libre tras esta mención. El coste aproximado de cada etapa se recoge en la tabla a columna sencilla :ref{id="runtime-metrics"}.
 
 #### Capa de entrada
 

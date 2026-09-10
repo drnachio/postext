@@ -62,6 +62,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const { hostRef, shadowRef } = useShadowDom();
   const deferredMarkdown = useDeferredValue(state.markdown);
   const deferredConfig = useDeferredValue(state.config);
+  const deferredResources = useDeferredValue(state.resources);
 
   const layoutWorker = useLayoutWorker();
   const scrollHostRef = useRef<HTMLDivElement | null>(null);
@@ -144,15 +145,18 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   }, [shadowRef]);
 
   // Memoize a trigger key so effects run only when real inputs change.
+  // Resources are part of the key too: an edit in the Resources panel (a
+  // cell, a caption, an SVG payload) must relayout the HTML tab as well.
   const renderKey = useMemo(
     () => ({
       markdown: deferredMarkdown,
       config: deferredConfig,
+      resources: deferredResources,
       fontScale,
       columnMode,
       locale: state.locale,
     }),
-    [deferredMarkdown, deferredConfig, fontScale, columnMode, state.locale],
+    [deferredMarkdown, deferredConfig, deferredResources, fontScale, columnMode, state.locale],
   );
 
   // Stable scheduler: subscribers (font listener, ResizeObserver, the
@@ -510,7 +514,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     for (const [pageIndex, overlay] of overlayMapRef.current) {
       const page = doc.pages[pageIndex];
       if (!page) continue;
-      const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx);
+      const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx, state.resourceSelection);
       if (rect) activeCursorRect = rect;
     }
 
@@ -539,7 +543,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         scroll.scrollLeft += cr.right - cn.right + padding;
       }
     }
-  }, [state.selection, state.config.debug, state.editorFocused, docVersion]);
+  }, [state.selection, state.config.debug, state.editorFocused, state.resourceSelection, docVersion]);
 
   // Imperative API exposed to the viewport toolbar.
   // - regenerate: force a fresh relayout immediately.

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { UploadCloud } from 'lucide-react';
 import type { Resource, ResourceKind, ResourceType, TableModel } from 'postext';
 import { defaultResourceTypes } from 'postext';
@@ -45,12 +45,23 @@ function newResource(kind: ResourceKind, typeId: string, existingIds: Set<string
   return resource;
 }
 
-export function ResourcesPanel() {
+interface ResourcesPanelProps {
+  /** Host theme, forwarded to the SVG source editor (CodeMirror theme). */
+  isDark?: boolean;
+}
+
+export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
   const { state, dispatch } = useSandbox();
   const resources = state.resources;
   const types: ResourceType[] = state.config.resourceTypes ?? defaultResourceTypes(state.locale);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // The open resource lives in shared state (a preview click can open it, and
+  // it survives switching panels); this panel only reads and sets it.
+  const selectedId = state.activeResourceId;
+  const setSelectedId = useCallback(
+    (id: string | null) => dispatch({ type: 'SET_ACTIVE_RESOURCE', payload: id }),
+    [dispatch],
+  );
   const [dropActive, setDropActive] = useState(false);
   const [uploadNote, setUploadNote] = useState<string | null>(null);
   // Drag events fire for every nested child; a depth counter keeps the overlay
@@ -187,6 +198,7 @@ export function ResourcesPanel() {
           key={selected.id}
           resource={selected}
           types={types}
+          isDark={isDark}
           otherIds={new Set(resources.filter((r) => r.id !== selected.id).map((r) => r.id))}
           referenceCount={countReferences(state.markdown, selected.id)}
           onChange={handleChange}

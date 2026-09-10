@@ -1,6 +1,7 @@
 'use client';
 
-import { useId, useMemo, type CSSProperties } from 'react';
+import { useEffect, useId, useMemo, useRef, type CSSProperties } from 'react';
+import { wordRangeAt } from './wordRange';
 
 // ---------------------------------------------------------------------------
 // InlineMarkdownInput — a lightweight text/textarea control that renders a live
@@ -190,6 +191,21 @@ function tokenStyle(token: PreviewToken): CSSProperties {
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle: CSSProperties = { borderColor: 'var(--rule)', color: 'var(--foreground)' };
 
+/** A request to focus the field with a given selection (offsets in `value`).
+ *  `selectWord` expands a collapsed selection to the word around it. */
+export interface InlineFocusRequest {
+  anchor: number;
+  head: number;
+  selectWord: boolean;
+}
+
+/** The field's current selection, reported while it has focus. */
+export interface InlineSelection {
+  from: number;
+  to: number;
+  head: number;
+}
+
 export interface InlineMarkdownInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -204,6 +220,12 @@ export interface InlineMarkdownInputProps {
   hidePreview?: boolean;
   /** Optional content shown as the preview when `value` is empty. */
   emptyPreview?: string;
+  /** Pending focus/selection request (from a preview click). Consumed once;
+   *  `onFocusConsumed` fires after it is applied. */
+  focusRequest?: InlineFocusRequest | null;
+  onFocusConsumed?: () => void;
+  /** Selection reports: on select / key / mouse / focus, and `null` on blur. */
+  onSelectionChange?: (selection: InlineSelection | null) => void;
 }
 
 /** Text input with a live inline-microformat preview. */
@@ -216,15 +238,68 @@ export function InlineMarkdownInput({
   rows = 2,
   hidePreview = false,
   emptyPreview,
+  focusRequest = null,
+  onFocusConsumed,
+  onSelectionChange,
 }: InlineMarkdownInputProps) {
   const previewId = useId();
   const tokens = useMemo(() => parseInlinePreview(value), [value]);
   const hasContent = tokens.length > 0;
+  const fieldRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
+  const onFocusConsumedRef = useRef(onFocusConsumed);
+  onFocusConsumedRef.current = onFocusConsumed;
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  onSelectionChangeRef.current = onSelectionChange;
+
+  const report = () => {
+    const el = fieldRef.current;
+    const cb = onSelectionChangeRef.current;
+    if (!el || !cb) return;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? start;
+    const head = el.selectionDirection === 'backward' ? start : end;
+    cb({ from: start, to: end, head });
+  };
+
+  // Consume a focus request: clamp to the value, expand to the word when
+  // asked, scroll the field into view, focus it and set the selection.
+  useEffect(() => {
+    if (!focusRequest) return;
+    const el = fieldRef.current;
+    if (!el) return;
+    const len = el.value.length;
+    const clamp = (n: number) => Math.max(0, Math.min(n, len));
+    let anchor = clamp(focusRequest.anchor);
+    let head = clamp(focusRequest.head);
+    if (focusRequest.selectWord && anchor === head) {
+      const word = wordRangeAt(el.value, anchor);
+      anchor = word.from;
+      head = word.to;
+    }
+    el.scrollIntoView?.({ block: 'nearest' });
+    el.focus({ preventScroll: true });
+    try {
+      el.setSelectionRange(Math.min(anchor, head), Math.max(anchor, head), head < anchor ? 'backward' : 'forward');
+    } catch {
+      /* input types without selection support */
+    }
+    onFocusConsumedRef.current?.();
+    report();
+  }, [focusRequest]);
+
+  const selectionHandlers = {
+    onSelect: report,
+    onKeyUp: report,
+    onMouseUp: report,
+    onFocus: report,
+    onBlur: () => onSelectionChangeRef.current?.(null),
+  };
 
   return (
     <div className="flex flex-col gap-1">
       {multiline ? (
         <textarea
+          ref={fieldRef as React.RefObject<HTMLTextAreaElement>}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-label={ariaLabel}
@@ -234,9 +309,11 @@ export function InlineMarkdownInput({
           aria-describedby={hidePreview ? undefined : previewId}
           className={`${inputClass} resize-y`}
           style={{ ...inputStyle, lineHeight: '16px' }}
+          {...selectionHandlers}
         />
       ) : (
         <input
+          ref={fieldRef as React.RefObject<HTMLInputElement>}
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -246,6 +323,7 @@ export function InlineMarkdownInput({
           aria-describedby={hidePreview ? undefined : previewId}
           className={inputClass}
           style={inputStyle}
+          {...selectionHandlers}
         />
       )}
       {!hidePreview && (

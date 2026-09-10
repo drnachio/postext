@@ -1,7 +1,124 @@
 import type { VDTBlock, VDTDocument, ResolvedDebugConfig } from 'postext';
+import type { ResourceSelection } from '../../context/SandboxContext';
+import { getSvgTextIndex } from '../../controls/svgTextIndex';
+import { svgSourceOffsetToCaret, svgSourceRangeToBoxes, type SvgCharBox } from '../../controls/svgSource';
 import { SVG_NS } from './dom';
 import { sourceToPlainIndex, xForPlainInLine } from './geometry';
 import { bandLineBoxes, bandPrefixX, bandSourceToPlain, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
+import {
+  contentOffsetToPlain,
+  resolveResourceRun,
+  resourceBlockOnPage,
+  svgBodyRectFor,
+  xForPlainInResourceLine,
+} from './resourceHit';
+
+function appendRect(group: SVGGElement, x: number, y: number, width: number, height: number, fill: string): void {
+  const rect = document.createElementNS(SVG_NS, 'rect');
+  rect.setAttribute('x', String(x));
+  rect.setAttribute('y', String(y));
+  rect.setAttribute('width', String(width));
+  rect.setAttribute('height', String(height));
+  rect.setAttribute('fill', fill);
+  group.appendChild(rect);
+}
+
+/**
+ * Paint the selection of the focused resource editor (a table cell, caption,
+ * note or SVG text node) onto its embed on this page: one rect per line for a
+ * range, a thin caret when collapsed. Independent of the Markdown editor's
+ * focus — the panel field owns the selection while it has focus.
+ */
+export function drawResourceSelection(
+  group: SVGGElement,
+  doc: VDTDocument,
+  pageIndex: number,
+  sel: ResourceSelection,
+  debug: ResolvedDebugConfig,
+): void {
+  const collapsed = sel.from === sel.to;
+  if (collapsed && !debug.cursorSync.enabled) return;
+  if (!collapsed && !debug.selectionSync.enabled) return;
+  const rangeFill = debug.selectionSync.color.hex;
+  const caretFill = debug.cursorSync.color.hex;
+  const caret = (x: number, y: number, h: number) => appendRect(group, x - 1, y, 2, h, caretFill);
+
+  if (sel.target.kind === 'svgText') {
+    const body = svgBodyRectFor(doc, pageIndex, sel.resourceId);
+    if (!body) return;
+    const index = getSvgTextIndex(body.fileId);
+    if (!index) return;
+    const toPage = (b: SvgCharBox) => ({
+      x: body.x + b.x0 * body.width,
+      y: body.y + b.y0 * body.height,
+      w: (b.x1 - b.x0) * body.width,
+      h: (b.y1 - b.y0) * body.height,
+    });
+    if (collapsed) {
+      const c = svgSourceOffsetToCaret(index, sel.head);
+      if (c) {
+        const r = toPage(c);
+        caret(r.x, r.y, Math.max(1, r.h));
+      }
+      return;
+    }
+    for (const b of svgSourceRangeToBoxes(index, sel.from, sel.to)) {
+      const r = toPage(b);
+      appendRect(group, r.x, r.y, Math.max(1, r.w), Math.max(1, r.h), rangeFill);
+    }
+    return;
+  }
+
+  const block = resourceBlockOnPage(doc, pageIndex, sel.resourceId);
+  if (!block) return;
+  const rb = block.resourceBlock!;
+  const run = resolveResourceRun(rb, sel.target);
+  if (!run) return;
+
+  if (run.lines.length === 0) {
+    // Empty run: an empty cell still has a rect to put the caret in.
+    if (collapsed && sel.target.kind === 'cell') {
+      const t = sel.target;
+      const found = rb.table?.cells.find((c) => c.row === t.row && c.col === t.col);
+      if (found) caret(found.rect.x + 3, found.rect.y + 2, Math.max(1, Math.min(found.rect.height - 4, 16)));
+    }
+    return;
+  }
+
+  const plainFrom = contentOffsetToPlain(run.sourceMap, sel.from);
+  const plainTo = contentOffsetToPlain(run.sourceMap, sel.to);
+  const plainHead = contentOffsetToPlain(run.sourceMap, sel.head);
+
+  if (collapsed) {
+    // Caret on the line containing the head (end of a line wins over the
+    // start of the next when the head sits exactly on the boundary).
+    for (let i = 0; i < run.lines.length; i++) {
+      const st = run.stamped[i]!;
+      const isLast = i === run.lines.length - 1;
+      if (plainHead < st.plainStart || (plainHead > st.plainEnd && !isLast)) continue;
+      if (plainHead > st.plainEnd && isLast) {
+        const line = run.lines[i]!;
+        caret(xForPlainInResourceLine(line, st, st.plainEnd), line.bbox.y, line.bbox.height);
+        return;
+      }
+      const line = run.lines[i]!;
+      caret(xForPlainInResourceLine(line, st, plainHead), line.bbox.y, line.bbox.height);
+      return;
+    }
+    return;
+  }
+
+  for (let i = 0; i < run.lines.length; i++) {
+    const st = run.stamped[i]!;
+    const lo = Math.max(plainFrom, st.plainStart);
+    const hi = Math.min(plainTo, st.plainEnd);
+    if (hi <= lo) continue;
+    const line = run.lines[i]!;
+    const x1 = xForPlainInResourceLine(line, st, lo);
+    const x2 = xForPlainInResourceLine(line, st, hi);
+    appendRect(group, x1, line.bbox.y, Math.max(1, x2 - x1), line.bbox.height, rangeFill);
+  }
+}
 
 /**
  * Paint the baseline grid for a single page into the overlay SVG's
@@ -86,6 +203,7 @@ export function drawOverlay(
   debug: ResolvedDebugConfig,
   focused: boolean,
   caretBlockIdx: number,
+  resourceSelection: ResourceSelection | null = null,
 ): SVGRectElement | null {
   const selectionGroup = svg.querySelector<SVGGElement>('g[data-role="selection"]');
   const cursorGroup = svg.querySelector<SVGGElement>('g[data-role="cursor"]');
@@ -97,6 +215,9 @@ export function drawOverlay(
   if (looseLineGroup) while (looseLineGroup.firstChild) looseLineGroup.removeChild(looseLineGroup.firstChild);
   cursorRect.style.display = 'none';
   cursorRect.style.visibility = 'hidden';
+
+  // A resource editor's selection paints regardless of Markdown editor focus.
+  if (resourceSelection) drawResourceSelection(selectionGroup, doc, pageIndex, resourceSelection, debug);
 
   // Loose-line highlight: paint lines whose justified space ratio exceeds the threshold.
   if (looseLineGroup && debug.looseLineHighlight.enabled) {

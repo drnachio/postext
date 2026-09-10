@@ -99,7 +99,7 @@ function SandboxLayout({
       case 'config':
         return <ConfigPanel />;
       case 'resources':
-        return <ResourcesPanel />;
+        return <ResourcesPanel isDark={isDark} />;
       case 'markdown':
         return <MarkdownPanel isDark={isDark} />;
       case 'warnings':

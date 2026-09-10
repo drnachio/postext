@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   TableCell,
   TableCellAlign,
@@ -19,6 +19,7 @@ import {
   unmergeCell,
 } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext';
+import type { InlineFocusRequest, InlineSelection } from '../../../controls/InlineMarkdownInput';
 import { TableEditorCell, type CellNav } from './TableEditorCell';
 import { TableEditorToolbar } from './TableEditorToolbar';
 import { ColumnWidthsEditor } from './ColumnWidthsEditor';
@@ -32,9 +33,20 @@ import { ColumnWidthsEditor } from './ColumnWidthsEditor';
 // the active cell.
 // ---------------------------------------------------------------------------
 
+/** A request to focus one cell with a selection inside its content. */
+export interface TableFocusRequest extends InlineFocusRequest {
+  row: number;
+  col: number;
+}
+
 interface TableEditorProps {
   model: TableModel;
   onModelChange: (next: TableModel) => void;
+  /** Pending cell focus (from a preview click); consumed once. */
+  focusRequest?: TableFocusRequest | null;
+  onFocusConsumed?: () => void;
+  /** Selection inside the focused cell (`null` when it loses focus). */
+  onCellSelectionChange?: (pos: TableCellPos, selection: InlineSelection | null) => void;
 }
 
 const columnCount = (m: TableModel): number =>
@@ -140,20 +152,42 @@ const clampPos = (m: TableModel, pos: TableCellPos): TableCellPos => {
   return { row, col };
 };
 
-export function TableEditor({ model, onModelChange }: TableEditorProps) {
+export function TableEditor({
+  model,
+  onModelChange,
+  focusRequest = null,
+  onFocusConsumed,
+  onCellSelectionChange,
+}: TableEditorProps) {
   const labels = useSandboxLabels();
   // Undo/redo snapshot stacks of TableModel. The live model is the prop; these
   // hold history only (past = older snapshots, future = redo targets).
   const [past, setPast] = useState<TableModel[]>([]);
   const [future, setFuture] = useState<TableModel[]>([]);
 
-  const [active, setActive] = useState<TableCellPos>({ row: 0, col: 0 });
+  // Mounting with a pending focus request starts on its cell, so the default
+  // cell never grabs focus first.
+  const [active, setActive] = useState<TableCellPos>(() =>
+    focusRequest ? clampPos(model, focusRequest) : { row: 0, col: 0 },
+  );
   // Selection anchor; the range spans anchor..active. Null = single-cell.
   const [anchor, setAnchor] = useState<TableCellPos | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const cols = columnCount(model);
+
+  // A focus request first makes its cell active (mounting/activating it),
+  // then the cell's own input consumes the selection part of the request.
+  const cellRequest = useMemo(
+    () => (focusRequest ? { target: clampPos(model, focusRequest), sel: focusRequest as InlineFocusRequest } : null),
+    [focusRequest, model],
+  );
+  useEffect(() => {
+    if (!cellRequest) return;
+    setActive(cellRequest.target);
+    setAnchor(null);
+  }, [cellRequest]);
 
   /** Commit a new model, recording the current one for undo. */
   const commit = useCallback(
@@ -420,6 +454,8 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
                 {row.map((cell, c) => {
                   if (cell.hiddenBy) return null;
                   const pos: TableCellPos = { row: r, col: c };
+                  const isRequested =
+                    cellRequest !== null && cellRequest.target.row === r && cellRequest.target.col === c;
                   return (
                     <TableEditorCell
                       key={c}
@@ -431,6 +467,9 @@ export function TableEditor({ model, onModelChange }: TableEditorProps) {
                       onFocus={handleFocus}
                       onNavigate={move}
                       onPaste={handleCellPaste}
+                      focusRequest={isRequested ? cellRequest.sel : null}
+                      onFocusConsumed={isRequested ? onFocusConsumed : undefined}
+                      onSelectionChange={onCellSelectionChange}
                     />
                   );
                 })}

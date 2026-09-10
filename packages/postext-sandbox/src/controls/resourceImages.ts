@@ -15,6 +15,19 @@
 import type { Resource } from 'postext';
 import { applySingleInkToSvg, registerResourceImage } from 'postext';
 import { getBlob, type BlobRecord } from '../storage/blobStore';
+import { dropSvgTextIndex, ensureSvgTextIndex } from './svgTextIndex';
+
+/** Build the SVG text-glyph index for a blob (once per fileId) so the
+ *  previews can hit-test and highlight the figure's text nodes. Indexed from
+ *  the original markup — single-ink recolouring never moves text. */
+function indexSvgText(fileId: string, rec: BlobRecord): void {
+  if (rec.contentType !== 'image/svg+xml') return;
+  try {
+    ensureSvgTextIndex(fileId, new TextDecoder().decode(rec.bytes));
+  } catch {
+    /* the figure stays clickable-less; editing still works from the panel */
+  }
+}
 
 /** fileId → variant key of the registered decode (`''` plain, ink hex when
  *  single-ink recolouring was applied). */
@@ -62,6 +75,7 @@ const urls = new Map<string, { variant: string; url: string }>();
  *  re-reads and re-registers it (used when a blob is overwritten in place). */
 export function invalidateResourceImage(fileId: string): void {
   decoded.delete(fileId);
+  dropSvgTextIndex(fileId);
   const entry = urls.get(fileId);
   if (entry) {
     URL.revokeObjectURL(entry.url);
@@ -92,6 +106,7 @@ export async function ensureResourceImageUrls(
     if (existing && existing.variant === variant) continue;
     const rec = await getBlob(fileId).catch(() => null);
     if (!rec) continue;
+    indexSvgText(fileId, rec);
     let blob: Blob;
     if (rec.contentType === 'image/svg+xml') {
       let svgText = new TextDecoder().decode(rec.bytes);
@@ -124,6 +139,7 @@ export async function ensureResourceImages(
     if (decoded.get(fileId) === variant) continue;
     const rec = await getBlob(fileId).catch(() => null);
     if (!rec) continue;
+    indexSvgText(fileId, rec);
     const img = await decodeImage(rec, variant || null).catch(() => null);
     if (!img) continue;
     registerResourceImage(fileId, img);

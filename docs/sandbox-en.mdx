@@ -119,6 +119,7 @@ The whole panel is also a drag-and-drop target: drop files from disk and they up
 - **Alt text** — Accessibility description for the HTML output
 - **Placement** — Position (`top` / `bottom` / `here`) plus span (`column` / `page`, disabled when the position is `here`), matching the engine defaults of `top` + `column`
 - **Payload** — Replace uploaders for the bitmap or SVG file
+- **SVG source** — For SVG figures, a source editor under the uploader where only the text nodes (the content of `<text>` / `<tspan>` elements, tinted in the editor) accept edits; typing anywhere else is rejected, and `<`, `>` and `&` typed into a text node are escaped so the file stays well-formed. Each change is saved after a short pause as a **new** stored file and the figure re-renders (single-ink recolouring included); the editor notes when the SVG has no text nodes
 - **Preview** — A live mock embed showing how the resource will look, with `#` standing in for the number (real numbers depend on where the resource lands in the document)
 - **Delete** — Guarded by a confirm popover that warns how many `::resource` / `:ref` references in the markdown would be left dangling
 
@@ -129,6 +130,7 @@ The whole panel is also a drag-and-drop target: drop files from disk and they up
 - **Paste-as-table** — Pasting TSV (or simple quoted CSV) fills the grid
 - **Undo/redo** — Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z
 - **Keyboard navigation** — Tab / Shift-Tab (with row wrap) and arrow keys move between cells
+- **Click-to-edit from the preview** — Clicking a table cell, a caption, a note, or a text fragment of an SVG figure on either preview tab opens the Resources panel on that resource and focuses the matching field with the caret on the clicked glyph; dragging selects a range inside the same cell or field, and a double-click selects the word. While the field has focus, its selection is mirrored back onto the page as a highlight (a thin caret when collapsed), on both the Canvas and HTML tabs
 
 All edits go through pure model functions exported by the postext core — `addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment`, `parseTSV` — so the same table model behaves identically inside and outside the sandbox.
 

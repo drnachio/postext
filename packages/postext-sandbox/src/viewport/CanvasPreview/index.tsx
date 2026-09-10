@@ -49,6 +49,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const selection = useSandboxSelector((s) => s.selection);
   const editorFocused = useSandboxSelector((s) => s.editorFocused);
+  const resourceSelection = useSandboxSelector((s) => s.resourceSelection);
   const containerRef = useRef<HTMLDivElement>(null);
   // Refs used by click handlers so changing panel/dispatch identity doesn't
   // force a full DOM rebuild of the page slots.
@@ -448,7 +449,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     for (const [pageIndex, overlay] of overlayMapRef.current) {
       const page = doc.pages[pageIndex];
       if (!page) continue;
-      const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx);
+      const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx, resourceSelection);
       if (rect) activeCursorRect = rect;
     }
 
@@ -477,7 +478,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
         container.scrollLeft += cr.right - cn.right + padding;
       }
     }
-  }, [selection, config.debug, editorFocused, docVersion]);
+  }, [selection, config.debug, editorFocused, resourceSelection, docVersion]);
 
   // Imperative API: regenerate by bumping rebuildKey; jumpToPage by scrolling
   // the slot element with the matching data-page-index into view.

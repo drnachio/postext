@@ -3,7 +3,11 @@
 import { useEffect, useRef } from 'react';
 import type { TableCell, TableCellPos } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext';
-import { InlineMarkdownInput } from '../../../controls/InlineMarkdownInput';
+import {
+  InlineMarkdownInput,
+  type InlineFocusRequest,
+  type InlineSelection,
+} from '../../../controls/InlineMarkdownInput';
 
 // ---------------------------------------------------------------------------
 // TableEditorCell — a single editable grid cell. It renders the Phase-6
@@ -28,6 +32,11 @@ interface TableEditorCellProps {
   /** `extend` true when Shift is held, growing the selection range. */
   onNavigate: (nav: CellNav, extend: boolean) => void;
   onPaste: (pos: TableCellPos, text: string) => void;
+  /** Focus/selection request addressed to this cell (from a preview click). */
+  focusRequest?: InlineFocusRequest | null;
+  onFocusConsumed?: () => void;
+  /** The cell's selection while its field has focus (`null` on blur). */
+  onSelectionChange?: (pos: TableCellPos, selection: InlineSelection | null) => void;
 }
 
 export function TableEditorCell({
@@ -39,6 +48,9 @@ export function TableEditorCell({
   onFocus,
   onNavigate,
   onPaste,
+  focusRequest = null,
+  onFocusConsumed,
+  onSelectionChange,
 }: TableEditorCellProps) {
   const labels = useSandboxLabels();
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -47,12 +59,13 @@ export function TableEditorCell({
     wrapRef.current?.querySelector('textarea') ?? null;
 
   // Pull focus to the inner textarea when this cell becomes active (e.g. after
-  // a keyboard move) so the caret follows navigation.
+  // a keyboard move) so the caret follows navigation. A pending focus request
+  // sets its own selection, so it takes over here.
   useEffect(() => {
-    if (!active) return;
+    if (!active || focusRequest) return;
     const el = textarea();
     if (el && document.activeElement !== el) el.focus();
-  }, [active]);
+  }, [active, focusRequest]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const el = e.target as HTMLTextAreaElement;
@@ -127,6 +140,9 @@ export function TableEditorCell({
           multiline
           rows={1}
           hidePreview
+          focusRequest={focusRequest}
+          onFocusConsumed={onFocusConsumed}
+          onSelectionChange={onSelectionChange ? (sel) => onSelectionChange(pos, sel) : undefined}
         />
       </div>
     </Tag>

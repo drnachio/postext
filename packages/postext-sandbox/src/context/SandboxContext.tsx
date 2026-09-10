@@ -54,6 +54,43 @@ export interface EditorSelection {
   head: number;
 }
 
+/** Which editable run of a resource a preview click / panel selection refers
+ *  to: a table cell, the caption, the note, or (SVG figures) a text node in
+ *  the SVG source. */
+export type ResourceFocusTarget =
+  | { kind: 'cell'; row: number; col: number }
+  | { kind: 'caption' }
+  | { kind: 'note' }
+  | { kind: 'svgText' };
+
+/** A request, raised by a preview click, to focus a resource's editor in the
+ *  Resources panel with the given selection (offsets in the run's own text —
+ *  the cell / caption / note string, or the SVG source). Consumed and cleared
+ *  by the panel, like `pendingEditorFocus` for the Markdown editor. */
+export interface PendingResourceFocus {
+  resourceId: string;
+  target: ResourceFocusTarget;
+  anchor: number;
+  head: number;
+  selectWord: boolean;
+}
+
+/** The live selection inside a resource's editor, mirrored back onto the
+ *  previews as a highlight. `null` when no resource field has focus. */
+export interface ResourceSelection {
+  resourceId: string;
+  target: ResourceFocusTarget;
+  from: number;
+  to: number;
+  head: number;
+}
+
+function sameResourceTarget(a: ResourceFocusTarget, b: ResourceFocusTarget): boolean {
+  if (a.kind !== b.kind) return false;
+  if (a.kind === 'cell' && b.kind === 'cell') return a.row === b.row && a.col === b.col;
+  return true;
+}
+
 export interface SandboxState {
   markdown: string;
   defaultMarkdown: string;
@@ -70,6 +107,14 @@ export interface SandboxState {
   selection: EditorSelection;
   editorFocused: boolean;
   pendingEditorFocus: { anchor: number; head: number; selectWord: boolean } | null;
+  /** Resource open in the Resources panel's detail view (null = list view).
+   *  Lives in shared state so a preview click can open it and so the choice
+   *  survives switching panels. */
+  activeResourceId: string | null;
+  /** Focus request for a resource editor raised by a preview click. */
+  pendingResourceFocus: PendingResourceFocus | null;
+  /** Selection inside the focused resource editor, for the preview highlight. */
+  resourceSelection: ResourceSelection | null;
   /** Incremented whenever a viewport publishes a new built VDTDocument to
    *  `docRef`. Consumers (e.g. WarningsPanel) listen to this counter to
    *  recompute derived data. */
@@ -118,6 +163,9 @@ export type SandboxAction =
   | { type: 'SET_SELECTION'; payload: EditorSelection }
   | { type: 'SET_EDITOR_FOCUSED'; payload: boolean }
   | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: { anchor: number; head: number; selectWord: boolean } | null }
+  | { type: 'SET_ACTIVE_RESOURCE'; payload: string | null }
+  | { type: 'SET_PENDING_RESOURCE_FOCUS'; payload: PendingResourceFocus | null }
+  | { type: 'SET_RESOURCE_SELECTION'; payload: ResourceSelection | null }
   | { type: 'BUMP_DOC_VERSION' }
   | { type: 'SET_RESOURCES'; payload: Resource[] }
   | { type: 'UPSERT_RESOURCE'; payload: Resource }
@@ -178,10 +226,62 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
         state.pendingEditorFocus.selectWord === action.payload.selectWord
       ) return state;
       return { ...state, pendingEditorFocus: action.payload };
+    case 'SET_ACTIVE_RESOURCE':
+      if (state.activeResourceId === action.payload) return state;
+      // Leaving a resource drops its stale focus request / selection so the
+      // previews stop highlighting a run nobody is editing.
+      return {
+        ...state,
+        activeResourceId: action.payload,
+        pendingResourceFocus:
+          state.pendingResourceFocus && state.pendingResourceFocus.resourceId === action.payload
+            ? state.pendingResourceFocus
+            : null,
+        resourceSelection:
+          state.resourceSelection && state.resourceSelection.resourceId === action.payload
+            ? state.resourceSelection
+            : null,
+      };
+    case 'SET_PENDING_RESOURCE_FOCUS': {
+      const next = action.payload;
+      const prev = state.pendingResourceFocus;
+      if (prev === next) return state;
+      if (
+        prev && next &&
+        prev.resourceId === next.resourceId &&
+        sameResourceTarget(prev.target, next.target) &&
+        prev.anchor === next.anchor &&
+        prev.head === next.head &&
+        prev.selectWord === next.selectWord
+      ) return state;
+      return { ...state, pendingResourceFocus: next };
+    }
+    case 'SET_RESOURCE_SELECTION': {
+      const next = action.payload;
+      const prev = state.resourceSelection;
+      if (prev === next) return state;
+      if (
+        prev && next &&
+        prev.resourceId === next.resourceId &&
+        sameResourceTarget(prev.target, next.target) &&
+        prev.from === next.from &&
+        prev.to === next.to &&
+        prev.head === next.head
+      ) return state;
+      return { ...state, resourceSelection: next };
+    }
     case 'BUMP_DOC_VERSION':
       return { ...state, docVersion: state.docVersion + 1 };
-    case 'SET_RESOURCES':
-      return { ...state, resources: action.payload };
+    case 'SET_RESOURCES': {
+      const ids = new Set(action.payload.map((r) => r.id));
+      return {
+        ...state,
+        resources: action.payload,
+        activeResourceId: state.activeResourceId !== null && ids.has(state.activeResourceId) ? state.activeResourceId : null,
+        pendingResourceFocus: state.pendingResourceFocus && ids.has(state.pendingResourceFocus.resourceId) ? state.pendingResourceFocus : null,
+        resourceSelection: state.resourceSelection && ids.has(state.resourceSelection.resourceId) ? state.resourceSelection : null,
+      };
+    }
     case 'UPSERT_RESOURCE': {
       const idx = state.resources.findIndex((r) => r.id === action.payload.id);
       const resources =
@@ -190,8 +290,16 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
           : state.resources.map((r) => (r.id === action.payload.id ? action.payload : r));
       return { ...state, resources };
     }
-    case 'DELETE_RESOURCE':
-      return { ...state, resources: state.resources.filter((r) => r.id !== action.payload) };
+    case 'DELETE_RESOURCE': {
+      const id = action.payload;
+      return {
+        ...state,
+        resources: state.resources.filter((r) => r.id !== id),
+        activeResourceId: state.activeResourceId === id ? null : state.activeResourceId,
+        pendingResourceFocus: state.pendingResourceFocus?.resourceId === id ? null : state.pendingResourceFocus,
+        resourceSelection: state.resourceSelection?.resourceId === id ? null : state.resourceSelection,
+      };
+    }
     case 'SET_PRESET':
       return {
         ...state,
@@ -518,6 +626,9 @@ export function SandboxProvider({
       selection: { from: 0, to: 0, head: 0 },
       editorFocused: false,
       pendingEditorFocus: null,
+      activeResourceId: null,
+      pendingResourceFocus: null,
+      resourceSelection: null,
       docVersion: 0,
       activePresetId: loadPresetId() ?? BUILTIN_PRESET_ID,
       presetStatus: 'idle' as const,
