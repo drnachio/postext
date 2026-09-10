@@ -145,6 +145,8 @@ describe("package exports", () => {
       "DEFAULT_HTML_VIEWER_CONFIG",
       "resolveHtmlViewerConfig",
       "stripHtmlViewerDefaults",
+      "mergeConfigOverrides",
+      "applyHtmlViewerOverrides",
       "DEFAULT_PDF_GENERATION_CONFIG",
       "resolvePdfGenerationConfig",
       "stripPdfGenerationDefaults",

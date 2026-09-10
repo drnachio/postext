@@ -4,6 +4,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import {
   renderToHtmlIndexed,
   dimensionToPx,
+  applyHtmlViewerOverrides,
   resolveHtmlViewerConfig,
   resolveDebugConfig,
   resolveDiagramStyleConfig,
@@ -220,7 +221,9 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     const currentFontScale = fontScaleRef.current;
     const currentColumnMode = columnModeRef.current;
     const currentMarkdown = markdownRef.current;
-    const currentConfig = configRef.current;
+    // Screen-only overrides (`htmlViewer.overrides`) merged in up front, so
+    // font loading, column measurement and layout all see the same config.
+    const currentConfig = applyHtmlViewerOverrides(configRef.current);
     const currentLocale = localeRef.current;
 
     const htmlViewer = resolveHtmlViewerConfig(currentConfig.htmlViewer);
@@ -414,8 +417,13 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           const sameBlockSkeleton =
             np.blocks.length === pp.blocks.length &&
             np.blocks.every((b, j) => b.id === pp.blocks[j]!.id);
+          // Opener bands, headers and footers live outside the block list:
+          // a design-only change (a preset reload swapping the part page
+          // design) leaves every block equal and would otherwise never
+          // reach the DOM.
+          const sameDecoration = np.decorationHtml === pp.decorationHtml;
 
-          if (!sameBlockSkeleton) {
+          if (!sameBlockSkeleton || !sameDecoration) {
             pageEl.innerHTML = np.innerHtml;
             const oldOverlay = overlayMapRef.current.get(np.index);
             if (oldOverlay && oldOverlay.parentNode === pageEl) {

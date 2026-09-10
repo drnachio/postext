@@ -582,10 +582,14 @@ function renderBlock(block: VDTBlock, options: RenderHtmlOptions): string {
 interface PageRenderResult {
   /** Full outer HTML including the wrapping <div class="pt-page">. */
   outerHtml: string;
-  /** Inner HTML (all pt-block wrappers concatenated). */
+  /** Inner HTML: opener band, pt-block wrappers, header and footer. */
   innerHtml: string;
   /** Per-block outer-HTML strings, in render order. */
   blocks: Array<{ id: string; html: string }>;
+  /** Everything on the page that is not a block — opener / part band,
+   *  header, footer. Lives outside `blocks`, so a patcher that diffs blocks
+   *  must compare this separately to catch a design-only change. */
+  decorationHtml: string;
 }
 
 function renderPageDetailed(page: VDTPage, background: string, options: RenderHtmlOptions): PageRenderResult {
@@ -602,11 +606,15 @@ function renderPageDetailed(page: VDTPage, background: string, options: RenderHt
     blocks.push({ id: fb.id, html: renderBlock(fb, options) });
   }
   const blocksHtml = blocks.map((b) => b.html).join('');
+  // Same paint order as the canvas backend: the opener / part band goes
+  // under the body (a part page's full-bleed background must not cover its
+  // chapter list); header and footer paint on top.
+  const openerHtml = page.openerBand ? renderDesignSlot(page.openerBand, options) : '';
   const slotParts: string[] = [];
-  if (page.openerBand) slotParts.push(renderDesignSlot(page.openerBand));
-  if (page.header) slotParts.push(renderDesignSlot(page.header));
-  if (page.footer) slotParts.push(renderDesignSlot(page.footer));
-  const innerHtml = blocksHtml + slotParts.join('');
+  if (page.header) slotParts.push(renderDesignSlot(page.header, options));
+  if (page.footer) slotParts.push(renderDesignSlot(page.footer, options));
+  const decorationHtml = openerHtml + slotParts.join('');
+  const innerHtml = openerHtml + blocksHtml + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" data-page="${page.index}" style="` +
     `position:relative;` +
@@ -615,7 +623,7 @@ function renderPageDetailed(page: VDTPage, background: string, options: RenderHt
     `flex-shrink:0;` +
     bgDecl +
     `">${innerHtml}</div>`;
-  return { outerHtml, innerHtml, blocks };
+  return { outerHtml, innerHtml, blocks, decorationHtml };
 }
 
 export interface HtmlRenderIndexPage {
@@ -624,6 +632,8 @@ export interface HtmlRenderIndexPage {
   height: number;
   innerHtml: string;
   blocks: Array<{ id: string; html: string }>;
+  /** Non-block markup (opener band, header, footer); see `PageRenderResult`. */
+  decorationHtml: string;
 }
 
 export interface HtmlRenderIndex {
@@ -663,6 +673,7 @@ export function renderToHtmlIndexed(
       height: p.height,
       innerHtml: detail.innerHtml,
       blocks: detail.blocks,
+      decorationHtml: detail.decorationHtml,
     });
   }
 

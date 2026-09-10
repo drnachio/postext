@@ -1347,6 +1347,10 @@ export interface ResolvedDebugConfig {
   warnings: ResolvedWarningsToggleConfig;
 }
 
+/** Partial document config that applies to the HTML viewer only (see
+ *  `HtmlViewerConfig.overrides`). */
+export type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
+
 export interface HtmlViewerConfig {
   /** Target column width in characters — drives the measured width of the
    *  single or multi-column layout in the HTML viewer. */
@@ -1357,12 +1361,24 @@ export interface HtmlViewerConfig {
    *  overrides `bodyText.optimalLineBreaking` only for HTML rendering to
    *  favour performance. Default false. */
   optimalLineBreaking?: boolean;
+  /** Screen-only alternative to parts of the document config. The HTML
+   *  viewer merges it over the document config before laying out (see
+   *  `applyHtmlViewerOverrides`); canvas and PDF ignore it. Objects merge
+   *  recursively; a `levels` array (headings, lists) merges entry by entry
+   *  on `level`; every other array — a design slot's `elements`,
+   *  `calloutStyles`, `colorPalette`… — replaces the base array wholesale.
+   *  Typical use: a chapter opener without the print bands, a part page
+   *  whose title wraps against the number instead of a fixed trim-box
+   *  width. */
+  overrides?: HtmlViewerOverrides;
 }
 
 export interface ResolvedHtmlViewerConfig {
   maxCharsPerLine: number;
   columnGap: number;
   optimalLineBreaking: boolean;
+  /** Carried through unchanged; absent when the config sets none. */
+  overrides?: HtmlViewerOverrides;
 }
 
 export interface PostextSectionOverride {
