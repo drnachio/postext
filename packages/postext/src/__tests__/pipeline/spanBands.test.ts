@@ -249,6 +249,8 @@ describe('page-span blocks mid-page (span blocks, stage 2 — band caps)', () =>
     expect(unapplied.result).toBe(initial);
   });
 
+  // Three full builds, the heaviest test in the file: it runs ~1.5s on a dev
+  // machine and has timed out against the 5s default on a loaded CI runner.
   it('falls back to next-page placement when the cap leaves no room for block plus minimum text', () => {
     // ~30 lines of text before the box: a level cut at line 15 leaves
     // 8.6 lines — not enough for the 7-line box plus 2 lines of body.
@@ -267,7 +269,7 @@ describe('page-span blocks mid-page (span blocks, stage 2 — band caps)', () =>
     const tightDoc = build(tight);
     expect(frames(tightDoc)[0]!.pageIndex).toBe(1);
     expect(tightDoc.iterationCount).toBe(1);
-  });
+  }, 20_000);
 
   it('band caps survive balancing passes (columns stay level after balancing)', () => {
     // 3-line paragraph, heading, 2-line paragraph: keep-with-next moves the
