@@ -18,6 +18,7 @@ import type {
   VAlign,
 } from '../types';
 import { dimensionToPx } from '../units';
+import { createBoundingBox, type BoundingBox } from '../vdt';
 import { buildFontString, measureTextWidth } from '../measure';
 import { hyphenateText } from '../hyphenate';
 import {
@@ -616,6 +617,25 @@ function fillToContainerEdgeY(
   const topDist = anchorY - container.y;
   const botDist = container.y + container.height - anchorY;
   return Math.min(topDist, botDist) * 2;
+}
+
+/** Box of `width` × `height` pinned to `edge` of `ref` (the container
+ *  nine-point grid, plus `offset`). Element-to-element edges fall back to
+ *  `top-left`. Shared by design slots and fixed-position callouts. */
+export function anchorBox(
+  edge: AnchorEdge,
+  ref: AnchorReference,
+  width: number,
+  height: number,
+  offset: { x: number; y: number },
+): BoundingBox {
+  const a = resolveContainerAnchor(edge, ref);
+  return createBoundingBox(
+    edgeXFromPin(a.anchorX, a.pinX, width) + offset.x,
+    edgeYFromPin(a.anchorY, a.pinY, height) + offset.y,
+    width,
+    height,
+  );
 }
 
 function edgeXFromPin(anchorX: number, pinX: Pin, width: number): number {

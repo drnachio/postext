@@ -194,7 +194,7 @@ Three container names are recognized. What each one renders is set in its own se
   </tbody>
 </table>
 
-The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. A `:::callout` fence takes `type` (the id of a configured callout style — unknown or missing types fall back to the first style), `title` (overrides the style's default title), and `span` / `placement` (`column` or `page`; `here`, `top` or `bottom`) to override the style's extent and position for that box:
+The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. A `:::callout` fence takes `type` (the id of a configured callout style — unknown or missing types fall back to the first style), `title` (overrides the style's default title), and `span` / `placement` (`column` or `page`; `here`, `top`, `bottom` or `fixed`) to override the style's extent and position for that box:
 
 ```
 :::callout{type="objectives" title="What you will learn" span="page" placement="top"}
@@ -203,7 +203,7 @@ The attributes accepted by each container, and how it is styled, are documented 
 :::
 ```
 
-A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width (`span="page"`) and floating (`placement="top"` / `"bottom"`) boxes are recorded but still placed inline in this version. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
+A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width boxes (`span="page"`) cut the page into column bands; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) are recorded but still placed inline in this version. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
 
 A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
 
@@ -358,7 +358,7 @@ $$
 
 ## Resources
 
-Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table to a band at the top or bottom of the page near that reference, just as a print typesetter would. You do not place it a second time.
+Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
 
 Both forms below are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
 
@@ -370,9 +370,9 @@ Refer to a resource from within prose with `:ref{id="…"}`. The first reference
 As shown in :ref{id="lighthouse-diagram"}, the lantern room sits above the gallery.
 ```
 
-renders as: *As shown in Fig. 1.7, the lantern room sits above the gallery.* — and the diagram itself floats to the top (or bottom) of the page, while this sentence and the text after it flow on uninterrupted.
+renders as: *As shown in Fig. 1.7, the lantern room sits above the gallery.* — and the diagram itself floats to the nearest free slot after the sentence (the bottom of this column, the top of the next, or a band of the next page), while this sentence and the text after it flow on uninterrupted.
 
-The running text is never broken at the reference point. Where the resource lands — top or bottom of the page, within a single column or across the full width — is governed by its **placement** (see [Placement](#placement) below), not by where you mention it.
+The running text is never broken at the reference point. Where the resource lands — the first free slot, or only a top or bottom slot; within a single column or across the full width — is governed by its **placement** (see [Placement](#placement) below), and by where you mention it: the search starts right after the reference.
 
 ### Block embed (optional, explicit inline placement)
 
@@ -454,7 +454,7 @@ Numbering is per resource type and respects each type's reset scope and counter 
 
 ### Placement
 
-Each resource has a **placement** that decides where its float lands, resolved per resource (its own `placement`), then its type's `defaultPlacement`, then the built-in default of `top` / `column`:
+Each resource has a **placement** that decides where its float lands, resolved per resource (its own `placement`), then its type's `defaultPlacement`, then the built-in default of `auto` / `column`:
 
 <table>
   <thead>
@@ -467,8 +467,8 @@ Each resource has a **placement** that decides where its float lands, resolved p
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td>Float to the top or bottom band of the page, or — for <code>"here"</code> — opt out of floating and embed inline at the <code>::resource</code> directive.</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
+      <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive.</td>
     </tr>
     <tr>
       <td><code>span</code></td>
@@ -478,7 +478,9 @@ Each resource has a **placement** that decides where its float lands, resolved p
   </tbody>
 </table>
 
-A float is placed on the next page opened after its first reference, near it in reading order. If it does not fit in that page's band, it **defers to the next page** (it is never shrunk or split). Floats keep first-reference order, so figures never reorder relative to where they are mentioned.
+A float goes into the **first free slot after its first reference**, in reading order: the bottom of the column the reference sits in, then the top and the bottom of the next empty column of the same page, then the bands of the next page the flow opens (a page-span float takes the bottom of the page when every column still has room for it, else a band of the next page). It is never shrunk or split, and it never lands before its reference. A float that fits nowhere on a page does not hold up the ones behind it — each takes the first slot it fits, so a later figure may occasionally appear before an earlier one; numbering is untouched, since it follows first-reference order in the text, not the slot.
+
+Floats never escape their chapter: at a chapter opener (a heading level with `breakBefore` or `span: 'page'`), a `:::part`, a callout style with `floatBarrier: true` (the closing "key points" box of a chapter) and at the end of the document, every float still pending is placed first — in the page's free slots, or on pages opened ahead of the boundary. A `:::pagebreak` simply sends pending floats to the page that follows it.
 
 Float bands are corrected against the baseline grid so the surrounding text keeps the page-wide vertical rhythm. A **top** band grows its bottom margin to the next grid line, so the text below the float stays aligned with the neighbouring columns and the facing page. A **bottom** float is anchored so its caption's last line shares a baseline with the last text line of the other columns (captionless content aligns its bottom edge to the last grid slot) — full pages therefore end at the same height across columns and across facing pages.
 

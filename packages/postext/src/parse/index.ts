@@ -24,3 +24,6 @@ export {
   KNOWN_DIRECTIVES,
   KNOWN_CONTAINERS,
 } from './blockParser';
+export { computeSourceMap } from './sourceMapping';
+export { parseInlineSnippetSpans, mapInlineSnippet } from './inlineSnippet';
+export type { InlineSnippetMapping } from './inlineSnippet';

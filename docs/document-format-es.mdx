@@ -194,7 +194,7 @@ Se reconocen tres nombres de contenedor. Lo que renderiza cada uno se define en 
   </tbody>
 </table>
 
-Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en [Configuración](/es/docs/configuration). Los valores de los atributos siguen la misma gramática que las directivas. Una valla `:::callout` admite `type` (el id de un estilo de aviso configurado — los tipos desconocidos o ausentes usan el primer estilo), `title` (sobrescribe el título por defecto del estilo) y `span` / `placement` (`column` o `page`; `here`, `top` o `bottom`) para sobrescribir la extensión y la posición del estilo en esa caja:
+Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en [Configuración](/es/docs/configuration). Los valores de los atributos siguen la misma gramática que las directivas. Una valla `:::callout` admite `type` (el id de un estilo de aviso configurado — los tipos desconocidos o ausentes usan el primer estilo), `title` (sobrescribe el título por defecto del estilo) y `span` / `placement` (`column` o `page`; `here`, `top`, `bottom` o `fixed`) para sobrescribir la extensión y la posición del estilo en esa caja:
 
 ```
 :::callout{type="objectives" title="Qué aprenderás" span="page" placement="top"}
@@ -203,7 +203,7 @@ Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en 
 :::
 ```
 
-Un aviso se compone como una caja indivisible — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo — y pasa entero a la columna o página siguiente cuando no cabe. Las cajas a ancho completo (`span="page"`) y flotantes (`placement="top"` / `"bottom"`) se registran pero en esta versión todavía se colocan en línea. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
+Un aviso se compone como una caja indivisible — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo — y pasa entero a la columna o página siguiente cuando no cabe. Las cajas a ancho completo (`span="page"`) cortan la página en bandas de columnas; las cajas `placement="fixed"` salen del flujo y se fijan a coordenadas de página (por ejemplo, un distintivo de autoevaluación en la esquina inferior izquierda de la última página del capítulo), y las columnas que cubren ceden esa zona; las cajas flotantes (`placement="top"` / `"bottom"`) se registran pero en esta versión todavía se colocan en línea. Un estilo con `floatBarrier: true` (normalmente la caja de «puntos clave» que cierra el capítulo) convierte la caja en una **barrera de flotantes**: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja — de modo que ningún flotante escapa más allá del final de su capítulo. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
 
 Una valla `:::part` admite `number` (tal como quieras imprimirlo — `"I"`, `"IV"`, `"3"`; además se interpreta para que el diseño pueda reformatearlo) y `title`; los dos son opcionales. El contenedor abre siempre una página propia: un salto de página con la paridad configurada antes, una columna única de cuerpo en los `parts.margins`, el diseño de apertura sobre la página entera y otro salto de página tras la valla de cierre. El cuerpo — normalmente la lista de los capítulos que agrupa la parte, o nada en absoluto — se compone con `parts.bodyStyle`:
 
@@ -358,7 +358,7 @@ $$
 
 ## Recursos
 
-Las imágenes, los SVG y las tablas no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el [panel de Recursos](/es/docs/sandbox#panel-de-recursos) del sandbox, que ofrece subida de imágenes y SVG, un editor interactivo de tablas y edición de pies y de colocación) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla a una banda en la parte superior o inferior de la página, cerca de esa referencia, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
+Las imágenes, los SVG y las tablas no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el [panel de Recursos](/es/docs/sandbox#panel-de-recursos) del sandbox, que ofrece subida de imágenes y SVG, un editor interactivo de tablas y edición de pies y de colocación) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla al primer hueco libre tras esa referencia — el final de la columna donde la mencionas, el principio de la siguiente, una banda de la página siguiente —, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
 
 Ambas formas de abajo son sintaxis completamente nueva que no choca con CommonMark, por lo que un documento que las use sigue leyéndose como texto plano en cualquier otro visor de markdown.
 
@@ -370,9 +370,9 @@ Refiérete a un recurso desde el texto con `:ref{id="…"}`. La primera referenc
 Como se ve en :ref{id="lighthouse-diagram"}, la sala de la linterna queda sobre la galería.
 ```
 
-se renderiza como: *Como se ve en Fig. 1.7, la sala de la linterna queda sobre la galería.* — y el propio diagrama flota a la parte superior (o inferior) de la página, mientras esta frase y el texto posterior siguen fluyendo sin interrupción.
+se renderiza como: *Como se ve en Fig. 1.7, la sala de la linterna queda sobre la galería.* — y el propio diagrama flota al primer hueco libre tras la frase (el final de esta columna, el principio de la siguiente, o una banda de la página siguiente), mientras esta frase y el texto posterior siguen fluyendo sin interrupción.
 
-El texto nunca se corta en el punto de la referencia. Dónde aterriza el recurso —arriba o abajo de la página, en una sola columna o a todo el ancho— lo decide su **colocación** (ver [Colocación](#colocación) más abajo), no el lugar donde lo mencionas.
+El texto nunca se corta en el punto de la referencia. Dónde aterriza el recurso —el primer hueco libre, o solo un hueco superior o inferior; en una sola columna o a todo el ancho— lo decide su **colocación** (ver [Colocación](#colocación) más abajo), junto con el lugar donde lo mencionas: la búsqueda empieza justo después de la referencia.
 
 ### Inserción en bloque (opcional, colocación en línea explícita)
 
@@ -454,7 +454,7 @@ La numeración es por tipo de recurso y respeta el ámbito de reinicio y el form
 
 ### Colocación
 
-Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, resuelta por recurso (su propio `placement`), luego el `defaultPlacement` de su tipo, y por último el valor por defecto integrado `top` / `column`:
+Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, resuelta por recurso (su propio `placement`), luego el `defaultPlacement` de su tipo, y por último el valor por defecto integrado `auto` / `column`:
 
 <table>
   <thead>
@@ -467,8 +467,8 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td>Flota a la banda superior o inferior de la página, o —con <code>"here"</code>— renuncia al flotado e inserta el recurso en línea en la directiva <code>::resource</code>.</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
+      <td><code>"auto"</code> (el valor por defecto) toma el primer hueco libre tras la referencia, arriba o abajo; <code>"top"</code> / <code>"bottom"</code> solo aceptan huecos de ese tipo; <code>"here"</code> renuncia al flotado e inserta el recurso en línea en la directiva <code>::resource</code>.</td>
     </tr>
     <tr>
       <td><code>span</code></td>
@@ -478,7 +478,9 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
   </tbody>
 </table>
 
-Un flotante se coloca en la siguiente página que se abre tras su primera referencia, cerca de ella en orden de lectura. Si no cabe en la banda de esa página, **se difiere a la página siguiente** (nunca se reduce ni se parte). Los flotantes mantienen el orden de primera referencia, de modo que las figuras no se reordenan respecto a donde se mencionan.
+Un flotante ocupa el **primer hueco libre tras su primera referencia**, en orden de lectura: el final de la columna donde está la referencia, después el principio y el final de la siguiente columna vacía de la misma página, y después las bandas de la siguiente página que abra el flujo (un flotante a ancho de página ocupa el pie de la página cuando todas las columnas aún tienen sitio para él; si no, una banda de la página siguiente). Nunca se reduce ni se parte, y nunca aterriza antes de su referencia. Un flotante que no cabe en ninguna parte de una página no retiene a los que vienen detrás — cada uno toma el primer hueco en el que cabe, así que en ocasiones una figura posterior puede aparecer antes que una anterior; la numeración no cambia, porque sigue el orden de primera referencia en el texto, no el hueco.
+
+Los flotantes nunca escapan de su capítulo: en una apertura de capítulo (un nivel de encabezado con `breakBefore` o `span: 'page'`), en un `:::part`, en un estilo de aviso con `floatBarrier: true` (la caja de «puntos clave» que cierra el capítulo) y al final del documento, todo flotante pendiente se coloca primero — en los huecos libres de la página, o en páginas abiertas por delante del límite. Un `:::pagebreak` simplemente envía los flotantes pendientes a la página que le sigue.
 
 Las bandas de flotantes se corrigen contra la rejilla base para que el texto circundante mantenga el ritmo vertical de toda la página. Una banda **superior** amplía su margen inferior hasta la siguiente línea de la rejilla, de modo que el texto bajo el flotante queda alineado con las columnas vecinas y con la página enfrentada. Un flotante **inferior** se ancla de forma que la última línea de su leyenda comparta línea base con la última línea de texto de las demás columnas (el contenido sin leyenda alinea su borde inferior con la última celda de la rejilla) — así, las páginas llenas terminan a la misma altura entre columnas y entre páginas enfrentadas.
 

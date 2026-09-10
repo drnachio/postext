@@ -224,7 +224,7 @@ export interface CalloutLayoutResult {
 }
 
 const VALID_SPANS: ReadonlySet<string> = new Set(['column', 'page']);
-const VALID_PLACEMENTS: ReadonlySet<string> = new Set(['here', 'top', 'bottom']);
+const VALID_PLACEMENTS: ReadonlySet<string> = new Set(['here', 'top', 'bottom', 'fixed']);
 
 /** Per-instance span / placement: fence attribute when valid, else the style. */
 export function resolveCalloutAttrs(

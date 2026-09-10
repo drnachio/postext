@@ -62,7 +62,7 @@ describe('float planning (pure)', () => {
       defaultPlacement: { position: 'bottom', span: 'page' },
     };
     // Built-in default when nothing set.
-    expect(resolveResourcePlacement(figure('a'), undefined)).toEqual({ position: 'top', span: 'column' });
+    expect(resolveResourcePlacement(figure('a'), undefined)).toEqual({ position: 'auto', span: 'column' });
     // Type default applies.
     expect(resolveResourcePlacement(figure('a'), type)).toEqual({ position: 'bottom', span: 'page' });
     // Resource overrides type.

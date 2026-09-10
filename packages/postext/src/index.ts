@@ -96,6 +96,7 @@ export type {
   ParagraphStyleConfig,
   ResolvedParagraphStyleConfig,
   CalloutStyleConfig,
+  CalloutFixedConfig,
   ResolvedCalloutStyleConfig,
   CalloutSpan,
   CalloutPlacement,
@@ -215,6 +216,8 @@ export type {
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue } from './parse';
 export { parseMarkdownWithIssues, MATH_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS } from './parse';
+export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet } from './parse';
+export type { InlineSnippetMapping } from './parse';
 export { buildPageLabels, collectPageLabelRuns, formatNumeral } from './numbering';
 export type { NumeralStyle, PageNumberSegment, PageLabelInfo, PageLabelRun } from './numbering';
 export type { MathRender, MathPath, MathViewBox } from './math/types';

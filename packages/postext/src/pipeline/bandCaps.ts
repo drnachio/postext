@@ -27,6 +27,11 @@ import type { VDTColumn } from '../vdt';
  *  (part `startPart` — a split paragraph's continuation can open a band
  *  too), keyed in `bandCaps` by the span block's own content index. */
 export interface BandCap {
+  /** `'span'`: proposed by a page-span block that wants to cut the band
+   *  mid-page (the box then sits on the cut). `'trailing'`: proposed at a
+   *  chapter / document boundary to level the closing band's columns; the
+   *  band ends inside the cap and nothing cuts it. */
+  kind: 'span' | 'trailing';
   startContentIndex: number;
   /** Part index of the band's opening block (`0` unless it is the
    *  continuation of a paragraph split across columns / pages). */
@@ -48,7 +53,9 @@ export const MAX_BAND_CAP_RETRIES = 3;
 export interface BandPassReport {
   /** New caps, keyed by the proposing span block's content index. */
   bandCapProposals: ReadonlyMap<number, BandCap>;
-  /** Span blocks inserted in the band their cap was applied to. */
+  /** Span blocks inserted in the band their cap was applied to — and, for
+   *  trailing caps, boundaries reached while the flow was still inside the
+   *  capped band (the content did not spill past the level cut). */
   spanPlacedInBand: ReadonlySet<number>;
   /** Caps whose opening block did open a band in this pass. */
   bandCapsApplied: ReadonlySet<number>;
@@ -128,7 +135,11 @@ export function resolveBandCaps<T extends BandPassReport>(
   const caps = new Map<number, BandCap>();
   let result = initial;
   let passCount = 1;
-  if (initial.bandCapProposals.size === 0) return { result, bandCaps: caps, passCount };
+  // Only span caps are settled here; trailing caps (closing bands cut level)
+  // are resolved by `resolveTrailingCaps` once column balancing has settled.
+  const spanProposals = (r: T): [number, BandCap][] =>
+    [...r.bandCapProposals].filter(([, c]) => c.kind === 'span');
+  if (spanProposals(initial).length === 0) return { result, bandCaps: caps, passCount };
 
   const tried = new Set<string>();
   for (let extra = 0; extra < MAX_BAND_PASSES; extra++) {
@@ -142,7 +153,7 @@ export function resolveBandCaps<T extends BandPassReport>(
         caps.delete(spanIndex);
       }
     }
-    for (const [spanIndex, cap] of result.bandCapProposals) {
+    for (const [spanIndex, cap] of spanProposals(result)) {
       if (caps.has(spanIndex) || tried.has(capKey(spanIndex, cap))) continue;
       caps.set(spanIndex, { ...cap });
       changed = true;
@@ -173,4 +184,72 @@ export function resolveBandCaps<T extends BandPassReport>(
     passCount++;
   }
   return { result, bandCaps: caps, passCount };
+}
+
+/**
+ * Drive the trailing-cap passes (closing bands cut level at a chapter /
+ * document boundary), after column balancing has settled: `initial` is the
+ * balanced layout whose boundaries proposed the caps, `spanCaps` the caps
+ * already in force, and `runPass` re-places the document with the balancing
+ * hints frozen and the given caps. A trailing cap whose band overflowed
+ * (applied, not delivered) is retried one line taller; one whose band
+ * opened with a different block (not applied) is replaced by the fresh
+ * proposal that pass made for the same boundary, else dropped. Span caps
+ * must stay delivered — a trailing cap that unsettles one is abandoned.
+ * The layout returned never carries an undelivered cap; when no trailing
+ * cap survives, `initial` is returned untouched.
+ */
+export function resolveTrailingCaps<T extends BandPassReport>(
+  initial: T,
+  spanCaps: ReadonlyMap<number, BandCap>,
+  runPass: (bandCaps: ReadonlyMap<number, BandCap>) => T,
+): { result: T; caps: Map<number, BandCap>; passCount: number } {
+  const caps = new Map(spanCaps);
+  let adopted = 0;
+  for (const [i, cap] of initial.bandCapProposals) {
+    if (cap.kind !== 'trailing' || caps.has(i)) continue;
+    caps.set(i, { ...cap });
+    adopted++;
+  }
+  let passCount = 0;
+  if (adopted === 0) return { result: initial, caps, passCount };
+
+  const trailingKeys = (): number[] => [...caps].filter(([, c]) => c.kind === 'trailing').map(([i]) => i);
+  const giveUp = (): { result: T; caps: Map<number, BandCap>; passCount: number } =>
+    ({ result: initial, caps: new Map(spanCaps), passCount });
+
+  let result = initial;
+  for (let extra = 0; extra < MAX_BAND_PASSES; extra++) {
+    result = runPass(caps);
+    passCount++;
+    if ([...spanCaps.keys()].some((i) => !result.spanPlacedInBand.has(i))) return giveUp();
+    const failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
+    if (failing.length === 0) return { result, caps, passCount };
+    for (const i of failing) {
+      const cap = caps.get(i)!;
+      const fresh = result.bandCapProposals.get(i);
+      if (result.bandCapsApplied.has(i)) {
+        if (cap.retries < MAX_BAND_CAP_RETRIES) {
+          caps.set(i, { ...cap, lines: cap.lines + 1, retries: cap.retries + 1 });
+        } else {
+          caps.delete(i);
+        }
+      } else if (fresh && fresh.kind === 'trailing') {
+        caps.set(i, { ...fresh });
+      } else {
+        caps.delete(i);
+      }
+    }
+    if (trailingKeys().length === 0) return giveUp();
+  }
+
+  // Out of passes: strip whatever is still undelivered and keep the rest.
+  const failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
+  if (failing.length === 0) return { result, caps, passCount };
+  for (const i of failing) caps.delete(i);
+  if (trailingKeys().length === 0) return giveUp();
+  result = runPass(caps);
+  passCount++;
+  const delivered = [...caps.keys()].every((i) => result.spanPlacedInBand.has(i));
+  return delivered ? { result, caps, passCount } : giveUp();
 }

@@ -99,6 +99,13 @@ export function pageHasContent(page: VDTPage): boolean {
   return page.columns.some((c) => c.blocks.length > 0);
 }
 
+/** Whether the page holds anything at all — column content or floats (a
+ *  page carrying only a drained float band is occupied: the next chapter
+ *  must not open on it). */
+export function pageIsOccupied(page: VDTPage): boolean {
+  return pageHasContent(page) || (page.floats?.length ?? 0) > 0;
+}
+
 // ---------------------------------------------------------------------------
 // Column bands (page-span blocks, stage 1)
 //
@@ -259,8 +266,9 @@ export function advanceToNextPageBoundary(
   onNewPage?: (page: VDTPage) => void,
 ): void {
   // Span columns hold their block like any other column, so a page whose
-  // only content is a page-span block counts as non-empty here.
-  if (!pageHasContent(doc.pages[cursor.pageIndex]!)) return;
+  // only content is a page-span block counts as non-empty here; so does a
+  // page holding only float bands (a drained chapter's leftover figures).
+  if (!pageIsOccupied(doc.pages[cursor.pageIndex]!)) return;
   const startPageIndex = cursor.pageIndex;
   do {
     advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);

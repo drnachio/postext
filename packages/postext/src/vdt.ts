@@ -488,11 +488,12 @@ export interface VDTPage {
   /** Optional full-width opener band above the column flow, used for
    *  heading-level `span: 'page'` chapter openers. */
   openerBand?: VDTDesignSlot;
-  /** Floated resource blocks (figures / tables) reserved into a band at the
-   *  top or bottom of this page. They live outside the column flow — their
-   *  bands shrink the columns' usable height — and are rendered after the
-   *  columns, clipped to the content area rather than to a single column so a
-   *  `span: 'page'` float can cross the gutter. */
+  /** Blocks positioned outside the column flow: floated resource blocks
+   *  (figures / tables) reserved into a band of a column or of the page, and
+   *  `placement: 'fixed'` callouts (frame + children) pinned to page
+   *  coordinates. Their zones shrink the columns' usable height; they are
+   *  rendered after the columns, clipped to the content area rather than to
+   *  a single column so a `span: 'page'` float can cross the gutter. */
   floats?: VDTBlock[];
   marginNotes: VDTBlock[];
   footnoteArea?: VDTFootnoteArea;
@@ -636,6 +637,8 @@ export function computePageTextExtent(page: VDTPage): { top: number; bottom: num
     }
   }
   for (const fb of page.floats ?? []) {
+    if (fb.hidden) continue;
+    expand(fb.lines);
     if (fb.resourceBlock) expand(fb.resourceBlock.captionLines);
   }
   return top === Infinity ? null : { top, bottom };

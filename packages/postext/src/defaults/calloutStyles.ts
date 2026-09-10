@@ -1,7 +1,9 @@
 import type {
+  CalloutFixedConfig,
   CalloutStyleConfig,
   ColorValue,
   Dimension,
+  ElementAnchor,
   ResolvedBodyTextConfig,
   ResolvedCalloutStyleConfig,
   ResolvedHeadingsConfig,
@@ -10,6 +12,7 @@ import type {
 import { colorsEqual, dimensionsEqual, DEFAULT_MAIN_COLOR } from './shared';
 
 const EM = (value: number): Dimension => ({ value, unit: 'em' });
+const PT0: Dimension = { value: 0, unit: 'pt' };
 
 /** Static defaults shared by every callout style. Fields that inherit from
  *  another config section (`titleStyle.fontFamily`, `body.*`, `lists.*`)
@@ -18,6 +21,11 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
   title: '',
   span: 'column' as const,
   placement: 'here' as const,
+  fixed: {
+    anchor: { to: 'container', edge: 'bottom-left' } as ElementAnchor,
+    offset: { x: PT0, y: PT0 },
+  },
+  floatBarrier: false,
   width: 'fill' as const,
   backgroundEnabled: true,
   background: { hex: '#f4f4f4', model: 'hex' } as ColorValue,
@@ -72,6 +80,14 @@ function resolveCalloutStyleConfig(
     title: partial.title ?? d.title,
     span: partial.span ?? d.span,
     placement: partial.placement ?? d.placement,
+    fixed: {
+      anchor: partial.fixed?.anchor ?? d.fixed.anchor,
+      offset: {
+        x: partial.fixed?.offset?.x ?? d.fixed.offset.x,
+        y: partial.fixed?.offset?.y ?? d.fixed.offset.y,
+      },
+    },
+    floatBarrier: partial.floatBarrier ?? d.floatBarrier,
     width: partial.width ?? d.width,
     backgroundEnabled: partial.backgroundEnabled ?? d.backgroundEnabled,
     background: partial.background ?? d.background,
@@ -168,6 +184,21 @@ export function stripCalloutStylesDefaults(
     if (s.title !== undefined && s.title !== d.title) r.title = s.title;
     if (s.span !== undefined && s.span !== d.span) r.span = s.span;
     if (s.placement !== undefined && s.placement !== d.placement) r.placement = s.placement;
+    if (s.fixed) {
+      const f: CalloutFixedConfig = {};
+      const a = s.fixed.anchor;
+      if (a && (a.to !== d.fixed.anchor.to || a.edge !== d.fixed.anchor.edge)) f.anchor = a;
+      if (s.fixed.offset) {
+        const o: NonNullable<CalloutFixedConfig['offset']> = {};
+        if (s.fixed.offset.x !== undefined && !dimensionsEqual(s.fixed.offset.x, d.fixed.offset.x)) o.x = s.fixed.offset.x;
+        if (s.fixed.offset.y !== undefined && !dimensionsEqual(s.fixed.offset.y, d.fixed.offset.y)) o.y = s.fixed.offset.y;
+        const kept = stripObject(o);
+        if (kept) f.offset = kept;
+      }
+      const kept = stripObject(f);
+      if (kept) r.fixed = kept;
+    }
+    if (s.floatBarrier !== undefined && s.floatBarrier !== d.floatBarrier) r.floatBarrier = s.floatBarrier;
     if (s.width !== undefined && s.width !== d.width) r.width = s.width;
     if (s.backgroundEnabled !== undefined && s.backgroundEnabled !== d.backgroundEnabled) {
       r.backgroundEnabled = s.backgroundEnabled;

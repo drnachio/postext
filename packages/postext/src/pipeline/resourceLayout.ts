@@ -46,7 +46,10 @@ import type {
 import { createBoundingBox } from '../vdt';
 import { measureRichBlock, buildFontString } from '../measure';
 import { dimensionToPx } from '../units';
-import { extractInlineRefs, injectRefSpans, parseInlineFormatting } from '../parse/inlineFormatting';
+// Caption / table-cell / note content is parsed with the shared snippet
+// parser so measurement and the sandbox's glyph→snippet mapping agree on
+// one span list (`:ref{…}` becomes a one-char placeholder span).
+import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
 import { resolveBodyStyle } from './styles';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -106,15 +109,6 @@ function applyRefCase(label: string, refCase: RefCase | undefined): string {
       return first.toLocaleUpperCase() + label.slice(first.length);
     }
   }
-}
-
-/** Parse caption / table-cell content into inline spans, recognising the same
- *  inline `:ref{…}` microformat as body text so references inside captions and
- *  cells resolve to their computed labels (the cell/caption is self-contained,
- *  so source offsets are irrelevant here). */
-function parseRefAwareSpans(content: string): InlineSpan[] {
-  const { cleaned, refs } = extractInlineRefs(content, 0);
-  return injectRefSpans(parseInlineFormatting(cleaned), refs);
 }
 
 /** Resolve inline `:ref` spans to their computed label, keeping the `ref`
