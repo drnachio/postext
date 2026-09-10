@@ -588,9 +588,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     };
   }
   const captionLines = shiftLines(measuredCaption, captionPaddingPx, captionBandY + captionPaddingPx);
+  // A table's rules are stroked centred on the cell edges, so its outer
+  // frame reaches half a stroke beyond the body on each side; the caption
+  // bar spans that same outer extent, or it would read a hair narrower.
+  const barOverhang = table ? table.borderWidthPx / 2 : 0;
   const captionBar = cs.backgroundEnabled && captionBandHeight > 0
     ? {
-        rect: createBoundingBox(0, captionBandY, columnWidth, captionBandHeight),
+        rect: createBoundingBox(0 - barOverhang || 0, captionBandY, columnWidth + 2 * barOverhang, captionBandHeight),
         background: cs.background.hex,
       }
     : undefined;
