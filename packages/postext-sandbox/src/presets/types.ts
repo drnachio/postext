@@ -4,6 +4,7 @@
 // described by JSON manifests served from a base URL (see remote.ts).
 
 import type { CustomFontFormat, PostextConfig, Resource } from 'postext';
+import type { Chapter } from '../book/types';
 
 export type PresetSource = 'builtin' | 'public' | 'private';
 
@@ -67,20 +68,39 @@ export interface PresetFontFamilySpec {
   variants: PresetFontVariantSpec[];
 }
 
-/** `preset.json` inside a preset directory. */
-export interface PresetManifest {
-  version: 1;
+/** One chapter file inside a v2 bundle (`chapters/01-intro.md`). */
+export interface PresetChapterSpec {
+  title: string;
+  file: string;
+}
+
+interface PresetManifestBase {
   id: string;
   name: string;
   description?: string;
   locale?: string;
   default?: boolean;
-  /** Markdown file, or a locale → file map. */
-  markdown: string | Record<string, string>;
   config?: PostextConfig;
   resources?: PresetResourceSpec[];
   fonts?: PresetFontFamilySpec[];
 }
+
+/** `preset.json` (version 1): a single markdown document. Still accepted
+ *  on import; the sandbox always writes version 2. */
+export interface PresetManifestV1 extends PresetManifestBase {
+  version: 1;
+  /** Markdown file, or a locale → file map. */
+  markdown: string | Record<string, string>;
+}
+
+/** `preset.json` (version 2): a book — one markdown file per chapter, in
+ *  order, or a locale → chapter list map. */
+export interface PresetManifestV2 extends PresetManifestBase {
+  version: 2;
+  chapters: PresetChapterSpec[] | Record<string, PresetChapterSpec[]>;
+}
+
+export type PresetManifest = PresetManifestV1 | PresetManifestV2;
 
 export interface LoadedPresetBlob {
   fileId: string;
@@ -99,7 +119,8 @@ export interface LoadedPresetFont {
  *  storage. `config.customFonts` already lists the families in `fonts`. */
 export interface LoadedPreset {
   summary: PresetSummary;
-  markdown: string;
+  /** Chapters in book order, with fresh ids. */
+  chapters: Chapter[];
   config: PostextConfig;
   resources: Resource[];
   blobs: LoadedPresetBlob[];
@@ -123,6 +144,7 @@ export interface PresetProvider {
 export interface AppliedPresetSnapshot {
   presetId: string;
   fingerprint: string | null;
+  /** Hash of the chapter list (titles + text, in order). */
   markdownHash: string;
   configHash: string;
   resourcesHash: string;

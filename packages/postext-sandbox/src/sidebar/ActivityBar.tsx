@@ -1,12 +1,10 @@
 'use client';
 
 import { FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files } from 'lucide-react';
-import { useMemo, useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
-import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxPresetStale, useSandboxSelector } from '../context/SandboxContext';
+import { useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxPresetStale, useSandboxSelector, useSandboxWarnings } from '../context/SandboxContext';
 import type { PanelId } from '../types';
 import { Tooltip } from '../ui';
-import { computeWarnings } from '../warnings/compute';
-import { hasIndexedDB } from '../storage/blobStore';
 
 interface ActivityBarProps {
   themeToggle?: ReactNode;
@@ -28,32 +26,13 @@ function PanelNav() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const activePanel = useSandboxSelector((s) => s.activePanel);
-  const markdown = useSandboxSelector((s) => s.markdown);
-  const config = useSandboxSelector((s) => s.config);
-  const docVersion = useSandboxSelector((s) => s.docVersion);
-  const resources = useSandboxSelector((s) => s.resources);
   const presetStale = useSandboxPresetStale();
-  const docRef = useSandboxDocRef();
   const navRef = useRef<HTMLElement>(null);
   const buttonRefs = useRef<Map<PanelId, HTMLButtonElement>>(new Map());
   const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null);
   const hasAnimated = useRef(false);
 
-  // Recomputed whenever markdown, config, or the last-built VDT change.
-  // Also exposed via the Warnings panel — parseMarkdown is memoized, so the
-  // duplicate call is cheap.
-  const warningCount = useMemo(
-    () =>
-      computeWarnings({
-        markdown,
-        config,
-        doc: docRef.current,
-        resources,
-        storageUnavailable: !hasIndexedDB(),
-      }).length,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [markdown, config, docVersion, resources],
-  );
+  const warningCount = useSandboxWarnings().length;
 
   const updateIndicator = useCallback(() => {
     if (activePanel === null) {

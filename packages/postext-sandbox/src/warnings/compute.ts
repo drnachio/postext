@@ -30,6 +30,9 @@ import {
   isRemovedCustomFontFamily,
 } from '../controls/fontLoader';
 import type { Warning } from './types';
+import type { ComposedBook } from '../book/types';
+import { fromBookLine, fromBookOffset } from '../book/compose';
+import { frontmatterRange } from '../book/frontmatter';
 
 function lineNumberForOffset(markdown: string, offset: number): number {
   if (offset <= 0) return 1;
@@ -613,8 +616,78 @@ export function computeWarnings(params: {
   /** True when IndexedDB is unavailable, so binary resource payloads cannot
    *  be persisted or resolved. Surfaces the `storageUnavailable` warning. */
   storageUnavailable?: boolean;
+  /** The composed book `markdown` came from. When given, every located
+   *  warning also carries its chapter and chapter-local line/offsets. */
+  book?: ComposedBook;
+  /** Chapter titles by id (for `chapterFrontmatterIgnored`). */
+  chapterTitles?: ReadonlyMap<string, string>;
 }): Warning[] {
-  const { markdown, config, doc, resources = [], storageUnavailable = false } = params;
+  const { markdown, config, doc, resources = [], storageUnavailable = false, book, chapterTitles } = params;
+  const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable });
+  if (!book) return warnings;
+  return attributeToChapters(warnings, book, chapterTitles);
+}
+
+/** Add chapter attribution to every located warning and flag later chapters
+ *  whose text starts with a front-matter block (the book ignores it). */
+export function attributeToChapters(
+  warnings: Warning[],
+  book: ComposedBook,
+  chapterTitles?: ReadonlyMap<string, string>,
+): Warning[] {
+  const out: Warning[] = warnings.map((w) => {
+    if (w.sourceStart === undefined) return w;
+    const start = fromBookOffset(book, w.sourceStart);
+    const end = w.sourceEnd !== undefined ? fromBookOffset(book, w.sourceEnd) : start;
+    const seg = book.segments.find((s) => s.chapterId === start.chapterId)!;
+    const chapterLine = w.line !== undefined ? fromBookLine(book, w.line).line : undefined;
+    return {
+      ...w,
+      chapterId: start.chapterId,
+      chapterIndex: seg.index,
+      chapterLine,
+      chapterStart: start.offset,
+      chapterEnd: end.chapterId === start.chapterId ? end.offset : seg.end - seg.start,
+    };
+  });
+  if (book.scope === 'book') {
+    book.segments.forEach((seg, i) => {
+      if (i === 0) return;
+      const text = book.markdown.slice(seg.start, seg.end);
+      // The composed text has the block blanked; detect it by the first line
+      // being all spaces of width 3 followed by a newline (`---` blanked).
+      if (!/^ {3}\r?\n/.test(text)) return;
+      const original = chapterTitles?.get(seg.chapterId) ?? String(i + 1);
+      out.push({
+        id: `chapter-frontmatter-${seg.chapterId}`,
+        payload: { kind: 'chapterFrontmatterIgnored', chapterTitle: original },
+        sourceStart: seg.start,
+        sourceEnd: seg.start,
+        line: seg.lineStart + 1,
+        chapterId: seg.chapterId,
+        chapterIndex: seg.index,
+        chapterLine: 1,
+        chapterStart: 0,
+        chapterEnd: 0,
+      });
+    });
+  }
+  return out;
+}
+
+/** True when `markdown` begins with a front-matter block. */
+export function hasFrontmatter(markdown: string): boolean {
+  return frontmatterRange(markdown) !== null;
+}
+
+function computeDocumentWarnings(params: {
+  markdown: string;
+  config: PostextConfig;
+  doc: VDTDocument | null;
+  resources: Resource[];
+  storageUnavailable: boolean;
+}): Warning[] {
+  const { markdown, config, doc, resources, storageUnavailable } = params;
   const debug = resolveDebugConfig(config.debug);
   const toggles = debug.warnings;
   const warnings: Warning[] = [];

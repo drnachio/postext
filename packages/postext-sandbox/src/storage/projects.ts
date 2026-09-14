@@ -7,15 +7,21 @@
 
 import type { PostextConfig, Resource } from 'postext';
 import { stripConfigDefaults } from 'postext';
+import type { BookContent } from '../book/types';
 import { PROJECTS_STORE, hasIndexedDB, runInStore } from './blobStore';
+import { generateId } from './ids';
+import { PROJECT_RECORD_VERSION, migrateProjectRecord, type MigrationDeps } from './projectMigration';
 
-export interface ProjectContent {
-  markdown: string;
+/** The three working slices a project owns: its chapters (with the active
+ *  one and the layout scope), the configuration and the resource records. */
+export interface ProjectContent extends BookContent {
   config: PostextConfig;
   resources: Resource[];
 }
 
 export interface ProjectRecord extends ProjectContent {
+  /** Record shape; legacy records (single `markdown`) are migrated on read. */
+  version: typeof PROJECT_RECORD_VERSION;
   /** Storage key; a random UUID, never shown to the user. */
   id: string;
   name: string;
@@ -34,39 +40,48 @@ export interface ProjectRecord extends ProjectContent {
 export type ProjectSummary = Pick<
   ProjectRecord,
   'id' | 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'createdAt' | 'updatedAt'
->;
+> & { chapterCount: number };
 
 export function toSummary(r: ProjectRecord): ProjectSummary {
   const { id, name, description, locale, bundleId, sourcePresetId, createdAt, updatedAt } = r;
-  return { id, name, description, locale, bundleId, sourcePresetId, createdAt, updatedAt };
+  return { id, name, description, locale, bundleId, sourcePresetId, createdAt, updatedAt, chapterCount: r.chapters.length };
 }
 
 export function generateProjectId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
-  return `project-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  return generateId('project');
 }
 
-/** Every stored project, oldest first. Empty (not rejected) without
- *  IndexedDB so the sandbox still works in preset-only mode. */
-export function listProjects(): Promise<ProjectRecord[]> {
+export function generateChapterId(): string {
+  return generateId('chapter');
+}
+
+const DEFAULT_MIGRATION: MigrationDeps = { ids: generateChapterId, untitled: (n) => `Chapter ${n}` };
+
+/** Every stored project, oldest first, migrated to the current record
+ *  shape. Empty (not rejected) without IndexedDB so the sandbox still works
+ *  in preset-only mode. */
+export function listProjects(migration: MigrationDeps = DEFAULT_MIGRATION): Promise<ProjectRecord[]> {
   if (!hasIndexedDB()) return Promise.resolve([]);
   return runInStore(PROJECTS_STORE, 'readonly', (store) =>
-    store.getAll() as IDBRequest<ProjectRecord[]>,
+    store.getAll() as IDBRequest<unknown[]>,
   )
-    .then((v) => (v ?? []).sort((a, b) => a.createdAt - b.createdAt))
+    .then((v) => (v ?? [])
+      .map((raw) => migrateProjectRecord(raw, migration))
+      .filter((r): r is ProjectRecord => r !== null)
+      .sort((a, b) => a.createdAt - b.createdAt))
     .catch(() => []);
 }
 
-export function getProject(id: string): Promise<ProjectRecord | null> {
+export function getProject(id: string, migration: MigrationDeps = DEFAULT_MIGRATION): Promise<ProjectRecord | null> {
   return runInStore(PROJECTS_STORE, 'readonly', (store) =>
-    store.get(id) as IDBRequest<ProjectRecord | undefined>,
-  ).then((v) => v ?? null);
+    store.get(id) as IDBRequest<unknown>,
+  ).then((v) => (v === undefined ? null : migrateProjectRecord(v, migration)));
 }
 
 /** Write a record as-is (config stored stripped of defaults, like
  *  localStorage, so records stay small and survive default changes). */
 export function putProject(record: ProjectRecord): Promise<void> {
-  const stored: ProjectRecord = { ...record, config: stripConfigDefaults(record.config) };
+  const stored: ProjectRecord = { ...record, version: PROJECT_RECORD_VERSION, config: stripConfigDefaults(record.config) };
   return runInStore(PROJECTS_STORE, 'readwrite', (store) =>
     store.put(stored) as IDBRequest<IDBValidKey>,
   ).then(() => undefined);

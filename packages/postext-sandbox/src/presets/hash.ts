@@ -6,6 +6,7 @@
 import type { PostextConfig, Resource } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { AppliedPresetSnapshot } from './types';
+import type { Chapter } from '../book/types';
 
 /** FNV-1a (32-bit) of a string's UTF-16 code units, as 8 hex digits. */
 export function hashString(input: string): string {
@@ -40,6 +41,12 @@ export function hashMarkdown(markdown: string): string {
   return hashString(markdown);
 }
 
+/** Hash of the chapter list: titles and text in book order. Ids and
+ *  timestamps (fresh on every load) do not count. */
+export function hashChapters(chapters: readonly Chapter[]): string {
+  return hashString(stableStringify(chapters.map((c) => ({ title: c.title, markdown: c.markdown }))));
+}
+
 /** Hash of the configuration with defaults stripped — the same shape the
  *  sandbox persists, so a config saved and reloaded hashes identically. */
 export function hashConfig(config: PostextConfig): string {
@@ -58,7 +65,7 @@ export function hashResources(resources: Resource[]): string {
 
 /** The slices of sandbox state a snapshot covers. */
 export interface DocumentHashSource {
-  markdown: string;
+  chapters: readonly Chapter[];
   config: PostextConfig;
   resources: Resource[];
 }
@@ -71,7 +78,7 @@ export function isDocumentUntouched(
   snapshot: AppliedPresetSnapshot | null | undefined,
 ): boolean {
   if (!snapshot) return false;
-  return hashMarkdown(state.markdown) === snapshot.markdownHash
+  return hashChapters(state.chapters) === snapshot.markdownHash
     && hashResources(state.resources) === snapshot.resourcesHash
     && hashConfig(state.config) === snapshot.configHash;
 }

@@ -4,12 +4,14 @@
 
 import type { CustomFontFamily, CustomFontFormat, Resource } from 'postext';
 import { formatFromFilename } from '../storage/fontStorage';
-import { slugify } from '../panels/resources/slugify';
+import { slugify, uniqueSlug } from '../panels/resources/slugify';
 import type {
+  PresetChapterSpec,
   PresetFontFamilySpec,
   PresetIndex,
   PresetIndexEntry,
   PresetManifest,
+  PresetManifestV1,
   PresetResourceSpec,
 } from './types';
 
@@ -39,11 +41,28 @@ function isMarkdownField(v: unknown): v is string | Record<string, string> {
   return values.length > 0 && values.every(isNonEmptyString);
 }
 
+function isChapterSpec(v: unknown): v is PresetChapterSpec {
+  return isRecord(v) && typeof v.title === 'string' && isNonEmptyString(v.file);
+}
+
+function isChapterList(v: unknown): v is PresetChapterSpec[] {
+  return Array.isArray(v) && v.length > 0 && v.every(isChapterSpec);
+}
+
+function isChaptersField(v: unknown): v is PresetChapterSpec[] | Record<string, PresetChapterSpec[]> {
+  if (isChapterList(v)) return true;
+  if (!isRecord(v) || Array.isArray(v)) return false;
+  const values = Object.values(v);
+  return values.length > 0 && values.every(isChapterList);
+}
+
+/** Accepts both manifest versions: v1 (`markdown`) and v2 (`chapters`). */
 export function isPresetManifest(data: unknown): data is PresetManifest {
   if (!isRecord(data)) return false;
-  if (data.version !== 1) return false;
+  if (data.version !== 1 && data.version !== 2) return false;
   if (!isNonEmptyString(data.id) || !isNonEmptyString(data.name)) return false;
-  if (!isMarkdownField(data.markdown)) return false;
+  if (data.version === 1 && !isMarkdownField(data.markdown)) return false;
+  if (data.version === 2 && !isChaptersField(data.chapters)) return false;
   if (data.config !== undefined && !isRecord(data.config)) return false;
   if (data.resources !== undefined) {
     if (!Array.isArray(data.resources)) return false;
@@ -74,23 +93,47 @@ export function presetFontFileId(presetId: string, file: string): string {
 /** Resolve which markdown file to use for `locale`: exact tag, then the base
  *  language (`es` for `es-ES`), then the manifest's own locale, then the first
  *  entry. */
-export function pickMarkdownFile(manifest: PresetManifest, locale: string): string {
+export function pickMarkdownFile(manifest: PresetManifestV1, locale: string): string {
   const md = manifest.markdown;
   if (typeof md === 'string') return md;
+  return pickByLocale(md, locale, manifest.locale);
+}
+
+/** Pick the entry of a locale → value map for `locale`: exact tag, base
+ *  language, the manifest's own locale, then the first entry. */
+function pickByLocale<T>(map: Record<string, T>, locale: string, manifestLocale?: string): T {
   const wanted = locale.toLowerCase();
-  const keys = Object.keys(md);
+  const keys = Object.keys(map);
   const byLower = new Map(keys.map((k) => [k.toLowerCase(), k]));
   const exact = byLower.get(wanted);
-  if (exact) return md[exact];
-  const base = wanted.split(/[-_]/)[0];
+  if (exact) return map[exact]!;
+  const base = wanted.split(/[-_]/)[0]!;
   const baseKey = byLower.get(base);
-  if (baseKey) return md[baseKey];
-  if (manifest.locale) {
-    const own = byLower.get(manifest.locale.toLowerCase())
-      ?? byLower.get(manifest.locale.toLowerCase().split(/[-_]/)[0]);
-    if (own) return md[own];
+  if (baseKey) return map[baseKey]!;
+  if (manifestLocale) {
+    const own = byLower.get(manifestLocale.toLowerCase())
+      ?? byLower.get(manifestLocale.toLowerCase().split(/[-_]/)[0]!);
+    if (own) return map[own]!;
   }
-  return md[keys[0]];
+  return map[keys[0]!]!;
+}
+
+/** The chapter files to read for `locale`: a v1 manifest yields a single
+ *  untitled chapter (title derived from the text later). */
+export function pickChapterSpecs(manifest: PresetManifest, locale: string): PresetChapterSpec[] {
+  if (manifest.version === 1) return [{ title: '', file: pickMarkdownFile(manifest, locale) }];
+  const ch = manifest.chapters;
+  return Array.isArray(ch) ? ch : pickByLocale(ch, locale, manifest.locale);
+}
+
+/** `chapters/01-intro.md`: zero-padded ordinal (at least two digits) plus a
+ *  slug of the title, unique against `taken`. */
+export function chapterFileName(index: number, title: string, taken: Set<string>, count = 1): string {
+  const digits = Math.max(2, String(count).length);
+  const ordinal = String(index + 1).padStart(digits, '0');
+  const name = uniqueSlug(`${ordinal}-${slugify(title) || 'chapter'}`, taken, 'chapter');
+  taken.add(name);
+  return `chapters/${name}.md`;
 }
 
 export function fileExtension(file: string): string {

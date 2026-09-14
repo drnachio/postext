@@ -1,6 +1,8 @@
 import type { Dispatch, MutableRefObject } from 'react';
 import type { VDTDocument } from 'postext';
-import type { ResourceFocusTarget, SandboxAction } from '../../context/SandboxContext';
+import type { PendingEditorFocus, ResourceFocusTarget, SandboxAction } from '../../context/SandboxContext';
+import type { ComposedBook } from '../../book/types';
+import { fromBookOffset, segmentForChapter } from '../../book/compose';
 import type { PanelId } from '../../types';
 import { getSvgTextIndex } from '../../controls/svgTextIndex';
 import {
@@ -70,6 +72,26 @@ function scrollToResourceLocation(
   container.scrollBy({ top, left, behavior: 'smooth' });
 }
 
+/** Map a document-offset selection to a chapter-local focus request. A
+ *  drag whose head lands in another chapter is clamped to the anchor's
+ *  chapter (one editor shows one chapter). */
+export function toChapterFocus(
+  source: ComposedBook | null,
+  anchor: number,
+  head: number,
+  selectWord: boolean,
+): PendingEditorFocus {
+  if (!source || source.segments.length === 0) return { anchor, head, selectWord };
+  const a = fromBookOffset(source, anchor);
+  const h = fromBookOffset(source, head);
+  let headLocal = h.offset;
+  if (h.chapterId !== a.chapterId) {
+    const seg = segmentForChapter(source, a.chapterId)!;
+    headLocal = head > anchor ? seg.end - seg.start : 0;
+  }
+  return { chapterId: a.chapterId, anchor: a.offset, head: headLocal, selectWord };
+}
+
 /**
  * Wire a click listener on a page slot. Background clicks (outside any block)
  * and active text-selection drags are ignored. Clicks on `:ref` segments
@@ -83,6 +105,9 @@ export function attachSlotClickHandler(
   docRef: MutableRefObject<VDTDocument | null>,
   dispatchRef: MutableRefObject<Dispatch<SandboxAction>>,
   activePanelRef: MutableRefObject<PanelId | null>,
+  /** The composed book `docRef` was built from: document offsets map back
+   *  to (chapter, offset) through it. */
+  sourceRef: MutableRefObject<ComposedBook | null>,
 ): void {
   slot.style.cursor = 'text';
 
@@ -130,7 +155,7 @@ export function attachSlotClickHandler(
     if (activePanelRef.current !== 'markdown') {
       dispatch({ type: 'SET_PANEL', payload: 'markdown' });
     }
-    dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: { anchor, head, selectWord } });
+    dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: toChapterFocus(sourceRef.current, anchor, head, selectWord) });
   };
 
   // Open the Resources panel on the hit resource and hand its editor the

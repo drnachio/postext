@@ -23,14 +23,17 @@ import {
   clearPresetApplied,
   downloadBytes,
   readFileBytes,
+  saveBook,
   saveConfig,
-  saveMarkdown,
   savePresetId,
   saveProjectId,
 } from '../storage/persistence';
+import { cloneBook, singleChapterBook } from '../book/chapterOps';
+import type { BookContent } from '../book/types';
 import { cloneContentForProject, projectFileId, projectFontFileId, remapContentFileIds } from '../storage/projectFiles';
 import {
   deleteProject,
+  generateChapterId,
   generateProjectId,
   getProject,
   putProject,
@@ -78,9 +81,13 @@ export interface ProjectActions {
  *  every file, under project ids. Bytes come from the loaded bundle when it
  *  carried them, else from IndexedDB (the built-in preset seeds its blobs
  *  directly). */
+function bookFromLoaded(loaded: LoadedPreset): BookContent {
+  return { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, layoutScope: 'book' };
+}
+
 async function adoptLoadedPreset(loaded: LoadedPreset, projectId: string): Promise<ProjectContent> {
   const remapped = remapContentFileIds(
-    { markdown: loaded.markdown, config: loaded.config, resources: loaded.resources },
+    { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources },
     (_old, kind, hint) => (kind === 'blob' ? projectFileId(projectId, hint) : projectFontFileId(projectId, hint)),
   );
   const blobByOld = new Map(loaded.blobs.map((b) => [b.fileId, b]));
@@ -115,7 +122,11 @@ function newRecord(
   id = generateProjectId(),
 ): ProjectRecord {
   const now = Date.now();
-  return { id, ...meta, ...content, createdAt: now, updatedAt: now };
+  return { version: 2, id, ...meta, ...content, createdAt: now, updatedAt: now };
+}
+
+function bookOfState(s: SandboxState): BookContent {
+  return { chapters: s.chapters, activeChapterId: s.activeChapterId, layoutScope: s.layoutScope };
 }
 
 export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
@@ -154,13 +165,14 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       dispatch({ type: 'UPDATE_CONFIG', payload: { customFonts: config.customFonts } });
     }
     if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: record.resources });
-    if (wantsMarkdown) dispatch({ type: 'SET_MARKDOWN', payload: record.markdown });
+    const book: BookContent = { chapters: record.chapters, activeChapterId: record.activeChapterId, layoutScope: record.layoutScope };
+    if (wantsMarkdown) dispatch({ type: 'SET_BOOK', payload: book });
     clearMeasurementCache();
     saveProjectId(record.id);
     savePresetId(record.sourcePresetId ?? deps.getBuiltin().summary.id);
     clearPresetApplied();
     const s = deps.getState();
-    saveMarkdown(wantsMarkdown ? record.markdown : s.markdown);
+    saveBook(wantsMarkdown ? book : bookOfState(s));
     saveConfig(wantsConfig ? config : s.config);
   };
 
@@ -205,7 +217,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       const id = generateProjectId();
       if (from === 'blank') {
         const content: ProjectContent = {
-          markdown: '',
+          ...singleChapterBook('', generateChapterId(), deps.labels().chapterUntitled.replace('__n__', '1')),
           config: withDefaultResourceTypes(createDefaultConfig(s.locale), s.locale),
           resources: [],
         };
@@ -214,7 +226,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       await deps.flushWorkingSave();
       const cur = deps.getState();
       const { content } = await cloneContentForProject(
-        { markdown: cur.markdown, config: cur.config, resources: cur.resources },
+        { ...cloneBook(bookOfState(cur), generateChapterId), config: cur.config, resources: cur.resources },
         id,
       );
       const active = cur.activeProjectId ? cur.projects.find((p) => p.id === cur.activeProjectId) : undefined;
@@ -236,7 +248,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         const record = await getProject(source.id);
         if (!record) throw new Error('Project not found');
         await deps.flushWorkingSave();
-        const { content } = await cloneContentForProject(record, id);
+        const { content } = await cloneContentForProject({ ...record, ...cloneBook(record, generateChapterId) }, id);
         return persistNew(newRecord(content, {
           name: copyName(record.name),
           description: record.description,
@@ -290,6 +302,8 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         locale: s.locale,
         summary: { id: summaryId, name: summaryId, source: 'private', available: true },
         ids: { blob: (f) => projectFileId(id, f), font: (f) => projectFontFileId(id, f) },
+        chapterIds: generateChapterId,
+        untitledChapter: (n) => deps.labels().chapterUntitled.replace('__n__', String(n)),
       });
       await Promise.all([
         ...loaded.blobs.map(async (b) => {
@@ -300,7 +314,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       ]);
       const manifestName = (opened.manifest as { name?: unknown }).name;
       return persistNew(newRecord(
-        { markdown: loaded.markdown, config: loaded.config, resources: loaded.resources },
+        { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources },
         {
           name: typeof manifestName === 'string' && manifestName ? manifestName : summaryId,
           description: loaded.summary.description,
@@ -329,7 +343,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         readBlob = async (fileId) => blobs.get(fileId) ?? fromIdb.readBlob(fileId);
         readFont = async (fileId) => fonts.get(fileId) ?? fromIdb.readFont(fileId);
         meta = { id: loaded.summary.id, name: loaded.summary.name, description: loaded.summary.description, locale: loaded.summary.locale };
-        content = { markdown: loaded.markdown, config: loaded.config, resources: loaded.resources };
+        content = { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources };
       } else if (target?.kind === 'project' && target.id !== s.activeProjectId) {
         const record = await getProject(target.id);
         if (!record) throw new Error('Project not found');
@@ -347,7 +361,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
           description: active?.description ?? preset?.description,
           locale: active?.locale ?? preset?.locale ?? cur.locale,
         };
-        content = { markdown: cur.markdown, config: cur.config, resources: cur.resources };
+        content = { ...bookOfState(cur), config: cur.config, resources: cur.resources };
       }
 
       const built = await buildBundleFiles(meta, content, { readBlob, readFont });

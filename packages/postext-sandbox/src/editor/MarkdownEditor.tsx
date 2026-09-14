@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { defaultResourceTypes } from 'postext';
 import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandbox, useSandboxEditorStateRef } from '../context/SandboxContext';
 import type { RefCompletionContext } from './refCompletion';
 
 interface MarkdownEditorProps {
@@ -12,7 +12,11 @@ interface MarkdownEditorProps {
 }
 
 export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
-  const { state, dispatch, editorStateRef } = useSandbox();
+  const { state, dispatch } = useSandbox();
+  // Per-chapter persisted CodeMirror state: the panel remounts this editor
+  // (keyed by chapter id) on every switch, so each chapter keeps its own
+  // undo history and caret.
+  const editorStateRef = useSandboxEditorStateRef(state.activeChapterId);
 
   // The `@` picker reads resources through a ref so the CodeMirror extension
   // (created once on mount) always sees the latest list without reconfiguring.
@@ -45,8 +49,12 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
   // Consume canvas-click caret requests: focus the editor and move the caret
   // to the requested source offset, then clear the pending flag.
   const pendingEditorFocus = state.pendingEditorFocus;
+  const activeChapterId = state.activeChapterId;
   useEffect(() => {
     if (pendingEditorFocus === null) return;
+    // The reducer already switched chapters; a request for another chapter
+    // can only be seen by an editor that is about to unmount.
+    if (pendingEditorFocus.chapterId && pendingEditorFocus.chapterId !== activeChapterId) return;
     const view = viewRef.current;
     if (!view) return;
     const docLen = view.state.doc.length;
@@ -66,7 +74,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
       scrollIntoView: true,
     });
     dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: null });
-  }, [pendingEditorFocus, dispatch, viewRef]);
+  }, [pendingEditorFocus, activeChapterId, dispatch, viewRef]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' as const, flex: '1 1 0%', minHeight: 0 }}>

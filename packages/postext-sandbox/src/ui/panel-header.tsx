@@ -20,8 +20,8 @@ export function PanelHeader({ title, actions, count, className }: PanelHeaderPro
       className={cn('flex h-10 shrink-0 items-center justify-between gap-2 border-b px-3', className)}
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
     >
-      <h2 className="flex min-w-0 items-center gap-2 text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-        <span className="min-w-0 truncate">{title}</span>
+      <h2 className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+        {typeof title === 'string' ? <span className="min-w-0 truncate">{title}</span> : <div className="flex min-w-0 flex-1 items-center">{title}</div>}
         {count !== undefined && (
           <span
             className="shrink-0 text-xs font-medium"

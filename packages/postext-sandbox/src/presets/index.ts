@@ -8,7 +8,10 @@ export type {
   PresetFontVariantSpec,
   PresetIndex,
   PresetIndexEntry,
+  PresetChapterSpec,
   PresetManifest,
+  PresetManifestV1,
+  PresetManifestV2,
   PresetProvider,
   PresetResourceSpec,
   PresetSource,
@@ -21,6 +24,8 @@ export {
   isPresetIndex,
   isPresetManifest,
   mimeForFile,
+  pickChapterSpecs,
+  chapterFileName,
   pickMarkdownFile,
   presetFileId,
   presetFontFileId,
@@ -34,7 +39,8 @@ export type { OpenedBundleZip } from './zip';
 export { createRemotePreset, fetchPresetIndex } from './remote';
 export { findDefaultPrivatePreset, listPresets } from './registry';
 export { applyPreset } from './apply';
-export { hashConfig, hashMarkdown, hashResources, hashString, isDocumentUntouched } from './hash';
+export { hashChapters, hashConfig, hashMarkdown, hashResources, hashString, isDocumentUntouched } from './hash';
 export type { DocumentHashSource } from './hash';
 export { decidePresetUpdate } from './watch';
 export type { PresetUpdateDecision } from './watch';
+export { hidePresetId, unhidePresetId, isPresetHideable, partitionPresets } from './hidden';

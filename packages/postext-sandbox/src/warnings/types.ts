@@ -35,7 +35,8 @@ export type WarningKind =
   | 'duplicateResourceId'
   | 'danglingTypeRef'
   | 'bitmapTooSmall'
-  | 'storageUnavailable';
+  | 'storageUnavailable'
+  | 'chapterFrontmatterIgnored';
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
@@ -138,7 +139,10 @@ export type WarningPayload =
     }
   /** IndexedDB is unavailable (private browsing / storage disabled), so
    *  uploaded bitmaps and SVGs cannot be persisted or resolved. */
-  | { kind: 'storageUnavailable' };
+  | { kind: 'storageUnavailable' }
+  /** A chapter other than the first starts with a front-matter block; only
+   *  the first chapter's front matter is the book's. */
+  | { kind: 'chapterFrontmatterIgnored'; chapterTitle: string };
 
 export interface Warning {
   id: string;
@@ -148,6 +152,15 @@ export interface Warning {
    *  fonts sourced from the config). */
   sourceStart?: number;
   sourceEnd?: number;
-  /** Approximate line number in the editor (1-based), when available. */
+  /** Approximate line number in the editor (1-based), when available. In a
+   *  multi-chapter book this is the line in the composed document. */
   line?: number;
+  /** Chapter the warning points at, with a chapter-local line, when the
+   *  document was composed from several chapters. */
+  chapterId?: string;
+  chapterIndex?: number;
+  chapterLine?: number;
+  /** Chapter-local offsets (`sourceStart`/`sourceEnd` stay document-wide). */
+  chapterStart?: number;
+  chapterEnd?: number;
 }
