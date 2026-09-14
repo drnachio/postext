@@ -42,7 +42,8 @@ const asText = (item: VectorItem | undefined): VectorText => {
 const monoFonts: VectorFontResolver = (families) =>
   families.includes('Mono') ? { widthOf: (t, size) => t.length * size * 0.5, pdfFont: null } : null;
 
-const ROBOTO = '/private/tmp/claude-501/-Users-ignacioferropicon-dev-postext/60543beb-2a47-4131-bee7-779851173e39/scratchpad/roboto/RobotoCondensed-Regular.ttf';
+/** Any real TrueType face will do: the tests only need widths and an embed. */
+const ROBOTO = new URL('../../../../apps/web/public/fonts/Fraunces-Regular.ttf', import.meta.url);
 
 async function pageCtx(): Promise<{ pdfDoc: PDFDocument; page: PDFPage; ctx: PageCtx }> {
   const pdfDoc = await PDFDocument.create();
