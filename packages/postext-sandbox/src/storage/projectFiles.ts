@@ -67,7 +67,7 @@ export function remapContentFileIds(content: ProjectContent, map: FileIdMapper):
   }));
 
   const config: PostextConfig = customFonts ? { ...content.config, customFonts } : content.config;
-  return { content: { markdown: content.markdown, config, resources }, blobPairs, fontPairs };
+  return { content: { ...content, config, resources }, blobPairs, fontPairs };
 }
 
 export interface CopiedFiles {

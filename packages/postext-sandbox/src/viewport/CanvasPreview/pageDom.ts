@@ -2,6 +2,7 @@ import type { Dispatch, MutableRefObject } from 'react';
 import type { VDTDocument } from 'postext';
 import type { SandboxAction } from '../../context/SandboxContext';
 import type { PanelId } from '../../types';
+import type { ComposedBook } from '../../book/types';
 import { createPageCanvas, createOverlaySvg } from './dom';
 import { attachSlotClickHandler } from './interaction';
 import {
@@ -28,6 +29,7 @@ export function buildPagesDom(
   docRef: MutableRefObject<VDTDocument | null>,
   dispatchRef: MutableRefObject<Dispatch<SandboxAction>>,
   activePanelRef: MutableRefObject<PanelId | null>,
+  sourceRef: MutableRefObject<ComposedBook | null>,
 ): BuildPagesDomResult {
   const isSpread = viewMode === 'spread';
   const pagesPerRow = isSpread ? 2 : 1;
@@ -52,7 +54,7 @@ export function buildPagesDom(
     const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
     slot.appendChild(overlay);
     overlayMap.set(pageIndex, overlay);
-    attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef);
+    attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef, sourceRef);
     allSlots.push(slot);
     return slot;
   };

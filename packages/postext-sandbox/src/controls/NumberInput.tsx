@@ -1,10 +1,10 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { InfoTip } from './InfoTip';
-import { ResetButton } from './ResetButton';
+import { FieldRow } from './FieldRow';
 import { NumberPopover } from './NumberPopover';
 import { useDebouncedCommit } from './useDebouncedCommit';
+import type { PopoverCloseReason } from '../ui';
 
 interface NumberInputProps {
   label: string;
@@ -21,77 +21,66 @@ interface NumberInputProps {
 
 export function NumberInput({ label, value, onChange, min = 0, max = 100, step = 1, tooltip, isDefault, onReset, suffix }: NumberInputProps) {
   // Typing into the field updates `typed` immediately but only commits
-  // upstream after a short quiet window. See T1-a in the perf plan.
+  // upstream after a short quiet window.
   const [typed, commitTyped, flushTyped] = useDebouncedCommit(value, onChange);
   const chars = Math.max(String(typed).length, 2);
   const muted = isDefault ?? false;
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-
-  const openPopover = () => {
-    if (inputRef.current) {
-      setAnchorRect(inputRef.current.getBoundingClientRect());
-    }
-    setPopoverOpen(true);
-  };
+  const popupRef = useRef<HTMLDivElement>(null);
 
   const handleBlur = (e: React.FocusEvent) => {
     const related = e.relatedTarget as Node | null;
-    if (related && popoverRef.current?.contains(related)) return;
+    if (related && popupRef.current?.contains(related)) return;
     flushTyped();
     setPopoverOpen(false);
   };
 
+  const handleOpenChange = (next: boolean, reason: PopoverCloseReason, event: Event | undefined) => {
+    // Clicking back into the input that opened the slider is not "outside".
+    if (!next && reason === 'outside-press' && event && inputRef.current?.contains(event.target as Node)) return;
+    setPopoverOpen(next);
+  };
+
   return (
-    <div className="mb-2 flex items-center justify-between gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-1">
-        {tooltip && <InfoTip text={tooltip} />}
-        <label className="text-xs" title={label} style={{ color: 'var(--slate)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-          {label}
-        </label>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {!muted && onReset && <ResetButton onClick={onReset} />}
-        <input
-          ref={inputRef}
-          type="number"
-          value={typed}
-          onChange={(e) => commitTyped(Number(e.target.value))}
-          onFocus={openPopover}
-          onBlur={handleBlur}
-          min={min}
-          max={max}
-          step={step}
-          className="hide-spinners rounded border px-2 py-1 text-xs text-right"
-          style={{
-            width: `${chars + 2.2}ch`,
-            borderColor: 'var(--rule)',
-            backgroundColor: 'var(--surface)',
-            color: muted ? 'var(--slate)' : 'var(--foreground)',
-            MozAppearance: 'textfield',
-          }}
-        />
-        {suffix && (
-          <span className="text-xs" style={{ color: muted ? 'var(--slate)' : 'var(--foreground)' }}>
-            {suffix}
-          </span>
-        )}
-      </div>
-      {popoverOpen && anchorRect && (
-        <NumberPopover
-          ref={popoverRef}
-          value={value}
-          onChange={onChange}
-          anchorRect={anchorRect}
-          onClose={() => setPopoverOpen(false)}
-          min={min}
-          max={max}
-          step={step}
-          label={label}
-        />
+    <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={suffix ? [suffix] : undefined}>
+      <input
+        ref={inputRef}
+        type="number"
+        value={typed}
+        onChange={(e) => commitTyped(Number(e.target.value))}
+        onFocus={() => setPopoverOpen(true)}
+        onBlur={handleBlur}
+        min={min}
+        max={max}
+        step={step}
+        aria-label={label}
+        className="postext-hide-spinners rounded border px-2 py-1 text-xs text-right"
+        style={{
+          width: `${chars + 2.2}ch`,
+          borderColor: 'var(--rule)',
+          backgroundColor: 'var(--surface)',
+          color: muted ? 'var(--slate)' : 'var(--foreground)',
+        }}
+      />
+      {suffix && (
+        <span className="text-xs" style={{ color: muted ? 'var(--slate)' : 'var(--foreground)' }}>
+          {suffix}
+        </span>
       )}
-    </div>
+      <NumberPopover
+        open={popoverOpen}
+        onOpenChange={handleOpenChange}
+        anchor={rowRef}
+        popupRef={popupRef}
+        value={value}
+        onChange={onChange}
+        min={min}
+        max={max}
+        step={step}
+        label={label}
+      />
+    </FieldRow>
   );
 }

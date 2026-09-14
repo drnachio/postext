@@ -15,7 +15,12 @@ import type {
   VDTDocument,
   HtmlRenderIndex,
 } from 'postext';
-import { useSandbox } from '../../context/SandboxContext';
+import { useSandbox, useSandboxDocSourceRef, useLayoutSource, withLayoutOverride, type EditorSelection } from '../../context/SandboxContext';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { toBookSelection } from '../../book/compose';
+import { computeBookPages } from '../../book/pages';
+import type { ComposedBook } from '../../book/types';
+import { BOOK_LAYOUT_DEBOUNCE_MS } from '../CanvasPreview';
 import { useShadowDom } from '../../hooks/useShadowDom';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImageUrls, getResourceImageUrl } from '../../controls/resourceImages';
@@ -60,9 +65,16 @@ export interface HtmlPreviewHandle {
 export const HtmlPreview = forwardRef<HtmlPreviewHandle, HtmlPreviewProps>(
 function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBoundsChange, onPageCountChange, onCurrentPageChange }, ref) {
   const { state, dispatch, docRef: sharedDocRef } = useSandbox();
+  const sharedDocSourceRef = useSandboxDocSourceRef();
+  const { book: layoutBook, scope: layoutScope, activeChapterId, configOverride } = useLayoutSource();
   const { hostRef, shadowRef } = useShadowDom();
-  const deferredMarkdown = useDeferredValue(state.markdown);
-  const deferredConfig = useDeferredValue(state.config);
+  const debouncedBook = useDebouncedValue(layoutBook, layoutScope === 'book' && layoutBook.segments.length > 1 ? BOOK_LAYOUT_DEBOUNCE_MS : 0);
+  const deferredBook = useDeferredValue(debouncedBook);
+  const deferredOverride = useDeferredValue(configOverride);
+  const rawDeferredConfig = useDeferredValue(state.config);
+  const deferredConfig = useMemo(() => withLayoutOverride(rawDeferredConfig, deferredOverride), [rawDeferredConfig, deferredOverride]);
+  // The book the current `docRef` was built from.
+  const builtSourceRef = useRef<ComposedBook | null>(null);
   const deferredResources = useDeferredValue(state.resources);
 
   const layoutWorker = useLayoutWorker();
@@ -108,13 +120,13 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   // don't capture stale values via closure.
   const fontScaleRef = useRef(fontScale);
   const columnModeRef = useRef<ColumnMode>(columnMode);
-  const markdownRef = useRef(deferredMarkdown);
+  const sourceRef = useRef(deferredBook);
   const configRef = useRef(deferredConfig);
   const localeRef = useRef(state.locale);
   const resourcesRef = useRef(state.resources);
   fontScaleRef.current = fontScale;
   columnModeRef.current = columnMode;
-  markdownRef.current = deferredMarkdown;
+  sourceRef.current = deferredBook;
   configRef.current = deferredConfig;
   localeRef.current = state.locale;
   resourcesRef.current = state.resources;
@@ -150,14 +162,14 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   // cell, a caption, an SVG payload) must relayout the HTML tab as well.
   const renderKey = useMemo(
     () => ({
-      markdown: deferredMarkdown,
+      book: deferredBook,
       config: deferredConfig,
       resources: deferredResources,
       fontScale,
       columnMode,
       locale: state.locale,
     }),
-    [deferredMarkdown, deferredConfig, deferredResources, fontScale, columnMode, state.locale],
+    [deferredBook, deferredConfig, deferredResources, fontScale, columnMode, state.locale],
   );
 
   // Stable scheduler: subscribers (font listener, ResizeObserver, the
@@ -220,7 +232,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     const currentFontScale = fontScaleRef.current;
     const currentColumnMode = columnModeRef.current;
-    const currentMarkdown = markdownRef.current;
+    const currentSource = sourceRef.current;
     // Screen-only overrides (`htmlViewer.overrides`) merged in up front, so
     // font loading, column measurement and layout all see the same config.
     const currentConfig = applyHtmlViewerOverrides(configRef.current);
@@ -303,7 +315,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     try {
       const doc = await layoutWorker.build(
-        { markdown: currentMarkdown, resources: resourcesRef.current },
+        { markdown: currentSource.markdown, metadata: currentSource.metadata, resources: resourcesRef.current },
         configOverride,
       );
       if (seq !== renderSeqRef.current) return;
@@ -372,6 +384,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           docRef,
           dispatchRef,
           activePanelRef,
+          builtSourceRef,
         );
       };
 
@@ -454,7 +467,10 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       }
 
       docRef.current = doc;
+      builtSourceRef.current = currentSource;
       sharedDocRef.current = doc;
+      sharedDocSourceRef.current = currentSource;
+      if (currentSource.scope === 'book') dispatch({ type: 'SET_BOOK_PAGES', payload: computeBookPages(doc, currentSource) });
       dispatch({ type: 'BUMP_DOC_VERSION' });
       lastRenderRef.current = indexed;
       lastRenderSigRef.current = sig;
@@ -497,8 +513,10 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     const doc = docRef.current;
     if (!doc) return;
     const debug = resolveDebugConfig(state.config.debug);
-    const selection = state.selection;
-    const focused = state.editorFocused;
+    const source = builtSourceRef.current;
+    const mapped = source ? toBookSelection(source, activeChapterId, state.selection) : state.selection;
+    const selection: EditorSelection = mapped ?? { from: -1, to: -1, head: -1 };
+    const focused = state.editorFocused && mapped !== null;
 
     let caretBlockIdx = -1;
     const { head } = selection;
@@ -551,7 +569,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         scroll.scrollLeft += cr.right - cn.right + padding;
       }
     }
-  }, [state.selection, state.config.debug, state.editorFocused, state.resourceSelection, docVersion]);
+  }, [state.selection, activeChapterId, state.config.debug, state.editorFocused, state.resourceSelection, docVersion]);
 
   // Imperative API exposed to the viewport toolbar.
   // - regenerate: force a fresh relayout immediately.

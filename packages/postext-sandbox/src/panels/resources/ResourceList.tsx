@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { FileCode, Table as TableIcon, ImageIcon, Plus, ChevronDown } from 'lucide-react';
+import { FileCode, Table as TableIcon, ImageIcon, Plus, ChevronDown, FolderOpen } from 'lucide-react';
 import type { Resource, ResourceKind, ResourceType } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext';
 import { useBlobObjectUrl } from './ResourcePreview';
+import { Button, EmptyState, ListRow, Menu, MenuItem, PanelBody, PanelHeader } from '../../ui';
 
 interface ThumbProps {
   resource: Resource;
@@ -59,77 +59,18 @@ interface NewMenuProps {
 /** "New" dropdown: Upload image / Upload SVG / New table. */
 function NewMenu({ onNew }: NewMenuProps) {
   const labels = useSandboxLabels();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onClick);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onClick);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
-  const item = (label: string, kind: ResourceKind, Icon: typeof ImageIcon) => (
-    <button
-      type="button"
-      onClick={() => {
-        onNew(kind);
-        setOpen(false);
-      }}
-      className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs"
-      style={{ color: 'var(--foreground)', background: 'none', border: 'none', cursor: 'pointer' }}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-    >
-      <Icon size={13} aria-hidden="true" />
-      {label}
-    </button>
-  );
-
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="flex items-center gap-1 rounded border px-2 py-1 text-xs"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: 'var(--foreground)',
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={12} aria-hidden="true" />
-        {labels.resourceNew}
-        <ChevronDown size={12} aria-hidden="true" />
-      </button>
-      {open && (
-        <div
-          role="menu"
-          className="absolute right-0 z-50 mt-1 rounded border py-1 shadow-md"
-          style={{
-            minWidth: 150,
-            backgroundColor: 'var(--background)',
-            borderColor: 'var(--rule)',
-          }}
-        >
-          {item(labels.resourceUploadImage, 'bitmap', ImageIcon)}
-          {item(labels.resourceUploadSvg, 'svg', FileCode)}
-          {item(labels.resourceNewTable, 'table', TableIcon)}
-        </div>
-      )}
-    </div>
+    <Menu
+      trigger={
+        <Button variant="outline" size="xs" icon={<Plus size={12} />} trailingIcon={<ChevronDown size={12} />}>
+          {labels.resourceNew}
+        </Button>
+      }
+    >
+      <MenuItem icon={<ImageIcon size={13} />} onClick={() => onNew('bitmap')}>{labels.resourceUploadImage}</MenuItem>
+      <MenuItem icon={<FileCode size={13} />} onClick={() => onNew('svg')}>{labels.resourceUploadSvg}</MenuItem>
+      <MenuItem icon={<TableIcon size={13} />} onClick={() => onNew('table')}>{labels.resourceNewTable}</MenuItem>
+    </Menu>
   );
 }
 
@@ -161,20 +102,10 @@ export function ResourceList({ resources, types, selectedId, onSelect, onNew }: 
 
   return (
     <div className="flex h-full flex-col">
-      <div
-        className="flex items-center justify-between gap-2 border-b px-2 py-2"
-        style={{ borderColor: 'var(--rule)' }}
-      >
-        <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-          {labels.resources}
-        </span>
-        <NewMenu onNew={onNew} />
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-2">
+      <PanelHeader title={labels.resources} count={resources.length > 0 ? resources.length : undefined} actions={<NewMenu onNew={onNew} />} />
+      <PanelBody padded>
         {resources.length === 0 ? (
-          <p className="px-1 py-4 text-center text-xs" style={{ color: 'var(--slate)' }}>
-            {labels.resourcesEmpty}
-          </p>
+          <EmptyState icon={<FolderOpen size={28} />} title={labels.resourcesEmpty} />
         ) : (
           [...groups.values()].map((group) => (
             <div key={group.name} className="mb-3">
@@ -189,50 +120,22 @@ export function ResourceList({ resources, types, selectedId, onSelect, onNew }: 
                   const selected = r.id === selectedId;
                   const label = r.caption?.trim() || r.id;
                   return (
-                    <button
+                    <ListRow
                       key={r.id}
-                      type="button"
-                      onClick={() => onSelect(r.id)}
-                      aria-current={selected}
-                      className="flex items-center gap-2 rounded px-1.5 py-1 text-left"
-                      style={{
-                        backgroundColor: selected ? 'var(--surface)' : 'transparent',
-                        border: '1px solid',
-                        borderColor: selected ? 'var(--rule)' : 'transparent',
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!selected) e.currentTarget.style.backgroundColor = 'var(--surface)';
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!selected) e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      <Thumb resource={r} />
-                      <span className="flex min-w-0 flex-col">
-                        <span
-                          className="truncate text-xs"
-                          style={{ color: 'var(--foreground)' }}
-                          title={label}
-                        >
-                          {label}
-                        </span>
-                        <span
-                          className="truncate text-xs"
-                          style={{ color: 'var(--slate)', fontSize: 10 }}
-                          title={r.id}
-                        >
-                          {r.id}
-                        </span>
-                      </span>
-                    </button>
+                      selected={selected}
+                      onSelect={() => onSelect(r.id)}
+                      ariaLabel={label}
+                      leading={<Thumb resource={r} />}
+                      title={label}
+                      subtitle={r.id}
+                    />
                   );
                 })}
               </div>
             </div>
           ))
         )}
-      </div>
+      </PanelBody>
     </div>
   );
 }

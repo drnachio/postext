@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSandboxLabels } from '../context/SandboxContext';
 
 interface ResizableHandleProps {
   onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
@@ -8,6 +9,7 @@ interface ResizableHandleProps {
 
 export function ResizableHandle({ onPointerDown }: ResizableHandleProps) {
   const [active, setActive] = useState(false);
+  const labels = useSandboxLabels();
 
   return (
     <div
@@ -24,7 +26,7 @@ export function ResizableHandle({ onPointerDown }: ResizableHandleProps) {
       onMouseLeave={() => setActive(false)}
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize sidebar"
+      aria-label={labels.sidebarResize}
       tabIndex={0}
       style={{
         position: 'relative',
@@ -32,9 +34,7 @@ export function ResizableHandle({ onPointerDown }: ResizableHandleProps) {
         flexShrink: 0,
         cursor: 'col-resize',
         height: '100%',
-        backgroundColor: active
-          ? 'var(--gilt, #E0A816)'
-          : 'var(--rule-visible, #52525B)',
+        backgroundColor: active ? 'var(--gilt)' : 'var(--rule)',
         transition: 'background-color 150ms',
       }}
     >

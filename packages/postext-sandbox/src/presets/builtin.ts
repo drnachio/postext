@@ -3,6 +3,8 @@ import { createDefaultConfig } from '../context/defaultConfig';
 import { buildDefaultResources } from '../defaultResources';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 import type { PresetProvider } from './types';
+import { deriveChapterTitle, newChapter } from '../book/chapterOps';
+import { generateId } from '../storage/ids';
 
 export const BUILTIN_PRESET_ID = 'postext-guide';
 
@@ -34,7 +36,8 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
         ?? (locale.toLowerCase().startsWith('es') ? DEFAULT_MARKDOWN_ES : DEFAULT_MARKDOWN_EN);
       const config = opts.configOverride ?? createDefaultConfig(locale);
       const resources = await buildDefaultResources(locale);
-      return { summary, markdown, config, resources, blobs: [], fonts: [] };
+      const chapters = [newChapter(generateId('chapter'), deriveChapterTitle(markdown, opts.name), markdown)];
+      return { summary, chapters, config, resources, blobs: [], fonts: [] };
     },
   };
 }

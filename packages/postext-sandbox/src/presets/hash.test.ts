@@ -3,7 +3,7 @@ import type { PostextConfig, Resource } from 'postext';
 import { createDefaultConfig } from '../context/defaultConfig';
 import {
   hashConfig,
-  hashMarkdown,
+  hashChapters,
   hashResources,
   hashString,
   isDocumentUntouched,
@@ -82,11 +82,12 @@ describe('hashResources', () => {
 });
 
 describe('isDocumentUntouched', () => {
-  const state = { markdown: '# Hi', config: createDefaultConfig('en'), resources: [table(), svg()] };
+  const chapters = [{ id: 'a', title: 'Hi', markdown: '# Hi', createdAt: 1, updatedAt: 1 }];
+  const state = { chapters, config: createDefaultConfig('en'), resources: [table(), svg()] };
   const snapshot: AppliedPresetSnapshot = {
     presetId: 'brochure',
     fingerprint: 'abc',
-    markdownHash: hashMarkdown(state.markdown),
+    markdownHash: hashChapters(state.chapters),
     configHash: hashConfig(state.config),
     resourcesHash: hashResources(state.resources),
   };
@@ -99,7 +100,8 @@ describe('isDocumentUntouched', () => {
   });
 
   it('is false after a markdown, config or resource edit', () => {
-    expect(isDocumentUntouched({ ...state, markdown: '# Hi!' }, snapshot)).toBe(false);
+    expect(isDocumentUntouched({ ...state, chapters: [{ ...chapters[0]!, markdown: '# Hi!' }] }, snapshot)).toBe(false);
+    expect(isDocumentUntouched({ ...state, chapters: [{ ...chapters[0]!, id: 'other', updatedAt: 99 }] }, snapshot)).toBe(true);
     const config: PostextConfig = { ...state.config, page: { dpi: 144 } };
     expect(isDocumentUntouched({ ...state, config }, snapshot)).toBe(false);
     expect(isDocumentUntouched({ ...state, resources: [table()] }, snapshot)).toBe(false);

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useSyncExternalStore } from 'react';
-import { InfoTip } from './InfoTip';
-import { ResetButton } from './ResetButton';
+import { useSandboxLabels } from '../context/SandboxContext';
+import { Popover, type PopoverCloseReason } from '../ui';
+import { FieldRow } from './FieldRow';
 import { listCustomFontFamilies, loadFont, onCustomFontsChanged } from './fontLoader';
 
 interface FontPickerProps {
@@ -106,17 +107,15 @@ function FontListItem({
       ref={ref}
       type="button"
       onClick={onClick}
-      className="w-full text-left px-3 py-1.5 text-sm transition-colors"
+      aria-selected={selected}
+      role="option"
+      className={selected
+        ? 'w-full px-3 py-1.5 text-left text-sm transition-colors'
+        : 'w-full px-3 py-1.5 text-left text-sm transition-colors hover:bg-(--background)'}
       style={{
         fontFamily: `"${font}", sans-serif`,
-        backgroundColor: selected ? 'var(--gilt)' : 'transparent',
+        backgroundColor: selected ? 'var(--gilt)' : undefined,
         color: selected ? 'var(--background)' : 'var(--foreground)',
-      }}
-      onMouseEnter={(e) => {
-        if (!selected) e.currentTarget.style.backgroundColor = 'var(--surface)';
-      }}
-      onMouseLeave={(e) => {
-        if (!selected) e.currentTarget.style.backgroundColor = 'transparent';
       }}
     >
       {font}
@@ -125,8 +124,18 @@ function FontListItem({
 }
 
 const POPOVER_WIDTH = 260;
-const POPOVER_HEIGHT = 320;
-const POPOVER_GAP = 6;
+const LIST_HEIGHT = 320;
+
+function GroupHeader({ children }: { children: string }) {
+  return (
+    <div
+      className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide"
+      style={{ color: 'var(--slate)', backgroundColor: 'var(--background)', borderBottom: '1px solid var(--rule)' }}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function FontPicker({
   label,
@@ -140,52 +149,30 @@ export function FontPicker({
   customGroupLabel,
   googleGroupLabel,
 }: FontPickerProps) {
+  const labels = useSandboxLabels();
   const muted = isDefault ?? false;
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const [fonts, setFonts] = useState<string[]>(cachedFonts ?? FALLBACK_FONTS);
   const customFonts = useSyncExternalStore(
     subscribeCustomFonts,
     getCustomFontSnapshot,
     getCustomFontSnapshot,
   );
+  const rowRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const openPopover = useCallback(() => {
-    if (buttonRef.current) {
-      setAnchorRect(buttonRef.current.getBoundingClientRect());
-    }
     setSearch('');
     setOpen(true);
     fetchGoogleFonts().then(setFonts);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const handle = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', handle);
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('mousedown', handle);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (open && searchRef.current) {
-      searchRef.current.focus();
-    }
-  }, [open]);
+  const handleOpenChange = (next: boolean, reason: PopoverCloseReason, event: Event | undefined) => {
+    if (!next && reason === 'outside-press' && event && buttonRef.current?.contains(event.target as Node)) return;
+    setOpen(next);
+  };
 
   // Load the currently selected font
   useEffect(() => {
@@ -201,143 +188,83 @@ export function FontPicker({
   const filteredGoogle = fonts.filter((f) => !customSet.has(f) && matches(f));
   const hasAny = filteredCustom.length > 0 || filteredGoogle.length > 0;
 
-  return (
-    <div className="mb-2 flex items-center justify-between gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-1">
-        {tooltip && <InfoTip text={tooltip} />}
-        <label className="text-xs" title={label} style={{ color: 'var(--slate)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-          {label}
-        </label>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {!muted && onReset && <ResetButton onClick={onReset} />}
-        <button
-          ref={buttonRef}
-          type="button"
-          onClick={openPopover}
-          className="rounded border px-2 py-1 text-xs text-right truncate"
-          style={{
-            maxWidth: '140px',
-            borderColor: 'var(--rule)',
-            backgroundColor: 'var(--surface)',
-            color: muted ? 'var(--slate)' : 'var(--foreground)',
-            fontFamily: `"${value}", sans-serif`,
-          }}
-        >
-          {value}
-        </button>
-      </div>
+  const pick = (font: string) => {
+    onChange(font);
+    setOpen(false);
+  };
 
-      {open && anchorRect && (
-        <div
-          ref={popoverRef}
-          role="dialog"
-          aria-label={label}
-          style={{
-            position: 'fixed',
-            zIndex: 50,
-            top: (anchorRect.bottom + POPOVER_GAP + POPOVER_HEIGHT + 50 < window.innerHeight)
-              ? anchorRect.bottom + POPOVER_GAP
-              : Math.max(8, anchorRect.top - POPOVER_GAP - POPOVER_HEIGHT - 50),
-            left: Math.max(8, anchorRect.right - POPOVER_WIDTH),
-            width: POPOVER_WIDTH,
-            backgroundColor: 'var(--background)',
-            border: '1px solid var(--rule)',
-            borderRadius: 6,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ padding: '8px 8px 4px' }}>
-            <input
-              ref={searchRef}
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={searchPlaceholder ?? 'Search fonts...'}
-              className="w-full rounded border px-2 py-1 text-xs"
-              style={{
-                borderColor: 'var(--rule)',
-                backgroundColor: 'var(--surface)',
-                color: 'var(--foreground)',
-                outline: 'none',
-              }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--gilt)'; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--rule)'; }}
-            />
-          </div>
-          <div
+  return (
+    <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={[value]}>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => (open ? setOpen(false) : openPopover())}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        className="rounded border px-2 py-1 text-xs text-right truncate"
+        style={{
+          maxWidth: '140px',
+          borderColor: 'var(--rule)',
+          backgroundColor: 'var(--surface)',
+          color: muted ? 'var(--slate)' : 'var(--foreground)',
+          fontFamily: `"${value}", sans-serif`,
+        }}
+      >
+        {value}
+      </button>
+
+      <Popover
+        open={open}
+        onOpenChange={handleOpenChange}
+        anchor={rowRef}
+        width={POPOVER_WIDTH}
+        initialFocus={searchRef}
+        ariaLabel={label}
+        style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'var(--background)' }}
+      >
+        <div style={{ padding: '8px 8px 4px' }}>
+          <input
+            ref={searchRef}
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={searchPlaceholder ?? labels.fontPickerSearch}
+            aria-label={searchPlaceholder ?? labels.fontPickerSearch}
+            className="w-full rounded border px-2 py-1 text-xs focus:border-(--gilt)"
             style={{
-              height: POPOVER_HEIGHT,
-              overflowY: 'auto',
-              paddingBottom: 4,
+              borderColor: 'var(--rule)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--foreground)',
+              outline: 'none',
             }}
-          >
-            {!hasAny && (
-              <div
-                className="px-3 py-2 text-xs"
-                style={{ color: 'var(--slate)' }}
-              >
-                {noResultsLabel ?? 'No fonts found'}
-              </div>
-            )}
-            {filteredCustom.length > 0 && (
-              <>
-                <div
-                  className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide"
-                  style={{
-                    color: 'var(--slate)',
-                    backgroundColor: 'var(--background)',
-                    borderBottom: '1px solid var(--rule)',
-                  }}
-                >
-                  {customGroupLabel ?? 'Custom'}
-                </div>
-                {filteredCustom.map((font) => (
-                  <FontListItem
-                    key={`custom-${font}`}
-                    font={font}
-                    selected={font === value}
-                    onClick={() => {
-                      onChange(font);
-                      setOpen(false);
-                    }}
-                  />
-                ))}
-              </>
-            )}
-            {filteredGoogle.length > 0 && (
-              <>
-                {filteredCustom.length > 0 && (
-                  <div
-                    className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide"
-                    style={{
-                      color: 'var(--slate)',
-                      backgroundColor: 'var(--background)',
-                      borderBottom: '1px solid var(--rule)',
-                    }}
-                  >
-                    {googleGroupLabel ?? 'Google Fonts'}
-                  </div>
-                )}
-                {filteredGoogle.map((font) => (
-                  <FontListItem
-                    key={`google-${font}`}
-                    font={font}
-                    selected={font === value}
-                    onClick={() => {
-                      onChange(font);
-                      setOpen(false);
-                    }}
-                  />
-                ))}
-              </>
-            )}
-          </div>
+          />
         </div>
-      )}
-    </div>
+        <div role="listbox" aria-label={label} style={{ height: LIST_HEIGHT, maxHeight: 'calc(var(--available-height) - 48px)', overflowY: 'auto', paddingBottom: 4 }}>
+          {!hasAny && (
+            <div className="px-3 py-2 text-xs" style={{ color: 'var(--slate)' }}>
+              {noResultsLabel ?? labels.fontPickerNoResults}
+            </div>
+          )}
+          {filteredCustom.length > 0 && (
+            <>
+              <GroupHeader>{customGroupLabel ?? labels.fontPickerCustomGroup}</GroupHeader>
+              {filteredCustom.map((font) => (
+                <FontListItem key={`custom-${font}`} font={font} selected={font === value} onClick={() => pick(font)} />
+              ))}
+            </>
+          )}
+          {filteredGoogle.length > 0 && (
+            <>
+              {filteredCustom.length > 0 && (
+                <GroupHeader>{googleGroupLabel ?? labels.fontPickerGoogleGroup}</GroupHeader>
+              )}
+              {filteredGoogle.map((font) => (
+                <FontListItem key={`google-${font}`} font={font} selected={font === value} onClick={() => pick(font)} />
+              ))}
+            </>
+          )}
+        </div>
+      </Popover>
+    </FieldRow>
   );
 }

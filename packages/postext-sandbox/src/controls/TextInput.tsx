@@ -1,7 +1,6 @@
 'use client';
 
-import { InfoTip } from './InfoTip';
-import { ResetButton } from './ResetButton';
+import { FieldRow } from './FieldRow';
 
 interface TextInputProps {
   label: string;
@@ -30,31 +29,22 @@ export function TextInput({
 }: TextInputProps) {
   const muted = isDefault ?? false;
   return (
-    <div className="mb-2 flex items-center justify-between gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-1">
-        {tooltip && <InfoTip text={tooltip} />}
-        <label className="text-xs" title={label} style={{ color: 'var(--slate)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-          {label}
-        </label>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {!muted && onReset && <ResetButton onClick={onReset} />}
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={onFocus}
-          onBlur={onBlur}
-          placeholder={placeholder}
-          className="rounded border px-2 py-1 text-xs"
-          style={{
-            width: `${widthCh}ch`,
-            borderColor: 'var(--rule)',
-            backgroundColor: 'var(--surface)',
-            color: muted ? 'var(--slate)' : 'var(--foreground)',
-          }}
-        />
-      </div>
-    </div>
+    <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        placeholder={placeholder}
+        className="rounded border px-2 py-1 text-xs"
+        style={{
+          width: `${widthCh}ch`,
+          borderColor: 'var(--rule)',
+          backgroundColor: 'var(--surface)',
+          color: muted ? 'var(--slate)' : 'var(--foreground)',
+        }}
+      />
+    </FieldRow>
   );
 }

@@ -3,10 +3,18 @@ import { sandboxReducer, type SandboxState } from './SandboxContext';
 import { DEFAULT_LABELS } from '../types';
 import { BUILTIN_PRESET_ID } from '../presets';
 
+function ch(id: string, markdown = ''): SandboxState['chapters'][number] {
+  return { id, title: id.toUpperCase(), markdown, createdAt: 1, updatedAt: 1 };
+}
+
 function baseState(over: Partial<SandboxState> = {}): SandboxState {
   return {
-    markdown: '',
-    defaultMarkdown: '',
+    markdown: '# A',
+    chapters: [ch('a', '# A'), ch('b', '# B')],
+    activeChapterId: 'a',
+    layoutScope: 'book',
+    bookPages: null,
+    hiddenPresetIds: [],
     config: {},
     resources: [],
     storeReady: true,
@@ -65,7 +73,7 @@ describe('SET_ACTIVE_PROJECT', () => {
 });
 
 describe('project summaries', () => {
-  const summary = (id: string, name = id) => ({ id, name, createdAt: 0, updatedAt: 0 });
+  const summary = (id: string, name = id) => ({ id, name, createdAt: 0, updatedAt: 0, chapterCount: 1 });
 
   it('upserts by id and removes', () => {
     let s = sandboxReducer(baseState(), { type: 'SET_PROJECT_LIST', payload: [summary('a'), summary('b')] });
@@ -138,5 +146,65 @@ describe('resource selection state', () => {
     const replaced = sandboxReducer(s, { type: 'SET_RESOURCES', payload: [] });
     expect(replaced.activeResourceId).toBeNull();
     expect(replaced.pendingResourceFocus).toBeNull();
+  });
+});
+
+describe('book actions', () => {
+  it('SET_MARKDOWN edits the active chapter and keeps the mirror in sync', () => {
+    const base = baseState();
+    const s = sandboxReducer(base, { type: 'SET_MARKDOWN', payload: 'edited' });
+    expect(s.markdown).toBe('edited');
+    expect(s.chapters[0]!.markdown).toBe('edited');
+    expect(s.chapters[1]).toBe(base.chapters[1]);
+    expect(sandboxReducer(s, { type: 'SET_MARKDOWN', payload: 'edited' })).toBe(s);
+  });
+  it('SET_ACTIVE_CHAPTER swaps the mirror and resets the selection', () => {
+    const s = sandboxReducer(baseState({ selection: { from: 3, to: 3, head: 3 } }), { type: 'SET_ACTIVE_CHAPTER', payload: 'b' });
+    expect(s.activeChapterId).toBe('b');
+    expect(s.markdown).toBe('# B');
+    expect(s.selection).toEqual({ from: 0, to: 0, head: 0 });
+    expect(sandboxReducer(s, { type: 'SET_ACTIVE_CHAPTER', payload: 'nope' })).toBe(s);
+  });
+  it('REMOVE_CHAPTER guards the last chapter and re-targets the active one', () => {
+    const s = sandboxReducer(baseState(), { type: 'REMOVE_CHAPTER', payload: 'a' });
+    expect(s.chapters.map((c) => c.id)).toEqual(['b']);
+    expect(s.activeChapterId).toBe('b');
+    expect(s.markdown).toBe('# B');
+    expect(sandboxReducer(s, { type: 'REMOVE_CHAPTER', payload: 'b' })).toBe(s);
+  });
+  it('ADD_CHAPTER inserts after the active one and activates it', () => {
+    const s = sandboxReducer(baseState(), { type: 'ADD_CHAPTER', payload: { chapter: ch('n', 'new') } });
+    expect(s.chapters.map((c) => c.id)).toEqual(['a', 'n', 'b']);
+    expect(s.activeChapterId).toBe('n');
+    expect(s.markdown).toBe('new');
+  });
+  it('SPLIT and MERGE round-trip', () => {
+    const start = baseState({ chapters: [ch('a', '# One\ntext\n# Two\nmore')], activeChapterId: 'a', markdown: '# One\ntext\n# Two\nmore' });
+    const split = sandboxReducer(start, { type: 'SPLIT_CHAPTER_AT_HEADINGS', payload: { id: 'a', newIds: ['x'] } });
+    expect(split.chapters.map((c) => [c.id, c.markdown])).toEqual([['a', '# One\ntext'], ['x', '# Two\nmore']]);
+    const merged = sandboxReducer(split, { type: 'MERGE_CHAPTER_WITH_PREVIOUS', payload: 'x' });
+    expect(merged.chapters).toHaveLength(1);
+    expect(merged.chapters[0]!.markdown).toBe('# One\ntext\n\n# Two\nmore');
+  });
+  it('SET_PENDING_EDITOR_FOCUS into another chapter switches the active chapter', () => {
+    const s = sandboxReducer(baseState(), { type: 'SET_PENDING_EDITOR_FOCUS', payload: { chapterId: 'b', anchor: 2, head: 2, selectWord: false } });
+    expect(s.activeChapterId).toBe('b');
+    expect(s.markdown).toBe('# B');
+    expect(s.pendingEditorFocus).toEqual({ chapterId: 'b', anchor: 2, head: 2, selectWord: false });
+  });
+  it('SET_BOOK replaces everything and resets the selection', () => {
+    const s = sandboxReducer(baseState({ selection: { from: 1, to: 1, head: 1 } }), { type: 'SET_BOOK', payload: { chapters: [ch('z', 'zz')], activeChapterId: 'z', layoutScope: 'chapter' } });
+    expect(s.markdown).toBe('zz');
+    expect(s.layoutScope).toBe('chapter');
+    expect(s.selection).toEqual({ from: 0, to: 0, head: 0 });
+  });
+});
+
+describe('hidden presets', () => {
+  it('hides and unhides, never the built-in preset', () => {
+    const s = sandboxReducer(baseState(), { type: 'HIDE_PRESET', payload: 'remote-a' });
+    expect(s.hiddenPresetIds).toEqual(['remote-a']);
+    expect(sandboxReducer(s, { type: 'HIDE_PRESET', payload: BUILTIN_PRESET_ID })).toBe(s);
+    expect(sandboxReducer(s, { type: 'UNHIDE_PRESET', payload: 'remote-a' }).hiddenPresetIds).toEqual([]);
   });
 });

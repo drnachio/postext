@@ -82,7 +82,6 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, generating, error
           <p className="mt-3 text-xs" style={{ color: 'var(--slate)' }}>
             {labels.pdfGenerating}
           </p>
-          <style>{`@keyframes postext-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
     </div>

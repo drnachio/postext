@@ -49,7 +49,9 @@ import {
   TextInput,
   ToggleSwitch,
 } from '../../controls';
-import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { Button, ConfirmPopover, IconButton } from '../../ui';
+import { FieldRow } from '../../controls/FieldRow';
+import { SearchScope } from '../search/SearchScope';
 import { CONTAINER_EDGES } from './HeaderFooterSection/placementAdapter';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
@@ -60,7 +62,6 @@ const OFFSET_UNITS: DimensionUnit[] = ['mm', 'pt', 'px', 'em'];
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
-const labelStyle = { color: 'var(--slate)', fontSize: 11, lineHeight: '14px' } as const;
 
 /** Turn free text into a `:::callout{type="…"}`-friendly id. */
 function slugifyStyleId(raw: string): string {
@@ -102,15 +103,9 @@ interface FieldProps {
 
 function Field({ label, hint, children }: FieldProps) {
   return (
-    <label className="flex flex-col gap-0.5">
-      <span style={labelStyle}>{label}</span>
+    <FieldRow stacked label={label} hint={hint} className="mb-0">
       {children}
-      {hint && (
-        <span style={labelStyle} className="opacity-80">
-          {hint}
-        </span>
-      )}
-    </label>
+    </FieldRow>
   );
 }
 
@@ -121,29 +116,11 @@ function CardButton({
   children,
 }: {
   label: string;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   destructive?: boolean;
   children: React.ReactNode;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-      style={{
-        color: destructive ? 'var(--destructive)' : 'var(--slate)',
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-      onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-    >
-      {children}
-    </button>
-  );
+  return <IconButton label={label} icon={children} onClick={onClick} destructive={destructive} />;
 }
 
 interface CalloutStyleCardProps {
@@ -299,6 +276,7 @@ function CalloutStyleCard({
   }
 
   return (
+    <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden>
     <div className="mb-3 rounded border p-2" style={{ borderColor: 'var(--rule)' }}>
       <div className="mb-2 flex items-center justify-between gap-1">
         <span
@@ -913,6 +891,7 @@ function CalloutStyleCard({
         />
       </CollapsibleSection>
     </div>
+    </SearchScope>
   );
 }
 
@@ -1011,20 +990,9 @@ export const CalloutStylesSection = memo(function CalloutStylesSection() {
           onRemove={() => removeStyle(style.id)}
         />
       ))}
-      <button
-        type="button"
-        onClick={addStyle}
-        className="mt-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: 'var(--foreground)',
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={12} aria-hidden="true" />
+      <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addStyle} className="mt-1">
         {labels.calloutStyleAdd}
-      </button>
+      </Button>
     </CollapsibleSection>
   );
 });

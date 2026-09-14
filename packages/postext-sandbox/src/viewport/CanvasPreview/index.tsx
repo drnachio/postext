@@ -1,7 +1,11 @@
 'use client';
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useDeferredValue, useMemo } from 'react';
-import { useSandboxDispatch, useSandboxDocRef, useSandboxSelector } from '../../context/SandboxContext';
+import { useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource, withLayoutOverride, type EditorSelection } from '../../context/SandboxContext';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { toBookSelection } from '../../book/compose';
+import { computeBookPages } from '../../book/pages';
+import type { ComposedBook } from '../../book/types';
 import { renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { drawOverlay } from './overlay';
@@ -17,6 +21,10 @@ import {
   type ViewMode,
 } from './layoutUtils';
 import { findCaretBlockIdx } from './caret';
+
+/** Debounce for whole-book rebuilds while typing (ms). */
+export const BOOK_LAYOUT_DEBOUNCE_MS = 400;
+const NO_SELECTION: EditorSelection = { from: -1, to: -1, head: -1 };
 import { buildPagesDom } from './pageDom';
 
 interface CanvasPreviewProps {
@@ -42,12 +50,13 @@ export const CanvasPreview = forwardRef<CanvasPreviewHandle, CanvasPreviewProps>
 function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCountChange, onCurrentPageChange }, ref) {
   const dispatch = useSandboxDispatch();
   const sharedDocRef = useSandboxDocRef();
-  const markdown = useSandboxSelector((s) => s.markdown);
+  const { book: layoutBook, scope: layoutScope, activeChapterId, configOverride } = useLayoutSource();
+  const sharedDocSourceRef = useSandboxDocSourceRef();
   const config = useSandboxSelector((s) => s.config);
   const resources = useSandboxSelector((s) => s.resources);
   const locale = useSandboxSelector((s) => s.locale);
   const activePanel = useSandboxSelector((s) => s.activePanel);
-  const selection = useSandboxSelector((s) => s.selection);
+  const editorSelection = useSandboxSelector((s) => s.selection);
   const editorFocused = useSandboxSelector((s) => s.editorFocused);
   const resourceSelection = useSandboxSelector((s) => s.resourceSelection);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,7 +77,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // The canvas internal pixel size is fixed at page dimensions, so browser
   // scaling handles size changes with no paint cost.
   const lastPaintedDocVersionRef = useRef(-1);
-  const deferredMarkdown = useDeferredValue(markdown);
+  // Whole-book layouts are heavier: wait for a typing pause before rebuilding.
+  const debouncedBook = useDebouncedValue(layoutBook, layoutScope === 'book' && layoutBook.segments.length > 1 ? BOOK_LAYOUT_DEBOUNCE_MS : 0);
+  const deferredBook = useDeferredValue(debouncedBook);
+  const deferredOverride = useDeferredValue(configOverride);
+  // The book the current `docRef` was built from (offsets in the document
+  // are offsets into its markdown).
+  const builtSourceRef = useRef<ComposedBook | null>(null);
   const deferredResources = useDeferredValue(resources);
   const rawDeferredConfig = useDeferredValue(config);
   // Inject app-locale-derived hyphenation locale when user hasn't set one explicitly
@@ -266,11 +281,18 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     appliedRebuildKeyRef.current = rebuildKey;
 
     onGeneratingChangeRef.current?.(true);
-    layoutWorker.build({ markdown: deferredMarkdown, resources: deferredResources }, deferredConfig)
+    const source = deferredBook;
+    layoutWorker.build(
+      { markdown: source.markdown, metadata: source.metadata, resources: deferredResources },
+      withLayoutOverride(deferredConfig, deferredOverride),
+    )
       .then((doc) => {
         if (cancelled) return;
         docRef.current = doc;
+        builtSourceRef.current = source;
         sharedDocRef.current = doc;
+        sharedDocSourceRef.current = source;
+        if (source.scope === 'book') dispatch({ type: 'SET_BOOK_PAGES', payload: computeBookPages(doc, source) });
         dispatch({ type: 'BUMP_DOC_VERSION' });
         setDocVersion((v) => v + 1);
         onPageCountChangeRef.current?.(doc.pages.length);
@@ -286,7 +308,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     return () => {
       cancelled = true;
     };
-  }, [deferredMarkdown, deferredResources, deferredConfig, rebuildKey, dispatch, sharedDocRef, layoutWorker]);
+  }, [deferredBook, deferredOverride, deferredResources, deferredConfig, rebuildKey, dispatch, sharedDocRef, sharedDocSourceRef, layoutWorker]);
 
   // Single-ink diagram colour: when diagramStyle.singleInk is on, SVG resources
   // decode through a recolouring pass keyed on the resolved ink hex.
@@ -396,6 +418,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       docRef,
       dispatchRef,
       activePanelRef,
+      builtSourceRef,
     );
 
     // Pre-render pages that were visible in the previous document so the
@@ -442,7 +465,11 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     const doc = docRef.current;
     if (!doc) return;
     const debug = resolveDebugConfig(config.debug);
-    const focused = editorFocused;
+    // The editor selection is chapter-local; the document is the composed book.
+    const source = builtSourceRef.current;
+    const mapped = source ? toBookSelection(source, activeChapterId, editorSelection) : editorSelection;
+    const selection: EditorSelection = mapped ?? NO_SELECTION;
+    const focused = editorFocused && mapped !== null;
     const caretBlockIdx = findCaretBlockIdx(doc, selection.head);
 
     let activeCursorRect: SVGRectElement | null = null;
@@ -478,7 +505,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
         container.scrollLeft += cr.right - cn.right + padding;
       }
     }
-  }, [selection, config.debug, editorFocused, resourceSelection, docVersion]);
+  }, [editorSelection, activeChapterId, config.debug, editorFocused, resourceSelection, docVersion]);
 
   // Imperative API: regenerate by bumping rebuildKey; jumpToPage by scrolling
   // the slot element with the matching data-page-index into view.

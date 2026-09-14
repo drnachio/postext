@@ -10,14 +10,18 @@ import { stripConfigDefaults } from 'postext';
 import { createDefaultConfig } from '../context/defaultConfig';
 import { svgIntrinsicSize } from '../panels/resources/svgIntrinsic';
 import { slugify, uniqueSlug } from '../panels/resources/slugify';
+import { deriveChapterTitle, newChapter } from '../book/chapterOps';
+import type { Chapter } from '../book/types';
+import { generateId } from '../storage/ids';
 import {
+  chapterFileName,
   extensionForResource,
   fontsToCustomFonts,
   isBitmapFile,
   isPresetManifest,
   isSvgFile,
   mimeForFile,
-  pickMarkdownFile,
+  pickChapterSpecs,
   presetFileId,
   presetFontFileId,
   resourceFromSpec,
@@ -26,8 +30,9 @@ import type {
   LoadedPreset,
   LoadedPresetBlob,
   LoadedPresetFont,
+  PresetChapterSpec,
   PresetFontFamilySpec,
-  PresetManifest,
+  PresetManifestV2,
   PresetResourceSpec,
   PresetSummary,
 } from './types';
@@ -56,6 +61,10 @@ export interface ParseBundleOptions {
   summary: PresetSummary;
   ids?: BundleIdScheme;
   onWarning?: (message: string) => void;
+  /** Id generator for the loaded chapters (defaults to random ids). */
+  chapterIds?: () => string;
+  /** Fallback title for a chapter without a heading (`n` is 1-based). */
+  untitledChapter?: (n: number) => string;
 }
 
 /** Read a bitmap's pixel size; zero when it cannot be decoded (or outside a
@@ -77,15 +86,24 @@ export async function bitmapSize(bytes: ArrayBuffer, mime: string): Promise<{ wi
 export async function parseBundle(
   manifest: unknown,
   readFile: BundleFileReader,
-  { locale, summary, ids, onWarning }: ParseBundleOptions,
+  { locale, summary, ids, onWarning, chapterIds, untitledChapter }: ParseBundleOptions,
 ): Promise<LoadedPreset> {
   if (!isPresetManifest(manifest)) {
     throw new Error(`Invalid preset manifest for "${summary.id}"`);
   }
   const presetId = manifest.id;
   const scheme = ids ?? presetIdScheme(presetId);
+  const nextId = chapterIds ?? (() => generateId('chapter'));
+  const untitled = untitledChapter ?? ((n: number) => `Chapter ${n}`);
 
-  const markdown = new TextDecoder().decode(await readFile(pickMarkdownFile(manifest, locale)));
+  const decoder = new TextDecoder();
+  const chapters: Chapter[] = [];
+  const specs = pickChapterSpecs(manifest, locale);
+  for (let i = 0; i < specs.length; i++) {
+    const spec = specs[i]!;
+    const text = decoder.decode(await readFile(spec.file));
+    chapters.push(newChapter(nextId(), spec.title || deriveChapterTitle(text, untitled(i + 1)), text));
+  }
 
   const blobs: LoadedPresetBlob[] = [];
   const resources: Resource[] = await Promise.all(
@@ -127,7 +145,7 @@ export async function parseBundle(
       description: manifest.description ?? summary.description,
       locale: manifest.locale ?? summary.locale,
     },
-    markdown,
+    chapters,
     config,
     resources,
     blobs,
@@ -146,7 +164,7 @@ export interface BundleMeta {
 }
 
 export interface BundleContent {
-  markdown: string;
+  chapters: readonly Chapter[];
   config: PostextConfig;
   resources: Resource[];
 }
@@ -161,11 +179,14 @@ export interface PlannedFile {
 }
 
 export interface BundlePlan {
-  manifest: PresetManifest;
+  manifest: PresetManifestV2;
   files: PlannedFile[];
+  /** Chapter file path → text, in book order. */
+  chapterFiles: { path: string; markdown: string }[];
   warnings: string[];
 }
 
+/** The v1 single-document file name (read path only). */
 export const MARKDOWN_FILE = 'document.md';
 
 /** A resource minus the fields that only make sense in storage. */
@@ -237,18 +258,27 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   const configWithoutFonts: Partial<PostextConfig> = { ...stripConfigDefaults(content.config) };
   delete configWithoutFonts.customFonts;
 
-  const manifest: PresetManifest = {
-    version: 1,
+  const takenChapterNames = new Set<string>();
+  const chapterSpecs: PresetChapterSpec[] = [];
+  const chapterFiles: BundlePlan['chapterFiles'] = [];
+  content.chapters.forEach((c, i) => {
+    const path = chapterFileName(i, c.title, takenChapterNames, content.chapters.length);
+    chapterSpecs.push({ title: c.title, file: path });
+    chapterFiles.push({ path, markdown: c.markdown });
+  });
+
+  const manifest: PresetManifestV2 = {
+    version: 2,
     id: meta.id,
     name: meta.name,
     ...(meta.description ? { description: meta.description } : {}),
     ...(meta.locale ? { locale: meta.locale } : {}),
-    markdown: MARKDOWN_FILE,
+    chapters: chapterSpecs,
     config: configWithoutFonts as PostextConfig,
     ...(resources.length > 0 ? { resources } : {}),
     ...(fonts.length > 0 ? { fonts } : {}),
   };
-  return { manifest, files, warnings };
+  return { manifest, files, chapterFiles, warnings };
 }
 
 export interface BundleByteSources {
@@ -259,7 +289,7 @@ export interface BundleByteSources {
 export interface BuiltBundle {
   /** Path → bytes, ready to zip. */
   files: Record<string, Uint8Array>;
-  manifest: PresetManifest;
+  manifest: PresetManifestV2;
   warnings: string[];
 }
 
@@ -308,6 +338,6 @@ export async function buildBundleFiles(
 
   const enc = new TextEncoder();
   files['preset.json'] = enc.encode(JSON.stringify(manifest, null, 2));
-  files[MARKDOWN_FILE] = enc.encode(content.markdown);
+  for (const c of plan.chapterFiles) files[c.path] = enc.encode(c.markdown);
   return { files, manifest, warnings };
 }
