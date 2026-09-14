@@ -19,14 +19,14 @@ const config: PostextConfig = {
 };
 const resources: Resource[] = [
   { id: 'pic', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'blob-1', format: 'png', width: 1, height: 1 } },
-  { id: 'draw', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0, svg: { fileId: 'blob-2' } },
+  { id: 'draw', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0, svg: { fileId: 'blob-2', pdfFileId: 'blob-3' } },
   { id: 'tbl', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0, table: { model: { rows: [] } } },
 ];
 
 describe('referencedFileIds', () => {
   it('collects blob and font ids, deduplicated', () => {
     const refs = referencedFileIds({ resources, config });
-    expect([...refs.blobIds]).toEqual(['blob-1', 'blob-2']);
+    expect([...refs.blobIds]).toEqual(['blob-1', 'blob-2', 'blob-3']);
     expect([...refs.fontIds]).toEqual(['font-a']);
   });
 });
@@ -38,9 +38,13 @@ describe('remapContentFileIds', () => {
       (_old, kind, hint) => (kind === 'blob' ? projectFileId('p1', hint) : projectFontFileId('p1', hint)),
     );
     expect(out.content.resources[0].bitmap?.fileId).toBe('project:p1:pic-png');
-    expect(out.content.resources[1].svg?.fileId).toBe('project:p1:draw-svg');
+    expect(out.content.resources[1].svg).toEqual({ fileId: 'project:p1:draw-svg', pdfFileId: 'project:p1:draw-pdf' });
     expect(out.content.resources[2]).toBe(resources[2]);
-    expect(out.blobPairs).toEqual([['blob-1', 'project:p1:pic-png'], ['blob-2', 'project:p1:draw-svg']]);
+    expect(out.blobPairs).toEqual([
+      ['blob-1', 'project:p1:pic-png'],
+      ['blob-2', 'project:p1:draw-svg'],
+      ['blob-3', 'project:p1:draw-pdf'],
+    ]);
     const variants = out.content.config.customFonts![0].variants;
     expect(variants.map((v) => v.fileId)).toEqual(['project-font:p1:body-ttf', 'project-font:p1:body-ttf']);
     expect(out.fontPairs).toEqual([['font-a', 'project-font:p1:body-ttf', 'ttf']]);

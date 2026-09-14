@@ -50,6 +50,10 @@ export interface PresetIndex {
  *  from the file at load time. */
 export type PresetResourceSpec = Omit<Resource, 'createdAt' | 'updatedAt' | 'bitmap' | 'svg'> & {
   file?: string;
+  /** SVG resources only: a single-page PDF holding the same figure as
+   *  vectors, embedded verbatim by the PDF export in place of the SVG
+   *  (`Resource.svg.pdfFileId`). Relative to the preset directory. */
+  pdfFile?: string;
   width?: number;
   height?: number;
   /** Source line / credits set under the resource (`Resource.note`). */

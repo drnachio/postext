@@ -16,7 +16,7 @@ export const PanelBody = forwardRef<HTMLDivElement, PanelBodyProps>(function Pan
   return (
     <div
       ref={ref}
-      className={cn('min-h-0 flex-1 overflow-y-auto', padded && 'px-3 py-3', className)}
+      className={cn('min-h-0 flex-1 overflow-y-auto overflow-x-hidden', padded && 'px-3 py-3', className)}
       {...rest}
     />
   );
