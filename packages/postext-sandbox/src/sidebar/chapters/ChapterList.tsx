@@ -10,7 +10,9 @@ import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator } fr
 import { LayoutScopeToggle } from './LayoutScopeToggle';
 
 /** The book's chapters: order, active one, page ranges, and the chapter
- *  operations (add, rename, move, split, merge, delete). */
+ *  operations (add, rename, move, split, merge, delete). Rendered inside
+ *  the card of the active project/preset row, so it reads as *its*
+ *  structure. */
 export function ChapterList({ title }: { title: ReactNode }) {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
@@ -23,12 +25,16 @@ export function ChapterList({ title }: { title: ReactNode }) {
   };
 
   return (
-    <section aria-label={labels.chapters}>
-      <div className="mt-3 mb-1.5 flex items-center justify-between gap-2 first:mt-0">
-        <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--slate)' }}>
+    <section
+      aria-label={labels.chapters}
+      className="border-t px-2 pt-1.5 pb-2"
+      style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
+    >
+      <div className="mb-1 flex h-7 items-center justify-between gap-2 pl-1">
+        <h4 className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--slate)' }}>
           {title}
           <span className="normal-case tracking-normal" style={{ fontVariantNumeric: 'tabular-nums' }}>{chapters.length}</span>
-        </h3>
+        </h4>
         <div className="flex items-center gap-1">
           <LayoutScopeToggle />
           <IconButton label={labels.chapterAdd} icon={<Plus size={14} />} onClick={add} />
