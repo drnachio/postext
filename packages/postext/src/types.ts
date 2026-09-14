@@ -164,6 +164,14 @@ export interface Resource {
     width?: number;
     /** Intrinsic height in px; see `width`. */
     height?: number;
+    /** Optional print master: the `fileId` of a single-page PDF holding the
+     *  same figure as vectors (typically the original Illustrator / PDF
+     *  export the SVG was derived from). The PDF backend embeds that page
+     *  verbatim — fonts, gradients and colour spaces intact — in place of the
+     *  SVG; screen backends keep rendering the SVG. Ignored when
+     *  `diagramStyle.singleInk` is on, since the recolouring pass only
+     *  operates on SVG markup. */
+    pdfFileId?: string;
   };
   /** Present when `kind === 'table'`. */
   table?: {

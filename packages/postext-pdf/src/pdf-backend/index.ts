@@ -41,9 +41,11 @@ export interface RenderToPdfOptions {
   /** Force every colour in the rendered output through the given PDF colour
    *  space. Defaults to `'rgb'` (pdf-lib's native output). */
   colorSpace?: PdfColorSpace;
-  /** Resolver for resource binary bytes by `fileId` (bitmaps, and SVGs
-   *  pre-rasterised to PNG by the host). When omitted, resource images are
-   *  drawn as placeholders. */
+  /** Resolver for resource binary bytes by `fileId`. The bytes are sniffed:
+   *  bitmaps embed as images, SVG markup is emitted as vector paths (or
+   *  rasterised in the browser when it uses unsupported features), and a
+   *  single-page PDF (`Resource.svg.pdfFileId` print masters) is embedded
+   *  verbatim. When omitted, resource images are drawn as placeholders. */
   resourceBytes?: ResourceBytesProvider;
 }
 
@@ -190,7 +192,7 @@ export async function renderToPdf(
   const colorSpace: PdfColorSpace = options.colorSpace ?? 'rgb';
 
   // Resource images are embedded up front (async) so page rendering stays sync.
-  const resourceImages = await preloadResourceImages(pdfDoc, doc, options.resourceBytes);
+  const resourceImages = await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, options.fontProvider);
   const resourceCtx: ResourceRenderContext = {
     images: resourceImages,
     linkRegistry: new LinkRegistry(),
