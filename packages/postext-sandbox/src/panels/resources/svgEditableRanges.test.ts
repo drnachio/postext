@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { EditorState } from '@codemirror/state';
-import { editableRangeFor, editableRangesField, setEditableRanges, svgEditableRanges } from './svgEditableRanges';
+import { history, redo, undo } from '@codemirror/commands';
+import {
+  editableRangeFor,
+  editableRangesField,
+  setEditableRanges,
+  setSourceLocked,
+  sourceLockedField,
+  svgEditableRanges,
+} from './svgEditableRanges';
 import { scanSvgTextNodeRanges } from '../../controls/svgSource';
 
 const SRC = '<svg><text x="1">Hello</text><rect/><text>Bye</text></svg>';
@@ -9,6 +17,13 @@ const BYE = SRC.indexOf('Bye');
 
 function make(doc = SRC): EditorState {
   return EditorState.create({ doc, extensions: [svgEditableRanges()] });
+}
+
+/** Run a history command against a state, returning the new state. */
+function run(state: EditorState, cmd: typeof undo): EditorState {
+  let next = state;
+  cmd({ state, dispatch: (tr) => { next = tr.state; } });
+  return next;
 }
 
 /** Apply a change spec through the filter, returning the resulting doc. */
@@ -63,6 +78,39 @@ describe('svgEditableRanges', () => {
     }).state;
     expect(st.doc.toString()).toBe(doc2);
     expect(st.field(editableRangesField)).toEqual([{ start: doc2.indexOf('Z'), end: doc2.indexOf('Z') + 1 }]);
+  });
+
+  it('unlocking lets markup change and re-locking rescans the text nodes', () => {
+    const locked = make();
+    expect(locked.field(sourceLockedField)).toBe(true);
+    const open = locked.update({ effects: setSourceLocked.of(false) }).state;
+    expect(open.field(sourceLockedField)).toBe(false);
+    // Outside a text node, and raw markup: both pass while unlocked.
+    const x = SRC.indexOf('x="1"') + 3;
+    const edited = open.update({ changes: { from: x, to: x + 1, insert: '42' } }).state;
+    expect(edited.doc.toString()).toContain('x="42"');
+    const withText = edited.update({ changes: { from: edited.doc.length - 6, insert: '<text>New</text>' } }).state;
+    expect(withText.doc.toString()).toContain('<text>New</text></svg>');
+    // Re-lock: the ranges now cover the three text nodes of the new source.
+    const relocked = withText.update({ effects: setSourceLocked.of(true) }).state;
+    expect(relocked.field(sourceLockedField)).toBe(true);
+    expect(relocked.field(editableRangesField)).toEqual(scanSvgTextNodeRanges(withText.doc.toString()));
+    expect(apply(relocked, { from: x, to: x + 2, insert: '7' })).toBe(withText.doc.toString());
+  });
+
+  it('lets undo and redo revert markup edits after re-locking, rescanning the text nodes', () => {
+    const base = EditorState.create({ doc: SRC, extensions: [svgEditableRanges(), history()] });
+    const x = SRC.indexOf('x="1"') + 3;
+    const open = base.update({ effects: setSourceLocked.of(false) }).state;
+    const edited = open.update({ changes: { from: x, to: x + 1, insert: '42' }, userEvent: 'input' }).state;
+    const relocked = edited.update({ effects: setSourceLocked.of(true) }).state;
+    const undone = run(relocked, undo);
+    expect(undone.doc.toString()).toBe(SRC);
+    expect(undone.field(editableRangesField)).toEqual(scanSvgTextNodeRanges(SRC));
+    const redone = run(undone, redo);
+    expect(redone.doc.toString()).toContain('x="42"');
+    // Still locked: a fresh markup edit is refused.
+    expect(apply(redone, { from: x, to: x + 2, insert: '7' })).toBe(redone.doc.toString());
   });
 
   it('editableRangeFor requires the whole span inside one range', () => {

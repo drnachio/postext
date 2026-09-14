@@ -10,12 +10,15 @@
 // SVGs are ink-aware: when the document's diagramStyle requests single-ink
 // reproduction, the SVG markup is recoloured (applySingleInkToSvg) before
 // decode. The per-file variant key records which ink a decode used, so
-// toggling the setting re-decodes and re-registers the affected SVGs.
+// toggling the setting re-decodes and re-registers the affected SVGs. SVG
+// text is set in the sandbox's custom fonts by inlining them as `@font-face`
+// data URIs (svgFonts.ts) — an `<img>` cannot see the page's fonts.
 
 import type { Resource } from 'postext';
 import { applySingleInkToSvg, registerResourceImage } from 'postext';
 import { getBlob, type BlobRecord } from '../storage/blobStore';
 import { dropSvgTextIndex, ensureSvgTextIndex } from './svgTextIndex';
+import { inlineSvgFonts } from './svgFonts';
 
 /** Build the SVG text-glyph index for a blob (once per fileId) so the
  *  previews can hit-test and highlight the figure's text nodes. Indexed from
@@ -48,6 +51,7 @@ async function decodeImage(rec: BlobRecord, inkHex: string | null): Promise<Canv
   if (rec.contentType === 'image/svg+xml') {
     let svgText = new TextDecoder().decode(rec.bytes);
     if (inkHex) svgText = applySingleInkToSvg(svgText, inkHex);
+    svgText = await inlineSvgFonts(svgText);
     const blob = new Blob([svgText], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     try {
@@ -111,6 +115,7 @@ export async function ensureResourceImageUrls(
     if (rec.contentType === 'image/svg+xml') {
       let svgText = new TextDecoder().decode(rec.bytes);
       if (variant) svgText = applySingleInkToSvg(svgText, variant);
+      svgText = await inlineSvgFonts(svgText);
       blob = new Blob([svgText], { type: 'image/svg+xml' });
     } else {
       blob = new Blob([rec.bytes], { type: rec.contentType });

@@ -5,6 +5,7 @@ import { FileCode, Table as TableIcon, ImageOff } from 'lucide-react';
 import type { Resource, ResourceType } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext';
 import { getBlob } from '../../storage/blobStore';
+import { inlineSvgFonts } from '../../controls/svgFonts';
 import { parseInlinePreview } from '../../controls/InlineMarkdownInput';
 
 // ---------------------------------------------------------------------------
@@ -26,12 +27,17 @@ export function useBlobObjectUrl(fileId: string | undefined): string | null {
     let revoked: string | null = null;
     let cancelled = false;
     getBlob(fileId)
-      .then((record) => {
+      .then(async (record) => {
         if (cancelled || !record) {
           if (!cancelled) setUrl(null);
           return;
         }
-        const blob = new Blob([record.bytes], { type: record.contentType });
+        // SVG text renders in the sandbox's custom fonts only when they are
+        // inlined; an <img> cannot reach the page's FontFaces.
+        const blob = record.contentType === 'image/svg+xml'
+          ? new Blob([await inlineSvgFonts(new TextDecoder().decode(record.bytes))], { type: record.contentType })
+          : new Blob([record.bytes], { type: record.contentType });
+        if (cancelled) return;
         const objectUrl = URL.createObjectURL(blob);
         revoked = objectUrl;
         setUrl(objectUrl);

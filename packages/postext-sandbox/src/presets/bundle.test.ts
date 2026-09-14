@@ -122,6 +122,43 @@ describe('planBundle', () => {
   });
 });
 
+describe('planBundle (print masters)', () => {
+  it('exports an SVG print master next to the SVG and drops it when its bytes are gone', async () => {
+    const content = sampleContent();
+    const withMaster: Resource = {
+      ...content.resources[0]!,
+      svg: { ...content.resources[0]!.svg!, pdfFileId: 'b-master' },
+    };
+    const next = { ...content, resources: [withMaster] };
+    const plan = planBundle({ id: 'p', name: 'P' }, next);
+    expect(plan.files.map((f) => f.path)).toEqual(['resources/fig-a.svg', 'resources/fig-a.pdf', 'fonts/body-regular.ttf']);
+    expect(plan.manifest.resources![0]).toMatchObject({ file: 'resources/fig-a.svg', pdfFile: 'resources/fig-a.pdf' });
+
+    const built = await buildBundleFiles({ id: 'p', name: 'P' }, next, {
+      readBlob: (id) => Promise.resolve(id === 'b-svg' ? enc.encode(SVG).buffer : null),
+      readFont: () => Promise.resolve(null),
+    });
+    expect(built.manifest.resources![0]!.pdfFile).toBeUndefined();
+    expect(built.manifest.resources![0]!.file).toBe('resources/fig-a.svg');
+  });
+
+  it('loads a print master from a bundle and tolerates a missing one', async () => {
+    const m = manifest({ resources: [
+      { id: 'a', typeId: 'figure', kind: 'svg', file: 'resources/a.svg', pdfFile: 'resources/a.pdf' },
+      { id: 'b', typeId: 'figure', kind: 'svg', file: 'resources/b.svg', pdfFile: 'resources/b.pdf' },
+    ] });
+    const warnings: string[] = [];
+    const loaded = await parseBundle(m, readerFrom({
+      'doc.md': '# Doc', 'resources/a.svg': SVG, 'resources/a.pdf': '%PDF-1.4\n', 'resources/b.svg': SVG,
+    }), { locale: 'en', summary, onWarning: (w) => warnings.push(w) });
+    expect(loaded.resources[0]!.svg).toMatchObject({ fileId: 'preset:brochure:resources-a-svg', pdfFileId: 'preset:brochure:resources-a-pdf' });
+    expect(loaded.resources[1]!.svg!.pdfFileId).toBeUndefined();
+    expect(loaded.blobs.map((b) => b.fileId)).toContain('preset:brochure:resources-a-pdf');
+    expect(loaded.blobs.find((b) => b.fileId === 'preset:brochure:resources-a-pdf')?.mime).toBe('application/pdf');
+    expect(warnings.some((w) => w.includes('b.pdf'))).toBe(true);
+  });
+});
+
 describe('buildBundleFiles', () => {
   it('drops resources and fonts whose bytes are missing', async () => {
     const built = await buildBundleFiles({ id: 'p', name: 'P' }, sampleContent(), {

@@ -18,6 +18,7 @@ import {
   extensionForResource,
   fontsToCustomFonts,
   isBitmapFile,
+  isPdfFile,
   isPresetManifest,
   isSvgFile,
   mimeForFile,
@@ -108,19 +109,33 @@ export async function parseBundle(
   const blobs: LoadedPresetBlob[] = [];
   const resources: Resource[] = await Promise.all(
     (manifest.resources ?? []).map(async (spec) => {
-      if (!spec.file) return resourceFromSpec(presetId, spec);
-      const mime = mimeForFile(spec.file);
-      const bytes = await readFile(spec.file);
-      blobs.push({ fileId: scheme.blob(spec.file), bytes, mime });
+      const file = spec.file;
+      if (!file) return resourceFromSpec(presetId, spec);
+      const mime = mimeForFile(file);
+      const bytes = await readFile(file);
+      blobs.push({ fileId: scheme.blob(file), bytes, mime });
+      // Optional vector print master next to an SVG: a missing or non-PDF
+      // file only costs the master, never the figure.
+      let resolved = spec;
+      const pdfFile = spec.pdfFile;
+      if (pdfFile && isSvgFile(file)) {
+        const master = isPdfFile(pdfFile) ? await readFile(pdfFile).catch(() => null) : null;
+        if (master) {
+          blobs.push({ fileId: scheme.blob(pdfFile), bytes: master, mime: mimeForFile(pdfFile) });
+        } else {
+          onWarning?.(`${spec.id}: print master "${pdfFile}" ${isPdfFile(pdfFile) ? 'not found' : 'is not a .pdf'}, ignored`);
+          resolved = { ...spec, pdfFile: undefined };
+        }
+      }
       let size: { width: number; height: number } | undefined;
       if (spec.width === undefined || spec.height === undefined) {
-        if (isSvgFile(spec.file)) {
+        if (isSvgFile(file)) {
           size = svgIntrinsicSize(new TextDecoder().decode(bytes));
-        } else if (isBitmapFile(spec.file)) {
+        } else if (isBitmapFile(file)) {
           size = await bitmapSize(bytes, mime);
         }
       }
-      return resourceFromSpec(presetId, spec, size, scheme.blob);
+      return resourceFromSpec(presetId, resolved, size, scheme.blob);
     }),
   );
 
@@ -227,11 +242,17 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     takenResourceNames.add(name);
     const path = `resources/${name}.${ext}`;
     files.push({ path, fileId, kind: 'blob', owner: r.id });
+    let pdfFile: string | undefined;
+    if (svg?.pdfFileId) {
+      pdfFile = `resources/${name}.pdf`;
+      files.push({ path: pdfFile, fileId: svg.pdfFileId, kind: 'blob', owner: r.id });
+    }
     const width = bitmap?.width ?? svg?.width;
     const height = bitmap?.height ?? svg?.height;
     resources.push({
       ...rest,
       file: path,
+      ...(pdfFile ? { pdfFile } : {}),
       ...(width ? { width } : {}),
       ...(height ? { height } : {}),
     });
@@ -323,7 +344,9 @@ export async function buildBundleFiles(
 
   let manifest = plan.manifest;
   if (missingPaths.size > 0) {
-    const resources = manifest.resources?.filter((r) => !r.file || !missingPaths.has(r.file));
+    const resources = manifest.resources
+      ?.filter((r) => !r.file || !missingPaths.has(r.file))
+      .map((r) => (r.pdfFile && missingPaths.has(r.pdfFile) ? { ...r, pdfFile: undefined } : r));
     const fonts = manifest.fonts
       ?.map((fam) => ({ ...fam, variants: fam.variants.filter((v) => !missingPaths.has(v.file)) }))
       .filter((fam) => fam.variants.length > 0);

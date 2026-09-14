@@ -235,7 +235,7 @@ describe('page-span callouts (span blocks, stage 1)', () => {
     expect(h1.pageIndex).toBe(0);
     expect(h1.bbox.y - h0.bbox.y).toBeGreaterThanOrEqual(GRID - 0.01);
     expect(frames(balanced)[0]!.pageIndex).toBe(1);
-  });
+  }, 30_000); // lays out a full page of text twice: ~1 s locally, 5 s+ on the CI runner
 
   it('consecutive span blocks stack with a zero-height intermediate band', () => {
     const doc = build([SPAN_CALLOUT, '', SPAN_CALLOUT_2, '', filler(4)].join('\n'));

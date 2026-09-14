@@ -7,33 +7,83 @@
  * which {@link preloadResourceImages} embeds into the document up front (PDF
  * embedding is async; page rendering is sync).
  *
- * Bitmaps: `embedPng` / `embedJpg`. WebP is decoded to PNG via a canvas before
- * embedding (browser-only runtime). SVGs:
- *   TODO(#49-svg-vector): emit SVG as vector paths. For v1 SVGs fall back to a
- *   raster embed (the host rasterises the SVG to PNG bytes and registers them
- *   under the same fileId) — vector emission is deferred as a known partial.
+ * The bytes are sniffed, so the host never has to say what it hands over:
+ *   - `%PDF`  → the first page is embedded as a form XObject and drawn
+ *               verbatim (vector print masters, `Resource.svg.pdfFileId`);
+ *   - SVG     → single-ink recolouring when `diagramStyle.singleInk` is on,
+ *               then vector emission through {@link svgToVectorDrawing}, with
+ *               `text` set in fonts loaded through the document's
+ *               {@link FontCache} (same provider as the body text); SVGs
+ *               outside the supported subset are rasterised (browser only) at
+ *               {@link RASTER_DPI} for their largest placement;
+ *   - PNG / JPEG / WebP / GIF → `embedPng` / `embedJpg` (WebP is decoded to
+ *               PNG via a canvas first; browser only).
+ * A missing or undecodable payload leaves the map entry absent and the
+ * renderer draws a neutral placeholder.
  *
  * Inline `:ref` segments render in the link colour and, via {@link LinkRegistry},
  * become clickable link annotations targeting the resource embed's destination.
  */
 
-import { type Color, type PDFImage, type PDFDocument } from 'pdf-lib';
+import { type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
 import type {
   VDTBlock,
   VDTLine,
   VDTDocument,
   ResolvedResourceBlock,
 } from 'postext';
+import { applySingleInkToSvg, resolveColorValue } from 'postext';
 import { parseFontString } from '../fontString';
-import { FontCache } from '../fontCache';
+import { FontCache, type PdfFontProvider } from '../fontCache';
 import { type PageCtx, drawTextPx, drawLinePx, fillRectPx, colorFromHex } from './primitives';
 import { LinkRegistry } from './links';
+import {
+  svgToVectorDrawing,
+  drawVectorDrawing,
+  type VectorDrawing,
+  type VectorFont,
+  type VectorFontResolver,
+} from './svgVector';
 
 /** Raw bytes of a resource binary, keyed by `fileId`. */
 export type ResourceBytesProvider = (fileId: string) => Uint8Array | undefined;
 
-/** Embedded images keyed by `fileId`, shared across pages. */
-export type ResourceImageMap = Map<string, PDFImage>;
+/** One embedded resource payload, ready to draw on any page. */
+export type EmbeddedResource =
+  | { kind: 'image'; image: PDFImage }
+  | { kind: 'page'; page: PDFEmbeddedPage }
+  | { kind: 'vector'; drawing: VectorDrawing };
+
+/** Embedded resources keyed by `fileId`, shared across pages. */
+export type ResourceImageMap = Map<string, EmbeddedResource>;
+
+/** Resolution of the raster fallback for SVGs the vector path cannot emit,
+ *  relative to the figure's largest placement on the page. Diagrams are line
+ *  art with small type, so this sits above the 300 dpi photographs need. */
+export const RASTER_DPI = 600;
+
+type Sniffed = 'pdf' | 'svg' | 'png' | 'jpeg' | 'webp' | 'gif' | 'unknown';
+
+/** Identify a payload from its leading bytes. */
+export function sniffBytes(bytes: Uint8Array): Sniffed {
+  const at = (i: number) => bytes[i] ?? -1;
+  if (at(0) === 0x25 && at(1) === 0x50 && at(2) === 0x44 && at(3) === 0x46) return 'pdf'; // %PDF
+  if (at(0) === 0x89 && at(1) === 0x50 && at(2) === 0x4e && at(3) === 0x47) return 'png';
+  if (at(0) === 0xff && at(1) === 0xd8) return 'jpeg';
+  if (at(0) === 0x47 && at(1) === 0x49 && at(2) === 0x46 && at(3) === 0x38) return 'gif';
+  if (at(0) === 0x52 && at(1) === 0x49 && at(2) === 0x46 && at(3) === 0x46
+    && at(8) === 0x57 && at(9) === 0x45 && at(10) === 0x42 && at(11) === 0x50) return 'webp';
+  // SVG: optional BOM / whitespace, then `<` (XML declaration, comment,
+  // doctype or the root element itself).
+  let i = 0;
+  if (at(0) === 0xef && at(1) === 0xbb && at(2) === 0xbf) i = 3;
+  while (i < bytes.length && (at(i) === 0x20 || at(i) === 0x09 || at(i) === 0x0a || at(i) === 0x0d)) i++;
+  if (at(i) === 0x3c) {
+    const head = new TextDecoder().decode(bytes.subarray(i, Math.min(bytes.length, i + 4096)));
+    if (/<svg[\s>]/i.test(head) || /^<\?xml/i.test(head) || head.startsWith('<!')) return 'svg';
+  }
+  return 'unknown';
+}
 
 /** Decode WebP bytes to PNG bytes via an offscreen canvas. Browser-only. */
 async function webpToPng(bytes: Uint8Array): Promise<Uint8Array | null> {
@@ -55,17 +105,159 @@ async function webpToPng(bytes: Uint8Array): Promise<Uint8Array | null> {
   }
 }
 
+/** Rasterise SVG markup to PNG bytes at the given pixel size. Browser-only;
+ *  returns null elsewhere or when the SVG does not decode. */
+async function svgToPng(svgText: string, widthPx: number, heightPx: number): Promise<Uint8Array | null> {
+  if (typeof document === 'undefined' || typeof URL === 'undefined' || typeof Image === 'undefined') return null;
+  const blob = new Blob([svgText], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('SVG decode failed'));
+      img.src = url;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(widthPx));
+    canvas.height = Math.max(1, Math.round(heightPx));
+    const c2d = canvas.getContext('2d');
+    if (!c2d) return null;
+    c2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const pngBlob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+    if (!pngBlob) return null;
+    return new Uint8Array(await pngBlob.arrayBuffer());
+  } catch {
+    return null;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** Generic CSS families that never name a loadable font. */
+const GENERIC_FAMILIES = new Set([
+  'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui', 'ui-serif', 'ui-sans-serif',
+  'ui-monospace', 'ui-rounded', 'emoji', 'math', 'fangsong', 'inherit', 'initial',
+]);
+
+/** A canvas font string for one family / weight / style (size is irrelevant
+ *  to the cache key). */
+function svgFontString(family: string, weight: number, italic: boolean): string {
+  return `${italic ? 'italic ' : ''}${weight} 16px ${family}`;
+}
+
+/** Fonts an SVG's text would need, as font strings the {@link FontCache}
+ *  can preload: every named (non-generic) family of each run, so the
+ *  resolver can fall through the `font-family` list in order. */
+function collectSvgFontStrings(svgText: string): string[] {
+  const wanted = new Set<string>();
+  const probe: VectorFontResolver = (families, weight, italic) => {
+    for (const f of families) if (!GENERIC_FAMILIES.has(f.toLowerCase())) wanted.add(svgFontString(f, weight, italic));
+    return { widthOf: () => 0, pdfFont: null };
+  };
+  svgToVectorDrawing(svgText, { fonts: probe, probe: true });
+  return [...wanted];
+}
+
+/** Resolve SVG font requests against the preloaded cache: the first named
+ *  family of the list that loaded wins; generic families never match. */
+function fontResolverFor(fontCache: FontCache): VectorFontResolver {
+  const fonts = new Map<PDFFont, VectorFont>();
+  return (families, weight, italic) => {
+    for (const f of families) {
+      if (GENERIC_FAMILIES.has(f.toLowerCase())) continue;
+      const pdfFont = fontCache.get(svgFontString(f, weight, italic));
+      if (!pdfFont) continue;
+      let vf = fonts.get(pdfFont);
+      if (!vf) {
+        vf = { pdfFont, widthOf: (text, size) => pdfFont.widthOfTextAtSize(text, size) };
+        fonts.set(pdfFont, vf);
+      }
+      return vf;
+    }
+    return null;
+  };
+}
+
+const FONT_MIME: Record<string, string> = { ttf: 'font/ttf', otf: 'font/otf', woff2: 'font/woff2', woff: 'font/woff' };
+
+function sniffFontFormat(bytes: Uint8Array): string {
+  const tag = String.fromCharCode(...bytes.subarray(0, 4));
+  if (tag === 'OTTO') return 'otf';
+  if (tag === 'wOF2') return 'woff2';
+  if (tag === 'wOFF') return 'woff';
+  return 'ttf';
+}
+
+function toBase64(bytes: Uint8Array): string {
+  if (typeof Buffer !== 'undefined') return Buffer.from(bytes).toString('base64');
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + 0x8000)));
+  }
+  return btoa(binary);
+}
+
+/** Before an SVG with text is rasterised through an `<img>` — which cannot
+ *  see any page font — embed the faces its runs ask for as `@font-face` data
+ *  URIs, fetched from the same provider the body text uses. Families the
+ *  provider cannot supply are skipped (the image falls back to a system
+ *  face, as the screen preview would). */
+export async function inlineSvgFontsForRaster(
+  svgText: string,
+  fontStrings: string[],
+  provider: PdfFontProvider,
+): Promise<string> {
+  let css = '';
+  for (const fs of fontStrings) {
+    const parsed = parseFontString(fs);
+    if (!parsed) continue;
+    const bytes = await provider(parsed.family, parsed.weight, parsed.style).catch(() => null);
+    if (!bytes || bytes.length === 0) continue;
+    const format = sniffFontFormat(bytes);
+    css += `@font-face{font-family:"${parsed.family.replace(/["\\]/g, '')}";font-weight:${parsed.weight};font-style:${parsed.style};src:url(data:${FONT_MIME[format]};base64,${toBase64(bytes)})}`;
+  }
+  if (!css) return svgText;
+  const m = /<svg\b[^>]*?>/i.exec(svgText);
+  if (!m || m[0].endsWith('/>')) return svgText;
+  const at = m.index + m[0].length;
+  return `${svgText.slice(0, at)}<style type="text/css"><![CDATA[${css}]]></style>${svgText.slice(at)}`;
+}
+
+/** Largest placement of each `fileId` in points, to size raster fallbacks. */
+function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { w: number; h: number }> {
+  const scale = 72 / doc.config.page.dpi;
+  const out = new Map<string, { w: number; h: number }>();
+  const note = (fileId: string, wPx: number, hPx: number) => {
+    const w = wPx * scale;
+    const h = hPx * scale;
+    const prev = out.get(fileId);
+    if (!prev || w * h > prev.w * prev.h) out.set(fileId, { w, h });
+  };
+  for (const block of blocks) {
+    const rb = block.resourceBlock;
+    if (rb?.fileId) note(rb.fileId, rb.bodyRect.width, rb.bodyRect.height);
+    const overlay = block.designOverlay;
+    if (overlay) {
+      for (const b of overlay.blocks) if (b.kind === 'image') note(b.fileId, b.bbox.width, b.bbox.height);
+    }
+  }
+  return out;
+}
+
 /**
- * Embed every bitmap / svg resource image referenced in the document. Returns a
- * map of `fileId → PDFImage` consumed by {@link renderResourceBlock}. SVGs are
- * expected to be supplied as pre-rasterised PNG bytes by the host (see the
- * SVG TODO above); a missing or undecodable image is simply absent from the map
- * and the renderer draws a placeholder.
+ * Embed every bitmap / svg / print-master resource referenced in the
+ * document. Returns a map of `fileId → EmbeddedResource` consumed by
+ * {@link renderResourceBlock} and the design-overlay image blocks. A missing or
+ * undecodable payload is simply absent from the map and the renderer draws a
+ * placeholder.
  */
 export async function preloadResourceImages(
   pdfDoc: PDFDocument,
   doc: VDTDocument,
   bytesProvider: ResourceBytesProvider | undefined,
+  fontCache?: FontCache,
+  fontProvider?: PdfFontProvider,
 ): Promise<ResourceImageMap> {
   const out: ResourceImageMap = new Map();
   if (!bytesProvider) return out;
@@ -75,24 +267,60 @@ export async function preloadResourceImages(
   for (const page of doc.pages) {
     if (page.floats) blocks.push(...page.floats);
   }
-  /** Embed one image by `fileId` (format hint from the resource when known). */
+  const placements = largestPlacements(doc, blocks);
+  const ds = doc.config.diagramStyle;
+  const inkHex = ds?.singleInk
+    ? resolveColorValue(ds.inkColor, doc.config.colorPalette, ds.inkColor).hex
+    : null;
+
+  /** Embed one payload by `fileId` (format hint from the resource when known). */
   const embed = async (fileId: string, format: string | undefined): Promise<void> => {
     if (out.has(fileId)) return;
     const bytes = bytesProvider(fileId);
     if (!bytes) return;
     try {
-      const fmt = (format ?? '').toLowerCase();
+      const sniffed = sniffBytes(bytes);
+      const fmt = sniffed !== 'unknown' ? sniffed : (format ?? '').toLowerCase().replace('jpg', 'jpeg');
+      if (fmt === 'pdf') {
+        const [page] = await pdfDoc.embedPdf(bytes, [0]);
+        if (page) out.set(fileId, { kind: 'page', page });
+        return;
+      }
+      if (fmt === 'svg') {
+        let svgText = new TextDecoder().decode(bytes);
+        if (inkHex) svgText = applySingleInkToSvg(svgText, inkHex);
+        let fonts: VectorFontResolver | undefined;
+        let wanted: string[] = [];
+        if (fontCache) {
+          // Text runs need their fonts embedded before the sync conversion.
+          wanted = collectSvgFontStrings(svgText);
+          if (wanted.length > 0) await fontCache.preloadFontStrings(wanted);
+          fonts = fontResolverFor(fontCache);
+        }
+        const drawing = svgToVectorDrawing(svgText, { fonts });
+        if (drawing) {
+          out.set(fileId, { kind: 'vector', drawing });
+          return;
+        }
+        const size = placements.get(fileId) ?? { w: 360, h: 270 };
+        const rasterSvg = wanted.length > 0 && fontProvider
+          ? await inlineSvgFontsForRaster(svgText, wanted, fontProvider)
+          : svgText;
+        const png = await svgToPng(rasterSvg, (size.w / 72) * RASTER_DPI, (size.h / 72) * RASTER_DPI);
+        if (png) out.set(fileId, { kind: 'image', image: await pdfDoc.embedPng(png) });
+        return;
+      }
       let image: PDFImage | null = null;
-      if (fmt === 'jpeg' || fmt === 'jpg') {
+      if (fmt === 'jpeg') {
         image = await pdfDoc.embedJpg(bytes);
       } else if (fmt === 'webp') {
         const png = await webpToPng(bytes);
         if (png) image = await pdfDoc.embedPng(png);
       } else {
-        // png / gif-first-frame / svg-rasterised-to-png all go through embedPng.
+        // png / gif-first-frame / unknown all go through embedPng.
         image = await pdfDoc.embedPng(bytes);
       }
-      if (image) out.set(fileId, image);
+      if (image) out.set(fileId, { kind: 'image', image });
     } catch {
       // Undecodable — leave absent; renderer falls back to a placeholder.
     }
@@ -107,6 +335,27 @@ export async function preloadResourceImages(
     if (iconFileId) await embed(iconFileId, block.callout?.iconFormat);
   }
   return out;
+}
+
+/** Draw an embedded resource fitted to a box in document pixels (top-down). */
+export function drawEmbeddedResource(
+  ctx: PageCtx,
+  res: EmbeddedResource,
+  xPx: number,
+  yPx: number,
+  wPx: number,
+  hPx: number,
+): void {
+  const { scale, pageHeightPt } = ctx;
+  const box = {
+    x: xPx * scale,
+    y: pageHeightPt - (yPx + hPx) * scale,
+    width: wPx * scale,
+    height: hPx * scale,
+  };
+  if (res.kind === 'image') ctx.page.drawImage(res.image, box);
+  else if (res.kind === 'page') ctx.page.drawPage(res.page, box);
+  else drawVectorDrawing(ctx, res.drawing, xPx, yPx, wPx, hPx);
 }
 
 function pickFont(
@@ -261,14 +510,9 @@ export function renderResourceBlock(
   const linkColor = colorFromHex(rb.linkColor, ctx.colorSpace);
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
-    const image = rb.fileId ? images.get(rb.fileId) : undefined;
-    if (image) {
-      ctx.page.drawImage(image, {
-        x: bx * scale,
-        y: pageHeightPt - (by + bh) * scale,
-        width: bw * scale,
-        height: bh * scale,
-      });
+    const embedded = rb.fileId ? images.get(rb.fileId) : undefined;
+    if (embedded) {
+      drawEmbeddedResource(ctx, embedded, bx, by, bw, bh);
     } else {
       drawPlaceholder(ctx, rb, bx, by);
     }

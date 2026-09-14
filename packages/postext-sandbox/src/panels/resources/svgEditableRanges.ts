@@ -4,7 +4,10 @@
 // exact without rescanning); a `transactionFilter` rejects any change that
 // is not fully inside one range and XML-escapes `<`, `>` and `&` typed into
 // a text node; decorations tint the editable ranges so the reader can see
-// where typing is allowed. Pure CodeMirror state — runs in node for tests.
+// where typing is allowed. The guard can be lifted (`setSourceLocked`
+// false) to edit the whole source — coordinates, colours, structure — and
+// re-armed, which rescans the text nodes of whatever the source became.
+// Pure CodeMirror state — runs in node for tests.
 
 import {
   EditorSelection,
@@ -21,6 +24,22 @@ import { escapeXmlText, scanSvgTextNodeRanges, type SourceRange } from '../../co
 /** Replace the editable ranges (after loading a new document). */
 export const setEditableRanges = StateEffect.define<SourceRange[]>();
 
+/** Lock (true: text nodes only) or unlock (false: whole source) editing. */
+export const setSourceLocked = StateEffect.define<boolean>();
+
+/** Whether editing is limited to text nodes (the default). */
+export const sourceLockedField = StateField.define<boolean>({
+  create() {
+    return true;
+  },
+  update(locked, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setSourceLocked)) return e.value;
+    }
+    return locked;
+  },
+});
+
 /** The editable text-node ranges of the current document. */
 export const editableRangesField = StateField.define<SourceRange[]>({
   create(state) {
@@ -29,8 +48,13 @@ export const editableRangesField = StateField.define<SourceRange[]>({
   update(ranges, tr) {
     for (const e of tr.effects) {
       if (e.is(setEditableRanges)) return e.value;
+      // Re-locking after free edits: the text nodes may have moved, appeared
+      // or vanished, so rescan the source as it now stands.
+      if (e.is(setSourceLocked) && e.value) return scanSvgTextNodeRanges(tr.newDoc.toString());
     }
     if (!tr.docChanged) return ranges;
+    // History steps may revert markup edits made while unlocked.
+    if (tr.isUserEvent('undo') || tr.isUserEvent('redo')) return scanSvgTextNodeRanges(tr.newDoc.toString());
     // An insertion at a range's start stays inside it (start keeps its
     // place), and one at its end extends it (end moves after the insert).
     return ranges.map((r) => ({
@@ -53,6 +77,10 @@ const textNodesOnlyFilter = EditorState.transactionFilter.of((tr): TransactionSp
   if (!tr.docChanged) return tr;
   // Programmatic loads (setEditableRanges) replace the whole document.
   if (tr.effects.some((e) => e.is(setEditableRanges))) return tr;
+  // Unlocked: the whole source is fair game, markup included. Undo / redo
+  // replay the user's own steps (possibly markup edits made while unlocked).
+  if (tr.startState.field(sourceLockedField, false) === false) return tr;
+  if (tr.isUserEvent('undo') || tr.isUserEvent('redo')) return tr;
   const ranges = tr.startState.field(editableRangesField, false);
   if (!ranges) return tr;
   let allowed = true;
@@ -87,7 +115,8 @@ const textNodesOnlyFilter = EditorState.transactionFilter.of((tr): TransactionSp
 
 const editableMark = Decoration.mark({ class: 'cm-svg-editable' });
 
-const editableDecorations = EditorView.decorations.compute([editableRangesField], (state) => {
+const editableDecorations = EditorView.decorations.compute([editableRangesField, sourceLockedField], (state) => {
+  if (!state.field(sourceLockedField)) return Decoration.none;
   const ranges = state.field(editableRangesField);
   const marks = ranges
     .filter((r) => r.end > r.start)
@@ -105,5 +134,5 @@ const editableTheme = EditorView.baseTheme({
 
 /** The full extension: field, filter, tint. */
 export function svgEditableRanges(): Extension {
-  return [editableRangesField, textNodesOnlyFilter, editableDecorations, editableTheme];
+  return [sourceLockedField, editableRangesField, textNodesOnlyFilter, editableDecorations, editableTheme];
 }
