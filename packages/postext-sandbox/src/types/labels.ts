@@ -939,6 +939,16 @@ export interface SandboxLabels {
   svgSourceInvalid: string;
   svgSourceNoText: string;
   svgSourceSaveFailed: string;
+  svgSourceUnlock: string;
+  svgSourceLock: string;
+  svgSourceHintUnlocked: string;
+  resourcePdfMasterLabel: string;
+  resourcePdfMasterHint: string;
+  uploadPdfMasterDrop: string;
+  uploadPdfMasterReplace: string;
+  uploadPdfMasterRemove: string;
+  uploadPdfMasterInvalid: string;
+  uploadPdfMasterFailed: string;
   uploadImageInvalid: string;
   uploadImageFailed: string;
   uploadImageReplace: string;

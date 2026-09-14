@@ -25,13 +25,16 @@ export function saveResource(resource: Resource): Promise<void> {
 }
 
 /** Delete a resource by id. When `cascadeBlobs` is true, any binary payload
- *  referenced by the resource (bitmap/svg `fileId`) is deleted too. */
+ *  referenced by the resource (bitmap/svg `fileId`, and an SVG's print
+ *  master) is deleted too. */
 export async function deleteResource(id: string, cascadeBlobs = false): Promise<void> {
   if (cascadeBlobs) {
     const existing = await getResource(id).catch(() => null);
     if (existing) {
       const fileId = existing.bitmap?.fileId ?? existing.svg?.fileId;
       if (fileId) await deleteBlob(fileId).catch(() => undefined);
+      const pdfFileId = existing.svg?.pdfFileId;
+      if (pdfFileId) await deleteBlob(pdfFileId).catch(() => undefined);
     }
   }
   await runInStore(RESOURCES_STORE, 'readwrite', (store) =>

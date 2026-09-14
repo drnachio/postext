@@ -119,6 +119,8 @@ export function referencedFileIds(content: { resources: Resource[]; config: Post
   for (const r of content.resources) {
     const fileId = r.bitmap?.fileId ?? r.svg?.fileId;
     if (fileId) blobIds.add(fileId);
+    // An SVG's vector print master is a blob of its own.
+    if (r.svg?.pdfFileId) blobIds.add(r.svg.pdfFileId);
   }
   for (const family of content.config.customFonts ?? []) {
     for (const v of family.variants) fontIds.add(v.fileId);

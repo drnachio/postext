@@ -331,7 +331,7 @@ Appendix. A preset source is a directory (served over HTTP) whose root holds an 
   <preset-dir>/
     preset.json
     chapters/              one .md per chapter, in order (a version 1 manifest names a single document instead)
-    resources/             figures: .svg / .png / .jpg / .jpeg / .webp / .gif
+    resources/             figures: .svg / .png / .jpg / .jpeg / .webp / .gif (+ optional .pdf print masters)
     fonts/                 .otf / .ttf / .woff2 single faces
 ```
 
@@ -384,6 +384,7 @@ Appendix. A preset source is a directory (served over HTTP) whose root holds an 
       "kind": "svg",                   // "svg" | "bitmap" | "table"
       "file": "resources/fig-1-1.svg", // svg/bitmap only, relative to preset.json
       "width": 240.5,                  // optional, pt (svg) / px (bitmap)
+      "pdfFile": "resources/fig-1-1.pdf", // optional, svg only: vector print master (see notes)
       "height": 180,                   // optional
       "caption": "Caption text",
       "altText": "Accessible description",            // optional
@@ -412,6 +413,9 @@ Notes:
 - `id` in `preset.json` must match the `index.json` entry; `description`, `locale` and `default` in the manifest override the index values once the preset is loaded.
 - `chapters` (version 2) is a list of `{ title, file }` in book order, or a locale → list map; `markdown` (version 1) is a file name or a locale → file map. In both cases the sandbox picks the entry matching the UI locale (exact tag, then base language, then the preset's own `locale`, then the first entry). An empty chapter `title` is derived from the file's first level-1 heading. The sandbox always writes version 2.
 - `width` / `height` are optional for `svg` and `bitmap` resources — when missing they are read from the file at load time.
+- `pdfFile` (svg resources only) points to a single-page PDF holding the same figure as vectors — typically the original Illustrator or PDF export the SVG was derived from. The PDF export embeds that page verbatim (fonts, gradients and colour spaces intact) instead of the SVG; the canvas and HTML previews keep using the SVG. It is ignored in single-ink mode, whose recolouring pass only operates on SVG markup, and a missing file only drops the master, never the figure. Editing the SVG source in the resource detail detaches the master (it was made for the source as it was), so the PDF export follows the edited SVG from then on; reload the preset to get it back. SVGs without a master are emitted as vector paths when they stay within the PDF backend's subset (basic shapes, paths, groups, `use`, clip paths, solid fills and strokes, opacity, and `text` / `tspan` runs set in the fonts the document can load — custom fonts first, then Google-hosted families) and rasterised at 600 dpi otherwise.
+- SVG `text` renders in the sandbox's custom fonts everywhere: the previews inline the matching `@font-face` data into the SVG before decoding it (an `<img>` cannot see the page's fonts), and the PDF export sets the runs as real, selectable text in the same embedded faces. Name the family in `font-family` exactly as it appears under Fonts.
+- The SVG source editor only lets you type inside text nodes (tinted) so a figure cannot be broken by accident; the lock button in its header opens the whole source — coordinates, colours, structure — and locking again rescans the text nodes.
 - `table.model` is a Postext `TableModel`: `rows` is a row-major array of cells (`content`, optional `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` the number of leading header rows, and `columnWidths` an optional array of relative column weights.
 - Font files are stored in IndexedDB under ids derived from the preset id and file path, and the families are appended to `config.customFonts` when the preset is applied; a missing or malformed `index.json` yields no presets rather than an error.
 - `<preset-dir>/fingerprint.json` is optional and, on the development route, **virtual**: when no such file exists, `GET` answers `{ "fingerprint": "<sha1 hex>", "files": <n> }` computed from the directory's file metadata (relative path, modification time and size of every file up to four levels deep, dotfiles and `node_modules` skipped), never from file contents, with `Cache-Control: no-store`. The sandbox polls it to follow edits to the bundle (see [Projects panel](#projects-panel)). A static host can serve a real `fingerprint.json` with the same shape, or none at all, in which case its presets are not followed.

@@ -7,7 +7,7 @@ import type {
   VDTDesignBoxStyle,
 } from 'postext';
 import { setCharacterSpacing } from 'pdf-lib';
-import type { ResourceImageMap } from './renderResourceBlock';
+import { drawEmbeddedResource, type ResourceImageMap } from './renderResourceBlock';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
 import {
@@ -141,15 +141,9 @@ function renderBoxBlock(ctx: PageCtx, block: VDTDesignBoxBlock): void {
 function renderImageBlock(ctx: PageCtx, block: VDTDesignImageBlock, images: ResourceImageMap | undefined): void {
   const { x, y, width, height } = block.bbox;
   if (width <= 0 || height <= 0) return;
-  const image = images?.get(block.fileId);
-  const { scale, pageHeightPt } = ctx;
-  if (image) {
-    ctx.page.drawImage(image, {
-      x: x * scale,
-      y: pageHeightPt - (y + height) * scale,
-      width: width * scale,
-      height: height * scale,
-    });
+  const embedded = images?.get(block.fileId);
+  if (embedded) {
+    drawEmbeddedResource(ctx, embedded, x, y, width, height);
   } else {
     fillRectPx(ctx, x, y, width, height, colorFromHex('#e8e8e8', ctx.colorSpace));
   }

@@ -16,6 +16,7 @@ import { FieldRow } from '../../controls/FieldRow';
 import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
+import { PdfMasterUploader } from './PdfMasterUploader';
 import { SvgSourceEditor, type SvgSourceCommit } from './SvgSourceEditor';
 import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor';
 import { slugify } from './slugify';
@@ -146,15 +147,24 @@ export function ResourceDetail({
     onChange(
       touch({
         kind: 'svg',
-        svg: { fileId: r.fileId, width: r.width, height: r.height },
+        // A replaced SVG keeps its print master: the master is the
+        // publisher's original and outlives screen-side re-exports.
+        svg: { fileId: r.fileId, width: r.width, height: r.height, pdfFileId: resource.svg?.pdfFileId },
         bitmap: undefined,
         table: undefined,
       }),
     );
   };
 
+  const applyPdfMaster = (pdfFileId: string | undefined) => {
+    if (!resource.svg) return;
+    onChange(touch({ svg: { ...resource.svg, pdfFileId } }));
+  };
+
   // A source edit saved as a new blob: swap the id, keep the declared size
-  // unless the source now says otherwise.
+  // unless the source now says otherwise. The print master (if any) was made
+  // for the source as it was, so it is detached: the PDF export follows the
+  // edited SVG from here on instead of silently printing the old figure.
   const applySvgSource = useCallback(
     (c: SvgSourceCommit) => {
       onChange(
@@ -164,6 +174,7 @@ export function ResourceDetail({
             fileId: c.fileId,
             width: c.width ?? resource.svg?.width,
             height: c.height ?? resource.svg?.height,
+            pdfFileId: undefined,
           },
         }),
       );
@@ -354,21 +365,25 @@ export function ResourceDetail({
           </Field>
         )}
         {resource.kind === 'svg' && resource.svg?.fileId && (
-          <div className="flex flex-col gap-0.5">
-            <span style={labelStyle}>{labels.svgSourceLabel}</span>
-            <SvgSourceEditor
+          <Field label={labels.resourcePdfMasterLabel} hint={labels.resourcePdfMasterHint}>
+            <PdfMasterUploader
               key={resource.id}
-              fileId={resource.svg.fileId}
-              isDark={isDark}
-              focusRequest={svgRequest}
-              onFocusConsumed={consumeFocus}
-              onSelectionChange={onSvgSelection}
-              onCommit={applySvgSource}
+              fileId={resource.svg.pdfFileId}
+              onAttached={applyPdfMaster}
+              onRemoved={() => applyPdfMaster(undefined)}
             />
-            <span style={{ ...labelStyle, color: 'var(--slate)' }} className="opacity-80">
-              {labels.svgSourceHint}
-            </span>
-          </div>
+          </Field>
+        )}
+        {resource.kind === 'svg' && resource.svg?.fileId && (
+          <SvgSourceEditor
+            key={resource.id}
+            fileId={resource.svg.fileId}
+            isDark={isDark}
+            focusRequest={svgRequest}
+            onFocusConsumed={consumeFocus}
+            onSelectionChange={onSvgSelection}
+            onCommit={applySvgSource}
+          />
         )}
         {resource.kind === 'table' && (
           <Field label={labels.resourceTableLabel}>

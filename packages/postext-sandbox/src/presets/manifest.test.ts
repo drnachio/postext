@@ -171,6 +171,16 @@ describe('resourceFromSpec', () => {
     expect(r.svg).toEqual({ fileId: 'preset:b:x-svg' });
   });
 
+  it('attaches a PDF print master to an SVG and ignores it elsewhere', () => {
+    const r = resourceFromSpec('b', { id: 'x', typeId: 'figure', kind: 'svg', file: 'x.svg', pdfFile: 'x.pdf' });
+    expect(r.svg).toEqual({ fileId: 'preset:b:x-svg', pdfFileId: 'preset:b:x-pdf' });
+    expect((r as unknown as { pdfFile?: string }).pdfFile).toBeUndefined();
+    const notPdf = resourceFromSpec('b', { id: 'y', typeId: 'figure', kind: 'svg', file: 'y.svg', pdfFile: 'y.ai' });
+    expect(notPdf.svg).toEqual({ fileId: 'preset:b:y-svg' });
+    const png = resourceFromSpec('b', { id: 'p', typeId: 'figure', kind: 'bitmap', file: 'p.png', pdfFile: 'p.pdf' });
+    expect(png.svg).toBeUndefined();
+  });
+
   it('maps a bitmap file, preferring explicit dimensions', () => {
     const r = resourceFromSpec('b', {
       id: 'cover', typeId: 'figure', kind: 'bitmap', file: 'Cover.JPG', width: 800, height: 600,

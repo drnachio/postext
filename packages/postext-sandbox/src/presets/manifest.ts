@@ -153,6 +153,7 @@ const MIME_BY_EXT: Record<string, string> = {
   jpeg: 'image/jpeg',
   webp: 'image/webp',
   gif: 'image/gif',
+  pdf: 'application/pdf',
 };
 
 export function mimeForFile(file: string): string {
@@ -174,6 +175,10 @@ export function isBitmapFile(file: string): boolean {
 
 export function isSvgFile(file: string): boolean {
   return fileExtension(file) === 'svg';
+}
+
+export function isPdfFile(file: string): boolean {
+  return fileExtension(file) === 'pdf';
 }
 
 export interface PresetFontFiles {
@@ -223,7 +228,7 @@ export function resourceFromSpec(
   fileIdFor: (file: string) => string = (file) => presetFileId(presetId, file),
 ): Resource {
   const now = Date.now();
-  const { file, width, height, ...rest } = spec;
+  const { file, pdfFile, width, height, ...rest } = spec;
   // `note` is a real resource field (rendered under the figure), so it is
   // kept on the stored resource like the caption.
   const base: Resource = { ...rest, createdAt: now, updatedAt: now };
@@ -234,10 +239,11 @@ export function resourceFromSpec(
   const h = height ?? size?.height;
 
   if (isSvgFile(file)) {
+    const master = pdfFile && isPdfFile(pdfFile) ? { pdfFileId: fileIdFor(pdfFile) } : {};
     return {
       ...base,
       kind: 'svg',
-      svg: w && h ? { fileId, width: w, height: h } : { fileId },
+      svg: w && h ? { fileId, width: w, height: h, ...master } : { fileId, ...master },
     };
   }
   const format = BITMAP_FORMAT_BY_EXT[fileExtension(file)];

@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Lock, LockOpen } from 'lucide-react';
 import { EditorView, lineNumbers, keymap } from '@codemirror/view';
 import { Compartment, EditorState, Transaction } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { xml } from '@codemirror/lang-xml';
 import { useSandboxLabels } from '../../context/SandboxContext';
+import { IconButton } from '../../ui';
 import { getEditorTheme } from '../../editor/postextTheme';
 import { getBlob, putBlob } from '../../storage/blobStore';
 import { invalidateResourceImage } from '../../controls/resourceImages';
@@ -13,12 +15,13 @@ import { ensureSvgTextIndex } from '../../controls/svgTextIndex';
 import { wordRangeAt } from '../../controls/wordRange';
 import type { InlineFocusRequest, InlineSelection } from '../../controls/InlineMarkdownInput';
 import { isValidSvg, svgIntrinsicSize } from './svgIntrinsic';
-import { editableRangesField, setEditableRanges, svgEditableRanges } from './svgEditableRanges';
+import { editableRangesField, setEditableRanges, setSourceLocked, svgEditableRanges } from './svgEditableRanges';
 import { scanSvgTextNodeRanges } from '../../controls/svgSource';
 
 // ---------------------------------------------------------------------------
 // SvgSourceEditor — a CodeMirror view over an SVG resource's source where only
-// the text nodes are editable (see svgEditableRanges.ts). Edits are saved on a
+// the text nodes are editable (see svgEditableRanges.ts) until the lock in
+// the header is opened, which frees the whole source. Edits are saved on a
 // short debounce as a NEW blob: every cache keyed by fileId (decoded images,
 // object URLs, thumbnails, the canvas registry, the text index) misses
 // naturally, and the previous blob is swept by the regular prune. The parent
@@ -61,6 +64,7 @@ export function SvgSourceEditor({
   const themeCompartment = useRef(new Compartment());
   const [status, setStatus] = useState<Status>('loading');
   const [hasText, setHasText] = useState(true);
+  const [locked, setLocked] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // The blob the editor's document currently mirrors. Set on load and on
   // every save so a `fileId` prop change caused by our own commit does not
@@ -164,6 +168,18 @@ export function SvgSourceEditor({
     viewRef.current?.dispatch({ effects: themeCompartment.current.reconfigure(getEditorTheme(isDark)) });
   }, [isDark]);
 
+  const toggleLock = () => {
+    const next = !locked;
+    setLocked(next);
+    const view = viewRef.current;
+    if (!view) return;
+    view.dispatch({ effects: setSourceLocked.of(next) });
+    if (next) {
+      const text = view.state.doc.toString();
+      setHasText(scanSvgTextNodeRanges(text).some((r) => /\S/.test(text.slice(r.start, r.end))));
+    }
+  };
+
   // Load the blob into the editor (unless it is the one we just saved).
   useEffect(() => {
     if (currentFileIdRef.current === fileId) return;
@@ -231,6 +247,15 @@ export function SvgSourceEditor({
 
   return (
     <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between gap-2">
+        <span style={{ color: 'var(--slate)', fontSize: 11, lineHeight: '14px' }}>{labels.svgSourceLabel}</span>
+        <IconButton
+          label={locked ? labels.svgSourceUnlock : labels.svgSourceLock}
+          icon={locked ? <Lock size={14} /> : <LockOpen size={14} />}
+          disabled={status !== 'ready'}
+          onClick={toggleLock}
+        />
+      </div>
       <div
         ref={hostRef}
         role="group"
@@ -252,12 +277,15 @@ export function SvgSourceEditor({
       {status === 'missing' && (
         <span className="text-xs" style={{ color: 'var(--destructive)' }}>{labels.svgSourceMissing}</span>
       )}
-      {status === 'ready' && !hasText && (
+      {status === 'ready' && locked && !hasText && (
         <span className="text-xs" style={{ color: 'var(--slate)' }}>{labels.svgSourceNoText}</span>
       )}
       {error && (
         <span className="text-xs" style={{ color: 'var(--destructive)' }}>{error}</span>
       )}
+      <span style={{ color: 'var(--slate)', fontSize: 11, lineHeight: '14px' }} className="opacity-80">
+        {locked ? labels.svgSourceHint : labels.svgSourceHintUnlocked}
+      </span>
     </div>
   );
 }

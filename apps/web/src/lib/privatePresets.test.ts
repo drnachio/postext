@@ -124,6 +124,7 @@ describe("contentTypeFor", () => {
       jpeg: "image/jpeg",
       webp: "image/webp",
       gif: "image/gif",
+      pdf: "application/pdf",
       otf: "font/otf",
       ttf: "font/ttf",
       woff2: "font/woff2",

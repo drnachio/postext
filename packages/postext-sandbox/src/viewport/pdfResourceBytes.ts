@@ -1,70 +1,38 @@
 // Resource binaries for PDF embedding (RenderToPdfOptions.resourceBytes).
 //
-// Bitmaps pass through as their stored bytes (pdf-lib embeds PNG/JPEG
-// natively; WebP is converted inside postext-pdf). SVGs are rasterised to PNG
-// on the main thread — pdf-lib vector emission is still deferred
-// (TODO #49-svg-vector) — honouring diagramStyle.singleInk so single-ink
-// documents print with recoloured diagrams.
+// The PDF backend sniffs whatever bytes it gets: bitmaps embed natively, SVG
+// markup is emitted as vector paths (recoloured first when
+// diagramStyle.singleInk is on) or rasterised when it uses features outside
+// the vector subset, and a single-page PDF is embedded verbatim. So the host's
+// only decision is which payload represents an SVG resource: its print master
+// (`svg.pdfFileId`) when one is attached — unless single-ink mode is on, since
+// the recolouring pass only works on SVG markup — and the SVG source otherwise.
 
 import type { PostextConfig, Resource } from 'postext';
-import { applySingleInkToSvg, resolveColorValue, resolveDiagramStyleConfig } from 'postext';
+import { resolveDiagramStyleConfig } from 'postext';
 import { getBlob } from '../storage/blobStore';
 
-/** Supersampling factor over the SVG's intrinsic CSS-px size (~288 dpi). */
-const RASTER_SCALE = 3;
-
-async function svgToPngBytes(svgText: string, width: number, height: number): Promise<Uint8Array | null> {
-  if (typeof document === 'undefined') return null;
-  const blob = new Blob([svgText], { type: 'image/svg+xml' });
-  const url = URL.createObjectURL(blob);
-  try {
-    const img = new Image();
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = () => reject(new Error('SVG decode failed'));
-      img.src = url;
-    });
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(width * RASTER_SCALE));
-    canvas.height = Math.max(1, Math.round(height * RASTER_SCALE));
-    const c2d = canvas.getContext('2d');
-    if (!c2d) return null;
-    c2d.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const pngBlob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/png'));
-    if (!pngBlob) return null;
-    return new Uint8Array(await pngBlob.arrayBuffer());
-  } catch {
-    return null;
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
-
-/** Pull every image-bearing resource's bytes from the blob store, rasterising
- *  SVGs (with the document's single-ink recolouring when enabled). Missing or
- *  undecodable entries are simply absent — the PDF renderer falls back to a
- *  placeholder for those. */
+/** Pull every image-bearing resource's bytes from the blob store. Missing
+ *  entries are simply absent — the PDF renderer falls back to a placeholder
+ *  for those. */
 export async function buildPdfResourceBytes(
   resources: Resource[],
   config: PostextConfig,
 ): Promise<Map<string, Uint8Array>> {
-  const ds = resolveDiagramStyleConfig(config.diagramStyle);
-  const inkHex = ds.singleInk
-    ? resolveColorValue(ds.inkColor, config.colorPalette, ds.inkColor).hex
-    : null;
+  const singleInk = resolveDiagramStyleConfig(config.diagramStyle).singleInk;
   const out = new Map<string, Uint8Array>();
+  const load = async (fileId: string): Promise<Uint8Array | null> => {
+    const rec = await getBlob(fileId).catch(() => null);
+    return rec ? new Uint8Array(rec.bytes) : null;
+  };
   for (const r of resources) {
     if (r.kind === 'bitmap' && r.bitmap?.fileId && !out.has(r.bitmap.fileId)) {
-      const rec = await getBlob(r.bitmap.fileId).catch(() => null);
-      if (rec) out.set(r.bitmap.fileId, new Uint8Array(rec.bytes));
+      const bytes = await load(r.bitmap.fileId);
+      if (bytes) out.set(r.bitmap.fileId, bytes);
     } else if (r.kind === 'svg' && r.svg?.fileId && !out.has(r.svg.fileId)) {
-      const rec = await getBlob(r.svg.fileId).catch(() => null);
-      if (!rec) continue;
-      let svgText = new TextDecoder().decode(rec.bytes);
-      if (inkHex) svgText = applySingleInkToSvg(svgText, inkHex);
-      // SVGs without declared intrinsic dims rasterise at a sane default box.
-      const png = await svgToPngBytes(svgText, r.svg.width ?? 480, r.svg.height ?? 360);
-      if (png) out.set(r.svg.fileId, png);
+      const master = r.svg.pdfFileId && !singleInk ? await load(r.svg.pdfFileId) : null;
+      const bytes = master ?? await load(r.svg.fileId);
+      if (bytes) out.set(r.svg.fileId, bytes);
     }
   }
   return out;

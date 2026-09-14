@@ -35,19 +35,26 @@ export function remapContentFileIds(content: ProjectContent, map: FileIdMapper):
   const fontPairs: [string, string, CustomFontFormat][] = [];
   const blobSeen = new Map<string, string>();
 
-  const resources: Resource[] = content.resources.map((r) => {
-    const fileId = r.bitmap?.fileId ?? r.svg?.fileId;
-    if (!fileId) return r;
+  const remapBlob = (fileId: string, hint: string): string => {
     let next = blobSeen.get(fileId);
     if (next === undefined) {
-      const ext = r.kind === 'svg' ? 'svg' : (r.bitmap?.format ?? 'bin');
-      next = map(fileId, 'blob', `${r.id}.${ext}`);
+      next = map(fileId, 'blob', hint);
       blobSeen.set(fileId, next);
       if (next !== fileId) blobPairs.push([fileId, next]);
     }
-    if (next === fileId) return r;
+    return next;
+  };
+  const resources: Resource[] = content.resources.map((r) => {
+    const fileId = r.bitmap?.fileId ?? r.svg?.fileId;
+    if (!fileId) return r;
+    const ext = r.kind === 'svg' ? 'svg' : (r.bitmap?.format ?? 'bin');
+    const next = remapBlob(fileId, `${r.id}.${ext}`);
+    // An SVG's vector print master travels with it under its own id.
+    const pdfFileId = r.svg?.pdfFileId;
+    const nextPdf = pdfFileId ? remapBlob(pdfFileId, `${r.id}.pdf`) : undefined;
+    if (next === fileId && nextPdf === pdfFileId) return r;
     if (r.bitmap) return { ...r, bitmap: { ...r.bitmap, fileId: next } };
-    if (r.svg) return { ...r, svg: { ...r.svg, fileId: next } };
+    if (r.svg) return { ...r, svg: { ...r.svg, fileId: next, ...(nextPdf ? { pdfFileId: nextPdf } : {}) } };
     return r;
   });
 
