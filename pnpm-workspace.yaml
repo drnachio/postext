@@ -7,3 +7,8 @@ overrides:
   # GHSA-qx2v-qp2m-jg93 — next pins a vulnerable postcss; 8.5.x is a
   # compatible in-major upgrade. Drop once next ships postcss >=8.5.10.
   "postcss@<8.5.10": ">=8.5.10"
+allowBuilds:
+  '@parcel/watcher': set this to true or false
+  '@swc/core': set this to true or false
+  msw: set this to true or false
+  unrs-resolver: set this to true or false
