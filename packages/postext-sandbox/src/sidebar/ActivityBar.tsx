@@ -1,12 +1,10 @@
 'use client';
 
 import { FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files } from 'lucide-react';
-import { useMemo, useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
-import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxPresetStale, useSandboxSelector } from '../context/SandboxContext';
+import { useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxPresetStale, useSandboxSelector, useSandboxWarnings } from '../context/SandboxContext';
 import type { PanelId } from '../types';
-import { Tooltip } from '../panels/Tooltip';
-import { computeWarnings } from '../warnings/compute';
-import { hasIndexedDB } from '../storage/blobStore';
+import { Tooltip } from '../ui';
 
 interface ActivityBarProps {
   themeToggle?: ReactNode;
@@ -28,32 +26,13 @@ function PanelNav() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const activePanel = useSandboxSelector((s) => s.activePanel);
-  const markdown = useSandboxSelector((s) => s.markdown);
-  const config = useSandboxSelector((s) => s.config);
-  const docVersion = useSandboxSelector((s) => s.docVersion);
-  const resources = useSandboxSelector((s) => s.resources);
   const presetStale = useSandboxPresetStale();
-  const docRef = useSandboxDocRef();
   const navRef = useRef<HTMLElement>(null);
   const buttonRefs = useRef<Map<PanelId, HTMLButtonElement>>(new Map());
   const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null);
   const hasAnimated = useRef(false);
 
-  // Recomputed whenever markdown, config, or the last-built VDT change.
-  // Also exposed via the Warnings panel — parseMarkdown is memoized, so the
-  // duplicate call is cheap.
-  const warningCount = useMemo(
-    () =>
-      computeWarnings({
-        markdown,
-        config,
-        doc: docRef.current,
-        resources,
-        storageUnavailable: !hasIndexedDB(),
-      }).length,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [markdown, config, docVersion, resources],
-  );
+  const warningCount = useSandboxWarnings().length;
 
   const updateIndicator = useCallback(() => {
     if (activePanel === null) {
@@ -81,7 +60,7 @@ function PanelNav() {
   }, [updateIndicator]);
 
   return (
-    <nav ref={navRef} className="relative flex flex-col items-center gap-2" aria-label="Panels">
+    <nav ref={navRef} className="relative flex flex-col items-center gap-2" aria-label={labels.panelsNav}>
       {indicator && (
         <div
           aria-hidden="true"
@@ -181,12 +160,13 @@ function PanelNav() {
 }
 
 export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }: ActivityBarProps) {
+  const labels = useSandboxLabels();
   return (
     <div
       className="flex h-full w-14 flex-col items-center border-r px-2 py-3"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
       role="toolbar"
-      aria-label="Activity bar"
+      aria-label={labels.activityBar}
       aria-orientation="vertical"
     >
       {/* Home logo */}

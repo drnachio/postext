@@ -1,11 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
 import { AlertTriangle, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database } from 'lucide-react';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES } from 'postext';
-import { useSandbox } from '../context/SandboxContext';
-import { computeWarnings } from '../warnings/compute';
-import { hasIndexedDB } from '../storage/blobStore';
+import { useSandbox, useSandboxWarnings } from '../context/SandboxContext';
+import { EmptyState, ListRow, PanelBody, PanelHeader } from '../ui';
 import type { Warning, WarningPayload } from '../warnings/types';
 import type { SandboxLabels } from '../types';
 
@@ -61,6 +59,8 @@ function iconFor(kind: WarningPayload['kind']) {
       return Image;
     case 'storageUnavailable':
       return Database;
+    case 'chapterFrontmatterIgnored':
+      return FileText;
     default:
       return AlertTriangle;
   }
@@ -133,6 +133,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsBitmapTooSmallTitle ?? 'Low-resolution image';
     case 'storageUnavailable':
       return labels.warningsStorageUnavailableTitle ?? 'Storage unavailable';
+    case 'chapterFrontmatterIgnored':
+      return labels.warningsChapterFrontmatterIgnoredTitle;
   }
 }
 
@@ -230,6 +232,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `#${payload.resourceId} · ${payload.renderedWidth}px / ${payload.bitmapWidth}px — ${labels.warningsBitmapTooSmallDetail ?? 'rendered larger than its native size; may look blurry'}`;
     case 'storageUnavailable':
       return labels.warningsStorageUnavailableDetail ?? 'IndexedDB is unavailable; uploaded images cannot be saved';
+    case 'chapterFrontmatterIgnored':
+      return labels.warningsChapterFrontmatterIgnoredDetail.replace('__chapter__', payload.chapterTitle);
   }
 }
 
@@ -245,81 +249,49 @@ function isFontWarning(kind: WarningPayload['kind']): boolean {
 function WarningItem({
   warning,
   labels,
+  multiChapter,
   onClick,
 }: {
   warning: Warning;
   labels: SandboxLabels;
+  multiChapter: boolean;
   onClick: (w: Warning) => void;
 }) {
   const Icon = iconFor(warning.payload.kind);
   const clickable = warning.sourceStart !== undefined || isFontWarning(warning.payload.kind);
   const title = titleFor(warning.payload, labels);
   const detail = detailFor(warning.payload, labels);
-  const lineTag = warning.line !== undefined
-    ? `${labels.warningsLineLabel} ${warning.line}`
+  const line = warning.chapterLine ?? warning.line;
+  const chapterTag = multiChapter && warning.chapterIndex !== undefined
+    ? labels.warningsChapterLabel.replace('__n__', String(warning.chapterIndex + 1))
     : null;
+  const lineTag = line !== undefined
+    ? [chapterTag, `${labels.warningsLineLabel} ${line}`].filter(Boolean).join(' · ')
+    : chapterTag;
 
   return (
-    <button
-      type="button"
-      onClick={clickable ? () => onClick(warning) : undefined}
-      disabled={!clickable}
-      className="flex w-full gap-3 border-b px-3 py-2 text-left transition-colors"
-      style={{
-        borderColor: 'var(--rule)',
-        cursor: clickable ? 'pointer' : 'default',
-        color: 'var(--foreground)',
-      }}
-      onMouseEnter={(e) => {
-        if (clickable) e.currentTarget.style.backgroundColor = 'var(--surface)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'transparent';
-      }}
-    >
-      <Icon size={16} aria-hidden="true" style={{ color: 'var(--gilt)', flexShrink: 0, marginTop: 2 }} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-            {title}
-          </span>
-          {lineTag && (
-            <span
-              className="text-[10px] font-medium"
-              style={{
-                color: 'var(--slate)',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {lineTag}
-            </span>
-          )}
-        </div>
-        <div className="mt-0.5 text-xs" style={{ color: 'var(--slate)', overflowWrap: 'anywhere' }}>
-          {detail}
-        </div>
-      </div>
-    </button>
+    <ListRow
+      onSelect={clickable ? () => onClick(warning) : undefined}
+      ariaLabel={`${title}${lineTag ? ` (${lineTag})` : ''}`}
+      alignTop
+      leading={<Icon size={16} aria-hidden="true" style={{ color: 'var(--gilt)', marginTop: 1 }} />}
+      title={title}
+      subtitle={detail}
+      tags={lineTag ? (
+        <span className="ml-auto shrink-0 text-[10px] font-medium" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>
+          {lineTag}
+        </span>
+      ) : undefined}
+      className="mx-2 my-0.5"
+    />
   );
 }
 
 export function WarningsPanel() {
-  const { state, dispatch, docRef } = useSandbox();
-  const { markdown, config, labels, docVersion, resources } = state;
-
-  const warnings = useMemo(
-    () =>
-      computeWarnings({
-        markdown,
-        config,
-        doc: docRef.current,
-        resources,
-        storageUnavailable: !hasIndexedDB(),
-      }),
-    // docRef is a ref — rely on docVersion to re-compute when the doc changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [markdown, config, docVersion, resources],
-  );
+  const { state, dispatch } = useSandbox();
+  const { labels } = state;
+  const warnings = useSandboxWarnings();
+  const multiChapter = state.chapters.length > 1;
 
   const handleClick = (w: Warning) => {
     if (isFontWarning(w.payload.kind)) {
@@ -329,45 +301,27 @@ export function WarningsPanel() {
       return;
     }
     if (w.sourceStart === undefined) return;
-    const anchor = w.sourceStart;
-    const head = w.sourceEnd ?? w.sourceStart;
+    const anchor = w.chapterStart ?? w.sourceStart;
+    const head = w.chapterEnd ?? w.sourceEnd ?? anchor;
     dispatch({ type: 'SET_PANEL', payload: 'markdown' });
     dispatch({
       type: 'SET_PENDING_EDITOR_FOCUS',
-      payload: { anchor, head, selectWord: false },
+      payload: { chapterId: w.chapterId, anchor, head, selectWord: false },
     });
   };
 
   return (
     <div className="flex h-full flex-col">
-      <div
-        className="flex shrink-0 items-center justify-between border-b px-3 py-2"
-        style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
-      >
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-          {labels.warnings}
-        </h2>
-        <span
-          className="text-xs"
-          style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}
-        >
-          {warnings.length}
-        </span>
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <PanelHeader title={labels.warnings} count={warnings.length} />
+      <PanelBody>
         {warnings.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-            <FileText size={40} className="mb-3" style={{ color: 'var(--rule)' }} />
-            <p className="text-xs" style={{ color: 'var(--slate)' }}>
-              {labels.warningsEmpty}
-            </p>
-          </div>
+          <EmptyState icon={<FileText size={32} />} title={labels.warningsEmpty} />
         ) : (
           warnings.map((w) => (
-            <WarningItem key={w.id} warning={w} labels={labels} onClick={handleClick} />
+            <WarningItem key={w.id} warning={w} labels={labels} multiChapter={multiChapter} onClick={handleClick} />
           ))
         )}
-      </div>
+      </PanelBody>
     </div>
   );
 }

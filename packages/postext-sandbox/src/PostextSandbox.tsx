@@ -17,6 +17,7 @@ import { ViewportTabs } from './viewport/ViewportTabs';
 import { CanvasViewport } from './viewport/CanvasViewport';
 import { HtmlViewport } from './viewport/HtmlViewport';
 import { PdfViewport } from './viewport/PdfViewport';
+import { SandboxGlobalStyles, TooltipProvider } from './ui';
 
 function SandboxLayout({
   themeToggle,
@@ -142,7 +143,6 @@ function SandboxLayout({
             animation: 'postext-spin 0.8s linear infinite',
           }}
         />
-        <style>{`@keyframes postext-spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -193,6 +193,7 @@ export function PostextSandbox({
 
   return (
     <div className={className ?? 'h-full w-full'}>
+      <SandboxGlobalStyles />
       <SandboxProvider
         initialMarkdown={initialMarkdown}
         initialConfig={initialConfig}
@@ -202,13 +203,15 @@ export function PostextSandbox({
         onConfigChange={onConfigChange}
         onMarkdownChange={onMarkdownChange}
       >
-        <SandboxLayout
-          themeToggle={themeToggle}
-          languageSwitcher={languageSwitcher}
-          isDark={isDark}
-          homeUrl={homeUrl}
-          homeLink={homeLink}
-        />
+        <TooltipProvider>
+          <SandboxLayout
+            themeToggle={themeToggle}
+            languageSwitcher={languageSwitcher}
+            isDark={isDark}
+            homeUrl={homeUrl}
+            homeLink={homeLink}
+          />
+        </TooltipProvider>
       </SandboxProvider>
     </div>
   );

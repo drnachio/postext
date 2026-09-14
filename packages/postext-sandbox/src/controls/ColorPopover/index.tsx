@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback, type RefObject } from 'react';
 import type { ColorPaletteEntry } from 'postext';
+import { Popover, type PopoverCloseReason } from '../../ui';
+import { useSandboxLabels } from '../../context/SandboxContext';
 import { SaturationValueArea } from '../SaturationValueArea';
 import { HueSlider } from '../HueSlider';
 import { AlphaSlider } from '../AlphaSlider';
@@ -14,11 +16,9 @@ import {
 import { PaletteChips } from './PaletteChips';
 import { TabInputs } from './TabInputs';
 
-interface ColorPopoverProps {
+interface ColorPopoverBodyProps {
   hex: string;
   onChange: (hex: string) => void;
-  anchorRect: DOMRect;
-  onClose: () => void;
   initialMode?: ColorMode;
   onModeChange?: (mode: ColorMode) => void;
   palette?: ColorPaletteEntry[];
@@ -28,6 +28,13 @@ interface ColorPopoverProps {
   unlinkLabel?: string;
 }
 
+interface ColorPopoverProps extends ColorPopoverBodyProps {
+  open: boolean;
+  onOpenChange: (open: boolean, reason: PopoverCloseReason, event: Event | undefined) => void;
+  anchor: RefObject<Element | null>;
+  ariaLabel: string;
+}
+
 const TABS: { id: ColorMode; label: string }[] = [
   { id: 'hex', label: 'HEX' },
   { id: 'rgb', label: 'RGB' },
@@ -35,18 +42,34 @@ const TABS: { id: ColorMode; label: string }[] = [
   { id: 'hsl', label: 'HSL' },
 ];
 
-const POPOVER_WIDTH = 240;
-const POPOVER_GAP = 6;
+const POPOVER_WIDTH = 260;
 
 const CHECKER = `repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 0 0 / 10px 10px`;
 
-export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel }: ColorPopoverProps) {
+/** Colour editor anchored beside its field. The body mounts only while open
+ *  so its working state always starts from the current `hex`. */
+export function ColorPopover({ open, onOpenChange, anchor, ariaLabel, ...body }: ColorPopoverProps) {
+  return (
+    <Popover
+      open={open}
+      onOpenChange={onOpenChange}
+      anchor={anchor}
+      width={POPOVER_WIDTH}
+      initialFocus={false}
+      ariaLabel={ariaLabel}
+    >
+      <ColorPopoverBody {...body} />
+    </Popover>
+  );
+}
+
+function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel }: ColorPopoverBodyProps) {
+  const labels = useSandboxLabels();
   const [hsv, setHsv] = useState<HSV>(() => hexToHsv(hexWithoutAlpha(hex)));
   const [alpha, setAlpha] = useState(() => hexAlpha(hex));
   const [activeTab, setActiveTab] = useState<ColorMode>(initialMode);
   const [hexText, setHexText] = useState(() => hexWithoutAlpha(hex));
   const [previousHex] = useState(hex);
-  const popoverRef = useRef<HTMLDivElement>(null);
 
   // Sync from external hex changes (e.g., reset)
   useEffect(() => {
@@ -62,23 +85,6 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
   useEffect(() => {
     setHexText(hsvToHex(hsv));
   }, [hsv]);
-
-  useEffect(() => {
-    const handleMouseDown = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose]);
 
   const emitColor = useCallback((nextHsv: HSV, nextAlpha: number) => {
     const hex6 = hsvToHex(nextHsv);
@@ -132,35 +138,11 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
     }
   };
 
-  // Position — flip above anchor if not enough space below
-  const estimatedHeight = 400;
-  const fitsBelow = anchorRect.bottom + POPOVER_GAP + estimatedHeight < window.innerHeight;
-  const top = fitsBelow
-    ? anchorRect.bottom + POPOVER_GAP
-    : Math.max(8, anchorRect.top - POPOVER_GAP - estimatedHeight);
-  const left = Math.max(8, anchorRect.right - POPOVER_WIDTH);
-
   const previousHex6 = hexWithoutAlpha(previousHex);
   const previousAlpha = hexAlpha(previousHex);
 
   return (
-    <div
-      ref={popoverRef}
-      role="dialog"
-      aria-label="Color picker"
-      style={{
-        position: 'fixed',
-        zIndex: 50,
-        width: POPOVER_WIDTH,
-        top,
-        left,
-        backgroundColor: 'var(--surface)',
-        border: '1px solid var(--rule)',
-        borderRadius: 8,
-        padding: 10,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-      }}
-    >
+    <>
       {palette && palette.length > 0 && (
         <PaletteChips
           palette={palette}
@@ -183,54 +165,23 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
       <AlphaSlider alpha={alpha} color={currentHex} onChange={updateAlpha} />
 
       <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-        <div style={{
-          flex: 1,
-          height: 20,
-          borderRadius: 3,
-          border: '1px solid var(--rule)',
-          background: CHECKER,
-          overflow: 'hidden',
-          position: 'relative',
-        }}>
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: currentHex,
-            opacity: alpha / 100,
-          }} />
+        <div style={{ flex: 1, height: 20, borderRadius: 3, border: '1px solid var(--rule)', background: CHECKER, overflow: 'hidden', position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: currentHex, opacity: alpha / 100 }} />
         </div>
-        <div style={{
-          flex: 1,
-          height: 20,
-          borderRadius: 3,
-          border: '1px solid var(--rule)',
-          background: CHECKER,
-          overflow: 'hidden',
-          position: 'relative',
-        }}>
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: previousHex6,
-            opacity: previousAlpha / 100,
-          }} />
+        <div style={{ flex: 1, height: 20, borderRadius: 3, border: '1px solid var(--rule)', background: CHECKER, overflow: 'hidden', position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: previousHex6, opacity: previousAlpha / 100 }} />
         </div>
       </div>
 
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        gap: 4,
-        marginTop: 6,
-      }}>
-        <span style={{ fontSize: 9, color: 'var(--slate)' }}>Alpha</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 6 }}>
+        <span style={{ fontSize: 9, color: 'var(--slate)' }}>{labels.colorAlpha}</span>
         <input
           type="number"
           value={alpha}
           onChange={(e) => updateAlpha(clamp(Number(e.target.value), 0, 100))}
           min={0}
           max={100}
+          aria-label={labels.colorAlpha}
           style={{
             width: 42,
             padding: '2px 4px',
@@ -246,17 +197,11 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
         <span style={{ fontSize: 9, color: 'var(--slate)' }}>%</span>
       </div>
 
-      <div
-        role="tablist"
-        style={{
-          display: 'flex',
-          marginTop: 8,
-          borderBottom: '1px solid var(--rule)',
-        }}
-      >
+      <div role="tablist" style={{ display: 'flex', marginTop: 8, borderBottom: '1px solid var(--rule)' }}>
         {TABS.map((tab) => (
           <button
             key={tab.id}
+            type="button"
             role="tab"
             aria-selected={activeTab === tab.id}
             onClick={() => { setActiveTab(tab.id); onModeChange?.(tab.id); }}
@@ -292,6 +237,6 @@ export function ColorPopover({ hex, onChange, anchorRect, onClose, initialMode =
         handleHslChange={handleHslChange}
         handleCmykChange={handleCmykChange}
       />
-    </div>
+    </>
   );
 }

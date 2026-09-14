@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource } from 'postext';
 import { createDefaultConfig } from '../context/defaultConfig';
-import { buildBundleFiles, parseBundle, planBundle, MARKDOWN_FILE } from './bundle';
+import { buildBundleFiles, parseBundle, planBundle } from './bundle';
+import { newChapter } from '../book/chapterOps';
+import type { Chapter } from '../book/types';
 import { openBundleZip, zipBundle } from './zip';
-import type { PresetManifest, PresetSummary } from './types';
+import type { PresetManifestV1, PresetSummary } from './types';
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
@@ -20,7 +22,7 @@ function readerFrom(files: Record<string, Uint8Array | string>) {
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"></svg>';
 
-const manifest = (over: Partial<PresetManifest> = {}): PresetManifest => ({
+const manifest = (over: Partial<PresetManifestV1> = {}): PresetManifestV1 => ({
   version: 1,
   id: 'brochure',
   name: 'Brochure',
@@ -41,7 +43,8 @@ describe('parseBundle', () => {
       readerFrom({ 'doc.md': '# Hi', 'resources/fig.svg': SVG, 'fonts/body.ttf': new Uint8Array([1, 2, 3]) }),
       { locale: 'en', summary },
     );
-    expect(loaded.markdown).toBe('# Hi');
+    expect(loaded.chapters.map((c) => c.markdown)).toEqual(['# Hi']);
+    expect(loaded.chapters[0]!.title).toBe('Hi');
     expect(loaded.resources.map((r) => r.id)).toEqual(['fig', 'tbl']);
     // Intrinsic size needs DOMParser (browser only); node yields just the id.
     expect(loaded.resources[0].svg).toEqual({ fileId: 'preset:brochure:resources-fig-svg' });
@@ -61,7 +64,7 @@ describe('parseBundle', () => {
       readerFrom({ 'en.md': 'EN', 'es.md': 'ES', 'resources/fig.svg': SVG }),
       { locale: 'es-ES', summary, ids: { blob: (f) => `project:p1:${f}`, font: (f) => `project-font:p1:${f}` } },
     );
-    expect(loaded.markdown).toBe('ES');
+    expect(loaded.chapters[0]!.markdown).toBe('ES');
     expect(loaded.resources[0].svg?.fileId).toBe('project:p1:resources/fig.svg');
     expect(loaded.blobs[0].fileId).toBe('project:p1:resources/fig.svg');
   });
@@ -81,7 +84,7 @@ describe('parseBundle', () => {
   });
 });
 
-function sampleContent(): { config: PostextConfig; resources: Resource[]; markdown: string } {
+function sampleContent(): { config: PostextConfig; resources: Resource[]; chapters: Chapter[] } {
   const config: PostextConfig = {
     ...createDefaultConfig('en'),
     customFonts: [
@@ -99,7 +102,7 @@ function sampleContent(): { config: PostextConfig; resources: Resource[]; markdo
     { id: 'fig-a', typeId: 'figure', kind: 'bitmap', createdAt: 1, updatedAt: 2, bitmap: { fileId: 'b-jpg', format: 'jpeg', width: 10, height: 5 } },
     { id: 'tbl', typeId: 'table', kind: 'table', createdAt: 1, updatedAt: 2, table: { model: { rows: [] } } },
   ];
-  return { config, resources, markdown: '# Doc' };
+  return { config, resources, chapters: [newChapter('c1', 'Doc', '# Doc', 1), newChapter('c2', 'Two', '# Two', 1)] };
 }
 
 describe('planBundle', () => {
@@ -110,7 +113,8 @@ describe('planBundle', () => {
     expect(svg).toEqual({ id: 'Fig A', typeId: 'figure', kind: 'svg', caption: 'A', file: 'resources/fig-a.svg', width: 40, height: 20 });
     expect(jpg.file).toBe('resources/fig-a-2.jpg');
     expect(tbl).toEqual({ id: 'tbl', typeId: 'table', kind: 'table', table: { model: { rows: [] } } });
-    expect(plan.manifest.markdown).toBe(MARKDOWN_FILE);
+    expect(plan.manifest.version).toBe(2);
+    expect(plan.manifest.chapters).toEqual([{ title: 'Doc', file: 'chapters/01-doc.md' }, { title: 'Two', file: 'chapters/02-two.md' }]);
     expect(plan.manifest.config?.customFonts).toBeUndefined();
     expect(plan.manifest.fonts).toEqual([{ name: 'Body', variants: [{ weight: 400, style: 'normal', file: 'fonts/body-regular.ttf' }] }]);
     expect(plan.warnings).toHaveLength(1);
@@ -124,7 +128,7 @@ describe('buildBundleFiles', () => {
       readBlob: (id) => Promise.resolve(id === 'b-svg' ? enc.encode(SVG).buffer : null),
       readFont: () => Promise.resolve(null),
     });
-    expect(Object.keys(built.files).sort()).toEqual(['document.md', 'preset.json', 'resources/fig-a.svg']);
+    expect(Object.keys(built.files).sort()).toEqual(['chapters/01-doc.md', 'chapters/02-two.md', 'preset.json', 'resources/fig-a.svg']);
     expect(built.manifest.resources?.map((r) => r.id)).toEqual(['Fig A', 'tbl']);
     expect(built.manifest.fonts).toBeUndefined();
     expect(built.warnings.some((w) => w.startsWith('fig-a'))).toBe(true);
@@ -143,7 +147,8 @@ describe('zip round trip', () => {
     const opened = openBundleZip(zipped);
     expect(opened.rootPrefix).toBe('');
     const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
-    expect(loaded.markdown).toBe('# Doc');
+    expect(loaded.chapters.map((c) => [c.title, c.markdown])).toEqual([['Doc', '# Doc'], ['Two', '# Two']]);
+    expect(loaded.chapters[0]!.id).not.toBe('c1');
     expect(loaded.resources.map((r) => r.id)).toEqual(['Fig A', 'fig-a', 'tbl']);
     expect(loaded.resources[0].svg).toMatchObject({ width: 40, height: 20 });
     expect(loaded.resources[1].bitmap).toMatchObject({ format: 'jpeg', width: 10, height: 5 });
@@ -175,5 +180,21 @@ describe('zip round trip', () => {
     expect(() => openBundleZip(new Uint8Array([1, 2, 3]))).toThrow(/Not a zip/);
     const opened = openBundleZip(zipBundle({ 'preset.json': enc.encode('{}') }));
     return expect(opened.readFile('../x')).rejects.toThrow(/Invalid bundle path/);
+  });
+});
+
+describe('parseBundle (v2)', () => {
+  it('reads every chapter in order with fresh ids and derived titles', async () => {
+    let n = 0;
+    const loaded = await parseBundle(
+      { version: 2, id: 'book', name: 'Book', chapters: [{ title: 'Intro', file: 'chapters/01.md' }, { title: '', file: 'chapters/02.md' }, { title: '', file: 'chapters/03.md' }] },
+      readerFrom({ 'chapters/01.md': 'one', 'chapters/02.md': '# Second', 'chapters/03.md': 'plain' }),
+      { locale: 'en', summary, chapterIds: () => `id${++n}`, untitledChapter: (k) => `Cap. ${k}` },
+    );
+    expect(loaded.chapters.map((c) => [c.id, c.title, c.markdown])).toEqual([
+      ['id1', 'Intro', 'one'],
+      ['id2', 'Second', '# Second'],
+      ['id3', 'Cap. 3', 'plain'],
+    ]);
   });
 });

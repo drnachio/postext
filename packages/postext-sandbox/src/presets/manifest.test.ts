@@ -1,22 +1,55 @@
 import { describe, expect, it } from 'vitest';
 import {
+  chapterFileName,
   fontsToCustomFonts,
   isPresetIndex,
   isPresetManifest,
   mimeForFile,
+  pickChapterSpecs,
   pickMarkdownFile,
   presetFileId,
   presetFontFileId,
   resourceFromSpec,
 } from './manifest';
-import type { PresetManifest } from './types';
+import type { PresetManifestV1, PresetManifestV2 } from './types';
 
-const manifest = (over: Partial<PresetManifest> = {}): PresetManifest => ({
+const manifest = (over: Partial<PresetManifestV1> = {}): PresetManifestV1 => ({
   version: 1,
   id: 'brochure',
   name: 'Brochure',
   markdown: 'doc.md',
   ...over,
+});
+
+const manifestV2 = (over: Partial<PresetManifestV2> = {}): PresetManifestV2 => ({
+  version: 2,
+  id: 'book',
+  name: 'Book',
+  chapters: [{ title: 'One', file: 'chapters/01-one.md' }, { title: 'Two', file: 'chapters/02-two.md' }],
+  ...over,
+});
+
+describe('v2 manifests', () => {
+  it('accepts chapter lists and per-locale chapter maps', () => {
+    expect(isPresetManifest(manifestV2())).toBe(true);
+    expect(isPresetManifest(manifestV2({ chapters: { en: [{ title: '', file: 'en/01.md' }], es: [{ title: '', file: 'es/01.md' }] } }))).toBe(true);
+    expect(isPresetManifest(manifestV2({ chapters: [] }))).toBe(false);
+    expect(isPresetManifest(manifestV2({ chapters: [{ title: 'x', file: '' }] }))).toBe(false);
+    expect(isPresetManifest({ ...manifestV2(), version: 3 })).toBe(false);
+  });
+  it('picks chapter specs for both versions', () => {
+    expect(pickChapterSpecs(manifest(), 'en')).toEqual([{ title: '', file: 'doc.md' }]);
+    expect(pickChapterSpecs(manifestV2(), 'en').map((c) => c.file)).toEqual(['chapters/01-one.md', 'chapters/02-two.md']);
+    const localized = manifestV2({ chapters: { en: [{ title: 'E', file: 'en.md' }], es: [{ title: 'S', file: 'es.md' }] }, locale: 'es' });
+    expect(pickChapterSpecs(localized, 'es-ES')[0]!.file).toBe('es.md');
+    expect(pickChapterSpecs(localized, 'fr')[0]!.file).toBe('es.md');
+  });
+  it('names chapter files with a padded ordinal and a unique slug', () => {
+    const taken = new Set<string>();
+    expect(chapterFileName(0, 'Intro duction', taken, 12)).toBe('chapters/01-intro-duction.md');
+    expect(chapterFileName(1, 'Intro duction', taken, 12)).toBe('chapters/02-intro-duction.md');
+    expect(chapterFileName(2, '', taken, 120)).toBe('chapters/003-chapter.md');
+  });
 });
 
 describe('isPresetIndex', () => {

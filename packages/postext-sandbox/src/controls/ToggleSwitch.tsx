@@ -1,7 +1,6 @@
 'use client';
 
-import { InfoTip } from './InfoTip';
-import { ResetButton } from './ResetButton';
+import { FieldRow } from './FieldRow';
 
 interface ToggleSwitchProps {
   label: string;
@@ -16,49 +15,41 @@ export function ToggleSwitch({ label, checked, onChange, tooltip, isDefault, onR
   const muted = isDefault ?? false;
 
   return (
-    <div className="mb-2 flex items-center justify-between gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-1">
-        {tooltip && <InfoTip text={tooltip} />}
-        <label className="text-xs" title={label} style={{ color: 'var(--slate)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-          {label}
-        </label>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {!muted && onReset && <ResetButton onClick={onReset} />}
-        <button
-          type="button"
-          role="switch"
-          aria-checked={checked}
-          aria-label={label}
-          onClick={() => onChange(!checked)}
+    <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset}>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        onClick={() => onChange(!checked)}
+        className="focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)"
+        style={{
+          position: 'relative',
+          height: 20,
+          width: 36,
+          flexShrink: 0,
+          borderRadius: 9999,
+          border: '1px solid var(--rule)',
+          cursor: 'pointer',
+          backgroundColor: checked ? 'var(--gilt)' : 'var(--surface)',
+          transition: 'background-color 200ms ease',
+          opacity: muted ? 0.7 : 1,
+        }}
+      >
+        <span
           style={{
-            position: 'relative',
-            height: 20,
-            width: 36,
-            flexShrink: 0,
+            position: 'absolute',
+            left: 1.5,
+            top: 1.5,
+            height: 16,
+            width: 16,
             borderRadius: 9999,
-            border: '1px solid var(--rule)',
-            cursor: 'pointer',
-            backgroundColor: checked ? 'var(--gilt)' : 'var(--surface)',
-            transition: 'background-color 200ms ease',
-            opacity: muted ? 0.7 : 1,
+            backgroundColor: checked ? 'var(--background)' : 'var(--slate)',
+            transform: checked ? 'translateX(16px)' : 'translateX(0)',
+            transition: 'transform 200ms ease',
           }}
-        >
-          <span
-            style={{
-              position: 'absolute',
-              left: 1.5,
-              top: 1.5,
-              height: 16,
-              width: 16,
-              borderRadius: 9999,
-              backgroundColor: checked ? 'var(--background)' : 'var(--slate)',
-              transform: checked ? 'translateX(16px)' : 'translateX(0)',
-              transition: 'transform 200ms ease',
-            }}
-          />
-        </button>
-      </div>
-    </div>
+        />
+      </button>
+    </FieldRow>
   );
 }

@@ -39,3 +39,38 @@ describe('project id', () => {
     expect(map.has('postext-sandbox-project')).toBe(false);
   });
 });
+
+describe('working book', () => {
+  const migration = { ids: () => 'gen', untitled: (n: number) => `Chapter ${n}` };
+  it('falls back to the legacy markdown key as a one-chapter book', async () => {
+    installStorage({ 'postext-sandbox-markdown': '# Old\n\ntext' });
+    const { loadBook } = await import('./persistence');
+    const book = loadBook(migration)!;
+    expect(book.chapters).toHaveLength(1);
+    expect(book.chapters[0]!.title).toBe('Old');
+    expect(book.activeChapterId).toBe('gen');
+  });
+  it('round-trips and removes the legacy key on save', async () => {
+    const map = installStorage({ 'postext-sandbox-markdown': 'old' });
+    const { loadBook, saveBook } = await import('./persistence');
+    const book = { chapters: [{ id: 'a', title: 'A', markdown: 'x', createdAt: 1, updatedAt: 1 }], activeChapterId: 'a', layoutScope: 'chapter' as const };
+    saveBook(book);
+    expect(map.has('postext-sandbox-markdown')).toBe(false);
+    expect(loadBook(migration)).toEqual(book);
+  });
+  it('returns null when nothing was saved', async () => {
+    installStorage();
+    const { loadBook } = await import('./persistence');
+    expect(loadBook(migration)).toBeNull();
+  });
+});
+
+describe('hidden presets', () => {
+  it('round-trips and tolerates garbage', async () => {
+    installStorage({ 'postext-sandbox-hidden-presets': '{"nope":1}' });
+    const { loadHiddenPresetIds, saveHiddenPresetIds } = await import('./persistence');
+    expect(loadHiddenPresetIds()).toEqual([]);
+    saveHiddenPresetIds(['a', 'b']);
+    expect(loadHiddenPresetIds()).toEqual(['a', 'b']);
+  });
+});

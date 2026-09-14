@@ -13,7 +13,9 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../controls';
-import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { Button, ConfirmPopover, IconButton } from '../../ui';
+import { FieldRow } from '../../controls/FieldRow';
+import { SearchScope } from '../search/SearchScope';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -21,7 +23,6 @@ const SPACING_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
-const labelStyle = { color: 'var(--slate)', fontSize: 11, lineHeight: '14px' } as const;
 
 /** Turn free text into a `:::paragraphs{style="…"}`-friendly id. */
 function slugifyStyleId(raw: string): string {
@@ -47,15 +48,9 @@ interface FieldProps {
 
 function Field({ label, hint, children }: FieldProps) {
   return (
-    <label className="flex flex-col gap-0.5">
-      <span style={labelStyle}>{label}</span>
+    <FieldRow stacked label={label} hint={hint} className="mb-0">
       {children}
-      {hint && (
-        <span style={labelStyle} className="opacity-80">
-          {hint}
-        </span>
-      )}
-    </label>
+    </FieldRow>
   );
 }
 
@@ -105,6 +100,7 @@ function ParagraphStyleCard({
   ];
 
   return (
+    <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden>
     <div className="mb-3 rounded border p-2" style={{ borderColor: 'var(--rule)' }}>
       <div className="mb-2 flex items-center justify-between gap-1">
         <span
@@ -116,18 +112,7 @@ function ParagraphStyleCard({
         </span>
         <ConfirmPopover message={labels.paragraphStyleDeleteConfirm} onConfirm={onRemove}>
           {({ open }) => (
-            <button
-              type="button"
-              onClick={open}
-              aria-label={labels.paragraphStyleDelete}
-              title={labels.paragraphStyleDelete}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-              style={{ color: 'var(--destructive)', background: 'none', border: 'none', cursor: 'pointer' }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-            </button>
+            <IconButton label={labels.paragraphStyleDelete} icon={<Trash2 size={13} />} destructive onClick={open} />
           )}
         </ConfirmPopover>
       </div>
@@ -283,6 +268,7 @@ function ParagraphStyleCard({
         onReset={() => onResetField('marginBottom')}
       />
     </div>
+    </SearchScope>
   );
 }
 
@@ -358,20 +344,9 @@ export const ParagraphStylesSection = memo(function ParagraphStylesSection() {
           onRemove={() => removeStyle(style.id)}
         />
       ))}
-      <button
-        type="button"
-        onClick={addStyle}
-        className="mt-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: 'var(--foreground)',
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={12} aria-hidden="true" />
+      <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addStyle} className="mt-1">
         {labels.paragraphStyleAdd}
-      </button>
+      </Button>
     </CollapsibleSection>
   );
 });

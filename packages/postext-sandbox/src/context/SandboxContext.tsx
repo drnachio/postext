@@ -16,13 +16,32 @@ import type { PostextConfig, VDTDocument, Resource } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
-import { loadConfig, loadMarkdown, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, saveConfig, saveMarkdown, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId } from '../storage/persistence';
+import { loadConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId, saveHiddenPresetIds } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
 import { pruneBlobs } from '../storage/blobStore';
-import { collectProjectFileIds, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
+import { collectProjectFileIds, generateChapterId, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
 import type { ProjectSummary } from '../storage/projects';
+import type { BookContent, BookPages, Chapter, ComposedBook, LayoutScope } from '../book/types';
+import {
+  activeChapter,
+  addChapter,
+  isPristineBook,
+  mergeWithPrevious,
+  moveChapter,
+  removeChapter,
+  renameChapter,
+  replaceChapterMarkdown,
+  singleChapterBook,
+  splitChapterAt,
+  splitChapterAtHeadings,
+} from '../book/chapterOps';
+import { composeBookMemo } from '../book/compose';
+import { hidePresetId, unhidePresetId } from '../presets/hidden';
+import { computeWarnings } from '../warnings/compute';
+import type { Warning } from '../warnings/types';
+import { hasIndexedDB } from '../storage/blobStore';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
 import { createProjectActions } from './projectActions';
@@ -46,12 +65,20 @@ import type {
 
 export { createDefaultConfig } from './defaultConfig';
 export type { ProjectSummary } from '../storage/projects';
+export type { BookContent, Chapter, LayoutScope } from '../book/types';
 export type { DuplicateSource } from './projectActions';
 
 export interface EditorSelection {
   from: number;
   to: number;
   head: number;
+}
+
+export interface PendingEditorFocus {
+  chapterId?: string;
+  anchor: number;
+  head: number;
+  selectWord: boolean;
 }
 
 /** Which editable run of a resource a preview click / panel selection refers
@@ -92,8 +119,20 @@ function sameResourceTarget(a: ResourceFocusTarget, b: ResourceFocusTarget): boo
 }
 
 export interface SandboxState {
+  /** The ACTIVE chapter's text — a mirror of `chapters[active].markdown`
+   *  kept in sync by the reducer so the editor and single-document
+   *  consumers keep a plain string. Edit through `SET_MARKDOWN`. */
   markdown: string;
-  defaultMarkdown: string;
+  /** Every chapter of the book, in order. Always at least one. */
+  chapters: Chapter[];
+  activeChapterId: string;
+  /** Whole book or just the active chapter goes to the layout engine. */
+  layoutScope: LayoutScope;
+  /** First page of every chapter from the last whole-book layout; null
+   *  until one lands. */
+  bookPages: BookPages | null;
+  /** Preset ids the user hid from the Projects panel (never the built-in). */
+  hiddenPresetIds: string[];
   config: PostextConfig;
   /** User-managed resources (images, SVGs, tables). Loaded asynchronously on
    *  init from IndexedDB (NOT localStorage) and persisted via an effect. */
@@ -112,7 +151,9 @@ export interface SandboxState {
   locale: string;
   selection: EditorSelection;
   editorFocused: boolean;
-  pendingEditorFocus: { anchor: number; head: number; selectWord: boolean } | null;
+  /** A request to place the editor caret. `chapterId` (when set) switches
+   *  the active chapter first; offsets are chapter-local. */
+  pendingEditorFocus: PendingEditorFocus | null;
   /** Resource open in the Resources panel's detail view (null = list view).
    *  Lives in shared state so a preview click can open it and so the choice
    *  survives switching panels. */
@@ -168,7 +209,20 @@ export type SandboxAction =
   | { type: 'SET_VIEWPORT'; payload: ViewportTab }
   | { type: 'SET_SELECTION'; payload: EditorSelection }
   | { type: 'SET_EDITOR_FOCUSED'; payload: boolean }
-  | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: { anchor: number; head: number; selectWord: boolean } | null }
+  | { type: 'SET_PENDING_EDITOR_FOCUS'; payload: PendingEditorFocus | null }
+  | { type: 'SET_BOOK'; payload: BookContent }
+  | { type: 'ADD_CHAPTER'; payload: { chapter: Chapter; index?: number; activate?: boolean } }
+  | { type: 'REMOVE_CHAPTER'; payload: string }
+  | { type: 'RENAME_CHAPTER'; payload: { id: string; title: string } }
+  | { type: 'MOVE_CHAPTER'; payload: { id: string; to: number } }
+  | { type: 'SET_ACTIVE_CHAPTER'; payload: string }
+  | { type: 'SET_LAYOUT_SCOPE'; payload: LayoutScope }
+  | { type: 'SPLIT_CHAPTER'; payload: { id: string; at: number; newId: string } }
+  | { type: 'SPLIT_CHAPTER_AT_HEADINGS'; payload: { id: string; newIds: string[] } }
+  | { type: 'MERGE_CHAPTER_WITH_PREVIOUS'; payload: string }
+  | { type: 'SET_BOOK_PAGES'; payload: BookPages | null }
+  | { type: 'HIDE_PRESET'; payload: string }
+  | { type: 'UNHIDE_PRESET'; payload: string }
   | { type: 'SET_ACTIVE_RESOURCE'; payload: string | null }
   | { type: 'SET_PENDING_RESOURCE_FOCUS'; payload: PendingResourceFocus | null }
   | { type: 'SET_RESOURCE_SELECTION'; payload: ResourceSelection | null }
@@ -177,7 +231,7 @@ export type SandboxAction =
   | { type: 'SET_STORE_READY' }
   | { type: 'UPSERT_RESOURCE'; payload: Resource }
   | { type: 'DELETE_RESOURCE'; payload: string }
-  | { type: 'SET_PRESET'; payload: { id: string; markdown?: string; config?: PostextConfig } }
+  | { type: 'SET_PRESET'; payload: { id: string; config?: PostextConfig } }
   | { type: 'SET_PRESET_STATUS'; payload: { status: 'idle' | 'loading' | 'error'; error?: string } }
   | { type: 'SET_PRESET_LIST'; payload: PresetSummary[] }
   | { type: 'SET_PRESET_APPLIED'; payload: AppliedPresetSnapshot | null }
@@ -190,10 +244,80 @@ export type SandboxAction =
   | { type: 'SET_PROJECT_STATUS'; payload: { status: SandboxState['projectStatus']; error?: string } }
   | { type: 'SET_PROJECT_NOTICE'; payload: string | null };
 
+const EMPTY_SELECTION: EditorSelection = { from: 0, to: 0, head: 0 };
+
+/** Adopt a book slice and re-derive the active-chapter mirror. Returns
+ *  `state` itself when nothing changed. */
+function withBook(state: SandboxState, book: BookContent, resetSelection = false): SandboxState {
+  if (
+    book.chapters === state.chapters &&
+    book.activeChapterId === state.activeChapterId &&
+    book.layoutScope === state.layoutScope
+  ) return state;
+  const chapterChanged = book.activeChapterId !== state.activeChapterId;
+  return {
+    ...state,
+    chapters: book.chapters,
+    activeChapterId: book.activeChapterId,
+    layoutScope: book.layoutScope,
+    markdown: activeChapter(book).markdown,
+    ...(resetSelection || chapterChanged ? { selection: EMPTY_SELECTION } : {}),
+  };
+}
+
+function bookOf(state: SandboxState): BookContent {
+  return { chapters: state.chapters, activeChapterId: state.activeChapterId, layoutScope: state.layoutScope };
+}
+
 export function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
-    case 'SET_MARKDOWN':
-      return { ...state, markdown: action.payload };
+    case 'SET_MARKDOWN': {
+      if (action.payload === state.markdown) return state;
+      const book = replaceChapterMarkdown(bookOf(state), state.activeChapterId, action.payload);
+      return { ...state, chapters: book.chapters, markdown: action.payload };
+    }
+    case 'SET_BOOK':
+      return withBook(state, action.payload, true);
+    case 'ADD_CHAPTER':
+      return withBook(state, addChapter(bookOf(state), action.payload.chapter, action.payload.index, action.payload.activate ?? true));
+    case 'REMOVE_CHAPTER': {
+      const next = withBook(state, removeChapter(bookOf(state), action.payload));
+      if (next === state) return state;
+      return next.activeChapterId !== state.activeChapterId
+        ? { ...next, pendingEditorFocus: null }
+        : next;
+    }
+    case 'RENAME_CHAPTER':
+      return withBook(state, renameChapter(bookOf(state), action.payload.id, action.payload.title));
+    case 'MOVE_CHAPTER':
+      return withBook(state, moveChapter(bookOf(state), action.payload.id, action.payload.to));
+    case 'SET_ACTIVE_CHAPTER': {
+      if (action.payload === state.activeChapterId) return state;
+      if (!state.chapters.some((c) => c.id === action.payload)) return state;
+      return withBook(state, { ...bookOf(state), activeChapterId: action.payload });
+    }
+    case 'SET_LAYOUT_SCOPE':
+      if (action.payload === state.layoutScope) return state;
+      return { ...state, layoutScope: action.payload };
+    case 'SPLIT_CHAPTER':
+      return withBook(state, splitChapterAt(bookOf(state), action.payload.id, action.payload.at, action.payload.newId));
+    case 'SPLIT_CHAPTER_AT_HEADINGS': {
+      const ids = [...action.payload.newIds];
+      const { book } = splitChapterAtHeadings(bookOf(state), action.payload.id, () => ids.shift() ?? generateChapterId());
+      return withBook(state, book);
+    }
+    case 'MERGE_CHAPTER_WITH_PREVIOUS':
+      return withBook(state, mergeWithPrevious(bookOf(state), action.payload));
+    case 'SET_BOOK_PAGES':
+      return { ...state, bookPages: action.payload };
+    case 'HIDE_PRESET': {
+      const next = hidePresetId(state.hiddenPresetIds, action.payload);
+      return next.length === state.hiddenPresetIds.length ? state : { ...state, hiddenPresetIds: next };
+    }
+    case 'UNHIDE_PRESET': {
+      const next = unhidePresetId(state.hiddenPresetIds, action.payload);
+      return next.length === state.hiddenPresetIds.length ? state : { ...state, hiddenPresetIds: next };
+    }
     case 'SET_CONFIG':
       return { ...state, config: action.payload };
     case 'UPDATE_CONFIG':
@@ -223,16 +347,24 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'SET_EDITOR_FOCUSED':
       if (state.editorFocused === action.payload) return state;
       return { ...state, editorFocused: action.payload };
-    case 'SET_PENDING_EDITOR_FOCUS':
+    case 'SET_PENDING_EDITOR_FOCUS': {
       if (state.pendingEditorFocus === action.payload) return state;
       if (
         state.pendingEditorFocus &&
         action.payload &&
+        state.pendingEditorFocus.chapterId === action.payload.chapterId &&
         state.pendingEditorFocus.anchor === action.payload.anchor &&
         state.pendingEditorFocus.head === action.payload.head &&
         state.pendingEditorFocus.selectWord === action.payload.selectWord
       ) return state;
-      return { ...state, pendingEditorFocus: action.payload };
+      // A focus request into another chapter switches the editor's document
+      // in the same commit, so the keyed editor mounts and consumes it.
+      const target = action.payload?.chapterId;
+      const base = target && target !== state.activeChapterId && state.chapters.some((c) => c.id === target)
+        ? withBook(state, { ...bookOf(state), activeChapterId: target })
+        : state;
+      return { ...base, pendingEditorFocus: action.payload };
+    }
     case 'SET_ACTIVE_RESOURCE':
       if (state.activeResourceId === action.payload) return state;
       // Leaving a resource drops its stale focus request / selection so the
@@ -313,7 +445,6 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       return {
         ...state,
         activePresetId: action.payload.id,
-        defaultMarkdown: action.payload.markdown ?? state.defaultMarkdown,
         presetConfig: action.payload.config ?? state.presetConfig,
         presetStatus: 'idle',
         presetError: undefined,
@@ -375,11 +506,19 @@ interface SandboxStore {
   getSnapshot: () => SandboxState;
   subscribe: (cb: () => void) => () => void;
   dispatch: Dispatch<SandboxAction>;
-  editorStateRef: MutableRefObject<unknown | null>;
+  /** Persisted CodeMirror state (doc, selection, undo history) per chapter
+   *  id, so switching chapters keeps each one's history and caret. */
+  editorStatesRef: MutableRefObject<Map<string, unknown>>;
   /** Ref to the most recently built VDT document from whichever viewport
    *  last rendered. Null until the first successful build. Updated together
    *  with a `BUMP_DOC_VERSION` dispatch so consumers can react. */
   docRef: MutableRefObject<VDTDocument | null>;
+  /** The composed book `docRef` was built from (offsets in the document are
+   *  offsets into `docSourceRef.current.markdown`). */
+  docSourceRef: MutableRefObject<ComposedBook | null>;
+  /** Warnings for the current layout source, cached per state so every
+   *  consumer (panel, activity bar) shares one computation. */
+  getWarnings: (s: SandboxState) => Warning[];
   /** Load a preset by id (all parts). No-op for unknown/unavailable ids. */
   loadPreset: (id: string) => Promise<void>;
   /** Re-fetch the active preset and re-apply the given parts. */
@@ -390,7 +529,6 @@ interface SandboxStore {
 export interface SandboxContextValue {
   state: SandboxState;
   dispatch: Dispatch<SandboxAction>;
-  editorStateRef: MutableRefObject<unknown | null>;
   docRef: MutableRefObject<VDTDocument | null>;
 }
 
@@ -405,7 +543,7 @@ function useStore(): SandboxStore {
 export function useSandbox(): SandboxContextValue {
   const store = useStore();
   const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
-  return { state, dispatch: store.dispatch, editorStateRef: store.editorStateRef, docRef: store.docRef };
+  return { state, dispatch: store.dispatch, docRef: store.docRef };
 }
 
 /** Stable dispatch reference — never triggers a re-render on state changes. */
@@ -469,8 +607,12 @@ export interface SandboxPresetsValue {
   /** Non-null for a few seconds after the preset was re-applied automatically
    *  because its bundle changed. */
   updatedAt: number | null;
+  /** Presets hidden from the panel ("deleted" — restorable). */
+  hiddenIds: string[];
   load: (id: string) => Promise<void>;
   reload: (parts: PresetApplyParts) => Promise<void>;
+  hide: (id: string) => void;
+  unhide: (id: string) => void;
 }
 
 /** Preset list plus load/reload actions. Re-renders on preset state changes
@@ -485,6 +627,7 @@ export function useSandboxPresets(): SandboxPresetsValue {
   const untouched = useSandboxSelector((s) => isDocumentUntouched(s, s.presetApplied));
   const stale = useSandboxSelector((s) => s.presetStale);
   const updatedAt = useSandboxSelector((s) => s.presetUpdatedAt);
+  const hiddenIds = useSandboxSelector((s) => s.hiddenPresetIds);
   return {
     presets,
     activePresetId,
@@ -493,8 +636,11 @@ export function useSandboxPresets(): SandboxPresetsValue {
     untouched,
     stale,
     updatedAt,
+    hiddenIds,
     load: store.loadPreset,
     reload: store.reloadPreset,
+    hide: (id) => store.dispatch({ type: 'HIDE_PRESET', payload: id }),
+    unhide: (id) => store.dispatch({ type: 'UNHIDE_PRESET', payload: id }),
   };
 }
 
@@ -552,9 +698,76 @@ export function useSandboxDocRef(): MutableRefObject<VDTDocument | null> {
   return useStore().docRef;
 }
 
-/** Stable ref for the editor state, mirroring useSandboxDocRef. */
-export function useSandboxEditorStateRef(): MutableRefObject<unknown | null> {
-  return useStore().editorStateRef;
+/** A ref-like handle onto the persisted CodeMirror state of one chapter.
+ *  Reading yields null until that chapter's editor has unmounted once. */
+export function useSandboxEditorStateRef(chapterId: string): MutableRefObject<unknown | null> {
+  const map = useStore().editorStatesRef;
+  return useMemo<MutableRefObject<unknown | null>>(() => ({
+    get current() { return map.current.get(chapterId) ?? null; },
+    set current(v: unknown | null) {
+      if (v === null || v === undefined) map.current.delete(chapterId);
+      else map.current.set(chapterId, v);
+    },
+  }), [map, chapterId]);
+}
+
+/** Stable ref to the composed book the last built document came from. */
+export function useSandboxDocSourceRef(): MutableRefObject<ComposedBook | null> {
+  return useStore().docSourceRef;
+}
+
+/** Warnings for the current document, chapter-attributed. Recomputed when
+ *  the chapters, config, resources or the built document change. */
+export function useSandboxWarnings(): Warning[] {
+  const store = useStore();
+  return useSandboxSelector((s) => store.getWarnings(s));
+}
+
+const SAMPLE_DOCUMENTS = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES];
+
+/** The book slice (chapters, active chapter, layout scope). */
+export function useBookContent(): BookContent {
+  const chapters = useSandboxSelector((s) => s.chapters);
+  const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
+  const layoutScope = useSandboxSelector((s) => s.layoutScope);
+  return useMemo(() => ({ chapters, activeChapterId, layoutScope }), [chapters, activeChapterId, layoutScope]);
+}
+
+export interface LayoutSource {
+  /** What the engine should lay out for the current scope. */
+  book: ComposedBook;
+  scope: LayoutScope;
+  activeChapterId: string;
+  /** In chapter-only mode: page numbering picks up where the chapter
+   *  starts in the last whole-book layout (approximate). */
+  configOverride: Pick<PostextConfig, 'page'> | null;
+}
+
+/** The composed document the viewports (and warnings) work from. Memoised
+ *  on the chapters array, so unrelated state changes reuse it. */
+export function useLayoutSource(): LayoutSource {
+  const chapters = useSandboxSelector((s) => s.chapters);
+  const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
+  const scope = useSandboxSelector((s) => s.layoutScope);
+  const startAt = useSandboxSelector((s) =>
+    s.layoutScope === 'chapter' ? s.bookPages?.[s.activeChapterId]?.pageNumberValue ?? null : null,
+  );
+  return useMemo(() => {
+    const book = composeBookMemo(chapters, scope === 'chapter' ? activeChapterId : undefined);
+    const configOverride = scope === 'chapter' && startAt !== null && startAt > 1
+      ? { page: { pageNumbering: { startAt } } }
+      : null;
+    return { book, scope, activeChapterId, configOverride };
+  }, [chapters, activeChapterId, scope, startAt]);
+}
+
+/** Page-numbering override merged into a config for chapter-only layout. */
+export function withLayoutOverride(config: PostextConfig, override: LayoutSource['configOverride']): PostextConfig {
+  if (!override) return config;
+  return {
+    ...config,
+    page: { ...config.page, pageNumbering: { ...config.page?.pageNumbering, ...override.page?.pageNumbering } },
+  };
 }
 
 export const DEFAULT_MARKDOWN = DEFAULT_MARKDOWN_EN;
@@ -611,16 +824,22 @@ export function SandboxProvider({
     [initialMarkdown, initialConfig, mergedLabels.presetPostextGuideName, mergedLabels.presetPostextGuideDescription],
   );
 
+  const migration = { ids: generateChapterId, untitled: (n: number) => mergedLabels.chapterUntitled.replace('__n__', String(n)) };
   const [state, dispatch] = useReducer(sandboxReducer, undefined, () => {
-    const savedMarkdown = loadMarkdown();
+    const savedBook = loadBook(migration);
+    const book = savedBook ?? singleChapterBook(defaultMd, generateChapterId(), mergedLabels.presetPostextGuideName);
     const savedConfig = loadConfig();
     const savedViewport = loadViewport() as ViewportTab | null;
     const savedPercent = loadSidebarPercent();
     const savedPanel = loadPanel() as PanelId | null | undefined;
 
     return {
-      markdown: savedMarkdown ?? defaultMd,
-      defaultMarkdown: defaultMd,
+      markdown: activeChapter(book).markdown,
+      chapters: book.chapters,
+      activeChapterId: book.activeChapterId,
+      layoutScope: book.layoutScope,
+      bookPages: null,
+      hiddenPresetIds: loadHiddenPresetIds(),
       config: withDefaultResourceTypes(
         savedConfig ?? initialConfig ?? createDefaultConfig(locale ?? 'en'),
         locale ?? 'en',
@@ -691,8 +910,8 @@ export function SandboxProvider({
       if (seq !== presetLoadSeqRef.current) return;
       const loaded = await provider.load(stateRef.current.locale);
       if (seq !== presetLoadSeqRef.current) return;
-      const { markdown, config, resources } = stateRef.current;
-      await applyPreset(loaded, dispatch, { parts, fingerprint, current: { markdown, config, resources } });
+      const { chapters, config, resources } = stateRef.current;
+      await applyPreset(loaded, dispatch, { parts, fingerprint, current: { chapters, config, resources } });
     } catch (err) {
       if (seq !== presetLoadSeqRef.current) return;
       const message = err instanceof Error ? err.message : String(err);
@@ -718,19 +937,19 @@ export function SandboxProvider({
         dispatch({ type: 'SET_PROJECT_LIST', payload: projects.map(toSummary) });
         projectsLoadedRef.current = true;
 
-        const md = stateRef.current.markdown;
-        const savedMarkdown = loadMarkdown();
+        const currentBook = bookOf(stateRef.current);
+        const savedBook = loadBook(migration);
         const savedId = loadPresetId();
         // Pristine: the user has never edited the document (nothing saved, or
-        // exactly one of the built-in samples). Any markdown edit opts out.
-        const pristine =
-          savedMarkdown === null || savedMarkdown === DEFAULT_MARKDOWN_EN || savedMarkdown === DEFAULT_MARKDOWN_ES;
+        // exactly one of the built-in samples as a single chapter). Any
+        // markdown edit or added chapter opts out.
+        const pristine = savedBook === null || isPristineBook(savedBook, SAMPLE_DOCUMENTS);
         // Storage is shared across locales, so a pristine default document
         // persisted in *another* language gets swapped to this locale's
         // default and its examples reseeded, so entering the Spanish sandbox
         // shows Spanish resources instead of whichever language seeded first.
         const pristineOtherLocale =
-          md !== defaultMd && (md === DEFAULT_MARKDOWN_EN || md === DEFAULT_MARKDOWN_ES);
+          isPristineBook(currentBook, SAMPLE_DOCUMENTS) && currentBook.chapters[0]!.markdown !== defaultMd;
         const onBuiltin = savedId === null || savedId === BUILTIN_PRESET_ID;
 
         // Summaries: every provider, plus a placeholder for a previously
@@ -913,11 +1132,13 @@ export function SandboxProvider({
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const persistWorking = (): Promise<void> => {
     const s = stateRef.current;
-    saveMarkdown(s.markdown);
+    saveBook(bookOf(s));
     saveConfig(s.config);
     if (!s.activeProjectId) return Promise.resolve();
     return updateProject(s.activeProjectId, {
-      markdown: s.markdown,
+      chapters: s.chapters,
+      activeChapterId: s.activeChapterId,
+      layoutScope: s.layoutScope,
       config: stripConfigDefaults(s.config),
       resources: s.resources,
     }).then(() => undefined, () => undefined);
@@ -945,7 +1166,22 @@ export function SandboxProvider({
       void persistWorking();
     }, WORKING_SAVE_MS);
     return () => clearTimeout(saveTimerRef.current);
-  }, [state.markdown, state.config, state.resources, state.activeProjectId]);
+  }, [state.chapters, state.activeChapterId, state.layoutScope, state.config, state.resources, state.activeProjectId]);
+
+  // Hidden presets are a UI preference: saved immediately.
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    saveHiddenPresetIds(state.hiddenPresetIds);
+  }, [state.hiddenPresetIds]);
+
+  // Drop editor histories of chapters that no longer exist (deleted, or a
+  // different project was activated — chapter ids are unique).
+  useEffect(() => {
+    const live = new Set(state.chapters.map((c) => c.id));
+    for (const id of editorStatesRef.current.keys()) {
+      if (!live.has(id)) editorStatesRef.current.delete(id);
+    }
+  }, [state.chapters]);
 
   // Save viewport tab and active panel immediately (skip until hydrated)
   useEffect(() => {
@@ -1020,8 +1256,29 @@ export function SandboxProvider({
     onMarkdownChange?.(state.markdown);
   }, [state.markdown, onMarkdownChange]);
 
-  const editorStateRef = useRef<unknown | null>(null);
+  const editorStatesRef = useRef<Map<string, unknown>>(new Map());
   const docRef = useRef<VDTDocument | null>(null);
+  const docSourceRef = useRef<ComposedBook | null>(null);
+  const warningsCacheRef = useRef<{ key: unknown[]; value: Warning[] } | null>(null);
+  const getWarnings = (s: SandboxState): Warning[] => {
+    const key = [s.chapters, s.layoutScope, s.activeChapterId, s.config, s.resources, s.docVersion];
+    const cached = warningsCacheRef.current;
+    if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
+    const book = composeBookMemo(s.chapters, s.layoutScope === 'chapter' ? s.activeChapterId : undefined);
+    const value = computeWarnings({
+      markdown: book.markdown,
+      config: s.config,
+      doc: docRef.current,
+      resources: s.resources,
+      storageUnavailable: !hasIndexedDB(),
+      book,
+      chapterTitles: new Map(s.chapters.map((c) => [c.id, c.title])),
+    });
+    warningsCacheRef.current = { key, value };
+    return value;
+  };
+  const getWarningsRef = useRef(getWarnings);
+  getWarningsRef.current = getWarnings;
 
   // Subscription plumbing: hold the live state in a ref and notify
   // subscribers when it changes. Lets hooks below subscribe to specific
@@ -1064,8 +1321,10 @@ export function SandboxProvider({
       return () => { listenersRef.current.delete(cb); };
     },
     dispatch,
-    editorStateRef,
+    editorStatesRef,
     docRef,
+    docSourceRef,
+    getWarnings: (s) => getWarningsRef.current(s),
     loadPreset: async (id) => {
       const provider = presetProvidersRef.current.find((p) => p.summary.id === id);
       if (!provider) return;

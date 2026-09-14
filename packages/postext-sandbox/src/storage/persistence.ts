@@ -1,9 +1,12 @@
 import type { PostextConfig } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { AppliedPresetSnapshot } from '../presets/types';
+import type { BookContent } from '../book/types';
+import { normalizeBookContent, type MigrationDeps } from './projectMigration';
 
 const CONFIG_KEY = 'postext-sandbox-config';
 const MARKDOWN_KEY = 'postext-sandbox-markdown';
+const BOOK_KEY = 'postext-sandbox-book';
 const VIEWPORT_KEY = 'postext-sandbox-viewport';
 const SIDEBAR_WIDTH_KEY = 'postext-sandbox-sidebar-width';
 const PANEL_KEY = 'postext-sandbox-panel';
@@ -17,6 +20,8 @@ const CANVAS_FIT_MODE_KEY = 'postext-sandbox-canvas-fit-mode';
 const CANVAS_ZOOM_KEY = 'postext-sandbox-canvas-zoom';
 const HTML_FONT_SCALE_KEY = 'postext-sandbox-html-font-scale';
 const HTML_COLUMN_MODE_KEY = 'postext-sandbox-html-column-mode';
+const SETTINGS_CATEGORY_KEY = 'postext-sandbox-settings-category';
+const HIDDEN_PRESETS_KEY = 'postext-sandbox-hidden-presets';
 const TOOLBAR_PINNED_PREFIX = 'postext-sandbox-toolbar-pinned-';
 
 function getStorage(): Storage | null {
@@ -43,10 +48,39 @@ export function loadConfig(): PostextConfig | null {
   }
 }
 
-export function saveMarkdown(markdown: string): void {
-  getStorage()?.setItem(MARKDOWN_KEY, markdown);
+/** The working book (every chapter, the active one and the layout scope).
+ *  Replaces the legacy single-markdown key, which is removed once a book has
+ *  been written. A quota error is swallowed: the active project record in
+ *  IndexedDB still holds the truth. */
+export function saveBook(book: BookContent): void {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(BOOK_KEY, JSON.stringify({ version: 2, ...book }));
+    storage.removeItem(MARKDOWN_KEY);
+  } catch (err) {
+    console.warn('[postext-sandbox] could not persist the working book', err);
+  }
 }
 
+/** The saved working book, or (legacy) the saved single document as a
+ *  one-chapter book, or null when nothing was ever saved. */
+export function loadBook(migration: MigrationDeps): BookContent | null {
+  const storage = getStorage();
+  if (!storage) return null;
+  const raw = storage.getItem(BOOK_KEY);
+  if (raw) {
+    try {
+      const book = normalizeBookContent(JSON.parse(raw), migration);
+      if (book) return book;
+    } catch { /* fall through to the legacy key */ }
+  }
+  const legacy = storage.getItem(MARKDOWN_KEY);
+  if (legacy === null) return null;
+  return normalizeBookContent({ markdown: legacy }, migration);
+}
+
+/** @deprecated Legacy single-document key; read by `loadBook` only. */
 export function loadMarkdown(): string | null {
   return getStorage()?.getItem(MARKDOWN_KEY) ?? null;
 }
@@ -161,6 +195,31 @@ export function loadSectionState(sectionId: string): boolean | null {
   }
 }
 
+/** Ids of presets hidden from the Projects panel. */
+export function saveHiddenPresetIds(ids: readonly string[]): void {
+  getStorage()?.setItem(HIDDEN_PRESETS_KEY, JSON.stringify(ids));
+}
+
+export function loadHiddenPresetIds(): string[] {
+  const raw = getStorage()?.getItem(HIDDEN_PRESETS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Category filter chosen in the settings panel ('all' or a category id). */
+export function saveSettingsCategory(category: string): void {
+  getStorage()?.setItem(SETTINGS_CATEGORY_KEY, category);
+}
+
+export function loadSettingsCategory(): string | null {
+  return getStorage()?.getItem(SETTINGS_CATEGORY_KEY) ?? null;
+}
+
 export function saveColorMode(fieldId: string, mode: string): void {
   const storage = getStorage();
   if (!storage) return;
@@ -245,6 +304,7 @@ export function clearStorage(): void {
   const storage = getStorage();
   storage?.removeItem(CONFIG_KEY);
   storage?.removeItem(MARKDOWN_KEY);
+  storage?.removeItem(BOOK_KEY);
   storage?.removeItem(VIEWPORT_KEY);
   storage?.removeItem(SIDEBAR_WIDTH_KEY);
   storage?.removeItem(PANEL_KEY);
@@ -258,6 +318,8 @@ export function clearStorage(): void {
   storage?.removeItem(CANVAS_ZOOM_KEY);
   storage?.removeItem(HTML_FONT_SCALE_KEY);
   storage?.removeItem(HTML_COLUMN_MODE_KEY);
+  storage?.removeItem(SETTINGS_CATEGORY_KEY);
+  storage?.removeItem(HIDDEN_PRESETS_KEY);
 }
 
 /** Trigger a browser download of `data` under `filename`. */

@@ -21,7 +21,7 @@ import { undo, redo } from '@codemirror/commands';
 import type { ReactNode } from 'react';
 import { useSandbox } from '../context/SandboxContext';
 import type { ToolbarAction } from '../types';
-import { Tooltip } from '../panels/Tooltip';
+import { IconButton } from '../ui';
 
 interface EditorToolbarProps {
   viewRef: React.RefObject<EditorView | null>;
@@ -37,27 +37,7 @@ function ToolbarButton({
   label: string;
   onClick: () => void;
 }) {
-  return (
-    <Tooltip content={label} side="bottom">
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={label}
-        className="flex shrink-0 items-center justify-center overflow-hidden rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-        style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)', width: 24, height: 24 }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = 'var(--foreground)';
-          e.currentTarget.style.backgroundColor = 'var(--surface)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = 'var(--slate)';
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
-      >
-        {icon}
-      </button>
-    </Tooltip>
-  );
+  return <IconButton label={label} icon={icon} onClick={onClick} tooltipSide="bottom" />;
 }
 
 function wrapSelection(view: EditorView, before: string, after: string) {
@@ -204,7 +184,7 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
       className="flex flex-nowrap items-center gap-0.5 overflow-x-auto border-b px-2 py-0.5"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
       role="toolbar"
-      aria-label="Markdown formatting"
+      aria-label={labels.editorFormatting}
     >
       {actions.map((a, i) => (
         <span key={i} className="contents">

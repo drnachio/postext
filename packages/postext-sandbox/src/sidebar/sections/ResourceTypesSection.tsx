@@ -23,7 +23,9 @@ import {
 } from '../../context/SandboxContext';
 import type { SandboxLabels } from '../../types/labels';
 import { CollapsibleSection } from '../../controls';
-import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { Button, ConfirmPopover, IconButton } from '../../ui';
+import { FieldRow } from '../../controls/FieldRow';
+import { SearchScope } from '../search/SearchScope';
 import { CaptionStyleFields } from './CaptionStyleFields';
 
 function newTypeId(): string {
@@ -112,10 +114,9 @@ interface FieldProps {
 
 function Field({ label, children }: FieldProps) {
   return (
-    <label className="flex flex-col gap-0.5">
-      <span style={labelStyle}>{label}</span>
+    <FieldRow stacked label={label} className="mb-0">
       {children}
-    </label>
+    </FieldRow>
   );
 }
 
@@ -210,8 +211,8 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
         );
 
         return (
+          <SearchScope key={type.id} title={`${type.name} ${type.id}`} overridden={!isDefault}>
           <div
-            key={type.id}
             className="mb-3 rounded border p-2"
             style={{ borderColor: 'var(--rule)' }}
           >
@@ -225,18 +226,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </span>
               <ConfirmPopover message={confirmMessage} onConfirm={() => removeType(type.id)}>
                 {({ open }) => (
-                  <button
-                    type="button"
-                    onClick={open}
-                    aria-label={labels.resourceTypeDelete}
-                    title={labels.resourceTypeDelete}
-                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-                    style={{ color: 'var(--destructive)', background: 'none', border: 'none', cursor: 'pointer' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                  >
-                    <Trash2 size={13} aria-hidden="true" />
-                  </button>
+                  <IconButton label={labels.resourceTypeDelete} icon={<Trash2 size={13} />} destructive onClick={open} />
                 )}
               </ConfirmPopover>
             </div>
@@ -377,22 +367,12 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </span>
             </div>
           </div>
+          </SearchScope>
         );
       })}
-      <button
-        type="button"
-        onClick={addType}
-        className="mt-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: 'var(--foreground)',
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={12} aria-hidden="true" />
+      <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addType} className="mt-1">
         {labels.resourceTypeAdd}
-      </button>
+      </Button>
     </CollapsibleSection>
   );
 });

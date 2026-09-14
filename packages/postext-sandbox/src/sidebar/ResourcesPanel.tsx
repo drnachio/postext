@@ -1,5 +1,7 @@
 'use client';
 
+import { composeBookMemo } from '../book/compose';
+
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { UploadCloud } from 'lucide-react';
 import type { Resource, ResourceKind, ResourceType, TableModel } from 'postext';
@@ -200,7 +202,7 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
           types={types}
           isDark={isDark}
           otherIds={new Set(resources.filter((r) => r.id !== selected.id).map((r) => r.id))}
-          referenceCount={countReferences(state.markdown, selected.id)}
+          referenceCount={countReferences(composeBookMemo(state.chapters).markdown, selected.id)}
           onChange={handleChange}
           onRename={handleRename}
           onDelete={handleDelete}

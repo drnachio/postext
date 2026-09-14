@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Copy, Download, FilePlus, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, FilePlus, Files, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import {
   useSandboxLabels,
@@ -8,26 +8,10 @@ import {
   useSandboxProjects,
   type ProjectSummary,
 } from '../context/SandboxContext';
-import { ConfirmPopover } from '../panels/ConfirmPopover';
-import { Tooltip } from '../panels/Tooltip';
+import { Button, Collapsible, ConfirmPopover, EmptyState, IconButton, ListRow, Menu, MenuItem, MenuSeparator, PanelBody, PanelHeader, RowTag } from '../ui';
+import { isPresetHideable, partitionPresets } from '../presets/hidden';
 import type { PresetSummary } from '../presets';
-
-const TAG_STYLE: React.CSSProperties = {
-  display: 'inline-block',
-  padding: '0 5px',
-  borderRadius: 3,
-  borderWidth: 1,
-  borderStyle: 'solid',
-  borderColor: 'var(--rule)',
-  color: 'var(--slate)',
-  fontSize: 10,
-  lineHeight: '16px',
-  whiteSpace: 'nowrap',
-};
-
-function Tag({ children }: { children: React.ReactNode }) {
-  return <span style={TAG_STYLE}>{children}</span>;
-}
+import { ChapterList } from './chapters/ChapterList';
 
 /** Wraps `children` in a confirm popover only when confirmation is wanted;
  *  otherwise the trigger fires `onConfirm` directly. */
@@ -45,57 +29,25 @@ function MaybeConfirm({
   if (!confirm) return <>{children(onConfirm)}</>;
   return (
     <ConfirmPopover message={message} onConfirm={onConfirm}>
-      {({ open }) => children(open)}
+      {({ open }) => children(() => open())}
     </ConfirmPopover>
   );
 }
 
-/** 24 px icon button used in the header and on rows. */
-function IconButton({
-  label,
-  onClick,
-  disabled,
-  size = 13,
-  children,
-}: {
-  label: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  size?: number;
-  children: ReactNode;
-}) {
+function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
-    <Tooltip content={label} side="bottom">
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        aria-label={label}
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:opacity-40"
-        style={{ color: 'var(--slate)', background: 'none', border: 'none', cursor: disabled ? 'default' : 'pointer', outlineColor: 'var(--gilt-hover)' }}
-        onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.color = 'var(--foreground)'; }}
-        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-      >
-        <span style={{ display: 'flex', width: size, height: size }} aria-hidden="true">{children}</span>
-      </button>
-    </Tooltip>
-  );
-}
-
-function GroupTitle({ children }: { children: ReactNode }) {
-  return (
-    <h3
-      className="mt-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wide first:mt-0"
-      style={{ color: 'var(--slate)' }}
-    >
-      {children}
-    </h3>
+    <div className="mt-4 mb-1.5 flex items-center justify-between gap-2 first:mt-0">
+      <h3 className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--slate)' }}>
+        {children}
+      </h3>
+      {actions}
+    </div>
   );
 }
 
 export function ProjectsPanel() {
   const labels = useSandboxLabels();
-  const { presets, activePresetId, status, error, untouched, stale, updatedAt, load, reload } = useSandboxPresets();
+  const { presets, activePresetId, status, error, untouched, stale, updatedAt, hiddenIds, load, reload, hide, unhide } = useSandboxPresets();
   const projectsValue = useSandboxProjects();
   const {
     projects,
@@ -114,6 +66,7 @@ export function ProjectsPanel() {
   } = projectsValue;
   const importRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [hiddenOpen, setHiddenOpen] = useState(false);
 
   const presetLoading = status === 'loading';
   const busy = presetLoading || projectStatus === 'busy';
@@ -124,6 +77,7 @@ export function ProjectsPanel() {
   // Leaving a preset with edits loses them; leaving a project loses nothing
   // (its edits are saved as they happen).
   const leavingLosesWork = inPresetMode && !untouched;
+  const { visible: visiblePresets, hidden: hiddenPresets } = partitionPresets(presets, hiddenIds);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,38 +92,53 @@ export function ProjectsPanel() {
     }
   };
 
+  const presetRow = (preset: PresetSummary, hidden: boolean) => (
+    <PresetRow
+      key={preset.id}
+      preset={preset}
+      isActive={inPresetMode && preset.id === activePresetId}
+      disabled={busy || !preset.available}
+      confirmLoad={leavingLosesWork}
+      untouched={untouched}
+      onLoad={() => { void load(preset.id); }}
+      onReload={reloadAll}
+      onDuplicate={() => { void duplicate({ kind: 'preset', id: preset.id }); }}
+      onExport={() => { void exportProject({ kind: 'preset', id: preset.id }); }}
+      onHide={!hidden && isPresetHideable(preset.id) ? () => hide(preset.id) : undefined}
+      onUnhide={hidden ? () => unhide(preset.id) : undefined}
+    />
+  );
+
   return (
     <div className="flex h-full flex-col">
-      <div
-        className="flex shrink-0 items-center justify-between border-b px-3 py-2"
-        style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
-      >
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-          {labels.projects}
-        </h2>
-        <div className="flex items-center gap-1">
-          <IconButton label={labels.projectNewFromCurrent} disabled={busy} onClick={() => { void create({ from: 'current' }); }}>
-            <Plus size={13} />
-          </IconButton>
-          <IconButton label={labels.projectNewBlank} disabled={busy} onClick={() => { void create({ from: 'blank' }); }}>
-            <FilePlus size={13} />
-          </IconButton>
-          <IconButton label={labels.projectImport} disabled={busy} onClick={() => importRef.current?.click()}>
-            <Upload size={13} />
-          </IconButton>
-          <IconButton label={labels.projectExportActive} disabled={busy} onClick={() => { void exportProject(); }}>
-            <Download size={13} />
-          </IconButton>
-          <input
-            ref={importRef}
-            type="file"
-            accept=".postext,application/zip"
-            onChange={handleImport}
-            className="hidden"
-            aria-hidden="true"
-          />
-        </div>
-      </div>
+      <PanelHeader
+        title={labels.projects}
+        actions={
+          <>
+            <Menu
+              trigger={
+                <Button variant="outline" size="xs" icon={<Plus size={12} />} trailingIcon={<ChevronDown size={12} />} disabled={busy}>
+                  {labels.projectNew}
+                </Button>
+              }
+            >
+              <MenuItem icon={<Copy size={13} />} onClick={() => { void create({ from: 'current' }); }}>{labels.projectNewFromCurrentShort}</MenuItem>
+              <MenuItem icon={<FilePlus size={13} />} onClick={() => { void create({ from: 'blank' }); }}>{labels.projectNewBlankShort}</MenuItem>
+              <MenuSeparator />
+              <MenuItem icon={<Upload size={13} />} onClick={() => importRef.current?.click()}>{labels.projectImportShort}</MenuItem>
+            </Menu>
+            <IconButton label={labels.projectExportActive} icon={<Download size={14} />} disabled={busy} onClick={() => { void exportProject(); }} />
+            <input
+              ref={importRef}
+              type="file"
+              accept=".postext,application/zip"
+              onChange={handleImport}
+              className="hidden"
+              aria-hidden="true"
+            />
+          </>
+        }
+      />
       {stale && inPresetMode && (
         <div
           role="status"
@@ -177,20 +146,12 @@ export function ProjectsPanel() {
           style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)', color: 'var(--foreground)' }}
         >
           <span className="min-w-0 flex-1">{labels.presetStaleBanner}</span>
-          <button
-            type="button"
-            onClick={reloadAll}
-            disabled={!canReload}
-            className="shrink-0 rounded border px-2 py-0.5 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:opacity-40"
-            style={{ borderColor: 'var(--gilt)', color: 'var(--gilt)', background: 'none', outlineColor: 'var(--gilt-hover)' }}
-            onMouseEnter={(e) => { if (canReload) e.currentTarget.style.backgroundColor = 'var(--background)'; }}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-          >
+          <Button variant="primary" size="xs" onClick={reloadAll} disabled={!canReload}>
             {labels.presetStaleReload}
-          </button>
+          </Button>
         </div>
       )}
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+      <PanelBody padded>
         {busy && (
           <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }} role="status">
             {presetLoading ? labels.presetLoading : labels.projectBusy}
@@ -224,23 +185,24 @@ export function ProjectsPanel() {
             style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
           >
             <span className="min-w-0 flex-1 break-words">{notice}</span>
-            <button
-              type="button"
-              onClick={dismissNotice}
-              aria-label={labels.projectNoticeDismiss}
-              className="flex h-4 w-4 shrink-0 items-center justify-center"
-              style={{ color: 'var(--slate)', background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              <X size={11} aria-hidden="true" />
-            </button>
+            <IconButton size={18} label={labels.projectNoticeDismiss} icon={<X size={11} />} tooltip={false} onClick={dismissNotice} />
           </div>
         )}
 
+        <ChapterList title={labels.chapters} />
+
         <GroupTitle>{labels.projects}</GroupTitle>
         {projects.length === 0 ? (
-          <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }}>
-            {labels.projectsEmpty}
-          </p>
+          <EmptyState
+            icon={<Files size={28} />}
+            title={labels.projectsEmptyTitle}
+            description={labels.projectsEmptyDescription}
+            action={
+              <Button variant="outline" size="xs" icon={<Plus size={12} />} disabled={busy} onClick={() => { void create({ from: 'current' }); }}>
+                {labels.projectNewFromCurrentShort}
+              </Button>
+            }
+          />
         ) : (
           <ul className="m-0 list-none p-0" aria-label={labels.projects}>
             {projects.map((project) => (
@@ -262,22 +224,24 @@ export function ProjectsPanel() {
 
         <GroupTitle>{labels.presetsGroup}</GroupTitle>
         <ul className="m-0 list-none p-0" aria-label={labels.presetsGroup}>
-          {presets.map((preset) => (
-            <PresetRow
-              key={preset.id}
-              preset={preset}
-              isActive={inPresetMode && preset.id === activePresetId}
-              disabled={busy || !preset.available}
-              confirmLoad={leavingLosesWork}
-              untouched={untouched}
-              onLoad={() => { void load(preset.id); }}
-              onReload={reloadAll}
-              onDuplicate={() => { void duplicate({ kind: 'preset', id: preset.id }); }}
-              onExport={() => { void exportProject({ kind: 'preset', id: preset.id }); }}
-            />
-          ))}
+          {visiblePresets.map((preset) => presetRow(preset, false))}
         </ul>
-      </div>
+        {hiddenPresets.length > 0 && (
+          <Collapsible.Root open={hiddenOpen} onOpenChange={setHiddenOpen} className="mt-1">
+            <Collapsible.Trigger
+              className="flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1 py-1 text-[11px] text-(--slate) hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)"
+            >
+              <ChevronRight size={12} aria-hidden="true" style={{ transform: hiddenOpen ? 'rotate(90deg)' : undefined, transition: 'transform 200ms ease' }} />
+              {labels.presetsHidden.replace('__count__', String(hiddenPresets.length))}
+            </Collapsible.Trigger>
+            <Collapsible.Panel data-postext-collapsible="">
+              <ul className="m-0 list-none p-0 pt-1" aria-label={labels.presetsHidden.replace('__count__', String(hiddenPresets.length))}>
+                {hiddenPresets.map((preset) => presetRow(preset, true))}
+              </ul>
+            </Collapsible.Panel>
+          </Collapsible.Root>
+        )}
+      </PanelBody>
     </div>
   );
 }
@@ -320,7 +284,7 @@ function ProjectRow({
     if (next && next !== project.name) onRename(next);
   };
 
-  const nameBlock = editing ? (
+  const title = editing ? (
     <input
       type="text"
       autoFocus
@@ -332,103 +296,59 @@ function ProjectRow({
       }}
       onBlur={commitRename}
       aria-label={labels.projectNameLabel}
-      className="min-w-0 flex-1 rounded border bg-transparent px-1.5 py-0.5 text-xs"
+      className="min-w-0 w-full rounded border bg-transparent px-1.5 py-0.5 text-xs font-medium"
       style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
     />
   ) : (
-    <span className="min-w-0 flex-1">
-      <span className="flex flex-wrap items-center gap-1">
-        <span className="truncate text-xs font-medium" style={{ color: 'var(--foreground)' }} title={project.name}>
-          {project.name}
-        </span>
-        {project.locale && <Tag>{project.locale}</Tag>}
-        {isActive && <Tag>{labels.presetActive}</Tag>}
-      </span>
-      {project.description && (
-        <span className="mt-0.5 block text-xs" style={{ color: 'var(--slate)' }}>
-          {project.description}
-        </span>
-      )}
-    </span>
+    project.name
   );
 
-  const body = (open?: () => void) => {
-    const inner = (
-      <>
-        <span
-          className="flex h-4 w-4 shrink-0 items-center justify-center"
-          style={{ color: 'var(--gilt)', marginTop: 1 }}
-          aria-hidden="true"
-        >
-          {isActive && <Check size={13} />}
-        </span>
-        {nameBlock}
-      </>
-    );
-    if (editing) {
-      return <div className="flex min-w-0 flex-1 items-start gap-2 px-2 py-1.5">{inner}</div>;
-    }
-    return (
-      <button
-        type="button"
-        onClick={open}
-        onDoubleClick={isActive ? startRename : undefined}
-        disabled={disabled || isActive}
-        aria-current={isActive ? 'true' : undefined}
-        aria-label={isActive ? `${project.name} (${labels.presetActive})` : `${labels.projectActivate}: ${project.name}`}
-        className="flex min-w-0 flex-1 items-start gap-2 rounded px-2 py-1.5 text-left transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: disabled || isActive ? 'default' : 'pointer',
-          outlineColor: 'var(--gilt-hover)',
-        }}
-        onMouseEnter={(e) => { if (!disabled && !isActive) e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-      >
-        {inner}
-      </button>
-    );
-  };
+  const tags = (
+    <>
+      {project.locale && <RowTag>{project.locale}</RowTag>}
+      {project.chapterCount > 1 && <RowTag>{labels.chapterCountTag.replace('__n__', String(project.chapterCount))}</RowTag>}
+      {isActive && <RowTag accent>{labels.presetActive}</RowTag>}
+    </>
+  );
 
-  const content = isActive || disabled || editing ? (
-    body()
-  ) : (
-    <MaybeConfirm
-      confirm={confirmSwitch}
-      message={labels.projectSwitchConfirm.replace('__name__', project.name)}
-      onConfirm={onActivate}
-    >
-      {(open) => body(open)}
-    </MaybeConfirm>
+  const row = (open?: () => void) => (
+    <ListRow
+      selected={isActive}
+      disabled={disabled}
+      onSelect={editing || isActive ? undefined : open}
+      onDoubleClick={isActive && !editing ? startRename : undefined}
+      ariaLabel={isActive ? `${project.name} (${labels.presetActive})` : `${labels.projectActivate}: ${project.name}`}
+      leading={
+        <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--gilt)' }}>
+          {isActive && <Check size={13} aria-hidden="true" />}
+        </span>
+      }
+      title={title}
+      subtitle={project.description}
+      tags={tags}
+      alignTop={!!project.description}
+      actions={
+        <>
+          <IconButton label={labels.projectRename} icon={<Pencil size={13} />} disabled={disabled || editing} onClick={startRename} />
+          <IconButton label={labels.projectDuplicate} icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate} />
+          <IconButton label={labels.projectExport} icon={<Download size={13} />} disabled={disabled} onClick={onExport} />
+          <ConfirmPopover message={labels.projectDeleteConfirm.replace('__name__', project.name)} onConfirm={onDelete}>
+            {({ open: openConfirm }) => (
+              <IconButton label={labels.projectDelete} icon={<Trash2 size={13} />} disabled={disabled} onClick={openConfirm} />
+            )}
+          </ConfirmPopover>
+        </>
+      }
+    />
   );
 
   return (
-    <li className="mb-1 rounded border" style={{ borderColor: isActive ? 'var(--gilt)' : 'var(--rule)' }}>
-      <div className="flex items-start">
-        {content}
-        <div className="flex shrink-0 items-center gap-0.5 px-1 py-1">
-          <IconButton label={labels.projectRename} disabled={disabled || editing} onClick={startRename} size={11}>
-            <Pencil size={11} />
-          </IconButton>
-          <IconButton label={labels.projectDuplicate} disabled={disabled} onClick={onDuplicate} size={11}>
-            <Copy size={11} />
-          </IconButton>
-          <IconButton label={labels.projectExport} disabled={disabled} onClick={onExport} size={11}>
-            <Download size={11} />
-          </IconButton>
-          <ConfirmPopover
-            message={labels.projectDeleteConfirm.replace('__name__', project.name)}
-            onConfirm={onDelete}
-          >
-            {({ open }) => (
-              <IconButton label={labels.projectDelete} disabled={disabled} onClick={open} size={11}>
-                <Trash2 size={11} />
-              </IconButton>
-            )}
-          </ConfirmPopover>
-        </div>
-      </div>
+    <li className="mb-0.5">
+      {isActive || disabled ? row() : (
+        <MaybeConfirm confirm={confirmSwitch} message={labels.projectSwitchConfirm.replace('__name__', project.name)} onConfirm={onActivate}>
+          {(open) => row(open)}
+        </MaybeConfirm>
+      )}
     </li>
   );
 }
@@ -444,6 +364,8 @@ interface PresetRowProps {
   onReload: () => void;
   onDuplicate: () => void;
   onExport: () => void;
+  onHide?: () => void;
+  onUnhide?: () => void;
 }
 
 function PresetRow({
@@ -456,105 +378,61 @@ function PresetRow({
   onReload,
   onDuplicate,
   onExport,
+  onHide,
+  onUnhide,
 }: PresetRowProps) {
   const labels = useSandboxLabels();
   const confirmMessage = labels.presetLoadConfirm.replace('__name__', preset.name);
 
-  const body = (open?: () => void) => (
-    <button
-      type="button"
-      onClick={open}
-      disabled={disabled || isActive}
-      aria-current={isActive ? 'true' : undefined}
-      aria-label={isActive ? `${preset.name} (${labels.presetActive})` : `${labels.presetLoad}: ${preset.name}`}
-      className="flex min-w-0 flex-1 items-start gap-2 rounded px-2 py-1.5 text-left transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: disabled || isActive ? 'default' : 'pointer',
-        opacity: preset.available ? 1 : 0.5,
-        outlineColor: 'var(--gilt-hover)',
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled && !isActive) e.currentTarget.style.backgroundColor = 'var(--surface)';
-      }}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-    >
-      <span
-        className="flex h-4 w-4 shrink-0 items-center justify-center"
-        style={{ color: 'var(--gilt)', marginTop: 1 }}
-        aria-hidden="true"
-      >
-        {isActive && <Check size={13} />}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-1">
-          <span
-            className="truncate text-xs font-medium"
-            style={{ color: 'var(--foreground)' }}
-            title={preset.name}
-          >
-            {preset.name}
-          </span>
-          {preset.locale && <Tag>{preset.locale}</Tag>}
-          {preset.source === 'private' && <Tag>{labels.presetPrivate}</Tag>}
-          {preset.default && <Tag>{labels.presetDefault}</Tag>}
-        </span>
-        {preset.description && (
-          <span className="mt-0.5 block text-xs" style={{ color: 'var(--slate)' }}>
-            {preset.description}
-          </span>
-        )}
-        {!preset.available && (
-          <span className="mt-0.5 block text-xs" style={{ color: 'var(--slate)' }}>
-            {labels.presetUnavailable}
-          </span>
-        )}
-      </span>
-    </button>
+  const tags = (
+    <>
+      {preset.locale && <RowTag>{preset.locale}</RowTag>}
+      {preset.source === 'private' && <RowTag>{labels.presetPrivate}</RowTag>}
+      {preset.default && <RowTag>{labels.presetDefault}</RowTag>}
+      {isActive && <RowTag accent>{labels.presetActive}</RowTag>}
+    </>
   );
+  const subtitle = preset.available ? preset.description : labels.presetUnavailable;
 
-  const content = isActive || disabled ? (
-    body()
-  ) : (
-    <MaybeConfirm confirm={confirmLoad} message={confirmMessage} onConfirm={onLoad}>
-      {(open) => body(open)}
-    </MaybeConfirm>
+  const row = (open?: () => void) => (
+    <ListRow
+      selected={isActive}
+      disabled={disabled}
+      onSelect={isActive ? undefined : open}
+      ariaLabel={isActive ? `${preset.name} (${labels.presetActive})` : `${labels.presetLoad}: ${preset.name}`}
+      leading={
+        <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--gilt)' }}>
+          {isActive && <Check size={13} aria-hidden="true" />}
+        </span>
+      }
+      title={preset.name}
+      subtitle={subtitle}
+      tags={tags}
+      alignTop={!!subtitle}
+      actions={
+        <>
+          {isActive && preset.available && (
+            <MaybeConfirm confirm={!untouched} message={labels.presetReloadConfirm} onConfirm={onReload}>
+              {(openReload) => (
+                <IconButton label={labels.presetReloadActive} icon={<RotateCcw size={13} />} disabled={disabled} onClick={openReload} />
+              )}
+            </MaybeConfirm>
+          )}
+          <IconButton label={labels.presetDuplicate} icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate} />
+          <IconButton label={labels.presetExport} icon={<Download size={13} />} disabled={disabled} onClick={onExport} />
+          {onHide && <IconButton label={labels.presetHide} icon={<EyeOff size={13} />} onClick={onHide} />}
+          {onUnhide && <IconButton label={labels.presetUnhide} icon={<Eye size={13} />} onClick={onUnhide} />}
+        </>
+      }
+    />
   );
 
   return (
-    <li className="mb-1 rounded border" style={{ borderColor: isActive ? 'var(--gilt)' : 'var(--rule)' }}>
-      <div className="flex items-start">
-        {content}
-        <div className="flex shrink-0 items-center gap-0.5 px-1 py-1">
-          <IconButton label={labels.presetDuplicate} disabled={disabled} onClick={onDuplicate} size={11}>
-            <Copy size={11} />
-          </IconButton>
-          <IconButton label={labels.presetExport} disabled={disabled} onClick={onExport} size={11}>
-            <Download size={11} />
-          </IconButton>
-        </div>
-      </div>
-      {isActive && preset.available && (
-        <div className="flex justify-end px-2 pb-1.5">
-          <MaybeConfirm confirm={!untouched} message={labels.presetReloadConfirm} onConfirm={onReload}>
-            {(open) => (
-              <button
-                type="button"
-                onClick={open}
-                disabled={disabled}
-                aria-label={`${labels.presetReloadActive}: ${preset.name}`}
-                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:opacity-40"
-                style={{ color: 'var(--slate)', background: 'none', border: 'none', outlineColor: 'var(--gilt-hover)' }}
-                onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.color = 'var(--foreground)'; }}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-              >
-                <RotateCcw size={11} aria-hidden="true" />
-                {labels.presetReloadActive}
-              </button>
-            )}
-          </MaybeConfirm>
-        </div>
+    <li className="mb-0.5">
+      {isActive || disabled ? row() : (
+        <MaybeConfirm confirm={confirmLoad} message={confirmMessage} onConfirm={onLoad}>
+          {(open) => row(open)}
+        </MaybeConfirm>
       )}
     </li>
   );

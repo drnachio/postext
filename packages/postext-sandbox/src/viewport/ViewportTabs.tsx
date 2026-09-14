@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import type { ViewportTab } from '../types';
+import { cn } from '../ui';
 
 const TABS: ViewportTab[] = ['canvas', 'html', 'pdf'];
 
@@ -44,7 +45,19 @@ export function ViewportTabs() {
       className="relative flex items-center justify-end"
       style={{ borderBottom: '1px solid var(--rule)', backgroundColor: 'var(--background)' }}
       role="tablist"
-      aria-label="Preview mode"
+      aria-label={labels.previewMode}
+      onKeyDown={(e) => {
+        const idx = TABS.indexOf(activeViewport);
+        let next: number | null = null;
+        if (e.key === 'ArrowRight') next = (idx + 1) % TABS.length;
+        else if (e.key === 'ArrowLeft') next = (idx - 1 + TABS.length) % TABS.length;
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = TABS.length - 1;
+        if (next === null) return;
+        e.preventDefault();
+        dispatch({ type: 'SET_VIEWPORT', payload: TABS[next]! });
+        containerRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
+      }}
     >
       {TABS.map((tab) => {
         const isActive = activeViewport === tab;
@@ -57,18 +70,11 @@ export function ViewportTabs() {
             aria-selected={isActive}
             tabIndex={isActive ? 0 : -1}
             onClick={() => dispatch({ type: 'SET_VIEWPORT', payload: tab })}
-            className="cursor-pointer px-4 py-2 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:outline-offset-[-1px]"
-            style={{
-              color: isActive ? 'var(--foreground)' : 'var(--slate)',
-              borderLeft: '1px solid var(--rule)',
-              outlineColor: 'var(--gilt-hover)',
-            }}
-            onMouseEnter={(e) => {
-              if (!isActive) e.currentTarget.style.color = 'var(--foreground)';
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) e.currentTarget.style.color = 'var(--slate)';
-            }}
+            className={cn(
+              'cursor-pointer px-4 py-2 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--gilt-hover)',
+              isActive ? 'text-(--foreground)' : 'text-(--slate) hover:text-(--foreground)',
+            )}
+            style={{ borderLeft: '1px solid var(--rule)' }}
           >
             {label}
           </button>

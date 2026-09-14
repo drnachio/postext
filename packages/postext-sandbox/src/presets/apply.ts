@@ -6,7 +6,7 @@ import { setCustomFonts } from '../controls/fontLoader';
 import { putBlobAt } from '../storage/blobStore';
 import { putFontFile } from '../storage/fontStorage';
 import { savePresetApplied, savePresetId } from '../storage/persistence';
-import { hashConfig, hashMarkdown, hashResources, type DocumentHashSource } from './hash';
+import { hashChapters, hashConfig, hashResources, type DocumentHashSource } from './hash';
 import type { AppliedPresetSnapshot, LoadedPreset, PresetApplyParts } from './types';
 
 export interface ApplyPresetOptions {
@@ -37,7 +37,7 @@ export function snapshotForApply(
   return {
     presetId: loaded.summary.id,
     fingerprint,
-    markdownHash: hashMarkdown(wantsMarkdown ? loaded.markdown : current.markdown),
+    markdownHash: hashChapters(wantsMarkdown ? loaded.chapters : current.chapters),
     configHash: hashConfig(config),
     resourcesHash: hashResources(wantsResources ? loaded.resources : current.resources),
   };
@@ -84,14 +84,16 @@ export async function applyPreset(
   if (parts === 'all' || parts === 'config' || (parts === 'document' && loaded.config.customFonts !== undefined)) {
     setCustomFonts(loaded.config.customFonts);
   }
-  dispatch({ type: 'SET_PRESET', payload: { id, markdown: loaded.markdown, config: loaded.config } });
+  dispatch({ type: 'SET_PRESET', payload: { id, config: loaded.config } });
   if (parts === 'all' || parts === 'config') {
     dispatch({ type: 'SET_CONFIG', payload: loaded.config });
   } else if (parts === 'document' && loaded.config.customFonts !== undefined) {
     dispatch({ type: 'UPDATE_CONFIG', payload: { customFonts: loaded.config.customFonts } });
   }
   if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: loaded.resources });
-  if (wantsMarkdown) dispatch({ type: 'SET_MARKDOWN', payload: loaded.markdown });
+  if (wantsMarkdown) {
+    dispatch({ type: 'SET_BOOK', payload: { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, layoutScope: 'book' } });
+  }
   const snapshot = snapshotForApply(loaded, options);
   dispatch({ type: 'SET_PRESET_APPLIED', payload: snapshot });
 

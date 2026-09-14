@@ -102,7 +102,6 @@ export const PdfToolbar = memo(function PdfToolbar({
         onClick={onPrint}
         disabled={!canPrint}
       />
-      <style>{`@keyframes postext-spin { to { transform: rotate(360deg); } } @keyframes postext-dirty-bounce { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-4px); } }`}</style>
     </div>
   );
 });

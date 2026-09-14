@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource } from 'postext';
 import { referencedFileIds, toSummary, type ProjectRecord } from './projects';
 import { projectFileId, projectFontFileId, remapContentFileIds } from './projectFiles';
+import type { BookContent } from '../book/types';
+
+const book: BookContent = { chapters: [{ id: 'c1', title: 'One', markdown: '# x', createdAt: 0, updatedAt: 0 }], activeChapterId: 'c1', layoutScope: 'book' };
 
 const config: PostextConfig = {
   customFonts: [
@@ -31,7 +34,7 @@ describe('referencedFileIds', () => {
 describe('remapContentFileIds', () => {
   it('rewrites every fileId through the mapper and reports the pairs once', () => {
     const out = remapContentFileIds(
-      { markdown: 'x', config, resources },
+      { ...book, config, resources },
       (_old, kind, hint) => (kind === 'blob' ? projectFileId('p1', hint) : projectFontFileId('p1', hint)),
     );
     expect(out.content.resources[0].bitmap?.fileId).toBe('project:p1:pic-png');
@@ -47,7 +50,7 @@ describe('remapContentFileIds', () => {
   });
 
   it('leaves untouched ids alone and emits no pairs', () => {
-    const out = remapContentFileIds({ markdown: '', config, resources }, (old) => old);
+    const out = remapContentFileIds({ ...book, config, resources }, (old) => old);
     expect(out.blobPairs).toEqual([]);
     expect(out.fontPairs).toEqual([]);
     expect(out.content.resources[0]).toBe(resources[0]);
@@ -57,11 +60,11 @@ describe('remapContentFileIds', () => {
 describe('toSummary', () => {
   it('drops the content slices', () => {
     const record: ProjectRecord = {
-      id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's',
-      createdAt: 1, updatedAt: 2, markdown: '# x', config, resources,
+      version: 2, id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's',
+      createdAt: 1, updatedAt: 2, ...book, config, resources,
     };
     expect(toSummary(record)).toEqual({
-      id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's', createdAt: 1, updatedAt: 2,
+      id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's', createdAt: 1, updatedAt: 2, chapterCount: 1,
     });
   });
 });

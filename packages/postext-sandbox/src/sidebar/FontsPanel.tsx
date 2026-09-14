@@ -1,15 +1,14 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { ChevronRight, Pencil, Plus, RotateCcw, Trash2, Upload } from 'lucide-react';
+import { ChevronRight, Pencil, Plus, RotateCcw, Trash2, Type, Upload } from 'lucide-react';
 import type { CustomFontFamily, CustomFontVariant, CustomFontStyle } from 'postext';
 import {
   useSandboxDispatch,
   useSandboxLabels,
   useSandboxSelector,
 } from '../context/SandboxContext';
-import { ConfirmPopover } from '../panels/ConfirmPopover';
-import { Tooltip } from '../panels/Tooltip';
+import { Button, ConfirmPopover, EmptyState, IconButton, PanelBody, PanelHeader, cn } from '../ui';
 import type { SandboxLabels } from '../types';
 import {
   deleteFontFile,
@@ -182,50 +181,30 @@ export function FontsPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div
-        className="flex shrink-0 items-center justify-between border-b px-3 py-2"
-        style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
-      >
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-          {labels.fonts}
-        </h2>
-        <div className="flex items-center gap-1">
-          {hasCustomFonts ? (
-            <ConfirmPopover
-              message={labels.resetSectionConfirm}
-              onConfirm={() => { void resetAll(); }}
-            >
-              {({ open }) => (
-                <Tooltip content={labels.reset} side="bottom">
-                  <button
-                    type="button"
-                    onClick={open}
-                    aria-label={labels.reset}
-                    className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-                    style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-                  >
-                    <RotateCcw size={13} aria-hidden="true" />
-                  </button>
-                </Tooltip>
-              )}
+      <PanelHeader
+        title={labels.fonts}
+        actions={
+          hasCustomFonts && (
+            <ConfirmPopover message={labels.resetSectionConfirm} onConfirm={() => { void resetAll(); }}>
+              {({ open }) => <IconButton label={labels.reset} icon={<RotateCcw size={14} />} onClick={open} />}
             </ConfirmPopover>
-          ) : (
-            /* Zero-width spacer keeps the header the same height as other
-             *  panel headers (which all have 24px icon buttons on the right). */
-            <span aria-hidden="true" style={{ display: 'inline-block', width: 0, height: 24 }} />
-          )}
-        </div>
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+          )
+        }
+      />
+      <PanelBody padded>
         <p className="mb-3 text-xs" style={{ color: 'var(--slate)' }}>
           {labels.customFontsTooltip}
         </p>
         {customFonts.length === 0 && (
-          <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }}>
-            {labels.customFontsNone}
-          </p>
+          <EmptyState
+            icon={<Type size={28} />}
+            title={labels.customFontsNone}
+            action={
+              <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addFamily}>
+                {labels.customFontsAddFamily}
+              </Button>
+            }
+          />
         )}
         {customFonts.map((family) => {
           const isEditing = editingName === family.name;
@@ -244,33 +223,13 @@ export function FontsPanel() {
                   borderBottomStyle: 'solid',
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => toggleExpanded(family.name)}
+                <IconButton
+                  label={isOpen ? labels.customFontsCollapseFamily : labels.customFontsExpandFamily}
+                  icon={<ChevronRight size={13} className={cn('transition-transform', isOpen && 'rotate-90')} />}
                   aria-expanded={isOpen}
-                  aria-label={
-                    isOpen ? labels.customFontsCollapseFamily : labels.customFontsExpandFamily
-                  }
-                  title={
-                    isOpen ? labels.customFontsCollapseFamily : labels.customFontsExpandFamily
-                  }
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-                  style={{
-                    color: 'var(--slate)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <ChevronRight
-                    size={13}
-                    aria-hidden="true"
-                    style={{
-                      transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
-                      transition: 'transform 200ms ease',
-                    }}
-                  />
-                </button>
+                  onClick={() => toggleExpanded(family.name)}
+                  tooltip={false}
+                />
                 {isEditing ? (
                   <input
                     type="text"
@@ -294,24 +253,14 @@ export function FontsPanel() {
                   />
                 ) : (
                   <>
-                    <button
-                      type="button"
+                    <IconButton
+                      label={labels.customFontsEditFamilyName}
+                      icon={<Pencil size={11} />}
                       onClick={() => {
                         setDraftName(family.name);
                         setEditingName(family.name);
                       }}
-                      aria-label={labels.customFontsEditFamilyName}
-                      title={labels.customFontsEditFamilyName}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-                      style={{
-                        color: 'var(--slate)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Pencil size={11} aria-hidden="true" />
-                    </button>
+                    />
                     <span
                       className="min-w-0 flex-1 truncate text-xs font-medium"
                       style={{
@@ -331,21 +280,7 @@ export function FontsPanel() {
                   }}
                 >
                   {({ open }) => (
-                    <button
-                      type="button"
-                      onClick={open}
-                      aria-label={labels.customFontsDeleteFamily}
-                      title={labels.customFontsDeleteFamily}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-                      style={{
-                        color: 'var(--destructive)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Trash2 size={13} aria-hidden="true" />
-                    </button>
+                    <IconButton label={labels.customFontsDeleteFamily} icon={<Trash2 size={13} />} destructive onClick={open} />
                   )}
                 </ConfirmPopover>
               </div>
@@ -381,21 +316,12 @@ export function FontsPanel() {
             </div>
           );
         })}
-        <button
-          type="button"
-          onClick={addFamily}
-          className="mt-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
-          style={{
-            borderColor: 'var(--rule)',
-            backgroundColor: 'var(--surface)',
-            color: 'var(--foreground)',
-            cursor: 'pointer',
-          }}
-        >
-          <Plus size={12} aria-hidden="true" />
-          {labels.customFontsAddFamily}
-        </button>
-      </div>
+        {customFonts.length > 0 && (
+          <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addFamily} className="mt-1">
+            {labels.customFontsAddFamily}
+          </Button>
+        )}
+      </PanelBody>
     </div>
   );
 }
@@ -443,21 +369,7 @@ function VariantRow({
       >
         {variant.fileName ?? `.${variant.format}`}
       </span>
-      <button
-        type="button"
-        onClick={onDelete}
-        aria-label={labels.customFontsVariantDelete}
-        title={labels.customFontsVariantDelete}
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-        style={{
-          color: 'var(--destructive)',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-        }}
-      >
-        <Trash2 size={12} aria-hidden="true" />
-      </button>
+      <IconButton label={labels.customFontsVariantDelete} icon={<Trash2 size={13} />} destructive onClick={onDelete} />
     </div>
   );
 }
@@ -496,21 +408,9 @@ function UploadVariantButton({
         <option value="normal">{labels.customFontsVariantStyleNormal}</option>
         <option value="italic">{labels.customFontsVariantStyleItalic}</option>
       </select>
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        className="flex shrink-0 items-center gap-1 rounded border px-2 py-1 text-xs"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: 'var(--foreground)',
-          cursor: 'pointer',
-        }}
-        aria-label={labels.customFontsUploadVariant}
-      >
-        <Upload size={11} aria-hidden="true" />
+      <Button variant="outline" size="xs" icon={<Upload size={11} />} onClick={() => inputRef.current?.click()} aria-label={labels.customFontsUploadVariant}>
         {labels.customFontsUploadVariant}
-      </button>
+      </Button>
       <input
         ref={inputRef}
         type="file"

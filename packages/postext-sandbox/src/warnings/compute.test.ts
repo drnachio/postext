@@ -166,3 +166,32 @@ describe('callout icon resources', () => {
     expect(warnings.some((w) => w.payload.kind === 'unusedResource')).toBe(false);
   });
 });
+
+describe('chapter attribution', () => {
+  it('maps located warnings to chapters and flags ignored front matter', async () => {
+    const { composeBook } = await import('../book/compose');
+    const { newChapter } = await import('../book/chapterOps');
+    const chapters = [
+      newChapter('a', 'A', '# A\n\ntext', 1),
+      newChapter('b', 'B', '---\ntitle: x\n---\n# B\n\n:::bogus\nunclosed', 1),
+    ];
+    const book = composeBook(chapters);
+    const warnings = computeWarnings({
+      markdown: book.markdown,
+      config: {},
+      doc: null,
+      book,
+      chapterTitles: new Map(chapters.map((c) => [c.id, c.title])),
+    });
+    const fm = warnings.find((w) => w.payload.kind === 'chapterFrontmatterIgnored');
+    expect(fm?.chapterId).toBe('b');
+    expect(fm?.payload).toEqual({ kind: 'chapterFrontmatterIgnored', chapterTitle: 'B' });
+    const located = warnings.filter((w) => w.sourceStart !== undefined && w.chapterId === 'b' && w.payload.kind !== 'chapterFrontmatterIgnored');
+    expect(located.length).toBeGreaterThan(0);
+    for (const w of located) {
+      expect(w.chapterIndex).toBe(1);
+      expect(w.chapterLine).toBeGreaterThanOrEqual(1);
+      expect(w.chapterStart).toBeLessThanOrEqual(chapters[1]!.markdown.length);
+    }
+  });
+});

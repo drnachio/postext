@@ -1,7 +1,7 @@
 'use client';
 
 import { Info } from 'lucide-react';
-import { Tooltip } from '../panels/Tooltip';
+import { Tooltip } from '../ui';
 
 interface InfoTipProps {
   text: string;
@@ -11,7 +11,8 @@ export function InfoTip({ text }: InfoTipProps) {
   return (
     <Tooltip content={text} side="right">
       <span
-        className="inline-flex items-center justify-center"
+        tabIndex={0}
+        className="inline-flex shrink-0 items-center justify-center rounded focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)"
         style={{ color: 'var(--slate)', cursor: 'help', width: 16, height: 16 }}
       >
         <Info size={13} aria-hidden="true" />
