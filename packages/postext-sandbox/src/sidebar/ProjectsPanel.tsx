@@ -34,6 +34,17 @@ function MaybeConfirm({
   );
 }
 
+/** The active row becomes a card that also holds the book's chapters: the
+ *  row on top (no border of its own), the chapter list below it. */
+function ActiveCard({ row, children }: { row: ReactNode; children?: ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded border" style={{ borderColor: 'var(--gilt)' }}>
+      {row}
+      {children}
+    </div>
+  );
+}
+
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
     <div className="mt-4 mb-1.5 flex items-center justify-between gap-2 first:mt-0">
@@ -189,8 +200,6 @@ export function ProjectsPanel() {
           </div>
         )}
 
-        <ChapterList title={labels.chapters} />
-
         <GroupTitle>{labels.projects}</GroupTitle>
         {projects.length === 0 ? (
           <EmptyState
@@ -315,6 +324,7 @@ function ProjectRow({
     <ListRow
       selected={isActive}
       disabled={disabled}
+      className={isActive ? 'rounded-none border-0' : undefined}
       onSelect={editing || isActive ? undefined : open}
       onDoubleClick={isActive && !editing ? startRename : undefined}
       ariaLabel={isActive ? `${project.name} (${labels.presetActive})` : `${labels.projectActivate}: ${project.name}`}
@@ -342,9 +352,18 @@ function ProjectRow({
     />
   );
 
+  if (isActive) {
+    return (
+      <li className="mb-1">
+        <ActiveCard row={row()}>
+          <ChapterList title={labels.chapters} />
+        </ActiveCard>
+      </li>
+    );
+  }
   return (
     <li className="mb-0.5">
-      {isActive || disabled ? row() : (
+      {disabled ? row() : (
         <MaybeConfirm confirm={confirmSwitch} message={labels.projectSwitchConfirm.replace('__name__', project.name)} onConfirm={onActivate}>
           {(open) => row(open)}
         </MaybeConfirm>
@@ -398,6 +417,7 @@ function PresetRow({
     <ListRow
       selected={isActive}
       disabled={disabled}
+      className={isActive ? 'rounded-none border-0' : undefined}
       onSelect={isActive ? undefined : open}
       ariaLabel={isActive ? `${preset.name} (${labels.presetActive})` : `${labels.presetLoad}: ${preset.name}`}
       leading={
@@ -427,9 +447,20 @@ function PresetRow({
     />
   );
 
+  if (isActive) {
+    // Preset mode: the working book belongs to this preset until a project
+    // is created from it, so its chapters show here.
+    return (
+      <li className="mb-1">
+        <ActiveCard row={row()}>
+          <ChapterList title={labels.chapters} />
+        </ActiveCard>
+      </li>
+    );
+  }
   return (
     <li className="mb-0.5">
-      {isActive || disabled ? row() : (
+      {disabled ? row() : (
         <MaybeConfirm confirm={confirmLoad} message={confirmMessage} onConfirm={onLoad}>
           {(open) => row(open)}
         </MaybeConfirm>
