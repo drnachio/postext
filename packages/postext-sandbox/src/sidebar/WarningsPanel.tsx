@@ -3,7 +3,7 @@
 import { AlertTriangle, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database } from 'lucide-react';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES } from 'postext';
 import { useSandbox, useSandboxWarnings } from '../context/SandboxContext';
-import { EmptyState, PanelBody, PanelHeader } from '../ui';
+import { EmptyState, ListRow, PanelBody, PanelHeader } from '../ui';
 import type { Warning, WarningPayload } from '../warnings/types';
 import type { SandboxLabels } from '../types';
 
@@ -270,46 +270,20 @@ function WarningItem({
     : chapterTag;
 
   return (
-    <button
-      type="button"
-      onClick={clickable ? () => onClick(warning) : undefined}
-      disabled={!clickable}
-      className="flex w-full gap-3 border-b px-3 py-2 text-left transition-colors"
-      style={{
-        borderColor: 'var(--rule)',
-        cursor: clickable ? 'pointer' : 'default',
-        color: 'var(--foreground)',
-      }}
-      onMouseEnter={(e) => {
-        if (clickable) e.currentTarget.style.backgroundColor = 'var(--surface)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'transparent';
-      }}
-    >
-      <Icon size={16} aria-hidden="true" style={{ color: 'var(--gilt)', flexShrink: 0, marginTop: 2 }} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-            {title}
-          </span>
-          {lineTag && (
-            <span
-              className="text-[10px] font-medium"
-              style={{
-                color: 'var(--slate)',
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {lineTag}
-            </span>
-          )}
-        </div>
-        <div className="mt-0.5 text-xs" style={{ color: 'var(--slate)', overflowWrap: 'anywhere' }}>
-          {detail}
-        </div>
-      </div>
-    </button>
+    <ListRow
+      onSelect={clickable ? () => onClick(warning) : undefined}
+      ariaLabel={`${title}${lineTag ? ` (${lineTag})` : ''}`}
+      alignTop
+      leading={<Icon size={16} aria-hidden="true" style={{ color: 'var(--gilt)', marginTop: 1 }} />}
+      title={title}
+      subtitle={detail}
+      tags={lineTag ? (
+        <span className="ml-auto shrink-0 text-[10px] font-medium" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>
+          {lineTag}
+        </span>
+      ) : undefined}
+      className="mx-2 my-0.5"
+    />
   );
 }
 

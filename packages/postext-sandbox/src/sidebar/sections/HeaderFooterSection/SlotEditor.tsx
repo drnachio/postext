@@ -12,7 +12,7 @@ import type {
   ResolvedDesignElement,
   ResolvedDesignSlot,
 } from 'postext';
-import { Tooltip } from '../../../ui';
+import { Button, IconButton as UiIconButton } from '../../../ui';
 import { SearchScope } from '../../search/SearchScope';
 import { TextElementEditor } from './TextElementEditor';
 import { RuleElementEditor } from './RuleElementEditor';
@@ -123,7 +123,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
           ? labels.headerFooterElementText
           : rawEl.kind === 'rule'
             ? labels.headerFooterElementRule
-            : (labels.headerFooterElementBox ?? 'Box');
+            : labels.headerFooterElementBox;
         return (
           <SearchScope key={`${slotKey}-${rawEl.id}-${idx}`} title={`${elementTitle} ${idx + 1}`} overridden>
           <div
@@ -139,7 +139,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
                   ? labels.headerFooterElementText
                   : rawEl.kind === 'rule'
                     ? labels.headerFooterElementRule
-                    : (labels.headerFooterElementBox ?? 'Box')}
+                    : labels.headerFooterElementBox}
                 {' '}#{idx + 1}
               </span>
               <div className="flex items-center gap-1">
@@ -189,7 +189,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
       <div className="mt-2 flex gap-2">
         <AddButton label={labels.headerFooterAddText} onClick={addText} />
         <AddButton label={labels.headerFooterAddRule} onClick={addRule} />
-        <AddButton label={labels.headerFooterAddBox ?? 'Add box'} onClick={addBox} />
+        <AddButton label={labels.headerFooterAddBox} onClick={addBox} />
       </div>
     </div>
   );
@@ -206,50 +206,13 @@ function IconButton({
   disabled?: boolean;
   children: React.ReactNode;
 }) {
-  return (
-    <Tooltip content={label} side="top">
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        aria-label={label}
-        className="flex h-5 w-5 items-center justify-center rounded transition-colors"
-        style={{
-          color: disabled ? 'var(--rule)' : 'var(--slate)',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          border: 'none',
-          background: 'none',
-        }}
-        onMouseEnter={(e) => {
-          if (!disabled) e.currentTarget.style.color = 'var(--foreground)';
-        }}
-        onMouseLeave={(e) => {
-          if (!disabled) e.currentTarget.style.color = 'var(--slate)';
-        }}
-      >
-        {children}
-      </button>
-    </Tooltip>
-  );
+  return <UiIconButton size={18} label={label} icon={children} onClick={onClick} disabled={disabled} tooltipSide="top" />;
 }
 
 function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-1 rounded border px-2 py-1 text-xs transition-colors"
-      style={{
-        borderColor: 'var(--rule)',
-        color: 'var(--slate)',
-        backgroundColor: 'var(--surface)',
-        cursor: 'pointer',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-    >
-      <Plus size={12} aria-hidden="true" />
+    <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={onClick}>
       {label}
-    </button>
+    </Button>
   );
 }

@@ -1,6 +1,12 @@
 export interface SandboxLabels {
   // Panel names
   configuration: string;
+  sidebarResize: string;
+  previewMode: string;
+  activityBar: string;
+  panelsNav: string;
+  editorFormatting: string;
+  colorAlpha: string;
   settingsSearchPlaceholder: string;
   settingsSearchClear: string;
   settingsSearchNoResults: string;
@@ -722,10 +728,10 @@ export interface SandboxLabels {
   footer: string;
   headerFooterElementText: string;
   headerFooterElementRule: string;
-  headerFooterElementBox?: string;
+  headerFooterElementBox: string;
   headerFooterAddText: string;
   headerFooterAddRule: string;
-  headerFooterAddBox?: string;
+  headerFooterAddBox: string;
   headerFooterElementBoxBackgroundColor?: string;
   headerFooterElementBoxBorderColor?: string;
   headerFooterElementBoxBorderWidth?: string;

@@ -6,6 +6,12 @@ type SandboxTranslator = ReturnType<typeof useTranslations<"Sandbox">>;
 export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
   return {
     configuration: t("configuration"),
+    sidebarResize: t("sidebarResize"),
+    previewMode: t("previewMode"),
+    activityBar: t("activityBar"),
+    panelsNav: t("panelsNav"),
+    editorFormatting: t("editorFormatting"),
+    colorAlpha: t("colorAlpha"),
     settingsSearchPlaceholder: t("settingsSearchPlaceholder"),
     settingsSearchClear: t("settingsSearchClear"),
     settingsSearchNoResults: t("settingsSearchNoResults"),

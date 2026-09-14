@@ -2,6 +2,12 @@ import type { SandboxLabels } from './labels';
 
 export const DEFAULT_LABELS: SandboxLabels = {
   configuration: 'Configuration',
+  sidebarResize: 'Resize sidebar',
+  previewMode: 'Preview mode',
+  activityBar: 'Activity bar',
+  panelsNav: 'Panels',
+  editorFormatting: 'Markdown formatting',
+  colorAlpha: 'Alpha',
   settingsSearchPlaceholder: 'Search settings…',
   settingsSearchClear: 'Clear search',
   settingsSearchNoResults: 'No settings match "__query__"',

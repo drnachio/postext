@@ -49,7 +49,7 @@ import {
   TextInput,
   ToggleSwitch,
 } from '../../controls';
-import { ConfirmPopover } from '../../ui';
+import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { CONTAINER_EDGES } from './HeaderFooterSection/placementAdapter';
@@ -116,29 +116,11 @@ function CardButton({
   children,
 }: {
   label: string;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   destructive?: boolean;
   children: React.ReactNode;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-      style={{
-        color: destructive ? 'var(--destructive)' : 'var(--slate)',
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-      onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-    >
-      {children}
-    </button>
-  );
+  return <IconButton label={label} icon={children} onClick={onClick} destructive={destructive} />;
 }
 
 interface CalloutStyleCardProps {
@@ -1008,20 +990,9 @@ export const CalloutStylesSection = memo(function CalloutStylesSection() {
           onRemove={() => removeStyle(style.id)}
         />
       ))}
-      <button
-        type="button"
-        onClick={addStyle}
-        className="mt-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: 'var(--foreground)',
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={12} aria-hidden="true" />
+      <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addStyle} className="mt-1">
         {labels.calloutStyleAdd}
-      </button>
+      </Button>
     </CollapsibleSection>
   );
 });

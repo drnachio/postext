@@ -2,8 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* The sandbox package ships Tailwind utility classes in its source; scan it. */
-@source "../../../packages/postext-sandbox/src/**/*.tsx";
+/* The sandbox package ships Tailwind utility classes in its source; scan it
+   (path is relative to this file: apps/web/src/app → repo root). */
+@source "../../../../packages/postext-sandbox/src/**/*.tsx";
 
 @custom-variant dark (&:is(.dark *));
 

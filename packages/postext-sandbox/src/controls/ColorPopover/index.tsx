@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, type RefObject } from 'react';
 import type { ColorPaletteEntry } from 'postext';
 import { Popover, type PopoverCloseReason } from '../../ui';
+import { useSandboxLabels } from '../../context/SandboxContext';
 import { SaturationValueArea } from '../SaturationValueArea';
 import { HueSlider } from '../HueSlider';
 import { AlphaSlider } from '../AlphaSlider';
@@ -63,6 +64,7 @@ export function ColorPopover({ open, onOpenChange, anchor, ariaLabel, ...body }:
 }
 
 function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel }: ColorPopoverBodyProps) {
+  const labels = useSandboxLabels();
   const [hsv, setHsv] = useState<HSV>(() => hexToHsv(hexWithoutAlpha(hex)));
   const [alpha, setAlpha] = useState(() => hexAlpha(hex));
   const [activeTab, setActiveTab] = useState<ColorMode>(initialMode);
@@ -172,14 +174,14 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 6 }}>
-        <span style={{ fontSize: 9, color: 'var(--slate)' }}>Alpha</span>
+        <span style={{ fontSize: 9, color: 'var(--slate)' }}>{labels.colorAlpha}</span>
         <input
           type="number"
           value={alpha}
           onChange={(e) => updateAlpha(clamp(Number(e.target.value), 0, 100))}
           min={0}
           max={100}
-          aria-label="Alpha"
+          aria-label={labels.colorAlpha}
           style={{
             width: 42,
             padding: '2px 4px',

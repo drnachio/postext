@@ -11,7 +11,8 @@ import type {
 } from 'postext';
 import { useSandbox, type ResourceFocusTarget } from '../../context/SandboxContext';
 import { InlineMarkdownInput, type InlineSelection } from '../../controls/InlineMarkdownInput';
-import { ConfirmPopover } from '../../ui';
+import { ConfirmPopover, IconButton, PanelBody, PanelHeader } from '../../ui';
+import { FieldRow } from '../../controls/FieldRow';
 import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
@@ -32,15 +33,9 @@ interface FieldProps {
 
 function Field({ label, children, hint }: FieldProps) {
   return (
-    <label className="flex flex-col gap-0.5">
-      <span style={labelStyle}>{label}</span>
+    <FieldRow stacked label={label} hint={hint} className="mb-0">
       {children}
-      {hint && (
-        <span style={{ ...labelStyle, color: 'var(--slate)' }} className="opacity-80">
-          {hint}
-        </span>
-      )}
-    </label>
+    </FieldRow>
   );
 }
 
@@ -194,45 +189,25 @@ export function ResourceDetail({
   );
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto p-3">
-      <div className="mb-3 flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label={labels.resourceBack}
-          title={labels.resourceBack}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-          style={{ color: 'var(--slate)', background: 'none', border: 'none', cursor: 'pointer' }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-        >
-          <ChevronLeft size={16} aria-hidden="true" />
-        </button>
-        <span
-          className="min-w-0 flex-1 truncate text-xs font-semibold"
-          style={{ color: 'var(--foreground)' }}
-          title={resource.id}
-        >
-          {resource.id || labels.resourceUntitled}
-        </span>
-        <ConfirmPopover message={deleteMessage} onConfirm={onDelete}>
-          {({ open }) => (
-            <button
-              type="button"
-              onClick={open}
-              aria-label={labels.resourceDelete}
-              title={labels.resourceDelete}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-              style={{ color: 'var(--destructive)', background: 'none', border: 'none', cursor: 'pointer' }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-            </button>
-          )}
-        </ConfirmPopover>
-      </div>
-
+    <div className="flex h-full flex-col">
+      <PanelHeader
+        title={
+          <div className="flex min-w-0 flex-1 items-center gap-1">
+            <IconButton label={labels.resourceBack} icon={<ChevronLeft size={16} />} onClick={onBack} />
+            <span className="min-w-0 flex-1 truncate" title={resource.id}>
+              {resource.id || labels.resourceUntitled}
+            </span>
+          </div>
+        }
+        actions={
+          <ConfirmPopover message={deleteMessage} onConfirm={onDelete}>
+            {({ open }) => (
+              <IconButton label={labels.resourceDelete} icon={<Trash2 size={14} />} destructive onClick={open} />
+            )}
+          </ConfirmPopover>
+        }
+      />
+      <PanelBody padded>
       <div className="flex flex-col gap-3">
         <Field
           label={labels.idLabel}
@@ -414,6 +389,7 @@ export function ResourceDetail({
           <ResourcePreview resource={resource} type={type} />
         </div>
       </div>
+      </PanelBody>
     </div>
   );
 }

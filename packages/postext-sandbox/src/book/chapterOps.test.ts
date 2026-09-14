@@ -17,6 +17,7 @@ function book(): BookContent {
 describe('deriveChapterTitle', () => {
   it('uses the first H1 outside front matter and fences', () => {
     expect(deriveChapterTitle('---\ntitle: FM\n---\n```\n# no\n```\n# **Real** _title_ {#id}\n', 'x')).toBe('Real title');
+    expect(deriveChapterTitle('# Salud y enfermedad. \\\\ Salud comunitaria {author="X"}', 'x')).toBe('Salud y enfermedad. Salud comunitaria');
   });
   it('falls back to the front-matter title, then the fallback', () => {
     expect(deriveChapterTitle('---\ntitle: "From FM"\n---\nbody', 'x')).toBe('From FM');

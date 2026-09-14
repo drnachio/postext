@@ -18,6 +18,7 @@ export function singleChapterBook(markdown: string, id: string, title: string, l
 function plainHeading(s: string): string {
   return s
     .replace(/\{[^}]*\}\s*$/, '')
+    .replace(/\s*\\\\\s*/g, ' ')
     .replace(/[*_`~]+/g, '')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/\\([\\`*_{}[\]()#+\-.!])/g, '$1')

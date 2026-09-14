@@ -34,8 +34,8 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
     <div className={cn('flex min-w-0 flex-1 gap-2', alignTop ? 'items-start' : 'items-center')}>
       {leading && <span className="inline-flex shrink-0" aria-hidden="true">{leading}</span>}
       <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className="min-w-0 truncate text-xs font-medium" style={{ color: 'var(--foreground)' }}>{title}</span>
+        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+          <span className="min-w-0 max-w-full truncate text-xs font-medium" style={{ color: 'var(--foreground)' }}>{title}</span>
           {tags}
         </div>
         {subtitle && (

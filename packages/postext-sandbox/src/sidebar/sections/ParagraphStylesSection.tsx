@@ -13,7 +13,7 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../controls';
-import { ConfirmPopover } from '../../ui';
+import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 
@@ -112,18 +112,7 @@ function ParagraphStyleCard({
         </span>
         <ConfirmPopover message={labels.paragraphStyleDeleteConfirm} onConfirm={onRemove}>
           {({ open }) => (
-            <button
-              type="button"
-              onClick={open}
-              aria-label={labels.paragraphStyleDelete}
-              title={labels.paragraphStyleDelete}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-              style={{ color: 'var(--destructive)', background: 'none', border: 'none', cursor: 'pointer' }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-            </button>
+            <IconButton label={labels.paragraphStyleDelete} icon={<Trash2 size={13} />} destructive onClick={open} />
           )}
         </ConfirmPopover>
       </div>
@@ -355,20 +344,9 @@ export const ParagraphStylesSection = memo(function ParagraphStylesSection() {
           onRemove={() => removeStyle(style.id)}
         />
       ))}
-      <button
-        type="button"
-        onClick={addStyle}
-        className="mt-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: 'var(--foreground)',
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={12} aria-hidden="true" />
+      <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addStyle} className="mt-1">
         {labels.paragraphStyleAdd}
-      </button>
+      </Button>
     </CollapsibleSection>
   );
 });

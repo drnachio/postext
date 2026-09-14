@@ -60,7 +60,7 @@ function PanelNav() {
   }, [updateIndicator]);
 
   return (
-    <nav ref={navRef} className="relative flex flex-col items-center gap-2" aria-label="Panels">
+    <nav ref={navRef} className="relative flex flex-col items-center gap-2" aria-label={labels.panelsNav}>
       {indicator && (
         <div
           aria-hidden="true"
@@ -160,12 +160,13 @@ function PanelNav() {
 }
 
 export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }: ActivityBarProps) {
+  const labels = useSandboxLabels();
   return (
     <div
       className="flex h-full w-14 flex-col items-center border-r px-2 py-3"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
       role="toolbar"
-      aria-label="Activity bar"
+      aria-label={labels.activityBar}
       aria-orientation="vertical"
     >
       {/* Home logo */}

@@ -7,7 +7,7 @@ import { cloneDefaultColorPalette, isDefaultColorPalette } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { findPaletteUsages, unlinkPaletteRefs } from '../../context/paletteUtils';
 import { CollapsibleSection, ColorPicker } from '../../controls';
-import { ConfirmPopover } from '../../ui';
+import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { SearchScope } from '../search/SearchScope';
 
 function newEntryId(): string {
@@ -146,18 +146,7 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
               />
             ) : (
               <>
-                <button
-                  type="button"
-                  onClick={() => beginEdit(entry)}
-                  aria-label={labels.colorPaletteEditName}
-                  title={labels.colorPaletteEditName}
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-                  style={{ color: 'var(--slate)', background: 'none', border: 'none', cursor: 'pointer' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-                >
-                  <Pencil size={11} aria-hidden="true" />
-                </button>
+                <IconButton label={labels.colorPaletteEditName} icon={<Pencil size={11} />} onClick={() => beginEdit(entry)} />
                 <span
                   className="min-w-0 flex-1 truncate text-xs"
                   style={{ color: 'var(--foreground)' }}
@@ -177,38 +166,16 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
             />
             <ConfirmPopover message={confirmMessage} onConfirm={() => removeEntry(entry.id)}>
               {({ open }) => (
-                <button
-                  type="button"
-                  onClick={open}
-                  aria-label={labels.colorPaletteRemove}
-                  title={labels.colorPaletteRemove}
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
-                  style={{ color: 'var(--destructive)', background: 'none', border: 'none', cursor: 'pointer' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
-                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                >
-                  <Trash2 size={13} aria-hidden="true" />
-                </button>
+                <IconButton label={labels.colorPaletteRemove} icon={<Trash2 size={13} />} destructive onClick={open} />
               )}
             </ConfirmPopover>
           </div>
           </SearchScope>
         );
       })}
-      <button
-        type="button"
-        onClick={addEntry}
-        className="mt-1 flex items-center gap-1 rounded border px-2 py-1 text-xs"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: 'var(--foreground)',
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={12} aria-hidden="true" />
+      <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addEntry} className="mt-1">
         {labels.colorPaletteAdd}
-      </button>
+      </Button>
     </CollapsibleSection>
   );
 });
