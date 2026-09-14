@@ -17,6 +17,7 @@ const CANVAS_FIT_MODE_KEY = 'postext-sandbox-canvas-fit-mode';
 const CANVAS_ZOOM_KEY = 'postext-sandbox-canvas-zoom';
 const HTML_FONT_SCALE_KEY = 'postext-sandbox-html-font-scale';
 const HTML_COLUMN_MODE_KEY = 'postext-sandbox-html-column-mode';
+const SETTINGS_CATEGORY_KEY = 'postext-sandbox-settings-category';
 const TOOLBAR_PINNED_PREFIX = 'postext-sandbox-toolbar-pinned-';
 
 function getStorage(): Storage | null {
@@ -161,6 +162,15 @@ export function loadSectionState(sectionId: string): boolean | null {
   }
 }
 
+/** Category filter chosen in the settings panel ('all' or a category id). */
+export function saveSettingsCategory(category: string): void {
+  getStorage()?.setItem(SETTINGS_CATEGORY_KEY, category);
+}
+
+export function loadSettingsCategory(): string | null {
+  return getStorage()?.getItem(SETTINGS_CATEGORY_KEY) ?? null;
+}
+
 export function saveColorMode(fieldId: string, mode: string): void {
   const storage = getStorage();
   if (!storage) return;
@@ -258,6 +268,7 @@ export function clearStorage(): void {
   storage?.removeItem(CANVAS_ZOOM_KEY);
   storage?.removeItem(HTML_FONT_SCALE_KEY);
   storage?.removeItem(HTML_COLUMN_MODE_KEY);
+  storage?.removeItem(SETTINGS_CATEGORY_KEY);
 }
 
 /** Trigger a browser download of `data` under `filename`. */

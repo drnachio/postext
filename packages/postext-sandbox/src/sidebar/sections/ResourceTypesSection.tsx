@@ -24,6 +24,8 @@ import {
 import type { SandboxLabels } from '../../types/labels';
 import { CollapsibleSection } from '../../controls';
 import { ConfirmPopover } from '../../ui';
+import { FieldRow } from '../../controls/FieldRow';
+import { SearchScope } from '../search/SearchScope';
 import { CaptionStyleFields } from './CaptionStyleFields';
 
 function newTypeId(): string {
@@ -112,10 +114,9 @@ interface FieldProps {
 
 function Field({ label, children }: FieldProps) {
   return (
-    <label className="flex flex-col gap-0.5">
-      <span style={labelStyle}>{label}</span>
+    <FieldRow stacked label={label} className="mb-0">
       {children}
-    </label>
+    </FieldRow>
   );
 }
 
@@ -210,8 +211,8 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
         );
 
         return (
+          <SearchScope key={type.id} title={`${type.name} ${type.id}`} overridden={!isDefault}>
           <div
-            key={type.id}
             className="mb-3 rounded border p-2"
             style={{ borderColor: 'var(--rule)' }}
           >
@@ -377,6 +378,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </span>
             </div>
           </div>
+          </SearchScope>
         );
       })}
       <button

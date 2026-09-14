@@ -1,6 +1,19 @@
 export interface SandboxLabels {
   // Panel names
   configuration: string;
+  settingsSearchPlaceholder: string;
+  settingsSearchClear: string;
+  settingsSearchNoResults: string;
+  settingsCategories: string;
+  settingsCategoryAll: string;
+  settingsCategoryDocument: string;
+  settingsCategoryText: string;
+  settingsCategoryFigures: string;
+  settingsCategoryOutput: string;
+  settingsCategoryAdvanced: string;
+  settingsOverriddenOnly: string;
+  settingsOverriddenOnlyEmpty: string;
+  settingsModifiedCount: string;
   resources: string;
   markdownEditor: string;
   warnings: string;

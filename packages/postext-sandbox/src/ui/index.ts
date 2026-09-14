@@ -14,3 +14,4 @@ export { EmptyState } from './empty-state';
 export { ListRow, RowTag, type ListRowProps } from './list-row';
 export { Collapsible } from './collapsible';
 export { ChipTabs, ChipTab } from './tabs';
+export { HighlightedText } from './highlight';

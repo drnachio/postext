@@ -1,7 +1,10 @@
 'use client';
 
-import { forwardRef, type ReactNode } from 'react';
+import { forwardRef, useMemo, type ReactNode } from 'react';
 import { cn } from '../ui/cn';
+import { HighlightedText } from '../ui/highlight';
+import { useFieldMatch } from '../sidebar/search/MatchScope';
+import { normalizeText } from '../sidebar/search/normalize';
 import { InfoTip } from './InfoTip';
 import { ResetButton } from './ResetButton';
 
@@ -23,17 +26,25 @@ export interface FieldRowProps {
 }
 
 /** The one field row used by every settings control: info tip + label on
- *  the left, reset button + control on the right. Forward the ref to
- *  anchor a popover to the whole row. */
+ *  the left, reset button + control on the right. It takes part in the
+ *  settings search (hides itself when filtered out, highlights hits) and
+ *  forwards its ref so popovers can anchor to the whole row. */
 export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function FieldRow(
-  { label, tooltip, isDefault, onReset, stacked, hint, htmlFor, className, children },
+  { label, tooltip, isDefault, onReset, stacked, hint, extraTerms, htmlFor, className, children },
   ref,
 ) {
+  const extra = extraTerms?.join(' ') ?? '';
+  const haystack = useMemo(
+    () => normalizeText(`${label} ${tooltip ?? ''} ${extra}`),
+    [label, tooltip, extra],
+  );
+  const { visible, tokens } = useFieldMatch(haystack, isDefault === false);
   const showReset = !isDefault && !!onReset;
   return (
     <div
       ref={ref}
       className={cn('mb-2 flex gap-2', stacked ? 'flex-col items-stretch' : 'items-center justify-between', className)}
+      style={visible ? undefined : { display: 'none' }}
     >
       <div className={cn('flex min-w-0 items-center gap-1', stacked ? 'justify-between' : 'flex-1')}>
         <span className="flex min-w-0 items-center gap-1">
@@ -44,7 +55,7 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
             title={label}
             style={{ color: 'var(--slate)' }}
           >
-            {label}
+            <HighlightedText text={label} tokens={tokens} />
           </label>
         </span>
         {stacked && showReset && <ResetButton onClick={onReset} />}
@@ -54,7 +65,7 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
         {children}
       </div>
       {stacked && hint && (
-        <div className="-mt-1 text-[10px] leading-[14px]" style={{ color: 'var(--slate)' }}>{hint}</div>
+        <div className="text-[10px] leading-[14px]" style={{ color: 'var(--slate)', marginTop: -4 }}>{hint}</div>
       )}
     </div>
   );

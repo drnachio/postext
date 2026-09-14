@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { ChevronRight, RotateCcw } from 'lucide-react';
 import { saveSectionState, loadSectionState } from '../storage/persistence';
-import { Tooltip, ConfirmPopover } from '../ui';
+import { useSandboxLabels } from '../context/SandboxContext';
+import { Collapsible, ConfirmPopover, HighlightedText, IconButton, cn } from '../ui';
+import { useSettingsSearch } from '../sidebar/search/SearchContext';
+import { MatchScopeProvider, useScopeCounts, useScopeVisible } from '../sidebar/search/MatchScope';
+import { normalizeText } from '../sidebar/search/normalize';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -20,6 +24,9 @@ interface CollapsibleSectionProps {
   variant?: 'section' | 'subsection';
 }
 
+/** Collapsible settings group. Open state is remembered per `sectionId`.
+ *  While the settings search is active every section is forced open and
+ *  hides itself when neither its title nor any field inside matches. */
 export function CollapsibleSection({
   title,
   sectionId,
@@ -27,10 +34,61 @@ export function CollapsibleSection({
   children,
   onReset,
   hasOverrides = false,
-  resetLabel = 'Reset section',
-  resetConfirmMessage = 'Reset this section to defaults?',
+  resetLabel,
+  resetConfirmMessage,
   variant = 'section',
 }: CollapsibleSectionProps) {
+  const search = useSettingsSearch();
+  const normalizedTitle = useMemo(() => normalizeText(title), [title]);
+  const titleMatch = search.matcher.tokens.length > 0 && search.matcher.test(normalizedTitle);
+  return (
+    <MatchScopeProvider id={sectionId} titleMatch={titleMatch} overridden={hasOverrides}>
+      <SectionFrame
+        title={title}
+        sectionId={sectionId}
+        defaultOpen={defaultOpen}
+        onReset={onReset}
+        hasOverrides={hasOverrides}
+        resetLabel={resetLabel}
+        resetConfirmMessage={resetConfirmMessage}
+        variant={variant}
+        titleMatch={titleMatch}
+      >
+        {children}
+      </SectionFrame>
+    </MatchScopeProvider>
+  );
+}
+
+interface SectionFrameProps {
+  title: string;
+  sectionId?: string;
+  defaultOpen: boolean;
+  children: ReactNode;
+  onReset?: () => void;
+  hasOverrides: boolean;
+  resetLabel?: string;
+  resetConfirmMessage?: string;
+  variant: 'section' | 'subsection';
+  titleMatch: boolean;
+}
+
+function SectionFrame({
+  title,
+  sectionId,
+  defaultOpen,
+  children,
+  onReset,
+  hasOverrides,
+  resetLabel,
+  resetConfirmMessage,
+  variant,
+  titleMatch,
+}: SectionFrameProps) {
+  const labels = useSandboxLabels();
+  const search = useSettingsSearch();
+  const { overrideCount } = useScopeCounts();
+  const visible = useScopeVisible(titleMatch, hasOverrides);
   const [open, setOpen] = useState(() => {
     if (sectionId) {
       const saved = loadSectionState(sectionId);
@@ -38,114 +96,78 @@ export function CollapsibleSection({
     }
     return defaultOpen;
   });
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const [maxHeight, setMaxHeight] = useState<string>(open ? 'none' : '0px');
-
-  useEffect(() => {
-    if (open) {
-      const el = bodyRef.current;
-      if (el) {
-        setMaxHeight(`${el.scrollHeight}px`);
-        const timer = setTimeout(() => setMaxHeight('none'), 300);
-        return () => clearTimeout(timer);
-      }
-    } else {
-      const el = bodyRef.current;
-      if (el) {
-        setMaxHeight(`${el.scrollHeight}px`);
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => setMaxHeight('0px'));
-        });
-      }
-    }
-  }, [open]);
+  const effectiveOpen = search.active ? true : open;
 
   const toggle = () => {
+    if (search.active) return;
     const next = !open;
     setOpen(next);
-    if (sectionId) {
-      saveSectionState(sectionId, next);
-    }
+    if (sectionId) saveSectionState(sectionId, next);
   };
 
   const isSubsection = variant === 'subsection';
-  const headerClass = isSubsection
-    ? 'flex flex-1 items-center justify-between px-3 py-2 text-xs transition-colors'
-    : 'flex flex-1 items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors';
-  const headerIdleColor = isSubsection ? 'var(--slate)' : 'var(--gilt)';
-  const containerClass = isSubsection
-    ? 'flex w-full items-center'
-    : 'flex w-full items-center border-b';
+  const modified = hasOverrides || overrideCount > 0;
 
   return (
-    <div>
+    <Collapsible.Root
+      open={effectiveOpen}
+      onOpenChange={toggle}
+      style={visible ? undefined : { display: 'none' }}
+      data-section-id={sectionId}
+    >
       <div
-        className={containerClass}
+        className={cn('flex w-full items-center', !isSubsection && 'border-b')}
         style={{ borderColor: 'var(--rule)' }}
       >
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={toggle}
-          className={headerClass}
-          style={{ color: headerIdleColor, cursor: 'pointer', border: 'none', background: 'none' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = headerIdleColor)}
+        <Collapsible.Trigger
+          className={cn(
+            'flex flex-1 cursor-pointer items-center justify-between gap-2 border-0 bg-transparent px-3 py-2 text-left text-xs transition-colors',
+            'focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--gilt-hover)',
+            isSubsection
+              ? 'text-(--slate) hover:text-(--foreground)'
+              : 'font-semibold uppercase tracking-wider text-(--gilt) hover:text-(--foreground)',
+          )}
         >
-          {title}
-          <ChevronRight
-            size={14}
-            aria-hidden="true"
-            style={{
-              transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
-              transition: 'transform 200ms ease',
-            }}
-          />
-        </button>
+          <span className="min-w-0 truncate">
+            <HighlightedText text={title} tokens={search.matcher.tokens} />
+          </span>
+          <span className="flex shrink-0 items-center gap-1.5">
+            {modified && (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-medium normal-case tracking-normal"
+                style={{ color: 'var(--gilt)', fontVariantNumeric: 'tabular-nums' }}
+                title={labels.settingsModifiedCount.replace('__count__', String(overrideCount))}
+              >
+                <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--gilt)' }} />
+                {overrideCount > 0 && overrideCount}
+              </span>
+            )}
+            <ChevronRight
+              size={14}
+              aria-hidden="true"
+              style={{ transform: effectiveOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}
+            />
+          </span>
+        </Collapsible.Trigger>
         {hasOverrides && onReset && (
-          <ConfirmPopover message={resetConfirmMessage} onConfirm={onReset}>
+          <ConfirmPopover message={resetConfirmMessage ?? labels.resetSectionConfirm} onConfirm={onReset}>
             {({ open: openConfirm }) => (
-              <Tooltip content={resetLabel} side="bottom">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openConfirm(e);
-                  }}
-                  aria-label={resetLabel}
-                  className="flex items-center justify-center rounded transition-colors"
-                  style={{
-                    color: 'var(--slate)',
-                    width: 24,
-                    height: 24,
-                    marginRight: 8,
-                    cursor: 'pointer',
-                    border: 'none',
-                    background: 'none',
-                    flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-                >
-                  <RotateCcw size={12} aria-hidden="true" />
-                </button>
-              </Tooltip>
+              <IconButton
+                label={resetLabel ?? labels.resetSection}
+                icon={<RotateCcw size={12} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openConfirm(e);
+                }}
+                className="mr-2"
+              />
             )}
           </ConfirmPopover>
         )}
       </div>
-      <div
-        ref={bodyRef}
-        style={{
-          maxHeight,
-          overflow: 'hidden',
-          transition: maxHeight === 'none' ? undefined : 'max-height 300ms ease',
-        }}
-      >
-        <div className="px-3 py-2">
-          {children}
-        </div>
-      </div>
-    </div>
+      <Collapsible.Panel keepMounted data-postext-collapsible="" data-instant={search.active ? '' : undefined}>
+        <div className="px-3 py-2">{children}</div>
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 }

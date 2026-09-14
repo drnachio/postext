@@ -8,6 +8,7 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../
 import { findPaletteUsages, unlinkPaletteRefs } from '../../context/paletteUtils';
 import { CollapsibleSection, ColorPicker } from '../../controls';
 import { ConfirmPopover } from '../../ui';
+import { SearchScope } from '../search/SearchScope';
 
 function newEntryId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -120,7 +121,8 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
         );
 
         return (
-          <div key={entry.id} className="mb-2 flex items-center gap-1">
+          <SearchScope key={entry.id} title={entry.name} overridden={!isDefaultColorPalette(palette)}>
+          <div className="mb-2 flex items-center gap-1">
             {isEditing ? (
               <input
                 type="text"
@@ -190,6 +192,7 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
               )}
             </ConfirmPopover>
           </div>
+          </SearchScope>
         );
       })}
       <button

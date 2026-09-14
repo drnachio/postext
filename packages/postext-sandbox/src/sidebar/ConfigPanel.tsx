@@ -1,11 +1,23 @@
 'use client';
 
-import { useRef } from 'react';
-import { Download, Upload, RotateCcw } from 'lucide-react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
+import { Download, Upload, RotateCcw, Search, X, SlidersHorizontal } from 'lucide-react';
 import { isDefaultColorPalette, stripConfigDefaults } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxPresets, useSandboxProjects, useSandboxSelector } from '../context/SandboxContext';
-import { exportConfigToJson, importConfigFromJson } from '../storage/persistence';
-import { Tooltip, ConfirmPopover } from '../ui';
+import { exportConfigToJson, importConfigFromJson, loadSettingsCategory, saveSettingsCategory } from '../storage/persistence';
+import { ChipTab, ChipTabs, ConfirmPopover, EmptyState, IconButton, PanelBody, PanelHeader, cn } from '../ui';
+import { SettingsSearchContext, useSettingsSearch, type SettingsSearchState } from './search/SearchContext';
+import { MatchScopeProvider, useScopeCounts } from './search/MatchScope';
+import { compileMatcher } from './search/normalize';
+import {
+  SETTINGS_CATEGORIES,
+  isSettingsCategoryFilter,
+  sectionsInCategory,
+  type SettingsCategoryFilter,
+  type SettingsCategoryId,
+  type SettingsSectionId,
+} from './sections/registry';
+import { categoryOverrideCounts } from './sections/sectionOverrides';
 import { ColorPaletteSection } from './sections/ColorPaletteSection';
 import { PageSection } from './sections/PageSection';
 import { LayoutSection } from './sections/LayoutSection';
@@ -27,6 +39,31 @@ import { PdfGenerationSection } from './sections/PdfGenerationSection';
 import { DebugSection } from './sections/DebugSection';
 import { WarningsConfigSection } from './sections/WarningsConfigSection';
 
+/** Section id → component. Kept here (not in the registry) so the registry
+ *  stays a pure, testable data module. */
+const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
+  'page': PageSection,
+  'layout': LayoutSection,
+  'color-palette': ColorPaletteSection,
+  'headerFooter': HeaderFooterSection,
+  'parts': PartsSection,
+  'bodyText': BodyTextSection,
+  'headings': HeadingsSection,
+  'paragraphStyles': ParagraphStylesSection,
+  'unordered-lists': UnorderedListsSection,
+  'ordered-lists': OrderedListsSection,
+  'math': MathSection,
+  'resource-types': ResourceTypesSection,
+  'captionStyle': CaptionStyleSection,
+  'tableStyle': TableStyleSection,
+  'diagramStyle': DiagramStyleSection,
+  'calloutStyles': CalloutStylesSection,
+  'htmlViewer': HtmlViewerSection,
+  'pdfGeneration': PdfGenerationSection,
+  'debug': DebugSection,
+  'warnings': WarningsConfigSection,
+};
+
 export function ConfigPanel() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
@@ -35,6 +72,34 @@ export function ConfigPanel() {
   const { reload } = useSandboxPresets();
   const { hasResetBaseline } = useSandboxProjects();
   const importRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Search state: the query is immediate (for the input), the matcher is
+  // deferred so 500+ rows re-filter without blocking typing.
+  const [query, setQuery] = useState('');
+  const [overriddenOnly, setOverriddenOnly] = useState(false);
+  const deferredQuery = useDeferredValue(query);
+  const matcher = useMemo(() => compileMatcher(deferredQuery), [deferredQuery]);
+  const search = useMemo<SettingsSearchState>(
+    () => ({ query, matcher, overriddenOnly, active: matcher.tokens.length > 0 || overriddenOnly }),
+    [query, matcher, overriddenOnly],
+  );
+
+  const [category, setCategory] = useState<SettingsCategoryFilter>(() => {
+    const saved = loadSettingsCategory();
+    return isSettingsCategoryFilter(saved) ? saved : 'all';
+  });
+  const pickCategory = (next: SettingsCategoryFilter) => {
+    setCategory(next);
+    saveSettingsCategory(next);
+  };
+
+  // Jump to the top whenever a filter kicks in, so the first hit is visible.
+  useEffect(() => {
+    if (search.active) bodyRef.current?.scrollTo({ top: 0 });
+  }, [search.active]);
+
+  const overrideCounts = useMemo(() => categoryOverrideCounts(config), [config]);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,99 +121,178 @@ export function ConfigPanel() {
     ? JSON.stringify(stripConfigDefaults(config)) !== JSON.stringify(stripConfigDefaults(presetConfig))
     : otherKeys.length > 0 || !isDefaultColorPalette(config.colorPalette);
 
+  // A text query spans every category; "Modified only" respects the chip.
+  const querying = search.matcher.tokens.length > 0;
+  const showCategory = (id: SettingsCategoryId) => querying || category === 'all' || category === id;
+
   return (
     <div className="flex h-full flex-col">
-      <div
-        className="flex shrink-0 items-center justify-between border-b px-3 py-2"
-        style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
-      >
-        <h2
-          className="text-sm font-semibold"
-          style={{ color: 'var(--foreground)' }}
-        >
-          {labels.configuration}
-        </h2>
-        <div className="flex items-center gap-1">
-          {hasAnyOverrides && hasResetBaseline && (
-            <ConfirmPopover
-              message={labels.resetConfigConfirm}
-              onConfirm={() => { void reload('config'); }}
-            >
-              {({ open }) => (
-                <Tooltip content={labels.reset} side="bottom">
-                  <button
-                    type="button"
-                    onClick={open}
-                    aria-label={labels.reset}
-                    className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-                    style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-                  >
-                    <RotateCcw size={13} aria-hidden="true" />
-                  </button>
-                </Tooltip>
-              )}
-            </ConfirmPopover>
-          )}
-          <Tooltip content={labels.exportFile} side="bottom">
-            <button
-              type="button"
-              onClick={() => exportConfigToJson(config)}
-              aria-label={labels.exportFile}
-              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-              style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-            >
-              <Download size={14} aria-hidden="true" />
-            </button>
-          </Tooltip>
-          <Tooltip content={labels.importFile} side="bottom">
-            <button
-              type="button"
-              onClick={() => importRef.current?.click()}
-              aria-label={labels.importFile}
-              className="flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-              style={{ color: 'var(--slate)', outlineColor: 'var(--gilt-hover)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--slate)')}
-            >
-              <Upload size={14} aria-hidden="true" />
-            </button>
-          </Tooltip>
-          <input
-            ref={importRef}
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-            aria-hidden="true"
-          />
+      <PanelHeader
+        title={labels.configuration}
+        actions={
+          <>
+            {hasAnyOverrides && hasResetBaseline && (
+              <ConfirmPopover message={labels.resetConfigConfirm} onConfirm={() => { void reload('config'); }}>
+                {({ open }) => (
+                  <IconButton label={labels.reset} icon={<RotateCcw size={14} />} onClick={open} />
+                )}
+              </ConfirmPopover>
+            )}
+            <IconButton label={labels.exportFile} icon={<Download size={14} />} onClick={() => exportConfigToJson(config)} />
+            <IconButton label={labels.importFile} icon={<Upload size={14} />} onClick={() => importRef.current?.click()} />
+            <input
+              ref={importRef}
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+              aria-hidden="true"
+            />
+          </>
+        }
+      />
+
+      <div className="flex shrink-0 flex-col gap-2 border-b px-3 py-2" style={{ borderColor: 'var(--rule)' }}>
+        <SearchInput value={query} onChange={setQuery} />
+        <div className="flex flex-wrap items-center gap-1">
+          <ChipTabs
+            value={category}
+            onValueChange={pickCategory}
+            ariaLabel={labels.settingsCategories}
+            className={cn(querying && 'opacity-50')}
+          >
+            <ChipTab value="all">{labels.settingsCategoryAll}</ChipTab>
+            {SETTINGS_CATEGORIES.map((c) => (
+              <ChipTab key={c.id} value={c.id} dot={overrideCounts[c.id] > 0}>
+                {String(labels[c.labelKey])}
+              </ChipTab>
+            ))}
+          </ChipTabs>
+          <button
+            type="button"
+            aria-pressed={overriddenOnly}
+            onClick={() => setOverriddenOnly((v) => !v)}
+            className={cn(
+              'ml-auto inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-[11px] whitespace-nowrap transition-colors',
+              'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+              overriddenOnly
+                ? 'border-(--gilt) bg-(--surface) text-(--gilt)'
+                : 'border-transparent text-(--slate) hover:text-(--foreground)',
+            )}
+          >
+            <SlidersHorizontal size={11} aria-hidden="true" />
+            {labels.settingsOverriddenOnly}
+          </button>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <ColorPaletteSection />
-        <PageSection />
-        <LayoutSection />
-        <HeaderFooterSection />
-        <BodyTextSection />
-        <HeadingsSection />
-        <PartsSection />
-        <UnorderedListsSection />
-        <OrderedListsSection />
-        <MathSection />
-        <TableStyleSection />
-        <CaptionStyleSection />
-        <ParagraphStylesSection />
-        <CalloutStylesSection />
-        <DiagramStyleSection />
-        <ResourceTypesSection />
-        <HtmlViewerSection />
-        <PdfGenerationSection />
-        <DebugSection />
-        <WarningsConfigSection />
-      </div>
+
+      <SettingsSearchContext value={search}>
+        <MatchScopeProvider id="root">
+          <PanelBody ref={bodyRef}>
+            {SETTINGS_CATEGORIES.map((c) => (
+              <CategoryGroup
+                key={c.id}
+                id={c.id}
+                title={String(labels[c.labelKey])}
+                shown={showCategory(c.id)}
+                showTitle={!querying && category === 'all'}
+              >
+                {sectionsInCategory(c.id).map((s) => {
+                  const Section = SECTION_COMPONENTS[s.id];
+                  return <Section key={s.id} />;
+                })}
+              </CategoryGroup>
+            ))}
+            <NoResults query={deferredQuery} />
+          </PanelBody>
+        </MatchScopeProvider>
+      </SettingsSearchContext>
     </div>
+  );
+}
+
+function SearchInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const labels = useSandboxLabels();
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <div
+      className="flex h-7 items-center gap-1.5 rounded border px-2 focus-within:border-(--gilt)"
+      style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)' }}
+    >
+      <Search size={13} aria-hidden="true" style={{ color: 'var(--slate)', flexShrink: 0 }} />
+      <input
+        ref={inputRef}
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            if (value) onChange('');
+            else e.currentTarget.blur();
+          }
+        }}
+        placeholder={labels.settingsSearchPlaceholder}
+        aria-label={labels.settingsSearchPlaceholder}
+        autoComplete="off"
+        spellCheck={false}
+        className="min-w-0 flex-1 bg-transparent text-xs outline-none [&::-webkit-search-cancel-button]:hidden"
+        style={{ color: 'var(--foreground)' }}
+      />
+      {value && (
+        <IconButton
+          size={18}
+          label={labels.settingsSearchClear}
+          icon={<X size={12} />}
+          tooltip={false}
+          onClick={() => {
+            onChange('');
+            inputRef.current?.focus();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/** One category: a divider label (in the "All" view) plus its sections.
+ *  Hidden as a whole while searching when nothing inside matches. */
+function CategoryGroup({ id, title, shown, showTitle, children }: { id: SettingsCategoryId; title: string; shown: boolean; showTitle: boolean; children: ReactNode }) {
+  return (
+    <MatchScopeProvider id={`category:${id}`}>
+      <CategoryGroupBody title={title} shown={shown} showTitle={showTitle}>{children}</CategoryGroupBody>
+    </MatchScopeProvider>
+  );
+}
+
+function CategoryGroupBody({ title, shown, showTitle, children }: { title: string; shown: boolean; showTitle: boolean; children: ReactNode }) {
+  const search = useSettingsSearch();
+  const { matchCount } = useScopeCounts();
+  const visible = shown && (!search.active || matchCount > 0);
+  return (
+    <div style={visible ? undefined : { display: 'none' }}>
+      {showTitle && (
+        <div
+          className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest"
+          style={{ color: 'var(--slate)' }}
+        >
+          {title}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+function NoResults({ query }: { query: string }) {
+  const labels = useSandboxLabels();
+  const search = useSettingsSearch();
+  const { matchCount } = useScopeCounts();
+  if (!search.active || matchCount > 0) return null;
+  return (
+    <EmptyState
+      icon={<Search size={28} />}
+      title={search.matcher.tokens.length > 0 ? labels.settingsSearchNoResults.replace('__query__', query) : labels.settingsOverriddenOnlyEmpty}
+    />
   );
 }

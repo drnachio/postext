@@ -14,6 +14,8 @@ import {
   ToggleSwitch,
 } from '../../controls';
 import { ConfirmPopover } from '../../ui';
+import { FieldRow } from '../../controls/FieldRow';
+import { SearchScope } from '../search/SearchScope';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -21,7 +23,6 @@ const SPACING_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
-const labelStyle = { color: 'var(--slate)', fontSize: 11, lineHeight: '14px' } as const;
 
 /** Turn free text into a `:::paragraphs{style="…"}`-friendly id. */
 function slugifyStyleId(raw: string): string {
@@ -47,15 +48,9 @@ interface FieldProps {
 
 function Field({ label, hint, children }: FieldProps) {
   return (
-    <label className="flex flex-col gap-0.5">
-      <span style={labelStyle}>{label}</span>
+    <FieldRow stacked label={label} hint={hint} className="mb-0">
       {children}
-      {hint && (
-        <span style={labelStyle} className="opacity-80">
-          {hint}
-        </span>
-      )}
-    </label>
+    </FieldRow>
   );
 }
 
@@ -105,6 +100,7 @@ function ParagraphStyleCard({
   ];
 
   return (
+    <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden>
     <div className="mb-3 rounded border p-2" style={{ borderColor: 'var(--rule)' }}>
       <div className="mb-2 flex items-center justify-between gap-1">
         <span
@@ -283,6 +279,7 @@ function ParagraphStyleCard({
         onReset={() => onResetField('marginBottom')}
       />
     </div>
+    </SearchScope>
   );
 }
 

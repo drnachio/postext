@@ -13,6 +13,7 @@ import type {
   ResolvedDesignSlot,
 } from 'postext';
 import { Tooltip } from '../../../ui';
+import { SearchScope } from '../../search/SearchScope';
 import { TextElementEditor } from './TextElementEditor';
 import { RuleElementEditor } from './RuleElementEditor';
 import { BoxElementEditor } from './BoxElementEditor';
@@ -118,9 +119,14 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
           .filter((s) => s.id !== rawEl.id);
         const isFirst = idx === 0;
         const isLast = idx === currentRaw.length - 1;
+        const elementTitle = rawEl.kind === 'text'
+          ? labels.headerFooterElementText
+          : rawEl.kind === 'rule'
+            ? labels.headerFooterElementRule
+            : (labels.headerFooterElementBox ?? 'Box');
         return (
+          <SearchScope key={`${slotKey}-${rawEl.id}-${idx}`} title={`${elementTitle} ${idx + 1}`} overridden>
           <div
-            key={`${slotKey}-${rawEl.id}-${idx}`}
             className="mb-2 rounded border"
             style={{ borderColor: 'var(--rule)' }}
           >
@@ -176,6 +182,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
               ) : null}
             </div>
           </div>
+          </SearchScope>
         );
       })}
 
