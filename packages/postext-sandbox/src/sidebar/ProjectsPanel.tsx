@@ -8,8 +8,7 @@ import {
   useSandboxProjects,
   type ProjectSummary,
 } from '../context/SandboxContext';
-import { ConfirmPopover } from '../panels/ConfirmPopover';
-import { Tooltip } from '../panels/Tooltip';
+import { ConfirmPopover, Tooltip } from '../ui';
 import type { PresetSummary } from '../presets';
 
 const TAG_STYLE: React.CSSProperties = {

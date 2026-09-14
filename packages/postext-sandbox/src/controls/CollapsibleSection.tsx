@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { ChevronRight, RotateCcw } from 'lucide-react';
 import { saveSectionState, loadSectionState } from '../storage/persistence';
-import { Tooltip } from '../panels/Tooltip';
-import { ConfirmPopover } from '../panels/ConfirmPopover';
+import { Tooltip, ConfirmPopover } from '../ui';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -111,7 +110,7 @@ export function CollapsibleSection({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    openConfirm();
+                    openConfirm(e);
                   }}
                   aria-label={resetLabel}
                   className="flex items-center justify-center rounded transition-colors"

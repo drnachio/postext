@@ -558,6 +558,15 @@ export interface SandboxLabels {
   exportFile: string;
   importFile: string;
   reset: string;
+  confirm: string;
+  cancel: string;
+  resetSection: string;
+  resetToDefault: string;
+  colorPickerOpen: string;
+  fontPickerSearch: string;
+  fontPickerNoResults: string;
+  fontPickerCustomGroup: string;
+  fontPickerGoogleGroup: string;
   resetConfigConfirm: string;
   resetSectionConfirm: string;
   resetMarkdownConfirm: string;

@@ -15,7 +15,7 @@ import {
   PinOff,
 } from 'lucide-react';
 import { useSandbox } from '../context/SandboxContext';
-import { Tooltip } from '../panels/Tooltip';
+import { Tooltip } from '../ui';
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
@@ -351,7 +351,6 @@ export function CanvasToolbar({
         onClick={() => onJumpToPage(Math.min(pageCount - 1, nextTarget))}
         disabled={nextDisabled}
       />
-      <style>{`@keyframes postext-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

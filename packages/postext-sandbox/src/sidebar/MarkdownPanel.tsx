@@ -6,8 +6,7 @@ import { MarkdownEditor } from '../editor/MarkdownEditor';
 import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/SandboxContext';
 import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence';
 import { slugify } from '../panels/resources/slugify';
-import { Tooltip } from '../panels/Tooltip';
-import { ConfirmPopover } from '../panels/ConfirmPopover';
+import { Tooltip, ConfirmPopover } from '../ui';
 
 interface MarkdownPanelProps {
   isDark?: boolean;

@@ -23,7 +23,7 @@ import {
 } from '../../context/SandboxContext';
 import type { SandboxLabels } from '../../types/labels';
 import { CollapsibleSection } from '../../controls';
-import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { ConfirmPopover } from '../../ui';
 import { CaptionStyleFields } from './CaptionStyleFields';
 
 function newTypeId(): string {

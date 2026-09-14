@@ -12,7 +12,7 @@ import type {
   ResolvedDesignElement,
   ResolvedDesignSlot,
 } from 'postext';
-import { Tooltip } from '../../../panels/Tooltip';
+import { Tooltip } from '../../../ui';
 import { TextElementEditor } from './TextElementEditor';
 import { RuleElementEditor } from './RuleElementEditor';
 import { BoxElementEditor } from './BoxElementEditor';

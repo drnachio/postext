@@ -11,7 +11,7 @@ import type {
 } from 'postext';
 import { useSandbox, type ResourceFocusTarget } from '../../context/SandboxContext';
 import { InlineMarkdownInput, type InlineSelection } from '../../controls/InlineMarkdownInput';
-import { ConfirmPopover } from '../ConfirmPopover';
+import { ConfirmPopover } from '../../ui';
 import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';

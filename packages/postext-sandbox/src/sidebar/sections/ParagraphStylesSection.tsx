@@ -13,7 +13,7 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../controls';
-import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { ConfirmPopover } from '../../ui';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];

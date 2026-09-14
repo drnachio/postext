@@ -49,7 +49,7 @@ import {
   TextInput,
   ToggleSwitch,
 } from '../../controls';
-import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { ConfirmPopover } from '../../ui';
 import { CONTAINER_EDGES } from './HeaderFooterSection/placementAdapter';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];

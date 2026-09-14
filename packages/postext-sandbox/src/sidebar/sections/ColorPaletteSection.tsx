@@ -7,7 +7,7 @@ import { cloneDefaultColorPalette, isDefaultColorPalette } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { findPaletteUsages, unlinkPaletteRefs } from '../../context/paletteUtils';
 import { CollapsibleSection, ColorPicker } from '../../controls';
-import { ConfirmPopover } from '../../panels/ConfirmPopover';
+import { ConfirmPopover } from '../../ui';
 
 function newEntryId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -171,7 +171,6 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
               onChange={(value) => updateEntry(entry.id, { value })}
               disablePalette
               hideLabel
-              className="flex items-center gap-1.5"
               fieldId={`palette-${entry.id}`}
             />
             <ConfirmPopover message={confirmMessage} onConfirm={() => removeEntry(entry.id)}>

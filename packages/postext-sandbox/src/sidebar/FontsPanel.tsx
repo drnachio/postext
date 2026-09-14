@@ -8,8 +8,7 @@ import {
   useSandboxLabels,
   useSandboxSelector,
 } from '../context/SandboxContext';
-import { ConfirmPopover } from '../panels/ConfirmPopover';
-import { Tooltip } from '../panels/Tooltip';
+import { ConfirmPopover, Tooltip } from '../ui';
 import type { SandboxLabels } from '../types';
 import {
   deleteFontFile,

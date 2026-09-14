@@ -21,7 +21,7 @@ import { undo, redo } from '@codemirror/commands';
 import type { ReactNode } from 'react';
 import { useSandbox } from '../context/SandboxContext';
 import type { ToolbarAction } from '../types';
-import { Tooltip } from '../panels/Tooltip';
+import { Tooltip } from '../ui';
 
 interface EditorToolbarProps {
   viewRef: React.RefObject<EditorView | null>;

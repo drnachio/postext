@@ -4,7 +4,7 @@ import { FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files } from 'luc
 import { useMemo, useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandboxDispatch, useSandboxDocRef, useSandboxLabels, useSandboxPresetStale, useSandboxSelector } from '../context/SandboxContext';
 import type { PanelId } from '../types';
-import { Tooltip } from '../panels/Tooltip';
+import { Tooltip } from '../ui';
 import { computeWarnings } from '../warnings/compute';
 import { hasIndexedDB } from '../storage/blobStore';
 
