@@ -442,8 +442,11 @@ export function planTableSlice(metrics: TableRowMetrics, startRow: number, bodyB
   // The first slice must carry a body row past the header; a continuation
   // at least its first row. Below that floor the caller decides.
   const floor = (start > 0 ? firstBody : headerRowCount) + 1;
-  while (best > floor && groupHeaderRow[best - 1]) best--;
-  return best;
+  // Back off group heads left at the cut, but only when a row that is not
+  // one remains: a run of nothing but heads is not a heading at all.
+  let cut = best;
+  while (cut > floor && groupHeaderRow[cut - 1]) cut--;
+  return cut > floor || best <= floor ? cut : best;
 }
 
 /** Lay out an HTML-table resource: weighted column split (see
@@ -592,7 +595,10 @@ function layoutTable(
     const headerRowCount = tableHeaderRowCount(model);
     for (let r = headerRowCount; r < rowCount; r++) {
       const p = primaries[r] ?? 0;
-      groupHeaderRow[r] = p > 0 && ((p === 1 && fullSpan[r] === true) || allHeader[r] === true);
+      // A single cell across every column heads the rows below it — in a
+      // multi-column table. Every row of a one-column (boxed) table spans
+      // it, and none of them is a heading.
+      groupHeaderRow[r] = p > 0 && ((p === 1 && fullSpan[r] === true && colCount > 1) || allHeader[r] === true);
     }
     metrics = { rowHeights: [...rowMinHeight], headerRowCount, breakableAfter, groupHeaderRow };
   }

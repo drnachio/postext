@@ -140,6 +140,30 @@ describe('planTableSlice', () => {
     expect(planTableSlice(metrics, 0, 1000)).toBe(8);
     expect(planTableSlice(metrics, 3, 1000)).toBe(8);
   });
+
+  it('a cut that would back off over nothing but group heads stays where the rows fit', () => {
+    // Rows 2..7 all flagged as heads (a boxed one-column table): the slice
+    // keeps every row that fits instead of collapsing to the floor.
+    const heads: TableRowMetrics = {
+      ...metrics,
+      groupHeaderRow: [false, false, true, true, true, true, true, true],
+      breakableAfter: metrics.breakableAfter.map(() => true),
+    };
+    expect(planTableSlice(heads, 0, 100)).toBe(6);
+    expect(planTableSlice(heads, 3, 100)).toBe(7);
+  });
+});
+
+describe('one-column tables', () => {
+  it('no row of a boxed one-column table is a group head', () => {
+    const model: TableModel = { rows: Array.from({ length: 6 }, (_, i) => [cell(`row ${i}`)]) };
+    const { tableRows } = layout(tableResource(model));
+    expect(tableRows!.headerRowCount).toBe(0);
+    expect(tableRows!.groupHeaderRow.every((g) => !g)).toBe(true);
+    // 3 rows fit: the slice takes them all.
+    const h = tableRows!.rowHeights[0]!;
+    expect(planTableSlice(tableRows!, 0, h * 3 + 0.5)).toBe(3);
+  });
 });
 
 describe('table slices', () => {
