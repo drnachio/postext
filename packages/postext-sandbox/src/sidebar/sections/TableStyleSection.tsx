@@ -3,13 +3,14 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveBodyTextConfig, resolveTableStyleConfig } from 'postext';
-import type { TableStyleConfig, TableRules, DimensionUnit } from 'postext';
+import type { TableStyleConfig, TableRules, TableOverflow, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
   DimensionInput,
   FontPicker,
   SelectInput,
+  TextInput,
   ToggleSwitch,
 } from '../../controls';
 
@@ -25,8 +26,12 @@ export const TableStyleSection = memo(function TableStyleSection() {
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.tableStyle);
   const bodyTextRaw = useSandboxSelector((s) => s.config.bodyText);
+  // Continuation strings default per document language, the way the engine
+  // resolves them: the config locale, else the hyphenation locale (which the
+  // preview derives from the app locale when unset).
+  const docLocale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? s.locale);
   const bodyText = resolveBodyTextConfig(bodyTextRaw);
-  const ts = resolveTableStyleConfig(raw, bodyText);
+  const ts = resolveTableStyleConfig(raw, bodyText, docLocale);
 
   const update = (partial: Partial<TableStyleConfig>) => {
     dispatch({ type: 'UPDATE_CONFIG', payload: { tableStyle: { ...raw, ...partial } } });
@@ -52,6 +57,11 @@ export const TableStyleSection = memo(function TableStyleSection() {
     { value: 'horizontal', label: labels.tableRulesHorizontal },
     { value: 'outer', label: labels.tableRulesOuter },
     { value: 'none', label: labels.tableRulesNone },
+  ];
+  const overflowOptions = [
+    { value: 'split', label: labels.tableOverflowSplit },
+    { value: 'clip', label: labels.tableOverflowClip },
+    { value: 'hide', label: labels.tableOverflowHide },
   ];
 
   return (
@@ -214,6 +224,46 @@ export const TableStyleSection = memo(function TableStyleSection() {
           isDefault={unset('cellPadding')}
           onReset={() => resetField('cellPadding')}
         />
+      </CollapsibleSection>
+
+      <CollapsibleSection title={labels.tableContinuationGroup} sectionId="tableStyle.continuation" variant="subsection">
+        <SelectInput
+          label={labels.tableOverflow}
+          value={ts.overflow}
+          options={overflowOptions}
+          onChange={(v) => update({ overflow: v as TableOverflow })}
+          tooltip={labels.tableOverflowTooltip}
+          isDefault={unset('overflow')}
+          onReset={() => resetField('overflow')}
+        />
+        {ts.overflow === 'split' && (
+          <>
+            <TextInput
+              label={labels.tableContinuedSuffix}
+              value={ts.continuedSuffix}
+              onChange={(v) => update({ continuedSuffix: v })}
+              tooltip={labels.tableContinuedSuffixTooltip}
+              isDefault={unset('continuedSuffix')}
+              onReset={() => resetField('continuedSuffix')}
+            />
+            <ToggleSwitch
+              label={labels.tableContinuesMarkerEnabled}
+              checked={ts.continuesMarkerEnabled}
+              onChange={(v) => update({ continuesMarkerEnabled: v })}
+              isDefault={unset('continuesMarkerEnabled')}
+              onReset={() => resetField('continuesMarkerEnabled')}
+            />
+            {ts.continuesMarkerEnabled && (
+              <TextInput
+                label={labels.tableContinuesMarker}
+                value={ts.continuesMarker}
+                onChange={(v) => update({ continuesMarker: v })}
+                isDefault={unset('continuesMarker')}
+                onReset={() => resetField('continuesMarker')}
+              />
+            )}
+          </>
+        )}
       </CollapsibleSection>
     </CollapsibleSection>
   );

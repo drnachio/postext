@@ -257,6 +257,7 @@ export function resolveCalloutAttrs(
 function offsetResourceBlock(rb: ResolvedResourceBlock, ox: number, oy: number): void {
   for (const ln of rb.captionLines) { ln.bbox.x += ox; ln.bbox.y += oy; ln.baseline += oy; }
   for (const ln of rb.noteLines) { ln.bbox.x += ox; ln.bbox.y += oy; ln.baseline += oy; }
+  for (const ln of rb.continuesLines) { ln.bbox.x += ox; ln.bbox.y += oy; ln.baseline += oy; }
   if (rb.captionBar) { rb.captionBar.rect.x += ox; rb.captionBar.rect.y += oy; }
   if (rb.table) {
     for (const cell of rb.table.cells) {

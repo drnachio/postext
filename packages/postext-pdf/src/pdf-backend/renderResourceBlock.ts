@@ -522,8 +522,9 @@ export function renderResourceBlock(
     renderTable(ctx, rb, bx, by, fontCache, linkColor, linkRegistry);
   }
 
-  // Named destination for inline refs: top-left of the placed block.
-  if (linkRegistry && rb.resource.id) {
+  // Named destination for inline refs: top-left of the placed block (the
+  // first slice of a split table; continuations are not targets).
+  if (linkRegistry && rb.resource.id && !rb.slice?.continued) {
     const destTop = pageHeightPt - block.bbox.y * scale;
     linkRegistry.addDestination(rb.resource.id, ctx.page, block.bbox.x * scale, destTop);
   }
@@ -555,7 +556,8 @@ export function renderResourceBlock(
     italic: rb.noteItalicFontString,
     boldItalic: rb.noteBoldItalicFontString,
   };
-  for (const line of rb.noteLines) {
+  // Note, or the "continued" marker of a table slice that goes on.
+  for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
     paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, (seg) => seg.refResourceId);
   }
 }

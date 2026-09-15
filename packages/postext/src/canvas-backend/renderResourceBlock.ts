@@ -351,7 +351,9 @@ export function renderResourceBlock(
       rb.captionColor, rb.linkColor, rb.captionLabelColor,
     );
   }
-  for (const line of rb.noteLines) {
+  // Note, or the "continued" marker of a table slice that goes on (same
+  // typeface and colour, right-aligned at layout time).
+  for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
     paintLine(
       ctx, line,
       rb.noteFontString, rb.noteBoldFontString, rb.noteItalicFontString, rb.noteBoldItalicFontString,

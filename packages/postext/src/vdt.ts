@@ -191,11 +191,30 @@ export interface VDTCaptionBar {
   background: string;
 }
 
+/** Which rows of a split table a block carries, and how it links to the
+ *  neighbouring slices (see `TableStyleConfig.overflow`). */
+export interface VDTTableSlice {
+  /** First model row of the slice (header rows excluded — they are repeated
+   *  on every continuation regardless). */
+  startRow: number;
+  /** One past the last model row of the slice. */
+  endRow: number;
+  /** The slice continues an earlier one: its caption carries the continued
+   *  suffix and the header rows are repeated. Anchors / link destinations
+   *  belong to the first slice only. */
+  continued: boolean;
+  /** More rows follow on a later page: the continues marker is set under
+   *  the slice and the note is held back for the last one. */
+  continues: boolean;
+}
+
 /** The resolved, measured content of a resource block. */
 export interface ResolvedResourceBlock {
   /** The source resource. */
   resource: Resource;
   kind: 'bitmap' | 'svg' | 'table';
+  /** Present when the block is one slice of a table split across pages. */
+  slice?: VDTTableSlice;
   /** Rendered number string (e.g. `"1.7"`) for this resource. */
   number: string;
   /** Caption prefix from the resource type (e.g. `"Figure"`). */
@@ -237,6 +256,10 @@ export interface ResolvedResourceBlock {
   noteBoldItalicFontString: string;
   /** Note text colour (hex). */
   noteColor: string;
+  /** "Continued" marker lines of a table slice that goes on on a later page
+   *  (`slice.continues`), right-aligned under the slice and painted with the
+   *  note fonts and colour. Empty otherwise. */
+  continuesLines: VDTLine[];
 }
 
 export interface VDTBlock {
