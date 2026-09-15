@@ -9,7 +9,7 @@ import {
   type Resource,
 } from 'postext';
 import { renderToPdf } from 'postext-pdf';
-import { useBookPages, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
+import { useBookPages, useChapterPlan, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { chapterLayoutFromDoc } from '../book/pagination';
 import type { ComposedBook } from '../book/types';
@@ -29,6 +29,7 @@ import { useFloatingToolbarShell } from './useFloatingToolbarShell';
 export function PdfViewport() {
   const dispatch = useSandboxDispatch();
   const chapterSource = useLayoutSource();
+  const currentPlan = useChapterPlan(chapterSource.chapterId);
   const scope = useSandboxSelector((s) => s.pdfScope);
   const chapters = useSandboxSelector((s) => s.chapters);
   const bookPages = useBookPages();
@@ -79,7 +80,9 @@ export function PdfViewport() {
   // render: the preview only picks it up when a new document lands.
   const chapterIndex = chapters.findIndex((c) => c.id === chapterSource.chapterId);
   const hash = readViewHash();
-  const leadingBlank = chapterSource.plan.layout?.leadingBlankPages ?? 0;
+  // The source's plan is stable across layout records (see
+  // `useLayoutSource`); the current record is read from the live plan.
+  const leadingBlank = currentPlan.layout?.leadingBlankPages ?? 0;
   const pages = bookPages[chapterSource.chapterId];
   const wanted = hash.chapter === null || hash.chapter === chapterIndex ? hash.page : null;
   const offsetInChapter = pages && wanted !== null ? Math.max(0, wanted - pages.pageNumberValue) : 0;

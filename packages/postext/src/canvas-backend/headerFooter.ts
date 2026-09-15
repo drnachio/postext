@@ -6,7 +6,7 @@ import type {
   VDTDesignImageBlock,
   VDTDesignBoxStyle,
 } from '../vdt';
-import { getResourceImage } from './renderResourceBlock';
+import { drawResourceImage } from './renderResourceBlock';
 
 function drawRoundedRectPath(
   ctx: CanvasRenderingContext2D,
@@ -110,11 +110,8 @@ function renderBoxBlock(ctx: CanvasRenderingContext2D, block: VDTDesignBoxBlock)
 function renderImageBlock(ctx: CanvasRenderingContext2D, block: VDTDesignImageBlock): void {
   const { x, y, width, height } = block.bbox;
   if (width <= 0 || height <= 0) return;
-  const image = getResourceImage(block.fileId);
   ctx.save();
-  if (image) {
-    ctx.drawImage(image, x, y, width, height);
-  } else {
+  if (!drawResourceImage(ctx, block.fileId, x, y, width, height)) {
     ctx.fillStyle = 'rgba(160,160,160,0.12)';
     ctx.fillRect(x, y, width, height);
     ctx.strokeStyle = 'rgba(160,160,160,0.5)';

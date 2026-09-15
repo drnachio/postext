@@ -22,6 +22,12 @@ import {
 import { findCaretBlockIdx } from './caret';
 
 const NO_SELECTION: EditorSelection = { from: -1, to: -1, head: -1 };
+/** Painted page bitmaps kept at once (~16 pages of 21×28 cm at 300 dpi);
+ *  beyond it the pages farthest from the reader are released and repainted
+ *  on their next entry. */
+const PAINTED_PAGES_BUDGET_BYTES = 512 * 1024 * 1024;
+/** Never trim below this many pages, whatever their size. */
+const MIN_PAINTED_PAGES = 6;
 import { buildPagesDom } from './pageDom';
 
 interface CanvasPreviewProps {
@@ -71,6 +77,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
   const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
   const renderedPagesRef = useRef<Set<number>>(new Set());
+  // Rendered pages whose bitmap shows an older document. A rebuild repaints
+  // only what is in view and marks the rest stale, to be repainted when
+  // they next scroll near — a chapter's worth of 300 dpi pages repainted
+  // at once blocks the main thread for about a second per rebuild.
+  const stalePagesRef = useRef<Set<number>>(new Set());
+  // Pages within the observer's margin of the viewport right now.
+  const visiblePagesRef = useRef<Set<number>>(new Set());
   const lastGeomRef = useRef<GeomSnapshot | null>(null);
   // Tracks the docVersion last painted into the canvas bitmaps so we can
   // skip bitmap repaints on pure CSS-size changes (window/sidebar resize).
@@ -356,6 +369,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       canvasMapRef.current.clear();
       overlayMapRef.current.clear();
       renderedPagesRef.current.clear();
+      stalePagesRef.current.clear();
+      visiblePagesRef.current.clear();
       lastGeomRef.current = null;
       return;
     }
@@ -391,10 +406,19 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       // Only repaint bitmaps when the doc itself changed. CSS scaling
       // handles pure size changes (window/sidebar resize) at zero bitmap cost.
       if (lastPaintedDocVersionRef.current !== docVersion) {
+        // The pages in view repaint now; the others keep their old pixels
+        // and repaint on their next entry (see the observer below).
         for (const pageIndex of renderedPagesRef.current) {
+          if (!visiblePagesRef.current.has(pageIndex)) {
+            stalePagesRef.current.add(pageIndex);
+            continue;
+          }
           const canvas = canvasMapRef.current.get(pageIndex);
           const page = doc.pages[pageIndex];
-          if (canvas && page) renderPageToCanvas(page, doc, canvas, renderOpts);
+          if (canvas && page) {
+            renderPageToCanvas(page, doc, canvas, renderOpts);
+            stalePagesRef.current.delete(pageIndex);
+          }
         }
         lastPaintedDocVersionRef.current = docVersion;
       }
@@ -408,8 +432,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     observerRef.current?.disconnect();
     canvasMapRef.current.clear();
     overlayMapRef.current.clear();
-    const previouslyRendered = renderedPagesRef.current;
+    const previouslyVisible = visiblePagesRef.current;
     renderedPagesRef.current = new Set();
+    stalePagesRef.current = new Set();
+    visiblePagesRef.current = new Set();
 
     const { innerDiv, allSlots } = buildPagesDom(
       doc,
@@ -426,10 +452,11 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       builtSourceRef,
     );
 
-    // Pre-render pages that were visible in the previous document so the
-    // swap from old DOM to new DOM shows already-painted pixels.
+    // Pre-render the pages that were in view in the previous document so
+    // the swap from old DOM to new DOM shows already-painted pixels. Pages
+    // that were painted but scrolled away are left to the observer.
     const renderedSet = new Set<number>();
-    for (const pageIndex of previouslyRendered) {
+    for (const pageIndex of previouslyVisible) {
       const canvas = canvasMapRef.current.get(pageIndex);
       const page = doc.pages[pageIndex];
       if (!canvas || !page) continue;
@@ -442,20 +469,52 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     while (container.firstChild) container.removeChild(container.firstChild);
     container.appendChild(innerDiv);
 
-    // Rasterize on entry but never release bitmaps on exit. Once a page is
-    // painted, its bitmap stays cached so resize / scroll can't thrash the
-    // rasterizer: the browser scales the existing bitmap for free and there
-    // is no work to redo when a page crosses the intersection margin.
+    // Rasterize on entry (and re-rasterize a stale page on re-entry); leaving
+    // the viewport releases nothing by itself, so scrolling back and forth
+    // never repaints and resize is free (the browser scales the bitmap).
+    // Only when the painted bitmaps exceed the memory budget is the page
+    // farthest from the one just painted released — a 300 dpi page is
+    // ~30 MB, and a long chapter kept whole would starve the GPU.
+    const pageBytes = Math.round(pageWidthPx) * Math.round(pageHeightPx) * 4;
+    const trimPaintedPages = (anchor: number) => {
+      const rendered = renderedPagesRef.current;
+      while (rendered.size * pageBytes > PAINTED_PAGES_BUDGET_BYTES && rendered.size > MIN_PAINTED_PAGES) {
+        let victim = -1;
+        let farthest = -1;
+        for (const idx of rendered) {
+          if (visiblePagesRef.current.has(idx)) continue;
+          const dist = Math.abs(idx - anchor);
+          if (dist > farthest) {
+            farthest = dist;
+            victim = idx;
+          }
+        }
+        if (victim < 0) return;
+        const canvas = canvasMapRef.current.get(victim);
+        if (canvas) {
+          canvas.width = 1;
+          canvas.height = 1;
+        }
+        rendered.delete(victim);
+        stalePagesRef.current.delete(victim);
+      }
+    };
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
           const idx = Number((entry.target as HTMLElement).dataset.pageIndex);
-          if (renderedPagesRef.current.has(idx)) continue;
+          if (!entry.isIntersecting) {
+            visiblePagesRef.current.delete(idx);
+            continue;
+          }
+          visiblePagesRef.current.add(idx);
+          if (renderedPagesRef.current.has(idx) && !stalePagesRef.current.has(idx)) continue;
           const canvas = canvasMapRef.current.get(idx);
           if (!canvas || !docRef.current) continue;
           renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, renderOpts);
           renderedPagesRef.current.add(idx);
+          stalePagesRef.current.delete(idx);
+          trimPaintedPages(idx);
         }
       },
       { root: container, rootMargin: '200px 0px 200px 0px' },

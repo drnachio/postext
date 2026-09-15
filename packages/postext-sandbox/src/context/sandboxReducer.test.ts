@@ -213,6 +213,16 @@ describe('book actions', () => {
     const replaced = sandboxReducer(s, { type: 'SET_BOOK', payload: { chapters: [ch('z', 'zz')], activeChapterId: 'z' } });
     expect(replaced.chapterLayouts).toEqual({});
   });
+  it('SET_CHAPTER_LAYOUT keeps the state when the record says nothing new', () => {
+    const layout = { chapterId: 'b', markdown: '# B', config: {}, resources: [], continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, lastPageDelta: 2, lastPageFormat: 'decimal' as const };
+    const s = sandboxReducer(baseState(), { type: 'SET_CHAPTER_LAYOUT', payload: layout });
+    // Same inputs (by identity) and outcome: a fresh object is a no-op.
+    expect(sandboxReducer(s, { type: 'SET_CHAPTER_LAYOUT', payload: { ...layout } })).toBe(s);
+    // A different outcome is recorded.
+    const grown = sandboxReducer(s, { type: 'SET_CHAPTER_LAYOUT', payload: { ...layout, pageCount: 4 } });
+    expect(grown).not.toBe(s);
+    expect(grown.chapterLayouts.b!.pageCount).toBe(4);
+  });
 });
 
 describe('hidden presets', () => {

@@ -10,7 +10,7 @@ export {
   clearResourceImages,
   getResourceImage,
 } from './renderResourceBlock';
-export type { ResourceImageSource } from './renderResourceBlock';
+export type { ResourceImageSource, RegisterResourceImageOptions } from './renderResourceBlock';
 
 export interface RenderPageOptions {
   pageNegative?: boolean;

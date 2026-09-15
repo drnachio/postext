@@ -2,7 +2,7 @@ export { createLayout } from './createLayout';
 export { buildDocument, BuildCancelledError, continuationAfter } from './pipeline';
 export type { BuildDocumentOptions } from './pipeline';
 export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage } from './canvas-backend';
-export type { RenderPageOptions, ResourceImageSource } from './canvas-backend';
+export type { RenderPageOptions, ResourceImageSource, RegisterResourceImageOptions } from './canvas-backend';
 export { renderToHtml, renderToHtmlIndexed } from './html-backend';
 export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage } from './html-backend';
 export { dimensionToPx } from './units';
