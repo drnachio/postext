@@ -39,6 +39,10 @@ export interface PlannedFloat {
   firstBlockIdx: number;
   position: 'auto' | 'top' | 'bottom';
   span: ResourceFloatSpan;
+  /** For the rest of a table split across pages: the first model row still
+   *  to place (the header rows are repeated above it). Absent (or `0`) for
+   *  a whole resource. */
+  startRow?: number;
 }
 
 /** Resolve a resource's placement: own `placement` → its type's

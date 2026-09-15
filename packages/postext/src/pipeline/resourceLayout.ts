@@ -23,7 +23,12 @@
  *    the caption is above, otherwise under the caption.
  *
  * Resource + caption + note are measured as one group; `totalHeight` is what
- * goes to placement (resources paginate atomically — no mid-split for v1).
+ * goes to placement. Figures paginate atomically; a table taller than the
+ * page can be laid out as a *slice* of its rows (`ResourceLayoutInput.slice`)
+ * — a continuation repeats the header rows and suffixes the caption, and a
+ * slice that goes on sets a marker under it and holds the note back for the
+ * last one. {@link planTableSlice} picks the rows a slice can carry from the
+ * row metrics the full-table layout reports.
  */
 
 import type { InlineSpan, RefCase } from '../parse';
@@ -31,6 +36,7 @@ import type {
   ResolvedCaptionStyleConfig,
   Resource,
   ResourceType,
+  TableCell,
   TableModel,
   TableCellAlign,
   TableCellVerticalAlign,
@@ -41,10 +47,12 @@ import type {
   ResolvedResourceBlock,
   VDTLine,
   VDTResourceTableCell,
+  VDTLineSegment,
   VDTResourceTableLayout,
+  VDTTableSlice,
 } from '../vdt';
 import { createBoundingBox } from '../vdt';
-import { measureRichBlock, buildFontString } from '../measure';
+import { measureRichBlock, measureTextWidth, buildFontString } from '../measure';
 import { dimensionToPx } from '../units';
 // Caption / table-cell / note content is parsed with the shared snippet
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
@@ -69,6 +77,37 @@ export interface ResourceLayoutInput {
   resourceNumbering: ResourceNumberingMap;
   resourceTypes: ResourceType[];
   resources: Resource[];
+  /** Lay out only these rows of a table (a slice of a table split across
+   *  pages). Ignored for figures. */
+  slice?: TableSliceSpec;
+}
+
+/** The rows a table slice carries. `startRow > 0` makes it a continuation:
+ *  the header rows are repeated above `startRow` and the caption gets the
+ *  continued suffix. `continues` sets the marker under the slice (and holds
+ *  the note back). */
+export interface TableSliceSpec {
+  startRow: number;
+  /** Exclusive. */
+  endRow: number;
+  continues: boolean;
+}
+
+/** Per-row metrics of a table laid out in full at some width, from which
+ *  {@link planTableSlice} decides where a slice can end. Row heights are
+ *  exact for any slice at the same width: every row is measured at the same
+ *  column edges, and rowspans never straddle a break. */
+export interface TableRowMetrics {
+  /** Height of each model row in px (rowspan overflow already distributed). */
+  rowHeights: number[];
+  /** Leading header rows, repeated at the top of every continuation. */
+  headerRowCount: number;
+  /** Whether a slice may end after row `i` — no rowspan crosses the edge
+   *  between `i` and `i + 1`. */
+  breakableAfter: boolean[];
+  /** Rows that head the rows below them (a single cell across every column,
+   *  or all header cells): a slice never ends on one when it can help it. */
+  groupHeaderRow: boolean[];
 }
 
 /** Build a label for an inline `:ref` to a resource, honouring its `style` and
@@ -182,6 +221,122 @@ interface TableLayoutStyle {
   bodyBackground?: string;
   /** Which rules to stroke. */
   rules: TableRules;
+  /** Gap between a list marker and its text inside a cell (px) — the
+   *  document's `unorderedLists.gap` at the body-cell size. */
+  listGapPx: number;
+}
+
+/** A list-item marker at the head of a cell paragraph: the glyph as
+ *  authored, the whitespace that follows it, and the nesting depth (from the
+ *  leading indentation, two spaces per level). */
+interface CellItemMarker {
+  text: string;
+  ws: string;
+  level: number;
+}
+
+/** Markers a cell paragraph may open with: bullets, dashes, a number with
+ *  its dot or bracket — followed by whitespace and some text. */
+const CELL_ITEM_MARKER = /^(\s*)([•·◦○▪‣\-*–—]|\d{1,3}[.)])(\s+)(?=\S)/;
+
+/** Split a cell's spans into paragraphs at hard line breaks (`\n`). The
+ *  break characters are dropped; an empty paragraph (a blank line) is kept
+ *  out — the measurer would skip it as whitespace anyway. */
+function splitCellParagraphs(spans: InlineSpan[]): InlineSpan[][] {
+  const out: InlineSpan[][] = [];
+  let current: InlineSpan[] = [];
+  const flush = () => {
+    if (current.some((sp) => sp.text.trim().length > 0)) out.push(current);
+    current = [];
+  };
+  for (const span of spans) {
+    if (span.ref || span.math || !span.text.includes('\n')) {
+      current.push(span);
+      continue;
+    }
+    const pieces = span.text.split('\n');
+    pieces.forEach((piece, i) => {
+      if (i > 0) flush();
+      if (piece.length > 0) current.push({ ...span, text: piece });
+    });
+  }
+  flush();
+  return out;
+}
+
+/** Detach a list marker from the head of a paragraph, when it opens with
+ *  one. Returns the marker and the spans with it stripped. */
+function takeCellItemMarker(spans: InlineSpan[]): { marker: CellItemMarker; spans: InlineSpan[] } | null {
+  const first = spans[0];
+  if (!first || first.ref || first.math) return null;
+  const m = CELL_ITEM_MARKER.exec(first.text);
+  if (!m) return null;
+  const [whole, indent, text, ws] = m as unknown as [string, string, string, string];
+  const rest = first.text.slice(whole.length);
+  const stripped = rest.length > 0 ? [{ ...first, text: rest }, ...spans.slice(1)] : spans.slice(1);
+  return { marker: { text, ws, level: Math.min(5, 1 + Math.floor(indent.length / 2)) }, spans: stripped };
+}
+
+/**
+ * Measure a cell's content: paragraphs separated by hard line breaks, each
+ * either plain text or a list item. An item hangs its text off its marker —
+ * the marker is painted as authored ("•", "–", "1."), the text starts after
+ * `listGapPx`, and wrapped lines align with the text — nested two spaces per
+ * level. Every plain character of the content survives in the produced
+ * segments (the marker and its whitespace included), so the sandbox's
+ * glyph → snippet mapping stays exact.
+ */
+function measureCellContent(
+  spans: InlineSpan[],
+  set: CellFontSet,
+  width: number,
+  textAlign: 'left' | 'center',
+  listGapPx: number,
+): { lines: VDTLine[]; totalHeight: number } {
+  const paragraphs = splitCellParagraphs(spans);
+  const lines: VDTLine[] = [];
+  let y = 0;
+  const measure = (ps: InlineSpan[], w: number, align: 'left' | 'center') => measureRichBlock(
+    ps, set.fontString, set.boldFontString, set.italicFontString, set.boldItalicFontString,
+    Math.max(1, w), set.lineHeightPx, { textAlign: align },
+  );
+  for (const paragraph of paragraphs) {
+    const item = takeCellItemMarker(paragraph);
+    if (!item) {
+      const m = measure(paragraph, width, textAlign);
+      lines.push(...shiftLines(m.lines, 0, y));
+      y += m.lines.length * set.lineHeightPx;
+      continue;
+    }
+    const markerWidth = measureTextWidth(item.marker.text, set.fontString);
+    const indentPx = markerWidth + listGapPx;
+    const levelOffset = (item.marker.level - 1) * indentPx;
+    const textX = levelOffset + indentPx;
+    const m = measure(item.spans, width - textX, 'left');
+    m.lines.forEach((line, i) => {
+      if (i === 0) {
+        const head: VDTLineSegment[] = [
+          { kind: 'text', text: item.marker.text, width: markerWidth },
+          { kind: 'space', text: item.marker.ws, width: indentPx - markerWidth },
+        ];
+        lines.push({
+          ...line,
+          text: `${item.marker.text}${item.marker.ws}${line.text}`,
+          bbox: createBoundingBox(levelOffset, line.bbox.y + y, indentPx + line.bbox.width, line.bbox.height),
+          baseline: line.baseline + y,
+          segments: [...head, ...(line.segments ?? [])],
+        });
+      } else {
+        lines.push({
+          ...line,
+          bbox: createBoundingBox(textX + line.bbox.x, line.bbox.y + y, line.bbox.width, line.bbox.height),
+          baseline: line.baseline + y,
+        });
+      }
+    });
+    y += m.lines.length * set.lineHeightPx;
+  }
+  return { lines, totalHeight: y };
 }
 
 /** Smallest border thickness (px) we let through: thinner rules would vanish
@@ -219,10 +374,87 @@ export function computeColumnEdges(model: TableModel, columnWidth: number): numb
   return edges;
 }
 
+/** Number of leading header rows of a table: `headerRowCount` when the
+ *  model declares it, else the leading run of rows whose visible cells are
+ *  all header cells. Never the whole table — a continuation needs at least
+ *  one body row to carry. */
+export function tableHeaderRowCount(model: TableModel): number {
+  const rowCount = model.rows.length;
+  if (rowCount === 0) return 0;
+  const declared = model.headerRowCount ?? 0;
+  let count = 0;
+  if (declared > 0) {
+    count = declared;
+  } else {
+    for (const row of model.rows) {
+      const visible = row.filter((c) => !c.hiddenBy);
+      if (visible.length === 0 || !visible.every((c) => c.isHeader)) break;
+      count++;
+    }
+  }
+  return Math.max(0, Math.min(count, rowCount - 1));
+}
+
+/** Whether a table cell is painted as a header cell. */
+const cellIsHeader = (cell: TableCell, row: number, model: TableModel): boolean =>
+  cell.isHeader ?? row < (model.headerRowCount ?? 0);
+
+/** The model rows a slice lays out, in order: the header rows (repeated on a
+ *  continuation) followed by the slice's own rows. */
+export function tableSliceRows(model: TableModel, slice: TableSliceSpec): number[] {
+  const headerRows = tableHeaderRowCount(model);
+  const rowCount = model.rows.length;
+  const start = Math.max(0, Math.min(slice.startRow, rowCount));
+  const end = Math.max(start, Math.min(slice.endRow, rowCount));
+  const rows: number[] = [];
+  if (start > 0) {
+    for (let r = 0; r < headerRows; r++) rows.push(r);
+    for (let r = Math.max(start, headerRows); r < end; r++) rows.push(r);
+  } else {
+    for (let r = start; r < end; r++) rows.push(r);
+  }
+  return rows;
+}
+
+/**
+ * Where a slice starting at `startRow` can end so that its rows (plus the
+ * repeated header rows of a continuation) stay within `bodyBudget` px: the
+ * furthest row edge no rowspan straddles, backed off a group-header row so
+ * the heading opens the rows it heads on the next page. Returns the
+ * exclusive end row — `startRow` when not even one row fits, the row count
+ * when the whole rest fits.
+ */
+export function planTableSlice(metrics: TableRowMetrics, startRow: number, bodyBudget: number): number {
+  const { rowHeights, headerRowCount, breakableAfter, groupHeaderRow } = metrics;
+  const rowCount = rowHeights.length;
+  const start = Math.max(0, Math.min(startRow, rowCount));
+  // A continuation carries the header rows again; the first slice includes
+  // them as ordinary leading rows.
+  const firstBody = start > 0 ? Math.max(start, headerRowCount) : start;
+  let acc = 0;
+  if (start > 0) for (let r = 0; r < headerRowCount; r++) acc += rowHeights[r] ?? 0;
+  let best = start;
+  for (let r = firstBody; r < rowCount; r++) {
+    acc += rowHeights[r] ?? 0;
+    if (acc > bodyBudget + 0.01) break;
+    if (breakableAfter[r] ?? true) best = r + 1;
+  }
+  // The first slice must carry a body row past the header; a continuation
+  // at least its first row. Below that floor the caller decides.
+  const floor = (start > 0 ? firstBody : headerRowCount) + 1;
+  // Back off group heads left at the cut, but only when a row that is not
+  // one remains: a run of nothing but heads is not a heading at all.
+  let cut = best;
+  while (cut > floor && groupHeaderRow[cut - 1]) cut--;
+  return cut > floor || best <= floor ? cut : best;
+}
+
 /** Lay out an HTML-table resource: weighted column split (see
  *  {@link computeColumnEdges}), per-cell rich-text measurement, row height =
  *  max measured cell height. Rowspans reserve their primary cell's full
- *  vertical extent. */
+ *  vertical extent. `selection` restricts the layout to those model rows
+ *  (in order) for a slice; cells keep their model row index. The row metrics
+ *  are reported for a full layout only. */
 function layoutTable(
   model: TableModel,
   columnWidth: number,
@@ -231,18 +463,33 @@ function layoutTable(
   resourceTypes: ResourceType[],
   resources: Resource[],
   refStyle: { bold: boolean; italic: boolean },
-): { layout: VDTResourceTableLayout; height: number } {
+  selection?: readonly number[],
+): { layout: VDTResourceTableLayout; height: number; metrics?: TableRowMetrics } {
   const { body, header, borderColor, borderWidthPx, cellPaddingPx } = style;
-  const rowCount = model.rows.length;
-  const colCount = rowCount > 0 ? Math.max(...model.rows.map((r) => r.length)) : 0;
+  const modelRowCount = model.rows.length;
+  const rows = selection ?? model.rows.map((_r, i) => i);
+  const rowCount = rows.length;
+  /** Slice index of each laid-out model row. */
+  const sliceIndexOf = new Map<number, number>();
+  rows.forEach((r, i) => sliceIndexOf.set(r, i));
+  const colCount = modelRowCount > 0 ? Math.max(...model.rows.map((r) => r.length)) : 0;
   const columnEdges = computeColumnEdges(model, columnWidth);
   const spanWidth = (col: number, colSpan: number): number =>
     (columnEdges[Math.min(col + colSpan, colCount)] ?? columnWidth) - (columnEdges[col] ?? 0);
+  /** Rows a primary cell at model row `r` spanning `rowSpan` rows covers
+   *  within this layout: the run of its spanned rows that sit consecutively
+   *  after it in the selection. */
+  const spanInSlice = (si: number, r: number, rowSpan: number): number => {
+    let n = 1;
+    while (n < rowSpan && rows[si + n] === r + n) n++;
+    return n;
+  };
 
   // First pass: measure each primary cell's content height (single-row span
   // contribution); rowspan cells are distributed after row heights are known.
   interface Measured {
     row: number;
+    sliceRow: number;
     col: number;
     colSpan: number;
     rowSpan: number;
@@ -255,14 +502,28 @@ function layoutTable(
   const measured: Measured[] = [];
   const rowMinHeight = new Array<number>(rowCount).fill(body.lineHeightPx);
 
-  for (let r = 0; r < rowCount; r++) {
-    const row = model.rows[r]!;
+  for (let si = 0; si < rowCount; si++) {
+    const r = rows[si]!;
+    const row = model.rows[r];
+    if (!row) continue;
     for (let c = 0; c < row.length; c++) {
-      const cell = row[c]!;
-      if (cell.hiddenBy) continue;
+      let cell = row[c]!;
+      if (cell.hiddenBy) {
+        // Covered by a merge whose primary is laid out here and reaches this
+        // row: skip. A primary left out of the slice (a rowspan running from
+        // the header into the body) leaves an empty cell so the grid closes.
+        const p = cell.hiddenBy;
+        const primary = model.rows[p.row]?.[p.col];
+        const psi = sliceIndexOf.get(p.row);
+        const covered = primary !== undefined && psi !== undefined && psi <= si
+          && spanInSlice(psi, p.row, Math.max(1, primary.rowSpan ?? 1)) > si - psi
+          && c >= p.col && c < p.col + Math.max(1, primary.colSpan ?? 1);
+        if (covered) continue;
+        cell = { content: '', isHeader: cellIsHeader(primary ?? cell, p.row, model) };
+      }
       const colSpan = Math.max(1, cell.colSpan ?? 1);
-      const rowSpan = Math.max(1, cell.rowSpan ?? 1);
-      const isHeader = cell.isHeader ?? r < (model.headerRowCount ?? 0);
+      const rowSpan = spanInSlice(si, r, Math.max(1, cell.rowSpan ?? 1));
+      const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
       const spans = resolveRefSpans(
@@ -272,19 +533,17 @@ function layoutTable(
         resources,
         refStyle,
       );
-      const m = measureRichBlock(
+      const m = measureCellContent(
         spans,
-        set.fontString,
-        set.boldFontString,
-        set.italicFontString,
-        set.boldItalicFontString,
+        set,
         Math.max(1, cellWidth),
-        set.lineHeightPx,
-        { textAlign: cell.align === 'center' ? 'center' : cell.align === 'right' ? 'left' : 'left' },
+        cell.align === 'center' ? 'center' : 'left',
+        style.listGapPx,
       );
       const contentHeight = Math.max(set.lineHeightPx, m.totalHeight) + cellPaddingPx * 2;
       measured.push({
         row: r,
+        sliceRow: si,
         col: c,
         colSpan,
         rowSpan,
@@ -296,7 +555,7 @@ function layoutTable(
       });
       // Single-row cells drive their row's minimum height directly.
       if (rowSpan === 1) {
-        rowMinHeight[r] = Math.max(rowMinHeight[r]!, contentHeight);
+        rowMinHeight[si] = Math.max(rowMinHeight[si]!, contentHeight);
       }
     }
   }
@@ -305,24 +564,50 @@ function layoutTable(
   for (const m of measured) {
     if (m.rowSpan <= 1) continue;
     let spannedHeight = 0;
-    for (let r = m.row; r < m.row + m.rowSpan && r < rowCount; r++) {
-      spannedHeight += rowMinHeight[r]!;
+    for (let si = m.sliceRow; si < m.sliceRow + m.rowSpan && si < rowCount; si++) {
+      spannedHeight += rowMinHeight[si]!;
     }
     if (m.contentHeight > spannedHeight) {
-      const lastRow = Math.min(m.row + m.rowSpan - 1, rowCount - 1);
+      const lastRow = Math.min(m.sliceRow + m.rowSpan - 1, rowCount - 1);
       rowMinHeight[lastRow] = rowMinHeight[lastRow]! + (m.contentHeight - spannedHeight);
     }
   }
 
   const rowEdges: number[] = [0];
-  for (let r = 0; r < rowCount; r++) rowEdges.push(rowEdges[r]! + rowMinHeight[r]!);
+  for (let si = 0; si < rowCount; si++) rowEdges.push(rowEdges[si]! + rowMinHeight[si]!);
   const tableHeight = rowEdges[rowCount] ?? 0;
+
+  // Row metrics for slice planning (full layouts only — a slice's rows are
+  // a subset, so its heights say nothing about the rest).
+  let metrics: TableRowMetrics | undefined;
+  if (!selection) {
+    const breakableAfter = new Array<boolean>(rowCount).fill(true);
+    const groupHeaderRow = new Array<boolean>(rowCount).fill(false);
+    const primaries = new Array<number>(rowCount).fill(0);
+    const allHeader = new Array<boolean>(rowCount).fill(true);
+    const fullSpan = new Array<boolean>(rowCount).fill(false);
+    for (const m of measured) {
+      for (let r = m.row; r < m.row + m.rowSpan - 1; r++) breakableAfter[r] = false;
+      primaries[m.row] = (primaries[m.row] ?? 0) + 1;
+      if (!m.isHeader) allHeader[m.row] = false;
+      if (m.colSpan >= colCount) fullSpan[m.row] = true;
+    }
+    const headerRowCount = tableHeaderRowCount(model);
+    for (let r = headerRowCount; r < rowCount; r++) {
+      const p = primaries[r] ?? 0;
+      // A single cell across every column heads the rows below it — in a
+      // multi-column table. Every row of a one-column (boxed) table spans
+      // it, and none of them is a heading.
+      groupHeaderRow[r] = p > 0 && ((p === 1 && fullSpan[r] === true && colCount > 1) || allHeader[r] === true);
+    }
+    metrics = { rowHeights: [...rowMinHeight], headerRowCount, breakableAfter, groupHeaderRow };
+  }
 
   const cells: VDTResourceTableCell[] = measured.map((m) => {
     const x0 = columnEdges[m.col] ?? 0;
     const x1 = columnEdges[Math.min(m.col + m.colSpan, colCount)] ?? columnWidth;
-    const y0 = rowEdges[m.row] ?? 0;
-    const y1 = rowEdges[Math.min(m.row + m.rowSpan, rowCount)] ?? tableHeight;
+    const y0 = rowEdges[m.sliceRow] ?? 0;
+    const y1 = rowEdges[Math.min(m.sliceRow + m.rowSpan, rowCount)] ?? tableHeight;
     const rect = createBoundingBox(x0, y0, x1 - x0, y1 - y0);
     // Place lines inside the cell with padding; horizontal alignment is applied
     // by the renderer via the cell rect + align flag.
@@ -360,7 +645,7 @@ function layoutTable(
     rowEdges,
     rules: style.rules,
   };
-  return { layout, height: tableHeight };
+  return metrics ? { layout, height: tableHeight, metrics } : { layout, height: tableHeight };
 }
 
 /**
@@ -372,6 +657,9 @@ function layoutTable(
 export function layoutResourceBlock(input: ResourceLayoutInput): {
   block: ResolvedResourceBlock;
   totalHeight: number;
+  /** Row metrics of a table laid out in full (no `slice`), for
+   *  {@link planTableSlice}. */
+  tableRows?: TableRowMetrics;
 } {
   const {
     resource,
@@ -383,6 +671,18 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     resourceTypes,
     resources,
   } = input;
+  // A slice only applies to tables; a slice covering the whole table from
+  // row 0 is the full table (no continuation marks).
+  const model = resource.kind === 'table' ? resource.table?.model : undefined;
+  const slice: VDTTableSlice | undefined = model && input.slice
+    && (input.slice.startRow > 0 || input.slice.endRow < model.rows.length || input.slice.continues)
+    ? {
+        startRow: Math.max(0, Math.min(input.slice.startRow, model.rows.length)),
+        endRow: Math.max(0, Math.min(input.slice.endRow, model.rows.length)),
+        continued: input.slice.startRow > 0,
+        continues: input.slice.continues,
+      }
+    : undefined;
 
   const bodyStyle = resolveBodyStyle(resolved);
   const dpi = resolved.page.dpi;
@@ -400,6 +700,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   let bodyWidth = columnWidth;
   let bodyHeight = 0;
   let table: VDTResourceTableLayout | undefined;
+  let tableRows: TableRowMetrics | undefined;
   let fileId: string | undefined;
   let format: string | undefined;
 
@@ -453,8 +754,9 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       headerBackground: ts.headerBackgroundEnabled ? ts.headerBackground.hex : undefined,
       bodyBackground: ts.bodyBackgroundEnabled ? ts.bodyBackground.hex : undefined,
       rules: ts.rules,
+      listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
     };
-    const { layout, height } = layoutTable(
+    const { layout, height, metrics } = layoutTable(
       resource.table.model,
       columnWidth,
       style,
@@ -462,8 +764,10 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       resourceTypes,
       resources,
       refStyle,
+      slice ? tableSliceRows(resource.table.model, slice) : undefined,
     );
     table = layout;
+    tableRows = metrics;
     bodyWidth = columnWidth;
     bodyHeight = height;
   }
@@ -509,9 +813,15 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const descSpans: InlineSpan[] = cs.descriptionItalic
       ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : resolvedSpans;
+    // A continued table slice: "Table 6-4. Title (cont.)" — the suffix is
+    // set in italics after the description, glued to it by a plain space.
+    const suffix = slice?.continued ? resolved.tableStyle.continuedSuffix.trim() : '';
+    const suffixSpans: InlineSpan[] = suffix.length > 0
+      ? [{ text: `${descSpans.length > 0 ? ' ' : ''}${suffix}`, bold: false, italic: true }]
+      : [];
     const allSpans: InlineSpan[] = prefixText.length > 0
-      ? [{ text: prefixText, bold: cs.labelBold, italic: cs.labelItalic, captionLabel: true }, ...descSpans]
-      : descSpans;
+      ? [{ text: prefixText, bold: cs.labelBold, italic: cs.labelItalic, captionLabel: true }, ...descSpans, ...suffixSpans]
+      : [...descSpans, ...suffixSpans];
     const measured = measureRichBlock(
       allSpans,
       captionFontString,
@@ -541,7 +851,9 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   const noteBoldItalicFontString = buildFontString(cs.fontFamily, noteFontPx, boldWeight, 'italic');
   let measuredNote: VDTLine[] = [];
   const noteText = resource.note ?? '';
-  if (noteText.trim().length > 0) {
+  // The note closes the table: a slice that continues holds it back for
+  // the last slice.
+  if (noteText.trim().length > 0 && !slice?.continues) {
     const noteSpans = resolveRefSpans(
       parseRefAwareSpans(noteText),
       resourceNumbering,
@@ -566,6 +878,34 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   }
   const noteHeight = measuredNote.length > 0
     ? measuredNote.length * noteLineHeightPx + noteGapPx
+    : 0;
+
+  // --- Continues marker --------------------------------------------------
+  // "Continued" under a slice that goes on: the note's typeface and size,
+  // italic, flush right — where the note would sit.
+  let measuredContinues: VDTLine[] = [];
+  const ts = resolved.tableStyle;
+  const markerText = slice?.continues && ts.continuesMarkerEnabled ? ts.continuesMarker.trim() : '';
+  if (markerText.length > 0) {
+    const measured = measureRichBlock(
+      [{ text: markerText, bold: false, italic: true }],
+      noteFontString,
+      noteBoldFontString,
+      noteItalicFontString,
+      noteBoldItalicFontString,
+      Math.max(1, columnWidth),
+      noteLineHeightPx,
+      { textAlign: 'left' },
+    );
+    // Flush right: the measurer has no right alignment, so each line is
+    // pushed to the block's right edge by its own width.
+    measuredContinues = measured.lines.map((line) => ({
+      ...line,
+      bbox: createBoundingBox(columnWidth - line.bbox.width, line.bbox.y, line.bbox.width, line.bbox.height),
+    }));
+  }
+  const continuesHeight = measuredContinues.length > 0
+    ? measuredContinues.length * noteLineHeightPx + noteGapPx
     : 0;
 
   // --- Vertical stacking -------------------------------------------------
@@ -600,11 +940,14 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     : undefined;
   const noteY = (captionAbove ? bodyY + bodyHeight : bodyHeight + captionHeight) + noteGapPx;
   const noteLines = shiftLines(measuredNote, 0, noteY);
-  const totalHeight = bodyHeight + captionHeight + noteHeight;
+  // The marker takes the note's slot (a continuing slice has no note).
+  const continuesLines = shiftLines(measuredContinues, 0, noteY);
+  const totalHeight = bodyHeight + captionHeight + noteHeight + continuesHeight;
 
   const block: ResolvedResourceBlock = {
     resource,
     kind: resource.kind,
+    ...(slice ? { slice } : {}),
     number,
     captionPrefix,
     bodyRect,
@@ -626,7 +969,8 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     noteItalicFontString,
     noteBoldItalicFontString,
     noteColor: cs.note.color.hex,
+    continuesLines,
   };
 
-  return { block, totalHeight };
+  return tableRows ? { block, totalHeight, tableRows } : { block, totalHeight };
 }

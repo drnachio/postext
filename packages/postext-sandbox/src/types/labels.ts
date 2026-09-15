@@ -1013,6 +1013,16 @@ export interface SandboxLabels {
   tableRulesHorizontal: string;
   tableRulesOuter: string;
   tableRulesNone: string;
+  tableContinuationGroup: string;
+  tableOverflow: string;
+  tableOverflowTooltip: string;
+  tableOverflowSplit: string;
+  tableOverflowClip: string;
+  tableOverflowHide: string;
+  tableContinuedSuffix: string;
+  tableContinuedSuffixTooltip: string;
+  tableContinuesMarkerEnabled: string;
+  tableContinuesMarker: string;
   // --- Caption styling section ---
   captionStyleSection: string;
   captionGap: string;

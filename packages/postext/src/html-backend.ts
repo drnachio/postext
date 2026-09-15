@@ -381,7 +381,9 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
   const bh = rb.bodyRect.height;
 
   // Zero-size anchor at the embed's top-left — the target of `:ref` links.
-  if (rb.resource.id) {
+  // A continued slice of a split table is not a target: links land on the
+  // first slice.
+  if (rb.resource.id && !rb.slice?.continued) {
     parts.push(
       `<span id="${esc(resourceAnchorId(rb.resource.id))}" style="position:absolute;` +
       `left:${block.bbox.x}px;top:${block.bbox.y}px;width:0;height:0;"></span>`,
@@ -436,7 +438,7 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
     italic: rb.noteItalicFontString,
     boldItalic: rb.noteBoldItalicFontString,
   };
-  for (const line of rb.noteLines) {
+  for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
     parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor));
   }
   return parts.join('');

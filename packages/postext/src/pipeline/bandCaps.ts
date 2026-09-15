@@ -131,10 +131,12 @@ export function columnBottom(col: VDTColumn, uncappedBottoms: ReadonlyMap<VDTCol
 /** Grid lines (from the band top) a level cut of the band would need: the
  *  content spread over the band's columns evenly, rounded up to whole
  *  lines. A column starting under a top float band counts that offset as
- *  used, so the cut lands at the same absolute height in every column. */
-export function bandCapLines(cols: readonly VDTColumn[], gridPx: number): number {
+ *  used, so the cut lands at the same absolute height in every column;
+ *  `extraPx` adds space the band must also hold (float bands reserved at
+ *  column feet, which shortened the columns instead of filling them). */
+export function bandCapLines(cols: readonly VDTColumn[], gridPx: number, extraPx = 0): number {
   const top = bandTop(cols);
-  let total = 0;
+  let total = extraPx;
   for (const c of cols) total += (c.bbox.height - c.availableHeight) + (c.bbox.y - top);
   return Math.max(1, Math.ceil((total / cols.length - 0.01) / gridPx));
 }

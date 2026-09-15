@@ -27,7 +27,24 @@ const STATIC_DEFAULTS = {
   // 0.375em ≈ 0.25 × the 1.5em line height — matches the previous padding.
   cellPadding: { value: 0.375, unit: 'em' as const },
   rules: 'grid' as const,
+  overflow: 'split' as const,
+  continuesMarkerEnabled: true,
 } satisfies Partial<ResolvedTableStyleConfig>;
+
+/** Localised continuation strings: the caption suffix of a continued slice
+ *  and the marker under a slice that continues. English is the fallback for
+ *  any locale not listed here. Add a language by adding a key. */
+const CONTINUATION_STRINGS: Record<string, { continuedSuffix: string; continuesMarker: string }> = {
+  en: { continuedSuffix: '(cont.)', continuesMarker: 'Continued' },
+  es: { continuedSuffix: '(cont.)', continuesMarker: 'Continúa' },
+};
+
+/** Default continuation strings for a (possibly regional) locale tag such
+ *  as `es-ES`, falling back to English. */
+export function defaultTableContinuationStrings(locale = 'en'): { continuedSuffix: string; continuesMarker: string } {
+  const lang = locale.toLowerCase().split('-')[0] ?? 'en';
+  return CONTINUATION_STRINGS[lang] ?? CONTINUATION_STRINGS.en!;
+}
 
 /** Resolve a partial table-style config into a fully-specified one. Font
  *  family, size, and colour inherit the resolved body text when unset, so a
@@ -35,8 +52,13 @@ const STATIC_DEFAULTS = {
 export function resolveTableStyleConfig(
   partial: TableStyleConfig | undefined,
   bodyText: ResolvedBodyTextConfig,
+  locale?: string,
 ): ResolvedTableStyleConfig {
   const p = partial ?? {};
+  // Continuation strings follow the document language: the explicit
+  // `locale`, else the hyphenation locale (which the sandbox derives from
+  // the app language when unset).
+  const strings = defaultTableContinuationStrings(locale ?? bodyText.hyphenation.locale);
   return {
     bodyFontFamily: p.bodyFontFamily ?? bodyText.fontFamily,
     bodyFontSize: p.bodyFontSize ?? bodyText.fontSize,
@@ -55,6 +77,10 @@ export function resolveTableStyleConfig(
     borderWidth: p.borderWidth ?? STATIC_DEFAULTS.borderWidth,
     cellPadding: p.cellPadding ?? STATIC_DEFAULTS.cellPadding,
     rules: p.rules ?? STATIC_DEFAULTS.rules,
+    overflow: p.overflow ?? STATIC_DEFAULTS.overflow,
+    continuedSuffix: p.continuedSuffix ?? strings.continuedSuffix,
+    continuesMarkerEnabled: p.continuesMarkerEnabled ?? STATIC_DEFAULTS.continuesMarkerEnabled,
+    continuesMarker: p.continuesMarker ?? strings.continuesMarker,
   };
 }
 
@@ -81,6 +107,9 @@ export function stripTableStyleDefaults(
   keep('headerFontFamily');
   keep('headerColor');
   keep('borderColor');
+  // Continuation strings default per document locale: keep whenever set.
+  keep('continuedSuffix');
+  keep('continuesMarker');
   if (tableStyle.bodyFontSize !== undefined) { r.bodyFontSize = tableStyle.bodyFontSize; has = true; }
   if (tableStyle.headerFontSize !== undefined) { r.headerFontSize = tableStyle.headerFontSize; has = true; }
 
@@ -95,6 +124,8 @@ export function stripTableStyleDefaults(
   if (tableStyle.borderWidth !== undefined && !dimensionsEqual(tableStyle.borderWidth, STATIC_DEFAULTS.borderWidth)) { r.borderWidth = tableStyle.borderWidth; has = true; }
   if (tableStyle.cellPadding !== undefined && !dimensionsEqual(tableStyle.cellPadding, STATIC_DEFAULTS.cellPadding)) { r.cellPadding = tableStyle.cellPadding; has = true; }
   if (tableStyle.rules !== undefined && tableStyle.rules !== STATIC_DEFAULTS.rules) { r.rules = tableStyle.rules; has = true; }
+  if (tableStyle.overflow !== undefined && tableStyle.overflow !== STATIC_DEFAULTS.overflow) { r.overflow = tableStyle.overflow; has = true; }
+  if (tableStyle.continuesMarkerEnabled !== undefined && tableStyle.continuesMarkerEnabled !== STATIC_DEFAULTS.continuesMarkerEnabled) { r.continuesMarkerEnabled = tableStyle.continuesMarkerEnabled; has = true; }
 
   return has ? r : undefined;
 }

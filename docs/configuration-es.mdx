@@ -1067,6 +1067,7 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
 
 Las editoriales esperan que cada columna empiece en la parte superior de la página y termine alineada con su parte inferior. Las reglas de ruptura (protección de huérfanas y viudas, títulos unidos a su texto, figuras indivisibles) dejan columnas cortas de forma natural — una o más líneas de rejilla base vacías al final. Con el equilibrado activado, el motor hace lo que haría un maquetista, aplicando tres palancas en orden de prioridad editorial:
 
+0. **Una caja que cierra la columna** — un callout que termina una columna corta baja exactamente el espacio que queda bajo su pie, de modo que su borde inferior cae en la última casilla de rejilla de la página, a nivel con la última línea de la columna contigua.
 1. **Encabezados** — se añaden líneas completas de rejilla al margen superior de los encabezados de la columna corta. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten entre ellos, dejando siempre la mayor parte al encabezado más importante (un `h2` recibe más que un `h3`). Los encabezados situados al principio de una columna nunca reciben espacio adicional, de modo que las columnas siguen empezando en la parte superior.
 2. **Finales de lista** — cuando los encabezados no pueden absorber todo el hueco, se añade una línea de rejilla donde termina una lista o enumeración (el aire tras una lista se lee con naturalidad), con un máximo por lista.
 3. **Párrafos corridos** — como último recurso, se recompone un párrafo de la columna con una línea más (el `\looseness=+1` de TeX), eligiendo el párrafo más largo para que el espaciado adicional se diluya de forma invisible. La solución corrida solo se acepta cuando todas sus líneas quedan **por debajo de `bodyText.maxWordSpacing`** — el color tipográfico nunca supera el límite que ya tengas configurado. Requiere `bodyText.optimalLineBreaking`.
@@ -2061,10 +2062,44 @@ const config: PostextConfig = {
       <td><code>'grid'</code></td>
       <td>Qué filetes trazar cuando <code>borders</code> está activo: la rejilla completa de celdas, solo filetes horizontales (borde superior e inferior de cada fila, sin verticales), solo el marco exterior, o ninguno.</td>
     </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'split' | 'clip' | 'hide'</code></td>
+      <td><code>'split'</code></td>
+      <td>Qué ocurre con una tabla más alta que la página: continuarla en las páginas siguientes, conservar solo las filas que caben, o no colocarla. Véase más abajo.</td>
+    </tr>
+    <tr>
+      <td><code>continuedSuffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'(cont.)'</code></td>
+      <td>Se añade, en cursiva, al pie de cada parte continuada de una tabla dividida.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Coloca un indicador bajo cada parte que continúa en la página siguiente.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'Continúa'</code> / <code>'Continued'</code></td>
+      <td>Texto de ese indicador, alineado a la derecha bajo la parte con la tipografía de la nota (véase <a href="#estilo-de-pies-de-recurso">estilo de pies</a>). El valor por defecto sigue el idioma del documento.</td>
+    </tr>
   </tbody>
 </table>
 
 Los grosores de borde se conservan fraccionarios: un filete de `0.5pt` se traza como línea fina en el PDF y en pantalla en lugar de redondearse a un píxel completo (el mínimo es 0.25px).
+
+### Tablas más altas que la página
+
+Una tabla flotante que no cabe en la página nueva que se le ofrece no se comprime ni se desborda: con `overflow: 'split'` (el valor por defecto) el motor la corta entre filas en el último borde que cabe en la página y la continúa en las páginas siguientes, tantas como haga falta. Cada parte continuada repite las filas de cabecera de la tabla (`TableModel.headerRowCount`, o las filas iniciales formadas por celdas de cabecera cuando no está definido) y lleva de nuevo el pie con `continuedSuffix` tras la descripción: «Tabla 6-4. Título *(cont.)*». Cada parte que sigue lleva `continuesMarker` debajo, alineado a la derecha, con la tipografía de la nota; la nota de la tabla se reserva para la última parte. Un corte nunca atraviesa una celda combinada (una celda con `rowSpan` pasa entera a la parte siguiente), y una fila que encabeza a las que la siguen —una sola celda a lo ancho de toda la tabla— pasa a la parte siguiente en lugar de quedar suelta al pie de la página.
+
+`'clip'` conserva las filas iniciales que caben en la página y descarta el resto en silencio (la nota sigue cerrando la parte); `'hide'` no coloca la tabla. Ambos solo actúan cuando la tabla es más alta que una página: una tabla que cabe se coloca entera en cualquier modo. Las tablas en línea (`placement.position: 'here'`) no se dividen.
+
+Las cadenas de continuación toman su valor por defecto del idioma del documento (`locale`, o en su defecto el idioma de la división silábica): inglés `(cont.)` / `Continued`, español `(cont.)` / `Continúa`.
+
+El contenido de una celda es markdown en línea, y un salto de línea dentro de la celda abre un nuevo párrafo. Un párrafo que empieza por una viñeta o un guion (`•`, `-`, `*`, `–`) o por un número (`1.`, `1)`) seguido de un espacio se compone como elemento de lista: la marca se pinta tal como se escribió, el texto cuelga de ella a la distancia `unorderedLists.gap` del documento, las líneas partidas se alinean con el texto y dos espacios iniciales anidan un nivel. Así, una celda escrita como `• Ofrece elección\n• Acomoda a personas diestras y zurdas` sale como una lista de dos elementos.
 
 Los anchos de columna pertenecen al modelo de la tabla, no al estilo: `TableModel.columnWidths` es un array opcional de pesos relativos, uno por columna, normalizados en el momento de maquetar — `[2, 1, 1]` da a la primera columna la mitad del ancho. Un array ausente, de longitud incorrecta o con algún peso no positivo vuelve al reparto igualitario. El editor de tablas mantiene el array alineado al añadir o quitar columnas.
 
@@ -2538,6 +2573,9 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Convierte la caja en una barrera de flotantes: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja —, de modo que ningún flotante escapa más allá de la caja que cierra el capítulo (normalmente un resumen de «puntos clave»). Las aperturas de capítulo, los <code>:::part</code> y el final del documento son siempre barreras.</td>
+    </tr>
+    <tr>
+      <td colSpan={4}>Una caja <code>span: 'page'</code> en una página a varias columnas corta la banda bajo el texto que la precede; una figura a todo el ancho referenciada antes toma ese corte primero: el texto se nivela, la figura queda justo donde terminó y la caja sigue debajo (o pasa a la página siguiente cuando ya no cabe). Una figura demasiado alta para seguir al texto nivelado abre la página siguiente, con la caja tras ella, y la banda que deja sigue terminando nivelada. Una caja divisible (<code>keepTogether: false</code>) se abre bajo el texto y la figura con los elementos que caben, y el resto continúa en la página siguiente.</td>
     </tr>
     <tr>
       <td><code>width</code></td>

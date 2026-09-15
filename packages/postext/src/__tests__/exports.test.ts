@@ -104,6 +104,7 @@ describe("package exports", () => {
       "stripHeadingsDefaults",
       "resolveTableStyleConfig",
       "stripTableStyleDefaults",
+      "defaultTableContinuationStrings",
       "resolveCaptionStyleConfig",
       "stripCaptionStyleDefaults",
       "mergeCaptionStyle",

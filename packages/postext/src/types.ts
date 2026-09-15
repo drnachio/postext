@@ -642,11 +642,30 @@ export interface TableStyleConfig {
   cellPadding?: Dimension;
   /** Which rules to stroke when {@link borders} is on. Default `'grid'`. */
   rules?: TableRules;
+  /** What happens to a table taller than the space a page offers: continue
+   *  it on the following pages (`'split'`, the default), keep only the rows
+   *  that fit (`'clip'`), or leave it out (`'hide'`). See {@link TableOverflow}. */
+  overflow?: TableOverflow;
+  /** Suffix appended to the caption of every continuation slice of a split
+   *  table (e.g. "Table 6-4. Title *(cont.)*"). Defaults to `"(cont.)"`. */
+  continuedSuffix?: string;
+  /** Set a marker under every slice that continues on the next page.
+   *  Default `true`. */
+  continuesMarkerEnabled?: boolean;
+  /** Text of that marker, set right-aligned under the slice in the note
+   *  style. Defaults to `"Continued"` (`"Continúa"` for Spanish documents). */
+  continuesMarker?: string;
 }
 
 /** Rule pattern of a table: the full cell grid, horizontal rules only (top
  *  and bottom edge of every row), the outer frame only, or none. */
 export type TableRules = 'grid' | 'horizontal' | 'outer' | 'none';
+
+/** Behaviour of a table taller than the page: `'split'` breaks it between
+ *  rows and continues on the following pages, repeating the header rows and
+ *  suffixing the caption; `'clip'` keeps the leading rows that fit and drops
+ *  the rest; `'hide'` leaves the table out entirely. */
+export type TableOverflow = 'split' | 'clip' | 'hide';
 
 export interface ResolvedTableStyleConfig {
   bodyFontFamily: string;
@@ -666,6 +685,10 @@ export interface ResolvedTableStyleConfig {
   borderWidth: Dimension;
   cellPadding: Dimension;
   rules: TableRules;
+  overflow: TableOverflow;
+  continuedSuffix: string;
+  continuesMarkerEnabled: boolean;
+  continuesMarker: string;
 }
 
 /** Where a resource caption sits relative to the figure body. */

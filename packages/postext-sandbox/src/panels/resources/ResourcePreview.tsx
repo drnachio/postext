@@ -178,6 +178,7 @@ function TableBody({ resource }: TableBodyProps) {
                       verticalAlign: cell.verticalAlign ?? 'top',
                       fontWeight: cell.isHeader ? 600 : 400,
                       color: PAPER_INK,
+                      whiteSpace: 'pre-line',
                     }}
                   >
                     {cell.content}
