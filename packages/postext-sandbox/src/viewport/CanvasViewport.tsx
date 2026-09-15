@@ -22,6 +22,7 @@ export function CanvasViewport() {
   const [layout, setLayout] = useState<ViewerLayout>(EMPTY_VIEWER_LAYOUT);
   const pageCount = layout.pageCount;
   const [currentPage, setCurrentPage] = useState(0);
+  const [firstPageRecto, setFirstPageRecto] = useState(true);
   const previewRef = useRef<CanvasPreviewHandle | null>(null);
   const hydratedRef = useRef(false);
 
@@ -94,8 +95,9 @@ export function CanvasViewport() {
 
   // `#chapter=C&page=P` in the URL: restored once the document is laid
   // out, written back as the reader scrolls.
-  const handlePageCountChange = useCallback((count: number, firstPage: number, pageNumbers: readonly number[]) => {
+  const handlePageCountChange = useCallback((count: number, firstPage: number, pageNumbers: readonly number[], recto: boolean) => {
     setLayout((l) => ({ pageCount: count, firstPage, pageNumbers, version: l.version + 1 }));
+    setFirstPageRecto(recto);
   }, []);
   // The toolbar shows and takes book page numbers; the preview works in
   // page indices.
@@ -133,6 +135,7 @@ export function CanvasViewport() {
         pageNumber={pageNumberAt(layout, currentPage)}
         firstPageNumber={pageNumberAt(layout, 0)}
         lastPageNumber={pageNumberAt(layout, Math.max(0, pageCount - 1))}
+        firstPageRecto={firstPageRecto}
         onJumpToPageNumber={handleJumpToPageNumber}
         pinned={shell.pinned}
         hidden={shell.hidden}

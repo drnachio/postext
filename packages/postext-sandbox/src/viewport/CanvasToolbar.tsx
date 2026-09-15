@@ -15,6 +15,7 @@ import {
   PinOff,
 } from 'lucide-react';
 import { useSandbox } from '../context/SandboxContext';
+import { groupPagesIntoRows } from './CanvasPreview/layoutUtils';
 import { Tooltip } from '../ui';
 
 type ViewMode = 'single' | 'spread';
@@ -56,6 +57,8 @@ interface CanvasToolbarProps {
   pageNumber: number;
   firstPageNumber: number;
   lastPageNumber: number;
+  /** Whether page 0 is a right-hand page (drives the spread pairing). */
+  firstPageRecto: boolean;
   pinned: boolean;
   hidden: boolean;
   onRegenerate: () => void;
@@ -73,16 +76,18 @@ interface CanvasToolbarProps {
   onBlur?: FocusEventHandler<HTMLDivElement>;
 }
 
-// In spread view, pages are grouped into rows as [[0],[1,2],[3,4],…]. The
-// `currentPage` reported by the preview is always the leftmost page of the
-// visible row, so next/prev must jump row-to-row rather than ±1.
-function nextPageTarget(current: number, viewMode: ViewMode): number {
-  if (viewMode === 'single') return current + 1;
-  return current === 0 ? 1 : current + 2;
-}
-function prevPageTarget(current: number, viewMode: ViewMode): number {
-  if (viewMode === 'single') return current - 1;
-  return current <= 1 ? 0 : current - 2;
+// In spread view the preview groups pages into verso/recto rows (see
+// `groupPagesIntoRows`: a chapter opening on a recto shows it alone, one
+// opening on a verso pairs it with the next page), and the `currentPage` it
+// reports is the leftmost page of the visible row — so next/prev jump to
+// the first page of the neighbouring row, whatever the pairing. Out of
+// range means there is no such row.
+function rowTargets(current: number, viewMode: ViewMode, pageCount: number, firstPageRecto: boolean): { prev: number; next: number } {
+  if (viewMode === 'single') return { prev: current - 1, next: current + 1 };
+  const rows = groupPagesIntoRows(pageCount, viewMode, firstPageRecto);
+  const r = rows.findIndex((row) => row.includes(current));
+  if (r < 0) return { prev: current - 1, next: current + 1 };
+  return { prev: rows[r - 1]?.[0] ?? -1, next: rows[r + 1]?.[0] ?? pageCount };
 }
 
 export function ToolbarButton({
@@ -264,6 +269,7 @@ export function CanvasToolbar({
   pageNumber,
   firstPageNumber,
   lastPageNumber,
+  firstPageRecto,
   pinned,
   hidden,
   onRegenerate,
@@ -282,8 +288,7 @@ export function CanvasToolbar({
 }: CanvasToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
-  const prevTarget = prevPageTarget(currentPage, viewMode);
-  const nextTarget = nextPageTarget(currentPage, viewMode);
+  const { prev: prevTarget, next: nextTarget } = rowTargets(currentPage, viewMode, pageCount, firstPageRecto);
   const prevDisabled = pageCount === 0 || currentPage <= 0;
   const nextDisabled = pageCount === 0 || nextTarget > pageCount - 1;
 
