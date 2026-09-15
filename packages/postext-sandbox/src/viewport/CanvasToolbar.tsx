@@ -51,6 +51,11 @@ interface CanvasToolbarProps {
   generating: boolean;
   currentPage: number;
   pageCount: number;
+  /** Book page number printed on the current page, and the chapter's
+   *  first / last ones — what the page field shows and accepts. */
+  pageNumber: number;
+  firstPageNumber: number;
+  lastPageNumber: number;
   pinned: boolean;
   hidden: boolean;
   onRegenerate: () => void;
@@ -61,6 +66,7 @@ interface CanvasToolbarProps {
   onFitHeight: () => void;
   onSetViewMode: (mode: ViewMode) => void;
   onJumpToPage: (pageIndex: number) => void;
+  onJumpToPageNumber: (pageNumber: number) => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onFocus?: FocusEventHandler<HTMLDivElement>;
@@ -171,31 +177,38 @@ export function PinToolbarButton({
   );
 }
 
+/** The page field shows the book page number printed on the current page
+ *  (not its index in the chapter) and jumps to the page carrying the
+ *  number typed, clamped to the chapter's range. */
 function PageNumberInput({
-  currentPage,
+  pageNumber,
+  firstPageNumber,
+  lastPageNumber,
   pageCount,
-  onJumpToPage,
+  onJumpToPageNumber,
   label,
 }: {
-  currentPage: number;
+  pageNumber: number;
+  firstPageNumber: number;
+  lastPageNumber: number;
   pageCount: number;
-  onJumpToPage: (pageIndex: number) => void;
+  onJumpToPageNumber: (pageNumber: number) => void;
   label: string;
 }) {
-  const [draft, setDraft] = useState(String(currentPage + 1));
+  const [draft, setDraft] = useState(String(pageNumber));
   const [focused, setFocused] = useState(false);
   useEffect(() => {
-    if (!focused) setDraft(String(currentPage + 1));
-  }, [currentPage, focused]);
+    if (!focused) setDraft(String(pageNumber));
+  }, [pageNumber, focused]);
 
   const commit = () => {
     const n = parseInt(draft, 10);
     if (Number.isFinite(n) && pageCount > 0) {
-      const clamped = Math.max(1, Math.min(pageCount, n));
-      onJumpToPage(clamped - 1);
+      const clamped = Math.max(firstPageNumber, Math.min(lastPageNumber, n));
+      onJumpToPageNumber(clamped);
       setDraft(String(clamped));
     } else {
-      setDraft(String(currentPage + 1));
+      setDraft(String(pageNumber));
     }
   };
 
@@ -222,7 +235,7 @@ function PageNumberInput({
             commit();
             (e.currentTarget as HTMLInputElement).blur();
           } else if (e.key === 'Escape') {
-            setDraft(String(currentPage + 1));
+            setDraft(String(pageNumber));
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}
@@ -248,6 +261,9 @@ export function CanvasToolbar({
   generating,
   currentPage,
   pageCount,
+  pageNumber,
+  firstPageNumber,
+  lastPageNumber,
   pinned,
   hidden,
   onRegenerate,
@@ -258,6 +274,7 @@ export function CanvasToolbar({
   onFitHeight,
   onSetViewMode,
   onJumpToPage,
+  onJumpToPageNumber,
   onMouseEnter,
   onMouseLeave,
   onFocus,
@@ -340,9 +357,11 @@ export function CanvasToolbar({
         disabled={prevDisabled}
       />
       <PageNumberInput
-        currentPage={currentPage}
+        pageNumber={pageNumber}
+        firstPageNumber={firstPageNumber}
+        lastPageNumber={lastPageNumber}
         pageCount={pageCount}
-        onJumpToPage={onJumpToPage}
+        onJumpToPageNumber={onJumpToPageNumber}
         label={labels.pageNumberInput}
       />
       <ToolbarButton

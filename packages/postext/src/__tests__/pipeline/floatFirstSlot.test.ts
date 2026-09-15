@@ -177,6 +177,40 @@ describe('chapter barriers', () => {
   });
 });
 
+describe('page-span box right after a float reference', () => {
+  it('the float takes the head of the empty column and the box cuts under text and figure alike', () => {
+    // The figure is referenced by the very last paragraph before the box:
+    // a band cap could not level the band (the reference would spill into
+    // the figure's column and the figure would lose its slot), so the
+    // float goes to the top of the empty second column and the box lands
+    // on the same page below both — the slack under the figure is the
+    // compositor's trade. Nothing of the box moves to the next page.
+    const config: PostextConfig = {
+      ...PAGE,
+      calloutStyles: [{ id: 'box', span: 'page', floatBarrier: true }],
+    };
+    const md = `${filler(5)}\n\nSee :ref{id="f1"} here.\n\n:::callout{type="box"}\nBox.\n:::\n\n${filler(2)}`;
+    const doc = build(md, [figure('f1', { height: 260 })], config);
+    const f = floatById(doc, 'f1');
+    expect(f.page).toBe(0);
+    expect(f.block.columnIndex).toBe(1);
+    expect(f.block.bbox.y).toBeCloseTo(doc.pages[0]!.contentArea.y, 5);
+    const page = doc.pages[0]!;
+    const span = page.columns.find((c) => c.kind === 'span');
+    expect(span).toBeDefined();
+    const box = doc.blocks.find((b) => b.type === 'callout')!;
+    expect(box.pageIndex).toBe(0);
+    // The band above the box: text in column 0, only the figure in column 1.
+    const band0 = page.columns.filter((c) => c.kind !== 'span' && (c.band ?? 0) === 0);
+    expect(band0[0]!.blocks.length).toBeGreaterThan(0);
+    expect(band0[1]!.blocks).toHaveLength(0);
+    expect(span!.bbox.y).toBeGreaterThanOrEqual(bottomOf(f.block) - 1e-6);
+    // The text after the box flows in the band below it, on the same page.
+    const after = page.columns.filter((c) => c.kind !== 'span' && (c.band ?? 0) === 1);
+    expect(after.some((c) => c.blocks.length > 0)).toBe(true);
+  });
+});
+
 describe('band caps under a top float', () => {
   it('a page-span box arriving mid-page cuts the band level even when one column starts under a float', () => {
     // The float takes the top of the second column; the box then arrives

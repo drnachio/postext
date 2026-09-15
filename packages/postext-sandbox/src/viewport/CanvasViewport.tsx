@@ -4,7 +4,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { CanvasPreview, type CanvasPreviewHandle } from './CanvasPreview';
 import { CanvasToolbar } from './CanvasToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
-import { usePageHashSync, type ViewerLayout } from './usePageHashSync';
+import { usePageHashSync, pageIndexOf, pageNumberAt, EMPTY_VIEWER_LAYOUT, type ViewerLayout } from './usePageHashSync';
 import { loadCanvasViewMode, saveCanvasViewMode, loadCanvasFitMode, saveCanvasFitMode, loadCanvasZoom, saveCanvasZoom } from '../storage/persistence';
 
 type ViewMode = 'single' | 'spread';
@@ -19,7 +19,7 @@ export function CanvasViewport() {
   const [viewMode, setViewMode] = useState<ViewMode>('single');
   const [fitMode, setFitMode] = useState<FitMode>('width');
   const [generating, setGenerating] = useState(false);
-  const [layout, setLayout] = useState<ViewerLayout>({ pageCount: 0, firstPage: 0, version: 0 });
+  const [layout, setLayout] = useState<ViewerLayout>(EMPTY_VIEWER_LAYOUT);
   const pageCount = layout.pageCount;
   const [currentPage, setCurrentPage] = useState(0);
   const previewRef = useRef<CanvasPreviewHandle | null>(null);
@@ -94,9 +94,15 @@ export function CanvasViewport() {
 
   // `#chapter=C&page=P` in the URL: restored once the document is laid
   // out, written back as the reader scrolls.
-  const handlePageCountChange = useCallback((count: number, firstPage: number) => {
-    setLayout((l) => ({ pageCount: count, firstPage, version: l.version + 1 }));
+  const handlePageCountChange = useCallback((count: number, firstPage: number, pageNumbers: readonly number[]) => {
+    setLayout((l) => ({ pageCount: count, firstPage, pageNumbers, version: l.version + 1 }));
   }, []);
+  // The toolbar shows and takes book page numbers; the preview works in
+  // page indices.
+  const handleJumpToPageNumber = useCallback((pageNumber: number) => {
+    const index = pageIndexOf(layout, pageNumber);
+    if (index >= 0) previewRef.current?.jumpToPage(index);
+  }, [layout]);
   const syncPageHash = usePageHashSync(layout, handleJumpToPage);
   const handleCurrentPageChange = useCallback((pageIndex: number) => {
     setCurrentPage(pageIndex);
@@ -124,6 +130,10 @@ export function CanvasViewport() {
         generating={generating}
         currentPage={currentPage}
         pageCount={pageCount}
+        pageNumber={pageNumberAt(layout, currentPage)}
+        firstPageNumber={pageNumberAt(layout, 0)}
+        lastPageNumber={pageNumberAt(layout, Math.max(0, pageCount - 1))}
+        onJumpToPageNumber={handleJumpToPageNumber}
         pinned={shell.pinned}
         hidden={shell.hidden}
         onRegenerate={handleRegenerate}

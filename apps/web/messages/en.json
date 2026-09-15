@@ -665,6 +665,8 @@
     "balanceColumnsMaxLinesTooltip": "Maximum extra grid lines that may be added above a single heading",
     "balanceAfterLists": "Stretch After Lists",
     "balanceAfterListsTooltip": "Add a baseline-grid line after a list ends when the column needs to reach the page bottom",
+    "balanceAfterFloats": "Stretch Under Figures",
+    "balanceAfterFloatsTooltip": "Add a baseline-grid line between a figure or table at the head of a column and the text under it when the column needs to reach the page bottom",
     "balanceLooseParagraphs": "Loose Paragraphs",
     "balanceLooseParagraphsTooltip": "As a last resort, re-break one paragraph per column one line looser, within the maximum word spacing",
     "balanceMaxLooseParagraphs": "Max Loose Paragraphs",

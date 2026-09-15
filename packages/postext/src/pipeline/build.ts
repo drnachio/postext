@@ -95,7 +95,7 @@ import {
 } from './resourceNumbering';
 import { defaultResourceTypes } from '../defaults/resourceTypes';
 import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
-import { totalGapLines, proposeBalanceLines, type LooseBudget, MAX_BALANCING_PASSES, type BalanceState } from './columnBalancing';
+import { totalGapLines, proposeBalanceLines, collectColumnGaps, firstDivergentColumn, type LooseBudget, MAX_BALANCING_PASSES, type BalanceState, type BalanceProposal } from './columnBalancing';
 import {
   applyBandCap,
   uncapBand,
@@ -477,6 +477,9 @@ export function buildDocumentPass(
   const floatReserved = new Map<VDTColumn, { top: number; bottom: number }>();
   const reservedOf = (col: VDTColumn): { top: number; bottom: number } =>
     floatReserved.get(col) ?? { top: 0, bottom: 0 };
+  /** Content index of the block that first referenced the latest float
+   *  reserved at the head of each column. */
+  const topFloatRefOf = new Map<VDTColumn, number>();
 
   /** Kind of cap the column is under (`undefined` when uncapped). A cap that
    *  cannot be attributed to the active band is treated as a span cap — the
@@ -547,6 +550,7 @@ export function buildDocumentPass(
         col.bbox.height = Math.max(0, col.bbox.height - need);
         col.availableHeight = Math.max(0, col.availableHeight - need);
         r.top += need;
+        topFloatRefOf.set(col, Math.max(topFloatRefOf.get(col) ?? -1, f.firstBlockIdx));
       } else {
         const capped = uncappedBottoms.get(col);
         if (capped !== undefined) {
@@ -615,13 +619,19 @@ export function buildDocumentPass(
    *  cursor (bottom of the referencing column, top / bottom of the next
    *  empty columns; the band bottom for page-span floats). Runs before each
    *  block is placed, so a float lands in the first gap after its reference. */
-  const tryPlacePendingFloatsOnCurrentPage = (): void => {
+  const tryPlacePendingFloatsOnCurrentPage = (preferTop = false): void => {
     if (pendingFloats.length === 0) return;
     const page = doc.pages[cursor.pageIndex]!;
     for (let i = 0; i < pendingFloats.length;) {
       const f = pendingFloats[i]!;
       let r: 'placed' | 'defer' | 'skip' = 'defer';
-      for (const slot of enumerateCurrentPageSlots(page, cursor.columnIndex, f, capKindOf)) {
+      let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, f, capKindOf);
+      // A page-span box comes next: the head of an empty column keeps the
+      // band cuttable under the float (the box then sits below both the
+      // text and the figure), where the referencing column's foot would
+      // wall the box off the page.
+      if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
+      for (const slot of slots) {
         r = placeFloatInColumns(page, f, slot.cols, slot.position, slot.pageSpan, 'strict');
         if (r !== 'defer') break;
       }
@@ -633,6 +643,19 @@ export function buildDocumentPass(
   /** Reserve floats on each freshly opened content page. Passed only to the
    *  content-flow column advances — parity / force-blank pages never get it. */
   const onNewPage = (page: VDTPage): void => flushFloatsIntoPage(page);
+
+  /** Whether content block `idx` opens a callout that will span the page
+   *  in the current (multi-column) band — the floats placed right before
+   *  it prefer the head of an empty column. */
+  const spanBoxAt = (idx: number): boolean => {
+    const b = contentBlocks[idx];
+    if (!b || b.type !== 'containerStart' || b.containerName !== 'callout') return false;
+    const plan = calloutPlan.get(idx);
+    const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+    if (!style || style.span !== 'page' || style.placement === 'fixed') return false;
+    const page = doc.pages[cursor.pageIndex]!;
+    return bandColumns(page, currentBand(page, cursor)).length > 1;
+  };
 
   /** Chapter barrier: place every pending float before the boundary — in
    *  the current page's free slots, then on fresh pages opened ahead of it
@@ -708,6 +731,18 @@ export function buildDocumentPass(
   let activeCap: { spanIndex: number; pageIndex: number; band: number } | null = null;
   /** True bottoms of capped columns (restored when the span block cuts). */
   const uncappedBottoms = new Map<VDTColumn, number>();
+  /** Column balancing: height (px) the levers added inside each column so
+   *  far — extra grid lines above headings / list ends and lines gained by
+   *  loose paragraphs. Balancing only ever fills a column's bottom gap, so
+   *  a placement rule that needs slack *after* a block (keep-colon-with-
+   *  list) must see the column as it was before the levers filled it:
+   *  otherwise the block that closed the column in the plain pass moves to
+   *  the next column, the flow shifts on every later page, and the pass is
+   *  discarded as a regression. */
+  const balanceExtraInColumn = new Map<VDTColumn, number>();
+  const addBalanceExtra = (col: VDTColumn, px: number): void => {
+    if (px > 0) balanceExtraInColumn.set(col, (balanceExtraInColumn.get(col) ?? 0) + px);
+  };
   const bandCapProposals = new Map<number, BandCap>();
   const spanPlacedInBand = new Set<number>();
   const bandCapsApplied = new Set<number>();
@@ -1074,6 +1109,32 @@ export function buildDocumentPass(
       const bottoms = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
       return Math.max(...bottoms) - Math.min(...bottoms) <= baselineGrid + 0.5;
     };
+    /** Level for the box: the text columns end level, and a column holding
+     *  only a float band (a figure at its head, no text yet) counts as level
+     *  when a band cap could not level it either — the figure was first
+     *  referenced by the very block before the box, so a cut that spills
+     *  that block into the figure's column leaves the figure no slot after
+     *  its reference (it would fall off the page, and the box with it). The
+     *  box then cuts under the text and the figure alike, the slack under
+     *  the figure being the compositor's usual trade; a figure referenced
+     *  earlier keeps the cap route, which flows text under it. */
+    const lastBlockBefore = (): number => {
+      let j = startIdx - 1;
+      while (j >= 0 && isMarkerBlock(contentBlocks[j])) j--;
+      return j;
+    };
+    const levelForBox = (cols: readonly VDTColumn[]): boolean => {
+      if (isBandLevel(cols)) return true;
+      const textCols = cols.filter((c) => c.blocks.length > 0);
+      const floatOnly = cols.filter((c) => c.blocks.length === 0 && reservedOf(c).top > 0);
+      if (textCols.length === 0 || textCols.length + floatOnly.length !== cols.length) return false;
+      if (!isBandLevel(textCols)) return false;
+      const textBottom = bandUsedBottom(textCols);
+      const before = lastBlockBefore();
+      return floatOnly.every((c) =>
+        c.bbox.y <= textBottom + baselineGrid + 0.5 && topFloatRefOf.get(c) === before,
+      );
+    };
 
     /** Position in the children the fragment to place starts at, and its
      *  0-based index among the fragments (0 = the box, or its head). */
@@ -1113,7 +1174,7 @@ export function buildDocumentPass(
        *  `requireLevel` is set. */
       const measureBand = (requireLevel: boolean): SpanFit | null => {
         const cols = bandColumns(page, currentBand(page, cursor));
-        if (cols.length === 0 || (requireLevel && !isBandLevel(cols))) return null;
+        if (cols.length === 0 || (requireLevel && !levelForBox(cols))) return null;
         const cutY = gridUp(page, bandUsedBottom(cols));
         const bandHasContent = cols.some((c) => c.blocks.length > 0);
         const spacing = bandHasContent ? Math.max(pendingSpacing, result.marginTopPx) : 0;
@@ -1570,7 +1631,7 @@ export function buildDocumentPass(
     // order. Then enqueue the floats first-referenced in this block, so the
     // next page opened while placing it (or any later block) reserves their
     // band and the next iteration offers them the slots that follow.
-    tryPlacePendingFloatsOnCurrentPage();
+    tryPlacePendingFloatsOnCurrentPage(spanBoxAt(blockIdx));
     enqueueFloatsFor(blockIdx);
 
     // --- Directives ----------------------------------------------------
@@ -1687,7 +1748,7 @@ export function buildDocumentPass(
         // slots, else on pages opened ahead of it — so no float escapes
         // past it. The page stays balanceable (no forced break).
         if (pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!.floatBarrier) {
-          tryPlacePendingFloatsOnCurrentPage();
+          tryPlacePendingFloatsOnCurrentPage(spanBoxAt(blockIdx));
           drainPendingFloats();
         }
         // `span: 'page'` boxes in multi-column layouts branch to the
@@ -1889,6 +1950,10 @@ export function buildDocumentPass(
     // A justified line a link leaves with too few spaces is set ragged.
     let remainingLines = [...raggedUrlLines(measured.lines, style.textAlign, rawBlock.text)];
     let partIndex = 0;
+    /** Times this block left an EMPTY short column (see `shortColumn`) —
+     *  bounded so a page whose columns are all short (footnotes, design
+     *  bands) cannot make it wander forever. */
+    let shortColumnMoves = 0;
 
     // "Keep with next" for colon-introduced lists: a paragraph ending in `:`
     // followed directly by a list acts as a lead-in title — the colon-bearing
@@ -1920,7 +1985,10 @@ export function buildDocumentPass(
           // page top.
           if (vdtType === 'heading') {
             const extraPx = balanceExtraPx?.get(blockIdx);
-            if (extraPx) spacingBefore += extraPx;
+            if (extraPx) {
+              spacingBefore += extraPx;
+              addBalanceExtra(curCol, extraPx);
+            }
           }
         } else if (vdtType === 'listItem') {
           const prevWasList = prevNonMarkerBlock(contentBlocks, blockIdx)?.type === 'listItem';
@@ -1933,8 +2001,24 @@ export function buildDocumentPass(
         // handled inside the heading branch above (after margin collapsing).
         if (vdtType !== 'heading' && vdtType !== 'mathDisplay' && partIndex === 0) {
           const extraPx = balanceExtraPx?.get(blockIdx);
-          if (extraPx) spacingBefore += extraPx;
+          if (extraPx) {
+            spacingBefore += extraPx;
+            addBalanceExtra(curCol, extraPx);
+          }
         }
+      } else if (partIndex === 0 && reservedOf(curCol).top > 0) {
+        // Column balancing: extra grid lines between the float band at the
+        // head of this column and its first block (the after-float lever).
+        const extraPx = balanceExtraPx?.get(blockIdx);
+        if (extraPx) {
+          spacingBefore += extraPx;
+          addBalanceExtra(curCol, extraPx);
+        }
+      }
+      // A loose paragraph's extra line is balancing height too (it lands
+      // whole in this column — loose candidates are never split parts).
+      if (partIndex === 0 && tryLoose && looseLines !== undefined && typeof looseOutcome.get(blockIdx) === 'number') {
+        addBalanceExtra(curCol, looseLines * style.lineHeightPx);
       }
 
       const effectiveAvailable = curCol.availableHeight - spacingBefore;
@@ -1996,7 +2080,9 @@ export function buildDocumentPass(
       ) {
         const usedHeight = (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
         const paragraphBottom = usedHeight + totalRemainHeight;
-        const availableAfter = curCol.bbox.height - paragraphBottom;
+        // Slack after the paragraph as the plain pass saw it: the height
+        // balancing added above in this column is not room the list lost.
+        const availableAfter = curCol.bbox.height - paragraphBottom + (balanceExtraInColumn.get(curCol) ?? 0);
         const nextListKind = (nextBlock as { listKind?: ListKind } | null)?.listKind ?? 'unordered';
         const nextListMarginDim = nextListKind === 'ordered'
           ? resolved.orderedLists.marginTop
@@ -2071,6 +2157,17 @@ export function buildDocumentPass(
         }
       }
 
+      // A block opening a column normally stays (no column can take it any
+      // better), except in a column at least a line shorter than the content
+      // area — the band under a page-span box, or a column cut by a float:
+      // a heading that fits there alone, or a block that does not fit there
+      // but would fit a full column, opens the next column instead (the move
+      // count is bounded besides). A column cut by a band cap is short on
+      // purpose — its content is meant to end at the cut.
+      const shortColumn = shortColumnMoves < 4
+        && !uncappedBottoms.has(curCol)
+        && curCol.bbox.height < contentArea.height - baselineGrid;
+
       // Block fits in current column
       if (effectiveRemainHeight <= effectiveAvailable) {
         // Heading keep-with-next: never leave a heading as the last block of a
@@ -2088,7 +2185,7 @@ export function buildDocumentPass(
           && resolved.headings.keepWithNext
           && !nextIsHeading
           && nextBlock !== null
-          && curCol.blocks.length > 0
+          && (curCol.blocks.length > 0 || shortColumn)
         ) {
           const wouldUsedHeight =
             (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
@@ -2102,6 +2199,7 @@ export function buildDocumentPass(
             : 1;
           const minSpaceAfter = minLinesNeeded * bodyStyle.lineHeightPx;
           if (remainAfterHeading < minSpaceAfter) {
+            if (curCol.blocks.length === 0) shortColumnMoves++;
             // Roll back any immediately-preceding heading blocks in this
             // column so they travel with this one.
             const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
@@ -2263,8 +2361,10 @@ export function buildDocumentPass(
         // choice.splitAt === 0: fall through to push whole paragraph to next column
       }
 
-      // Cannot split — advance to next column if current has content
-      if (curCol.blocks.length > 0) {
+      // Cannot split — advance to next column if current has content (or
+      // the column is a short band that cannot hold the block at all).
+      if (curCol.blocks.length > 0 || (shortColumn && effectiveRemainHeight <= contentArea.height)) {
+        if (curCol.blocks.length === 0) shortColumnMoves++;
         // Heading keep-with-next (no-fit variant): when a heading can't fit
         // in the current column and the column's tail is a run of headings,
         // pull those headings along so they don't remain stranded as orphans
@@ -2401,7 +2501,43 @@ export function buildDocument(
   let bestScore = totalGapLines(best.doc, best.forcedBreakPages);
   let applied: BalanceState = { lines: new Map(), loose: new Map() };
   const failedLoose = new Set<number>();
+  const failedLines = new Set<number>();
   let converged = bestScore === 0;
+
+  /**
+   * A rejected pass moved content across a column break somewhere (a
+   * split paragraph whose head no longer fits, a float that lost its slot,
+   * a lead-in that left with its list…): every page after that point is
+   * re-flowed, gaps open elsewhere and a span cap may miss its band. The
+   * levers are meant to be local, so contain the damage: find the first
+   * column whose content changed and blacklist the levers this pass newly
+   * applied there (failing that, on its page; failing that, everywhere), so
+   * the next proposal keeps the working levers before it and tries again
+   * without the one that cascaded. Returns whether anything was blacklisted.
+   */
+  const containCascade = (next: PassResult, proposal: BalanceProposal): boolean => {
+    const div = firstDivergentColumn(best.doc, next.doc);
+    if (!div) return false;
+    const newLines = [...proposal.lines].filter(([k, n]) => n > (applied.lines.get(k) ?? 0)).map(([k]) => k);
+    const newLoose = [...proposal.loose.keys()].filter((k) => !applied.loose.has(k));
+    if (newLines.length === 0 && newLoose.length === 0) return false;
+    const gaps = collectColumnGaps(best.doc, best.forcedBreakPages);
+    const blacklist = (cands: ReadonlySet<number> | null): boolean => {
+      let hit = false;
+      for (const k of newLines) if (!cands || cands.has(k)) { failedLines.add(k); hit = true; }
+      for (const k of newLoose) if (!cands || cands.has(k)) { failedLoose.add(k); hit = true; }
+      return hit;
+    };
+    const inColumn = gaps
+      .filter((g) => g.pageIndex === div.pageIndex && g.columnIndex === div.columnIndex)
+      .flatMap((g) => g.candidates.map((c) => c.contentIndex));
+    if (blacklist(new Set(inColumn))) return true;
+    const onPage = gaps
+      .filter((g) => g.pageIndex === div.pageIndex)
+      .flatMap((g) => g.candidates.map((c) => c.contentIndex));
+    if (blacklist(new Set(onPage))) return true;
+    return blacklist(null);
+  };
 
   const balance = (): void => {
     while (!converged && passCount < MAX_BALANCING_PASSES) {
@@ -2409,10 +2545,13 @@ export function buildDocument(
         maxLinesPerHeading: balancing.maxLinesPerHeading,
         stretchAfterLists: balancing.stretchAfterLists,
         maxLinesAfterList: balancing.maxLinesAfterList,
+        stretchAfterFloats: balancing.stretchAfterFloats,
+        maxLinesAfterFloat: balancing.maxLinesAfterFloat,
         looseParagraphs: balancing.looseParagraphs,
         maxLooseParagraphs: balancing.maxLooseParagraphs,
         optimalLineBreaking: best.doc.config.bodyText.optimalLineBreaking,
         failedLoose,
+        failedLines,
       });
       if (!proposal.changed) {
         // No stretch point can absorb the remaining gaps — stable.
@@ -2453,11 +2592,15 @@ export function buildDocument(
         };
         converged = score === 0;
       } else {
-        // Plateau or regression. Retry when a loose candidate was just
-        // blacklisted (the proposer falls through to the next one), or when
-        // the new loose paragraphs gained their lines yet the layout did not
-        // improve (the gain landed elsewhere — drop them too). A pure spacing
-        // plateau means we're done: keep the best layout found so far.
+        // Plateau or regression. First contain a cascade: a lever that
+        // moved content across a column break is blacklisted and the loop
+        // retries without it. Otherwise retry when a loose candidate was
+        // just blacklisted (the proposer falls through to the next one), or
+        // when the new loose paragraphs gained their lines yet the layout
+        // did not improve (the gain landed elsewhere — drop them too). A
+        // pure spacing plateau means we're done: keep the best layout found
+        // so far.
+        if (containCascade(next, proposal)) continue;
         if (looseFailed.length > 0 || looseWon.length > 0) {
           for (const k of looseWon) failedLoose.add(k);
           continue;

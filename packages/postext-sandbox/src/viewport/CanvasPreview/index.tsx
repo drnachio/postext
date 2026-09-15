@@ -31,7 +31,7 @@ interface CanvasPreviewProps {
   onGeneratingChange?: (generating: boolean) => void;
   /** After every layout: the page count and the first page with content
    *  (the ones before it are parity padding). */
-  onPageCountChange?: (count: number, firstContentPage: number) => void;
+  onPageCountChange?: (count: number, firstContentPage: number, pageNumbers: readonly number[]) => void;
   onCurrentPageChange?: (index: number) => void;
 }
 
@@ -295,7 +295,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
         if (layout) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
         dispatch({ type: 'BUMP_DOC_VERSION' });
         setDocVersion((v) => v + 1);
-        onPageCountChangeRef.current?.(doc.pages.length, leadingBlankPageCount(doc));
+        onPageCountChangeRef.current?.(doc.pages.length, leadingBlankPageCount(doc), doc.pages.map((p) => p.pageNumberValue));
       })
       .catch((err: unknown) => {
         if ((err as { name?: string } | null)?.name === 'AbortError') return;

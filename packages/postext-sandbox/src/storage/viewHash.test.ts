@@ -20,11 +20,11 @@ afterEach(() => {
 });
 
 describe('view hash', () => {
-  it('reads 1-based chapter and page as 0-based indices and rejects junk', () => {
+  it('reads the 1-based chapter as a 0-based index, the page as its number, and rejects junk', () => {
     installWindow('#chapter=2&page=3');
-    expect(readViewHash()).toEqual({ chapter: 1, page: 2 });
-    installWindow('#page=3');
-    expect(readViewHash()).toEqual({ chapter: null, page: 2 });
+    expect(readViewHash()).toEqual({ chapter: 1, page: 3 });
+    installWindow('#page=27');
+    expect(readViewHash()).toEqual({ chapter: null, page: 27 });
     installWindow('#chapter=0&page=0');
     expect(readViewHash()).toEqual({ chapter: null, page: null });
     installWindow('#other=1');
@@ -34,19 +34,19 @@ describe('view hash', () => {
   });
 
   it('builds the fragment, leaving unknown parts out', () => {
-    expect(viewHashFragment({ chapter: 1, page: 2 })).toBe('#chapter=2&page=3');
-    expect(viewHashFragment({ chapter: null, page: 2 })).toBe('#page=3');
+    expect(viewHashFragment({ chapter: 1, page: 27 })).toBe('#chapter=2&page=27');
+    expect(viewHashFragment({ chapter: null, page: 3 })).toBe('#page=3');
     expect(viewHashFragment({ chapter: 1, page: null })).toBe('#chapter=2');
     expect(viewHashFragment({ chapter: null, page: null })).toBe('');
   });
 
   it('writes the fragment without a history entry and skips no-op writes', () => {
     const replaceState = installWindow('#chapter=1&page=3');
-    writeViewHash({ chapter: 0, page: 2 });
+    writeViewHash({ chapter: 0, page: 3 });
     expect(replaceState).not.toHaveBeenCalled();
-    writeViewHash({ chapter: 2, page: 5 });
+    writeViewHash({ chapter: 2, page: 6 });
     expect(replaceState).toHaveBeenCalledWith(null, '', '#chapter=3&page=6');
-    expect(readViewHash()).toEqual({ chapter: 2, page: 5 });
+    expect(readViewHash()).toEqual({ chapter: 2, page: 6 });
   });
 
   it('clears the fragment through the page URL, not an empty string', () => {
