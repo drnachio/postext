@@ -460,7 +460,12 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     lastGeomRef.current = geom;
   }, [docVersion, layoutKey, zoom, viewMode, fitMode, deferredConfig, applyDisplaySize]);
 
-  // Draw cursor/selection overlays whenever selection or debug config changes
+  // Draw cursor/selection overlays whenever selection or debug config changes.
+  // The viewport follows the caret only when the SELECTION moves (the reader
+  // placed it in the editor); a relayout, a focus change or a redraw with the
+  // same selection must not pull the page back to it, or the reader could
+  // never scroll away from a selected block.
+  const lastFollowedRef = useRef<string | null>(null);
   useEffect(() => {
     const doc = docRef.current;
     if (!doc) return;
@@ -485,11 +490,15 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     const scrollEnabled = isCollapsed
       ? debug.cursorSync.enabled
       : debug.selectionSync.enabled;
+    const followKey = focused ? `${activeChapterId}:${selection.from}:${selection.to}:${selection.head}` : null;
+    const selectionMoved = followKey !== null && followKey !== lastFollowedRef.current;
+    if (focused) lastFollowedRef.current = followKey;
     if (
       activeCursorRect &&
       container &&
       focused &&
-      scrollEnabled
+      scrollEnabled &&
+      selectionMoved
     ) {
       const padding = 16;
       const cr = activeCursorRect.getBoundingClientRect();

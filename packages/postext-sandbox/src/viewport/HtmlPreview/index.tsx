@@ -508,7 +508,9 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   }, [renderKey, scheduleRelayout]);
 
   // Draw cursor/selection overlays whenever selection, focus, or the document
-  // itself changes. Mirrors the effect in CanvasPreview so behavior is shared.
+  // itself changes. Mirrors the effect in CanvasPreview so behavior is shared:
+  // the viewport follows the caret only when the selection itself moves.
+  const lastFollowedRef = useRef<string | null>(null);
   useEffect(() => {
     const doc = docRef.current;
     if (!doc) return;
@@ -549,11 +551,15 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     const scrollEnabled = isCollapsed
       ? debug.cursorSync.enabled
       : debug.selectionSync.enabled;
+    const followKey = focused ? `${activeChapterId}:${selection.from}:${selection.to}:${selection.head}` : null;
+    const selectionMoved = followKey !== null && followKey !== lastFollowedRef.current;
+    if (focused) lastFollowedRef.current = followKey;
     if (
       activeCursorRect &&
       scroll &&
       focused &&
-      scrollEnabled
+      scrollEnabled &&
+      selectionMoved
     ) {
       const padding = 16;
       const cr = activeCursorRect.getBoundingClientRect();
