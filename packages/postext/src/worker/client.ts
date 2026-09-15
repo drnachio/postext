@@ -1,11 +1,16 @@
 import type { PostextContent, PostextConfig } from '../types';
 import type { VDTDocument } from '../vdt';
+import type { BuildProgress } from '../pipeline/build';
+
+export type { BuildProgress } from '../pipeline/build';
 import type { FontPayload, RequestMessage, ResponseMessage } from './protocol';
 
 export type { FontPayload } from './protocol';
 
 export interface BuildOptions {
   signal?: AbortSignal;
+  /** Called as the worker's placement advances (throttled by the worker). */
+  onProgress?: (progress: BuildProgress) => void;
 }
 
 export interface LayoutWorkerHandle {
@@ -26,6 +31,7 @@ interface Pending {
   resolve: (value: unknown) => void;
   reject: (err: unknown) => void;
   onAbort?: () => void;
+  onProgress?: (progress: BuildProgress) => void;
 }
 
 export interface CreateLayoutWorkerOptions {
@@ -51,6 +57,9 @@ export function createLayoutWorker(
     const entry = pending.get(msg.id);
     if (!entry) return;
     switch (msg.kind) {
+      case 'progress':
+        entry.onProgress?.(msg.progress);
+        return;
       case 'built':
         pending.delete(msg.id);
         entry.resolve(msg.doc);
@@ -132,6 +141,7 @@ export function createLayoutWorker(
             reject(err);
           },
           onAbort,
+          onProgress: opts?.onProgress,
         });
         send({ kind: 'build', id, content, config });
       });

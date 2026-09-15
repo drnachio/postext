@@ -12,10 +12,11 @@ import {
   type Dispatch,
   type MutableRefObject,
 } from 'react';
-import type { PostextConfig, VDTDocument, Resource } from 'postext';
+import type { PostextConfig, VDTDocument, Resource, LayoutContinuation } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
+import { readViewHash } from '../storage/viewHash';
 import { loadConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId, saveHiddenPresetIds } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
@@ -23,7 +24,8 @@ import { pruneFontFiles } from '../storage/fontStorage';
 import { pruneBlobs } from '../storage/blobStore';
 import { collectProjectFileIds, generateChapterId, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
 import type { ProjectSummary } from '../storage/projects';
-import type { BookContent, BookPages, Chapter, ComposedBook, LayoutScope } from '../book/types';
+import type { BookContent, BookPages, BookPlan, Chapter, ChapterLayout, ChapterPlan, ComposedBook, LayoutScope } from '../book/types';
+import { createBookPlanner } from '../book/pagination';
 import {
   activeChapter,
   addChapter,
@@ -126,11 +128,14 @@ export interface SandboxState {
   /** Every chapter of the book, in order. Always at least one. */
   chapters: Chapter[];
   activeChapterId: string;
-  /** Whole book or just the active chapter goes to the layout engine. */
-  layoutScope: LayoutScope;
-  /** First page of every chapter from the last whole-book layout; null
-   *  until one lands. */
-  bookPages: BookPages | null;
+  /** What the PDF viewer renders: the whole book or the active chapter.
+   *  The canvas and HTML previews always lay out the active chapter. */
+  pdfScope: LayoutScope;
+  /** What the last layout of each chapter on its own recorded (page count
+   *  and how its numbering ends), keyed by chapter id. Chapters are laid out
+   *  one at a time; the layouts of the chapters before the active one give
+   *  it its first page number (see `book/pagination.ts`). */
+  chapterLayouts: Record<string, ChapterLayout>;
   /** Preset ids the user hid from the Projects panel (never the built-in). */
   hiddenPresetIds: string[];
   config: PostextConfig;
@@ -216,11 +221,11 @@ export type SandboxAction =
   | { type: 'RENAME_CHAPTER'; payload: { id: string; title: string } }
   | { type: 'MOVE_CHAPTER'; payload: { id: string; to: number } }
   | { type: 'SET_ACTIVE_CHAPTER'; payload: string }
-  | { type: 'SET_LAYOUT_SCOPE'; payload: LayoutScope }
+  | { type: 'SET_PDF_SCOPE'; payload: LayoutScope }
   | { type: 'SPLIT_CHAPTER'; payload: { id: string; at: number; newId: string } }
   | { type: 'SPLIT_CHAPTER_AT_HEADINGS'; payload: { id: string; newIds: string[] } }
   | { type: 'MERGE_CHAPTER_WITH_PREVIOUS'; payload: string }
-  | { type: 'SET_BOOK_PAGES'; payload: BookPages | null }
+  | { type: 'SET_CHAPTER_LAYOUT'; payload: ChapterLayout }
   | { type: 'HIDE_PRESET'; payload: string }
   | { type: 'UNHIDE_PRESET'; payload: string }
   | { type: 'SET_ACTIVE_RESOURCE'; payload: string | null }
@@ -251,22 +256,31 @@ const EMPTY_SELECTION: EditorSelection = { from: 0, to: 0, head: 0 };
 function withBook(state: SandboxState, book: BookContent, resetSelection = false): SandboxState {
   if (
     book.chapters === state.chapters &&
-    book.activeChapterId === state.activeChapterId &&
-    book.layoutScope === state.layoutScope
+    book.activeChapterId === state.activeChapterId
   ) return state;
   const chapterChanged = book.activeChapterId !== state.activeChapterId;
   return {
     ...state,
     chapters: book.chapters,
     activeChapterId: book.activeChapterId,
-    layoutScope: book.layoutScope,
     markdown: activeChapter(book).markdown,
+    chapterLayouts: book.chapters === state.chapters ? state.chapterLayouts : pruneChapterLayouts(state.chapterLayouts, book.chapters),
     ...(resetSelection || chapterChanged ? { selection: EMPTY_SELECTION } : {}),
   };
 }
 
+/** Drop the layout records of chapters that are no longer in the book. */
+function pruneChapterLayouts(layouts: Record<string, ChapterLayout>, chapters: Chapter[]): Record<string, ChapterLayout> {
+  const ids = new Set(chapters.map((c) => c.id));
+  const stale = Object.keys(layouts).filter((id) => !ids.has(id));
+  if (stale.length === 0) return layouts;
+  const next = { ...layouts };
+  for (const id of stale) delete next[id];
+  return next;
+}
+
 function bookOf(state: SandboxState): BookContent {
-  return { chapters: state.chapters, activeChapterId: state.activeChapterId, layoutScope: state.layoutScope };
+  return { chapters: state.chapters, activeChapterId: state.activeChapterId };
 }
 
 export function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
@@ -296,9 +310,9 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       if (!state.chapters.some((c) => c.id === action.payload)) return state;
       return withBook(state, { ...bookOf(state), activeChapterId: action.payload });
     }
-    case 'SET_LAYOUT_SCOPE':
-      if (action.payload === state.layoutScope) return state;
-      return { ...state, layoutScope: action.payload };
+    case 'SET_PDF_SCOPE':
+      if (action.payload === state.pdfScope) return state;
+      return { ...state, pdfScope: action.payload };
     case 'SPLIT_CHAPTER':
       return withBook(state, splitChapterAt(bookOf(state), action.payload.id, action.payload.at, action.payload.newId));
     case 'SPLIT_CHAPTER_AT_HEADINGS': {
@@ -308,8 +322,11 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     }
     case 'MERGE_CHAPTER_WITH_PREVIOUS':
       return withBook(state, mergeWithPrevious(bookOf(state), action.payload));
-    case 'SET_BOOK_PAGES':
-      return { ...state, bookPages: action.payload };
+    case 'SET_CHAPTER_LAYOUT': {
+      const layout = action.payload;
+      if (!state.chapters.some((c) => c.id === layout.chapterId)) return state;
+      return { ...state, chapterLayouts: { ...state.chapterLayouts, [layout.chapterId]: layout } };
+    }
     case 'HIDE_PRESET': {
       const next = hidePresetId(state.hiddenPresetIds, action.payload);
       return next.length === state.hiddenPresetIds.length ? state : { ...state, hiddenPresetIds: next };
@@ -519,6 +536,9 @@ interface SandboxStore {
   /** Warnings for the current layout source, cached per state so every
    *  consumer (panel, activity bar) shares one computation. */
   getWarnings: (s: SandboxState) => Warning[];
+  /** How each chapter is laid out on its own (continuation, page ranges),
+   *  cached per state so every consumer shares one computation. */
+  getPlan: (s: SandboxState) => BookPlan;
   /** Load a preset by id (all parts). No-op for unknown/unavailable ids. */
   loadPreset: (id: string) => Promise<void>;
   /** Re-fetch the active preset and re-apply the given parts. */
@@ -725,49 +745,59 @@ export function useSandboxWarnings(): Warning[] {
 
 const SAMPLE_DOCUMENTS = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES];
 
-/** The book slice (chapters, active chapter, layout scope). */
+/** The book slice (chapters, active chapter). */
 export function useBookContent(): BookContent {
   const chapters = useSandboxSelector((s) => s.chapters);
   const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
-  const layoutScope = useSandboxSelector((s) => s.layoutScope);
-  return useMemo(() => ({ chapters, activeChapterId, layoutScope }), [chapters, activeChapterId, layoutScope]);
+  return useMemo(() => ({ chapters, activeChapterId }), [chapters, activeChapterId]);
+}
+
+/** How every chapter is laid out on its own: what it inherits from the
+ *  chapters before it and, once their layouts are known, its page range. */
+export function useBookPlan(): BookPlan {
+  const store = useStore();
+  return useSandboxSelector((s) => store.getPlan(s));
+}
+
+/** Page ranges of the chapters whose pagination is known. */
+export function useBookPages(): BookPages {
+  return useBookPlan().bookPages;
 }
 
 export interface LayoutSource {
-  /** What the engine should lay out for the current scope. */
+  /** The active chapter, composed on its own (its offsets are chapter
+   *  offsets, so clicks map back directly). */
   book: ComposedBook;
-  scope: LayoutScope;
-  activeChapterId: string;
-  /** In chapter-only mode: page numbering picks up where the chapter
-   *  starts in the last whole-book layout (approximate). */
-  configOverride: Pick<PostextConfig, 'page'> | null;
+  chapterId: string;
+  /** The chapter's own text, as stored — what a layout record is keyed on. */
+  chapterMarkdown: string;
+  /** What the engine inherits from the chapters before this one. */
+  continuation: LayoutContinuation | undefined;
+  plan: ChapterPlan;
 }
 
-/** The composed document the viewports (and warnings) work from. Memoised
- *  on the chapters array, so unrelated state changes reuse it. */
+/** The document the previews (and warnings) lay out: the active chapter,
+ *  continued after the chapters before it. Memoised on its inputs, so
+ *  unrelated state changes reuse it. */
 export function useLayoutSource(): LayoutSource {
   const chapters = useSandboxSelector((s) => s.chapters);
   const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
-  const scope = useSandboxSelector((s) => s.layoutScope);
-  const startAt = useSandboxSelector((s) =>
-    s.layoutScope === 'chapter' ? s.bookPages?.[s.activeChapterId]?.pageNumberValue ?? null : null,
-  );
+  const chapterPlan = useChapterPlan(activeChapterId);
   return useMemo(() => {
-    const book = composeBookMemo(chapters, scope === 'chapter' ? activeChapterId : undefined);
-    const configOverride = scope === 'chapter' && startAt !== null && startAt > 1
-      ? { page: { pageNumbering: { startAt } } }
-      : null;
-    return { book, scope, activeChapterId, configOverride };
-  }, [chapters, activeChapterId, scope, startAt]);
+    const book = composeBookMemo(chapters, activeChapterId);
+    const chapter = chapters.find((c) => c.id === activeChapterId) ?? chapters[0]!;
+    return { book, chapterId: chapter.id, chapterMarkdown: chapter.markdown, continuation: chapterPlan.continuation, plan: chapterPlan };
+  }, [chapters, activeChapterId, chapterPlan]);
 }
 
-/** Page-numbering override merged into a config for chapter-only layout. */
-export function withLayoutOverride(config: PostextConfig, override: LayoutSource['configOverride']): PostextConfig {
-  if (!override) return config;
-  return {
-    ...config,
-    page: { ...config.page, pageNumbering: { ...config.page?.pageNumbering, ...override.page?.pageNumbering } },
-  };
+/** The plan of one chapter; falls back to the first chapter's for an
+ *  unknown id. */
+export function useChapterPlan(chapterId: string): ChapterPlan {
+  const store = useStore();
+  return useSandboxSelector((s) => {
+    const plan = store.getPlan(s);
+    return plan.byId[chapterId] ?? plan.chapters[0]!;
+  });
 }
 
 export const DEFAULT_MARKDOWN = DEFAULT_MARKDOWN_EN;
@@ -807,7 +837,18 @@ export function SandboxProvider({
   onConfigChange,
   onMarkdownChange,
 }: SandboxProviderProps) {
-  const mergedLabels: SandboxLabels = { ...DEFAULT_LABELS, ...labels };
+  // A host label that is missing (undefined — e.g. a message key the host's
+  // running translation bundle does not have yet) keeps the default rather
+  // than blanking the string.
+  const mergedLabels: SandboxLabels = useMemo(() => {
+    const merged: SandboxLabels = { ...DEFAULT_LABELS };
+    if (labels) {
+      for (const [key, value] of Object.entries(labels)) {
+        if (value !== undefined) (merged as unknown as Record<string, unknown>)[key] = value;
+      }
+    }
+    return merged;
+  }, [labels]);
 
   const defaultMd = initialMarkdown ?? DEFAULT_MARKDOWN;
 
@@ -827,7 +868,12 @@ export function SandboxProvider({
   const migration = { ids: generateChapterId, untitled: (n: number) => mergedLabels.chapterUntitled.replace('__n__', String(n)) };
   const [state, dispatch] = useReducer(sandboxReducer, undefined, () => {
     const savedBook = loadBook(migration);
-    const book = savedBook ?? singleChapterBook(defaultMd, generateChapterId(), mergedLabels.presetPostextGuideName);
+    const loadedBook = savedBook ?? singleChapterBook(defaultMd, generateChapterId(), mergedLabels.presetPostextGuideName);
+    // A `#chapter=C` fragment (a reload, a shared link) names the chapter to
+    // open; the viewers restore its page (see `useChapterHashSync`).
+    const hashChapter = readViewHash().chapter;
+    const hashChapterId = hashChapter === null ? undefined : loadedBook.chapters[hashChapter]?.id;
+    const book = hashChapterId ? { ...loadedBook, activeChapterId: hashChapterId } : loadedBook;
     const savedConfig = loadConfig();
     const savedViewport = loadViewport() as ViewportTab | null;
     const savedPercent = loadSidebarPercent();
@@ -837,8 +883,8 @@ export function SandboxProvider({
       markdown: activeChapter(book).markdown,
       chapters: book.chapters,
       activeChapterId: book.activeChapterId,
-      layoutScope: book.layoutScope,
-      bookPages: null,
+      pdfScope: 'chapter' as LayoutScope,
+      chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config: withDefaultResourceTypes(
         savedConfig ?? initialConfig ?? createDefaultConfig(locale ?? 'en'),
@@ -1138,7 +1184,6 @@ export function SandboxProvider({
     return updateProject(s.activeProjectId, {
       chapters: s.chapters,
       activeChapterId: s.activeChapterId,
-      layoutScope: s.layoutScope,
       config: stripConfigDefaults(s.config),
       resources: s.resources,
     }).then(() => undefined, () => undefined);
@@ -1166,7 +1211,7 @@ export function SandboxProvider({
       void persistWorking();
     }, WORKING_SAVE_MS);
     return () => clearTimeout(saveTimerRef.current);
-  }, [state.chapters, state.activeChapterId, state.layoutScope, state.config, state.resources, state.activeProjectId]);
+  }, [state.chapters, state.activeChapterId, state.config, state.resources, state.activeProjectId]);
 
   // Hidden presets are a UI preference: saved immediately.
   useEffect(() => {
@@ -1261,10 +1306,10 @@ export function SandboxProvider({
   const docSourceRef = useRef<ComposedBook | null>(null);
   const warningsCacheRef = useRef<{ key: unknown[]; value: Warning[] } | null>(null);
   const getWarnings = (s: SandboxState): Warning[] => {
-    const key = [s.chapters, s.layoutScope, s.activeChapterId, s.config, s.resources, s.docVersion];
+    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion];
     const cached = warningsCacheRef.current;
     if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
-    const book = composeBookMemo(s.chapters, s.layoutScope === 'chapter' ? s.activeChapterId : undefined);
+    const book = composeBookMemo(s.chapters, s.activeChapterId);
     const value = computeWarnings({
       markdown: book.markdown,
       config: s.config,
@@ -1279,6 +1324,18 @@ export function SandboxProvider({
   };
   const getWarningsRef = useRef(getWarnings);
   getWarningsRef.current = getWarnings;
+  const plannerRef = useRef(createBookPlanner());
+  const planCacheRef = useRef<{ key: unknown[]; value: BookPlan } | null>(null);
+  const getPlan = (s: SandboxState): BookPlan => {
+    const key = [s.chapters, s.config, s.resources, s.chapterLayouts];
+    const cached = planCacheRef.current;
+    if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
+    const value = plannerRef.current.plan(s.chapters, s.config, s.resources, s.chapterLayouts);
+    planCacheRef.current = { key, value };
+    return value;
+  };
+  const getPlanRef = useRef(getPlan);
+  getPlanRef.current = getPlan;
 
   // Subscription plumbing: hold the live state in a ref and notify
   // subscribers when it changes. Lets hooks below subscribe to specific
@@ -1325,6 +1382,7 @@ export function SandboxProvider({
     docRef,
     docSourceRef,
     getWarnings: (s) => getWarningsRef.current(s),
+    getPlan: (s) => getPlanRef.current(s),
     loadPreset: async (id) => {
       const provider = presetProvidersRef.current.find((p) => p.summary.id === id);
       if (!provider) return;

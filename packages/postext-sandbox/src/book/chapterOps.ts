@@ -4,14 +4,14 @@
 import { frontmatterRange } from './frontmatter';
 import { CHAPTER_SEPARATOR } from './compose';
 import { blankFrontmatter } from './frontmatter';
-import type { BookContent, Chapter, LayoutScope } from './types';
+import type { BookContent, Chapter } from './types';
 
 export function newChapter(id: string, title: string, markdown = '', now = Date.now()): Chapter {
   return { id, title, markdown, createdAt: now, updatedAt: now };
 }
 
-export function singleChapterBook(markdown: string, id: string, title: string, layoutScope: LayoutScope = 'book'): BookContent {
-  return { chapters: [newChapter(id, title, markdown)], activeChapterId: id, layoutScope };
+export function singleChapterBook(markdown: string, id: string, title: string): BookContent {
+  return { chapters: [newChapter(id, title, markdown)], activeChapterId: id };
 }
 
 /** Strip inline markdown marks from a heading line. */
@@ -215,7 +215,7 @@ export function cloneChapters(chapters: readonly Chapter[], ids: () => string, n
 
 export function cloneBook(book: BookContent, ids: () => string, now = Date.now()): BookContent {
   const { chapters, idMap } = cloneChapters(book.chapters, ids, now);
-  return { chapters, activeChapterId: idMap.get(book.activeChapterId) ?? chapters[0]!.id, layoutScope: book.layoutScope };
+  return { chapters, activeChapterId: idMap.get(book.activeChapterId) ?? chapters[0]!.id };
 }
 
 /** A book that is still exactly one of the untouched sample documents. */

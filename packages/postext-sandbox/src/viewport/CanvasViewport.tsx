@@ -4,7 +4,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { CanvasPreview, type CanvasPreviewHandle } from './CanvasPreview';
 import { CanvasToolbar } from './CanvasToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
-import { usePageHashSync } from './usePageHashSync';
+import { usePageHashSync, type ViewerLayout } from './usePageHashSync';
 import { loadCanvasViewMode, saveCanvasViewMode, loadCanvasFitMode, saveCanvasFitMode, loadCanvasZoom, saveCanvasZoom } from '../storage/persistence';
 
 type ViewMode = 'single' | 'spread';
@@ -19,7 +19,8 @@ export function CanvasViewport() {
   const [viewMode, setViewMode] = useState<ViewMode>('single');
   const [fitMode, setFitMode] = useState<FitMode>('width');
   const [generating, setGenerating] = useState(false);
-  const [pageCount, setPageCount] = useState(0);
+  const [layout, setLayout] = useState<ViewerLayout>({ pageCount: 0, firstPage: 0, version: 0 });
+  const pageCount = layout.pageCount;
   const [currentPage, setCurrentPage] = useState(0);
   const previewRef = useRef<CanvasPreviewHandle | null>(null);
   const hydratedRef = useRef(false);
@@ -91,9 +92,12 @@ export function CanvasViewport() {
     previewRef.current?.jumpToPage(pageIndex);
   }, []);
 
-  // `#page=N` in the URL: restored once the document is laid out, written
-  // back as the reader scrolls.
-  const syncPageHash = usePageHashSync(pageCount, handleJumpToPage);
+  // `#chapter=C&page=P` in the URL: restored once the document is laid
+  // out, written back as the reader scrolls.
+  const handlePageCountChange = useCallback((count: number, firstPage: number) => {
+    setLayout((l) => ({ pageCount: count, firstPage, version: l.version + 1 }));
+  }, []);
+  const syncPageHash = usePageHashSync(layout, handleJumpToPage);
   const handleCurrentPageChange = useCallback((pageIndex: number) => {
     setCurrentPage(pageIndex);
     syncPageHash(pageIndex);
@@ -109,7 +113,7 @@ export function CanvasViewport() {
         viewMode={viewMode}
         fitMode={fitMode}
         onGeneratingChange={setGenerating}
-        onPageCountChange={setPageCount}
+        onPageCountChange={handlePageCountChange}
         onCurrentPageChange={handleCurrentPageChange}
       />
       <div {...shell.hoverStripProps} />

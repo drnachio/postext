@@ -37,11 +37,13 @@ export function createPageWithColumns(
   contentArea: BoundingBox,
   pageWidthPx: number,
   pageHeightPx: number,
+  pageIndexOffset = 0,
 ): VDTPage {
   // `contentArea` is the recto (odd-page) area; mirrored margins swap the
   // inner/outer margins on even pages. `pageIndex` is the page's position in
-  // `doc.pages`, so page number = index + 1.
-  const pageArea = contentAreaForPage({ contentArea, pageWidthPx }, resolved, pageIndex);
+  // `doc.pages`, so page number = index + 1 (+ the pages before a continued
+  // document).
+  const pageArea = contentAreaForPage({ contentArea, pageWidthPx }, resolved, pageIndex, pageIndexOffset);
   const page = createVDTPage(pageIndex, pageWidthPx, pageHeightPx, pageArea);
   const colBboxes = computeColumnBboxes(pageArea, resolved);
   for (let i = 0; i < colBboxes.length; i++) {
@@ -61,6 +63,7 @@ export function createPartPage(
   metrics: Pick<PageMetrics, 'trimBox' | 'pageWidthPx'>,
   resolved: ResolvedConfig,
   info: { number: string; title: string; titleSourceStart?: number; titleSourceEnd?: number },
+  pageIndexOffset = 0,
 ): VDTPage {
   const dpi = resolved.page.dpi;
   const m = resolved.parts.margins;
@@ -75,7 +78,7 @@ export function createPartPage(
     Math.max(0, trim.width - left - right),
     Math.max(0, trim.height - top - bottom),
   );
-  const isEvenPage = (page.index + 1) % 2 === 0;
+  const isEvenPage = (page.index + pageIndexOffset + 1) % 2 === 0;
   if (m.mirror && isEvenPage) area = mirrorContentArea(area, metrics.pageWidthPx);
   page.contentArea = area;
   page.columns = [createVDTColumn(0, area)];
@@ -241,6 +244,7 @@ export function advanceToNextColumn(
       contentArea,
       pageWidthPx,
       pageHeightPx,
+      doc.pageIndexOffset ?? 0,
     );
     doc.pages.push(newPage);
     cursor.pageIndex = newPage.index;
@@ -297,12 +301,15 @@ export function enforcePageParity(
   parity: HeadingBreakParity,
 ): void {
   if (parity === 'any') return;
+  const pageIndexOffset = doc.pageIndexOffset ?? 0;
   // Document-start exception: when the first block of the document is a
   // heading with `breakBefore` (or the source opens with a `:::pagebreak`),
   // we're still sitting on page 0 with nothing placed yet. Skip parity
   // and force logic entirely — there's no previous content to separate
   // from, and padding would only create a spurious blank opening page.
-  if (cursor.pageIndex === 0) {
+  // A continued document (a chapter laid out after the pages before it)
+  // has that previous content, so it pads exactly as it would mid-book.
+  if (cursor.pageIndex === 0 && pageIndexOffset === 0) {
     const firstPage = doc.pages[0];
     if (firstPage && firstPage.columns.every((c) => c.blocks.length === 0)) {
       return;
@@ -322,7 +329,7 @@ export function enforcePageParity(
   }
   while (true) {
     const curPage = doc.pages[cursor.pageIndex]!;
-    const pageNumber = curPage.index + 1;
+    const pageNumber = curPage.index + pageIndexOffset + 1;
     const isOdd = pageNumber % 2 === 1;
     const ok = targetParity === 'odd' ? isOdd : !isOdd;
     if (ok) return;

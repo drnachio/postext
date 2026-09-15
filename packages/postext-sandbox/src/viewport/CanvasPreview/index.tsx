@@ -1,10 +1,9 @@
 'use client';
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useDeferredValue, useMemo } from 'react';
-import { useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource, withLayoutOverride, type EditorSelection } from '../../context/SandboxContext';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource, type EditorSelection } from '../../context/SandboxContext';
 import { toBookSelection } from '../../book/compose';
-import { computeBookPages } from '../../book/pages';
+import { chapterLayoutFromDoc, leadingBlankPageCount } from '../../book/pagination';
 import type { ComposedBook } from '../../book/types';
 import { renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
@@ -22,8 +21,6 @@ import {
 } from './layoutUtils';
 import { findCaretBlockIdx } from './caret';
 
-/** Debounce for whole-book rebuilds while typing (ms). */
-export const BOOK_LAYOUT_DEBOUNCE_MS = 400;
 const NO_SELECTION: EditorSelection = { from: -1, to: -1, head: -1 };
 import { buildPagesDom } from './pageDom';
 
@@ -32,7 +29,9 @@ interface CanvasPreviewProps {
   viewMode: ViewMode;
   fitMode: FitMode;
   onGeneratingChange?: (generating: boolean) => void;
-  onPageCountChange?: (count: number) => void;
+  /** After every layout: the page count and the first page with content
+   *  (the ones before it are parity padding). */
+  onPageCountChange?: (count: number, firstContentPage: number) => void;
   onCurrentPageChange?: (index: number) => void;
 }
 
@@ -50,7 +49,8 @@ export const CanvasPreview = forwardRef<CanvasPreviewHandle, CanvasPreviewProps>
 function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCountChange, onCurrentPageChange }, ref) {
   const dispatch = useSandboxDispatch();
   const sharedDocRef = useSandboxDocRef();
-  const { book: layoutBook, scope: layoutScope, activeChapterId, configOverride } = useLayoutSource();
+  const layoutSource = useLayoutSource();
+  const { chapterId: activeChapterId } = layoutSource;
   const sharedDocSourceRef = useSandboxDocSourceRef();
   const config = useSandboxSelector((s) => s.config);
   const resources = useSandboxSelector((s) => s.resources);
@@ -77,10 +77,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // The canvas internal pixel size is fixed at page dimensions, so browser
   // scaling handles size changes with no paint cost.
   const lastPaintedDocVersionRef = useRef(-1);
-  // Whole-book layouts are heavier: wait for a typing pause before rebuilding.
-  const debouncedBook = useDebouncedValue(layoutBook, layoutScope === 'book' && layoutBook.segments.length > 1 ? BOOK_LAYOUT_DEBOUNCE_MS : 0);
-  const deferredBook = useDeferredValue(debouncedBook);
-  const deferredOverride = useDeferredValue(configOverride);
+  const deferredSource = useDeferredValue(layoutSource);
   // The book the current `docRef` was built from (offsets in the document
   // are offsets into its markdown).
   const builtSourceRef = useRef<ComposedBook | null>(null);
@@ -281,10 +278,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     appliedRebuildKeyRef.current = rebuildKey;
 
     onGeneratingChangeRef.current?.(true);
-    const source = deferredBook;
+    const source = deferredSource.book;
     layoutWorker.build(
-      { markdown: source.markdown, metadata: source.metadata, resources: deferredResources },
-      withLayoutOverride(deferredConfig, deferredOverride),
+      { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation },
+      deferredConfig,
     )
       .then((doc) => {
         if (cancelled) return;
@@ -292,10 +289,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
         builtSourceRef.current = source;
         sharedDocRef.current = doc;
         sharedDocSourceRef.current = source;
-        if (source.scope === 'book') dispatch({ type: 'SET_BOOK_PAGES', payload: computeBookPages(doc, source) });
+        // Record the chapter's page count so the chapters after it know
+        // where they start (keyed on the state config, not the derived one).
+        const layout = chapterLayoutFromDoc(doc, deferredSource.plan, { markdown: deferredSource.chapterMarkdown, config: rawDeferredConfig, resources: deferredResources });
+        if (layout) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
         dispatch({ type: 'BUMP_DOC_VERSION' });
         setDocVersion((v) => v + 1);
-        onPageCountChangeRef.current?.(doc.pages.length);
+        onPageCountChangeRef.current?.(doc.pages.length, leadingBlankPageCount(doc));
       })
       .catch((err: unknown) => {
         if ((err as { name?: string } | null)?.name === 'AbortError') return;
@@ -308,7 +308,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     return () => {
       cancelled = true;
     };
-  }, [deferredBook, deferredOverride, deferredResources, deferredConfig, rebuildKey, dispatch, sharedDocRef, sharedDocSourceRef, layoutWorker]);
+  }, [deferredSource, deferredResources, deferredConfig, rawDeferredConfig, rebuildKey, dispatch, sharedDocRef, sharedDocSourceRef, layoutWorker]);
 
   // Single-ink diagram colour: when diagramStyle.singleInk is on, SVG resources
   // decode through a recolouring pass keyed on the resolved ink hex.

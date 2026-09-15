@@ -45,6 +45,11 @@ export interface SandboxLabels {
   pdfPrint: string;
   pdfPrintTooltip: string;
   pdfGenerating: string;
+  /** Progress line under the PDF spinner while the layout runs:
+   *  `__pass__` = placement pass, `__page__` = pages laid out so far. */
+  pdfProgressLayout: string;
+  /** Progress line while the laid-out document is rendered to PDF bytes. */
+  pdfProgressRender: string;
   pdfError: string;
 
   // Page section
@@ -176,8 +181,6 @@ export interface SandboxLabels {
   warningsHeadingAdvancedWithoutTitleTextDetail?: string;
   warningsUnknownResourceIdTitle?: string;
   warningsUnknownResourceIdDetail?: string;
-  warningsUnusedResourceTitle?: string;
-  warningsUnusedResourceDetail?: string;
   warningsDuplicateResourceIdTitle?: string;
   warningsDuplicateResourceIdDetail?: string;
   warningsDanglingTypeRefTitle?: string;
@@ -634,11 +637,11 @@ export interface SandboxLabels {
   chapterPagesUnknown: string;
   chapterWords: string;
   chapterCountTag: string;
-  layoutScope: string;
-  layoutScopeBook: string;
-  layoutScopeChapter: string;
-  layoutScopeChapterHint: string;
-  pdfChapterOnlyTag: string;
+  /** PDF scope selector in the viewport tab bar: the active chapter on
+   *  its own, or every chapter as one continuous PDF. */
+  pdfScope: string;
+  pdfScopeChapter: string;
+  pdfScopeBook: string;
   importFileChapter: string;
   exportFileChapter: string;
   warningsChapterLabel: string;
@@ -1117,6 +1120,17 @@ export interface SandboxLabels {
   calloutStyleIconAlign: string;
   calloutStyleIconAlignTop: string;
   calloutStyleIconAlignCenter: string;
+  calloutStyleMarkerGroup: string;
+  calloutStyleMarkerKind: string;
+  calloutStyleMarkerKindTooltip: string;
+  calloutStyleMarkerGap: string;
+  calloutStyleMarkerGapTooltip: string;
+  calloutStyleMarkerRule: string;
+  calloutStyleMarkerRuleTooltip: string;
+  calloutStyleMarkerRuleColor: string;
+  calloutStyleMarkerRuleWidth: string;
+  calloutStyleMarkerRuleLength: string;
+  calloutStyleMarkerRuleLengthTooltip: string;
   calloutStyleTitleGroup: string;
   calloutStyleTitleFont: string;
   calloutStyleTitleSize: string;

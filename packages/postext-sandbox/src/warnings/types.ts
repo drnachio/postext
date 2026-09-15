@@ -31,7 +31,6 @@ export type WarningKind =
   | 'headingSpanWithoutBreak'
   | 'headingAdvancedWithoutTitleText'
   | 'unknownResourceId'
-  | 'unusedResource'
   | 'duplicateResourceId'
   | 'danglingTypeRef'
   | 'bitmapTooSmall'
@@ -120,9 +119,6 @@ export type WarningPayload =
    *  resource id that does not exist in the resources list. `usage` records
    *  whether it came from an embed block or an inline reference. */
   | { kind: 'unknownResourceId'; resourceId: string; usage: 'embed' | 'ref' }
-  /** A resource is defined but never embedded or referenced anywhere in the
-   *  markdown. */
-  | { kind: 'unusedResource'; resourceId: string; caption?: string }
   /** Two or more resources share the same id. Only one of them resolves at
    *  render time; the warning names the colliding id and how many share it. */
   | { kind: 'duplicateResourceId'; resourceId: string; count: number }

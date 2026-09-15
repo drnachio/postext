@@ -60,7 +60,7 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
         </span>
         {stacked && showReset && <ResetButton onClick={onReset} />}
       </div>
-      <div className={cn('flex items-center gap-1', stacked ? 'min-w-0' : 'shrink-0')}>
+      <div className={cn('flex items-center gap-1', stacked ? 'w-full min-w-0' : 'shrink-0')}>
         {!stacked && showReset && <ResetButton onClick={onReset} />}
         {children}
       </div>

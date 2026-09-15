@@ -12,7 +12,6 @@ describe('migrateProjectRecord', () => {
     expect(rec.chapters[0]!.title).toBe('Intro');
     expect(rec.chapters[0]!.markdown).toBe('# Intro\n\ntext');
     expect(rec.activeChapterId).toBe(rec.chapters[0]!.id);
-    expect(rec.layoutScope).toBe('book');
     expect((rec as unknown as { markdown?: string }).markdown).toBeUndefined();
     expect(rec.createdAt).toBe(1);
   });
@@ -23,7 +22,8 @@ describe('migrateProjectRecord', () => {
       activeChapterId: 'gone', layoutScope: 'chapter',
     }, deps)!;
     expect(rec.activeChapterId).toBe('a');
-    expect(rec.layoutScope).toBe('chapter');
+    // The layout scope of earlier versions is dropped.
+    expect((rec as unknown as { layoutScope?: string }).layoutScope).toBeUndefined();
   });
   it('rejects garbage', () => {
     expect(migrateProjectRecord(null, deps)).toBeNull();

@@ -14,7 +14,7 @@
  */
 
 import type { ContentBlock } from '../parse';
-import type { Resource, ResourceType, ResourceCounterFormat } from '../types';
+import type { HeadingCounters, Resource, ResourceNumberEntry, ResourceType, ResourceCounterFormat } from '../types';
 import {
   formatNumeral,
   renderCounterTemplate,
@@ -24,23 +24,9 @@ import {
 
 /** Heading counters (1-indexed by level) in effect at a given point in the
  *  document. `h1`..`h6` carry the running heading number for each level. */
-export interface HeadingContext {
-  h1: number;
-  h2: number;
-  h3: number;
-  h4: number;
-  h5: number;
-  h6: number;
-}
+export type HeadingContext = HeadingCounters;
 
-export interface ResourceNumberEntry {
-  /** The rendered number string (e.g. `"1.7"`). */
-  number: string;
-  /** The `ResourceType.id` this number was computed for. */
-  typeId: string;
-  /** The heading counters in effect at the point of first reference. */
-  heading: HeadingContext;
-}
+export type { ResourceNumberEntry };
 
 /** Maps each referenced `Resource.id` to its computed numbering entry. */
 export type ResourceNumberingMap = Record<string, ResourceNumberEntry>;
@@ -70,8 +56,9 @@ function counterFormatToStyle(format: ResourceCounterFormat): NumeralStyle {
  *  `result[i]` (i.e. the heading counts itself). Mirrors the counter logic in
  *  `computeHeadingNumbers` but exposes the raw per-level values rather than the
  *  rendered prefix. */
-export function computeHeadingContext(blocks: ContentBlock[]): HeadingContext[] {
+export function computeHeadingContext(blocks: ContentBlock[], start?: HeadingContext): HeadingContext[] {
   const counters = [0, 0, 0, 0, 0, 0, 0]; // index 1..6 used
+  if (start) for (let lvl = 1; lvl <= 6; lvl++) counters[lvl] = start[`h${lvl}` as keyof HeadingContext];
   const out: HeadingContext[] = new Array(blocks.length);
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!;
@@ -200,25 +187,58 @@ function shouldResetCounter(
  *                        {@link computeHeadingContext}); must align with
  *                        `blocks` by index
  */
+/** Per-type counter state at the end of a document: the `{n}` counter and
+ *  the heading counters of the last numbered resource (what `resetOn`
+ *  compares against). */
+export type ResourceCounterState = Record<string, { counter: number; heading: HeadingContext }>;
+
+/** What precedes the document: resources already numbered (they keep the
+ *  number of their first mention) and the per-type counters to continue. */
+export interface ResourceNumberingStart {
+  counters?: ResourceCounterState;
+  numbered?: ResourceNumberingMap;
+}
+
+export interface ResourceNumberingResult {
+  /** Every referenced resource — including the inherited ones. */
+  map: ResourceNumberingMap;
+  /** Counter state at the end of the document, to continue from. */
+  counters: ResourceCounterState;
+}
+
 export function computeResourceNumbering(
   blocks: ContentBlock[],
   resourceTypes: ResourceType[],
   resources: Resource[],
   headingContext: HeadingContext[],
+  start?: ResourceNumberingStart,
 ): ResourceNumberingMap {
+  return computeResourceNumberingState(blocks, resourceTypes, resources, headingContext, start).map;
+}
+
+/** {@link computeResourceNumbering} plus the counter state at the end of the
+ *  document. */
+export function computeResourceNumberingState(
+  blocks: ContentBlock[],
+  resourceTypes: ResourceType[],
+  resources: Resource[],
+  headingContext: HeadingContext[],
+  start?: ResourceNumberingStart,
+): ResourceNumberingResult {
   const typeById = new Map<string, ResourceType>();
   for (const t of resourceTypes) typeById.set(t.id, t);
   const resourceById = new Map<string, Resource>();
   for (const r of resources) resourceById.set(r.id, r);
 
   // First reference (in reading order) of every resourceId, paired with the
-  // heading context in effect at that point.
+  // heading context in effect at that point. Resources numbered by the
+  // preceding content keep their number and never re-enter the sequence.
   interface Occurrence {
     resourceId: string;
     heading: HeadingContext;
   }
   const firstOccurrences: Occurrence[] = [];
-  const seen = new Set<string>();
+  const seen = new Set<string>(start?.numbered ? Object.keys(start.numbered) : []);
 
   const record = (resourceId: string, blockIdx: number) => {
     if (seen.has(resourceId)) return;
@@ -252,7 +272,8 @@ export function computeResourceNumbering(
     else byType.set(type.id, [occ]);
   }
 
-  const map: ResourceNumberingMap = {};
+  const map: ResourceNumberingMap = { ...(start?.numbered ?? {}) };
+  const counters: ResourceCounterState = { ...(start?.counters ?? {}) };
   for (const [typeId, occurrences] of byType) {
     const type = typeById.get(typeId)!;
     const tokens = parseResourceTemplate(type.numberingTemplate);
@@ -260,8 +281,9 @@ export function computeResourceNumbering(
     const resetLevel: ResetLevel | null =
       type.resetOn === 'never' ? null : (Number(type.resetOn.slice(1)) as ResetLevel);
 
-    let counter = 0;
-    let prevHeading: HeadingContext | null = null;
+    const inherited = start?.counters?.[typeId];
+    let counter = inherited?.counter ?? 0;
+    let prevHeading: HeadingContext | null = inherited?.heading ?? null;
     for (const occ of occurrences) {
       if (resetLevel !== null && shouldResetCounter(prevHeading, occ.heading, resetLevel)) {
         counter = 0;
@@ -274,7 +296,8 @@ export function computeResourceNumbering(
         heading: occ.heading,
       };
     }
+    if (prevHeading) counters[typeId] = { counter, heading: prevHeading };
   }
 
-  return map;
+  return { map, counters };
 }

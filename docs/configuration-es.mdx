@@ -2573,7 +2573,13 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>icon</code></td>
       <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align &#125;</code></td>
       <td><code>'none'</code>, fuente de encabezados, <code>400</code>, <code>1.5em</code>, color principal, <code>'top'</code></td>
-      <td>Un glifo de texto (<code>kind: 'glyph'</code>) o un recurso bitmap / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) junto al contenido. Con franja lateral el icono se centra sobre la franja; si no, reserva su propia columna (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> lo centra verticalmente sobre el contenido.</td>
+      <td>Un glifo de texto (<code>kind: 'glyph'</code>) o un recurso bitmap / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) junto al contenido. Con franja lateral el icono se centra sobre la franja; si no, reserva su propia columna (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> lo centra verticalmente sobre el contenido. Una imagen de recurso se ajusta dentro del cuadrado conservando su proporción; un icono más alto que el contenido agranda la caja para contenerlo (y, con <code>align: 'center'</code>, centra el contenido sobre él).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align, gap, rule &#125;</code></td>
+      <td><code>'none'</code>, fuente de títulos, <code>400</code>, <code>1.5em</code>, color principal, <code>'center'</code>, <code>0.5em</code>, filete desactivado (<code>0.5pt</code>, color principal, longitud <code>0</code>)</td>
+      <td>Un segundo icono dibujado <em>fuera</em> de la caja, en una columna a su izquierda, con un <code>rule</code> (filete vertical) opcional entre él y la caja: la mano de «toca aquí» junto a un distintivo de autoevaluación. El marco pasa a ser <code>[marker][rule][gap][box]</code> y mide lo que el más alto de los tres; <code>align</code> los centra entre sí o los alinea arriba. <code>rule.length</code> es un mínimo: el filete abarca siempre al menos la altura de la caja.</td>
     </tr>
     <tr>
       <td><code>titleStyle</code></td>

@@ -4,7 +4,7 @@ import { referencedFileIds, toSummary, type ProjectRecord } from './projects';
 import { projectFileId, projectFontFileId, remapContentFileIds } from './projectFiles';
 import type { BookContent } from '../book/types';
 
-const book: BookContent = { chapters: [{ id: 'c1', title: 'One', markdown: '# x', createdAt: 0, updatedAt: 0 }], activeChapterId: 'c1', layoutScope: 'book' };
+const book: BookContent = { chapters: [{ id: 'c1', title: 'One', markdown: '# x', createdAt: 0, updatedAt: 0 }], activeChapterId: 'c1' };
 
 const config: PostextConfig = {
   customFonts: [

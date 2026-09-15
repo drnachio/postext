@@ -13,7 +13,7 @@ import { generateId } from './ids';
 import { PROJECT_RECORD_VERSION, migrateProjectRecord, type MigrationDeps } from './projectMigration';
 
 /** The three working slices a project owns: its chapters (with the active
- *  one and the layout scope), the configuration and the resource records. */
+ *  one), the configuration and the resource records. */
 export interface ProjectContent extends BookContent {
   config: PostextConfig;
   resources: Resource[];

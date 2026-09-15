@@ -98,10 +98,12 @@ export function computeChapterNumbers(
   blocks: VDTBlock[],
   totalPages: number,
   pages?: ChapterTitlePageInfo[],
+  ordinalOffset = 0,
 ): string[] {
   // Without a level-1 numbering template the prefix is empty; fall back to
-  // the chapter's ordinal so `{chapterNumber}` still counts chapters.
-  let ordinal = 0;
+  // the chapter's ordinal so `{chapterNumber}` still counts chapters
+  // (continuing past the chapters laid out before this document).
+  let ordinal = ordinalOffset;
   let lastContentIndex: number | undefined;
   return computeChapterValues(
     blocks,

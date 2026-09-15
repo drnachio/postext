@@ -10,7 +10,6 @@ function book(): BookContent {
   return {
     chapters: [newChapter('a', 'A', '# A\n\ntext a', 1), newChapter('b', 'B', '# B\n\ntext b', 1), newChapter('c', 'C', '# C', 1)],
     activeChapterId: 'b',
-    layoutScope: 'book',
   };
 }
 

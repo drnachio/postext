@@ -156,6 +156,60 @@ describe('callout style defaults', () => {
     expect(stripCalloutStylesDefaults([{ id: 'note', name: 'Nota' }])).toEqual([{ id: 'note', name: 'Nota' }]);
   });
 
+  it('marker resolves, strips and round-trips like the icon', () => {
+    const [d] = resolve([{ id: 'x' }]);
+    expect(d!.marker).toEqual({
+      kind: 'none',
+      glyph: '',
+      resourceId: '',
+      fontFamily: 'Inter',
+      fontWeight: 400,
+      size: { value: 1.5, unit: 'em' },
+      color: DEFAULT_CALLOUT_STYLE_STATIC.marker.color,
+      align: 'center',
+      gap: { value: 0.5, unit: 'em' },
+      rule: {
+        enabled: false,
+        color: DEFAULT_CALLOUT_STYLE_STATIC.marker.rule.color,
+        width: { value: 0.5, unit: 'pt' },
+        length: { value: 0, unit: 'pt' },
+      },
+    });
+    const style: CalloutStyleConfig = {
+      id: 'badge',
+      marker: {
+        kind: 'resource',
+        resourceId: 'hand',
+        fontFamily: 'Inter',
+        fontWeight: 400,
+        size: { value: 8.8, unit: 'mm' },
+        align: 'center',
+        gap: { value: 2, unit: 'mm' },
+        rule: { enabled: true, width: { value: 0.5, unit: 'pt' }, length: { value: 10, unit: 'mm' } },
+      },
+    };
+    const [r] = resolve([style]);
+    expect(r!.marker.kind).toBe('resource');
+    expect(r!.marker.resourceId).toBe('hand');
+    expect(r!.marker.size).toEqual({ value: 8.8, unit: 'mm' });
+    expect(r!.marker.rule.enabled).toBe(true);
+    expect(r!.marker.rule.length).toEqual({ value: 10, unit: 'mm' });
+    expect(r!.marker.rule.color).toEqual(DEFAULT_CALLOUT_STYLE_STATIC.marker.rule.color);
+    expect(stripCalloutStylesDefaults([style])).toEqual([{
+      id: 'badge',
+      marker: {
+        kind: 'resource',
+        resourceId: 'hand',
+        fontFamily: 'Inter',
+        size: { value: 8.8, unit: 'mm' },
+        gap: { value: 2, unit: 'mm' },
+        rule: { enabled: true, length: { value: 10, unit: 'mm' } },
+      },
+    }]);
+    expect(stripCalloutStylesDefaults([{ id: 'y', marker: { kind: 'none', rule: { enabled: false } } }])).toEqual([{ id: 'y' }]);
+    expect(resolve(stripCalloutStylesDefaults([style])!)).toEqual(resolve([style]));
+  });
+
   it('strip round-trips through resolve', () => {
     const styles: CalloutStyleConfig[] = [
       { id: 'a', name: 'a', border: { enabled: false }, padding: {} },
@@ -190,17 +244,20 @@ describe('callout style defaults', () => {
         border: { color: accent },
         stripe: { color: accent },
         icon: { color: accent },
+        marker: { color: accent, rule: { color: accent } },
         titleStyle: { color: accent },
         body: { color: accent },
         lists: { color: accent },
       }],
     };
     const applied = applyPaletteToConfig(config)!.calloutStyles![0]!;
+    expect(applied.marker!.color).toEqual({ hex: '#AA0000', model: 'hex' });
+    expect(applied.marker!.rule!.color).toEqual({ hex: '#AA0000', model: 'hex' });
     expect(applied.background).toEqual({ hex: '#AA0000', model: 'hex' });
     expect(applied.border!.color).toEqual({ hex: '#AA0000', model: 'hex' });
     expect(applied.lists!.color).toEqual({ hex: '#AA0000', model: 'hex' });
     const [r] = resolveAllConfig(config).calloutStyles;
-    for (const c of [r!.background, r!.border.color, r!.stripe.color, r!.icon.color, r!.titleStyle.color, r!.body.color, r!.lists.color]) {
+    for (const c of [r!.background, r!.border.color, r!.stripe.color, r!.icon.color, r!.marker.color, r!.marker.rule.color, r!.titleStyle.color, r!.body.color, r!.lists.color]) {
       expect(c.hex).toBe('#AA0000');
     }
     // The default main-colour links (stripe / icon / title) follow a
@@ -210,6 +267,7 @@ describe('callout style defaults', () => {
     };
     const [d] = resolveAllConfig(recoloured).calloutStyles;
     expect(d!.stripe.color.hex).toBe('#00AA00');
+    expect(d!.marker.rule.color.hex).toBe('#00AA00');
     expect(d!.titleStyle.color.hex).toBe('#00AA00');
     expect(resolveAllConfig().calloutStyles[0]!.stripe.color.hex).toBe(DEFAULT_MAIN_COLOR_HEX);
   });

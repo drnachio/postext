@@ -48,7 +48,7 @@ export function loadConfig(): PostextConfig | null {
   }
 }
 
-/** The working book (every chapter, the active one and the layout scope).
+/** The working book (every chapter and the active one).
  *  Replaces the legacy single-markdown key, which is removed once a book has
  *  been written. A quota error is swallowed: the active project record in
  *  IndexedDB still holds the truth. */

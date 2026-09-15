@@ -107,6 +107,9 @@ export interface VDTLine {
   segments?: VDTLineSegment[];
   /** Whether this is the last line of the paragraph (ragged even when justified) */
   isLastLine?: boolean;
+  /** Set ragged inside a justified paragraph: a line a URL made unfillable
+   *  (its few word spaces would stretch past the loose-line threshold). */
+  ragged?: boolean;
   /** Approximate character offset in the original markdown source where this line begins */
   sourceStart?: number;
   /** Approximate character offset just past the last source character contributing to this line */
@@ -353,6 +356,10 @@ export interface ResolvedCalloutBlock {
   iconFileId?: string;
   /** Bitmap format of the icon image (`'png'`, `'jpeg'`, …) when known. */
   iconFormat?: string;
+  /** `fileId` of the marker resource image when `marker.kind === 'resource'`. */
+  markerFileId?: string;
+  /** Bitmap format of the marker image when known. */
+  markerFormat?: string;
 }
 
 export interface VDTColumn {
@@ -530,6 +537,12 @@ export interface VDTDocument {
   converged: boolean;
   iterationCount: number;
   metadata: DocumentMetadata;
+  /** Physical pages before page 0 (`PostextContent.continuation`): shifts
+   *  parity everywhere. Absent or 0 for a self-contained document. */
+  pageIndexOffset?: number;
+  /** Chapters (level-1 headings) before this document, so `{chapterNumber}`
+   *  keeps counting without a numbering template. */
+  chapterOrdinalOffset?: number;
 }
 
 // ---------------------------------------------------------------------------

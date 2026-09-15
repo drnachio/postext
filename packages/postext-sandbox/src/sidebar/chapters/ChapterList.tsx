@@ -1,13 +1,12 @@
 'use client';
 
 import { useRef, useState, type ReactNode } from 'react';
-import { ArrowDown, ArrowUp, Check, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
-import { useBookContent, useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
+import { ArrowDown, ArrowUp, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
+import { useBookContent, useBookPages, useSandboxDispatch, useSandboxLabels } from '../../context/SandboxContext';
 import { h1Count, newChapter, wordCount } from '../../book/chapterOps';
 import type { Chapter } from '../../book/types';
 import { generateChapterId } from '../../storage/projects';
 import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator } from '../../ui';
-import { LayoutScopeToggle } from './LayoutScopeToggle';
 
 /** The book's chapters: order, active one, page ranges, and the chapter
  *  operations (add, rename, move, split, merge, delete). Rendered inside
@@ -17,7 +16,7 @@ export function ChapterList({ title }: { title: ReactNode }) {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const { chapters, activeChapterId } = useBookContent();
-  const bookPages = useSandboxSelector((s) => s.bookPages);
+  const bookPages = useBookPages();
 
   const add = () => {
     const chapter = newChapter(generateChapterId(), labels.chapterUntitled.replace('__n__', String(chapters.length + 1)));
@@ -35,10 +34,7 @@ export function ChapterList({ title }: { title: ReactNode }) {
           {title}
           <span className="normal-case tracking-normal" style={{ fontVariantNumeric: 'tabular-nums' }}>{chapters.length}</span>
         </h4>
-        <div className="flex items-center gap-1">
-          <LayoutScopeToggle />
-          <IconButton label={labels.chapterAdd} icon={<Plus size={14} />} onClick={add} />
-        </div>
+        <IconButton label={labels.chapterAdd} icon={<Plus size={14} />} onClick={add} />
       </div>
       <ul className="m-0 list-none p-0" aria-label={labels.chapters}>
         {chapters.map((c, i) => (
@@ -48,7 +44,7 @@ export function ChapterList({ title }: { title: ReactNode }) {
             index={i}
             total={chapters.length}
             isActive={c.id === activeChapterId}
-            pages={bookPages?.[c.id] ?? null}
+            pages={bookPages[c.id] ?? null}
           />
         ))}
       </ul>
@@ -125,8 +121,14 @@ function ChapterRow({ chapter, index, total, isActive, pages }: ChapterRowProps)
         onDoubleClick={editing ? undefined : startRename}
         ariaLabel={`${index + 1}. ${chapter.title}`}
         leading={
-          <span className="flex h-4 w-5 items-center justify-end text-[10px]" style={{ color: isActive ? 'var(--gilt)' : 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>
-            {isActive ? <Check size={13} aria-hidden="true" /> : index + 1}
+          // The number alone marks the row (the selected one is framed and
+          // set in gilt): large enough to span the title and its page line,
+          // right-aligned in a slot wide enough for two digits.
+          <span
+            className="flex shrink-0 items-center justify-end self-stretch leading-none"
+            style={{ width: 34, color: isActive ? 'var(--gilt)' : 'var(--slate)', fontSize: 26, fontWeight: 300, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}
+          >
+            {index + 1}
           </span>
         }
         title={title}

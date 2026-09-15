@@ -1,3 +1,5 @@
+import type { NumeralStyle } from './numbering';
+
 /** @deprecated Legacy content-model resource used by the VDT renderer
  *  (`VDTBlock.resource`). The Resources-panel feature uses the newer
  *  `Resource` / `ResourceType` model below. Retained until the renderer
@@ -208,6 +210,54 @@ export interface PostextContent {
    *  inline. */
   resources?: Resource[];
   notes?: PostextNote[];
+  /** Counters carried over from content laid out before this document — a
+   *  book chapter laid out on its own continues the numbering of the
+   *  chapters before it. Omit for a self-contained document. */
+  continuation?: LayoutContinuation;
+}
+
+/** Heading counters (1-indexed by level) in effect at a point in a document. */
+export interface HeadingCounters {
+  h1: number;
+  h2: number;
+  h3: number;
+  h4: number;
+  h5: number;
+  h6: number;
+}
+
+/** A numbered resource: its rendered number, type and the heading counters
+ *  at its first reference. */
+export interface ResourceNumberEntry {
+  number: string;
+  typeId: string;
+  heading: HeadingCounters;
+}
+
+/** What a document laid out after other content inherits from it. Every
+ *  field is optional; a missing one means "nothing precedes". Obtain it
+ *  with `continuationAfter()` (counters) and the previous layout's page
+ *  count (pages). */
+export interface LayoutContinuation {
+  /** Physical pages before this document's first page. Shifts page parity
+   *  (recto/verso, mirrored margins, odd/even header elements) and marks the
+   *  document as continued, so a leading heading's `breakBefore` pads
+   *  parity as it would mid-book. */
+  pageIndexOffset?: number;
+  /** Page numbering in effect on the first page, overriding
+   *  `page.pageNumbering` (the value the previous page would be followed
+   *  by, in its format). */
+  pageNumbering?: { format?: NumeralStyle; startAt?: number };
+  /** Heading counters at the end of the preceding content: the next `#`
+   *  becomes chapter `h1 + 1`. */
+  headings?: HeadingCounters;
+  /** Per resource-type counter state at the end of the preceding content
+   *  (the `{n}` counter and the heading counters of the last numbered
+   *  resource, which decide `resetOn`). */
+  resourceCounters?: Record<string, { counter: number; heading: HeadingCounters }>;
+  /** Resources already numbered by the preceding content, so a later
+   *  reference keeps the number of its first mention. */
+  resourceNumbers?: Record<string, ResourceNumberEntry>;
 }
 
 export type PlacementStrategy =
@@ -809,7 +859,9 @@ export interface CalloutStripeConfig {
 
 /** Icon drawn beside the title/body: a text glyph or a resource image. When
  *  the style has a side stripe the icon is centred over the stripe;
- *  otherwise it reserves its own column (`size` + `titleStyle.gap`). */
+ *  otherwise it reserves its own column (`size` + `titleStyle.gap`). A
+ *  resource image is fitted inside the square box keeping its aspect ratio.
+ *  An icon taller than the content grows the box to fit it. */
 export interface CalloutIconConfig {
   kind?: CalloutIconKind;
   /** Glyph text for `kind: 'glyph'` (e.g. `'!'`, `'✎'`). */
@@ -823,6 +875,32 @@ export interface CalloutIconConfig {
   size?: Dimension;
   color?: ColorValue;
   align?: CalloutIconAlign;
+}
+
+/** Vertical rule drawn between a callout marker and its box. */
+export interface CalloutMarkerRuleConfig {
+  enabled?: boolean;
+  /** Default main colour. */
+  color?: ColorValue;
+  /** Default `0.5pt`. */
+  width?: Dimension;
+  /** Minimum rule length; the rule always spans at least the box height and
+   *  is centred on it (`align: 'center'`) or hangs from its top. Default `0`
+   *  (box height). */
+  length?: Dimension;
+}
+
+/** Marker drawn *outside* the box, in a column on its left: an icon (glyph
+ *  or resource, same fields as {@link CalloutIconConfig}) with an optional
+ *  vertical rule between it and the box. The frame grows by the marker
+ *  column (`size` + rule width + `gap`); the box keeps its own background,
+ *  padding and icon. `align` positions the marker, the rule and the box
+ *  against each other when their heights differ. */
+export interface CalloutMarkerConfig extends CalloutIconConfig {
+  /** Space between the marker column (after the rule) and the box. Default
+   *  `0.5em`. */
+  gap?: Dimension;
+  rule?: CalloutMarkerRuleConfig;
 }
 
 export interface CalloutTitleStyleConfig {
@@ -898,6 +976,8 @@ export interface CalloutStyleConfig {
   stripe?: CalloutStripeConfig;
   /** Default `kind: 'none'`. */
   icon?: CalloutIconConfig;
+  /** Default `kind: 'none'` (no marker column). */
+  marker?: CalloutMarkerConfig;
   titleStyle?: CalloutTitleStyleConfig;
   body?: CalloutBodyStyleConfig;
   lists?: CalloutListStyleConfig;
@@ -934,6 +1014,18 @@ export interface ResolvedCalloutStyleConfig {
     size: Dimension;
     color: ColorValue;
     align: CalloutIconAlign;
+  };
+  marker: {
+    kind: CalloutIconKind;
+    glyph: string;
+    resourceId: string;
+    fontFamily: string;
+    fontWeight: number;
+    size: Dimension;
+    color: ColorValue;
+    align: CalloutIconAlign;
+    gap: Dimension;
+    rule: { enabled: boolean; color: ColorValue; width: Dimension; length: Dimension };
   };
   titleStyle: {
     fontFamily: string;

@@ -10,12 +10,13 @@ interface ThumbProps {
   resource: Resource;
 }
 
-/** A small thumbnail: bitmap preview for images, glyphs for SVG/table. */
+/** A small thumbnail: bitmap preview for images, glyphs for SVG/table. SVGs
+ *  get a glyph on purpose: previewing them means decoding each file and
+ *  inlining its fonts for every row, which made a long list sluggish. */
 function Thumb({ resource }: ThumbProps) {
   const bitmapUrl = useBlobObjectUrl(
     resource.kind === 'bitmap' ? resource.bitmap?.fileId : undefined,
   );
-  const svgUrl = useBlobObjectUrl(resource.kind === 'svg' ? resource.svg?.fileId : undefined);
 
   const box: React.CSSProperties = {
     width: 36,
@@ -37,9 +38,7 @@ function Thumb({ resource }: ThumbProps) {
     );
   }
   if (resource.kind === 'svg') {
-    return svgUrl ? (
-      <img src={svgUrl} alt="" style={{ ...box, objectFit: 'contain', padding: 3 }} />
-    ) : (
+    return (
       <span className="flex items-center justify-center" style={box}>
         <FileCode size={16} aria-hidden="true" />
       </span>

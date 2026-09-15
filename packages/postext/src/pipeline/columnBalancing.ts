@@ -144,7 +144,22 @@ export function collectColumnGaps(
       // A `:::columnbreak` ended this column on purpose — leave its gap.
       if (col.forcedBreak) continue;
 
-      const gapLines = Math.floor((col.availableHeight + EPS) / doc.baselineGrid);
+      // A column closed by a list tail: the tail's box bakes the list's
+      // bottom margin and grid snap in (so the flow after it lands on the
+      // grid), which can hide a whole empty line under the last item — one
+      // a stretch point above could still use; the item would simply land
+      // with less margin below it. Measure the room below its last line.
+      let free = col.availableHeight;
+      for (let i = col.blocks.length - 1; i >= 0; i--) {
+        const b = col.blocks[i]!;
+        if (b.hidden) continue;
+        const lastLine = b.lines[b.lines.length - 1];
+        if (b.type === 'listItem' && lastLine) {
+          free = Math.max(free, col.bbox.y + col.bbox.height - (lastLine.bbox.y + lastLine.bbox.height));
+        }
+        break;
+      }
+      const gapLines = Math.floor((free + EPS) / doc.baselineGrid);
       if (gapLines < 1) continue;
 
       const candidates: BalanceCandidate[] = [];

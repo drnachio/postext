@@ -15,12 +15,10 @@ import type {
   VDTDocument,
   HtmlRenderIndex,
 } from 'postext';
-import { useSandbox, useSandboxDocSourceRef, useLayoutSource, withLayoutOverride, type EditorSelection } from '../../context/SandboxContext';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { useSandbox, useSandboxDocSourceRef, useLayoutSource, type EditorSelection } from '../../context/SandboxContext';
 import { toBookSelection } from '../../book/compose';
-import { computeBookPages } from '../../book/pages';
+import { leadingBlankPageCount } from '../../book/pagination';
 import type { ComposedBook } from '../../book/types';
-import { BOOK_LAYOUT_DEBOUNCE_MS } from '../CanvasPreview';
 import { useShadowDom } from '../../hooks/useShadowDom';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImageUrls, getResourceImageUrl } from '../../controls/resourceImages';
@@ -49,7 +47,9 @@ interface HtmlPreviewProps {
   // per viewport, so reporting a single "current column" is ambiguous.
   onScrollBoundsChange?: (info: { canPrev: boolean; canNext: boolean }) => void;
   /** Page count of the last laid-out document. */
-  onPageCountChange?: (count: number) => void;
+  /** After every layout: the page count and the first page with content
+   *  (the ones before it are parity padding). */
+  onPageCountChange?: (count: number, firstContentPage: number) => void;
   /** The page the reader is on: the first page snapped into view in multi
    *  mode, the page nearest the viewport centre in single mode. */
   onCurrentPageChange?: (pageIndex: number) => void;
@@ -66,13 +66,11 @@ export const HtmlPreview = forwardRef<HtmlPreviewHandle, HtmlPreviewProps>(
 function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBoundsChange, onPageCountChange, onCurrentPageChange }, ref) {
   const { state, dispatch, docRef: sharedDocRef } = useSandbox();
   const sharedDocSourceRef = useSandboxDocSourceRef();
-  const { book: layoutBook, scope: layoutScope, activeChapterId, configOverride } = useLayoutSource();
+  const layoutSource = useLayoutSource();
+  const { chapterId: activeChapterId } = layoutSource;
   const { hostRef, shadowRef } = useShadowDom();
-  const debouncedBook = useDebouncedValue(layoutBook, layoutScope === 'book' && layoutBook.segments.length > 1 ? BOOK_LAYOUT_DEBOUNCE_MS : 0);
-  const deferredBook = useDeferredValue(debouncedBook);
-  const deferredOverride = useDeferredValue(configOverride);
-  const rawDeferredConfig = useDeferredValue(state.config);
-  const deferredConfig = useMemo(() => withLayoutOverride(rawDeferredConfig, deferredOverride), [rawDeferredConfig, deferredOverride]);
+  const deferredSource = useDeferredValue(layoutSource);
+  const deferredConfig = useDeferredValue(state.config);
   // The book the current `docRef` was built from.
   const builtSourceRef = useRef<ComposedBook | null>(null);
   const deferredResources = useDeferredValue(state.resources);
@@ -120,13 +118,13 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   // don't capture stale values via closure.
   const fontScaleRef = useRef(fontScale);
   const columnModeRef = useRef<ColumnMode>(columnMode);
-  const sourceRef = useRef(deferredBook);
+  const sourceRef = useRef(deferredSource);
   const configRef = useRef(deferredConfig);
   const localeRef = useRef(state.locale);
   const resourcesRef = useRef(state.resources);
   fontScaleRef.current = fontScale;
   columnModeRef.current = columnMode;
-  sourceRef.current = deferredBook;
+  sourceRef.current = deferredSource;
   configRef.current = deferredConfig;
   localeRef.current = state.locale;
   resourcesRef.current = state.resources;
@@ -162,14 +160,14 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   // cell, a caption, an SVG payload) must relayout the HTML tab as well.
   const renderKey = useMemo(
     () => ({
-      book: deferredBook,
+      source: deferredSource,
       config: deferredConfig,
       resources: deferredResources,
       fontScale,
       columnMode,
       locale: state.locale,
     }),
-    [deferredBook, deferredConfig, deferredResources, fontScale, columnMode, state.locale],
+    [deferredSource, deferredConfig, deferredResources, fontScale, columnMode, state.locale],
   );
 
   // Stable scheduler: subscribers (font listener, ResizeObserver, the
@@ -232,7 +230,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     const currentFontScale = fontScaleRef.current;
     const currentColumnMode = columnModeRef.current;
-    const currentSource = sourceRef.current;
+    const currentLayout = sourceRef.current;
+    const currentSource = currentLayout.book;
     // Screen-only overrides (`htmlViewer.overrides`) merged in up front, so
     // font loading, column measurement and layout all see the same config.
     const currentConfig = applyHtmlViewerOverrides(configRef.current);
@@ -315,7 +314,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     try {
       const doc = await layoutWorker.build(
-        { markdown: currentSource.markdown, metadata: currentSource.metadata, resources: resourcesRef.current },
+        { markdown: currentSource.markdown, metadata: currentSource.metadata, resources: resourcesRef.current, continuation: currentLayout.continuation },
         configOverride,
       );
       if (seq !== renderSeqRef.current) return;
@@ -470,7 +469,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       builtSourceRef.current = currentSource;
       sharedDocRef.current = doc;
       sharedDocSourceRef.current = currentSource;
-      if (currentSource.scope === 'book') dispatch({ type: 'SET_BOOK_PAGES', payload: computeBookPages(doc, currentSource) });
+      // Not recorded as the chapter's layout: this tab lays out for the
+      // screen (one tall page, or viewport-high columns), not for print.
       dispatch({ type: 'BUMP_DOC_VERSION' });
       lastRenderRef.current = indexed;
       lastRenderSigRef.current = sig;
@@ -492,7 +492,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         drawBaselines(overlay, doc, pageIndex, bOffset);
       }
 
-      onPageCountChangeRef.current?.(doc.pages.length);
+      onPageCountChangeRef.current?.(doc.pages.length, leadingBlankPageCount(doc));
       setDocVersion((v) => v + 1);
     } catch (err) {
       if ((err as { name?: string } | null)?.name === 'AbortError') return;

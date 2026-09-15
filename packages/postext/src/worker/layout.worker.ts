@@ -69,6 +69,8 @@ function unregisterFonts(families: string[]): void {
   clearMeasurementCache();
 }
 
+const PROGRESS_INTERVAL_MS = 80;
+
 function post(msg: ResponseMessage): void {
   ctx.postMessage(msg);
 }
@@ -116,8 +118,20 @@ ctx.addEventListener('message', async (event: MessageEvent<RequestMessage>) => {
             return;
           }
         }
+        // Progress goes out at most every PROGRESS_INTERVAL_MS, plus on
+        // every new page, so a long build paints a moving bar without
+        // flooding the main thread.
+        let lastProgressAt = 0;
+        let lastPages = -1;
         const doc = buildDocument(msg.content, msg.config, measurementCache, {
           shouldCancel: () => cancelRequestedFor === msg.id,
+          onProgress: (progress) => {
+            const now = Date.now();
+            if (progress.pages === lastPages && now - lastProgressAt < PROGRESS_INTERVAL_MS) return;
+            lastProgressAt = now;
+            lastPages = progress.pages;
+            post({ kind: 'progress', id: msg.id, progress });
+          },
         });
         if (cancelRequestedFor === msg.id) {
           cancelRequestedFor = null;

@@ -289,11 +289,16 @@ export function collectPageLabelRuns(labels: PageLabelInfo[]): PageLabelRun[] {
   return runs;
 }
 
+/** Heading counters carried over from preceding content: `[h1..h6]`. */
+export type HeadingCounterStart = readonly number[];
+
 export function computeHeadingNumbers(
   blocks: ContentBlock[],
   templates: HeadingTemplates,
+  start?: HeadingCounterStart,
 ): Array<string | undefined> {
   const counters = [0, 0, 0, 0, 0, 0, 0];
+  if (start) for (let lvl = 1; lvl <= 6; lvl++) counters[lvl] = start[lvl - 1] ?? 0;
   const parsed: Record<number, Token[] | null> = {};
   for (let lvl = 1; lvl <= 6; lvl++) {
     const tpl = templates[lvl as 1 | 2 | 3 | 4 | 5 | 6] ?? '';

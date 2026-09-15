@@ -97,8 +97,9 @@ export function contentAreaForPage(
   metrics: Pick<PageMetrics, 'contentArea' | 'pageWidthPx'>,
   resolved: ResolvedConfig,
   pageIndex: number,
+  pageIndexOffset = 0,
 ): BoundingBox {
-  const isEvenPage = (pageIndex + 1) % 2 === 0;
+  const isEvenPage = (pageIndex + pageIndexOffset + 1) % 2 === 0;
   if (resolved.page.margins.mirror && isEvenPage) {
     return mirrorContentArea(metrics.contentArea, metrics.pageWidthPx);
   }

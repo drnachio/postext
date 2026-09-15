@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { createLayoutWorker } from 'postext/worker';
-import type { LayoutWorkerHandle } from 'postext/worker';
+import type { BuildProgress, LayoutWorkerHandle } from 'postext/worker';
+
+export type { BuildProgress } from 'postext/worker';
 import type { PostextConfig, PostextContent, VDTDocument } from 'postext';
 import { collectFontPayloadsForFamilies, getConfigFontFamilies, onCustomFontsChanged } from '../controls/fontLoader';
 
@@ -10,7 +12,7 @@ export interface LayoutWorkerApi {
    * same worker handle (last-wins). Returns the new doc, or rejects with an
    * `AbortError` if cancelled.
    */
-  build(content: PostextContent, config?: PostextConfig): Promise<VDTDocument>;
+  build(content: PostextContent, config?: PostextConfig, opts?: { onProgress?: (progress: BuildProgress) => void }): Promise<VDTDocument>;
 }
 
 interface WorkerBundle {
@@ -106,7 +108,7 @@ export function useLayoutWorker(): LayoutWorkerApi {
     await next;
   }, []);
 
-  const build = useCallback(async (content: PostextContent, config?: PostextConfig) => {
+  const build = useCallback(async (content: PostextContent, config?: PostextConfig, opts?: { onProgress?: (progress: BuildProgress) => void }) => {
     const bundle = ensureBundle();
     if (!bundle) throw new Error('Layout worker unavailable (SSR?)');
     currentAbortRef.current?.abort();
@@ -118,7 +120,7 @@ export function useLayoutWorker(): LayoutWorkerApi {
       throw new DOMException('Aborted', 'AbortError');
     }
     try {
-      return await bundle.handle.build(content, config, { signal: controller.signal });
+      return await bundle.handle.build(content, config, { signal: controller.signal, onProgress: opts?.onProgress });
     } finally {
       if (currentAbortRef.current === controller) currentAbortRef.current = null;
     }

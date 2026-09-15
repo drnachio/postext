@@ -148,7 +148,7 @@ function renderLineText(
       else wordWidth += seg.width;
       naturalWidth += seg.width;
     }
-    if (spaceCount > 0 && (!line.isLastLine || naturalWidth > effectiveWidth)) {
+    if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
       renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, justifiedSpaceWidth);
       return;

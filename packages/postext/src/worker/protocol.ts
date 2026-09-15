@@ -1,5 +1,6 @@
 import type { PostextContent, PostextConfig } from '../types';
 import type { VDTDocument } from '../vdt';
+import type { BuildProgress } from '../pipeline/build';
 
 export interface FontPayload {
   family: string;
@@ -45,6 +46,11 @@ export type ResponseMessage =
       kind: 'built';
       id: number;
       doc: VDTDocument;
+    }
+  | {
+      kind: 'progress';
+      id: number;
+      progress: BuildProgress;
     }
   | {
       kind: 'fontsRegistered';

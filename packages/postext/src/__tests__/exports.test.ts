@@ -49,6 +49,7 @@ describe("package exports", () => {
       "createLayout",
       "buildDocument",
       "BuildCancelledError",
+      "continuationAfter",
       "renderToCanvas",
       "renderPage",
       "renderPageToCanvas",

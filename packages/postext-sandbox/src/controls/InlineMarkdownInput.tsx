@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, type CSSProperties } from 'react';
+import { useEffect, useId, useMemo, useRef, type CSSProperties, useLayoutEffect } from 'react';
 import { wordRangeAt } from './wordRange';
 
 // ---------------------------------------------------------------------------
@@ -188,8 +188,10 @@ function tokenStyle(token: PreviewToken): CSSProperties {
   }
 }
 
-const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
-const inputStyle: CSSProperties = { borderColor: 'var(--rule)', color: 'var(--foreground)' };
+const inputClass = 'block w-full min-w-0 rounded border bg-transparent px-2 py-1.5';
+// Explicit type: form controls do not inherit the panel's font, and the
+// lines of a multi-line value need real leading to stay legible.
+const inputStyle: CSSProperties = { borderColor: 'var(--rule)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' };
 
 /** A request to focus the field with a given selection (offsets in `value`).
  *  `selectWord` expands a collapsed selection to the word around it. */
@@ -246,6 +248,14 @@ export function InlineMarkdownInput({
   const tokens = useMemo(() => parseInlinePreview(value), [value]);
   const hasContent = tokens.length > 0;
   const fieldRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
+  // A textarea grows with its value (never a scrolled box of `rows` lines):
+  // every line of a caption or a table cell stays in view.
+  useLayoutEffect(() => {
+    const el = fieldRef.current;
+    if (!multiline || !(el instanceof HTMLTextAreaElement)) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [multiline, value]);
   const onFocusConsumedRef = useRef(onFocusConsumed);
   onFocusConsumedRef.current = onFocusConsumed;
   const onSelectionChangeRef = useRef(onSelectionChange);
@@ -296,7 +306,7 @@ export function InlineMarkdownInput({
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex w-full min-w-0 flex-col gap-1">
       {multiline ? (
         <textarea
           ref={fieldRef as React.RefObject<HTMLTextAreaElement>}
@@ -307,8 +317,8 @@ export function InlineMarkdownInput({
           placeholder={placeholder}
           rows={rows}
           aria-describedby={hidePreview ? undefined : previewId}
-          className={`${inputClass} resize-y`}
-          style={{ ...inputStyle, lineHeight: '16px' }}
+          className={`${inputClass} resize-none overflow-hidden`}
+          style={inputStyle}
           {...selectionHandlers}
         />
       ) : (
@@ -330,12 +340,13 @@ export function InlineMarkdownInput({
         <div
           id={previewId}
           aria-live="polite"
-          className="rounded px-1.5 py-1 text-xs"
+          className="rounded px-2 py-1"
           style={{
             minHeight: 22,
             backgroundColor: 'var(--surface)',
             color: hasContent ? 'var(--foreground)' : 'var(--slate)',
-            lineHeight: '16px',
+            fontSize: 13,
+            lineHeight: '20px',
             wordBreak: 'break-word',
           }}
         >

@@ -4,7 +4,7 @@
 
 import type { PostextConfig, Resource } from 'postext';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
-import type { BookContent, Chapter, LayoutScope } from '../book/types';
+import type { BookContent, Chapter } from '../book/types';
 
 export const PROJECT_RECORD_VERSION = 2 as const;
 
@@ -22,12 +22,9 @@ function isChapter(v: unknown): v is Chapter {
   return isRecord(v) && typeof v.id === 'string' && v.id.length > 0 && typeof v.title === 'string' && typeof v.markdown === 'string';
 }
 
-function isLayoutScope(v: unknown): v is LayoutScope {
-  return v === 'book' || v === 'chapter';
-}
-
-/** Normalise a book slice: at least one chapter, a valid active id, a
- *  known layout scope. Returns null when there is no usable content. */
+/** Normalise a book slice: at least one chapter and a valid active id. A
+ *  `layoutScope` written by earlier versions is dropped. Returns null when
+ *  there is no usable content. */
 export function normalizeBookContent(raw: unknown, deps: MigrationDeps): BookContent | null {
   if (!isRecord(raw)) return null;
   const now = Date.now();
@@ -49,8 +46,7 @@ export function normalizeBookContent(raw: unknown, deps: MigrationDeps): BookCon
   const activeChapterId = typeof raw.activeChapterId === 'string' && chapters.some((c) => c.id === raw.activeChapterId)
     ? raw.activeChapterId
     : chapters[0]!.id;
-  const layoutScope = isLayoutScope(raw.layoutScope) ? raw.layoutScope : 'book';
-  return { chapters, activeChapterId, layoutScope };
+  return { chapters, activeChapterId };
 }
 
 export interface MigratedProjectRecord extends BookContent {

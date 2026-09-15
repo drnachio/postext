@@ -20,4 +20,6 @@ export {
   isRemovedCustomFontFamily,
   onCustomFontsChanged,
   missingStandardVariants,
+  missingUsedVariants,
+  collectFontUsage,
 } from './fontLoader';

@@ -11,6 +11,8 @@ import type {
   CalloutIconConfig,
   CalloutIconKind,
   CalloutListStyleConfig,
+  CalloutMarkerConfig,
+  CalloutMarkerRuleConfig,
   CalloutPaddingConfig,
   CalloutPlacement,
   CalloutSpan,
@@ -87,7 +89,7 @@ function nextStyleId(existing: CalloutStyleConfig[]): string {
 }
 
 /** Sub-objects of a callout style that are edited field by field. */
-type Group = 'border' | 'padding' | 'stripe' | 'icon' | 'titleStyle' | 'body' | 'lists';
+type Group = 'border' | 'padding' | 'stripe' | 'icon' | 'marker' | 'titleStyle' | 'body' | 'lists';
 type GroupConfig<G extends Group> = NonNullable<CalloutStyleConfig[G]>;
 
 function iconLabel(r: Resource): string {
@@ -121,6 +123,131 @@ function CardButton({
   children: React.ReactNode;
 }) {
   return <IconButton label={label} icon={children} onClick={onClick} destructive={destructive} />;
+}
+
+type IconSpec = ResolvedCalloutStyleConfig['icon'];
+type IconField = keyof CalloutIconConfig;
+
+interface IconFieldsProps {
+  /** Resolved icon (or marker) spec the controls display. */
+  value: IconSpec;
+  kindLabel: string;
+  kindTooltip: string;
+  update: (partial: Partial<CalloutIconConfig>) => void;
+  isDefault: (field: IconField) => boolean;
+  onReset: (field: IconField) => void;
+  fieldId: string;
+  iconResources: Resource[];
+}
+
+/** Kind / glyph / resource / size / alignment controls shared by the in-box
+ *  icon and the marker (the same `CalloutIconConfig` shape). */
+function IconFields({ value, kindLabel, kindTooltip, update, isDefault, onReset, fieldId, iconResources }: IconFieldsProps) {
+  const labels = useSandboxLabels();
+  const kindOptions = [
+    { value: 'none', label: labels.calloutStyleIconKindNone },
+    { value: 'glyph', label: labels.calloutStyleIconKindGlyph },
+    { value: 'resource', label: labels.calloutStyleIconKindResource },
+  ];
+  const alignOptions = [
+    { value: 'top', label: labels.calloutStyleIconAlignTop },
+    { value: 'center', label: labels.calloutStyleIconAlignCenter },
+  ];
+  const resourceOptions = [
+    { value: '', label: labels.calloutStyleIconResourceNone },
+    ...iconResources.map((r) => ({ value: r.id, label: iconLabel(r) })),
+  ];
+  // Keep a dangling resource id selectable so the picker never shows a
+  // value that is not in its option list.
+  if (value.resourceId && !iconResources.some((r) => r.id === value.resourceId)) {
+    resourceOptions.push({ value: value.resourceId, label: value.resourceId });
+  }
+  return (
+    <>
+      <SelectInput
+        label={kindLabel}
+        value={value.kind}
+        options={kindOptions}
+        onChange={(v) => update({ kind: v as CalloutIconKind })}
+        tooltip={kindTooltip}
+        isDefault={isDefault('kind')}
+        onReset={() => onReset('kind')}
+      />
+      {value.kind === 'glyph' && (
+        <>
+          <TextInput
+            label={labels.calloutStyleIconGlyph}
+            value={value.glyph}
+            onChange={(v) => update({ glyph: v })}
+            tooltip={labels.calloutStyleIconGlyphTooltip}
+            widthCh={6}
+            isDefault={isDefault('glyph')}
+            onReset={() => onReset('glyph')}
+          />
+          <FontPicker
+            label={labels.calloutStyleIconFont}
+            value={value.fontFamily}
+            onChange={(v) => update({ fontFamily: v })}
+            isDefault={isDefault('fontFamily')}
+            onReset={() => onReset('fontFamily')}
+            searchPlaceholder={labels.bodyFontSearch}
+            noResultsLabel={labels.bodyFontNoResults}
+          />
+          <NumberInput
+            label={labels.calloutStyleIconWeight}
+            value={value.fontWeight}
+            onChange={(v) => update({ fontWeight: v })}
+            min={100}
+            max={900}
+            step={10}
+            isDefault={isDefault('fontWeight')}
+            onReset={() => onReset('fontWeight')}
+          />
+          <ColorPicker
+            label={labels.calloutStyleIconColor}
+            value={value.color}
+            onChange={(v) => update({ color: v })}
+            isDefault={isDefault('color')}
+            onReset={() => onReset('color')}
+            fieldId={fieldId}
+          />
+        </>
+      )}
+      {value.kind === 'resource' && (
+        <SelectInput
+          label={labels.calloutStyleIconResource}
+          value={value.resourceId}
+          options={resourceOptions}
+          onChange={(v) => update({ resourceId: v })}
+          tooltip={labels.calloutStyleIconResourceTooltip}
+          isDefault={isDefault('resourceId')}
+          onReset={() => onReset('resourceId')}
+        />
+      )}
+      {value.kind !== 'none' && (
+        <>
+          <DimensionInput
+            label={labels.calloutStyleIconSize}
+            value={value.size}
+            onChange={(v) => update({ size: v })}
+            min={0}
+            step={0.1}
+            units={SPACING_UNITS}
+            isDefault={isDefault('size')}
+            onReset={() => onReset('size')}
+          />
+          <SelectInput
+            label={labels.calloutStyleIconAlign}
+            value={value.align}
+            options={alignOptions}
+            onChange={(v) => update({ align: v as CalloutIconAlign })}
+            isDefault={isDefault('align')}
+            onReset={() => onReset('align')}
+          />
+        </>
+      )}
+    </>
+  );
 }
 
 interface CalloutStyleCardProps {
@@ -190,6 +317,18 @@ function CalloutStyleCard({
   const padding = (partial: Partial<CalloutPaddingConfig>) => updateGroup('padding', partial);
   const stripe = (partial: Partial<CalloutStripeConfig>) => updateGroup('stripe', partial);
   const icon = (partial: Partial<CalloutIconConfig>) => updateGroup('icon', partial);
+  const marker = (partial: Partial<CalloutMarkerConfig>) => updateGroup('marker', partial);
+  /** `marker.rule` is nested one level deeper: merge there and drop the
+   *  rule (then the marker) when nothing is left set. */
+  const updateMarkerRule = (partial: Partial<CalloutMarkerRuleConfig>) =>
+    marker({ rule: { ...style.marker?.rule, ...partial } });
+  const resetMarkerRuleField = (field: keyof CalloutMarkerRuleConfig) => {
+    const rule: CalloutMarkerRuleConfig = { ...style.marker?.rule };
+    delete rule[field];
+    if (Object.keys(rule).length > 0) marker({ rule });
+    else resetGroupField('marker', 'rule');
+  };
+  const markerRuleUnset = (field: keyof CalloutMarkerRuleConfig) => style.marker?.rule?.[field] === undefined;
   const title = (partial: Partial<CalloutTitleStyleConfig>) => updateGroup('titleStyle', partial);
   const body = (partial: Partial<CalloutBodyStyleConfig>) => updateGroup('body', partial);
   const lists = (partial: Partial<CalloutListStyleConfig>) => updateGroup('lists', partial);
@@ -248,15 +387,6 @@ function CalloutStyleCard({
     { value: 'right', label: labels.calloutStyleStripeSideRight },
     { value: 'top', label: labels.calloutStyleStripeSideTop },
   ];
-  const iconKindOptions = [
-    { value: 'none', label: labels.calloutStyleIconKindNone },
-    { value: 'glyph', label: labels.calloutStyleIconKindGlyph },
-    { value: 'resource', label: labels.calloutStyleIconKindResource },
-  ];
-  const iconAlignOptions = [
-    { value: 'top', label: labels.calloutStyleIconAlignTop },
-    { value: 'center', label: labels.calloutStyleIconAlignCenter },
-  ];
   const transformOptions = [
     { value: 'none', label: labels.calloutStyleTitleTransformNone },
     { value: 'uppercase', label: labels.calloutStyleTitleTransformUppercase },
@@ -265,15 +395,6 @@ function CalloutStyleCard({
     { value: 'left', label: labels.bodyTextAlignLeft },
     { value: 'justify', label: labels.bodyTextAlignJustify },
   ];
-  const resourceOptions = [
-    { value: '', label: labels.calloutStyleIconResourceNone },
-    ...iconResources.map((r) => ({ value: r.id, label: iconLabel(r) })),
-  ];
-  // Keep a dangling resource id selectable so the picker never shows a
-  // value that is not in its option list.
-  if (resolved.icon.resourceId && !iconResources.some((r) => r.id === resolved.icon.resourceId)) {
-    resourceOptions.push({ value: resolved.icon.resourceId, label: resolved.icon.resourceId });
-  }
 
   return (
     <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden>
@@ -593,86 +714,87 @@ function CalloutStyleCard({
         sectionId={`${sectionId}.icon`}
         variant="subsection"
       >
-        <SelectInput
-          label={labels.calloutStyleIconKind}
-          value={resolved.icon.kind}
-          options={iconKindOptions}
-          onChange={(v) => icon({ kind: v as CalloutIconKind })}
-          tooltip={labels.calloutStyleIconKindTooltip}
-          isDefault={groupUnset('icon', 'kind')}
-          onReset={() => resetGroupField('icon', 'kind')}
+        <IconFields
+          value={resolved.icon}
+          kindLabel={labels.calloutStyleIconKind}
+          kindTooltip={labels.calloutStyleIconKindTooltip}
+          update={icon}
+          isDefault={(f) => groupUnset('icon', f)}
+          onReset={(f) => resetGroupField('icon', f)}
+          fieldId={`${fieldId}-icon`}
+          iconResources={iconResources}
         />
-        {resolved.icon.kind === 'glyph' && (
-          <>
-            <TextInput
-              label={labels.calloutStyleIconGlyph}
-              value={resolved.icon.glyph}
-              onChange={(v) => icon({ glyph: v })}
-              tooltip={labels.calloutStyleIconGlyphTooltip}
-              widthCh={6}
-              isDefault={groupUnset('icon', 'glyph')}
-              onReset={() => resetGroupField('icon', 'glyph')}
-            />
-            <FontPicker
-              label={labels.calloutStyleIconFont}
-              value={resolved.icon.fontFamily}
-              onChange={(v) => icon({ fontFamily: v })}
-              isDefault={groupUnset('icon', 'fontFamily')}
-              onReset={() => resetGroupField('icon', 'fontFamily')}
-              searchPlaceholder={labels.bodyFontSearch}
-              noResultsLabel={labels.bodyFontNoResults}
-            />
-            <NumberInput
-              label={labels.calloutStyleIconWeight}
-              value={resolved.icon.fontWeight}
-              onChange={(v) => icon({ fontWeight: v })}
-              min={100}
-              max={900}
-              step={10}
-              isDefault={groupUnset('icon', 'fontWeight')}
-              onReset={() => resetGroupField('icon', 'fontWeight')}
-            />
-            <ColorPicker
-              label={labels.calloutStyleIconColor}
-              value={resolved.icon.color}
-              onChange={(v) => icon({ color: v })}
-              isDefault={groupUnset('icon', 'color')}
-              onReset={() => resetGroupField('icon', 'color')}
-              fieldId={`${fieldId}-icon`}
-            />
-          </>
-        )}
-        {resolved.icon.kind === 'resource' && (
-          <SelectInput
-            label={labels.calloutStyleIconResource}
-            value={resolved.icon.resourceId}
-            options={resourceOptions}
-            onChange={(v) => icon({ resourceId: v })}
-            tooltip={labels.calloutStyleIconResourceTooltip}
-            isDefault={groupUnset('icon', 'resourceId')}
-            onReset={() => resetGroupField('icon', 'resourceId')}
-          />
-        )}
-        {resolved.icon.kind !== 'none' && (
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title={labels.calloutStyleMarkerGroup}
+        sectionId={`${sectionId}.marker`}
+        variant="subsection"
+      >
+        <IconFields
+          value={resolved.marker}
+          kindLabel={labels.calloutStyleMarkerKind}
+          kindTooltip={labels.calloutStyleMarkerKindTooltip}
+          update={marker}
+          isDefault={(f) => groupUnset('marker', f)}
+          onReset={(f) => resetGroupField('marker', f)}
+          fieldId={`${fieldId}-marker`}
+          iconResources={iconResources}
+        />
+        {resolved.marker.kind !== 'none' && (
           <>
             <DimensionInput
-              label={labels.calloutStyleIconSize}
-              value={resolved.icon.size}
-              onChange={(v) => icon({ size: v })}
+              label={labels.calloutStyleMarkerGap}
+              value={resolved.marker.gap}
+              onChange={(v) => marker({ gap: v })}
               min={0}
-              step={0.1}
+              step={0.05}
               units={SPACING_UNITS}
-              isDefault={groupUnset('icon', 'size')}
-              onReset={() => resetGroupField('icon', 'size')}
+              tooltip={labels.calloutStyleMarkerGapTooltip}
+              isDefault={groupUnset('marker', 'gap')}
+              onReset={() => resetGroupField('marker', 'gap')}
             />
-            <SelectInput
-              label={labels.calloutStyleIconAlign}
-              value={resolved.icon.align}
-              options={iconAlignOptions}
-              onChange={(v) => icon({ align: v as CalloutIconAlign })}
-              isDefault={groupUnset('icon', 'align')}
-              onReset={() => resetGroupField('icon', 'align')}
+            <ToggleSwitch
+              label={labels.calloutStyleMarkerRule}
+              checked={resolved.marker.rule.enabled}
+              onChange={(v) => updateMarkerRule({ enabled: v })}
+              tooltip={labels.calloutStyleMarkerRuleTooltip}
+              isDefault={markerRuleUnset('enabled')}
+              onReset={() => resetMarkerRuleField('enabled')}
             />
+            {resolved.marker.rule.enabled && (
+              <>
+                <ColorPicker
+                  label={labels.calloutStyleMarkerRuleColor}
+                  value={resolved.marker.rule.color}
+                  onChange={(v) => updateMarkerRule({ color: v })}
+                  isDefault={markerRuleUnset('color')}
+                  onReset={() => resetMarkerRuleField('color')}
+                  fieldId={`${fieldId}-marker-rule`}
+                />
+                <DimensionInput
+                  label={labels.calloutStyleMarkerRuleWidth}
+                  value={resolved.marker.rule.width}
+                  onChange={(v) => updateMarkerRule({ width: v })}
+                  min={0}
+                  step={0.25}
+                  units={STROKE_UNITS}
+                  isDefault={markerRuleUnset('width')}
+                  onReset={() => resetMarkerRuleField('width')}
+                />
+                <DimensionInput
+                  label={labels.calloutStyleMarkerRuleLength}
+                  value={resolved.marker.rule.length}
+                  onChange={(v) => updateMarkerRule({ length: v })}
+                  min={0}
+                  step={0.5}
+                  units={OFFSET_UNITS}
+                  tooltip={labels.calloutStyleMarkerRuleLengthTooltip}
+                  isDefault={markerRuleUnset('length')}
+                  onReset={() => resetMarkerRuleField('length')}
+                />
+              </>
+            )}
           </>
         )}
       </CollapsibleSection>

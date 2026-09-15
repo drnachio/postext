@@ -17,6 +17,8 @@ import { ViewportTabs } from './viewport/ViewportTabs';
 import { CanvasViewport } from './viewport/CanvasViewport';
 import { HtmlViewport } from './viewport/HtmlViewport';
 import { PdfViewport } from './viewport/PdfViewport';
+import { ChapterPaginator } from './viewport/ChapterPaginator';
+import { useChapterHashSync } from './viewport/useChapterHashSync';
 import { SandboxGlobalStyles, TooltipProvider } from './ui';
 
 function SandboxLayout({
@@ -36,6 +38,7 @@ function SandboxLayout({
   const config = useSandboxSelector((s) => s.config);
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const activeViewport = useSandboxSelector((s) => s.activeViewport);
+  useChapterHashSync();
   const containerRef = useRef<HTMLDivElement>(null);
   const [fontsReady, setFontsReady] = useState(false);
   const configVersionRef = useRef(0);
@@ -164,6 +167,7 @@ function SandboxLayout({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
+        <ChapterPaginator />
         <ViewportTabs />
         <div className="min-h-0 flex-1 overflow-hidden">
           {renderViewport()}

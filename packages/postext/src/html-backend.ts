@@ -137,7 +137,7 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
   // so honor that by compressing the spaces to fit the measure exactly.
   const useJustify =
     block.textAlign === 'justify' && spaceCount > 0 &&
-    (!line.isLastLine || contentWidth > effectiveWidth);
+    ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
   const justifiedSpaceWidth = useJustify
     ? (effectiveWidth - wordWidth) / spaceCount
     : 0;

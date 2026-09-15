@@ -40,6 +40,19 @@ export interface BandCap {
   lines: number;
   /** Times the cap has been grown by one line after an overflow. */
   retries: number;
+  /** Trailing caps only: the zone a chapter-closing fixed box takes at the
+   *  bottom of the band. The band's columns it meets (by position in the
+   *  band) are cut no lower than `top`, so the box fits below them; `lines`
+   *  is then the height of the other columns, which take the text the cut
+   *  displaces. */
+  zone?: BandCapZone;
+}
+
+export interface BandCapZone {
+  /** Absolute page y of the zone's top edge (grid-snapped). */
+  top: number;
+  /** Positions, in the band's column list, of the columns the box meets. */
+  columns: number[];
 }
 
 /** Maximum number of extra placement passes the band-cap driver may run on
@@ -79,10 +92,13 @@ export function applyBandCap(
   cols: readonly VDTColumn[],
   capPx: number,
   uncappedBottoms: Map<VDTColumn, number>,
+  zone?: BandCapZone,
 ): void {
   const cut = bandTop(cols) + capPx;
-  for (const c of cols) {
-    const height = Math.max(c.bbox.height - c.availableHeight, cut - c.bbox.y);
+  for (let i = 0; i < cols.length; i++) {
+    const c = cols[i]!;
+    const colCut = zone && zone.columns.includes(i) ? Math.min(cut, zone.top) : cut;
+    const height = Math.max(c.bbox.height - c.availableHeight, colCut - c.bbox.y);
     if (c.bbox.height <= height + 0.01) continue;
     if (!uncappedBottoms.has(c)) uncappedBottoms.set(c, c.bbox.y + c.bbox.height);
     const trimmed = c.bbox.height - height;
@@ -121,6 +137,33 @@ export function bandCapLines(cols: readonly VDTColumn[], gridPx: number): number
   let total = 0;
   for (const c of cols) total += (c.bbox.height - c.availableHeight) + (c.bbox.y - top);
   return Math.max(1, Math.ceil((total / cols.length - 0.01) / gridPx));
+}
+
+/** Grid lines the columns of a closing band NOT under a fixed box's zone
+ *  need when the columns under it are cut at `zone.top`: the band's content
+ *  minus what fits above the zone, spread over the other columns and
+ *  rounded up to whole lines. `null` when no column is left to take the
+ *  displaced text, or when the level cut already clears the zone (a plain
+ *  level cap does the job), or when the other columns cannot hold it
+ *  within their true height (the box would not fit on the page anyway). */
+export function bandCapLinesAroundZone(
+  cols: readonly VDTColumn[],
+  gridPx: number,
+  zone: BandCapZone,
+  trueBottom: (col: VDTColumn) => number,
+): number | null {
+  const top = bandTop(cols);
+  const level = top + bandCapLines(cols, gridPx) * gridPx;
+  if (level <= zone.top + 0.5) return null;
+  const under = cols.filter((_, i) => zone.columns.includes(i));
+  const others = cols.filter((_, i) => !zone.columns.includes(i));
+  if (under.length === 0 || others.length === 0) return null;
+  let total = 0;
+  for (const c of cols) total += (c.bbox.height - c.availableHeight) + (c.bbox.y - top);
+  const aboveZone = under.length * Math.max(0, zone.top - top);
+  const lines = Math.max(1, Math.ceil(((total - aboveZone) / others.length - 0.01) / gridPx));
+  const room = Math.min(...others.map((c) => trueBottom(c) - top));
+  return lines * gridPx <= room + 0.5 ? lines : null;
 }
 
 const capKey = (spanIndex: number, cap: BandCap): string =>
