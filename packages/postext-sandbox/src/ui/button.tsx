@@ -24,9 +24,13 @@ const VARIANT: Record<ButtonVariant, string> = {
     'border border-(--gilt) bg-transparent text-(--gilt) enabled:hover:bg-(--surface)',
 };
 
+// Pixel units on purpose: the host page scales its root font size with the
+// display (18–30px), and rem-based sizes would grow the buttons with it —
+// the sandbox chrome, and the popups it portals out of its root, keep a
+// fixed 11–12px scale like every other primitive here.
 const SIZE: Record<ButtonSize, string> = {
-  xs: 'h-6 px-2 text-xs gap-1',
-  sm: 'h-7 px-2.5 text-xs gap-1.5',
+  xs: 'h-[24px] px-[8px] text-[11px] leading-[16px] gap-[4px]',
+  sm: 'h-[28px] px-[10px] text-[12px] leading-[16px] gap-[6px]',
 };
 
 /** Text button with the sandbox's three looks. Hover and disabled states
