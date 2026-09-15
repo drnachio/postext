@@ -258,6 +258,22 @@ export interface LayoutContinuation {
   /** Resources already numbered by the preceding content, so a later
    *  reference keeps the number of its first mention. */
   resourceNumbers?: Record<string, ResourceNumberEntry>;
+  /** The `:::part` in effect at the end of the preceding content — the last
+   *  part opened, whether or not its fence has closed — so a chapter laid
+   *  out on its own keeps `{partTitle}` / `{partNumber}` and the part's
+   *  palette overrides on every page until it opens a part of its own. */
+  part?: PartState;
+}
+
+/** A part (section) as the running heads see it: number and title as
+ *  written on the fence, plus the colour-palette entries the fence
+ *  overrides (`palette="band=#f6c297"`), applied to every design slot laid
+ *  out on the part's pages. */
+export interface PartState {
+  number: string;
+  title: string;
+  /** Palette id → hex colour. */
+  palette?: Record<string, string>;
 }
 
 export type PlacementStrategy =
@@ -986,7 +1002,13 @@ export interface CalloutStyleConfig {
   /** Minimum space below the box; the flow snaps back to the baseline grid
    *  after it. Default `0.75em`. */
   marginBottom?: Dimension;
-  /** Always `true` in v1: callouts never split across columns or pages. */
+  /** When `true` (default) the box never splits: a callout that does not
+   *  fit the remaining space moves whole to the next column or page. When
+   *  `false` it may break between child blocks — never inside a paragraph
+   *  or list item — the part that fits closes the current column (or, for
+   *  a `span: 'page'` box, the page) and the rest continues on the next one
+   *  in a box of its own without the title or icon (stripe, border and
+   *  background stay). */
   keepTogether?: boolean;
 }
 
@@ -1204,6 +1226,13 @@ export interface ColumnBalancingConfig {
    *  level (via a band cap) so the last columns end at the same height, the
    *  way a compositor sets a short closing page. Default true. */
   trailing?: boolean;
+  /** Balance the band a page-span block leaves behind: when a `span: 'page'`
+   *  callout does not fit under the current columns and has to move to the
+   *  next page (or split, see `CalloutStyleConfig.keepTogether`), the
+   *  columns it interrupts are cut level instead of leaving the last one
+   *  short — the flow ends at the same height in every column and the box
+   *  (or the part of it that fits) sits under them. Default true. */
+  beforeSpan?: boolean;
 }
 
 export interface ResolvedHeadingsConfig {
@@ -1225,6 +1254,7 @@ export interface ResolvedHeadingsConfig {
     trackParagraphs: boolean;
     maxTracking: number;
     trailing: boolean;
+    beforeSpan: boolean;
   };
   levels: ResolvedHeadingLevelConfig[];
 }

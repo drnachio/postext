@@ -521,6 +521,8 @@ export interface SandboxLabels {
   balanceTrackParagraphsTooltip: string;
   balanceTrailing: string;
   balanceTrailingTooltip: string;
+  balanceBeforeSpan: string;
+  balanceBeforeSpanTooltip: string;
   balanceMaxTracking: string;
   balanceMaxTrackingTooltip: string;
 
@@ -1076,6 +1078,8 @@ export interface SandboxLabels {
   calloutStyleFixedOffsetTooltip: string;
   calloutStyleFloatBarrier: string;
   calloutStyleFloatBarrierTooltip: string;
+  calloutStyleKeepTogether: string;
+  calloutStyleKeepTogetherTooltip: string;
   calloutStyleWidth: string;
   calloutStyleWidthTooltip: string;
   calloutStyleWidthFill: string;

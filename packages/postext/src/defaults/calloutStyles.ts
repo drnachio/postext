@@ -180,8 +180,7 @@ function resolveCalloutStyleConfig(
     },
     marginTop: partial.marginTop ?? d.marginTop,
     marginBottom: partial.marginBottom ?? d.marginBottom,
-    // v1: callouts are always kept together (never split).
-    keepTogether: true,
+    keepTogether: partial.keepTogether ?? d.keepTogether,
   };
 }
 
@@ -339,7 +338,7 @@ export function stripCalloutStylesDefaults(
     }
     if (s.marginTop !== undefined && !dimensionsEqual(s.marginTop, d.marginTop)) r.marginTop = s.marginTop;
     if (s.marginBottom !== undefined && !dimensionsEqual(s.marginBottom, d.marginBottom)) r.marginBottom = s.marginBottom;
-    // `keepTogether` is always true in v1 — never persisted.
+    if (s.keepTogether !== undefined && s.keepTogether !== d.keepTogether) r.keepTogether = s.keepTogether;
     return r;
   });
   // The built-in default (a single bare `note` style) needs no persisting.

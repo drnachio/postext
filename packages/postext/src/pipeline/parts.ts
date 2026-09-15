@@ -27,6 +27,9 @@ export interface PlannedPart {
   number: string;
   /** `title` attribute; `''` when absent. */
   title: string;
+  /** `palette` attribute parsed: palette id → hex colour (see
+   *  {@link parsePartPalette}); empty when absent. */
+  palette: Record<string, string>;
 }
 
 export interface PartPlan {
@@ -55,6 +58,7 @@ export function planParts(contentBlocks: readonly ContentBlock[]): PartPlan {
         containerId: b.containerId,
         number: (attrs.number ?? '').trim(),
         title: (attrs.title ?? '').trim(),
+        palette: parsePartPalette(attrs.palette),
       };
       open = { part, depth: 0 };
       continue;
@@ -71,6 +75,19 @@ export function planParts(contentBlocks: readonly ContentBlock[]): PartPlan {
     if (open) byBlock[i] = open.part;
   }
   return { byStart, byEnd, byBlock };
+}
+
+/** Parse a part's `palette` attribute — `"band=#f6c297, band-grey: #fadec7"`
+ *  — into palette id → hex. Pairs are separated by commas, semicolons or
+ *  whitespace; `=` or `:` joins id and colour; a colour must be a 3-, 6- or
+ *  8-digit hex (the `#` is optional and normalised in). Malformed pairs are
+ *  skipped. */
+export function parsePartPalette(attr: string | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!attr) return out;
+  const pair = /(?:^|[,;\s])([A-Za-z0-9_-]+)\s*[=:]\s*#?([0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})(?=$|[,;\s])/g;
+  for (const m of attr.matchAll(pair)) out[m[1]!] = `#${m[2]!.toLowerCase()}`;
+  return out;
 }
 
 const ROMAN_RE = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i;

@@ -23,6 +23,7 @@ import type {
   ResolvedDesignSlot,
   ResolvedPartsConfig,
   PageRole,
+  PartState,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -360,6 +361,12 @@ export interface ResolvedCalloutBlock {
   markerFileId?: string;
   /** Bitmap format of the marker image when known. */
   markerFormat?: string;
+  /** Set on the frames of a callout split across columns / pages
+   *  (`keepTogether: false`): 0-based index of this fragment. Every
+   *  fragment shares the fence's `contentIndex` and `containerId`. */
+  part?: number;
+  /** On a split callout: `true` while another fragment follows this one. */
+  continued?: boolean;
 }
 
 export interface VDTColumn {
@@ -491,7 +498,15 @@ export interface VDTPage {
   role?: PageRole;
   /** Present on part-divider pages: the part number and title. Marks the
    *  page as `role: 'part'`. */
-  partInfo?: { number: string; title: string; titleSourceStart?: number; titleSourceEnd?: number };
+  partInfo?: {
+    number: string;
+    title: string;
+    /** Palette entries the part's fence overrides (id → hex), applied to
+     *  the design slots of every page of the part. */
+    palette?: Record<string, string>;
+    titleSourceStart?: number;
+    titleSourceEnd?: number;
+  };
   columns: VDTColumn[];
   header?: VDTDesignSlot;
   footer?: VDTDesignSlot;
@@ -543,6 +558,10 @@ export interface VDTDocument {
   /** Chapters (level-1 headings) before this document, so `{chapterNumber}`
    *  keeps counting without a numbering template. */
   chapterOrdinalOffset?: number;
+  /** The part in effect before this document's first page (from
+   *  `continuation.part`): `{partTitle}` / `{partNumber}` and the part's
+   *  palette overrides apply from page 0 until the document opens a part. */
+  partStart?: PartState;
 }
 
 // ---------------------------------------------------------------------------

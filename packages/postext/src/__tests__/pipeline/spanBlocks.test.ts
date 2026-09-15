@@ -228,8 +228,10 @@ describe('page-span callouts (span blocks, stage 1)', () => {
     const gap0 = gaps.find((g) => g.pageIndex === 0 && g.columnIndex === 0);
     expect(gap0).toBeDefined();
     expect(gap0!.candidates.some((c) => c.kind === 'heading')).toBe(true);
-    // …so with balancing on, the heading moves down to absorb the gap.
-    const balanced = build(md, { ...TWO_COL, headings: { balancing: { enabled: true } } });
+    // …so with balancing on (and `beforeSpan` off — the default levels the
+    // band behind the box instead, see `spanLeaveLevel.test.ts`), the
+    // heading moves down to absorb the gap.
+    const balanced = build(md, { ...TWO_COL, headings: { balancing: { enabled: true, beforeSpan: false } } });
     const h0 = doc.blocks.find((b) => b.type === 'heading')!;
     const h1 = balanced.blocks.find((b) => b.type === 'heading')!;
     expect(h1.pageIndex).toBe(0);

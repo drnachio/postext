@@ -20,9 +20,11 @@
  * and as tall as the tallest of the three; the box keeps its own icon,
  * background and padding.
  *
- * v1 limits: callouts never split (`keepTogether` is always on); nested
- * `:::callout` fences inside a callout are flattened into the outer box;
- * `width: 'auto'` shrink-wraps the title only and ignores the children.
+ * A style with `keepTogether: false` may be split by the placement code
+ * between its children; every fragment is laid out here as a box of its own
+ * (`continuation` drops the title and icon of the later ones). Limits:
+ * nested `:::callout` fences inside a callout are flattened into the outer
+ * box; `width: 'auto'` shrink-wraps the title only and ignores the children.
  */
 
 import type { ContentBlock, DirectiveAttrs } from '../parse';
@@ -212,6 +214,10 @@ export interface CalloutLayoutInput {
   paragraphStyleFor?: (blockIdx: number) => BlockStyle | undefined;
   /** Source offset of the markdown body inside the original document. */
   bodyOffset?: number;
+  /** Lay out a continuation fragment of a split box (`keepTogether:
+   *  false`): the frame keeps its background, border, stripe and marker but
+   *  drops the title and the in-box icon — the head already carries them. */
+  continuation?: boolean;
 }
 
 export interface CalloutLayoutResult {
@@ -333,7 +339,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const stripeRight = sideStripe && style.stripe.side === 'right';
   const topStripe = stripeOn && style.stripe.side === 'top';
 
-  const hasIcon = iconPresent(style.icon);
+  const hasIcon = !input.continuation && iconPresent(style.icon);
   const iconSize = hasIcon ? px(style.icon.size) : 0;
   const gapPx = px(style.titleStyle.gap);
   // The icon takes its own column only when there is no side stripe to sit
@@ -355,7 +361,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     style.titleStyle.italic ? 'italic' : 'normal',
   );
   const titleLineHeight = titleFontPx * 1.2;
-  const hasTitle = titleText.trim().length > 0;
+  const hasTitle = !input.continuation && titleText.trim().length > 0;
 
   // Box width: `fill` uses the given width less the marker column; `auto`
   // shrink-wraps the title.

@@ -1,5 +1,6 @@
 // What a document laid out after another one inherits from it — the
-// counter half of `PostextContent.continuation`. Pure over the parsed
+// counter half of `PostextContent.continuation`, plus the part left open.
+// Pure over the parsed
 // markdown: no layout is involved, so the page half (`pageIndexOffset`,
 // `pageNumbering`) is left to the caller, which knows how many pages the
 // preceding content produced and how its last page was numbered.
@@ -7,8 +8,9 @@
 import { extractFrontmatter } from '../frontmatter';
 import { parseMarkdownMemo } from '../parse';
 import { defaultResourceTypes } from '../defaults';
-import type { HeadingCounters, LayoutContinuation, PostextConfig, PostextContent } from '../types';
+import type { HeadingCounters, LayoutContinuation, PartState, PostextConfig, PostextContent } from '../types';
 import { computeHeadingContext, computeResourceNumberingState } from './resourceNumbering';
+import { planParts } from './parts';
 
 const NO_HEADINGS: HeadingCounters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
 
@@ -35,5 +37,15 @@ export function continuationAfter(
     headingContext,
     before ? { counters: before.resourceCounters, numbered: before.resourceNumbers } : undefined,
   );
-  return { headings, resourceCounters: counters, resourceNumbers: map };
+  // The last part opened in `content` (its fence may well have closed —
+  // a part stays in effect until the next one), else the inherited one.
+  let part: PartState | undefined = before?.part;
+  for (const planned of planParts(blocks).byStart.values()) {
+    part = {
+      number: planned.number,
+      title: planned.title,
+      ...(Object.keys(planned.palette).length > 0 ? { palette: planned.palette } : {}),
+    };
+  }
+  return { headings, resourceCounters: counters, resourceNumbers: map, ...(part ? { part } : {}) };
 }

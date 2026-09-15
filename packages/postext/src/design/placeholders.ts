@@ -39,6 +39,10 @@ export interface DesignPlaceholderContext {
    *  `{partNumber}`); see `computePartValues`. */
   partTitleByPageIndex?: string[];
   partNumberByPageIndex?: string[];
+  /** Palette overrides of the current part per page index (palette id →
+   *  hex): every palette-linked colour of a design slot laid out on that
+   *  page takes the part's value. Absent / empty = the document palette. */
+  partPaletteByPageIndex?: Record<string, string>[];
   /** Current chapter number per page index; backs `{chapterNumber}` in
    *  header/footer slots (heading slots use `heading.chapterNumber`). */
   chapterNumberByPageIndex?: string[];

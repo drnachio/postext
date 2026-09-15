@@ -116,8 +116,7 @@ describe('callout style defaults', () => {
     expect(r!.body.fontFamily).toBe('Literata');
     expect(r!.lists.bulletChar).toBe('▸');
     expect(r!.lists.gap).toEqual(lists.gap);
-    // v1: always kept together, regardless of the requested value.
-    expect(r!.keepTogether).toBe(true);
+    expect(r!.keepTogether).toBe(false);
   });
 
   it('strip drops static defaults and keeps explicit / inherited fields', () => {
@@ -154,6 +153,9 @@ describe('callout style defaults', () => {
     expect(stripCalloutStylesDefaults([{ id: 'note' }])).toBeUndefined();
     expect(stripCalloutStylesDefaults([{ id: 'note', name: 'Note' }])).toBeUndefined();
     expect(stripCalloutStylesDefaults([{ id: 'note', name: 'Nota' }])).toEqual([{ id: 'note', name: 'Nota' }]);
+    // A splittable box is persisted; the default (kept together) is not.
+    expect(stripCalloutStylesDefaults([{ id: 'kp', keepTogether: false }])).toEqual([{ id: 'kp', keepTogether: false }]);
+    expect(stripCalloutStylesDefaults([{ id: 'kp', keepTogether: true }])).toEqual([{ id: 'kp' }]);
   });
 
   it('marker resolves, strips and round-trips like the icon', () => {
