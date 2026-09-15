@@ -18,30 +18,175 @@ import type { VDTBlock, VDTLine, ResolvedResourceBlock } from '../vdt';
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
 
+export interface RegisterResourceImageOptions {
+  /** The source is vector art (an SVG `<img>`): every `drawImage` of it
+   *  re-rasterises the document, so the backend rasterises it once at each
+   *  placed pixel size and blits the bitmap thereafter (see
+   *  {@link drawResourceImage}). Defaults to true for an `HTMLImageElement`
+   *  — the host decodes rasters through `createImageBitmap`. */
+  vector?: boolean;
+}
+
+interface RegistryEntry {
+  image: ResourceImageSource;
+  vector: boolean;
+}
+
 /** Module-level registry of decoded images, keyed by `fileId`. The sandbox
  *  decodes blobs (createImageBitmap for bitmaps; an `<img>`/offscreen canvas
  *  for SVGs) once and registers them here before rendering a page. */
-const imageRegistry = new Map<string, ResourceImageSource>();
+const imageRegistry = new Map<string, RegistryEntry>();
+
+function isImageElement(image: ResourceImageSource): boolean {
+  return typeof HTMLImageElement !== 'undefined' && image instanceof HTMLImageElement;
+}
 
 /** Register (or replace) a decoded image for a `fileId`. */
-export function registerResourceImage(fileId: string, image: ResourceImageSource): void {
-  imageRegistry.set(fileId, image);
+export function registerResourceImage(
+  fileId: string,
+  image: ResourceImageSource,
+  options?: RegisterResourceImageOptions,
+): void {
+  imageRegistry.set(fileId, { image, vector: options?.vector ?? isImageElement(image) });
+  dropRasters(fileId);
 }
 
 /** Remove a cached image (e.g. when its resource is deleted). */
 export function unregisterResourceImage(fileId: string): void {
   imageRegistry.delete(fileId);
+  dropRasters(fileId);
 }
 
 /** Clear the entire image registry. */
 export function clearResourceImages(): void {
   imageRegistry.clear();
+  rasterCache.clear();
+  rasterBytes = 0;
 }
 
 /** Look up a decoded image. Exposed so the host can check what still needs
  *  decoding before a render. */
 export function getResourceImage(fileId: string): ResourceImageSource | undefined {
-  return imageRegistry.get(fileId);
+  return imageRegistry.get(fileId)?.image;
+}
+
+// ---------------------------------------------------------------------------
+// Vector raster cache
+//
+// Drawing an SVG `<img>` onto a canvas rasterises the whole SVG document on
+// every call — text set in embedded fonts, embedded raster fills, filters —
+// at print resolution that is tens to hundreds of milliseconds per figure,
+// paid again on every repaint of the page (a rebuild, a view-mode switch).
+// A page's figures always draw at the same pixel size (the placed body rect
+// at the page DPI), so the first draw at a size rasterises into an offscreen
+// bitmap, keyed by fileId and size, and later draws blit that bitmap. The
+// cache is bounded by bytes, least recently used first, and a fileId's
+// entries are dropped when its image is (re)registered.
+// ---------------------------------------------------------------------------
+
+type RasterCanvas = OffscreenCanvas | HTMLCanvasElement;
+
+interface RasterEntry {
+  fileId: string;
+  canvas: RasterCanvas;
+  bytes: number;
+}
+
+/** Insertion order doubles as recency: a hit is re-inserted at the end. */
+const rasterCache = new Map<string, RasterEntry>();
+let rasterBytes = 0;
+/** ~256 MB of RGBA bitmaps: a few dozen full-width figures at 300 dpi. */
+const RASTER_CACHE_MAX_BYTES = 256 * 1024 * 1024;
+/** Above this many device pixels on a side the draw stays direct — a bitmap
+ *  that large would evict everything else for one figure. */
+const RASTER_MAX_SIDE = 8192;
+
+function dropRasters(fileId: string): void {
+  for (const [key, entry] of rasterCache) {
+    if (entry.fileId !== fileId) continue;
+    rasterCache.delete(key);
+    rasterBytes -= entry.bytes;
+  }
+}
+
+function createRasterCanvas(w: number, h: number): RasterCanvas | null {
+  if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(w, h);
+  if (typeof document !== 'undefined') {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    return c;
+  }
+  return null;
+}
+
+function evictRastersTo(budget: number): void {
+  for (const [key, entry] of rasterCache) {
+    if (rasterBytes <= budget) return;
+    rasterCache.delete(key);
+    rasterBytes -= entry.bytes;
+  }
+}
+
+/** The bitmap of `image` at `w`×`h` device pixels, rasterised on the first
+ *  request; null when no offscreen canvas can be made (or the size is out
+ *  of range), in which case the caller draws the source directly. */
+function getVectorRaster(fileId: string, image: ResourceImageSource, w: number, h: number): RasterCanvas | null {
+  if (w <= 0 || h <= 0 || w > RASTER_MAX_SIDE || h > RASTER_MAX_SIDE) return null;
+  const key = `${fileId}|${w}x${h}`;
+  const hit = rasterCache.get(key);
+  if (hit) {
+    rasterCache.delete(key);
+    rasterCache.set(key, hit);
+    return hit.canvas;
+  }
+  const bytes = w * h * 4;
+  if (bytes > RASTER_CACHE_MAX_BYTES) return null;
+  const canvas = createRasterCanvas(w, h);
+  if (!canvas) return null;
+  const ctx = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null;
+  if (!ctx) return null;
+  try {
+    ctx.drawImage(image, 0, 0, w, h);
+  } catch {
+    return null;
+  }
+  evictRastersTo(RASTER_CACHE_MAX_BYTES - bytes);
+  rasterCache.set(key, { fileId, canvas, bytes });
+  rasterBytes += bytes;
+  return canvas;
+}
+
+/** Bytes of vector bitmaps currently cached (diagnostics / tests). */
+export function resourceRasterCacheBytes(): number {
+  return rasterBytes;
+}
+
+/** Draw the registered image of `fileId` into the box, through the raster
+ *  cache for vector sources. Returns false when nothing is registered, so
+ *  the caller can paint its placeholder. */
+export function drawResourceImage(
+  ctx: CanvasRenderingContext2D,
+  fileId: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): boolean {
+  const entry = imageRegistry.get(fileId);
+  if (!entry) return false;
+  if (entry.vector) {
+    // The page canvas is 1 device px per page px (no transform), so the
+    // placed box rounded to whole pixels is the bitmap size the figure
+    // shows at.
+    const raster = getVectorRaster(fileId, entry.image, Math.round(w), Math.round(h));
+    if (raster) {
+      ctx.drawImage(raster, x, y, w, h);
+      return true;
+    }
+  }
+  ctx.drawImage(entry.image, x, y, w, h);
+  return true;
 }
 
 function pickFont(
@@ -182,10 +327,8 @@ export function renderResourceBlock(
   const bh = rb.bodyRect.height;
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
-    const img = rb.fileId ? imageRegistry.get(rb.fileId) : undefined;
-    if (img) {
-      ctx.drawImage(img, bx, by, bw, bh);
-    } else {
+    const drawn = rb.fileId ? drawResourceImage(ctx, rb.fileId, bx, by, bw, bh) : false;
+    if (!drawn) {
       drawPlaceholder(ctx, bx, by, bw, bh, rb.kind === 'svg' ? 'SVG' : 'Image');
     }
   } else if (rb.kind === 'table') {

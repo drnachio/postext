@@ -15,6 +15,7 @@ import {
   PinOff,
 } from 'lucide-react';
 import { useSandbox } from '../context/SandboxContext';
+import { groupPagesIntoRows } from './CanvasPreview/layoutUtils';
 import { Tooltip } from '../ui';
 
 type ViewMode = 'single' | 'spread';
@@ -51,6 +52,13 @@ interface CanvasToolbarProps {
   generating: boolean;
   currentPage: number;
   pageCount: number;
+  /** Book page number printed on the current page, and the chapter's
+   *  first / last ones — what the page field shows and accepts. */
+  pageNumber: number;
+  firstPageNumber: number;
+  lastPageNumber: number;
+  /** Whether page 0 is a right-hand page (drives the spread pairing). */
+  firstPageRecto: boolean;
   pinned: boolean;
   hidden: boolean;
   onRegenerate: () => void;
@@ -61,22 +69,25 @@ interface CanvasToolbarProps {
   onFitHeight: () => void;
   onSetViewMode: (mode: ViewMode) => void;
   onJumpToPage: (pageIndex: number) => void;
+  onJumpToPageNumber: (pageNumber: number) => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onFocus?: FocusEventHandler<HTMLDivElement>;
   onBlur?: FocusEventHandler<HTMLDivElement>;
 }
 
-// In spread view, pages are grouped into rows as [[0],[1,2],[3,4],…]. The
-// `currentPage` reported by the preview is always the leftmost page of the
-// visible row, so next/prev must jump row-to-row rather than ±1.
-function nextPageTarget(current: number, viewMode: ViewMode): number {
-  if (viewMode === 'single') return current + 1;
-  return current === 0 ? 1 : current + 2;
-}
-function prevPageTarget(current: number, viewMode: ViewMode): number {
-  if (viewMode === 'single') return current - 1;
-  return current <= 1 ? 0 : current - 2;
+// In spread view the preview groups pages into verso/recto rows (see
+// `groupPagesIntoRows`: a chapter opening on a recto shows it alone, one
+// opening on a verso pairs it with the next page), and the `currentPage` it
+// reports is the leftmost page of the visible row — so next/prev jump to
+// the first page of the neighbouring row, whatever the pairing. Out of
+// range means there is no such row.
+function rowTargets(current: number, viewMode: ViewMode, pageCount: number, firstPageRecto: boolean): { prev: number; next: number } {
+  if (viewMode === 'single') return { prev: current - 1, next: current + 1 };
+  const rows = groupPagesIntoRows(pageCount, viewMode, firstPageRecto);
+  const r = rows.findIndex((row) => row.includes(current));
+  if (r < 0) return { prev: current - 1, next: current + 1 };
+  return { prev: rows[r - 1]?.[0] ?? -1, next: rows[r + 1]?.[0] ?? pageCount };
 }
 
 export function ToolbarButton({
@@ -171,31 +182,38 @@ export function PinToolbarButton({
   );
 }
 
+/** The page field shows the book page number printed on the current page
+ *  (not its index in the chapter) and jumps to the page carrying the
+ *  number typed, clamped to the chapter's range. */
 function PageNumberInput({
-  currentPage,
+  pageNumber,
+  firstPageNumber,
+  lastPageNumber,
   pageCount,
-  onJumpToPage,
+  onJumpToPageNumber,
   label,
 }: {
-  currentPage: number;
+  pageNumber: number;
+  firstPageNumber: number;
+  lastPageNumber: number;
   pageCount: number;
-  onJumpToPage: (pageIndex: number) => void;
+  onJumpToPageNumber: (pageNumber: number) => void;
   label: string;
 }) {
-  const [draft, setDraft] = useState(String(currentPage + 1));
+  const [draft, setDraft] = useState(String(pageNumber));
   const [focused, setFocused] = useState(false);
   useEffect(() => {
-    if (!focused) setDraft(String(currentPage + 1));
-  }, [currentPage, focused]);
+    if (!focused) setDraft(String(pageNumber));
+  }, [pageNumber, focused]);
 
   const commit = () => {
     const n = parseInt(draft, 10);
     if (Number.isFinite(n) && pageCount > 0) {
-      const clamped = Math.max(1, Math.min(pageCount, n));
-      onJumpToPage(clamped - 1);
+      const clamped = Math.max(firstPageNumber, Math.min(lastPageNumber, n));
+      onJumpToPageNumber(clamped);
       setDraft(String(clamped));
     } else {
-      setDraft(String(currentPage + 1));
+      setDraft(String(pageNumber));
     }
   };
 
@@ -222,7 +240,7 @@ function PageNumberInput({
             commit();
             (e.currentTarget as HTMLInputElement).blur();
           } else if (e.key === 'Escape') {
-            setDraft(String(currentPage + 1));
+            setDraft(String(pageNumber));
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}
@@ -248,6 +266,10 @@ export function CanvasToolbar({
   generating,
   currentPage,
   pageCount,
+  pageNumber,
+  firstPageNumber,
+  lastPageNumber,
+  firstPageRecto,
   pinned,
   hidden,
   onRegenerate,
@@ -258,6 +280,7 @@ export function CanvasToolbar({
   onFitHeight,
   onSetViewMode,
   onJumpToPage,
+  onJumpToPageNumber,
   onMouseEnter,
   onMouseLeave,
   onFocus,
@@ -265,8 +288,7 @@ export function CanvasToolbar({
 }: CanvasToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
-  const prevTarget = prevPageTarget(currentPage, viewMode);
-  const nextTarget = nextPageTarget(currentPage, viewMode);
+  const { prev: prevTarget, next: nextTarget } = rowTargets(currentPage, viewMode, pageCount, firstPageRecto);
   const prevDisabled = pageCount === 0 || currentPage <= 0;
   const nextDisabled = pageCount === 0 || nextTarget > pageCount - 1;
 
@@ -340,9 +362,11 @@ export function CanvasToolbar({
         disabled={prevDisabled}
       />
       <PageNumberInput
-        currentPage={currentPage}
+        pageNumber={pageNumber}
+        firstPageNumber={firstPageNumber}
+        lastPageNumber={lastPageNumber}
         pageCount={pageCount}
-        onJumpToPage={onJumpToPage}
+        onJumpToPageNumber={onJumpToPageNumber}
         label={labels.pageNumberInput}
       />
       <ToolbarButton

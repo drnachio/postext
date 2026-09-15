@@ -11,7 +11,23 @@ import { readViewHash, writeViewHash } from '../storage/viewHash';
 export interface ViewerLayout {
   pageCount: number;
   firstPage: number;
+  /** Book page number printed on each page, by page index. */
+  pageNumbers: readonly number[];
   version: number;
+}
+
+/** Empty layout record, before the viewer's first document. */
+export const EMPTY_VIEWER_LAYOUT: ViewerLayout = { pageCount: 0, firstPage: 0, pageNumbers: [], version: 0 };
+
+/** Index of the page numbered `pageNumber` in the layout, or -1. */
+export function pageIndexOf(layout: ViewerLayout, pageNumber: number): number {
+  return layout.pageNumbers.indexOf(pageNumber);
+}
+
+/** Book page number of the page at `pageIndex` (falls back to `index + 1`
+ *  while the layout is unknown). */
+export function pageNumberAt(layout: ViewerLayout, pageIndex: number): number {
+  return layout.pageNumbers[pageIndex] ?? pageIndex + 1;
 }
 
 /**
@@ -19,12 +35,13 @@ export interface ViewerLayout {
  *
  * A restore is pending on mount and again whenever the active chapter
  * changes. It settles on the next layout: when the fragment names the
- * active chapter (or no chapter at all), the viewer jumps to its page; any
- * other chapter's page does not carry over, and a fragment without a page
- * means the chapter's first content page — where a chapter switch lands. From then on every page the viewer reports is
- * written back to the fragment — so a reload, or a switch to another viewer
- * (which mounts and restores from the same fragment), lands where the
- * reader was. Pages reported while a restore is pending are not written:
+ * active chapter (or no chapter at all), the viewer jumps to the page
+ * carrying that number; any other chapter's page does not carry over, and
+ * a fragment without a page means the chapter's first content page — where
+ * a chapter switch lands. From then on every page the viewer reports is
+ * written back to the fragment as its book page number — so a reload, or a
+ * switch to another viewer (which mounts and restores from the same
+ * fragment), lands where the reader was. Pages reported while a restore is pending are not written:
  * the layout's own first report, or a scroll of the outgoing chapter's
  * document, must not overwrite the target before it is read.
  *
@@ -48,6 +65,8 @@ export function usePageHashSync(
   chapterIndexRef.current = chapterIndex;
   const jumpRef = useRef(jumpToPage);
   jumpRef.current = jumpToPage;
+  const layoutRef = useRef(layout);
+  layoutRef.current = layout;
 
   // Re-arm during render, before any effect of this commit can report a
   // page for the outgoing document.
@@ -67,11 +86,12 @@ export function usePageHashSync(
     const chapter = chapterIndexRef.current;
     const carried = hash.chapter === null || hash.chapter === chapter;
     const wanted = carried && hash.page !== null ? hash.page : null;
+    const wantedIndex = wanted === null ? -1 : pageIndexOf(layout, wanted);
     let target: number;
-    if (wanted === null) {
+    if (wanted === null || (wantedIndex < 0 && wanted < pageNumberAt(layout, 0))) {
       target = layout.firstPage;
-    } else if (wanted < layout.pageCount) {
-      target = wanted;
+    } else if (wantedIndex >= 0) {
+      target = wantedIndex;
     } else {
       // Not laid out yet: show the last page and keep the restore pending
       // for a later, taller layout — for a while.
@@ -90,7 +110,7 @@ export function usePageHashSync(
     }
     waitingSinceRef.current = null;
     jumpRef.current(target);
-    writeViewHash({ chapter, page: target });
+    writeViewHash({ chapter, page: pageNumberAt(layout, target) });
     // Let the jump's own scroll report settle before the reader's position
     // becomes authoritative for the fragment. A timer, not an animation
     // frame: a background tab never runs frames, but must still restore.
@@ -108,13 +128,17 @@ export function usePageHashSync(
     const onHashChange = () => {
       const hash = readViewHash();
       if (hash.chapter !== null && hash.chapter !== chapterIndexRef.current) return;
-      if (hash.page !== null) jumpRef.current(hash.page);
+      if (hash.page === null) return;
+      const index = pageIndexOf(layoutRef.current, hash.page);
+      if (index >= 0) jumpRef.current(index);
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
   return useCallback((pageIndex: number) => {
-    if (!pendingRef.current) writeViewHash({ chapter: chapterIndexRef.current, page: pageIndex });
+    if (!pendingRef.current) {
+      writeViewHash({ chapter: chapterIndexRef.current, page: pageNumberAt(layoutRef.current, pageIndex) });
+    }
   }, []);
 }

@@ -57,6 +57,46 @@ export function chapterLayoutIsCurrent(
     && layout.continuationKey === continuationKey;
 }
 
+/** Whether two plans of a chapter hand the engine the same inputs — the
+ *  parts of a plan a layout depends on. The plan's `layout` record is the
+ *  build's own output, so a preview selecting its plan through this
+ *  equality does not rebuild when its previous build lands (the plan is
+ *  re-derived, as new objects, whenever any chapter's layout is recorded);
+ *  the counters are covered by `continuationKey`, the page fields compared
+ *  by value. */
+export function sameLayoutInputs(a: ChapterPlan, b: ChapterPlan): boolean {
+  if (a === b) return true;
+  if (
+    a.chapterId !== b.chapterId
+    || a.index !== b.index
+    || a.paginated !== b.paginated
+    || a.continuationKey !== b.continuationKey
+  ) return false;
+  const ca = a.continuation;
+  const cb = b.continuation;
+  if (!ca || !cb) return ca === cb;
+  return ca.pageIndexOffset === cb.pageIndexOffset
+    && ca.pageNumbering?.format === cb.pageNumbering?.format
+    && ca.pageNumbering?.startAt === cb.pageNumbering?.startAt;
+}
+
+/** Whether two layout records say the same thing about a chapter: built
+ *  from the same inputs (by identity, as {@link chapterLayoutIsCurrent}
+ *  checks them) with the same page outcome. Recording such a record again
+ *  changes nothing downstream. */
+export function sameChapterLayout(a: ChapterLayout | undefined, b: ChapterLayout): boolean {
+  return !!a
+    && a.chapterId === b.chapterId
+    && a.markdown === b.markdown
+    && a.config === b.config
+    && a.resources === b.resources
+    && a.continuationKey === b.continuationKey
+    && a.pageCount === b.pageCount
+    && a.leadingBlankPages === b.leadingBlankPages
+    && a.lastPageDelta === b.lastPageDelta
+    && a.lastPageFormat === b.lastPageFormat;
+}
+
 /** A planner keeps the per-chapter counter chain cached, so a keystroke in
  *  chapter 9 re-derives nothing for chapters 1–8 and only the chapters after
  *  the edited one are re-counted. */

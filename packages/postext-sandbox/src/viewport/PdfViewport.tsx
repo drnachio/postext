@@ -9,7 +9,7 @@ import {
   type Resource,
 } from 'postext';
 import { renderToPdf } from 'postext-pdf';
-import { useBookPages, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
+import { useBookPages, useChapterPlan, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { chapterLayoutFromDoc } from '../book/pagination';
 import type { ComposedBook } from '../book/types';
@@ -29,6 +29,7 @@ import { useFloatingToolbarShell } from './useFloatingToolbarShell';
 export function PdfViewport() {
   const dispatch = useSandboxDispatch();
   const chapterSource = useLayoutSource();
+  const currentPlan = useChapterPlan(chapterSource.chapterId);
   const scope = useSandboxSelector((s) => s.pdfScope);
   const chapters = useSandboxSelector((s) => s.chapters);
   const bookPages = useBookPages();
@@ -71,18 +72,23 @@ export function PdfViewport() {
   const effectiveConfig = useMemo((): PostextConfig => withHyphenationLocale(config, locale), [config, locale]);
 
   // The reader's page (`#chapter=C&page=P`, kept by the canvas / HTML
-  // viewers) in the rendered document: as is for a chapter render, moved
-  // by the chapter's first physical page for a whole-book one — unknown
-  // until the chapters before it are paginated. Read on every render: the
-  // preview only picks it up when a new document lands.
+  // viewers as the book page number) in the rendered document: the
+  // chapter's pages sit at `bookPages[chapter]` (first content page index
+  // and number) — unknown until the chapters before it are paginated, in
+  // which case the chapter's first content page is opened. A chapter
+  // render starts at the chapter's first physical page. Read on every
+  // render: the preview only picks it up when a new document lands.
   const chapterIndex = chapters.findIndex((c) => c.id === chapterSource.chapterId);
   const hash = readViewHash();
-  const leadingBlank = chapterSource.plan.layout?.leadingBlankPages ?? 0;
-  const chapterPage = hash.chapter === null || hash.chapter === chapterIndex ? (hash.page ?? leadingBlank) : leadingBlank;
-  let openPage: number | null = chapterPage;
+  // The source's plan is stable across layout records (see
+  // `useLayoutSource`); the current record is read from the live plan.
+  const leadingBlank = currentPlan.layout?.leadingBlankPages ?? 0;
+  const pages = bookPages[chapterSource.chapterId];
+  const wanted = hash.chapter === null || hash.chapter === chapterIndex ? hash.page : null;
+  const offsetInChapter = pages && wanted !== null ? Math.max(0, wanted - pages.pageNumberValue) : 0;
+  let openPage: number | null = leadingBlank + offsetInChapter;
   if (scope === 'book') {
-    const pages = bookPages[chapterSource.chapterId];
-    openPage = pages ? pages.pageIndex - leadingBlank + chapterPage : null;
+    openPage = pages ? pages.pageIndex + offsetInChapter : null;
   }
 
   const regenerate = useCallback(async () => {

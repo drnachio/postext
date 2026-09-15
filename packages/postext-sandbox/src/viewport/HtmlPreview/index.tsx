@@ -49,7 +49,7 @@ interface HtmlPreviewProps {
   /** Page count of the last laid-out document. */
   /** After every layout: the page count and the first page with content
    *  (the ones before it are parity padding). */
-  onPageCountChange?: (count: number, firstContentPage: number) => void;
+  onPageCountChange?: (count: number, firstContentPage: number, pageNumbers: readonly number[]) => void;
   /** The page the reader is on: the first page snapped into view in multi
    *  mode, the page nearest the viewport centre in single mode. */
   onCurrentPageChange?: (pageIndex: number) => void;
@@ -492,7 +492,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         drawBaselines(overlay, doc, pageIndex, bOffset);
       }
 
-      onPageCountChangeRef.current?.(doc.pages.length, leadingBlankPageCount(doc));
+      onPageCountChangeRef.current?.(doc.pages.length, leadingBlankPageCount(doc), doc.pages.map((p) => p.pageNumberValue));
       setDocVersion((v) => v + 1);
     } catch (err) {
       if ((err as { name?: string } | null)?.name === 'AbortError') return;
@@ -508,7 +508,9 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   }, [renderKey, scheduleRelayout]);
 
   // Draw cursor/selection overlays whenever selection, focus, or the document
-  // itself changes. Mirrors the effect in CanvasPreview so behavior is shared.
+  // itself changes. Mirrors the effect in CanvasPreview so behavior is shared:
+  // the viewport follows the caret only when the selection itself moves.
+  const lastFollowedRef = useRef<string | null>(null);
   useEffect(() => {
     const doc = docRef.current;
     if (!doc) return;
@@ -549,11 +551,15 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     const scrollEnabled = isCollapsed
       ? debug.cursorSync.enabled
       : debug.selectionSync.enabled;
+    const followKey = focused ? `${activeChapterId}:${selection.from}:${selection.to}:${selection.head}` : null;
+    const selectionMoved = followKey !== null && followKey !== lastFollowedRef.current;
+    if (focused) lastFollowedRef.current = followKey;
     if (
       activeCursorRect &&
       scroll &&
       focused &&
-      scrollEnabled
+      scrollEnabled &&
+      selectionMoved
     ) {
       const padding = 16;
       const cr = activeCursorRect.getBoundingClientRect();

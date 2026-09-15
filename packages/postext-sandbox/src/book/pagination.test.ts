@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
-import { chapterLayoutFromDoc, createBookPlanner } from './pagination';
+import { chapterLayoutFromDoc, createBookPlanner, sameChapterLayout, sameLayoutInputs } from './pagination';
 import { newChapter } from './chapterOps';
 import type { ChapterLayout, ChapterPlan } from './types';
 
@@ -145,5 +145,41 @@ describe('chapterLayoutFromDoc', () => {
   it('records nothing for an unpaginated plan or an empty document', () => {
     expect(chapterLayoutFromDoc(doc([{ value: 1 }], [0]), plan(false), inputs)).toBeNull();
     expect(chapterLayoutFromDoc(doc([], []), plan(true), inputs)).toBeNull();
+  });
+});
+
+describe('plan and layout equivalence', () => {
+  const planner = createBookPlanner();
+  it('sameLayoutInputs ignores the layout record but not the page fields', () => {
+    const p1 = planner.plan(chapters, config, resources, {});
+    const a = p1.byId.b!;
+    // Recording chapter a's layout re-derives the plans as new objects;
+    // chapter b now inherits pages, so its inputs did change.
+    const p2 = planner.plan(chapters, config, resources, { a: layoutFor(p1.byId.a!, { pageCount: 3 }) });
+    const b = p2.byId.b!;
+    expect(b).not.toBe(a);
+    expect(sameLayoutInputs(a, b)).toBe(false);
+    // Recording b's own layout changes b's plan object, not its inputs.
+    const p3 = planner.plan(chapters, config, resources, { a: p2.byId.a!.layout!, b: layoutFor(b, { pageCount: 5 }) });
+    const b2 = p3.byId.b!;
+    expect(b2).not.toBe(b);
+    expect(b2.layout).not.toBeNull();
+    expect(sameLayoutInputs(b, b2)).toBe(true);
+    // A different page count before b moves its first page: not the same.
+    const p4 = planner.plan(chapters, config, resources, { a: layoutFor(p1.byId.a!, { pageCount: 4 }) });
+    expect(sameLayoutInputs(b, p4.byId.b!)).toBe(false);
+    // Same parity but a different first page number: not the same either.
+    const p5 = planner.plan(chapters, config, resources, { a: { ...layoutFor(p1.byId.a!, { pageCount: 3 }), lastPageDelta: 5 } });
+    expect(sameLayoutInputs(b, p5.byId.b!)).toBe(false);
+  });
+  it('sameChapterLayout compares inputs by identity and the page outcome by value', () => {
+    const plan = planner.plan(chapters, config, resources, {}).byId.a!;
+    const l = layoutFor(plan, { pageCount: 3 });
+    expect(sameChapterLayout(undefined, l)).toBe(false);
+    expect(sameChapterLayout(l, { ...l })).toBe(true);
+    expect(sameChapterLayout(l, { ...l, pageCount: 4 })).toBe(false);
+    expect(sameChapterLayout(l, { ...l, leadingBlankPages: 1 })).toBe(false);
+    expect(sameChapterLayout(l, { ...l, config: { ...config } })).toBe(false);
+    expect(sameChapterLayout(l, { ...l, markdown: l.markdown + ' ' })).toBe(false);
   });
 });

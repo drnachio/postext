@@ -147,7 +147,9 @@ export async function ensureResourceImages(
     indexSvgText(fileId, rec);
     const img = await decodeImage(rec, variant || null).catch(() => null);
     if (!img) continue;
-    registerResourceImage(fileId, img);
+    // SVGs go in as vector sources: the canvas backend rasterises them once
+    // per placed size instead of on every draw.
+    registerResourceImage(fileId, img, { vector: rec.contentType === 'image/svg+xml' });
     decoded.set(fileId, variant);
     changed = true;
   }

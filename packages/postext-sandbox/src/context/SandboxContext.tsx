@@ -25,7 +25,7 @@ import { pruneBlobs } from '../storage/blobStore';
 import { collectProjectFileIds, generateChapterId, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
 import type { ProjectSummary } from '../storage/projects';
 import type { BookContent, BookPages, BookPlan, Chapter, ChapterLayout, ChapterPlan, ComposedBook, LayoutScope } from '../book/types';
-import { createBookPlanner } from '../book/pagination';
+import { createBookPlanner, sameChapterLayout, sameLayoutInputs } from '../book/pagination';
 import {
   activeChapter,
   addChapter,
@@ -325,6 +325,10 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'SET_CHAPTER_LAYOUT': {
       const layout = action.payload;
       if (!state.chapters.some((c) => c.id === layout.chapterId)) return state;
+      // A record equivalent to the stored one changes nothing for the
+      // chapters after it; keeping the state identity spares every plan
+      // consumer (and the preview that just built) a needless re-derivation.
+      if (sameChapterLayout(state.chapterLayouts[layout.chapterId], layout)) return state;
       return { ...state, chapterLayouts: { ...state.chapterLayouts, [layout.chapterId]: layout } };
     }
     case 'HIDE_PRESET': {
@@ -782,7 +786,11 @@ export interface LayoutSource {
 export function useLayoutSource(): LayoutSource {
   const chapters = useSandboxSelector((s) => s.chapters);
   const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
-  const chapterPlan = useChapterPlan(activeChapterId);
+  // The plan is selected by its layout inputs, not by identity: recording
+  // a layout (this preview's own build landing, or a background one)
+  // re-derives every plan as new objects, and a source that changed with
+  // them would rebuild — and record — again, without end.
+  const chapterPlan = useChapterPlan(activeChapterId, sameLayoutInputs);
   return useMemo(() => {
     const book = composeBookMemo(chapters, activeChapterId);
     const chapter = chapters.find((c) => c.id === activeChapterId) ?? chapters[0]!;
@@ -792,12 +800,15 @@ export function useLayoutSource(): LayoutSource {
 
 /** The plan of one chapter; falls back to the first chapter's for an
  *  unknown id. */
-export function useChapterPlan(chapterId: string): ChapterPlan {
+export function useChapterPlan(
+  chapterId: string,
+  isEqual: (a: ChapterPlan, b: ChapterPlan) => boolean = Object.is,
+): ChapterPlan {
   const store = useStore();
   return useSandboxSelector((s) => {
     const plan = store.getPlan(s);
     return plan.byId[chapterId] ?? plan.chapters[0]!;
-  });
+  }, isEqual);
 }
 
 export const DEFAULT_MARKDOWN = DEFAULT_MARKDOWN_EN;

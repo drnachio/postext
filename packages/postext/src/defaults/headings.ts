@@ -35,6 +35,8 @@ export const DEFAULT_COLUMN_BALANCING = {
   maxLinesPerHeading: 4,
   stretchAfterLists: true,
   maxLinesAfterList: 1,
+  stretchAfterFloats: true,
+  maxLinesAfterFloat: 1,
   looseParagraphs: true,
   maxLooseParagraphs: 2,
   trackParagraphs: true,
@@ -94,6 +96,10 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
           partial.balancing.stretchAfterLists ?? DEFAULT_COLUMN_BALANCING.stretchAfterLists,
         maxLinesAfterList:
           partial.balancing.maxLinesAfterList ?? DEFAULT_COLUMN_BALANCING.maxLinesAfterList,
+        stretchAfterFloats:
+          partial.balancing.stretchAfterFloats ?? DEFAULT_COLUMN_BALANCING.stretchAfterFloats,
+        maxLinesAfterFloat:
+          partial.balancing.maxLinesAfterFloat ?? DEFAULT_COLUMN_BALANCING.maxLinesAfterFloat,
         looseParagraphs:
           partial.balancing.looseParagraphs ?? DEFAULT_COLUMN_BALANCING.looseParagraphs,
         maxLooseParagraphs:
@@ -196,6 +202,20 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       && headings.balancing.maxLinesAfterList !== DEFAULT_COLUMN_BALANCING.maxLinesAfterList
     ) {
       b.maxLinesAfterList = headings.balancing.maxLinesAfterList;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.stretchAfterFloats !== undefined
+      && headings.balancing.stretchAfterFloats !== DEFAULT_COLUMN_BALANCING.stretchAfterFloats
+    ) {
+      b.stretchAfterFloats = headings.balancing.stretchAfterFloats;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.maxLinesAfterFloat !== undefined
+      && headings.balancing.maxLinesAfterFloat !== DEFAULT_COLUMN_BALANCING.maxLinesAfterFloat
+    ) {
+      b.maxLinesAfterFloat = headings.balancing.maxLinesAfterFloat;
       hasBOverride = true;
     }
     if (

@@ -4,6 +4,7 @@ import { createMeasurementCache } from '../measure';
 import {
   collectColumnGaps,
   proposeBalanceLines,
+  firstDivergentColumn,
   type BalanceState,
   type BalanceProposalOptions,
 } from '../pipeline/columnBalancing';
@@ -240,6 +241,8 @@ const baseOptions = (over?: Partial<BalanceProposalOptions>): BalanceProposalOpt
   maxLinesPerHeading: 2,
   stretchAfterLists: true,
   maxLinesAfterList: 1,
+  stretchAfterFloats: true,
+  maxLinesAfterFloat: 1,
   looseParagraphs: true,
   maxLooseParagraphs: 1,
   optimalLineBreaking: true,
@@ -342,6 +345,38 @@ describe('list-end and loose-paragraph levers', () => {
     ]);
     const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
     expect(proposal.lines.get(50)).toBe(1); // cap 1 even though the gap is 2
+  });
+
+  it('adds a line under a top float band when headings and list ends cannot', () => {
+    const doc = fakeDoc([
+      [
+        // Column 0 starts under a figure band: its top sits at y=300, the
+        // float ends right above it.
+        { blocks: [afterListPara(60), para()], availableHeight: 2 * 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const col = doc.pages[0]!.columns[0]!;
+    col.bbox = { ...col.bbox, y: 300, height: 600 };
+    doc.pages[0]!.floats = [fakeBlock({ type: 'resource', bbox: { x: 0, y: 0, width: 480, height: 280 } })];
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
+    expect(proposal.lines.get(60)).toBe(1); // cap 1 even though the gap is 2
+
+    // Off: the lever stays unused.
+    const off = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions({ stretchAfterFloats: false }));
+    expect(off.lines.get(60)).toBeUndefined();
+
+    // A column whose float sits below its text is not a candidate.
+    const bottom = fakeDoc([
+      [
+        { blocks: [afterListPara(61), para()], availableHeight: 2 * 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    bottom.pages[0]!.floats = [fakeBlock({ type: 'resource', bbox: { x: 0, y: 700, width: 480, height: 200 } })];
+    expect(proposeBalanceLines(bottom, NO_FORCED, emptyState(), baseOptions()).lines.get(61)).toBeUndefined();
   });
 
   it('exhausts heading capacity before touching list ends', () => {
@@ -484,6 +519,56 @@ describe('list-end and loose-paragraph levers', () => {
       doc, NO_FORCED, emptyState(), baseOptions({ looseParagraphs: false }),
     );
     expect(turnedOff.loose.size).toBe(0);
+  });
+});
+
+describe('cascade containment', () => {
+  const para = (contentIndex: number, cont = false) =>
+    fakeBlock({ type: 'paragraph', contentIndex, id: cont ? `p-${contentIndex}-cont-1` : `p-${contentIndex}` });
+  const heading = (contentIndex: number) => fakeBlock({ type: 'heading', headingLevel: 2, contentIndex });
+
+  it('finds the first column whose blocks or floats changed', () => {
+    const a = fakeDoc([
+      [{ blocks: [para(1), heading(2), para(3)], availableHeight: 48 }, { blocks: [para(3, true), para(4)], availableHeight: 0 }],
+      [{ blocks: [para(5)], availableHeight: 0 }],
+    ]);
+    const same = fakeDoc([
+      [{ blocks: [para(1), heading(2), para(3)], availableHeight: 0 }, { blocks: [para(3, true), para(4)], availableHeight: 0 }],
+      [{ blocks: [para(5)], availableHeight: 0 }],
+    ]);
+    expect(firstDivergentColumn(a, same)).toBeNull();
+    // Paragraph 3 moved whole into the second column.
+    const moved = fakeDoc([
+      [{ blocks: [para(1), heading(2)], availableHeight: 0 }, { blocks: [para(3), para(4)], availableHeight: 0 }],
+      [{ blocks: [para(5)], availableHeight: 0 }],
+    ]);
+    expect(firstDivergentColumn(a, moved)).toEqual({ pageIndex: 0, columnIndex: 0 });
+    // Same blocks, a float left the second column: that column diverges.
+    const withFloat = fakeDoc([
+      [{ blocks: [para(1), heading(2), para(3)], availableHeight: 48 }, { blocks: [para(3, true), para(4)], availableHeight: 0 }],
+      [{ blocks: [para(5)], availableHeight: 0 }],
+    ]);
+    withFloat.pages[0]!.floats = [fakeBlock({ type: 'resource', columnIndex: 1, id: 'fig' })];
+    expect(firstDivergentColumn(a, withFloat)).toEqual({ pageIndex: 0, columnIndex: 1 });
+    // A page missing from the other layout diverges at its first column.
+    const shorter = fakeDoc([
+      [{ blocks: [para(1), heading(2), para(3)], availableHeight: 48 }, { blocks: [para(3, true), para(4)], availableHeight: 0 }],
+    ]);
+    expect(firstDivergentColumn(a, shorter)).toEqual({ pageIndex: 1, columnIndex: 0 });
+  });
+
+  it('a blacklisted spacing candidate takes no further lines', () => {
+    const doc = fakeDoc([
+      [{ blocks: [para(1), heading(2), para(3)], availableHeight: 2 * 24 }, { blocks: [para(4)], availableHeight: 0 }],
+      [{ blocks: [para(5)], availableHeight: 0 }],
+    ]);
+    const open = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
+    expect(open.lines.get(2)).toBe(2);
+    const blocked = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions({ failedLines: new Set([2]) }));
+    expect(blocked.lines.get(2)).toBeUndefined();
+    // Lines already applied stay; only the increase is refused.
+    const kept = proposeBalanceLines(doc, NO_FORCED, { lines: new Map([[2, 1]]), loose: new Map() }, baseOptions({ failedLines: new Set([2]) }));
+    expect(kept.lines.get(2)).toBe(1);
   });
 });
 

@@ -42,7 +42,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
   };
 
   const resetBalancingField = (
-    field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'looseParagraphs'
+    field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'stretchAfterFloats' | 'looseParagraphs'
       | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking' | 'trailing' | 'beforeSpan',
   ) => {
     if (!raw?.balancing) return;
@@ -132,6 +132,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isBalEnabledDefault = headings.balancing.enabled === DEFAULT_COLUMN_BALANCING.enabled;
   const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
   const isBalAfterListsDefault = headings.balancing.stretchAfterLists === DEFAULT_COLUMN_BALANCING.stretchAfterLists;
+  const isBalAfterFloatsDefault = headings.balancing.stretchAfterFloats === DEFAULT_COLUMN_BALANCING.stretchAfterFloats;
   const isBalLooseDefault = headings.balancing.looseParagraphs === DEFAULT_COLUMN_BALANCING.looseParagraphs;
   const isBalMaxLooseDefault = headings.balancing.maxLooseParagraphs === DEFAULT_COLUMN_BALANCING.maxLooseParagraphs;
   const isBalTrackDefault = headings.balancing.trackParagraphs === DEFAULT_COLUMN_BALANCING.trackParagraphs;
@@ -277,6 +278,16 @@ export const HeadingsSection = memo(function HeadingsSection() {
             tooltip={labels.balanceAfterListsTooltip}
             isDefault={isBalAfterListsDefault}
             onReset={() => resetBalancingField('stretchAfterLists')}
+          />
+          <ToggleSwitch
+            label={labels.balanceAfterFloats}
+            checked={headings.balancing.stretchAfterFloats}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, stretchAfterFloats: v } })
+            }
+            tooltip={labels.balanceAfterFloatsTooltip}
+            isDefault={isBalAfterFloatsDefault}
+            onReset={() => resetBalancingField('stretchAfterFloats')}
           />
           <ToggleSwitch
             label={labels.balanceLooseParagraphs}

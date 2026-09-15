@@ -1206,6 +1206,12 @@ export interface ColumnBalancingConfig {
   stretchAfterLists?: boolean;
   /** Maximum extra grid lines after a single list end. Default 1. */
   maxLinesAfterList?: number;
+  /** Allow extra grid lines between a top float (figure / table band) and
+   *  the text under it in the same column, after headings and list ends
+   *  have been tried. Default true. */
+  stretchAfterFloats?: boolean;
+  /** Maximum extra grid lines under a single float band. Default 1. */
+  maxLinesAfterFloat?: number;
   /** Last resort: re-break one paragraph per short column one line looser
    *  (TeX \looseness=+1), within the configured `bodyText.maxWordSpacing`.
    *  Requires `bodyText.optimalLineBreaking`. Default true. */
@@ -1249,6 +1255,8 @@ export interface ResolvedHeadingsConfig {
     maxLinesPerHeading: number;
     stretchAfterLists: boolean;
     maxLinesAfterList: number;
+    stretchAfterFloats: boolean;
+    maxLinesAfterFloat: number;
     looseParagraphs: boolean;
     maxLooseParagraphs: number;
     trackParagraphs: boolean;

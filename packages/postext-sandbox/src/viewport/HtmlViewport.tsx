@@ -4,7 +4,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { HtmlPreview, type HtmlPreviewHandle } from './HtmlPreview';
 import { HtmlToolbar } from './HtmlToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
-import { usePageHashSync, type ViewerLayout } from './usePageHashSync';
+import { usePageHashSync, EMPTY_VIEWER_LAYOUT, type ViewerLayout } from './usePageHashSync';
 import {
   loadHtmlFontScale,
   saveHtmlFontScale,
@@ -26,7 +26,7 @@ export function HtmlViewport() {
   const [columnMode, setColumnMode] = useState<ColumnMode>('multi');
   const [generating, setGenerating] = useState(false);
   const [scrollBounds, setScrollBounds] = useState<{ canPrev: boolean; canNext: boolean }>({ canPrev: false, canNext: false });
-  const [layout, setLayout] = useState<ViewerLayout>({ pageCount: 0, firstPage: 0, version: 0 });
+  const [layout, setLayout] = useState<ViewerLayout>(EMPTY_VIEWER_LAYOUT);
   const previewRef = useRef<HtmlPreviewHandle | null>(null);
   const hydratedRef = useRef(false);
 
@@ -81,8 +81,8 @@ export function HtmlViewport() {
   const handleJumpToPage = useCallback((pageIndex: number) => {
     previewRef.current?.jumpToPage(pageIndex);
   }, []);
-  const handlePageCountChange = useCallback((count: number, firstPage: number) => {
-    setLayout((l) => ({ pageCount: count, firstPage, version: l.version + 1 }));
+  const handlePageCountChange = useCallback((count: number, firstPage: number, pageNumbers: readonly number[]) => {
+    setLayout((l) => ({ pageCount: count, firstPage, pageNumbers, version: l.version + 1 }));
   }, []);
   const handleCurrentPageChange = usePageHashSync(layout, handleJumpToPage);
 

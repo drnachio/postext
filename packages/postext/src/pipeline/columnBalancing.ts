@@ -21,10 +21,13 @@
  * share — e.g. 3 lines over an h2 and an h3 become +2 above the h2 and +1
  * above the h3.
  *
- * When the column's headings cannot absorb the whole gap, two further
+ * When the column's headings cannot absorb the whole gap, three further
  * levers apply in editorial priority order:
  *  - extra grid lines where a list/enumeration ends (space after a list
  *    reads naturally), capped per list end;
+ *  - extra grid lines between a top float band (a figure or table at the
+ *    head of the column) and the text under it, capped per band — a
+ *    little more air under a figure is invisible;
  *  - as a last resort, up to `maxLooseParagraphs` paragraphs of the column
  *    are each re-broken one line looser (TeX \looseness=+1) via the
  *    Knuth-Plass `looseness` option — always within the configured
@@ -40,9 +43,9 @@ import type { VDTColumn, VDTDocument, VDTPage } from '../vdt';
 const EPS = 0.01;
 
 /** Maximum number of placement passes (initial + balancing retries). */
-export const MAX_BALANCING_PASSES = 8;
+export const MAX_BALANCING_PASSES = 10;
 
-export type BalanceCandidateKind = 'heading' | 'listEnd' | 'looseParagraph';
+export type BalanceCandidateKind = 'heading' | 'listEnd' | 'afterFloat' | 'looseParagraph';
 
 interface BalanceCandidate {
   /** Stable content-block index keying the adjustment across passes. */
@@ -70,6 +73,21 @@ function pageHasBodyContent(page: VDTPage): boolean {
   return page.columns.some((c) => c.blocks.length > 0);
 }
 
+/** Whether a float band sits right above the column (the column's top was
+ *  pushed down under it): a float on the page overlapping the column
+ *  horizontally whose box ends at or above the column's top. */
+function columnUnderTopFloat(page: VDTPage, col: VDTColumn): boolean {
+  const floats = page.floats ?? [];
+  const left = col.bbox.x;
+  const right = col.bbox.x + col.bbox.width;
+  return floats.some((f) =>
+    f.bbox.x < right - 0.5
+    && f.bbox.x + f.bbox.width > left + 0.5
+    && f.bbox.y + f.bbox.height <= col.bbox.y + 0.5
+    && f.bbox.y >= page.contentArea.y - 0.5,
+  );
+}
+
 /** Regular flow column with a usable height — never a page-span block's
  *  full-width column, nor a band closed at its own top. */
 function isTextColumn(col: VDTColumn): boolean {
@@ -91,7 +109,9 @@ function isTextColumn(col: VDTColumn): boolean {
  * would strand it at the column bottom). List-end points are the first
  * non-list block after a run of list items — they may be last in column
  * (pushing a trailing paragraph down by at most the gap is local: the
- * element that opened the next column still does not fit). Loose-paragraph
+ * element that opened the next column still does not fit). After-float
+ * points are the first block of a column that starts under a float band (a
+ * whole block, not a continuation, and not a callout). Loose-paragraph
  * candidates are justified paragraphs wholly contained in the column (never
  * split parts — loosening those would reshuffle lines across columns).
  */
@@ -184,6 +204,18 @@ export function collectColumnGaps(
             lineCount: b.lines.length,
           });
         } else if (
+          i === 0
+          && !b.id.includes('-cont-')
+          && columnUnderTopFloat(page, col)
+        ) {
+          candidates.push({
+            contentIndex: b.contentIndex,
+            kind: 'afterFloat',
+            level: 0,
+            order: i,
+            lineCount: b.lines.length,
+          });
+        } else if (
           i >= 1
           && col.blocks[i - 1]!.type === 'listItem'
           && col.blocks[i - 1]!.containerId === undefined
@@ -242,6 +274,8 @@ export interface BalanceProposalOptions {
   maxLinesPerHeading: number;
   stretchAfterLists: boolean;
   maxLinesAfterList: number;
+  stretchAfterFloats: boolean;
+  maxLinesAfterFloat: number;
   looseParagraphs: boolean;
   /** Loose paragraphs allowed per short column (one extra line each). */
   maxLooseParagraphs: number;
@@ -249,6 +283,46 @@ export interface BalanceProposalOptions {
   optimalLineBreaking: boolean;
   /** Loose candidates that failed to gain a line in a previous attempt. */
   failedLoose: ReadonlySet<number>;
+  /** Spacing candidates (headings, list ends, after-float points) that may
+   *  not take more lines than already applied: a pass that gave them more
+   *  moved content across a column break (see {@link firstDivergentColumn})
+   *  and was discarded. */
+  failedLines?: ReadonlySet<number>;
+}
+
+/** Position of a column in a document, in reading order. */
+export interface ColumnPosition {
+  pageIndex: number;
+  columnIndex: number;
+}
+
+/** Identity of a column's content: its blocks (content index plus the
+ *  continuation mark) and the floats reserved on it. */
+function columnKey(page: VDTPage, col: VDTColumn): string {
+  const blocks = col.blocks.map((b) => `${b.contentIndex ?? '?'}${b.id.includes('-cont-') ? 'c' : ''}`).join(',');
+  const floats = (page.floats ?? [])
+    .filter((f) => f.columnIndex === col.index)
+    .map((f) => f.resourceBlock?.resource.id ?? f.id)
+    .join(',');
+  return `${blocks}|${floats}`;
+}
+
+/**
+ * First column, in reading order, whose content differs between two
+ * layouts of the same document — where a balancing pass stopped being
+ * local. Null when every column of `a` has its counterpart in `b`.
+ */
+export function firstDivergentColumn(a: VDTDocument, b: VDTDocument): ColumnPosition | null {
+  for (let p = 0; p < a.pages.length; p++) {
+    const pa = a.pages[p]!;
+    const pb = b.pages[p];
+    for (let c = 0; c < pa.columns.length; c++) {
+      const ca = pa.columns[c]!;
+      const cb = pb?.columns[c];
+      if (!cb || columnKey(pa, ca) !== columnKey(pb, cb)) return { pageIndex: p, columnIndex: c };
+    }
+  }
+  return null;
 }
 
 /** Budget shared by the loose candidates of one column: the placement pass
@@ -280,7 +354,9 @@ export interface BalanceProposal {
  *     order), capped at `maxLinesPerHeading`;
  *  2. list ends — round-robin in reading order, capped at
  *     `maxLinesAfterList`;
- *  3. loose paragraphs — every eligible candidate of the column is offered,
+ *  3. after-float points — the first block under a float band, capped at
+ *     `maxLinesAfterFloat`;
+ *  4. loose paragraphs — every eligible candidate of the column is offered,
  *     longest first (most glue = least visible loosening), with a shared
  *     budget: the pass stops loosening once the column has gained what it
  *     needs, capped at `maxLooseParagraphs` (cumulative across passes).
@@ -305,6 +381,7 @@ export function proposeBalanceLines(
       progress = false;
       for (const cand of cands) {
         if (remaining <= 0) break;
+        if (options.failedLines?.has(cand.contentIndex)) continue;
         const cur = lines.get(cand.contentIndex) ?? 0;
         if (cur >= cap) continue;
         lines.set(cand.contentIndex, cur + 1);
@@ -329,6 +406,13 @@ export function proposeBalanceLines(
         .filter((c) => c.kind === 'listEnd')
         .sort((a, b) => a.order - b.order);
       remaining = distribute(listEnds, remaining, options.maxLinesAfterList);
+    }
+
+    if (remaining > 0 && options.stretchAfterFloats) {
+      const afterFloats = gap.candidates
+        .filter((c) => c.kind === 'afterFloat')
+        .sort((a, b) => a.order - b.order);
+      remaining = distribute(afterFloats, remaining, options.maxLinesAfterFloat);
     }
 
     if (

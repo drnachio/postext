@@ -974,6 +974,8 @@
     "balanceColumnsMaxLinesTooltip": "Número máximo de líneas de rejilla adicionales que se pueden añadir sobre un mismo título",
     "balanceAfterLists": "Estirar tras listas",
     "balanceAfterListsTooltip": "Añade una línea de rejilla tras el final de una lista cuando la columna necesita llegar al pie de página",
+    "balanceAfterFloats": "Estirar bajo figuras",
+    "balanceAfterFloatsTooltip": "Añade una línea de rejilla entre una figura o tabla en cabeza de columna y el texto que va debajo cuando la columna necesita llegar al pie de página",
     "balanceLooseParagraphs": "Párrafos corridos",
     "balanceLooseParagraphsTooltip": "Como último recurso, recompone un párrafo por columna con una línea más, sin superar el espaciado máximo entre palabras",
     "balanceMaxLooseParagraphs": "Párrafos corridos máx.",
