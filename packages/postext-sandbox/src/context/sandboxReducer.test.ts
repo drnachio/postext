@@ -12,8 +12,8 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     markdown: '# A',
     chapters: [ch('a', '# A'), ch('b', '# B')],
     activeChapterId: 'a',
-    layoutScope: 'book',
-    bookPages: null,
+    pdfScope: 'chapter',
+    chapterLayouts: {},
     hiddenPresetIds: [],
     config: {},
     resources: [],
@@ -193,10 +193,25 @@ describe('book actions', () => {
     expect(s.pendingEditorFocus).toEqual({ chapterId: 'b', anchor: 2, head: 2, selectWord: false });
   });
   it('SET_BOOK replaces everything and resets the selection', () => {
-    const s = sandboxReducer(baseState({ selection: { from: 1, to: 1, head: 1 } }), { type: 'SET_BOOK', payload: { chapters: [ch('z', 'zz')], activeChapterId: 'z', layoutScope: 'chapter' } });
+    const s = sandboxReducer(baseState({ selection: { from: 1, to: 1, head: 1 } }), { type: 'SET_BOOK', payload: { chapters: [ch('z', 'zz')], activeChapterId: 'z' } });
     expect(s.markdown).toBe('zz');
-    expect(s.layoutScope).toBe('chapter');
     expect(s.selection).toEqual({ from: 0, to: 0, head: 0 });
+  });
+  it('SET_PDF_SCOPE switches what the PDF tab renders', () => {
+    const s = sandboxReducer(baseState(), { type: 'SET_PDF_SCOPE', payload: 'book' });
+    expect(s.pdfScope).toBe('book');
+    expect(sandboxReducer(s, { type: 'SET_PDF_SCOPE', payload: 'book' })).toBe(s);
+  });
+  it('SET_CHAPTER_LAYOUT records a chapter layout and forgets it with the chapter', () => {
+    const layout = { chapterId: 'b', markdown: '# B', config: {}, resources: [], continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, lastPageDelta: 2, lastPageFormat: 'decimal' as const };
+    const s = sandboxReducer(baseState(), { type: 'SET_CHAPTER_LAYOUT', payload: layout });
+    expect(s.chapterLayouts.b).toBe(layout);
+    // Unknown chapters are ignored.
+    expect(sandboxReducer(s, { type: 'SET_CHAPTER_LAYOUT', payload: { ...layout, chapterId: 'nope' } })).toBe(s);
+    const removed = sandboxReducer(s, { type: 'REMOVE_CHAPTER', payload: 'b' });
+    expect(removed.chapterLayouts.b).toBeUndefined();
+    const replaced = sandboxReducer(s, { type: 'SET_BOOK', payload: { chapters: [ch('z', 'zz')], activeChapterId: 'z' } });
+    expect(replaced.chapterLayouts).toEqual({});
   });
 });
 

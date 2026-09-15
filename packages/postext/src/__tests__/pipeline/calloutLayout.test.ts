@@ -19,7 +19,7 @@ import {
 import { defaultResourceTypes } from '../../defaults/resourceTypes';
 import { dimensionToPx } from '../../units';
 import type { CalloutStyleConfig, PostextConfig, Resource } from '../../types';
-import type { VDTDesignBoxBlock, VDTDesignImageBlock, VDTDesignTextBlock } from '../../vdt';
+import type { VDTDesignBoxBlock, VDTDesignImageBlock, VDTDesignRuleBlock, VDTDesignTextBlock } from '../../vdt';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -187,6 +187,181 @@ describe('layoutCallout', () => {
     const glyph = g.frame.designOverlay!.blocks.find((b) => b.kind === 'text') as VDTDesignTextBlock;
     expect(glyph.lines[0]!.text).toBe('!');
     expect(g.frame.callout!.iconFileId).toBeUndefined();
+  });
+
+  it('fits a non-square resource icon inside the square box', () => {
+    const tall: Resource = {
+      id: 'tall',
+      typeId: 'figure',
+      kind: 'svg',
+      createdAt: 0,
+      updatedAt: 0,
+      svg: { fileId: 'file-tall', width: 14, height: 28 },
+    };
+    const h = harness(withStyle({ icon: { kind: 'resource', resourceId: 'tall' } }), [tall]);
+    const r = h.layout(SENTENCE.repeat(2).trim(), 800);
+    const image = r.frame.designOverlay!.blocks.find((b) => b.kind === 'image') as VDTDesignImageBlock;
+    const iconSize = BODY_PX * 1.5;
+    expect(image.bbox.height).toBeCloseTo(iconSize, 5);
+    expect(image.bbox.width).toBeCloseTo(iconSize / 2, 5);
+    // Centred horizontally in its column, top-aligned (default align).
+    expect(image.bbox.x).toBeCloseTo(PAD + iconSize / 4, 5);
+    expect(image.bbox.y).toBeCloseTo(PAD, 5);
+    // The column is still `size` wide.
+    expect(r.frame.callout!.innerRect.x).toBeCloseTo(PAD + iconSize + GAP, 5);
+    // An SVG with no declared size fills the square.
+    const unsized: Resource = { ...tall, id: 'unsized', svg: { fileId: 'file-unsized' } };
+    const u = harness(withStyle({ icon: { kind: 'resource', resourceId: 'unsized' } }), [unsized])
+      .layout(SENTENCE.trim(), 800);
+    const uImage = u.frame.designOverlay!.blocks.find((b) => b.kind === 'image') as VDTDesignImageBlock;
+    expect(uImage.bbox.width).toBeCloseTo(iconSize, 5);
+    expect(uImage.bbox.height).toBeCloseTo(iconSize, 5);
+  });
+
+  it('an icon taller than the content grows the box and centres the title on it', () => {
+    // Badge: a single title line (TITLE_LH) with a 3em icon.
+    const iconSize = BODY_PX * 3;
+    const centred = harness(withStyle({
+      width: 'auto',
+      title: 'Badge',
+      icon: { kind: 'glyph', glyph: '?', size: { value: 3, unit: 'em' }, align: 'center' },
+    })).layout('', 800);
+    expect(centred.totalHeight).toBeCloseTo(PAD + iconSize + PAD, 5);
+    const blocks = centred.frame.designOverlay!.blocks;
+    const glyph = blocks.find((b) => b.kind === 'text' && b.lines[0]!.text === '?') as VDTDesignTextBlock;
+    const title = blocks[blocks.length - 1] as VDTDesignTextBlock;
+    expect(glyph.bbox.y).toBeCloseTo(PAD, 5);
+    expect(title.bbox.y).toBeCloseTo(PAD + (iconSize - TITLE_LH) / 2, 5);
+    expect(title.lines[0]!.baselineY).toBeCloseTo(title.bbox.y + TITLE_LH * 0.8, 5);
+    expect(centred.frame.callout!.innerRect.height).toBeCloseTo(iconSize, 5);
+    // `align: 'top'` grows the box the same way but keeps the title at the top.
+    const top = harness(withStyle({
+      width: 'auto',
+      title: 'Badge',
+      icon: { kind: 'glyph', glyph: '?', size: { value: 3, unit: 'em' }, align: 'top' },
+    })).layout('', 800);
+    expect(top.totalHeight).toBeCloseTo(PAD + iconSize + PAD, 5);
+    const topTitle = top.frame.designOverlay!.blocks[top.frame.designOverlay!.blocks.length - 1] as VDTDesignTextBlock;
+    expect(topTitle.bbox.y).toBeCloseTo(PAD, 5);
+    // Children move with the title.
+    const withKids = harness(withStyle({
+      title: 'Nota',
+      icon: { kind: 'glyph', glyph: '?', size: { value: 6, unit: 'em' }, align: 'center' },
+    })).layout(SENTENCE.trim(), 800);
+    const contentH = TITLE_LH + GAP + withKids.children[0]!.bbox.height;
+    const extra = BODY_PX * 6 - contentH;
+    expect(extra).toBeGreaterThan(0);
+    expect(withKids.children[0]!.bbox.y).toBeCloseTo(PAD + TITLE_LH + GAP + extra / 2, 5);
+    expect(withKids.children[0]!.lines[0]!.baseline).toBeGreaterThan(withKids.children[0]!.bbox.y);
+  });
+
+  it('marker: icon and rule outside the box, frame as tall as the tallest part', () => {
+    const hand: Resource = {
+      id: 'hand',
+      typeId: 'figure',
+      kind: 'svg',
+      createdAt: 0,
+      updatedAt: 0,
+      svg: { fileId: 'file-hand', width: 14, height: 25 },
+    };
+    const markerSize = BODY_PX * 4; // taller than the badge box
+    const ruleW = 4;
+    const ruleLen = BODY_PX * 5; // taller than both
+    const markerGap = BODY_PX; // 1em
+    const h = harness(withStyle({
+      width: 'auto',
+      title: 'Badge',
+      marker: {
+        kind: 'resource',
+        resourceId: 'hand',
+        size: { value: 4, unit: 'em' },
+        gap: { value: 1, unit: 'em' },
+        rule: { enabled: true, width: { value: ruleW, unit: 'px' }, length: { value: 5, unit: 'em' }, color: { hex: '#004988', model: 'hex' } },
+      },
+    }), [hand]);
+    const r = h.layout('', 800);
+    const boxW = PAD + 'Badge'.length * 7 + PAD;
+    const boxH = PAD + TITLE_LH + PAD;
+    const column = markerSize + ruleW + markerGap;
+    expect(r.width).toBeCloseTo(column + boxW, 5);
+    expect(r.totalHeight).toBeCloseTo(ruleLen, 5);
+    const blocks = r.frame.designOverlay!.blocks;
+    // Marker image first (aspect-fitted in its square, centred vertically on the frame).
+    const image = blocks[0] as VDTDesignImageBlock;
+    expect(image.kind).toBe('image');
+    expect(image.fileId).toBe('file-hand');
+    expect(image.bbox.height).toBeCloseTo(markerSize, 5);
+    expect(image.bbox.width).toBeCloseTo(markerSize * 14 / 25, 5);
+    expect(image.bbox.x).toBeCloseTo((markerSize - image.bbox.width) / 2, 5);
+    expect(image.bbox.y).toBeCloseTo((ruleLen - markerSize) / 2, 5);
+    // Then the vertical rule, right after the marker square.
+    const rule = blocks[1] as VDTDesignRuleBlock;
+    expect(rule.kind).toBe('rule');
+    expect(rule.direction).toBe('vertical');
+    expect(rule.color).toBe('#004988');
+    expect(rule.thicknessPx).toBe(ruleW);
+    expect(rule.bbox.x).toBeCloseTo(markerSize, 5);
+    expect(rule.bbox.y).toBe(0);
+    expect(rule.bbox.width).toBe(ruleW);
+    expect(rule.bbox.height).toBeCloseTo(ruleLen, 5);
+    // The box background sits after the column, centred on the frame.
+    const bg = blocks[2] as VDTDesignBoxBlock;
+    expect(bg.kind).toBe('box');
+    expect(bg.bbox.x).toBeCloseTo(column, 5);
+    expect(bg.bbox.y).toBeCloseTo((ruleLen - boxH) / 2, 5);
+    expect(bg.bbox.width).toBeCloseTo(boxW, 5);
+    expect(bg.bbox.height).toBeCloseTo(boxH, 5);
+    const title = blocks[blocks.length - 1] as VDTDesignTextBlock;
+    expect(title.bbox.x).toBeCloseTo(column + PAD, 5);
+    expect(title.lines[0]!.baselineY).toBeCloseTo(bg.bbox.y + PAD + TITLE_LH * 0.8, 5);
+    expect(r.frame.callout!.innerRect.x).toBeCloseTo(column + PAD, 5);
+    expect(r.frame.callout!.innerRect.y).toBeCloseTo(bg.bbox.y + PAD, 5);
+    expect(r.frame.callout!.markerFileId).toBe('file-hand');
+    expect(r.frame.callout!.iconFileId).toBeUndefined();
+    // Absolute placement moves marker, rule and box together.
+    offsetCalloutToAbsolute(r, 50, 70);
+    expect((r.frame.designOverlay!.blocks[0] as VDTDesignImageBlock).bbox.y).toBeCloseTo(70 + (ruleLen - markerSize) / 2, 5);
+    expect((r.frame.designOverlay!.blocks[1] as VDTDesignRuleBlock).bbox.x).toBeCloseTo(50 + markerSize, 5);
+  });
+
+  it('marker: a fill-width box narrows by the column; a glyph marker with no rule; top alignment', () => {
+    const h = harness(withStyle({
+      marker: { kind: 'glyph', glyph: '→', size: { value: 2, unit: 'em' }, align: 'top' },
+    }));
+    const r = h.layout(SENTENCE.repeat(3).trim(), 800);
+    const column = BODY_PX * 2 + GAP; // no rule: size + gap (0.5em default)
+    expect(r.width).toBe(800);
+    const blocks = r.frame.designOverlay!.blocks;
+    const glyph = blocks[0] as VDTDesignTextBlock;
+    expect(glyph.kind).toBe('text');
+    expect(glyph.lines[0]!.text).toBe('→');
+    expect(glyph.bbox.y).toBe(0);
+    expect(blocks.some((b) => b.kind === 'rule')).toBe(false);
+    const bg = blocks[1] as VDTDesignBoxBlock;
+    expect(bg.bbox.x).toBeCloseTo(column, 5);
+    expect(bg.bbox.y).toBe(0);
+    expect(bg.bbox.width).toBeCloseTo(800 - column, 5);
+    // The box is taller than the marker: the frame is the box height.
+    expect(r.totalHeight).toBeCloseTo(bg.bbox.height, 5);
+    expect(r.children[0]!.bbox.x).toBeCloseTo(column + PAD, 5);
+    expect(r.children[0]!.bbox.width).toBeCloseTo(800 - column - 2 * PAD, 5);
+    // Lines follow (the first one carries the body's first-line indent).
+    expect(r.children[0]!.lines[0]!.bbox.x).toBeGreaterThanOrEqual(column + PAD - 1e-6);
+    expect(r.children[0]!.lines[1]!.bbox.x).toBeCloseTo(column + PAD, 5);
+    // A rule with no explicit length spans exactly the box.
+    const ruled = harness(withStyle({
+      marker: { kind: 'glyph', glyph: '→', rule: { enabled: true } },
+    })).layout(SENTENCE.trim(), 800);
+    const rule = ruled.frame.designOverlay!.blocks[1] as VDTDesignRuleBlock;
+    expect(rule.kind).toBe('rule');
+    expect(rule.bbox.height).toBeCloseTo(ruled.totalHeight, 5);
+    expect(rule.bbox.y).toBe(0);
+    expect(rule.thicknessPx).toBeCloseTo((0.5 * 300) / 72, 5);
+    // A missing marker resource draws nothing but still reserves the column.
+    const missing = harness(withStyle({ marker: { kind: 'resource', resourceId: 'nope' } })).layout(SENTENCE.trim(), 800);
+    expect(missing.frame.designOverlay!.blocks[0]!.kind).toBe('box');
+    expect((missing.frame.designOverlay!.blocks[0] as VDTDesignBoxBlock).bbox.x).toBeCloseTo(BODY_PX * 1.5 + GAP, 5);
+    expect(missing.frame.callout!.markerFileId).toBeUndefined();
   });
 
   it('children carry the containerId and lie inside innerRect', () => {

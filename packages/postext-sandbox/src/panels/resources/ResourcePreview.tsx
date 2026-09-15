@@ -66,10 +66,10 @@ function CaptionFoot({ resource, type }: CaptionFootProps) {
   return (
     <figcaption
       className="text-xs"
-      style={{ color: 'var(--slate)', lineHeight: '16px', wordBreak: 'break-word' }}
+      style={{ color: PAPER_MUTED, lineHeight: '16px', wordBreak: 'break-word' }}
     >
       {prefix && (
-        <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>
+        <span style={{ fontWeight: 600, color: PAPER_INK }}>
           {prefix} #.{tokens.length > 0 ? ' ' : ''}
         </span>
       )}
@@ -172,12 +172,12 @@ function TableBody({ resource }: TableBodyProps) {
                     colSpan={cell.colSpan ?? 1}
                     rowSpan={cell.rowSpan ?? 1}
                     style={{
-                      border: '1px solid var(--rule)',
+                      border: '1px solid #c8c8c8',
                       padding: '2px 5px',
                       textAlign: cell.align ?? 'left',
                       verticalAlign: cell.verticalAlign ?? 'top',
                       fontWeight: cell.isHeader ? 600 : 400,
-                      color: 'var(--foreground)',
+                      color: PAPER_INK,
                     }}
                   >
                     {cell.content}
@@ -197,14 +197,21 @@ interface ResourcePreviewProps {
   type: ResourceType | undefined;
 }
 
+/** The preview is set on paper: the page's white ground and dark ink, so
+ *  a figure drawn for the printed page reads as it will there, whatever
+ *  the panel's theme. */
+const PAPER = '#ffffff';
+const PAPER_INK = '#1f1f1f';
+const PAPER_MUTED = '#5c5c5c';
+
 /** Mock embed of a resource (visual payload + caption foot). */
 export function ResourcePreview({ resource, type }: ResourcePreviewProps) {
   const labels = useSandboxLabels();
   const alt = resource.altText ?? '';
   return (
     <figure
-      className="flex flex-col gap-2 rounded border p-2"
-      style={{ borderColor: 'var(--rule)', margin: 0 }}
+      className="flex flex-col gap-3 rounded border p-3"
+      style={{ borderColor: 'var(--rule)', backgroundColor: PAPER, color: PAPER_INK, margin: 0 }}
     >
       {resource.kind === 'bitmap' && resource.bitmap ? (
         <BitmapBody fileId={resource.bitmap.fileId} altText={alt} />

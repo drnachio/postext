@@ -330,9 +330,11 @@ export async function preloadResourceImages(
     if (rb && rb.fileId && (rb.kind === 'bitmap' || rb.kind === 'svg')) {
       await embed(rb.fileId, rb.format);
     }
-    // Callout icons (`icon.kind: 'resource'`) draw through the same map.
+    // Callout icons and markers (`kind: 'resource'`) draw through the same map.
     const iconFileId = block.callout?.iconFileId;
     if (iconFileId) await embed(iconFileId, block.callout?.iconFormat);
+    const markerFileId = block.callout?.markerFileId;
+    if (markerFileId) await embed(markerFileId, block.callout?.markerFormat);
   }
   return out;
 }

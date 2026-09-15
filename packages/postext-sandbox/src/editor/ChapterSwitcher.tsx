@@ -1,18 +1,16 @@
 'use client';
 
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useBookContent, useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
+import { useBookContent, useBookPages, useSandboxDispatch, useSandboxLabels } from '../context/SandboxContext';
 import { IconButton, Menu, MenuItem, cn } from '../ui';
-import { LayoutScopeToggle } from '../sidebar/chapters/LayoutScopeToggle';
 
-/** Header widget of the Markdown panel: previous/next chapter, a menu to
- *  jump to any chapter (with page ranges once a book layout landed) and the
- *  whole-book / this-chapter layout toggle. */
+/** Header widget of the Markdown panel: previous/next chapter and a menu to
+ *  jump to any chapter (with page ranges once its pagination is known). */
 export function ChapterSwitcher() {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const { chapters, activeChapterId } = useBookContent();
-  const bookPages = useSandboxSelector((s) => s.bookPages);
+  const bookPages = useBookPages();
   const index = Math.max(0, chapters.findIndex((c) => c.id === activeChapterId));
   const active = chapters[index];
   const total = chapters.length;
@@ -24,7 +22,7 @@ export function ChapterSwitcher() {
   };
 
   const pagesOf = (id: string): string | null => {
-    const p = bookPages?.[id];
+    const p = bookPages[id];
     if (!p) return null;
     const from = p.pageNumberValue;
     const to = p.pageCount > 0 ? from + p.pageCount - 1 : from;
@@ -86,7 +84,6 @@ export function ChapterSwitcher() {
           onClick={() => go(index + 1)}
         />
       )}
-      <LayoutScopeToggle compact />
     </div>
   );
 }

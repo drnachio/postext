@@ -82,7 +82,7 @@ export interface ProjectActions {
  *  carried them, else from IndexedDB (the built-in preset seeds its blobs
  *  directly). */
 function bookFromLoaded(loaded: LoadedPreset): BookContent {
-  return { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, layoutScope: 'book' };
+  return { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id };
 }
 
 async function adoptLoadedPreset(loaded: LoadedPreset, projectId: string): Promise<ProjectContent> {
@@ -126,7 +126,7 @@ function newRecord(
 }
 
 function bookOfState(s: SandboxState): BookContent {
-  return { chapters: s.chapters, activeChapterId: s.activeChapterId, layoutScope: s.layoutScope };
+  return { chapters: s.chapters, activeChapterId: s.activeChapterId };
 }
 
 export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
@@ -165,7 +165,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       dispatch({ type: 'UPDATE_CONFIG', payload: { customFonts: config.customFonts } });
     }
     if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: record.resources });
-    const book: BookContent = { chapters: record.chapters, activeChapterId: record.activeChapterId, layoutScope: record.layoutScope };
+    const book: BookContent = { chapters: record.chapters, activeChapterId: record.activeChapterId };
     if (wantsMarkdown) dispatch({ type: 'SET_BOOK', payload: book });
     clearMeasurementCache();
     saveProjectId(record.id);

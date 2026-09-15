@@ -94,13 +94,7 @@ import {
 } from './resourceNumbering';
 import { defaultResourceTypes } from '../defaults/resourceTypes';
 import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
-import {
-  totalGapLines,
-  proposeBalanceLines,
-  type LooseBudget,
-  MAX_BALANCING_PASSES,
-  type BalanceState,
-} from './columnBalancing';
+import { totalGapLines, proposeBalanceLines, type LooseBudget, MAX_BALANCING_PASSES, type BalanceState } from './columnBalancing';
 import {
   applyBandCap,
   uncapBand,
@@ -111,7 +105,10 @@ import {
   resolveTrailingCaps,
   type BandCap,
   type BandPassReport,
+  bandCapLinesAroundZone,
+  type BandCapZone,
 } from './bandCaps';
+import { raggedUrlLines } from './raggedUrl';
 
 export interface BuildDocumentOptions {
   /**
@@ -121,6 +118,24 @@ export interface BuildDocumentOptions {
    * a newer request has superseded this one.
    */
   shouldCancel?: () => boolean;
+  /**
+   * Progress hook, called as placement advances: once per top-level content
+   * block of every pass (the engine re-places the document several times —
+   * band caps, column balancing — so `pass` counts up and the block counter
+   * restarts). A long build can show a bar from it.
+   */
+  onProgress?: (progress: BuildProgress) => void;
+}
+
+export interface BuildProgress {
+  /** 1-based placement pass. */
+  pass: number;
+  /** Top-level content blocks placed so far in this pass, and how many
+   *  there are in the document. */
+  blocks: number;
+  totalBlocks: number;
+  /** Pages opened so far in this pass. */
+  pages: number;
 }
 
 export class BuildCancelledError extends Error {
@@ -255,6 +270,12 @@ export function buildDocumentPass(
 
   // Create document
   const doc = createVDTDocument(resolved, baselineGrid);
+  // A chapter laid out after the pages before it: shift parity and carry the
+  // counters over (see `PostextContent.continuation`).
+  const continuation = content.continuation;
+  const pageIndexOffset = Math.max(0, Math.floor(continuation?.pageIndexOffset ?? 0));
+  if (pageIndexOffset > 0) doc.pageIndexOffset = pageIndexOffset;
+  if (continuation?.headings && continuation.headings.h1 > 0) doc.chapterOrdinalOffset = continuation.headings.h1;
 
   const pageMetrics = computePageMetrics(resolved);
   const { pageWidthPx, pageHeightPx, trimOffset, contentArea } = pageMetrics;
@@ -263,7 +284,7 @@ export function buildDocumentPass(
   doc.trimOffset = trimOffset;
 
   // Create first page
-  const firstPage = createPageWithColumns(0, resolved, contentArea, pageWidthPx, pageHeightPx);
+  const firstPage = createPageWithColumns(0, resolved, contentArea, pageWidthPx, pageHeightPx, pageIndexOffset);
   doc.pages.push(firstPage);
 
   // Extract frontmatter, then parse the remaining markdown body
@@ -277,7 +298,12 @@ export function buildDocumentPass(
       headingTemplates[lvl.level as 1 | 2 | 3 | 4 | 5 | 6] = lvl.numberingTemplate;
     }
   }
-  const headingPrefixes = computeHeadingNumbers(contentBlocks, headingTemplates);
+  const headingStart = continuation?.headings;
+  const headingPrefixes = computeHeadingNumbers(
+    contentBlocks,
+    headingTemplates,
+    headingStart ? [headingStart.h1, headingStart.h2, headingStart.h3, headingStart.h4, headingStart.h5, headingStart.h6] : undefined,
+  );
 
   // Resource numbering — computed up front (before the placement loop) so that
   // captions and inline `:ref`s can resolve their rendered number strings
@@ -285,12 +311,13 @@ export function buildDocumentPass(
   // document.
   const resourceTypes: ResourceType[] = config?.resourceTypes ?? defaultResourceTypes();
   const resources: Resource[] = content.resources ?? [];
-  const headingContext = computeHeadingContext(contentBlocks);
+  const headingContext = computeHeadingContext(contentBlocks, headingStart);
   const resourceNumbering: ResourceNumberingMap = computeResourceNumbering(
     contentBlocks,
     resourceTypes,
     resources,
     headingContext,
+    continuation ? { counters: continuation.resourceCounters, numbered: continuation.resourceNumbers } : undefined,
   );
 
   // Lookups threaded into block-kind resolution + measurement.
@@ -691,7 +718,7 @@ export function buildDocumentPass(
     if (!bandCaps) return;
     for (const [spanIndex, cap] of bandCaps) {
       if (cap.startContentIndex !== contentIndex || cap.startPart !== part) continue;
-      applyBandCap(bandColumns(page, band), cap.lines * baselineGrid, uncappedBottoms);
+      applyBandCap(bandColumns(page, band), cap.lines * baselineGrid, uncappedBottoms, cap.zone);
       activeCap = { spanIndex, pageIndex: page.index, band };
       bandCapsApplied.add(spanIndex);
       break;
@@ -709,8 +736,14 @@ export function buildDocumentPass(
    * the cap delivered when it is reached inside the capped band (nothing
    * spilled past the cut); the columns are NOT uncapped afterwards, so
    * column balancing does not stretch them back to the page bottom.
+   *
+   * A chapter-closing fixed box passes the `zone` it will take at the
+   * bottom of the band: when the level cut would run into it, the columns
+   * under the box are cut at the zone's top instead and the others take
+   * the displaced text (see {@link bandCapLinesAroundZone}) — the box then
+   * fits on the page, under its columns, rather than opening a page alone.
    */
-  const proposeTrailingCap = (boundaryIndex: number): void => {
+  const proposeTrailingCap = (boundaryIndex: number, zone?: BandCapZone): void => {
     const balancingCfg = resolved.headings.balancing;
     if (!balancingCfg.enabled || !balancingCfg.trailing) return;
     const page = doc.pages[cursor.pageIndex]!;
@@ -729,13 +762,15 @@ export function buildDocumentPass(
     if (!cols.some((c) => c.blocks.length > 0)) return;
     if (!bandStart || !registeredBand || registeredBand.pageIndex !== page.index || registeredBand.band !== band) return;
     const bottoms = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
-    if (Math.max(...bottoms) - Math.min(...bottoms) <= baselineGrid + 0.5) return;
+    const aroundZone = zone ? bandCapLinesAroundZone(cols, baselineGrid, zone, (c) => columnBottom(c, uncappedBottoms)) : null;
+    if (aroundZone === null && Math.max(...bottoms) - Math.min(...bottoms) <= baselineGrid + 0.5) return;
     bandCapProposals.set(boundaryIndex, {
       kind: 'trailing',
       startContentIndex: bandStart.contentIndex,
       startPart: bandStart.part,
-      lines: bandCapLines(cols, baselineGrid),
+      lines: aroundZone ?? bandCapLines(cols, baselineGrid),
       retries: 0,
+      ...(aroundZone !== null ? { zone } : {}),
     });
   };
 
@@ -773,11 +808,12 @@ export function buildDocumentPass(
   // Page-numbering segments. The implicit first segment comes from
   // `cfg.page.pageNumbering`; `:::numbering` directives append more,
   // each applied at the next page boundary.
+  // A continued document starts where the previous page left off.
   const pageNumberSegments: PageNumberSegment[] = [
     {
       startPageIndex: 0,
-      format: resolved.page.pageNumbering.format,
-      startAt: resolved.page.pageNumbering.startAt,
+      format: continuation?.pageNumbering?.format ?? resolved.page.pageNumbering.format,
+      startAt: continuation?.pageNumbering?.startAt ?? resolved.page.pageNumbering.startAt,
     },
   ];
   let pendingNumberingChange:
@@ -1035,7 +1071,8 @@ export function buildDocumentPass(
     interface Cut { col: VDTColumn; kind: 'top' | 'bottom'; edge: number }
     interface FixedFit { rect: BoundingBox; result: CalloutLayoutResult; cuts: Cut[] }
 
-    const attempt = (page: VDTPage, force: boolean): FixedFit | null => {
+    /** The box laid out for `page` and the zone it takes there. */
+    const zoneOn = (page: VDTPage) => {
       const ref = anchor.to === 'page' ? designFrames.page
         : anchor.to === 'bleed' ? designFrames.bleed
         : page.contentArea;
@@ -1052,10 +1089,16 @@ export function buildDocumentPass(
       const rect = anchorBox(anchor.edge, ref, result.width, result.totalHeight, offset);
       const zoneTop = snapDown(page, rect.y - result.marginTopPx);
       const zoneBottom = snapUp(page, rect.y + rect.height + result.marginBottomPx);
+      const meetsX = (col: VDTColumn): boolean =>
+        rect.x < col.bbox.x + col.bbox.width - 0.5 && rect.x + rect.width > col.bbox.x + 0.5;
+      return { cols, result, rect, zoneTop, zoneBottom, meetsX };
+    };
+
+    const attempt = (page: VDTPage, force: boolean): FixedFit | null => {
+      const { cols, result, rect, zoneTop, zoneBottom, meetsX } = zoneOn(page);
       const cuts: Cut[] = [];
       for (const col of cols) {
-        const meetsX = rect.x < col.bbox.x + col.bbox.width - 0.5 && rect.x + rect.width > col.bbox.x + 0.5;
-        if (!meetsX) continue;
+        if (!meetsX(col)) continue;
         const colTop = col.bbox.y;
         const colBottom = trueBottom(col, uncappedBottoms);
         if (zoneTop >= colBottom - 0.5 || zoneBottom <= colTop + 0.5) continue;
@@ -1083,10 +1126,13 @@ export function buildDocumentPass(
       return { rect, result, cuts };
     };
 
-    // A box that closes the chapter levels the columns above it first.
+    // A box that closes the chapter levels the columns above it first —
+    // around the zone it takes on the current page.
     if (nextIsBarrier(plan.endIdx + 1)) {
       tryPlacePendingFloatsOnCurrentPage();
-      proposeTrailingCap(startIdx);
+      const here = zoneOn(doc.pages[cursor.pageIndex]!);
+      const columns = here.cols.flatMap((c, i) => (here.meetsX(c) ? [i] : []));
+      proposeTrailingCap(startIdx, columns.length > 0 ? { top: here.zoneTop, columns } : undefined);
     }
 
     let page = doc.pages[cursor.pageIndex]!;
@@ -1251,6 +1297,7 @@ export function buildDocumentPass(
 
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
+    options?.onProgress?.({ pass: 1, blocks: blockIdx, totalBlocks: contentBlocks.length, pages: doc.pages.length });
     const rawBlock = contentBlocks[blockIdx]!;
 
     // Floats whose reference landed in an earlier iteration take the first
@@ -1342,7 +1389,7 @@ export function buildDocumentPass(
           title: plan.title,
           titleSourceStart,
           titleSourceEnd,
-        });
+        }, pageIndexOffset);
         flushPendingNumberingAtBoundary();
         continue;
       }
@@ -1573,7 +1620,8 @@ export function buildDocumentPass(
     // List items may split too — orphan/widow protection per-list is gated by
     // `avoidOrphansInLists` / `avoidWidowsInLists`; bullet stays on first part.
     const canSplit = vdtType === 'paragraph' || vdtType === 'blockquote' || vdtType === 'listItem';
-    let remainingLines = [...measured.lines];
+    // A justified line a link leaves with too few spaces is set ragged.
+    let remainingLines = [...raggedUrlLines(measured.lines, style.textAlign, rawBlock.text)];
     let partIndex = 0;
 
     // "Keep with next" for colon-introduced lists: a paragraph ending in `:`
@@ -2049,8 +2097,16 @@ export function buildDocument(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
 ): VDTDocument {
-  const runPass = (hints?: PassHints): PassResult =>
-    buildDocumentPass(content, config, cache, options, hints);
+  // Each pass reports its own progress, numbered in build order.
+  let passIndex = 0;
+  const onProgress = options?.onProgress;
+  const passOptions: BuildDocumentOptions | undefined = onProgress
+    ? { ...options, onProgress: (p) => onProgress({ ...p, pass: passIndex }) }
+    : options;
+  const runPass = (hints?: PassHints): PassResult => {
+    passIndex++;
+    return buildDocumentPass(content, config, cache, passOptions, hints);
+  };
 
   // --- Band caps (page-span blocks mid-page) -----------------------------
   // A span block that arrived in an uneven band proposes a cap; the driver

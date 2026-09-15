@@ -141,6 +141,11 @@ export function applyPaletteToResolvedConfig(
       border: { ...s.border, color: resolveRequired(s.border.color, palette) },
       stripe: { ...s.stripe, color: resolveRequired(s.stripe.color, palette) },
       icon: { ...s.icon, color: resolveRequired(s.icon.color, palette) },
+      marker: {
+        ...s.marker,
+        color: resolveRequired(s.marker.color, palette),
+        rule: { ...s.marker.rule, color: resolveRequired(s.marker.rule.color, palette) },
+      },
       titleStyle: { ...s.titleStyle, color: resolveRequired(s.titleStyle.color, palette) },
       body: { ...s.body, color: resolveRequired(s.body.color, palette) },
       lists: { ...s.lists, color: resolveRequired(s.lists.color, palette) },
@@ -308,6 +313,13 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
       border: s.border ? { ...s.border, color: resolveColor(s.border.color, palette) } : s.border,
       stripe: s.stripe ? { ...s.stripe, color: resolveColor(s.stripe.color, palette) } : s.stripe,
       icon: s.icon ? { ...s.icon, color: resolveColor(s.icon.color, palette) } : s.icon,
+      marker: s.marker
+        ? {
+            ...s.marker,
+            color: resolveColor(s.marker.color, palette),
+            rule: s.marker.rule ? { ...s.marker.rule, color: resolveColor(s.marker.rule.color, palette) } : s.marker.rule,
+          }
+        : s.marker,
       titleStyle: s.titleStyle ? { ...s.titleStyle, color: resolveColor(s.titleStyle.color, palette) } : s.titleStyle,
       body: s.body ? { ...s.body, color: resolveColor(s.body.color, palette) } : s.body,
       lists: s.lists ? { ...s.lists, color: resolveColor(s.lists.color, palette) } : s.lists,

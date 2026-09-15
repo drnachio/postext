@@ -6,7 +6,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { UploadCloud } from 'lucide-react';
 import type { Resource, ResourceKind, ResourceType, TableModel } from 'postext';
 import { defaultResourceTypes } from 'postext';
-import { useSandbox } from '../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import { getBlob, putBlob } from '../storage/blobStore';
 import { ResourceList } from '../panels/resources/ResourceList';
 import { ResourceDetail } from '../panels/resources/ResourceDetail';
@@ -53,13 +53,19 @@ interface ResourcesPanelProps {
 }
 
 export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
-  const { state, dispatch } = useSandbox();
-  const resources = state.resources;
-  const types: ResourceType[] = state.config.resourceTypes ?? defaultResourceTypes(state.locale);
+  // Slices only: the whole state changes on every keystroke, caret move and
+  // relayout, and a panel of many thumbnails must not re-render for those.
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const resources = useSandboxSelector((s) => s.resources);
+  const configTypes = useSandboxSelector((s) => s.config.resourceTypes);
+  const locale = useSandboxSelector((s) => s.locale);
+  const chapters = useSandboxSelector((s) => s.chapters);
+  const types: ResourceType[] = useMemo(() => configTypes ?? defaultResourceTypes(locale), [configTypes, locale]);
 
   // The open resource lives in shared state (a preview click can open it, and
   // it survives switching panels); this panel only reads and sets it.
-  const selectedId = state.activeResourceId;
+  const selectedId = useSandboxSelector((s) => s.activeResourceId);
   const setSelectedId = useCallback(
     (id: string | null) => dispatch({ type: 'SET_ACTIVE_RESOURCE', payload: id }),
     [dispatch],
@@ -74,6 +80,16 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
     () => resources.find((r) => r.id === selectedId) ?? null,
     [resources, selectedId],
   );
+  const otherIds = useMemo(
+    () => new Set(resources.filter((r) => r.id !== selectedId).map((r) => r.id)),
+    [resources, selectedId],
+  );
+  // Counted over the whole book (resources are shared by every chapter);
+  // only recounted when the text or the selection changes.
+  const referenceCount = useMemo(
+    () => (selectedId ? countReferences(composeBookMemo(chapters).markdown, selectedId) : 0),
+    [chapters, selectedId],
+  );
 
   const ingestFiles = async (files: File[]) => {
     if (files.length === 0) return;
@@ -84,7 +100,7 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
     if (created.length === 1) setSelectedId(created[0].id);
     setUploadNote(
       skipped.length > 0
-        ? state.labels.resourcesUploadNote
+        ? labels.resourcesUploadNote
             .replace('__added__', String(created.length))
             .replace('__skipped__', String(skipped.length))
         : null,
@@ -201,8 +217,8 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
           resource={selected}
           types={types}
           isDark={isDark}
-          otherIds={new Set(resources.filter((r) => r.id !== selected.id).map((r) => r.id))}
-          referenceCount={countReferences(composeBookMemo(state.chapters).markdown, selected.id)}
+          otherIds={otherIds}
+          referenceCount={referenceCount}
           onChange={handleChange}
           onRename={handleRename}
           onDelete={handleDelete}
@@ -238,7 +254,7 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
           }}
         >
           <UploadCloud size={28} aria-hidden="true" style={{ color: 'var(--gilt)' }} />
-          <span>{state.labels.resourcesDropToUpload}</span>
+          <span>{labels.resourcesDropToUpload}</span>
         </div>
       )}
     </div>

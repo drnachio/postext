@@ -51,6 +51,22 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
     color: { ...DEFAULT_MAIN_COLOR } as ColorValue,
     align: 'top' as const,
   },
+  marker: {
+    kind: 'none' as const,
+    glyph: '',
+    resourceId: '',
+    fontWeight: 400,
+    size: EM(1.5),
+    color: { ...DEFAULT_MAIN_COLOR } as ColorValue,
+    align: 'center' as const,
+    gap: EM(0.5),
+    rule: {
+      enabled: false,
+      color: { ...DEFAULT_MAIN_COLOR } as ColorValue,
+      width: { value: 0.5, unit: 'pt' } as Dimension,
+      length: PT0,
+    },
+  },
   titleStyle: {
     fontWeight: 700,
     italic: false,
@@ -119,6 +135,23 @@ function resolveCalloutStyleConfig(
       color: partial.icon?.color ?? d.icon.color,
       align: partial.icon?.align ?? d.icon.align,
     },
+    marker: {
+      kind: partial.marker?.kind ?? d.marker.kind,
+      glyph: partial.marker?.glyph ?? d.marker.glyph,
+      resourceId: partial.marker?.resourceId ?? d.marker.resourceId,
+      fontFamily: partial.marker?.fontFamily ?? headings.fontFamily,
+      fontWeight: partial.marker?.fontWeight ?? d.marker.fontWeight,
+      size: partial.marker?.size ?? d.marker.size,
+      color: partial.marker?.color ?? d.marker.color,
+      align: partial.marker?.align ?? d.marker.align,
+      gap: partial.marker?.gap ?? d.marker.gap,
+      rule: {
+        enabled: partial.marker?.rule?.enabled ?? d.marker.rule.enabled,
+        color: partial.marker?.rule?.color ?? d.marker.rule.color,
+        width: partial.marker?.rule?.width ?? d.marker.rule.width,
+        length: partial.marker?.rule?.length ?? d.marker.rule.length,
+      },
+    },
     titleStyle: {
       fontFamily: partial.titleStyle?.fontFamily ?? headings.fontFamily,
       fontSize: partial.titleStyle?.fontSize ?? bodyText.fontSize,
@@ -169,7 +202,7 @@ function stripObject<T extends object>(obj: T): T | undefined {
 
 /** Drop every field equal to its static default (and `name` equal to `id`).
  *  Inherited fields (`titleStyle.fontFamily`, `titleStyle.fontSize`,
- *  `icon.fontFamily`, `body.*`, `lists.*`) are kept whenever set, since
+ *  `icon.fontFamily`, `marker.fontFamily`, `body.*`, `lists.*`) are kept whenever set, since
  *  their effective default depends on other config sections. Returns
  *  `undefined` when the list is the built-in default (a single bare
  *  `note` style) or empty. */
@@ -243,6 +276,31 @@ export function stripCalloutStylesDefaults(
       if (s.icon.align !== undefined && s.icon.align !== d.icon.align) ic.align = s.icon.align;
       const kept = stripObject(ic);
       if (kept) r.icon = kept;
+    }
+    if (s.marker) {
+      const m: CalloutStyleConfig['marker'] = {};
+      const dm = d.marker;
+      if (s.marker.kind !== undefined && s.marker.kind !== dm.kind) m.kind = s.marker.kind;
+      if (s.marker.glyph !== undefined && s.marker.glyph !== dm.glyph) m.glyph = s.marker.glyph;
+      if (s.marker.resourceId !== undefined && s.marker.resourceId !== dm.resourceId) m.resourceId = s.marker.resourceId;
+      if (s.marker.fontFamily !== undefined) m.fontFamily = s.marker.fontFamily;
+      if (s.marker.fontWeight !== undefined && s.marker.fontWeight !== dm.fontWeight) m.fontWeight = s.marker.fontWeight;
+      if (s.marker.size !== undefined && !dimensionsEqual(s.marker.size, dm.size)) m.size = s.marker.size;
+      if (s.marker.color !== undefined && !colorsEqual(s.marker.color, dm.color)) m.color = s.marker.color;
+      if (s.marker.align !== undefined && s.marker.align !== dm.align) m.align = s.marker.align;
+      if (s.marker.gap !== undefined && !dimensionsEqual(s.marker.gap, dm.gap)) m.gap = s.marker.gap;
+      if (s.marker.rule) {
+        const ru: NonNullable<CalloutStyleConfig['marker']>['rule'] = {};
+        const r0 = s.marker.rule;
+        if (r0.enabled !== undefined && r0.enabled !== dm.rule.enabled) ru.enabled = r0.enabled;
+        if (r0.color !== undefined && !colorsEqual(r0.color, dm.rule.color)) ru.color = r0.color;
+        if (r0.width !== undefined && !dimensionsEqual(r0.width, dm.rule.width)) ru.width = r0.width;
+        if (r0.length !== undefined && !dimensionsEqual(r0.length, dm.rule.length)) ru.length = r0.length;
+        const keptRule = stripObject(ru);
+        if (keptRule) m.rule = keptRule;
+      }
+      const kept = stripObject(m);
+      if (kept) r.marker = kept;
     }
     if (s.titleStyle) {
       const t: CalloutStyleConfig['titleStyle'] = {};

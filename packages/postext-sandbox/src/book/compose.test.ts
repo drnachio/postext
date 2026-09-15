@@ -80,3 +80,18 @@ describe('line mapping', () => {
     expect(fromBookLine(book, cLine)).toEqual({ chapterId: 'c', line: 1 });
   });
 });
+
+describe('composeBook chapter-only scope', () => {
+  it('keeps the chapter at its place in the book', () => {
+    const chapters = [
+      { id: 'a', title: 'A', markdown: 'Alpha', createdAt: 0, updatedAt: 0 },
+      { id: 'b', title: 'B', markdown: 'Beta', createdAt: 0, updatedAt: 0 },
+      { id: 'c', title: 'C', markdown: 'Gamma', createdAt: 0, updatedAt: 0 },
+    ];
+    const only = composeBook(chapters, { only: 'c' });
+    expect(only.segments).toHaveLength(1);
+    expect(only.segments[0]!.index).toBe(2);
+    expect(only.segments[0]!.start).toBe(0);
+    expect(only.scope).toEqual({ only: 'c' });
+  });
+});

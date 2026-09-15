@@ -52,7 +52,6 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'headingAdvancedWithoutTitleText':
       return Heading;
     case 'unknownResourceId':
-    case 'unusedResource':
     case 'duplicateResourceId':
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
@@ -123,8 +122,6 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeadingAdvancedWithoutTitleTextTitle ?? 'Heading title not referenced';
     case 'unknownResourceId':
       return labels.warningsUnknownResourceIdTitle ?? 'Unknown resource';
-    case 'unusedResource':
-      return labels.warningsUnusedResourceTitle ?? 'Unused resource';
     case 'duplicateResourceId':
       return labels.warningsDuplicateResourceIdTitle ?? 'Duplicate resource id';
     case 'danglingTypeRef':
@@ -219,10 +216,6 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'unknownResourceId': {
       const where = payload.usage === 'embed' ? '::resource' : ':ref';
       return `${where}{id=${payload.resourceId}} — ${labels.warningsUnknownResourceIdDetail ?? 'no resource with this id exists'}`;
-    }
-    case 'unusedResource': {
-      const name = payload.caption ? `"${payload.caption}" ` : '';
-      return `${name}#${payload.resourceId} — ${labels.warningsUnusedResourceDetail ?? 'defined but never embedded or referenced'}`;
     }
     case 'duplicateResourceId':
       return `#${payload.resourceId} ×${payload.count} — ${labels.warningsDuplicateResourceIdDetail ?? 'multiple resources share this id; only one resolves'}`;

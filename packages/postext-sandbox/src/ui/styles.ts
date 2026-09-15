@@ -3,6 +3,7 @@
  *  drives through data attributes. Injected once by `SandboxGlobalStyles`. */
 export const SANDBOX_CSS = `
 @keyframes postext-spin { to { transform: rotate(360deg); } }
+@keyframes postext-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 @keyframes postext-dirty-bounce { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-4px); } }
 .postext-hide-spinners::-webkit-outer-spin-button,
 .postext-hide-spinners::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }

@@ -39,7 +39,11 @@ export function buildPagesDom(
   innerDiv.style.width = `${innerWidth}px`;
   innerDiv.style.margin = '0 auto';
 
-  const rows = groupPagesIntoRows(doc.pages.length, viewMode);
+  // Page 0 sits `pageIndexOffset` physical pages into the book: an even
+  // offset makes it a recto (right-hand page).
+  const pageIndexOffset = doc.pageIndexOffset ?? 0;
+  const isRecto = (pageIndex: number) => (pageIndexOffset + pageIndex) % 2 === 0;
+  const rows = groupPagesIntoRows(doc.pages.length, viewMode, isRecto(0));
   const allSlots: HTMLDivElement[] = [];
 
   const buildSlot = (pageIndex: number) => {
@@ -82,12 +86,12 @@ export function buildPagesDom(
     rowDiv.dataset.pageRow = '1';
 
     if (isSpread && row.length === 1) {
+      // A lone page keeps its side of the spread: a recto on the right.
       const pageIndex = row[0]!;
-      const isFirstPage = pageIndex === 0;
-
-      if (isFirstPage) rowDiv.appendChild(buildSpacer());
+      const recto = isRecto(pageIndex);
+      if (recto) rowDiv.appendChild(buildSpacer());
       rowDiv.appendChild(buildSlot(pageIndex));
-      if (!isFirstPage) rowDiv.appendChild(buildSpacer());
+      if (!recto) rowDiv.appendChild(buildSpacer());
     } else {
       for (const pageIndex of row) {
         rowDiv.appendChild(buildSlot(pageIndex));

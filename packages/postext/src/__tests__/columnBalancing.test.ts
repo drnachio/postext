@@ -486,3 +486,54 @@ describe('list-end and loose-paragraph levers', () => {
     expect(turnedOff.loose.size).toBe(0);
   });
 });
+
+describe('collectColumnGaps: room below a list tail', () => {
+  const grid = 10;
+  // One line per grid step, so the last line ends where the box does unless
+  // `boxExtra` (a baked margin) stretches the box below it.
+  const block = (type: string, y: number, height: number, contentIndex: number, extra: Record<string, unknown> = {}, boxExtra = 0) =>
+    ({
+      id: `b${contentIndex}`, type, contentIndex, bbox: { x: 0, y, width: 100, height: height + boxExtra },
+      lines: Array.from({ length: Math.max(1, Math.round(height / grid)) }, (_, i) => ({ text: 'x', bbox: { x: 0, y: y + i * grid, width: 100, height: grid } })),
+      ...extra,
+    });
+  const page = (columns: unknown[]) => ({ index: 0, contentArea: { x: 0, y: 0, width: 220, height: 100 }, columns, floats: [] });
+  const docWith = (columns: unknown[]) =>
+    ({ pages: [page(columns), page([{ index: 0, kind: 'text', bbox: { x: 0, y: 0, width: 100, height: 100 }, availableHeight: 50, blocks: [block('paragraph', 0, 50, 9)] }])], blocks: [], baselineGrid: grid } as unknown as VDTDocument);
+
+  it('sees the line a list tail hides behind its baked bottom margin', () => {
+    // Column 0: a heading at line 2, then list items ending at y = 90 (one
+    // free line), but the tail's margin left `availableHeight` under a line.
+    const col0 = {
+      index: 0, kind: 'text', bbox: { x: 0, y: 0, width: 100, height: 100 }, availableHeight: 4,
+      blocks: [
+        block('paragraph', 0, 20, 0),
+        block('heading', 20, 10, 1, { headingLevel: 2 }),
+        block('listItem', 30, 30, 2),
+        // Two lines drawn (62–82); the box runs to the column bottom with
+        // the baked margin — which is what hid the free line.
+        block('listItem', 62, 20, 3, {}, 14),
+      ],
+    };
+    const col1 = {
+      index: 1, kind: 'text', bbox: { x: 120, y: 0, width: 100, height: 100 }, availableHeight: 0,
+      blocks: [block('paragraph', 0, 100, 4)],
+    };
+    const gaps = collectColumnGaps(docWith([col0, col1]), NO_FORCED);
+    expect(gaps.map((g) => [g.columnIndex, g.gapLines])).toEqual([[0, 1]]);
+    expect(gaps[0]!.candidates.some((c) => c.kind === 'heading' && c.contentIndex === 1)).toBe(true);
+  });
+
+  it('still trusts availableHeight when the last block sits lower than it says', () => {
+    const col0 = {
+      index: 0, kind: 'text', bbox: { x: 0, y: 0, width: 100, height: 100 }, availableHeight: 20,
+      blocks: [block('paragraph', 0, 20, 0), block('heading', 20, 10, 1, { headingLevel: 2 }), block('paragraph', 30, 50, 2)],
+    };
+    const col1 = {
+      index: 1, kind: 'text', bbox: { x: 120, y: 0, width: 100, height: 100 }, availableHeight: 0,
+      blocks: [block('paragraph', 0, 100, 4)],
+    };
+    const gaps = collectColumnGaps(docWith([col0, col1]), NO_FORCED);
+    expect(gaps.map((g) => [g.columnIndex, g.gapLines])).toEqual([[0, 2]]);
+  });
+});

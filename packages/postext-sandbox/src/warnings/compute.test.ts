@@ -151,22 +151,6 @@ describe('design slot placeholder warnings', () => {
   });
 });
 
-describe('callout icon resources', () => {
-  it('does not flag a resource used as a callout icon as unused', () => {
-    const resource = {
-      id: 'icon-note', typeId: 'figure', kind: 'svg' as const, caption: '',
-      createdAt: 0, updatedAt: 0, svg: { fileId: 'f' },
-    };
-    const warnings = computeWarnings({
-      markdown: 'Hello',
-      config: { calloutStyles: [{ id: 'note', icon: { kind: 'resource', resourceId: 'icon-note' } }] },
-      resources: [resource],
-      doc: null,
-    } as never);
-    expect(warnings.some((w) => w.payload.kind === 'unusedResource')).toBe(false);
-  });
-});
-
 describe('chapter attribution', () => {
   it('maps located warnings to chapters and flags ignored front matter', async () => {
     const { composeBook } = await import('../book/compose');

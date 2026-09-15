@@ -9,7 +9,7 @@ import type {
   ResourceFloatPosition as PlacementPosition,
   ResourceFloatSpan as PlacementSpan,
 } from 'postext';
-import { useSandbox, type ResourceFocusTarget } from '../../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, type ResourceFocusTarget } from '../../context/SandboxContext';
 import { InlineMarkdownInput, type InlineSelection } from '../../controls/InlineMarkdownInput';
 import { ConfirmPopover, IconButton, PanelBody, PanelHeader } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
@@ -22,8 +22,8 @@ import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor';
 import { slugify } from './slugify';
 import type { TableCellPos, TableModel } from 'postext';
 
-const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
-const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
+const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-2 py-1.5';
+const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' } as const;
 const labelStyle = { color: 'var(--slate)', fontSize: 11, lineHeight: '14px' } as const;
 
 interface FieldProps {
@@ -69,14 +69,15 @@ export function ResourceDetail({
   onBack,
   isDark = true,
 }: ResourceDetailProps) {
-  const { state, dispatch } = useSandbox();
-  const labels = state.labels;
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
   const type = types.find((t) => t.id === resource.typeId);
 
   // Preview click → panel: the pending request addressed to this resource is
   // routed to the matching field by its target kind and cleared once applied;
-  // every field reports its selection back for the preview highlight.
-  const pending = state.pendingResourceFocus?.resourceId === resource.id ? state.pendingResourceFocus : null;
+  // every field reports its selection back for the preview highlight. Read
+  // through a selector so unrelated state changes leave this pane alone.
+  const pending = useSandboxSelector((s) => (s.pendingResourceFocus?.resourceId === resource.id ? s.pendingResourceFocus : null));
   const captionRequest = pending?.target.kind === 'caption' ? pending : null;
   const noteRequest = pending?.target.kind === 'note' ? pending : null;
   const svgRequest = pending?.target.kind === 'svgText' ? pending : null;
@@ -219,7 +220,7 @@ export function ResourceDetail({
         }
       />
       <PanelBody padded>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <Field
           label={labels.idLabel}
           hint={
@@ -399,7 +400,7 @@ export function ResourceDetail({
           </Field>
         )}
 
-        <div className="mt-1 flex flex-col gap-1">
+        <div className="mt-2 flex flex-col gap-1.5">
           <span style={labelStyle}>{labels.previewLabel}</span>
           <ResourcePreview resource={resource} type={type} />
         </div>

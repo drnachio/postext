@@ -1,5 +1,5 @@
 export { createLayout } from './createLayout';
-export { buildDocument, BuildCancelledError } from './pipeline';
+export { buildDocument, BuildCancelledError, continuationAfter } from './pipeline';
 export type { BuildDocumentOptions } from './pipeline';
 export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage } from './canvas-backend';
 export type { RenderPageOptions, ResourceImageSource } from './canvas-backend';
@@ -28,6 +28,9 @@ export { classifyPages } from './pipeline/pageRoles';
 export { migrateLegacyHeaderFooterConfig, isLegacyHeaderFooterSlot, resolveDesignSlot, stripDesignSlotDefaults, DEFAULT_BOX_ELEMENT } from './defaults/headerFooter';
 export type {
   PostextContent,
+  LayoutContinuation,
+  HeadingCounters,
+  ResourceNumberEntry,
   DocumentMetadata,
   PostextResource,
   ResourceType,
@@ -109,6 +112,8 @@ export type {
   CalloutPaddingConfig,
   CalloutStripeConfig,
   CalloutIconConfig,
+  CalloutMarkerConfig,
+  CalloutMarkerRuleConfig,
   CalloutTitleStyleConfig,
   CalloutBodyStyleConfig,
   CalloutListStyleConfig,

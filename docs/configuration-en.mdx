@@ -2573,7 +2573,13 @@ The glass stays hot for an hour after the flame is out.
       <td><code>icon</code></td>
       <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align &#125;</code></td>
       <td><code>'none'</code>, headings font, <code>400</code>, <code>1.5em</code>, main colour, <code>'top'</code></td>
-      <td>A text glyph (<code>kind: 'glyph'</code>) or a bitmap / SVG resource (<code>kind: 'resource'</code> + <code>resourceId</code>) beside the content. With a side stripe the icon is centred over the stripe; otherwise it reserves its own column (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> centres it vertically on the content.</td>
+      <td>A text glyph (<code>kind: 'glyph'</code>) or a bitmap / SVG resource (<code>kind: 'resource'</code> + <code>resourceId</code>) beside the content. With a side stripe the icon is centred over the stripe; otherwise it reserves its own column (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> centres it vertically on the content. A resource image is fitted inside the square keeping its aspect ratio; an icon taller than the content grows the box to fit it (and, with <code>align: 'center'</code>, centres the content on it).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align, gap, rule &#125;</code></td>
+      <td><code>'none'</code>, headings font, <code>400</code>, <code>1.5em</code>, main colour, <code>'center'</code>, <code>0.5em</code>, rule off (<code>0.5pt</code>, main colour, length <code>0</code>)</td>
+      <td>A second icon drawn <em>outside</em> the box, in a column on its left, with an optional vertical <code>rule</code> between it and the box — the "tap here" hand beside a self-assessment badge. The frame becomes <code>[marker][rule][gap][box]</code> and as tall as the tallest of the three; <code>align</code> centres them on each other or top-aligns them. <code>rule.length</code> is a minimum: the rule always spans at least the box height.</td>
     </tr>
     <tr>
       <td><code>titleStyle</code></td>

@@ -163,6 +163,13 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
     families.add(level.fontFamily);
     families.add(level.separatorFontFamily);
   }
+  // Callout styles: title, glyph icon / marker and body fonts. Unset fields
+  // inherit the headings / body families collected above.
+  for (const style of config.calloutStyles ?? []) {
+    for (const family of [style.titleStyle?.fontFamily, style.icon?.fontFamily, style.marker?.fontFamily, style.body?.fontFamily]) {
+      if (family) families.add(family);
+    }
+  }
   // Part list overrides (partial configs applied inside `:::part`).
   const partLists = [config.parts?.bodyStyle?.unorderedLists, config.parts?.bodyStyle?.orderedLists];
   for (const lists of partLists) {
@@ -539,14 +546,71 @@ export function isKnownUnavailableGoogleFont(family: string): boolean {
 export function missingStandardVariants(
   family: CustomFontFamily,
 ): Array<{ weight: number; style: 'normal' | 'italic' }> {
-  const have = new Set(
-    family.variants.map((v) => `${v.weight}|${v.style}`),
-  );
-  const want: Array<{ weight: number; style: 'normal' | 'italic' }> = [
-    { weight: 400, style: 'normal' },
-    { weight: 700, style: 'normal' },
-    { weight: 400, style: 'italic' },
-    { weight: 700, style: 'italic' },
-  ];
-  return want.filter((w) => !have.has(`${w.weight}|${w.style}`));
+  return missingVariants(family, STANDARD_VARIANTS);
+}
+
+export interface FontVariantUse { weight: number; style: 'normal' | 'italic' }
+
+const STANDARD_VARIANTS: readonly FontVariantUse[] = [
+  { weight: 400, style: 'normal' },
+  { weight: 700, style: 'normal' },
+  { weight: 400, style: 'italic' },
+  { weight: 700, style: 'italic' },
+];
+
+function missingVariants(family: CustomFontFamily, wanted: readonly FontVariantUse[]): FontVariantUse[] {
+  const have = new Set(family.variants.map((v) => `${v.weight}|${v.style}`));
+  const seen = new Set<string>();
+  const out: FontVariantUse[] = [];
+  for (const w of wanted) {
+    const key = `${w.weight}|${w.style}`;
+    if (have.has(key) || seen.has(key)) continue;
+    seen.add(key);
+    out.push(w);
+  }
+  return out;
+}
+
+/**
+ * The (weight, style) pairs the configuration asks of each family: every
+ * config node carrying a `fontFamily` contributes its `fontWeight` (400
+ * when unset) and `fontStyle` (normal when unset). The body text family
+ * also needs the four standard variants, since markdown emphasis sets bold
+ * and italic runs in it.
+ */
+export function collectFontUsage(config: PostextConfig): Map<string, FontVariantUse[]> {
+  const usage = new Map<string, FontVariantUse[]>();
+  const add = (family: string, use: FontVariantUse) => {
+    const list = usage.get(family) ?? [];
+    list.push(use);
+    usage.set(family, list);
+  };
+  const walk = (node: unknown): void => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item);
+      return;
+    }
+    const rec = node as Record<string, unknown>;
+    if (typeof rec.fontFamily === 'string' && rec.fontFamily.trim()) {
+      const weight = typeof rec.fontWeight === 'number' ? rec.fontWeight : 400;
+      const style = rec.fontStyle === 'italic' ? 'italic' : 'normal';
+      add(rec.fontFamily, { weight, style });
+    }
+    for (const value of Object.values(rec)) walk(value);
+  };
+  walk(config);
+  const body = config.bodyText?.fontFamily;
+  if (typeof body === 'string' && body.trim()) {
+    for (const v of STANDARD_VARIANTS) add(body, v);
+  }
+  return usage;
+}
+
+/** The variants `config` asks of a declared custom family that it has no
+ *  file for — bold or italic set in a family that only carries a regular
+ *  face, a weight no face covers. */
+export function missingUsedVariants(family: CustomFontFamily, config: PostextConfig): FontVariantUse[] {
+  const wanted = collectFontUsage(config).get(family.name) ?? [];
+  return missingVariants(family, wanted);
 }

@@ -25,7 +25,7 @@ import {
   getConfigFontSpecs,
   getConfigFontFamilies,
   getCustomFontFamily,
-  missingStandardVariants,
+  missingUsedVariants,
   isKnownUnavailableGoogleFont,
   isRemovedCustomFontFamily,
 } from '../controls/fontLoader';
@@ -491,7 +491,6 @@ const BITMAP_UPSCALE_THRESHOLD = 1.5;
  * Resource integrity warnings (issue #49 §8):
  *   - unknownResourceId: an `::resource` embed or `:ref` inline reference whose
  *     id is not in `resources`.
- *   - unusedResource: a resource that is never embedded or referenced.
  *   - duplicateResourceId: two or more resources sharing the same id.
  *   - danglingTypeRef: a resource whose `typeId` is not a known `ResourceType`.
  *   - bitmapTooSmall: a bitmap rendered larger than 1.5× its natural width.
@@ -552,7 +551,9 @@ function collectResourceWarnings(
     }
   }
 
-  // 2. Per-resource integrity: duplicates, dangling type refs, unused.
+  // 2. Per-resource integrity: duplicates and dangling type refs. A resource
+  //    nobody embeds or references is not a problem: resources are shared by
+  //    every chapter and are often uploaded before the text that uses them.
   //    Duplicates are reported once per colliding id.
   const reportedDuplicate = new Set<string>();
   for (const r of resources) {
@@ -568,12 +569,6 @@ function collectResourceWarnings(
       out.push({
         id: `resource-dangling-type-${idx++}-${r.id}`,
         payload: { kind: 'danglingTypeRef', resourceId: r.id, typeId: r.typeId },
-      });
-    }
-    if (!usedIds.has(r.id)) {
-      out.push({
-        id: `resource-unused-${idx++}-${r.id}`,
-        payload: { kind: 'unusedResource', resourceId: r.id, caption: r.caption },
       });
     }
   }
@@ -718,9 +713,9 @@ function computeDocumentWarnings(params: {
     for (const family of families) {
       const custom = getCustomFontFamily(family);
       if (custom) {
-        // Custom family still declared: report specifically which
-        // standard variants are missing (weight × style).
-        const missingVariants = missingStandardVariants(custom);
+        // Custom family still declared: report the variants the
+        // configuration asks of it (weight × style) that have no file.
+        const missingVariants = missingUsedVariants(custom, config);
         if (missingVariants.length > 0) {
           warnings.push({
             id: `missing-font-variant-${family}`,

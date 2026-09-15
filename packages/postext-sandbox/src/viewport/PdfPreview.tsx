@@ -1,22 +1,31 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useRef } from 'react';
 import { FileText } from 'lucide-react';
 import { useSandboxLabels } from '../context/SandboxContext';
-import { pdfPageFragment, readPageHash } from '../storage/pageHash';
+import { pdfPageFragment } from '../storage/viewHash';
+import type { BuildProgress } from '../worker/useLayoutWorker';
 
 interface PdfPreviewProps {
   bytesUrl: string | null;
+  /** 0-based page of the rendered document to open the viewer at. */
+  openPage: number | null;
   generating: boolean;
+  /** Placement progress of the running generation (null before the first
+   *  report), and which phase it is in. */
+  progress: BuildProgress | null;
+  phase: 'layout' | 'render' | null;
   error: string | null;
 }
 
-export const PdfPreview = memo(function PdfPreview({ bytesUrl, generating, error }: PdfPreviewProps) {
+export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generating, progress, phase, error }: PdfPreviewProps) {
   const labels = useSandboxLabels();
-  // Open the viewer at the page carried by the URL fragment (`#page=N`, the
-  // one the canvas / HTML viewers keep), re-read for every new document.
+  // Open the viewer at the reader's page, resolved by the viewport for
+  // each new document (a change of `openPage` alone must not reload it).
+  const openPageRef = useRef(openPage);
+  openPageRef.current = openPage;
   const src = useMemo(
-    () => (bytesUrl ? bytesUrl + pdfPageFragment(readPageHash()) : null),
+    () => (bytesUrl ? bytesUrl + pdfPageFragment(openPageRef.current) : null),
     [bytesUrl],
   );
 
@@ -80,10 +89,46 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, generating, error
             }}
           />
           <p className="mt-3 text-xs" style={{ color: 'var(--slate)' }}>
-            {labels.pdfGenerating}
+            {phase === 'render'
+              ? labels.pdfProgressRender
+              : progress
+                ? labels.pdfProgressLayout.replace('__pass__', String(progress.pass)).replace('__page__', String(progress.pages + 1))
+                : labels.pdfGenerating}
           </p>
+          <GenerationBar progress={progress} phase={phase} />
         </div>
       )}
     </div>
   );
 });
+
+/** A bar for the generation: the share of the document's blocks placed in
+ *  the running pass (the engine re-places the document a few times, so the
+ *  bar refills per pass), then full and pulsing while the PDF is written. */
+function GenerationBar({ progress, phase }: { progress: BuildProgress | null; phase: 'layout' | 'render' | null }) {
+  const fraction = phase === 'render'
+    ? 1
+    : progress && progress.totalBlocks > 0
+      ? Math.min(1, progress.blocks / progress.totalBlocks)
+      : 0;
+  return (
+    <div
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(fraction * 100)}
+      className="mt-3 h-1 w-48 overflow-hidden rounded-full"
+      style={{ backgroundColor: 'var(--rule)' }}
+    >
+      <div
+        className="h-full rounded-full"
+        style={{
+          width: `${fraction * 100}%`,
+          backgroundColor: 'var(--gilt)',
+          transition: 'width 120ms linear',
+          animation: phase === 'render' ? 'postext-pulse 1s ease-in-out infinite' : undefined,
+        }}
+      />
+    </div>
+  );
+}

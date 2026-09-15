@@ -408,7 +408,9 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
   classifyPages(doc, resolved);
 
   const chapterTitleByPageIndex = computeChapterTitles(doc.blocks, doc.pages.length, doc.pages);
-  const chapterNumberByPageIndex = computeChapterNumbers(doc.blocks, doc.pages.length, doc.pages);
+  const chapterNumberByPageIndex = computeChapterNumbers(doc.blocks, doc.pages.length, doc.pages, doc.chapterOrdinalOffset ?? 0);
+  // Parity (odd/even elements) counts the pages before a continued document.
+  const pageIndexOffset = doc.pageIndexOffset ?? 0;
   const chapterAttrsByPageIndex = computeChapterAttrs(doc.blocks, doc.pages.length, doc.pages);
   const { partTitleByPageIndex, partNumberByPageIndex } = computePartValues(doc.pages);
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
@@ -432,7 +434,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
       page.header = layoutSlotToVdt(
         resolved.header,
         headerContainerBbox(contentArea),
-        page.index,
+        page.index + pageIndexOffset,
         placeholders,
         dpi,
         extras,
@@ -468,7 +470,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
       page.openerBand = layoutSlotToVdt(
         resolved.parts.versoDesign,
         { x: frames.page.x, y: frames.page.y, width: frames.page.width, height: frames.page.height },
-        page.index,
+        page.index + pageIndexOffset,
         placeholders,
         dpi,
         extras,
@@ -508,7 +510,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
       page.openerBand = layoutSlotToVdt(
         slot,
         { x: frames.page.x, y: frames.page.y, width: frames.page.width, height: frames.page.height },
-        page.index,
+        page.index + pageIndexOffset,
         placeholders,
         dpi,
         { ...extras, titleSource: partTitleSource },
@@ -552,7 +554,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         page.openerBand = layoutSlotToVdt(
           slot,
           openerContainerBbox(opener.block, contentArea),
-          page.index,
+          page.index + pageIndexOffset,
           placeholders,
           dpi,
           { ...extras, titleSource: headingTitleSource, attrSources: opener.block.attrSources, attrs: opener.block.attrs },
@@ -601,7 +603,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         const overlay = layoutSlotToVdt(
           lvl.advancedDesign.slot,
           { x: block.bbox.x, y: block.bbox.y, width: block.bbox.width, height: block.bbox.height },
-          page.index,
+          page.index + pageIndexOffset,
           placeholders,
           dpi,
           extras,
@@ -624,7 +626,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
       page.footer = layoutSlotToVdt(
         resolved.footer,
         footerContainerBbox(contentArea, page.height),
-        page.index,
+        page.index + pageIndexOffset,
         placeholders,
         dpi,
         extras,

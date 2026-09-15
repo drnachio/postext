@@ -15,6 +15,11 @@
  * and list sections carry the style's `body` / `lists` overrides, so the
  * existing style resolvers produce the callout typography unchanged.
  *
+ * A style's `marker` adds a column *outside* the box on its left — an icon
+ * with an optional vertical rule — so the frame is `[marker][rule][gap][box]`
+ * and as tall as the tallest of the three; the box keeps its own icon,
+ * background and padding.
+ *
  * v1 limits: callouts never split (`keepTogether` is always on); nested
  * `:::callout` fences inside a callout are flattened into the outer box;
  * `width: 'auto'` shrink-wraps the title only and ignores the children.
@@ -29,6 +34,7 @@ import type {
 } from '../types';
 import { dimensionToPx } from '../units';
 import {
+  type BoundingBox,
   createBoundingBox,
   createVDTBlock,
   type ResolvedConfig,
@@ -305,7 +311,17 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const { span, placement, title: rawTitle } = resolveCalloutAttrs(style, attrs);
   const isAuto = style.width === 'auto';
 
-  // --- Frame geometry ------------------------------------------------------
+  // --- Marker column (outside the box, on its left) --------------------------
+  const hasMarker = iconPresent(style.marker);
+  const markerSize = hasMarker ? px(style.marker.size) : 0;
+  const ruleOn = hasMarker && style.marker.rule.enabled;
+  const ruleW = ruleOn ? px(style.marker.rule.width) : 0;
+  const markerColumn = hasMarker ? markerSize + ruleW + px(style.marker.gap) : 0;
+
+  // --- Box geometry ------------------------------------------------------------
+  // Everything below is box-relative (box origin = `(0,0)`); the marker
+  // column shifts the box right (and down, when the marker is taller) at
+  // the end.
   const padT = px(style.padding.top);
   const padR = px(style.padding.right);
   const padB = px(style.padding.bottom);
@@ -317,8 +333,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const stripeRight = sideStripe && style.stripe.side === 'right';
   const topStripe = stripeOn && style.stripe.side === 'top';
 
-  const hasIcon = style.icon.kind !== 'none'
-    && (style.icon.kind === 'glyph' ? style.icon.glyph.length > 0 : style.icon.resourceId.length > 0);
+  const hasIcon = iconPresent(style.icon);
   const iconSize = hasIcon ? px(style.icon.size) : 0;
   const gapPx = px(style.titleStyle.gap);
   // The icon takes its own column only when there is no side stripe to sit
@@ -342,15 +357,16 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const titleLineHeight = titleFontPx * 1.2;
   const hasTitle = titleText.trim().length > 0;
 
-  // Frame width: `fill` uses the given width; `auto` shrink-wraps the title.
-  let width = input.width;
+  // Box width: `fill` uses the given width less the marker column; `auto`
+  // shrink-wraps the title.
+  let boxWidth = input.width - markerColumn;
   let innerWidth: number;
   if (isAuto) {
     const titleW = hasTitle ? measureTextWidth(titleText, titleFont) : 0;
     innerWidth = Math.max(1, titleW);
-    width = innerX + innerWidth + padR + (stripeRight ? stripeW : 0);
+    boxWidth = innerX + innerWidth + padR + (stripeRight ? stripeW : 0);
   } else {
-    innerWidth = Math.max(1, width - innerX - padR - (stripeRight ? stripeW : 0));
+    innerWidth = Math.max(1, boxWidth - innerX - padR - (stripeRight ? stripeW : 0));
   }
 
   let cursorY = innerTop;
@@ -446,7 +462,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         blk.sourceEnd = measured.lines[measured.lines.length - 1]!.sourceEnd ?? raw.sourceEnd + ctx.bodyOffset;
       }
 
-      // Relocate to the inner rect (frame-relative).
+      // Relocate to the inner rect (box-relative).
       blk.bbox = createBoundingBox(innerX, cursorY, innerWidth, height);
       for (const line of blk.lines) {
         line.bbox.x += innerX;
@@ -483,17 +499,27 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     }
   }
 
-  const contentBottom = cursorY;
-  const totalHeight = contentBottom + padB;
+  // An icon taller than the content grows the inner area to fit it; with
+  // `align: 'center'` the title and children are centred on the icon.
+  let contentBottom = cursorY;
+  const contentH = contentBottom - innerTop;
+  if (hasIcon && iconSize > contentH) {
+    const extra = iconSize - contentH;
+    if (style.icon.align === 'center') {
+      if (titleBlock) offsetDesignBlock(titleBlock, 0, extra / 2);
+      for (const blk of childBlocks) offsetBlock(blk, 0, extra / 2);
+    }
+    contentBottom += extra;
+  }
+  const boxHeight = contentBottom + padB;
   const innerRect = createBoundingBox(innerX, innerTop, innerWidth, Math.max(0, contentBottom - innerTop));
 
-  // --- Decoration (paint order: background, stripe, icon, title) -------------
-  const overlay: VDTDesignSlot = { bbox: createBoundingBox(0, 0, width, totalHeight), blocks: overlayBlocks };
+  // --- Box decoration (paint order: background, stripe, icon, title) ---------
   const borderOn = style.border.enabled;
   if (style.backgroundEnabled || borderOn) {
     overlayBlocks.push({
       kind: 'box',
-      bbox: createBoundingBox(0, 0, width, totalHeight),
+      bbox: createBoundingBox(0, 0, boxWidth, boxHeight),
       box: {
         backgroundColor: style.backgroundEnabled ? style.background.hex : undefined,
         borderColor: borderOn ? style.border.color.hex : undefined,
@@ -504,10 +530,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   }
   if (stripeOn) {
     const stripeBox = topStripe
-      ? createBoundingBox(0, 0, width, stripeW)
+      ? createBoundingBox(0, 0, boxWidth, stripeW)
       : stripeLeft
-        ? createBoundingBox(0, 0, stripeW, totalHeight)
-        : createBoundingBox(width - stripeW, 0, stripeW, totalHeight);
+        ? createBoundingBox(0, 0, stripeW, boxHeight)
+        : createBoundingBox(boxWidth - stripeW, 0, stripeW, boxHeight);
     overlayBlocks.push({
       kind: 'box',
       bbox: stripeBox,
@@ -520,39 +546,62 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     // Over a side stripe the icon is centred on the stripe; otherwise it
     // sits in its own column left of the content.
     const iconX = sideStripe
-      ? (stripeLeft ? (stripeW - iconSize) / 2 : width - stripeW + (stripeW - iconSize) / 2)
+      ? (stripeLeft ? (stripeW - iconSize) / 2 : boxWidth - stripeW + (stripeW - iconSize) / 2)
       : innerX - iconColumn;
     const iconY = style.icon.align === 'center'
-      ? innerTop + Math.max(0, (contentBottom - innerTop - iconSize) / 2)
+      ? innerTop + (contentBottom - innerTop - iconSize) / 2
       : innerTop;
-    const iconBox = createBoundingBox(iconX, iconY, iconSize, iconSize);
-    if (style.icon.kind === 'resource') {
-      const resource = ctx.resourceById.get(style.icon.resourceId);
-      const fileId = resource?.bitmap?.fileId ?? resource?.svg?.fileId;
-      if (fileId) {
-        iconFileId = fileId;
-        iconFormat = resource?.bitmap?.format;
-        overlayBlocks.push({ kind: 'image', bbox: iconBox, fileId });
-      }
-    } else {
-      const iconFont = buildFontString(style.icon.fontFamily, iconSize, style.icon.fontWeight.toString());
-      const glyphW = measureTextWidth(style.icon.glyph, iconFont);
-      overlayBlocks.push({
-        kind: 'text',
-        bbox: iconBox,
-        fontString: iconFont,
-        color: style.icon.color.hex,
-        lines: [{
-          text: style.icon.glyph,
-          xOffset: Math.max(0, (iconSize - glyphW) / 2),
-          baselineY: iconY + iconSize * 0.8,
-          width: glyphW,
-        }],
-        clip: false,
-      });
+    const built = buildIconBlock(style.icon, iconX, iconY, iconSize, ctx);
+    if (built) {
+      overlayBlocks.push(built.block);
+      iconFileId = built.fileId;
+      iconFormat = built.format;
     }
   }
   if (titleBlock) overlayBlocks.push(titleBlock);
+
+  // --- Marker column + frame -----------------------------------------------------
+  // The frame is as tall as the tallest of box, marker and rule; the three
+  // are centred on each other (`marker.align: 'center'`) or top-aligned.
+  const ruleLen = ruleOn ? Math.max(px(style.marker.rule.length), boxHeight) : 0;
+  const totalHeight = Math.max(boxHeight, markerSize, ruleLen);
+  const centerMarker = style.marker.align === 'center';
+  const boxDy = centerMarker ? (totalHeight - boxHeight) / 2 : 0;
+  const width = markerColumn + boxWidth;
+  if (markerColumn > 0 || boxDy > 0) {
+    for (const b of overlayBlocks) offsetDesignBlock(b, markerColumn, boxDy);
+    for (const blk of childBlocks) offsetBlock(blk, markerColumn, boxDy);
+    innerRect.x += markerColumn;
+    innerRect.y += boxDy;
+  }
+  // Paint order: marker, rule, then the box decoration (the marker lies
+  // outside the box, so the order only matters for readers of the overlay).
+  const markerBlocks: VDTDesignBlock[] = [];
+  let markerFileId: string | undefined;
+  let markerFormat: string | undefined;
+  if (hasMarker) {
+    const markerY = centerMarker ? (totalHeight - markerSize) / 2 : 0;
+    const built = buildIconBlock(style.marker, 0, markerY, markerSize, ctx);
+    if (built) {
+      markerBlocks.push(built.block);
+      markerFileId = built.fileId;
+      markerFormat = built.format;
+    }
+    if (ruleOn) {
+      const ruleY = centerMarker ? (totalHeight - ruleLen) / 2 : 0;
+      markerBlocks.push({
+        kind: 'rule',
+        bbox: createBoundingBox(markerSize, ruleY, ruleW, ruleLen),
+        color: style.marker.rule.color.hex,
+        thicknessPx: ruleW,
+        direction: 'vertical',
+      });
+    }
+  }
+  const overlay: VDTDesignSlot = {
+    bbox: createBoundingBox(0, 0, width, totalHeight),
+    blocks: [...markerBlocks, ...overlayBlocks],
+  };
 
   // --- Frame block -------------------------------------------------------------
   const frame = createVDTBlock(frameId, 'callout', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);
@@ -570,6 +619,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     childIds: childBlocks.map((b) => b.id),
     iconFileId,
     iconFormat,
+    markerFileId,
+    markerFormat,
   };
 
   return {
@@ -579,5 +630,75 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     totalHeight,
     marginTopPx: px(style.marginTop),
     marginBottomPx: px(style.marginBottom),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Icons (shared by the in-box icon and the marker)
+// ---------------------------------------------------------------------------
+
+type IconSpec = ResolvedCalloutStyleConfig['icon'];
+
+/** Whether an icon / marker spec draws anything. */
+function iconPresent(spec: IconSpec): boolean {
+  if (spec.kind === 'glyph') return spec.glyph.length > 0;
+  if (spec.kind === 'resource') return spec.resourceId.length > 0;
+  return false;
+}
+
+/** Fit a `w × h` image inside the square `(x, y, size)`, centred, keeping
+ *  its aspect ratio. Unknown dimensions fill the square. */
+function fitInSquare(x: number, y: number, size: number, w?: number, h?: number): BoundingBox {
+  if (!w || !h || w <= 0 || h <= 0) return createBoundingBox(x, y, size, size);
+  const scale = size / Math.max(w, h);
+  const fw = w * scale;
+  const fh = h * scale;
+  return createBoundingBox(x + (size - fw) / 2, y + (size - fh) / 2, fw, fh);
+}
+
+interface BuiltIcon {
+  block: VDTDesignBlock;
+  /** Resource image id / bitmap format for `kind: 'resource'`. */
+  fileId?: string;
+  format?: string;
+}
+
+/** The design block for an icon spec drawn in the square `(x, y, size)`:
+ *  an image block for a resource (aspect-fitted; `undefined` when the
+ *  resource is missing), a centred text block for a glyph. */
+function buildIconBlock(
+  spec: IconSpec,
+  x: number,
+  y: number,
+  size: number,
+  ctx: BlockMeasureContext,
+): BuiltIcon | undefined {
+  if (spec.kind === 'resource') {
+    const resource = ctx.resourceById.get(spec.resourceId);
+    const fileId = resource?.bitmap?.fileId ?? resource?.svg?.fileId;
+    if (!fileId) return undefined;
+    const dims = resource?.bitmap ?? resource?.svg;
+    return {
+      block: { kind: 'image', bbox: fitInSquare(x, y, size, dims?.width, dims?.height), fileId },
+      fileId,
+      format: resource?.bitmap?.format,
+    };
+  }
+  const font = buildFontString(spec.fontFamily, size, spec.fontWeight.toString());
+  const glyphW = measureTextWidth(spec.glyph, font);
+  return {
+    block: {
+      kind: 'text',
+      bbox: createBoundingBox(x, y, size, size),
+      fontString: font,
+      color: spec.color.hex,
+      lines: [{
+        text: spec.glyph,
+        xOffset: Math.max(0, (size - glyphW) / 2),
+        baselineY: y + size * 0.8,
+        width: glyphW,
+      }],
+      clip: false,
+    },
   };
 }

@@ -49,7 +49,10 @@ export function composeBook(chapters: readonly Chapter[], opts: ComposeOptions =
     const start = markdown.length;
     markdown += text;
     const lineCount = countLines(text);
-    segments.push({ chapterId: chapter.id, index, start, end: start + text.length, lineStart: line, lineCount });
+    // `index` is the chapter's position in the book, not in the composition:
+    // a chapter-only layout still belongs to its place in the book.
+    const bookIndex = chapters.findIndex((c) => c.id === chapter.id);
+    segments.push({ chapterId: chapter.id, index: bookIndex < 0 ? index : bookIndex, start, end: start + text.length, lineStart: line, lineCount });
     line += lineCount - 1;
   });
   return {

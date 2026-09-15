@@ -4,7 +4,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { HtmlPreview, type HtmlPreviewHandle } from './HtmlPreview';
 import { HtmlToolbar } from './HtmlToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
-import { usePageHashSync } from './usePageHashSync';
+import { usePageHashSync, type ViewerLayout } from './usePageHashSync';
 import {
   loadHtmlFontScale,
   saveHtmlFontScale,
@@ -26,7 +26,7 @@ export function HtmlViewport() {
   const [columnMode, setColumnMode] = useState<ColumnMode>('multi');
   const [generating, setGenerating] = useState(false);
   const [scrollBounds, setScrollBounds] = useState<{ canPrev: boolean; canNext: boolean }>({ canPrev: false, canNext: false });
-  const [pageCount, setPageCount] = useState(0);
+  const [layout, setLayout] = useState<ViewerLayout>({ pageCount: 0, firstPage: 0, version: 0 });
   const previewRef = useRef<HtmlPreviewHandle | null>(null);
   const hydratedRef = useRef(false);
 
@@ -75,12 +75,16 @@ export function HtmlViewport() {
     previewRef.current?.scrollColumn(delta);
   }, []);
 
-  // `#page=N` in the URL: restored once the document is laid out, written
-  // back as the reader scrolls — the same fragment the canvas viewer keeps.
+  // `#chapter=C&page=P` in the URL: restored once the document is laid
+  // out, written back as the reader scrolls — the same fragment the canvas
+  // viewer keeps.
   const handleJumpToPage = useCallback((pageIndex: number) => {
     previewRef.current?.jumpToPage(pageIndex);
   }, []);
-  const handleCurrentPageChange = usePageHashSync(pageCount, handleJumpToPage);
+  const handlePageCountChange = useCallback((count: number, firstPage: number) => {
+    setLayout((l) => ({ pageCount: count, firstPage, version: l.version + 1 }));
+  }, []);
+  const handleCurrentPageChange = usePageHashSync(layout, handleJumpToPage);
 
   const shell = useFloatingToolbarShell('html', generating);
 
@@ -92,7 +96,7 @@ export function HtmlViewport() {
         columnMode={columnMode}
         onGeneratingChange={setGenerating}
         onScrollBoundsChange={setScrollBounds}
-        onPageCountChange={setPageCount}
+        onPageCountChange={handlePageCountChange}
         onCurrentPageChange={handleCurrentPageChange}
       />
       <div {...shell.hoverStripProps} />

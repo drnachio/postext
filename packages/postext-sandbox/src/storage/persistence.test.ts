@@ -53,7 +53,7 @@ describe('working book', () => {
   it('round-trips and removes the legacy key on save', async () => {
     const map = installStorage({ 'postext-sandbox-markdown': 'old' });
     const { loadBook, saveBook } = await import('./persistence');
-    const book = { chapters: [{ id: 'a', title: 'A', markdown: 'x', createdAt: 1, updatedAt: 1 }], activeChapterId: 'a', layoutScope: 'chapter' as const };
+    const book = { chapters: [{ id: 'a', title: 'A', markdown: 'x', createdAt: 1, updatedAt: 1 }], activeChapterId: 'a' };
     saveBook(book);
     expect(map.has('postext-sandbox-markdown')).toBe(false);
     expect(loadBook(migration)).toEqual(book);

@@ -92,7 +92,7 @@ export async function applyPreset(
   }
   if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: loaded.resources });
   if (wantsMarkdown) {
-    dispatch({ type: 'SET_BOOK', payload: { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, layoutScope: 'book' } });
+    dispatch({ type: 'SET_BOOK', payload: { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id } });
   }
   const snapshot = snapshotForApply(loaded, options);
   dispatch({ type: 'SET_PRESET_APPLIED', payload: snapshot });
