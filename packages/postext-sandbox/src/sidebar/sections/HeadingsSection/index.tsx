@@ -43,7 +43,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
 
   const resetBalancingField = (
     field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'looseParagraphs'
-      | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking' | 'trailing',
+      | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking' | 'trailing' | 'beforeSpan',
   ) => {
     if (!raw?.balancing) return;
     const next = { ...raw.balancing };
@@ -137,6 +137,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isBalTrackDefault = headings.balancing.trackParagraphs === DEFAULT_COLUMN_BALANCING.trackParagraphs;
   const isBalMaxTrackingDefault = headings.balancing.maxTracking === DEFAULT_COLUMN_BALANCING.maxTracking;
   const isBalTrailingDefault = headings.balancing.trailing === DEFAULT_COLUMN_BALANCING.trailing;
+  const isBalBeforeSpanDefault = headings.balancing.beforeSpan === DEFAULT_COLUMN_BALANCING.beforeSpan;
 
   const ALIGN_OPTIONS = [
     { value: 'left', label: labels.headingsTextAlignLeft },
@@ -336,6 +337,16 @@ export const HeadingsSection = memo(function HeadingsSection() {
                 tooltip={labels.balanceTrailingTooltip}
                 isDefault={isBalTrailingDefault}
                 onReset={() => resetBalancingField('trailing')}
+              />
+              <ToggleSwitch
+                label={labels.balanceBeforeSpan}
+                checked={headings.balancing.beforeSpan}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, beforeSpan: v } })
+                }
+                tooltip={labels.balanceBeforeSpanTooltip}
+                isDefault={isBalBeforeSpanDefault}
+                onReset={() => resetBalancingField('beforeSpan')}
               />
             </>
           )}

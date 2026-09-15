@@ -40,6 +40,7 @@ export const DEFAULT_COLUMN_BALANCING = {
   trackParagraphs: true,
   maxTracking: 10,
   trailing: true,
+  beforeSpan: true,
 };
 
 const DEFAULT_HEADING_MARGIN_TOP: Dimension = { value: 1.5, unit: 'em' };
@@ -103,6 +104,8 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
           partial.balancing.maxTracking ?? DEFAULT_COLUMN_BALANCING.maxTracking,
         trailing:
           partial.balancing.trailing ?? DEFAULT_COLUMN_BALANCING.trailing,
+        beforeSpan:
+          partial.balancing.beforeSpan ?? DEFAULT_COLUMN_BALANCING.beforeSpan,
       }
     : { ...DEFAULT_COLUMN_BALANCING };
 
@@ -228,6 +231,13 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       && headings.balancing.trailing !== DEFAULT_COLUMN_BALANCING.trailing
     ) {
       b.trailing = headings.balancing.trailing;
+      hasBOverride = true;
+    }
+    if (
+      headings.balancing.beforeSpan !== undefined
+      && headings.balancing.beforeSpan !== DEFAULT_COLUMN_BALANCING.beforeSpan
+    ) {
+      b.beforeSpan = headings.balancing.beforeSpan;
       hasBOverride = true;
     }
     if (hasBOverride) {

@@ -187,6 +187,39 @@ function colorHex(c: ColorValue | undefined): string {
   return c?.hex ?? '#000000';
 }
 
+/** `c` with its hex replaced when its `paletteId` is overridden. */
+function overrideColor(c: ColorValue | undefined, overrides: Record<string, string>): ColorValue | undefined {
+  if (!c?.paletteId) return c;
+  const hex = overrides[c.paletteId];
+  return hex ? { ...c, hex } : c;
+}
+
+function overrideBoxStyle(style: ElementBoxStyle | undefined, overrides: Record<string, string>): ElementBoxStyle | undefined {
+  if (!style) return style;
+  return {
+    ...style,
+    backgroundColor: overrideColor(style.backgroundColor, overrides),
+    borderColor: overrideColor(style.borderColor, overrides),
+  };
+}
+
+/** The element with every palette-linked colour (text colour, rule colour,
+ *  box background / border) that a `:::part` overrides taking the part's
+ *  value — how a section recolours the running heads and opener bands of
+ *  its pages without a second design. */
+export function applyPaletteOverrides(el: ResolvedDesignElement, overrides: Record<string, string>): ResolvedDesignElement {
+  switch (el.kind) {
+    case 'text':
+      return { ...el, color: overrideColor(el.color, overrides) ?? el.color, box: overrideBoxStyle(el.box, overrides) };
+    case 'rule':
+      return { ...el, color: overrideColor(el.color, overrides) ?? el.color };
+    case 'box':
+      return { ...el, style: overrideBoxStyle(el.style, overrides) ?? el.style };
+    default:
+      return el;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Anchor dependency graph
 // ---------------------------------------------------------------------------
@@ -673,10 +706,12 @@ export function layoutDesignSlot(
     height: context.container.height,
   };
 
-  // Filter by parity and page role first.
-  const candidates = slot.elements.filter(
-    (el) => pageMatchesParity(pageIndex, el.parity) && pageMatchesRole(el.pages, context.pageRole),
-  );
+  // Filter by parity and page role first; then let the current part's
+  // palette overrides recolour the palette-linked colours.
+  const overrides = context.placeholders.partPaletteByPageIndex?.[context.placeholders.page.index];
+  const candidates = slot.elements
+    .filter((el) => pageMatchesParity(pageIndex, el.parity) && pageMatchesRole(el.pages, context.pageRole))
+    .map((el) => (overrides && Object.keys(overrides).length > 0 ? applyPaletteOverrides(el, overrides) : el));
 
   // Topologically sort (dependencies first).
   const ordered = topoSort(candidates, issues);

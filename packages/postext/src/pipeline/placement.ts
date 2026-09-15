@@ -62,7 +62,7 @@ export function createPartPage(
   page: VDTPage,
   metrics: Pick<PageMetrics, 'trimBox' | 'pageWidthPx'>,
   resolved: ResolvedConfig,
-  info: { number: string; title: string; titleSourceStart?: number; titleSourceEnd?: number },
+  info: { number: string; title: string; palette?: Record<string, string>; titleSourceStart?: number; titleSourceEnd?: number },
   pageIndexOffset = 0,
 ): VDTPage {
   const dpi = resolved.page.dpi;
@@ -85,6 +85,7 @@ export function createPartPage(
   page.partInfo = {
     number: info.number,
     title: info.title,
+    ...(info.palette && Object.keys(info.palette).length > 0 ? { palette: info.palette } : {}),
     titleSourceStart: info.titleSourceStart,
     titleSourceEnd: info.titleSourceEnd,
   };

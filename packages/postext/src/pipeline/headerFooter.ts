@@ -412,7 +412,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
   // Parity (odd/even elements) counts the pages before a continued document.
   const pageIndexOffset = doc.pageIndexOffset ?? 0;
   const chapterAttrsByPageIndex = computeChapterAttrs(doc.blocks, doc.pages.length, doc.pages);
-  const { partTitleByPageIndex, partNumberByPageIndex } = computePartValues(doc.pages);
+  const { partTitleByPageIndex, partNumberByPageIndex, partPaletteByPageIndex } = computePartValues(doc.pages, doc.partStart);
   const headingLevelByNumber = buildHeadingLevelMap(resolved);
 
   for (const page of doc.pages) {
@@ -430,6 +430,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         chapterAttrsByPageIndex,
         partTitleByPageIndex,
         partNumberByPageIndex,
+        partPaletteByPageIndex,
       };
       page.header = layoutSlotToVdt(
         resolved.header,
@@ -460,6 +461,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         chapterAttrsByPageIndex,
         partTitleByPageIndex,
         partNumberByPageIndex,
+        partPaletteByPageIndex,
         heading: {
           titleText: title.replace(TITLE_BREAK_RE, '\n'),
           formattedNumber: number,
@@ -493,6 +495,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         chapterAttrsByPageIndex,
         partTitleByPageIndex,
         partNumberByPageIndex,
+        partPaletteByPageIndex,
         heading: {
           titleText: title.replace(TITLE_BREAK_RE, '\n'),
           formattedNumber: number,
@@ -533,6 +536,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           chapterAttrsByPageIndex,
           partTitleByPageIndex,
           partNumberByPageIndex,
+          partPaletteByPageIndex,
           heading: {
             titleText: opener.titleText,
             formattedNumber: opener.numberPrefix,
@@ -593,6 +597,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
           chapterAttrsByPageIndex,
           partTitleByPageIndex,
           partNumberByPageIndex,
+          partPaletteByPageIndex,
           heading: {
             titleText: title,
             formattedNumber: pref,
@@ -622,6 +627,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         chapterAttrsByPageIndex,
         partTitleByPageIndex,
         partNumberByPageIndex,
+        partPaletteByPageIndex,
       };
       page.footer = layoutSlotToVdt(
         resolved.footer,

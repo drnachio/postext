@@ -540,6 +540,14 @@ function CalloutStyleCard({
         isDefault={unset('floatBarrier')}
         onReset={() => onResetField('floatBarrier')}
       />
+      <ToggleSwitch
+        label={labels.calloutStyleKeepTogether}
+        checked={resolved.keepTogether}
+        onChange={(v) => onChange({ keepTogether: v })}
+        tooltip={labels.calloutStyleKeepTogetherTooltip}
+        isDefault={unset('keepTogether')}
+        onReset={() => onResetField('keepTogether')}
+      />
       <SelectInput
         label={labels.calloutStyleWidth}
         value={resolved.width}

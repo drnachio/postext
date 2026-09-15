@@ -36,7 +36,10 @@ function countersKey(c: LayoutContinuation | undefined): string {
   const numbers = c.resourceNumbers
     ? Object.keys(c.resourceNumbers).sort().map((id) => `${id}=${c.resourceNumbers![id]!.number}`).join(',')
     : '';
-  return `${headings}|${counters}|${numbers}`;
+  const part = c.part
+    ? `${c.part.number}/${c.part.title}/${Object.entries(c.part.palette ?? {}).sort().map(([k, v]) => `${k}=${v}`).join(',')}`
+    : '';
+  return `${headings}|${counters}|${numbers}|${part}`;
 }
 
 /** Whether `layout` was built from the chapter's current inputs. */

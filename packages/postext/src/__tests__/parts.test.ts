@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline';
 import { computePartValues } from '../pipeline/placeholders';
-import { derivePartResolvedConfig, parsePartNumber, planParts } from '../pipeline/parts';
+import { derivePartResolvedConfig, parsePartNumber, parsePartPalette, planParts } from '../pipeline/parts';
+import { continuationAfter } from '../pipeline/continuation';
 import { parseMarkdown } from '../parse';
 import { resolveAllConfig } from '../pipeline/config';
 import { dimensionToPx } from '../units';
@@ -266,6 +267,93 @@ describe('computePartValues', () => {
     const { partTitleByPageIndex, partNumberByPageIndex } = computePartValues(pages);
     expect(partTitleByPageIndex).toEqual(['', '', 'One', 'One', 'One', 'Two', 'Two', 'Two']);
     expect(partNumberByPageIndex).toEqual(['', '', 'I', 'I', 'I', 'II', 'II', 'II']);
+  });
+
+  it("starts from the inherited part and carries each part's palette", () => {
+    const pages = [
+      {},
+      { partInfo: { number: 'II', title: 'Two', palette: { band: '#f6c297' } } },
+      {},
+      { partInfo: { number: 'III', title: 'Three' } },
+    ];
+    const start = { number: 'I', title: 'One', palette: { band: '#a6cfc1' } };
+    const { partTitleByPageIndex, partNumberByPageIndex, partPaletteByPageIndex } = computePartValues(pages, start);
+    expect(partNumberByPageIndex).toEqual(['I', 'II', 'II', 'III']);
+    expect(partTitleByPageIndex).toEqual(['One', 'Two', 'Two', 'Three']);
+    expect(partPaletteByPageIndex).toEqual([{ band: '#a6cfc1' }, { band: '#f6c297' }, { band: '#f6c297' }, {}]);
+  });
+});
+
+describe('parsePartPalette', () => {
+  it('parses id=colour pairs with either joiner and separator, normalising the hex', () => {
+    expect(parsePartPalette('band=#F6C297')).toEqual({ band: '#f6c297' });
+    expect(parsePartPalette('band: f6c297, band-grey = #FADEC7; dot:#abc')).toEqual({ band: '#f6c297', 'band-grey': '#fadec7', dot: '#abc' });
+    expect(parsePartPalette('band=#f6c297 dot=#9caad3')).toEqual({ band: '#f6c297', dot: '#9caad3' });
+  });
+  it('skips malformed pairs and empty input', () => {
+    expect(parsePartPalette(undefined)).toEqual({});
+    expect(parsePartPalette('')).toEqual({});
+    expect(parsePartPalette('band=red, =#fff, band-grey#fff, ok=#123456')).toEqual({ ok: '#123456' });
+  });
+});
+
+describe('part palette overrides', () => {
+  const tab = (paletteId?: string): DesignElement => ({
+    kind: 'box',
+    id: 'tab',
+    placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: pt(20), height: pt(10) } },
+    style: { backgroundColor: paletteId ? { hex: '#9bcdbf', model: 'hex', paletteId } : { hex: '#9bcdbf', model: 'hex' } },
+  });
+  const boxColor = (page: { header?: { blocks: unknown[] } }): string | undefined =>
+    (page.header?.blocks[0] as { box?: { backgroundColor?: string } } | undefined)?.box?.backgroundColor;
+  const md = (palette: string) => [
+    '# Zero', '', filler(2), '',
+    `:::part{number="II" title="Two" palette="${palette}"}`, ':::', '',
+    '# One', '', filler(2),
+  ].join('\n');
+
+  it('recolours palette-linked design colours on the part page and every page after it', () => {
+    const cfg: PostextConfig = { ...base, colorPalette: [{ id: 'band', name: 'Band', value: { hex: '#9bcdbf', model: 'hex' } }], header: { elements: [tab('band')] } };
+    const doc = buildDocument({ markdown: md('band=#f6c297') }, cfg);
+    const partIdx = doc.pages.findIndex((p) => p.partInfo);
+    expect(partIdx).toBeGreaterThan(0);
+    expect(doc.pages[partIdx]!.partInfo!.palette).toEqual({ band: '#f6c297' });
+    const colors = doc.pages.map(boxColor);
+    expect(colors[0]).toBe('#9bcdbf');
+    for (let i = 0; i < doc.pages.length; i++) {
+      if (colors[i] === undefined) continue; // blank pages carry no header
+      const before = i < partIdx && !doc.pages[i]!.blankForParity;
+      expect(colors[i]).toBe(before ? '#9bcdbf' : '#f6c297');
+    }
+  });
+
+  it('leaves colours that are not palette-linked, and other palette ids, alone', () => {
+    const cfg: PostextConfig = { ...base, header: { elements: [tab(), { ...tab('other'), id: 'tab2' }] } };
+    const doc = buildDocument({ markdown: md('band=#f6c297') }, cfg);
+    const last = doc.pages[doc.pages.length - 1]!;
+    expect(last.header!.blocks.map((b) => (b as { box: { backgroundColor: string } }).box.backgroundColor)).toEqual(['#9bcdbf', '#9bcdbf']);
+  });
+
+  it('a chapter laid out after the part inherits it through the continuation: heads and palette from page 0', () => {
+    const cfg: PostextConfig = {
+      ...base,
+      header: { elements: [tab('band'), textEl('{partNumber}-{partTitle}')] },
+    };
+    const first = continuationAfter({ markdown: md('band=#f6c297') });
+    expect(first.part).toEqual({ number: 'II', title: 'Two', palette: { band: '#f6c297' } });
+    // A chapter without a part of its own passes the part through…
+    const second = continuationAfter({ markdown: '# Three\n\ntext' }, undefined, first);
+    expect(second.part).toEqual(first.part);
+    // …and a later part replaces it (no palette when the fence sets none).
+    const third = continuationAfter({ markdown: ':::part{number="III" title="Three"}\n:::\n# Four' }, undefined, second);
+    expect(third.part).toEqual({ number: 'III', title: 'Three' });
+
+    const doc = buildDocument({ markdown: `# Three\n\n${filler(2)}`, continuation: { ...first, pageIndexOffset: 4 } }, cfg);
+    expect(doc.partStart).toEqual(first.part);
+    const page = doc.pages.find((p) => p.header)!;
+    expect(boxColor(page)).toBe('#f6c297');
+    const text = page.header!.blocks.find((b) => b.kind === 'text') as VDTDesignTextBlock;
+    expect(text.lines[0]!.text).toBe('II-Two');
   });
 });
 

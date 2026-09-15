@@ -29,6 +29,7 @@ export interface PlaceholderContext {
    *  Back `{partTitle}` / `{partNumber}`; a missing entry resolves to `''`. */
   partTitleByPageIndex?: string[];
   partNumberByPageIndex?: string[];
+  partPaletteByPageIndex?: Record<string, string>[];
   /** Current chapter number per page index (see `computeChapterNumbers`).
    *  Backs `{chapterNumber}` in header/footer slots. */
   chapterNumberByPageIndex?: string[];
@@ -195,40 +196,41 @@ function computeChapterValues<T>(
 
 /** The page fields `computePartValues` reads. */
 export interface PartPageInfo extends ChapterTitlePageInfo {
-  partInfo?: { number: string; title: string };
+  partInfo?: { number: string; title: string; palette?: Record<string, string> };
 }
-
-/**
- * Precompute the current part title and number per page index. A page with
- * `partInfo` (a `:::part` divider page) starts a new part that runs until
- * the next one; pages before the first part get `''`. Blank parity pages
- * immediately preceding a part page belong to the upcoming part (they exist
- * only to push it onto the right parity); a `blankForForce` page stops the
- * walk — it belongs to the previous part, the same rule as chapters.
- */
+/** Per page, the part in effect: the most recent part page on or before it
+ *  (blank parity pages right before a part page already belong to it), or
+ *  `start` — the part the preceding chapters left open — before any. Each
+ *  part brings its own palette overrides (`{}` when the fence sets none). */
 export function computePartValues(
   pages: readonly PartPageInfo[],
-): { partTitleByPageIndex: string[]; partNumberByPageIndex: string[] } {
+  start?: { number: string; title: string; palette?: Record<string, string> },
+): { partTitleByPageIndex: string[]; partNumberByPageIndex: string[]; partPaletteByPageIndex: Record<string, string>[] } {
   const partTitleByPageIndex = new Array<string>(pages.length).fill('');
   const partNumberByPageIndex = new Array<string>(pages.length).fill('');
-  let title = '';
-  let number = '';
+  const partPaletteByPageIndex = new Array<Record<string, string>>(pages.length).fill({});
+  let title = start?.title.replace(TITLE_BREAK_RE, ' ') ?? '';
+  let number = start?.number ?? '';
+  let palette: Record<string, string> = start?.palette ?? {};
   for (let p = 0; p < pages.length; p++) {
     const info = pages[p]!.partInfo;
     if (info) {
       title = info.title.replace(TITLE_BREAK_RE, ' ');
       number = info.number;
+      palette = info.palette ?? {};
       for (let q = p - 1; q >= 0; q--) {
         const prev = pages[q]!;
         if (prev.blankForForce || !prev.blankForParity) break;
         partTitleByPageIndex[q] = title;
         partNumberByPageIndex[q] = number;
+        partPaletteByPageIndex[q] = palette;
       }
     }
     partTitleByPageIndex[p] = title;
     partNumberByPageIndex[p] = number;
+    partPaletteByPageIndex[p] = palette;
   }
-  return { partTitleByPageIndex, partNumberByPageIndex };
+  return { partTitleByPageIndex, partNumberByPageIndex, partPaletteByPageIndex };
 }
 
 function plainTextOfBlock(block: VDTBlock): string {

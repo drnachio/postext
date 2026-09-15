@@ -1,6 +1,6 @@
 import { applyTitleBreaks } from '../parse/inlineFormatting';
 import type { PostextContent, PostextConfig, Resource, ResourceType, HeadingBreakParity, ResolvedCalloutStyleConfig } from '../types';
-import type { ListKind } from '../parse';
+import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import {
   createVDTDocument,
@@ -55,6 +55,7 @@ import { chooseParagraphSplit } from './orphanWidow';
 import {
   applyStyleAttrs,
   computePageMetrics,
+  isMarkerBlock,
   nextNonMarkerBlock,
   prevNonMarkerBlock,
   rollbackTrailingBlocks,
@@ -276,6 +277,9 @@ export function buildDocumentPass(
   const pageIndexOffset = Math.max(0, Math.floor(continuation?.pageIndexOffset ?? 0));
   if (pageIndexOffset > 0) doc.pageIndexOffset = pageIndexOffset;
   if (continuation?.headings && continuation.headings.h1 > 0) doc.chapterOrdinalOffset = continuation.headings.h1;
+  // The part the preceding chapters left open: running heads and palette
+  // overrides apply from the first page until this document opens its own.
+  if (continuation?.part) doc.partStart = continuation.part;
 
   const pageMetrics = computePageMetrics(resolved);
   const { pageWidthPx, pageHeightPx, trimOffset, contentArea } = pageMetrics;
@@ -841,28 +845,38 @@ export function buildDocumentPass(
    *  unit; its children never leave it). */
   const isFreeHeading = (b: VDTBlock): boolean => b.type === 'heading' && b.containerId === undefined;
 
+  /** Stamp a callout frame's content index and source range: the whole
+   *  fence (opening to closing marker) for an unsplit box; for a fragment
+   *  of a split box, from the fence start (first fragment) or the first
+   *  child it holds, to the fence end (last fragment) or the last child. */
+  const stampCalloutSource = (
+    frame: VDTBlock,
+    startIdx: number,
+    plan: PlannedCallout,
+    range?: { firstChildIdx: number; lastChildIdx: number },
+  ): void => {
+    const startBlock = contentBlocks[startIdx]!;
+    const endBlock = contentBlocks[plan.endIdx]!;
+    frame.contentIndex = startIdx;
+    const first = range && range.firstChildIdx > startIdx + 1 ? contentBlocks[range.firstChildIdx]! : startBlock;
+    const last = range && range.lastChildIdx < plan.endIdx - 1 ? contentBlocks[range.lastChildIdx]! : endBlock;
+    frame.sourceStart = first.sourceStart + bodyOffset;
+    frame.sourceEnd = last.sourceEnd + bodyOffset;
+  };
+
   /** Shared tail of callout placement: stamp the frame's source range,
    *  convert the laid-out box to absolute coordinates at the frame's placed
    *  origin, and push frame + children — in that order — to `doc.blocks`
    *  and to the column the frame landed in. */
-  /** Stamp a callout frame's content index and source range (the whole
-   *  fence, opening to closing marker). */
-  const stampCalloutSource = (frame: VDTBlock, startIdx: number, plan: PlannedCallout): void => {
-    const startBlock = contentBlocks[startIdx]!;
-    const endBlock = contentBlocks[plan.endIdx]!;
-    frame.contentIndex = startIdx;
-    frame.sourceStart = startBlock.sourceStart + bodyOffset;
-    frame.sourceEnd = endBlock.sourceEnd + bodyOffset;
-  };
-
   const commitCallout = (
     result: CalloutLayoutResult,
     startIdx: number,
     plan: PlannedCallout,
     col: VDTColumn,
+    range?: { firstChildIdx: number; lastChildIdx: number },
   ): void => {
     const frame = result.frame;
-    stampCalloutSource(frame, startIdx, plan);
+    stampCalloutSource(frame, startIdx, plan, range);
     offsetCalloutToAbsolute(result, frame.bbox.x, frame.bbox.y);
     doc.blocks.push(frame);
     for (const child of result.children) {
@@ -870,6 +884,117 @@ export function buildDocumentPass(
       child.columnIndex = frame.columnIndex;
       col.blocks.push(child);
       doc.blocks.push(child);
+    }
+  };
+
+  // --- Callout fragments (`keepTogether: false`) ---------------------------
+  // A splittable box breaks only BETWEEN its child blocks (a list item or a
+  // paragraph is never cut in two): the fragment that fits closes the
+  // current column / page, the rest continues in a box of its own — same
+  // frame, stripe and marker, no title or icon — on the next one, and may
+  // split again. Every
+  // fragment's frame shares the fence's `contentIndex` / `containerId` and
+  // records its `callout.part` / `callout.continued`.
+
+  interface CalloutLayouter {
+    /** Content blocks between the fence markers. */
+    children: readonly ContentBlock[];
+    /** Content index of `children[0]`. */
+    childBase: number;
+    /** Positions in `children` of the blocks the box lays out (marker
+     *  blocks of nested containers and directives are skipped) — a split
+     *  may only fall right before one of them. */
+    realAt: readonly number[];
+    /** Lay out the children in `[from, to)` at `width` as one box — a
+     *  `continuation` (every fragment after the head) without title / icon. */
+    layoutRange: (from: number, to: number, width: number, frameId: string, continuation: boolean) => CalloutLayoutResult;
+  }
+
+  const makeCalloutLayouter = (
+    startIdx: number,
+    plan: PlannedCallout,
+    style: ResolvedCalloutStyleConfig,
+  ): CalloutLayouter => {
+    const children = contentBlocks.slice(startIdx + 1, plan.endIdx);
+    const realAt: number[] = [];
+    children.forEach((c, k) => {
+      if (c.type !== 'directive' && !isMarkerBlock(c)) realAt.push(k);
+    });
+    const layoutRange = (from: number, to: number, width: number, frameId: string, continuation: boolean) => {
+      let n = 0;
+      return layoutCallout({
+        style,
+        attrs: plan.attrs,
+        continuation,
+        children: children.slice(from, to),
+        childStartIdx: startIdx + 1 + from,
+        width,
+        ctx: measureCtx,
+        resolved,
+        containerId: plan.containerId,
+        frameId,
+        nextChildId: () => `${frameId}-c${n++}`,
+        paragraphStyleFor: (idx) => paragraphContainers.byBlock[idx]?.style,
+      });
+    };
+    return { children, childBase: startIdx + 1, realAt, layoutRange };
+  };
+
+  interface CalloutFragment {
+    /** Position in `children` the rest of the box starts at. */
+    to: number;
+    result: CalloutLayoutResult;
+  }
+
+  /** The longest leading fragment of the children from `from` on whose box
+   *  is at most `roomPx` tall — at least one child, and at least one left
+   *  for the rest. The full layout's child geometry picks the candidate
+   *  (box bottom = child bottom + the box's tail below its last child);
+   *  the candidate is then laid out for real and shortened while it does
+   *  not fit. `null` when not even the first child fits. */
+  const splitCalloutFragment = (
+    L: CalloutLayouter,
+    from: number,
+    width: number,
+    roomPx: number,
+    frameId: string,
+    continuation: boolean,
+  ): CalloutFragment | null => {
+    const starts = L.realAt.filter((k) => k >= from);
+    if (starts.length < 2) return null;
+    const full = L.layoutRange(from, L.children.length, width, frameId, continuation);
+    const lastChild = full.children[full.children.length - 1];
+    if (!lastChild) return null;
+    const tail = full.totalHeight - (lastChild.bbox.y + lastChild.bbox.height);
+    /** Frame-relative bottom of the last laid-out child before position `to`. */
+    const bottomBefore = (to: number): number => {
+      let bottom = 0;
+      for (const c of full.children) {
+        if (c.contentIndex !== undefined && c.contentIndex < L.childBase + to) {
+          bottom = Math.max(bottom, c.bbox.y + c.bbox.height);
+        }
+      }
+      return bottom;
+    };
+    let j = starts.length - 1;
+    while (j >= 1 && bottomBefore(starts[j]!) + tail > roomPx + 0.01) j--;
+    for (; j >= 1; j--) {
+      const to = starts[j]!;
+      const result = L.layoutRange(from, to, width, frameId, continuation);
+      if (result.totalHeight <= roomPx + 0.01) return { to, result };
+    }
+    return null;
+  };
+
+  /** Absolute content indices of the children in `[from, to)` of `L`, for
+   *  the fragment's source range. */
+  const fragmentRange = (L: CalloutLayouter, from: number, to: number) =>
+    ({ firstChildIdx: L.childBase + from, lastChildIdx: L.childBase + to - 1 });
+
+  const markFragment = (result: CalloutLayoutResult, part: number, continued: boolean): void => {
+    if (result.frame.callout) {
+      result.frame.callout.part = part;
+      result.frame.callout.continued = continued;
     }
   };
 
@@ -901,6 +1026,26 @@ export function buildDocumentPass(
    * overflowed instead (the box arrives elsewhere), the driver grows or
    * drops the cap.
    *
+   * Leaving level (`headings.balancing.beforeSpan`): a box that does not
+   * fit even after a level cut proposes a TRAILING cap instead — the band
+   * it leaves is cut level, the way a chapter's closing band is, and the
+   * page is marked as a forced break in that pass so balancing does not
+   * stretch its last column back to the page bottom. The cap is resolved
+   * after balancing (`resolveTrailingCaps`); when the box reaches the
+   * capped band it counts as delivered whether it fits there or moves on,
+   * and the cut columns stay cut (the polish round fills a column ending a
+   * line under the cap).
+   *
+   * Splitting (`keepTogether: false`): a box that does not fit a level (or
+   * capped, or nearly level — within one grid line) band breaks between
+   * its children: the longest fragment that fits closes the page flush
+   * with the band bottom, the rest opens the next page in a box without
+   * the title or icon, and splits again if it is still too tall. Such a box that
+   * fits whole only flush with the page bottom (no text below) is placed
+   * whole. When the band is uneven, the cap that levels it (span cap when
+   * the whole box fits after the cut, trailing cap otherwise) comes first;
+   * the fragment is cut in the capped pass.
+   *
    * Geometry stays on the baseline grid: the cut line is the band's used
    * bottom snapped UP to the next grid line (anchored at the content-area
    * top, like every column start), and the span column's height is the
@@ -912,73 +1057,196 @@ export function buildDocumentPass(
   const placeCalloutSpan = (
     startIdx: number,
     plan: PlannedCallout,
-    layoutAt: (width: number) => CalloutLayoutResult,
+    style: ResolvedCalloutStyleConfig,
+    L: CalloutLayouter,
+    firstFrameId: string,
   ): boolean => {
-    let page = doc.pages[cursor.pageIndex]!;
-    let result = layoutAt(page.contentArea.width);
+    const splittable = !style.keepTogether;
+    const balancingCfg = resolved.headings.balancing;
+    const levelBefore = balancingCfg.enabled && balancingCfg.beforeSpan;
     const minLines = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
     const minRoomPx = minLines * bodyStyle.lineHeightPx;
-
-    interface SpanFit { cols: VDTColumn[]; cutY: number; need: number; spacing: number; room: boolean }
-    /** Where the box would cut the current band, and whether it fits (room
-     *  is measured against the columns' TRUE bottoms — a capped band keeps
-     *  its slack below the cap). Null when the band is not level (or the
-     *  cursor sits on a span column with no band below it) and
-     *  `requireLevel` is set. */
-    const measureBand = (requireLevel: boolean): SpanFit | null => {
-      const cols = bandColumns(page, currentBand(page, cursor));
-      if (cols.length === 0 || (requireLevel && !isBandLevel(cols))) return null;
-      const usedBottom = bandUsedBottom(cols);
-      const cutY = page.contentArea.y
-        + Math.ceil((usedBottom - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid;
-      const bandHasContent = cols.some((c) => c.blocks.length > 0);
-      const spacing = bandHasContent ? Math.max(pendingSpacing, result.marginTopPx) : 0;
-      const need = Math.ceil((spacing + result.totalHeight + result.marginBottomPx - 0.01) / baselineGrid) * baselineGrid;
-      const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
-      const room = cutY + need + minRoomPx <= bandBottom + 0.01;
-      return { cols, cutY, need, spacing, room };
+    const gridUp = (page: VDTPage, v: number): number =>
+      page.contentArea.y + Math.ceil((v - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid;
+    const needFor = (spacing: number, height: number, margin: number): number =>
+      Math.ceil((spacing + height + margin - 0.01) / baselineGrid) * baselineGrid;
+    const nearlyLevel = (cols: readonly VDTColumn[]): boolean => {
+      const bottoms = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
+      return Math.max(...bottoms) - Math.min(...bottoms) <= baselineGrid + 0.5;
     };
 
-    // Is this band capped for this very box? Then it cuts at the band's
-    // used bottom (at most the cap) even when the last column is short.
-    const cap = bandCaps?.get(startIdx);
-    const capActive = cap !== undefined
-      && activeCap !== null
-      && activeCap.spanIndex === startIdx
-      && activeCap.pageIndex === page.index
-      && activeCap.band === currentBand(page, cursor);
+    /** Position in the children the fragment to place starts at, and its
+     *  0-based index among the fragments (0 = the box, or its head). */
+    let from = 0;
+    let part = 0;
+    let frameId = firstFrameId;
+    /** The box already moved to a fresh page (or sits on an empty one):
+     *  whatever does not fit there is force-placed and overflows. */
+    let forceHere = false;
 
-    let fit = measureBand(!capActive);
-    if (fit?.room && capActive) {
-      uncapBand(fit.cols, uncappedBottoms);
-      spanPlacedInBand.add(startIdx);
-    }
-    if (!fit && cap === undefined && bandStart && registeredBand
-      && registeredBand.pageIndex === page.index
-      && registeredBand.band === currentBand(page, cursor)) {
-      // Uneven band, no cap yet: propose one when a level cut would leave
-      // room for the box plus the widow minimum of body lines below it.
-      const cols = bandColumns(page, currentBand(page, cursor));
-      const lines = bandCapLines(cols, baselineGrid);
-      const capBottom = bandTop(cols) + lines * baselineGrid;
-      const spacing = Math.max(pendingSpacing, result.marginTopPx);
-      const need = Math.ceil((spacing + result.totalHeight + result.marginBottomPx - 0.01) / baselineGrid) * baselineGrid;
-      const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
-      if (capBottom + need + minRoomPx <= bandBottom + 0.01) {
-        bandCapProposals.set(startIdx, {
-          kind: 'span',
-          startContentIndex: bandStart.contentIndex,
-          startPart: bandStart.part,
-          lines,
-          retries: 0,
-        });
+    for (;;) {
+      let page = doc.pages[cursor.pageIndex]!;
+      const continuation = part > 0;
+      const layoutAt = (width: number): CalloutLayoutResult =>
+        L.layoutRange(from, L.children.length, width, frameId, continuation);
+      const result = layoutAt(page.contentArea.width);
+
+      interface SpanFit {
+        cols: VDTColumn[];
+        cutY: number;
+        spacing: number;
+        /** Height (grid multiple) the whole box takes with `marginBottom`
+         *  below it, and whether that plus the widow minimum of text fits. */
+        need: number;
+        room: boolean;
+        /** Height the whole box takes flush with the band bottom (no margin,
+         *  nothing below), and whether that fits. */
+        needFlush: number;
+        roomFlush: boolean;
+        /** Free height between the cut line and the band's true bottom. */
+        roomPx: number;
       }
-    }
-    if (!fit || !fit.room) {
+      /** Where the box would cut the current band, and whether it fits (room
+       *  is measured against the columns' TRUE bottoms — a capped band keeps
+       *  its slack below the cap). Null when the band is not level (or the
+       *  cursor sits on a span column with no band below it) and
+       *  `requireLevel` is set. */
+      const measureBand = (requireLevel: boolean): SpanFit | null => {
+        const cols = bandColumns(page, currentBand(page, cursor));
+        if (cols.length === 0 || (requireLevel && !isBandLevel(cols))) return null;
+        const cutY = gridUp(page, bandUsedBottom(cols));
+        const bandHasContent = cols.some((c) => c.blocks.length > 0);
+        const spacing = bandHasContent ? Math.max(pendingSpacing, result.marginTopPx) : 0;
+        const need = needFor(spacing, result.totalHeight, result.marginBottomPx);
+        const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
+        const room = cutY + need + minRoomPx <= bandBottom + 0.01;
+        const needFlush = needFor(spacing, result.totalHeight, 0);
+        const roomFlush = cutY + needFlush <= bandBottom + 0.01;
+        return { cols, cutY, spacing, need, room, needFlush, roomFlush, roomPx: bandBottom - cutY };
+      };
+
+      // Is this band capped for this very box? Then it cuts at the band's
+      // used bottom (at most the cap) even when the last column is short.
+      const cap = part === 0 ? bandCaps?.get(startIdx) : undefined;
+      const capActive = cap !== undefined
+        && activeCap !== null
+        && activeCap.spanIndex === startIdx
+        && activeCap.pageIndex === page.index
+        && activeCap.band === currentBand(page, cursor);
+
+      const fit = forceHere ? (measureBand(true) ?? measureBand(false)) : measureBand(!capActive);
+
+      // What lands in this band: the whole (remaining) box, or its head.
+      type Action =
+        | { kind: 'whole'; fit: SpanFit; need: number; result: CalloutLayoutResult }
+        | { kind: 'split'; fit: SpanFit; need: number; fragment: CalloutFragment };
+      let action: Action | null = null;
+      if (fit) {
+        if (fit.room) action = { kind: 'whole', fit, need: fit.need, result };
+        else if (splittable && fit.roomFlush) action = { kind: 'whole', fit, need: fit.needFlush, result };
+      }
+      if (!action && splittable) {
+        // A band uneven by no more than a grid line still takes a fragment
+        // cut at its used bottom: balancing fills the line the short column
+        // is left under the cut.
+        let band = fit;
+        if (!band) {
+          const cols = bandColumns(page, currentBand(page, cursor));
+          if (cols.length > 0 && nearlyLevel(cols)) band = measureBand(false);
+        }
+        if (band) {
+          const fragment = splitCalloutFragment(
+            L, from, page.contentArea.width, band.roomPx - band.spacing, frameId, continuation,
+          );
+          if (fragment) {
+            action = { kind: 'split', fit: band, need: needFor(band.spacing, fragment.result.totalHeight, 0), fragment };
+          }
+        }
+      }
+      if (!action && forceHere && fit) action = { kind: 'whole', fit, need: fit.need, result };
+
+      if (action) {
+        if (capActive) {
+          uncapBand(action.fit.cols, uncappedBottoms);
+          spanPlacedInBand.add(startIdx);
+        }
+        const placed = action.kind === 'whole' ? action.result : action.fragment.result;
+        const to = action.kind === 'whole' ? L.children.length : action.fragment.to;
+        if (part > 0 || action.kind === 'split') markFragment(placed, part, action.kind === 'split');
+        const spanCol = closeBandAndInsertSpan(
+          page, action.fit.cols, action.fit.cutY, placed.frame, action.need, cursor, action.fit.spacing, placed.totalHeight,
+        );
+        commitCallout(placed, startIdx, plan, spanCol, part > 0 || action.kind === 'split' ? fragmentRange(L, from, to) : undefined);
+        // Floats first-referenced inside the box enqueue once its head is
+        // committed, in reading order (same as the inline path).
+        if (part === 0) for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
+        // The new band starts on the grid right below the span column; nothing
+        // to snap — `need` already bakes in `marginBottom`.
+        pendingSpacing = 0;
+        if (action.kind === 'whole') return true;
+        // The rest opens the next page.
+        from = to;
+        part++;
+        frameId = `block-${blockIdCounter++}`;
+        const startPageIndex = cursor.pageIndex;
+        do {
+          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        } while (cursor.pageIndex === startPageIndex);
+        forceHere = true;
+        continue;
+      }
+
+      // Nothing of the box lands in this band.
+      if (part === 0) {
+        let proposedSpan = false;
+        if (!fit && cap === undefined && bandStart && registeredBand
+          && registeredBand.pageIndex === page.index
+          && registeredBand.band === currentBand(page, cursor)) {
+          // Uneven band, no cap yet: propose one when a level cut would leave
+          // room for the box plus the widow minimum of body lines below it
+          // (or, for a splittable box, for the whole box flush with the
+          // band bottom).
+          const cols = bandColumns(page, currentBand(page, cursor));
+          const lines = bandCapLines(cols, baselineGrid);
+          const capBottom = bandTop(cols) + lines * baselineGrid;
+          const spacing = Math.max(pendingSpacing, result.marginTopPx);
+          const need = needFor(spacing, result.totalHeight, result.marginBottomPx);
+          const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
+          const fitsAfterCut = capBottom + need + minRoomPx <= bandBottom + 0.01
+            || (splittable && capBottom + needFor(spacing, result.totalHeight, 0) <= bandBottom + 0.01);
+          if (fitsAfterCut) {
+            bandCapProposals.set(startIdx, {
+              kind: 'span',
+              startContentIndex: bandStart.contentIndex,
+              startPart: bandStart.part,
+              lines,
+              retries: 0,
+            });
+            proposedSpan = true;
+          }
+        }
+        if (levelBefore && !capActive && !proposedSpan) {
+          // The box leaves an uncapped band: level it behind the box (a
+          // trailing cap, resolved after balancing) and keep balancing from
+          // stretching its last column to the page bottom meanwhile.
+          proposeTrailingCap(startIdx);
+          markForcedBreak();
+        } else if (capActive && cap.kind === 'trailing') {
+          // Reached inside the band cut level for it: delivered even though
+          // the box moves on — the columns stay cut.
+          spanPlacedInBand.add(startIdx);
+        }
+      }
+
       // Open the next page (flushing pending floats into its bands). A page
       // holding only floats counts as occupied here — its float band is what
       // left no room — but a truly empty page is kept: the box then simply
       // does not fit a page and is force-placed (overflowing, like inline).
+      // On a fresh page the whole box is force-placed above whenever the
+      // page has a text column to cut; reaching this point there means it
+      // has none — leave the box to the inline path (its head, if any, is
+      // already committed: `true` keeps the rest from being placed twice).
+      if (forceHere) return part > 0;
       const curPage = doc.pages[cursor.pageIndex]!;
       if (pageIsOccupied(curPage)) {
         pendingSpacing = 0;
@@ -987,27 +1255,12 @@ export function buildDocumentPass(
           advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
         } while (cursor.pageIndex === startPageIndex);
         page = doc.pages[cursor.pageIndex]!;
-        if (Math.abs(page.contentArea.width - result.width) > 0.01) {
-          result = layoutAt(page.contentArea.width);
-        }
       }
-      // A freshly opened page is level; force-place (overflow) when the box
-      // is taller than the page.
-      fit = measureBand(true) ?? measureBand(false);
-      if (!fit) return false; // no text column to cut — leave it to the inline path
+      // A freshly opened (or empty) page is level; force-place (overflow)
+      // when the box is taller than the page.
+      if (bandColumns(page, currentBand(page, cursor)).length === 0) return false; // no text column to cut — leave it to the inline path
+      forceHere = true;
     }
-
-    const spanCol = closeBandAndInsertSpan(
-      page, fit.cols, fit.cutY, result.frame, fit.need, cursor, fit.spacing, result.totalHeight,
-    );
-    commitCallout(result, startIdx, plan, spanCol);
-    // Floats first-referenced inside the box enqueue once it is committed,
-    // in reading order (same as the inline path).
-    for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
-    // The new band starts on the grid right below the span column; nothing
-    // to snap — `need` already bakes in `marginBottom`.
-    pendingSpacing = 0;
-    return true;
   };
 
   /** Whether the flow ends at a chapter-level boundary right after block
@@ -1192,8 +1445,12 @@ export function buildDocumentPass(
    * baked into the post-box grid snap. A box that does not fit moves to the
    * next column/page (like a resource), pulling a run of trailing headings
    * along (keep-with-next); a box taller than an empty column is placed
-   * anyway and overflows (the sandbox warns). Returns the content index to
-   * rewind the main loop to when headings were rolled back, else `undefined`.
+   * anyway and overflows (the sandbox warns). A splittable box
+   * (`keepTogether: false`) instead leaves the longest run of its children
+   * that fits in the column and continues — in a box of its own, without
+   * the title or icon — at the top of the next one, splitting again if needed.
+   * Returns the content index to rewind the main loop to when headings
+   * were rolled back, else `undefined`.
    *
    * `span: 'page'` boxes in multi-column layouts take the span-block path
    * (`placeCalloutSpan`) instead; `placement: 'top' | 'bottom'` (floating
@@ -1202,25 +1459,10 @@ export function buildDocumentPass(
    */
   const placeCalloutInline = (startIdx: number, plan: PlannedCallout): number | undefined => {
     const style = pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)!;
-    const children = contentBlocks.slice(startIdx + 1, plan.endIdx);
-    const frameId = `block-${blockIdCounter++}`;
+    const firstFrameId = `block-${blockIdCounter++}`;
     const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
-    const layoutAt = (width: number) => {
-      let n = 0;
-      return layoutCallout({
-        style,
-        attrs: plan.attrs,
-        children,
-        childStartIdx: startIdx + 1,
-        width,
-        ctx: measureCtx,
-        resolved,
-        containerId: plan.containerId,
-        frameId,
-        nextChildId: () => `${frameId}-c${n++}`,
-        paragraphStyleFor: (idx) => paragraphContainers.byBlock[idx]?.style,
-      });
-    };
+    const L = makeCalloutLayouter(startIdx, plan, style);
+    const layoutAt = (width: number) => L.layoutRange(0, L.children.length, width, firstFrameId, false);
 
     // Fixed boxes leave the flow entirely.
     if (placement === 'fixed') {
@@ -1235,64 +1477,87 @@ export function buildDocumentPass(
         span === 'page'
         && placement === 'here'
         && bandColumns(page, currentBand(page, cursor)).length > 1
-        && placeCalloutSpan(startIdx, plan, layoutAt)
+        && placeCalloutSpan(startIdx, plan, style, L, firstFrameId)
       ) {
         return undefined;
       }
     }
 
-    let curCol = currentColumn(doc, cursor);
-    let result = layoutAt(curCol.bbox.width);
-    if (curCol.blocks.length > 0) {
-      const spacingBefore = Math.max(pendingSpacing, result.marginTopPx);
-      if (result.totalHeight > curCol.availableHeight - spacingBefore) {
-        // Keep-with-next: a run of headings at the column's tail travels
-        // with the box. Skipped when the column holds nothing else (rolling
-        // back again would loop) — the headings stay, orphaned.
-        let run = 0;
-        for (let j = curCol.blocks.length - 1; j >= 0; j--) {
-          if (isFreeHeading(curCol.blocks[j]!)) run++;
-          else break;
-        }
-        pendingSpacing = 0;
-        if (resolved.headings.keepWithNext && run > 0 && run < curCol.blocks.length) {
-          const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
+    const splittable = !style.keepTogether;
+    let from = 0;
+    let part = 0;
+    let frameId = firstFrameId;
+    for (;;) {
+      let curCol = currentColumn(doc, cursor);
+      const continuation = part > 0;
+      const result = L.layoutRange(from, L.children.length, curCol.bbox.width, frameId, continuation);
+      const spacing = curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, result.marginTopPx);
+      const roomPx = curCol.availableHeight - spacing;
+      let fragment: CalloutFragment | null = null;
+      if (result.totalHeight > roomPx + 0.01) {
+        // The (rest of the) box does not fit the column: a splittable box
+        // leaves the head that fits here…
+        if (splittable) fragment = splitCalloutFragment(L, from, curCol.bbox.width, roomPx, frameId, continuation);
+        if (!fragment && curCol.blocks.length > 0) {
+          // …otherwise it moves whole to the next column. Keep-with-next: a
+          // run of headings at the column's tail travels with the box.
+          // Skipped when the column holds nothing else (rolling back again
+          // would loop) — the headings stay, orphaned. Only the head of a
+          // box can roll headings back: a continuation always lands in a
+          // fresh column.
+          let run = 0;
+          for (let j = curCol.blocks.length - 1; j >= 0; j--) {
+            if (isFreeHeading(curCol.blocks[j]!)) run++;
+            else break;
+          }
+          pendingSpacing = 0;
+          if (part === 0 && resolved.headings.keepWithNext && run > 0 && run < curCol.blocks.length) {
+            const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
+            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+            return (rolledBack[0]!.contentIndex ?? startIdx - rolledBack.length) - 1;
+          }
           advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
-          return (rolledBack[0]!.contentIndex ?? startIdx - rolledBack.length) - 1;
+          curCol = currentColumn(doc, cursor);
+          // Columns of different widths (oneAndHalf): re-lay out for the new one.
+          if (Math.abs(curCol.bbox.width - result.width) > 0.01 && style.width !== 'auto') {
+            continue;
+          }
         }
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
-        curCol = currentColumn(doc, cursor);
-        // Columns of different widths (oneAndHalf): re-lay out for the new one.
-        if (Math.abs(curCol.bbox.width - result.width) > 0.01 && style.width !== 'auto') {
-          result = layoutAt(curCol.bbox.width);
-        }
+        // An empty column that is still too short: placed anyway, overflowing.
       }
-    }
 
-    // Floats first-referenced inside the box still enqueue in reading order
-    // (only once the box is committed, so a keep-with-next replay does not
-    // enqueue them twice).
-    for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
-    const frame = result.frame;
-    const spacing = curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, result.marginTopPx);
-    enterBand(startIdx, 0);
-    placeAtomicBlock(
-      frame, result.totalHeight, spacing, cursor, doc, resolved,
-      contentArea, pageWidthPx, pageHeightPx,
-    );
-    enterBand(startIdx, 0);
-    curCol = currentColumn(doc, cursor);
-    commitCallout(result, startIdx, plan, curCol);
-    // Snap the flow after the box to the baseline grid, baking in at least
-    // `marginBottom` (grid wins, margin is a minimum — the resource rule).
-    {
-      const usedHeight = curCol.bbox.height - curCol.availableHeight;
-      const naturalBottom = usedHeight + result.marginBottomPx;
-      const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
-      curCol.availableHeight = Math.max(0, curCol.bbox.height - snappedBottom);
+      // Floats first-referenced inside the box still enqueue in reading order
+      // (only once the box is committed, so a keep-with-next replay does not
+      // enqueue them twice).
+      if (part === 0) for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
+      const placed = fragment ? fragment.result : result;
+      const to = fragment ? fragment.to : L.children.length;
+      if (part > 0 || fragment) markFragment(placed, part, fragment !== null);
+      const spacingBefore = curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, placed.marginTopPx);
+      enterBand(startIdx, 0);
+      placeAtomicBlock(
+        placed.frame, placed.totalHeight, spacingBefore, cursor, doc, resolved,
+        contentArea, pageWidthPx, pageHeightPx,
+      );
+      enterBand(startIdx, 0);
+      curCol = currentColumn(doc, cursor);
+      commitCallout(placed, startIdx, plan, curCol, part > 0 || fragment ? fragmentRange(L, from, to) : undefined);
+      // Snap the flow after the box to the baseline grid, baking in at least
+      // `marginBottom` (grid wins, margin is a minimum — the resource rule).
+      {
+        const usedHeight = curCol.bbox.height - curCol.availableHeight;
+        const naturalBottom = usedHeight + placed.marginBottomPx;
+        const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
+        curCol.availableHeight = Math.max(0, curCol.bbox.height - snappedBottom);
+      }
+      pendingSpacing = 0;
+      if (!fragment) return undefined;
+      // The rest continues at the top of the next column.
+      from = to;
+      part++;
+      frameId = `block-${blockIdCounter++}`;
+      advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
     }
-    pendingSpacing = 0;
-    return undefined;
   };
 
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
@@ -1387,6 +1652,7 @@ export function buildDocumentPass(
         createPartPage(doc.pages[cursor.pageIndex]!, pageMetrics, resolved, {
           number: plan.number,
           title: plan.title,
+          palette: plan.palette,
           titleSourceStart,
           titleSourceEnd,
         }, pageIndexOffset);
