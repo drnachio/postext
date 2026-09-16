@@ -55,6 +55,9 @@ import {
   placeAtomicBlock,
   createPartPage,
   pageHasContent,
+  sideColumnOf,
+  sideColumns,
+  sideUsedBottom,
   pageIsOccupied,
   bandColumns,
   currentBand,
@@ -92,6 +95,7 @@ import {
 import {
   enumerateCurrentPageSlots,
   measureFloatBand,
+  measureSideStack,
   columnHasFloatBand,
   fitsStrict,
   trueBottom,
@@ -401,6 +405,17 @@ export function buildDocumentPass(
   // Floats whose first reference has been passed but which are not yet placed
   // into a page band, in reading order.
   const pendingFloats: PlannedFloat[] = [];
+  /** `span: 'side'` boxes that found no room in the side column of their
+   *  page: they take the side column of the next page the flow opens, in
+   *  order (see `placeCalloutSide`). */
+  const pendingSideBoxes: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig }[] = [];
+  /** Whether the band the cursor is in lays out as a multi-column band:
+   *  two or more text columns, or one beside a float-only side column — a
+   *  page-span block then cuts the band across every column. */
+  const multiColumnBand = (page: VDTPage): boolean => {
+    const band = currentBand(page, cursor);
+    return bandColumns(page, band).length > 1 || sideColumnOf(page, band) !== undefined;
+  };
   /** Resource ids already enqueued in this pass — a keep-with-next rewind
    *  replays the loop top for the rolled-back blocks and must not enqueue
    *  (and later place) the same float twice. */
@@ -408,10 +423,16 @@ export function buildDocumentPass(
   const enqueueFloatsFor = (blockIdx: number): void => {
     const fl = floatsByFirstBlock.get(blockIdx);
     if (!fl) return;
+    const page = doc.pages[cursor.pageIndex];
+    const col = page?.columns[cursor.columnIndex];
     for (const f of fl) {
       if (enqueuedFloatIds.has(f.resourceId)) continue;
       enqueuedFloatIds.add(f.resourceId);
-      pendingFloats.push(f);
+      // Where the citing block starts: a side float stacks beside it.
+      const stamped: PlannedFloat = col
+        ? { ...f, refPageIndex: page!.index, refY: col.bbox.y + (col.bbox.height - col.availableHeight) + (col.blocks.length > 0 ? pendingSpacing : 0) }
+        : f;
+      pendingFloats.push(stamped);
     }
   };
   const floatGapPx = bodyStyle.lineHeightPx;
@@ -677,6 +698,8 @@ export function buildDocumentPass(
     position: FloatSlotPosition,
     pageSpan: boolean,
     anchorToCap: boolean,
+    side = false,
+    refY?: number,
   ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number } | null => {
     const first = targetCols[0]!;
     const width = pageSpan ? page.contentArea.width : first.bbox.width;
@@ -684,6 +707,11 @@ export function buildDocumentPass(
     const slice = sliceOf(f);
     const measure = measureFloat(f.resourceId, width, slice);
     if (!measure) return null;
+    // A side float stacks in the side column beside the citing text.
+    if (side) {
+      const { need, y } = measureSideStack(measure, first, refY, page.contentArea, baselineGrid, floatGapPx);
+      return { need, y, measure, slice, width, xLeft };
+    }
     // A bottom band normally anchors to the column's true foot (under a
     // trailing cap, the page bottom — the closing-page figure). Before a
     // page-span box the cap IS the band's foot: the figure hugs the text
@@ -720,15 +748,37 @@ export function buildDocumentPass(
     pageSpan: boolean,
     mode: 'fresh' | 'strict',
     anchorToCap = false,
+    side = false,
+    refY?: number,
   ): PlaceResult => {
     const first = targetCols[0]!;
-    const probe = probeFloatBand(page, f, targetCols, position, pageSpan, anchorToCap);
+    const probe = probeFloatBand(page, f, targetCols, position, pageSpan, anchorToCap, side, refY);
     if (!probe) return 'skip';
     const { width, xLeft } = probe;
     let { slice, measure, need, y } = probe;
     let rest: PlannedFloat | undefined;
     /** The float was cut to this slot (a table slice). */
     let cut = false;
+
+    if (side) {
+      // The side column's stack: the float goes under what the column holds
+      // when the rest of the column takes it; otherwise it waits for the
+      // side column of the next page — where it is set anyway, overflowing,
+      // when even an empty column cannot hold it (a dominating figure).
+      if (need > first.availableHeight + 0.01) {
+        if (mode === 'strict' || sideUsedBottom(first) > first.bbox.y + 0.5) return 'defer';
+      }
+      const built = buildFloatBlock(f.resourceId, xLeft, width, slice);
+      if (!built) return 'skip';
+      first.availableHeight = Math.max(0, first.availableHeight - need);
+      offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
+      built.block.bbox = createBoundingBox(xLeft, y, width, built.height);
+      built.block.pageIndex = page.index;
+      built.block.columnIndex = first.index;
+      (page.floats ??= []).push(built.block);
+      floatsPlaced++;
+      return 'placed';
+    }
 
     if (mode === 'fresh') {
       let minAvail = Infinity;
@@ -882,9 +932,14 @@ export function buildDocumentPass(
    *  is set. A float that does not fit holds up the ones behind it in its
    *  numbering sequence (see `heldBack`), never the other sequence. */
   const flushFloatsIntoPage = (page: VDTPage): void => {
+    flushSideBoxesIntoPage(page);
     if (pendingFloats.length === 0) return;
-    const textCols = page.columns.filter((c) => c.kind !== 'span');
+    const textCols = page.columns.filter((c) => c.kind !== 'span' && c.kind !== 'side');
     if (textCols.length === 0) return;
+    const sideCols = sideColumns(page);
+    /** A page-span float on a fresh page takes the band of every column,
+     *  the side column included. */
+    const pageCols = [...textCols, ...sideCols];
     /** The least reserved text column a float may take (the rest of a
      *  split table: only columns after its previous slice on this page). */
     const leastReserved = (f: PlannedFloat): VDTColumn | undefined => {
@@ -901,21 +956,27 @@ export function buildDocumentPass(
     };
     for (let progress = true; progress;) {
       const before = floatsPlaced;
-      for (const pageSpanPass of [true, false]) {
+      for (const pass of ['page', 'side', 'column'] as const) {
         let i = 0;
         while (i < pendingFloats.length) {
           const f = pendingFloats[i]!;
-          const isPageSpan = f.span === 'page' && textCols.length > 1;
-          if (isPageSpan !== pageSpanPass || heldBack(i)) { i++; continue; }
+          const isPageSpan = f.span === 'page' && (textCols.length > 1 || sideCols.length > 0);
+          const isSide = !isPageSpan && f.span === 'side' && sideCols.length > 0;
+          const kind = isPageSpan ? 'page' : isSide ? 'side' : 'column';
+          if (kind !== pass || heldBack(i)) { i++; continue; }
           // A page-span rest never shares the page of its previous slice.
           if (isPageSpan && f.notBefore?.pageIndex === page.index) { i++; continue; }
           let r: PlaceResult = 'defer';
-          for (const pos of positionsFor(f)) {
-            const col = isPageSpan ? undefined : leastReserved(f);
-            if (!isPageSpan && !col) break;
-            const cols = isPageSpan ? textCols : [col!];
-            r = placeFloatInColumns(page, f, cols, pos, isPageSpan, 'fresh');
-            if (r !== 'defer') break;
+          if (isSide) {
+            r = placeFloatInColumns(page, f, [sideCols[0]!], 'top', false, 'fresh', false, true);
+          } else {
+            for (const pos of positionsFor(f)) {
+              const col = isPageSpan ? undefined : leastReserved(f);
+              if (!isPageSpan && !col) break;
+              const cols = isPageSpan ? pageCols : [col!];
+              r = placeFloatInColumns(page, f, cols, pos, isPageSpan, 'fresh');
+              if (r !== 'defer') break;
+            }
           }
           i = settle(i, r);
         }
@@ -937,7 +998,8 @@ export function buildDocumentPass(
     const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
     if (placement !== 'here') return null;
     const page = doc.pages[cursor.pageIndex]!;
-    if (span === 'page' && bandColumns(page, currentBand(page, cursor)).length > 1) return null;
+    if (span === 'page' && multiColumnBand(page)) return null;
+    if (span === 'side' && sideColumnOf(page, currentBand(page, cursor))) return null;
     const L = makeCalloutLayouter(idx, plan, style);
     const heights = new Map<number, number>();
     return {
@@ -1010,9 +1072,14 @@ export function buildDocumentPass(
       // itself, which cuts the band under the text and sets the figure
       // there, above the box (`placeSpanFloatsAtCut`) — its only slot here
       // would be the band's foot, under the box.
-      if (preferTop && f.span === 'page' && bandColumns(page, currentBand(page, cursor)).length > 1) { i++; continue; }
+      if (preferTop && f.span === 'page' && multiColumnBand(page)) { i++; continue; }
       if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
       for (const slot of slots) {
+        if (slot.side) {
+          r = placeFloatInColumns(page, f, slot.cols, slot.position, false, 'strict', false, true, slot.refY);
+          if (r !== 'defer') break;
+          continue;
+        }
         if (box && slotStarvesBox(page, f, slot, box, preferTop)) continue;
         r = placeFloatInColumns(page, f, slot.cols, slot.position, slot.pageSpan, 'strict', preferTop);
         if (r !== 'defer') break;
@@ -1036,8 +1103,7 @@ export function buildDocumentPass(
     if (!style) return false;
     const { span, placement } = resolveCalloutAttrs(style, plan!.attrs);
     if (span !== 'page' || placement === 'fixed') return false;
-    const page = doc.pages[cursor.pageIndex]!;
-    return bandColumns(page, currentBand(page, cursor)).length > 1;
+    return multiColumnBand(doc.pages[cursor.pageIndex]!);
   };
 
   /** Chapter barrier: place every pending float before the boundary — in
@@ -1047,7 +1113,7 @@ export function buildDocumentPass(
   const drainPendingFloats = (): void => {
     tryPlacePendingFloatsOnCurrentPage();
     let guard = 0;
-    while (pendingFloats.length > 0 && guard++ < 1000) {
+    while ((pendingFloats.length > 0 || pendingSideBoxes.length > 0) && guard++ < 1000) {
       const before = floatsPlaced;
       const startPageIndex = cursor.pageIndex;
       do {
@@ -2130,6 +2196,77 @@ export function buildDocumentPass(
   };
 
   /**
+   * Set a `span: 'side'` box in the side column of the current band: laid
+   * out at the side column's width and stacked under what the column holds,
+   * no higher than the flow's current position (beside the text it
+   * interrupts), consuming the column's free height like a side float. A
+   * box the rest of the column cannot hold waits for the side column of the
+   * next page the flow opens (`flushSideBoxesIntoPage`), where it is set
+   * anyway — overflowing — when even an empty column cannot hold it. The
+   * frame and its children leave the flow into `page.floats`, as a fixed
+   * box does. Returns false when the page has no side column: the box then
+   * lays out inline.
+   */
+  const trySideBox = (
+    page: VDTPage,
+    side: VDTColumn,
+    box: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig },
+    refY: number | undefined,
+    mode: 'fresh' | 'strict',
+  ): boolean => {
+    const { startIdx, plan, style } = box;
+    const L = makeCalloutLayouter(startIdx, plan, style);
+    const frameId = `block-${blockIdCounter++}`;
+    const result = L.layoutRange(CUT_START, L.end, side.bbox.width, frameId, false);
+    const used = sideUsedBottom(side);
+    const raw = Math.max(used, refY ?? used);
+    const y = page.contentArea.y + Math.ceil((raw - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid;
+    const need = y - used + result.totalHeight + Math.max(result.marginBottomPx, floatGapPx);
+    if (need > side.availableHeight + 0.01) {
+      if (mode === 'strict' || used > side.bbox.y + 0.5) return false;
+    }
+    const frame = result.frame;
+    stampCalloutSource(frame, startIdx, plan);
+    frame.pageIndex = page.index;
+    frame.columnIndex = side.index;
+    offsetCalloutToAbsolute(result, side.bbox.x, y);
+    const floats = (page.floats ??= []);
+    doc.blocks.push(frame);
+    floats.push(frame);
+    for (const child of result.children) {
+      child.pageIndex = frame.pageIndex;
+      child.columnIndex = frame.columnIndex;
+      doc.blocks.push(child);
+      floats.push(child);
+    }
+    side.availableHeight = Math.max(0, side.availableHeight - need);
+    for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
+    return true;
+  };
+  const placeCalloutSide = (startIdx: number, plan: PlannedCallout, style: ResolvedCalloutStyleConfig): boolean => {
+    const page = doc.pages[cursor.pageIndex]!;
+    const side = sideColumnOf(page, currentBand(page, cursor));
+    if (!side) return false;
+    const curCol = currentColumn(doc, cursor);
+    const refY = curCol.bbox.y + (curCol.bbox.height - curCol.availableHeight) + (curCol.blocks.length > 0 ? pendingSpacing : 0);
+    if (!trySideBox(page, side, { startIdx, plan, style }, refY, 'strict')) {
+      pendingSideBoxes.push({ startIdx, plan, style });
+    }
+    return true;
+  };
+  /** Set the waiting side boxes in the side column of a freshly opened
+   *  page, in order; one that does not fit an empty column is set anyway. */
+  const flushSideBoxesIntoPage = (page: VDTPage): void => {
+    if (pendingSideBoxes.length === 0) return;
+    const side = sideColumnOf(page, 0);
+    if (!side) return;
+    while (pendingSideBoxes.length > 0) {
+      if (!trySideBox(page, side, pendingSideBoxes[0]!, undefined, 'fresh')) break;
+      pendingSideBoxes.shift();
+    }
+  };
+
+  /**
    * Place a `:::callout` inline at the current column width as one atomic
    * unit: the frame block followed by its children in the same column. The
    * box's `marginTop` collapses with the pending spacing; `marginBottom` is
@@ -2167,9 +2304,13 @@ export function buildDocumentPass(
       if (
         span === 'page'
         && placement === 'here'
-        && bandColumns(page, currentBand(page, cursor)).length > 1
+        && multiColumnBand(page)
         && placeCalloutSpan(startIdx, plan, style, L, firstFrameId)
       ) {
+        return undefined;
+      }
+      // Side boxes stack in the float-only side column beside the text.
+      if (span === 'side' && placement === 'here' && placeCalloutSide(startIdx, plan, style)) {
         return undefined;
       }
     }

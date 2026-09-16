@@ -109,6 +109,11 @@ export interface VDTLineSegment {
   fontString?: string;
   /** Colour of this segment when it differs from the block's. */
   color?: string;
+  /** Superscript / subscript segment (`^…^` / `~…~`): `fontString` carries
+   *  the reduced size and `baselineShift` the offset (px, positive down)
+   *  renderers add to the line's baseline. */
+  script?: 'sup' | 'sub';
+  baselineShift?: number;
 }
 
 export interface VDTLine {
@@ -449,8 +454,12 @@ export interface VDTColumn {
    *  Absent for the plain single-band layout. */
   band?: number;
   /** `'text'` for a regular flow column, `'span'` for a full-width column
-   *  that hosts page-spanning content. Absent means `'text'`. */
-  kind?: 'text' | 'span';
+   *  that hosts page-spanning content, `'side'` for the float-only side
+   *  column of a one-and-a-half layout (`layout.sideColumnRole: 'floats'`):
+   *  body text never flows into it; the `span: 'side'` floats stacked in
+   *  it consume its `availableHeight` from the top, so its used height is
+   *  the stack's current bottom. Absent means `'text'`. */
+  kind?: 'text' | 'span' | 'side';
   /** True when a `:::columnbreak` directive ended this column: its bottom
    *  gap is intentional, so column balancing leaves it alone. */
   forcedBreak?: boolean;

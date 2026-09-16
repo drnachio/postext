@@ -15,7 +15,7 @@
  */
 
 import type { BoundingBox, VDTColumn, VDTPage } from '../vdt';
-import { bandColumns, currentBand } from './placement';
+import { bandColumns, currentBand, sideColumnOf, sideColumns, sideUsedBottom } from './placement';
 import { columnBottom } from './bandCaps';
 import type { PlannedFloat } from './floatPlacement';
 
@@ -27,6 +27,12 @@ export interface FloatSlot {
   cols: VDTColumn[];
   position: FloatSlotPosition;
   pageSpan: boolean;
+  /** The slot is the float-only side column (`span: 'side'`): the float
+   *  stacks under what the column already holds, no lower than `refY`
+   *  (the top of the text that cites it), and consumes the column's
+   *  `availableHeight` instead of cutting a band. */
+  side?: boolean;
+  refY?: number;
 }
 
 /** Kind of band cap a column is currently under, if any (`undefined` when
@@ -52,10 +58,23 @@ export function enumerateCurrentPageSlots(
   const wantsBottom = f.position !== 'top';
   const bottomFree = (col: VDTColumn): boolean => capKindOf(col) !== 'span';
 
-  if (f.span === 'page' && cols.length > 1) {
+  // A side float takes the side column of the band, right beside the text
+  // that cites it (never above it); a page without a side column offers
+  // it the column slots below instead.
+  const side = sideColumnOf(page, band);
+  if (f.span === 'side' && side && side.bbox.height > 0.5) {
+    // Beside the citing block when it sits on this page; a float carried
+    // over from an earlier page takes the stack's foot.
+    const refY = f.refPageIndex === page.index ? f.refY : undefined;
+    return [{ cols: [side], position: 'top', pageSpan: false, side: true, refY }];
+  }
+
+  // A page-span float crosses the side column too: the band it takes is
+  // reserved in every column of the band, the side column included.
+  if (f.span === 'page' && (cols.length > 1 || sideColumns(page).length > 0)) {
     if (!wantsBottom) return [];
     if (!cols.every(bottomFree)) return [];
-    return [{ cols, position: 'bottom', pageSpan: true }];
+    return [{ cols: [...cols, ...sideColumns(page).filter((c) => (c.band ?? 0) === band)], position: 'bottom', pageSpan: true }];
   }
 
   const slots: FloatSlot[] = [];
@@ -76,6 +95,26 @@ export interface FloatMeasure {
   height: number;
   /** Block-relative baseline of the caption's last line, when captioned. */
   lastCaptionBaseline?: number;
+}
+
+/** Geometry of a float stacked in the side column: it starts at the foot of
+ *  what the column holds, or at `refY` (the top of the citing text) when
+ *  that is lower, snapped up to the baseline grid of the content area, and
+ *  consumes the column's free height from the stack's foot to its own foot
+ *  plus `gapPx`. */
+export function measureSideStack(
+  built: FloatMeasure,
+  col: VDTColumn,
+  refY: number | undefined,
+  contentArea: BoundingBox,
+  baselineGrid: number,
+  gapPx: number,
+): { need: number; y: number } {
+  const used = sideUsedBottom(col);
+  const raw = Math.max(used, refY ?? used);
+  const y = contentArea.y + Math.ceil((raw - contentArea.y - 0.01) / baselineGrid) * baselineGrid;
+  const need = y - used + built.height + gapPx;
+  return { need, y };
 }
 
 /** Band geometry for one slot. Both kinds are corrected against the baseline

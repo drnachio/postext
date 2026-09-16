@@ -336,6 +336,7 @@ function CalloutStyleCard({
   const spanOptions = [
     { value: 'column', label: labels.calloutStyleSpanColumn },
     { value: 'page', label: labels.calloutStyleSpanPage },
+    { value: 'side', label: labels.calloutStyleSpanSide },
   ];
   const placementOptions = [
     { value: 'here', label: labels.calloutStylePlacementHere },

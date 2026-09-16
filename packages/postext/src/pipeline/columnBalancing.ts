@@ -155,7 +155,7 @@ function columnUnderTopFloat(page: VDTPage, col: VDTColumn): boolean {
 /** Regular flow column with a usable height — never a page-span block's
  *  full-width column, nor a band closed at its own top. */
 function isTextColumn(col: VDTColumn): boolean {
-  return col.kind !== 'span' && col.bbox.height > 0.5;
+  return col.kind !== 'span' && col.kind !== 'side' && col.bbox.height > 0.5;
 }
 
 /**

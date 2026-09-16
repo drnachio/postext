@@ -329,6 +329,18 @@ The `layout` property controls how columns are arranged within the content area.
       <td>Width of the side column as a percentage of the content area. Only applies to <code>'oneAndHalf'</code> layout.</td>
     </tr>
     <tr>
+      <td><code>sideColumnRole</code></td>
+      <td><code>'text' | 'floats'</code></td>
+      <td><code>'text'</code></td>
+      <td>What the side column carries: body text (it flows there after the main column), or only the resources and callouts placed with <code>span: 'side'</code> — a float-only margin column. <code>'oneAndHalf'</code> only.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnSide</code></td>
+      <td><code>'right' | 'left' | 'outer' | 'inner'</code></td>
+      <td><code>'right'</code></td>
+      <td>Edge of the content area the side column sits at. <code>'outer'</code> / <code>'inner'</code> follow the page parity when the margins are mirrored (a recto's outer edge is its right edge, a verso's its left). <code>'oneAndHalf'</code> only.</td>
+    </tr>
+    <tr>
       <td><code>columnRule</code></td>
       <td><code>ColumnRuleConfig</code></td>
       <td>disabled</td>
@@ -378,7 +390,7 @@ Draws a thin vertical line in the gutter to visually separate columns.
 
 - **`'double'`** — Two equal-width columns. The classic editorial layout — keeps line measure within the optimal 40–50 character range for comfortable reading.
 
-- **`'oneAndHalf'`** — An asymmetric layout with a main column and a narrower side column. The side column (controlled by `sideColumnPercent`) is ideal for margin notes, small figures, or supporting content. Values between 25–40% work well.
+- **`'oneAndHalf'`** — An asymmetric layout with a main column and a narrower side column. The side column (controlled by `sideColumnPercent`) is ideal for margin notes, small figures, or supporting content. Values between 25–40% work well. With `sideColumnRole: 'floats'` the body text never enters the side column: it becomes a channel for the figures, tables and callouts placed with `span: 'side'`, each stacked beside the paragraph that first cites it (a resource that cannot fit the rest of the channel waits for the next page's), while `span: 'page'` floats and boxes still cross both columns. Combined with mirrored margins and `sideColumnSide: 'outer'`, the channel sits at the outer edge of every page — the marginal column of a textbook.
 
 
 ## Headers & footers
@@ -1870,7 +1882,7 @@ type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface ResourcePlacement {
   position?: 'top' | 'bottom' | 'here'; // float band, or inline at the ::resource directive
-  span?: 'column' | 'page';             // single column or full content width
+  span?: 'column' | 'page' | 'side';    // single column, full content width, or the float-only side column
 }
 
 interface ResourceType {
@@ -2614,9 +2626,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>span</code></td>
-      <td><code>'column' | 'page'</code></td>
+      <td><code>'column' | 'page' | 'side'</code></td>
       <td><code>'column'</code></td>
-      <td>Horizontal extent: the column, or the full content width. Overridable per instance with the <code>span</code> attribute. In multi-column layouts a <code>'page'</code> box becomes a <em>span block</em>: it splits the page into column bands and sits in its own full-width column (see the container section below).</td>
+      <td>Horizontal extent: the column, the full content width, or the float-only side column of a one-and-a-half layout (<code>layout.sideColumnRole: 'floats'</code>) — the box then leaves the flow and stacks in that column beside the text it interrupts. Overridable per instance with the <code>span</code> attribute. In multi-column layouts a <code>'page'</code> box becomes a <em>span block</em>: it splits the page into column bands and sits in its own full-width column (see the container section below).</td>
     </tr>
     <tr>
       <td><code>placement</code></td>

@@ -35,6 +35,12 @@ export interface ResolvedPlacement {
  *  the first free slot after the reference (top or bottom); `'top'` /
  *  `'bottom'` restrict the search to that kind of slot. */
 export interface PlannedFloat {
+  /** Where the flow stood when the float's first reference was reached
+   *  (the top of the citing block, on that page): a `span: 'side'` float
+   *  stacks no higher than this on that page — beside the text that cites
+   *  it. Stamped by the build when the float is enqueued. */
+  refPageIndex?: number;
+  refY?: number;
   resourceId: string;
   firstBlockIdx: number;
   position: 'auto' | 'top' | 'bottom';

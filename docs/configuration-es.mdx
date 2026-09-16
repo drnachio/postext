@@ -329,6 +329,18 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td>Ancho de la columna lateral como porcentaje del área de contenido. Solo aplica a la disposición <code>'oneAndHalf'</code>.</td>
     </tr>
     <tr>
+      <td><code>sideColumnRole</code></td>
+      <td><code>'text' | 'floats'</code></td>
+      <td><code>'text'</code></td>
+      <td>Qué lleva la columna lateral: texto corrido (fluye a ella tras la columna principal) o solo los recursos y avisos colocados con <code>span: 'side'</code> — una columna de margen solo para flotantes. Solo en <code>'oneAndHalf'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnSide</code></td>
+      <td><code>'right' | 'left' | 'outer' | 'inner'</code></td>
+      <td><code>'right'</code></td>
+      <td>Borde del área de contenido en el que se sitúa la columna lateral. <code>'outer'</code> / <code>'inner'</code> siguen la paridad de la página cuando los márgenes están espejados (el borde exterior de una página impar es el derecho; el de una par, el izquierdo). Solo en <code>'oneAndHalf'</code>.</td>
+    </tr>
+    <tr>
       <td><code>columnRule</code></td>
       <td><code>ColumnRuleConfig</code></td>
       <td>desactivado</td>
@@ -378,7 +390,7 @@ Dibuja una línea vertical fina en el medianil para separar visualmente las colu
 
 - **`'double'`** — Dos columnas de igual ancho. La disposición editorial clásica — mantiene el ancho de carro en el rango óptimo de 40–50 caracteres para una lectura cómoda.
 
-- **`'oneAndHalf'`** — Una disposición asimétrica con una columna principal y una columna lateral más estrecha. La columna lateral (controlada por `sideColumnPercent`) es ideal para notas al margen, figuras pequeñas o contenido complementario. Valores entre 25–40% funcionan bien.
+- **`'oneAndHalf'`** — Una disposición asimétrica con una columna principal y una columna lateral más estrecha. La columna lateral (controlada por `sideColumnPercent`) es ideal para notas al margen, figuras pequeñas o contenido complementario. Valores entre 25–40% funcionan bien. Con `sideColumnRole: 'floats'` el texto corrido nunca entra en la columna lateral: se convierte en un canal para las figuras, tablas y avisos colocados con `span: 'side'`, apilados junto al párrafo que los cita por primera vez (un recurso que no cabe en lo que queda del canal espera al de la página siguiente), mientras que los flotantes y cajas `span: 'page'` siguen cruzando ambas columnas. Combinada con márgenes espejados y `sideColumnSide: 'outer'`, el canal queda en el borde exterior de cada página — la columna marginal de un manual.
 
 
 ## Encabezados y pies
@@ -1870,7 +1882,7 @@ type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface ResourcePlacement {
   position?: 'top' | 'bottom' | 'here'; // banda flotante, o en línea en la directiva ::resource
-  span?: 'column' | 'page';             // una sola columna o todo el ancho de contenido
+  span?: 'column' | 'page' | 'side';    // una sola columna, todo el ancho de contenido o la columna lateral solo para flotantes
 }
 
 interface ResourceType {
@@ -2614,9 +2626,9 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>span</code></td>
-      <td><code>'column' | 'page'</code></td>
+      <td><code>'column' | 'page' | 'side'</code></td>
       <td><code>'column'</code></td>
-      <td>Extensión horizontal: la columna o el ancho completo del área de contenido. Se puede sobrescribir por instancia con el atributo <code>span</code>. En disposiciones multicolumna una caja <code>'page'</code> se convierte en un <em>bloque a ancho de página</em>: divide la página en bandas de columnas y ocupa su propia columna a todo el ancho (ver la sección del contenedor más abajo).</td>
+      <td>Extensión horizontal: la columna, el ancho completo del área de contenido o la columna lateral solo para flotantes de una disposición de columna y media (<code>layout.sideColumnRole: 'floats'</code>) — la caja sale entonces del flujo y se apila en esa columna junto al texto que interrumpe. Se puede sobrescribir por instancia con el atributo <code>span</code>. En disposiciones multicolumna una caja <code>'page'</code> se convierte en un <em>bloque a ancho de página</em>: divide la página en bandas de columnas y ocupa su propia columna a todo el ancho (ver la sección del contenedor más abajo).</td>
     </tr>
     <tr>
       <td><code>placement</code></td>

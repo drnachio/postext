@@ -45,8 +45,12 @@ export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here';
 /** How wide a floated resource is. `'column'` keeps it within a single column;
  *  `'page'` spans the full content width across all columns (a full-width
  *  float that breaks the column flow). In a single-column layout the two are
- *  equivalent. */
-export type ResourceFloatSpan = 'column' | 'page';
+ *  equivalent. `'side'` sets the resource in the side column of a
+ *  one-and-a-half layout whose side column is reserved for floats
+ *  (`layout.sideColumnRole: 'floats'`), stacked beside the paragraph that
+ *  first cites it; on a page without such a column it behaves as
+ *  `'column'`. */
+export type ResourceFloatSpan = 'column' | 'page' | 'side';
 
 /** Placement of a resource on the page. Resolved per resource, falling back to
  *  its {@link ResourceType.defaultPlacement} and then the built-in default
@@ -487,6 +491,23 @@ export interface ResolvedPageConfig {
 
 export type LayoutType = 'single' | 'double' | 'oneAndHalf';
 
+/** What the narrow column of a `oneAndHalf` layout carries. `'text'` (the
+ *  default): body text flows into it after the main column, as into any
+ *  column. `'floats'`: it is a side channel that never takes body text —
+ *  the flow stays in the main column and the side column receives the
+ *  resources and callouts placed with `span: 'side'`, stacked beside the
+ *  paragraph that first references them (the marginal figures and key
+ *  boxes of a textbook). */
+export type SideColumnRole = 'text' | 'floats';
+
+/** Which edge of the content area the side column of a `oneAndHalf` layout
+ *  sits at. `'right'` (the default) and `'left'` are fixed; `'outer'` /
+ *  `'inner'` follow the page parity when the margins are mirrored — the
+ *  outer edge is the right edge of a recto (odd page) and the left edge of
+ *  a verso. Without mirrored margins `'outer'` is `'right'` and `'inner'`
+ *  is `'left'`. */
+export type SideColumnSide = 'right' | 'left' | 'outer' | 'inner';
+
 export interface ColumnRuleConfig {
   enabled?: boolean;
   color?: ColorValue;
@@ -497,6 +518,10 @@ export interface LayoutConfig {
   layoutType?: LayoutType;
   gutterWidth?: Dimension;
   sideColumnPercent?: number;
+  /** `oneAndHalf` only. Default `'text'`. */
+  sideColumnRole?: SideColumnRole;
+  /** `oneAndHalf` only. Default `'right'`. */
+  sideColumnSide?: SideColumnSide;
   columnRule?: ColumnRuleConfig;
 }
 
@@ -504,6 +529,8 @@ export interface ResolvedLayoutConfig {
   layoutType: LayoutType;
   gutterWidth: Dimension;
   sideColumnPercent: number;
+  sideColumnRole: SideColumnRole;
+  sideColumnSide: SideColumnSide;
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
 }
 
@@ -911,7 +938,10 @@ export interface ResolvedParagraphStyleConfig {
 // ---------------------------------------------------------------------------
 
 /** Horizontal extent of a callout: its column, or the full content width. */
-export type CalloutSpan = 'column' | 'page';
+/** `'side'` sets the box in the float-only side column of a `oneAndHalf`
+ *  layout (`layout.sideColumnRole: 'floats'`), beside the text it
+ *  interrupts; on a page without such a column it lays out as `'column'`. */
+export type CalloutSpan = 'column' | 'page' | 'side';
 /** Where a callout lands: inline in the flow (`'here'`), floated to the
  *  top / bottom band of a page like a resource, or at fixed page coordinates
  *  (`'fixed'` — anchored through {@link CalloutFixedConfig}, out of the

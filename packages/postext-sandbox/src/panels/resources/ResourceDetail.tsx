@@ -345,6 +345,7 @@ export function ResourceDetail({
             >
               <option value="column">{labels.resourceSpanColumn}</option>
               <option value="page">{labels.resourceSpanPage}</option>
+              <option value="side">{labels.resourceSpanSide}</option>
             </select>
           </div>
         </Field>
