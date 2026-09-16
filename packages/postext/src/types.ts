@@ -1061,6 +1061,9 @@ export interface CalloutBodyStyleConfig {
   fontSize?: Dimension;
   lineHeight?: Dimension;
   color?: ColorValue;
+  /** Colour of bold runs in the box (a key term set off in the box's own
+   *  colour). Defaults to `bodyText.boldColor`, i.e. the body colour. */
+  boldColor?: ColorValue;
   textAlign?: 'left' | 'justify';
   hyphenation?: boolean;
   paragraphSpacing?: boolean;
@@ -1191,6 +1194,7 @@ export interface ResolvedCalloutStyleConfig {
     fontSize: Dimension;
     lineHeight: Dimension;
     color: ColorValue;
+    boldColor?: ColorValue;
     textAlign: 'left' | 'justify';
     hyphenation: boolean;
     paragraphSpacing: boolean;

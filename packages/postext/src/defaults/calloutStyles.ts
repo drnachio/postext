@@ -169,6 +169,7 @@ function resolveCalloutStyleConfig(
       fontSize: partial.body?.fontSize ?? bodyText.fontSize,
       lineHeight: partial.body?.lineHeight ?? bodyText.lineHeight,
       color: partial.body?.color ?? bodyText.color,
+      ...(partial.body?.boldColor ?? bodyText.boldColor ? { boldColor: partial.body?.boldColor ?? bodyText.boldColor } : {}),
       textAlign: partial.body?.textAlign ?? (bodyText.textAlign === 'justify' ? 'justify' : 'left'),
       hyphenation: partial.body?.hyphenation ?? bodyText.hyphenation.enabled,
       paragraphSpacing: partial.body?.paragraphSpacing ?? bodyText.paragraphSpacing,
