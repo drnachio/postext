@@ -139,7 +139,7 @@ describe(':::toc', () => {
     // Leader dots sit between the title and the number.
     expect(segs.some((s) => s.text.startsWith('...'))).toBe(true);
     // Part row: the design overlay carries number, title and page label.
-    expect(part!.tocPart).toEqual({ number: 'I', title: 'Foundations', pageLabel: '1', palette: { band: '#112233' } });
+    expect(part!.tocPart).toMatchObject({ number: 'I', title: 'Foundations', pageLabel: '1', palette: { band: '#112233' } });
     const overlayText = (part!.designOverlay!.blocks.filter((b) => b.kind === 'text') as VDTDesignTextBlock[]).map((b) => b.lines.map((l) => l.text).join(' '));
     expect(overlayText).toEqual(['I Foundations', '1']);
     const bodyPx = dimensionToPx(doc.config.bodyText.fontSize, DPI);
@@ -156,6 +156,17 @@ describe(':::toc', () => {
     // The outline derived from the document is what the contents printed.
     const outline = outlineFromDoc(doc, computeOutline(parseMarkdown(book), resolveAllConfig(base)));
     expect(outline.map((e) => e.pageLabel)).toEqual(['i', 'iii', '1', '3', trimming!.lines[0]!.text.split(' ').at(-1)]);
+    // Each entry knows the book page it points at; the rows carry it as
+    // their link target (the part row's page holds the part opener).
+    const partPageIndex = doc.pages.findIndex((p) => p.partInfo);
+    expect(outline.map((e) => e.pageIndex)).toEqual([0, preface.pageIndex, partPageIndex, one.pageIndex, outline[4]!.pageIndex]);
+    expect(part!.tocPart!.pageIndex).toBe(partPageIndex);
+    expect(lantern!.tocEntry).toEqual({ pageIndex: one.pageIndex });
+    expect(pref!.tocEntry).toEqual({ pageIndex: preface.pageIndex });
+    // A continued chapter counts the pages before it.
+    const continued = buildDocument({ markdown: '# Later', continuation: { pageIndexOffset: 10 } }, base);
+    const laterOutline = outlineFromDoc(continued, computeOutline(parseMarkdown('# Later'), resolveAllConfig(base)));
+    expect(laterOutline[0]!.pageIndex).toBe(10 + continued.blocks.find((b) => b.type === 'heading')!.pageIndex);
     expect(doc.pages[0]!.pageLabel).toBe('i');
   });
 
@@ -171,9 +182,9 @@ describe(':::toc', () => {
     };
     const doc = buildDocument({ markdown: book }, spaced);
     const [pref, part, lantern, trimming] = tocBlocks(doc);
-    expect(pref!.tocEntry).toBe(true);
+    expect(pref!.tocEntry).toBeDefined();
     expect(part!.tocEntry).toBeUndefined();
-    expect(lantern!.tocEntry).toBe(true);
+    expect(lantern!.tocEntry).toBeDefined();
     const gap = (above: VDTBlock, below: VDTBlock) => below.bbox.y - (above.bbox.y + above.bbox.height);
     // The part row keeps its top margin (a paragraph-shaped block, whose
     // margin placement otherwise ignores) and its bottom margin.

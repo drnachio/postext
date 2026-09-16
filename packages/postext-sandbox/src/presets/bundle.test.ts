@@ -3,7 +3,8 @@ import type { PostextConfig, Resource } from 'postext';
 import { createDefaultConfig } from '../context/defaultConfig';
 import { buildBundleFiles, parseBundle, planBundle } from './bundle';
 import { newChapter } from '../book/chapterOps';
-import type { Chapter } from '../book/types';
+import type { Chapter, ChapterLayout } from '../book/types';
+import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../book/layoutKeys';
 import { openBundleZip, zipBundle } from './zip';
 import type { PresetManifestV1, PresetSummary } from './types';
 
@@ -233,5 +234,70 @@ describe('parseBundle (v2)', () => {
       ['id2', 'Second', '# Second'],
       ['id3', 'Cap. 3', 'plain'],
     ]);
+  });
+});
+
+describe('layouts.json round trip', () => {
+  const layoutOf = (chapter: Chapter, config: PostextConfig, resources: Resource[]): ChapterLayout => ({
+    chapterId: chapter.id,
+    markdown: chapter.markdown,
+    configKey: configKeyOf(config),
+    resourcesKey: resourcesKeyOf(resources),
+    engine: ENGINE_KEY,
+    continuationKey: 'first',
+    pageCount: 3,
+    leadingBlankPages: 0,
+    firstContentPageNumber: { delta: 0 },
+    firstContentPageFormat: 'decimal',
+    lastPageNumber: { delta: 2 },
+    lastPageFormat: 'decimal',
+    outline: [{ kind: 'heading', level: 1, title: 'One', number: '1', numbered: true, listed: true, pageLabel: '1', pageIndex: 0 }],
+    outlineKey: '',
+  });
+  const chapters = [newChapter('c1', 'One', '# One\n\nText.', 1), newChapter('c2', 'Two', '# Two', 1)];
+  const config: PostextConfig = { ...createDefaultConfig('en'), bodyText: { fontSize: { value: 11, unit: 'pt' } } };
+  const resources: Resource[] = [
+    { id: 'tbl', typeId: 'table', kind: 'table', caption: 'Sizes.', createdAt: 5, updatedAt: 6, table: { model: { rows: [[{ content: 'a' }]] } } },
+    { id: 'fig', typeId: 'figure', kind: 'svg', caption: 'A figure.', createdAt: 5, updatedAt: 6, svg: { fileId: 'blob-1', width: 40, height: 20 } },
+  ];
+  const meta = { id: 'book', name: 'Book' };
+  const sources = { readBlob: async () => enc.encode(SVG).buffer as ArrayBuffer, readFont: async () => null };
+
+  it('carries current records and re-keys them to the imported chapters', async () => {
+    const layouts = { c1: layoutOf(chapters[0]!, config, resources), c2: layoutOf(chapters[1]!, config, resources) };
+    const built = await buildBundleFiles(meta, { chapters, config, resources, layouts }, sources);
+    expect(Object.keys(built.files)).toContain('layouts.json');
+    const opened = openBundleZip(zipBundle(built.files));
+    let n = 0;
+    const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary, chapterIds: () => `new-${++n}` });
+    expect(loaded.layouts).toBeDefined();
+    expect(Object.keys(loaded.layouts!)).toEqual(['new-1', 'new-2']);
+    const first = loaded.layouts!['new-1']!;
+    expect(first.markdown).toBe('# One\n\nText.');
+    expect(first.pageCount).toBe(3);
+    expect(first.outline[0]!.pageIndex).toBe(0);
+    // The imported configuration and resources fingerprint like the exported ones.
+    expect(first.configKey).toBe(configKeyOf(loaded.config));
+    expect(first.resourcesKey).toBe(resourcesKeyOf(loaded.resources));
+  });
+
+  it('writes no pagination when a record is stale or missing', async () => {
+    const stale = { c1: { ...layoutOf(chapters[0]!, config, resources), markdown: 'edited' }, c2: layoutOf(chapters[1]!, config, resources) };
+    const built = await buildBundleFiles(meta, { chapters, config, resources, layouts: stale }, sources);
+    expect(Object.keys(built.files)).not.toContain('layouts.json');
+    const partial = await buildBundleFiles(meta, { chapters, config, resources, layouts: { c1: layoutOf(chapters[0]!, config, resources) } }, sources);
+    expect(Object.keys(partial.files)).not.toContain('layouts.json');
+    const none = await buildBundleFiles(meta, { chapters, config, resources }, sources);
+    expect(Object.keys(none.files)).not.toContain('layouts.json');
+  });
+
+  it('drops a pagination built by another engine or configuration', async () => {
+    const layouts = { c1: layoutOf(chapters[0]!, config, resources), c2: layoutOf(chapters[1]!, config, resources) };
+    const built = await buildBundleFiles(meta, { chapters, config, resources, layouts }, sources);
+    const text = dec.decode(built.files['layouts.json']!);
+    const files = { ...built.files, 'layouts.json': enc.encode(text.replace(ENGINE_KEY, '0.0.0')) };
+    const opened = openBundleZip(zipBundle(files));
+    const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
+    expect(loaded.layouts).toBeUndefined();
   });
 });

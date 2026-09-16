@@ -29,6 +29,7 @@ const PAINTED_PAGES_BUDGET_BYTES = 512 * 1024 * 1024;
 /** Never trim below this many pages, whatever their size. */
 const MIN_PAINTED_PAGES = 6;
 import { buildPagesDom } from './pageDom';
+import { usePageNavigator } from '../usePageNavigator';
 
 interface CanvasPreviewProps {
   zoom: number;
@@ -72,6 +73,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   dispatchRef.current = dispatch;
   const activePanelRef = useRef(activePanel);
   activePanelRef.current = activePanel;
+  const navigateRef = usePageNavigator();
   const docRef = useRef<VDTDocument | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
@@ -450,6 +452,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       dispatchRef,
       activePanelRef,
       builtSourceRef,
+      navigateRef,
     );
 
     // Pre-render the pages that were in view in the previous document so
@@ -522,7 +525,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     observerRef.current = observer;
     for (const slot of allSlots) observer.observe(slot);
     lastGeomRef.current = geom;
-  }, [docVersion, layoutKey, zoom, viewMode, fitMode, deferredConfig, applyDisplaySize]);
+  }, [navigateRef, docVersion, layoutKey, zoom, viewMode, fitMode, deferredConfig, applyDisplaySize]);
 
   // Draw cursor/selection overlays whenever selection or debug config changes.
   // The viewport follows the caret only when the SELECTION moves (the reader

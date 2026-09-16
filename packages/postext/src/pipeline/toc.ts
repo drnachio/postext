@@ -52,6 +52,7 @@ function tocBlocksFor(directive: ContentBlock, outline: readonly OutlineEntry[],
       const info: TocBlockInfo = {
         kind: 'part', level: 0, number: entry.number, numbered: entry.numbered, title: entry.title,
         ...(entry.pageLabel !== undefined ? { pageLabel: entry.pageLabel } : {}),
+        ...(entry.pageIndex !== undefined ? { pageIndex: entry.pageIndex } : {}),
         ...(entry.palette ? { palette: entry.palette } : {}),
       };
       out.push({ ...base, type: 'paragraph', text: '', spans: [], sourceMap: [], toc: info });
@@ -66,6 +67,7 @@ function tocBlocksFor(directive: ContentBlock, outline: readonly OutlineEntry[],
     const info: TocBlockInfo = {
       kind: 'entry', level: entry.level, number: entry.number, numbered: entry.numbered,
       ...(entry.pageLabel !== undefined ? { pageLabel: entry.pageLabel } : {}),
+      ...(entry.pageIndex !== undefined ? { pageIndex: entry.pageIndex } : {}),
       ...(subtitle ? { subtitle } : {}),
     };
     // Every character maps to the directive line, so a click on the

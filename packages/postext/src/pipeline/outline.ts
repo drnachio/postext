@@ -119,26 +119,28 @@ export function computeOutlineFor(
  * chapters).
  */
 export function outlineFromDoc(doc: VDTDocument, parsedOutline: readonly OutlineEntry[]): OutlineEntry[] {
-  // Page label per heading content index (first fragment of a split heading).
-  const headingPage = new Map<number, string>();
+  const offset = doc.pageIndexOffset ?? 0;
+  // Page (label and book index) per heading content index (first fragment
+  // of a split heading).
+  const headingPage = new Map<number, { pageLabel: string; pageIndex: number }>();
   for (const b of doc.blocks) {
     if (b.type !== 'heading' || b.contentIndex === undefined || b.pageIndex < 0) continue;
     if (headingPage.has(b.contentIndex)) continue;
-    headingPage.set(b.contentIndex, doc.pages[b.pageIndex]?.pageLabel ?? '');
+    headingPage.set(b.contentIndex, { pageLabel: doc.pages[b.pageIndex]?.pageLabel ?? '', pageIndex: offset + b.pageIndex });
   }
-  const partPages: string[] = [];
-  for (const page of doc.pages) if (page.partInfo) partPages.push(page.pageLabel);
+  const partPages: { pageLabel: string; pageIndex: number }[] = [];
+  for (const page of doc.pages) if (page.partInfo) partPages.push({ pageLabel: page.pageLabel, pageIndex: offset + page.index });
   const headingIndices = [...headingPage.keys()].sort((a, b) => a - b);
   let h = 0;
   let p = 0;
   return parsedOutline.map((entry) => {
     if (entry.kind === 'part') {
-      const label = partPages[p++];
-      return label !== undefined ? { ...entry, pageLabel: label } : { ...entry };
+      const page = partPages[p++];
+      return page !== undefined ? { ...entry, ...page } : { ...entry };
     }
     const idx = headingIndices[h++];
-    const label = idx !== undefined ? headingPage.get(idx) : undefined;
-    return label !== undefined ? { ...entry, pageLabel: label } : { ...entry };
+    const page = idx !== undefined ? headingPage.get(idx) : undefined;
+    return page !== undefined ? { ...entry, ...page } : { ...entry };
   });
 }
 
@@ -148,7 +150,7 @@ const FIELD_SEP = '';
 export function outlineKey(entries: readonly OutlineEntry[] | undefined): string {
   if (!entries) return '';
   return entries.map((e) => [
-    e.kind, e.level, e.number, e.title, e.numbered ? 1 : 0, e.listed ? 1 : 0, e.styleId ?? '', e.pageLabel ?? '?',
+    e.kind, e.level, e.number, e.title, e.numbered ? 1 : 0, e.listed ? 1 : 0, e.styleId ?? '', e.pageLabel ?? '?', e.pageIndex ?? '?',
     e.attrs ? Object.entries(e.attrs).sort().map(([k, v]) => `${k}=${v}`).join(';') : '',
     e.palette ? Object.entries(e.palette).sort().map(([k, v]) => `${k}=${v}`).join(';') : '',
     e.spans ? e.spans.map((s) => `${s.bold ? 'b' : ''}${s.italic ? 'i' : ''}:${s.text}`).join(FIELD_SEP) : '',

@@ -121,6 +121,8 @@ export interface TocBlockInfo {
   numbered: boolean;
   /** Page label of the entry's page; absent while unknown. */
   pageLabel?: string;
+  /** Physical index of that page in the book (see `OutlineEntry.pageIndex`). */
+  pageIndex?: number;
   /** Subtitle line under the title (an entry's `{author}`), when any. */
   subtitle?: string;
   /** A part row's title and palette overrides. */

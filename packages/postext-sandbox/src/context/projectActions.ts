@@ -8,6 +8,7 @@ import type { PostextConfig } from 'postext';
 import { setCustomFonts } from '../controls/fontLoader';
 import { invalidateResourceImage } from '../controls/resourceImages';
 import { slugify } from '../panels/resources/slugify';
+import type { BundleContent } from '../presets/bundle';
 import {
   buildBundleFiles,
   openBundleZip,
@@ -44,6 +45,8 @@ import {
 } from '../storage/projects';
 import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
 import type { SandboxAction, SandboxState } from './SandboxContext';
+import type { ChapterLayout } from '../book/types';
+import { deleteChapterLayouts } from '../storage/layouts';
 
 export interface ProjectActionDeps {
   dispatch: Dispatch<SandboxAction>;
@@ -56,6 +59,9 @@ export interface ProjectActionDeps {
   cancelPresetLoads: () => void;
   /** Write the pending working-state save now (localStorage + active project). */
   flushWorkingSave: () => Promise<void>;
+  /** The layout records that are current for the working book, by chapter
+   *  id (what an export carries so the book opens paginated). */
+  currentLayouts: () => Record<string, ChapterLayout>;
   /** Drop a pending save without writing it (the target is going away). */
   discardWorkingSave: () => void;
   /** Run `fn` with garbage collection paused, then schedule a sweep. */
@@ -286,7 +292,9 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
         saveProjectId(null);
       }
+      const record = await getProject(id);
       await deleteProject(id);
+      if (record) await deleteChapterLayouts(record.chapters.map((c) => c.id)).catch(() => undefined);
       dispatch({ type: 'REMOVE_PROJECT_SUMMARY', payload: id });
       if (wasActive) await deps.runPreset(deps.getBuiltin(), 'all');
     });
@@ -313,7 +321,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         ...loaded.fonts.map((f) => putFontFile(f)),
       ]);
       const manifestName = (opened.manifest as { name?: unknown }).name;
-      return persistNew(newRecord(
+      const projectId = await persistNew(newRecord(
         { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources },
         {
           name: typeof manifestName === 'string' && manifestName ? manifestName : summaryId,
@@ -323,13 +331,17 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         },
         id,
       ));
+      // The bundle's pagination, when it still applies: the book opens
+      // paginated (the records are written to storage with the state).
+      if (loaded.layouts) dispatch({ type: 'SET_CHAPTER_LAYOUTS', payload: loaded.layouts });
+      return projectId;
     });
 
   const exportProject: ProjectActions['exportProject'] = (target) =>
     run(async () => {
       const s = deps.getState();
       let meta: { id: string; name: string; description?: string; locale?: string };
-      let content: ProjectContent;
+      let content: BundleContent;
       let readBlob = async (fileId: string) => (await getBlob(fileId))?.bytes ?? null;
       let readFont = async (fileId: string) => (await getFontFile(fileId))?.buffer ?? null;
 
@@ -361,7 +373,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
           description: active?.description ?? preset?.description,
           locale: active?.locale ?? preset?.locale ?? cur.locale,
         };
-        content = { ...bookOfState(cur), config: cur.config, resources: cur.resources };
+        content = { ...bookOfState(cur), config: cur.config, resources: cur.resources, layouts: deps.currentLayouts() };
       }
 
       const built = await buildBundleFiles(meta, content, { readBlob, readFont });

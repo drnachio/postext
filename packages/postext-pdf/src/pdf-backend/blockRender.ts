@@ -250,6 +250,13 @@ function renderStrikethrough(ctx: PageCtx, block: VDTBlock): void {
   }
 }
 
+/** Annotation rectangle of a block's box, in PDF points. */
+function rectOfBlock(ctx: PageCtx, block: VDTBlock): [number, number, number, number] {
+  const { scale, pageHeightPt } = ctx;
+  const { x, y, width, height } = block.bbox;
+  return [x * scale, pageHeightPt - (y + height) * scale, (x + width) * scale, pageHeightPt - y * scale];
+}
+
 export function renderBlock(
   ctx: PageCtx,
   block: VDTBlock,
@@ -260,16 +267,28 @@ export function renderBlock(
 ): void {
   if (block.hidden) return;
   const structure = resourceCtx?.structure;
+  const linkRegistry = resourceCtx?.linkRegistry;
+  // A row of the contents links to the page it lists: the whole row is
+  // the annotation, its text the `Link` element in a tagged render.
+  const targetPage = block.tocEntry?.pageIndex ?? block.tocPart?.pageIndex;
   if (block.designOverlay) {
     // A heading's advanced design or a callout frame: the overlay's text is
     // the heading / the callout title, its boxes and icons are decoration.
+    let link: StructElem | undefined;
+    const textElem = structure
+      ? () => link ?? (targetPage !== undefined ? (link = structure.blockElem(block).child('Link')) : structure.blockElem(block))
+      : undefined;
     renderHeaderFooterSlot(
       ctx,
       block.designOverlay,
       fontCache,
       resourceCtx?.images,
-      structure ? { text: () => structure.blockElem(block), artifact: { type: 'Layout' } } : undefined,
+      textElem ? { text: textElem, artifact: { type: 'Layout' } } : undefined,
     );
+    if (targetPage !== undefined && linkRegistry) {
+      const contents = block.tocPart ? `${block.tocPart.number} ${block.tocPart.title}`.trim() : block.lines.map((l) => l.text).join(' ');
+      linkRegistry.addPageLink(ctx.page, rectOfBlock(ctx, block), targetPage, link ? { elem: link, contents } : undefined);
+    }
     return;
   }
   if (block.type === 'resource') {
@@ -283,7 +302,9 @@ export function renderBlock(
     );
     return;
   }
-  const elem = structure && (block.lines.length > 0 || block.bulletText) ? structure.blockElem(block) : undefined;
+  const blockElem = structure && (block.lines.length > 0 || block.bulletText) ? structure.blockElem(block) : undefined;
+  const link = targetPage !== undefined && blockElem ? blockElem.child('Link') : undefined;
+  const elem = link ?? blockElem;
   if (block.type === 'listItem') {
     renderBullet(ctx, block, fontCache, structure?.bulletElem(block) ?? elem);
   }
@@ -292,7 +313,11 @@ export function renderBlock(
   void columnWidth;
   void columnX;
   for (const line of block.lines) {
-    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, resourceCtx?.linkRegistry, elem);
+    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem);
+  }
+  if (targetPage !== undefined && linkRegistry) {
+    const contents = block.lines.map((l) => l.text).join(' ');
+    linkRegistry.addPageLink(ctx.page, rectOfBlock(ctx, block), targetPage, link ? { elem: link, contents } : undefined);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

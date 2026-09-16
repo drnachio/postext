@@ -26,6 +26,7 @@ import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { createOverlaySvg } from '../CanvasPreview/dom';
 import { drawOverlay, drawBaselines } from '../CanvasPreview/overlay';
 import { attachSlotClickHandler } from '../CanvasPreview/interaction';
+import { usePageNavigator } from '../usePageNavigator';
 import {
   type ColumnMode,
   HTML_DPI,
@@ -103,6 +104,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   dispatchRef.current = dispatch;
   const activePanelRef = useRef(state.activePanel);
   activePanelRef.current = state.activePanel;
+  const navigateRef = usePageNavigator();
   const docRef = useRef<VDTDocument | null>(null);
   const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
   // Previous indexed render — drives block-level DOM patching so that an
@@ -384,6 +386,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           dispatchRef,
           activePanelRef,
           builtSourceRef,
+          navigateRef,
         );
       };
 

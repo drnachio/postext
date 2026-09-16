@@ -175,4 +175,34 @@ describe('pageNumberRestarts', () => {
     expect(formatOnly.pages.map((p) => p.pageLabel)).toEqual(['V', '6']);
     expect(formatOnly.pageNumberRestarts).toBeUndefined();
   });
+
+  it('numbers the first page with content after the directive, never a parity blank', () => {
+    // A chapter continued on a verso (odd offset) whose opener wants a
+    // recto: the blank page keeps the inherited count, the opener is 1.
+    const odd: PostextConfig = { ...numbered, headings: { levels: [{ level: 1, breakBefore: { enabled: true, parity: 'odd' } }] } };
+    const doc = buildDocument(
+      {
+        markdown: ':::numbering{format="decimal" startAt=1}\n\n# One\n\nText.',
+        continuation: { pageIndexOffset: 15, pageNumbering: { format: 'upper-roman', startAt: 16 } },
+      },
+      odd,
+    );
+    expect(doc.pages.map((p) => [p.pageLabel, p.blankForParity ?? false])).toEqual([['XVI', true], ['1', false]]);
+    expect(doc.pageNumberRestarts).toEqual([1]);
+    // A part opener is a page the reader sees: it takes the number.
+    const part = buildDocument(
+      {
+        markdown: ':::numbering{format="decimal" startAt=1}\n\n:::part{number="I" title="Start"}\n:::\n\n# One\n\nText.',
+        continuation: { pageIndexOffset: 15, pageNumbering: { format: 'upper-roman', startAt: 16 } },
+      },
+      odd,
+    );
+    const partPage = part.pages.findIndex((p) => p.partInfo);
+    expect(partPage).toBeGreaterThan(0);
+    expect(part.pages[partPage]!.pageLabel).toBe('1');
+    expect(part.pages.slice(0, partPage).every((p) => p.pageNumberFormat === 'upper-roman')).toBe(true);
+    // Mid-page, the change waits for the next page.
+    const mid = buildDocument({ markdown: 'Text.\n\n:::numbering{startAt=7}\n\nMore.\n\n:::pagebreak\n\nLast.' }, numbered);
+    expect(mid.pages.map((p) => p.pageLabel)).toEqual(['1', '7']);
+  });
 });

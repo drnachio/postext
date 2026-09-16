@@ -330,11 +330,13 @@ export interface VDTBlock {
   /** Present on the part row of an expanded `:::toc`: the row's design is
    *  laid out from `toc.parts.design` with these values (see
    *  `buildHeadersAndFooters`), replacing the block's (empty) line. */
-  tocPart?: { number: string; title: string; pageLabel: string; palette?: Record<string, string> };
-  /** Present on an entry of an expanded `:::toc`. The contents keep their
-   *  own rhythm: entries and part rows neither snap to the baseline grid
-   *  nor serve as column-balancing stretch points. */
-  tocEntry?: boolean;
+  tocPart?: { number: string; title: string; pageLabel: string; palette?: Record<string, string>; pageIndex?: number };
+  /** Present on an entry of an expanded `:::toc`, with the book page index
+   *  the entry points at once known (`OutlineEntry.pageIndex`): renderers
+   *  make the row a link to it. The contents keep their own rhythm:
+   *  entries and part rows neither snap to the baseline grid nor serve as
+   *  column-balancing stretch points. */
+  tocEntry?: { pageIndex?: number };
   numberPrefix?: string;
   fontString: string;
   boldFontString?: string;

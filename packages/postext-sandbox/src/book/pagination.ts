@@ -8,6 +8,7 @@
 import { contentOutline, continuationAfter, formatNumeral, outlineFromDoc, outlineKey, resolvePageConfig } from 'postext';
 import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
 import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPlan } from './types';
+import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
 
 /** The page number `n` resolves to when the chapter's first page is
  *  numbered `start`. */
@@ -64,7 +65,9 @@ function countersKey(c: LayoutContinuation | undefined): string {
   return `${headings}|${counters}|${numbers}|${part}`;
 }
 
-/** Whether `layout` was built from the chapter's current inputs. */
+/** Whether `layout` was built from the chapter's current inputs: its text,
+ *  the configuration and resources (by fingerprint), the engine, and what
+ *  it inherits. */
 export function chapterLayoutIsCurrent(
   layout: ChapterLayout | undefined,
   chapter: Chapter,
@@ -77,8 +80,9 @@ export function chapterLayoutIsCurrent(
 ): layout is ChapterLayout {
   return !!layout
     && layout.markdown === chapter.markdown
-    && layout.config === config
-    && layout.resources === resources
+    && layout.engine === ENGINE_KEY
+    && layout.configKey === configKeyOf(config)
+    && layout.resourcesKey === resourcesKeyOf(resources)
     && layout.continuationKey === continuationKey
     && (outlineKeyOf === undefined || layout.outlineKey === outlineKeyOf);
 }
@@ -108,15 +112,16 @@ export function sameLayoutInputs(a: ChapterPlan, b: ChapterPlan): boolean {
 }
 
 /** Whether two layout records say the same thing about a chapter: built
- *  from the same inputs (by identity, as {@link chapterLayoutIsCurrent}
- *  checks them) with the same page outcome. Recording such a record again
- *  changes nothing downstream. */
+ *  from the same inputs (as {@link chapterLayoutIsCurrent} checks them)
+ *  with the same page outcome. Recording such a record again changes
+ *  nothing downstream. */
 export function sameChapterLayout(a: ChapterLayout | undefined, b: ChapterLayout): boolean {
   return !!a
     && a.chapterId === b.chapterId
     && a.markdown === b.markdown
-    && a.config === b.config
-    && a.resources === b.resources
+    && a.configKey === b.configKey
+    && a.resourcesKey === b.resourcesKey
+    && a.engine === b.engine
     && a.continuationKey === b.continuationKey
     && a.pageCount === b.pageCount
     && a.leadingBlankPages === b.leadingBlankPages
@@ -208,7 +213,7 @@ export function createBookPlanner(): BookPlanner {
           // A record built from the chapter's current text carries the
           // page labels; its outline is preferred whenever its titles
           // match the text (the page chain may still move it).
-          return stored && stored.markdown === chapter.markdown && stored.config === config && stored.outline.length === entry.outline.length
+          return stored && stored.markdown === chapter.markdown && stored.configKey === configKeyOf(config) && stored.outline.length === entry.outline.length
             ? stored.outline
             : entry.outline;
         })
@@ -307,8 +312,9 @@ export function chapterLayoutFromDoc(
   return {
     chapterId: plan.chapterId,
     markdown: inputs.markdown,
-    config: inputs.config,
-    resources: inputs.resources,
+    configKey: configKeyOf(inputs.config),
+    resourcesKey: resourcesKeyOf(inputs.resources),
+    engine: ENGINE_KEY,
     continuationKey: plan.continuationKey,
     pageCount,
     leadingBlankPages,

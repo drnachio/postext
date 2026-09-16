@@ -277,7 +277,7 @@ export async function renderToPdf(
   const resourceImages = await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, options.fontProvider);
   const resourceCtx: ResourceRenderContext = {
     images: resourceImages,
-    linkRegistry: new LinkRegistry(),
+    linkRegistry: new LinkRegistry(doc.pageIndexOffset ?? 0),
     structure: tree ? new StructureFlow(tree) : undefined,
   };
 

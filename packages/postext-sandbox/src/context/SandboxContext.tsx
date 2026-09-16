@@ -23,6 +23,7 @@ import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
 import { pruneBlobs } from '../storage/blobStore';
 import { collectProjectFileIds, generateChapterId, listProjects, referencedFileIds, toSummary, updateProject } from '../storage/projects';
+import { getChapterLayouts, pruneChapterLayoutStore, putChapterLayouts } from '../storage/layouts';
 import type { ProjectSummary } from '../storage/projects';
 import type { BookContent, BookPages, BookPlan, Chapter, ChapterLayout, ChapterPlan, ComposedBook, LayoutScope } from '../book/types';
 import { createBookPlanner, sameChapterLayout, sameLayoutInputs } from '../book/pagination';
@@ -226,6 +227,8 @@ export type SandboxAction =
   | { type: 'SPLIT_CHAPTER_AT_HEADINGS'; payload: { id: string; newIds: string[] } }
   | { type: 'MERGE_CHAPTER_WITH_PREVIOUS'; payload: string }
   | { type: 'SET_CHAPTER_LAYOUT'; payload: ChapterLayout }
+  /** Stored records (storage, a bundle) for chapters that have none in memory yet. */
+  | { type: 'SET_CHAPTER_LAYOUTS'; payload: Record<string, ChapterLayout> }
   | { type: 'HIDE_PRESET'; payload: string }
   | { type: 'UNHIDE_PRESET'; payload: string }
   | { type: 'SET_ACTIVE_RESOURCE'; payload: string | null }
@@ -330,6 +333,16 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       // consumer (and the preview that just built) a needless re-derivation.
       if (sameChapterLayout(state.chapterLayouts[layout.chapterId], layout)) return state;
       return { ...state, chapterLayouts: { ...state.chapterLayouts, [layout.chapterId]: layout } };
+    }
+    case 'SET_CHAPTER_LAYOUTS': {
+      // A record built in this session is at least as fresh as a stored
+      // one: only chapters without a record take the stored one.
+      const live = new Set(state.chapters.map((c) => c.id));
+      const added = Object.values(action.payload).filter((l) => live.has(l.chapterId) && !state.chapterLayouts[l.chapterId]);
+      if (added.length === 0) return state;
+      const chapterLayouts = { ...state.chapterLayouts };
+      for (const l of added) chapterLayouts[l.chapterId] = l;
+      return { ...state, chapterLayouts };
     }
     case 'HIDE_PRESET': {
       const next = hidePresetId(state.hiddenPresetIds, action.payload);
@@ -835,6 +848,8 @@ const PRESET_WATCH_INTERVAL_MS = 3000;
 const PRESET_NOTICE_MS = 4000;
 /** Debounce for the working-state save (localStorage + active project). */
 const WORKING_SAVE_MS = 1000;
+/** Debounce of the chapter layout records' write to storage. */
+const LAYOUTS_SAVE_MS = 400;
 /** Debounce for the blob/font garbage collection sweep. */
 const GC_DEBOUNCE_MS = 2000;
 
@@ -993,6 +1008,11 @@ export function SandboxProvider({
         presetProvidersRef.current = providers;
         dispatch({ type: 'SET_PROJECT_LIST', payload: projects.map(toSummary) });
         projectsLoadedRef.current = true;
+        // Layout records of chapters no book holds any more are dropped.
+        void pruneChapterLayoutStore(new Set([
+          ...projects.flatMap((p) => p.chapters.map((c) => c.id)),
+          ...stateRef.current.chapters.map((c) => c.id),
+        ])).catch(() => undefined);
 
         const currentBook = bookOf(stateRef.current);
         const savedBook = loadBook(migration);
@@ -1230,6 +1250,41 @@ export function SandboxProvider({
     saveHiddenPresetIds(state.hiddenPresetIds);
   }, [state.hiddenPresetIds]);
 
+  // Chapter layouts persist with the book (the 'layouts' store, by chapter
+  // id): the records of chapters that have none in memory are read once
+  // per chapter id — on mount, after a project switch, a preset, an import
+  // — and every record built or changed here is written back. Stale ones
+  // are told apart by the planner, never here.
+  const layoutsLookedUpRef = useRef(new Set<string>());
+  const layoutsPersistedRef = useRef(new Map<string, ChapterLayout>());
+  useEffect(() => {
+    const ids = state.chapters.map((c) => c.id).filter((id) => !layoutsLookedUpRef.current.has(id));
+    if (ids.length === 0) return;
+    for (const id of ids) layoutsLookedUpRef.current.add(id);
+    // Never cancelled: the chapter list changes right after mount (the
+    // seeding) and on every keystroke; the reducer keeps only records of
+    // chapters still in the book that have none in memory.
+    getChapterLayouts(ids)
+      .then((stored) => {
+        for (const l of Object.values(stored)) layoutsPersistedRef.current.set(l.chapterId, l);
+        if (Object.keys(stored).length > 0) dispatch({ type: 'SET_CHAPTER_LAYOUTS', payload: stored });
+      })
+      .catch(() => undefined);
+  }, [state.chapters]);
+  const layoutsSaveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => {
+    clearTimeout(layoutsSaveTimerRef.current);
+    layoutsSaveTimerRef.current = setTimeout(() => {
+      layoutsSaveTimerRef.current = undefined;
+      const persisted = layoutsPersistedRef.current;
+      const changed = Object.values(state.chapterLayouts).filter((l) => persisted.get(l.chapterId) !== l);
+      if (changed.length === 0) return;
+      for (const l of changed) persisted.set(l.chapterId, l);
+      void putChapterLayouts(changed).catch(() => undefined);
+    }, LAYOUTS_SAVE_MS);
+    return () => clearTimeout(layoutsSaveTimerRef.current);
+  }, [state.chapterLayouts]);
+
   // Drop editor histories of chapters that no longer exist (deleted, or a
   // different project was activated — chapter ids are unique).
   useEffect(() => {
@@ -1369,6 +1424,11 @@ export function SandboxProvider({
     runPreset: (provider, parts) => runPresetRef.current(provider, parts),
     cancelPresetLoads: () => { presetLoadSeqRef.current++; },
     flushWorkingSave: () => flushWorkingSaveRef.current(),
+    currentLayouts: () => {
+      const out: Record<string, ChapterLayout> = {};
+      for (const c of getPlan(stateRef.current).chapters) if (c.layout) out[c.chapterId] = c.layout;
+      return out;
+    },
     discardWorkingSave: () => discardWorkingSaveRef.current(),
     withGcSuspended: async (fn) => {
       gcSuspendedRef.current++;

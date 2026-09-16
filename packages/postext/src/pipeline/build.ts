@@ -1126,13 +1126,16 @@ export function buildDocumentPass(
         if (!style.numbered) blk.unnumbered = true;
       }
     }
-    if (raw.toc?.kind === 'entry') blk.tocEntry = true;
+    if (raw.toc?.kind === 'entry') {
+      blk.tocEntry = raw.toc.pageIndex !== undefined ? { pageIndex: raw.toc.pageIndex } : {};
+    }
     if (raw.toc?.kind === 'part') {
       blk.tocPart = {
         number: raw.toc.number,
         title: raw.toc.title ?? '',
         pageLabel: raw.toc.pageLabel ?? '',
         ...(raw.toc.palette ? { palette: raw.toc.palette } : {}),
+        ...(raw.toc.pageIndex !== undefined ? { pageIndex: raw.toc.pageIndex } : {}),
       };
     }
   };
@@ -1314,28 +1317,32 @@ export function buildDocumentPass(
   let pendingNumberingChange:
     | { format?: NumeralStyle; startAt?: number }
     | null = null;
-  let lastSeenPageIndex = 0;
+  /** The earliest page a pending change may number: the page the directive
+   *  was met on while still empty, else the page after it. */
+  let pendingNumberingPage = 0;
+  /** A page holding something the reader sees: column content, a float, a
+   *  part opener. A parity blank is not one. */
+  const pageTakesNumbering = (page: VDTPage): boolean =>
+    pageHasContent(page) || (page.floats?.length ?? 0) > 0 || page.partInfo !== undefined;
 
-  /** Commits any pending `:::numbering` change once we've crossed into a
-   *  new page — or while the current page is still empty: the directive at
-   *  the head of a chapter (or right after a page break) numbers the page
-   *  it opens, not the one after. Called after every block iteration. */
+  /** Commits a pending `:::numbering` change to the first page from the
+   *  directive on that receives content: the page the directive opens (the
+   *  head of a chapter, right after a page break) or, when that page was
+   *  already written on, the next one — never a blank page padding parity
+   *  in between. Called after every block iteration and page advance. */
   const flushPendingNumberingAtBoundary = (): void => {
-    if (pendingNumberingChange) {
-      const page = doc.pages[cursor.pageIndex]!;
-      const pageStillEmpty = !pageHasContent(page) && !(page.floats && page.floats.length > 0);
-      if (cursor.pageIndex > lastSeenPageIndex || pageStillEmpty) {
-        // A change already recorded for this page is replaced.
-        const last = pageNumberSegments[pageNumberSegments.length - 1]!;
-        if (last.startPageIndex === cursor.pageIndex && pageNumberSegments.length > 1) pageNumberSegments.pop();
-        pageNumberSegments.push({
-          startPageIndex: cursor.pageIndex,
-          ...pendingNumberingChange,
-        });
-        pendingNumberingChange = null;
-      }
-    }
-    if (cursor.pageIndex > lastSeenPageIndex) lastSeenPageIndex = cursor.pageIndex;
+    if (!pendingNumberingChange) return;
+    if (cursor.pageIndex < pendingNumberingPage) return;
+    const page = doc.pages[cursor.pageIndex]!;
+    if (!pageTakesNumbering(page)) return;
+    // A change already recorded for this page is replaced.
+    const last = pageNumberSegments[pageNumberSegments.length - 1]!;
+    if (last.startPageIndex === cursor.pageIndex && pageNumberSegments.length > 1) pageNumberSegments.pop();
+    pageNumberSegments.push({
+      startPageIndex: cursor.pageIndex,
+      ...pendingNumberingChange,
+    });
+    pendingNumberingChange = null;
   };
 
   /** Heading blocks that are not part of a callout — the only ones the
@@ -2338,11 +2345,10 @@ export function buildDocumentPass(
           const n = Number(attrs.startAt);
           if (Number.isInteger(n) && n >= 1) change.startAt = n;
         }
-        if (Object.keys(change).length > 0) pendingNumberingChange = change;
-        // A page opened just before (a `:::pagebreak`, the chapter's head)
-        // is still empty: it takes the change now. Otherwise the change
-        // waits for the next page boundary.
-        flushPendingNumberingAtBoundary();
+        if (Object.keys(change).length > 0) {
+          pendingNumberingChange = change;
+          pendingNumberingPage = pageTakesNumbering(doc.pages[cursor.pageIndex]!) ? cursor.pageIndex + 1 : cursor.pageIndex;
+        }
       }
       continue;
     }

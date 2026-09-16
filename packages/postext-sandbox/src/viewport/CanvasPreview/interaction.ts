@@ -8,6 +8,7 @@ import { getSvgTextIndex } from '../../controls/svgTextIndex';
 import {
   findResourceLocation,
   pixelToSourceOffset,
+  pageTargetAtPixel,
   refResourceIdAtPixel,
   type ResourceLocation,
 } from './geometry';
@@ -92,10 +93,16 @@ export function toChapterFocus(
   return { chapterId: a.chapterId, anchor: a.offset, head: headLocal, selectWord };
 }
 
+/** Where a click on a row of the contents goes: the book page index the
+ *  row lists, with the document it was clicked in (whose own pages need
+ *  no book lookup). */
+export type PageNavigator = (pageIndex: number, doc: VDTDocument) => void;
+
 /**
  * Wire a click listener on a page slot. Background clicks (outside any block)
  * and active text-selection drags are ignored. Clicks on `:ref` segments
- * navigate to the referenced resource instead of focusing the editor.
+ * navigate to the referenced resource, clicks on a row of the contents to
+ * the page it lists, instead of focusing the editor.
  */
 export function attachSlotClickHandler(
   slot: HTMLDivElement,
@@ -108,6 +115,7 @@ export function attachSlotClickHandler(
   /** The composed book `docRef` was built from: document offsets map back
    *  to (chapter, offset) through it. */
   sourceRef: MutableRefObject<ComposedBook | null>,
+  navigateRef?: MutableRefObject<PageNavigator | null>,
 ): void {
   slot.style.cursor = 'text';
 
@@ -137,6 +145,14 @@ export function attachSlotClickHandler(
     const pt = resolvePagePoint(ev);
     if (!pt) return null;
     return refResourceIdAtPixel(doc, pageIndex, pt.x, pt.y);
+  };
+
+  const resolvePageTarget = (ev: MouseEvent): number | null => {
+    const doc = docRef.current;
+    if (!doc || !navigateRef?.current) return null;
+    const pt = resolvePagePoint(ev);
+    if (!pt) return null;
+    return pageTargetAtPixel(doc, pageIndex, pt.x, pt.y);
   };
 
   // Editable resource text (table cells, captions, notes, SVG text nodes) is
@@ -200,8 +216,8 @@ export function attachSlotClickHandler(
 
   slot.addEventListener('pointermove', (ev) => {
     if (dragPointerId === null) {
-      // Hover feedback: refs read as links.
-      slot.style.cursor = resolveRefId(ev) !== null ? 'pointer' : 'text';
+      // Hover feedback: refs and contents rows read as links.
+      slot.style.cursor = resolveRefId(ev) !== null || resolvePageTarget(ev) !== null ? 'pointer' : 'text';
       return;
     }
     if (ev.pointerId !== dragPointerId) return;
@@ -266,6 +282,12 @@ export function attachSlotClickHandler(
       const doc = docRef.current;
       const loc = doc ? findResourceLocation(doc, refId) : null;
       if (doc && loc) scrollToResourceLocation(slot, doc, loc);
+      return;
+    }
+    const target = resolvePageTarget(ev);
+    if (target !== null && docRef.current) {
+      ev.preventDefault();
+      navigateRef!.current!(target, docRef.current);
       return;
     }
     const resourceHit = resolveResourceHit(ev);

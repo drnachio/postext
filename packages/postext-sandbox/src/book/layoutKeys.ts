@@ -1,0 +1,69 @@
+// Fingerprints of a chapter layout's inputs. A layout record is only valid
+// for the configuration, resources and engine it was built with; comparing
+// fingerprints (rather than object identity) lets a record persisted in
+// storage or carried by a bundle stay current across sessions.
+
+import { stripConfigDefaults } from 'postext';
+import type { PostextConfig, Resource } from 'postext';
+import { version as ENGINE_VERSION } from 'postext/package.json';
+
+/** Bumped by hand when the record shape or the layout semantics change
+ *  between engine releases (development builds share a version). */
+const RECORD_FORMAT = 2;
+
+/** The layout engine a record was built with (the `postext` version and
+ *  the record format). A record from another is recomputed. */
+export const ENGINE_KEY = `${ENGINE_VERSION}/${RECORD_FORMAT}`;
+
+/** Storage-local fields that do not shape a layout: the ids of stored files
+ *  (remapped when a bundle is imported), timestamps, and the custom font
+ *  registry (families are referenced by name; a bundle rebuilds the list
+ *  with its own file ids and names). */
+const VOLATILE_KEYS = new Set(['fileId', 'pdfFileId', 'createdAt', 'updatedAt', 'customFonts']);
+
+/** JSON with sorted object keys and the volatile fields left out, so equal
+ *  content gives equal text whatever the object came through. */
+export function stableStringify(value: unknown): string {
+  return JSON.stringify(value, function replacer(this: unknown, key: string, v: unknown) {
+    if (VOLATILE_KEYS.has(key)) return undefined;
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      const sorted: Record<string, unknown> = {};
+      for (const k of Object.keys(v as Record<string, unknown>).sort()) sorted[k] = (v as Record<string, unknown>)[k];
+      return sorted;
+    }
+    return v;
+  });
+}
+
+/** djb2 over a string, as 8 hex digits: short enough to store per record,
+ *  distinct enough to tell configurations apart. */
+function hash(text: string): string {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(16).padStart(8, '0') + text.length.toString(16);
+}
+
+const configKeys = new WeakMap<PostextConfig, string>();
+const resourceKeys = new WeakMap<readonly Resource[], string>();
+
+/** Fingerprint of everything in `config` a layout depends on. Cached per
+ *  object, so a plan re-derived on every state change pays nothing. */
+export function configKeyOf(config: PostextConfig): string {
+  let key = configKeys.get(config);
+  if (key === undefined) {
+    key = hash(stableStringify(stripConfigDefaults(config)));
+    configKeys.set(config, key);
+  }
+  return key;
+}
+
+/** Fingerprint of the resource records (captions, sizes, placement — not
+ *  the stored files' ids). */
+export function resourcesKeyOf(resources: readonly Resource[]): string {
+  let key = resourceKeys.get(resources);
+  if (key === undefined) {
+    key = hash(stableStringify(resources));
+    resourceKeys.set(resources, key);
+  }
+  return key;
+}

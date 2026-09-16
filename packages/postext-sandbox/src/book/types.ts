@@ -2,7 +2,7 @@
 // resource set, plus one markdown document per chapter. These types are the
 // vocabulary shared by state, storage records and preset bundles.
 
-import type { DocumentMetadata, LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource } from 'postext';
+import type { DocumentMetadata, LayoutContinuation, NumeralStyle, OutlineEntry } from 'postext';
 
 export interface Chapter {
   /** Random UUID; stable across rename/reorder; unique across projects. */
@@ -81,12 +81,17 @@ export type ChapterPageNumber = { delta: number } | { value: number };
  *  it was built from so a stale record is told from a current one. Page
  *  numbers are not part of the inputs: a chapter's page count only depends
  *  on the parity and format it starts with, so shifting the chapters before
- *  it keeps the record valid. */
+ *  it keeps the record valid. Plain data: records persist with the book
+ *  (storage, bundles) so reopening it needs no relayout, and the
+ *  fingerprints (`layoutKeys.ts`) tell a current record from a stale one. */
 export interface ChapterLayout {
   chapterId: string;
   markdown: string;
-  config: PostextConfig;
-  resources: Resource[];
+  /** `configKeyOf` / `resourcesKeyOf` of the inputs, `ENGINE_KEY` of the
+   *  engine that laid the chapter out. */
+  configKey: string;
+  resourcesKey: string;
+  engine: string;
   /** {@link ChapterPlan.continuationKey} at build time. */
   continuationKey: string;
   pageCount: number;

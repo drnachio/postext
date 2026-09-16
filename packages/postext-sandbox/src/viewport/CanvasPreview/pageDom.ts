@@ -4,7 +4,7 @@ import type { SandboxAction } from '../../context/SandboxContext';
 import type { PanelId } from '../../types';
 import type { ComposedBook } from '../../book/types';
 import { createPageCanvas, createOverlaySvg } from './dom';
-import { attachSlotClickHandler } from './interaction';
+import { attachSlotClickHandler, type PageNavigator } from './interaction';
 import {
   PAGE_GAP,
   PAGE_PADDING,
@@ -30,6 +30,7 @@ export function buildPagesDom(
   dispatchRef: MutableRefObject<Dispatch<SandboxAction>>,
   activePanelRef: MutableRefObject<PanelId | null>,
   sourceRef: MutableRefObject<ComposedBook | null>,
+  navigateRef?: MutableRefObject<PageNavigator | null>,
 ): BuildPagesDomResult {
   const isSpread = viewMode === 'spread';
   const pagesPerRow = isSpread ? 2 : 1;
@@ -58,7 +59,7 @@ export function buildPagesDom(
     const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
     slot.appendChild(overlay);
     overlayMap.set(pageIndex, overlay);
-    attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef, sourceRef);
+    attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef, sourceRef, navigateRef);
     allSlots.push(slot);
     return slot;
   };

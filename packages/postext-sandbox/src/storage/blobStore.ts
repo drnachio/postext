@@ -8,12 +8,15 @@
 // consistent regardless of which module opens the DB first.
 
 export const DB_NAME = 'postext-sandbox';
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 export const BLOBS_STORE = 'blobs';
 export const RESOURCES_STORE = 'resources';
 /** Local projects (see projects.ts). Added in DB version 2. */
 export const PROJECTS_STORE = 'projects';
+/** Chapter layout records (see layouts.ts), keyed by chapter id. Added in
+ *  DB version 3. */
+export const LAYOUTS_STORE = 'layouts';
 
 export interface BlobRecord {
   fileId: string;
@@ -38,6 +41,9 @@ export function openSandboxDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(RESOURCES_STORE)) {
         db.createObjectStore(RESOURCES_STORE, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(LAYOUTS_STORE)) {
+        db.createObjectStore(LAYOUTS_STORE, { keyPath: 'chapterId' });
       }
       if (!db.objectStoreNames.contains(PROJECTS_STORE)) {
         db.createObjectStore(PROJECTS_STORE, { keyPath: 'id' });
