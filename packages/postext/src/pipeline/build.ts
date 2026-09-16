@@ -1165,6 +1165,14 @@ export function buildDocumentPass(
    *  keep-with-next rollbacks may pull along (a callout is one unbreakable
    *  unit; its children never leave it). */
   const isFreeHeading = (b: VDTBlock): boolean => b.type === 'heading' && b.containerId === undefined;
+  /** Free headings closing `col` (its trailing run), 0 unless keep-with-next
+   *  is on: the headings a block moving on would strand. */
+  const trailingHeadingRun = (col: VDTColumn): number => {
+    if (!resolved.headings.keepWithNext) return 0;
+    let n = 0;
+    for (let j = col.blocks.length - 1; j >= 0 && isFreeHeading(col.blocks[j]!); j--) n++;
+    return n;
+  };
 
   /** Stamp a callout frame's content index and source range: the whole
    *  fence (opening to closing marker) for an unsplit box; for a fragment
@@ -2798,7 +2806,7 @@ export function buildDocumentPass(
       const effectiveAvoidWidows = resolved.bodyText.avoidWidows
         && (!inList || resolved.bodyText.avoidWidowsInLists);
       if (canSplit && linesPerAvailable >= 1) {
-        const choice = chooseParagraphSplit(remainingLines.length, linesPerAvailable, {
+        let choice = chooseParagraphSplit(remainingLines.length, linesPerAvailable, {
           avoidOrphans: effectiveAvoidOrphans,
           orphanMinLines: resolved.bodyText.orphanMinLines,
           orphanPenalty: resolved.bodyText.orphanPenalty,
@@ -2807,6 +2815,17 @@ export function buildDocumentPass(
           widowPenalty: resolved.bodyText.widowPenalty,
           slackWeight: resolved.bodyText.slackWeight,
         });
+        // The block sits right under a heading: pushing it whole would
+        // strand the heading. Keep as many lines as fit under it — at
+        // least the widow minimum — even when that leaves a short tail;
+        // with fewer than that, the heading moves along with the block
+        // (the no-fit branch below rolls it back).
+        const headingRun = partIndex === 0 ? trailingHeadingRun(curCol) : 0;
+        if (choice.splitAt === 0 && headingRun > 0 && headingRun < curCol.blocks.length) {
+          const minKeep = effectiveAvoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
+          const maxFit = Math.min(linesPerAvailable, remainingLines.length);
+          if (maxFit >= minKeep) choice = { splitAt: maxFit, demerit: choice.demerit };
+        }
         if (choice.splitAt > 0) {
           // Consume spacing (negative: a container margin pulling the block up)
           if (spacingBefore !== 0) {
@@ -2849,11 +2868,17 @@ export function buildDocumentPass(
       // the column is a short band that cannot hold the block at all).
       if (curCol.blocks.length > 0 || (shortColumn && effectiveRemainHeight <= contentArea.height)) {
         if (curCol.blocks.length === 0) shortColumnMoves++;
-        // Heading keep-with-next (no-fit variant): when a heading can't fit
-        // in the current column and the column's tail is a run of headings,
-        // pull those headings along so they don't remain stranded as orphans
-        // at the column's bottom. Mirrors the rollback inside the "fits" path.
-        if (vdtType === 'heading' && resolved.headings.keepWithNext) {
+        // Heading keep-with-next (no-fit variant): when a block can't fit
+        // in the current column — a heading, or any block moving on whole
+        // (fewer lines than the widow minimum would stay) — and the
+        // column's tail is a run of headings, pull those headings along so
+        // they don't remain stranded at the column's bottom. Mirrors the
+        // rollback inside the "fits" path. A block leaving a column that
+        // holds nothing but headings stays put instead (rolling back would
+        // loop): the headings then open the next column with it.
+        const strands = partIndex === 0 && vdtType !== 'heading'
+          && trailingHeadingRun(curCol) > 0 && trailingHeadingRun(curCol) < curCol.blocks.length;
+        if (resolved.headings.keepWithNext && (vdtType === 'heading' || strands)) {
           const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
           if (rolledBack.length > 0) {
             blockIdx = (rolledBack[0]!.contentIndex ?? blockIdx - rolledBack.length) - 1;
