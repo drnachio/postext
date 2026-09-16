@@ -585,6 +585,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   chapterDeleteLast: 'A book needs at least one chapter',
   chapterMoveUp: 'Move up',
   chapterMoveDown: 'Move down',
+  chapterDragHandle: 'Drag to reorder',
   chapterSplitAtHeadings: 'Split at level-1 headings',
   chapterSplitAtHeadingsConfirm: 'Split this chapter into __n__ chapters at its level-1 headings?',
   chapterMergePrevious: 'Merge into previous chapter',

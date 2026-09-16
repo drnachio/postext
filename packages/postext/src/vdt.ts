@@ -331,6 +331,10 @@ export interface VDTBlock {
    *  laid out from `toc.parts.design` with these values (see
    *  `buildHeadersAndFooters`), replacing the block's (empty) line. */
   tocPart?: { number: string; title: string; pageLabel: string; palette?: Record<string, string> };
+  /** Present on an entry of an expanded `:::toc`. The contents keep their
+   *  own rhythm: entries and part rows neither snap to the baseline grid
+   *  nor serve as column-balancing stretch points. */
+  tocEntry?: boolean;
   numberPrefix?: string;
   fontString: string;
   boldFontString?: string;
@@ -641,6 +645,13 @@ export interface VDTDocument {
   /** Physical pages before page 0 (`PostextContent.continuation`): shifts
    *  parity everywhere. Absent or 0 for a self-contained document. */
   pageIndexOffset?: number;
+  /** Indices of the pages where a `:::numbering{startAt=…}` directive
+   *  restarts the page count, ascending. The pages before the first one
+   *  continue the inherited numbering (`continuation.pageNumbering` or
+   *  `page.pageNumbering`); a host laying out a book chapter by chapter
+   *  tells the two apart when the pages before the chapter shift. Absent
+   *  when the count never restarts. */
+  pageNumberRestarts?: number[];
   /** Chapters (level-1 headings) before this document, so `{chapterNumber}`
    *  keeps counting without a numbering template. */
   chapterOrdinalOffset?: number;

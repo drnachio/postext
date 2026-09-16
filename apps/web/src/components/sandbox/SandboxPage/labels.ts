@@ -571,6 +571,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     chapterDeleteLast: t("chapterDeleteLast"),
     chapterMoveUp: t("chapterMoveUp"),
     chapterMoveDown: t("chapterMoveDown"),
+    chapterDragHandle: t("chapterDragHandle"),
     chapterSplitAtHeadings: t("chapterSplitAtHeadings"),
     chapterSplitAtHeadingsConfirm: t("chapterSplitAtHeadingsConfirm"),
     chapterMergePrevious: t("chapterMergePrevious"),

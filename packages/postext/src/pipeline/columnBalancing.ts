@@ -336,6 +336,7 @@ export function collectColumnGaps(
           && b.type !== 'listItem'
           && b.type !== 'heading' // a heading after a list is a heading candidate
           && !b.id.includes('-cont-')
+          && !b.tocEntry && !b.tocPart // the contents keep their own rhythm
         ) {
           candidates.push({
             contentIndex: b.contentIndex,

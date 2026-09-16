@@ -1099,6 +1099,7 @@
     "chapterDeleteLast": "Un libro necesita al menos un capítulo",
     "chapterMoveUp": "Subir",
     "chapterMoveDown": "Bajar",
+    "chapterDragHandle": "Arrastra para reordenar",
     "chapterSplitAtHeadings": "Dividir por títulos de nivel 1",
     "chapterSplitAtHeadingsConfirm": "¿Dividir este capítulo en __n__ capítulos por sus títulos de nivel 1?",
     "chapterMergePrevious": "Fusionar con el capítulo anterior",

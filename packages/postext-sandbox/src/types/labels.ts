@@ -633,6 +633,8 @@ export interface SandboxLabels {
   chapterDeleteLast: string;
   chapterMoveUp: string;
   chapterMoveDown: string;
+  /** Grip at the left of a chapter row: drag it to reorder. */
+  chapterDragHandle: string;
   chapterSplitAtHeadings: string;
   chapterSplitAtHeadingsConfirm: string;
   chapterMergePrevious: string;

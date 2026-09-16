@@ -159,6 +159,32 @@ describe(':::toc', () => {
     expect(doc.pages[0]!.pageLabel).toBe('i');
   });
 
+  it('spaces entries and part rows by their own margins, off the baseline grid', () => {
+    const spaced: PostextConfig = {
+      ...base,
+      page: { ...base.page, baselineGrid: { enabled: true } },
+      toc: {
+        ...base.toc,
+        levels: [{ level: 1, marginTop: pt(4) }],
+        parts: { enabled: true, marginTop: pt(28), marginBottom: pt(4) },
+      },
+    };
+    const doc = buildDocument({ markdown: book }, spaced);
+    const [pref, part, lantern, trimming] = tocBlocks(doc);
+    expect(pref!.tocEntry).toBe(true);
+    expect(part!.tocEntry).toBeUndefined();
+    expect(lantern!.tocEntry).toBe(true);
+    const gap = (above: VDTBlock, below: VDTBlock) => below.bbox.y - (above.bbox.y + above.bbox.height);
+    // The part row keeps its top margin (a paragraph-shaped block, whose
+    // margin placement otherwise ignores) and its bottom margin.
+    expect(gap(pref!, part!)).toBeCloseTo(dimensionToPx(pt(28), DPI), 1);
+    expect(gap(part!, lantern!)).toBeCloseTo(dimensionToPx(pt(4), DPI), 1);
+    // Consecutive entries sit one margin apart: an entry is not a list
+    // tail snapped to the grid.
+    expect(gap(lantern!, trimming!)).toBeCloseTo(dimensionToPx(pt(4), DPI), 1);
+    expect(lantern!.snappedToGrid).toBe(false);
+  });
+
   it('uses a host-supplied outline as is, without a second pass', () => {
     const outline = computeOutline(parseMarkdown(book), resolveAllConfig(base)).map((e) => ({ ...e, pageLabel: '42' }));
     const doc = buildDocument({ markdown: book, outline }, base);

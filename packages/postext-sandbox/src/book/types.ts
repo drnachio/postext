@@ -56,13 +56,26 @@ export interface ComposedBook {
 export interface ChapterPages {
   /** 0-based index of the chapter's first content page in the book. */
   pageIndex: number;
-  /** Numeric page value shown on that page (respects `startAt`). */
+  /** Numeric page value shown on that page (respects `startAt` and a
+   *  `:::numbering` restart at the chapter's head). */
   pageNumberValue: number;
+  /** Page-number format on that page (`upper-roman` front matter…). */
+  pageNumberFormat: NumeralStyle;
+  /** Numeric page value and format of the chapter's last page. */
+  lastPageNumberValue: number;
+  lastPageNumberFormat: NumeralStyle;
   /** Content pages (leading parity padding excluded). */
   pageCount: number;
 }
 
 export type BookPages = Record<string, ChapterPages>;
+
+/** How a page of a chapter is numbered, in terms the record keeps valid
+ *  when the chapters before it shift: `delta` pages after the number the
+ *  chapter inherits (its first page's) while no `:::numbering{startAt=…}`
+ *  restarts the count before the page, else the absolute `value` the
+ *  restart set. */
+export type ChapterPageNumber = { delta: number } | { value: number };
 
 /** What the last layout of a chapter on its own recorded, with the inputs
  *  it was built from so a stale record is told from a current one. Page
@@ -80,10 +93,13 @@ export interface ChapterLayout {
   /** Pages at the start holding no content (parity padding before the
    *  chapter opener). */
   leadingBlankPages: number;
-  /** `pageNumberValue` of the last page minus that of the first, so the
-   *  next chapter's first number follows whatever numbering the chapter
-   *  ends on. */
-  lastPageDelta: number;
+  /** How the first content page is numbered (see {@link ChapterPageNumber})
+   *  and the format printed on it. */
+  firstContentPageNumber: ChapterPageNumber;
+  firstContentPageFormat: NumeralStyle;
+  /** How the last page is numbered, so the next chapter's first number
+   *  follows whatever numbering the chapter ends on. */
+  lastPageNumber: ChapterPageNumber;
   /** Page-number format on the last page. */
   lastPageFormat: NumeralStyle;
   /** The chapter's outline — its headings and parts with the page label
@@ -99,6 +115,11 @@ export interface ChapterLayout {
 export interface ChapterPlan {
   chapterId: string;
   index: number;
+  /** The chapter's number: the ordinal of its first numbered level-1
+   *  heading, counted over the book. Null when it opens no numbered
+   *  chapter — the front matter (headings styled `numbered: false`) or a
+   *  chapter without a level-1 heading. */
+  number: number | null;
   /** What the engine inherits. `undefined` for the first chapter (a
    *  self-contained document); the counters alone while the pages of a
    *  preceding chapter are still unknown. */

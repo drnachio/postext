@@ -1126,6 +1126,7 @@ export function buildDocumentPass(
         if (!style.numbered) blk.unnumbered = true;
       }
     }
+    if (raw.toc?.kind === 'entry') blk.tocEntry = true;
     if (raw.toc?.kind === 'part') {
       blk.tocPart = {
         number: raw.toc.number,
@@ -2338,6 +2339,10 @@ export function buildDocumentPass(
           if (Number.isInteger(n) && n >= 1) change.startAt = n;
         }
         if (Object.keys(change).length > 0) pendingNumberingChange = change;
+        // A page opened just before (a `:::pagebreak`, the chapter's head)
+        // is still empty: it takes the change now. Otherwise the change
+        // waits for the next page boundary.
+        flushPendingNumberingAtBoundary();
       }
       continue;
     }
@@ -2606,11 +2611,14 @@ export function buildDocumentPass(
     // paragraph of a `:::paragraphs` container, whose leading and spacing
     // are off-grid by design.
     const nextIsHeading = nextBlock?.type === 'heading';
-    const shouldSnapToGrid =
+    // The contents (`:::toc`) keep their own rhythm: an entry set as a list
+    // item is not a list tail to realign the text after it.
+    const shouldSnapToGrid = rawBlock.toc === undefined && (
       (vdtType === 'heading' && !nextIsHeading) ||
       (vdtType === 'listItem' && !nextIsListItem) ||
       (vdtType === 'paragraph' && isContainerTail) ||
-      vdtType === 'mathDisplay';
+      vdtType === 'mathDisplay'
+    );
 
     // Place block, splitting across columns/pages if needed.
     // List items may split too — orphan/widow protection per-list is gated by
@@ -2665,6 +2673,11 @@ export function buildDocumentPass(
           if (!prevWasList) {
             spacingBefore = Math.max(spacingBefore, style.marginTopPx);
           }
+        } else if (rawBlock.toc) {
+          // A part row or an unnumbered entry of the contents: its top
+          // margin (`toc.parts.marginTop`, the level's `marginTop`) applies
+          // like a heading's.
+          spacingBefore = Math.max(spacingBefore, style.marginTopPx);
         }
         // Column balancing: extra grid lines above a non-heading balance
         // target — the first block after a list end. Heading targets are
@@ -3143,6 +3156,10 @@ export function buildDocumentPass(
     page.pageLabel = info.label;
     page.pageNumberFormat = info.format;
   }
+  const restarts = pageNumberSegments
+    .filter((s, i) => i > 0 && s.startAt !== undefined && s.startPageIndex < doc.pages.length)
+    .map((s) => s.startPageIndex);
+  if (restarts.length > 0) doc.pageNumberRestarts = restarts;
 
   buildHeadersAndFooters(doc, resourceById);
 

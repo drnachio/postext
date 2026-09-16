@@ -203,7 +203,7 @@ describe('book actions', () => {
     expect(sandboxReducer(s, { type: 'SET_PDF_SCOPE', payload: 'book' })).toBe(s);
   });
   it('SET_CHAPTER_LAYOUT records a chapter layout and forgets it with the chapter', () => {
-    const layout = { chapterId: 'b', markdown: '# B', config: {}, resources: [], continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, lastPageDelta: 2, lastPageFormat: 'decimal' as const, outline: [], outlineKey: '' };
+    const layout = { chapterId: 'b', markdown: '# B', config: {}, resources: [], continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, firstContentPageNumber: { delta: 1 }, firstContentPageFormat: 'decimal' as const, lastPageNumber: { delta: 2 }, lastPageFormat: 'decimal' as const, outline: [], outlineKey: '' };
     const s = sandboxReducer(baseState(), { type: 'SET_CHAPTER_LAYOUT', payload: layout });
     expect(s.chapterLayouts.b).toBe(layout);
     // Unknown chapters are ignored.
@@ -214,7 +214,7 @@ describe('book actions', () => {
     expect(replaced.chapterLayouts).toEqual({});
   });
   it('SET_CHAPTER_LAYOUT keeps the state when the record says nothing new', () => {
-    const layout = { chapterId: 'b', markdown: '# B', config: {}, resources: [], continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, lastPageDelta: 2, lastPageFormat: 'decimal' as const, outline: [], outlineKey: '' };
+    const layout = { chapterId: 'b', markdown: '# B', config: {}, resources: [], continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, firstContentPageNumber: { delta: 1 }, firstContentPageFormat: 'decimal' as const, lastPageNumber: { delta: 2 }, lastPageFormat: 'decimal' as const, outline: [], outlineKey: '' };
     const s = sandboxReducer(baseState(), { type: 'SET_CHAPTER_LAYOUT', payload: layout });
     // Same inputs (by identity) and outcome: a fresh object is a no-op.
     expect(sandboxReducer(s, { type: 'SET_CHAPTER_LAYOUT', payload: { ...layout } })).toBe(s);

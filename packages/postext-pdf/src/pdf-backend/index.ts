@@ -194,9 +194,16 @@ function renderPage(
       col.bbox.height,
     );
     for (const block of col.blocks) {
+      if (block.tocPart && block.designOverlay) continue;
       renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
     }
     popClip(ctx);
+    // A part row of the contents carries a design of its own, which may
+    // run past the column (a band reaching beyond the page numbers): it
+    // is drawn outside the column clip, like a float.
+    for (const block of col.blocks) {
+      if (block.tocPart && block.designOverlay) renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);
+    }
   }
 
   // Floated resources sit outside the column clip (a `span: 'page'` float can
