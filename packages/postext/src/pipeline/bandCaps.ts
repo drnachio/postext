@@ -93,6 +93,7 @@ export function applyBandCap(
   capPx: number,
   uncappedBottoms: Map<VDTColumn, number>,
   zone?: BandCapZone,
+  trailing = false,
 ): void {
   const cut = bandTop(cols) + capPx;
   for (let i = 0; i < cols.length; i++) {
@@ -100,6 +101,7 @@ export function applyBandCap(
     const colCut = zone && zone.columns.includes(i) ? Math.min(cut, zone.top) : cut;
     const height = Math.max(c.bbox.height - c.availableHeight, colCut - c.bbox.y);
     if (c.bbox.height <= height + 0.01) continue;
+    if (trailing) c.trailingCap = true;
     if (!uncappedBottoms.has(c)) uncappedBottoms.set(c, c.bbox.y + c.bbox.height);
     const trimmed = c.bbox.height - height;
     c.bbox.height = height;

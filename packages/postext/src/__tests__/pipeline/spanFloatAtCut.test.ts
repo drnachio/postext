@@ -155,9 +155,13 @@ describe('page-span figure before a page-span box', () => {
     const fl = (page1.floats ?? []).find((f) => f.resourceBlock?.resource.id === 'f1')!;
     expect(fl, 'figure on the closing page').toBeDefined();
     const col = page1.columns[fl.columnIndex]!;
-    // The figure hugs the text of its column (within a gap), not the page foot.
+    // The figure hugs the text of its column (within a gap), not the page
+    // foot. The cut lands at the exact level (the fit tolerance lets the
+    // capped band close without a retry a line taller), so the slack
+    // between the text and the figure anchored to the cap is up to the
+    // float gap plus the paragraph the column could not take.
     const textBottom = col.bbox.y + (col.bbox.height - col.availableHeight);
-    expect(fl.bbox.y - textBottom).toBeLessThanOrEqual(2 * GRID + 0.01);
+    expect(fl.bbox.y - textBottom).toBeLessThanOrEqual(3 * GRID + 0.01);
     expect(fl.bbox.y + fl.bbox.height).toBeLessThan(page1.contentArea.y + page1.contentArea.height - 2 * GRID);
     // Text plus figure level with the other column within a line.
     const other = page1.columns.find((c) => c.kind !== 'span' && c !== col)!;

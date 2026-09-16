@@ -55,6 +55,29 @@ describe('trailing band balance', () => {
     expect(doc.iterationCount).toBeGreaterThan(1);
   });
 
+  it('balancing fills the closing column of a capped band up to the cut', () => {
+    // A heading inside the last column of the closing band: the level cut
+    // leaves that column two lines short (the heading's own spacing does
+    // not reach a grid line) and the heading takes them above it — the page
+    // does not flow on, but the cap makes the column balanceable.
+    const md = [filler(12), '', '## Sección', '', filler(7, 12)].join('\n');
+    const doc = build(md);
+    const last = doc.pages[doc.pages.length - 1]!;
+    const cols = last.columns.filter((c) => c.kind !== 'span' && c.blocks.length > 0);
+    expect(cols.length).toBe(2);
+    expect(cols[1]!.trailingCap).toBe(true);
+    for (const c of cols) expect(c.availableHeight).toBeLessThan(0.5);
+    const [b0, b1] = usedBottoms(last);
+    expect(Math.abs(b0! - b1!)).toBeLessThan(0.5);
+    const col = cols[1]!;
+    const hi = col.blocks.findIndex((b) => b.type === 'heading');
+    expect(hi).toBeGreaterThan(0);
+    const heading = col.blocks[hi]!;
+    const prev = col.blocks[hi - 1]!;
+    // The heading's margin alone is under a grid line; two lines were added.
+    expect(heading.bbox.y - (prev.bbox.y + prev.bbox.height)).toBeGreaterThanOrEqual(2 * doc.baselineGrid - 0.5);
+  });
+
   it('is proposed by the first pass, keyed by the end of the document', () => {
     const content = { markdown: LAME };
     const pass = buildDocumentPass(content, PAGE, createMeasurementCache());

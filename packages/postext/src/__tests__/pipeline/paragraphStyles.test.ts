@@ -126,6 +126,26 @@ describe(':::paragraphs containers', () => {
     expect((after!.bbox.y - columnTop(doc, after!)) % GRID).toBeCloseTo(0, 5);
   });
 
+  it('negative marginTop / marginBottom pull the container and the flow after it up', () => {
+    const doc = build(SAMPLE, bibConfig({
+      marginTop: { value: -1, unit: 'em' },
+      marginBottom: { value: -1, unit: 'em' },
+    }));
+    const [intro, e1, e2, after] = paragraphs(doc);
+    // The container starts one style em above the intro's bottom edge.
+    expect(e1!.bbox.y - (intro!.bbox.y + intro!.bbox.height)).toBeCloseTo(-BIB_FONT_PX, 5);
+    // The flow after it snaps to the first grid line at or above the text
+    // bottom minus the margin (so it may sit above the text's own bottom).
+    const lastLine = e2!.lines[e2!.lines.length - 1]!;
+    const textBottom = e2!.bbox.y + lastLine.bbox.y - e2!.lines[0]!.bbox.y + BIB_LEADING;
+    expect(after!.bbox.y - textBottom).toBeGreaterThanOrEqual(-BIB_FONT_PX - 0.01);
+    expect(after!.bbox.y - textBottom).toBeLessThan(GRID - BIB_FONT_PX + 0.01);
+    expect((after!.bbox.y - columnTop(doc, after!)) % GRID).toBeCloseTo(0, 5);
+    // …and it starts above where a zero margin would have put it.
+    const plain = paragraphs(build(SAMPLE, bibConfig()))[3]!;
+    expect(after!.bbox.y).toBeLessThan(plain.bbox.y);
+  });
+
   it('unknown style id falls back to body style', () => {
     const doc = build(SAMPLE.replace('style="bib"', 'style="nope"'), bibConfig());
     const [intro, e1, e2, after] = paragraphs(doc);
