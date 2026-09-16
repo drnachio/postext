@@ -110,7 +110,7 @@ import {
   bandCapLinesAroundZone,
   type BandCapZone,
 } from './bandCaps';
-import { raggedUrlLines } from './raggedUrl';
+import { raggedLooseLines } from './raggedLines';
 
 /** Tolerance for "does this block fit" checks against a column's free
  *  height, absorbing floating-point drift between grid multiples. */
@@ -2426,8 +2426,9 @@ export function buildDocumentPass(
     // List items may split too — orphan/widow protection per-list is gated by
     // `avoidOrphansInLists` / `avoidWidowsInLists`; bullet stays on first part.
     const canSplit = vdtType === 'paragraph' || vdtType === 'blockquote' || vdtType === 'listItem';
-    // A justified line a link leaves with too few spaces is set ragged.
-    let remainingLines = [...raggedUrlLines(measured.lines, style.textAlign, rawBlock.text)];
+    // A justified line the breaker could not fill (a link breaking at its
+    // joints, a last word that cannot come up) is set ragged, not stretched.
+    let remainingLines = [...raggedLooseLines(measured.lines, style.textAlign)];
     let partIndex = 0;
     /** Times this block left an EMPTY short column (see `shortColumn`) —
      *  bounded so a page whose columns are all short (footnotes, design

@@ -273,6 +273,10 @@ At the defaults (1.9 / 0.6), if the normal space width is 4 px:
 
 The defaults of 2 and 0.6 favor the algorithm's flexibility — giving Knuth-Plass enough room to avoid overflow, hyphenation, and runts across narrow columns, while still being well within ranges typographic literature considers acceptable.
 
+### Lines the Breaker Cannot Fill
+
+Sometimes no break set stays within the bounds: a long URL breaks only at its own joints, or a list item's last word will not come up and every hyphenation would leave a runt. Knuth-Plass then accepts the least bad line, whose few word spaces would have to stretch to several times their width. Instead of stretching them, the engine sets such a line **ragged** — it is drawn at its natural spacing and the right edge gives, like a paragraph's last line. The threshold is 3× the normal space width, the same one the sandbox's loose-line warning uses, so a line past it is fixed rather than flagged. Lines within the threshold are left as measured.
+
 ### The Final Line
 
 In the box-glue-penalty model, every paragraph ends with a width-0, infinitely stretchable glue followed by a forced break. That trailing glue absorbs whatever space remains on the last line at zero cost, so last lines come out naturally ragged: they are rendered at their natural width, and `justifiedSpaceRatio` is only computed for non-last lines.
