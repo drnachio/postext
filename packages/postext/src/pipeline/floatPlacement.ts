@@ -28,6 +28,10 @@ import type {
 export interface ResolvedPlacement {
   position: ResourceFloatPosition;
   span: ResourceFloatSpan;
+  /** Fraction of the slot width the float takes (`1` = the whole width). */
+  widthFraction: number;
+  align: 'left' | 'center' | 'right';
+  captionSide: boolean;
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
@@ -45,6 +49,11 @@ export interface PlannedFloat {
   firstBlockIdx: number;
   position: 'auto' | 'top' | 'bottom';
   span: ResourceFloatSpan;
+  /** Width fraction, alignment and side caption of the placement (see
+   *  `ResourcePlacement`). */
+  widthFraction?: number;
+  align?: 'left' | 'center' | 'right';
+  captionSide?: boolean;
   /** For the rest of a table split across pages: the first model row still
    *  to place (the header rows are repeated above it). Absent (or `0`) for
    *  a whole resource. */
@@ -65,7 +74,11 @@ export function resolveResourcePlacement(
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
   const span = resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column';
-  return { position, span };
+  const rawWidth = resource.placement?.width ?? type?.defaultPlacement?.width;
+  const widthFraction = typeof rawWidth === 'number' && rawWidth > 0 && rawWidth < 1 ? rawWidth : 1;
+  const align = resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left';
+  const captionSide = resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide ?? false;
+  return { position, span, widthFraction, align, captionSide };
 }
 
 /**
@@ -94,9 +107,13 @@ export function computeFloatPlan(
     const resource = resourceById.get(resourceId);
     if (!resource) return;
     const type = typeById.get(resource.typeId);
-    const { position, span } = resolveResourcePlacement(resource, type);
+    const { position, span, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type);
     if (position === 'here') return;
-    plan.push({ resourceId, firstBlockIdx: blockIdx, position, span });
+    plan.push({
+      resourceId, firstBlockIdx: blockIdx, position, span,
+      ...(widthFraction < 1 ? { widthFraction, align } : {}),
+      ...(captionSide && span === 'column' ? { captionSide } : {}),
+    });
   };
 
   for (let i = 0; i < blocks.length; i++) {

@@ -32,6 +32,9 @@ import {
 export interface WrappedLine {
   text: string;
   width: number;
+  /** Extra left offset of the line inside the content box (a paragraph's
+   *  first-line indent, the room a drop cap takes). Default 0. */
+  xOffset?: number;
   /** Vertical offset of the baseline from the top of the text content box. */
   baselineY: number;
   /** Y offset of the line top within the element's content box. */
@@ -773,14 +776,14 @@ export function layoutDesignSlot(
     const anchorY = anchor.anchorY + offsetY;
 
     if (el.kind === 'text') {
-      const prim = layoutTextElement(el, textContent.get(el.id) ?? '', {
+      const prims = layoutTextElement(el, textContent.get(el.id) ?? '', {
         anchorX,
         anchorY,
         pinX: anchor.pinX,
         pinY: anchor.pinY,
       }, fillRef, context.dpi, useElementEdge);
-      resolvedGeo.set(el.id, prim);
-      primitives.push(prim);
+      resolvedGeo.set(el.id, prims[0]!);
+      primitives.push(...prims);
     } else if (el.kind === 'rule') {
       const prim = layoutRuleElement(el, {
         anchorX,
@@ -820,6 +823,51 @@ export function layoutDesignSlot(
   };
 }
 
+/** Greedy wrap of one paragraph where every line may have its own width
+ *  (`widthFor(lineIndex)`), preserving existing line breaks. */
+function wrapWithWidths(text: string, measure: TextMeasure, widthFor: (i: number) => number, hyphenate: boolean, startLine = 0): string[] {
+  const out: string[] = [];
+  let i = startLine;
+  for (const para of text.split('\n')) {
+    const words = para.split(/(\s+)/);
+    let current = '';
+    let maxWidth = Math.max(1, widthFor(i));
+    const flush = () => { out.push(current); current = ''; i++; maxWidth = Math.max(1, widthFor(i)); };
+    for (const part of words) {
+      const test = current + part;
+      if (measure(test) <= maxWidth || (current.length === 0 && /^\s*$/.test(part))) {
+        current = test;
+      } else if (current.length === 0) {
+        let remaining = part;
+        while (remaining.length > 0) {
+          if (measure(remaining) <= maxWidth) { current = remaining; break; }
+          const split = breakWordWithHyphenation(remaining, measure, maxWidth, hyphenate);
+          if (!split || split.head.length === 0) { current = remaining; break; }
+          current = split.head; flush();
+          remaining = split.tail;
+        }
+      } else {
+        flush();
+        current = part.trimStart();
+        if (measure(current) > maxWidth) {
+          let remaining = current; current = '';
+          while (remaining.length > 0) {
+            if (measure(remaining) <= maxWidth) { current = remaining; break; }
+            const split = breakWordWithHyphenation(remaining, measure, maxWidth, hyphenate);
+            if (!split || split.head.length === 0) { current = remaining; break; }
+            current = split.head; flush();
+            remaining = split.tail;
+          }
+        }
+      }
+    }
+    out.push(current.trimEnd());
+    i++;
+    maxWidth = Math.max(1, widthFor(i));
+  }
+  return out;
+}
+
 function layoutTextElement(
   el: ResolvedDesignTextElement,
   text: string,
@@ -827,7 +875,7 @@ function layoutTextElement(
   container: AnchorReference,
   dpi: number,
   anchoredToElement: boolean,
-): ResolvedTextPrimitive {
+): ResolvedTextPrimitive[] {
   const fontSizePx = dimPx(el.fontSize, dpi);
   const weight = el.fontWeight === 400 ? 'normal' : String(el.fontWeight);
   const style = el.italic ? 'italic' : 'normal';
@@ -867,7 +915,60 @@ function layoutTextElement(
     contentMax = Math.max(0, elementWidth - padding.left - padding.right);
   }
 
-  const m = layoutText(text, measure, fontSizePx, el.lineHeight, el.overflow, contentMax, el.hyphenate);
+  // Paragraphs (a newline, or the `\n` escape of an attribute value) with
+  // a first-line indent, and a drop cap on the first: wrapping text only.
+  const lineHeightPx = fontSizePx * el.lineHeight;
+  const paraIndentPx = Math.max(0, dimPx(el.paragraphIndent, dpi, fontSizePx));
+  const normalised = text.replace(/\\n/g, '\n');
+  const paragraphs = normalised.split(/\n+/).map((p) => p.trim()).filter((p) => p.length > 0);
+  const dropCap = el.dropCap && el.overflow === 'wrap' && contentMax !== undefined && paragraphs.length > 0 && paragraphs[0]!.length > 1
+    ? el.dropCap
+    : undefined;
+  let m: TextMeasurement;
+  let cap: { text: string; font: string; fontPx: number; width: number; lines: number; color: string } | undefined;
+  if ((dropCap || (paraIndentPx > 0 && paragraphs.length > 1)) && el.overflow === 'wrap' && contentMax !== undefined) {
+    const maxW = contentMax;
+    const wrapped: WrappedLine[] = [];
+    let capLines = 0;
+    let capRoom = 0;
+    if (dropCap) {
+      capLines = Math.max(1, Math.round(dropCap.lines ?? 2));
+      const capFontPx = dropCap.fontSize ? dimPx(dropCap.fontSize, dpi, fontSizePx) : (capLines * lineHeightPx) / 0.72;
+      const capWeight = (dropCap.fontWeight ?? el.fontWeight) === 400 ? 'normal' : String(dropCap.fontWeight ?? el.fontWeight);
+      const capFont = buildFontString(dropCap.fontFamily ?? el.fontFamily, capFontPx, capWeight, 'normal');
+      const letter = paragraphs[0]!.slice(0, 1);
+      paragraphs[0] = paragraphs[0]!.slice(1).trimStart();
+      const capW = measureTextWidth(letter, capFont);
+      capRoom = capW + Math.max(0, dimPx(dropCap.gap, dpi, fontSizePx));
+      cap = { text: letter, font: capFont, fontPx: capFontPx, width: capW, lines: capLines, color: colorHex(dropCap.color ?? el.color) };
+    }
+    let lineNo = 0;
+    paragraphs.forEach((para, p) => {
+      const offsetOf = (i: number): number => {
+        if (p === 0 && i < capLines) return capRoom;
+        if (p > 0 && i === 0) return paraIndentPx;
+        return 0;
+      };
+      const local: number[] = [];
+      const lines = wrapWithWidths(para, measure, (i) => maxW - offsetOf(i), el.hyphenate ?? false);
+      lines.forEach((t, i) => {
+        local.push(i);
+        wrapped.push({
+          text: t,
+          width: measure(t),
+          xOffset: offsetOf(i),
+          topY: lineNo * lineHeightPx,
+          baselineY: lineNo * lineHeightPx + lineHeightPx * 0.8,
+          height: lineHeightPx,
+        });
+        lineNo++;
+      });
+    });
+    const w = wrapped.reduce((mx, l) => Math.max(mx, l.width + (l.xOffset ?? 0)), 0);
+    m = { lines: wrapped, contentWidth: w, contentHeight: wrapped.length * lineHeightPx, needsClip: false };
+  } else {
+    m = layoutText(text, measure, fontSizePx, el.lineHeight, el.overflow, contentMax, el.hyphenate);
+  }
   const contentWidth = m.contentWidth;
   if (elementWidth === undefined) elementWidth = contentWidth + padding.left + padding.right;
   if (clampToContainer) {
@@ -896,7 +997,7 @@ function layoutTextElement(
     ? (pin.pinX === 'start' ? 'left' : pin.pinX === 'end' ? 'right' : el.align)
     : el.align;
 
-  return {
+  const main: ResolvedTextPrimitive = {
     kind: 'text',
     id: el.id,
     x,
@@ -917,6 +1018,32 @@ function layoutTextElement(
     contentHeight: Math.max(0, elementHeight - padding.top - padding.bottom),
     box,
   };
+  if (!cap) return [main];
+  // The drop cap: its baseline on the baseline of the last line it spans.
+  const capLineH = cap.fontPx * 1.2;
+  const anchorLine = m.lines[Math.min(cap.lines, m.lines.length) - 1];
+  const targetBaseline = anchorLine ? anchorLine.baselineY : lineHeightPx * 0.8;
+  const capPrim: ResolvedTextPrimitive = {
+    kind: 'text',
+    id: `${el.id}-dropcap`,
+    x: x + padding.left,
+    y: y + padding.top + targetBaseline - capLineH * 0.8,
+    width: cap.width,
+    height: capLineH,
+    lines: [{ text: cap.text, width: cap.width, topY: 0, baselineY: capLineH * 0.8, height: capLineH }],
+    fontString: cap.font,
+    fontSizePx: cap.fontPx,
+    color: cap.color,
+    align: 'left',
+    verticalAlign: 'top',
+    needsClip: false,
+    letterSpacingPx: 0,
+    contentX: 0,
+    contentY: 0,
+    contentWidth: cap.width,
+    contentHeight: capLineH,
+  };
+  return [main, capPrim];
 }
 
 function layoutRuleElement(

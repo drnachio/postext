@@ -390,7 +390,7 @@ Draws a thin vertical line in the gutter to visually separate columns.
 
 - **`'double'`** — Two equal-width columns. The classic editorial layout — keeps line measure within the optimal 40–50 character range for comfortable reading.
 
-- **`'oneAndHalf'`** — An asymmetric layout with a main column and a narrower side column. The side column (controlled by `sideColumnPercent`) is ideal for margin notes, small figures, or supporting content. Values between 25–40% work well. With `sideColumnRole: 'floats'` the body text never enters the side column: it becomes a channel for the figures, tables and callouts placed with `span: 'side'`, each stacked beside the paragraph that first cites it (a resource that cannot fit the rest of the channel waits for the next page's), while `span: 'page'` floats and boxes still cross both columns. Combined with mirrored margins and `sideColumnSide: 'outer'`, the channel sits at the outer edge of every page — the marginal column of a textbook.
+- **`'oneAndHalf'`** — An asymmetric layout with a main column and a narrower side column. The side column (controlled by `sideColumnPercent`) is ideal for margin notes, small figures, or supporting content. Values between 25–40% work well. With `sideColumnRole: 'floats'` the body text never enters the side column: it becomes a channel for the figures, tables and callouts placed with `span: 'side'`. A side figure or table stacks from the head of the channel on the page that first cites it — the marginal figure of a textbook sits at the top of its page even when the text cites it further down; one that cannot fit the rest of the channel waits for the next page's. A side box stacks beside the text it interrupts, and when the rest of the channel cannot hold it there it slides up to the lowest position that still fits (its foot on the channel's foot), or waits for the next page. `span: 'page'` floats and boxes still cross both columns, and a column float with `placement.captionSide` puts its caption in the channel, level with the figure. Combined with mirrored margins and `sideColumnSide: 'outer'`, the channel sits at the outer edge of every page — the marginal column of a textbook.
 
 
 ## Headers & footers
@@ -506,6 +506,18 @@ Text elements render a template string with placeholder substitution. Placeholde
       <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
       <td><code>'wrap'</code></td>
       <td>How the engine handles text that exceeds the element's available width. <code>'wrap'</code> breaks the line into multiple lines; the ellipsis variants truncate to a single line and insert <code>…</code> at the start, middle, or end; <code>'clip'</code> hard-clips to the element's bounding box without inserting any character.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
+      <td>—</td>
+      <td>Drop cap on a wrapping text: the first letter set large beside the first <code>lines</code> lines (default 2), in its own face, weight and colour, <code>gap</code> from the text. <code>fontSize</code> defaults to the size whose cap height spans those lines.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>First-line indent of every paragraph after the first. A newline in the content — or the two characters <code>\n</code>, for text that comes from an attribute value — separates paragraphs; consecutive newlines count as one.</td>
     </tr>
     <tr>
       <td><code>hyphenate</code></td>
@@ -2689,9 +2701,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>icon</code></td>
-      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align &#125;</code></td>
-      <td><code>'none'</code>, headings font, <code>400</code>, <code>1.5em</code>, main colour, <code>'top'</code></td>
-      <td>A text glyph (<code>kind: 'glyph'</code>) or a bitmap / SVG resource (<code>kind: 'resource'</code> + <code>resourceId</code>) beside the content. With a side stripe the icon is centred over the stripe; otherwise it reserves its own column (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> centres it vertically on the content. A resource image is fitted inside the square keeping its aspect ratio; an icon taller than the content grows the box to fit it (and, with <code>align: 'center'</code>, centres the content on it).</td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, width, color, align, position, cornerSide &#125;</code></td>
+      <td><code>'none'</code>, headings font, <code>400</code>, <code>1.5em</code>, main colour, <code>'top'</code>, <code>'inline'</code>, <code>'right'</code></td>
+      <td>A text glyph (<code>kind: 'glyph'</code>) or a bitmap / SVG resource (<code>kind: 'resource'</code> + <code>resourceId</code>) beside the content. With a side stripe the icon is centred over the stripe; otherwise it reserves its own column (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> centres it vertically on the content. A resource image is fitted inside the square keeping its aspect ratio — or inside a <code>width</code> × <code>size</code> box when <code>width</code> is set (a wide strip of icons); an icon taller than the content grows the box to fit it (and, with <code>align: 'center'</code>, centres the content on it). <code>position: 'corner'</code> hangs the icon on a top corner as a badge, half of it past the border, taking no room from the content; <code>cornerSide</code> picks the corner — <code>'right'</code> / <code>'left'</code>, or <code>'outer'</code> / <code>'inner'</code>, which follow the page parity of mirrored margins (outer = right on a recto, left on a verso).</td>
     </tr>
     <tr>
       <td><code>marker</code></td>
@@ -2701,9 +2713,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>titleStyle</code></td>
-      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap &#125;</code></td>
-      <td>headings font, body size, <code>700</code>, <code>false</code>, main colour, <code>'none'</code>, <code>0.5em</code></td>
-      <td>Title typography. <code>gap</code> is the space between the title and the first child (and the icon column gap). <code>textTransform: 'uppercase'</code> is length-preserving.</td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap, letterSpacing, indent &#125;</code></td>
+      <td>headings font, body size, <code>700</code>, <code>false</code>, main colour, <code>'none'</code>, <code>0.5em</code>, <code>0</code>, <code>0</code></td>
+      <td>Title typography. <code>gap</code> is the space between the title and the first child (and the icon column gap). <code>textTransform: 'uppercase'</code> is length-preserving. <code>letterSpacing</code> tracks the title (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> pushes it right of the box's inner edge (room for a corner badge).</td>
     </tr>
     <tr>
       <td><code>body</code></td>
@@ -2713,9 +2725,21 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>lists</code></td>
-      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing &#125;</code></td>
+      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing, bulletFontSize, bulletFontWeight &#125;</code></td>
       <td>inherits <code>unorderedLists</code></td>
-      <td>List typography inside the box (<code>color</code>, <code>indent</code>, <code>gap</code> and <code>itemSpacing</code> also apply to ordered lists).</td>
+      <td>List typography inside the box (<code>color</code>, <code>indent</code>, <code>gap</code> and <code>itemSpacing</code> also apply to ordered lists). <code>bulletFontSize</code> / <code>bulletFontWeight</code> set the bullet glyph in the box's body face at that size and weight (a heavy coloured bullet).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, color, background, position, height, paddingX, offset, inset, icon, rule &#125;</code></td>
+      <td>unset (no tab)</td>
+      <td>A tab on the box's top edge that prints the fence's <code>label</code> attribute — the number of a numbered box ("BOX 1-1"). It hugs the <code>position</code> corner (<code>'top-right'</code> / <code>'top-left'</code>), inset by <code>inset</code>, rises <code>offset</code> above the box top (that room is part of the block, on top of <code>marginTop</code>, so the tab keeps it at a column head too), is <code>height</code> tall with <code>paddingX</code> on each side of the text, and may carry an <code>icon</code> resource beside it (<code>&#123; resourceId, width, gap &#125;</code>, on the side away from the corner) and a <code>rule</code> (<code>&#123; enabled, color, width &#125;</code>) along the top edge from the far corner up to it. Defaults: headings font, body size, <code>700</code>, white on the main colour, <code>1.4em</code> tall, <code>0.6em</code> padding.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>Gap between the columns of a <code>:::columns</code> group inside the box (see the container section below).</td>
     </tr>
     <tr>
       <td><code>marginTop</code> / <code>marginBottom</code></td>
@@ -2751,6 +2775,8 @@ Limits in this version:
 - `placement: 'top' | 'bottom'` is recorded on the VDT (`VDTBlock.callout`) but still placed inline at column width — floating boxes arrive with the next stage.
 - `width: 'auto'` shrink-wraps the title only; children are ignored.
 - A `:::callout` nested inside another callout is flattened into the outer box.
+- A `:::columns{count=N}` … `:::` group among the children lays those children out in `N` columns of equal width, `columnGap` apart, inside the box: the run is cut at the block or line boundaries that level the columns best (a paragraph or list item cut mid-way continues at the head of the next column without its bullet), every column starts at the group's top and the group is as tall as its tallest column; the children after it return to the full width. A split box (`keepTogether: false`) never cuts inside a group. Use it for a two-column summary of key points, or the tables of a wide box set side by side.
+- The fence's fifth attribute, `label`, prints on the style's label tab (see `label` above) — `:::callout{type="box" label="BOX 1-1" title="The octet rule"}`; without a `label` style the attribute is ignored.
 
 In the VDT the box is a `type: 'callout'` frame block whose decoration (background, stripe, icon, title) lives on `designOverlay`, followed by its child blocks in the same column; the frame and every child carry the fence's `containerId`. Icon images resolve like resource images: the canvas image registry, the HTML `resourceImageUrl` option and the PDF `resourceBytes` provider.
 

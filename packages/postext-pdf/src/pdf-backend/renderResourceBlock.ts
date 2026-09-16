@@ -312,6 +312,15 @@ export async function preloadResourceImages(
         }
         const drawing = svgToVectorDrawing(svgText, { fonts });
         if (drawing) {
+          // Pictures inside the drawing become image XObjects.
+          for (const shape of drawing.shapes) {
+            if (shape.kind !== 'image') continue;
+            try {
+              shape.pdfImage = shape.format === 'png' ? await pdfDoc.embedPng(shape.data) : await pdfDoc.embedJpg(shape.data);
+            } catch {
+              shape.pdfImage = undefined;
+            }
+          }
           out.set(fileId, { kind: 'vector', drawing });
           return;
         }
@@ -334,8 +343,9 @@ export async function preloadResourceImages(
         image = await pdfDoc.embedPng(bytes);
       }
       if (image) out.set(fileId, { kind: 'image', image });
-    } catch {
+    } catch (err) {
       // Undecodable — leave absent; renderer falls back to a placeholder.
+      if (typeof process !== 'undefined' && process.env?.POSTEXT_SVG_DEBUG) console.warn('embed failed:', fileId, (err as Error).message);
     }
   };
   for (const block of blocks) {
@@ -352,6 +362,18 @@ export async function preloadResourceImages(
     if (iconFileId) await embed(iconFileId, block.callout?.iconFormat);
     const markerFileId = block.callout?.markerFileId;
     if (markerFileId) await embed(markerFileId, block.callout?.markerFormat);
+    // Pictures of a box's decoration (a label icon) draw through the map too.
+    for (const b of block.designOverlay?.blocks ?? []) {
+      if (b.kind === 'image') await embed(b.fileId, undefined);
+    }
+  }
+  // Image elements of the page design slots (a logo on a title page, the
+  // chapter motif in a running head, a part page's pictures).
+  for (const page of doc.pages) {
+    for (const slot of [page.header, page.footer, page.openerBand]) {
+      if (!slot) continue;
+      for (const b of slot.blocks) if (b.kind === 'image') await embed(b.fileId, undefined);
+    }
   }
   return out;
 }

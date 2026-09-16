@@ -98,7 +98,7 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
 
   const lines = prim.lines.map((l) => ({
     text: l.text,
-    xOffset: prim.contentX + textAlignOffsetX(prim.align, prim.contentWidth, l.width),
+    xOffset: prim.contentX + (l.xOffset ?? 0) + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width),
     baselineY: prim.y + prim.contentY + vOffset + l.baselineY,
     width: l.width,
   }));

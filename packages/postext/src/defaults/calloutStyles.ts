@@ -51,7 +51,21 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
     color: { ...DEFAULT_MAIN_COLOR } as ColorValue,
     align: 'top' as const,
     position: 'inline' as const,
+    cornerSide: 'right' as const,
   },
+  label: {
+    fontWeight: 700,
+    color: { hex: '#ffffff', model: 'hex' } as ColorValue,
+    background: { ...DEFAULT_MAIN_COLOR } as ColorValue,
+    position: 'top-right' as const,
+    height: EM(1.4),
+    paddingX: EM(0.6),
+    offset: PT0,
+    inset: PT0,
+    icon: { resourceId: '', width: EM(1), gap: EM(0.3) },
+    rule: { enabled: false, color: { ...DEFAULT_MAIN_COLOR } as ColorValue, width: { value: 0.5, unit: 'pt' } as Dimension },
+  },
+  columnGap: EM(1.5),
   marker: {
     kind: 'none' as const,
     glyph: '',
@@ -137,7 +151,36 @@ function resolveCalloutStyleConfig(
       color: partial.icon?.color ?? d.icon.color,
       align: partial.icon?.align ?? d.icon.align,
       position: partial.icon?.position ?? d.icon.position,
+      cornerSide: partial.icon?.cornerSide ?? d.icon.cornerSide,
+      ...(partial.icon?.width ? { width: partial.icon.width } : {}),
     },
+    ...(partial.label
+      ? {
+          label: {
+            fontFamily: partial.label.fontFamily ?? headings.fontFamily,
+            fontSize: partial.label.fontSize ?? bodyText.fontSize,
+            fontWeight: partial.label.fontWeight ?? d.label.fontWeight,
+            color: partial.label.color ?? d.label.color,
+            background: partial.label.background ?? d.label.background,
+            position: partial.label.position ?? d.label.position,
+            height: partial.label.height ?? d.label.height,
+            paddingX: partial.label.paddingX ?? d.label.paddingX,
+            offset: partial.label.offset ?? d.label.offset,
+            inset: partial.label.inset ?? d.label.inset,
+            icon: {
+              resourceId: partial.label.icon?.resourceId ?? d.label.icon.resourceId,
+              width: partial.label.icon?.width ?? d.label.icon.width,
+              gap: partial.label.icon?.gap ?? d.label.icon.gap,
+            },
+            rule: {
+              enabled: partial.label.rule?.enabled ?? d.label.rule.enabled,
+              color: partial.label.rule?.color ?? d.label.rule.color,
+              width: partial.label.rule?.width ?? d.label.rule.width,
+            },
+          },
+        }
+      : {}),
+    columnGap: partial.columnGap ?? d.columnGap,
     marker: {
       kind: partial.marker?.kind ?? d.marker.kind,
       glyph: partial.marker?.glyph ?? d.marker.glyph,
@@ -163,6 +206,8 @@ function resolveCalloutStyleConfig(
       color: partial.titleStyle?.color ?? d.titleStyle.color,
       textTransform: partial.titleStyle?.textTransform ?? d.titleStyle.textTransform,
       gap: partial.titleStyle?.gap ?? d.titleStyle.gap,
+      letterSpacing: partial.titleStyle?.letterSpacing ?? PT0,
+      indent: partial.titleStyle?.indent ?? PT0,
     },
     body: {
       fontFamily: partial.body?.fontFamily ?? bodyText.fontFamily,
@@ -181,6 +226,8 @@ function resolveCalloutStyleConfig(
       indent: partial.lists?.indent ?? unorderedLists.indent,
       gap: partial.lists?.gap ?? unorderedLists.gap,
       itemSpacing: partial.lists?.itemSpacing ?? unorderedLists.itemSpacing,
+      ...(partial.lists?.bulletFontSize ? { bulletFontSize: partial.lists.bulletFontSize } : {}),
+      ...(partial.lists?.bulletFontWeight !== undefined ? { bulletFontWeight: partial.lists.bulletFontWeight } : {}),
     },
     marginTop: partial.marginTop ?? d.marginTop,
     marginBottom: partial.marginBottom ?? d.marginBottom,
@@ -280,6 +327,9 @@ export function stripCalloutStylesDefaults(
       if (s.icon.size !== undefined && !dimensionsEqual(s.icon.size, d.icon.size)) ic.size = s.icon.size;
       if (s.icon.color !== undefined && !colorsEqual(s.icon.color, d.icon.color)) ic.color = s.icon.color;
       if (s.icon.align !== undefined && s.icon.align !== d.icon.align) ic.align = s.icon.align;
+      if (s.icon.position !== undefined && s.icon.position !== d.icon.position) ic.position = s.icon.position;
+      if (s.icon.cornerSide !== undefined && s.icon.cornerSide !== d.icon.cornerSide) ic.cornerSide = s.icon.cornerSide;
+      if (s.icon.width !== undefined) ic.width = s.icon.width;
       const kept = stripObject(ic);
       if (kept) r.icon = kept;
     }
@@ -316,6 +366,8 @@ export function stripCalloutStylesDefaults(
       if (s.titleStyle.italic !== undefined && s.titleStyle.italic !== d.titleStyle.italic) t.italic = s.titleStyle.italic;
       if (s.titleStyle.color !== undefined && !colorsEqual(s.titleStyle.color, d.titleStyle.color)) t.color = s.titleStyle.color;
       if (s.titleStyle.textTransform !== undefined && s.titleStyle.textTransform !== d.titleStyle.textTransform) t.textTransform = s.titleStyle.textTransform;
+      if (s.titleStyle.letterSpacing !== undefined && !dimensionsEqual(s.titleStyle.letterSpacing, PT0)) t.letterSpacing = s.titleStyle.letterSpacing;
+      if (s.titleStyle.indent !== undefined && !dimensionsEqual(s.titleStyle.indent, PT0)) t.indent = s.titleStyle.indent;
       if (s.titleStyle.gap !== undefined && !dimensionsEqual(s.titleStyle.gap, d.titleStyle.gap)) t.gap = s.titleStyle.gap;
       const kept = stripObject(t);
       if (kept) r.titleStyle = kept;
@@ -340,9 +392,13 @@ export function stripCalloutStylesDefaults(
       if (s.lists.indent !== undefined) l.indent = s.lists.indent;
       if (s.lists.gap !== undefined) l.gap = s.lists.gap;
       if (s.lists.itemSpacing !== undefined) l.itemSpacing = s.lists.itemSpacing;
+      if (s.lists.bulletFontSize !== undefined) l.bulletFontSize = s.lists.bulletFontSize;
+      if (s.lists.bulletFontWeight !== undefined) l.bulletFontWeight = s.lists.bulletFontWeight;
       const kept = stripObject(l);
       if (kept) r.lists = kept;
     }
+    if (s.label) r.label = s.label;
+    if (s.columnGap !== undefined && !dimensionsEqual(s.columnGap, d.columnGap)) r.columnGap = s.columnGap;
     if (s.marginTop !== undefined && !dimensionsEqual(s.marginTop, d.marginTop)) r.marginTop = s.marginTop;
     if (s.marginBottom !== undefined && !dimensionsEqual(s.marginBottom, d.marginBottom)) r.marginBottom = s.marginBottom;
     if (s.keepTogether !== undefined && s.keepTogether !== d.keepTogether) r.keepTogether = s.keepTogether;

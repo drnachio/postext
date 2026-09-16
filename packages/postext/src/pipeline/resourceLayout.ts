@@ -81,6 +81,12 @@ export interface ResourceLayoutInput {
   /** Lay out only these rows of a table (a slice of a table split across
    *  pages). Ignored for figures. */
   slice?: TableSliceSpec;
+  /** Set the caption (and note) beside the body instead of under it: in a
+   *  band `width` wide whose left edge is `dx` from the block's left (the
+   *  side column of a one-and-a-half layout), level with the body's top,
+   *  or with its bottom when `alignBottom`. The block's height is then the
+   *  body's alone; `asideHeight` reports the caption band's. */
+  captionAside?: { dx: number; width: number; alignBottom: boolean; offsetY?: number };
 }
 
 /** The rows a table slice carries. `startRow > 0` makes it a continuation:
@@ -749,6 +755,9 @@ function layoutTable(
 export function layoutResourceBlock(input: ResourceLayoutInput): {
   block: ResolvedResourceBlock;
   totalHeight: number;
+  /** Height of the caption + note band set beside the body
+   *  (`captionAside`); absent otherwise. */
+  asideHeight?: number;
   /** Row metrics of a table laid out in full (no `slice`), for
    *  {@link planTableSlice}. */
   tableRows?: TableRowMetrics;
@@ -920,7 +929,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       captionBoldFontString,
       captionItalicFontString,
       captionBoldItalicFontString,
-      Math.max(1, columnWidth - captionPaddingPx * 2),
+      Math.max(1, (input.captionAside?.width ?? columnWidth) - captionPaddingPx * 2),
       captionLineHeightPx,
       { textAlign: cs.align },
     );
@@ -962,7 +971,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       noteBoldFontString,
       noteItalicFontString,
       noteBoldItalicFontString,
-      Math.max(1, columnWidth),
+      Math.max(1, input.captionAside?.width ?? columnWidth),
       noteLineHeightPx,
       { textAlign: cs.note.align },
     );
@@ -1003,9 +1012,14 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // --- Vertical stacking -------------------------------------------------
   // above: [caption band] gap [body] noteGap [note]
   // below: [body] gap [caption band] noteGap [note]
-  const captionAbove = cs.position === 'above' && captionBandHeight > 0;
-  const captionBandY = captionAbove ? 0 : bodyHeight + (captionBandHeight > 0 ? captionGapPx : 0);
+  const aside = input.captionAside;
+  const asideBand = aside ? captionBandHeight + noteHeight : 0;
+  const captionAbove = !aside && cs.position === 'above' && captionBandHeight > 0;
+  const captionBandY = aside
+    ? (aside.alignBottom ? Math.max(0, bodyHeight - asideBand) : Math.max(0, aside.offsetY ?? 0))
+    : captionAbove ? 0 : bodyHeight + (captionBandHeight > 0 ? captionGapPx : 0);
   const bodyY = captionAbove ? captionHeight : 0;
+  const asideDx = aside ? aside.dx : 0;
   const bodyRect = createBoundingBox(0, bodyY, bodyWidth, bodyHeight);
   // Table cells were laid out with the table's top at y = 0; when the caption
   // sits above, move them down with the body (block-relative, like captions).
@@ -1022,22 +1036,26 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       })),
     };
   }
-  const captionLines = shiftLines(measuredCaption, captionPaddingPx, captionBandY + captionPaddingPx);
+  const captionLines = shiftLines(measuredCaption, asideDx + captionPaddingPx, captionBandY + captionPaddingPx);
   // A table's rules are stroked centred on the cell edges, so its outer
   // frame reaches half a stroke beyond the body on each side; the caption
   // bar spans that same outer extent, or it would read a hair narrower.
   const barOverhang = table ? table.borderWidthPx / 2 : 0;
   const captionBar = cs.backgroundEnabled && captionBandHeight > 0
     ? {
-        rect: createBoundingBox(0 - barOverhang || 0, captionBandY, columnWidth + 2 * barOverhang, captionBandHeight),
+        rect: createBoundingBox(asideDx - barOverhang || 0, captionBandY, (aside?.width ?? columnWidth) + 2 * barOverhang, captionBandHeight),
         background: cs.background.hex,
       }
     : undefined;
-  const noteY = (captionAbove ? bodyY + bodyHeight : bodyHeight + captionHeight) + noteGapPx;
-  const noteLines = shiftLines(measuredNote, 0, noteY);
+  const noteY = aside
+    ? captionBandY + captionBandHeight + noteGapPx
+    : (captionAbove ? bodyY + bodyHeight : bodyHeight + captionHeight) + noteGapPx;
+  const noteLines = shiftLines(measuredNote, asideDx, noteY);
   // The marker takes the note's slot (a continuing slice has no note).
-  const continuesLines = shiftLines(measuredContinues, 0, noteY);
-  const totalHeight = bodyHeight + captionHeight + noteHeight + continuesHeight;
+  const continuesLines = shiftLines(measuredContinues, 0, aside ? bodyHeight + noteGapPx : noteY);
+  const totalHeight = aside
+    ? bodyHeight + continuesHeight
+    : bodyHeight + captionHeight + noteHeight + continuesHeight;
 
   const block: ResolvedResourceBlock = {
     resource,
@@ -1067,5 +1085,27 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     continuesLines,
   };
 
-  return tableRows ? { block, totalHeight, tableRows } : { block, totalHeight };
+  return {
+    block,
+    totalHeight,
+    ...(tableRows ? { tableRows } : {}),
+    ...(aside ? { asideHeight: asideBand } : {}),
+  };
+}
+
+
+/** Shift a resolved resource block's geometry right by `dx` (an inline
+ *  resource narrower than its column, set per `placement.align`). */
+export function shiftResourceBlockX(rb: ResolvedResourceBlock, dx: number): void {
+  if (!dx) return;
+  rb.bodyRect = createBoundingBox(rb.bodyRect.x + dx, rb.bodyRect.y, rb.bodyRect.width, rb.bodyRect.height);
+  for (const ln of [...rb.captionLines, ...rb.noteLines, ...rb.continuesLines]) ln.bbox.x += dx;
+  if (rb.captionBar) rb.captionBar.rect.x += dx;
+  if (rb.table) {
+    for (const cell of rb.table.cells) {
+      cell.rect.x += dx;
+      if (cell.image) cell.image.rect.x += dx;
+      for (const cl of cell.lines) cl.bbox.x += dx;
+    }
+  }
 }

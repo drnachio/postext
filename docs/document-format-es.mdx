@@ -232,6 +232,22 @@ Con los valores por defecto de los encabezados esto produce la secuencia clásic
 
 Una valla no necesita una línea en blanco delante: una valla de apertura o de cierre pegada justo debajo de un párrafo, una lista o una cita termina ese bloque. Un contenedor que queda abierto al final del documento se cierra automáticamente ahí, y el sandbox emite un aviso **Contenedor sin cerrar** que señala la línea de apertura. Un `:::` suelto sin ningún contenedor abierto se deja en el texto como un párrafo visible en lugar de descartarse en silencio.
 
+### `:::columns`
+
+Dentro de un `:::callout`, un grupo `:::columns{count=2}` … `:::` compone los bloques entre sus vallas en `count` columnas de igual ancho (separadas por el `columnGap` del estilo): la secuencia se corta donde mejor se nivelan las columnas —entre bloques, o entre las líneas de un párrafo o elemento de lista, cuya cola sigue en la cabeza de la columna siguiente sin su viñeta— y la caja crece hasta la columna más alta. Los bloques posteriores al grupo recuperan el ancho completo. Fuera de un aviso las vallas se ignoran y los bloques fluyen como siempre. El atributo `breaks` fija dónde empieza cada columna en lugar de nivelarlas: `:::columns{count=2 breaks="4"}` abre la segunda columna en el cuarto bloque del grupo (una lista separada por comas para más columnas), sin cortar dentro de un párrafo —una columna de texto junto a una columna con una figura—.
+
+```md
+:::callout{type="summary"}
+:::columns{count=2}
+- Cada elemento es un tipo de átomo.
+- Los electrones viven en orbitales.
+- Un enlace comparte o transfiere electrones.
+:::
+:::
+```
+
+Una valla `:::callout` admite también `label="…"`: el texto que un estilo con pestaña `label` imprime en la esquina superior de la caja (`:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`).
+
 ### `:::pagebreak`
 
 La directiva por sí sola no fuerza paridad — solo afecta al siguiente bloque. Úsala para terminar un prólogo, forzar una dedicatoria en su propia página, o marcar el final de una sección. Cuando se quieren ambos efectos (salto de página y reinicio de numeración), compón `:::pagebreak` seguido de `:::numbering` — el cambio de numeración se aplica en la nueva página que acaba de crear `:::pagebreak`.
@@ -505,6 +521,16 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
       <td><code>"auto"</code> (el valor por defecto) toma el primer hueco libre tras la referencia, arriba o abajo; <code>"top"</code> / <code>"bottom"</code> solo aceptan huecos de ese tipo; <code>"here"</code> renuncia al flotado e inserta el recurso en línea en la directiva <code>::resource</code>.</td>
+    </tr>
+    <tr>
+      <td><code>width</code>, <code>align</code></td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
+      <td>Un recurso más estrecho que su hueco: <code>width</code> es la fracción del ancho de la columna (o de la página) que ocupa y <code>align</code> dónde se sitúa en el hueco (una tabla pequeña centrada en su columna; una banda a ancho de página cuya imagen abarca una sola columna). Vale tanto para flotantes como para inserciones <code>::resource</code> en línea.</td>
+    </tr>
+    <tr>
+      <td><code>captionSide</code></td>
+      <td><code>true</code> · <code>false</code></td>
+      <td>En una maquetación de columna y media cuya columna lateral está reservada a flotantes (<code>layout.sideColumnRole: 'floats'</code>), un flotante <code>"column"</code> con <code>captionSide</code> mantiene su cuerpo en la columna principal y compone su pie (y su nota) en la columna lateral, a la altura del borde superior de la figura —o del inferior en un flotante de pie—; la columna lateral cede esa banda. Una página sin esa columna deja el pie bajo la figura.</td>
     </tr>
     <tr>
       <td><code>span</code></td>

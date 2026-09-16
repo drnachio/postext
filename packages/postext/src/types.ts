@@ -58,6 +58,17 @@ export type ResourceFloatSpan = 'column' | 'page' | 'side';
 export interface ResourcePlacement {
   position?: ResourceFloatPosition;
   span?: ResourceFloatSpan;
+  /** Fraction of the column (or page) width the float takes, `0 < width
+   *  < 1` — a narrow table centred in its column. Default: the whole width. */
+  width?: number;
+  /** Where a float narrower than its column sits. Default `'left'`. */
+  align?: 'left' | 'center' | 'right';
+  /** Set the caption beside the figure, in the float-only side column of
+   *  a `oneAndHalf` layout (`layout.sideColumnRole: 'floats'`): the body
+   *  keeps its column, the caption goes to the margin level with the
+   *  figure's top (its bottom for a bottom float). A page without such a
+   *  column keeps the caption under the figure. Column floats only. */
+  captionSide?: boolean;
 }
 
 /** A user-definable category of resource (e.g. "Figure", "Table"). Drives
@@ -969,6 +980,11 @@ export type CalloutIconAlign = 'top' | 'center';
  *  `'corner'` as a badge on the box's top-right corner, half over the
  *  border, taking no room from the content (the icon of a marginal box). */
 export type CalloutIconPosition = 'inline' | 'corner';
+/** Which corner a `position: 'corner'` icon hangs on: `'right'` (the
+ *  default) / `'left'` are fixed; `'outer'` / `'inner'` follow the page
+ *  parity when the margins are mirrored (outer = right on a recto, left on
+ *  a verso), like the side column of a `oneAndHalf` layout. */
+export type CalloutIconCornerSide = 'right' | 'left' | 'outer' | 'inner';
 export type CalloutTextTransform = 'none' | 'uppercase';
 
 export interface CalloutBorderConfig {
@@ -1013,6 +1029,44 @@ export interface CalloutIconConfig {
   align?: CalloutIconAlign;
   /** Default `'inline'`. Ignored by the marker. */
   position?: CalloutIconPosition;
+  /** Corner of a `position: 'corner'` icon. Default `'right'`. */
+  cornerSide?: CalloutIconCornerSide;
+  /** Width of the icon's box when it is not square (a wide strip of
+   *  icons): the picture is fitted into `width` x `size`. Default: `size`. */
+  width?: Dimension;
+}
+
+/** A small tab on the box's top edge carrying the fence's `label`
+ *  attribute — the number of a numbered box ("RECUADRO 1-1"). It rises
+ *  `offset` above the box top (its vertical middle on the edge when
+ *  `offset` is half its height), hugs the corner `position` names, and can
+ *  carry an `icon` resource on its outer side and a `rule` along the top
+ *  edge from the opposite corner up to it. */
+export interface CalloutLabelConfig {
+  /** Defaults to the headings font family. */
+  fontFamily?: string;
+  /** Defaults to the body font size. */
+  fontSize?: Dimension;
+  fontWeight?: number;
+  color?: ColorValue;
+  /** Tab fill. Default: the main colour. */
+  background?: ColorValue;
+  /** Default `'top-right'`. */
+  position?: 'top-right' | 'top-left';
+  /** Tab height. Default `1.4em` of the label size. */
+  height?: Dimension;
+  /** Horizontal padding on each side of the text. Default `0.6em`. */
+  paddingX?: Dimension;
+  /** How far the tab's top rises above the box top. Default `0`. */
+  offset?: Dimension;
+  /** Inset of the tab from the box's side edge. Default `0`. */
+  inset?: Dimension;
+  /** A picture set beside the tab (on the side away from the corner):
+   *  `width` is its width, `gap` the space to the tab. */
+  icon?: { resourceId?: string; width?: Dimension; gap?: Dimension };
+  /** A rule along the box's top edge from the far corner to the tab (or
+   *  its icon). */
+  rule?: { enabled?: boolean; color?: ColorValue; width?: Dimension };
 }
 
 /** Vertical rule drawn between a callout marker and its box. */
@@ -1053,6 +1107,11 @@ export interface CalloutTitleStyleConfig {
   /** Vertical gap between the title and the first child block (also the
    *  horizontal gap between the icon column and the content). */
   gap?: Dimension;
+  /** Tracking after every glyph of the title. Default `0`. */
+  letterSpacing?: Dimension;
+  /** Extra indent of the title from the box's inner left edge (room for a
+   *  corner badge). Default `0`. */
+  indent?: Dimension;
 }
 
 /** Body typography inside the callout. Every field inherits `bodyText`. */
@@ -1079,6 +1138,9 @@ export interface CalloutListStyleConfig {
   indent?: Dimension;
   gap?: Dimension;
   itemSpacing?: Dimension;
+  /** Size and weight of the bullet glyph (inherit `unorderedLists`). */
+  bulletFontSize?: Dimension;
+  bulletFontWeight?: number;
 }
 
 /** A named callout style, selected by `:::callout{type="<id>"}`. */
@@ -1117,6 +1179,12 @@ export interface CalloutStyleConfig {
   stripe?: CalloutStripeConfig;
   /** Default `kind: 'none'`. */
   icon?: CalloutIconConfig;
+  /** The label tab a fence's `label` attribute prints (unset: no tab even
+   *  when the attribute is given). */
+  label?: CalloutLabelConfig;
+  /** Gap between the columns of a `:::columns` group inside the box.
+   *  Default `1.5em`. */
+  columnGap?: Dimension;
   /** Default `kind: 'none'` (no marker column). */
   marker?: CalloutMarkerConfig;
   titleStyle?: CalloutTitleStyleConfig;
@@ -1167,7 +1235,24 @@ export interface ResolvedCalloutStyleConfig {
     color: ColorValue;
     align: CalloutIconAlign;
     position: CalloutIconPosition;
+    cornerSide: CalloutIconCornerSide;
+    width?: Dimension;
   };
+  label?: {
+    fontFamily: string;
+    fontSize: Dimension;
+    fontWeight: number;
+    color: ColorValue;
+    background: ColorValue;
+    position: 'top-right' | 'top-left';
+    height: Dimension;
+    paddingX: Dimension;
+    offset: Dimension;
+    inset: Dimension;
+    icon: { resourceId: string; width: Dimension; gap: Dimension };
+    rule: { enabled: boolean; color: ColorValue; width: Dimension };
+  };
+  columnGap: Dimension;
   marker: {
     kind: CalloutIconKind;
     glyph: string;
@@ -1188,6 +1273,8 @@ export interface ResolvedCalloutStyleConfig {
     color: ColorValue;
     textTransform: CalloutTextTransform;
     gap: Dimension;
+    letterSpacing: Dimension;
+    indent: Dimension;
   };
   body: {
     fontFamily: string;
@@ -1206,6 +1293,8 @@ export interface ResolvedCalloutStyleConfig {
     indent: Dimension;
     gap: Dimension;
     itemSpacing: Dimension;
+    bulletFontSize?: Dimension;
+    bulletFontWeight?: number;
   };
   marginTop: Dimension;
   marginBottom: Dimension;
@@ -1836,6 +1925,22 @@ export interface DesignTextElement {
    *  in capitals in the contents). Default `'none'`. */
   textTransform?: 'none' | 'uppercase';
   box?: ElementBoxStyle;
+  /** Drop cap: the first letter set large beside the first `lines` lines
+   *  of the text (default 2), in its own face, weight and colour; `gap`
+   *  is the space between the letter and the text. `fontSize` defaults to
+   *  the size whose cap height spans those lines. Wrapping text only. */
+  dropCap?: {
+    lines?: number;
+    fontFamily?: string;
+    fontWeight?: number;
+    fontSize?: Dimension;
+    color?: ColorValue;
+    gap?: Dimension;
+  };
+  /** First-line indent of every paragraph after the first. A newline in
+   *  the content (or the two characters `\n`, for attribute values)
+   *  separates paragraphs; consecutive newlines count as one. */
+  paragraphIndent?: Dimension;
 }
 
 export interface DesignRuleElement {

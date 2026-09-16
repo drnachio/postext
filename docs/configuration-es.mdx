@@ -508,6 +508,18 @@ Los elementos de texto renderizan una plantilla con sustitución de marcadores. 
       <td>Cómo se gestiona el texto que excede el ancho disponible del elemento. <code>'wrap'</code> divide el texto en varias líneas; las variantes de elipsis truncan a una sola línea e insertan <code>…</code> al principio, en el centro o al final; <code>'clip'</code> recorta de forma estricta al rectángulo del elemento sin insertar ningún carácter.</td>
     </tr>
     <tr>
+      <td><code>dropCap</code></td>
+      <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
+      <td>—</td>
+      <td>Letra capital en un texto que se ajusta: la primera letra, grande, junto a las primeras <code>lines</code> líneas (2 por defecto), con su propia fuente, peso y color, y a <code>gap</code> del texto. <code>fontSize</code> vale por defecto el tamaño cuya altura de mayúscula abarca esas líneas.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría de primera línea de cada párrafo a partir del segundo. Un salto de línea en el contenido —o los dos caracteres <code>\n</code>, en un texto que viene de un atributo— separa párrafos; varios saltos seguidos cuentan como uno.</td>
+    </tr>
+    <tr>
       <td><code>hyphenate</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
@@ -2689,9 +2701,9 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>icon</code></td>
-      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align &#125;</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, width, color, align, position, cornerSide &#125;</code></td>
       <td><code>'none'</code>, fuente de encabezados, <code>400</code>, <code>1.5em</code>, color principal, <code>'top'</code></td>
-      <td>Un glifo de texto (<code>kind: 'glyph'</code>) o un recurso bitmap / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) junto al contenido. Con franja lateral el icono se centra sobre la franja; si no, reserva su propia columna (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> lo centra verticalmente sobre el contenido. Una imagen de recurso se ajusta dentro del cuadrado conservando su proporción; un icono más alto que el contenido agranda la caja para contenerlo (y, con <code>align: 'center'</code>, centra el contenido sobre él).</td>
+      <td>Un glifo de texto (<code>kind: 'glyph'</code>) o un recurso bitmap / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) junto al contenido. Con franja lateral el icono se centra sobre la franja; si no, reserva su propia columna (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> lo centra verticalmente sobre el contenido. Una imagen de recurso se ajusta dentro del cuadrado conservando su proporción; un icono más alto que el contenido agranda la caja para contenerlo (y, con <code>align: 'center'</code>, centra el contenido sobre él). Con <code>width</code> la imagen se ajusta a una caja de <code>width</code> × <code>size</code> (una tira ancha de iconos). <code>position: 'corner'</code> cuelga el icono de una esquina superior como una insignia, medio fuera del borde y sin ocupar sitio en el contenido; <code>cornerSide</code> elige la esquina: <code>'right'</code> / <code>'left'</code>, o <code>'outer'</code> / <code>'inner'</code>, que siguen la paridad de la página con márgenes simétricos (exterior = derecha en una página impar, izquierda en una par).</td>
     </tr>
     <tr>
       <td><code>marker</code></td>
@@ -2701,9 +2713,9 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>titleStyle</code></td>
-      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap, letterSpacing, indent &#125;</code></td>
       <td>fuente de encabezados, tamaño del cuerpo, <code>700</code>, <code>false</code>, color principal, <code>'none'</code>, <code>0.5em</code></td>
-      <td>Tipografía del título. <code>gap</code> es el espacio entre el título y el primer hijo (y el hueco de la columna del icono). <code>textTransform: 'uppercase'</code> conserva la longitud del texto.</td>
+      <td>Tipografía del título. <code>gap</code> es el espacio entre el título y el primer hijo (y el hueco de la columna del icono). <code>textTransform: 'uppercase'</code> conserva la longitud del texto. <code>letterSpacing</code> aplica un tracking al título (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> lo desplaza a la derecha del borde interior de la caja (sitio para una insignia de esquina).</td>
     </tr>
     <tr>
       <td><code>body</code></td>
@@ -2713,9 +2725,21 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>lists</code></td>
-      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing &#125;</code></td>
+      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing, bulletFontSize, bulletFontWeight &#125;</code></td>
       <td>hereda de <code>unorderedLists</code></td>
-      <td>Tipografía de las listas dentro de la caja (<code>color</code>, <code>indent</code>, <code>gap</code> e <code>itemSpacing</code> se aplican también a las listas ordenadas).</td>
+      <td>Tipografía de las listas dentro de la caja (<code>color</code>, <code>indent</code>, <code>gap</code> e <code>itemSpacing</code> se aplican también a las listas ordenadas). <code>bulletFontSize</code> / <code>bulletFontWeight</code> componen la viñeta en la fuente del cuerpo de la caja a ese tamaño y peso (una viñeta gruesa de color).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, color, background, position, height, paddingX, offset, inset, icon, rule &#125;</code></td>
+      <td>sin definir (sin pestaña)</td>
+      <td>Una pestaña sobre el borde superior de la caja que imprime el atributo <code>label</code> de la valla —el número de un recuadro numerado («RECUADRO 1-1»)—. Se pega a la esquina <code>position</code> (<code>'top-right'</code> / <code>'top-left'</code>) con un retranqueo <code>inset</code>, sobresale <code>offset</code> por encima del borde (ese espacio forma parte del bloque, además de <code>marginTop</code>, y se conserva también en cabeza de columna), mide <code>height</code> de alto con <code>paddingX</code> a cada lado del texto, y puede llevar un recurso <code>icon</code> a su lado (<code>&#123; resourceId, width, gap &#125;</code>, hacia el interior) y un filete <code>rule</code> (<code>&#123; enabled, color, width &#125;</code>) a lo largo del borde superior desde la esquina opuesta hasta ella. Por defecto: fuente de encabezados, tamaño del cuerpo, <code>700</code>, blanco sobre el color principal, <code>1.4em</code> de alto, <code>0.6em</code> de relleno.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>Separación entre las columnas de un grupo <code>:::columns</code> dentro de la caja (véase la sección del contenedor).</td>
     </tr>
     <tr>
       <td><code>marginTop</code> / <code>marginBottom</code></td>
@@ -2751,6 +2775,8 @@ Límites de esta versión:
 - `placement: 'top' | 'bottom'` se registra en el VDT (`VDTBlock.callout`) pero todavía se coloca en línea al ancho de columna — las cajas flotantes llegan con la siguiente etapa.
 - `width: 'auto'` se ajusta solo al título; los hijos se ignoran.
 - Un `:::callout` anidado dentro de otro aviso se aplana en la caja exterior.
+- Un grupo `:::columns{count=N}` … `:::` entre los hijos compone esos hijos en `N` columnas de igual ancho, separadas por `columnGap`, dentro de la caja: la secuencia se corta por los límites de bloque o de línea que mejor nivelan las columnas (un párrafo o elemento de lista cortado a medias sigue en la cabeza de la columna siguiente sin su viñeta), cada columna empieza en la parte superior del grupo y el grupo mide lo que la columna más alta; los hijos posteriores recuperan el ancho completo. Una caja partible (`keepTogether: false`) nunca corta dentro de un grupo. Sirve para un resumen de puntos clave a dos columnas o para las tablas de un recuadro ancho puestas lado a lado.
+- El quinto atributo de la valla, `label`, se imprime en la pestaña `label` del estilo (véase arriba): `:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`; sin estilo de pestaña el atributo se ignora.
 
 En el VDT la caja es un bloque marco de `type: 'callout'` cuya decoración (fondo, franja, icono, título) vive en `designOverlay`, seguido de sus bloques hijos en la misma columna; el marco y cada hijo llevan el `containerId` de la valla. Las imágenes de icono se resuelven como las de los recursos: el registro de imágenes del canvas, la opción `resourceImageUrl` del HTML y el proveedor `resourceBytes` del PDF.
 
