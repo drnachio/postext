@@ -1058,13 +1058,16 @@ export function buildDocumentPass(
     const band = currentBand(page, cursor);
     const cols = bandColumns(page, band).filter((c) => c.bbox.height > 0.5);
     if (cols.length < 2 || cols.some((c) => c.forcedBreak)) return;
-    if (bandCaps?.has(boundaryIndex)) {
-      if (activeCap && activeCap.spanIndex === boundaryIndex
-        && activeCap.pageIndex === page.index && activeCap.band === band) {
-        spanPlacedInBand.add(boundaryIndex);
-      }
+    if (activeCap && activeCap.spanIndex === boundaryIndex
+      && activeCap.pageIndex === page.index && activeCap.band === band) {
+      spanPlacedInBand.add(boundaryIndex);
       return;
     }
+    // A cap in force for this boundary that did not open the band the
+    // boundary is reached in (an earlier cap moved the flow under it, or
+    // its own band overflowed) still gets a fresh proposal below: the
+    // driver replaces a cap that no longer applies with it, and ignores it
+    // while retrying an applied cap a line taller.
     if (activeCap && activeCap.pageIndex === page.index && activeCap.band === band) return;
     if (!cols.some((c) => c.blocks.length > 0)) return;
     if (!bandStart || !registeredBand || registeredBand.pageIndex !== page.index || registeredBand.band !== band) return;

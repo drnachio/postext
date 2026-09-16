@@ -3,6 +3,7 @@ import { buildDocument, buildDocumentPass } from '../../pipeline/build';
 import { createMeasurementCache } from '../../measure';
 import type { PostextConfig, VDTDocument, VDTPage } from '../../index';
 import { parseMarkdown } from '../../parse';
+import { resolveTrailingCaps, type BandCap, type BandPassReport } from '../../pipeline/bandCaps';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -106,5 +107,53 @@ describe('trailing band balance', () => {
     const last = doc.pages[doc.pages.length - 1]!;
     expect(last.columns[0]!.forcedBreak).toBe(true);
     expect(last.columns[0]!.bbox.y + last.columns[0]!.bbox.height).toBeCloseTo(last.contentArea.y + last.contentArea.height, 5);
+  });
+
+  // Driver-level (deterministic fake passes): two closing bands, the first
+  // cap overflows on its first try and its retry moves the flow under the
+  // second boundary, whose band then opens with another block. That cap is
+  // replaced by the boundary's fresh proposal instead of being dropped, so
+  // both bands end level once the first cap settles (EMP ch. 17: key points
+  // on p. 201, the bibliography + self-assessment badge on p. 203).
+  it('keeps a later boundary alive while an earlier cap is still being retried', () => {
+    const capA: BandCap = { kind: 'trailing', startContentIndex: 133, startPart: 1, lines: 55, retries: 0 };
+    const capB: BandCap = { kind: 'trailing', startContentIndex: 178, startPart: 0, lines: 29, retries: 0 };
+    // B as the second boundary sees it while A's band still overflows.
+    const capBShifted: BandCap = { kind: 'trailing', startContentIndex: 181, startPart: 0, lines: 12, retries: 0 };
+    const report = (
+      proposals: [number, BandCap][],
+      placed: number[],
+      applied: number[],
+    ): BandPassReport & { tag: string } => ({
+      bandCapProposals: new Map(proposals),
+      spanPlacedInBand: new Set(placed),
+      bandCapsApplied: new Set(applied),
+      tag: `${applied.join(',')}|${placed.join(',')}`,
+    });
+    const initial = report([[154, capA], [205, capB]], [], []);
+    const seen: [number, number][][] = [];
+    const out = resolveTrailingCaps(initial, new Map(), (caps) => {
+      seen.push([...caps].map(([i, c]) => [i, c.lines]));
+      const a = caps.get(154)!;
+      const b = caps.get(205);
+      if (a.lines < 56) {
+        // A overflows; the flow under it moved, so B's band opened with
+        // another block — the boundary proposes afresh from there.
+        return report([[205, capBShifted]], [], [154]);
+      }
+      if (!b || b.startContentIndex !== capB.startContentIndex) {
+        return report([[205, capB]], [154], [154]);
+      }
+      return report([], [154, 205], [154, 205]);
+    });
+    expect(seen).toEqual([
+      [[154, 55], [205, 29]],
+      [[154, 56], [205, 12]],
+      [[154, 56], [205, 29]],
+    ]);
+    expect(out.passCount).toBe(3);
+    expect([...out.caps.keys()]).toEqual([154, 205]);
+    expect(out.result.spanPlacedInBand.has(205)).toBe(true);
+    expect(out.result).not.toBe(initial);
   });
 });
