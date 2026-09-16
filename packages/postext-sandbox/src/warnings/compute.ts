@@ -88,6 +88,25 @@ function collectLooseLineWarnings(
   return out;
 }
 
+/** Warnings the layout itself raised (`doc.warnings`): a box the engine
+ *  had to place overflowing its column because no column could hold it. */
+function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
+  const out: Warning[] = [];
+  const pxPerMm = doc.config.page.dpi / 25.4;
+  let idx = 0;
+  for (const w of doc.warnings ?? []) {
+    if (w.kind !== 'calloutOverflow') continue;
+    out.push({
+      id: `layout-${idx++}-${w.sourceStart ?? 'x'}`,
+      payload: { kind: 'calloutOverflow', page: w.pageIndex + 1 + (doc.pageIndexOffset ?? 0), overflowMm: w.overflowPx / pxPerMm },
+      sourceStart: w.sourceStart,
+      sourceEnd: w.sourceEnd,
+      line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+    });
+  }
+  return out;
+}
+
 function collectHeadingHierarchyWarnings(blocks: ContentBlock[], markdown: string): Warning[] {
   const out: Warning[] = [];
   let prev: number | null = null;
@@ -779,6 +798,7 @@ function computeDocumentWarnings(params: {
   if (toggles.looseLines && doc) {
     warnings.push(...collectLooseLineWarnings(doc, debug, markdown));
   }
+  if (doc) warnings.push(...collectLayoutWarnings(doc, markdown));
 
   warnings.push(...collectHeaderFooterWarnings(config, doc));
   warnings.push(...collectDirectiveWarnings(markdown, blocks));

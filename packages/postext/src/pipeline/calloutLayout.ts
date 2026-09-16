@@ -218,6 +218,13 @@ export interface CalloutLayoutInput {
    *  false`): the frame keeps its background, border, stripe and marker but
    *  drops the title and the in-box icon — the head already carries them. */
   continuation?: boolean;
+  /** Line-level cuts of a split box: skip the first `lineFrom` text lines
+   *  of the first child (a continuation opening inside a paragraph — its
+   *  bullet, if a list item, stays with the head), and keep only the first
+   *  `lineTo` lines of the last child (a head cut inside a paragraph).
+   *  Ignored for children that are not text runs (figures, display math). */
+  lineFrom?: number;
+  lineTo?: number;
 }
 
 export interface CalloutLayoutResult {
@@ -345,8 +352,13 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const iconSize = hasIcon ? px(style.icon.size) : 0;
   const gapPx = px(style.titleStyle.gap);
   // The icon takes its own column only when there is no side stripe to sit
-  // over.
-  const iconColumn = hasIcon && !sideStripe ? iconSize + gapPx : 0;
+  // over. A continuation that opens inside a paragraph (`lineFrom`) keeps
+  // that column empty: its lines were counted at the head's inner width,
+  // so the text must wrap the same way — line `lineFrom` on, nothing lost
+  // or doubled.
+  const openingMidRun = !!input.continuation && (input.lineFrom ?? 0) > 0;
+  const iconColumnKept = (hasIcon || (openingMidRun && iconPresent(style.icon))) && !sideStripe;
+  const iconColumn = iconColumnKept ? px(style.icon.size) + gapPx : 0;
 
   const innerX = (stripeLeft ? stripeW : 0) + padL + iconColumn;
   const innerTop = (topStripe ? stripeW : 0) + padT;
@@ -441,6 +453,19 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       blk.sourceMap = absoluteSourceMap;
       blk.plainPrefixLen = prefixLen;
 
+      // Line-level cut of the first / last child (split boxes): the kept
+      // run of lines, and whether this child opens after its first line
+      // (no bullet then — the head carries it).
+      const isTextRun = !(vdtType === 'resource' && resourceBlock) && !(vdtType === 'mathDisplay' && mathDisplayRender);
+      const isFirstReal = childBlocks.length === 0;
+      const isLastReal = children.slice(k + 1).every((c) => c.type === 'directive' || isMarkerBlock(c));
+      const lineFrom = isTextRun && isFirstReal ? Math.max(0, input.lineFrom ?? 0) : 0;
+      const lineTo = isTextRun && isLastReal && input.lineTo !== undefined
+        ? Math.max(lineFrom + 1, Math.min(input.lineTo, measured.lines.length))
+        : measured.lines.length;
+      const keptLines = isTextRun ? measured.lines.slice(Math.min(lineFrom, measured.lines.length - 1), lineTo) : measured.lines;
+      const openedMidRun = lineFrom > 0;
+
       let height: number;
       if (vdtType === 'resource' && resourceBlock) {
         height = measured.totalHeight;
@@ -464,10 +489,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         blk.sourceStart = raw.sourceStart + ctx.bodyOffset;
         blk.sourceEnd = raw.sourceEnd + ctx.bodyOffset;
       } else {
-        blk.lines = resetLinePositions(measured.lines, bs.lineHeightPx);
+        blk.lines = resetLinePositions(keptLines, bs.lineHeightPx);
         height = blk.lines.length * bs.lineHeightPx;
-        blk.sourceStart = measured.lines[0]!.sourceStart ?? raw.sourceStart + ctx.bodyOffset;
-        blk.sourceEnd = measured.lines[measured.lines.length - 1]!.sourceEnd ?? raw.sourceEnd + ctx.bodyOffset;
+        blk.sourceStart = keptLines[0]!.sourceStart ?? raw.sourceStart + ctx.bodyOffset;
+        blk.sourceEnd = keptLines[keptLines.length - 1]!.sourceEnd ?? raw.sourceEnd + ctx.bodyOffset;
       }
 
       // Relocate to the inner rect (box-relative).
@@ -479,7 +504,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       }
       if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, innerX, cursorY);
 
-      if (listBullet) {
+      if (listBullet && !openedMidRun) {
         blk.listDepth = listDepth;
         blk.listKind = listKind;
         blk.bulletText = listBullet.bulletText;
@@ -497,6 +522,9 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         if (firstLine) {
           blk.bulletY = firstLine.baseline - listBullet.textFontSizePx * 0.3 + listBullet.verticalOffsetPx;
         }
+      } else if (listBullet) {
+        blk.listDepth = listDepth;
+        blk.listKind = listKind;
       }
 
       childBlocks.push(blk);

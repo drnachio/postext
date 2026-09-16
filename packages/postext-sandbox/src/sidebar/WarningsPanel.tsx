@@ -43,6 +43,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'headingBreakInvalidParity':
     case 'parityCascade':
     case 'alphaPdfOverflow':
+    case 'calloutOverflow':
       return FileWarning;
     case 'designCyclicAnchor':
     case 'designDanglingAnchor':
@@ -110,6 +111,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsParityCascadeTitle;
     case 'alphaPdfOverflow':
       return labels.warningsAlphaPdfOverflowTitle;
+    case 'calloutOverflow':
+      return labels.warningsCalloutOverflowTitle;
     case 'designCyclicAnchor':
       return labels.warningsDesignCyclicAnchorTitle ?? 'Cyclic anchor reference';
     case 'designDanglingAnchor':
@@ -197,6 +200,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.runLength} — ${labels.warningsParityCascadeDetail}`;
     case 'alphaPdfOverflow':
       return labels.warningsAlphaPdfOverflowDetail;
+    case 'calloutOverflow':
+      return labels.warningsCalloutOverflowDetail
+        .replace('__page__', String(payload.page))
+        .replace('__mm__', payload.overflowMm.toFixed(1));
     case 'designCyclicAnchor': {
       const where = slotWhere(payload.slot, payload.level);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail ?? 'anchor chain loops back to this element'}`;

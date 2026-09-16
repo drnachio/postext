@@ -1043,12 +1043,17 @@ export interface CalloutStyleConfig {
   marginBottom?: Dimension;
   /** When `true` (default) the box never splits: a callout that does not
    *  fit the remaining space moves whole to the next column or page. When
-   *  `false` it may break between child blocks — never inside a paragraph
-   *  or list item — the part that fits closes the current column (or, for
-   *  a `span: 'page'` box, the page) and the rest continues on the next one
-   *  in a box of its own without the title or icon (stripe, border and
-   *  background stay). */
+   *  `false` it may break between child blocks or between the lines of a
+   *  paragraph or list item — leaving at least `splitMinLines` lines on
+   *  each side of the cut — the part that fits closes the current column
+   *  (or, for a `span: 'page'` box, the page) and the rest continues on the
+   *  next one in a box of its own without the title or icon (stripe, border
+   *  and background stay). */
   keepTogether?: boolean;
+  /** Fewest text lines a fragment of a split box may carry, on either side
+   *  of the cut (`keepTogether: false`). Default 2: a box never breaks
+   *  leaving a lone line at the foot of a column or the head of the next. */
+  splitMinLines?: number;
 }
 
 export interface ResolvedCalloutStyleConfig {
@@ -1117,6 +1122,7 @@ export interface ResolvedCalloutStyleConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepTogether: boolean;
+  splitMinLines: number;
 }
 
 /** Parity constraint for a forced page break.

@@ -77,6 +77,7 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
   marginTop: EM(0.75),
   marginBottom: EM(0.75),
   keepTogether: true,
+  splitMinLines: 2,
 };
 
 /** One neutral style ships by default so `:::callout` works out of the box:
@@ -181,6 +182,9 @@ function resolveCalloutStyleConfig(
     marginTop: partial.marginTop ?? d.marginTop,
     marginBottom: partial.marginBottom ?? d.marginBottom,
     keepTogether: partial.keepTogether ?? d.keepTogether,
+    splitMinLines: Number.isInteger(partial.splitMinLines) && partial.splitMinLines! >= 1
+      ? partial.splitMinLines!
+      : d.splitMinLines,
   };
 }
 
@@ -339,6 +343,7 @@ export function stripCalloutStylesDefaults(
     if (s.marginTop !== undefined && !dimensionsEqual(s.marginTop, d.marginTop)) r.marginTop = s.marginTop;
     if (s.marginBottom !== undefined && !dimensionsEqual(s.marginBottom, d.marginBottom)) r.marginBottom = s.marginBottom;
     if (s.keepTogether !== undefined && s.keepTogether !== d.keepTogether) r.keepTogether = s.keepTogether;
+    if (s.splitMinLines !== undefined && s.splitMinLines !== d.splitMinLines) r.splitMinLines = s.splitMinLines;
     return r;
   });
   // The built-in default (a single bare `note` style) needs no persisting.

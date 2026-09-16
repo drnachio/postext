@@ -218,6 +218,7 @@ export type {
   ResolvedResourceBlock,
   ResolvedCalloutBlock,
   VDTCaptionBar,
+  LayoutWarning,
   VDTResourceTableCell,
   VDTResourceTableCellImage,
   VDTResourceTableLayout,

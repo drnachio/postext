@@ -161,6 +161,8 @@ export interface SandboxLabels {
   warningsParityCascadeDetail: string;
   warningsAlphaPdfOverflowTitle: string;
   warningsAlphaPdfOverflowDetail: string;
+  warningsCalloutOverflowTitle: string;
+  warningsCalloutOverflowDetail: string;
   warningsInvalidMathTitle?: string;
   warningsUnclosedMathTitle?: string;
   warningsUnclosedContainerTitle: string;
@@ -1098,6 +1100,8 @@ export interface SandboxLabels {
   calloutStyleFloatBarrierTooltip: string;
   calloutStyleKeepTogether: string;
   calloutStyleKeepTogetherTooltip: string;
+  calloutStyleSplitMinLines: string;
+  calloutStyleSplitMinLinesTooltip: string;
   calloutStyleWidth: string;
   calloutStyleWidthTooltip: string;
   calloutStyleWidthFill: string;

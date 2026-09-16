@@ -581,9 +581,28 @@ export interface VDTPage {
   blankForForce?: boolean;
 }
 
+/** Something the layout could not set as asked and placed anyway — a box
+ *  taller than any column it could go to. Hosts surface these as warnings;
+ *  the geometry still describes what was painted. */
+export interface LayoutWarning {
+  /** `calloutOverflow`: a `:::callout` box that fits no column was placed
+   *  overflowing its column (by `overflowPx`). */
+  kind: 'calloutOverflow';
+  pageIndex: number;
+  columnIndex: number;
+  /** Absolute source range of the offending construct in the markdown. */
+  sourceStart?: number;
+  sourceEnd?: number;
+  /** How far past the column's free room the content reaches (px). */
+  overflowPx: number;
+}
+
 export interface VDTDocument {
   pages: VDTPage[];
   blocks: VDTBlock[];
+  /** Layout warnings raised while placing the content (see
+   *  {@link LayoutWarning}); absent or empty when everything fit. */
+  warnings?: LayoutWarning[];
   config: ResolvedConfig;
   baselineGrid: number;
   /** Pixel offset from canvas edge to trim edge (0 when cutLines disabled) */

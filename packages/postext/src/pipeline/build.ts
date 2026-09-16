@@ -86,6 +86,7 @@ import {
   trueBottom,
   type ColumnCapKind,
   type FloatMeasure,
+  type FloatSlot,
   type FloatSlotPosition,
 } from './floatSlots';
 import {
@@ -627,6 +628,51 @@ export function buildDocumentPass(
    * the text room only next to another band. Only mutates page geometry
    * when it places.
    */
+  /** The band a float would take in a slot — its height (`need`) and the
+   *  float's `y` — without reserving it. `null` when the float cannot be
+   *  measured. */
+  const probeFloatBand = (
+    page: VDTPage,
+    f: PlannedFloat,
+    targetCols: readonly VDTColumn[],
+    position: FloatSlotPosition,
+    pageSpan: boolean,
+    anchorToCap: boolean,
+  ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number } | null => {
+    const first = targetCols[0]!;
+    const width = pageSpan ? page.contentArea.width : first.bbox.width;
+    const xLeft = pageSpan ? page.contentArea.x : first.bbox.x;
+    const slice = sliceOf(f);
+    const measure = measureFloat(f.resourceId, width, slice);
+    if (!measure) return null;
+    // A bottom band normally anchors to the column's true foot (under a
+    // trailing cap, the page bottom — the closing-page figure). Before a
+    // page-span box the cap IS the band's foot: the figure hugs the text
+    // and the box follows both.
+    const bottomOf = (c: VDTColumn): number =>
+      anchorToCap ? c.bbox.y + c.bbox.height : trueBottom(c, uncappedBottoms);
+    const { need, y } = measureFloatBand(
+      position, measure, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf,
+    );
+    return { need, y, measure, slice, width, xLeft };
+  };
+
+  /** Free height `col` keeps for the flow once a float band `probe` is
+   *  reserved in it at `position` (mirrors the reservation arithmetic of
+   *  `placeFloatInColumns`; a capped column absorbs a bottom band in its
+   *  remembered true bottom, so its free height does not change). */
+  const availableAfterBand = (
+    col: VDTColumn,
+    position: FloatSlotPosition,
+    probe: { need: number; y: number },
+    anchorToCap: boolean,
+  ): number => {
+    if (position === 'top') return Math.max(0, col.availableHeight - probe.need);
+    if (uncappedBottoms.has(col) && !anchorToCap) return col.availableHeight;
+    const newHeight = Math.max(0, probe.y - floatGapPx - col.bbox.y);
+    return Math.max(0, col.availableHeight - (col.bbox.height - newHeight));
+  };
+
   const placeFloatInColumns = (
     page: VDTPage,
     f: PlannedFloat,
@@ -637,21 +683,11 @@ export function buildDocumentPass(
     anchorToCap = false,
   ): PlaceResult => {
     const first = targetCols[0]!;
-    const width = pageSpan ? page.contentArea.width : first.bbox.width;
-    const xLeft = pageSpan ? page.contentArea.x : first.bbox.x;
-    let slice = sliceOf(f);
+    const probe = probeFloatBand(page, f, targetCols, position, pageSpan, anchorToCap);
+    if (!probe) return 'skip';
+    const { width, xLeft } = probe;
+    let { slice, measure, need, y } = probe;
     let rest: PlannedFloat | undefined;
-    let measure = measureFloat(f.resourceId, width, slice);
-    if (!measure) return 'skip';
-    // A bottom band normally anchors to the column's true foot (under a
-    // trailing cap, the page bottom — the closing-page figure). Before a
-    // page-span box the cap IS the band's foot: the figure hugs the text
-    // and the box follows both.
-    const bottomOf = (c: VDTColumn): number =>
-      anchorToCap ? c.bbox.y + c.bbox.height : trueBottom(c, uncappedBottoms);
-    let { need, y } = measureFloatBand(
-      position, measure, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf,
-    );
 
     if (mode === 'fresh') {
       let minAvail = Infinity;
@@ -781,13 +817,73 @@ export function buildDocumentPass(
     }
   };
 
+  /** The keep-together box content block `idx` opens, when it is one that
+   *  lays out inline in a column of the current band (`span: 'column'`,
+   *  placement `here`): its height at a column width, so the floats placed
+   *  right before it can tell whether a slot would starve it. */
+  const keepTogetherBoxAt = (idx: number): { heightAt: (width: number) => number } | null => {
+    const b = contentBlocks[idx];
+    if (!b || b.type !== 'containerStart' || b.containerName !== 'callout') return null;
+    const plan = calloutPlan.get(idx);
+    const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
+    if (!plan || !style || !style.keepTogether) return null;
+    const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
+    if (placement !== 'here') return null;
+    const page = doc.pages[cursor.pageIndex]!;
+    if (span === 'page' && bandColumns(page, currentBand(page, cursor)).length > 1) return null;
+    const L = makeCalloutLayouter(idx, plan, style);
+    const heights = new Map<number, number>();
+    return {
+      heightAt: (width) => {
+        const key = Math.round(width * 100);
+        let h = heights.get(key);
+        if (h === undefined) {
+          const r = L.layoutRange(CUT_START, L.end, width, 'probe', false);
+          h = r.totalHeight + Math.max(pendingSpacing, r.marginTopPx);
+          heights.set(key, h);
+        }
+        return h;
+      },
+    };
+  };
+
+  /** Whether reserving float `f` in `slot` would leave the keep-together
+   *  box that comes next with no column of the current band to land in —
+   *  when, without the float, one of them (the cursor's, or an empty one
+   *  after it) still holds it. A float yields to such a box, as a
+   *  compositor would: the box stays in flow and the figure takes the next
+   *  slot (usually the next page) instead of pushing the box off the page
+   *  and leaving the column with the figure alone. */
+  const slotStarvesBox = (
+    page: VDTPage,
+    f: PlannedFloat,
+    slot: FloatSlot,
+    box: { heightAt: (width: number) => number },
+    anchorToCap: boolean,
+  ): boolean => {
+    const cursorCol = page.columns[cursor.columnIndex];
+    if (!cursorCol) return false;
+    const candidates = bandColumns(page, currentBand(page, cursor))
+      .filter((c) => c.kind !== 'span' && c.index >= cursorCol.index && (c === cursorCol || c.blocks.length === 0));
+    const fitsIn = (c: VDTColumn, available: number): boolean => available >= box.heightAt(c.bbox.width) - 0.01;
+    if (!candidates.some((c) => fitsIn(c, c.availableHeight))) return false;
+    const probe = probeFloatBand(page, f, slot.cols, slot.position, slot.pageSpan, anchorToCap);
+    if (!probe) return false;
+    const after = (c: VDTColumn): number =>
+      slot.cols.includes(c) ? availableAfterBand(c, slot.position, probe, anchorToCap) : c.availableHeight;
+    return !candidates.some((c) => fitsIn(c, after(c)));
+  };
+
   /** Offer every pending float the free slots of the current page after the
    *  cursor (bottom of the referencing column, top / bottom of the next
    *  empty columns; the band bottom for page-span floats). Runs before each
-   *  block is placed, so a float lands in the first gap after its reference. */
-  const tryPlacePendingFloatsOnCurrentPage = (preferTop = false): void => {
+   *  block is placed, so a float lands in the first gap after its reference.
+   *  `nextBlockIdx` is that block: a keep-together box it opens holds the
+   *  slots that would starve it (see `slotStarvesBox`). */
+  const tryPlacePendingFloatsOnCurrentPage = (preferTop = false, nextBlockIdx?: number): void => {
     if (pendingFloats.length === 0) return;
     const page = doc.pages[cursor.pageIndex]!;
+    const box = nextBlockIdx !== undefined ? keepTogetherBoxAt(nextBlockIdx) : null;
     for (let i = 0; i < pendingFloats.length;) {
       const f = pendingFloats[i]!;
       let r: PlaceResult = 'defer';
@@ -802,6 +898,7 @@ export function buildDocumentPass(
       if (preferTop && f.span === 'page' && bandColumns(page, currentBand(page, cursor)).length > 1) { i++; continue; }
       if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
       for (const slot of slots) {
+        if (box && slotStarvesBox(page, f, slot, box, preferTop)) continue;
         r = placeFloatInColumns(page, f, slot.cols, slot.position, slot.pageSpan, 'strict', preferTop);
         if (r !== 'defer') break;
       }
@@ -1113,18 +1210,30 @@ export function buildDocumentPass(
   // fragment's frame shares the fence's `contentIndex` / `containerId` and
   // records its `callout.part` / `callout.continued`.
 
+  /** A position inside a box's children where a fragment starts or ends:
+   *  before child `child` (a position in `children`), past its first
+   *  `line` text lines. `line: 0` is the child's head; a cut with
+   *  `line > 0` falls inside that child, between two of its lines. */
+  interface CalloutCut {
+    child: number;
+    line: number;
+  }
+  const CUT_START: CalloutCut = { child: 0, line: 0 };
+
   interface CalloutLayouter {
     /** Content blocks between the fence markers. */
     children: readonly ContentBlock[];
     /** Content index of `children[0]`. */
     childBase: number;
     /** Positions in `children` of the blocks the box lays out (marker
-     *  blocks of nested containers and directives are skipped) — a split
-     *  may only fall right before one of them. */
+     *  blocks of nested containers and directives are skipped). */
     realAt: readonly number[];
-    /** Lay out the children in `[from, to)` at `width` as one box — a
-     *  `continuation` (every fragment after the head) without title / icon. */
-    layoutRange: (from: number, to: number, width: number, frameId: string, continuation: boolean) => CalloutLayoutResult;
+    /** The cut past the last child (the end of the box). */
+    end: CalloutCut;
+    /** Lay out the children from cut `from` to cut `to` at `width` as one
+     *  box — a `continuation` (every fragment after the head) without
+     *  title / icon. A cut inside a child keeps only the lines on its side. */
+    layoutRange: (from: CalloutCut, to: CalloutCut, width: number, frameId: string, continuation: boolean) => CalloutLayoutResult;
   }
 
   const makeCalloutLayouter = (
@@ -1137,14 +1246,17 @@ export function buildDocumentPass(
     children.forEach((c, k) => {
       if (c.type !== 'directive' && !isMarkerBlock(c)) realAt.push(k);
     });
-    const layoutRange = (from: number, to: number, width: number, frameId: string, continuation: boolean) => {
+    const layoutRange = (from: CalloutCut, to: CalloutCut, width: number, frameId: string, continuation: boolean) => {
       let n = 0;
+      // A cut inside child `to.child` includes that child (its first
+      // `to.line` lines); a cut at a child's head excludes it.
+      const toChild = to.line > 0 ? to.child + 1 : to.child;
       return layoutCallout({
         style,
         attrs: plan.attrs,
         continuation,
-        children: children.slice(from, to),
-        childStartIdx: startIdx + 1 + from,
+        children: children.slice(from.child, toChild),
+        childStartIdx: startIdx + 1 + from.child,
         width,
         ctx: measureCtx,
         resolved,
@@ -1152,61 +1264,78 @@ export function buildDocumentPass(
         frameId,
         nextChildId: () => `${frameId}-c${n++}`,
         paragraphStyleFor: (idx) => paragraphContainers.byBlock[idx]?.style,
+        ...(from.line > 0 ? { lineFrom: from.line } : {}),
+        ...(to.line > 0 ? { lineTo: to.line } : {}),
       });
     };
-    return { children, childBase: startIdx + 1, realAt, layoutRange };
+    return { children, childBase: startIdx + 1, realAt, end: { child: children.length, line: 0 }, layoutRange };
   };
 
   interface CalloutFragment {
-    /** Position in `children` the rest of the box starts at. */
-    to: number;
+    /** The cut the rest of the box starts at. */
+    to: CalloutCut;
     result: CalloutLayoutResult;
   }
 
-  /** The longest leading fragment of the children from `from` on whose box
-   *  is at most `roomPx` tall — at least one child, and at least one left
-   *  for the rest. The full layout's child geometry picks the candidate
-   *  (box bottom = child bottom + the box's tail below its last child);
-   *  the candidate is then laid out for real and shortened while it does
-   *  not fit. `null` when not even the first child fits. */
+  /** The longest leading fragment of the box from cut `from` on whose box
+   *  is at most `roomPx` tall. Cuts fall between children or between the
+   *  lines of a text child, and every fragment keeps at least the style's
+   *  `splitMinLines` lines on its side of the cut (a figure or a display
+   *  formula counts as one line). The full layout's geometry ranks the
+   *  candidates (box bottom = content bottom at the cut + the box's tail
+   *  below its last child); the deepest candidate that fits is laid out
+   *  for real and taken when it truly fits. `null` when none does. */
   const splitCalloutFragment = (
     L: CalloutLayouter,
-    from: number,
+    from: CalloutCut,
     width: number,
     roomPx: number,
     frameId: string,
     continuation: boolean,
+    minLines: number,
   ): CalloutFragment | null => {
-    const starts = L.realAt.filter((k) => k >= from);
-    if (starts.length < 2) return null;
-    const full = L.layoutRange(from, L.children.length, width, frameId, continuation);
+    const full = L.layoutRange(from, L.end, width, frameId, continuation);
     const lastChild = full.children[full.children.length - 1];
     if (!lastChild) return null;
     const tail = full.totalHeight - (lastChild.bbox.y + lastChild.bbox.height);
-    /** Frame-relative bottom of the last laid-out child before position `to`. */
-    const bottomBefore = (to: number): number => {
-      let bottom = 0;
-      for (const c of full.children) {
-        if (c.contentIndex !== undefined && c.contentIndex < L.childBase + to) {
-          bottom = Math.max(bottom, c.bbox.y + c.bbox.height);
+    const totalLines = full.children.reduce((n, c) => n + Math.max(1, c.lines.length), 0);
+    /** Candidate cuts with the head's content bottom and line count. */
+    const candidates: { cut: CalloutCut; bottom: number; headLines: number }[] = [];
+    let linesBefore = 0;
+    for (let i = 0; i < full.children.length; i++) {
+      const c = full.children[i]!;
+      const k = (c.contentIndex ?? L.childBase) - L.childBase;
+      const cuttable = c.type !== 'resource' && c.type !== 'mathDisplay' && c.lines.length > 1;
+      // The first laid-out child of a continuation opens after `from.line`
+      // lines: cuts inside it are counted from the child's own head.
+      const lineBase = k === from.child ? from.line : 0;
+      if (cuttable) {
+        for (let l = 1; l < c.lines.length; l++) {
+          const line = c.lines[l - 1]!;
+          candidates.push({ cut: { child: k, line: lineBase + l }, bottom: line.bbox.y + line.bbox.height, headLines: linesBefore + l });
         }
       }
-      return bottom;
-    };
-    let j = starts.length - 1;
-    while (j >= 1 && bottomBefore(starts[j]!) + tail > roomPx + 0.01) j--;
-    for (; j >= 1; j--) {
-      const to = starts[j]!;
-      const result = L.layoutRange(from, to, width, frameId, continuation);
-      if (result.totalHeight <= roomPx + 0.01) return { to, result };
+      linesBefore += Math.max(1, c.lines.length);
+      if (i < full.children.length - 1) {
+        candidates.push({ cut: { child: k + 1, line: 0 }, bottom: c.bbox.y + c.bbox.height, headLines: linesBefore });
+      }
+    }
+    const min = Math.max(1, minLines);
+    const viable = candidates
+      .filter((c) => c.headLines >= min && totalLines - c.headLines >= min)
+      .sort((a, b) => b.bottom - a.bottom);
+    for (const c of viable) {
+      if (c.bottom + tail > roomPx + 0.01) continue;
+      const result = L.layoutRange(from, c.cut, width, frameId, continuation);
+      if (result.totalHeight <= roomPx + 0.01) return { to: c.cut, result };
     }
     return null;
   };
 
-  /** Absolute content indices of the children in `[from, to)` of `L`, for
-   *  the fragment's source range. */
-  const fragmentRange = (L: CalloutLayouter, from: number, to: number) =>
-    ({ firstChildIdx: L.childBase + from, lastChildIdx: L.childBase + to - 1 });
+  /** Absolute content indices of the children a fragment from cut `from`
+   *  to cut `to` of `L` touches, for the fragment's source range. */
+  const fragmentRange = (L: CalloutLayouter, from: CalloutCut, to: CalloutCut) =>
+    ({ firstChildIdx: L.childBase + from.child, lastChildIdx: L.childBase + (to.line > 0 ? to.child : to.child - 1) });
 
   const markFragment = (result: CalloutLayoutResult, part: number, continued: boolean): void => {
     if (result.frame.callout) {
@@ -1360,9 +1489,9 @@ export function buildDocumentPass(
       return placedAny;
     };
 
-    /** Position in the children the fragment to place starts at, and its
-     *  0-based index among the fragments (0 = the box, or its head). */
-    let from = 0;
+    /** Cut the fragment to place starts at, and its 0-based index among
+     *  the fragments (0 = the box, or its head). */
+    let from: CalloutCut = CUT_START;
     let part = 0;
     let frameId = firstFrameId;
     /** The box already moved to a fresh page (or sits on an empty one):
@@ -1373,7 +1502,7 @@ export function buildDocumentPass(
       let page = doc.pages[cursor.pageIndex]!;
       const continuation = part > 0;
       const layoutAt = (width: number): CalloutLayoutResult =>
-        L.layoutRange(from, L.children.length, width, frameId, continuation);
+        L.layoutRange(from, L.end, width, frameId, continuation);
       const result = layoutAt(page.contentArea.width);
 
       interface SpanFit {
@@ -1497,14 +1626,24 @@ export function buildDocumentPass(
         }
         if (band) {
           const fragment = splitCalloutFragment(
-            L, from, page.contentArea.width, band.roomPx - band.spacing, frameId, continuation,
+            L, from, page.contentArea.width, band.roomPx - band.spacing, frameId, continuation, style.splitMinLines,
           );
           if (fragment) {
             action = { kind: 'split', fit: band, need: needFor(band.spacing, fragment.result.totalHeight, 0), fragment };
           }
         }
       }
-      if (!action && forceHere && fit) action = { kind: 'whole', fit, need: fit.need, result };
+      if (!action && forceHere && fit) {
+        action = { kind: 'whole', fit, need: fit.need, result };
+        (doc.warnings ??= []).push({
+          kind: 'calloutOverflow',
+          pageIndex: cursor.pageIndex,
+          columnIndex: cursor.columnIndex,
+          sourceStart: contentBlocks[startIdx]!.sourceStart + bodyOffset,
+          sourceEnd: contentBlocks[plan.endIdx]!.sourceEnd + bodyOffset,
+          overflowPx: Math.max(0, fit.spacing + result.totalHeight - fit.roomPx),
+        });
+      }
 
       if (action) {
         if (capActive) {
@@ -1512,7 +1651,7 @@ export function buildDocumentPass(
           spanPlacedInBand.add(startIdx);
         }
         const placed = action.kind === 'whole' ? action.result : action.fragment.result;
-        const to = action.kind === 'whole' ? L.children.length : action.fragment.to;
+        const to = action.kind === 'whole' ? L.end : action.fragment.to;
         if (part > 0 || action.kind === 'split') markFragment(placed, part, action.kind === 'split');
         const spanCol = closeBandAndInsertSpan(
           page, action.fit.cols, action.fit.cutY, placed.frame, action.need, cursor, action.fit.spacing, placed.totalHeight,
@@ -1565,7 +1704,7 @@ export function buildDocumentPass(
           const fitsAfterCut = capBottom + need + minRoomPx <= bandBottom + 0.01
             || (splittable && capBottom + needFor(spacing, result.totalHeight, 0) <= bandBottom + 0.01)
             || (splittable && splitCalloutFragment(
-              L, from, page.contentArea.width, bandBottom - capBottom - spacing, frameId, continuation,
+              L, from, page.contentArea.width, bandBottom - capBottom - spacing, frameId, continuation, style.splitMinLines,
             ) !== null);
           if (fitsAfterCut) {
             bandCapProposals.set(startIdx, {
@@ -1815,7 +1954,7 @@ export function buildDocumentPass(
     const firstFrameId = `block-${blockIdCounter++}`;
     const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
     const L = makeCalloutLayouter(startIdx, plan, style);
-    const layoutAt = (width: number) => L.layoutRange(0, L.children.length, width, firstFrameId, false);
+    const layoutAt = (width: number) => L.layoutRange(CUT_START, L.end, width, firstFrameId, false);
 
     // Fixed boxes leave the flow entirely.
     if (placement === 'fixed') {
@@ -1837,13 +1976,15 @@ export function buildDocumentPass(
     }
 
     const splittable = !style.keepTogether;
-    let from = 0;
+    let from: CalloutCut = CUT_START;
     let part = 0;
     let frameId = firstFrameId;
+    /** Times the box left an EMPTY short column (see below) — bounded. */
+    let shortColumnMoves = 0;
     for (;;) {
       let curCol = currentColumn(doc, cursor);
       const continuation = part > 0;
-      const result = L.layoutRange(from, L.children.length, curCol.bbox.width, frameId, continuation);
+      const result = L.layoutRange(from, L.end, curCol.bbox.width, frameId, continuation);
       // Column balancing: a box closing its column takes the column's gap
       // above it (the trailing-callout lever), so its foot lands on the
       // last grid slot — level with the column beside it.
@@ -1854,8 +1995,17 @@ export function buildDocumentPass(
       if (result.totalHeight > roomPx + 0.01) {
         // The (rest of the) box does not fit the column: a splittable box
         // leaves the head that fits here…
-        if (splittable) fragment = splitCalloutFragment(L, from, curCol.bbox.width, roomPx, frameId, continuation);
-        if (!fragment && curCol.blocks.length > 0) {
+        if (splittable) fragment = splitCalloutFragment(L, from, curCol.bbox.width, roomPx, frameId, continuation, style.splitMinLines);
+        // …otherwise it moves whole to the next column — also out of an
+        // EMPTY column that float bands or a band cap have cut short, when
+        // a full column would hold it (bounded, so a run of short columns
+        // cannot make it wander forever). Only a box taller than a full
+        // column is placed anyway, overflowing (a layout warning says so).
+        const shortColumn = shortColumnMoves < 4
+          && curCol.bbox.height < contentArea.height - baselineGrid
+          && result.totalHeight <= contentArea.height + 0.01;
+        if (!fragment && (curCol.blocks.length > 0 || shortColumn)) {
+          if (curCol.blocks.length === 0) shortColumnMoves++;
           // …otherwise it moves whole to the next column. Keep-with-next: a
           // run of headings at the column's tail travels with the box.
           // Skipped when the column holds nothing else (rolling back again
@@ -1874,13 +2024,21 @@ export function buildDocumentPass(
             return (rolledBack[0]!.contentIndex ?? startIdx - rolledBack.length) - 1;
           }
           advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
-          curCol = currentColumn(doc, cursor);
-          // Columns of different widths (oneAndHalf): re-lay out for the new one.
-          if (Math.abs(curCol.bbox.width - result.width) > 0.01 && style.width !== 'auto') {
-            continue;
-          }
+          // Try the next column afresh: it may be short too (a float band
+          // reserved on the page it opened), or of another width (oneAndHalf).
+          continue;
         }
         // An empty column that is still too short: placed anyway, overflowing.
+        if (!fragment && curCol.blocks.length === 0 && result.totalHeight > curCol.availableHeight - spacing + 0.01) {
+          (doc.warnings ??= []).push({
+            kind: 'calloutOverflow',
+            pageIndex: cursor.pageIndex,
+            columnIndex: cursor.columnIndex,
+            sourceStart: contentBlocks[startIdx]!.sourceStart + bodyOffset,
+            sourceEnd: contentBlocks[plan.endIdx]!.sourceEnd + bodyOffset,
+            overflowPx: result.totalHeight + spacing - curCol.availableHeight,
+          });
+        }
       }
 
       // Floats first-referenced inside the box still enqueue in reading order
@@ -1888,7 +2046,7 @@ export function buildDocumentPass(
       // enqueue them twice).
       if (part === 0) for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
       const placed = fragment ? fragment.result : result;
-      const to = fragment ? fragment.to : L.children.length;
+      const to = fragment ? fragment.to : L.end;
       if (part > 0 || fragment) markFragment(placed, part, fragment !== null);
       const spacingBefore = (curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, placed.marginTopPx)) + balanceBefore;
       if (balanceBefore > 0) addBalanceExtra(curCol, balanceBefore);
@@ -1928,7 +2086,7 @@ export function buildDocumentPass(
     // order. Then enqueue the floats first-referenced in this block, so the
     // next page opened while placing it (or any later block) reserves their
     // band and the next iteration offers them the slots that follow.
-    tryPlacePendingFloatsOnCurrentPage(spanBoxAt(blockIdx));
+    tryPlacePendingFloatsOnCurrentPage(spanBoxAt(blockIdx), blockIdx);
     enqueueFloatsFor(blockIdx);
 
     // --- Directives ----------------------------------------------------
