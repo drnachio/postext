@@ -16,6 +16,8 @@ import { stripHtmlViewerDefaults } from './htmlViewer';
 import { stripPdfGenerationDefaults } from './pdfGeneration';
 import { stripHeaderFooterDefaults } from './headerFooter';
 import { stripPartsDefaults } from './parts';
+import { stripHeadingStylesDefaults } from './headingStyles';
+import { stripTocDefaults } from './toc';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
@@ -37,6 +39,8 @@ export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, D
 export type { HeaderFooterSlotKind } from './headerFooter';
 export { defaultResourceTypes } from './resourceTypes';
 export { DEFAULT_PARTS_CONFIG, resolvePartsConfig, stripPartsDefaults } from './parts';
+export { DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesDefaults } from './headingStyles';
+export { DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults } from './toc';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
@@ -147,6 +151,18 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.parts = strippedParts;
   } else {
     delete result.parts;
+  }
+  const strippedHeadingStyles = stripHeadingStylesDefaults(config.headingStyles);
+  if (strippedHeadingStyles) {
+    result.headingStyles = strippedHeadingStyles;
+  } else {
+    delete result.headingStyles;
+  }
+  const strippedToc = stripTocDefaults(config.toc);
+  if (strippedToc) {
+    result.toc = strippedToc;
+  } else {
+    delete result.toc;
   }
   return result;
 }

@@ -47,6 +47,8 @@ This reference is long. These are the main blocks:
 - [Paragraph styles](#paragraph-styles) — named styles for `:::paragraphs` containers: bibliographies, glossaries, notes.
 - [Callout styles](#callout-styles) — boxed notes, tips and objectives for `:::callout` containers.
 - [Parts](#parts) — part-divider pages for `:::part` containers: parity, body area, opener design, body typography.
+- [Heading styles](#heading-styles) — named styles for `{style="…"}` headings: unnumbered chapters, front matter with its own running heads, geometry and palette.
+- [Table of contents](#table-of-contents) — what `:::toc` prints: entry typography, leaders, page numbers, author lines, part rows.
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
@@ -672,6 +674,56 @@ Box elements paint a rounded rectangle inside the slot — useful as a backdrop 
     </tr>
   </tbody>
 </table>
+
+### Image elements
+
+An `image` element draws a bitmap or SVG resource of the document — a publisher's logo on a title page, a mark in a running head. It is sized by its `placement.size`: with one of `width` / `height` left `'auto'` (the default) the other side follows the image's aspect ratio; with both set the image is fitted inside the box and centred. A missing or non-image resource draws nothing.
+
+```ts
+{
+  kind: 'image', id: 'logo', resourceId: 'logo-publisher',
+  placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 64, unit: 'mm' }, y: { value: 233, unit: 'mm' } }, size: { width: { value: 83, unit: 'mm' }, height: 'auto' } },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Stable identifier; other elements may anchor to it as <code>#id</code>.</td>
+    </tr>
+    <tr>
+      <td><code>resourceId</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Id of a bitmap or SVG <code>Resource</code> of the document.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>—</td>
+      <td>Anchor, offset and size (see <a href="#element-placement">Element placement</a>). A <code>'fill'</code> side runs to the container edge.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code>, <code>pages</code></td>
+      <td>as above</td>
+      <td><code>'all'</code></td>
+      <td>Which pages the image appears on.</td>
+    </tr>
+  </tbody>
+</table>
+
+The PDF backend embeds the resource like a figure (an SVG with a print master uses it); the HTML viewer resolves it through <code>resourceImageUrl</code>.
 
 ### Element placement
 
@@ -2428,9 +2480,15 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
       <td>body alignment</td>
-      <td>Horizontal alignment.</td>
+      <td>Horizontal alignment. <code>'center'</code> and <code>'right'</code> set every line ragged from the other side — a dedication, a signature block.</td>
+    </tr>
+    <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>bodyText.boldColor</code></td>
+      <td>Colour of bold runs (an authors list with the names in the house colour).</td>
     </tr>
     <tr>
       <td><code>hyphenation</code></td>
@@ -2829,6 +2887,200 @@ const minimal = stripPartsDefaults(config.parts);
 // => undefined when only static defaults remain
 ```
 
+
+## Heading styles
+
+The `headingStyles` property declares named styles a document applies to a heading with `# Title {style="<id>"}`. A style does two things. It overrides the heading's level typography and design — every field of a level entry except `level` and `numberingTemplate` (font, size, colour, `breakBefore`, `span`, `advancedDesign`, `textTransform`…) — and it governs the **section** the heading opens: its pages, up to the next heading of the same or a higher level, take the style's running heads, page geometry, body typography and palette. That is how a book's front matter (a preface in a single wide column with roman folios and blue bands) sits in a two-column, decimal-numbered manual without a second configuration.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    {
+      id: 'front-matter',
+      numbered: false,
+      breakBefore: { enabled: true, parity: 'odd' },
+      span: 'page',
+      advancedDesign: { enabled: true, minHeight: { value: 52, unit: 'mm' }, slot: { elements: [/* bands, `{titleText}` */] } },
+      header: { elements: [/* folio | rule | `{title}. {subtitle}` */] },
+      margins: { left: { value: 50, unit: 'mm' }, right: { value: 17, unit: 'mm' } },
+      layout: { layoutType: 'single' },
+      bodyStyle: { fontSize: { value: 10.5, unit: 'pt' }, textAlign: 'justify' },
+      palette: { band: '#547396' },
+    },
+  ],
+};
+```
+
+```md
+# Preface {style="front-matter"}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identifier referenced from <code>{'{style="…"}'}</code> on a heading line. An unknown id leaves the heading as it is.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name (editor UI only).</td>
+    </tr>
+    <tr>
+      <td><code>numbered</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether the heading counts: advances its level's counter (the <code>numberingTemplate</code> numbers, the <code>{'{h1}'}</code> of resource numbers), the chapter ordinal behind <code>{'{chapterNumber}'}</code> and the number printed in the contents. <code>false</code> for a preface, an authors list, an index: the first numbered chapter after them is still chapter 1, and <code>{'{chapterNumber}'}</code> is empty on their pages.</td>
+    </tr>
+    <tr>
+      <td><code>toc</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether <code>:::toc</code> lists the heading. A heading overrides it with <code>{'{toc="false"}'}</code> / <code>{'{toc="true"}'}</code>.</td>
+    </tr>
+    <tr>
+      <td>level fields</td>
+      <td>as in <code>headings.levels[]</code></td>
+      <td>the level's values</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>: each one set replaces the heading level's value for headings of this style.</td>
+    </tr>
+    <tr>
+      <td><code>header</code>, <code>footer</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>the document's</td>
+      <td>Running heads of the section's pages, replacing <code>header</code> / <code>footer</code> there (element <code>parity</code> and <code>pages</code> filters still apply). An empty slot removes them.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>page margins</td>
+      <td>Body area of the section's pages; each side inherits the page margin when unset, <code>mirror</code> included. Takes effect on the pages the section opens — pair it with <code>breakBefore</code>.</td>
+    </tr>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>LayoutConfig</code></td>
+      <td><code>layout</code></td>
+      <td>Column layout of the section's pages (<code>layoutType</code>, <code>gutterWidth</code>…): a single wide column for a preface set in a two-column book.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle</code></td>
+      <td><code>PartsBodyStyleConfig</code></td>
+      <td>inherit <code>bodyText</code></td>
+      <td>Typography of the paragraphs, blockquotes and lists in the section — the same fields as <a href="#parts">parts.bodyStyle</a>.</td>
+    </tr>
+    <tr>
+      <td><code>palette</code></td>
+      <td><code>Record&lt;string, string&gt;</code></td>
+      <td><code>{'{}'}</code></td>
+      <td>Palette overrides (id → hex) applied to every design slot laid out on the section's pages, on top of the current part's — the same mechanism as a part's <code>palette</code> attribute.</td>
+    </tr>
+  </tbody>
+</table>
+
+A section closes at the next heading of the same or a higher level: an unstyled `#` after a styled one returns to the document's running heads and geometry; a styled one opens its own section. Pages the section left blank for parity belong to it, like chapter titles do.
+
+```ts
+const resolved = resolveHeadingStylesConfig(config.headingStyles, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => level overrides normalised, margins filled from the page, bodyStyle from the body
+
+const minimal = stripHeadingStylesDefaults(config.headingStyles);
+// => undefined when no style remains
+```
+
+## Table of contents
+
+The `toc` property configures what a `:::toc` directive prints (see [Document format](/en/docs/document-format#toc)). The contents are assembled from the document's **outline** — every heading with its number and page label, every `:::part` — so they follow the chapters: rename one, move it to another part, change its authors, and the entries change with it. An entry is the heading's number in a column of its own, the title, a leader and the page label at the right edge, then an optional subtitle line; a part is a row designed by `parts.design`.
+
+```ts
+const config: PostextConfig = {
+  toc: {
+    levels: [{ level: 1, fontWeight: 700, color: { hex: '#00507b', model: 'hex' }, numberWidth: { value: 7.4, unit: 'mm' } }],
+    unnumbered: { color: { hex: '#000000', model: 'hex' } },
+    pageNumber: { fontWeight: 400, width: { value: 8, unit: 'mm' } },
+    leader: { char: '.', gap: { value: 1, unit: 'mm' } },
+    subtitle: { enabled: true, attr: 'author', italic: true, fontSize: { value: 8.5, unit: 'pt' } },
+    parts: {
+      height: { value: 23, unit: 'pt' },
+      marginTop: { value: 11.5, unit: 'pt' },
+      design: { elements: [/* a band box, 'SECTION {number}', '{titleText}', '{pageNumber}' */] },
+    },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>TocLevelConfig[]</code></td>
+      <td>level 1</td>
+      <td>Heading levels listed, each with its entry typography: <code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code> (defaults to the body leading, so the contents sit on the grid), <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>indent</code> (of the whole entry), <code>numberWidth</code> / <code>numberGap</code> (the number column the title starts after; numbers are right-aligned in it), <code>numberFontFamily</code>, <code>numberFontSize</code>, <code>numberFontWeight</code>, <code>numberColor</code>, <code>marginTop</code>, <code>marginBottom</code>. Unset fields inherit the body text.</td>
+    </tr>
+    <tr>
+      <td><code>unnumbered</code></td>
+      <td><code>TocEntryStyleConfig</code></td>
+      <td>—</td>
+      <td>Overrides for headings whose style has <code>numbered: false</code> (a preface): they print no number and start flush at the level's <code>indent</code>.</td>
+    </tr>
+    <tr>
+      <td><code>pageNumber</code></td>
+      <td>object</td>
+      <td>level-1 face, body weight</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code> of the page label, and <code>width</code> (default <code>2em</code>): the column reserved for it at the right edge, where it is right-aligned.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>object</td>
+      <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
+      <td><code>char</code> is repeated across the gap between the title and the page number, right-aligned so the dots of consecutive entries line up (<code>'. '</code> spaces them out); <code>gap</code> is the least room kept between the title and the leader. A title that would leave the label no room wraps a little earlier.</td>
+    </tr>
+    <tr>
+      <td><code>subtitle</code></td>
+      <td>object</td>
+      <td><code>{"{ enabled: false, attr: 'author' }"}</code></td>
+      <td>A second line under the entry taken from a heading attribute (<code>attr</code>) — the chapter authors — with its own <code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code> (default <code>true</code>), <code>color</code> and extra <code>indent</code>. The line shares the entry's leading and never separates from its title.</td>
+    </tr>
+    <tr>
+      <td><code>parts.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether part dividers get a row.</td>
+    </tr>
+    <tr>
+      <td><code>parts.design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>empty</td>
+      <td>Row design; its container is the row (column width × <code>height</code>). Placeholders: <code>{'{number}'}</code>, <code>{'{numberDecimal}'}</code>, <code>{'{numberRoman}'}</code>…, <code>{'{titleText}'}</code> and <code>{'{pageNumber}'}</code> (the part page's label). Palette-linked colours take the part's own <code>palette</code>, so each section's row comes in its colour. When empty, <code>{'{number} {titleText}'}</code> and the page number are set in the level-1 entry typography.</td>
+    </tr>
+    <tr>
+      <td><code>parts.height</code>, <code>marginTop</code>, <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td>two body lines, <code>0</code>, <code>0</code></td>
+      <td>Row height and the space around it.</td>
+    </tr>
+  </tbody>
+</table>
+
+The page labels are the ones the document prints. `buildDocument()` lays a document with a `:::toc` out again with the labels of the previous pass until they settle (at most three extra passes); a host laying a book out chapter by chapter supplies the whole book's outline as `PostextContent.outline` instead, assembled from `contentOutline()` (headings and parts from the text alone) and `outlineFromDoc()` (the same entries with the page labels of a layout), and lays the contents chapter out again whenever `outlineKey()` of that outline changes.
 
 ## Units and colors
 

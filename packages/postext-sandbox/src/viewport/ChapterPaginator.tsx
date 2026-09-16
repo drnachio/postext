@@ -36,7 +36,7 @@ export function ChapterPaginator() {
   const pending = plan.pendingChapterId ? plan.byId[plan.pendingChapterId] : undefined;
   const leftToPreview = activeViewport === 'canvas' && pending?.chapterId === activeChapterId;
   const pendingId = storeReady && pending && pending.paginated && !leftToPreview ? pending.chapterId : null;
-  const pendingKey = pendingId ? `${pendingId}|${plan.byId[pendingId]!.continuationKey}` : null;
+  const pendingKey = pendingId ? `${pendingId}|${plan.byId[pendingId]!.continuationKey}|${plan.byId[pendingId]!.outlineKey}` : null;
   const debouncedKey = useDebouncedValue(pendingKey, PAGINATION_DEBOUNCE_MS);
 
   // The latest inputs, read when a build starts so typing in the active
@@ -56,7 +56,7 @@ export function ChapterPaginator() {
     let cancelled = false;
     const book = composeBookMemo(currentChapters, id);
     layoutWorker.build(
-      { markdown: book.markdown, metadata: book.metadata, resources: currentResources, continuation: chapterPlan.continuation },
+      { markdown: book.markdown, metadata: book.metadata, resources: currentResources, continuation: chapterPlan.continuation, outline: chapterPlan.outline },
       withHyphenationLocale(currentConfig, currentLocale),
     )
       .then((doc) => {

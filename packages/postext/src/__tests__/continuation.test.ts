@@ -148,3 +148,31 @@ describe('buildDocument with a continuation', () => {
     expect(evenAgain.pages[0]!.contentArea.x).toBe(even.pages[0]!.contentArea.x);
   });
 });
+
+describe('pageNumberRestarts', () => {
+  it('lists the pages where a :::numbering restart lands, none otherwise', () => {
+    const plain = buildDocument({ markdown: '# A\n\nText.' }, numbered);
+    expect(plain.pageNumberRestarts).toBeUndefined();
+    // Roman front matter continued from the chapters before, then the
+    // count restarts at 1 on the page a `:::numbering` opens.
+    const doc = buildDocument(
+      {
+        markdown: 'Front matter.\n\n:::pagebreak\n\n:::numbering{format="decimal" startAt=1}\n\n# One\n\nText.',
+        continuation: { pageIndexOffset: 4, pageNumbering: { format: 'upper-roman', startAt: 5 } },
+      },
+      numbered,
+    );
+    expect(doc.pages.map((p) => p.pageLabel)).toEqual(['V', '1']);
+    expect(doc.pageNumberRestarts).toEqual([1]);
+    // A format-only switch keeps the count: no restart.
+    const formatOnly = buildDocument(
+      {
+        markdown: 'Front matter.\n\n:::pagebreak\n\n:::numbering{format="decimal"}\n\n# One\n\nText.',
+        continuation: { pageIndexOffset: 4, pageNumbering: { format: 'upper-roman', startAt: 5 } },
+      },
+      numbered,
+    );
+    expect(formatOnly.pages.map((p) => p.pageLabel)).toEqual(['V', '6']);
+    expect(formatOnly.pageNumberRestarts).toBeUndefined();
+  });
+});

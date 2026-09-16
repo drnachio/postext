@@ -1,22 +1,30 @@
 'use client';
 
 import { useRef, useState, type ReactNode } from 'react';
-import { ArrowDown, ArrowUp, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
-import { useBookContent, useBookPages, useSandboxDispatch, useSandboxLabels } from '../../context/SandboxContext';
+import { ArrowDown, ArrowUp, GripVertical, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
+import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels } from '../../context/SandboxContext';
 import { h1Count, newChapter, wordCount } from '../../book/chapterOps';
-import type { Chapter } from '../../book/types';
+import { chapterPageLabels } from '../../book/pagination';
+import type { Chapter, ChapterPages } from '../../book/types';
 import { generateChapterId } from '../../storage/projects';
-import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator } from '../../ui';
+import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator, cn } from '../../ui';
+import { useRowDrag, type RowDragHandleProps } from './useRowDrag';
 
 /** The book's chapters: order, active one, page ranges, and the chapter
  *  operations (add, rename, move, split, merge, delete). Rendered inside
  *  the card of the active project/preset row, so it reads as *its*
- *  structure. */
+ *  structure. Rows reorder by dragging the grip at their left (or with
+ *  the arrow keys on it); the menu's move up/down stays for one-step
+ *  moves. */
 export function ChapterList({ title }: { title: ReactNode }) {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const { chapters, activeChapterId } = useBookContent();
-  const bookPages = useBookPages();
+  const plan = useBookPlan();
+  const { listRef, drag, indicatorTop, handleProps } = useRowDrag(
+    chapters.length,
+    (id, to) => dispatch({ type: 'MOVE_CHAPTER', payload: { id, to } }),
+  );
 
   const add = () => {
     const chapter = newChapter(generateChapterId(), labels.chapterUntitled.replace('__n__', String(chapters.length + 1)));
@@ -36,7 +44,7 @@ export function ChapterList({ title }: { title: ReactNode }) {
         </h4>
         <IconButton label={labels.chapterAdd} icon={<Plus size={14} />} onClick={add} />
       </div>
-      <ul className="m-0 list-none p-0" aria-label={labels.chapters}>
+      <ul ref={listRef} className="relative m-0 list-none p-0" aria-label={labels.chapters}>
         {chapters.map((c, i) => (
           <ChapterRow
             key={c.id}
@@ -44,9 +52,21 @@ export function ChapterList({ title }: { title: ReactNode }) {
             index={i}
             total={chapters.length}
             isActive={c.id === activeChapterId}
-            pages={bookPages[c.id] ?? null}
+            number={plan.byId[c.id]?.number ?? null}
+            pages={plan.bookPages[c.id] ?? null}
+            dragging={drag?.id === c.id}
+            handleProps={handleProps(c.id, i)}
           />
         ))}
+        {indicatorTop !== null && (
+          // The drop line, in the gap above the row the dragged one lands
+          // before (or under the last row).
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute right-1 left-1 h-0.5 rounded"
+            style={{ top: indicatorTop - 2, backgroundColor: 'var(--gilt)' }}
+          />
+        )}
       </ul>
     </section>
   );
@@ -57,10 +77,16 @@ interface ChapterRowProps {
   index: number;
   total: number;
   isActive: boolean;
-  pages: { pageNumberValue: number; pageCount: number } | null;
+  /** The chapter's number in the book, or null for an unnumbered one
+   *  (the front matter) — shown as a dash. */
+  number: number | null;
+  pages: ChapterPages | null;
+  /** Whether this row is the one being dragged (drawn faded). */
+  dragging: boolean;
+  handleProps: RowDragHandleProps;
 }
 
-function ChapterRow({ chapter, index, total, isActive, pages }: ChapterRowProps) {
+function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, handleProps }: ChapterRowProps) {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const [editing, setEditing] = useState(false);
@@ -81,11 +107,11 @@ function ChapterRow({ chapter, index, total, isActive, pages }: ChapterRowProps)
 
   const headings = h1Count(chapter.markdown);
   const words = wordCount(chapter.markdown);
-  const pagesText = pages
-    ? labels.chapterPages
-        .replace('__from__', String(pages.pageNumberValue))
-        .replace('__to__', String(pages.pageCount > 0 ? pages.pageNumberValue + pages.pageCount - 1 : pages.pageNumberValue))
+  const range = pages ? chapterPageLabels(pages) : null;
+  const pagesText = range
+    ? labels.chapterPages.replace('__from__', range.from).replace('__to__', range.to)
     : labels.chapterPagesUnknown;
+  const numberText = number === null ? '–' : String(number);
   const subtitle = `${pagesText} · ${labels.chapterWords.replace('__n__', words.toLocaleString())}`;
 
   const ask = (message: string, action: () => void) => {
@@ -117,18 +143,36 @@ function ChapterRow({ chapter, index, total, isActive, pages }: ChapterRowProps)
     <li className="mb-0.5">
       <ListRow
         selected={isActive}
+        className={cn(dragging && 'opacity-40')}
         onSelect={editing ? undefined : () => dispatch({ type: 'SET_ACTIVE_CHAPTER', payload: chapter.id })}
         onDoubleClick={editing ? undefined : startRename}
-        ariaLabel={`${index + 1}. ${chapter.title}`}
+        ariaLabel={`${numberText} ${chapter.title}`}
+        handle={
+          <button
+            type="button"
+            aria-label={labels.chapterDragHandle}
+            title={labels.chapterDragHandle}
+            className={cn(
+              'flex h-full w-4 shrink-0 cursor-grab touch-none items-center justify-center rounded border-0 bg-transparent p-0',
+              'hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+              dragging && 'cursor-grabbing',
+            )}
+            style={{ color: 'var(--slate)' }}
+            {...handleProps}
+          >
+            <GripVertical size={12} aria-hidden="true" />
+          </button>
+        }
         leading={
-          // The number alone marks the row (the selected one is framed and
-          // set in gilt): large enough to span the title and its page line,
-          // right-aligned in a slot wide enough for two digits.
+          // The chapter number alone marks the row (the selected one is
+          // framed and set in gilt): large enough to span the title and its
+          // page line, right-aligned in a slot wide enough for two digits.
+          // An unnumbered chapter (the front matter) shows a dash.
           <span
             className="flex shrink-0 items-center justify-end self-stretch leading-none"
             style={{ width: 34, color: isActive ? 'var(--gilt)' : 'var(--slate)', fontSize: 26, fontWeight: 300, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}
           >
-            {index + 1}
+            {numberText}
           </span>
         }
         title={title}

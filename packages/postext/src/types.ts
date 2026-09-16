@@ -230,6 +230,44 @@ export interface PostextContent {
    *  book chapter laid out on its own continues the numbering of the
    *  chapters before it. Omit for a self-contained document. */
   continuation?: LayoutContinuation;
+  /** The book's outline — every heading and part the `:::toc` directive
+   *  lists, with the page label each one landed on. A chapter laid out on
+   *  its own gets the whole book's outline from its host; when absent, the
+   *  engine derives it from the document itself, laying it out again until
+   *  the page labels the contents print no longer change. */
+  outline?: OutlineEntry[];
+}
+
+/** One line of a book's outline: a heading of a listed level, or a part
+ *  divider. Produced from the parsed markdown (page labels unknown) or from
+ *  a laid-out document (page labels known); consumed by `:::toc`. */
+export interface OutlineEntry {
+  kind: 'heading' | 'part';
+  /** Heading level (1–6); `0` for a part. */
+  level: number;
+  /** Title as plain text (forced title breaks flattened to spaces). */
+  title: string;
+  /** Inline runs of the title (bold / italic), so a title set in italics
+   *  keeps its emphasis in the contents. Absent for a part. */
+  spans?: { text: string; bold: boolean; italic: boolean }[];
+  /** Printed number: the level's `numberingTemplate` output, else the
+   *  chapter ordinal for a level-1 heading; the part's `number` as written.
+   *  Empty for an unnumbered heading. */
+  number: string;
+  /** False for a heading whose style has `numbered: false`. */
+  numbered: boolean;
+  /** Id of the heading style (`{style="…"}`), when the heading has one. */
+  styleId?: string;
+  /** Heading attributes (`{author="…"}`), for the contents' subtitle line. */
+  attrs?: Record<string, string>;
+  /** Palette overrides of a part (`palette="band=#…"`), so its row in the
+   *  contents takes the part's colours. */
+  palette?: Record<string, string>;
+  /** Label of the page the entry starts on; absent until laid out. */
+  pageLabel?: string;
+  /** Whether the entry appears in the contents (a heading style's `toc`
+   *  or a `{toc="false"}` attribute may exclude it). */
+  listed: boolean;
 }
 
 /** Heading counters (1-indexed by level) in effect at a point in a document. */
@@ -465,7 +503,7 @@ export interface ResolvedLayoutConfig {
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
 }
 
-export type TextAlign = 'left' | 'justify' | 'center';
+export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
 export type HyphenationLocale =
   | 'en-us'
@@ -824,8 +862,11 @@ export interface ParagraphStyleConfig {
   lineHeight?: Dimension;
   /** Defaults to the body text colour. */
   color?: ColorValue;
-  /** Defaults to the body alignment (`center` is not available here). */
-  textAlign?: 'left' | 'justify';
+  /** Defaults to the body alignment. `'center'` and `'right'` set every
+   *  line ragged from the other side (a dedication, a signature block). */
+  textAlign?: TextAlign;
+  /** Colour of bold runs. Defaults to `bodyText.boldColor`. */
+  boldColor?: ColorValue;
   /** Hyphenate when justified. Defaults to the body hyphenation setting. */
   hyphenation?: boolean;
   /** Defaults to the body first-line indent. Ignored when
@@ -851,7 +892,8 @@ export interface ResolvedParagraphStyleConfig {
   fontSize: Dimension;
   lineHeight: Dimension;
   color: ColorValue;
-  textAlign: 'left' | 'justify';
+  textAlign: TextAlign;
+  boldColor?: ColorValue;
   hyphenation: boolean;
   firstLineIndent: Dimension;
   hangingIndent: Dimension;
@@ -1744,6 +1786,9 @@ export interface DesignTextElement {
   /** When true, break long words at syllable boundaries while wrapping.
    *  Uses the document's active hyphenation locale. */
   hyphenate?: boolean;
+  /** Letter-case transform applied to the resolved text (a part title set
+   *  in capitals in the contents). Default `'none'`. */
+  textTransform?: 'none' | 'uppercase';
   box?: ElementBoxStyle;
 }
 
@@ -1769,7 +1814,23 @@ export interface DesignBoxElement {
   style: ElementBoxStyle;
 }
 
-export type DesignElement = DesignTextElement | DesignRuleElement | DesignBoxElement;
+/** An image drawn from a resource (a bitmap or SVG `Resource`, e.g. a
+ *  publisher logo on a title page). Sized by `placement.size`: with one of
+ *  `width` / `height` left `'auto'` the other follows the image's aspect
+ *  ratio; with both set the image is fitted inside the box, centred. A
+ *  missing resource draws nothing. */
+export interface DesignImageElement {
+  kind: 'image';
+  id: string;
+  parity?: PageParity;
+  /** Page roles this element renders on. Default `'all'`. */
+  pages?: PageRoleFilter;
+  placement: ElementPlacement;
+  /** `Resource.id` of a bitmap or SVG resource. */
+  resourceId: string;
+}
+
+export type DesignElement = DesignTextElement | DesignRuleElement | DesignBoxElement | DesignImageElement;
 
 export interface DesignSlot {
   /** Array order = paint order: first = back, last = front. */
@@ -1801,10 +1862,15 @@ export interface ResolvedDesignBoxElement extends Omit<DesignBoxElement, 'parity
   parity: PageParity;
 }
 
+export interface ResolvedDesignImageElement extends Omit<DesignImageElement, 'parity'> {
+  parity: PageParity;
+}
+
 export type ResolvedDesignElement =
   | ResolvedDesignTextElement
   | ResolvedDesignRuleElement
-  | ResolvedDesignBoxElement;
+  | ResolvedDesignBoxElement
+  | ResolvedDesignImageElement;
 
 export interface ResolvedDesignSlot {
   elements: ResolvedDesignElement[];
@@ -1964,6 +2030,218 @@ export interface ResolvedPartsConfig {
   bodyStyle: ResolvedPartsBodyStyleConfig;
 }
 
+// ---------------------------------------------------------------------------
+// Heading styles — `# Title {style="…"}`. A style overrides the heading's
+// level typography and design and, for the section it opens (its pages up
+// to the next heading of the same or a higher level), the running heads,
+// the page geometry, the body typography and the palette.
+// ---------------------------------------------------------------------------
+
+/** Typography of the body blocks in a section opened by a styled heading.
+ *  Same shape as a part's body style. */
+export type SectionBodyStyleConfig = PartsBodyStyleConfig;
+export type ResolvedSectionBodyStyleConfig = ResolvedPartsBodyStyleConfig;
+
+export interface HeadingStyleConfig extends Omit<HeadingLevelConfig, 'level' | 'numberingTemplate'> {
+  /** Identifier referenced from `{style="…"}` on a heading line. */
+  id: string;
+  /** Human-readable name (editor UI only). Defaults to {@link id}. */
+  name?: string;
+  /** Whether the heading counts: advances the level's counter and the
+   *  chapter ordinal (`{chapterNumber}`), and is numbered in the contents.
+   *  `false` for a preface, an authors list, an index. Default `true`. */
+  numbered?: boolean;
+  /** Whether the heading is listed by `:::toc`. Default `true`; a heading
+   *  may override it with `{toc="false"}` / `{toc="true"}`. */
+  toc?: boolean;
+  /** Running heads of the section's pages, replacing the document's
+   *  `header` / `footer` there (element `pages` / `parity` filters still
+   *  apply). Unset = the document's own. */
+  header?: HeaderFooterSlot;
+  footer?: HeaderFooterSlot;
+  /** Body area of the section's pages. Each side inherits the page margin
+   *  when unset. Takes effect on the pages the section opens, so pair it
+   *  with `breakBefore`. */
+  margins?: PageMargins;
+  /** Column layout of the section's pages (a single wide column for a
+   *  preface set in a two-column book). Inherits `layout` when unset. */
+  layout?: LayoutConfig;
+  /** Typography of the body blocks in the section. */
+  bodyStyle?: SectionBodyStyleConfig;
+  /** Palette overrides (palette id → hex) applied to the design slots of
+   *  the section's pages, like a part's `palette` attribute. */
+  palette?: Record<string, string>;
+}
+
+/** The level fields a heading style may override, resolved. */
+export type ResolvedHeadingStyleOverrides = Partial<Omit<ResolvedHeadingLevelConfig, 'level' | 'numberingTemplate'>>;
+
+export interface ResolvedHeadingStyleConfig {
+  id: string;
+  name: string;
+  numbered: boolean;
+  toc: boolean;
+  /** Level fields the style sets; merged over the heading's level config. */
+  overrides: ResolvedHeadingStyleOverrides;
+  header?: ResolvedDesignSlot;
+  footer?: ResolvedDesignSlot;
+  margins?: Required<PageMargins>;
+  layout?: ResolvedLayoutConfig;
+  bodyStyle?: ResolvedSectionBodyStyleConfig;
+  palette: Record<string, string>;
+}
+
+// ---------------------------------------------------------------------------
+// Table of contents — what `:::toc` prints.
+// ---------------------------------------------------------------------------
+
+/** Typography of one kind of contents entry. Every field inherits the body
+ *  text (or the `toc`-wide value) when unset. */
+export interface TocEntryStyleConfig {
+  fontFamily?: string;
+  fontSize?: Dimension;
+  /** Leading of the entry's lines (title and subtitle alike). Defaults to
+   *  the body line height so the contents sit on the baseline grid. */
+  lineHeight?: Dimension;
+  fontWeight?: number;
+  italic?: boolean;
+  color?: ColorValue;
+  /** Left indent of the whole entry. Default `0`. */
+  indent?: Dimension;
+  /** Width of the number column: the title starts after it plus
+   *  `numberGap`; numbers are right-aligned in it. Default `2em`. */
+  numberWidth?: Dimension;
+  /** Gap between the number column and the title. Default `0.5em`. */
+  numberGap?: Dimension;
+  numberFontFamily?: string;
+  numberFontSize?: Dimension;
+  numberFontWeight?: number;
+  numberColor?: ColorValue;
+  /** Space above / below the entry (subtitle included). Default `0`. */
+  marginTop?: Dimension;
+  marginBottom?: Dimension;
+}
+
+export interface TocLevelConfig extends TocEntryStyleConfig {
+  /** Heading level (1–6). */
+  level: number;
+}
+
+export interface TocConfig {
+  /** Heading levels listed, each with its entry typography. Default: level
+   *  1 only. */
+  levels?: TocLevelConfig[];
+  /** Entry typography of headings whose style has `numbered: false`
+   *  (a preface). They print no number and start flush at the level's
+   *  `indent`. Inherits the level's style. */
+  unnumbered?: TocEntryStyleConfig;
+  /** The page number at the right edge of an entry. */
+  pageNumber?: {
+    fontFamily?: string;
+    fontSize?: Dimension;
+    fontWeight?: number;
+    italic?: boolean;
+    color?: ColorValue;
+    /** Width reserved for the number at the right edge. Default `2em`. */
+    width?: Dimension;
+  };
+  /** Leader between the title and the page number. */
+  leader?: {
+    /** Default `true`. */
+    enabled?: boolean;
+    /** Repeated across the gap, right-aligned so dots line up. Default `'.'`;
+     *  `'. '` spaces them out. */
+    char?: string;
+    /** Minimum gap between the title and the leader / page number. Default
+     *  `0.5em`. */
+    gap?: Dimension;
+  };
+  /** A second line under the entry taken from a heading attribute — the
+   *  chapter authors (`{author="…"}`). Absent when unset. */
+  subtitle?: {
+    /** Attribute name, e.g. `'author'`. Default `'author'`. */
+    attr?: string;
+    /** Default `false`. */
+    enabled?: boolean;
+    fontFamily?: string;
+    fontSize?: Dimension;
+    fontWeight?: number;
+    italic?: boolean;
+    color?: ColorValue;
+    /** Extra indent beyond the title's. Default `0`. */
+    indent?: Dimension;
+  };
+  /** Part dividers get a row of their own. */
+  parts?: {
+    /** Default `true`. */
+    enabled?: boolean;
+    /** Row design; its container is the row (column width × `height`).
+     *  Placeholders: `{number}`, `{numberRoman}`…, `{titleText}` and
+     *  `{pageNumber}` (the part page's label). Palette-linked colours take
+     *  the part's own palette. When empty, `{number} {titleText}` and the
+     *  page number are set in the level-1 entry typography. */
+    design?: DesignSlot;
+    /** Row height. Default: two body lines. */
+    height?: Dimension;
+    marginTop?: Dimension;
+    marginBottom?: Dimension;
+  };
+}
+
+export interface ResolvedTocEntryStyleConfig {
+  fontFamily: string;
+  fontSize: Dimension;
+  lineHeight: Dimension;
+  fontWeight: number;
+  italic: boolean;
+  color: ColorValue;
+  indent: Dimension;
+  numberWidth: Dimension;
+  numberGap: Dimension;
+  numberFontFamily: string;
+  numberFontSize: Dimension;
+  numberFontWeight: number;
+  numberColor: ColorValue;
+  marginTop: Dimension;
+  marginBottom: Dimension;
+}
+
+export interface ResolvedTocLevelConfig extends ResolvedTocEntryStyleConfig {
+  level: number;
+}
+
+export interface ResolvedTocConfig {
+  levels: ResolvedTocLevelConfig[];
+  /** Overrides applied on top of the level's entry style for unnumbered headings. */
+  unnumbered: Partial<ResolvedTocEntryStyleConfig>;
+  pageNumber: {
+    fontFamily: string;
+    fontSize: Dimension;
+    fontWeight: number;
+    italic: boolean;
+    color: ColorValue;
+    width: Dimension;
+  };
+  leader: { enabled: boolean; char: string; gap: Dimension };
+  subtitle: {
+    enabled: boolean;
+    attr: string;
+    fontFamily: string;
+    fontSize: Dimension;
+    fontWeight: number;
+    italic: boolean;
+    color: ColorValue;
+    indent: Dimension;
+  };
+  parts: {
+    enabled: boolean;
+    design: ResolvedDesignSlot;
+    height: Dimension;
+    marginTop: Dimension;
+    marginBottom: Dimension;
+  };
+}
+
 export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;
@@ -1983,6 +2261,12 @@ export interface PostextConfig {
   /** Part dividers (`:::part` containers): page breaks, body area,
    *  opener design and body typography. */
   parts?: PartsConfig;
+  /** Named heading styles applied with `# Title {style="…"}`: a front
+   *  matter chapter, an unnumbered appendix, a preface with its own running
+   *  heads and page geometry. */
+  headingStyles?: HeadingStyleConfig[];
+  /** The table of contents a `:::toc` directive prints. */
+  toc?: TocConfig;
   unorderedLists?: UnorderedListsConfig;
   orderedLists?: OrderedListsConfig;
   math?: MathConfig;

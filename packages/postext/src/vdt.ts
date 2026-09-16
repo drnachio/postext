@@ -22,6 +22,8 @@ import type {
   ResolvedMathConfig,
   ResolvedDesignSlot,
   ResolvedPartsConfig,
+  ResolvedHeadingStyleConfig,
+  ResolvedTocConfig,
   PageRole,
   PartState,
 } from './types';
@@ -60,6 +62,10 @@ export interface ResolvedConfig {
   footer: ResolvedDesignSlot;
   /** Part dividers (`:::part` containers). */
   parts: ResolvedPartsConfig;
+  /** Named heading styles (`# Title {style="…"}`). */
+  headingStyles: ResolvedHeadingStyleConfig[];
+  /** The table of contents `:::toc` prints. */
+  toc: ResolvedTocConfig;
   /** The document's colour palette, kept so per-resource-type caption
    *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
    *  layout time. Absent when the config defines no palette. */
@@ -80,7 +86,7 @@ export type VDTBlockType =
   | 'mathDisplay'
   | 'callout';
 
-export type TextAlign = 'left' | 'justify' | 'center';
+export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
 export interface VDTLineSegment {
   kind: 'text' | 'space' | 'math';
@@ -97,6 +103,12 @@ export interface VDTLineSegment {
   /** True when this segment is part of a caption's numbered label, so renderers
    *  paint it in the configured caption-label colour. */
   captionLabel?: boolean;
+  /** Font of this segment when it differs from the block's (a contents
+   *  entry's page number, leader or subtitle). Renderers paint the segment
+   *  with it instead of the block font the bold / italic flags would pick. */
+  fontString?: string;
+  /** Colour of this segment when it differs from the block's. */
+  color?: string;
 }
 
 export interface VDTLine {
@@ -310,6 +322,19 @@ export interface VDTBlock {
    *  list. Stable across layout passes — used by column balancing to key
    *  extra-spacing adjustments to headings. */
   contentIndex?: number;
+  /** Id of the heading style (`{style="…"}`) applied to this heading. */
+  headingStyleId?: string;
+  /** True for a heading whose style has `numbered: false`: it advances no
+   *  counter and `{chapterNumber}` is empty on its pages. */
+  unnumbered?: boolean;
+  /** Present on the part row of an expanded `:::toc`: the row's design is
+   *  laid out from `toc.parts.design` with these values (see
+   *  `buildHeadersAndFooters`), replacing the block's (empty) line. */
+  tocPart?: { number: string; title: string; pageLabel: string; palette?: Record<string, string> };
+  /** Present on an entry of an expanded `:::toc`. The contents keep their
+   *  own rhythm: entries and part rows neither snap to the baseline grid
+   *  nor serve as column-balancing stretch points. */
+  tocEntry?: boolean;
   numberPrefix?: string;
   fontString: string;
   boldFontString?: string;
@@ -620,6 +645,13 @@ export interface VDTDocument {
   /** Physical pages before page 0 (`PostextContent.continuation`): shifts
    *  parity everywhere. Absent or 0 for a self-contained document. */
   pageIndexOffset?: number;
+  /** Indices of the pages where a `:::numbering{startAt=…}` directive
+   *  restarts the page count, ascending. The pages before the first one
+   *  continue the inherited numbering (`continuation.pageNumbering` or
+   *  `page.pageNumbering`); a host laying out a book chapter by chapter
+   *  tells the two apart when the pages before the chapter shift. Absent
+   *  when the count never restarts. */
+  pageNumberRestarts?: number[];
   /** Chapters (level-1 headings) before this document, so `{chapterNumber}`
    *  keeps counting without a numbering template. */
   chapterOrdinalOffset?: number;

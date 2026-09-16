@@ -24,6 +24,7 @@ import { resolveBlockKind, type BlockKind, type BlockKindContext } from './build
 import { runMeasurement } from './buildMeasurement';
 import { resolveRefSpans } from './resourceLayout';
 import type { ResourceNumberingMap } from './resourceNumbering';
+import { measureTocBlock } from './toc';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -83,6 +84,9 @@ export function measureContentBlock(
   opts?: MeasureContentBlockOptions,
 ): MeasuredContentBlock | null {
   const { resolved, bodyStyle, contentBlocks, cache, bodyOffset } = ctx;
+
+  // A block of an expanded `:::toc`: title, number, leader, page label.
+  if (rawBlock.toc) return measureTocBlock(rawBlock, columnWidth, ctx);
 
   const kind = resolveBlockKind(rawBlock, {
     ...ctx,

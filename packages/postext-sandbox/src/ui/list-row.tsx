@@ -9,6 +9,9 @@ export interface ListRowProps extends Omit<ComponentProps<'div'>, 'title'> {
   /** Makes the main area a button; omit for static rows. */
   onSelect?: () => void;
   onDoubleClick?: () => void;
+  /** A control before the main area, outside the select button (a drag
+   *  handle). */
+  handle?: ReactNode;
   /** Leading glyph/thumbnail. */
   leading?: ReactNode;
   title: ReactNode;
@@ -26,7 +29,7 @@ export interface ListRowProps extends Omit<ComponentProps<'div'>, 'title'> {
 /** The one list row: same padding, hover, selected ring and focus treatment
  *  for projects, chapters, resources, fonts and warnings. */
 export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow(
-  { selected, disabled, onSelect, onDoubleClick, leading, title, subtitle, tags, actions, ariaLabel, alignTop, className, ...rest },
+  { selected, disabled, onSelect, onDoubleClick, handle, leading, title, subtitle, tags, actions, ariaLabel, alignTop, className, ...rest },
   ref,
 ) {
   const interactive = !!onSelect;
@@ -57,6 +60,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
       )}
       {...rest}
     >
+      {handle && <div className="flex shrink-0 items-center self-stretch">{handle}</div>}
       {interactive ? (
         <button
           type="button"

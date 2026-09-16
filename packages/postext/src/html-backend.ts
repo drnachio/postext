@@ -80,6 +80,7 @@ function pickSegmentFont(
   seg: VDTLineSegment,
   block: VDTBlock,
 ): string {
+  if (seg.fontString) return seg.fontString;
   const bold = !!seg.bold;
   const italic = !!seg.italic;
   if (bold && italic && block.boldItalicFontString) return block.boldItalicFontString;
@@ -92,6 +93,7 @@ function pickSegmentColor(
   seg: VDTLineSegment,
   block: VDTBlock,
 ): string {
+  if (seg.color) return seg.color;
   if (seg.refResourceId !== undefined && block.refColor) return block.refColor;
   const bold = !!seg.bold;
   const italic = !!seg.italic;
@@ -116,7 +118,13 @@ function renderMathSegmentSvg(seg: VDTLineSegment, xPx: number, line: VDTLine, b
 
 function renderSegments(line: VDTLine, block: VDTBlock): string {
   if (!line.segments || line.segments.length === 0) {
-    return `<span style="position:absolute;left:0;top:0;white-space:pre;">${esc(line.text)}</span>`;
+    const plainIndent = line.bbox.x - block.bbox.x;
+    const plainLeft = block.textAlign === 'right'
+      ? Math.max(0, block.bbox.width - plainIndent - line.bbox.width)
+      : block.textAlign === 'center'
+        ? Math.max(0, (block.bbox.width - plainIndent - line.bbox.width) / 2)
+        : 0;
+    return `<span style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>`;
   }
 
   // Match canvas justification: stretch inter-word spaces to fill effective width.
@@ -142,12 +150,13 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
     ? (effectiveWidth - wordWidth) / spaceCount
     : 0;
 
-  // Centred alignment — used by math display blocks. Distribute leading gap.
-  const useCenter = block.textAlign === 'center';
-  const centerLeft = useCenter ? Math.max(0, (effectiveWidth - contentWidth) / 2) : 0;
+  // Centred / right alignment — math display blocks, ragged-left paragraph
+  // styles. Distribute the leading gap.
+  const slack = Math.max(0, effectiveWidth - contentWidth);
+  const leadingGap = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
 
   const parts: string[] = [];
-  let x = centerLeft;
+  let x = leadingGap;
   for (const seg of line.segments) {
     if (seg.kind === 'space') {
       x += useJustify ? justifiedSpaceWidth : seg.width;

@@ -111,6 +111,12 @@ export function computeChapterNumbers(
     totalPages,
     pages,
     (b) => {
+      // An unnumbered chapter (a heading style with `numbered: false`)
+      // advances nothing and shows no number.
+      if (b.unnumbered) {
+        lastContentIndex = b.contentIndex;
+        return '';
+      }
       // A heading split across columns yields several blocks with the same
       // content index; count the chapter once.
       if (b.contentIndex === undefined || b.contentIndex !== lastContentIndex) ordinal++;

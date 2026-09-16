@@ -11,9 +11,11 @@ import type {
   PageRoleFilter,
   ResolvedDesignBoxElement,
   ResolvedDesignElement,
+  ResolvedDesignImageElement,
   ResolvedDesignRuleElement,
   ResolvedDesignSlot,
   ResolvedDesignTextElement,
+  Resource,
   TextOverflow,
   VAlign,
 } from '../types';
@@ -56,7 +58,7 @@ export interface ResolvedElementBox {
 /** Resolved geometry for a single element in a design slot. */
 export interface ResolvedElementGeometry {
   id: string;
-  kind: 'text' | 'rule' | 'box';
+  kind: 'text' | 'rule' | 'box' | 'image';
   /** Absolute page-space rectangle (the element's outer box). */
   x: number;
   y: number;
@@ -96,10 +98,21 @@ export interface ResolvedBoxPrimitive extends ResolvedElementGeometry {
   box: ResolvedElementBox;
 }
 
+/** An image element resolved to its resource payload. Only emitted when
+ *  the resource exists and carries a bitmap / SVG file. */
+export interface ResolvedImagePrimitive extends ResolvedElementGeometry {
+  kind: 'image';
+  /** Out-of-band binary id of the resource image. */
+  fileId: string;
+  /** Bitmap format when known (`'png'`, `'jpeg'`, …). */
+  format?: string;
+}
+
 export type ResolvedPrimitive =
   | ResolvedTextPrimitive
   | ResolvedRulePrimitive
-  | ResolvedBoxPrimitive;
+  | ResolvedBoxPrimitive
+  | ResolvedImagePrimitive;
 
 export interface DesignSlotLayout {
   /** Container bbox passed in (absolute page coordinates). */
@@ -133,6 +146,9 @@ export interface LayoutContext {
   /** Role of the page being laid out, for the per-element `pages` filter.
    *  When absent every element passes the filter. */
   pageRole?: PageRole;
+  /** Resources by id, for `kind: 'image'` elements. Without it (or for an
+   *  unknown id) an image element is skipped. */
+  resourceById?: ReadonlyMap<string, Resource>;
 }
 
 function pageMatchesParity(pageIndex: number, parity: PageParity): boolean {
@@ -721,7 +737,7 @@ export function layoutDesignSlot(
   for (const el of ordered) {
     if (el.kind === 'text') {
       const { text } = resolveDesignPlaceholders(el.content, context.placeholders);
-      textContent.set(el.id, text);
+      textContent.set(el.id, el.textTransform === 'uppercase' ? text.toLocaleUpperCase() : text);
     }
   }
 
@@ -774,6 +790,17 @@ export function layoutDesignSlot(
       }, fillRef, context.dpi);
       resolvedGeo.set(el.id, prim);
       primitives.push(prim);
+    } else if (el.kind === 'image') {
+      const prim = layoutImageElement(el, {
+        anchorX,
+        anchorY,
+        pinX: anchor.pinX,
+        pinY: anchor.pinY,
+      }, fillRef, context.dpi, context.resourceById);
+      if (prim) {
+        resolvedGeo.set(el.id, prim);
+        primitives.push(prim);
+      }
     } else {
       const prim = layoutBoxElement(el, {
         anchorX,
@@ -933,6 +960,53 @@ function layoutRuleElement(
     height: elementHeight,
     color: colorHex(el.color),
     thicknessPx,
+  };
+}
+
+/** An image element: the box its `placement.size` describes, with an
+ *  `'auto'` side following the image's aspect ratio (both auto = the
+ *  image's own pixel size) and the image fitted inside a fully sized box,
+ *  centred. Nothing without a resolvable resource image. */
+function layoutImageElement(
+  el: ResolvedDesignImageElement,
+  pin: AnchorResult,
+  container: AnchorReference,
+  dpi: number,
+  resourceById: ReadonlyMap<string, Resource> | undefined,
+): ResolvedImagePrimitive | undefined {
+  const resource = resourceById?.get(el.resourceId);
+  const payload = resource?.bitmap ?? resource?.svg;
+  const fileId = payload?.fileId;
+  if (!fileId) return undefined;
+  const natW = payload?.width && payload.width > 0 ? payload.width : 1;
+  const natH = payload?.height && payload.height > 0 ? payload.height : 1;
+  const widthSize = resolveFixedSize(el.placement.size?.width, dpi);
+  const heightSize = resolveFixedSize(el.placement.size?.height, dpi);
+  const fixedW = typeof widthSize === 'number' ? widthSize
+    : widthSize === 'fill' ? Math.max(0, fillToContainerEdge(pin.anchorX, pin.pinX, container)) : undefined;
+  const fixedH = typeof heightSize === 'number' ? heightSize
+    : heightSize === 'fill' ? Math.max(0, fillToContainerEdgeY(pin.anchorY, pin.pinY, container)) : undefined;
+  let boxW: number;
+  let boxH: number;
+  if (fixedW !== undefined && fixedH !== undefined) { boxW = fixedW; boxH = fixedH; }
+  else if (fixedW !== undefined) { boxW = fixedW; boxH = fixedW * natH / natW; }
+  else if (fixedH !== undefined) { boxH = fixedH; boxW = fixedH * natW / natH; }
+  else { boxW = natW; boxH = natH; }
+  // Aspect-fit inside the box, centred.
+  const scale = Math.min(boxW / natW, boxH / natH);
+  const w = natW * scale;
+  const h = natH * scale;
+  const boxX = edgeXFromPin(pin.anchorX, pin.pinX, boxW);
+  const boxY = edgeYFromPin(pin.anchorY, pin.pinY, boxH);
+  return {
+    kind: 'image',
+    id: el.id,
+    x: boxX + (boxW - w) / 2,
+    y: boxY + (boxH - h) / 2,
+    width: w,
+    height: h,
+    fileId,
+    ...(resource?.bitmap?.format ? { format: resource.bitmap.format } : {}),
   };
 }
 

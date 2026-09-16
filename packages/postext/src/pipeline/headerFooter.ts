@@ -1,5 +1,5 @@
 import { TITLE_BREAK_RE, applyTitleBreaks } from '../parse/inlineFormatting';
-import type { DocumentMetadata, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig } from '../types';
+import type { DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig } from '../types';
 import {
   createBoundingBox,
   type VDTBlock,
@@ -9,13 +9,14 @@ import {
   type VDTDesignTextBlock,
   type VDTDesignRuleBlock,
   type VDTDesignBoxBlock,
+  type VDTDesignImageBlock,
   type VDTPage,
 } from '../vdt';
 import { computeChapterTitles, computeChapterNumbers, computeChapterAttrs, computePartValues } from './placeholders';
 import { parsePartNumber } from './parts';
 import { computePageMetrics } from './buildHelpers';
-import { buildHeadingLevelMap } from './config';
 import { classifyPages } from './pageRoles';
+import { computeSectionStyles, createHeadingLevelResolver, type HeadingLevelResolver } from './headingStyles';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import type { PageRole } from '../types';
@@ -26,6 +27,7 @@ import {
   type ResolvedTextPrimitive,
   type ResolvedRulePrimitive,
   type ResolvedBoxPrimitive,
+  type ResolvedImagePrimitive,
 } from '../design/layout';
 import type { DesignPlaceholderContext } from '../design/placeholders';
 
@@ -72,7 +74,16 @@ function textAlignOffsetX(
 function primitiveToBlock(prim: ResolvedPrimitive): VDTDesignBlock {
   if (prim.kind === 'text') return textPrimitiveToBlock(prim);
   if (prim.kind === 'rule') return rulePrimitiveToBlock(prim);
+  if (prim.kind === 'image') return imagePrimitiveToBlock(prim);
   return boxPrimitiveToBlock(prim);
+}
+
+function imagePrimitiveToBlock(prim: ResolvedImagePrimitive): VDTDesignImageBlock {
+  return {
+    kind: 'image',
+    bbox: createBoundingBox(prim.x, prim.y, prim.width, prim.height),
+    fileId: prim.fileId,
+  };
 }
 
 function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
@@ -198,6 +209,8 @@ export function measureHeadingAdvancedDesignHeight(
 export interface SlotLayoutExtras {
   frames?: DesignFrames;
   pageRole?: PageRole;
+  /** Resources by id, for `kind: 'image'` elements. */
+  resourceById?: ReadonlyMap<string, Resource>;
   /** Source range of the text `{titleText}` renders; stamped on the text
    *  blocks whose element content mentions the placeholder. */
   titleSource?: { start: number; end: number; text?: string; sourceMap?: number[] };
@@ -217,7 +230,7 @@ export function layoutSlotToVdt(
 ): VDTDesignSlot | undefined {
   const result = layoutDesignSlot(
     slot,
-    { container, dpi, placeholders, frames: extras?.frames, pageRole: extras?.pageRole },
+    { container, dpi, placeholders, frames: extras?.frames, pageRole: extras?.pageRole, resourceById: extras?.resourceById },
     pageIndex,
   );
   if (result.primitives.length === 0) return undefined;
@@ -299,12 +312,12 @@ function openerContainerBbox(
  *  a default slot from the heading level typography. */
 function findOpenerHeading(
   page: VDTPage,
-  headingLevelByNumber: Map<number, ResolvedHeadingLevelConfig>,
+  levels: HeadingLevelResolver,
 ): { block: VDTBlock; level: number; titleText: string; numberPrefix: string } | undefined {
   for (const col of page.columns) {
     for (const block of col.blocks) {
       if (block.type !== 'heading' || !block.headingLevel) continue;
-      const lvl = headingLevelByNumber.get(block.headingLevel);
+      const lvl = levels.forLevel(block.headingLevel, block.headingStyleId);
       if (!lvl) continue;
       if (lvl.span !== 'page') continue;
       const full = block.lines
@@ -395,10 +408,33 @@ function synthesiseDefaultPartSlot(
   return { elements: [textEl] };
 }
 
+/** Default row design of a part in the contents when `toc.parts.design` is
+ *  empty: `{number} {titleText}` at the left and `{pageNumber}` at the
+ *  right, in the level-1 entry typography. */
+function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig): ResolvedDesignSlot {
+  const entry = resolved.toc.levels[0]!;
+  const common = {
+    kind: 'text' as const, parity: 'all' as const, pages: 'all' as const,
+    fontFamily: entry.fontFamily, fontSize: entry.fontSize, fontWeight: entry.fontWeight, italic: entry.italic,
+    color: entry.color, verticalAlign: 'middle' as const, lineHeight: 1.2, hyphenate: false,
+  };
+  const title: ResolvedDesignTextElement = {
+    ...common, id: 'tocPartTitle', content: '{number} {titleText}', align: 'left', overflow: 'ellipsis-end',
+    placement: { anchor: { to: 'container', edge: 'left' }, offset: {}, size: { width: 'auto', height: 'auto' } },
+  };
+  const page: ResolvedDesignTextElement = {
+    ...common, id: 'tocPartPage', content: '{pageNumber}', align: 'right', overflow: 'clip',
+    fontWeight: resolved.toc.pageNumber.fontWeight, color: resolved.toc.pageNumber.color,
+    placement: { anchor: { to: 'container', edge: 'right' }, offset: {}, size: { width: 'auto', height: 'auto' } },
+  };
+  return { elements: [title, page] };
+}
+
 /**
  * After body placement finishes, attach header/footer slots to every page.
+ * `resourceById` resolves the `kind: 'image'` elements of the designs.
  */
-export function buildHeadersAndFooters(doc: VDTDocument): void {
+export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: ReadonlyMap<string, Resource>): void {
   const resolved = doc.config;
   const dpi = resolved.page.dpi;
   const metrics = computePageMetrics(resolved);
@@ -412,14 +448,26 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
   // Parity (odd/even elements) counts the pages before a continued document.
   const pageIndexOffset = doc.pageIndexOffset ?? 0;
   const chapterAttrsByPageIndex = computeChapterAttrs(doc.blocks, doc.pages.length, doc.pages);
-  const { partTitleByPageIndex, partNumberByPageIndex, partPaletteByPageIndex } = computePartValues(doc.pages, doc.partStart);
-  const headingLevelByNumber = buildHeadingLevelMap(resolved);
+  const partValues = computePartValues(doc.pages, doc.partStart);
+  const { partTitleByPageIndex, partNumberByPageIndex } = partValues;
+  const headingLevels = createHeadingLevelResolver(resolved);
+  // Styled sections (`{style="…"}` headings): their running heads replace
+  // the document's on their pages, and their palette overrides stack on the
+  // part's.
+  const sectionByPage = computeSectionStyles(doc.blocks, doc.pages.length, doc.pages, resolved);
+  const partPaletteByPageIndex = partValues.partPaletteByPageIndex.map((palette, i) => {
+    const section = sectionByPage[i];
+    return section && Object.keys(section.palette).length > 0 ? { ...palette, ...section.palette } : palette;
+  });
 
   for (const page of doc.pages) {
     // Per-page content area: mirrored margins swap inner/outer on even pages.
     const contentArea = page.contentArea;
-    const extras: SlotLayoutExtras = { frames, pageRole: page.role };
-    if (resolved.header.elements.length > 0) {
+    const extras: SlotLayoutExtras = { frames, pageRole: page.role, resourceById };
+    const section = sectionByPage[page.index];
+    const headerSlot = section?.header ?? resolved.header;
+    const footerSlot = section?.footer ?? resolved.footer;
+    if (headerSlot.elements.length > 0) {
       const placeholders: DesignPlaceholderContext = {
         kind: 'header',
         page,
@@ -433,7 +481,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         partPaletteByPageIndex,
       };
       page.header = layoutSlotToVdt(
-        resolved.header,
+        headerSlot,
         headerContainerBbox(contentArea),
         page.index + pageIndexOffset,
         placeholders,
@@ -519,9 +567,9 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         { ...extras, titleSource: partTitleSource },
       );
     }
-    const opener = findOpenerHeading(page, headingLevelByNumber);
+    const opener = findOpenerHeading(page, headingLevels);
     if (opener) {
-      const level = headingLevelByNumber.get(opener.level);
+      const level = headingLevels.forLevel(opener.level, opener.block.headingStyleId);
       if (level) {
         const slot = level.advancedDesign.enabled && level.advancedDesign.slot.elements.length > 0
           ? level.advancedDesign.slot
@@ -576,8 +624,46 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
     for (const col of page.columns) {
       for (const block of col.blocks) {
         if (block.hidden) continue;
+        // A part row of the contents: its design laid out in the block's box
+        // with the part's own number, title, page label and palette.
+        if (block.tocPart) {
+          const tp = block.tocPart;
+          const slot = resolved.toc.parts.design.elements.length > 0
+            ? resolved.toc.parts.design
+            : synthesiseDefaultTocPartSlot(resolved);
+          const rowPage = { ...page, pageLabel: tp.pageLabel } as VDTPage;
+          const palette = { ...(partPaletteByPageIndex[page.index] ?? {}), ...(tp.palette ?? {}) };
+          const placeholders: DesignPlaceholderContext = {
+            kind: 'part',
+            page: rowPage,
+            allPages: doc.pages,
+            metadata: doc.metadata,
+            chapterTitleByPageIndex,
+            chapterNumberByPageIndex,
+            chapterAttrsByPageIndex,
+            partTitleByPageIndex,
+            partNumberByPageIndex,
+            partPaletteByPageIndex: doc.pages.map((_, i) => (i === page.index ? palette : partPaletteByPageIndex[i] ?? {})),
+            heading: {
+              titleText: tp.title,
+              formattedNumber: tp.number,
+              numericValue: parsePartNumber(tp.number),
+              chapterNumber: chapterNumberByPageIndex[page.index] ?? '',
+            },
+          };
+          const overlay = layoutSlotToVdt(
+            slot,
+            { x: block.bbox.x, y: block.bbox.y, width: block.bbox.width, height: block.bbox.height },
+            page.index + pageIndexOffset,
+            placeholders,
+            dpi,
+            extras,
+          );
+          if (overlay) block.designOverlay = overlay;
+          continue;
+        }
         if (block.type !== 'heading' || !block.headingLevel) continue;
-        const lvl = headingLevelByNumber.get(block.headingLevel);
+        const lvl = headingLevels.forLevel(block.headingLevel, block.headingStyleId);
         if (!lvl) continue;
         if (lvl.span === 'page') continue;
         if (!lvl.advancedDesign.enabled) continue;
@@ -616,7 +702,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         if (overlay) block.designOverlay = overlay;
       }
     }
-    if (resolved.footer.elements.length > 0) {
+    if (footerSlot.elements.length > 0) {
       const placeholders: DesignPlaceholderContext = {
         kind: 'footer',
         page,
@@ -630,7 +716,7 @@ export function buildHeadersAndFooters(doc: VDTDocument): void {
         partPaletteByPageIndex,
       };
       page.footer = layoutSlotToVdt(
-        resolved.footer,
+        footerSlot,
         footerContainerBbox(contentArea, page.height),
         page.index + pageIndexOffset,
         placeholders,

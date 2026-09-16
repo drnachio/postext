@@ -1,7 +1,8 @@
 'use client';
 
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useBookContent, useBookPages, useSandboxDispatch, useSandboxLabels } from '../context/SandboxContext';
+import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels } from '../context/SandboxContext';
+import { chapterPageLabels } from '../book/pagination';
 import { IconButton, Menu, MenuItem, cn } from '../ui';
 
 /** Header widget of the Markdown panel: previous/next chapter and a menu to
@@ -10,7 +11,7 @@ export function ChapterSwitcher() {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const { chapters, activeChapterId } = useBookContent();
-  const bookPages = useBookPages();
+  const plan = useBookPlan();
   const index = Math.max(0, chapters.findIndex((c) => c.id === activeChapterId));
   const active = chapters[index];
   const total = chapters.length;
@@ -22,11 +23,10 @@ export function ChapterSwitcher() {
   };
 
   const pagesOf = (id: string): string | null => {
-    const p = bookPages[id];
+    const p = plan.bookPages[id];
     if (!p) return null;
-    const from = p.pageNumberValue;
-    const to = p.pageCount > 0 ? from + p.pageCount - 1 : from;
-    return labels.chapterPages.replace('__from__', String(from)).replace('__to__', String(to));
+    const { from, to } = chapterPageLabels(p);
+    return labels.chapterPages.replace('__from__', from).replace('__to__', to);
   };
 
   return (
@@ -65,10 +65,13 @@ export function ChapterSwitcher() {
       >
         {chapters.map((c, i) => {
           const pages = pagesOf(c.id);
+          // The chapter's number (a dash for the unnumbered front matter),
+          // as in the chapter list.
+          const number = plan.byId[c.id]?.number ?? null;
           return (
             <MenuItem key={c.id} selected={c.id === activeChapterId} onClick={() => go(i)}>
               <span className="flex min-w-0 items-center gap-2">
-                <span className="w-5 shrink-0 text-right text-[10px]" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
+                <span className="w-5 shrink-0 text-right text-[10px]" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>{number === null ? '–' : number}</span>
                 <span className="min-w-0 flex-1 truncate">{c.title}</span>
                 {pages && <span className="shrink-0 text-[10px]" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>{pages}</span>}
               </span>

@@ -97,12 +97,13 @@ function renderSegments(
       x += seg.width;
       continue;
     }
-    const fontStr = pickSegmentFont(!!seg.bold, !!seg.italic, block);
+    const fontStr = seg.fontString ?? pickSegmentFont(!!seg.bold, !!seg.italic, block);
     const font = fontCache.get(fontStr) ?? blockFont;
     const size = parseFontString(fontStr)?.sizePx ?? blockSize;
-    const colorHex = seg.refResourceId !== undefined && block.refColor
-      ? block.refColor
-      : pickSegmentColor(!!seg.bold, !!seg.italic, block);
+    const colorHex = seg.color
+      ?? (seg.refResourceId !== undefined && block.refColor
+        ? block.refColor
+        : pickSegmentColor(!!seg.bold, !!seg.italic, block));
     const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
     const link = seg.refResourceId !== undefined && elem ? elem.child('Link') : undefined;
     tagContent(ctx, link ?? elem);
@@ -177,24 +178,27 @@ function renderLineText(
     }
   }
 
-  if (block.textAlign === 'center' && segments) {
+  if ((block.textAlign === 'center' || block.textAlign === 'right') && segments) {
     let contentWidth = 0;
     for (const seg of segments) contentWidth += seg.width;
-    const startX = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
+    const slack = Math.max(0, effectiveWidth - contentWidth);
+    const startX = line.bbox.x + (block.textAlign === 'center' ? slack / 2 : slack);
     renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }
 
   // Ragged (left-aligned) rendering — also used for last lines of justified
   // blocks. Segments are needed when any of them styles differently from the
-  // block (bold/italic/math/ref); otherwise one drawTextPx paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined)) {
+  // block (bold/italic/math/ref/own font or colour); otherwise one drawTextPx
+  // paints the line.
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined || s.fontString !== undefined || s.color !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }
 
   tagContent(ctx, elem);
-  drawTextPx(ctx, line.text, line.bbox.x, line.baseline, blockFont, blockSize, blockColor);
+  const plainX = block.textAlign === 'right' ? line.bbox.x + Math.max(0, effectiveWidth - line.bbox.width) : line.bbox.x;
+  drawTextPx(ctx, line.text, plainX, line.baseline, blockFont, blockSize, blockColor);
 }
 
 function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem: StructElem | undefined): void {

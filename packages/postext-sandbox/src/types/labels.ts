@@ -633,6 +633,8 @@ export interface SandboxLabels {
   chapterDeleteLast: string;
   chapterMoveUp: string;
   chapterMoveDown: string;
+  /** Grip at the left of a chapter row: drag it to reorder. */
+  chapterDragHandle: string;
   chapterSplitAtHeadings: string;
   chapterSplitAtHeadingsConfirm: string;
   chapterMergePrevious: string;
@@ -743,6 +745,10 @@ export interface SandboxLabels {
   headerFooterAddText: string;
   headerFooterAddRule: string;
   headerFooterAddBox: string;
+  /** Image elements of a design slot (a logo on a title page). */
+  headerFooterElementImage?: string;
+  headerFooterAddImage?: string;
+  headerFooterImageResource?: string;
   headerFooterElementBoxBackgroundColor?: string;
   headerFooterElementBoxBorderColor?: string;
   headerFooterElementBoxBorderWidth?: string;
