@@ -138,6 +138,29 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, balancing, levels };
 }
 
+/** The level fields a heading style (or any partial level config) sets,
+ *  resolved to their final shape — `breakBefore` and `advancedDesign`
+ *  normalised, everything else passed through — so they can be merged
+ *  over a resolved level with a spread. */
+export function resolveHeadingLevelOverrides(
+  partial: Omit<HeadingLevelConfig, 'level' | 'numberingTemplate'>,
+): Partial<Omit<ResolvedHeadingLevelConfig, 'level' | 'numberingTemplate'>> {
+  const out: Partial<Omit<ResolvedHeadingLevelConfig, 'level' | 'numberingTemplate'>> = {};
+  if (partial.fontSize !== undefined) out.fontSize = partial.fontSize;
+  if (partial.lineHeight !== undefined) out.lineHeight = partial.lineHeight;
+  if (partial.fontFamily !== undefined) out.fontFamily = partial.fontFamily;
+  if (partial.color !== undefined) out.color = partial.color;
+  if (partial.fontWeight !== undefined) out.fontWeight = partial.fontWeight;
+  if (partial.marginTop !== undefined) out.marginTop = partial.marginTop;
+  if (partial.marginBottom !== undefined) out.marginBottom = partial.marginBottom;
+  if (partial.italic !== undefined) out.italic = partial.italic;
+  if (partial.breakBefore !== undefined) out.breakBefore = resolveBreakBefore(partial.breakBefore);
+  if (partial.span !== undefined) out.span = partial.span;
+  if (partial.advancedDesign !== undefined) out.advancedDesign = resolveAdvancedDesign(partial.advancedDesign);
+  if (partial.textTransform !== undefined) out.textTransform = partial.textTransform;
+  return out;
+}
+
 export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig | undefined {
   if (!headings) return undefined;
 

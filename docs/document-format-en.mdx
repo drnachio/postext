@@ -109,6 +109,14 @@ A heading line may end with an attribute block in braces — the same `key="valu
 
 The braces and their content are removed from the heading text (the title above renders as *The Long Road*) and stored on the heading as `attrs`. They are exposed to design slots as `{attr.<key>}` placeholders: in the heading's own advanced-design slot, and in page headers and footers, where they resolve from the current chapter's H1. Only a balanced, brace-free block at the very end of the line is recognised; a lone `{}` or an unbalanced brace stays in the text. See **Configuration → Headers & footers**.
 
+Two attributes have a meaning of their own. `style="<id>"` applies a named [heading style](/en/docs/configuration#heading-styles) to the heading — a preface or an authors list with its own opener design, running heads, page geometry and body typography, and no chapter number when the style says `numbered: false`. `toc="false"` (or `"true"`) overrides whether the heading is listed by `:::toc`:
+
+```markdown
+# Preface {style="front-matter"}
+
+# Contents {style="front-matter" toc="false"}
+```
+
 ## Directives
 
 Directives are single-line control tags written as `:::name` or `:::name{attrs}` on their own line. They produce no visible output — they drive the placement and numbering pipeline.
@@ -149,12 +157,16 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td><code>:::columnbreak</code></td>
       <td>End the current column here: the next block opens in the next column of the same page (or on a new page when the directive lands in the last column). A no-op in an empty column, so it never produces a blank column or page. The column it ends keeps its bottom gap — column balancing does not stretch it.</td>
     </tr>
+    <tr>
+      <td><code>:::toc</code></td>
+      <td>Print the table of contents here: one entry per heading of the listed levels (title, number, page number, optionally the chapter authors) and one row per part divider, typeset per the <code>toc</code> configuration. The entries follow the document — rename, move or renumber a chapter and the contents follow.</td>
+    </tr>
   </tbody>
 </table>
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak`, `numbering` and `columnbreak` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
+Only `pagebreak`, `numbering`, `columnbreak` and `toc` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
 
 ### Containers
 
@@ -274,6 +286,18 @@ Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a r
 
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
 
+
+### `:::toc`
+
+`:::toc` prints the table of contents where it stands. It expands into ordinary blocks — one per heading of the levels `toc.levels` lists (level 1 by default) and one per `:::part` — so the contents flow through columns and pages like any other text and a click on an entry lands on the directive line. An entry shows the heading's number (its `numberingTemplate` output, else the chapter ordinal), its title, a dotted leader and the label of the page it starts on, and, when `toc.subtitle` is enabled, a second line with a heading attribute such as the chapter's `{author="…"}`. A part gets a row of its own, designed by `toc.parts.design` and coloured with the part's own `palette`. Headings whose style has `numbered: false` are listed without a number; `{toc="false"}` on a heading keeps it out (the contents' own heading, typically).
+
+```md
+# Contents {style="front-matter" toc="false"}
+
+:::toc
+```
+
+The page numbers are the ones the document actually prints. A document laid out on its own is laid out again with the labels of the previous pass until they no longer move — with the numbering restarting after the front matter (the `:::numbering` recipe above) one extra pass settles it. A chapter laid out on its own (the sandbox previews) receives the whole book's outline from its host instead. See [Table of contents](/en/docs/configuration#table-of-contents) in the configuration reference.
 
 ### Line breaks in titles
 

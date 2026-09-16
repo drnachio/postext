@@ -743,6 +743,10 @@ export interface SandboxLabels {
   headerFooterAddText: string;
   headerFooterAddRule: string;
   headerFooterAddBox: string;
+  /** Image elements of a design slot (a logo on a title page). */
+  headerFooterElementImage?: string;
+  headerFooterAddImage?: string;
+  headerFooterImageResource?: string;
   headerFooterElementBoxBackgroundColor?: string;
   headerFooterElementBoxBorderColor?: string;
   headerFooterElementBoxBorderWidth?: string;

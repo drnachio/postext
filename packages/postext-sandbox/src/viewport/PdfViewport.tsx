@@ -99,6 +99,7 @@ export function PdfViewport() {
     const snapshotSource = book;
     const snapshotChapter = scope === 'chapter' ? chapterSource : null;
     const snapshotContinuation = continuation;
+    const snapshotOutline = scope === 'book' ? undefined : chapterSource.plan.outline;
     const snapshotSig = continuationSig;
     const snapshotConfig = effectiveConfig;
     const snapshotStateConfig = config;
@@ -106,7 +107,7 @@ export function PdfViewport() {
     try {
       await ensureConfigFontsLoaded(snapshotConfig);
       const doc = await layoutWorker.build(
-        { markdown: snapshotSource.markdown, metadata: snapshotSource.metadata, resources: snapshotResources, continuation: snapshotContinuation },
+        { markdown: snapshotSource.markdown, metadata: snapshotSource.metadata, resources: snapshotResources, continuation: snapshotContinuation, outline: snapshotOutline },
         snapshotConfig,
         { onProgress: setProgress },
       );

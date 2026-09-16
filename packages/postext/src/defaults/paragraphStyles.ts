@@ -25,7 +25,8 @@ function resolveParagraphStyleConfig(
     fontSize: partial.fontSize ?? bodyText.fontSize,
     lineHeight: partial.lineHeight ?? bodyText.lineHeight,
     color: partial.color ?? bodyText.color,
-    textAlign: partial.textAlign ?? (bodyText.textAlign === 'justify' ? 'justify' : 'left'),
+    textAlign: partial.textAlign ?? bodyText.textAlign,
+    ...(partial.boldColor ? { boldColor: partial.boldColor } : {}),
     hyphenation: partial.hyphenation ?? bodyText.hyphenation.enabled,
     firstLineIndent: partial.firstLineIndent ?? bodyText.firstLineIndent,
     hangingIndent: partial.hangingIndent ?? ZERO,
@@ -58,6 +59,7 @@ export function stripParagraphStylesDefaults(
     if (s.lineHeight !== undefined) r.lineHeight = s.lineHeight;
     if (s.color !== undefined) r.color = s.color;
     if (s.textAlign !== undefined) r.textAlign = s.textAlign;
+    if (s.boldColor !== undefined) r.boldColor = s.boldColor;
     if (s.hyphenation !== undefined) r.hyphenation = s.hyphenation;
     if (s.firstLineIndent !== undefined) r.firstLineIndent = s.firstLineIndent;
     if (s.hangingIndent !== undefined && !isZero(s.hangingIndent)) r.hangingIndent = s.hangingIndent;

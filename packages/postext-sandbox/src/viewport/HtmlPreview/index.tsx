@@ -314,7 +314,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     try {
       const doc = await layoutWorker.build(
-        { markdown: currentSource.markdown, metadata: currentSource.metadata, resources: resourcesRef.current, continuation: currentLayout.continuation },
+        { markdown: currentSource.markdown, metadata: currentSource.metadata, resources: resourcesRef.current, continuation: currentLayout.continuation, outline: currentLayout.plan.outline },
         configOverride,
       );
       if (seq !== renderSeqRef.current) return;

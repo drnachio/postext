@@ -22,6 +22,8 @@ import type {
   ResolvedMathConfig,
   ResolvedDesignSlot,
   ResolvedPartsConfig,
+  ResolvedHeadingStyleConfig,
+  ResolvedTocConfig,
   PageRole,
   PartState,
 } from './types';
@@ -60,6 +62,10 @@ export interface ResolvedConfig {
   footer: ResolvedDesignSlot;
   /** Part dividers (`:::part` containers). */
   parts: ResolvedPartsConfig;
+  /** Named heading styles (`# Title {style="…"}`). */
+  headingStyles: ResolvedHeadingStyleConfig[];
+  /** The table of contents `:::toc` prints. */
+  toc: ResolvedTocConfig;
   /** The document's colour palette, kept so per-resource-type caption
    *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
    *  layout time. Absent when the config defines no palette. */
@@ -80,7 +86,7 @@ export type VDTBlockType =
   | 'mathDisplay'
   | 'callout';
 
-export type TextAlign = 'left' | 'justify' | 'center';
+export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
 export interface VDTLineSegment {
   kind: 'text' | 'space' | 'math';
@@ -97,6 +103,12 @@ export interface VDTLineSegment {
   /** True when this segment is part of a caption's numbered label, so renderers
    *  paint it in the configured caption-label colour. */
   captionLabel?: boolean;
+  /** Font of this segment when it differs from the block's (a contents
+   *  entry's page number, leader or subtitle). Renderers paint the segment
+   *  with it instead of the block font the bold / italic flags would pick. */
+  fontString?: string;
+  /** Colour of this segment when it differs from the block's. */
+  color?: string;
 }
 
 export interface VDTLine {
@@ -310,6 +322,15 @@ export interface VDTBlock {
    *  list. Stable across layout passes — used by column balancing to key
    *  extra-spacing adjustments to headings. */
   contentIndex?: number;
+  /** Id of the heading style (`{style="…"}`) applied to this heading. */
+  headingStyleId?: string;
+  /** True for a heading whose style has `numbered: false`: it advances no
+   *  counter and `{chapterNumber}` is empty on its pages. */
+  unnumbered?: boolean;
+  /** Present on the part row of an expanded `:::toc`: the row's design is
+   *  laid out from `toc.parts.design` with these values (see
+   *  `buildHeadersAndFooters`), replacing the block's (empty) line. */
+  tocPart?: { number: string; title: string; pageLabel: string; palette?: Record<string, string> };
   numberPrefix?: string;
   fontString: string;
   boldFontString?: string;

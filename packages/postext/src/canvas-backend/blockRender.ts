@@ -131,14 +131,16 @@ function renderSegments(
       currentFill = '';
       continue;
     }
-    const font = pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
+    const font = seg.fontString
+      ?? pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
     if (font !== currentFont) {
       ctx.font = font;
       currentFont = font;
     }
-    const fill = seg.refResourceId !== undefined && style.refColor
-      ? style.refColor
-      : pickSegmentColor(!!seg.bold, !!seg.italic, style.color, style.boldColor, style.italicColor);
+    const fill = seg.color
+      ?? (seg.refResourceId !== undefined && style.refColor
+        ? style.refColor
+        : pickSegmentColor(!!seg.bold, !!seg.italic, style.color, style.boldColor, style.italicColor));
     if (fill !== currentFill) {
       ctx.fillStyle = fill;
       currentFill = fill;
@@ -146,6 +148,12 @@ function renderSegments(
     ctx.fillText(seg.text, x, baseline);
     x += seg.width;
   }
+}
+
+/** Whether a segment paints differently from the block's plain text. */
+function segmentIsStyled(s: VDTLineSegment): boolean {
+  return !!s.bold || !!s.italic || s.kind === 'math' || s.refResourceId !== undefined
+    || s.fontString !== undefined || s.color !== undefined;
 }
 
 function renderLine(
@@ -184,27 +192,30 @@ function renderLine(
     }
   }
 
-  // Centred alignment — used by math display blocks. Distribute remaining
-  // space equally on either side.
-  if (textAlign === 'center' && segments) {
+  // Centred / right alignment — math display blocks, and paragraph styles
+  // set ragged from the left. Distribute the remaining space.
+  if ((textAlign === 'center' || textAlign === 'right') && segments) {
     let contentWidth = 0;
     for (const seg of segments) contentWidth += seg.width;
-    const startX = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
+    const slack = Math.max(0, effectiveWidth - contentWidth);
+    const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
     renderSegments(ctx, segments, startX, line.baseline, style);
     return;
   }
 
   // Ragged (left-aligned) rendering — also used for last lines of justified
   // blocks. Segments are needed when any of them styles differently from the
-  // block (bold/italic/math/ref); otherwise one fillText paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined)) {
+  // block (bold/italic/math/ref/own font or colour); otherwise one fillText
+  // paints the line.
+  if (segments && segments.some(segmentIsStyled)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, style);
     return;
   }
 
   ctx.font = style.font;
   ctx.fillStyle = style.color;
-  ctx.fillText(line.text, line.bbox.x, line.baseline);
+  const plainX = textAlign === 'right' ? line.bbox.x + Math.max(0, effectiveWidth - line.bbox.width) : line.bbox.x;
+  ctx.fillText(line.text, plainX, line.baseline);
 }
 
 function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {

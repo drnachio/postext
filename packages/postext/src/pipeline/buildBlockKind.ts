@@ -11,6 +11,7 @@ import type { ResolvedConfig, VDTBlock } from '../vdt';
 import type { BlockStyle } from './styles';
 import { resolveHeadingStyle, resolveMathDisplayStyle } from './styles';
 import type { ListBulletStyle, ListItemResolved, OrderedListMetrics } from './lists';
+import type { HeadingLevelResolver } from './headingStyles';
 import {
   resolveOrderedListItemStyle,
   resolveUnorderedListItemStyle,
@@ -54,6 +55,9 @@ export interface BlockKindContext {
   /** Style forced onto `paragraph` blocks by an enclosing `:::paragraphs`
    *  container; the body style applies when unset. */
   paragraphStyleOverride?: BlockStyle;
+  /** Level configs with heading-style overrides merged in; the plain level
+   *  lookup applies when unset. */
+  headingLevels?: HeadingLevelResolver;
 }
 
 /** Upper-case `text` one UTF-16 code unit at a time, keeping any character
@@ -96,12 +100,12 @@ export function resolveBlockKind(
     }
     case 'heading': {
       const level = rawBlock.level ?? 1;
-      const style = resolveHeadingStyle(level, resolved);
+      const levelCfg = ctx.headingLevels?.forBlock(rawBlock) ?? resolved.headings.levels.find((l) => l.level === level);
+      const style = resolveHeadingStyle(level, resolved, levelCfg);
       const numberPrefix = headingPrefixes[blockIdx];
       let contentBlock: ContentBlock = rawBlock;
       // Letter-case transform on the title text (the numbering prefix, added
       // below, is kept as written). Length-preserving so `sourceMap` stays 1:1.
-      const levelCfg = resolved.headings.levels.find((l) => l.level === level);
       if (levelCfg?.textTransform === 'uppercase') {
         contentBlock = {
           ...contentBlock,

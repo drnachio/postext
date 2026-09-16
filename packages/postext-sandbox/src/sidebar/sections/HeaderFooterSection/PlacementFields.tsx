@@ -22,7 +22,7 @@ const ZERO: Dimension = { value: 0, unit: 'pt' };
 
 export interface Sibling {
   id: string;
-  kind: 'text' | 'rule' | 'box';
+  kind: 'text' | 'rule' | 'box' | 'image';
   index: number;
 }
 
@@ -49,7 +49,9 @@ export function PlacementFields({ placement, slotKind, siblings = [], onChange }
       ? labels.headerFooterElementText
       : kind === 'rule'
         ? labels.headerFooterElementRule
-        : (labels.headerFooterElementBox ?? 'Box');
+        : kind === 'image'
+          ? (labels.headerFooterElementImage ?? 'Image')
+          : (labels.headerFooterElementBox ?? 'Box');
 
   const targetOptions = [
     { value: 'container', label: labels.headerFooterElementAnchorContainer ?? 'Container' },
