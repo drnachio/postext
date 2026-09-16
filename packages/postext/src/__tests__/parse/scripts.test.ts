@@ -61,3 +61,14 @@ describe('inline superscript / subscript', () => {
     expect(two.width).toBeLessThan(segs[0]!.width);
   });
 });
+
+describe('script-only paragraphs take the rich measurer', () => {
+  it('a paragraph whose only marks are scripts keeps them as segments', async () => {
+    const { buildDocument } = await import('../../pipeline');
+    const doc = buildDocument({ markdown: 'subnivel: p~x~^1^, p~y~^1^.' }, { page: { width: { value: 400, unit: 'pt' }, height: { value: 400, unit: 'pt' } }, layout: { layoutType: 'single' } });
+    const block = doc.blocks.find((b) => b.type === 'paragraph')!;
+    const segs = block.lines[0]!.segments ?? [];
+    expect(segs.some((s) => s.script === 'sub')).toBe(true);
+    expect(segs.some((s) => s.script === 'sup')).toBe(true);
+  });
+});

@@ -141,7 +141,7 @@ export function measureContentBlock(
     };
   }
 
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref);
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.script);
 
   // List items reserve horizontal space for indent + bullet + gap.
   const {
