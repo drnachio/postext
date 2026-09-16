@@ -132,7 +132,9 @@ function isTextColumn(col: VDTColumn): boolean {
  * Eligible headings are heading blocks that are neither the first block of
  * their column (their top margin is suppressed there so the column keeps
  * starting at the page top) nor the last (space above a trailing heading
- * would strand it at the column bottom). List-end points are the first
+ * would strand it at the column bottom); a heading that opens a column
+ * under a float band is eligible too (it is a heading lever, not an
+ * after-float point). List-end points are the first
  * non-list block after a run of list items — they may be last in column
  * (pushing a trailing paragraph down by at most the gap is local: the
  * element that opened the next column still does not fit). After-float
@@ -264,10 +266,14 @@ export function collectColumnGaps(
         // interior is off-grid by design — never a stretch point.
         if (b.containerId !== undefined) continue;
 
+        // A heading opening a column under a float band is a heading lever
+        // (its cap and priority), not an after-float point: the room goes
+        // above a title, where the reader expects it.
+        const underFloat = i === 0 && !b.id.includes('-cont-') && columnUnderTopFloat(page, col);
         if (
           b.type === 'heading'
           && b.headingLevel !== undefined
-          && i >= 1
+          && (i >= 1 || underFloat)
           && i < col.blocks.length - 1
         ) {
           candidates.push({
@@ -277,11 +283,7 @@ export function collectColumnGaps(
             order: i,
             lineCount: b.lines.length,
           });
-        } else if (
-          i === 0
-          && !b.id.includes('-cont-')
-          && columnUnderTopFloat(page, col)
-        ) {
+        } else if (underFloat) {
           candidates.push({
             contentIndex: b.contentIndex,
             kind: 'afterFloat',

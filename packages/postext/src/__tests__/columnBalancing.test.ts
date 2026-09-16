@@ -379,6 +379,36 @@ describe('list-end and loose-paragraph levers', () => {
     expect(proposeBalanceLines(bottom, NO_FORCED, emptyState(), baseOptions()).lines.get(61)).toBeUndefined();
   });
 
+  it('treats a heading that opens a column under a float band as a heading lever', () => {
+    // A column-top table with a level-4 heading right under it (EMP p. 310):
+    // the two missing lines go above the heading (heading cap), not one line
+    // under the float (after-float cap).
+    const doc = fakeDoc([
+      [
+        { blocks: [heading(70, 4), para(), para()], availableHeight: 2 * 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const col = doc.pages[0]!.columns[0]!;
+    col.bbox = { ...col.bbox, y: 300, height: 600 };
+    doc.pages[0]!.floats = [fakeBlock({ type: 'resource', bbox: { x: 0, y: 0, width: 480, height: 280 } })];
+    const gaps = collectColumnGaps(doc, NO_FORCED);
+    expect(gaps[0]!.candidates.find((c) => c.contentIndex === 70)?.kind).toBe('heading');
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions({ stretchAfterFloats: false }));
+    expect(proposal.lines.get(70)).toBe(2);
+
+    // Without a float above it, a heading opening the column is still no lever.
+    const plain = fakeDoc([
+      [
+        { blocks: [heading(71, 4), para(), para()], availableHeight: 2 * 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    expect(proposeBalanceLines(plain, NO_FORCED, emptyState(), baseOptions()).lines.get(71)).toBeUndefined();
+  });
+
   it('exhausts heading capacity before touching list ends', () => {
     const doc = fakeDoc([
       [
