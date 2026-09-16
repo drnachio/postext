@@ -200,10 +200,12 @@ describe('floats yield to a keep-together box', () => {
     const f = frames(doc)[0]!;
     const f1 = floatsOf(doc).find((x) => x.id === 'f1')!;
     const f2 = floatsOf(doc).find((x) => x.id === 'f2')!;
-    expect(f2.page).toBe(0);
     expect(f.pageIndex).toBe(0);
     expect(f.columnIndex).toBe(1);
     expect(f1.page).toBe(1);
+    // Figure 2 keeps its place in the sequence: after figure 1, never on
+    // page 0 ahead of it.
+    expect(f2.page).toBeGreaterThanOrEqual(1);
     // A splittable note takes no such precedence: the figure keeps its slot.
     const split = build(md, TWO_COL({ keepTogether: false }), resources);
     expect(floatsOf(split).find((x) => x.id === 'f1')!.page).toBe(0);
