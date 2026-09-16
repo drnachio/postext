@@ -248,11 +248,14 @@ export function collectColumnGaps(
           const gapPx = target - (frame.bbox.y + frame.bbox.height);
           if (gapPx > doc.baselineGrid * 0.1) {
             candidates.push({ contentIndex: frame.contentIndex, part: frame.callout?.part ?? 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx });
-            gapLines = Math.max(gapLines, Math.ceil(gapPx / doc.baselineGrid - EPS));
+            // The box takes its room exactly; the whole-line levers above it
+            // may only take the whole lines of it (a line more overflows the
+            // column — or the cut of a capped band — and the pass is lost).
+            gapLines = Math.max(gapLines, Math.floor(gapPx / doc.baselineGrid + EPS));
           }
         }
       }
-      if (gapLines < 1) continue;
+      if (gapLines < 1 && candidates.length === 0) continue;
 
       for (let i = 0; i < col.blocks.length; i++) {
         const b = col.blocks[i]!;

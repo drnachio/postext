@@ -1080,8 +1080,15 @@ export function buildDocumentPass(
     if (aroundZone === null && Math.max(...bottoms) - Math.min(...bottoms) <= baselineGrid + 0.5) return;
     // Float bands reserved at the columns' feet are the band's content too:
     // the level cut must leave them room under the text (a figure placed
-    // before a span box then anchors to the cut, see `anchorToCap`).
-    const footBands = cols.reduce((sum, c) => sum + reservedOf(c).bottom, 0);
+    // before a span box then anchors to the cut, see `anchorToCap`). A band
+    // every column reserves alike — a page-span table at the page foot —
+    // stays where it is under the level cut and counts for nothing: adding
+    // it would push the cut down by the table's height, the capped pass
+    // could no longer seat the table below the cut, and the text would
+    // fill a cap far taller than its level (EMP ch. 24 p. 279).
+    const feet = cols.map((c) => reservedOf(c).bottom);
+    const shared = Math.min(...feet);
+    const footBands = feet.reduce((sum, b) => sum + (b - shared), 0);
     // A figure heading an otherwise empty column keeps its slot: the cut
     // goes no higher than the band it takes, or the capped pass evicts it
     // to a page of its own.

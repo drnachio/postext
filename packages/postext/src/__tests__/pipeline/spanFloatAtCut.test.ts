@@ -174,6 +174,33 @@ describe('page-span figure before a page-span box', () => {
     if (boxFrame.pageIndex === 1) expect(boxFrame.bbox.y).toBeGreaterThanOrEqual(figBottom - 0.01);
   }, 30000);
 
+  it('a page-span table already at the page foot: the closing band levels above it, the table stays', () => {
+    // The figure is referenced early on the closing page and takes the
+    // page foot at once (a plain float slot); the text after it fills the
+    // shortened columns unevenly, then the barrier box arrives. The
+    // trailing cap must level the TEXT only: the foot band, reserved alike
+    // in both columns, stays where it is (counting it pushed the cut down
+    // by the figure's height, the capped pass could not seat the figure
+    // below the cut and the text filled a cap far taller than its level —
+    // EMP ch. 24 p. 279).
+    const doc = buildDocument(
+      {
+        markdown: [filler(49), '', 'Ver :ref{id="f1"} aquí.', '', filler(7), '', KEY_POINTS, '', '## BIBLIOGRAFÍA', '', filler(6)].join('\n'),
+        resources: [figure(500)],
+      },
+      CFG,
+      createMeasurementCache(),
+    );
+    const page = doc.pages[1]!;
+    const fl = (page.floats ?? []).find((f) => f.resourceBlock?.resource.id === 'f1');
+    expect(fl, 'the table keeps its foot slot on the closing page').toBeDefined();
+    const band0 = page.columns.filter((c) => c.kind !== 'span' && c.blocks.length > 0);
+    expect(band0).toHaveLength(2);
+    const bottoms = band0.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
+    expect(Math.abs(bottoms[0]! - bottoms[1]!)).toBeLessThanOrEqual(GRID + 0.5);
+    for (const b of bottoms) expect(b).toBeLessThan(fl!.bbox.y);
+  }, 30000);
+
   it('without a following span box the figure keeps its float slot', () => {
     const doc = buildDocument(
       { markdown: [filler(49), '', filler(2), '', 'Ver :ref{id="f1"} aquí.', '', filler(6)].join('\n'), resources: [figure(340)] },

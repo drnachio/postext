@@ -814,6 +814,7 @@ function layoutTextElement(
 
   const widthSize = resolveFixedSize(el.placement.size?.width, dpi, fontSizePx);
   const heightSize = resolveFixedSize(el.placement.size?.height, dpi, fontSizePx);
+  const maxWidthSize = resolveFixedSize(el.placement.size?.maxWidth, dpi, fontSizePx);
 
   // Determine content width budget.
   let contentMax: number | undefined;
@@ -824,7 +825,11 @@ function layoutTextElement(
     // We compute the distance from the anchor to the container edge and use
     // that as an upper bound for wrapping/ellipsis.
     const fillW = fillToContainerEdge(pin.anchorX, pin.pinX, container);
-    contentMax = Math.max(0, fillW - padding.left - padding.right);
+    // `maxWidth` caps the budget below the container edge: the element keeps
+    // sizing to its content, so whatever hangs off it stays attached, and a
+    // long text truncates here instead of squeezing those elements out.
+    const capW = typeof maxWidthSize === 'number' ? Math.min(fillW, maxWidthSize) : fillW;
+    contentMax = Math.max(0, capW - padding.left - padding.right);
     clampToContainer = true;
   } else if (widthSize === 'fill') {
     const fillW = fillToContainerEdge(pin.anchorX, pin.pinX, container);
