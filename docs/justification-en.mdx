@@ -231,6 +231,8 @@ The consecutive-hyphen demerit (default 3000) ensures the algorithm strongly avo
 
 Hyphenation is only applied when both `bodyText.hyphenation.enabled` is `true` **and** `bodyText.textAlign` is `'justify'`. Left-aligned text does not benefit from hyphenation because the right edge is intentionally ragged.
 
+Two break opportunities exist regardless of that setting. A **hard hyphen between two letters** — `enseñanza-aprendizaje`, `físico-química` — is a place the line may end: the word already carries the hyphen, so nothing is added. And a **word wider than its whole measure** (a narrow table cell, a long compound in a narrow column) is never let run past it: the engine divides it at the last syllable that fits, with a hyphen, or at the last character that fits when the dictionary offers no syllable there.
+
 
 ## Word Spacing Bounds
 

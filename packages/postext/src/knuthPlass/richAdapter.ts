@@ -14,6 +14,8 @@ import { cleanSoftHyphens } from './utils';
 interface RichBreakPoint {
   charIndex: number;
   widthBefore: number;
+  /** A hard hyphen the word carries: the line ends as it is, no hyphen added. */
+  bare?: boolean;
 }
 
 interface RichToken {
@@ -78,14 +80,15 @@ export function richTokensToItems(
           meta: { ...meta, subStart: prevCharIndex, subEnd: breakPoint.charIndex },
         });
 
-        // Penalty at the soft hyphen
+        // Penalty at the break: a soft hyphen adds one, a hard hyphen the
+        // word carries ends the line as it is.
         items.push({
           type: 'penalty',
-          width: hyphenW,
+          width: breakPoint.bare ? 0 : hyphenW,
           penalty: HYPHEN_PENALTY,
           flagged: true,
           sourceIndex: t,
-          meta: { ...meta },
+          meta: { ...meta, ...(breakPoint.bare ? { bare: true } : {}) },
         });
 
         prevCharIndex = breakPoint.charIndex;
@@ -196,7 +199,7 @@ export function reconstructRichLines(
     // is a bare one inside a URL, which ends the line as it is.
     const breakMeta = breakItem.meta as RichTokenMeta | undefined;
     const breakToken = breakMeta ? tokens[breakMeta.originalTokenIndex] : undefined;
-    if (hyphenated && lineSegments.length > 0 && !breakToken?.bareBreaks) {
+    if (hyphenated && lineSegments.length > 0 && !breakToken?.bareBreaks && !breakMeta?.bare) {
       const hyphenW = breakToken?.hyphenWidth ?? 0;
       const lastIdx = lineSegments.length - 1;
       const last = lineSegments[lastIdx]!;

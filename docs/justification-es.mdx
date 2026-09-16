@@ -231,6 +231,8 @@ El demérito por guiones consecutivos (por defecto 3000) asegura que el algoritm
 
 La separación silábica solo se aplica cuando `bodyText.hyphenation.enabled` es `true` **y** `bodyText.textAlign` es `'justify'`. El texto alineado a la izquierda no se beneficia de la separación silábica porque el borde derecho es intencionadamente irregular.
 
+Hay dos oportunidades de corte que no dependen de ese ajuste. Un **guion entre dos letras** — `enseñanza-aprendizaje`, `físico-química` — es un punto donde la línea puede terminar: la palabra ya lleva el guion, así que no se añade nada. Y una **palabra más ancha que toda su medida** (una celda estrecha de tabla, un compuesto largo en una columna estrecha) nunca se deja sobresalir: el motor la divide por la última sílaba que cabe, con guion, o por el último carácter que cabe cuando el diccionario no ofrece sílaba ahí.
+
 
 ## Límites de espaciado entre palabras
 
