@@ -1062,6 +1062,7 @@ export interface SandboxLabels {
   paragraphStyleHangingIndentTooltip: string;
   paragraphStyleSpaceBetween: string;
   paragraphStyleSpaceBetweenTooltip: string;
+  paragraphStyleMarginTopTooltip: string;
   paragraphStyleMarginBottomTooltip: string;
   calloutStylesSection: string;
   calloutStylesResetConfirm: string;

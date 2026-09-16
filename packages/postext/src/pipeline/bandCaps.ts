@@ -93,6 +93,7 @@ export function applyBandCap(
   capPx: number,
   uncappedBottoms: Map<VDTColumn, number>,
   zone?: BandCapZone,
+  trailing = false,
 ): void {
   const cut = bandTop(cols) + capPx;
   for (let i = 0; i < cols.length; i++) {
@@ -100,6 +101,7 @@ export function applyBandCap(
     const colCut = zone && zone.columns.includes(i) ? Math.min(cut, zone.top) : cut;
     const height = Math.max(c.bbox.height - c.availableHeight, colCut - c.bbox.y);
     if (c.bbox.height <= height + 0.01) continue;
+    if (trailing) c.trailingCap = true;
     if (!uncappedBottoms.has(c)) uncappedBottoms.set(c, c.bbox.y + c.bbox.height);
     const trimmed = c.bbox.height - height;
     c.bbox.height = height;
@@ -251,11 +253,15 @@ export function resolveBandCaps<T extends BandPassReport>(
  * already in force, and `runPass` re-places the document with the balancing
  * hints frozen and the given caps. A trailing cap whose band overflowed
  * (applied, not delivered) is retried one line taller; one whose band
- * opened with a different block (not applied) is replaced by the fresh
- * proposal that pass made for the same boundary, else dropped. Span caps
- * must stay delivered — a trailing cap that unsettles one is abandoned.
- * The layout returned never carries an undelivered cap; when no trailing
- * cap survives, `initial` is returned untouched.
+ * opened with a different block (not applied — an earlier cap's retry moved
+ * the flow under it) is replaced by the fresh proposal that pass made for
+ * the same boundary, else dropped. A boundary that proposes anew once the
+ * caps before it have settled (a dropped one, or a closing band the earlier
+ * caps uncovered) joins the next pass, so a cap that stumbles while another
+ * is still being retried is not lost. Span caps must stay delivered — a
+ * trailing cap that unsettles one is abandoned. The layout returned never
+ * carries an undelivered cap; when no trailing cap survives, `initial` is
+ * returned untouched.
  */
 export function resolveTrailingCaps<T extends BandPassReport>(
   initial: T,
@@ -263,14 +269,22 @@ export function resolveTrailingCaps<T extends BandPassReport>(
   runPass: (bandCaps: ReadonlyMap<number, BandCap>) => T,
 ): { result: T; caps: Map<number, BandCap>; passCount: number } {
   const caps = new Map(spanCaps);
-  let adopted = 0;
-  for (const [i, cap] of initial.bandCapProposals) {
-    if (cap.kind !== 'trailing' || caps.has(i)) continue;
-    caps.set(i, { ...cap });
-    adopted++;
-  }
+  /** Caps whose band did open under them and overflowed — the only ones a
+   *  pass says anything about; a cap that never applied may come back. */
+  const tried = new Set<string>();
+  /** Adopt the trailing proposals of `report` for boundaries without a cap
+   *  in force (never one that already failed); returns how many were taken. */
+  const adopt = (report: T): number => {
+    let taken = 0;
+    for (const [i, cap] of report.bandCapProposals) {
+      if (cap.kind !== 'trailing' || caps.has(i) || tried.has(capKey(i, cap))) continue;
+      caps.set(i, { ...cap });
+      taken++;
+    }
+    return taken;
+  };
   let passCount = 0;
-  if (adopted === 0) return { result: initial, caps, passCount };
+  if (adopt(initial) === 0) return { result: initial, caps, passCount };
 
   const trailingKeys = (): number[] => [...caps].filter(([, c]) => c.kind === 'trailing').map(([i]) => i);
   const giveUp = (): { result: T; caps: Map<number, BandCap>; passCount: number } =>
@@ -282,22 +296,24 @@ export function resolveTrailingCaps<T extends BandPassReport>(
     passCount++;
     if ([...spanCaps.keys()].some((i) => !result.spanPlacedInBand.has(i))) return giveUp();
     const failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
-    if (failing.length === 0) return { result, caps, passCount };
     for (const i of failing) {
       const cap = caps.get(i)!;
       const fresh = result.bandCapProposals.get(i);
       if (result.bandCapsApplied.has(i)) {
+        tried.add(capKey(i, cap));
         if (cap.retries < MAX_BAND_CAP_RETRIES) {
           caps.set(i, { ...cap, lines: cap.lines + 1, retries: cap.retries + 1 });
         } else {
           caps.delete(i);
         }
-      } else if (fresh && fresh.kind === 'trailing') {
+      } else if (fresh && fresh.kind === 'trailing' && !tried.has(capKey(i, fresh))) {
         caps.set(i, { ...fresh });
       } else {
         caps.delete(i);
       }
     }
+    const adopted = adopt(result);
+    if (failing.length === 0 && adopted === 0) return { result, caps, passCount };
     if (trailingKeys().length === 0) return giveUp();
   }
 

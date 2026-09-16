@@ -948,6 +948,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     paragraphStyleHangingIndentTooltip: t("paragraphStyleHangingIndentTooltip"),
     paragraphStyleSpaceBetween: t("paragraphStyleSpaceBetween"),
     paragraphStyleSpaceBetweenTooltip: t("paragraphStyleSpaceBetweenTooltip"),
+    paragraphStyleMarginTopTooltip: t("paragraphStyleMarginTopTooltip"),
     paragraphStyleMarginBottomTooltip: t("paragraphStyleMarginBottomTooltip"),
     calloutStylesSection: t("calloutStylesSection"),
     calloutStylesResetConfirm: t("calloutStylesResetConfirm"),

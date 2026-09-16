@@ -424,6 +424,10 @@ export interface VDTColumn {
   /** True when a `:::columnbreak` directive ended this column: its bottom
    *  gap is intentional, so column balancing leaves it alone. */
   forcedBreak?: boolean;
+  /** True when a trailing band cap cut this column so a closing band ends
+   *  level: its bottom is the level cut, and column balancing fills the
+   *  column up to it even though the page does not flow on. */
+  trailingCap?: boolean;
 }
 
 export interface VDTFootnoteArea {

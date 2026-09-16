@@ -186,7 +186,10 @@ export function collectColumnGaps(
     for (let c = 0; c <= lastNonEmpty; c++) {
       const col = page.columns[c]!;
       if (!isTextColumn(col) || col.blocks.length === 0) continue;
-      if (c === lastNonEmpty && !pageFlowsOn) continue;
+      // The closing column of a page that does not flow on ends where its
+      // text ends — unless a trailing cap cut it level with the columns
+      // beside it: then it fills up to the cut like any other.
+      if (c === lastNonEmpty && !pageFlowsOn && !col.trailingCap) continue;
       // A `:::columnbreak` ended this column on purpose — leave its gap.
       if (col.forcedBreak) continue;
 

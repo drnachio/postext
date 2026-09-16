@@ -250,9 +250,10 @@ function ParagraphStyleCard({
         label={labels.marginTop}
         value={resolved.marginTop}
         onChange={(v) => onChange({ marginTop: v })}
-        min={0}
+        min={-20}
         step={0.1}
         units={SPACING_UNITS}
+        tooltip={labels.paragraphStyleMarginTopTooltip}
         isDefault={unset('marginTop')}
         onReset={() => onResetField('marginTop')}
       />
@@ -260,7 +261,7 @@ function ParagraphStyleCard({
         label={labels.marginBottom}
         value={resolved.marginBottom}
         onChange={(v) => onChange({ marginBottom: v })}
-        min={0}
+        min={-20}
         step={0.1}
         units={SPACING_UNITS}
         tooltip={labels.paragraphStyleMarginBottomTooltip}

@@ -59,9 +59,12 @@ export function planParagraphContainers(
           if (cfg) {
             const style = resolveParagraphStyle(cfg, resolved);
             const marginBottomPx = dimensionToPx(cfg.marginBottom, dpi, style.fontSizePx);
+            // A negative margin pulls the flow after the container up past
+            // the entries' own spacing instead of collapsing with it.
+            const tailMarginPx = marginBottomPx < 0 ? marginBottomPx : Math.max(style.marginBottomPx, marginBottomPx);
             base = {
               style,
-              tailStyle: { ...style, marginBottomPx: Math.max(style.marginBottomPx, marginBottomPx) },
+              tailStyle: { ...style, marginBottomPx: tailMarginPx },
               marginTopPx: dimensionToPx(cfg.marginTop, dpi, style.fontSizePx),
               marginBottomPx,
             };

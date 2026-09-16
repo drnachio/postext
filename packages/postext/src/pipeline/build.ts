@@ -110,7 +110,11 @@ import {
   bandCapLinesAroundZone,
   type BandCapZone,
 } from './bandCaps';
-import { raggedUrlLines } from './raggedUrl';
+import { raggedLooseLines } from './raggedLines';
+
+/** Tolerance for "does this block fit" checks against a column's free
+ *  height, absorbing floating-point drift between grid multiples. */
+const FIT_EPS = 0.01;
 
 export interface BuildDocumentOptions {
   /**
@@ -1025,7 +1029,7 @@ export function buildDocumentPass(
     if (!bandCaps) return;
     for (const [spanIndex, cap] of bandCaps) {
       if (cap.startContentIndex !== contentIndex || cap.startPart !== part) continue;
-      applyBandCap(bandColumns(page, band), cap.lines * baselineGrid, uncappedBottoms, cap.zone);
+      applyBandCap(bandColumns(page, band), cap.lines * baselineGrid, uncappedBottoms, cap.zone, cap.kind === 'trailing');
       activeCap = { spanIndex, pageIndex: page.index, band };
       bandCapsApplied.add(spanIndex);
       break;
@@ -1058,13 +1062,16 @@ export function buildDocumentPass(
     const band = currentBand(page, cursor);
     const cols = bandColumns(page, band).filter((c) => c.bbox.height > 0.5);
     if (cols.length < 2 || cols.some((c) => c.forcedBreak)) return;
-    if (bandCaps?.has(boundaryIndex)) {
-      if (activeCap && activeCap.spanIndex === boundaryIndex
-        && activeCap.pageIndex === page.index && activeCap.band === band) {
-        spanPlacedInBand.add(boundaryIndex);
-      }
+    if (activeCap && activeCap.spanIndex === boundaryIndex
+      && activeCap.pageIndex === page.index && activeCap.band === band) {
+      spanPlacedInBand.add(boundaryIndex);
       return;
     }
+    // A cap in force for this boundary that did not open the band the
+    // boundary is reached in (an earlier cap moved the flow under it, or
+    // its own band overflowed) still gets a fresh proposal below: the
+    // driver replaces a cap that no longer applies with it, and ignores it
+    // while retrying an applied cap a line taller.
     if (activeCap && activeCap.pageIndex === page.index && activeCap.band === band) return;
     if (!cols.some((c) => c.blocks.length > 0)) return;
     if (!bandStart || !registeredBand || registeredBand.pageIndex !== page.index || registeredBand.band !== band) return;
@@ -2233,10 +2240,16 @@ export function buildDocumentPass(
         ? paragraphContainers.byId.get(rawBlock.containerId)
         : undefined;
       if (pc) {
+        // Margins collapse with the pending spacing; a negative one pulls
+        // the flow up past it instead (the container starts inside the
+        // space the previous block left, or the next block inside the
+        // container's).
+        const collapse = (margin: number): number =>
+          margin < 0 ? pendingSpacing + margin : Math.max(pendingSpacing, margin);
         if (rawBlock.type === 'containerStart') {
-          pendingSpacing = Math.max(pendingSpacing, pc.marginTopPx);
+          pendingSpacing = collapse(pc.marginTopPx);
         } else if (contentBlocks[blockIdx - 1]?.type !== 'paragraph') {
-          pendingSpacing = Math.max(pendingSpacing, pc.marginBottomPx);
+          pendingSpacing = collapse(pc.marginBottomPx);
         }
       }
       continue;
@@ -2413,8 +2426,9 @@ export function buildDocumentPass(
     // List items may split too — orphan/widow protection per-list is gated by
     // `avoidOrphansInLists` / `avoidWidowsInLists`; bullet stays on first part.
     const canSplit = vdtType === 'paragraph' || vdtType === 'blockquote' || vdtType === 'listItem';
-    // A justified line a link leaves with too few spaces is set ragged.
-    let remainingLines = [...raggedUrlLines(measured.lines, style.textAlign, rawBlock.text)];
+    // A justified line the breaker could not fill (a link breaking at its
+    // joints, a last word that cannot come up) is set ragged, not stretched.
+    let remainingLines = [...raggedLooseLines(measured.lines, style.textAlign)];
     let partIndex = 0;
     /** Times this block left an EMPTY short column (see `shortColumn`) —
      *  bounded so a page whose columns are all short (footnotes, design
@@ -2562,7 +2576,7 @@ export function buildDocumentPass(
             : 1;
           const splitAt = remainingLines.length - 1;
           if (splitAt >= effectiveWidowMin) {
-            if (spacingBefore > 0) curCol.availableHeight -= spacingBefore;
+            if (spacingBefore !== 0) curCol.availableHeight -= spacingBefore;
             const splitLines = remainingLines.slice(0, splitAt);
             const blk = createVDTBlock(id, vdtType, style.fontString, style.color, style.textAlign);
             applyStyleAttrs(blk, style);
@@ -2634,8 +2648,10 @@ export function buildDocumentPass(
         && !uncappedBottoms.has(curCol)
         && curCol.bbox.height < contentArea.height - baselineGrid;
 
-      // Block fits in current column
-      if (effectiveRemainHeight <= effectiveAvailable) {
+      // Block fits in current column (a hair of tolerance: a capped column
+      // and the grid lines balancing adds above a block differ by floating
+      // point noise, which must not push the block over the cut).
+      if (effectiveRemainHeight <= effectiveAvailable + FIT_EPS) {
         // Heading keep-with-next: never leave a heading as the last block of a
         // column. If the following (non-heading) block wouldn't have room to
         // place at least its widow-minimum number of lines after this heading,
@@ -2683,8 +2699,8 @@ export function buildDocumentPass(
           }
         }
 
-        // Consume spacing
-        if (spacingBefore > 0) {
+        // Consume spacing (negative: a container margin pulling the block up)
+        if (spacingBefore !== 0) {
           curCol.availableHeight -= spacingBefore;
         }
 
@@ -2744,7 +2760,9 @@ export function buildDocumentPass(
           // the grid (e.g. marginBottom is an exact multiple of baselineGrid),
           // don't round up to the next line.
           const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
-          h = snappedBottom - usedHeight;
+          // A negative margin below a container tail may snap the flow back
+          // above the text's own bottom; never below the block's top.
+          h = Math.max(0, snappedBottom - usedHeight);
         }
         placeBlockInColumn(blk, h, curCol, cursor);
         finalizeListItem(blk, partIndex === 0);
@@ -2790,8 +2808,8 @@ export function buildDocumentPass(
           slackWeight: resolved.bodyText.slackWeight,
         });
         if (choice.splitAt > 0) {
-          // Consume spacing
-          if (spacingBefore > 0) {
+          // Consume spacing (negative: a container margin pulling the block up)
+          if (spacingBefore !== 0) {
             curCol.availableHeight -= spacingBefore;
           }
 

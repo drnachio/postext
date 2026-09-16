@@ -273,6 +273,10 @@ Con los valores por defecto (1.9 / 0.6), si el ancho normal del espacio es 4 px:
 
 Los valores por defecto de 2 y 0.6 priorizan la flexibilidad del algoritmo — dan a Knuth-Plass margen suficiente para evitar desbordamientos, separaciones silábicas y *runts* en columnas estrechas, manteniéndose dentro del rango que la literatura tipográfica considera aceptable.
 
+### Líneas que el algoritmo no puede llenar
+
+A veces ningún conjunto de cortes respeta los límites: una URL larga solo corta por sus propias junturas, o la última palabra de un elemento de lista no sube y cualquier división silábica dejaría una línea huérfana. Knuth-Plass acepta entonces la línea menos mala, cuyos pocos espacios tendrían que estirarse varias veces su ancho. En vez de estirarlos, el motor compone esa línea **en bandera**: se dibuja con su espaciado natural y cede el margen derecho, como la última línea de un párrafo. El umbral es 3× el ancho normal del espacio, el mismo que usa el aviso de línea floja del sandbox, de modo que una línea que lo supera se corrige en lugar de señalarse. Las líneas dentro del umbral se dejan tal como se midieron.
+
 ### La última línea
 
 En el modelo caja-cola-penalización, cada párrafo termina con una cola de ancho 0 e infinitamente estirable seguida de un corte forzado. Esa cola final absorbe a coste cero todo el espacio que quede en la última línea, así que las últimas líneas salen irregulares de forma natural: se renderizan en su ancho natural, y el `justifiedSpaceRatio` solo se calcula para las líneas que no son finales.
