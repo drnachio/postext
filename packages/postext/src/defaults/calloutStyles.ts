@@ -50,6 +50,7 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
     size: EM(1.5),
     color: { ...DEFAULT_MAIN_COLOR } as ColorValue,
     align: 'top' as const,
+    position: 'inline' as const,
   },
   marker: {
     kind: 'none' as const,
@@ -135,6 +136,7 @@ function resolveCalloutStyleConfig(
       size: partial.icon?.size ?? d.icon.size,
       color: partial.icon?.color ?? d.icon.color,
       align: partial.icon?.align ?? d.icon.align,
+      position: partial.icon?.position ?? d.icon.position,
     },
     marker: {
       kind: partial.marker?.kind ?? d.marker.kind,

@@ -964,6 +964,11 @@ export type CalloutWidth = 'fill' | 'auto';
 export type CalloutStripeSide = 'left' | 'right' | 'top';
 export type CalloutIconKind = 'none' | 'glyph' | 'resource';
 export type CalloutIconAlign = 'top' | 'center';
+/** Where the in-box icon sits: `'inline'` (the default) in a column of its
+ *  own left of the title and content (or centred on the side stripe);
+ *  `'corner'` as a badge on the box's top-right corner, half over the
+ *  border, taking no room from the content (the icon of a marginal box). */
+export type CalloutIconPosition = 'inline' | 'corner';
 export type CalloutTextTransform = 'none' | 'uppercase';
 
 export interface CalloutBorderConfig {
@@ -1006,6 +1011,8 @@ export interface CalloutIconConfig {
   size?: Dimension;
   color?: ColorValue;
   align?: CalloutIconAlign;
+  /** Default `'inline'`. Ignored by the marker. */
+  position?: CalloutIconPosition;
 }
 
 /** Vertical rule drawn between a callout marker and its box. */
@@ -1156,6 +1163,7 @@ export interface ResolvedCalloutStyleConfig {
     size: Dimension;
     color: ColorValue;
     align: CalloutIconAlign;
+    position: CalloutIconPosition;
   };
   marker: {
     kind: CalloutIconKind;
