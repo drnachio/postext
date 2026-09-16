@@ -56,13 +56,18 @@ function counterFormatToStyle(format: ResourceCounterFormat): NumeralStyle {
  *  `result[i]` (i.e. the heading counts itself). Mirrors the counter logic in
  *  `computeHeadingNumbers` but exposes the raw per-level values rather than the
  *  rendered prefix. */
-export function computeHeadingContext(blocks: ContentBlock[], start?: HeadingContext): HeadingContext[] {
+export function computeHeadingContext(
+  blocks: ContentBlock[],
+  start?: HeadingContext,
+  /** Whether a heading advances its counter (see `computeHeadingNumbers`). */
+  isNumbered: (block: ContentBlock) => boolean = () => true,
+): HeadingContext[] {
   const counters = [0, 0, 0, 0, 0, 0, 0]; // index 1..6 used
   if (start) for (let lvl = 1; lvl <= 6; lvl++) counters[lvl] = start[`h${lvl}` as keyof HeadingContext];
   const out: HeadingContext[] = new Array(blocks.length);
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!;
-    if (b.type === 'heading' && b.level && b.level >= 1 && b.level <= 6) {
+    if (b.type === 'heading' && b.level && b.level >= 1 && b.level <= 6 && isNumbered(b)) {
       const lvl = b.level;
       counters[lvl] = (counters[lvl] ?? 0) + 1;
       for (let k = lvl + 1; k <= 6; k++) counters[k] = 0;

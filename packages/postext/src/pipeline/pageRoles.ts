@@ -17,7 +17,7 @@
 
 import type { PageRole } from '../types';
 import type { ResolvedConfig, VDTBlock, VDTDocument, VDTPage } from '../vdt';
-import { buildHeadingLevelMap } from './config';
+import { createHeadingLevelResolver, type HeadingLevelResolver } from './headingStyles';
 
 /** First block of the page in reading order (columns in index order), or
  *  `undefined` when the page holds no column content. */
@@ -34,13 +34,17 @@ function pageIsEmpty(page: VDTPage): boolean {
 }
 
 /** Classify one page. Pure — does not mutate the page. */
-export function classifyPage(page: VDTPage, resolved: ResolvedConfig): PageRole {
+export function classifyPage(
+  page: VDTPage,
+  resolved: ResolvedConfig,
+  levels: HeadingLevelResolver = createHeadingLevelResolver(resolved),
+): PageRole {
   if (page.blankForParity || page.blankForForce) return 'blank';
   if (page.partInfo) return 'part';
   if (pageIsEmpty(page)) return 'blank';
   const first = firstBlockInReadingOrder(page);
   if (first && first.type === 'heading' && first.headingLevel !== undefined) {
-    const level = buildHeadingLevelMap(resolved).get(first.headingLevel);
+    const level = levels.forLevel(first.headingLevel, first.headingStyleId);
     if (level && (level.span === 'page' || level.breakBefore.enabled)) return 'opener';
   }
   return 'body';
@@ -48,7 +52,8 @@ export function classifyPage(page: VDTPage, resolved: ResolvedConfig): PageRole 
 
 /** Stamp `page.role` on every page of `doc`. */
 export function classifyPages(doc: VDTDocument, resolved: ResolvedConfig = doc.config): void {
+  const levels = createHeadingLevelResolver(resolved);
   for (const page of doc.pages) {
-    page.role = classifyPage(page, resolved);
+    page.role = classifyPage(page, resolved, levels);
   }
 }

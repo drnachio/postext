@@ -2,7 +2,7 @@
 // resource set, plus one markdown document per chapter. These types are the
 // vocabulary shared by state, storage records and preset bundles.
 
-import type { DocumentMetadata, LayoutContinuation, NumeralStyle, PostextConfig, Resource } from 'postext';
+import type { DocumentMetadata, LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource } from 'postext';
 
 export interface Chapter {
   /** Random UUID; stable across rename/reorder; unique across projects. */
@@ -86,6 +86,12 @@ export interface ChapterLayout {
   lastPageDelta: number;
   /** Page-number format on the last page. */
   lastPageFormat: NumeralStyle;
+  /** The chapter's outline — its headings and parts with the page label
+   *  each landed on — the book's table of contents is assembled from. */
+  outline: OutlineEntry[];
+  /** {@link ChapterPlan.outlineKey} at build time: the book outline a
+   *  chapter printing the contents was laid out with (`''` otherwise). */
+  outlineKey: string;
 }
 
 /** How one chapter is laid out on its own, continued after the chapters
@@ -104,6 +110,12 @@ export interface ChapterPlan {
    *  its own text, config and resources: the counters it inherits, the
    *  parity of its first page and the page-number format it starts with. */
   continuationKey: string;
+  /** The book's outline, handed to the engine as `content.outline` — only
+   *  for a chapter printing the contents (`:::toc`), which depends on the
+   *  headings and pages of every chapter. */
+  outline?: OutlineEntry[];
+  /** Fingerprint of `outline` (`''` when the chapter prints no contents). */
+  outlineKey: string;
   /** The current layout record, when one matches every input. */
   layout: ChapterLayout | null;
 }

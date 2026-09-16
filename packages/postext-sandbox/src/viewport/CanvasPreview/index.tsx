@@ -293,7 +293,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     onGeneratingChangeRef.current?.(true);
     const source = deferredSource.book;
     layoutWorker.build(
-      { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation },
+      { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation, outline: deferredSource.plan.outline },
       deferredConfig,
     )
       .then((doc) => {

@@ -25,7 +25,18 @@ import {
 import { extractFrontmatter } from '../frontmatter';
 import { initHyphenator } from '../measure';
 import type { MeasurementCache } from '../measure';
-import { resolveAllConfig, computeBaselineGrid, buildHeadingLevelMap } from './config';
+import { resolveAllConfig, computeBaselineGrid } from './config';
+import {
+  createHeadingLevelResolver,
+  deriveSectionGeometryConfig,
+  deriveSectionMeasureContext,
+  headingIsNumbered,
+  headingStyleOf,
+  planHeadingSections,
+} from './headingStyles';
+import { computeOutline, hasTocDirective, outlineFromDoc, sameOutline } from './outline';
+import { expandTocDirectives } from './toc';
+import type { ResolvedHeadingStyleConfig } from '../types';
 import { resolveBodyStyle, resolveBlockquoteStyle, type BlockStyle } from './styles';
 import {
   computeLevelIndentsPx,
@@ -259,7 +270,8 @@ export function buildDocumentPass(
   const looseOutcome = new Map<number, number | null>();
   // Lines gained so far per column budget group (see `LooseBudget`).
   const looseGained = new Map<number, number>();
-  const headingLevelByNumber = buildHeadingLevelMap(resolved);
+  // Level configs with heading-style overrides merged in (`{style="…"}`).
+  const headingLevels = createHeadingLevelResolver(resolved);
   const dpi = resolved.page.dpi;
 
   // Initialize hyphenator if needed (body text, or any justified paragraph
@@ -287,7 +299,11 @@ export function buildDocumentPass(
   if (continuation?.part) doc.partStart = continuation.part;
 
   const pageMetrics = computePageMetrics(resolved);
-  const { pageWidthPx, pageHeightPx, trimOffset, contentArea } = pageMetrics;
+  const { pageWidthPx, pageHeightPx, trimOffset } = pageMetrics;
+  // The geometry pages are opened with: the document's, or — inside a
+  // styled section with its own margins / layout — the section's.
+  let contentArea = pageMetrics.contentArea;
+  let geomResolved = resolved;
   // Page/bleed frames for design elements anchored to `'page'` / `'bleed'`.
   const designFrames = { page: pageMetrics.trimBox, bleed: pageMetrics.bleedBox };
   doc.trimOffset = trimOffset;
@@ -299,7 +315,15 @@ export function buildDocumentPass(
   // Extract frontmatter, then parse the remaining markdown body
   const { metadata: frontmatterMeta, content: markdownBody, contentOffset: bodyOffset } = extractFrontmatter(content.markdown);
   doc.metadata = { ...(content.metadata ?? {}), ...frontmatterMeta };
-  const contentBlocks = parseMarkdownMemo(markdownBody);
+  const parsedBlocks = parseMarkdownMemo(markdownBody);
+  const headingStart = continuation?.headings;
+  // `:::toc` expands into the entries of the book's outline — the one the
+  // host supplied, else this document's own (page labels unknown on the
+  // first pass; `buildDocument` lays the document out again with them).
+  const outline = content.outline
+    ?? (hasTocDirective(parsedBlocks) ? computeOutline(parsedBlocks, resolved, headingStart) : undefined);
+  const contentBlocks = expandTocDirectives(parsedBlocks, outline, resolved);
+  const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
 
   const headingTemplates: HeadingTemplates = {};
   for (const lvl of resolved.headings.levels) {
@@ -307,11 +331,11 @@ export function buildDocumentPass(
       headingTemplates[lvl.level as 1 | 2 | 3 | 4 | 5 | 6] = lvl.numberingTemplate;
     }
   }
-  const headingStart = continuation?.headings;
   const headingPrefixes = computeHeadingNumbers(
     contentBlocks,
     headingTemplates,
     headingStart ? [headingStart.h1, headingStart.h2, headingStart.h3, headingStart.h4, headingStart.h5, headingStart.h6] : undefined,
+    isNumbered,
   );
 
   // Resource numbering — computed up front (before the placement loop) so that
@@ -320,7 +344,7 @@ export function buildDocumentPass(
   // document.
   const resourceTypes: ResourceType[] = config?.resourceTypes ?? defaultResourceTypes();
   const resources: Resource[] = content.resources ?? [];
-  const headingContext = computeHeadingContext(contentBlocks, headingStart);
+  const headingContext = computeHeadingContext(contentBlocks, headingStart, isNumbered);
   const resourceNumbering: ResourceNumberingMap = computeResourceNumbering(
     contentBlocks,
     resourceTypes,
@@ -355,6 +379,9 @@ export function buildDocumentPass(
   const calloutPlan = planCallouts(contentBlocks);
   // `:::part` ranges: start/end marker indices and the enclosed blocks.
   const partPlan = planParts(contentBlocks);
+  // Styled sections (`{style="…"}` headings): geometry, running heads and
+  // body typography per content-block index.
+  const sectionPlan = planHeadingSections(contentBlocks, resolved);
 
   // --- Float planning (issue #49 — resources float to page bands) ----------
   // A resource is incorporated by its first reference (an inline `:ref` or a
@@ -1024,7 +1051,7 @@ export function buildDocumentPass(
       const before = floatsPlaced;
       const startPageIndex = cursor.pageIndex;
       do {
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
       } while (cursor.pageIndex === startPageIndex);
       if (floatsPlaced === before) break; // safety: no progress
     }
@@ -1033,6 +1060,7 @@ export function buildDocumentPass(
   // Everything per-block measurement needs that is constant for this pass.
   const measureCtx: BlockMeasureContext = {
     resolved,
+    headingLevels,
     bodyStyle,
     blockquoteStyle,
     headingPrefixes,
@@ -1057,6 +1085,56 @@ export function buildDocumentPass(
 
   // Placement cursor
   const cursor: PlacementCursor = { pageIndex: 0, columnIndex: 0 };
+
+  // Blocks inside a styled section with a body style measure with it.
+  const sectionMeasureCtxs = new Map<ResolvedHeadingStyleConfig, BlockMeasureContext>();
+  const sectionMeasureCtx = (style: ResolvedHeadingStyleConfig | undefined): BlockMeasureContext => {
+    if (!style?.bodyStyle) return measureCtx;
+    let ctx = sectionMeasureCtxs.get(style);
+    if (!ctx) {
+      ctx = deriveSectionMeasureContext(measureCtx, style);
+      sectionMeasureCtxs.set(style, ctx);
+    }
+    return ctx;
+  };
+  /** The styled section whose geometry the pages opened from now on take. */
+  let currentSection: ResolvedHeadingStyleConfig | undefined;
+  const enterSection = (style: ResolvedHeadingStyleConfig | undefined): void => {
+    currentSection = style;
+    geomResolved = style ? deriveSectionGeometryConfig(resolved, style) : resolved;
+    contentArea = geomResolved === resolved ? pageMetrics.contentArea : computePageMetrics(geomResolved).contentArea;
+    // A page still empty takes the geometry right away — the document (or
+    // a chapter laid out on its own) opening with a styled heading.
+    const page = doc.pages[cursor.pageIndex];
+    if (
+      page && !page.partInfo && cursor.columnIndex === 0
+      && !pageHasContent(page) && !(page.floats && page.floats.length > 0)
+    ) {
+      const fresh = createPageWithColumns(page.index, geomResolved, contentArea, pageWidthPx, pageHeightPx, pageIndexOffset);
+      if (page.blankForParity) fresh.blankForParity = true;
+      if (page.blankForForce) fresh.blankForForce = true;
+      doc.pages[cursor.pageIndex] = fresh;
+    }
+  };
+  /** Heading-style and contents-row stamps a placed block carries for the
+   *  running heads (`computeSectionStyles`) and the contents' part rows. */
+  const stampBlockExtras = (blk: VDTBlock, raw: ContentBlock): void => {
+    if (raw.type === 'heading') {
+      const style = headingStyleOf(raw, resolved);
+      if (style) {
+        blk.headingStyleId = style.id;
+        if (!style.numbered) blk.unnumbered = true;
+      }
+    }
+    if (raw.toc?.kind === 'part') {
+      blk.tocPart = {
+        number: raw.toc.number,
+        title: raw.toc.title ?? '',
+        pageLabel: raw.toc.pageLabel ?? '',
+        ...(raw.toc.palette ? { palette: raw.toc.palette } : {}),
+      };
+    }
+  };
 
   let blockIdCounter = 0;
   let pendingSpacing = 0;
@@ -1214,11 +1292,11 @@ export function buildDocumentPass(
     if (curPage.partInfo && !pageHasContent(curPage)) {
       const startPageIndex = cursor.pageIndex;
       do {
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
       } while (cursor.pageIndex === startPageIndex);
       return;
     }
-    advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+    advanceToNextPageBoundary(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
   };
 
   // Page-numbering segments. The implicit first segment comes from
@@ -1238,18 +1316,25 @@ export function buildDocumentPass(
   let lastSeenPageIndex = 0;
 
   /** Commits any pending `:::numbering` change once we've crossed into a
-   *  new page. Called after every block iteration. */
+   *  new page — or while the current page is still empty: the directive at
+   *  the head of a chapter (or right after a page break) numbers the page
+   *  it opens, not the one after. Called after every block iteration. */
   const flushPendingNumberingAtBoundary = (): void => {
-    if (cursor.pageIndex > lastSeenPageIndex) {
-      if (pendingNumberingChange) {
+    if (pendingNumberingChange) {
+      const page = doc.pages[cursor.pageIndex]!;
+      const pageStillEmpty = !pageHasContent(page) && !(page.floats && page.floats.length > 0);
+      if (cursor.pageIndex > lastSeenPageIndex || pageStillEmpty) {
+        // A change already recorded for this page is replaced.
+        const last = pageNumberSegments[pageNumberSegments.length - 1]!;
+        if (last.startPageIndex === cursor.pageIndex && pageNumberSegments.length > 1) pageNumberSegments.pop();
         pageNumberSegments.push({
           startPageIndex: cursor.pageIndex,
           ...pendingNumberingChange,
         });
         pendingNumberingChange = null;
       }
-      lastSeenPageIndex = cursor.pageIndex;
     }
+    if (cursor.pageIndex > lastSeenPageIndex) lastSeenPageIndex = cursor.pageIndex;
   };
 
   /** Heading blocks that are not part of a callout — the only ones the
@@ -1776,7 +1861,7 @@ export function buildDocumentPass(
         frameId = `block-${blockIdCounter++}`;
         const startPageIndex = cursor.pageIndex;
         do {
-          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
         } while (cursor.pageIndex === startPageIndex);
         forceHere = true;
         continue;
@@ -1850,7 +1935,7 @@ export function buildDocumentPass(
         pendingSpacing = 0;
         const startPageIndex = cursor.pageIndex;
         do {
-          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
         } while (cursor.pageIndex === startPageIndex);
         page = doc.pages[cursor.pageIndex]!;
       }
@@ -1878,7 +1963,7 @@ export function buildDocumentPass(
         continue;
       }
       if (b.type === 'heading' && b.level) {
-        const level = headingLevelByNumber.get(b.level);
+        const level = headingLevels.forBlock(b);
         return level?.breakBefore?.enabled === true || level?.span === 'page';
       }
       return false;
@@ -1992,7 +2077,7 @@ export function buildDocumentPass(
       pendingSpacing = 0;
       const startPageIndex = cursor.pageIndex;
       do {
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
       } while (cursor.pageIndex === startPageIndex);
       page = doc.pages[cursor.pageIndex]!;
       fit = attempt(page, false) ?? attempt(page, true)!;
@@ -2130,10 +2215,10 @@ export function buildDocumentPass(
           pendingSpacing = 0;
           if (part === 0 && resolved.headings.keepWithNext && run > 0 && run < curCol.blocks.length) {
             const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+            advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             return (rolledBack[0]!.contentIndex ?? startIdx - rolledBack.length) - 1;
           }
-          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
           // Try the next column afresh: it may be short too (a float band
           // reserved on the page it opened), or of another width (oneAndHalf).
           continue;
@@ -2167,7 +2252,7 @@ export function buildDocumentPass(
       }
       enterBand(startIdx, 0);
       placeAtomicBlock(
-        placed.frame, placed.totalHeight, spacingBefore, cursor, doc, resolved,
+        placed.frame, placed.totalHeight, spacingBefore, cursor, doc, geomResolved,
         contentArea, pageWidthPx, pageHeightPx,
       );
       enterBand(startIdx, 0);
@@ -2187,7 +2272,7 @@ export function buildDocumentPass(
       from = to;
       part++;
       frameId = `block-${blockIdCounter++}`;
-      advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+      advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
     }
   };
 
@@ -2195,6 +2280,11 @@ export function buildDocumentPass(
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
     options?.onProgress?.({ pass: 1, blocks: blockIdx, totalBlocks: contentBlocks.length, pages: doc.pages.length });
     const rawBlock = contentBlocks[blockIdx]!;
+
+    // The styled section this block sits in: its geometry applies to the
+    // pages opened from here (a heading with `breakBefore` opens one).
+    const blockSection = sectionPlan.byBlock[blockIdx];
+    if (blockSection !== currentSection) enterSection(blockSection);
 
     // Floats whose reference landed in an earlier iteration take the first
     // free slot of the current page now — after their reference in reading
@@ -2211,7 +2301,7 @@ export function buildDocumentPass(
       if (name === 'pagebreak') {
         pendingSpacing = 0;
         markForcedBreak();
-        advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+        advanceToNextPageBoundary(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
         const parity = attrs.parity;
         if (
           parity === 'odd'
@@ -2219,7 +2309,7 @@ export function buildDocumentPass(
           || parity === 'always-odd'
           || parity === 'always-even'
         ) {
-          enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, parity);
+          enforcePageParity(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, parity);
         }
         // Pending floats land on the page that follows the break — after
         // parity padding, so a blank parity page never carries a float.
@@ -2236,7 +2326,7 @@ export function buildDocumentPass(
           col.forcedBreak = true;
           const page = doc.pages[cursor.pageIndex]!;
           if (cursor.columnIndex === page.columns.length - 1) markForcedBreak();
-          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
           flushPendingNumberingAtBoundary();
         }
       } else if (name === 'numbering') {
@@ -2271,7 +2361,7 @@ export function buildDocumentPass(
         pendingSpacing = 0;
         closeFlowSegment(blockIdx);
         leaveCurrentPage();
-        enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, resolved.parts.breakBefore.parity);
+        enforcePageParity(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, resolved.parts.breakBefore.parity);
         cursor.columnIndex = 0;
         // Map the opener's title back to the `title="…"` attribute of the
         // fence so the editor can place the cursor from a click on the band.
@@ -2307,7 +2397,7 @@ export function buildDocumentPass(
       pendingSpacing = 0;
       closeFlowSegment(blockIdx);
       leaveCurrentPage();
-      enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, parity);
+      enforcePageParity(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, parity);
       flushPendingNumberingAtBoundary();
     }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
@@ -2356,14 +2446,14 @@ export function buildDocumentPass(
 
     // --- Heading `breakBefore` ----------------------------------------
     if (rawBlock.type === 'heading' && rawBlock.level) {
-      const level = headingLevelByNumber.get(rawBlock.level);
+      const level = headingLevels.forBlock(rawBlock);
       const bb = level?.breakBefore;
       if (bb && bb.enabled) {
         pendingSpacing = 0;
         closeFlowSegment(blockIdx);
-        advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+        advanceToNextPageBoundary(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
         if (bb.parity !== 'any') {
-          enforcePageParity(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, bb.parity);
+          enforcePageParity(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, bb.parity);
         }
         flushPendingNumberingAtBoundary();
       }
@@ -2374,7 +2464,7 @@ export function buildDocumentPass(
       if (level?.span === 'page') {
         pendingSpacing = 0;
         closeFlowSegment(blockIdx);
-        advanceToNextPageBoundary(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
+        advanceToNextPageBoundary(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
         cursor.columnIndex = 0;
         flushPendingNumberingAtBoundary();
       }
@@ -2394,7 +2484,7 @@ export function buildDocumentPass(
     // Measure against the current column width. `null` means there is nothing
     // to place inline (empty text, unknown resource id, floated resource).
     const col = currentColumn(doc, cursor);
-    const blockMeasureCtx = partPlan.byBlock[blockIdx] ? partMeasureCtx : measureCtx;
+    const blockMeasureCtx = partPlan.byBlock[blockIdx] ? partMeasureCtx : sectionMeasureCtx(sectionPlan.byBlock[blockIdx]);
     const styleOverride = paragraphContainer
       ? (isContainerTail ? paragraphContainer.tailStyle : paragraphContainer.style)
       : undefined;
@@ -2428,6 +2518,7 @@ export function buildDocumentPass(
       const groupHeight = measured.totalHeight;
       const blk = createVDTBlock(id, 'resource', style.fontString, style.color, style.textAlign);
       blk.contentIndex = blockIdx;
+      stampBlockExtras(blk, rawBlock);
       blk.resourceBlock = resourceBlock;
       blk.dirty = false;
       blk.snappedToGrid = false;
@@ -2446,7 +2537,7 @@ export function buildDocumentPass(
       const spacingBefore = pendingSpacing;
       enterBand(blockIdx, 0);
       placeAtomicBlock(
-        blk, groupHeight, spacingBefore, cursor, doc, resolved,
+        blk, groupHeight, spacingBefore, cursor, doc, geomResolved,
         contentArea, pageWidthPx, pageHeightPx,
       );
       enterBand(blockIdx, 0);
@@ -2614,7 +2705,7 @@ export function buildDocumentPass(
       // subsequent marginBottom + grid snap) starts from there.
       let effectiveRemainHeight = totalRemainHeight;
       if (vdtType === 'heading' && headingLevel !== undefined && partIndex === 0) {
-        const lvl = headingLevelByNumber.get(headingLevel);
+        const lvl = headingLevels.forBlock(rawBlock);
         if (lvl) {
           const full = remainingLines
             .map((ln) => (ln.segments ?? []).map((s) => s.text).join(''))
@@ -2681,6 +2772,7 @@ export function buildDocumentPass(
             applyStyleAttrs(blk, style);
             if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
             blk.contentIndex = blockIdx;
+            stampBlockExtras(blk, rawBlock);
             blk.headingLevel = headingLevel;
             if (numberPrefix) blk.numberPrefix = numberPrefix;
             blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
@@ -2695,7 +2787,7 @@ export function buildDocumentPass(
             remainingLines = remainingLines.slice(splitAt);
             partIndex++;
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+            advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             continue;
           }
           // Can't cleanly split the colon line off — would create a widow.
@@ -2724,12 +2816,12 @@ export function buildDocumentPass(
             // rolled-back heading (marker blocks in between are replayed).
             blockIdx = (popped[0]!.contentIndex ?? blockIdx - headingRunCount) - 1;
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+            advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             break;
           }
           if (headingRunCount === 0) {
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+            advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             continue;
           }
           // headingRunCount === curCol.blocks.length: fall through to place.
@@ -2789,11 +2881,11 @@ export function buildDocumentPass(
               // rolled-back heading (marker blocks in between are replayed).
               blockIdx = (rolledBack[0]!.contentIndex ?? blockIdx - rolledBack.length) - 1;
               pendingSpacing = 0;
-              advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+              advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
               break;
             }
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+            advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             continue;
           }
         }
@@ -2808,6 +2900,7 @@ export function buildDocumentPass(
         applyStyleAttrs(blk, style);
             if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
         blk.contentIndex = blockIdx;
+        stampBlockExtras(blk, rawBlock);
         if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrSources) {
@@ -2870,7 +2963,7 @@ export function buildDocumentPass(
         // other column on this page so body text under the opener band
         // starts below it in ALL columns, not just the one it was placed in.
         if (vdtType === 'heading' && headingLevel !== undefined) {
-          const lvl = headingLevelByNumber.get(headingLevel);
+          const lvl = headingLevels.forBlock(rawBlock);
           if (lvl?.span === 'page') {
             const page = doc.pages[cursor.pageIndex]!;
             for (const otherCol of page.columns) {
@@ -2930,6 +3023,7 @@ export function buildDocumentPass(
           applyStyleAttrs(blk, style);
             if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
           blk.contentIndex = blockIdx;
+          stampBlockExtras(blk, rawBlock);
           if (partIndex === 0) { blk.headingLevel = headingLevel; if (numberPrefix) blk.numberPrefix = numberPrefix; }
           blk.lines = resetLinePositions(splitLines, style.lineHeightPx);
           blk.dirty = false;
@@ -2949,7 +3043,7 @@ export function buildDocumentPass(
           remainingLines = remainingLines.slice(choice.splitAt);
           partIndex++;
           pendingSpacing = 0;
-          advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
           continue;
         }
         // choice.splitAt === 0: fall through to push whole paragraph to next column
@@ -2974,12 +3068,12 @@ export function buildDocumentPass(
           if (rolledBack.length > 0) {
             blockIdx = (rolledBack[0]!.contentIndex ?? blockIdx - rolledBack.length) - 1;
             pendingSpacing = 0;
-            advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+            advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
             break;
           }
         }
         pendingSpacing = 0;
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
         continue;
       }
 
@@ -2988,7 +3082,7 @@ export function buildDocumentPass(
       // go here — move on. The next column, or a fresh page, has room.
       if (curCol.availableHeight < style.lineHeightPx - 0.01 && totalRemainHeight > curCol.availableHeight + 0.01) {
         pendingSpacing = 0;
-        advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
         continue;
       }
 
@@ -2998,6 +3092,7 @@ export function buildDocumentPass(
       applyStyleAttrs(blk, style);
             if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
       blk.contentIndex = blockIdx;
+      stampBlockExtras(blk, rawBlock);
       if (partIndex === 0) blk.headingLevel = headingLevel;
       if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrs) blk.attrs = rawBlock.attrs;
         if (partIndex === 0 && vdtType === 'heading' && rawBlock.attrSources) {
@@ -3049,7 +3144,7 @@ export function buildDocumentPass(
     page.pageNumberFormat = info.format;
   }
 
-  buildHeadersAndFooters(doc);
+  buildHeadersAndFooters(doc, resourceById);
 
   doc.converged = true;
   doc.iterationCount = 1;
@@ -3057,7 +3152,39 @@ export function buildDocumentPass(
   return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome };
 }
 
+/** Passes a document printing its own contents gets at most, beyond the
+ *  first, for the page labels it prints to settle. */
+const MAX_TOC_ROUNDS = 3;
+
 export function buildDocument(
+  content: PostextContent,
+  config?: PostextConfig,
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
+): VDTDocument {
+  // A document printing its own table of contents (`:::toc` with no
+  // host-supplied outline) is laid out with the page labels of the previous
+  // build until they no longer change: the contents' own length moves what
+  // follows, and a numbering restart after the front matter usually settles
+  // it in one extra round.
+  if (content.outline === undefined) {
+    const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content);
+    if (hasTocDirective(parsed)) {
+      let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);
+      let doc = buildDocumentBalanced({ ...content, outline }, config, cache, options);
+      for (let round = 0; round < MAX_TOC_ROUNDS; round++) {
+        const after = outlineFromDoc(doc, outline);
+        if (sameOutline(after, outline)) break;
+        outline = after;
+        doc = buildDocumentBalanced({ ...content, outline }, config, cache, options);
+      }
+      return doc;
+    }
+  }
+  return buildDocumentBalanced(content, config, cache, options);
+}
+
+function buildDocumentBalanced(
   content: PostextContent,
   config?: PostextConfig,
   cache?: MeasurementCache,

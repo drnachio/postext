@@ -5,18 +5,22 @@
 // preceding chapter, recorded as a `ChapterLayout`). Page numbers thus run
 // on across chapters without ever laying out the whole book in a preview.
 
-import { continuationAfter, resolvePageConfig } from 'postext';
-import type { LayoutContinuation, NumeralStyle, PostextConfig, Resource, VDTDocument } from 'postext';
+import { contentOutline, continuationAfter, outlineFromDoc, outlineKey, resolvePageConfig } from 'postext';
+import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
 import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPlan } from './types';
 
 interface CountersEntry {
   markdown: string;
-  resourceTypes: PostextConfig['resourceTypes'];
+  config: PostextConfig;
   resources: Resource[];
   before: LayoutContinuation | undefined;
   after: LayoutContinuation;
   /** Fingerprint of `after`'s counters. */
   key: string;
+  /** The chapter's outline from its text alone (no page labels). */
+  outline: OutlineEntry[];
+  /** Whether the chapter prints the contents (`:::toc`). */
+  hasToc: boolean;
 }
 
 export interface BookPlanner {
@@ -49,12 +53,16 @@ export function chapterLayoutIsCurrent(
   config: PostextConfig,
   resources: Resource[],
   continuationKey: string,
+  /** The book outline the chapter must have been laid out with (a chapter
+   *  printing the contents); not checked when omitted. */
+  outlineKeyOf?: string,
 ): layout is ChapterLayout {
   return !!layout
     && layout.markdown === chapter.markdown
     && layout.config === config
     && layout.resources === resources
-    && layout.continuationKey === continuationKey;
+    && layout.continuationKey === continuationKey
+    && (outlineKeyOf === undefined || layout.outlineKey === outlineKeyOf);
 }
 
 /** Whether two plans of a chapter hand the engine the same inputs — the
@@ -71,6 +79,7 @@ export function sameLayoutInputs(a: ChapterPlan, b: ChapterPlan): boolean {
     || a.index !== b.index
     || a.paginated !== b.paginated
     || a.continuationKey !== b.continuationKey
+    || a.outlineKey !== b.outlineKey
   ) return false;
   const ca = a.continuation;
   const cb = b.continuation;
@@ -94,7 +103,9 @@ export function sameChapterLayout(a: ChapterLayout | undefined, b: ChapterLayout
     && a.pageCount === b.pageCount
     && a.leadingBlankPages === b.leadingBlankPages
     && a.lastPageDelta === b.lastPageDelta
-    && a.lastPageFormat === b.lastPageFormat;
+    && a.lastPageFormat === b.lastPageFormat
+    && a.outlineKey === b.outlineKey
+    && outlineKey(a.outline) === outlineKey(b.outline);
 }
 
 /** A planner keeps the per-chapter counter chain cached, so a keystroke in
@@ -113,18 +124,21 @@ export function createBookPlanner(): BookPlanner {
     if (
       hit
       && hit.markdown === chapter.markdown
-      && hit.resourceTypes === config.resourceTypes
+      && hit.config === config
       && hit.resources === resources
       && hit.before === before
     ) return hit;
     const after = continuationAfter({ markdown: chapter.markdown, resources }, config, before);
+    const { outline, hasToc } = contentOutline({ markdown: chapter.markdown }, config, before);
     const entry: CountersEntry = {
       markdown: chapter.markdown,
-      resourceTypes: config.resourceTypes,
+      config,
       resources,
       before,
       after,
       key: countersKey(after),
+      outline,
+      hasToc,
     };
     cache.set(chapter.id, entry);
     return entry;
@@ -143,6 +157,36 @@ export function createBookPlanner(): BookPlanner {
       // Pages before the chapter being planned; null once unknown.
       let pages: { physical: number; number: number; format: NumeralStyle } | null = { physical: 0, number: numbering.startAt, format: numbering.format };
 
+      // The book's outline: every chapter's headings and parts, with the
+      // page labels of the chapters whose layout is current — a chapter
+      // printing the contents (`:::toc`) is laid out with it and again
+      // whenever it changes. Assembled first, over the counter chain, so
+      // the chapter with the contents (usually the front matter, before
+      // every other chapter) sees the whole book.
+      const entries: CountersEntry[] = [];
+      {
+        let before: LayoutContinuation | undefined;
+        for (const chapter of chapters) {
+          const entry = countersAfter(chapter, config, resources, before);
+          entries.push(entry);
+          before = entry.after;
+        }
+      }
+      const anyToc = entries.some((e) => e.hasToc);
+      const bookOutline: OutlineEntry[] = anyToc
+        ? chapters.flatMap((chapter, index) => {
+          const stored = layouts[chapter.id];
+          const entry = entries[index]!;
+          // A record built from the chapter's current text carries the
+          // page labels; its outline is preferred whenever its titles
+          // match the text (the page chain may still move it).
+          return stored && stored.markdown === chapter.markdown && stored.config === config && stored.outline.length === entry.outline.length
+            ? stored.outline
+            : entry.outline;
+        })
+        : [];
+      const bookOutlineKey = anyToc ? outlineKey(bookOutline) : '';
+
       chapters.forEach((chapter, index) => {
         const first = index === 0;
         const paginated = pages !== null;
@@ -157,9 +201,15 @@ export function createBookPlanner(): BookPlanner {
           : pages
             ? `${countersFingerprint}|${pages.physical % 2}|${pages.format}`
             : `${countersFingerprint}|?`;
+        const hasToc = entries[index]!.hasToc;
+        const chapterOutlineKey = hasToc ? bookOutlineKey : '';
         const stored = layouts[chapter.id];
-        const layout = paginated && chapterLayoutIsCurrent(stored, chapter, config, resources, continuationKey) ? stored : null;
-        const plan: ChapterPlan = { chapterId: chapter.id, index, continuation, paginated, continuationKey, layout };
+        const layout = paginated && chapterLayoutIsCurrent(stored, chapter, config, resources, continuationKey, chapterOutlineKey) ? stored : null;
+        const plan: ChapterPlan = {
+          chapterId: chapter.id, index, continuation, paginated, continuationKey, layout,
+          ...(hasToc ? { outline: bookOutline } : {}),
+          outlineKey: chapterOutlineKey,
+        };
         plans.push(plan);
         byId[chapter.id] = plan;
 
@@ -179,7 +229,7 @@ export function createBookPlanner(): BookPlanner {
           pages = null;
         }
 
-        const entry = countersAfter(chapter, config, resources, counters);
+        const entry = entries[index]!;
         counters = entry.after;
         countersFingerprint = entry.key;
       });
@@ -222,5 +272,7 @@ export function chapterLayoutFromDoc(
     leadingBlankPages,
     lastPageDelta: lastPage.pageNumberValue - firstPage.pageNumberValue,
     lastPageFormat: lastPage.pageNumberFormat,
+    outline: outlineFromDoc(doc, contentOutline({ markdown: inputs.markdown }, inputs.config, plan.continuation).outline),
+    outlineKey: plan.outlineKey,
   };
 }

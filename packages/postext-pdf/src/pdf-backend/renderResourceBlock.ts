@@ -248,6 +248,13 @@ function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { 
       for (const b of overlay.blocks) if (b.kind === 'image') note(b.fileId, b.bbox.width, b.bbox.height);
     }
   }
+  // Image elements of the page design slots (a logo on a title page).
+  for (const page of doc.pages) {
+    for (const slot of [page.header, page.footer, page.openerBand]) {
+      if (!slot) continue;
+      for (const b of slot.blocks) if (b.kind === 'image') note(b.fileId, b.bbox.width, b.bbox.height);
+    }
+  }
   return out;
 }
 

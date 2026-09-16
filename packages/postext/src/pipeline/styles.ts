@@ -49,10 +49,13 @@ export function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
 export function resolveHeadingStyle(
   level: number,
   resolved: ResolvedConfig,
+  /** The level config to use — a heading style's merged level (see
+   *  `headingLevelFor`) — instead of the plain level lookup. */
+  levelConfig?: ResolvedHeadingLevelConfig,
 ): BlockStyle {
   const dpi = resolved.page.dpi;
-  const headingConfig: ResolvedHeadingLevelConfig =
-    resolved.headings.levels.find((l) => l.level === level) ?? resolved.headings.levels[0]!;
+  const headingConfig: ResolvedHeadingLevelConfig = levelConfig
+    ?? resolved.headings.levels.find((l) => l.level === level) ?? resolved.headings.levels[0]!;
 
   const fontSizePx = dimensionToPx(headingConfig.fontSize, dpi);
   const lineHeightDim = headingConfig.lineHeight;
@@ -157,7 +160,7 @@ export function resolveParagraphStyle(
     fontSizePx,
     lineHeightPx,
     color: style.color.hex,
-    boldColor: body.boldColor?.hex,
+    boldColor: style.boldColor?.hex ?? body.boldColor?.hex,
     italicColor: body.italicColor?.hex,
     referenceColor: body.referenceColor.hex,
     referenceBold: body.referenceBold,

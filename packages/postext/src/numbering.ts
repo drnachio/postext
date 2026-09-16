@@ -296,6 +296,10 @@ export function computeHeadingNumbers(
   blocks: ContentBlock[],
   templates: HeadingTemplates,
   start?: HeadingCounterStart,
+  /** Whether a heading block advances its counter; an unnumbered heading
+   *  (a style with `numbered: false`) gets no prefix and counts for nothing.
+   *  Every heading is numbered when omitted. */
+  isNumbered: (block: ContentBlock) => boolean = () => true,
 ): Array<string | undefined> {
   const counters = [0, 0, 0, 0, 0, 0, 0];
   if (start) for (let lvl = 1; lvl <= 6; lvl++) counters[lvl] = start[lvl - 1] ?? 0;
@@ -308,6 +312,7 @@ export function computeHeadingNumbers(
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!;
     if (b.type !== 'heading' || !b.level) continue;
+    if (!isNumbered(b)) continue;
     const lvl = b.level;
     counters[lvl] = (counters[lvl] ?? 0) + 1;
     for (let k = lvl + 1; k <= 6; k++) counters[k] = 0;

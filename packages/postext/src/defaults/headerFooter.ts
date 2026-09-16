@@ -3,6 +3,7 @@ import type {
   Dimension,
   DesignBoxElement,
   DesignElement,
+  DesignImageElement,
   DesignRuleElement,
   DesignSlot,
   DesignTextElement,
@@ -11,6 +12,7 @@ import type {
   LegacyHeaderFooterTextElement,
   ResolvedDesignBoxElement,
   ResolvedDesignElement,
+  ResolvedDesignImageElement,
   ResolvedDesignRuleElement,
   ResolvedDesignSlot,
   ResolvedDesignTextElement,
@@ -326,6 +328,7 @@ function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignT
     letterSpacing: el.letterSpacing,
     overflow: el.overflow ?? DEFAULT_TEXT_ELEMENT.overflow,
     hyphenate: el.hyphenate,
+    ...(el.textTransform ? { textTransform: el.textTransform } : {}),
     box: el.box,
   };
 }
@@ -362,9 +365,25 @@ function resolveBoxElement(el: DesignBoxElement, idx: number): ResolvedDesignBox
   };
 }
 
+function resolveImageElement(el: DesignImageElement, idx: number): ResolvedDesignImageElement {
+  return {
+    kind: 'image',
+    id: el.id ?? `image-${idx + 1}`,
+    parity: el.parity ?? 'all',
+    pages: el.pages ?? 'all',
+    placement: {
+      anchor: el.placement.anchor,
+      offset: el.placement.offset ?? {},
+      size: el.placement.size ?? { width: 'auto', height: 'auto' },
+    },
+    resourceId: el.resourceId,
+  };
+}
+
 function resolveElement(el: DesignElement, idx: number): ResolvedDesignElement {
   if (el.kind === 'text') return resolveTextElement(el, idx);
   if (el.kind === 'rule') return resolveRuleElement(el, idx);
+  if (el.kind === 'image') return resolveImageElement(el, idx);
   return resolveBoxElement(el, idx);
 }
 

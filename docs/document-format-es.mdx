@@ -109,6 +109,14 @@ Una línea de encabezado puede terminar con un bloque de atributos entre llaves 
 
 Las llaves y su contenido se eliminan del texto del encabezado (el título anterior se renderiza como *El largo camino*) y se guardan en el encabezado como `attrs`. Se exponen a las ranuras de diseño como marcadores `{attr.<clave>}`: en la ranura de diseño avanzado del propio encabezado, y en los encabezados y pies de página, donde se resuelven a partir del H1 del capítulo actual. Solo se reconoce un bloque equilibrado y sin llaves anidadas al final de la línea; un `{}` suelto o una llave sin cerrar permanece en el texto. Ver **Configuración → Encabezados y pies**.
 
+Dos atributos tienen significado propio. `style="<id>"` aplica al encabezado un [estilo de encabezado](/es/docs/configuration#estilos-de-encabezado) con nombre — un prólogo o una lista de autores con su propio diseño de apertura, sus cabeceras, su geometría de página y su tipografía de cuerpo, y sin número de capítulo cuando el estilo declara `numbered: false`. `toc="false"` (o `"true"`) decide si el encabezado aparece en `:::toc`:
+
+```markdown
+# Prólogo {style="preliminar"}
+
+# Índice {style="preliminar" toc="false"}
+```
+
 ## Directivas
 
 Las directivas son etiquetas de control de una sola línea escritas como `:::nombre` o `:::nombre{atributos}` en su propia línea. No producen salida visible — controlan el pipeline de colocación y numeración.
@@ -149,12 +157,16 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
       <td><code>:::columnbreak</code></td>
       <td>Termina aquí la columna actual: el siguiente bloque comienza en la siguiente columna de la misma página (o en una página nueva cuando la directiva cae en la última columna). No hace nada en una columna vacía, así que nunca genera una columna o página en blanco. La columna que termina conserva su hueco inferior — el equilibrado de columnas no la estira.</td>
     </tr>
+    <tr>
+      <td><code>:::toc</code></td>
+      <td>Imprime aquí el índice de contenidos: una entrada por encabezado de los niveles indicados (título, número, número de página y, opcionalmente, los autores del capítulo) y una fila por separador de parte, compuestas según la configuración <code>toc</code>. Las entradas siguen al documento — renombra, mueve o renumera un capítulo y el índice le sigue.</td>
+    </tr>
   </tbody>
 </table>
 
 Los valores de los atributos pueden ir entre comillas dobles (<code>"…"</code>), comillas simples (<code>'…'</code>) o sin comillas (<code>startAt=17</code>). Una clave sin `=` se trata como una bandera presente con valor vacío.
 
-Hoy solo se reconocen `pagebreak`, `numbering` y `columnbreak` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox.
+Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak` y `toc` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox.
 
 ### Contenedores
 
@@ -274,6 +286,18 @@ Las páginas del prefacio se etiquetan `i`, `ii`, `iii`, …; el primer capítul
 
 Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil para, por ejemplo, pasar de `lower-alpha` a `upper-alpha` sin reiniciar.
 
+
+### `:::toc`
+
+`:::toc` imprime el índice de contenidos en el punto donde está. Se expande en bloques ordinarios — uno por encabezado de los niveles que enumera `toc.levels` (el nivel 1 por defecto) y uno por `:::part` — de modo que el índice fluye por columnas y páginas como cualquier otro texto, y un clic sobre una entrada lleva a la línea de la directiva. Cada entrada muestra el número del encabezado (el resultado de su `numberingTemplate` o, en su defecto, el ordinal de capítulo), su título, una línea de puntos y la etiqueta de la página en que empieza y, si `toc.subtitle` está activado, una segunda línea con un atributo del encabezado, como los autores del capítulo (`{author="…"}`). Cada parte recibe una fila propia, diseñada por `toc.parts.design` y coloreada con la `palette` de la parte. Los encabezados cuyo estilo declara `numbered: false` aparecen sin número; `{toc="false"}` en un encabezado lo deja fuera (el propio encabezado del índice, normalmente).
+
+```md
+# Índice {style="preliminar" toc="false"}
+
+:::toc
+```
+
+Los números de página son los que el documento imprime realmente. Un documento compuesto por sí solo se vuelve a componer con las etiquetas de la pasada anterior hasta que dejan de moverse — con la numeración reiniciada tras los preliminares (la receta de `:::numbering` de más arriba) basta una pasada adicional. Un capítulo compuesto por separado (las vistas previas del sandbox) recibe en su lugar el esquema del libro entero desde su anfitrión. Ver [Índice de contenidos](/es/docs/configuration#índice-de-contenidos) en la referencia de configuración.
 
 ### Saltos de línea en los títulos
 

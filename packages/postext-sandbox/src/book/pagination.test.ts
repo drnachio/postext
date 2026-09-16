@@ -28,6 +28,8 @@ function layoutFor(plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount
     leadingBlankPages: 0,
     lastPageDelta: over.pageCount - 1,
     lastPageFormat: 'decimal',
+    outline: [],
+    outlineKey: '',
     ...over,
   };
 }
@@ -129,7 +131,7 @@ describe('chapterLayoutFromDoc', () => {
     pages: pages.map((p, index) => ({ index, pageNumberValue: p.value, pageNumberFormat: p.format ?? 'decimal' })),
     blocks: blockPages.map((pageIndex) => ({ pageIndex })),
   } as unknown as VDTDocument);
-  const plan = (paginated: boolean): ChapterPlan => ({ chapterId: 'b', index: 1, continuation: undefined, paginated, continuationKey: 'k', layout: null });
+  const plan = (paginated: boolean): ChapterPlan => ({ chapterId: 'b', index: 1, continuation: undefined, paginated, continuationKey: 'k', outlineKey: '', layout: null });
   const inputs = { markdown: '# B', config, resources };
 
   it('records page count, leading blanks and how the numbering ends', () => {

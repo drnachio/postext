@@ -47,6 +47,8 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Estilos de párrafo](#estilos-de-párrafo) — estilos con nombre para contenedores `:::paragraphs`: bibliografías, glosarios, notas.
 - [Estilos de aviso](#estilos-de-aviso) — notas, consejos y objetivos en caja para contenedores `:::callout`.
 - [Partes](#partes) — páginas separadoras de parte para contenedores `:::part`: paridad, área de cuerpo, diseño de apertura, tipografía del cuerpo.
+- [Estilos de encabezado](#estilos-de-encabezado) — estilos con nombre para encabezados `{style="…"}`: capítulos sin numerar, preliminares con sus propias cabeceras, geometría y paleta.
+- [Índice de contenidos](#índice-de-contenidos) — lo que imprime `:::toc`: tipografía de las entradas, líneas de puntos, números de página, líneas de autores, filas de parte.
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
 - [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
@@ -672,6 +674,56 @@ Los elementos de caja pintan un rectángulo redondeado dentro del bloque — út
     </tr>
   </tbody>
 </table>
+
+### Elementos de imagen
+
+Un elemento `image` dibuja un recurso de mapa de bits o SVG del documento — el logotipo de la editorial en la portada, una marca en una cabecera. Su tamaño lo fija `placement.size`: si uno de los lados `width` / `height` queda en `'auto'` (el valor por defecto), el otro sigue la proporción de la imagen; con ambos fijados, la imagen se ajusta dentro de la caja, centrada. Un recurso inexistente o que no sea una imagen no dibuja nada.
+
+```ts
+{
+  kind: 'image', id: 'logo', resourceId: 'logo-editorial',
+  placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 64, unit: 'mm' }, y: { value: 233, unit: 'mm' } }, size: { width: { value: 83, unit: 'mm' }, height: 'auto' } },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identificador estable; otros elementos pueden anclarse a él como <code>#id</code>.</td>
+    </tr>
+    <tr>
+      <td><code>resourceId</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Id de un <code>Resource</code> de mapa de bits o SVG del documento.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>—</td>
+      <td>Anclaje, desplazamiento y tamaño (ver <a href="#posicionamiento-de-elementos">Posicionamiento de elementos</a>). Un lado <code>'fill'</code> llega hasta el borde del contenedor.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code>, <code>pages</code></td>
+      <td>como arriba</td>
+      <td><code>'all'</code></td>
+      <td>En qué páginas aparece la imagen.</td>
+    </tr>
+  </tbody>
+</table>
+
+El backend PDF incrusta el recurso como una figura (un SVG con máster de impresión lo usa); el visor HTML lo resuelve mediante <code>resourceImageUrl</code>.
 
 ### Posicionamiento de elementos
 
@@ -2428,9 +2480,15 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
       <td>alineación del cuerpo</td>
-      <td>Alineación horizontal.</td>
+      <td>Alineación horizontal. <code>'center'</code> y <code>'right'</code> dejan cada línea en bandera por el otro lado — una dedicatoria, una firma.</td>
+    </tr>
+    <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>bodyText.boldColor</code></td>
+      <td>Color de las negritas (una lista de autores con los nombres en el color de la casa).</td>
     </tr>
     <tr>
       <td><code>hyphenation</code></td>
@@ -2829,6 +2887,200 @@ const minimal = stripPartsDefaults(config.parts);
 // => undefined cuando solo quedan valores estáticos por defecto
 ```
 
+
+## Estilos de encabezado
+
+La propiedad `headingStyles` declara estilos con nombre que un documento aplica a un encabezado con `# Título {style="<id>"}`. Un estilo hace dos cosas. Sobrescribe la tipografía y el diseño del nivel del encabezado — cualquier campo de una entrada de nivel salvo `level` y `numberingTemplate` (fuente, cuerpo, color, `breakBefore`, `span`, `advancedDesign`, `textTransform`…) — y gobierna la **sección** que el encabezado abre: sus páginas, hasta el siguiente encabezado del mismo nivel o superior, toman las cabeceras, la geometría de página, la tipografía de cuerpo y la paleta del estilo. Así los preliminares de un libro (un prólogo a una sola columna ancha, con folios en romanos y bandas azules) conviven en un manual a dos columnas y numeración decimal sin una segunda configuración.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    {
+      id: 'preliminar',
+      numbered: false,
+      breakBefore: { enabled: true, parity: 'odd' },
+      span: 'page',
+      advancedDesign: { enabled: true, minHeight: { value: 52, unit: 'mm' }, slot: { elements: [/* bandas, `{titleText}` */] } },
+      header: { elements: [/* folio | filete | `{title}. {subtitle}` */] },
+      margins: { left: { value: 50, unit: 'mm' }, right: { value: 17, unit: 'mm' } },
+      layout: { layoutType: 'single' },
+      bodyStyle: { fontSize: { value: 10.5, unit: 'pt' }, textAlign: 'justify' },
+      palette: { band: '#547396' },
+    },
+  ],
+};
+```
+
+```md
+# Prólogo {style="preliminar"}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identificador al que se refiere <code>{'{style="…"}'}</code> en una línea de encabezado. Un id desconocido deja el encabezado tal cual.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nombre legible (solo para la interfaz del editor).</td>
+    </tr>
+    <tr>
+      <td><code>numbered</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si el encabezado cuenta: avanza el contador de su nivel (los números de <code>numberingTemplate</code>, el <code>{'{h1}'}</code> de la numeración de recursos), el ordinal de capítulo que hay tras <code>{'{chapterNumber}'}</code> y el número que imprime el índice. <code>false</code> para un prólogo, una lista de autores, un índice: el primer capítulo numerado que los sigue sigue siendo el capítulo 1, y <code>{'{chapterNumber}'}</code> queda vacío en sus páginas.</td>
+    </tr>
+    <tr>
+      <td><code>toc</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si <code>:::toc</code> lista el encabezado. Un encabezado lo sobrescribe con <code>{'{toc="false"}'}</code> / <code>{'{toc="true"}'}</code>.</td>
+    </tr>
+    <tr>
+      <td>campos de nivel</td>
+      <td>como en <code>headings.levels[]</code></td>
+      <td>los valores del nivel</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>: cada uno que se fije sustituye al valor del nivel para los encabezados de este estilo.</td>
+    </tr>
+    <tr>
+      <td><code>header</code>, <code>footer</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>los del documento</td>
+      <td>Cabeceras y pies de las páginas de la sección, en lugar de <code>header</code> / <code>footer</code> (los filtros <code>parity</code> y <code>pages</code> de los elementos siguen aplicándose). Una ranura vacía los elimina.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>márgenes de página</td>
+      <td>Área de cuerpo de las páginas de la sección; cada lado hereda el margen de página si no se fija, <code>mirror</code> incluido. Surte efecto en las páginas que la sección abre — combínalo con <code>breakBefore</code>.</td>
+    </tr>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>LayoutConfig</code></td>
+      <td><code>layout</code></td>
+      <td>Disposición de columnas de las páginas de la sección (<code>layoutType</code>, <code>gutterWidth</code>…): una sola columna ancha para un prólogo en un libro a dos columnas.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle</code></td>
+      <td><code>PartsBodyStyleConfig</code></td>
+      <td>hereda <code>bodyText</code></td>
+      <td>Tipografía de los párrafos, citas y listas de la sección — los mismos campos que <a href="#partes">parts.bodyStyle</a>.</td>
+    </tr>
+    <tr>
+      <td><code>palette</code></td>
+      <td><code>Record&lt;string, string&gt;</code></td>
+      <td><code>{'{}'}</code></td>
+      <td>Sustituciones de paleta (id → hex) aplicadas a toda ranura de diseño compuesta en las páginas de la sección, sobre las de la parte en curso — el mismo mecanismo que el atributo <code>palette</code> de una parte.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una sección se cierra en el siguiente encabezado del mismo nivel o superior: un `#` sin estilo tras uno con estilo vuelve a las cabeceras y la geometría del documento; uno con estilo abre su propia sección. Las páginas que la sección deja en blanco por paridad le pertenecen, como ocurre con los títulos de capítulo.
+
+```ts
+const resolved = resolveHeadingStylesConfig(config.headingStyles, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => sobrescrituras de nivel normalizadas, márgenes tomados de la página, bodyStyle del cuerpo
+
+const minimal = stripHeadingStylesDefaults(config.headingStyles);
+// => undefined cuando no queda ningún estilo
+```
+
+## Índice de contenidos
+
+La propiedad `toc` configura lo que imprime una directiva `:::toc` (ver [Formato del documento](/es/docs/document-format#toc)). El índice se ensambla a partir del **esquema** del documento — cada encabezado con su número y su etiqueta de página, cada `:::part` — de modo que sigue a los capítulos: renombra uno, muévelo a otra parte, cambia sus autores, y las entradas cambian con él. Una entrada es el número del encabezado en una columna propia, el título, una línea de puntos y la etiqueta de página en el borde derecho, y después una línea de subtítulo opcional; una parte es una fila diseñada por `parts.design`.
+
+```ts
+const config: PostextConfig = {
+  toc: {
+    levels: [{ level: 1, fontWeight: 700, color: { hex: '#00507b', model: 'hex' }, numberWidth: { value: 7.4, unit: 'mm' } }],
+    unnumbered: { color: { hex: '#000000', model: 'hex' } },
+    pageNumber: { fontWeight: 400, width: { value: 8, unit: 'mm' } },
+    leader: { char: '.', gap: { value: 1, unit: 'mm' } },
+    subtitle: { enabled: true, attr: 'author', italic: true, fontSize: { value: 8.5, unit: 'pt' } },
+    parts: {
+      height: { value: 23, unit: 'pt' },
+      marginTop: { value: 11.5, unit: 'pt' },
+      design: { elements: [/* una caja de banda, 'SECCIÓN {number}', '{titleText}', '{pageNumber}' */] },
+    },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>TocLevelConfig[]</code></td>
+      <td>nivel 1</td>
+      <td>Niveles de encabezado listados, cada uno con la tipografía de sus entradas: <code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code> (por defecto la interlínea del cuerpo, para que el índice caiga en la rejilla), <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>indent</code> (de toda la entrada), <code>numberWidth</code> / <code>numberGap</code> (la columna de números tras la que empieza el título; los números se alinean a la derecha en ella), <code>numberFontFamily</code>, <code>numberFontSize</code>, <code>numberFontWeight</code>, <code>numberColor</code>, <code>marginTop</code>, <code>marginBottom</code>. Los campos sin fijar heredan el texto de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>unnumbered</code></td>
+      <td><code>TocEntryStyleConfig</code></td>
+      <td>—</td>
+      <td>Sobrescrituras para los encabezados cuyo estilo declara <code>numbered: false</code> (un prólogo): no imprimen número y empiezan a ras en el <code>indent</code> del nivel.</td>
+    </tr>
+    <tr>
+      <td><code>pageNumber</code></td>
+      <td>objeto</td>
+      <td>fuente del nivel 1, peso del cuerpo</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code> de la etiqueta de página, y <code>width</code> (por defecto <code>2em</code>): la columna que se le reserva en el borde derecho, donde se alinea a la derecha.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>objeto</td>
+      <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
+      <td><code>char</code> se repite a lo largo del hueco entre el título y el número de página, alineado a la derecha para que los puntos de entradas consecutivas queden en línea (<code>'. '</code> los espacia); <code>gap</code> es el hueco mínimo entre el título y la línea de puntos. Un título que no dejara sitio a la etiqueta salta de línea un poco antes.</td>
+    </tr>
+    <tr>
+      <td><code>subtitle</code></td>
+      <td>objeto</td>
+      <td><code>{"{ enabled: false, attr: 'author' }"}</code></td>
+      <td>Una segunda línea bajo la entrada tomada de un atributo del encabezado (<code>attr</code>) — los autores del capítulo — con sus propios <code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code> (por defecto <code>true</code>), <code>color</code> e <code>indent</code> adicional. La línea comparte la interlínea de la entrada y nunca se separa de su título.</td>
+    </tr>
+    <tr>
+      <td><code>parts.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si los separadores de parte reciben una fila.</td>
+    </tr>
+    <tr>
+      <td><code>parts.design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>vacío</td>
+      <td>Diseño de la fila; su contenedor es la fila (anchura de columna × <code>height</code>). Marcadores: <code>{'{number}'}</code>, <code>{'{numberDecimal}'}</code>, <code>{'{numberRoman}'}</code>…, <code>{'{titleText}'}</code> y <code>{'{pageNumber}'}</code> (la etiqueta de la página de parte). Los colores ligados a la paleta toman la <code>palette</code> de la propia parte, así que la fila de cada sección sale en su color. Vacío, se componen <code>{'{number} {titleText}'}</code> y el número de página con la tipografía de las entradas de nivel 1.</td>
+    </tr>
+    <tr>
+      <td><code>parts.height</code>, <code>marginTop</code>, <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td>dos líneas de cuerpo, <code>0</code>, <code>0</code></td>
+      <td>Altura de la fila y espacio a su alrededor.</td>
+    </tr>
+  </tbody>
+</table>
+
+Las etiquetas de página son las que el documento imprime. `buildDocument()` vuelve a componer un documento con `:::toc` con las etiquetas de la pasada anterior hasta que se estabilizan (tres pasadas adicionales como máximo); un anfitrión que compone un libro capítulo a capítulo suministra en su lugar el esquema del libro entero como `PostextContent.outline`, ensamblado con `contentOutline()` (encabezados y partes a partir del texto) y `outlineFromDoc()` (las mismas entradas con las etiquetas de página de una composición), y vuelve a componer el capítulo del índice cada vez que cambia el `outlineKey()` de ese esquema.
 
 ## Unidades y colores
 

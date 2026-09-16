@@ -9,6 +9,7 @@ import type {
   DesignTextElement,
   DesignRuleElement,
   DesignBoxElement,
+  DesignImageElement,
   ResolvedDesignElement,
   ResolvedDesignSlot,
 } from 'postext';
@@ -17,6 +18,7 @@ import { SearchScope } from '../../search/SearchScope';
 import { TextElementEditor } from './TextElementEditor';
 import { RuleElementEditor } from './RuleElementEditor';
 import { BoxElementEditor } from './BoxElementEditor';
+import { ImageElementEditor } from './ImageElementEditor';
 import { applyAlign, type SlotKind } from './placementAdapter';
 
 interface SlotEditorProps {
@@ -26,7 +28,7 @@ interface SlotEditorProps {
   onUpdate: (slot: DesignSlot | undefined) => void;
 }
 
-function generateId(kind: 'text' | 'rule' | 'box', used: Set<string>): string {
+function generateId(kind: 'text' | 'rule' | 'box' | 'image', used: Set<string>): string {
   let i = 1;
   while (used.has(`${kind}${i}`)) i++;
   return `${kind}${i}`;
@@ -79,6 +81,17 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
     commit([...currentRaw, template]);
   };
 
+  const addImage = () => {
+    const id = generateId('image', existingIds);
+    const template: DesignImageElement = {
+      kind: 'image',
+      id,
+      resourceId: '',
+      placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: { value: 20, unit: 'mm' }, height: 'auto' } },
+    };
+    commit([...currentRaw, template]);
+  };
+
   const updateAt = (index: number, next: DesignElement) => {
     const arr = currentRaw.slice();
     arr[index] = next;
@@ -123,7 +136,9 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
           ? labels.headerFooterElementText
           : rawEl.kind === 'rule'
             ? labels.headerFooterElementRule
-            : labels.headerFooterElementBox;
+            : rawEl.kind === 'image'
+              ? (labels.headerFooterElementImage ?? 'Image')
+              : labels.headerFooterElementBox;
         return (
           <SearchScope key={`${slotKey}-${rawEl.id}-${idx}`} title={`${elementTitle} ${idx + 1}`} overridden>
           <div
@@ -135,11 +150,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
               style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)' }}
             >
               <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--gilt)' }}>
-                {rawEl.kind === 'text'
-                  ? labels.headerFooterElementText
-                  : rawEl.kind === 'rule'
-                    ? labels.headerFooterElementRule
-                    : labels.headerFooterElementBox}
+                {elementTitle}
                 {' '}#{idx + 1}
               </span>
               <div className="flex items-center gap-1">
@@ -179,6 +190,14 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
                   siblings={siblings}
                   onChange={(next) => updateAt(idx, next)}
                 />
+              ) : rawEl.kind === 'image' && resolvedEl?.kind === 'image' ? (
+                <ImageElementEditor
+                  raw={rawEl}
+                  resolved={resolvedEl}
+                  slotKind={slotKey}
+                  siblings={siblings}
+                  onChange={(next) => updateAt(idx, next)}
+                />
               ) : null}
             </div>
           </div>
@@ -190,6 +209,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
         <AddButton label={labels.headerFooterAddText} onClick={addText} />
         <AddButton label={labels.headerFooterAddRule} onClick={addRule} />
         <AddButton label={labels.headerFooterAddBox} onClick={addBox} />
+        <AddButton label={labels.headerFooterAddImage ?? 'Add image'} onClick={addImage} />
       </div>
     </div>
   );

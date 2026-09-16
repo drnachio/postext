@@ -16,7 +16,7 @@ export type DirectiveAttrs = Record<string, string>;
 
 /** Recognized directive names. Unknown names are not parsed as directives —
  *  they fall through to the paragraph branch and surface via warnings. */
-export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak';
+export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'toc';
 
 /** Recognized fenced-container names. A container opens with a
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
@@ -109,6 +109,25 @@ export interface UnclosedContainerIssue extends ParseIssueBase {
 
 export type ParseIssue = UnclosedMathIssue | UnclosedContainerIssue;
 
+/** What one block of an expanded `:::toc` prints. */
+export interface TocBlockInfo {
+  /** `'entry'`: a heading (title, number, page label, optional subtitle
+   *  line); `'part'`: a part divider row. */
+  kind: 'entry' | 'part';
+  /** Heading level of an entry (`0` for a part). */
+  level: number;
+  /** Printed number (`''` when none). */
+  number: string;
+  numbered: boolean;
+  /** Page label of the entry's page; absent while unknown. */
+  pageLabel?: string;
+  /** Subtitle line under the title (an entry's `{author}`), when any. */
+  subtitle?: string;
+  /** A part row's title and palette overrides. */
+  title?: string;
+  palette?: Record<string, string>;
+}
+
 export interface ContentBlock {
   type: ContentBlockType;
   text: string;
@@ -138,6 +157,11 @@ export interface ContentBlock {
   directiveName?: DirectiveName;
   /** For `directive` blocks: parsed attributes. */
   directiveAttrs?: DirectiveAttrs;
+  /** Present on the blocks a `:::toc` directive expands into (see
+   *  `pipeline/toc.ts`): what the entry lists. The block's `type` is
+   *  `'paragraph'` and its text the entry title, so it flows and maps back
+   *  to the directive line like ordinary content. */
+  toc?: TocBlockInfo;
   /** For `resourceBlock` blocks: the referenced `Resource.id`. */
   resourceId?: string;
   /** For `containerStart` / `containerEnd` marker blocks: the container

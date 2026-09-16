@@ -14,6 +14,7 @@ export type {
   ParseIssueKind,
   ParseIssue,
   ContentBlock,
+  TocBlockInfo,
 } from './types';
 export { MATH_PLACEHOLDER } from './inlineMath';
 export {

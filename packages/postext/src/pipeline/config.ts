@@ -14,6 +14,8 @@ import {
   resolveMathConfig,
   resolveHeaderFooterConfig,
   resolvePartsConfig,
+  resolveHeadingStylesConfig,
+  resolveTocConfig,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
 } from '../defaults';
@@ -43,6 +45,8 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
     header: resolveHeaderFooterConfig(config?.header, 'header'),
     footer: resolveHeaderFooterConfig(config?.footer, 'footer'),
     parts: resolvePartsConfig(config?.parts, page, bodyText, unorderedLists, orderedLists),
+    headingStyles: resolveHeadingStylesConfig(config?.headingStyles, page, bodyText, unorderedLists, orderedLists),
+    toc: resolveTocConfig(config?.toc, bodyText),
     // Kept for per-resource-type caption overrides, which resolve their
     // palette colours at layout time (see `mergeCaptionStyle`).
     ...(rawConfig?.colorPalette && rawConfig.colorPalette.length > 0
