@@ -355,6 +355,10 @@ export function enforcePageParity(
  * placement (collapsed against the previous block's bottom margin by the
  * caller). Returns the height actually reserved for the block.
  */
+/** Tolerance for "does this block fit" checks against a column's free
+ *  height, absorbing floating-point drift between grid multiples. */
+const FIT_EPS = 0.01;
+
 export function placeAtomicBlock(
   block: VDTBlock,
   groupHeight: number,
@@ -376,7 +380,10 @@ export function placeAtomicBlock(
   let guard = 0;
   for (;;) {
     const available = col.availableHeight - (col.blocks.length === 0 ? 0 : spacingBefore);
-    if (groupHeight <= available) break;
+    // A hair of tolerance: the trailing-callout lever pushes a box flush
+    // with its column's last grid slot, and that "exact" room differs from
+    // the free height by floating-point noise.
+    if (groupHeight <= available + FIT_EPS) break;
     if (col.blocks.length === 0 && col.availableHeight >= 0.5) break;
     if (guard++ >= 8) break;
     advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);

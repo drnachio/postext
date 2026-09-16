@@ -686,8 +686,12 @@ interface ElementPlacement {
   };
   /** Distancia desde el punto de anclaje. */
   offset?: { x?: Dimension; y?: Dimension };
-  /** Ancho / alto opcional. El ancho admite también 'fill' (extender a lo largo del bloque). */
-  size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto' };
+  /** Ancho / alto opcional. El ancho admite también 'fill' (extender a lo largo del bloque).
+   *  `maxWidth` limita un ancho 'auto' (texto): el elemento sigue ajustándose a su
+   *  contenido, así que los elementos anclados a él no se despegan, pero un texto largo
+   *  se corta o se pliega ahí — una cabecera puede reservar sitio para la etiqueta que
+   *  cuelga de ella en vez de expulsarla. */
+  size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto'; maxWidth?: Dimension };
 }
 ```
 

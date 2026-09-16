@@ -1690,6 +1690,11 @@ export interface ElementPlacement {
   size?: {
     width?: ElementSize;
     height?: ElementSize;
+    /** Cap for an `'auto'` width (text elements): the element still sizes to
+     *  its content, so elements anchored to it stay attached, but never
+     *  grows past this — the text wraps or ellipsizes there. Lets a running
+     *  head reserve room for the label that hangs off it. */
+    maxWidth?: ElementSize;
   };
 }
 

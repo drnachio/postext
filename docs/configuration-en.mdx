@@ -686,8 +686,12 @@ interface ElementPlacement {
   };
   /** Distance from the anchor point. */
   offset?: { x?: Dimension; y?: Dimension };
-  /** Optional fixed width / height. Width also accepts 'fill' (span the slot). */
-  size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto' };
+  /** Optional fixed width / height. Width also accepts 'fill' (span the slot).
+   *  `maxWidth` caps an 'auto' width (text): the element still shrink-wraps its
+   *  content, so elements anchored to it stay attached, but a long text wraps or
+   *  ellipsizes there — a running head can reserve room for the label hanging
+   *  off it instead of squeezing that label out. */
+  size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto'; maxWidth?: Dimension };
 }
 ```
 
