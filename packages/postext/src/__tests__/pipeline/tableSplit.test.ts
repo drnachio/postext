@@ -163,6 +163,56 @@ describe('tables taller than the page', () => {
     expect(rbOf(slices[0]!.block).slice).toBeUndefined();
   });
 
+  it('a column table cited beside an empty column is cut to that column and goes on in the next slot', () => {
+    // The reference lands in the first column of page 0 while the second
+    // column is still empty: the table starts there, cut to the column,
+    // and the rest continues at the head of the next page's first column.
+    const doc = build(markdown, [table('tab', 40, { placement: { span: 'column' } })]);
+    const slices = floatsOf(doc, 'tab');
+    expect(slices.length).toBeGreaterThan(1);
+    const first = slices[0]!;
+    expect(first.page.index).toBe(0);
+    expect(first.block.columnIndex).toBe(1);
+    const col = first.page.columns[1]!;
+    expect(first.block.bbox.x).toBeCloseTo(col.bbox.x, 6);
+    expect(first.block.bbox.y).toBeCloseTo(first.page.contentArea.y, 6);
+    expect(first.block.bbox.width).toBeCloseTo(col.bbox.width, 6);
+    expect(rbOf(first.block).slice!.continues).toBe(true);
+    expect(rbOf(first.block).continuesLines.length).toBeGreaterThan(0);
+    // The column holds nothing but the slice: the text flows on around it.
+    expect(col.blocks).toHaveLength(0);
+    const second = slices[1]!;
+    expect(second.page.index).toBe(1);
+    expect(second.block.columnIndex).toBe(0);
+    expect(captionText(second.block).includes('(cont.)')).toBe(true);
+    // Rows carried in order, each once.
+    let next = 0;
+    for (const { block } of slices) {
+      const slice = rbOf(block).slice!;
+      expect(slice.startRow).toBe(next);
+      next = slice.endRow;
+    }
+    expect(next).toBe(41);
+  });
+
+  it('the rest of a table cut on a fresh page continues in the column beside it', () => {
+    // The first slice takes the empty second column of the referencing
+    // page; the rest opens the next page and, cut again to its first
+    // column, goes on in the second column of that same page.
+    const doc = build(`${filler(3)}\n\nClosing :ref{id="tab"} text.`, [table('tab', 40, { placement: { span: 'column' } })]);
+    const slices = floatsOf(doc, 'tab');
+    expect(slices.length).toBeGreaterThanOrEqual(3);
+    const [a, b, c] = [slices[0]!, slices[1]!, slices[2]!];
+    expect(a.page.index).toBe(0);
+    expect(a.block.columnIndex).toBe(1);
+    expect(b.page.index).toBe(1);
+    expect(c.page.index).toBe(1);
+    expect(b.block.columnIndex).toBe(0);
+    expect(c.block.columnIndex).toBe(1);
+    expect(b.block.bbox.y).toBeCloseTo(b.page.contentArea.y, 6);
+    expect(c.block.bbox.y).toBeCloseTo(c.page.contentArea.y, 6);
+  });
+
   it('Spanish documents mark continuations with "Continúa"', () => {
     const doc = build(markdown, [table('tab', ROWS)], { ...PAGE, locale: 'es' });
     const slices = floatsOf(doc, 'tab');

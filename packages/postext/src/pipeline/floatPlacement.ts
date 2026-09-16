@@ -43,6 +43,11 @@ export interface PlannedFloat {
    *  to place (the header rows are repeated above it). Absent (or `0`) for
    *  a whole resource. */
   startRow?: number;
+  /** For the rest of a split table: where its previous slice went. The
+   *  rest never lands before it in reading order — on that page only a
+   *  later column's slot will do (a page-span rest waits for the next
+   *  page). */
+  notBefore?: { pageIndex: number; columnIndex: number };
 }
 
 /** Resolve a resource's placement: own `placement` → its type's

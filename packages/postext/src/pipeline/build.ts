@@ -552,7 +552,9 @@ export function buildDocumentPass(
    * decides what becomes of the rows left over — a rest float to continue
    * on the next page (`'split'`), nothing (`'clip'`) — or, for `'hide'`,
    * that the table is dropped. Returns null for a figure or a table with
-   * nothing to cut, which are force-placed like before.
+   * nothing to cut, which are force-placed like before. In the `'strict'`
+   * (current-page) mode nothing is forced: `'none'` when not even the
+   * smallest slice fits the slot.
    */
   const splitTableFloat = (
     f: PlannedFloat,
@@ -561,7 +563,8 @@ export function buildDocumentPass(
     targetCols: readonly VDTColumn[],
     contentArea: BoundingBox,
     avail: number,
-  ): { slice: TableSliceSpec; rest?: PlannedFloat } | 'skip' | null => {
+    mode: 'fresh' | 'strict',
+  ): { slice: TableSliceSpec; rest?: PlannedFloat } | 'skip' | 'none' | null => {
     const rowCount = tableRowCount(f.resourceId);
     if (rowCount === 0) return null;
     const overflow = resolved.tableStyle.overflow;
@@ -580,10 +583,14 @@ export function buildDocumentPass(
     // `avail` is the grid multiple below it, less the gap.
     const hMax = Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx;
     let end = planTableSlice(metrics, startRow, hMax - overhead);
-    // Nothing fits: carry the smallest slice anyway (it overflows, as a
-    // dominating figure would) rather than stall the queue.
     const floor = firstBody + 1;
-    if (end < floor) end = floor;
+    if (end < floor) {
+      // Nothing fits. A fresh page carries the smallest slice anyway (it
+      // overflows, as a dominating figure would) rather than stall the
+      // queue; a slot of the current page is simply not this table's.
+      if (mode === 'strict') return 'none';
+      end = floor;
+    }
     // A last page holding a row or two under a repeated header reads as a
     // stranded tail: give the closing slice at least `MIN_TAIL_ROWS` rows by
     // handing some back from this one (at a breakable edge, not under a
@@ -616,6 +623,7 @@ export function buildDocumentPass(
       do end--; while (end > floor && !(metrics.breakableAfter[end - 1] ?? true));
       slice = sliceFor(end);
     }
+    if (mode === 'strict' && !fits(slice)) return 'none';
     const rest: PlannedFloat | undefined = slice.continues ? { ...f, startRow: end } : undefined;
     return rest ? { slice, rest } : { slice };
   };
@@ -692,6 +700,8 @@ export function buildDocumentPass(
     const { width, xLeft } = probe;
     let { slice, measure, need, y } = probe;
     let rest: PlannedFloat | undefined;
+    /** The float was cut to this slot (a table slice). */
+    let cut = false;
 
     if (mode === 'fresh') {
       let minAvail = Infinity;
@@ -704,11 +714,12 @@ export function buildDocumentPass(
       if (need > minAvail - minTextPx && anyReserved) return 'defer';
       if (need > minAvail + 0.01) {
         // Dominating the band: a table is cut to it.
-        const split = splitTableFloat(f, width, position, targetCols, page.contentArea, minAvail);
+        const split = splitTableFloat(f, width, position, targetCols, page.contentArea, minAvail, 'fresh');
         if (split === 'skip') return 'skip';
-        if (split) {
+        if (split && split !== 'none') {
           slice = split.slice;
           rest = split.rest;
+          cut = true;
           const m = measureFloat(f.resourceId, width, slice);
           if (!m) return 'skip';
           measure = m;
@@ -725,8 +736,43 @@ export function buildDocumentPass(
           if (y - floatGapPx < c.bbox.y + c.bbox.height - 0.01) return 'defer';
           continue;
         }
-        if (!fitsStrict(need, c, columnHasFloatBand(page, c), minTextPx)) return 'defer';
+        const hasBand = columnHasFloatBand(page, c);
+        if (fitsStrict(need, c, hasBand, minTextPx)) continue;
+        // The head of an empty column: a splittable table is cut to the
+        // column and continues in the next slot — the compositor sets a
+        // long table beside the text that cites it, not pages later. A
+        // table that clips or hides when too tall keeps to fresh pages.
+        if (position !== 'top' || pageSpan || c.blocks.length > 0) return 'defer';
+        if (resolved.tableStyle.overflow !== 'split') return 'defer';
+        const split = splitTableFloat(
+          f, width, position, targetCols, page.contentArea,
+          c.availableHeight - (hasBand ? minTextPx : 0), 'strict',
+        );
+        if (!split || split === 'none' || split === 'skip') return 'defer';
+        slice = split.slice;
+        rest = split.rest;
+        cut = true;
+        const m = measureFloat(f.resourceId, width, slice);
+        if (!m) return 'skip';
+        measure = m;
+        ({ need, y } = measureFloatBand(
+          position, measure, targetCols, page.contentArea, baselineGrid, floatGapPx,
+          (cc) => trueBottom(cc, uncappedBottoms),
+        ));
+        if (!fitsStrict(need, c, hasBand, minTextPx)) return 'defer';
       }
+    }
+
+    // A slice cut to the head of a column takes the column whole when the
+    // rows leave less than the text minimum under it: a line or two of
+    // body text stranded under a table reads worse than an empty foot.
+    if (cut && position === 'top') {
+      const minAvail = Math.min(...targetCols.map((c) => c.availableHeight));
+      if (minAvail - need < minTextPx) need = Math.max(need, minAvail);
+    }
+    // The rest goes on after this slice in reading order, never before.
+    if (rest) {
+      rest = { ...rest, notBefore: { pageIndex: page.index, columnIndex: targetCols[targetCols.length - 1]!.index } };
     }
 
     const built = buildFloatBlock(f.resourceId, xLeft, width, slice);
@@ -769,16 +815,31 @@ export function buildDocumentPass(
   };
 
   /** Apply a slot outcome to the queue at `i`: drop a placed float, keep a
-   *  deferred one, swap in the rest of a split table. Returns the index to
-   *  continue from. */
+   *  deferred one, swap in the rest of a split table (offered the next slot
+   *  right away, so a table cut to one column goes on in the column beside
+   *  it). Returns the index to continue from. */
   const settle = (i: number, r: PlaceResult): number => {
     if (r === 'defer') return i + 1;
     if (typeof r === 'object') {
       pendingFloats[i] = r.rest;
-      return i + 1;
+      return i;
     }
     pendingFloats.splice(i, 1);
     return i;
+  };
+
+  /** Whether the pending float at `i` must wait: an earlier float of the
+   *  same numbering sequence (resource type) is still pending. Figures and
+   *  tables are numbered in first-reference order, and the reader must
+   *  meet them in that order too — table 3 never lands after table 4, even
+   *  when 4 would fit a slot 3 does not. Sequences do not hold each other
+   *  up: a waiting table lets a later figure through. */
+  const heldBack = (i: number): boolean => {
+    const typeId = resourceById.get(pendingFloats[i]!.resourceId)?.typeId;
+    for (let j = 0; j < i; j++) {
+      if (resourceById.get(pendingFloats[j]!.resourceId)?.typeId === typeId) return true;
+    }
+    return false;
   };
 
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
@@ -788,36 +849,51 @@ export function buildDocumentPass(
    *  pending floats as fit, shrinking the affected columns so body text flows
    *  around them. Full-width (page-span) floats reserve the outermost bands
    *  first, so a later single-column float nests inside the remaining column
-   *  space rather than overlapping a full-width band. A float that does not
-   *  fit never holds up the ones behind it: each takes the first slot it
-   *  fits (numbering follows first-reference order regardless). */
+   *  space rather than overlapping a full-width band; the passes repeat
+   *  while they place something, so a page-span float held back behind a
+   *  column float of its sequence still gets the page's foot once that one
+   *  is set. A float that does not fit holds up the ones behind it in its
+   *  numbering sequence (see `heldBack`), never the other sequence. */
   const flushFloatsIntoPage = (page: VDTPage): void => {
     if (pendingFloats.length === 0) return;
     const textCols = page.columns.filter((c) => c.kind !== 'span');
     if (textCols.length === 0) return;
-    const leastReserved = (): VDTColumn => {
-      let best = textCols[0]!;
+    /** The least reserved text column a float may take (the rest of a
+     *  split table: only columns after its previous slice on this page). */
+    const leastReserved = (f: PlannedFloat): VDTColumn | undefined => {
+      const after = f.notBefore && f.notBefore.pageIndex === page.index ? f.notBefore.columnIndex : -1;
+      let best: VDTColumn | undefined;
       for (const c of textCols) {
+        if (c.index <= after) continue;
+        if (!best) { best = c; continue; }
         const rb = reservedOf(best);
         const rc = reservedOf(c);
         if (rc.top + rc.bottom < rb.top + rb.bottom) best = c;
       }
       return best;
     };
-    for (const pageSpanPass of [true, false]) {
-      let i = 0;
-      while (i < pendingFloats.length) {
-        const f = pendingFloats[i]!;
-        const isPageSpan = f.span === 'page' && textCols.length > 1;
-        if (isPageSpan !== pageSpanPass) { i++; continue; }
-        let r: PlaceResult = 'defer';
-        for (const pos of positionsFor(f)) {
-          const cols = isPageSpan ? textCols : [leastReserved()];
-          r = placeFloatInColumns(page, f, cols, pos, isPageSpan, 'fresh');
-          if (r !== 'defer') break;
+    for (let progress = true; progress;) {
+      const before = floatsPlaced;
+      for (const pageSpanPass of [true, false]) {
+        let i = 0;
+        while (i < pendingFloats.length) {
+          const f = pendingFloats[i]!;
+          const isPageSpan = f.span === 'page' && textCols.length > 1;
+          if (isPageSpan !== pageSpanPass || heldBack(i)) { i++; continue; }
+          // A page-span rest never shares the page of its previous slice.
+          if (isPageSpan && f.notBefore?.pageIndex === page.index) { i++; continue; }
+          let r: PlaceResult = 'defer';
+          for (const pos of positionsFor(f)) {
+            const col = isPageSpan ? undefined : leastReserved(f);
+            if (!isPageSpan && !col) break;
+            const cols = isPageSpan ? textCols : [col!];
+            r = placeFloatInColumns(page, f, cols, pos, isPageSpan, 'fresh');
+            if (r !== 'defer') break;
+          }
+          i = settle(i, r);
         }
-        i = settle(i, r);
       }
+      progress = floatsPlaced > before;
     }
   };
 
@@ -889,9 +965,17 @@ export function buildDocumentPass(
     const page = doc.pages[cursor.pageIndex]!;
     const box = nextBlockIdx !== undefined ? keepTogetherBoxAt(nextBlockIdx) : null;
     for (let i = 0; i < pendingFloats.length;) {
+      if (heldBack(i)) { i++; continue; }
       const f = pendingFloats[i]!;
       let r: PlaceResult = 'defer';
       let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, f, capKindOf);
+      // The rest of a table cut on this page only takes the slots after
+      // its previous slice in reading order (never the foot of the column
+      // before it; a page-span rest waits for the next page).
+      if (f.notBefore && f.notBefore.pageIndex === page.index) {
+        const after = f.notBefore.columnIndex;
+        slots = slots.filter((s) => !s.pageSpan && s.cols[0]!.index > after);
+      }
       // A page-span box comes next: the head of an empty column keeps the
       // band cuttable under the float (the box then sits below both the
       // text and the figure), where the referencing column's foot would
@@ -1482,7 +1566,7 @@ export function buildDocumentPass(
       for (let i = 0; i < pendingFloats.length;) {
         const f = pendingFloats[i]!;
         const cols = bandColumns(page, currentBand(page, cursor));
-        if (f.span !== 'page' || cols.length < 2 || !((capActiveHere && !placedAny) || levelForBox(cols))) { i++; continue; }
+        if (f.span !== 'page' || cols.length < 2 || heldBack(i) || !((capActiveHere && !placedAny) || levelForBox(cols))) { i++; continue; }
         const width = page.contentArea.width;
         const slice = sliceOf(f);
         const measure = measureFloat(f.resourceId, width, slice);
@@ -1586,7 +1670,7 @@ export function buildDocumentPass(
           // box moving on and the band ending level like a closing one.
           // Only a page-span figure is planned for here; column figures keep
           // the ordinary slots (their level is the band cap's own business).
-          const first = pendingFloats.find((f) => f.span === 'page');
+          const first = pendingFloats.find((f, i) => f.span === 'page' && !heldBack(i));
           if (first && !capActive && cap === undefined && bandStart && registeredBand
             && registeredBand.pageIndex === page.index && registeredBand.band === bandBefore) {
             const cols = bandColumns(page, bandBefore).filter((c) => c.bbox.height > 0.5);

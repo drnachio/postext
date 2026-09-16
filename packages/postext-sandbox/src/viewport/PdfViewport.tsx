@@ -124,6 +124,7 @@ export function PdfViewport() {
         pageNegative: debug.pageNegative.enabled,
         outlines: pdfGen.outlines,
         colorSpace: pdfGen.forceColorSpace ? pdfGen.colorSpace : 'rgb',
+        accessible: pdfGen.accessible,
         resourceBytes: (fileId) => resourceBytes.get(fileId),
       });
       bytesRef.current = bytes;

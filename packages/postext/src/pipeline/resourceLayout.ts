@@ -356,6 +356,7 @@ interface FittedCellImage {
   kind: 'bitmap' | 'svg';
   fileId: string;
   format?: string;
+  altText?: string;
   x: number;
   width: number;
   height: number;
@@ -406,7 +407,8 @@ function fitCellImage(
   }
   if (!fileId) return null;
   const x = align === 'center' ? (innerWidth - width) / 2 : align === 'right' ? innerWidth - width : 0;
-  return { resourceId: resource.id, kind, fileId, format, x: Math.max(0, x), width, height };
+  const altText = resource.altText ?? resource.caption;
+  return { resourceId: resource.id, kind, fileId, format, altText, x: Math.max(0, x), width, height };
 }
 
 /** Smallest border thickness (px) we let through: thinner rules would vanish
@@ -697,6 +699,7 @@ function layoutTable(
           kind: m.image.kind,
           fileId: m.image.fileId,
           ...(m.image.format !== undefined ? { format: m.image.format } : {}),
+          ...(m.image.altText !== undefined ? { altText: m.image.altText } : {}),
           rect: createBoundingBox(x0 + cellPaddingPx + m.image.x, y0 + cellPaddingPx, m.image.width, m.image.height),
         }
       : undefined;

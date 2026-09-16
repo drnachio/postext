@@ -162,6 +162,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     pdfGenerationSection: t("pdfGenerationSection"),
     pdfOutlines: t("pdfOutlines"),
     pdfOutlinesTooltip: t("pdfOutlinesTooltip"),
+    pdfAccessible: t("pdfAccessible"),
+    pdfAccessibleTooltip: t("pdfAccessibleTooltip"),
     pdfForceColorSpace: t("pdfForceColorSpace"),
     pdfForceColorSpaceTooltip: t("pdfForceColorSpaceTooltip"),
     pdfColorSpace: t("pdfColorSpace"),

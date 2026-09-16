@@ -690,6 +690,8 @@
     "pdfGenerationSection": "Generación de PDF",
     "pdfOutlines": "Marcadores",
     "pdfOutlinesTooltip": "Genera marcadores en el PDF para que los lectores puedan hacer clic en los títulos y saltar a la página correspondiente",
+    "pdfAccessible": "PDF accesible",
+    "pdfAccessibleTooltip": "Etiqueta el PDF para tecnologías de asistencia (PDF/UA): orden de lectura, títulos, listas, tablas, texto alternativo de las figuras e idioma",
     "pdfForceColorSpace": "Forzar espacio de color",
     "pdfForceColorSpaceTooltip": "Convierte todos los colores del PDF generado al espacio de color seleccionado",
     "pdfColorSpace": "Espacio de color",

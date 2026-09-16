@@ -14,12 +14,22 @@
  */
 
 import {
+  PDFHexString,
   PDFName,
   PDFArray,
+  PDFNumber,
   type PDFDocument,
   type PDFPage,
   type PDFRef,
 } from 'pdf-lib';
+import type { StructElem, StructTree } from './tagging';
+
+/** Structure bookkeeping of a link in an accessible render: the `Link`
+ *  element wrapping the ref text, and the annotation's `/Contents`. */
+export interface LinkStruct {
+  elem: StructElem;
+  contents: string;
+}
 
 interface DestRecord {
   page: PDFPage;
@@ -35,6 +45,7 @@ interface PendingLink {
   rect: [number, number, number, number];
   /** Target resource id (resolved against the destination map at finalize). */
   resourceId: string;
+  struct?: LinkStruct;
 }
 
 export class LinkRegistry {
@@ -49,20 +60,26 @@ export class LinkRegistry {
   }
 
   /** Record a pending inline-ref link to be attached at finalize. */
-  addLink(page: PDFPage, rect: [number, number, number, number], resourceId: string): void {
-    this.pending.push({ page, rect, resourceId });
+  addLink(page: PDFPage, rect: [number, number, number, number], resourceId: string, struct?: LinkStruct): void {
+    this.pending.push({ page, rect, resourceId, struct });
   }
 
   /** Attach all pending link annotations. Links whose destination resource was
-   *  never embedded are skipped (they still rendered as styled text). */
-  finalize(pdfDoc: PDFDocument): void {
+   *  never embedded are skipped (they still rendered as styled text; in a
+   *  tagged render their `Link` element dissolves into the paragraph). With
+   *  `tree`, each annotation joins its `Link` element (`OBJR` kid,
+   *  `/StructParent`) and carries `/Contents` (PDF/UA-1 §7.18.5). */
+  finalize(pdfDoc: PDFDocument, tree?: StructTree): void {
     const context = pdfDoc.context;
     // Group annotation refs per page so each page's /Annots array is written once.
     const perPage = new Map<PDFPage, PDFRef[]>();
 
     for (const link of this.pending) {
       const dest = this.dests.get(link.resourceId);
-      if (!dest) continue;
+      if (!dest) {
+        if (link.struct && tree) tree.dissolve(link.struct.elem);
+        continue;
+      }
       const destArray = context.obj([
         dest.page.ref,
         PDFName.of('XYZ'),
@@ -75,9 +92,15 @@ export class LinkRegistry {
         Subtype: PDFName.of('Link'),
         Rect: context.obj(link.rect),
         Border: context.obj([0, 0, 0]),
+        F: PDFNumber.of(4),
         Dest: destArray,
       });
-      const ref = context.register(annot);
+      const ref = context.nextRef();
+      if (link.struct && tree) {
+        annot.set(PDFName.of('Contents'), PDFHexString.fromText(link.struct.contents));
+        annot.set(PDFName.of('StructParent'), PDFNumber.of(tree.annotation(link.struct.elem, link.page, ref)));
+      }
+      context.assign(ref, annot);
       const list = perPage.get(link.page);
       if (list) list.push(ref);
       else perPage.set(link.page, [ref]);

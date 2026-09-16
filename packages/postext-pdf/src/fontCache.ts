@@ -43,6 +43,77 @@ export function coverAllGlyphWidths(font: PDFFont): void {
   };
 }
 
+/** UTF-16BE hex of a code point sequence, for a CMap `bfchar` destination. */
+function utf16Hex(codePoints: number[]): string {
+  let out = '';
+  for (const cp of codePoints) {
+    if (cp > 0xffff) {
+      const v = cp - 0x10000;
+      out += (0xd800 + (v >> 10)).toString(16).padStart(4, '0') + (0xdc00 + (v & 0x3ff)).toString(16).padStart(4, '0');
+    } else {
+      out += cp.toString(16).padStart(4, '0');
+    }
+  }
+  return out;
+}
+
+/** A ToUnicode CMap (Identity-H codes = glyph ids) for the given glyphs. */
+export function toUnicodeCmap(glyphs: Array<{ id: number; codePoints: number[] }>): string {
+  const entries = glyphs
+    .filter((g) => g.codePoints.length > 0)
+    .sort((a, b) => a.id - b.id)
+    .map((g) => `<${g.id.toString(16).padStart(4, '0')}> <${utf16Hex(g.codePoints)}>`);
+  let blocks = '';
+  for (let i = 0; i < entries.length; i += 100) {
+    const chunk = entries.slice(i, i + 100);
+    blocks += `${chunk.length} beginbfchar\n${chunk.join('\n')}\nendbfchar\n`;
+  }
+  return (
+    '/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n' +
+    '/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n' +
+    '/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n' +
+    '1 begincodespacerange\n<0000><ffff>\nendcodespacerange\n' +
+    blocks +
+    'endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend\n'
+  );
+}
+
+/**
+ * A fully embedded face gets a ToUnicode map covering only the glyphs its
+ * cmap reaches, so a ligature the shaper substitutes (`fi`, `fl`, `ffi`)
+ * has no Unicode value: text extraction drops the letters and PDF/UA
+ * validators reject the font (ISO 14289-1 §7.21.7). Record every glyph the
+ * layout engine produces for the text actually set — its `codePoints` are
+ * the characters it stands for, ligatures included — and write the map
+ * from the cmap glyphs plus those.
+ */
+export function coverAllGlyphUnicode(font: PDFFont): void {
+  interface Glyph { id: number; codePoints: number[] }
+  const embedder = (font as unknown as {
+    embedder: {
+      font: FontkitFace & { layout: (text: string, features?: unknown) => { glyphs: Glyph[] } };
+      glyphCache: { access: () => Glyph[] };
+      embedUnicodeCmap: (context: { flateStream: (s: string) => unknown; register: (o: unknown) => unknown }) => unknown;
+    };
+  }).embedder;
+  const face = embedder.font;
+  const shaped = new Map<number, number[]>();
+  const layout = face.layout.bind(face);
+  face.layout = (text, features) => {
+    const run = layout(text, features);
+    for (const g of run.glyphs) {
+      if (g.codePoints.length > 0 && !shaped.has(g.id)) shaped.set(g.id, g.codePoints);
+    }
+    return run;
+  };
+  embedder.embedUnicodeCmap = (context) => {
+    const glyphs: Glyph[] = [...embedder.glyphCache.access()];
+    const known = new Set(glyphs.map((g) => g.id));
+    for (const [id, codePoints] of shaped) if (!known.has(id)) glyphs.push({ id, codePoints });
+    return context.register(context.flateStream(toUnicodeCmap(glyphs)));
+  };
+}
+
 export type PdfFontProvider = (
   family: string,
   weight: number,
@@ -85,7 +156,10 @@ export class FontCache {
           // every viewer reads it. TrueType fonts subset normally.
           const subset = !isCffOpenType(bytes);
           const font = await this.pdfDoc.embedFont(bytes, { subset });
-          if (!subset) coverAllGlyphWidths(font);
+          if (!subset) {
+            coverAllGlyphWidths(font);
+            coverAllGlyphUnicode(font);
+          }
           this.map.set(key, font);
         } catch {
           this.failed.add(`${spec.family} ${spec.weight}${spec.style === 'italic' ? ' italic' : ''}`);

@@ -319,14 +319,15 @@ describe('page-span callouts (span blocks, stage 1)', () => {
       bitmap: { fileId: `${id}.png`, format: 'png', width: 1600, height: 200 },
       placement: { position, span: 'page' },
     });
-    // Both floats are referenced in the first paragraph of page 0. The
-    // bottom float takes the first free slot after its reference — the
-    // bottom band of page 0, which every column still has room for. The
-    // top float only accepts top slots, so it waits for the next page. Page
-    // 0 is then filled past the point where a level cut could still hold
-    // the box (stage 2), so the box opens page 1 — whose top band is
-    // reserved first — and cuts the band right below it.
-    const md = ['Ver :ref{id="ft"} y :ref{id="fb"}.', '', filler(40), '', SPAN_CALLOUT_2, '', filler(6)].join('\n');
+    // Both floats are referenced in the first paragraph of page 0, the
+    // bottom one first (figures land in reference order). It takes the
+    // first free slot after its reference — the bottom band of page 0,
+    // which every column still has room for. The top float only accepts
+    // top slots, so it waits for the next page. Page 0 is then filled past
+    // the point where a level cut could still hold the box (stage 2), so
+    // the box opens page 1 — whose top band is reserved first — and cuts
+    // the band right below it.
+    const md = ['Ver :ref{id="fb"} y :ref{id="ft"}.', '', filler(40), '', SPAN_CALLOUT_2, '', filler(6)].join('\n');
     const doc = build(md, TWO_COL, [wide('ft', 'top'), wide('fb', 'bottom')]);
     const [frame] = frames(doc);
     expect(frame!.pageIndex).toBe(1);

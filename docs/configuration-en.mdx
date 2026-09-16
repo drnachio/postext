@@ -50,7 +50,7 @@ This reference is long. These are the main blocks:
 - [Units and colors](#units-and-colors) + [Color palette](#color-palette) — `Dimension`, `ColorValue`, named colors.
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
-- [PDF generation (config)](#pdf-generation-config) — outlines, forced colour space for the PDF backend.
+- [PDF generation (config)](#pdf-generation-config) — outlines, accessible (tagged) output, forced colour space for the PDF backend.
 - [Debug](#debug) — visual overlays and authoring warnings for the editor.
 - [Advanced configuration](#advanced-configuration) — declared types, future support.
 - [Programmatic use](#programmatic-usage) — `buildDocument`, resolvers, caches.
@@ -3087,6 +3087,7 @@ interface PdfGenerationConfig {
   outlines?: boolean;          // Emit PDF bookmarks from the heading tree.
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
+  accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
 }
 ```
 
@@ -3118,12 +3119,19 @@ interface PdfGenerationConfig {
       <td><code>'cmyk'</code></td>
       <td>Target colour space used when `forceColorSpace` is on. Use `'cmyk'` for offset printing, `'rgb'` for screen-only PDFs, and `'grayscale'` for black-and-white print proofs. Has no effect when `forceColorSpace` is false.</td>
     </tr>
+    <tr>
+      <td><code>accessible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Emit an accessible, tagged PDF oriented to PDF/UA-1: a logical structure tree in reading order (headings that never skip a level, paragraphs, lists, block quotes, callouts, tables with header cells, figures with their alt text and captions, formulas, clickable refs as links), the document title and language (`bodyText.locale`), the PDF/UA identification in the XMP metadata, and every decorative mark (page background, rules, baseline grid, running headers and footers, cut marks, repeated table headers) flagged as an artifact so screen readers skip it. A figure without `altText` falls back to its caption, then to its label. Turn off only for print masters where the extra structure is unwanted.</td>
+    </tr>
   </tbody>
 </table>
 
 ```ts
 pdfGeneration: {
   outlines: true,
+  accessible: true,
   forceColorSpace: true,
   colorSpace: 'cmyk',
 }
@@ -3139,7 +3147,7 @@ import {
 } from 'postext';
 
 const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
-// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk' }
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk', accessible: true }
 
 const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 // => undefined when everything matches the defaults

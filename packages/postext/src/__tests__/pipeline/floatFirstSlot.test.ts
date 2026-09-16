@@ -26,6 +26,25 @@ const figure = (id: string, opts: { placement?: Resource['placement']; height?: 
   ...(opts.placement ? { placement: opts.placement } : {}),
 });
 
+/** A small column-span table (a different numbering sequence from figures). */
+const smallTable = (id: string): Resource => ({
+  id,
+  typeId: 'table',
+  kind: 'table',
+  caption: `Table ${id}.`,
+  createdAt: 0,
+  updatedAt: 0,
+  table: {
+    model: {
+      headerRowCount: 1,
+      rows: [
+        [{ content: 'A', isHeader: true }, { content: 'B', isHeader: true }],
+        [{ content: '1' }, { content: '2' }],
+      ],
+    },
+  },
+});
+
 const pt = (value: number) => ({ value, unit: 'pt' as const });
 
 /** Two-column page with balancing off (single pass, deterministic). */
@@ -73,16 +92,33 @@ describe('first-available-slot float placement', () => {
     expect(col1.blocks.length).toBeGreaterThan(0);
   });
 
-  it('a float that fits nowhere on the page does not hold up a later one', () => {
+  it('a float that fits nowhere on the page holds up the later ones of its sequence', () => {
     const doc = build(
       `Intro :ref{id="tall"} then :ref{id="small"}.\n\n${filler(12)}`,
       [figure('tall', { height: 4000 }), figure('small', { height: 150 })],
     );
-    expect(floatById(doc, 'small').page).toBe(0);
+    // Figure 2 waits for figure 1 (which needs a fresh page) and lands
+    // after it in reading order, never on the referencing page before it.
+    const tall = floatById(doc, 'tall');
+    const small = floatById(doc, 'small');
+    expect(tall.page).toBeGreaterThan(0);
+    expect(small.page).toBeGreaterThanOrEqual(tall.page);
+    if (small.page === tall.page) {
+      expect(small.block.columnIndex).toBeGreaterThanOrEqual(tall.block.columnIndex);
+    }
+  });
+
+  it('a waiting float does not hold up a later one of the other sequence', () => {
+    const doc = build(
+      `Intro :ref{id="tall"} then :ref{id="tab"}.\n\n${filler(12)}`,
+      [figure('tall', { height: 4000 }), smallTable('tab')],
+    );
+    // Table 1 takes the referencing page while figure 1 waits for a fresh one.
+    expect(floatById(doc, 'tab').page).toBe(0);
     expect(floatById(doc, 'tall').page).toBeGreaterThan(0);
   });
 
-  it('numbering follows first-reference order even when a later float lands first', () => {
+  it('numbering follows first-reference order', () => {
     const doc = build(
       `Intro :ref{id="tall"} then :ref{id="small"}.\n\n${filler(12)}`,
       [figure('tall', { height: 4000 }), figure('small', { height: 150 })],
