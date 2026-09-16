@@ -76,4 +76,7 @@ export interface RichTokenMeta {
   subStart?: number;
   /** Character index within the original token where this sub-box ends. */
   subEnd?: number;
+  /** On a penalty: the break is bare (a hard hyphen the word carries), so
+   *  the line ends as it is and no hyphen is added. */
+  bare?: boolean;
 }

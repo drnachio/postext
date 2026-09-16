@@ -16,6 +16,9 @@ import { computeJustifiedSpaceRatio } from './plain';
 export interface RichBreakPoint {
   charIndex: number;
   widthBefore: number;
+  /** The line ends on the character before `charIndex` as it is — a hard
+   *  hyphen the word already carries — and no hyphen is added. */
+  bare?: boolean;
 }
 
 export interface RichToken {
@@ -76,6 +79,70 @@ export function urlBreakIndices(text: string): number[] {
     else if ('.?#&=_~%-'.includes(ch) && prev !== '/' && !'.?#&=_~%-'.includes(prev)) out.push(i);
   }
   return out;
+}
+
+const LETTER_RE = /\p{L}/u;
+
+/** Break opportunities inside a word: after each soft hyphen the dictionary
+ *  inserted (a hyphen is added when the line ends there) and after a hard
+ *  hyphen between two letters — "enseñanza-aprendizaje" — where the line
+ *  ends on the hyphen the word already carries. `part` still holds the
+ *  soft hyphens, `clean` is the text as laid out. */
+function wordBreakPoints(part: string, clean: string, font: string, letterSpacingPx: number): RichBreakPoint[] {
+  const out: RichBreakPoint[] = [];
+  const widthBefore = (idx: number): number => measureTextWidth(clean.slice(0, idx), font) + letterSpacingPx * idx;
+  let priorSoft = 0;
+  for (let i = 0; i < part.length; i++) {
+    const ch = part[i]!;
+    if (ch === SOFT_HYPHEN) {
+      const idx = i - priorSoft;
+      if (idx > 0 && idx < clean.length && !out.some((b) => b.charIndex === idx)) out.push({ charIndex: idx, widthBefore: widthBefore(idx) });
+      priorSoft++;
+    } else if (ch === '-' && i > 0 && i < part.length - 1 && LETTER_RE.test(part[i - 1]!) && LETTER_RE.test(part[i + 1]!)) {
+      const idx = i - priorSoft + 1;
+      out.push({ charIndex: idx, widthBefore: widthBefore(idx), bare: true });
+    }
+  }
+  return out;
+}
+
+/**
+ * A word wider than the whole line (a table cell, a narrow column): divide
+ * it at the last syllable that fits — the dictionary's, a hyphen added —
+ * or, when none does, at the last character that fits, so no word ever
+ * runs past its measure. Null when not even one character fits.
+ */
+function emergencySplit(
+  token: RichToken,
+  font: string,
+  letterSpacingPx: number,
+  lineMaxWidth: number,
+): { head: RichToken; tail: RichToken } | null {
+  const text = token.text;
+  if (text.length < 2) return null;
+  const hyphenW = measureTextWidth('-', font) + letterSpacingPx;
+  const widthBefore = (idx: number): number => measureTextWidth(text.slice(0, idx), font) + letterSpacingPx * idx;
+  const fits = (idx: number): boolean => widthBefore(idx) + hyphenW <= lineMaxWidth;
+  let at = 0;
+  const syllabified = hyphenateText(text);
+  let priorSoft = 0;
+  for (let i = 0; i < syllabified.length; i++) {
+    if (syllabified[i] !== SOFT_HYPHEN) continue;
+    const idx = i - priorSoft;
+    priorSoft++;
+    if (idx > 0 && idx < text.length && fits(idx)) at = idx;
+  }
+  if (at === 0) {
+    for (let idx = text.length - 1; idx >= 1; idx--) {
+      if (fits(idx)) { at = idx; break; }
+    }
+  }
+  if (at === 0) return null;
+  const flags = { bold: token.bold, italic: token.italic, captionLabel: token.captionLabel };
+  return {
+    head: { ...flags, text: text.slice(0, at) + '-', kind: 'text', width: widthBefore(at) + hyphenW },
+    tail: { ...flags, text: text.slice(at), kind: 'text', width: token.width - widthBefore(at) },
+  };
 }
 
 function tokenizeSpans(
@@ -152,28 +219,16 @@ function tokenizeSpans(
         });
         continue;
       }
-      if (!isSpace && part.includes(SOFT_HYPHEN)) {
-        const clean = part.replace(/\u00AD/g, '');
-        const cleanWidth = measureTextWidth(clean, font) + track(clean);
-        const breakPoints: RichBreakPoint[] = [];
-        let priorSoft = 0;
-        for (let i = 0; i < part.length; i++) {
-          if (part[i] === SOFT_HYPHEN) {
-            const cleanIdx = i - priorSoft;
-            breakPoints.push({
-              charIndex: cleanIdx,
-              widthBefore: measureTextWidth(clean.slice(0, cleanIdx), font) + letterSpacingPx * cleanIdx,
-            });
-            priorSoft++;
-          }
-        }
+      const clean = isSpace ? part : part.replace(/\u00AD/g, '');
+      const breakPoints = isSpace ? [] : wordBreakPoints(part, clean, font, letterSpacingPx);
+      if (breakPoints.length > 0) {
         tokens.push({
           text: clean,
           bold: span.bold,
           italic: span.italic,
           captionLabel: span.captionLabel,
           kind: 'text',
-          width: cleanWidth,
+          width: measureTextWidth(clean, font) + track(clean),
           breakPoints,
           hyphenWidth: measureTextWidth('-', font) + letterSpacingPx,
         });
@@ -297,17 +352,19 @@ export function measureRichBlock(
         continue;
       }
 
-      // Doesn't fit. Try to split at a soft-hyphen.
+      // Doesn't fit. Try to split at a break point (a soft hyphen, a hard
+      // hyphen inside the word, a URL joint).
       if (token.kind === 'text' && token.breakPoints && token.breakPoints.length > 0) {
         const remaining = lineMaxWidth - lineWidth;
-        const hyphenW = token.bareBreaks ? 0 : (token.hyphenWidth ?? 0);
-        const mark = token.bareBreaks ? '' : '-';
+        const markW = (bp: RichBreakPoint): number => (token.bareBreaks || bp.bare ? 0 : (token.hyphenWidth ?? 0));
         let chosen: RichBreakPoint | null = null;
         for (const bp of token.breakPoints) {
-          if (bp.widthBefore + hyphenW <= remaining) chosen = bp;
+          if (bp.widthBefore + markW(bp) <= remaining) chosen = bp;
           else break;
         }
         if (chosen) {
+          const hyphenW = markW(chosen);
+          const mark = token.bareBreaks || chosen.bare ? '' : '-';
           lineTokens.push({
             text: token.text.slice(0, chosen.charIndex) + mark,
             bold: token.bold,
@@ -323,7 +380,7 @@ export function measureRichBlock(
           const chosenWidth = chosen.widthBefore;
           const residualBreakPoints = token.breakPoints
             .filter((bp) => bp.charIndex > chosenIdx)
-            .map((bp) => ({ charIndex: bp.charIndex - chosenIdx, widthBefore: bp.widthBefore - chosenWidth }));
+            .map((bp) => ({ ...bp, charIndex: bp.charIndex - chosenIdx, widthBefore: bp.widthBefore - chosenWidth }));
           tokens[tokenIdx] = {
             text: token.text.slice(chosenIdx),
             bold: token.bold,
@@ -336,6 +393,20 @@ export function measureRichBlock(
               : {}),
             ...(token.bareBreaks ? { bareBreaks: true } : {}),
           };
+          break;
+        }
+      }
+
+      // A word wider than the whole line: divide it rather than let it run
+      // past the measure (syllable first, then character).
+      if (lineTokens.length === 0 && token.kind === 'text' && !token.mathRender && token.refResourceId === undefined && token.width > lineMaxWidth) {
+        const font = pickSpanFont(token.bold, token.italic, normalFont, boldFont, italicFont, boldItalicFont);
+        const split = emergencySplit(token, font, letterSpacingPx, lineMaxWidth);
+        if (split) {
+          lineTokens.push(split.head);
+          lineWidth += split.head.width;
+          lineHyphenated = true;
+          tokens[tokenIdx] = split.tail;
           break;
         }
       }
