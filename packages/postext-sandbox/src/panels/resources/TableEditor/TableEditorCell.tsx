@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Image as ImageIcon } from 'lucide-react';
 import type { TableCell, TableCellPos } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext';
 import {
@@ -131,6 +132,19 @@ export function TableEditorCell({
           fontWeight: cell.isHeader ? 600 : 400,
         }}
       >
+        {cell.image && (
+          <div
+            role="img"
+            aria-label={labels.tableEditorImageChipAria.replace('__id__', cell.image.resourceId)}
+            title={cell.image.resourceId}
+            className="mx-1 mt-1 flex items-center gap-1 rounded px-1 text-[10px]"
+            style={{ backgroundColor: 'var(--surface)', color: 'var(--slate)', width: 'fit-content', maxWidth: 'calc(100% - 8px)' }}
+          >
+            <ImageIcon size={10} aria-hidden="true" />
+            <span className="truncate">{cell.image.resourceId}</span>
+            {cell.image.width !== undefined && <span>{Math.round(cell.image.width * 100)}%</span>}
+          </div>
+        )}
         <InlineMarkdownInput
           value={cell.content}
           onChange={(value) => onContentChange(pos, value)}

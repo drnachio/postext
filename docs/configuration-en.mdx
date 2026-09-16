@@ -1067,6 +1067,7 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
 
 Publishers expect every column to start at the top of the page and end flush with its bottom. Break rules (orphan/widow protection, headings kept with their text, unsplittable figures) naturally leave short columns — one or more empty baseline-grid lines at the bottom. When balancing is enabled, the engine does what a compositor would, applying three levers in editorial priority order:
 
+0. **A box closing the column** — a callout that ends a short column is pushed down by the exact room under its foot, so its bottom edge lands on the last grid slot of the page, level with the last line of the column beside it.
 1. **Headings** — whole grid lines are added to the top margin of the headings inside the short column. When several lines are needed and the column holds several headings, the lines are distributed among them, always giving the largest share to the most important heading (an `h2` receives more than an `h3`). Headings sitting at the very top of a column never receive extra space, so columns keep starting at the page top.
 2. **List ends** — when the headings cannot absorb the whole gap, a grid line is added where a list/enumeration ends (space after a list reads naturally), capped per list end.
 3. **Loose paragraphs** — as a last resort, one paragraph of the column is re-broken one line longer (TeX's `\looseness=+1`), choosing the longest paragraph so the extra word spacing dilutes invisibly. The loose solution is only accepted when every line stays **below `bodyText.maxWordSpacing`** — type colour never exceeds the limit you already configured. Requires `bodyText.optimalLineBreaking`.
@@ -2061,10 +2062,44 @@ const config: PostextConfig = {
       <td><code>'grid'</code></td>
       <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, or none.</td>
     </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'split' | 'clip' | 'hide'</code></td>
+      <td><code>'split'</code></td>
+      <td>What becomes of a table taller than the page: continue it on the following pages, keep only the rows that fit, or leave it out. See below.</td>
+    </tr>
+    <tr>
+      <td><code>continuedSuffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'(cont.)'</code></td>
+      <td>Appended, in italics, to the caption of every continued part of a split table.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Set a marker under every part that continues on the next page.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'Continued'</code> / <code>'Continúa'</code></td>
+      <td>Text of that marker, set flush right under the part in the note typeface (see <a href="#caption-style">caption style</a>). The default follows the document locale.</td>
+    </tr>
   </tbody>
 </table>
 
 Border widths are kept fractional: a `0.5pt` rule is stroked as a hairline in the PDF and on screen rather than being rounded up to a full pixel (the floor is 0.25px).
+
+### Tables taller than the page
+
+A floated table that does not fit the fresh page it is offered is not squeezed or overflowed: with `overflow: 'split'` (the default) the engine cuts it between rows at the last edge that fits the page and continues it on the following pages, as many as it takes. Every continued part repeats the table's header rows (`TableModel.headerRowCount`, or the leading rows made of header cells when it is unset) and carries the caption again with `continuedSuffix` after the description — "Table 6-4. Title *(cont.)*". Every part that goes on gets `continuesMarker` under it, flush right, in the note typeface; the table's note is held back for the last part. A cut never runs through a merged cell (a rowspan moves whole to the next part), and a row that heads the rows below it — a single cell across the whole table — is carried to the next part rather than left stranded at the foot of a page.
+
+`'clip'` keeps the leading rows that fit the page and drops the rest silently (the note still closes the part); `'hide'` leaves the table out altogether. Both apply only when the table is taller than a page: a table that fits is placed whole in any mode. Inline (`placement.position: 'here'`) tables are not split.
+
+The continuation strings default per document language (`locale`, else the hyphenation locale): English `(cont.)` / `Continued`, Spanish `(cont.)` / `Continúa`.
+
+Cell content is inline markdown, and a line break inside a cell starts a new paragraph. A paragraph that opens with a bullet or dash (`•`, `-`, `*`, `–`) or a number (`1.`, `1)`) followed by a space is set as a list item: the marker is painted as written, the text hangs off it by the document's `unorderedLists.gap`, wrapped lines align with the text, and two leading spaces nest a level. So a cell written as `• Ofrece elección\n• Acomoda a personas diestras y zurdas` comes out as a two-item list.
 
 Column widths belong to the table model, not the style: `TableModel.columnWidths` is an optional array of relative weights, one per column, normalised at layout time — `[2, 1, 1]` gives the first column half the width. A missing array, a wrong length, or a non-positive weight falls back to an equal split. The table editor keeps the array aligned when columns are added or removed.
 
@@ -2540,6 +2575,9 @@ The glass stays hot for an hour after the flame is out.
       <td>Make the box a float barrier: every figure or table referenced before it is placed before it — in the page's free slots, else on pages opened ahead of the box — so no float escapes past a chapter's closing box (a "key points" summary, typically). Chapter openers, <code>:::part</code> and the end of the document are always barriers.</td>
     </tr>
     <tr>
+      <td colSpan={4}>A <code>span: 'page'</code> box on a multi-column page cuts the band under the text it follows; a full-width figure referenced before it takes that cut first — the text is levelled, the figure sits right where it ended, and the box goes on below it (or to the next page when it no longer fits). A figure too tall to follow the levelled text opens the next page instead, the box after it, and the band it left still ends level. A splittable box (<code>keepTogether: false</code>) opens under the text and figure with as many items as fit, the rest continuing on the next page.</td>
+    </tr>
+    <tr>
       <td><code>width</code></td>
       <td><code>'fill' | 'auto'</code></td>
       <td><code>'fill'</code></td>
@@ -2615,7 +2653,13 @@ The glass stays hot for an hour after the flame is out.
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>When <code>true</code> the box never splits: a callout that does not fit the remaining space moves whole to the next column or page. When <code>false</code> it may break <em>between</em> its child blocks — never inside a paragraph or a list item: the longest run of children that fits closes the current column (or, for a <code>span: 'page'</code> box, the page, flush with the bottom of the columns) and the rest continues at the top of the next one in a box of its own — same frame and stripe, no title or icon — splitting again if it is still too tall. Every fragment's frame shares the fence's <code>contentIndex</code> / <code>containerId</code> and records <code>callout.part</code> / <code>callout.continued</code>. Use it on a long closing "key points" box together with <code>headings.balancing.beforeSpan</code>.</td>
+      <td>When <code>true</code> the box never splits: a callout that does not fit the remaining space moves whole to the next column or page. When <code>false</code> it may break between its child blocks or between the lines of a paragraph or list item: the deepest cut that fits closes the current column (or, for a <code>span: 'page'</code> box, the page, flush with the bottom of the columns) and the rest continues at the top of the next one in a box of its own — same frame and stripe, no title or icon — splitting again if it is still too tall. A cut inside a list item leaves its bullet with the head. Every fragment's frame shares the fence's <code>contentIndex</code> / <code>containerId</code> and records <code>callout.part</code> / <code>callout.continued</code>. Use it on a long closing "key points" box together with <code>headings.balancing.beforeSpan</code>, or on a note style whose boxes must never push a figure off the page.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Fewest text lines a fragment of a split box (<code>keepTogether: false</code>) keeps on either side of the cut — a figure or a display formula counts as one line. With the default no box breaks leaving a lone line at the foot of a column or at the head of the next; when no cut satisfies the minimum the box moves whole.</td>
     </tr>
   </tbody>
 </table>
@@ -2626,7 +2670,8 @@ A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. 
 
 Limits in this version:
 
-- A callout is unbreakable unless its style sets `keepTogether: false`. When it does not fit the remaining column space it moves whole to the next column or page; a box taller than an empty column is placed anyway and overflows (the sandbox warns). A splittable box leaves the children that fit behind and continues in a box without title or icon on the next column or page.
+- A callout is unbreakable unless its style sets `keepTogether: false`. When it does not fit the remaining column space it moves whole to the next column or page — also out of an empty column that float bands or a band cap have cut short, as long as a full column would hold it. Only a box taller than a full column is placed anyway and overflows; the layout then records a `calloutOverflow` warning (`VDTDocument.warnings`), which the sandbox lists. A splittable box leaves the part that fits behind — whole children, or the lines of a paragraph down to `splitMinLines` on each side — and continues in a box without title or icon on the next column or page.
+- Floats yield to an unbreakable box. When the block right after a figure's reference is a `keepTogether` callout, a slot that would leave the box no column of the current band to land in (the referencing column or an empty one after it, which held it before the float) is not taken: the figure moves on to its next slot, usually the next page, and the box stays in flow — as a compositor would set it, rather than pushing the box off the page and leaving the column with the figure alone.
 - `span: 'page'` in a multi-column layout makes the box a **span block**: it is laid out at the full content width and splits the page into column bands — the text columns above it are closed at the cut line, the box takes its own full-width column, and a fresh band of text columns opens below it, so the flow continues under the box in every column. Where the columns are *level* — at the top of a page, right below a `span: 'page'` opener heading, right below another span block, or right below a top float band — the box simply cuts there. Arriving mid-page, with the columns uneven, it is set the way a compositor would: the text above it is cut level across all columns (the engine re-runs placement with the band's columns shortened to the same number of grid lines, so the text overflows from column to column naturally and every orphan, widow and keep-with-next rule still applies), the box spans the page, and the columns resume below it. The cut takes a couple of extra placement passes; when the cut line would leave no room for the box plus the widow minimum of body lines below it, or no arrangement fits after a few attempts, the box moves to the top of the next page. With `headings.balancing.beforeSpan` (the default) the band it leaves is cut level behind it — like a chapter's closing band — and, when the style allows splitting (`keepTogether: false`), the part of the box that fits under the levelled columns closes the page and the rest opens the next one; with `beforeSpan: false` the page it leaves is simply balanced as usual, without forcing a page break. A heading right before a span block does not travel with it. In single-column layouts `span: 'page'` is simply inline.
 - `placement: 'fixed'` takes the box out of the flow: it is laid out (`width: 'auto'` shrink-wraps the title; `'fill'` takes the width of the text column under the anchor point) and pinned to the page where it occurs in the flow at the position `fixed.anchor` / `fixed.offset` describe — the bottom-left corner of the content area by default. The text columns it covers give up that zone (cut from the bottom, or from the top when the column is still empty), exactly like a float band; when the zone already holds text, a float or a span block, the box moves to the next page. A fixed box that closes the chapter (the next block is a chapter opener, a `:::part`, a float-barrier box or the end of the document) first levels the columns above it (`headings.balancing.trailing`), so a short closing page ends level with the badge beneath. Frame and children live in `page.floats` and render outside the column clip in every backend.
 - `placement: 'top' | 'bottom'` is recorded on the VDT (`VDTBlock.callout`) but still placed inline at column width — floating boxes arrive with the next stage.

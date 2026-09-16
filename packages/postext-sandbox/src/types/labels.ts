@@ -161,6 +161,8 @@ export interface SandboxLabels {
   warningsParityCascadeDetail: string;
   warningsAlphaPdfOverflowTitle: string;
   warningsAlphaPdfOverflowDetail: string;
+  warningsCalloutOverflowTitle: string;
+  warningsCalloutOverflowDetail: string;
   warningsInvalidMathTitle?: string;
   warningsUnclosedMathTitle?: string;
   warningsUnclosedContainerTitle: string;
@@ -989,6 +991,12 @@ export interface SandboxLabels {
   tableEditorColumnWidthsHint: string;
   tableEditorColumnWidthAria: string;
   tableEditorColumnWidthsEqual: string;
+  tableEditorImage: string;
+  tableEditorImageNone: string;
+  tableEditorImageEmpty: string;
+  tableEditorImageWidth: string;
+  tableEditorImageWidthHint: string;
+  tableEditorImageChipAria: string;
   fontLabel: string;
   sizeLabel: string;
   colorLabel: string;
@@ -1013,6 +1021,16 @@ export interface SandboxLabels {
   tableRulesHorizontal: string;
   tableRulesOuter: string;
   tableRulesNone: string;
+  tableContinuationGroup: string;
+  tableOverflow: string;
+  tableOverflowTooltip: string;
+  tableOverflowSplit: string;
+  tableOverflowClip: string;
+  tableOverflowHide: string;
+  tableContinuedSuffix: string;
+  tableContinuedSuffixTooltip: string;
+  tableContinuesMarkerEnabled: string;
+  tableContinuesMarker: string;
   // --- Caption styling section ---
   captionStyleSection: string;
   captionGap: string;
@@ -1082,6 +1100,8 @@ export interface SandboxLabels {
   calloutStyleFloatBarrierTooltip: string;
   calloutStyleKeepTogether: string;
   calloutStyleKeepTogetherTooltip: string;
+  calloutStyleSplitMinLines: string;
+  calloutStyleSplitMinLinesTooltip: string;
   calloutStyleWidth: string;
   calloutStyleWidthTooltip: string;
   calloutStyleWidthFill: string;

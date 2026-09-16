@@ -32,7 +32,7 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
     layout: resolveLayoutConfig(config?.layout),
     bodyText,
     headings,
-    tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText),
+    tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText, config?.locale),
     captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText),
     diagramStyle: resolveDiagramStyleConfig(config?.diagramStyle),
     paragraphStyles: resolveParagraphStylesConfig(config?.paragraphStyles, bodyText),

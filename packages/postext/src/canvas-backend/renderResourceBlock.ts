@@ -303,6 +303,15 @@ function renderTable(
     }
     ctx.restore();
   }
+  // Cell images (bitmap / SVG resources embedded in cells), then text.
+  for (const cell of t.cells) {
+    const img = cell.image;
+    if (!img) continue;
+    const { x, y, width, height } = img.rect;
+    if (!drawResourceImage(ctx, img.fileId, x, y, width, height)) {
+      drawPlaceholder(ctx, x, y, width, height, img.kind === 'svg' ? 'SVG' : 'Image');
+    }
+  }
   for (const cell of t.cells) {
     const font = cell.isHeader ? t.headerFontString : t.fontString;
     const bold = cell.isHeader ? t.headerBoldFontString : t.boldFontString;
@@ -351,7 +360,9 @@ export function renderResourceBlock(
       rb.captionColor, rb.linkColor, rb.captionLabelColor,
     );
   }
-  for (const line of rb.noteLines) {
+  // Note, or the "continued" marker of a table slice that goes on (same
+  // typeface and colour, right-aligned at layout time).
+  for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
     paintLine(
       ctx, line,
       rb.noteFontString, rb.noteBoldFontString, rb.noteItalicFontString, rb.noteBoldItalicFontString,

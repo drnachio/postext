@@ -37,6 +37,10 @@ export function collectFontStrings(doc: VDTDocument): string[] {
         out.add(rb.table.boldFontString);
         out.add(rb.table.italicFontString);
         out.add(rb.table.boldItalicFontString);
+        out.add(rb.table.headerFontString);
+        out.add(rb.table.headerBoldFontString);
+        out.add(rb.table.headerItalicFontString);
+        out.add(rb.table.headerBoldItalicFontString);
       }
     }
   }

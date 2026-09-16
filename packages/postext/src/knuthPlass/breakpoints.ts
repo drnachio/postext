@@ -185,8 +185,12 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
         i === terminalBreakPosition &&
         contentWidth > 0 &&
         contentWidth < runtMinWidth;
-      // Beyond the stretch limit: a soft preference must never buy this.
-      const overStretch = r > 1 ? Math.max(OVER_STRETCH_BADNESS, 2 * runtPenalty) : 0;
+      // Beyond the stretch limit: a soft preference must never buy this,
+      // and the cost grows with the overshoot (× r²), so two lines a
+      // little over the limit stay cheaper than one line far over it — a
+      // flat cost made the count of loose lines matter more than how
+      // loose they are, and bought a 3× line to keep a 2.2× one tight.
+      const overStretch = r > 1 ? Math.max(OVER_STRETCH_BADNESS, 2 * runtPenalty) * r * r : 0;
       const effectiveBadness = badness + overStretch + (isRunt ? runtPenalty : 0);
 
       let d: number;

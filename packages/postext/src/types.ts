@@ -101,9 +101,25 @@ export interface TableCellPos {
   col: number;
 }
 
+/** An image set inside a table cell: a bitmap or SVG resource referenced by
+ *  id. The resource is drawn inside the cell — never numbered, floated or
+ *  captioned — fitted to the cell's inner width (or a fraction of it) with
+ *  its aspect ratio kept, aligned like the cell's text, and any cell text
+ *  runs under it. */
+export interface TableCellImage {
+  /** The `Resource.id` of a `bitmap` / `svg` resource. A table resource, or
+   *  an id that matches nothing, leaves the cell text-only. */
+  resourceId: string;
+  /** Width as a fraction of the cell's inner width, in `(0, 1]`. Default 1
+   *  (the full inner width; a bitmap narrower than that keeps its size). */
+  width?: number;
+}
+
 export interface TableCell {
   /** Cell content (plain text / inline markdown). */
   content: string;
+  /** Optional image drawn inside the cell, above the content. */
+  image?: TableCellImage;
   /** Number of columns this cell spans. Default 1. */
   colSpan?: number;
   /** Number of rows this cell spans. Default 1. */
@@ -642,11 +658,30 @@ export interface TableStyleConfig {
   cellPadding?: Dimension;
   /** Which rules to stroke when {@link borders} is on. Default `'grid'`. */
   rules?: TableRules;
+  /** What happens to a table taller than the space a page offers: continue
+   *  it on the following pages (`'split'`, the default), keep only the rows
+   *  that fit (`'clip'`), or leave it out (`'hide'`). See {@link TableOverflow}. */
+  overflow?: TableOverflow;
+  /** Suffix appended to the caption of every continuation slice of a split
+   *  table (e.g. "Table 6-4. Title *(cont.)*"). Defaults to `"(cont.)"`. */
+  continuedSuffix?: string;
+  /** Set a marker under every slice that continues on the next page.
+   *  Default `true`. */
+  continuesMarkerEnabled?: boolean;
+  /** Text of that marker, set right-aligned under the slice in the note
+   *  style. Defaults to `"Continued"` (`"Continúa"` for Spanish documents). */
+  continuesMarker?: string;
 }
 
 /** Rule pattern of a table: the full cell grid, horizontal rules only (top
  *  and bottom edge of every row), the outer frame only, or none. */
 export type TableRules = 'grid' | 'horizontal' | 'outer' | 'none';
+
+/** Behaviour of a table taller than the page: `'split'` breaks it between
+ *  rows and continues on the following pages, repeating the header rows and
+ *  suffixing the caption; `'clip'` keeps the leading rows that fit and drops
+ *  the rest; `'hide'` leaves the table out entirely. */
+export type TableOverflow = 'split' | 'clip' | 'hide';
 
 export interface ResolvedTableStyleConfig {
   bodyFontFamily: string;
@@ -666,6 +701,10 @@ export interface ResolvedTableStyleConfig {
   borderWidth: Dimension;
   cellPadding: Dimension;
   rules: TableRules;
+  overflow: TableOverflow;
+  continuedSuffix: string;
+  continuesMarkerEnabled: boolean;
+  continuesMarker: string;
 }
 
 /** Where a resource caption sits relative to the figure body. */
@@ -1004,12 +1043,17 @@ export interface CalloutStyleConfig {
   marginBottom?: Dimension;
   /** When `true` (default) the box never splits: a callout that does not
    *  fit the remaining space moves whole to the next column or page. When
-   *  `false` it may break between child blocks — never inside a paragraph
-   *  or list item — the part that fits closes the current column (or, for
-   *  a `span: 'page'` box, the page) and the rest continues on the next one
-   *  in a box of its own without the title or icon (stripe, border and
-   *  background stay). */
+   *  `false` it may break between child blocks or between the lines of a
+   *  paragraph or list item — leaving at least `splitMinLines` lines on
+   *  each side of the cut — the part that fits closes the current column
+   *  (or, for a `span: 'page'` box, the page) and the rest continues on the
+   *  next one in a box of its own without the title or icon (stripe, border
+   *  and background stay). */
   keepTogether?: boolean;
+  /** Fewest text lines a fragment of a split box may carry, on either side
+   *  of the cut (`keepTogether: false`). Default 2: a box never breaks
+   *  leaving a lone line at the foot of a column or the head of the next. */
+  splitMinLines?: number;
 }
 
 export interface ResolvedCalloutStyleConfig {
@@ -1078,6 +1122,7 @@ export interface ResolvedCalloutStyleConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepTogether: boolean;
+  splitMinLines: number;
 }
 
 /** Parity constraint for a forced page break.

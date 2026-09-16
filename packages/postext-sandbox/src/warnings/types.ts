@@ -25,6 +25,7 @@ export type WarningKind =
   | 'headingBreakInvalidParity'
   | 'parityCascade'
   | 'alphaPdfOverflow'
+  | 'calloutOverflow'
   | 'designCyclicAnchor'
   | 'designDanglingAnchor'
   | 'designTextClipAlwaysTruncates'
@@ -94,6 +95,7 @@ export type WarningPayload =
   | { kind: 'headingBreakInvalidParity'; level: number; value: string }
   | { kind: 'parityCascade'; runLength: number }
   | { kind: 'alphaPdfOverflow' }
+  | { kind: 'calloutOverflow'; page: number; overflowMm: number }
   | {
       kind: 'designCyclicAnchor';
       slot: WarningSlotKind;

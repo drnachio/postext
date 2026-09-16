@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { FileCode, Table as TableIcon, ImageOff } from 'lucide-react';
 import type { Resource, ResourceType } from 'postext';
-import { useSandboxLabels } from '../../context/SandboxContext';
+import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { getBlob } from '../../storage/blobStore';
 import { inlineSvgFonts } from '../../controls/svgFonts';
 import { parseInlinePreview } from '../../controls/InlineMarkdownInput';
@@ -143,6 +143,24 @@ interface TableBodyProps {
   resource: Resource;
 }
 
+/** The image embedded in a table cell (`TableCell.image`), at the fraction
+ *  of the cell width it takes on the page. Nothing when the id resolves to
+ *  no image resource — the cell is then text-only on the page as well. */
+function CellImage({ resourceId, width }: { resourceId: string; width: number | undefined }) {
+  const resource = useSandboxSelector((s) => s.resources.find((r) => r.id === resourceId));
+  const fileId = resource?.kind === 'bitmap' ? resource.bitmap?.fileId : resource?.kind === 'svg' ? resource.svg?.fileId : undefined;
+  const url = useBlobObjectUrl(fileId);
+  if (!url) return null;
+  const pct = `${Math.round(Math.max(0.01, Math.min(1, width ?? 1)) * 100)}%`;
+  return (
+    <img
+      src={url}
+      alt={resource?.altText ?? ''}
+      style={{ display: 'inline-block', width: pct, maxWidth: '100%', verticalAlign: 'top', marginBottom: 2 }}
+    />
+  );
+}
+
 function TableBody({ resource }: TableBodyProps) {
   const labels = useSandboxLabels();
   const model = resource.table?.model;
@@ -178,8 +196,11 @@ function TableBody({ resource }: TableBodyProps) {
                       verticalAlign: cell.verticalAlign ?? 'top',
                       fontWeight: cell.isHeader ? 600 : 400,
                       color: PAPER_INK,
+                      whiteSpace: 'pre-line',
                     }}
                   >
+                    {cell.image && <CellImage resourceId={cell.image.resourceId} width={cell.image.width} />}
+                    {cell.image && cell.content && <br />}
                     {cell.content}
                   </Tag>
                 );

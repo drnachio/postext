@@ -237,6 +237,9 @@ function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { 
   for (const block of blocks) {
     const rb = block.resourceBlock;
     if (rb?.fileId) note(rb.fileId, rb.bodyRect.width, rb.bodyRect.height);
+    for (const cell of rb?.table?.cells ?? []) {
+      if (cell.image) note(cell.image.fileId, cell.image.rect.width, cell.image.rect.height);
+    }
     const overlay = block.designOverlay;
     if (overlay) {
       for (const b of overlay.blocks) if (b.kind === 'image') note(b.fileId, b.bbox.width, b.bbox.height);
@@ -329,6 +332,10 @@ export async function preloadResourceImages(
     const rb = block.resourceBlock;
     if (rb && rb.fileId && (rb.kind === 'bitmap' || rb.kind === 'svg')) {
       await embed(rb.fileId, rb.format);
+    }
+    // Images embedded in table cells draw through the same map.
+    for (const cell of rb?.table?.cells ?? []) {
+      if (cell.image) await embed(cell.image.fileId, cell.image.format);
     }
     // Callout icons and markers (`kind: 'resource'`) draw through the same map.
     const iconFileId = block.callout?.iconFileId;
@@ -427,6 +434,7 @@ function renderTable(
   bx: number,
   by: number,
   fontCache: FontCache,
+  images: ResourceImageMap,
   linkColor: Color,
   linkRegistry: LinkRegistry | undefined,
 ): void {
@@ -480,6 +488,15 @@ function renderTable(
       }
     }
   }
+  // Cell images (bitmap / SVG resources embedded in cells), then text.
+  for (const cell of t.cells) {
+    const img = cell.image;
+    if (!img) continue;
+    const { x, y, width, height } = img.rect;
+    const embedded = images.get(img.fileId);
+    if (embedded) drawEmbeddedResource(ctx, embedded, x, y, width, height);
+    else fillRectPx(ctx, x, y, width, height, colorFromHex('#eeeeee', ctx.colorSpace));
+  }
   // Cell content.
   for (const cell of t.cells) {
     const fonts = cell.isHeader ? headerFonts : bodyFonts;
@@ -519,11 +536,12 @@ export function renderResourceBlock(
       drawPlaceholder(ctx, rb, bx, by);
     }
   } else if (rb.kind === 'table') {
-    renderTable(ctx, rb, bx, by, fontCache, linkColor, linkRegistry);
+    renderTable(ctx, rb, bx, by, fontCache, images, linkColor, linkRegistry);
   }
 
-  // Named destination for inline refs: top-left of the placed block.
-  if (linkRegistry && rb.resource.id) {
+  // Named destination for inline refs: top-left of the placed block (the
+  // first slice of a split table; continuations are not targets).
+  if (linkRegistry && rb.resource.id && !rb.slice?.continued) {
     const destTop = pageHeightPt - block.bbox.y * scale;
     linkRegistry.addDestination(rb.resource.id, ctx.page, block.bbox.x * scale, destTop);
   }
@@ -555,7 +573,8 @@ export function renderResourceBlock(
     italic: rb.noteItalicFontString,
     boldItalic: rb.noteBoldItalicFontString,
   };
-  for (const line of rb.noteLines) {
+  // Note, or the "continued" marker of a table slice that goes on.
+  for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
     paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, (seg) => seg.refResourceId);
   }
 }

@@ -135,6 +135,20 @@ export interface VDTLine {
 /** A single laid-out table cell: its primary grid position, pixel rect within
  *  the block, alignment, header flag, and the measured rich-text lines of its
  *  content. Cells covered by a merge are omitted (only the primary is kept). */
+/** A cell's embedded image (`TableCell.image`), resolved to its payload and
+ *  placed inside the cell. */
+export interface VDTResourceTableCellImage {
+  /** The referenced `Resource.id`. */
+  resourceId: string;
+  kind: 'bitmap' | 'svg';
+  /** Out-of-band binary id, resolved at render time like a figure's. */
+  fileId: string;
+  /** For bitmaps: the source format (e.g. `'png'`, `'jpeg'`). */
+  format?: string;
+  /** Pixel rect of the image, in the same frame as the cell `rect`. */
+  rect: BoundingBox;
+}
+
 export interface VDTResourceTableCell {
   row: number;
   col: number;
@@ -147,6 +161,8 @@ export interface VDTResourceTableCell {
   rect: BoundingBox;
   /** Measured content lines, with bboxes relative to the cell's text origin. */
   lines: VDTLine[];
+  /** The cell's embedded image, when it has one and the resource resolved. */
+  image?: VDTResourceTableCellImage;
 }
 
 /** Laid-out table geometry for a `kind: 'table'` resource block. */
@@ -191,11 +207,30 @@ export interface VDTCaptionBar {
   background: string;
 }
 
+/** Which rows of a split table a block carries, and how it links to the
+ *  neighbouring slices (see `TableStyleConfig.overflow`). */
+export interface VDTTableSlice {
+  /** First model row of the slice (header rows excluded — they are repeated
+   *  on every continuation regardless). */
+  startRow: number;
+  /** One past the last model row of the slice. */
+  endRow: number;
+  /** The slice continues an earlier one: its caption carries the continued
+   *  suffix and the header rows are repeated. Anchors / link destinations
+   *  belong to the first slice only. */
+  continued: boolean;
+  /** More rows follow on a later page: the continues marker is set under
+   *  the slice and the note is held back for the last one. */
+  continues: boolean;
+}
+
 /** The resolved, measured content of a resource block. */
 export interface ResolvedResourceBlock {
   /** The source resource. */
   resource: Resource;
   kind: 'bitmap' | 'svg' | 'table';
+  /** Present when the block is one slice of a table split across pages. */
+  slice?: VDTTableSlice;
   /** Rendered number string (e.g. `"1.7"`) for this resource. */
   number: string;
   /** Caption prefix from the resource type (e.g. `"Figure"`). */
@@ -237,6 +272,10 @@ export interface ResolvedResourceBlock {
   noteBoldItalicFontString: string;
   /** Note text colour (hex). */
   noteColor: string;
+  /** "Continued" marker lines of a table slice that goes on on a later page
+   *  (`slice.continues`), right-aligned under the slice and painted with the
+   *  note fonts and colour. Empty otherwise. */
+  continuesLines: VDTLine[];
 }
 
 export interface VDTBlock {
@@ -542,9 +581,28 @@ export interface VDTPage {
   blankForForce?: boolean;
 }
 
+/** Something the layout could not set as asked and placed anyway — a box
+ *  taller than any column it could go to. Hosts surface these as warnings;
+ *  the geometry still describes what was painted. */
+export interface LayoutWarning {
+  /** `calloutOverflow`: a `:::callout` box that fits no column was placed
+   *  overflowing its column (by `overflowPx`). */
+  kind: 'calloutOverflow';
+  pageIndex: number;
+  columnIndex: number;
+  /** Absolute source range of the offending construct in the markdown. */
+  sourceStart?: number;
+  sourceEnd?: number;
+  /** How far past the column's free room the content reaches (px). */
+  overflowPx: number;
+}
+
 export interface VDTDocument {
   pages: VDTPage[];
   blocks: VDTBlock[];
+  /** Layout warnings raised while placing the content (see
+   *  {@link LayoutWarning}); absent or empty when everything fit. */
+  warnings?: LayoutWarning[];
   config: ResolvedConfig;
   baselineGrid: number;
   /** Pixel offset from canvas edge to trim edge (0 when cutLines disabled) */

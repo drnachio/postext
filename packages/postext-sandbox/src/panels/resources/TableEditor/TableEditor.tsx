@@ -16,12 +16,13 @@ import {
   removeRow,
   setAlignment,
   setCellContent,
+  setCellImage,
   unmergeCell,
 } from 'postext';
-import { useSandboxLabels } from '../../../context/SandboxContext';
+import { useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
 import type { InlineFocusRequest, InlineSelection } from '../../../controls/InlineMarkdownInput';
 import { TableEditorCell, type CellNav } from './TableEditorCell';
-import { TableEditorToolbar } from './TableEditorToolbar';
+import { TableEditorToolbar, type TableEditorImageOption } from './TableEditorToolbar';
 import { ColumnWidthsEditor } from './ColumnWidthsEditor';
 
 // ---------------------------------------------------------------------------
@@ -160,6 +161,14 @@ export function TableEditor({
   onCellSelectionChange,
 }: TableEditorProps) {
   const labels = useSandboxLabels();
+  // Bitmap / SVG resources a cell may embed (`TableCell.image`), by id.
+  const resources = useSandboxSelector((s) => s.resources);
+  const imageOptions = useMemo<TableEditorImageOption[]>(
+    () => resources
+      .filter((r) => (r.kind === 'bitmap' && r.bitmap) || (r.kind === 'svg' && r.svg))
+      .map((r) => ({ id: r.id, kind: r.kind === 'svg' ? 'svg' : 'bitmap' })),
+    [resources],
+  );
   // The live model mirrors the prop locally: an edit re-renders the grid at
   // once with the new content, while the sandbox store delivers the updated
   // resource on its own schedule. Without the mirror a controlled cell is
@@ -314,6 +323,25 @@ export function TableEditor({
     commit(setAlignment(model, active, align, activeCell?.verticalAlign));
   };
 
+  // Image in the active cell: pick a resource (keeping the width fraction
+  // already set), clear it, or change the fraction of the cell width it takes.
+  const activeImage = activeCell?.image;
+  const handleSetImage = (resourceId: string | undefined) => {
+    if (resourceId === undefined) {
+      commit(setCellImage(model, active, undefined));
+      return;
+    }
+    const width = activeImage?.width;
+    commit(setCellImage(model, active, width !== undefined ? { resourceId, width } : { resourceId }));
+  };
+  const handleSetImageWidth = (percent: number) => {
+    if (!activeImage) return;
+    const fraction = Math.max(1, Math.min(100, Math.round(percent))) / 100;
+    commit(setCellImage(model, active, fraction >= 1
+      ? { resourceId: activeImage.resourceId }
+      : { resourceId: activeImage.resourceId, width: fraction }));
+  };
+
   const handlePasteTsv = async () => {
     let text = '';
     try {
@@ -429,6 +457,9 @@ export function TableEditor({
           onToggleHeaderColumn={() => {}}
           onSetAlign={() => {}}
           onPasteTsv={handlePasteTsv}
+          imageOptions={imageOptions}
+          activeImageId={undefined}
+          onSetImage={() => {}}
         />
         <p className="text-xs" style={{ color: 'var(--slate)' }}>
           {labels.tableEditorEmpty}
@@ -459,7 +490,34 @@ export function TableEditor({
         onToggleHeaderColumn={handleToggleHeaderColumn}
         onSetAlign={handleSetAlign}
         onPasteTsv={handlePasteTsv}
+        imageOptions={imageOptions}
+        activeImageId={activeImage?.resourceId}
+        onSetImage={handleSetImage}
       />
+
+      {activeImage && (
+        <div className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--slate)' }}>
+          <label className="flex items-center gap-1.5" title={labels.tableEditorImageWidthHint}>
+            <span>{labels.tableEditorImageWidth}</span>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              step={5}
+              value={Math.round((activeImage.width ?? 1) * 100)}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (Number.isFinite(v)) handleSetImageWidth(v);
+              }}
+              aria-label={labels.tableEditorImageWidth}
+              className="w-14 rounded border bg-transparent px-1 py-0.5 text-right"
+              style={{ borderColor: 'var(--rule)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 11 }}
+            />
+            <span>%</span>
+          </label>
+          <span className="truncate">{activeImage.resourceId}</span>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
