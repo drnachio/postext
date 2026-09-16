@@ -101,9 +101,25 @@ export interface TableCellPos {
   col: number;
 }
 
+/** An image set inside a table cell: a bitmap or SVG resource referenced by
+ *  id. The resource is drawn inside the cell — never numbered, floated or
+ *  captioned — fitted to the cell's inner width (or a fraction of it) with
+ *  its aspect ratio kept, aligned like the cell's text, and any cell text
+ *  runs under it. */
+export interface TableCellImage {
+  /** The `Resource.id` of a `bitmap` / `svg` resource. A table resource, or
+   *  an id that matches nothing, leaves the cell text-only. */
+  resourceId: string;
+  /** Width as a fraction of the cell's inner width, in `(0, 1]`. Default 1
+   *  (the full inner width; a bitmap narrower than that keeps its size). */
+  width?: number;
+}
+
 export interface TableCell {
   /** Cell content (plain text / inline markdown). */
   content: string;
+  /** Optional image drawn inside the cell, above the content. */
+  image?: TableCellImage;
   /** Number of columns this cell spans. Default 1. */
   colSpan?: number;
   /** Number of rows this cell spans. Default 1. */

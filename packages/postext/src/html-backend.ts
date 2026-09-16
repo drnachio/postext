@@ -308,7 +308,35 @@ function renderResourceLine(
   );
 }
 
-function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number): string {
+/** An image fitted to a box: `<img>` from `resourceImageUrl`, or the neutral
+ *  placeholder the canvas backend paints when nothing is registered. */
+function renderFittedImage(
+  url: string | undefined,
+  alt: string,
+  label: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): string {
+  if (url) {
+    return (
+      `<img src="${esc(url)}" alt="${esc(alt)}" style="position:absolute;` +
+      `left:${x}px;top:${y}px;width:${w}px;height:${h}px;" />`
+    );
+  }
+  const labelSize = Math.max(10, Math.min(16, h * 0.1));
+  return (
+    `<div aria-hidden="true" style="position:absolute;` +
+    `left:${x}px;top:${y}px;width:${w}px;height:${h}px;` +
+    `background:rgba(160,160,160,0.12);border:1px solid rgba(160,160,160,0.5);box-sizing:border-box;` +
+    `display:flex;align-items:center;justify-content:center;` +
+    `font:${labelSize}px sans-serif;color:rgba(120,120,120,0.8);` +
+    `">${label}</div>`
+  );
+}
+
+function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, options: RenderHtmlOptions): string {
   const t = rb.table;
   if (!t) return '';
   const parts: string[] = [];
@@ -361,6 +389,14 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number):
     italic: t.headerItalicFontString,
     boldItalic: t.headerBoldItalicFontString,
   };
+  // Cell images (bitmap / SVG resources embedded in cells), then text.
+  for (const cell of t.cells) {
+    const img = cell.image;
+    if (!img) continue;
+    const url = options.resourceImageUrl?.(img.fileId);
+    const { x, y, width, height } = img.rect;
+    parts.push(renderFittedImage(url, '', img.kind === 'svg' ? 'SVG' : 'Image', x, y, width, height));
+  }
   for (const cell of t.cells) {
     const fonts = cell.isHeader ? headerFonts : bodyFonts;
     const color = cell.isHeader ? t.headerColor : t.color;
@@ -392,26 +428,10 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
     const url = rb.fileId ? options.resourceImageUrl?.(rb.fileId) : undefined;
-    if (url) {
-      const alt = rb.resource.altText ?? '';
-      parts.push(
-        `<img src="${esc(url)}" alt="${esc(alt)}" style="position:absolute;` +
-        `left:${bx}px;top:${by}px;width:${bw}px;height:${bh}px;" />`,
-      );
-    } else {
-      // Neutral placeholder, matching the canvas backend's colours.
-      const labelSize = Math.max(10, Math.min(16, bh * 0.1));
-      parts.push(
-        `<div aria-hidden="true" style="position:absolute;` +
-        `left:${bx}px;top:${by}px;width:${bw}px;height:${bh}px;` +
-        `background:rgba(160,160,160,0.12);border:1px solid rgba(160,160,160,0.5);box-sizing:border-box;` +
-        `display:flex;align-items:center;justify-content:center;` +
-        `font:${labelSize}px sans-serif;color:rgba(120,120,120,0.8);` +
-        `">${rb.kind === 'svg' ? 'SVG' : 'Image'}</div>`,
-      );
-    }
+    // `<img>`, or a neutral placeholder matching the canvas backend's colours.
+    parts.push(renderFittedImage(url, rb.resource.altText ?? '', rb.kind === 'svg' ? 'SVG' : 'Image', bx, by, bw, bh));
   } else if (rb.kind === 'table') {
-    parts.push(renderResourceTable(rb, bx, by));
+    parts.push(renderResourceTable(rb, bx, by, options));
   }
 
   // Caption bar (behind the caption lines), like other absolute decorations.

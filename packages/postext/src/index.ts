@@ -13,7 +13,7 @@ export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, ini
 export type { MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure';
 export { hyphenateText, setHyphenationLocale } from './hyphenate';
 export { parseMarkdown } from './parse';
-export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setAlignment, parseTSV } from './table/model';
+export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setAlignment, parseTSV } from './table/model';
 export type { CellPos, CellRange } from './table/model';
 export { extractFrontmatter } from './frontmatter';
 export type { ParsedFrontmatter } from './frontmatter';
@@ -43,6 +43,7 @@ export type {
   Resource,
   TableCell,
   TableCellAlign,
+  TableCellImage,
   TableCellVerticalAlign,
   TableCellPos,
   TableModel,
@@ -218,6 +219,7 @@ export type {
   ResolvedCalloutBlock,
   VDTCaptionBar,
   VDTResourceTableCell,
+  VDTResourceTableCellImage,
   VDTResourceTableLayout,
 } from './vdt';
 export { computeColumnEdges } from './pipeline/resourceLayout';

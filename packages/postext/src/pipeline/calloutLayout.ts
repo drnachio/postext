@@ -262,6 +262,7 @@ function offsetResourceBlock(rb: ResolvedResourceBlock, ox: number, oy: number):
   if (rb.table) {
     for (const cell of rb.table.cells) {
       cell.rect.x += ox; cell.rect.y += oy;
+      if (cell.image) { cell.image.rect.x += ox; cell.image.rect.y += oy; }
       for (const cl of cell.lines) { cl.bbox.x += ox; cl.bbox.y += oy; cl.baseline += oy; }
     }
   }

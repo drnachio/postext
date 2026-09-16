@@ -6,6 +6,8 @@ import {
   AlignRight,
   ClipboardPaste,
   Columns,
+  FileCode,
+  Image as ImageIcon,
   Merge,
   Rows,
   Split,
@@ -13,6 +15,13 @@ import {
 } from 'lucide-react';
 import type { TableCellAlign } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext';
+import { Menu, MenuItem, MenuSeparator } from '../../../ui';
+
+/** An image-bearing resource the active cell can embed. */
+export interface TableEditorImageOption {
+  id: string;
+  kind: 'bitmap' | 'svg';
+}
 
 // ---------------------------------------------------------------------------
 // TableEditorToolbar — structural & formatting actions for the table editor.
@@ -41,6 +50,12 @@ interface TableEditorToolbarProps {
   onToggleHeaderColumn: () => void;
   onSetAlign: (align: TableCellAlign) => void;
   onPasteTsv: () => void;
+  /** Bitmap / SVG resources offered for embedding in the active cell. */
+  imageOptions: TableEditorImageOption[];
+  /** Resource id of the image embedded in the active cell, if any. */
+  activeImageId: string | undefined;
+  /** Embed the given resource in the active cell (`undefined` clears it). */
+  onSetImage: (resourceId: string | undefined) => void;
 }
 
 const btnBase =
@@ -106,9 +121,13 @@ export function TableEditorToolbar({
   onToggleHeaderColumn,
   onSetAlign,
   onPasteTsv,
+  imageOptions,
+  activeImageId,
+  onSetImage,
 }: TableEditorToolbarProps) {
   const labels = useSandboxLabels();
   const iconSize = 13;
+  const imageActive = activeImageId !== undefined;
   return (
     <div
       className="flex flex-wrap items-center gap-1.5 rounded border p-1"
@@ -182,6 +201,49 @@ export function TableEditorToolbar({
         >
           <AlignRight size={iconSize} aria-hidden="true" />
         </Btn>
+      </Group>
+      <Divider />
+      <Group>
+        <Menu
+          side="bottom"
+          align="start"
+          trigger={
+            <button
+              type="button"
+              aria-label={labels.tableEditorImage}
+              aria-pressed={imageActive}
+              title={labels.tableEditorImage}
+              className={btnBase}
+              style={{
+                color: 'var(--foreground)',
+                background: imageActive ? 'var(--surface)' : 'none',
+                border: '1px solid var(--rule)',
+                cursor: 'pointer',
+              }}
+            >
+              <ImageIcon size={iconSize} aria-hidden="true" />
+            </button>
+          }
+        >
+          <MenuItem onClick={() => onSetImage(undefined)} selected={!imageActive} disabled={!imageActive}>
+            {labels.tableEditorImageNone}
+          </MenuItem>
+          <MenuSeparator />
+          {imageOptions.length === 0 ? (
+            <MenuItem disabled>{labels.tableEditorImageEmpty}</MenuItem>
+          ) : (
+            imageOptions.map((option) => (
+              <MenuItem
+                key={option.id}
+                icon={option.kind === 'svg' ? <FileCode size={12} /> : <ImageIcon size={12} />}
+                selected={option.id === activeImageId}
+                onClick={() => onSetImage(option.id)}
+              >
+                {option.id}
+              </MenuItem>
+            ))
+          )}
+        </Menu>
       </Group>
       <Divider />
       <Group>

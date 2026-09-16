@@ -47,6 +47,7 @@ import type {
   ResolvedResourceBlock,
   VDTLine,
   VDTResourceTableCell,
+  VDTResourceTableCellImage,
   VDTLineSegment,
   VDTResourceTableLayout,
   VDTTableSlice,
@@ -290,21 +291,29 @@ function measureCellContent(
   spans: InlineSpan[],
   set: CellFontSet,
   width: number,
-  textAlign: 'left' | 'center',
+  textAlign: TableCellAlign,
   listGapPx: number,
 ): { lines: VDTLine[]; totalHeight: number } {
   const paragraphs = splitCellParagraphs(spans);
   const lines: VDTLine[] = [];
   let y = 0;
-  const measure = (ps: InlineSpan[], w: number, align: 'left' | 'center') => measureRichBlock(
+  const measure = (ps: InlineSpan[], w: number) => measureRichBlock(
     ps, set.fontString, set.boldFontString, set.italicFontString, set.boldItalicFontString,
-    Math.max(1, w), set.lineHeightPx, { textAlign: align },
+    Math.max(1, w), set.lineHeightPx, { textAlign: 'left' },
   );
+  // Plain paragraphs follow the cell's horizontal alignment: the measurer
+  // sets every line flush left at its natural width, so a centred or
+  // right-aligned line is pushed over by the slack. List items stay flush
+  // left (their markers align).
+  const slack = (line: VDTLine): number =>
+    textAlign === 'center' ? Math.max(0, (width - line.bbox.width) / 2)
+      : textAlign === 'right' ? Math.max(0, width - line.bbox.width)
+        : 0;
   for (const paragraph of paragraphs) {
     const item = takeCellItemMarker(paragraph);
     if (!item) {
-      const m = measure(paragraph, width, textAlign);
-      lines.push(...shiftLines(m.lines, 0, y));
+      const m = measure(paragraph, width);
+      lines.push(...m.lines.map((line) => shiftLines([line], slack(line), y)[0]!));
       y += m.lines.length * set.lineHeightPx;
       continue;
     }
@@ -312,7 +321,7 @@ function measureCellContent(
     const indentPx = markerWidth + listGapPx;
     const levelOffset = (item.marker.level - 1) * indentPx;
     const textX = levelOffset + indentPx;
-    const m = measure(item.spans, width - textX, 'left');
+    const m = measure(item.spans, width - textX);
     m.lines.forEach((line, i) => {
       if (i === 0) {
         const head: VDTLineSegment[] = [
@@ -337,6 +346,67 @@ function measureCellContent(
     y += m.lines.length * set.lineHeightPx;
   }
   return { lines, totalHeight: y };
+}
+
+/** A cell image resolved to its resource and fitted into the cell's inner
+ *  width: the payload ids plus the box it takes, relative to the cell's
+ *  content origin (top-left inside the padding). */
+interface FittedCellImage {
+  resourceId: string;
+  kind: 'bitmap' | 'svg';
+  fileId: string;
+  format?: string;
+  x: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Resolve `TableCell.image` against the document's resources and size it:
+ * the image takes `image.width` of the cell's inner width (all of it by
+ * default) with its aspect ratio kept — a bitmap narrower than that keeps
+ * its intrinsic size, like a floated figure — and sits at the cell's
+ * horizontal alignment. An id that matches no bitmap / SVG resource, or a
+ * payload without a file, yields null and the cell lays out text-only.
+ */
+function fitCellImage(
+  image: TableCell['image'],
+  align: TableCellAlign,
+  innerWidth: number,
+  resources: Resource[],
+): FittedCellImage | null {
+  if (!image) return null;
+  const resource = resources.find((r) => r.id === image.resourceId);
+  if (!resource) return null;
+  const fraction = image.width !== undefined && Number.isFinite(image.width) && image.width > 0
+    ? Math.min(1, image.width)
+    : 1;
+  const target = Math.max(1, innerWidth * fraction);
+  let fileId: string | undefined;
+  let format: string | undefined;
+  let kind: 'bitmap' | 'svg';
+  let width: number;
+  let height: number;
+  if (resource.kind === 'bitmap' && resource.bitmap) {
+    kind = 'bitmap';
+    fileId = resource.bitmap.fileId;
+    format = resource.bitmap.format;
+    const fit = fitWidth(resource.bitmap.width, resource.bitmap.height, target);
+    width = fit.width;
+    height = fit.height;
+  } else if (resource.kind === 'svg' && resource.svg) {
+    kind = 'svg';
+    fileId = resource.svg.fileId;
+    const iw = resource.svg.width ?? 0;
+    const ih = resource.svg.height ?? 0;
+    width = target;
+    height = iw > 0 && ih > 0 ? target * (ih / iw) : target * 0.75;
+  } else {
+    return null;
+  }
+  if (!fileId) return null;
+  const x = align === 'center' ? (innerWidth - width) / 2 : align === 'right' ? innerWidth - width : 0;
+  return { resourceId: resource.id, kind, fileId, format, x: Math.max(0, x), width, height };
 }
 
 /** Smallest border thickness (px) we let through: thinner rules would vanish
@@ -498,6 +568,7 @@ function layoutTable(
     verticalAlign: TableCellVerticalAlign;
     lines: VDTLine[];
     contentHeight: number;
+    image: FittedCellImage | null;
   }
   const measured: Measured[] = [];
   const rowMinHeight = new Array<number>(rowCount).fill(body.lineHeightPx);
@@ -537,10 +608,17 @@ function layoutTable(
         spans,
         set,
         Math.max(1, cellWidth),
-        cell.align === 'center' ? 'center' : 'left',
+        cell.align ?? 'left',
         style.listGapPx,
       );
-      const contentHeight = Math.max(set.lineHeightPx, m.totalHeight) + cellPaddingPx * 2;
+      // An embedded image sits at the top of the cell; the text (when
+      // there is any) runs under it, a padding's worth below.
+      const image = cell.hiddenBy ? null : fitCellImage(cell.image, cell.align ?? 'left', Math.max(1, cellWidth), resources);
+      const textHeight = m.totalHeight;
+      const textY = image ? image.height + (textHeight > 0 ? cellPaddingPx : 0) : 0;
+      const lines = image && textHeight > 0 ? shiftLines(m.lines, 0, textY) : m.lines;
+      const stackHeight = image ? textY + textHeight : textHeight;
+      const contentHeight = Math.max(set.lineHeightPx, stackHeight) + cellPaddingPx * 2;
       measured.push({
         row: r,
         sliceRow: si,
@@ -550,8 +628,9 @@ function layoutTable(
         isHeader,
         align: cell.align ?? 'left',
         verticalAlign: cell.verticalAlign ?? 'top',
-        lines: m.lines,
+        lines,
         contentHeight,
+        image,
       });
       // Single-row cells drive their row's minimum height directly.
       if (rowSpan === 1) {
@@ -612,6 +691,15 @@ function layoutTable(
     // Place lines inside the cell with padding; horizontal alignment is applied
     // by the renderer via the cell rect + align flag.
     const placed = shiftLines(m.lines, x0 + cellPaddingPx, y0 + cellPaddingPx);
+    const image: VDTResourceTableCellImage | undefined = m.image
+      ? {
+          resourceId: m.image.resourceId,
+          kind: m.image.kind,
+          fileId: m.image.fileId,
+          ...(m.image.format !== undefined ? { format: m.image.format } : {}),
+          rect: createBoundingBox(x0 + cellPaddingPx + m.image.x, y0 + cellPaddingPx, m.image.width, m.image.height),
+        }
+      : undefined;
     return {
       row: m.row,
       col: m.col,
@@ -622,6 +710,7 @@ function layoutTable(
       verticalAlign: m.verticalAlign,
       rect,
       lines: placed,
+      ...(image ? { image } : {}),
     };
   });
 
@@ -924,6 +1013,9 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
         ...cell,
         rect: createBoundingBox(cell.rect.x, cell.rect.y + bodyY, cell.rect.width, cell.rect.height),
         lines: shiftLines(cell.lines, 0, bodyY),
+        ...(cell.image
+          ? { image: { ...cell.image, rect: createBoundingBox(cell.image.rect.x, cell.image.rect.y + bodyY, cell.image.rect.width, cell.image.rect.height) } }
+          : {}),
       })),
     };
   }

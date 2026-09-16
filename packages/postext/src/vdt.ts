@@ -135,6 +135,20 @@ export interface VDTLine {
 /** A single laid-out table cell: its primary grid position, pixel rect within
  *  the block, alignment, header flag, and the measured rich-text lines of its
  *  content. Cells covered by a merge are omitted (only the primary is kept). */
+/** A cell's embedded image (`TableCell.image`), resolved to its payload and
+ *  placed inside the cell. */
+export interface VDTResourceTableCellImage {
+  /** The referenced `Resource.id`. */
+  resourceId: string;
+  kind: 'bitmap' | 'svg';
+  /** Out-of-band binary id, resolved at render time like a figure's. */
+  fileId: string;
+  /** For bitmaps: the source format (e.g. `'png'`, `'jpeg'`). */
+  format?: string;
+  /** Pixel rect of the image, in the same frame as the cell `rect`. */
+  rect: BoundingBox;
+}
+
 export interface VDTResourceTableCell {
   row: number;
   col: number;
@@ -147,6 +161,8 @@ export interface VDTResourceTableCell {
   rect: BoundingBox;
   /** Measured content lines, with bboxes relative to the cell's text origin. */
   lines: VDTLine[];
+  /** The cell's embedded image, when it has one and the resource resolved. */
+  image?: VDTResourceTableCellImage;
 }
 
 /** Laid-out table geometry for a `kind: 'table'` resource block. */

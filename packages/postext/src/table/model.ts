@@ -1,6 +1,7 @@
 import type {
   TableCell,
   TableCellAlign,
+  TableCellImage,
   TableCellVerticalAlign,
   TableCellPos,
   TableModel,
@@ -32,6 +33,11 @@ const columnCount = (m: TableModel): number =>
 const makeEmptyCell = (isHeader?: boolean): TableCell =>
   isHeader ? { content: '', isHeader: true } : { content: '' };
 
+const cloneImage = (image: TableCellImage): TableCellImage =>
+  image.width !== undefined
+    ? { resourceId: image.resourceId, width: image.width }
+    : { resourceId: image.resourceId };
+
 /** Shallow-clone a single cell, returning a brand-new object. */
 const cloneCell = (cell: TableCell): TableCell => {
   const next: TableCell = { content: cell.content };
@@ -40,6 +46,7 @@ const cloneCell = (cell: TableCell): TableCell => {
   if (cell.isHeader !== undefined) next.isHeader = cell.isHeader;
   if (cell.align !== undefined) next.align = cell.align;
   if (cell.verticalAlign !== undefined) next.verticalAlign = cell.verticalAlign;
+  if (cell.image !== undefined) next.image = cloneImage(cell.image);
   if (cell.hiddenBy !== undefined) {
     next.hiddenBy = { row: cell.hiddenBy.row, col: cell.hiddenBy.col };
   }
@@ -172,6 +179,25 @@ export const setCellContent = (
   const rows = cloneRows(m);
   if (!inBounds(rows, at)) return withRows(m, rows);
   rows[at.row][at.col] = { ...rows[at.row][at.col], content };
+  return withRows(m, rows);
+};
+
+/**
+ * Set (or clear, with `undefined`) the image embedded in the cell at `at`:
+ * a bitmap / SVG resource referenced by id, drawn inside the cell above its
+ * content (see {@link TableCellImage}).
+ */
+export const setCellImage = (
+  m: TableModel,
+  at: CellPos,
+  image: TableCellImage | undefined,
+): TableModel => {
+  const rows = cloneRows(m);
+  if (!inBounds(rows, at)) return withRows(m, rows);
+  const cell = cloneCell(rows[at.row][at.col]);
+  if (image === undefined) delete cell.image;
+  else cell.image = cloneImage(image);
+  rows[at.row][at.col] = cell;
   return withRows(m, rows);
 };
 

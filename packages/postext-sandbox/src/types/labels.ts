@@ -989,6 +989,12 @@ export interface SandboxLabels {
   tableEditorColumnWidthsHint: string;
   tableEditorColumnWidthAria: string;
   tableEditorColumnWidthsEqual: string;
+  tableEditorImage: string;
+  tableEditorImageNone: string;
+  tableEditorImageEmpty: string;
+  tableEditorImageWidth: string;
+  tableEditorImageWidthHint: string;
+  tableEditorImageChipAria: string;
   fontLabel: string;
   sizeLabel: string;
   colorLabel: string;
