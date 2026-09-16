@@ -25,18 +25,21 @@
  * become clickable link annotations targeting the resource embed's destination.
  */
 
-import { type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
+import { PDFHexString, type Color, type PDFImage, type PDFDocument, type PDFEmbeddedPage, type PDFFont } from 'pdf-lib';
 import type {
   VDTBlock,
   VDTLine,
   VDTDocument,
   ResolvedResourceBlock,
+  VDTResourceTableCell,
 } from 'postext';
 import { applySingleInkToSvg, resolveColorValue } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import { type PageCtx, drawTextPx, drawLinePx, fillRectPx, colorFromHex } from './primitives';
 import { LinkRegistry } from './links';
+import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
+import type { StructureFlow } from './structureFlow';
 import {
   svgToVectorDrawing,
   drawVectorDrawing,
@@ -385,7 +388,10 @@ interface PaintFonts {
   boldItalic: string;
 }
 
-/** Paint one absolutely-positioned rich-text line; records ref link rects. */
+/** Paint one absolutely-positioned rich-text line; records ref link rects.
+ *  In a tagged render the text joins `elem` (refs get a `Link` child) and
+ *  word spaces are painted as real glyphs; without `elem` the line joins
+ *  whatever sequence is open (an artifact for repeated table headers). */
 function paintLine(
   ctx: PageCtx,
   line: VDTLine,
@@ -396,6 +402,7 @@ function paintLine(
   linkRegistry: LinkRegistry | undefined,
   resolveRefId: ((seg: { refResourceId?: string }) => string | undefined),
   labelColor: Color = color,
+  elem?: StructElem,
 ): void {
   const baseFont = fontCache.get(fonts.normal);
   if (!baseFont) return;
@@ -404,6 +411,10 @@ function paintLine(
     let x = line.bbox.x;
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
+        if (ctx.tags && seg.text) {
+          tagContent(ctx, elem);
+          drawTextPx(ctx, seg.text, x, line.baseline, baseFont, baseSize, color);
+        }
         x += seg.width;
         continue;
       }
@@ -412,6 +423,8 @@ function paintLine(
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
       const refId = resolveRefId(seg);
       const segColor = refId !== undefined ? linkColor : seg.captionLabel ? labelColor : color;
+      const link = refId !== undefined && elem ? elem.child('Link') : undefined;
+      tagContent(ctx, link ?? elem);
       drawTextPx(ctx, seg.text, x, line.baseline, font, size, segColor);
       if (refId !== undefined && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
@@ -419,13 +432,80 @@ function paintLine(
         const y2 = pageHeightPt - (line.bbox.y) * scale;
         const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
         const x2 = (x + seg.width) * scale;
-        linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], refId);
+        linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], refId, link ? { elem: link, contents: seg.text } : undefined);
       }
       x += seg.width;
     }
     return;
   }
+  tagContent(ctx, elem);
   drawTextPx(ctx, line.text, line.bbox.x, line.baseline, baseFont, baseSize, color);
+}
+
+/** Layout attributes of a figure: its bounding box on the page (PDF user
+ *  space, bottom-up) and block placement. */
+function figureLayout(ctx: PageCtx, xPx: number, yPx: number, wPx: number, hPx: number): StructAttrs['attributes'] {
+  const { scale, pageHeightPt } = ctx;
+  const bbox = ctx.page.doc.context.obj([
+    xPx * scale,
+    pageHeightPt - (yPx + hPx) * scale,
+    (xPx + wPx) * scale,
+    pageHeightPt - yPx * scale,
+  ]);
+  return [{ owner: 'Layout', entries: { BBox: bbox, Placement: 'Block' } }];
+}
+
+/** Plain text of a resource caption, for figure alt text fallbacks. */
+function captionText(rb: ResolvedResourceBlock): string {
+  return rb.captionLines.map((l) => l.text).join(' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Alt text of a figure: the resource's `altText`, else its caption, else
+ *  its label (`Figure 1.2`) — PDF/UA-1 §7.3 requires one on every figure. */
+function figureAlt(rb: ResolvedResourceBlock): string {
+  return rb.resource.altText?.trim() || captionText(rb) || `${rb.captionPrefix} ${rb.number}`.trim();
+}
+
+/** Rows whose every cell is a header cell: the column-header rows, which
+ *  a continuation slice repeats and an accessible render then flags as
+ *  artifacts (the reader already met them on the first slice). */
+function headerRows(cells: VDTResourceTableCell[]): Set<number> {
+  const rows = new Map<number, boolean>();
+  for (const cell of cells) rows.set(cell.row, (rows.get(cell.row) ?? true) && cell.isHeader);
+  const out = new Set<number>();
+  for (const [row, allHeader] of rows) if (allHeader) out.add(row);
+  return out;
+}
+
+/** Build the `TR` › `TH` / `TD` elements of a table slice: one element per
+ *  cell in row / column order, with span and scope attributes. Cells of
+ *  repeated header rows on a continuation slice get no element. */
+function tableCellElems(
+  table: StructElem,
+  cells: VDTResourceTableCell[],
+  continued: boolean,
+): Map<VDTResourceTableCell, StructElem> {
+  const out = new Map<VDTResourceTableCell, StructElem>();
+  const heads = headerRows(cells);
+  const ordered = [...cells].sort((a, b) => a.row - b.row || a.col - b.col);
+  let row: StructElem | undefined;
+  let rowIndex = -1;
+  for (const cell of ordered) {
+    if (continued && heads.has(cell.row)) continue;
+    if (cell.row !== rowIndex) {
+      rowIndex = cell.row;
+      row = table.child('TR');
+    }
+    const entries: Record<string, number | string> = {};
+    if (cell.colSpan > 1) entries.ColSpan = cell.colSpan;
+    if (cell.rowSpan > 1) entries.RowSpan = cell.rowSpan;
+    if (cell.isHeader) entries.Scope = heads.has(cell.row) ? 'Column' : 'Row';
+    const attrs: StructAttrs = Object.keys(entries).length > 0
+      ? { attributes: [{ owner: 'Table', entries }] }
+      : {};
+    out.set(cell, row!.child(cell.isHeader ? 'TH' : 'TD', attrs));
+  }
+  return out;
 }
 
 function renderTable(
@@ -437,9 +517,13 @@ function renderTable(
   images: ResourceImageMap,
   linkColor: Color,
   linkRegistry: LinkRegistry | undefined,
+  tableElem: StructElem | undefined,
 ): void {
   const t = rb.table;
   if (!t) return;
+  // Cell grid, fills and rules are layout; the reader gets the cell text.
+  tagArtifact(ctx, { type: 'Layout' });
+  const cellElems = tableElem ? tableCellElems(tableElem, t.cells, !!rb.slice?.continued) : undefined;
   const borderColor = colorFromHex(t.borderColor, ctx.colorSpace);
   const headerBg = t.headerBackground ? colorFromHex(t.headerBackground, ctx.colorSpace) : undefined;
   const bodyBg = t.bodyBackground ? colorFromHex(t.bodyBackground, ctx.colorSpace) : undefined;
@@ -493,6 +577,17 @@ function renderTable(
     const img = cell.image;
     if (!img) continue;
     const { x, y, width, height } = img.rect;
+    const cellElem = cellElems?.get(cell);
+    if (cellElems) {
+      if (cellElem) {
+        tagContent(ctx, cellElem.child('Figure', {
+          alt: img.altText?.trim() || img.resourceId,
+          attributes: figureLayout(ctx, x, y, width, height),
+        }));
+      } else {
+        tagArtifact(ctx, { type: 'Layout' });
+      }
+    }
     const embedded = images.get(img.fileId);
     if (embedded) drawEmbeddedResource(ctx, embedded, x, y, width, height);
     else fillRectPx(ctx, x, y, width, height, colorFromHex('#eeeeee', ctx.colorSpace));
@@ -501,8 +596,10 @@ function renderTable(
   for (const cell of t.cells) {
     const fonts = cell.isHeader ? headerFonts : bodyFonts;
     const color = cell.isHeader ? headerColor : bodyColor;
+    const cellElem = cellElems?.get(cell);
+    if (cellElems && !cellElem) tagArtifact(ctx, { type: 'Layout' });
     for (const line of cell.lines) {
-      paintLine(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, (seg) => seg.refResourceId);
+      paintLine(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, (seg) => seg.refResourceId, color, cellElem);
     }
   }
 }
@@ -518,6 +615,7 @@ export function renderResourceBlock(
   fontCache: FontCache,
   images: ResourceImageMap,
   linkRegistry: LinkRegistry | undefined,
+  structure?: StructureFlow,
 ): void {
   const rb = block.resourceBlock;
   if (!rb) return;
@@ -527,8 +625,27 @@ export function renderResourceBlock(
   const bh = rb.bodyRect.height;
   const { scale, pageHeightPt } = ctx;
   const linkColor = colorFromHex(rb.linkColor, ctx.colorSpace);
+  const continued = !!rb.slice?.continued;
+
+  // Structure: a `Figure` (alt text required) or a `Table` (its alt text as
+  // the summary), shared by the slices of a split table.
+  let owner: StructElem | undefined;
+  if (structure) {
+    if (rb.kind === 'table') {
+      const alt = rb.resource.altText?.trim();
+      owner = structure.resourceElem(block, 'Table', alt
+        ? { attributes: [{ owner: 'Table', entries: { Summary: PDFHexString.fromText(alt) } }] }
+        : {});
+    } else {
+      owner = structure.resourceElem(block, 'Figure', {
+        alt: figureAlt(rb),
+        attributes: figureLayout(ctx, bx, by, bw, bh),
+      });
+    }
+  }
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
+    tagContent(ctx, owner);
     const embedded = rb.fileId ? images.get(rb.fileId) : undefined;
     if (embedded) {
       drawEmbeddedResource(ctx, embedded, bx, by, bw, bh);
@@ -536,7 +653,7 @@ export function renderResourceBlock(
       drawPlaceholder(ctx, rb, bx, by);
     }
   } else if (rb.kind === 'table') {
-    renderTable(ctx, rb, bx, by, fontCache, images, linkColor, linkRegistry);
+    renderTable(ctx, rb, bx, by, fontCache, images, linkColor, linkRegistry, owner);
   }
 
   // Named destination for inline refs: top-left of the placed block (the
@@ -548,11 +665,13 @@ export function renderResourceBlock(
 
   // Caption bar (behind the caption lines).
   if (rb.captionBar) {
+    tagArtifact(ctx, { type: 'Layout' });
     const { rect, background } = rb.captionBar;
     fillRectPx(ctx, rect.x, rect.y, rect.width, rect.height, colorFromHex(background, ctx.colorSpace));
   }
 
-  // Caption.
+  // Caption — the first slice's is the `Caption` of the figure / table; the
+  // repeated (continued) caption of a later slice is an artifact.
   const captionColor = colorFromHex(rb.captionColor, ctx.colorSpace);
   const captionLabelColor = colorFromHex(rb.captionLabelColor, ctx.colorSpace);
   const captionFonts: PaintFonts = {
@@ -561,8 +680,12 @@ export function renderResourceBlock(
     italic: rb.captionItalicFontString,
     boldItalic: rb.captionBoldItalicFontString,
   };
+  if (structure && rb.captionLines.length > 0 && continued) tagArtifact(ctx, { type: 'Layout' });
+  const captionElem = structure && owner && rb.captionLines.length > 0 && !continued
+    ? structure.captionElem(owner)
+    : undefined;
   for (const line of rb.captionLines) {
-    paintLine(ctx, line, captionFonts, fontCache, captionColor, linkColor, linkRegistry, (seg) => seg.refResourceId, captionLabelColor);
+    paintLine(ctx, line, captionFonts, fontCache, captionColor, linkColor, linkRegistry, (seg) => seg.refResourceId, captionLabelColor, captionElem);
   }
 
   // Note.
@@ -573,8 +696,15 @@ export function renderResourceBlock(
     italic: rb.noteItalicFontString,
     boldItalic: rb.noteBoldItalicFontString,
   };
-  // Note, or the "continued" marker of a table slice that goes on.
-  for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
-    paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, (seg) => seg.refResourceId);
+  const noteElem = structure && rb.noteLines.length > 0 ? structure.noteElem(block) : undefined;
+  for (const line of rb.noteLines) {
+    paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, (seg) => seg.refResourceId, noteColor, noteElem);
+  }
+  // The "continued" marker of a table slice that goes on is a layout cue.
+  if (rb.continuesLines && rb.continuesLines.length > 0) {
+    tagArtifact(ctx, { type: 'Layout' });
+    for (const line of rb.continuesLines) {
+      paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, (seg) => seg.refResourceId);
+    }
   }
 }

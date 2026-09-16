@@ -50,7 +50,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Unidades y colores](#unidades-y-colores) + [Paleta de colores](#paleta-de-colores) — `Dimension`, `ColorValue`, colores con nombre.
 - [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
-- [Generación de PDF (configuración)](#generación-de-pdf-configuración) — outlines y espacio de color forzado para el backend PDF.
+- [Generación de PDF (configuración)](#generación-de-pdf-configuración) — outlines, salida accesible (etiquetada) y espacio de color forzado para el backend PDF.
 - [Depuración](#depuración) — superposiciones visuales y avisos de autoría para el editor.
 - [Configuración avanzada](#configuración-avanzada) — tipos declarados, soporte futuro.
 - [Uso programático](#uso-programático) — `buildDocument`, resolvers, cachés.
@@ -3087,6 +3087,7 @@ interface PdfGenerationConfig {
   outlines?: boolean;          // Emitir marcadores PDF desde el árbol de encabezados.
   forceColorSpace?: boolean;   // Convertir todos los colores a `colorSpace`.
   colorSpace?: PdfColorSpace;  // Espacio destino cuando `forceColorSpace` es true.
+  accessible?: boolean;        // Salida etiquetada orientada a PDF/UA (árbol de estructura, texto alternativo, idioma).
 }
 ```
 
@@ -3118,12 +3119,19 @@ interface PdfGenerationConfig {
       <td><code>'cmyk'</code></td>
       <td>Espacio de color destino usado cuando `forceColorSpace` está activado. Usa `'cmyk'` para imprenta offset, `'rgb'` para PDFs solo-pantalla y `'grayscale'` para pruebas en blanco y negro. No tiene efecto si `forceColorSpace` es `false`.</td>
     </tr>
+    <tr>
+      <td><code>accessible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Genera un PDF accesible y etiquetado, orientado a PDF/UA-1: un árbol de estructura lógica en orden de lectura (títulos que nunca saltan de nivel, párrafos, listas, citas, callouts, tablas con celdas de cabecera, figuras con su texto alternativo y su pie, fórmulas, referencias como enlaces), el título y el idioma del documento (`bodyText.locale`), la identificación PDF/UA en los metadatos XMP, y toda marca decorativa (fondo de página, filetes, rejilla base, cabeceras y pies corridos, marcas de corte, cabeceras de tabla repetidas) señalada como artefacto para que los lectores de pantalla la omitan. Una figura sin `altText` usa su pie y, si no lo tiene, su etiqueta. Desactívalo solo para masters de imprenta donde la estructura adicional sobre.</td>
+    </tr>
   </tbody>
 </table>
 
 ```ts
 pdfGeneration: {
   outlines: true,
+  accessible: true,
   forceColorSpace: true,
   colorSpace: 'cmyk',
 }
@@ -3139,7 +3147,7 @@ import {
 } from 'postext';
 
 const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
-// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk' }
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk', accessible: true }
 
 const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 // => undefined cuando todo coincide con los valores por defecto

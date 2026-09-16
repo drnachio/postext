@@ -203,6 +203,8 @@ export interface SandboxLabels {
   pdfGenerationSection?: string;
   pdfOutlines?: string;
   pdfOutlinesTooltip?: string;
+  pdfAccessible?: string;
+  pdfAccessibleTooltip?: string;
   pdfForceColorSpace?: string;
   pdfForceColorSpaceTooltip?: string;
   pdfColorSpace?: string;

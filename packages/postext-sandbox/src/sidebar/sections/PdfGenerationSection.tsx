@@ -56,6 +56,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   const isOutlinesDefault = cfg.outlines === D.outlines;
+  const isAccessibleDefault = cfg.accessible === D.accessible;
   const isForceDefault = cfg.forceColorSpace === D.forceColorSpace;
   const isColorSpaceDefault = cfg.colorSpace === D.colorSpace;
 
@@ -78,6 +79,18 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
         }
         isDefault={isOutlinesDefault}
         onReset={() => resetField('outlines')}
+      />
+
+      <ToggleSwitch
+        label={labels.pdfAccessible ?? 'Accessible PDF'}
+        checked={cfg.accessible}
+        onChange={(v) => update({ accessible: v })}
+        tooltip={
+          labels.pdfAccessibleTooltip ??
+          'Tag the PDF for assistive technology (PDF/UA): reading order, headings, lists, tables, figure alt text and language'
+        }
+        isDefault={isAccessibleDefault}
+        onReset={() => resetField('accessible')}
       />
 
       <ToggleSwitch

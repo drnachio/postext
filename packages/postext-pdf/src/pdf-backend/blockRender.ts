@@ -11,11 +11,15 @@ import {
   type ResourceImageMap,
 } from './renderResourceBlock';
 import { LinkRegistry } from './links';
+import { tagArtifact, tagContent, type StructElem } from './tagging';
+import type { StructureFlow } from './structureFlow';
 
 /** Per-document context for resource rendering, threaded through `renderBlock`. */
 export interface ResourceRenderContext {
   images: ResourceImageMap;
   linkRegistry: LinkRegistry;
+  /** Structure mapping of an accessible (tagged) render; absent otherwise. */
+  structure?: StructureFlow;
 }
 
 function renderMathRender(
@@ -53,6 +57,11 @@ function renderMathSegment(
  * `justifiedSpaceWidth` is set, spaces advance by it instead of their
  * measured width. `:ref` segments record a link annotation rectangle so the
  * reference is clickable in the final PDF.
+ *
+ * In a tagged render (`elem` set) the text joins `elem`, each inline formula
+ * gets its own `Formula` element (alt text = its TeX) and each ref a `Link`
+ * element; word spaces are painted as real space glyphs so text extraction
+ * never has to infer them from the gaps of a justified line.
  */
 function renderSegments(
   ctx: PageCtx,
@@ -66,15 +75,24 @@ function renderSegments(
   blockColor: Color,
   fontCache: FontCache,
   linkRegistry: LinkRegistry | undefined,
+  elem: StructElem | undefined,
   justifiedSpaceWidth?: number,
 ): void {
   let x = startX;
   for (const seg of segments) {
     if (seg.kind === 'space') {
+      if (ctx.tags && seg.text) {
+        tagContent(ctx, elem);
+        drawTextPx(ctx, seg.text, x, baseline, blockFont, blockSize, blockColor);
+      }
       x += justifiedSpaceWidth ?? seg.width;
       continue;
     }
     if (seg.kind === 'math') {
+      if (elem) {
+        const formula = elem.type === 'Formula' ? elem : elem.child('Formula', { alt: seg.mathRender?.tex ?? '' });
+        tagContent(ctx, formula);
+      }
       renderMathSegment(ctx, seg, x, baseline, blockColor);
       x += seg.width;
       continue;
@@ -86,6 +104,8 @@ function renderSegments(
       ? block.refColor
       : pickSegmentColor(!!seg.bold, !!seg.italic, block);
     const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
+    const link = seg.refResourceId !== undefined && elem ? elem.child('Link') : undefined;
+    tagContent(ctx, link ?? elem);
     drawTextPx(ctx, seg.text, x, baseline, font, size, color);
     if (seg.refResourceId !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
@@ -93,7 +113,7 @@ function renderSegments(
       const x2 = (x + seg.width) * scale;
       const y2 = pageHeightPt - line.bbox.y * scale;
       const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
-      linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], seg.refResourceId);
+      linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], seg.refResourceId, link ? { elem: link, contents: seg.text } : undefined);
     }
     x += seg.width;
   }
@@ -110,10 +130,11 @@ function renderLine(
   columnX: number,
   fontCache: FontCache,
   linkRegistry: LinkRegistry | undefined,
+  elem: StructElem | undefined,
 ): void {
   const tracked = block.letterSpacing !== undefined && block.letterSpacing > 0;
   if (tracked) ctx.page.pushOperators(setCharacterSpacing(block.letterSpacing! * ctx.scale));
-  renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry);
+  renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry, elem);
   if (tracked) ctx.page.pushOperators(setCharacterSpacing(0));
 }
 
@@ -125,6 +146,7 @@ function renderLineText(
   columnX: number,
   fontCache: FontCache,
   linkRegistry: LinkRegistry | undefined,
+  elem: StructElem | undefined,
 ): void {
   const blockFont = fontCache.get(block.fontString);
   if (!blockFont) return;
@@ -150,7 +172,7 @@ function renderLineText(
     }
     if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, justifiedSpaceWidth);
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, justifiedSpaceWidth);
       return;
     }
   }
@@ -159,7 +181,7 @@ function renderLineText(
     let contentWidth = 0;
     for (const seg of segments) contentWidth += seg.width;
     const startX = line.bbox.x + Math.max(0, (effectiveWidth - contentWidth) / 2);
-    renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry);
+    renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }
 
@@ -167,14 +189,15 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref); otherwise one drawTextPx paints the line.
   if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined)) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry);
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }
 
+  tagContent(ctx, elem);
   drawTextPx(ctx, line.text, line.bbox.x, line.baseline, blockFont, blockSize, blockColor);
 }
 
-function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache): void {
+function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem: StructElem | undefined): void {
   if (
     !block.bulletText ||
     !block.bulletFontString ||
@@ -195,6 +218,7 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache): void
   // midline aligns at bulletY, matching canvas placement within hinting tolerance.
   const midY = block.bulletY ?? firstLine.baseline;
   const baselinePx = midY + size * 0.3;
+  tagContent(ctx, elem);
   drawTextPx(ctx, block.bulletText, block.bulletOffsetX, baselinePx, font, size, color);
 
   // Ordered-list separator styled apart from the number (own font/colour).
@@ -210,6 +234,7 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache): void
 
 function renderStrikethrough(ctx: PageCtx, block: VDTBlock): void {
   if (!block.strikethroughText) return;
+  tagArtifact(ctx, { type: 'Layout' });
   const color = colorFromHex(block.color, ctx.colorSpace);
   const thickness = Math.max(
     1,
@@ -230,8 +255,17 @@ export function renderBlock(
   resourceCtx?: ResourceRenderContext,
 ): void {
   if (block.hidden) return;
+  const structure = resourceCtx?.structure;
   if (block.designOverlay) {
-    renderHeaderFooterSlot(ctx, block.designOverlay, fontCache, resourceCtx?.images);
+    // A heading's advanced design or a callout frame: the overlay's text is
+    // the heading / the callout title, its boxes and icons are decoration.
+    renderHeaderFooterSlot(
+      ctx,
+      block.designOverlay,
+      fontCache,
+      resourceCtx?.images,
+      structure ? { text: () => structure.blockElem(block), artifact: { type: 'Layout' } } : undefined,
+    );
     return;
   }
   if (block.type === 'resource') {
@@ -241,18 +275,20 @@ export function renderBlock(
       fontCache,
       resourceCtx?.images ?? new Map(),
       resourceCtx?.linkRegistry,
+      structure,
     );
     return;
   }
+  const elem = structure && (block.lines.length > 0 || block.bulletText) ? structure.blockElem(block) : undefined;
   if (block.type === 'listItem') {
-    renderBullet(ctx, block, fontCache);
+    renderBullet(ctx, block, fontCache, structure?.bulletElem(block) ?? elem);
   }
   // Justify against the block's own measure (see the canvas backend): blocks
   // inside callouts are narrower than their column.
   void columnWidth;
   void columnX;
   for (const line of block.lines) {
-    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, resourceCtx?.linkRegistry);
+    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, resourceCtx?.linkRegistry, elem);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

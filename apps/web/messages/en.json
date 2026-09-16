@@ -362,6 +362,8 @@
     "pdfGenerationSection": "PDF Generation",
     "pdfOutlines": "Bookmarks",
     "pdfOutlinesTooltip": "Emit PDF outlines so readers can click headings to jump between pages",
+    "pdfAccessible": "Accessible PDF",
+    "pdfAccessibleTooltip": "Tag the PDF for assistive technology (PDF/UA): reading order, headings, lists, tables, figure alt text and language",
     "pdfForceColorSpace": "Force color space",
     "pdfForceColorSpaceTooltip": "Convert every colour in the generated PDF to the selected colour space",
     "pdfColorSpace": "Color space",

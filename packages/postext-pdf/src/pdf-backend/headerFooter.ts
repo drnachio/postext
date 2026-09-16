@@ -8,6 +8,22 @@ import type {
 } from 'postext';
 import { setCharacterSpacing } from 'pdf-lib';
 import { drawEmbeddedResource, type ResourceImageMap } from './renderResourceBlock';
+import { tagArtifact, tagContent, type ArtifactSpec, type StructElem } from './tagging';
+
+/** How an accessible render tags a design slot: its text goes to the
+ *  element `text()` returns (created on first use), or counts as an
+ *  artifact when `text` is absent (running headers / footers); rules,
+ *  boxes and images are always artifacts of class `artifact`. */
+export interface SlotMark {
+  text?: () => StructElem;
+  artifact: ArtifactSpec;
+}
+
+function tagSlotText(ctx: PageCtx, mark: SlotMark | undefined): void {
+  if (!mark) return;
+  if (mark.text) tagContent(ctx, mark.text());
+  else tagArtifact(ctx, mark.artifact);
+}
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
 import {
@@ -94,8 +110,10 @@ function renderTextBlock(
   ctx: PageCtx,
   block: VDTDesignTextBlock,
   fontCache: FontCache,
+  mark: SlotMark | undefined,
 ): void {
   if (block.box) {
+    if (mark) tagArtifact(ctx, mark.artifact);
     drawRoundedBox(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
   }
   const font = fontCache.get(block.fontString);
@@ -108,6 +126,7 @@ function renderTextBlock(
   }
   const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx > 0;
   if (tracked) ctx.page.pushOperators(setCharacterSpacing(block.letterSpacingPx! * ctx.scale));
+  tagSlotText(ctx, mark);
   for (const line of block.lines) {
     drawTextPx(
       ctx,
@@ -154,10 +173,15 @@ export function renderHeaderFooterSlot(
   slot: VDTDesignSlot,
   fontCache: FontCache,
   images?: ResourceImageMap,
+  mark?: SlotMark,
 ): void {
   for (const block of slot.blocks) {
-    if (block.kind === 'text') renderTextBlock(ctx, block, fontCache);
-    else if (block.kind === 'rule') renderRuleBlock(ctx, block);
+    if (block.kind === 'text') {
+      renderTextBlock(ctx, block, fontCache, mark);
+      continue;
+    }
+    if (mark) tagArtifact(ctx, mark.artifact);
+    if (block.kind === 'rule') renderRuleBlock(ctx, block);
     else if (block.kind === 'image') renderImageBlock(ctx, block, images);
     else renderBoxBlock(ctx, block);
   }

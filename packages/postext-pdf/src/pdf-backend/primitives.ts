@@ -14,12 +14,17 @@ import {
 } from 'pdf-lib';
 import { hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
 import type { PdfColorSpace } from 'postext';
+import type { PageTagger } from './tagging';
 
 export interface PageCtx {
   page: PDFPage;
   pageHeightPt: number;
   scale: number;
   colorSpace: PdfColorSpace;
+  /** Marked-content state of an accessible (tagged) render; absent when the
+   *  document is not tagged. Renderers route each drawing call to a
+   *  structure element or flag it as an artifact through it. */
+  tags?: PageTagger;
 }
 
 export function makeScale(dpi: number): number {
@@ -134,6 +139,8 @@ export function pushClipRect(
   const y = pageHeightPt - (yPx + hPx) * scale;
   const width = wPx * scale;
   const height = hPx * scale;
+  // Marked content must nest inside the graphics state it was opened in.
+  ctx.tags?.close();
   ctx.page.pushOperators(
     pushGraphicsState(),
     rectangle(x, y, width, height),
@@ -143,5 +150,6 @@ export function pushClipRect(
 }
 
 export function popClip(ctx: PageCtx): void {
+  ctx.tags?.close();
   ctx.page.pushOperators(popGraphicsState());
 }

@@ -1605,12 +1605,20 @@ export interface PdfGenerationConfig {
   forceColorSpace?: boolean;
   /** Target colour space when `forceColorSpace` is true. */
   colorSpace?: PdfColorSpace;
+  /** Emit an accessible, tagged PDF (PDF/UA-1 oriented): a logical structure
+   *  tree (headings, paragraphs, lists, tables, figures with alt text,
+   *  formulas, links), the document language and title, and every purely
+   *  decorative mark (backgrounds, rules, running headers and footers, cut
+   *  marks) flagged as an artifact so assistive technology skips it.
+   *  Defaults to true. */
+  accessible?: boolean;
 }
 
 export interface ResolvedPdfGenerationConfig {
   outlines: boolean;
   forceColorSpace: boolean;
   colorSpace: PdfColorSpace;
+  accessible: boolean;
 }
 
 export type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';

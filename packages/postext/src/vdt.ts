@@ -145,6 +145,9 @@ export interface VDTResourceTableCellImage {
   fileId: string;
   /** For bitmaps: the source format (e.g. `'png'`, `'jpeg'`). */
   format?: string;
+  /** Alternative text of the image (the resource's `altText`, else its
+   *  caption), for accessible output. */
+  altText?: string;
   /** Pixel rect of the image, in the same frame as the cell `rect`. */
   rect: BoundingBox;
 }
