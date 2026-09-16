@@ -96,7 +96,7 @@ import {
 } from './resourceNumbering';
 import { defaultResourceTypes } from '../defaults/resourceTypes';
 import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
-import { totalGapLines, proposeBalanceLines, collectColumnGaps, firstDivergentColumn, type LooseBudget, MAX_BALANCING_PASSES, type BalanceState, type BalanceProposal, balanceKey } from './columnBalancing';
+import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey } from './columnBalancing';
 import {
   applyBandCap,
   uncapBand,
@@ -3084,63 +3084,211 @@ export function buildDocument(
   const bandCaps = bands.bandCaps;
   let passCount = bands.passCount;
   best.doc.iterationCount = passCount;
-  /** Hints that produced `best` (replayed by the trailing-cap passes). */
-  let bestHints: PassHints = { bandCaps };
 
   // --- Column balancing (vertical justification) ------------------------
   // Iteratively re-place the document with extra grid lines above headings
-  // until every balanceable column ends flush with the page bottom (or no
-  // further adjustment is possible). Each retry recomputes the remaining
-  // gaps on the freshly placed document, so split/keep-with-next decisions
-  // that shift under the new spacing are accounted for. The best layout
-  // (fewest leftover gap lines) always wins — a retry that regresses is
-  // discarded.
+  // (and the other levers) until every balanceable column ends flush with
+  // the page bottom, or no further adjustment is possible. Each retry
+  // recomputes the remaining gaps on the freshly placed document, so
+  // split / keep-with-next decisions that shift under the new spacing are
+  // accounted for. The best layout (fewest leftover gap lines) always wins
+  // — a retry that regresses is discarded.
+  //
+  // The pages between explicit breaks (chapter openers, `:::pagebreak`)
+  // are laid out independently of one another — nothing flows across such
+  // a break, so a lever inside one run of pages cannot move a line of any
+  // other. The loop therefore judges every run (a *segment*, see
+  // `pageSegments`) on its own: a pass places the whole document, but each
+  // segment keeps or rejects its share of the levers by its own score,
+  // blacklists its own cascades, plateaus on its own and spends its own
+  // budget of attempts; a rejected segment gets its pages back from the
+  // best pass it had (`spliceSegments`). A book of thirty chapters thus
+  // balances exactly as its chapters would one by one, instead of one
+  // cascade anywhere costing every page of the book a pass.
   const balancing = best.doc.config.headings.balancing;
   if (!balancing.enabled) return best.doc;
 
-  let bestScore = totalGapLines(best.doc, best.forcedBreakPages);
-  let applied: BalanceState = { lines: new Map(), loose: new Map() };
-  const failedLoose = new Set<number>();
-  const failedLines = new Set<number>();
-  let converged = bestScore === 0;
+  interface Segment {
+    range: PageRange;
+    /** Fewest empty grid lines seen over its columns. */
+    bestScore: number;
+    /** Passes in which the segment tried new levers. */
+    attempts: number;
+    /** Nothing more to do: flush, out of levers, plateaued or out of attempts. */
+    done: boolean;
+    /** Flush, or no lever left to propose (the loop's notion of converged). */
+    stable: boolean;
+    failedLoose: Set<number>;
+    failedLines: Set<number>;
+  }
+
+  /** Levers accepted so far, over every segment (keyed by content index /
+   *  `balanceKey`; each key belongs to exactly one segment). */
+  const applied = { lines: new Map<number, number>(), loose: new Map<number, number>() };
+  let segments: Segment[] = [];
+  /** (Re)derive the segments of the current best layout, keeping the
+   *  attempts and blacklists of the segment at the same position. */
+  const resetSegments = (): void => {
+    const gaps = collectColumnGaps(best.doc, best.forcedBreakPages);
+    const prev = segments;
+    segments = pageSegments(best.doc.pages.length, best.forcedBreakPages).map((range, i) => {
+      const score = gapLinesIn(gaps, range);
+      const old = prev[i];
+      return {
+        range,
+        bestScore: score,
+        attempts: old?.attempts ?? 0,
+        done: score === 0,
+        stable: score === 0,
+        failedLoose: old?.failedLoose ?? new Set<number>(),
+        failedLines: old?.failedLines ?? new Set<number>(),
+      };
+    });
+  };
+
+  const hintsFrom = (
+    lines: ReadonlyMap<number, number>,
+    loose: ReadonlyMap<number, number>,
+    looseBudget?: ReadonlyMap<number, LooseBudget>,
+  ): PassHints => {
+    const extraPx = new Map<number, number>();
+    for (const [idx, n] of lines) if (n > 0) extraPx.set(idx, n * best.doc.baselineGrid);
+    return {
+      balanceExtraPx: extraPx,
+      balanceLooseness: loose,
+      ...(looseBudget ? { balanceLooseBudget: looseBudget } : {}),
+      bandCaps,
+    };
+  };
+
+  const segmentAt = (pageIndex: number): number =>
+    segments.findIndex((s) => pageIndex >= s.range.from && pageIndex <= s.range.to);
+  /** Segment owning each lever key of the current best layout. */
+  const keyOwners = (gaps: readonly ColumnGap[]): Map<number, number> => {
+    const owner = new Map<number, number>();
+    for (const g of gaps) {
+      const si = segmentAt(g.pageIndex);
+      if (si < 0) continue;
+      for (const c of g.candidates) owner.set(balanceKey(c.contentIndex, c.part ?? 0), si);
+    }
+    return owner;
+  };
+  /** First page each content index was placed on. */
+  const pageOfContent = (doc: VDTDocument): Map<number, number> => {
+    const m = new Map<number, number>();
+    for (const b of doc.blocks) {
+      if (b.contentIndex !== undefined && b.pageIndex !== undefined && !m.has(b.contentIndex)) m.set(b.contentIndex, b.pageIndex);
+    }
+    return m;
+  };
+  const inRange = (r: PageRange, p: number | undefined): boolean => p !== undefined && p >= r.from && p <= r.to;
+
+  /** Whether the explicit breaks before / around a segment fell on the same
+   *  pages in `next` as in the best layout — the segment's pages then line
+   *  up and can be compared or spliced. `before` checks only the pages
+   *  ahead of it (an earlier segment's cascade shifts everything after). */
+  const breaksMatch = (next: PassResult, upTo: number): boolean => {
+    for (let p = 0; p < upTo; p++) {
+      if (best.forcedBreakPages.has(p) !== next.forcedBreakPages.has(p)) return false;
+    }
+    return true;
+  };
+  const startIntact = (next: PassResult, s: Segment): boolean => breaksMatch(next, s.range.from);
+  const wholeIntact = (next: PassResult, s: Segment, last: boolean): boolean => {
+    if (!breaksMatch(next, s.range.to + 1)) return false;
+    if (next.doc.pages.length <= s.range.to) return false;
+    return !last || next.doc.pages.length === best.doc.pages.length;
+  };
 
   /**
-   * A rejected pass moved content across a column break somewhere (a
-   * split paragraph whose head no longer fits, a float that lost its slot,
-   * a lead-in that left with its list…): every page after that point is
-   * re-flowed, gaps open elsewhere and a span cap may miss its band. The
-   * levers are meant to be local, so contain the damage: find the first
-   * column whose content changed and blacklist the levers this pass newly
-   * applied there (failing that, on its page; failing that, everywhere), so
-   * the next proposal keeps the working levers before it and tries again
-   * without the one that cascaded. Returns whether anything was blacklisted.
+   * The best layout with the pages of `ranges` taken from `next` (whose
+   * breaks line up with it there): pages, the blocks and warnings on them,
+   * and the pass report entries whose block sits on them.
    */
-  const containCascade = (next: PassResult, proposal: BalanceProposal): boolean => {
-    const div = firstDivergentColumn(best.doc, next.doc);
+  const spliceSegments = (next: PassResult, ranges: readonly PageRange[]): PassResult => {
+    const taken = (p: number | undefined): boolean => ranges.some((r) => inRange(r, p));
+    const pages = best.doc.pages.map((pg, i) => (taken(i) ? next.doc.pages[i]! : pg));
+    const blocks = [
+      ...best.doc.blocks.filter((b) => !taken(b.pageIndex)),
+      ...next.doc.blocks.filter((b) => taken(b.pageIndex)),
+    ].sort((a, b) => (a.pageIndex ?? -1) - (b.pageIndex ?? -1));
+    const warnings = [
+      ...(best.doc.warnings ?? []).filter((w) => !taken(w.pageIndex)),
+      ...(next.doc.warnings ?? []).filter((w) => taken(w.pageIndex)),
+    ].sort((a, b) => a.pageIndex - b.pageIndex);
+    const doc: VDTDocument = { ...best.doc, pages, blocks, ...(warnings.length > 0 ? { warnings } : { warnings: undefined }) };
+    const pageBest = pageOfContent(best.doc);
+    const pageNext = pageOfContent(next.doc);
+    const mergeMap = <V,>(a: ReadonlyMap<number, V>, b: ReadonlyMap<number, V>): Map<number, V> => {
+      const out = new Map<number, V>();
+      for (const [k, v] of a) if (!taken(pageBest.get(k))) out.set(k, v);
+      for (const [k, v] of b) if (taken(pageNext.get(k))) out.set(k, v);
+      return out;
+    };
+    const mergeSet = (a: ReadonlySet<number>, b: ReadonlySet<number>): Set<number> => {
+      const out = new Set<number>();
+      for (const k of a) if (!taken(pageBest.get(k))) out.add(k);
+      for (const k of b) if (taken(pageNext.get(k))) out.add(k);
+      return out;
+    };
+    return {
+      doc,
+      forcedBreakPages: best.forcedBreakPages,
+      bandCapProposals: mergeMap(best.bandCapProposals, next.bandCapProposals),
+      spanPlacedInBand: mergeSet(best.spanPlacedInBand, next.spanPlacedInBand),
+      bandCapsApplied: mergeSet(best.bandCapsApplied, next.bandCapsApplied),
+      looseOutcome: mergeMap(best.looseOutcome, next.looseOutcome),
+    };
+  };
+
+  /**
+   * A rejected segment moved content across a column break somewhere in
+   * its pages (a split paragraph whose head no longer fits, a float that
+   * lost its slot, a lead-in that left with its list…): the pages after
+   * that point re-flow, gaps open elsewhere and a span cap may miss its
+   * band. The levers are meant to be local, so contain the damage: find
+   * the first column of the segment whose content changed and blacklist
+   * the levers this pass newly applied there (failing that, on its page;
+   * failing that, in the whole segment), so the next proposal keeps the
+   * working levers before it and tries again without the one that
+   * cascaded. Returns whether anything was blacklisted.
+   */
+  const containCascade = (
+    next: PassResult,
+    s: Segment,
+    newLines: readonly number[],
+    newLoose: readonly number[],
+    gaps: readonly ColumnGap[],
+  ): boolean => {
+    const div = firstDivergentColumn(best.doc, next.doc, s.range);
     if (!div) return false;
-    const newLines = [...proposal.lines].filter(([k, n]) => n > (applied.lines.get(k) ?? 0)).map(([k]) => k);
-    const newLoose = [...proposal.loose.keys()].filter((k) => !applied.loose.has(k));
     if (newLines.length === 0 && newLoose.length === 0) return false;
-    const gaps = collectColumnGaps(best.doc, best.forcedBreakPages);
     const blacklist = (cands: ReadonlySet<number> | null): boolean => {
       let hit = false;
-      for (const k of newLines) if (!cands || cands.has(k)) { failedLines.add(k); hit = true; }
-      for (const k of newLoose) if (!cands || cands.has(k)) { failedLoose.add(k); hit = true; }
+      for (const k of newLines) if (!cands || cands.has(k)) { s.failedLines.add(k); hit = true; }
+      for (const k of newLoose) if (!cands || cands.has(k)) { s.failedLoose.add(k); hit = true; }
       return hit;
     };
-    const inColumn = gaps
-      .filter((g) => g.pageIndex === div.pageIndex && g.columnIndex === div.columnIndex)
-      .flatMap((g) => g.candidates.map((c) => balanceKey(c.contentIndex, c.part ?? 0)));
-    if (blacklist(new Set(inColumn))) return true;
-    const onPage = gaps
-      .filter((g) => g.pageIndex === div.pageIndex)
-      .flatMap((g) => g.candidates.map((c) => balanceKey(c.contentIndex, c.part ?? 0)));
-    if (blacklist(new Set(onPage))) return true;
+    const keysOf = (pick: (g: ColumnGap) => boolean): Set<number> =>
+      new Set(gaps.filter(pick).flatMap((g) => g.candidates.map((c) => balanceKey(c.contentIndex, c.part ?? 0))));
+    if (blacklist(keysOf((g) => g.pageIndex === div.pageIndex && g.columnIndex === div.columnIndex))) return true;
+    if (blacklist(keysOf((g) => g.pageIndex === div.pageIndex))) return true;
     return blacklist(null);
   };
 
+  let balancingPasses = 0;
   const balance = (): void => {
-    while (!converged && passCount < MAX_BALANCING_PASSES) {
+    while (balancingPasses < MAX_BALANCING_PASSES_PER_DOCUMENT) {
+      const active = segments.filter((s) => !s.done);
+      if (active.length === 0) break;
+      const gaps = collectColumnGaps(best.doc, best.forcedBreakPages);
+      const owner = keyOwners(gaps);
+      const failedLoose = new Set<number>();
+      const failedLines = new Set<number>();
+      for (const s of segments) {
+        for (const k of s.failedLoose) failedLoose.add(k);
+        for (const k of s.failedLines) failedLines.add(k);
+      }
       const proposal = proposeBalanceLines(best.doc, best.forcedBreakPages, applied, {
         maxLinesPerHeading: balancing.maxLinesPerHeading,
         stretchAfterLists: balancing.stretchAfterLists,
@@ -3153,63 +3301,93 @@ export function buildDocument(
         failedLoose,
         failedLines,
       });
-      if (!proposal.changed) {
-        // No stretch point can absorb the remaining gaps — stable.
-        converged = true;
-        break;
-      }
-      const extraPx = new Map<number, number>();
-      for (const [idx, n] of proposal.lines) extraPx.set(idx, n * best.doc.baselineGrid);
-      const hints: PassHints = {
-        balanceExtraPx: extraPx,
-        balanceLooseness: proposal.loose,
-        balanceLooseBudget: proposal.looseBudget,
-        bandCaps,
-      };
-      const next = runPass(hints);
-      passCount++;
-      // Band caps ride along unchanged; a retry that unsettles one (its span
-      // block no longer lands in the capped band, or a levelled closing band
-      // spills past its cut) counts as a regression — capped columns without
-      // their box are not a layout we may keep.
-      const capsDelivered = [...bandCaps.keys()].every((i) => next.spanPlacedInBand.has(i));
-      const score = capsDelivered ? totalGapLines(next.doc, next.forcedBreakPages) : Infinity;
-      // Loose paragraphs that gained no line at any tracking rung are
-      // blacklisted whatever the score did, and never counted as applied.
-      // Candidates the pass never tried (their column's budget was met
-      // first) stay eligible for a later proposal.
-      const newlyLoose = [...proposal.loose.keys()].filter((k) => !applied.loose.has(k));
-      const looseFailed = newlyLoose.filter((k) => next.looseOutcome.get(k) === null);
-      for (const k of looseFailed) failedLoose.add(k);
-      const looseWon = newlyLoose.filter((k) => typeof next.looseOutcome.get(k) === 'number');
-      if (score < bestScore) {
-        best = next;
-        bestHints = hints;
-        bestScore = score;
-        applied = {
-          lines: proposal.lines,
-          loose: new Map([...proposal.loose].filter(([k]) => applied.loose.has(k) || looseWon.includes(k))),
-        };
-        converged = score === 0;
-      } else {
-        // Plateau or regression. First contain a cascade: a lever that
-        // moved content across a column break is blacklisted and the loop
-        // retries without it. Otherwise retry when a loose candidate was
-        // just blacklisted (the proposer falls through to the next one), or
-        // when the new loose paragraphs gained their lines yet the layout
-        // did not improve (the gain landed elsewhere — drop them too). A
-        // pure spacing plateau means we're done: keep the best layout found
-        // so far.
-        if (containCascade(next, proposal)) continue;
-        if (looseFailed.length > 0 || looseWon.length > 0) {
-          for (const k of looseWon) failedLoose.add(k);
+      // The levers newly proposed, by segment; those of a segment that is
+      // done (plateaued, out of attempts) are withdrawn from the pass.
+      const newLines: number[] = [];
+      const newLoose: number[] = [];
+      for (const [k, n] of proposal.lines) {
+        const cur = applied.lines.get(k) ?? 0;
+        if (n <= cur) continue;
+        const si = owner.get(k);
+        if (si === undefined || segments[si]!.done) {
+          if (cur > 0) proposal.lines.set(k, cur);
+          else proposal.lines.delete(k);
           continue;
         }
+        newLines.push(k);
+      }
+      for (const k of [...proposal.loose.keys()]) {
+        if (applied.loose.has(k)) continue;
+        const si = owner.get(k);
+        if (si === undefined || segments[si]!.done) {
+          proposal.loose.delete(k);
+          proposal.looseBudget.delete(k);
+          continue;
+        }
+        newLoose.push(k);
+      }
+      const trying = new Set<number>([...newLines, ...newLoose].map((k) => owner.get(k)!));
+      if (trying.size === 0) {
+        // No stretch point can absorb the remaining gaps — stable.
+        for (const s of active) { s.done = true; s.stable = true; }
         break;
       }
+      for (const si of trying) segments[si]!.attempts++;
+      const next = runPass(hintsFrom(proposal.lines, proposal.loose, proposal.looseBudget));
+      passCount++;
+      balancingPasses++;
+      const nextGaps = collectColumnGaps(next.doc, next.forcedBreakPages);
+      const capPage = pageOfContent(best.doc);
+      const accepted: PageRange[] = [];
+      for (const si of trying) {
+        const s = segments[si]!;
+        // An earlier segment's cascade shifted this one's pages: the pass
+        // says nothing about its levers. They are offered again once the
+        // culprit is blacklisted.
+        if (!startIntact(next, s)) { s.attempts--; continue; }
+        const keysLines = newLines.filter((k) => owner.get(k) === si);
+        const keysLoose = newLoose.filter((k) => owner.get(k) === si);
+        // Band caps ride along unchanged; a retry that unsettles one of the
+        // segment's (its span block no longer lands in the capped band, or
+        // a levelled closing band spills past its cut) is a regression —
+        // capped columns without their box are not a layout we may keep.
+        const capsDelivered = [...bandCaps.keys()].every((i) => !inRange(s.range, capPage.get(i)) || next.spanPlacedInBand.has(i));
+        const score = capsDelivered && wholeIntact(next, s, si === segments.length - 1)
+          ? gapLinesIn(nextGaps, s.range)
+          : Infinity;
+        // Loose paragraphs that gained no line at any tracking rung are
+        // blacklisted whatever the score did, and never counted as applied.
+        // Candidates the pass never tried (their column's budget was met
+        // first) stay eligible for a later proposal.
+        const looseFailed = keysLoose.filter((k) => next.looseOutcome.get(k) === null);
+        for (const k of looseFailed) s.failedLoose.add(k);
+        const looseWon = keysLoose.filter((k) => typeof next.looseOutcome.get(k) === 'number');
+        if (score < s.bestScore) {
+          for (const k of keysLines) applied.lines.set(k, proposal.lines.get(k)!);
+          for (const k of looseWon) applied.loose.set(k, proposal.loose.get(k)!);
+          s.bestScore = score;
+          if (score === 0) { s.done = true; s.stable = true; }
+          accepted.push(s.range);
+        } else if (!containCascade(next, s, keysLines, keysLoose, gaps)) {
+          // Plateau or regression without a cascade to contain: retry when
+          // a loose candidate was just blacklisted (the proposer falls
+          // through to the next one), or when the new loose paragraphs
+          // gained their lines yet the segment did not improve (the gain
+          // landed elsewhere — drop them too). A pure spacing plateau means
+          // the segment is done: it keeps the best layout found so far.
+          if (looseFailed.length > 0 || looseWon.length > 0) {
+            for (const k of looseWon) s.failedLoose.add(k);
+          } else {
+            s.done = true;
+          }
+        }
+        if (!s.done && s.attempts >= MAX_BALANCING_PASSES) s.done = true;
+      }
+      if (accepted.length > 0) best = spliceSegments(next, accepted);
     }
   };
 
+  resetSegments();
   balance();
 
   // --- Trailing bands (closing columns cut level) -------------------------
@@ -3221,23 +3399,22 @@ export function buildDocument(
   // block and the cap applies. A short polish round then lets the levers
   // fill what the cut left short (a column ending a line under the cap).
   if (balancing.trailing) {
+    const frozen = hintsFrom(applied.lines, applied.loose);
     const trailing = resolveTrailingCaps(
       best,
       bandCaps,
-      (caps) => runPass({ ...bestHints, bandCaps: caps }),
+      (caps) => runPass({ ...frozen, bandCaps: caps }),
     );
     passCount += trailing.passCount;
     if (trailing.result !== best) {
       best = trailing.result;
       for (const [i, cap] of trailing.caps) bandCaps.set(i, cap);
-      bestHints = { ...bestHints, bandCaps };
-      bestScore = totalGapLines(best.doc, best.forcedBreakPages);
-      converged = bestScore === 0;
+      resetSegments();
       balance();
     }
   }
 
   best.doc.iterationCount = passCount;
-  best.doc.converged = converged || bestScore === 0;
+  best.doc.converged = segments.every((s) => s.stable || s.bestScore === 0);
   return best.doc;
 }

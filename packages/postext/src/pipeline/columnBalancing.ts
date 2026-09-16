@@ -45,8 +45,46 @@ import type { VDTColumn, VDTDocument, VDTPage } from '../vdt';
 /** Tolerance against FP drift when converting free space to grid lines. */
 const EPS = 0.01;
 
-/** Maximum number of placement passes (initial + balancing retries). */
+/** Balancing attempts a segment of pages (see {@link pageSegments}) may
+ *  spend: passes in which it tried new levers. */
 export const MAX_BALANCING_PASSES = 10;
+
+/** Hard cap on the balancing passes of one document, whatever its segments
+ *  still want to try — every pass places the whole document. */
+export const MAX_BALANCING_PASSES_PER_DOCUMENT = MAX_BALANCING_PASSES * 3;
+
+/** Inclusive run of page indices. */
+export interface PageRange {
+  from: number;
+  to: number;
+}
+
+/**
+ * The runs of pages laid out independently of one another: every page in
+ * `forcedBreakPages` (a `:::pagebreak`, a heading `breakBefore`, a chapter
+ * opener) closes a segment and the next page opens another. Nothing flows
+ * across such a break, so a balancing lever inside one segment cannot
+ * move a line of any other — the convergence loop judges each on its own.
+ */
+export function pageSegments(pageCount: number, forcedBreakPages: ReadonlySet<number>): PageRange[] {
+  const out: PageRange[] = [];
+  let from = 0;
+  const breaks = [...forcedBreakPages].filter((p) => p >= 0 && p < pageCount - 1).sort((a, b) => a - b);
+  for (const p of breaks) {
+    if (p < from) continue;
+    out.push({ from, to: p });
+    from = p + 1;
+  }
+  out.push({ from, to: Math.max(from, pageCount - 1) });
+  return out;
+}
+
+/** Empty grid lines over the balanceable columns of the pages in `range`. */
+export function gapLinesIn(gaps: readonly ColumnGap[], range: PageRange): number {
+  let n = 0;
+  for (const g of gaps) if (g.pageIndex >= range.from && g.pageIndex <= range.to) n += g.gapLines;
+  return n;
+}
 
 export type BalanceCandidateKind = 'heading' | 'listEnd' | 'afterFloat' | 'trailingCallout' | 'looseParagraph';
 
@@ -86,7 +124,7 @@ function floatBandAbove(page: VDTPage, col: VDTColumn): boolean {
     f.bbox.x < right - 0.5 && f.bbox.x + f.bbox.width > left + 0.5 && f.bbox.y + f.bbox.height <= col.bbox.y + EPS);
 }
 
-interface ColumnGap {
+export interface ColumnGap {
   pageIndex: number;
   columnIndex: number;
   /** Whole empty grid lines at the bottom of the column. */
@@ -386,10 +424,13 @@ function columnKey(page: VDTPage, col: VDTColumn): string {
 /**
  * First column, in reading order, whose content differs between two
  * layouts of the same document — where a balancing pass stopped being
- * local. Null when every column of `a` has its counterpart in `b`.
+ * local. Null when every column of `a` has its counterpart in `b`. With
+ * `range`, only those pages of `a` are compared.
  */
-export function firstDivergentColumn(a: VDTDocument, b: VDTDocument): ColumnPosition | null {
-  for (let p = 0; p < a.pages.length; p++) {
+export function firstDivergentColumn(a: VDTDocument, b: VDTDocument, range?: PageRange): ColumnPosition | null {
+  const from = range?.from ?? 0;
+  const to = Math.min(range?.to ?? a.pages.length - 1, a.pages.length - 1);
+  for (let p = from; p <= to; p++) {
     const pa = a.pages[p]!;
     const pb = b.pages[p];
     for (let c = 0; c < pa.columns.length; c++) {
