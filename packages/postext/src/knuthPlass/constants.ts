@@ -8,7 +8,9 @@ export const BADNESS_CAP = 10000;
  *  they stay legal — a paragraph may have no other way to set — but they
  *  must cost more than any soft preference (runt avoidance, a hyphen), so a
  *  short last line or a hyphenated last word is chosen before word spacing
- *  overshoots the limit. Scaled to stay above the configured runt penalty. */
+ *  overshoots the limit. Scaled to stay above the configured runt penalty,
+ *  and multiplied by the square of the adjustment ratio, so the cost rises
+ *  with the overshoot (see `computeBreakpoints`). */
 export const OVER_STRETCH_BADNESS = 2000;
 export const MAX_STRETCH = Number.MAX_SAFE_INTEGER;
 

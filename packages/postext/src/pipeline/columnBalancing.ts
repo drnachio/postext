@@ -64,6 +64,26 @@ interface BalanceCandidate {
   /** `trailingCallout` only: room (px) between the box's foot and the last
    *  grid slot of the column — the exact space to add above the box. */
   gapPx?: number;
+  /** `trailingCallout` only: the fragment of a split box the candidate is
+   *  (0 = the box or its head) — each fragment closes its own column and
+   *  is levered on its own (see {@link balanceKey}). */
+  part?: number;
+}
+
+/** Key of a balancing adjustment: the content index of the block, or, for a
+ *  continuation fragment of a split callout, a composite that keeps the
+ *  fragments of one fence apart (they share the fence's content index). */
+export function balanceKey(contentIndex: number, part: number): number {
+  return part > 0 ? -(contentIndex * 1024 + part) : contentIndex;
+}
+
+/** Whether a float band sits right above `col` (a figure at the head of the
+ *  column): the column's content then has something to be pushed down from. */
+function floatBandAbove(page: VDTPage, col: VDTColumn): boolean {
+  const left = col.bbox.x;
+  const right = col.bbox.x + col.bbox.width;
+  return (page.floats ?? []).some((f) =>
+    f.bbox.x < right - 0.5 && f.bbox.x + f.bbox.width > left + 0.5 && f.bbox.y + f.bbox.height <= col.bbox.y + EPS);
 }
 
 interface ColumnGap {
@@ -189,9 +209,12 @@ export function collectColumnGaps(
 
       const candidates: BalanceCandidate[] = [];
       // A callout box closing the column (its frame and children are the
-      // column's last blocks, the frame not opening the column) takes the
-      // room under its foot, up to the column's last grid slot, as space
-      // above it — the head of a box only, never a continuation. The box's
+      // column's last blocks) takes the room under its foot, up to the
+      // column's last grid slot, as space above it — provided something
+      // sits above it to push down from: text blocks, or a float band at
+      // the column's head. A continuation fragment of a split box counts
+      // like a head: under a figure it lands level with the foot of the
+      // head in the column before, as any note closing a column. The box's
       // tail bakes its bottom margin and a grid snap in, so that room is
       // measured from the frame itself and taken exactly, not by the line.
       const visible = col.blocks.filter((b) => !b.hidden);
@@ -201,15 +224,27 @@ export function collectColumnGaps(
         const frame = frameAt >= 0 ? visible[frameAt]! : undefined;
         if (
           frame
-          && frameAt >= 1
+          && (frameAt >= 1 || floatBandAbove(page, col))
           && frame.contentIndex !== undefined
-          && !(frame.callout?.part !== undefined && frame.callout.part > 0)
           && visible.slice(frameAt).every((b) => b.containerId === last.containerId)
         ) {
           const lastSlotBottom = col.bbox.y + Math.floor((col.bbox.height + EPS) / doc.baselineGrid) * doc.baselineGrid;
-          const gapPx = lastSlotBottom - (frame.bbox.y + frame.bbox.height);
+          // A continuation lands level with the foot of the fragment before
+          // it when that one closes a column of the same page (the note's
+          // head at the band bottom of the column beside), else on the
+          // column's true foot — box interiors are off-grid anyway.
+          const part = frame.callout?.part ?? 0;
+          let target = lastSlotBottom;
+          if (part > 0) {
+            const trueBottom = col.bbox.y + col.bbox.height;
+            const before = doc.blocks.find((b) =>
+              b.type === 'callout' && b.containerId === frame.containerId && b.pageIndex === frame.pageIndex && b.callout?.part === part - 1);
+            const beforeFoot = before ? before.bbox.y + before.bbox.height : undefined;
+            target = beforeFoot !== undefined && beforeFoot <= trueBottom + EPS ? beforeFoot : trueBottom;
+          }
+          const gapPx = target - (frame.bbox.y + frame.bbox.height);
           if (gapPx > doc.baselineGrid * 0.1) {
-            candidates.push({ contentIndex: frame.contentIndex, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx });
+            candidates.push({ contentIndex: frame.contentIndex, part: frame.callout?.part ?? 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx });
             gapLines = Math.max(gapLines, Math.ceil(gapPx / doc.baselineGrid - EPS));
           }
         }
@@ -435,9 +470,10 @@ export function proposeBalanceLines(
     // which closes the column's gap outright.
     for (const cand of gap.candidates) {
       if (cand.kind !== 'trailingCallout' || cand.gapPx === undefined) continue;
-      if (options.failedLines?.has(cand.contentIndex)) continue;
-      const cur = lines.get(cand.contentIndex) ?? 0;
-      lines.set(cand.contentIndex, cur + cand.gapPx / doc.baselineGrid);
+      const key = balanceKey(cand.contentIndex, cand.part ?? 0);
+      if (options.failedLines?.has(key)) continue;
+      const cur = lines.get(key) ?? 0;
+      lines.set(key, cur + cand.gapPx / doc.baselineGrid);
       changed = true;
       remaining = 0;
     }

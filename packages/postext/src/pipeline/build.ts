@@ -96,7 +96,7 @@ import {
 } from './resourceNumbering';
 import { defaultResourceTypes } from '../defaults/resourceTypes';
 import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
-import { totalGapLines, proposeBalanceLines, collectColumnGaps, firstDivergentColumn, type LooseBudget, MAX_BALANCING_PASSES, type BalanceState, type BalanceProposal } from './columnBalancing';
+import { totalGapLines, proposeBalanceLines, collectColumnGaps, firstDivergentColumn, type LooseBudget, MAX_BALANCING_PASSES, type BalanceState, type BalanceProposal, balanceKey } from './columnBalancing';
 import {
   applyBandCap,
   uncapBand,
@@ -1987,8 +1987,12 @@ export function buildDocumentPass(
       const result = L.layoutRange(from, L.end, curCol.bbox.width, frameId, continuation);
       // Column balancing: a box closing its column takes the column's gap
       // above it (the trailing-callout lever), so its foot lands on the
-      // last grid slot — level with the column beside it.
-      const balanceBefore = part === 0 && curCol.blocks.length > 0 ? (balanceExtraPx?.get(startIdx) ?? 0) : 0;
+      // last grid slot — level with the column beside it. Any fragment
+      // qualifies, as long as something sits above it to push down from:
+      // text, or the float band at the head of an otherwise empty column.
+      const balanceBefore = curCol.blocks.length > 0 || reservedOf(curCol).top > 0
+        ? (balanceExtraPx?.get(balanceKey(startIdx, part)) ?? 0)
+        : 0;
       const spacing = (curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, result.marginTopPx)) + balanceBefore;
       const roomPx = curCol.availableHeight - spacing;
       let fragment: CalloutFragment | null = null;
@@ -2050,6 +2054,11 @@ export function buildDocumentPass(
       if (part > 0 || fragment) markFragment(placed, part, fragment !== null);
       const spacingBefore = (curCol.blocks.length === 0 ? 0 : Math.max(pendingSpacing, placed.marginTopPx)) + balanceBefore;
       if (balanceBefore > 0) addBalanceExtra(curCol, balanceBefore);
+      // Spacing collapses at a column top, so the lever's push under a
+      // float band is consumed here: the box then opens that far down.
+      if (balanceBefore > 0 && curCol.blocks.length === 0) {
+        curCol.availableHeight = Math.max(0, curCol.availableHeight - balanceBefore);
+      }
       enterBand(startIdx, 0);
       placeAtomicBlock(
         placed.frame, placed.totalHeight, spacingBefore, cursor, doc, resolved,
@@ -2987,11 +2996,11 @@ export function buildDocument(
     };
     const inColumn = gaps
       .filter((g) => g.pageIndex === div.pageIndex && g.columnIndex === div.columnIndex)
-      .flatMap((g) => g.candidates.map((c) => c.contentIndex));
+      .flatMap((g) => g.candidates.map((c) => balanceKey(c.contentIndex, c.part ?? 0)));
     if (blacklist(new Set(inColumn))) return true;
     const onPage = gaps
       .filter((g) => g.pageIndex === div.pageIndex)
-      .flatMap((g) => g.candidates.map((c) => c.contentIndex));
+      .flatMap((g) => g.candidates.map((c) => balanceKey(c.contentIndex, c.part ?? 0)));
     if (blacklist(new Set(onPage))) return true;
     return blacklist(null);
   };

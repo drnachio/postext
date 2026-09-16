@@ -152,6 +152,43 @@ describe('keep-together box in a column cut short by floats', () => {
   }, 30000);
 });
 
+describe('continuation fragment closing a column under a figure', () => {
+  it('is levered down so its foot meets the foot of the head in the column before', () => {
+    // Left column: text, then a splittable note whose head closes the
+    // column. Right column: a figure at the head, then the note's tail;
+    // a keep-together box after it does not fit and opens the next page,
+    // so the tail closes the column with a gap under it.
+    const resources = [figure('f1', 400, 500, 'column'), figure('f2', 400, 200, 'page')];
+    const config: PostextConfig = {
+      ...TWO_COL({ keepTogether: false }),
+      headings: { levels: [{ level: 1, breakBefore: { enabled: false } }] },
+    };
+    config.calloutStyles = [...(config.calloutStyles ?? []), { id: 'kt', title: 'Puntos clave', span: 'column', keepTogether: true }];
+    const kt = [':::callout{type="kt"}', filler(12), ':::'].join('\n');
+    const md = `Intro :ref{id="f1"} and :ref{id="f2"} text. ${filler(18)}\n\n${note(filler(8))}\n\n${kt}\n\n${filler(4)}`;
+    const doc = build(md, config, resources);
+    const parts = frames(doc).filter((f) => f.callout?.styleId === 'note');
+    expect(parts).toHaveLength(2);
+    const [head, tail] = parts as [VDTBlock, VDTBlock];
+    expect(head.pageIndex).toBe(0);
+    expect(head.columnIndex).toBe(0);
+    expect(tail.pageIndex).toBe(0);
+    expect(tail.columnIndex).toBe(1);
+    const f1 = floatsOf(doc).find((x) => x.id === 'f1')!;
+    expect(f1.page).toBe(0);
+    expect(f1.block.columnIndex).toBe(1);
+    // Under the figure, and bottom-aligned with the head's foot.
+    expect(tail.bbox.y).toBeGreaterThan(f1.block.bbox.y + f1.block.bbox.height);
+    const headFoot = head.bbox.y + head.bbox.height;
+    const tailFoot = tail.bbox.y + tail.bbox.height;
+    expect(Math.abs(tailFoot - headFoot)).toBeLessThan(0.5);
+    // Nothing else shares the column with the tail.
+    const col = doc.pages[0]!.columns[1]!;
+    expect(col.blocks.every((b) => b.containerId === tail.containerId)).toBe(true);
+    expect(doc.warnings ?? []).toHaveLength(0);
+  }, 60000);
+});
+
 describe('floats yield to a keep-together box', () => {
   it('a column figure defers to the next page when its slot would push the box off the page', () => {
     const resources = [figure('f1', 400, 700, 'column'), figure('f2', 400, 200, 'page')];
