@@ -265,6 +265,10 @@ export interface OutlineEntry {
   palette?: Record<string, string>;
   /** Label of the page the entry starts on; absent until laid out. */
   pageLabel?: string;
+  /** 0-based physical index of that page in the book (the document's
+   *  `pageIndexOffset` counted in); absent until laid out. What a link on
+   *  the entry jumps to. */
+  pageIndex?: number;
   /** Whether the entry appears in the contents (a heading style's `toc`
    *  or a `{toc="false"}` attribute may exclude it). */
   listed: boolean;

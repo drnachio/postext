@@ -6,12 +6,13 @@
 // sandbox's working slices. Nothing here touches storage or the DOM.
 
 import type { CustomFontFormat, PostextConfig, Resource } from 'postext';
+import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../book/layoutKeys';
 import { stripConfigDefaults } from 'postext';
 import { createDefaultConfig } from '../context/defaultConfig';
 import { svgIntrinsicSize } from '../panels/resources/svgIntrinsic';
 import { slugify, uniqueSlug } from '../panels/resources/slugify';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
-import type { Chapter } from '../book/types';
+import type { Chapter, ChapterLayout } from '../book/types';
 import { generateId } from '../storage/ids';
 import {
   chapterFileName,
@@ -154,6 +155,28 @@ export async function parseBundle(
   const customFonts = [...(manifest.config?.customFonts ?? []), ...fontSet.families];
   const config = customFonts.length > 0 ? { ...baseConfig, customFonts } : baseConfig;
 
+  // The bundle's pagination, taken as is when it was built by this engine
+  // from this configuration and these resources — else laid out afresh.
+  let layouts: Record<string, ChapterLayout> | undefined;
+  const layoutsBytes = await readFile(LAYOUTS_FILE).catch(() => null);
+  if (layoutsBytes) {
+    try {
+      const parsed = JSON.parse(decoder.decode(layoutsBytes)) as BundleLayoutsFile;
+      const configKey = configKeyOf(config);
+      const resourcesKey = resourcesKeyOf(resources);
+      if (parsed.version === 1 && parsed.engine === ENGINE_KEY && parsed.configKey === configKey && parsed.resourcesKey === resourcesKey) {
+        layouts = {};
+        specs.forEach((spec, i) => {
+          const rest = parsed.chapters[spec.file];
+          const chapter = chapters[i];
+          if (rest && chapter) layouts![chapter.id] = { ...rest, chapterId: chapter.id, markdown: chapter.markdown, configKey, resourcesKey, engine: ENGINE_KEY };
+        });
+      }
+    } catch (err) {
+      onWarning?.(`${LAYOUTS_FILE}: ${err instanceof Error ? err.message : 'unreadable'}, ignored`);
+    }
+  }
+
   return {
     summary: {
       ...summary,
@@ -165,6 +188,7 @@ export async function parseBundle(
     resources,
     blobs,
     fonts,
+    ...(layouts ? { layouts } : {}),
   };
 }
 
@@ -182,6 +206,21 @@ export interface BundleContent {
   chapters: readonly Chapter[];
   config: PostextConfig;
   resources: Resource[];
+  /** Current layout records by chapter id, carried as `layouts.json` so
+   *  the bundle opens paginated. */
+  layouts?: Record<string, ChapterLayout>;
+}
+
+/** `layouts.json`: the pagination of the bundle's chapters, keyed by
+ *  chapter file, valid for the engine, configuration and resources named
+ *  by their fingerprints (`layoutKeys.ts`). */
+export const LAYOUTS_FILE = 'layouts.json';
+export interface BundleLayoutsFile {
+  version: 1;
+  engine: string;
+  configKey: string;
+  resourcesKey: string;
+  chapters: Record<string, Omit<ChapterLayout, 'chapterId' | 'markdown' | 'configKey' | 'resourcesKey' | 'engine'>>;
 }
 
 export interface PlannedFile {
@@ -198,6 +237,8 @@ export interface BundlePlan {
   files: PlannedFile[];
   /** Chapter file path → text, in book order. */
   chapterFiles: { path: string; markdown: string }[];
+  /** The pagination file, when every chapter has a current record. */
+  layouts?: BundleLayoutsFile;
   warnings: string[];
 }
 
@@ -282,11 +323,36 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   const takenChapterNames = new Set<string>();
   const chapterSpecs: PresetChapterSpec[] = [];
   const chapterFiles: BundlePlan['chapterFiles'] = [];
+  const layoutChapters: BundleLayoutsFile['chapters'] = {};
+  let layoutsComplete = content.layouts !== undefined;
   content.chapters.forEach((c, i) => {
     const path = chapterFileName(i, c.title, takenChapterNames, content.chapters.length);
     chapterSpecs.push({ title: c.title, file: path });
     chapterFiles.push({ path, markdown: c.markdown });
+    const layout = content.layouts?.[c.id];
+    if (layout && layout.markdown === c.markdown && layout.engine === ENGINE_KEY
+      && layout.configKey === configKeyOf(content.config) && layout.resourcesKey === resourcesKeyOf(content.resources)) {
+      const rest: BundleLayoutsFile['chapters'][string] = {
+        continuationKey: layout.continuationKey,
+        pageCount: layout.pageCount,
+        leadingBlankPages: layout.leadingBlankPages,
+        firstContentPageNumber: layout.firstContentPageNumber,
+        firstContentPageFormat: layout.firstContentPageFormat,
+        lastPageNumber: layout.lastPageNumber,
+        lastPageFormat: layout.lastPageFormat,
+        outline: layout.outline,
+        outlineKey: layout.outlineKey,
+      };
+      layoutChapters[path] = rest;
+    } else {
+      layoutsComplete = false;
+    }
   });
+  // A partial pagination is worth nothing to a reader (the chapters after
+  // the first gap would be laid out again anyway): all or none.
+  const layouts: BundleLayoutsFile | undefined = layoutsComplete && content.chapters.length > 0
+    ? { version: 1, engine: ENGINE_KEY, configKey: configKeyOf(content.config), resourcesKey: resourcesKeyOf(content.resources), chapters: layoutChapters }
+    : undefined;
 
   const manifest: PresetManifestV2 = {
     version: 2,
@@ -299,7 +365,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     ...(resources.length > 0 ? { resources } : {}),
     ...(fonts.length > 0 ? { fonts } : {}),
   };
-  return { manifest, files, chapterFiles, warnings };
+  return { manifest, files, chapterFiles, ...(layouts ? { layouts } : {}), warnings };
 }
 
 export interface BundleByteSources {
@@ -362,5 +428,6 @@ export async function buildBundleFiles(
   const enc = new TextEncoder();
   files['preset.json'] = enc.encode(JSON.stringify(manifest, null, 2));
   for (const c of plan.chapterFiles) files[c.path] = enc.encode(c.markdown);
+  if (plan.layouts && missingPaths.size === 0) files[LAYOUTS_FILE] = enc.encode(JSON.stringify(plan.layouts));
   return { files, manifest, warnings };
 }

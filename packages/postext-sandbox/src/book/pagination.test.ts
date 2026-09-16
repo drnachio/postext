@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { NumeralStyle, PostextConfig, Resource, VDTDocument } from 'postext';
 import { chapterLayoutFromDoc, chapterPageLabels, createBookPlanner, sameChapterLayout, sameLayoutInputs } from './pagination';
+import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
 import { newChapter } from './chapterOps';
 import type { ChapterLayout, ChapterPlan } from './types';
 
@@ -22,8 +23,9 @@ function layoutFor(plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount
   return {
     chapterId: plan.chapterId,
     markdown: chapter.markdown,
-    config,
-    resources,
+    configKey: configKeyOf(config),
+    resourcesKey: resourcesKeyOf(resources),
+    engine: ENGINE_KEY,
     continuationKey: plan.continuationKey,
     leadingBlankPages: 0,
     firstContentPageNumber: { delta: over.leadingBlankPages ?? 0 },
@@ -133,10 +135,15 @@ describe('createBookPlanner', () => {
     const a = layoutFor(p0.byId.a!, { pageCount: 13 });
     const p1 = planner.plan(chapters, config, resources, { a });
     const b = layoutFor(p1.byId.b!, { pageCount: 3 });
-    // A different config object invalidates every record.
-    const other = planner.plan(chapters, { ...config }, resources, { a, b });
+    // An equal config in another object keeps every record; a different
+    // one (or another engine) invalidates them.
+    const same = planner.plan(chapters, { ...config }, resources, { a, b });
+    expect(same.byId.a!.layout).toBe(a);
+    const other = planner.plan(chapters, { ...config, bodyText: { fontSize: { value: 12, unit: 'pt' } } }, resources, { a, b });
     expect(other.byId.a!.layout).toBeNull();
     expect(other.pendingChapterId).toBe('a');
+    const older = planner.plan(chapters, config, resources, { a: { ...a, engine: '0.0.0' }, b });
+    expect(older.byId.a!.layout).toBeNull();
     // Chapter a grew by one page: b now starts on the other side of the
     // spread, so its record (keyed on parity) no longer applies.
     const a2 = { ...a, pageCount: 14, lastPageNumber: { delta: 13 } };
@@ -146,9 +153,9 @@ describe('createBookPlanner', () => {
     expect(shifted.byId.b!.continuationKey).not.toBe(p1.byId.b!.continuationKey);
     // Growing by two pages keeps the parity: b's record is still current.
     const a3 = { ...a, pageCount: 15, lastPageNumber: { delta: 14 } };
-    const same = planner.plan(chapters, config, resources, { a: a3, b });
-    expect(same.byId.b!.layout).toBe(b);
-    expect(same.byId.b!.continuation?.pageNumbering?.startAt).toBe(16);
+    const kept = planner.plan(chapters, config, resources, { a: a3, b });
+    expect(kept.byId.b!.layout).toBe(b);
+    expect(kept.byId.b!.continuation?.pageNumbering?.startAt).toBe(16);
     // Editing the chapter's own text invalidates only its record.
     const edited = chapters.map((c) => (c.id === 'a' ? { ...c, markdown: '# One\n\nchanged' } : c));
     const p = planner.plan(edited, config, resources, { a, b });
@@ -177,8 +184,9 @@ describe('chapterLayoutFromDoc', () => {
   it('records page count, leading blanks and how the numbering ends', () => {
     const layout = chapterLayoutFromDoc(doc([{ value: 14 }, { value: 15 }, { value: 16 }], [1, 2, 2]), plan(true), inputs)!;
     expect(layout).toMatchObject({ chapterId: 'b', continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, firstContentPageNumber: { delta: 1 }, firstContentPageFormat: 'decimal', lastPageNumber: { delta: 2 }, lastPageFormat: 'decimal', markdown: '# B' });
-    expect(layout.config).toBe(config);
-    expect(layout.resources).toBe(resources);
+    expect(layout.configKey).toBe(configKeyOf(config));
+    expect(layout.resourcesKey).toBe(resourcesKeyOf(resources));
+    expect(layout.engine).toBe(ENGINE_KEY);
     const roman = chapterLayoutFromDoc(doc([{ value: 1, format: 'lower-roman' }, { value: 1 }], [0, 1], [1]), plan(true), inputs)!;
     expect(roman.lastPageNumber).toEqual({ value: 1 });
     expect(roman.lastPageFormat).toBe('decimal');
@@ -227,7 +235,7 @@ describe('plan and layout equivalence', () => {
     expect(sameChapterLayout(l, { ...l })).toBe(true);
     expect(sameChapterLayout(l, { ...l, pageCount: 4 })).toBe(false);
     expect(sameChapterLayout(l, { ...l, leadingBlankPages: 1 })).toBe(false);
-    expect(sameChapterLayout(l, { ...l, config: { ...config } })).toBe(false);
+    expect(sameChapterLayout(l, { ...l, configKey: 'other' })).toBe(false);
     expect(sameChapterLayout(l, { ...l, markdown: l.markdown + ' ' })).toBe(false);
   });
 });

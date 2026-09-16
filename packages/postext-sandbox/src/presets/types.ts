@@ -4,7 +4,7 @@
 // described by JSON manifests served from a base URL (see remote.ts).
 
 import type { CustomFontFormat, PostextConfig, Resource } from 'postext';
-import type { Chapter } from '../book/types';
+import type { ChapterLayout, Chapter } from '../book/types';
 
 export type PresetSource = 'builtin' | 'public' | 'private';
 
@@ -129,6 +129,9 @@ export interface LoadedPreset {
   resources: Resource[];
   blobs: LoadedPresetBlob[];
   fonts: LoadedPresetFont[];
+  /** The bundle's layout records (`layouts.json`), by chapter id, when they
+   *  were built by this engine from this configuration and these resources. */
+  layouts?: Record<string, ChapterLayout>;
 }
 
 export interface PresetProvider {

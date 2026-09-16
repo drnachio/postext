@@ -159,6 +159,28 @@ export function refResourceIdAtPixel(
 }
 
 /**
+ * Hit-test a row of the contents (`:::toc`) at page-space pixel
+ * coordinates: the book page index the row points at, or null when the
+ * click isn't on a row that knows its page.
+ */
+export function pageTargetAtPixel(
+  doc: VDTDocument,
+  pageIndex: number,
+  xPage: number,
+  yPage: number,
+): number | null {
+  for (const b of doc.blocks) {
+    if (b.pageIndex !== pageIndex || b.hidden) continue;
+    const target = b.tocEntry?.pageIndex ?? b.tocPart?.pageIndex;
+    if (target === undefined) continue;
+    if (xPage < b.bbox.x || xPage > b.bbox.x + b.bbox.width) continue;
+    if (yPage < b.bbox.y || yPage > b.bbox.y + b.bbox.height) continue;
+    return target;
+  }
+  return null;
+}
+
+/**
  * Convert an absolute source offset (in the original markdown) to a plain-text
  * character index within the given block's plain text. Returns null if the
  * offset is outside the block. Uses the block's per-char sourceMap plus any
