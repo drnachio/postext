@@ -107,7 +107,7 @@ function renderSegments(
     const color = colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace);
     const link = seg.refResourceId !== undefined && elem ? elem.child('Link') : undefined;
     tagContent(ctx, link ?? elem);
-    drawTextPx(ctx, seg.text, x, baseline, font, size, color);
+    drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color);
     if (seg.refResourceId !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       const x1 = x * scale;
@@ -191,7 +191,7 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one drawTextPx
   // paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined || s.fontString !== undefined || s.color !== undefined)) {
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }

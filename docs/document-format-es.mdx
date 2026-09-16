@@ -206,7 +206,7 @@ Se reconocen tres nombres de contenedor. Lo que renderiza cada uno se define en 
   </tbody>
 </table>
 
-Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en [Configuración](/es/docs/configuration). Los valores de los atributos siguen la misma gramática que las directivas. Una valla `:::callout` admite `type` (el id de un estilo de aviso configurado — los tipos desconocidos o ausentes usan el primer estilo), `title` (sobrescribe el título por defecto del estilo) y `span` / `placement` (`column` o `page`; `here`, `top`, `bottom` o `fixed`) para sobrescribir la extensión y la posición del estilo en esa caja:
+Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en [Configuración](/es/docs/configuration). Los valores de los atributos siguen la misma gramática que las directivas. Una valla `:::callout` admite `type` (el id de un estilo de aviso configurado — los tipos desconocidos o ausentes usan el primer estilo), `title` (sobrescribe el título por defecto del estilo) y `span` / `placement` (`column`, `page` o `side`; `here`, `top`, `bottom` o `fixed`) para sobrescribir la extensión y la posición del estilo en esa caja:
 
 ```
 :::callout{type="objectives" title="Qué aprenderás" span="page" placement="top"}
@@ -215,7 +215,7 @@ Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en 
 :::
 ```
 
-Un aviso se compone como una caja indivisible — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo — y pasa entero a la columna o página siguiente cuando no cabe. Las cajas a ancho completo (`span="page"`) cortan la página en bandas de columnas; las cajas `placement="fixed"` salen del flujo y se fijan a coordenadas de página (por ejemplo, un distintivo de autoevaluación en la esquina inferior izquierda de la última página del capítulo), y las columnas que cubren ceden esa zona; las cajas flotantes (`placement="top"` / `"bottom"`) se registran pero en esta versión todavía se colocan en línea. Un estilo con `floatBarrier: true` (normalmente la caja de «puntos clave» que cierra el capítulo) convierte la caja en una **barrera de flotantes**: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja — de modo que ningún flotante escapa más allá del final de su capítulo. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
+Un aviso se compone como una caja indivisible — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo — y pasa entero a la columna o página siguiente cuando no cabe. Las cajas a ancho completo (`span="page"`) cortan la página en bandas de columnas; las cajas `span="side"` salen del flujo a la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), apiladas junto al texto que interrumpen, y se componen como cajas de columna donde no existe tal columna; las cajas `placement="fixed"` salen del flujo y se fijan a coordenadas de página (por ejemplo, un distintivo de autoevaluación en la esquina inferior izquierda de la última página del capítulo), y las columnas que cubren ceden esa zona; las cajas flotantes (`placement="top"` / `"bottom"`) se registran pero en esta versión todavía se colocan en línea. Un estilo con `floatBarrier: true` (normalmente la caja de «puntos clave» que cierra el capítulo) convierte la caja en una **barrera de flotantes**: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja — de modo que ningún flotante escapa más allá del final de su capítulo. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
 
 Una valla `:::part` admite `number` (tal como quieras imprimirlo — `"I"`, `"IV"`, `"3"`; además se interpreta para que el diseño pueda reformatearlo) y `title`; los dos son opcionales. El contenedor abre siempre una página propia: un salto de página con la paridad configurada antes, una columna única de cuerpo en los `parts.margins`, el diseño de apertura sobre la página entera y otro salto de página tras la valla de cierre. El cuerpo — normalmente la lista de los capítulos que agrupa la parte, o nada en absoluto — se compone con `parts.bodyStyle`:
 
@@ -336,6 +336,16 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td>Negrita cursiva</td>
       <td><code>***ambas***</code> o <code>___ambas___</code></td>
       <td>Se combinan ambos estilos.</td>
+    </tr>
+    <tr>
+      <td>Superíndice</td>
+      <td><code>^texto^</code></td>
+      <td>Se compone al 58 % del cuerpo y elevado un tercio de él — un exponente (<code>10^-8^</code>), la carga de un ion (<code>Na^+^</code>). El texto marcado empieza y termina en un carácter que no es un espacio; un acento circunflejo suelto en la prosa se mantiene literal.</td>
+    </tr>
+    <tr>
+      <td>Subíndice</td>
+      <td><code>~texto~</code></td>
+      <td>Mismo tamaño, bajado un tercio del cuerpo — un índice químico (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Se combina con negrita y cursiva (<code>**H~2~O**</code>).</td>
     </tr>
     <tr>
       <td>Código en línea</td>

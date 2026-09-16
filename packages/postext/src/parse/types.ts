@@ -43,6 +43,9 @@ export interface InlineSpan {
   text: string;
   bold: boolean;
   italic: boolean;
+  /** Superscript (`^text^`) or subscript (`~text~`): set smaller and
+   *  raised / lowered off the baseline (an exponent, a chemical index). */
+  script?: 'sup' | 'sub';
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
    *  token → segment, mirroring {@link ref}. */

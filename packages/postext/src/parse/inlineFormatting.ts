@@ -136,7 +136,30 @@ export function stripInlineFormatting(text: string): string {
     .replace(/\*(.+?)\*/g, '$1')             // italic
     .replace(/_(.+?)_/g, '$1')               // italic alt
     .replace(/`(.+?)`/g, '$1')              // inline code
+    .replace(SUPERSCRIPT_RE, '$1')           // superscript
+    .replace(SUBSCRIPT_RE, '$1')             // subscript
     .trim();
+}
+
+/** `^text^` (superscript) and `~text~` (subscript): the marked text starts
+ *  and ends with a non-space character and carries no other marker of the
+ *  same kind, so a stray caret or tilde in prose stays literal. */
+export const SUPERSCRIPT_RE = /\^(\S(?:[^^\n]*?\S)?)\^/g;
+export const SUBSCRIPT_RE = /~(\S(?:[^~\n]*?\S)?)~/g;
+
+/** Split a bold / italic run into plain and script spans: `^…^` becomes a
+ *  superscript span, `~…~` a subscript one (the markers are dropped). */
+function splitScriptSpans(text: string, bold: boolean, italic: boolean, out: InlineSpan[]): void {
+  const re = /\^(\S(?:[^^\n]*?\S)?)\^|~(\S(?:[^~\n]*?\S)?)~/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push({ text: text.slice(last, m.index), bold, italic });
+    if (m[1] !== undefined) out.push({ text: m[1], bold, italic, script: 'sup' });
+    else out.push({ text: m[2]!, bold, italic, script: 'sub' });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push({ text: text.slice(last), bold, italic });
 }
 
 /**
@@ -154,7 +177,7 @@ function stripNonEmphasisFormatting(text: string): string {
  */
 function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, out: InlineSpan[]): void {
   if (forcedItalic) {
-    if (text.length > 0) out.push({ text, bold, italic: true });
+    if (text.length > 0) splitScriptSpans(text, bold, true, out);
     return;
   }
   const italicRe = /\*(.+?)\*|_(.+?)_/g;
@@ -163,15 +186,15 @@ function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, ou
   while ((m = italicRe.exec(text)) !== null) {
     if (m.index > last) {
       const before = text.slice(last, m.index);
-      if (before.length > 0) out.push({ text: before, bold, italic: false });
+      if (before.length > 0) splitScriptSpans(before, bold, false, out);
     }
     const inner = m[1] ?? m[2]!;
-    if (inner.length > 0) out.push({ text: inner, bold, italic: true });
+    if (inner.length > 0) splitScriptSpans(inner, bold, true, out);
     last = m.index + m[0].length;
   }
   if (last < text.length) {
     const rest = text.slice(last);
-    if (rest.length > 0) out.push({ text: rest, bold, italic: false });
+    if (rest.length > 0) splitScriptSpans(rest, bold, false, out);
   }
 }
 

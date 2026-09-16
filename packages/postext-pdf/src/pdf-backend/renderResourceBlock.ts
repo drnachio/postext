@@ -425,14 +425,14 @@ function paintLine(
         x += seg.width;
         continue;
       }
-      const fontStr = pickFont(!!seg.bold, !!seg.italic, fonts);
+      const fontStr = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, fonts);
       const font = fontCache.get(fontStr) ?? baseFont;
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
       const refId = resolveRefId(seg);
       const segColor = refId !== undefined ? linkColor : seg.captionLabel ? labelColor : color;
       const link = refId !== undefined && elem ? elem.child('Link') : undefined;
       tagContent(ctx, link ?? elem);
-      drawTextPx(ctx, seg.text, x, line.baseline, font, size, segColor);
+      drawTextPx(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
       if (refId !== undefined && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
         const x1 = x * scale;
