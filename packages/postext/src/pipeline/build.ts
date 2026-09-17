@@ -2807,7 +2807,9 @@ export function buildDocumentPass(
         segments: [],
         isLastLine: true,
       }];
-      const spacingBefore = pendingSpacing;
+      // An inline resource keeps the float gap (a line) above it, as a
+      // float would, unless the block before asked for more.
+      const spacingBefore = Math.max(pendingSpacing, floatGapPx);
       enterBand(blockIdx, 0);
       placeAtomicBlock(
         blk, groupHeight, spacingBefore, cursor, doc, geomResolved,
