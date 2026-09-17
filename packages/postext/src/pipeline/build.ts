@@ -1993,14 +1993,18 @@ export function buildDocumentPass(
       }
       if (!action && forceHere && fit) {
         action = { kind: 'whole', fit, need: fit.need, result };
-        (doc.warnings ??= []).push({
-          kind: 'calloutOverflow',
-          pageIndex: cursor.pageIndex,
-          columnIndex: cursor.columnIndex,
-          sourceStart: contentBlocks[startIdx]!.sourceStart + bodyOffset,
-          sourceEnd: contentBlocks[plan.endIdx]!.sourceEnd + bodyOffset,
-          overflowPx: Math.max(0, fit.spacing + result.totalHeight - fit.roomPx),
-        });
+        // A box that fills its band to the last grid line is not an overflow.
+        const overflowPx = Math.max(0, fit.spacing + result.totalHeight - fit.roomPx);
+        if (overflowPx > 0.5) {
+          (doc.warnings ??= []).push({
+            kind: 'calloutOverflow',
+            pageIndex: cursor.pageIndex,
+            columnIndex: cursor.columnIndex,
+            sourceStart: contentBlocks[startIdx]!.sourceStart + bodyOffset,
+            sourceEnd: contentBlocks[plan.endIdx]!.sourceEnd + bodyOffset,
+            overflowPx,
+          });
+        }
       }
 
       if (action) {
