@@ -2884,7 +2884,7 @@ export function buildDocumentPass(
     // The contents (`:::toc`) keep their own rhythm: an entry set as a list
     // item is not a list tail to realign the text after it.
     const shouldSnapToGrid = rawBlock.toc === undefined && (
-      (vdtType === 'heading' && !nextIsHeading) ||
+      (vdtType === 'heading' && !nextIsHeading && resolved.headings.snapToGrid) ||
       (vdtType === 'listItem' && !nextIsListItem) ||
       (vdtType === 'paragraph' && isContainerTail) ||
       vdtType === 'mathDisplay'

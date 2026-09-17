@@ -1135,6 +1135,12 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
       <td>When <code>true</code>, a heading is never placed as the last element of a column or page. If the following block would not have at least <code>bodyText.widowMinLines</code> lines of room after the heading (or one line when <code>bodyText.avoidWidows</code> is <code>false</code>), the heading is pushed forward so it stays joined to its text. Interacts with <code>bodyText.keepColonWithList</code>: if that rule has to push a colon-paragraph whole, any trailing heading(s) in the column travel with it rather than being left stranded.</td>
     </tr>
     <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether the flow snaps back onto the baseline grid under a heading. With <code>true</code> the heading's <code>marginBottom</code> is rounded up to whole grid lines; with <code>false</code> the exact margin is kept and the text under the heading may sit off the grid until the next snap point (the end of a list, a <code>:::paragraphs</code> tail, display math) — the way many books set a line and a half under a heading.</td>
+    </tr>
+    <tr>
       <td><code>balancing</code></td>
       <td><code>ColumnBalancingConfig</code></td>
       <td>enabled</td>

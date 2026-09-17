@@ -1135,6 +1135,12 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
       <td>Cuando es <code>true</code>, un encabezado nunca se coloca como último elemento de una columna o página. Si el siguiente bloque no tuviera al menos <code>bodyText.widowMinLines</code> líneas de hueco tras el encabezado (o una línea cuando <code>bodyText.avoidWidows</code> es <code>false</code>), el encabezado se empuja hacia delante para quedar unido a su texto. Interactúa con <code>bodyText.keepColonWithList</code>: si esa regla tiene que empujar el párrafo de dos puntos por completo, los encabezados que lo preceden en la columna viajan con él en vez de quedar varados.</td>
     </tr>
     <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si el flujo vuelve a la retícula base bajo un título. Con <code>true</code> el <code>marginBottom</code> del título se redondea a líneas enteras de la retícula; con <code>false</code> se conserva el margen exacto y el texto bajo el título puede quedar fuera de la retícula hasta el siguiente punto de ajuste (el final de una lista, la cola de un <code>:::paragraphs</code>, una ecuación) — como muchos libros, que dejan línea y media bajo el título.</td>
+    </tr>
+    <tr>
       <td><code>balancing</code></td>
       <td><code>ColumnBalancingConfig</code></td>
       <td>activado</td>

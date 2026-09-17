@@ -1410,6 +1410,12 @@ export interface HeadingsConfig {
    *  heading, the heading is pushed to the next column/page so it stays joined
    *  to its text. Default true. */
   keepWithNext?: boolean;
+  /** When true (the default) the flow snaps back onto the baseline grid
+   *  under a heading, so its `marginBottom` is rounded up to whole grid
+   *  lines. `false` keeps the exact margin: the text under the heading may
+   *  sit off the grid until the next snap point (a list's end, a container's
+   *  tail, display math). */
+  snapToGrid?: boolean;
   /** Vertical column balancing — editorial bottom alignment. When a column
    *  ends short of its bottom, extra baseline-grid lines are added above the
    *  column's headings so every column ends flush with the page bottom.
@@ -1472,6 +1478,7 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepWithNext: boolean;
+  snapToGrid: boolean;
   balancing: {
     enabled: boolean;
     maxLinesPerHeading: number;

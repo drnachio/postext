@@ -66,6 +66,7 @@ export const DEFAULT_HEADINGS_CONFIG: ResolvedHeadingsConfig = {
   marginTop: DEFAULT_HEADING_MARGIN_TOP,
   marginBottom: DEFAULT_HEADING_MARGIN_BOTTOM,
   keepWithNext: true,
+  snapToGrid: true,
   balancing: { ...DEFAULT_COLUMN_BALANCING },
   levels: DEFAULT_HEADING_LEVELS,
 };
@@ -87,6 +88,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   const generalMarginTop = partial.marginTop ?? DEFAULT_HEADINGS_CONFIG.marginTop;
   const generalMarginBottom = partial.marginBottom ?? DEFAULT_HEADINGS_CONFIG.marginBottom;
   const generalKeepWithNext = partial.keepWithNext ?? DEFAULT_HEADINGS_CONFIG.keepWithNext;
+  const generalSnapToGrid = partial.snapToGrid ?? DEFAULT_HEADINGS_CONFIG.snapToGrid;
   const balancing = partial.balancing
     ? {
         enabled: partial.balancing.enabled ?? DEFAULT_COLUMN_BALANCING.enabled,
@@ -135,7 +137,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
     };
   });
 
-  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, balancing, levels };
+  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, snapToGrid: generalSnapToGrid, balancing, levels };
 }
 
 /** The level fields a heading style (or any partial level config) sets,
@@ -197,6 +199,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
   }
   if (headings.keepWithNext !== undefined && headings.keepWithNext !== DEFAULT_HEADINGS_CONFIG.keepWithNext) {
     result.keepWithNext = headings.keepWithNext;
+    hasOverride = true;
+  }
+  if (headings.snapToGrid !== undefined && headings.snapToGrid !== DEFAULT_HEADINGS_CONFIG.snapToGrid) {
+    result.snapToGrid = headings.snapToGrid;
     hasOverride = true;
   }
   if (headings.balancing) {
