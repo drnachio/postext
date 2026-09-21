@@ -55,7 +55,10 @@ function chapterMarkdown(): string {
 const markdown = chapterMarkdown();
 const config: PostextConfig = { bodyText: { hyphenation: { locale: 'es' } } };
 
-describe.skipIf(!process.env.BENCH)('chapter layout bench', () => {
+// No node typings in this package: reach the environment through globalThis.
+const nodeProcess = (globalThis as { process?: { env?: Record<string, string | undefined>; stdout: { write(s: string): void } } }).process;
+
+describe.skipIf(!nodeProcess?.env?.BENCH)('chapter layout bench', () => {
   const ROUNDS = 5;
   const median = (xs: number[]): number => xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)]!;
   const time = (fn: () => void): number => {
@@ -74,7 +77,8 @@ describe.skipIf(!process.env.BENCH)('chapter layout bench', () => {
     const passes: BuildPassInfo[] = [];
     const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPass: (p) => passes.push(p) });
     const passMs = passes.map((p) => Math.round(p.ms)).join('/');
-    process.stdout.write(
+    // Written to the process stream: vitest hides console output of passing tests.
+    nodeProcess?.stdout.write(
       `[bench] chapter: ${doc.pages.length} pages, ${passes.length} passes (${passMs} ms), iterationCount=${doc.iterationCount}; `
       + `cold median ${Math.round(median(cold))} ms, warm median ${Math.round(median(warm))} ms (${ROUNDS} rounds)\n`,
     );
