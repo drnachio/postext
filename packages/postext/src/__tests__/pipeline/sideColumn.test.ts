@@ -76,7 +76,7 @@ describe('float-only side column (oneAndHalf, sideColumnRole: floats)', () => {
     expect(sideOf(doc, 1).bbox.x).toBeCloseTo(verso.contentArea.x, 5);
   });
 
-  it('a span: side figure stacks in the side column beside the paragraph that cites it', () => {
+  it('a span: side figure stacks in the side column of the page that cites it, from the column head', () => {
     const doc = build(`${filler(4)}\n\nHere is the reference :ref{id="f1"} in the text.\n\n${filler(6)}`, [figure('f1', { placement: { span: 'side' } })]);
     const fl = floatsOf(doc);
     expect(fl.length).toBe(1);
@@ -86,9 +86,9 @@ describe('float-only side column (oneAndHalf, sideColumnRole: floats)', () => {
     expect(block.columnIndex).toBe(side.index);
     expect(block.bbox.x).toBeCloseTo(side.bbox.x, 5);
     expect(block.bbox.width).toBeCloseTo(side.bbox.width, 5);
-    // Not above the citing paragraph, and the side column's stack moved on.
-    const citing = mainOf(doc, 0).blocks.find((b) => b.lines.some((l) => l.text?.includes('reference')))!;
-    expect(block.bbox.y).toBeGreaterThanOrEqual(citing.bbox.y - 1e-6);
+    // The marginal figure of a textbook sits at the head of its page even
+    // when the text cites it further down; the side column's stack moved on.
+    expect(block.bbox.y).toBeCloseTo(side.bbox.y, 5);
     expect(side.availableHeight).toBeLessThan(side.bbox.height - block.bbox.height);
     // The main column kept its full height: a side float cuts no band.
     const main = mainOf(doc, 0);

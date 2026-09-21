@@ -329,6 +329,8 @@ function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignT
     overflow: el.overflow ?? DEFAULT_TEXT_ELEMENT.overflow,
     hyphenate: el.hyphenate,
     ...(el.textTransform ? { textTransform: el.textTransform } : {}),
+    ...(el.dropCap ? { dropCap: el.dropCap } : {}),
+    ...(el.paragraphIndent ? { paragraphIndent: el.paragraphIndent } : {}),
     box: el.box,
   };
 }

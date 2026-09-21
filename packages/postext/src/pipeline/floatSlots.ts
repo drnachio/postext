@@ -63,10 +63,10 @@ export function enumerateCurrentPageSlots(
   // it the column slots below instead.
   const side = sideColumnOf(page, band);
   if (f.span === 'side' && side && side.bbox.height > 0.5) {
-    // Beside the citing block when it sits on this page; a float carried
-    // over from an earlier page takes the stack's foot.
-    const refY = f.refPageIndex === page.index ? f.refY : undefined;
-    return [{ cols: [side], position: 'top', pageSpan: false, side: true, refY }];
+    // The stack's foot — the marginal figure of a textbook sits at the
+    // head of its page even when the text cites it further down (the side
+    // boxes, set beside the text they interrupt, keep their `refY`).
+    return [{ cols: [side], position: 'top', pageSpan: false, side: true }];
   }
 
   // A page-span float crosses the side column too: the band it takes is
@@ -98,6 +98,8 @@ export interface FloatMeasure {
   /** For a rotated block: the width it takes on the page (its upright
    *  height), which must fit the band's width. */
   rotatedWidth?: number;
+  /** Height of a caption band set beside the body (`placement.captionSide`). */
+  asideHeight?: number;
 }
 
 /** Geometry of a float stacked in the side column: it starts at the foot of

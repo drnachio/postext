@@ -53,6 +53,8 @@ describe('callout style defaults', () => {
       color: DEFAULT_CALLOUT_STYLE_STATIC.titleStyle.color,
       textTransform: 'none',
       gap: { value: 0.5, unit: 'em' },
+      letterSpacing: { value: 0, unit: 'pt' },
+      indent: { value: 0, unit: 'pt' },
     });
     expect(r!.icon.fontFamily).toBe('Inter');
     expect(r!.body).toEqual({

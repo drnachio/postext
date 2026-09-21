@@ -22,7 +22,7 @@ export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'toc';
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
  *  between are parsed as usual and bracketed by a `containerStart` /
  *  `containerEnd` marker pair sharing a `containerId`. */
-export type ContainerName = 'callout' | 'paragraphs' | 'part';
+export type ContainerName = 'callout' | 'paragraphs' | 'part' | 'columns';
 
 /** Letter-case transform applied to the computed label of an inline `:ref`
  *  (never to the number, never to a `text=` override). */

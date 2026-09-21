@@ -479,12 +479,17 @@ export function buildDocumentPass(
   const rotationKey = (rotated: FloatRotation | undefined): string =>
     rotated ? `:${rotated.direction}${rotated.length.toFixed(2)}` : '';
 
+  /** A caption set beside the figure (`placement.captionSide`): the band
+   *  in the side column, relative to the float's left edge. */
+  type CaptionAside = { dx: number; width: number; alignBottom: boolean; offsetY?: number };
+  const asideKey = (a?: CaptionAside): string => (a ? `:aside${a.dx.toFixed(1)}x${a.width.toFixed(1)}${a.alignBottom ? 'b' : 't'}${(a.offsetY ?? 0).toFixed(1)}` : '');
   const layoutFloat = (
     resourceId: string,
     width: number,
     slice?: TableSliceSpec,
     rotated?: FloatRotation,
-  ): { block: ResolvedResourceBlock; totalHeight: number; tableRows?: TableRowMetrics } | null => {
+    aside?: CaptionAside,
+  ): { block: ResolvedResourceBlock; totalHeight: number; tableRows?: TableRowMetrics; asideHeight?: number } | null => {
     const resource = resourceById.get(resourceId);
     if (!resource) return null;
     return layoutResourceBlock({
@@ -498,6 +503,7 @@ export function buildDocumentPass(
       resources,
       ...(slice ? { slice } : {}),
       ...(rotated ? { rotate: rotated.direction, rotatedLength: rotated.length } : {}),
+      ...(aside ? { captionAside: aside } : {}),
     });
   };
 
@@ -538,11 +544,11 @@ export function buildDocumentPass(
   /** Height (and caption baseline) of a float at a given width, memoised —
    *  fit checks run for every pending float on every loop iteration. */
   const floatMeasureMemo = new Map<string, FloatMeasure | null>();
-  const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation): FloatMeasure | null => {
-    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}`;
+  const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside): FloatMeasure | null => {
+    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
-    const laid = layoutFloat(resourceId, width, slice, rotated);
+    const laid = layoutFloat(resourceId, width, slice, rotated, aside);
     let m: FloatMeasure | null = null;
     if (laid && laid.block.rotation) {
       // A rotated block takes its band whole: no caption baseline to align,
@@ -563,6 +569,7 @@ export function buildDocumentPass(
       m = {
         height: laid.totalHeight,
         ...(lastBaseline !== undefined ? { lastCaptionBaseline: lastBaseline } : {}),
+        ...(laid.asideHeight !== undefined ? { asideHeight: laid.asideHeight } : {}),
       };
     }
     floatMeasureMemo.set(key, m);
@@ -580,8 +587,9 @@ export function buildDocumentPass(
     /** A rotated block sits flush to the band's right edge (the spine of a
      *  verso page) instead of its left. */
     flushEnd = false,
+    aside?: CaptionAside,
   ): { block: VDTBlock; height: number } | null => {
-    const laid = layoutFloat(resourceId, width, slice, rotated);
+    const laid = layoutFloat(resourceId, width, slice, rotated, aside);
     if (!laid) return null;
     const { block: rb, totalHeight } = laid;
     const id = slice && slice.startRow > 0 ? `float-${resourceId}-cont-${slice.startRow}` : `float-${resourceId}`;
@@ -750,14 +758,28 @@ export function buildDocumentPass(
     anchorToCap: boolean,
     side = false,
     refY?: number,
-  ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number; rotated: FloatRotation | undefined } | null => {
+  ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number; rotated: FloatRotation | undefined; aside?: CaptionAside; sideCol?: VDTColumn } | null => {
     const first = targetCols[0]!;
-    const width = pageSpan ? page.contentArea.width : first.bbox.width;
-    const xLeft = pageSpan ? page.contentArea.x : first.bbox.x;
+    const slotWidth = pageSpan ? page.contentArea.width : first.bbox.width;
+    const slotX = pageSpan ? page.contentArea.x : first.bbox.x;
+    // A narrower float (`placement.width`) sits in its slot per `align`.
+    const width = f.widthFraction && f.widthFraction < 1 ? slotWidth * f.widthFraction : slotWidth;
+    const alignK = f.align === 'center' ? 0.5 : f.align === 'right' ? 1 : 0;
+    const xLeft = slotX + (slotWidth - width) * alignK;
     const slice = sliceOf(f);
     // A side float never turns: it stacks upright in the side column.
     const rotated = side ? undefined : rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)));
-    const measure = measureFloat(f.resourceId, width, slice, rotated);
+    // The caption beside the figure, in the band's side column.
+    let aside: CaptionAside | undefined;
+    let sideCol: VDTColumn | undefined;
+    if (f.captionSide && !pageSpan && !side && !rotated) {
+      const sc = sideColumnOf(page, first.band ?? 0);
+      if (sc && sc.bbox.width > 0.5) {
+        sideCol = sc;
+        aside = { dx: sc.bbox.x - xLeft, width: sc.bbox.width, alignBottom: position === 'bottom' };
+      }
+    }
+    const measure = measureFloat(f.resourceId, width, slice, rotated, aside);
     if (!measure) return null;
     // A side float stacks in the side column beside the citing text.
     if (side) {
@@ -770,10 +792,24 @@ export function buildDocumentPass(
     // and the box follows both.
     const bottomOf = (c: VDTColumn): number =>
       anchorToCap ? c.bbox.y + c.bbox.height : trueBottom(c, uncappedBottoms);
-    const { need, y } = measureFloatBand(
+    let { need, y } = measureFloatBand(
       position, measure, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf,
     );
-    return { need, y, measure, slice, width, xLeft, rotated };
+    // A caption level with a top float's head would overlap what the side
+    // column already holds: it drops under the stack instead.
+    if (aside && sideCol && position === 'top' && !aside.alignBottom) {
+      const used = sideUsedBottom(sideCol);
+      if (used > y + 0.5) {
+        const shifted: CaptionAside = { ...aside, offsetY: used - y };
+        const m2 = measureFloat(f.resourceId, width, slice, rotated, shifted);
+        if (m2) {
+          aside = shifted;
+          ({ need, y } = measureFloatBand(position, m2, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf));
+          return { need, y, measure: m2, slice, width, xLeft, rotated, aside, sideCol };
+        }
+      }
+    }
+    return { need, y, measure, slice, width, xLeft, rotated, ...(aside ? { aside, sideCol } : {}) };
   };
 
   /** Free height `col` keeps for the flow once a float band `probe` is
@@ -806,7 +842,7 @@ export function buildDocumentPass(
     const first = targetCols[0]!;
     const probe = probeFloatBand(page, f, targetCols, position, pageSpan, anchorToCap, side, refY);
     if (!probe) return 'skip';
-    const { width, xLeft, rotated } = probe;
+    const { width, xLeft, rotated, aside, sideCol } = probe;
     let { slice, measure, need, y } = probe;
     let rest: PlannedFloat | undefined;
     /** The float was cut to this slot (a table slice). */
@@ -911,8 +947,24 @@ export function buildDocumentPass(
       rest = { ...rest, notBefore: { pageIndex: page.index, columnIndex: targetCols[targetCols.length - 1]!.index } };
     }
 
-    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, rotated ? rotatedFlushEnd(page) : false);
+    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, rotated ? rotatedFlushEnd(page) : false, aside);
     if (!built) return 'skip';
+
+    // The caption beside the figure takes its band of the side column: a
+    // top float's caption is consumed from the stack's head (when the
+    // stack is still above it), a bottom float's cuts the column's foot.
+    if (aside && sideCol && measure.asideHeight !== undefined) {
+      const bandH = measure.asideHeight + floatGapPx;
+      if (position === 'top') {
+        const used = sideUsedBottom(sideCol);
+        const bottom = y + (aside.offsetY ?? 0) + bandH;
+        if (bottom > used) sideCol.availableHeight = Math.max(0, sideCol.availableHeight - (bottom - used));
+      } else {
+        const cut = Math.max(0, sideCol.bbox.y + sideCol.bbox.height - (y + built.height - measure.asideHeight - floatGapPx));
+        sideCol.bbox.height = Math.max(0, sideCol.bbox.height - cut);
+        sideCol.availableHeight = Math.max(0, sideCol.availableHeight - cut);
+      }
+    }
 
     for (const col of targetCols) {
       const r = { ...reservedOf(col) };
@@ -992,8 +1044,7 @@ export function buildDocumentPass(
    *  is set. A float that does not fit holds up the ones behind it in its
    *  numbering sequence (see `heldBack`), never the other sequence. */
   const flushFloatsIntoPage = (page: VDTPage): void => {
-    flushSideBoxesIntoPage(page);
-    if (pendingFloats.length === 0) return;
+    if (pendingFloats.length === 0) { flushSideBoxesIntoPage(page); return; }
     const textCols = page.columns.filter((c) => c.kind !== 'span' && c.kind !== 'side');
     if (textCols.length === 0) return;
     const sideCols = sideColumns(page);
@@ -1014,15 +1065,27 @@ export function buildDocumentPass(
       }
       return best;
     };
+    // Order of the passes: page-span floats take the outer bands; column
+    // floats whose caption goes to the side column reserve it before the
+    // waiting side boxes and side floats stack there; the rest follow.
+    let sideBoxesFlushed = false;
+    for (let stage = 0; stage < 3; stage++) {
+      // Stage 0: page-span floats alone, until none is left to place (they
+      // take the outer bands of every column, the side column included);
+      // stage 1: column floats whose caption goes to the side column (they
+      // reserve their band there); then the waiting side boxes; stage 2:
+      // the side floats and the other column floats.
+      const passes = stage === 0 ? (['page'] as const) : stage === 1 ? (['aside'] as const) : (['side', 'column'] as const);
+      if (stage === 2 && !sideBoxesFlushed) { flushSideBoxesIntoPage(page); sideBoxesFlushed = true; }
     for (let progress = true; progress;) {
       const before = floatsPlaced;
-      for (const pass of ['page', 'side', 'column'] as const) {
+      for (const pass of passes) {
         let i = 0;
         while (i < pendingFloats.length) {
           const f = pendingFloats[i]!;
           const isPageSpan = f.span === 'page' && (textCols.length > 1 || sideCols.length > 0);
           const isSide = !isPageSpan && f.span === 'side' && sideCols.length > 0;
-          const kind = isPageSpan ? 'page' : isSide ? 'side' : 'column';
+          const kind = isPageSpan ? 'page' : isSide ? 'side' : f.captionSide && sideCols.length > 0 ? 'aside' : 'column';
           if (kind !== pass || heldBack(i)) { i++; continue; }
           // A page-span rest never shares the page of its previous slice.
           if (isPageSpan && f.notBefore?.pageIndex === page.index) { i++; continue; }
@@ -1043,6 +1106,8 @@ export function buildDocumentPass(
       }
       progress = floatsPlaced > before;
     }
+    }
+    if (!sideBoxesFlushed) flushSideBoxesIntoPage(page);
   };
 
   /** The keep-together box content block `idx` opens, when it is one that
@@ -1555,10 +1620,13 @@ export function buildDocumentPass(
     realAt: readonly number[];
     /** The cut past the last child (the end of the box). */
     end: CalloutCut;
+    /** `:::columns` groups among the children ([start, end] marker
+     *  positions): no cut falls inside one. */
+    groups: readonly [number, number][];
     /** Lay out the children from cut `from` to cut `to` at `width` as one
      *  box — a `continuation` (every fragment after the head) without
      *  title / icon. A cut inside a child keeps only the lines on its side. */
-    layoutRange: (from: CalloutCut, to: CalloutCut, width: number, frameId: string, continuation: boolean) => CalloutLayoutResult;
+    layoutRange: (from: CalloutCut, to: CalloutCut, width: number, frameId: string, continuation: boolean, mirrored?: boolean) => CalloutLayoutResult;
   }
 
   const makeCalloutLayouter = (
@@ -1571,7 +1639,17 @@ export function buildDocumentPass(
     children.forEach((c, k) => {
       if (c.type !== 'directive' && !isMarkerBlock(c)) realAt.push(k);
     });
-    const layoutRange = (from: CalloutCut, to: CalloutCut, width: number, frameId: string, continuation: boolean) => {
+    // `:::columns` groups among the children, as [start marker, end marker]
+    // positions: a split never cuts inside one.
+    const groups: [number, number][] = [];
+    children.forEach((c, k) => {
+      if (c.type === 'containerStart' && c.containerName === 'columns') {
+        let e = k + 1;
+        while (e < children.length && !(children[e]!.type === 'containerEnd' && children[e]!.containerName === 'columns' && children[e]!.containerId === c.containerId)) e++;
+        groups.push([k, e]);
+      }
+    });
+    const layoutRange = (from: CalloutCut, to: CalloutCut, width: number, frameId: string, continuation: boolean, mirrored = false) => {
       let n = 0;
       // A cut inside child `to.child` includes that child (its first
       // `to.line` lines); a cut at a child's head excludes it.
@@ -1591,9 +1669,21 @@ export function buildDocumentPass(
         paragraphStyleFor: (idx) => paragraphContainers.byBlock[idx]?.style,
         ...(from.line > 0 ? { lineFrom: from.line } : {}),
         ...(to.line > 0 ? { lineTo: to.line } : {}),
+        mirrored,
       });
     };
-    return { children, childBase: startIdx + 1, realAt, end: { child: children.length, line: 0 }, layoutRange };
+    return { children, childBase: startIdx + 1, realAt, end: { child: children.length, line: 0 }, layoutRange, groups };
+  };
+  /** Whether a page is a verso of mirrored margins (an `'outer'` corner
+   *  icon hangs on the left there). */
+  const mirroredOf = (page: VDTPage): boolean =>
+    resolved.page.margins.mirror === true && (page.index + pageIndexOffset + 1) % 2 === 0;
+  /** Used bottom of a band, the float-only side column's stack included:
+   *  a span block cuts under the side boxes already set there. */
+  const bandUsedBottomWithSide = (page: VDTPage, cols: readonly VDTColumn[]): number => {
+    const side = sideColumnOf(page, cols[0]?.band ?? 0);
+    const withSide = side && sideUsedBottom(side) > side.bbox.y + 0.5 ? [...cols, side] : cols;
+    return bandUsedBottom(withSide);
   };
 
   interface CalloutFragment {
@@ -1618,8 +1708,9 @@ export function buildDocumentPass(
     frameId: string,
     continuation: boolean,
     minLines: number,
+    mirrored = false,
   ): CalloutFragment | null => {
-    const full = L.layoutRange(from, L.end, width, frameId, continuation);
+    const full = L.layoutRange(from, L.end, width, frameId, continuation, mirrored);
     const lastChild = full.children[full.children.length - 1];
     if (!lastChild) return null;
     const tail = full.totalHeight - (lastChild.bbox.y + lastChild.bbox.height);
@@ -1646,12 +1737,14 @@ export function buildDocumentPass(
       }
     }
     const min = Math.max(1, minLines);
+    const insideGroup = (cut: CalloutCut): boolean =>
+      L.groups.some(([gs, ge]) => (cut.line === 0 ? gs < cut.child && cut.child <= ge : gs < cut.child && cut.child < ge));
     const viable = candidates
-      .filter((c) => c.headLines >= min && totalLines - c.headLines >= min)
+      .filter((c) => c.headLines >= min && totalLines - c.headLines >= min && !insideGroup(c.cut))
       .sort((a, b) => b.bottom - a.bottom);
     for (const c of viable) {
       if (c.bottom + tail > roomPx + 0.01) continue;
-      const result = L.layoutRange(from, c.cut, width, frameId, continuation);
+      const result = L.layoutRange(from, c.cut, width, frameId, continuation, mirrored);
       if (result.totalHeight <= roomPx + 0.01) return { to: c.cut, result };
     }
     return null;
@@ -1790,7 +1883,7 @@ export function buildDocumentPass(
         const slice = sliceOf(f);
         const measure = measureFloat(f.resourceId, width, slice);
         if (!measure) { i++; continue; }
-        const cutY = gridUp(page, bandUsedBottom(cols));
+        const cutY = gridUp(page, bandUsedBottomWithSide(page, cols));
         const spacing = cols.some((c) => c.blocks.length > 0) ? floatGapPx : 0;
         const need = needFor(spacing, measure.height, floatGapPx);
         const bandBottom = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
@@ -1827,7 +1920,7 @@ export function buildDocumentPass(
       let page = doc.pages[cursor.pageIndex]!;
       const continuation = part > 0;
       const layoutAt = (width: number): CalloutLayoutResult =>
-        L.layoutRange(from, L.end, width, frameId, continuation);
+        L.layoutRange(from, L.end, width, frameId, continuation, mirroredOf(page));
       const result = layoutAt(page.contentArea.width);
 
       interface SpanFit {
@@ -1853,7 +1946,7 @@ export function buildDocumentPass(
       const measureBand = (requireLevel: boolean): SpanFit | null => {
         const cols = bandColumns(page, currentBand(page, cursor));
         if (cols.length === 0 || (requireLevel && !levelForBox(cols))) return null;
-        const cutY = gridUp(page, bandUsedBottom(cols));
+        const cutY = gridUp(page, bandUsedBottomWithSide(page, cols));
         const bandHasContent = cols.some((c) => c.blocks.length > 0);
         const spacing = bandHasContent ? Math.max(pendingSpacing, result.marginTopPx) : 0;
         const need = needFor(spacing, result.totalHeight, result.marginBottomPx);
@@ -1960,14 +2053,18 @@ export function buildDocumentPass(
       }
       if (!action && forceHere && fit) {
         action = { kind: 'whole', fit, need: fit.need, result };
-        (doc.warnings ??= []).push({
-          kind: 'calloutOverflow',
-          pageIndex: cursor.pageIndex,
-          columnIndex: cursor.columnIndex,
-          sourceStart: contentBlocks[startIdx]!.sourceStart + bodyOffset,
-          sourceEnd: contentBlocks[plan.endIdx]!.sourceEnd + bodyOffset,
-          overflowPx: Math.max(0, fit.spacing + result.totalHeight - fit.roomPx),
-        });
+        // A box that fills its band to the last grid line is not an overflow.
+        const overflowPx = Math.max(0, fit.spacing + result.totalHeight - fit.roomPx);
+        if (overflowPx > 0.5) {
+          (doc.warnings ??= []).push({
+            kind: 'calloutOverflow',
+            pageIndex: cursor.pageIndex,
+            columnIndex: cursor.columnIndex,
+            sourceStart: contentBlocks[startIdx]!.sourceStart + bodyOffset,
+            sourceEnd: contentBlocks[plan.endIdx]!.sourceEnd + bodyOffset,
+            overflowPx,
+          });
+        }
       }
 
       if (action) {
@@ -2277,12 +2374,28 @@ export function buildDocumentPass(
     const { startIdx, plan, style } = box;
     const L = makeCalloutLayouter(startIdx, plan, style);
     const frameId = `block-${blockIdCounter++}`;
-    const result = L.layoutRange(CUT_START, L.end, side.bbox.width, frameId, false);
+    const result = L.layoutRange(CUT_START, L.end, side.bbox.width, frameId, false, mirroredOf(page));
     const used = sideUsedBottom(side);
     const raw = Math.max(used, refY ?? used);
-    const y = page.contentArea.y + Math.ceil((raw - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid;
-    const need = y - used + result.totalHeight + Math.max(result.marginBottomPx, floatGapPx);
-    if (need > side.availableHeight + 0.01) {
+    const gridUpSide = (v: number): number => page.contentArea.y + Math.ceil((v - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid;
+    let y = gridUpSide(raw);
+    const below = Math.max(result.marginBottomPx, floatGapPx);
+    let need = y - used + result.totalHeight + below;
+    // The gap under the box is owed only to what follows: a box whose foot
+    // lands on the column's foot needs none.
+    const fits = (): boolean => need <= side.availableHeight + 0.01 || y - used + result.totalHeight <= side.availableHeight + 0.01;
+    if (!fits() && refY !== undefined && raw > used + 0.5) {
+      // Beside its text the box runs off the column: it slides up — as far
+      // as the stack above allows — to the lowest position that fits, its
+      // foot on the column's foot (the bottom-aligned marginal box).
+      const foot = side.bbox.y + side.bbox.height;
+      const fit = page.contentArea.y + Math.floor((foot - result.totalHeight - page.contentArea.y + 0.01) / baselineGrid) * baselineGrid;
+      if (fit >= used - 0.01) {
+        y = fit;
+        need = y - used + result.totalHeight + below;
+      }
+    }
+    if (!fits()) {
       if (mode === 'strict' || used > side.bbox.y + 0.5) return false;
     }
     const frame = result.frame;
@@ -2350,7 +2463,7 @@ export function buildDocumentPass(
     const firstFrameId = `block-${blockIdCounter++}`;
     const { span, placement } = resolveCalloutAttrs(style, plan.attrs);
     const L = makeCalloutLayouter(startIdx, plan, style);
-    const layoutAt = (width: number) => L.layoutRange(CUT_START, L.end, width, firstFrameId, false);
+    const layoutAt = (width: number) => L.layoutRange(CUT_START, L.end, width, firstFrameId, false, mirroredOf(doc.pages[cursor.pageIndex]!));
 
     // Fixed boxes leave the flow entirely.
     if (placement === 'fixed') {
@@ -2384,7 +2497,7 @@ export function buildDocumentPass(
     for (;;) {
       let curCol = currentColumn(doc, cursor);
       const continuation = part > 0;
-      const result = L.layoutRange(from, L.end, curCol.bbox.width, frameId, continuation);
+      const result = L.layoutRange(from, L.end, curCol.bbox.width, frameId, continuation, mirroredOf(doc.pages[cursor.pageIndex]!));
       // Column balancing: a box closing its column takes the column's gap
       // above it (the trailing-callout lever), so its foot lands on the
       // last grid slot — level with the column beside it. Any fragment
@@ -2399,7 +2512,7 @@ export function buildDocumentPass(
       if (result.totalHeight > roomPx + 0.01) {
         // The (rest of the) box does not fit the column: a splittable box
         // leaves the head that fits here…
-        if (splittable) fragment = splitCalloutFragment(L, from, curCol.bbox.width, roomPx, frameId, continuation, style.splitMinLines);
+        if (splittable) fragment = splitCalloutFragment(L, from, curCol.bbox.width, roomPx, frameId, continuation, style.splitMinLines, mirroredOf(doc.pages[cursor.pageIndex]!));
         // …otherwise it moves whole to the next column — also out of an
         // EMPTY column that float bands or a band cap have cut short, when
         // a full column would hold it (bounded, so a run of short columns
@@ -2693,6 +2806,14 @@ export function buildDocumentPass(
       && nextRaw?.type === 'containerEnd'
       && nextRaw.containerId === paragraphContainer.id;
 
+    // A page-span box that left no band under it keeps the cursor on its
+    // (full) span column. Move on before measuring: a block measured at the
+    // span width and placed in the next page's text column would carry
+    // lines wider than that column.
+    if (currentColumn(doc, cursor).kind === 'span') {
+      pendingSpacing = 0;
+      advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+    }
     // Measure against the current column width. `null` means there is nothing
     // to place inline (empty text, unknown resource id, floated resource).
     const col = currentColumn(doc, cursor);
@@ -2746,7 +2867,9 @@ export function buildDocumentPass(
         segments: [],
         isLastLine: true,
       }];
-      const spacingBefore = pendingSpacing;
+      // An inline resource keeps the float gap (a line) above it, as a
+      // float would, unless the block before asked for more.
+      const spacingBefore = Math.max(pendingSpacing, floatGapPx);
       enterBand(blockIdx, 0);
       placeAtomicBlock(
         blk, groupHeight, spacingBefore, cursor, doc, geomResolved,
@@ -2821,7 +2944,7 @@ export function buildDocumentPass(
     // The contents (`:::toc`) keep their own rhythm: an entry set as a list
     // item is not a list tail to realign the text after it.
     const shouldSnapToGrid = rawBlock.toc === undefined && (
-      (vdtType === 'heading' && !nextIsHeading) ||
+      (vdtType === 'heading' && !nextIsHeading && resolved.headings.snapToGrid) ||
       (vdtType === 'listItem' && !nextIsListItem) ||
       (vdtType === 'paragraph' && isContainerTail) ||
       vdtType === 'mathDisplay'

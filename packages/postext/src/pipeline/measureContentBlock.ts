@@ -22,7 +22,7 @@ import {
 } from './buildHelpers';
 import { resolveBlockKind, type BlockKind, type BlockKindContext } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
-import { resolveRefSpans, resolveSwatchSpans } from './resourceLayout';
+import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './resourceLayout';
 import type { ResourceNumberingMap } from './resourceNumbering';
 import { measureTocBlock } from './toc';
 
@@ -103,12 +103,18 @@ export function measureContentBlock(
   // but land in a page band, so they are never measured inline.
   if (vdtType === 'resource') {
     if (!kind.resource || ctx.floatedIds.has(kind.resource.id)) return null;
+    // A resource narrower than its column (`placement.width`) sits in it
+    // per `placement.align`.
+    const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
+    const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
+    const align = kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left';
+    const embedWidth = columnWidth * frac;
     const { resourceBlock, measured } = runMeasurement({
       vdtType,
       rawBlock,
       contentBlock,
       style,
-      measureMaxWidth: columnWidth,
+      measureMaxWidth: embedWidth,
       measureOptions: { textAlign: style.textAlign },
       mathEnabled,
       useRich: false,
@@ -121,6 +127,10 @@ export function measureContentBlock(
       resourceNumber: kind.resourceNumber,
     });
     if (!resourceBlock) return null;
+    if (frac < 1) {
+      const dx = (columnWidth - embedWidth) * (align === 'center' ? 0.5 : align === 'right' ? 1 : 0);
+      shiftResourceBlockX(resourceBlock, dx);
+    }
     return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
   }
 

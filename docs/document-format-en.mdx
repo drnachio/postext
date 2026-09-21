@@ -232,6 +232,22 @@ With the default heading settings this produces the classic sequence: part page 
 
 A fence does not need a blank line before it: an opening or closing fence glued directly under a paragraph, list or blockquote ends that block. A container left open at the end of the document is closed automatically there, and the sandbox reports an **Unclosed container** warning pointing at the opening line. A stray `:::` with no container open is left in the text as a visible paragraph rather than dropped silently.
 
+### `:::columns`
+
+Inside a `:::callout`, a `:::columns{count=2}` … `:::` group sets the blocks between its fences in `count` columns of equal width (the style's `columnGap` apart): the run is cut where the columns level best — between blocks, or between the lines of a paragraph or list item, whose tail goes on at the head of the next column without its bullet — and the box grows to the tallest column. Blocks after the group take the full width again. Outside a callout the fences are ignored and the blocks flow as usual. A `breaks` attribute fixes the column starts instead of balancing: `:::columns{count=2 breaks="4"}` opens the second column at the group's fourth block (a comma list for more columns), with no cut inside a paragraph — a text column beside a figure column.
+
+```md
+:::callout{type="summary"}
+:::columns{count=2}
+- Every element is one kind of atom.
+- Electrons live in orbitals.
+- A bond shares or transfers electrons.
+:::
+:::
+```
+
+A `:::callout` fence also accepts `label="…"`: the text a style with a `label` tab prints on the box's top corner (`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`).
+
 ### `:::pagebreak`
 
 The directive itself does not force parity on its own — only the next block's layout. Use it to end a preface, force a dedication onto its own page, or mark the end of a section. When both a page break and a numbering reset are wanted at the same point, compose `:::pagebreak` followed by `:::numbering` — the numbering switch applies at the fresh page the `:::pagebreak` just created.
@@ -420,7 +436,7 @@ Here is the floor plan we discussed.
 The keeper's quarters occupy the eastern wing.
 ```
 
-For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`.
+For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`. An inline resource keeps a line of space above it (the float gap), like a float would, unless the block before asks for more.
 
 The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
 
@@ -507,6 +523,16 @@ Each resource has a **placement** that decides where its float lands, resolved p
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
       <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive.</td>
+    </tr>
+    <tr>
+      <td><code>width</code>, <code>align</code></td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
+      <td>A resource narrower than its slot: <code>width</code> is the fraction of the column (or page) width it takes, <code>align</code> where it sits in the slot (a small table centred in its column; a page-wide band whose picture spans one column). Floats and inline <code>::resource</code> embeds alike.</td>
+    </tr>
+    <tr>
+      <td><code>captionSide</code></td>
+      <td><code>true</code> · <code>false</code></td>
+      <td>In a one-and-a-half layout whose side column is reserved for floats (<code>layout.sideColumnRole: 'floats'</code>), a <code>"column"</code> float with <code>captionSide</code> keeps its body in the main column and sets its caption (and note) in the side column, level with the figure's top — or its bottom for a bottom float; the side column gives up that band. A page without such a column keeps the caption under the figure.</td>
     </tr>
     <tr>
       <td><code>span</code></td>
