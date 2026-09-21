@@ -42,8 +42,9 @@ export const HeadingsSection = memo(function HeadingsSection() {
   };
 
   const resetBalancingField = (
-    field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'stretchAfterFloats' | 'looseParagraphs'
-      | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking' | 'trailing' | 'beforeSpan',
+    field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'maxLinesAfterList' | 'stretchAfterFloats'
+      | 'maxLinesAfterFloat' | 'looseParagraphs' | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking'
+      | 'trailing' | 'beforeSpan',
   ) => {
     if (!raw?.balancing) return;
     const next = { ...raw.balancing };
@@ -132,7 +133,9 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isBalEnabledDefault = headings.balancing.enabled === DEFAULT_COLUMN_BALANCING.enabled;
   const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
   const isBalAfterListsDefault = headings.balancing.stretchAfterLists === DEFAULT_COLUMN_BALANCING.stretchAfterLists;
+  const isBalMaxAfterListDefault = headings.balancing.maxLinesAfterList === DEFAULT_COLUMN_BALANCING.maxLinesAfterList;
   const isBalAfterFloatsDefault = headings.balancing.stretchAfterFloats === DEFAULT_COLUMN_BALANCING.stretchAfterFloats;
+  const isBalMaxAfterFloatDefault = headings.balancing.maxLinesAfterFloat === DEFAULT_COLUMN_BALANCING.maxLinesAfterFloat;
   const isBalLooseDefault = headings.balancing.looseParagraphs === DEFAULT_COLUMN_BALANCING.looseParagraphs;
   const isBalMaxLooseDefault = headings.balancing.maxLooseParagraphs === DEFAULT_COLUMN_BALANCING.maxLooseParagraphs;
   const isBalTrackDefault = headings.balancing.trackParagraphs === DEFAULT_COLUMN_BALANCING.trackParagraphs;
@@ -279,6 +282,21 @@ export const HeadingsSection = memo(function HeadingsSection() {
             isDefault={isBalAfterListsDefault}
             onReset={() => resetBalancingField('stretchAfterLists')}
           />
+          {headings.balancing.stretchAfterLists && (
+            <NumberInput
+              label={labels.balanceMaxLinesAfterList}
+              value={headings.balancing.maxLinesAfterList}
+              onChange={(v) =>
+                updateHeadings({ balancing: { ...raw?.balancing, maxLinesAfterList: v } })
+              }
+              min={1}
+              max={8}
+              step={1}
+              tooltip={labels.balanceMaxLinesAfterListTooltip}
+              isDefault={isBalMaxAfterListDefault}
+              onReset={() => resetBalancingField('maxLinesAfterList')}
+            />
+          )}
           <ToggleSwitch
             label={labels.balanceAfterFloats}
             checked={headings.balancing.stretchAfterFloats}
@@ -289,6 +307,21 @@ export const HeadingsSection = memo(function HeadingsSection() {
             isDefault={isBalAfterFloatsDefault}
             onReset={() => resetBalancingField('stretchAfterFloats')}
           />
+          {headings.balancing.stretchAfterFloats && (
+            <NumberInput
+              label={labels.balanceMaxLinesAfterFloat}
+              value={headings.balancing.maxLinesAfterFloat}
+              onChange={(v) =>
+                updateHeadings({ balancing: { ...raw?.balancing, maxLinesAfterFloat: v } })
+              }
+              min={1}
+              max={8}
+              step={1}
+              tooltip={labels.balanceMaxLinesAfterFloatTooltip}
+              isDefault={isBalMaxAfterFloatDefault}
+              onReset={() => resetBalancingField('maxLinesAfterFloat')}
+            />
+          )}
           <ToggleSwitch
             label={labels.balanceLooseParagraphs}
             checked={headings.balancing.looseParagraphs}

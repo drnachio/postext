@@ -22,7 +22,7 @@ export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'toc';
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
  *  between are parsed as usual and bracketed by a `containerStart` /
  *  `containerEnd` marker pair sharing a `containerId`. */
-export type ContainerName = 'callout' | 'paragraphs' | 'part';
+export type ContainerName = 'callout' | 'paragraphs' | 'part' | 'columns';
 
 /** Letter-case transform applied to the computed label of an inline `:ref`
  *  (never to the number, never to a `text=` override). */
@@ -43,6 +43,9 @@ export interface InlineSpan {
   text: string;
   bold: boolean;
   italic: boolean;
+  /** Superscript (`^text^`) or subscript (`~text~`): set smaller and
+   *  raised / lowered off the baseline (an exponent, a chemical index). */
+  script?: 'sup' | 'sub';
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
    *  token → segment, mirroring {@link ref}. */

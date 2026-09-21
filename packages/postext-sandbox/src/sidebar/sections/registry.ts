@@ -15,6 +15,8 @@ export type SettingsSectionId =
   | 'parts'
   | 'bodyText'
   | 'headings'
+  | 'headingStyles'
+  | 'toc'
   | 'paragraphStyles'
   | 'unordered-lists'
   | 'ordered-lists'
@@ -58,8 +60,10 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'headerFooter', category: 'document', labelKey: 'headerFooter', configKeys: ['header', 'footer'] },
   { id: 'parts', category: 'document', labelKey: 'parts', configKeys: ['parts'] },
   // Text
-  { id: 'bodyText', category: 'text', labelKey: 'bodyText', configKeys: ['bodyText'] },
+  { id: 'bodyText', category: 'text', labelKey: 'bodyText', configKeys: ['bodyText', 'locale'] },
   { id: 'headings', category: 'text', labelKey: 'headings', configKeys: ['headings'] },
+  { id: 'headingStyles', category: 'text', labelKey: 'headingStylesSection', configKeys: ['headingStyles'] },
+  { id: 'toc', category: 'text', labelKey: 'tocSection', configKeys: ['toc'] },
   { id: 'paragraphStyles', category: 'text', labelKey: 'paragraphStylesSection', configKeys: ['paragraphStyles'] },
   { id: 'unordered-lists', category: 'text', labelKey: 'unorderedLists', configKeys: ['unorderedLists'] },
   { id: 'ordered-lists', category: 'text', labelKey: 'orderedLists', configKeys: ['orderedLists'] },

@@ -29,7 +29,7 @@ export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak'
 const HEADING_ATTRS_RE = /\s+\{([^{}]*)\}\s*$/;
 /** Set of fenced-container names recognized today. A `:::name` line whose
  *  name is a known container opens a block that runs until a bare `:::`. */
-export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 'paragraphs', 'part']);
+export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 'paragraphs', 'part', 'columns']);
 
 /** True for lines that end a paragraph run even without a blank line: any
  *  `:::name` directive/container fence and the bare `:::` closing fence. */

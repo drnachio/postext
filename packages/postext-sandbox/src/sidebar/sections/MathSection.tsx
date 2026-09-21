@@ -59,7 +59,7 @@ export const MathSection = memo(function MathSection() {
 
   return (
     <CollapsibleSection
-      title={labels.mathSection ?? 'Math'}
+      title={labels.mathSection}
       sectionId="math"
       onReset={resetMath}
       hasOverrides={hasOverrides}
@@ -67,51 +67,51 @@ export const MathSection = memo(function MathSection() {
       resetConfirmMessage={labels.resetSectionConfirm}
     >
       <ToggleSwitch
-        label={labels.mathEnabled ?? 'Enable LaTeX'}
+        label={labels.mathEnabled}
         checked={math.enabled}
         onChange={(v) => updateMath({ enabled: v })}
-        tooltip={labels.mathEnabledTooltip ?? 'Render $…$ and $$…$$ as typeset math'}
+        tooltip={labels.mathEnabledTooltip}
         isDefault={isEnabledDefault}
         onReset={() => resetField('enabled')}
       />
       <NumberInput
-        label={labels.mathFontSizeScale ?? 'Size scale'}
+        label={labels.mathFontSizeScale}
         value={math.fontSizeScale}
         onChange={(v) => updateMath({ fontSizeScale: v })}
         min={0.5}
         max={2}
         step={0.05}
-        tooltip={labels.mathFontSizeScaleTooltip ?? 'Multiplier applied to the body font size when rendering math'}
+        tooltip={labels.mathFontSizeScaleTooltip}
         isDefault={isScaleDefault}
         onReset={() => resetField('fontSizeScale')}
       />
       <ColorPicker
-        label={labels.mathColor ?? 'Color'}
+        label={labels.mathColor}
         value={math.color ?? bodyColor ?? FALLBACK_COLOR}
         onChange={(color) => updateMath({ color })}
-        tooltip={labels.mathColorTooltip ?? 'Formula colour (inherits body colour when unset)'}
+        tooltip={labels.mathColorTooltip}
         isDefault={isColorDefault}
         onReset={() => resetField('color')}
         fieldId="math-color"
       />
       <DimensionInput
-        label={labels.mathMarginTop ?? 'Display margin top'}
+        label={labels.mathMarginTop}
         value={math.marginTop}
         onChange={(dim) => updateMath({ marginTop: dim })}
         min={0}
         step={0.1}
-        tooltip={labels.mathMarginTopTooltip ?? 'Top margin for $$...$$ display blocks'}
+        tooltip={labels.mathMarginTopTooltip}
         isDefault={isMarginTopDefault}
         onReset={() => resetField('marginTop')}
         units={MARGIN_UNITS}
       />
       <DimensionInput
-        label={labels.mathMarginBottom ?? 'Display margin bottom'}
+        label={labels.mathMarginBottom}
         value={math.marginBottom}
         onChange={(dim) => updateMath({ marginBottom: dim })}
         min={0}
         step={0.1}
-        tooltip={labels.mathMarginBottomTooltip ?? 'Bottom margin for $$...$$ display blocks (baseline grid snap may enlarge it)'}
+        tooltip={labels.mathMarginBottomTooltip}
         isDefault={isMarginBottomDefault}
         onReset={() => resetField('marginBottom')}
         units={MARGIN_UNITS}

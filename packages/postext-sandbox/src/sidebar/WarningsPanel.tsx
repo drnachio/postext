@@ -85,9 +85,9 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'listAfterHeading':
       return labels.warningsListAfterHeadingTitle;
     case 'invalidMath':
-      return labels.warningsInvalidMathTitle ?? 'Invalid LaTeX';
+      return labels.warningsInvalidMathTitle;
     case 'unclosedMath':
-      return labels.warningsUnclosedMathTitle ?? 'Unclosed math delimiter';
+      return labels.warningsUnclosedMathTitle;
     case 'headerFooterUnknownPlaceholder':
       return labels.warningsHeaderFooterUnknownPlaceholderTitle;
     case 'headerFooterMetadataMissing':
@@ -114,25 +114,25 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'calloutOverflow':
       return labels.warningsCalloutOverflowTitle;
     case 'designCyclicAnchor':
-      return labels.warningsDesignCyclicAnchorTitle ?? 'Cyclic anchor reference';
+      return labels.warningsDesignCyclicAnchorTitle;
     case 'designDanglingAnchor':
-      return labels.warningsDesignDanglingAnchorTitle ?? 'Dangling anchor reference';
+      return labels.warningsDesignDanglingAnchorTitle;
     case 'designTextClipAlwaysTruncates':
-      return labels.warningsDesignTextClipAlwaysTruncatesTitle ?? 'Text always truncated';
+      return labels.warningsDesignTextClipAlwaysTruncatesTitle;
     case 'headingSpanWithoutBreak':
-      return labels.warningsHeadingSpanWithoutBreakTitle ?? 'Heading span without break';
+      return labels.warningsHeadingSpanWithoutBreakTitle;
     case 'headingAdvancedWithoutTitleText':
-      return labels.warningsHeadingAdvancedWithoutTitleTextTitle ?? 'Heading title not referenced';
+      return labels.warningsHeadingAdvancedWithoutTitleTextTitle;
     case 'unknownResourceId':
-      return labels.warningsUnknownResourceIdTitle ?? 'Unknown resource';
+      return labels.warningsUnknownResourceIdTitle;
     case 'duplicateResourceId':
-      return labels.warningsDuplicateResourceIdTitle ?? 'Duplicate resource id';
+      return labels.warningsDuplicateResourceIdTitle;
     case 'danglingTypeRef':
-      return labels.warningsDanglingTypeRefTitle ?? 'Unknown resource type';
+      return labels.warningsDanglingTypeRefTitle;
     case 'bitmapTooSmall':
-      return labels.warningsBitmapTooSmallTitle ?? 'Low-resolution image';
+      return labels.warningsBitmapTooSmallTitle;
     case 'storageUnavailable':
-      return labels.warningsStorageUnavailableTitle ?? 'Storage unavailable';
+      return labels.warningsStorageUnavailableTitle;
     case 'chapterFrontmatterIgnored':
       return labels.warningsChapterFrontmatterIgnoredTitle;
   }
@@ -206,32 +206,32 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         .replace('__mm__', payload.overflowMm.toFixed(1));
     case 'designCyclicAnchor': {
       const where = slotWhere(payload.slot, payload.level);
-      return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail ?? 'anchor chain loops back to this element'}`;
+      return `${where} · #${payload.elementId} — ${labels.warningsDesignCyclicAnchorDetail}`;
     }
     case 'designDanglingAnchor': {
       const where = slotWhere(payload.slot, payload.level);
-      return `${where} · #${payload.elementId} → #${payload.referencedId} — ${labels.warningsDesignDanglingAnchorDetail ?? 'referenced element does not exist'}`;
+      return `${where} · #${payload.elementId} → #${payload.referencedId} — ${labels.warningsDesignDanglingAnchorDetail}`;
     }
     case 'designTextClipAlwaysTruncates': {
       const where = slotWhere(payload.slot, payload.level);
-      return `${where} · #${payload.elementId} — ${labels.warningsDesignTextClipAlwaysTruncatesDetail ?? 'overflow clip with a small box always truncates'}`;
+      return `${where} · #${payload.elementId} — ${labels.warningsDesignTextClipAlwaysTruncatesDetail}`;
     }
     case 'headingSpanWithoutBreak':
-      return `H${payload.level} — ${labels.warningsHeadingSpanWithoutBreakDetail ?? 'span is "page" but breakBefore is disabled'}`;
+      return `H${payload.level} — ${labels.warningsHeadingSpanWithoutBreakDetail}`;
     case 'headingAdvancedWithoutTitleText':
-      return `H${payload.level} — ${labels.warningsHeadingAdvancedWithoutTitleTextDetail ?? 'no element references {titleText}; the heading text will not appear'}`;
+      return `H${payload.level} — ${labels.warningsHeadingAdvancedWithoutTitleTextDetail}`;
     case 'unknownResourceId': {
       const where = payload.usage === 'embed' ? '::resource' : ':ref';
-      return `${where}{id=${payload.resourceId}} — ${labels.warningsUnknownResourceIdDetail ?? 'no resource with this id exists'}`;
+      return `${where}{id=${payload.resourceId}} — ${labels.warningsUnknownResourceIdDetail}`;
     }
     case 'duplicateResourceId':
-      return `#${payload.resourceId} ×${payload.count} — ${labels.warningsDuplicateResourceIdDetail ?? 'multiple resources share this id; only one resolves'}`;
+      return `#${payload.resourceId} ×${payload.count} — ${labels.warningsDuplicateResourceIdDetail}`;
     case 'danglingTypeRef':
-      return `#${payload.resourceId} → ${payload.typeId} — ${labels.warningsDanglingTypeRefDetail ?? 'resource type no longer exists; a default is used'}`;
+      return `#${payload.resourceId} → ${payload.typeId} — ${labels.warningsDanglingTypeRefDetail}`;
     case 'bitmapTooSmall':
-      return `#${payload.resourceId} · ${payload.renderedWidth}px / ${payload.bitmapWidth}px — ${labels.warningsBitmapTooSmallDetail ?? 'rendered larger than its native size; may look blurry'}`;
+      return `#${payload.resourceId} · ${payload.renderedWidth}px / ${payload.bitmapWidth}px — ${labels.warningsBitmapTooSmallDetail}`;
     case 'storageUnavailable':
-      return labels.warningsStorageUnavailableDetail ?? 'IndexedDB is unavailable; uploaded images cannot be saved';
+      return labels.warningsStorageUnavailableDetail;
     case 'chapterFrontmatterIgnored':
       return labels.warningsChapterFrontmatterIgnoredDetail.replace('__chapter__', payload.chapterTitle);
   }

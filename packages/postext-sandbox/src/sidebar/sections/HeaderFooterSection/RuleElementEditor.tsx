@@ -54,6 +54,14 @@ export function RuleElementEditor({ raw, resolved, slotKind, siblings = [], onCh
     { value: 'full', label: labels.headerFooterElementWidthFull },
     { value: 'custom', label: labels.headerFooterElementWidthCustom },
   ];
+  const DIRECTION_OPTIONS = [
+    { value: 'horizontal', label: labels.headerFooterElementDirectionHorizontal },
+    { value: 'vertical', label: labels.headerFooterElementDirectionVertical },
+  ];
+  const vertical = resolved.direction === 'vertical';
+  const heightSize = resolved.placement.size?.height;
+  const lengthMode: 'full' | 'custom' = heightSize && typeof heightSize === 'object' ? 'custom' : 'full';
+  const customLength: Dimension = heightSize && typeof heightSize === 'object' ? heightSize : { value: 40, unit: 'pt' };
 
   const mode = widthMode(resolved.placement.size);
   const customWidth: Dimension =
@@ -97,19 +105,56 @@ export function RuleElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         onReset={() => update({ thickness: { ...DEFAULT_RULE_ELEMENT.thickness } })}
       />
       <SelectInput
-        label={labels.headerFooterElementWidth}
-        value={mode}
-        options={WIDTH_MODE_OPTIONS}
-        onChange={(v) => updateSize(applyWidthMode(resolved.placement.size, v as 'full' | 'custom'))}
+        label={labels.headerFooterElementDirection}
+        value={resolved.direction}
+        options={DIRECTION_OPTIONS}
+        onChange={(v) => update({ direction: v as DesignRuleElement['direction'] })}
+        tooltip={labels.headerFooterElementDirectionTooltip}
+        isDefault={resolved.direction === DEFAULT_RULE_ELEMENT.direction}
+        onReset={() => update({ direction: DEFAULT_RULE_ELEMENT.direction })}
       />
-      {mode === 'custom' && (
-        <DimensionInput
-          label={labels.headerFooterElementWidth}
-          value={customWidth}
-          onChange={(dim: Dimension) => updateSize({ ...(resolved.placement.size ?? {}), width: dim })}
-          min={0}
-          step={1}
-        />
+      {vertical ? (
+        <>
+          <SelectInput
+            label={labels.headerFooterElementLength}
+            value={lengthMode}
+            options={WIDTH_MODE_OPTIONS}
+            onChange={(v) => {
+              const size = { ...(resolved.placement.size ?? {}) };
+              if (v === 'full') delete size.height;
+              else size.height = customLength;
+              updateSize(size);
+            }}
+            tooltip={labels.headerFooterElementLengthTooltip}
+          />
+          {lengthMode === 'custom' && (
+            <DimensionInput
+              label={labels.headerFooterElementLength}
+              value={customLength}
+              onChange={(dim: Dimension) => updateSize({ ...(resolved.placement.size ?? {}), height: dim })}
+              min={0}
+              step={1}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <SelectInput
+            label={labels.headerFooterElementWidth}
+            value={mode}
+            options={WIDTH_MODE_OPTIONS}
+            onChange={(v) => updateSize(applyWidthMode(resolved.placement.size, v as 'full' | 'custom'))}
+          />
+          {mode === 'custom' && (
+            <DimensionInput
+              label={labels.headerFooterElementWidth}
+              value={customWidth}
+              onChange={(dim: Dimension) => updateSize({ ...(resolved.placement.size ?? {}), width: dim })}
+              min={0}
+              step={1}
+            />
+          )}
+        </>
       )}
       <PlacementFields
         placement={resolved.placement}

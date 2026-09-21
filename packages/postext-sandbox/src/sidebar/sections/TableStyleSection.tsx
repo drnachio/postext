@@ -143,14 +143,14 @@ export const TableStyleSection = memo(function TableStyleSection() {
           fieldId="tableStyle-headerColor"
         />
         <ToggleSwitch
-          label={labels.bold ?? 'Bold'}
+          label={labels.bold}
           checked={ts.headerBold}
           onChange={(v) => update({ headerBold: v })}
           isDefault={unset('headerBold')}
           onReset={() => resetField('headerBold')}
         />
         <ToggleSwitch
-          label={labels.italic ?? 'Italic'}
+          label={labels.italic}
           checked={ts.headerItalic}
           onChange={(v) => update({ headerItalic: v })}
           isDefault={unset('headerItalic')}

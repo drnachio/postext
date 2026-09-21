@@ -2,7 +2,7 @@
 
 import { memo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type { DimensionUnit, ParagraphStyleConfig, ResolvedParagraphStyleConfig } from 'postext';
+import type { ColorValue, DimensionUnit, ParagraphStyleConfig, ResolvedParagraphStyleConfig } from 'postext';
 import { resolveBodyTextConfig, resolveParagraphStylesConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
@@ -57,6 +57,8 @@ function Field({ label, hint, children }: FieldProps) {
 interface ParagraphStyleCardProps {
   style: ParagraphStyleConfig;
   resolved: ResolvedParagraphStyleConfig;
+  /** The body text bold colour — what an unset `boldColor` renders with. */
+  bodyBoldColor: ColorValue;
   otherIds: Set<string>;
   onChange: (partial: Partial<ParagraphStyleConfig>) => void;
   onResetField: (field: keyof ParagraphStyleConfig) => void;
@@ -71,6 +73,7 @@ interface ParagraphStyleCardProps {
 function ParagraphStyleCard({
   style,
   resolved,
+  bodyBoldColor,
   otherIds,
   onChange,
   onResetField,
@@ -195,6 +198,15 @@ function ParagraphStyleCard({
         isDefault={unset('color')}
         onReset={() => onResetField('color')}
         fieldId={`paragraphStyle-${style.id}-color`}
+      />
+      <ColorPicker
+        label={labels.bodyBoldColor}
+        value={resolved.boldColor ?? bodyBoldColor}
+        onChange={(v) => onChange({ boldColor: v })}
+        tooltip={labels.paragraphStyleBoldColorTooltip}
+        isDefault={unset('boldColor')}
+        onReset={() => onResetField('boldColor')}
+        fieldId={`paragraphStyle-${style.id}-boldColor`}
       />
       <SelectInput
         label={labels.alignmentLabel}
@@ -338,6 +350,7 @@ export const ParagraphStylesSection = memo(function ParagraphStylesSection() {
           key={style.id}
           style={style}
           resolved={resolved[i] ?? resolveParagraphStylesConfig([style], bodyText)[0]!}
+          bodyBoldColor={bodyText.boldColor ?? bodyText.color}
           otherIds={new Set(styles.filter((s) => s.id !== style.id).map((s) => s.id))}
           onChange={(partial) => updateStyle(style.id, partial)}
           onResetField={(field) => resetStyleField(style.id, field)}

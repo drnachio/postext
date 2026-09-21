@@ -97,6 +97,10 @@ export function buildHtmlConfigOverride(
     layout: {
       ...base.layout,
       layoutType,
+      // No rectos or versos on screen: a side column at the outer edge
+      // takes the right, one at the inner edge the left.
+      ...(base.layout?.sideColumnSide === 'outer' ? { sideColumnSide: 'right' as const } : {}),
+      ...(base.layout?.sideColumnSide === 'inner' ? { sideColumnSide: 'left' as const } : {}),
     },
     bodyText: {
       ...base.bodyText,

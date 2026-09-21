@@ -67,58 +67,13 @@ describe("createLayout", () => {
 
   it("accepts a full config object", () => {
     const config: PostextConfig = {
-      columns: 2,
-      gutter: "2rem",
-      columnConfig: {
-        count: 2,
-        gutter: "2rem",
-        columnRule: { width: "1px", style: "solid", color: "#ccc" },
-        balancing: true,
-      },
-      typography: {
-        orphans: 2,
-        widows: 2,
-        hyphenation: true,
-        ragOptimization: true,
-        spacing: {
-          beforeHeading: "1.5em",
-          afterHeading: "0.5em",
-          beforeFigure: "1em",
-          afterFigure: "1em",
-          beforeBlockQuote: "1em",
-          afterBlockQuote: "1em",
-        },
-        keepTogether: {
-          headingWithParagraph: true,
-          figureWithCaption: true,
-        },
-      },
-      resourcePlacement: {
-        defaultStrategy: "topOfColumn",
-        deferPlacement: false,
-        preserveAspectRatio: true,
-      },
-      references: {
-        footnotes: { placement: "columnBottom", marker: "number" },
-        figureNumbering: true,
-        tableNumbering: true,
-        marginNotes: true,
-      },
-      sectionOverrides: [
-        {
-          selector: ".intro",
-          columns: { count: 1 },
-          typography: { orphans: 3 },
-        },
-      ],
-      renderer: "web",
+      locale: "es",
+      layout: { layoutType: "double", gutterWidth: { value: 1, unit: "cm" } },
+      bodyText: { hyphenation: { enabled: true } },
+      headings: { balancing: { enabled: true, maxLinesAfterFloat: 2 } },
+      pdfGeneration: { outlines: true },
     };
     const Layout = createLayout(minimalContent, config);
-    expect(Layout.displayName).toBe("PostextLayout");
-  });
-
-  it("accepts config with pdf renderer", () => {
-    const Layout = createLayout(minimalContent, { renderer: "pdf" });
     expect(Layout.displayName).toBe("PostextLayout");
   });
 
@@ -130,23 +85,5 @@ describe("createLayout", () => {
   it("works with empty config", () => {
     const Layout = createLayout(minimalContent, {});
     expect(Layout.displayName).toBe("PostextLayout");
-  });
-
-  it("accepts all resource placement strategies", () => {
-    const strategies = [
-      "topOfColumn",
-      "inline",
-      "floatLeft",
-      "floatRight",
-      "fullWidthBreak",
-      "margin",
-    ] as const;
-
-    for (const strategy of strategies) {
-      const Layout = createLayout(minimalContent, {
-        resourcePlacement: { defaultStrategy: strategy },
-      });
-      expect(Layout.displayName).toBe("PostextLayout");
-    }
   });
 });

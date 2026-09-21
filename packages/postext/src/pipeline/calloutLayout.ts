@@ -133,6 +133,7 @@ export function deriveCalloutResolvedConfig(
       fontSize: body.fontSize,
       lineHeight: body.lineHeight,
       color: body.color,
+      boldColor: body.boldColor ?? body.color,
       textAlign: body.textAlign,
       hyphenation: { ...resolved.bodyText.hyphenation, enabled: body.hyphenation },
       paragraphSpacing: body.paragraphSpacing,
@@ -149,6 +150,10 @@ export function deriveCalloutResolvedConfig(
         ...l,
         bulletChar: bulletOverride ? lists.bulletChar : l.bulletChar,
         color: colorOverride ? lists.color : l.color,
+        // A bullet size / weight of its own sets the glyph in the box's body
+        // face at that size (the document's list face otherwise).
+        ...(lists.bulletFontSize ? { fontSize: lists.bulletFontSize, fontFamily: body.fontFamily } : {}),
+        ...(lists.bulletFontWeight !== undefined ? { fontWeight: lists.bulletFontWeight } : {}),
       })),
     },
     orderedLists: {
@@ -225,6 +230,9 @@ export interface CalloutLayoutInput {
    *  Ignored for children that are not text runs (figures, display math). */
   lineFrom?: number;
   lineTo?: number;
+  /** The box lands on a verso of mirrored margins: an `'outer'` corner icon
+   *  hangs on the left corner there. */
+  mirrored?: boolean;
 }
 
 export interface CalloutLayoutResult {
@@ -242,14 +250,14 @@ export interface CalloutLayoutResult {
   marginBottomPx: number;
 }
 
-const VALID_SPANS: ReadonlySet<string> = new Set(['column', 'page']);
+const VALID_SPANS: ReadonlySet<string> = new Set(['column', 'page', 'side']);
 const VALID_PLACEMENTS: ReadonlySet<string> = new Set(['here', 'top', 'bottom', 'fixed']);
 
 /** Per-instance span / placement: fence attribute when valid, else the style. */
 export function resolveCalloutAttrs(
   style: ResolvedCalloutStyleConfig,
   attrs: DirectiveAttrs,
-): { span: CalloutSpan; placement: CalloutPlacement; title: string } {
+): { span: CalloutSpan; placement: CalloutPlacement; title: string; label: string } {
   const span = attrs.span !== undefined && VALID_SPANS.has(attrs.span)
     ? (attrs.span as CalloutSpan)
     : style.span;
@@ -257,7 +265,8 @@ export function resolveCalloutAttrs(
     ? (attrs.placement as CalloutPlacement)
     : style.placement;
   const title = attrs.title !== undefined ? attrs.title : style.title;
-  return { span, placement, title };
+  const label = attrs.label ?? '';
+  return { span, placement, title, label };
 }
 
 /** Shift a resolved resource block's caption/table geometry by `(ox, oy)`. */
@@ -323,7 +332,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const em = bodyStyle.fontSizePx;
   const px = (d: Dimension): number => dimensionToPx(d, dpi, em);
 
-  const { span, placement, title: rawTitle } = resolveCalloutAttrs(style, attrs);
+  const { span, placement, title: rawTitle, label: labelText } = resolveCalloutAttrs(style, attrs);
   const isAuto = style.width === 'auto';
 
   // --- Marker column (outside the box, on its left) --------------------------
@@ -350,6 +359,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
 
   const hasIcon = !input.continuation && iconPresent(style.icon);
   const iconSize = hasIcon ? px(style.icon.size) : 0;
+  const iconBoxW = hasIcon && style.icon.width ? Math.max(iconSize, px(style.icon.width)) : iconSize;
   const gapPx = px(style.titleStyle.gap);
   // The icon takes its own column only when there is no side stripe to sit
   // over. A continuation that opens inside a paragraph (`lineFrom`) keeps
@@ -357,8 +367,9 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // so the text must wrap the same way — line `lineFrom` on, nothing lost
   // or doubled.
   const openingMidRun = !!input.continuation && (input.lineFrom ?? 0) > 0;
-  const iconColumnKept = (hasIcon || (openingMidRun && iconPresent(style.icon))) && !sideStripe;
-  const iconColumn = iconColumnKept ? px(style.icon.size) + gapPx : 0;
+  const cornerIcon = style.icon.position === 'corner';
+  const iconColumnKept = (hasIcon || (openingMidRun && iconPresent(style.icon))) && !sideStripe && !cornerIcon;
+  const iconColumn = iconColumnKept ? iconBoxW + gapPx : 0;
 
   const innerX = (stripeLeft ? stripeW : 0) + padL + iconColumn;
   const innerTop = (topStripe ? stripeW : 0) + padT;
@@ -375,14 +386,17 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     style.titleStyle.italic ? 'italic' : 'normal',
   );
   const titleLineHeight = titleFontPx * 1.2;
+  const titleTrackingPx = Math.max(0, dimensionToPx(style.titleStyle.letterSpacing, dpi, titleFontPx));
+  const titleIndentPx = Math.max(0, dimensionToPx(style.titleStyle.indent, dpi, titleFontPx));
   const hasTitle = !input.continuation && titleText.trim().length > 0;
+  const titleWidthOf = (t: string): number => measureTextWidth(t, titleFont) + titleTrackingPx * t.length;
 
   // Box width: `fill` uses the given width less the marker column; `auto`
   // shrink-wraps the title.
   let boxWidth = input.width - markerColumn;
   let innerWidth: number;
   if (isAuto) {
-    const titleW = hasTitle ? measureTextWidth(titleText, titleFont) : 0;
+    const titleW = hasTitle ? titleWidthOf(titleText) + titleIndentPx : 0;
     innerWidth = Math.max(1, titleW);
     boxWidth = innerX + innerWidth + padR + (stripeRight ? stripeW : 0);
   } else {
@@ -393,14 +407,18 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const overlayBlocks: VDTDesignBlock[] = [];
   let titleBlock: VDTDesignTextBlock | undefined;
   if (hasTitle) {
-    const measured = measureBlock(titleText, titleFont, innerWidth, titleLineHeight, { textAlign: 'left' });
+    const titleW = Math.max(1, innerWidth - titleIndentPx);
+    const measured = measureBlock(titleText, titleFont, titleW, titleLineHeight, {
+      textAlign: 'left',
+      ...(titleTrackingPx > 0 ? { letterSpacingPx: titleTrackingPx } : {}),
+    });
     const lines = measured.lines.length > 0
       ? measured.lines
-      : [{ text: titleText, bbox: createBoundingBox(0, 0, innerWidth, titleLineHeight), baseline: titleLineHeight * 0.8, hyphenated: false }];
+      : [{ text: titleText, bbox: createBoundingBox(0, 0, titleW, titleLineHeight), baseline: titleLineHeight * 0.8, hyphenated: false }];
     const titleHeight = lines.length * titleLineHeight;
     titleBlock = {
       kind: 'text',
-      bbox: createBoundingBox(innerX, cursorY, innerWidth, titleHeight),
+      bbox: createBoundingBox(innerX + titleIndentPx, cursorY, titleW, titleHeight),
       fontString: titleFont,
       color: style.titleStyle.color.hex,
       lines: lines.map((ln, i) => ({
@@ -410,136 +428,276 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         width: ln.bbox.width,
       })),
       clip: false,
+      ...(titleTrackingPx > 0 ? { letterSpacingPx: titleTrackingPx } : {}),
     };
     cursorY += titleHeight;
   }
 
   // --- Children --------------------------------------------------------------
+  // The children stack under the title; a `:::columns{count=N}` group among
+  // them lays its own children out in N columns of equal width, cut at
+  // the line boundaries that level the columns best, and takes the height
+  // of the tallest column.
   const childBlocks: VDTBlock[] = [];
+  const columnGapPx = px(style.columnGap);
+  /** Stacking state shared by the box and each columns group. */
+  interface Stack {
+    cursorY: number;
+    prevMarginBottom: number;
+    prevWasListItem: boolean;
+    first: boolean;
+  }
+  const isFirstRealOf = (k: number): boolean => children.slice(0, k).every((c) => c.type === 'directive' || isMarkerBlock(c));
+  const isLastRealOf = (k: number): boolean => children.slice(k + 1).every((c) => c.type === 'directive' || isMarkerBlock(c));
+  /** Lay out one child at `width` from `x`, appending it to `into` and
+   *  advancing the stack. */
+  const placeChild = (raw: ContentBlock, k: number, width: number, x: number, st: Stack, into: VDTBlock[]): VDTBlock | undefined => {
+    const blockIdx = childStartIdx + k;
+    const measuredBlock = measureContentBlock(raw, blockIdx, width, derivedCtx, {
+      styleOverride: input.paragraphStyleFor?.(blockIdx),
+    });
+    if (!measuredBlock) return undefined;
+    const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock } = measuredBlock;
+    const { style: bs, vdtType, headingLevel, numberPrefix, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
+
+    // Spacing above: margin collapsing, list-item spacing inside a run.
+    let spacing: number;
+    if (st.first) {
+      spacing = st.prevMarginBottom;
+    } else if (vdtType === 'listItem' && st.prevWasListItem) {
+      spacing = listBullet ? listBullet.itemSpacingPx : 0;
+    } else {
+      spacing = Math.max(st.prevMarginBottom, bs.marginTopPx);
+    }
+    st.cursorY += spacing;
+
+    const blk = createVDTBlock(input.nextChildId(), vdtType, bs.fontString, bs.color, bs.textAlign);
+    applyStyleAttrs(blk, bs);
+    blk.contentIndex = blockIdx;
+    blk.containerId = containerId;
+    blk.dirty = false;
+    blk.snappedToGrid = false;
+    blk.headingLevel = headingLevel;
+    if (numberPrefix) blk.numberPrefix = numberPrefix;
+    blk.sourceMap = absoluteSourceMap;
+    blk.plainPrefixLen = prefixLen;
+
+    // Line-level cut of the first / last child (split boxes): the kept
+    // run of lines, and whether this child opens after its first line
+    // (no bullet then — the head carries it).
+    const isTextRun = !(vdtType === 'resource' && resourceBlock) && !(vdtType === 'mathDisplay' && mathDisplayRender);
+    const isFirstReal = isFirstRealOf(k);
+    const isLastReal = isLastRealOf(k);
+    const lineFrom = isTextRun && isFirstReal ? Math.max(0, input.lineFrom ?? 0) : 0;
+    const lineTo = isTextRun && isLastReal && input.lineTo !== undefined
+      ? Math.max(lineFrom + 1, Math.min(input.lineTo, measured.lines.length))
+      : measured.lines.length;
+    const keptLines = isTextRun ? measured.lines.slice(Math.min(lineFrom, measured.lines.length - 1), lineTo) : measured.lines;
+    const openedMidRun = lineFrom > 0;
+
+    let height: number;
+    if (vdtType === 'resource' && resourceBlock) {
+      height = measured.totalHeight;
+      blk.resourceBlock = resourceBlock;
+      blk.lines = [{
+        text: '',
+        bbox: createBoundingBox(0, 0, resourceBlock.bodyRect.width, height),
+        baseline: 0,
+        hyphenated: false,
+        segments: [],
+        isLastLine: true,
+      }];
+      blk.sourceStart = raw.sourceStart + (input.bodyOffset ?? ctx.bodyOffset);
+      blk.sourceEnd = raw.sourceEnd + (input.bodyOffset ?? ctx.bodyOffset);
+    } else if (vdtType === 'mathDisplay' && mathDisplayRender) {
+      blk.mathRender = mathDisplayRender;
+      blk.tex = raw.tex;
+      const mathLine = { ...measured.lines[0]!, bbox: { ...measured.lines[0]!.bbox, y: 0 } };
+      blk.lines = [mathLine];
+      height = mathLine.bbox.height;
+      blk.sourceStart = raw.sourceStart + ctx.bodyOffset;
+      blk.sourceEnd = raw.sourceEnd + ctx.bodyOffset;
+    } else {
+      blk.lines = resetLinePositions(keptLines, bs.lineHeightPx);
+      height = blk.lines.length * bs.lineHeightPx;
+      blk.sourceStart = keptLines[0]!.sourceStart ?? raw.sourceStart + ctx.bodyOffset;
+      blk.sourceEnd = keptLines[keptLines.length - 1]!.sourceEnd ?? raw.sourceEnd + ctx.bodyOffset;
+    }
+
+    // Relocate to the inner rect (box-relative).
+    blk.bbox = createBoundingBox(x, st.cursorY, width, height);
+    for (const line of blk.lines) {
+      line.bbox.x += x;
+      line.bbox.y += st.cursorY;
+      line.baseline += st.cursorY;
+    }
+    if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, x, st.cursorY);
+
+    if (listBullet && !openedMidRun) {
+      blk.listDepth = listDepth;
+      blk.listKind = listKind;
+      blk.bulletText = listBullet.bulletText;
+      blk.bulletFontString = listBullet.bulletFontString;
+      blk.bulletColor = listBullet.bulletColor;
+      blk.bulletOffsetX = x + bulletXOffsetInColumn;
+      if (listBullet.separatorText !== undefined) {
+        blk.separatorText = listBullet.separatorText;
+        blk.separatorFontString = listBullet.separatorFontString;
+        blk.separatorColor = listBullet.separatorColor;
+        blk.separatorX = blk.bulletOffsetX + (listBullet.separatorOffsetPx ?? 0);
+      }
+      if (strikethroughText) blk.strikethroughText = true;
+      const firstLine = blk.lines[0];
+      if (firstLine) {
+        blk.bulletY = firstLine.baseline - listBullet.textFontSizePx * 0.3 + listBullet.verticalOffsetPx;
+      }
+    } else if (listBullet) {
+      blk.listDepth = listDepth;
+      blk.listKind = listKind;
+    }
+
+    into.push(blk);
+    st.cursorY += height;
+    st.prevMarginBottom = bs.marginBottomPx;
+    st.prevWasListItem = vdtType === 'listItem';
+    st.first = false;
+    return blk;
+  };
+
+  /** The tail of a text block cut at line `l`: a block of its own with the
+   *  lines from `l` on (no bullet — the head keeps it), at y = 0. */
+  const tailOf = (blk: VDTBlock, l: number): VDTBlock => {
+    const lh = blk.lines[0]?.bbox.height ?? 0;
+    const tail: VDTBlock = { ...blk, id: input.nextChildId(), lines: resetLinePositions(blk.lines.slice(l), lh) };
+    delete tail.bulletText; delete tail.bulletFontString; delete tail.bulletColor;
+    delete tail.bulletOffsetX; delete tail.bulletY;
+    delete tail.separatorText; delete tail.separatorFontString; delete tail.separatorColor; delete tail.separatorX;
+    tail.bbox = createBoundingBox(blk.bbox.x, 0, blk.bbox.width, tail.lines.length * lh);
+    tail.sourceStart = tail.lines[0]?.sourceStart ?? blk.sourceStart;
+    return tail;
+  };
+
+  /** A `:::columns{count=N}` group: children `k0 … k1 - 1` in N columns. */
+  const placeColumnsGroup = (k0: number, k1: number, count: number, st: Stack, breaks?: number[]): void => {
+    const cols = Math.max(1, Math.min(6, count));
+    const colW = Math.max(1, (innerWidth - columnGapPx * (cols - 1)) / cols);
+    // Spacing above the group: as a block with no margin of its own.
+    const spacing = st.first ? st.prevMarginBottom : st.prevMarginBottom;
+    const groupTop = st.cursorY + spacing;
+    const gst: Stack = { cursorY: 0, prevMarginBottom: 0, prevWasListItem: false, first: true };
+    const stack: VDTBlock[] = [];
+    for (let k = k0; k < k1; k++) {
+      const raw = children[k]!;
+      if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
+      placeChild(raw, k, colW, innerX, gst, stack);
+    }
+    if (stack.length === 0) return;
+    const total = gst.cursorY;
+    // Cut candidates: block boundaries and the line boundaries of text blocks.
+    interface Cut { y: number; block: number; line: number }
+    const candidates: Cut[] = [];
+    stack.forEach((blk, i) => {
+      if (i > 0) candidates.push({ y: blk.bbox.y, block: i, line: 0 });
+      const cuttable = blk.type !== 'resource' && blk.type !== 'mathDisplay' && blk.lines.length > 1 && !blk.mathRender;
+      if (cuttable) {
+        for (let l = 1; l < blk.lines.length; l++) candidates.push({ y: blk.lines[l]!.bbox.y, block: i, line: l });
+      }
+    });
+    const cuts: Cut[] = [];
+    let prevY = 0;
+    if (breaks && breaks.length > 0) {
+      // Explicit column starts (`breaks="3"`: the third child opens the
+      // second column): block-level cuts, no balancing.
+      for (const b of breaks.slice(0, cols - 1)) {
+        const i = b - 1;
+        if (i <= 0 || i >= stack.length) continue;
+        const y = stack[i]!.bbox.y;
+        if (y <= prevY + 0.01) continue;
+        cuts.push({ y, block: i, line: 0 });
+        prevY = y;
+      }
+    } else {
+      for (let c = 1; c < cols; c++) {
+        const target = (total * c) / cols;
+        let best: Cut | undefined;
+        for (const cand of candidates) {
+          if (cand.y <= prevY + 0.01) continue;
+          if (!best || Math.abs(cand.y - target) < Math.abs(best.y - target)) best = cand;
+        }
+        if (!best) break;
+        cuts.push(best);
+        prevY = best.y;
+      }
+    }
+    // Split the stack at the cuts into columns of blocks; a cut inside a
+    // text block leaves its head behind and opens the next column with the
+    // tail (a block of its own, bullet-less).
+    const columns: VDTBlock[][] = [[]];
+    const columnStarts: number[] = [0];
+    let cutIdx = 0;
+    for (let i = 0; i < stack.length; i++) {
+      let blk = stack[i]!;
+      while (cutIdx < cuts.length && cuts[cutIdx]!.block === i && cuts[cutIdx]!.line === 0) {
+        columns.push([]); columnStarts.push(cuts[cutIdx]!.y); cutIdx++;
+      }
+      let consumed = 0;
+      while (cutIdx < cuts.length && cuts[cutIdx]!.block === i && cuts[cutIdx]!.line > 0) {
+        const cut = cuts[cutIdx]!;
+        const l = cut.line - consumed;
+        cutIdx++;
+        if (l <= 0 || l >= blk.lines.length) continue;
+        const lh = blk.lines[0]?.bbox.height ?? 0;
+        const tail = tailOf(blk, l);
+        blk.lines = blk.lines.slice(0, l);
+        blk.bbox = createBoundingBox(blk.bbox.x, blk.bbox.y, blk.bbox.width, l * lh);
+        columns[columns.length - 1]!.push(blk);
+        offsetBlock(tail, 0, cut.y);
+        columns.push([]); columnStarts.push(cut.y);
+        consumed += l;
+        blk = tail;
+      }
+      columns[columns.length - 1]!.push(blk);
+    }
+    let groupHeight = 0;
+    columns.forEach((blocks, c) => {
+      const shiftX = c * (colW + columnGapPx);
+      const shiftY = groupTop - (columnStarts[c] ?? 0);
+      for (const blk of blocks) {
+        offsetBlock(blk, shiftX, shiftY);
+        childBlocks.push(blk);
+        groupHeight = Math.max(groupHeight, blk.bbox.y + blk.bbox.height - groupTop);
+      }
+    });
+    st.cursorY = groupTop + groupHeight;
+    st.prevMarginBottom = 0;
+    st.prevWasListItem = false;
+    st.first = false;
+  };
+
+  const st: Stack = { cursorY, prevMarginBottom: hasTitle ? gapPx : 0, prevWasListItem: false, first: true };
   if (!isAuto) {
-    let prevMarginBottom = hasTitle ? gapPx : 0;
-    let prevWasListItem = false;
-    let first = true;
     for (let k = 0; k < children.length; k++) {
       const raw = children[k]!;
-      const blockIdx = childStartIdx + k;
+      if (raw.type === 'containerStart' && raw.containerName === 'columns') {
+        let e = k + 1;
+        while (e < children.length && !(children[e]!.type === 'containerEnd' && children[e]!.containerName === 'columns' && children[e]!.containerId === raw.containerId)) e++;
+        const count = Number.parseInt(raw.containerAttrs?.count ?? '2', 10);
+        const breaks = (raw.containerAttrs?.breaks ?? '').split(',').map((v) => Number.parseInt(v.trim(), 10)).filter((v) => Number.isFinite(v) && v > 1);
+        placeColumnsGroup(k + 1, e, Number.isFinite(count) ? count : 2, st, breaks.length > 0 ? breaks : undefined);
+        k = e;
+        continue;
+      }
       if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
-      const measuredBlock = measureContentBlock(raw, blockIdx, innerWidth, derivedCtx, {
-        styleOverride: input.paragraphStyleFor?.(blockIdx),
-      });
-      if (!measuredBlock) continue;
-      const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock } = measuredBlock;
-      const { style: bs, vdtType, headingLevel, numberPrefix, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
-
-      // Spacing above: margin collapsing, list-item spacing inside a run.
-      let spacing: number;
-      if (first) {
-        spacing = prevMarginBottom;
-      } else if (vdtType === 'listItem' && prevWasListItem) {
-        spacing = listBullet ? listBullet.itemSpacingPx : 0;
-      } else {
-        spacing = Math.max(prevMarginBottom, bs.marginTopPx);
-      }
-      cursorY += spacing;
-
-      const blk = createVDTBlock(input.nextChildId(), vdtType, bs.fontString, bs.color, bs.textAlign);
-      applyStyleAttrs(blk, bs);
-      blk.contentIndex = blockIdx;
-      blk.containerId = containerId;
-      blk.dirty = false;
-      blk.snappedToGrid = false;
-      blk.headingLevel = headingLevel;
-      if (numberPrefix) blk.numberPrefix = numberPrefix;
-      blk.sourceMap = absoluteSourceMap;
-      blk.plainPrefixLen = prefixLen;
-
-      // Line-level cut of the first / last child (split boxes): the kept
-      // run of lines, and whether this child opens after its first line
-      // (no bullet then — the head carries it).
-      const isTextRun = !(vdtType === 'resource' && resourceBlock) && !(vdtType === 'mathDisplay' && mathDisplayRender);
-      const isFirstReal = childBlocks.length === 0;
-      const isLastReal = children.slice(k + 1).every((c) => c.type === 'directive' || isMarkerBlock(c));
-      const lineFrom = isTextRun && isFirstReal ? Math.max(0, input.lineFrom ?? 0) : 0;
-      const lineTo = isTextRun && isLastReal && input.lineTo !== undefined
-        ? Math.max(lineFrom + 1, Math.min(input.lineTo, measured.lines.length))
-        : measured.lines.length;
-      const keptLines = isTextRun ? measured.lines.slice(Math.min(lineFrom, measured.lines.length - 1), lineTo) : measured.lines;
-      const openedMidRun = lineFrom > 0;
-
-      let height: number;
-      if (vdtType === 'resource' && resourceBlock) {
-        height = measured.totalHeight;
-        blk.resourceBlock = resourceBlock;
-        blk.lines = [{
-          text: '',
-          bbox: createBoundingBox(0, 0, resourceBlock.bodyRect.width, height),
-          baseline: 0,
-          hyphenated: false,
-          segments: [],
-          isLastLine: true,
-        }];
-        blk.sourceStart = raw.sourceStart + (input.bodyOffset ?? ctx.bodyOffset);
-        blk.sourceEnd = raw.sourceEnd + (input.bodyOffset ?? ctx.bodyOffset);
-      } else if (vdtType === 'mathDisplay' && mathDisplayRender) {
-        blk.mathRender = mathDisplayRender;
-        blk.tex = raw.tex;
-        const mathLine = { ...measured.lines[0]!, bbox: { ...measured.lines[0]!.bbox, y: 0 } };
-        blk.lines = [mathLine];
-        height = mathLine.bbox.height;
-        blk.sourceStart = raw.sourceStart + ctx.bodyOffset;
-        blk.sourceEnd = raw.sourceEnd + ctx.bodyOffset;
-      } else {
-        blk.lines = resetLinePositions(keptLines, bs.lineHeightPx);
-        height = blk.lines.length * bs.lineHeightPx;
-        blk.sourceStart = keptLines[0]!.sourceStart ?? raw.sourceStart + ctx.bodyOffset;
-        blk.sourceEnd = keptLines[keptLines.length - 1]!.sourceEnd ?? raw.sourceEnd + ctx.bodyOffset;
-      }
-
-      // Relocate to the inner rect (box-relative).
-      blk.bbox = createBoundingBox(innerX, cursorY, innerWidth, height);
-      for (const line of blk.lines) {
-        line.bbox.x += innerX;
-        line.bbox.y += cursorY;
-        line.baseline += cursorY;
-      }
-      if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, innerX, cursorY);
-
-      if (listBullet && !openedMidRun) {
-        blk.listDepth = listDepth;
-        blk.listKind = listKind;
-        blk.bulletText = listBullet.bulletText;
-        blk.bulletFontString = listBullet.bulletFontString;
-        blk.bulletColor = listBullet.bulletColor;
-        blk.bulletOffsetX = innerX + bulletXOffsetInColumn;
-        if (listBullet.separatorText !== undefined) {
-          blk.separatorText = listBullet.separatorText;
-          blk.separatorFontString = listBullet.separatorFontString;
-          blk.separatorColor = listBullet.separatorColor;
-          blk.separatorX = blk.bulletOffsetX + (listBullet.separatorOffsetPx ?? 0);
-        }
-        if (strikethroughText) blk.strikethroughText = true;
-        const firstLine = blk.lines[0];
-        if (firstLine) {
-          blk.bulletY = firstLine.baseline - listBullet.textFontSizePx * 0.3 + listBullet.verticalOffsetPx;
-        }
-      } else if (listBullet) {
-        blk.listDepth = listDepth;
-        blk.listKind = listKind;
-      }
-
-      childBlocks.push(blk);
-      cursorY += height;
-      prevMarginBottom = bs.marginBottomPx;
-      prevWasListItem = vdtType === 'listItem';
-      first = false;
+      placeChild(raw, k, innerWidth, innerX, st, childBlocks);
     }
   }
+  cursorY = st.cursorY;
 
   // An icon taller than the content grows the inner area to fit it; with
   // `align: 'center'` the title and children are centred on the icon.
   let contentBottom = cursorY;
   const contentH = contentBottom - innerTop;
-  if (hasIcon && iconSize > contentH) {
+  if (hasIcon && !cornerIcon && iconSize > contentH) {
     const extra = iconSize - contentH;
     if (style.icon.align === 'center') {
       if (titleBlock) offsetDesignBlock(titleBlock, 0, extra / 2);
@@ -581,13 +739,22 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   if (hasIcon) {
     // Over a side stripe the icon is centred on the stripe; otherwise it
     // sits in its own column left of the content.
-    const iconX = sideStripe
-      ? (stripeLeft ? (stripeW - iconSize) / 2 : boxWidth - stripeW + (stripeW - iconSize) / 2)
-      : innerX - iconColumn;
-    const iconY = style.icon.align === 'center'
-      ? innerTop + (contentBottom - innerTop - iconSize) / 2
-      : innerTop;
-    const built = buildIconBlock(style.icon, iconX, iconY, iconSize, ctx);
+    // A corner badge hangs on the top-right corner, half of it past the
+    // border, flush with the top edge.
+    const cornerRight = style.icon.cornerSide === 'right'
+      || (style.icon.cornerSide === 'outer' && !input.mirrored)
+      || (style.icon.cornerSide === 'inner' && !!input.mirrored);
+    const iconX = cornerIcon
+      ? (cornerRight ? boxWidth - iconSize / 2 : -iconSize / 2)
+      : sideStripe
+        ? (stripeLeft ? (stripeW - iconSize) / 2 : boxWidth - stripeW + (stripeW - iconSize) / 2)
+        : innerX - iconColumn;
+    const iconY = cornerIcon
+      ? 0
+      : style.icon.align === 'center'
+        ? innerTop + (contentBottom - innerTop - iconSize) / 2
+        : innerTop;
+    const built = buildIconBlock(style.icon, iconX, iconY, iconSize, ctx, iconBoxW);
     if (built) {
       overlayBlocks.push(built.block);
       iconFileId = built.fileId;
@@ -595,6 +762,72 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     }
   }
   if (titleBlock) overlayBlocks.push(titleBlock);
+
+  // --- Label tab ---------------------------------------------------------------
+  // The fence's `label` on a tab hugging a top corner, rising `offset`
+  // above the box; an icon beside it and a rule along the top edge.
+  let labelRisePx = 0;
+  if (style.label && !input.continuation && labelText.trim().length > 0) {
+    const lb = style.label;
+    const lbFontPx = dimensionToPx(lb.fontSize, dpi, em);
+    const lbFont = buildFontString(lb.fontFamily, lbFontPx, lb.fontWeight.toString());
+    const padX = dimensionToPx(lb.paddingX, dpi, lbFontPx);
+    const tabH = dimensionToPx(lb.height, dpi, lbFontPx);
+    const rise = px(lb.offset);
+    const inset = px(lb.inset);
+    const textW = measureTextWidth(labelText, lbFont);
+    const tabW = textW + 2 * padX;
+    const onRight = lb.position === 'top-right';
+    const tabX = onRight ? boxWidth - inset - tabW : inset;
+    const tabY = -rise;
+    labelRisePx = Math.max(0, rise);
+    overlayBlocks.push({
+      kind: 'box',
+      bbox: createBoundingBox(tabX, tabY, tabW, tabH),
+      box: { backgroundColor: lb.background.hex, borderWidthPx: 0, borderRadiusPx: 0 },
+    });
+    overlayBlocks.push({
+      kind: 'text',
+      bbox: createBoundingBox(tabX, tabY, tabW, tabH),
+      fontString: lbFont,
+      color: lb.color.hex,
+      lines: [{ text: labelText, xOffset: padX, baselineY: tabY + tabH / 2 + lbFontPx * 0.36, width: textW }],
+      clip: false,
+    });
+    let edgeX = onRight ? tabX : tabX + tabW;
+    if (lb.icon.resourceId) {
+      const iconW = px(lb.icon.width);
+      const gap = px(lb.icon.gap);
+      const iconX = onRight ? tabX - gap - iconW : tabX + tabW + gap;
+      const resource = ctx.resourceById.get(lb.icon.resourceId);
+      const fileId = resource?.bitmap?.fileId ?? resource?.svg?.fileId;
+      if (fileId) {
+        const dims = resource?.bitmap ?? resource?.svg;
+        let w = iconW;
+        let h = tabH;
+        if (dims?.width && dims?.height) {
+          const k = Math.min(iconW / dims.width, tabH / dims.height);
+          w = dims.width * k; h = dims.height * k;
+        }
+        overlayBlocks.push({ kind: 'image', bbox: createBoundingBox(onRight ? iconX + iconW - w : iconX, tabY + (tabH - h) / 2, w, h), fileId });
+        edgeX = onRight ? iconX + iconW - w : iconX + w;
+      }
+    }
+    if (lb.rule.enabled) {
+      const ruleW = px(lb.rule.width);
+      const x0 = onRight ? 0 : edgeX;
+      const len = onRight ? edgeX : boxWidth - edgeX;
+      if (len > 0) {
+        overlayBlocks.push({
+          kind: 'rule',
+          bbox: createBoundingBox(x0, -ruleW / 2, len, ruleW),
+          color: lb.rule.color.hex,
+          thicknessPx: ruleW,
+          direction: 'horizontal',
+        });
+      }
+    }
+  }
 
   // --- Marker column + frame -----------------------------------------------------
   // The frame is as tall as the tallest of box, marker and rule; the three
@@ -634,14 +867,24 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       });
     }
   }
+  // The label tab rises above the box inside the block: the box starts
+  // `labelRisePx` down, so the tab keeps its room at a column head too,
+  // where the top margin is dropped.
+  if (labelRisePx > 0) {
+    for (const b of overlayBlocks) offsetDesignBlock(b, 0, labelRisePx);
+    for (const b of markerBlocks) offsetDesignBlock(b, 0, labelRisePx);
+    for (const blk of childBlocks) offsetBlock(blk, 0, labelRisePx);
+    innerRect.y += labelRisePx;
+  }
+  const frameHeight = totalHeight + labelRisePx;
   const overlay: VDTDesignSlot = {
-    bbox: createBoundingBox(0, 0, width, totalHeight),
+    bbox: createBoundingBox(0, 0, width, frameHeight),
     blocks: [...markerBlocks, ...overlayBlocks],
   };
 
   // --- Frame block -------------------------------------------------------------
   const frame = createVDTBlock(frameId, 'callout', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);
-  frame.bbox = createBoundingBox(0, 0, width, totalHeight);
+  frame.bbox = createBoundingBox(0, 0, width, frameHeight);
   frame.lines = [];
   frame.dirty = false;
   frame.snappedToGrid = false;
@@ -663,7 +906,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     frame,
     children: childBlocks,
     width,
-    totalHeight,
+    totalHeight: frameHeight,
     marginTopPx: px(style.marginTop),
     marginBottomPx: px(style.marginBottom),
   };
@@ -673,7 +916,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
 // Icons (shared by the in-box icon and the marker)
 // ---------------------------------------------------------------------------
 
-type IconSpec = ResolvedCalloutStyleConfig['icon'];
+type IconSpec = Omit<ResolvedCalloutStyleConfig['icon'], 'position' | 'cornerSide' | 'width'>;
 
 /** Whether an icon / marker spec draws anything. */
 function iconPresent(spec: IconSpec): boolean {
@@ -708,14 +951,22 @@ function buildIconBlock(
   y: number,
   size: number,
   ctx: BlockMeasureContext,
+  boxWidth = size,
 ): BuiltIcon | undefined {
   if (spec.kind === 'resource') {
     const resource = ctx.resourceById.get(spec.resourceId);
     const fileId = resource?.bitmap?.fileId ?? resource?.svg?.fileId;
     if (!fileId) return undefined;
     const dims = resource?.bitmap ?? resource?.svg;
+    let bbox = fitInSquare(x, y, size, dims?.width, dims?.height);
+    if (boxWidth > size && dims?.width && dims?.height) {
+      const k = Math.min(boxWidth / dims.width, size / dims.height);
+      const fw = dims.width * k;
+      const fh = dims.height * k;
+      bbox = createBoundingBox(x, y + (size - fh) / 2, fw, fh);
+    }
     return {
-      block: { kind: 'image', bbox: fitInSquare(x, y, size, dims?.width, dims?.height), fileId },
+      block: { kind: 'image', bbox, fileId },
       fileId,
       format: resource?.bitmap?.format,
     };

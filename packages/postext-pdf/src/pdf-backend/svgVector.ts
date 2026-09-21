@@ -38,8 +38,10 @@ import {
   LineCapStyle,
   LineJoinStyle,
   type PDFFont,
+  type PDFImage,
   type PDFName,
   appendBezierCurve,
+  drawObject,
   beginText,
   clip,
   clipEvenOdd,
@@ -142,7 +144,23 @@ export interface VectorText {
   clips: VectorClip[];
 }
 
-export type VectorItem = VectorShape | VectorText;
+/** A raster picture embedded in the SVG (`<image href="data:…">`),
+ *  stretched into its `(x, y, width, height)` box in the user space of
+ *  `matrix`. `pdfImage` is filled in by the embedder before drawing. */
+export interface VectorImage {
+  kind: 'image';
+  data: Uint8Array;
+  format: 'png' | 'jpeg';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  matrix: VectorMatrix;
+  clips: VectorClip[];
+  pdfImage?: PDFImage;
+}
+
+export type VectorItem = VectorShape | VectorText | VectorImage;
 
 export interface VectorDrawing {
   /** `[minX, minY, width, height]` of the root user space. */
@@ -1283,7 +1301,39 @@ function walk(w: Walker, el: XmlEl, ctm: Matrix, parentStyle: Style, clips: Vect
     layoutText(w, el, m, style, nextClips);
     return;
   }
-  // tspan outside text, image, svg (nested), symbol, switch, foreignObject,
+  if (local === 'image') {
+    // A data-URI PNG / JPEG stretched into its box (`preserveAspectRatio`
+    // is not honoured: the box is taken as the picture's extent).
+    if (!style.visible) return;
+    const href = hrefOf(el) ?? '';
+    const dm = /^data:image\/(png|jpeg|jpg);base64,([\s\S]*)$/i.exec(href.trim());
+    if (!dm) return unsupported('image source');
+    const width = parseLength(attrs['width'], 0);
+    const height = parseLength(attrs['height'], 0);
+    if (width <= 0 || height <= 0) return;
+    if (w.probe) return;
+    let data: Uint8Array;
+    try {
+      const bin = atob(dm[2]!.replace(/\s+/g, ''));
+      data = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) data[i] = bin.charCodeAt(i);
+    } catch {
+      return unsupported('image data');
+    }
+    w.shapes.push({
+      kind: 'image',
+      data,
+      format: dm[1]!.toLowerCase() === 'png' ? 'png' : 'jpeg',
+      x: parseLength(attrs['x'], 0),
+      y: parseLength(attrs['y'], 0),
+      width,
+      height,
+      matrix: m,
+      clips: nextClips,
+    });
+    return;
+  }
+  // tspan outside text, svg (nested), symbol, switch, foreignObject,
   // linearGradient outside defs, pattern, mask, filter, marker, …
   unsupported(local);
 }
@@ -1339,6 +1389,7 @@ export function svgToVectorDrawing(svgText: string, options: SvgToVectorOptions 
     walk(walker, root, IDENTITY, ROOT_STYLE, []);
     return { viewBox, aspect, shapes: walker.shapes };
   } catch (err) {
+    if (typeof process !== 'undefined' && process.env?.POSTEXT_SVG_DEBUG) console.warn('svgToVectorDrawing:', (err as Error).message);
     if (err instanceof Unsupported) return null;
     return null;
   }
@@ -1453,6 +1504,18 @@ export function drawVectorDrawing(
     for (const c of shape.clips) {
       ops.push(...pathOps(c.segs), c.evenOdd ? clipEvenOdd() : clip(), endPath());
     }
+    if (shape.kind === 'image') {
+      if (shape.pdfImage) {
+        // The unit square maps onto the picture's box; the image's rows run
+        // bottom-up in PDF, so the box is flipped inside the y-down root
+        // space to keep the picture upright.
+        const [a, b, c, d, e, f] = mul(shape.matrix, [shape.width, 0, 0, -shape.height, shape.x, shape.y + shape.height]);
+        const name = ctx.page.node.newXObject('Image', shape.pdfImage.ref);
+        ops.push(concatTransformationMatrix(round(a), round(b), round(c), round(d), round(e), round(f)), drawObject(name));
+      }
+      ops.push(popGraphicsState());
+      continue;
+    }
     if (shape.kind === 'text') {
       for (const run of shape.runs) {
         const font = run.font.pdfFont;
@@ -1501,5 +1564,7 @@ export function drawVectorDrawing(
     ops.push(popGraphicsState());
   }
   ops.push(popGraphicsState());
-  ctx.page.pushOperators(...ops);
+  // In slices: a drawing of many thousands of paths would overflow the
+  // call stack as one spread argument list.
+  for (let i = 0; i < ops.length; i += 4000) ctx.page.pushOperators(...ops.slice(i, i + 4000));
 }

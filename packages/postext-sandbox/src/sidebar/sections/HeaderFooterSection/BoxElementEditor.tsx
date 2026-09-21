@@ -113,7 +113,7 @@ export function BoxElementEditor({ raw, resolved, slotKind, siblings = [], onCha
         step={1}
       />
       <ColorPicker
-        label={labels.headerFooterElementBoxBackgroundColor ?? 'Background'}
+        label={labels.headerFooterElementBoxBackgroundColor}
         value={bgColor ?? { hex: '#000000', model: 'hex' }}
         onChange={(c: ColorValue) => updateStyle({ backgroundColor: c })}
         isDefault={isBgDefault}
@@ -121,20 +121,20 @@ export function BoxElementEditor({ raw, resolved, slotKind, siblings = [], onCha
         fieldId={`headerFooter-box-bg-${raw.id}`}
       />
       <ColorPicker
-        label={labels.headerFooterElementBoxBorderColor ?? 'Border color'}
+        label={labels.headerFooterElementBoxBorderColor}
         value={borderColor ?? { hex: '#000000', model: 'hex' }}
         onChange={(c: ColorValue) => updateStyle({ borderColor: c })}
         fieldId={`headerFooter-box-border-${raw.id}`}
       />
       <DimensionInput
-        label={labels.headerFooterElementBoxBorderWidth ?? 'Border width'}
+        label={labels.headerFooterElementBoxBorderWidth}
         value={borderWidth}
         onChange={(dim: Dimension) => updateStyle({ borderWidth: dim })}
         min={0}
         step={0.1}
       />
       <DimensionInput
-        label={labels.headerFooterElementBoxBorderRadius ?? 'Border radius'}
+        label={labels.headerFooterElementBoxBorderRadius}
         value={borderRadius}
         onChange={(dim: Dimension) => updateStyle({ borderRadius: dim })}
         min={0}

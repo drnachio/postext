@@ -137,7 +137,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
           : rawEl.kind === 'rule'
             ? labels.headerFooterElementRule
             : rawEl.kind === 'image'
-              ? (labels.headerFooterElementImage ?? 'Image')
+              ? labels.headerFooterElementImage
               : labels.headerFooterElementBox;
         return (
           <SearchScope key={`${slotKey}-${rawEl.id}-${idx}`} title={`${elementTitle} ${idx + 1}`} overridden>
@@ -209,7 +209,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
         <AddButton label={labels.headerFooterAddText} onClick={addText} />
         <AddButton label={labels.headerFooterAddRule} onClick={addRule} />
         <AddButton label={labels.headerFooterAddBox} onClick={addBox} />
-        <AddButton label={labels.headerFooterAddImage ?? 'Add image'} onClick={addImage} />
+        <AddButton label={labels.headerFooterAddImage} onClick={addImage} />
       </div>
     </div>
   );

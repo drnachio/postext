@@ -53,6 +53,8 @@ describe('callout style defaults', () => {
       color: DEFAULT_CALLOUT_STYLE_STATIC.titleStyle.color,
       textTransform: 'none',
       gap: { value: 0.5, unit: 'em' },
+      letterSpacing: { value: 0, unit: 'pt' },
+      indent: { value: 0, unit: 'pt' },
     });
     expect(r!.icon.fontFamily).toBe('Inter');
     expect(r!.body).toEqual({
@@ -64,6 +66,7 @@ describe('callout style defaults', () => {
       hyphenation: false,
       paragraphSpacing: body.paragraphSpacing,
       firstLineIndent: { value: 1, unit: 'em' },
+      boldColor: { hex: '#295AA3', model: 'hex', paletteId: 'main-color' },
     });
     expect(r!.lists).toEqual({
       bulletChar: '–',

@@ -151,7 +151,7 @@ function renderSegments(
       ctx.fillStyle = fill;
       currentFill = fill;
     }
-    ctx.fillText(seg.text, x, baseline);
+    ctx.fillText(seg.text, x, baseline + (seg.baselineShift ?? 0));
     x += seg.width;
   }
 }
@@ -159,7 +159,7 @@ function renderSegments(
 /** Whether a segment paints differently from the block's plain text. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.refResourceId !== undefined
-    || s.fontString !== undefined || s.color !== undefined;
+    || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined;
 }
 
 function renderLine(

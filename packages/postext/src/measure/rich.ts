@@ -25,6 +25,12 @@ export interface RichToken {
   text: string;
   bold: boolean;
   italic: boolean;
+  /** Superscript / subscript token: measured and painted with `scriptFont`
+   *  (the span font at the script size) and painted `baselineShift` px
+   *  below the baseline (negative: above). */
+  script?: 'sup' | 'sub';
+  scriptFont?: string;
+  baselineShift?: number;
   kind: 'text' | 'space';
   width: number;
   breakPoints?: RichBreakPoint[];
@@ -67,6 +73,40 @@ function pickSpanFont(
   if (bold) return boldFont;
   if (italic) return italicFont;
   return normalFont;
+}
+
+/** Superscripts and subscripts are set at this fraction of the text size
+ *  and shifted off the baseline by this fraction of it (up for a
+ *  superscript, down for a subscript) — the compositor's defaults. */
+export const SCRIPT_SIZE_RATIO = 0.583;
+export const SCRIPT_SHIFT_RATIO = 0.333;
+const FONT_SIZE_RE = /(\d*\.?\d+)px/;
+
+/** The font a script token is measured and painted with (`font` at the
+ *  script size) and its baseline shift in px. */
+export function scriptMetrics(font: string, script: 'sup' | 'sub'): { font: string; baselineShift: number } {
+  const m = FONT_SIZE_RE.exec(font);
+  const size = m ? parseFloat(m[1]!) : 0;
+  const scaled = m ? font.replace(FONT_SIZE_RE, `${size * SCRIPT_SIZE_RATIO}px`) : font;
+  return { font: scaled, baselineShift: (script === 'sup' ? -1 : 1) * size * SCRIPT_SHIFT_RATIO };
+}
+
+/** Font a token is measured with: its span font, or the script font of a
+ *  superscript / subscript. */
+function tokenFont(
+  t: { bold: boolean; italic: boolean; scriptFont?: string },
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+): string {
+  return t.scriptFont ?? pickSpanFont(t.bold, t.italic, normalFont, boldFont, italicFont, boldItalicFont);
+}
+
+/** The script fields a token derived from another (a split, a hyphenated
+ *  head) carries on. */
+function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift'> {
+  return t.script ? { script: t.script, scriptFont: t.scriptFont, baselineShift: t.baselineShift } : {};
 }
 
 /**
@@ -149,7 +189,7 @@ function emergencySplit(
     }
   }
   if (at === 0) return null;
-  const flags = { bold: token.bold, italic: token.italic, captionLabel: token.captionLabel };
+  const flags = { bold: token.bold, italic: token.italic, captionLabel: token.captionLabel, ...scriptOf(token) };
   return {
     head: { ...flags, text: text.slice(0, at) + '-', kind: 'text', width: widthBefore(at) + hyphenW },
     tail: { ...flags, text: text.slice(at), kind: 'text', width: token.width - widthBefore(at) },
@@ -170,6 +210,15 @@ function tokenizeSpans(
   // more, exactly as canvas `letterSpacing` / CSS `letter-spacing` / PDF `Tc`
   // paint it, so measured widths stay in step with the renderers.
   const track = (text: string): number => letterSpacingPx * text.length;
+  /** The script fields of a span's tokens (font at the script size, shift). */
+  const scriptFieldsOf = (span: InlineSpan): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift'> => {
+    if (!span.script) return {};
+    const base = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+    const m = scriptMetrics(base, span.script);
+    return { script: span.script, scriptFont: m.font, baselineShift: m.baselineShift };
+  };
+  const spanFont = (span: InlineSpan): string =>
+    scriptFieldsOf(span).scriptFont ?? pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
 
   for (const span of spans) {
     // Inline `:ref` spans are atomic: the resolved label (already in `text`)
@@ -177,12 +226,13 @@ function tokenizeSpans(
     // generic layout/renderers treating it like a word; `refResourceId` flows
     // onto the segment for link colouring / PDF link annotations.
     if (span.ref) {
-      const refFont = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+      const refFont = spanFont(span);
       tokens.push({
         text: span.text,
         bold: span.bold,
         italic: span.italic,
         captionLabel: span.captionLabel,
+        ...scriptFieldsOf(span),
         kind: 'text',
         width: measureTextWidth(span.text, refFont) + track(span.text),
         refResourceId: span.ref.resourceId,
@@ -219,7 +269,8 @@ function tokenizeSpans(
       continue;
     }
     const text = shouldHyphenate ? hyphenateText(span.text) : span.text;
-    const font = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+    const font = spanFont(span);
+    const scriptFields = scriptFieldsOf(span);
 
     // Split on word boundaries while preserving spaces
     const parts = text.match(/\S+|\s+/g);
@@ -238,6 +289,7 @@ function tokenizeSpans(
           bold: span.bold,
           italic: span.italic,
           captionLabel: span.captionLabel,
+          ...scriptFields,
           kind: 'text',
           width: measureTextWidth(clean, font) + track(clean),
           ...(breakPoints.length > 0 ? { breakPoints, hyphenWidth: 0, bareBreaks: true } : {}),
@@ -252,6 +304,7 @@ function tokenizeSpans(
           bold: span.bold,
           italic: span.italic,
           captionLabel: span.captionLabel,
+          ...scriptFields,
           kind: 'text',
           width: measureTextWidth(clean, font) + track(clean),
           breakPoints,
@@ -263,6 +316,7 @@ function tokenizeSpans(
           bold: span.bold,
           italic: span.italic,
           captionLabel: span.captionLabel,
+          ...scriptFields,
           kind: isSpace ? 'space' : 'text',
           width: measureTextWidth(part, font) + track(part),
         });
@@ -396,6 +450,7 @@ export function measureRichBlock(
             bold: token.bold,
             italic: token.italic,
             captionLabel: token.captionLabel,
+            ...scriptOf(token),
             kind: 'text',
             width: chosen.widthBefore + hyphenW,
           });
@@ -412,6 +467,7 @@ export function measureRichBlock(
             bold: token.bold,
             italic: token.italic,
             captionLabel: token.captionLabel,
+            ...scriptOf(token),
             kind: 'text',
             width: token.width - chosenWidth,
             ...(residualBreakPoints.length > 0
@@ -426,7 +482,7 @@ export function measureRichBlock(
       // A word wider than the whole line: divide it rather than let it run
       // past the measure (syllable first, then character).
       if (lineTokens.length === 0 && token.kind === 'text' && !token.mathRender && !token.swatch && token.refResourceId === undefined && token.width > lineMaxWidth) {
-        const font = pickSpanFont(token.bold, token.italic, normalFont, boldFont, italicFont, boldItalicFont);
+        const font = tokenFont(token, normalFont, boldFont, italicFont, boldItalicFont);
         const split = emergencySplit(token, font, letterSpacingPx, lineMaxWidth);
         if (split) {
           lineTokens.push(split.head);
@@ -473,6 +529,7 @@ export function measureRichBlock(
       ...(t.swatch ? { swatch: t.swatch } : {}),
       ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId } : {}),
       ...(t.captionLabel ? { captionLabel: true } : {}),
+      ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     }));
 
     const lineText = lineTokens.map((t) => cleanSoftHyphens(t.text)).join('');

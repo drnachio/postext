@@ -348,6 +348,15 @@ export async function preloadResourceImages(
         }
         const drawing = svgToVectorDrawing(svgText, { fonts });
         if (drawing) {
+          // Pictures inside the drawing become image XObjects.
+          for (const shape of drawing.shapes) {
+            if (shape.kind !== 'image') continue;
+            try {
+              shape.pdfImage = shape.format === 'png' ? await pdfDoc.embedPng(shape.data) : await pdfDoc.embedJpg(shape.data);
+            } catch {
+              shape.pdfImage = undefined;
+            }
+          }
           out.set(fileId, { kind: 'vector', drawing });
           return;
         }
@@ -370,8 +379,9 @@ export async function preloadResourceImages(
         image = await pdfDoc.embedPng(bytes);
       }
       if (image) out.set(fileId, { kind: 'image', image });
-    } catch {
+    } catch (err) {
       // Undecodable — leave absent; renderer falls back to a placeholder.
+      if (typeof process !== 'undefined' && process.env?.POSTEXT_SVG_DEBUG) console.warn('embed failed:', fileId, (err as Error).message);
     }
   };
   for (const block of blocks) {
@@ -388,6 +398,18 @@ export async function preloadResourceImages(
     if (iconFileId) await embed(iconFileId, block.callout?.iconFormat);
     const markerFileId = block.callout?.markerFileId;
     if (markerFileId) await embed(markerFileId, block.callout?.markerFormat);
+    // Pictures of a box's decoration (a label icon) draw through the map too.
+    for (const b of block.designOverlay?.blocks ?? []) {
+      if (b.kind === 'image') await embed(b.fileId, undefined);
+    }
+  }
+  // Image elements of the page design slots (a logo on a title page, the
+  // chapter motif in a running head, a part page's pictures).
+  for (const page of doc.pages) {
+    for (const slot of [page.header, page.footer, page.openerBand]) {
+      if (!slot) continue;
+      for (const b of slot.blocks) if (b.kind === 'image') await embed(b.fileId, undefined);
+    }
   }
   return out;
 }
@@ -467,14 +489,14 @@ function paintLine(
         x += seg.width;
         continue;
       }
-      const fontStr = pickFont(!!seg.bold, !!seg.italic, fonts);
+      const fontStr = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, fonts);
       const font = fontCache.get(fontStr) ?? baseFont;
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
       const refId = resolveRefId(seg);
       const segColor = refId !== undefined ? linkColor : seg.captionLabel ? labelColor : color;
       const link = refId !== undefined && elem ? elem.child('Link') : undefined;
       tagContent(ctx, link ?? elem);
-      drawTextPx(ctx, seg.text, x, line.baseline, font, size, segColor);
+      drawTextPx(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
       if (refId !== undefined && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
         const x1 = x * scale;

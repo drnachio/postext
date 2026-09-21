@@ -29,6 +29,8 @@ interface OverrideGroupProps<T extends object, R> {
   onReset: (field: keyof T) => void;
   onResetAll: () => void;
   labels: Labels;
+  /** Collapse-state key; pass a distinct one per host (parts, each heading style). */
+  sectionId?: string;
 }
 
 /** `parts.bodyStyle.orderedLists`: partial overrides applied on top of the
@@ -41,13 +43,14 @@ export function PartsOrderedListsOverrides({
   onReset,
   onResetAll,
   labels,
+  sectionId = 'parts-ordered-lists',
 }: OverrideGroupProps<OrderedListsConfig, ResolvedOrderedListsConfig>) {
   const isDefault = (field: keyof OrderedListsConfig) => raw?.[field] === undefined;
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   return (
     <CollapsibleSection
       title={labels.partsOrderedLists}
-      sectionId="parts-ordered-lists"
+      sectionId={sectionId}
       onReset={onResetAll}
       hasOverrides={hasOverrides}
       resetLabel={labels.reset}
@@ -210,13 +213,14 @@ export function PartsUnorderedListsOverrides({
   onReset,
   onResetAll,
   labels,
+  sectionId = 'parts-unordered-lists',
 }: OverrideGroupProps<UnorderedListsConfig, ResolvedUnorderedListsConfig>) {
   const isDefault = (field: keyof UnorderedListsConfig) => raw?.[field] === undefined;
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   return (
     <CollapsibleSection
       title={labels.partsUnorderedLists}
-      sectionId="parts-unordered-lists"
+      sectionId={sectionId}
       onReset={onResetAll}
       hasOverrides={hasOverrides}
       resetLabel={labels.reset}

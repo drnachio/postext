@@ -18,8 +18,23 @@ export function buildFontString(
   if (style !== 'normal') parts.push(style);
   if (weight !== 'normal') parts.push(weight);
   parts.push(`${fontSizePx}px`);
-  parts.push(fontFamily);
+  parts.push(quoteFamily(fontFamily));
   return parts.join(' ');
+}
+
+/**
+ * A family name the CSS font shorthand would not take bare — a word that
+ * starts with a digit ("Optima 105", "DIN Pro 120"), a character outside
+ * letters, digits, spaces, hyphens and underscores — goes in double quotes;
+ * canvas silently ignores the whole shorthand otherwise. Plain names stay
+ * bare (the existing font-string cache keys), and a name already quoted is
+ * left alone.
+ */
+export function quoteFamily(fontFamily: string): string {
+  const f = fontFamily.trim();
+  if (/^["'].*["']$/.test(f)) return f;
+  if (/(^|\s)\d/.test(f) || /[^\w\s-]/.test(f)) return `"${f.replace(/"/g, '\\"')}"`;
+  return f;
 }
 
 /**

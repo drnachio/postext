@@ -45,8 +45,12 @@ export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here';
 /** How wide a floated resource is. `'column'` keeps it within a single column;
  *  `'page'` spans the full content width across all columns (a full-width
  *  float that breaks the column flow). In a single-column layout the two are
- *  equivalent. */
-export type ResourceFloatSpan = 'column' | 'page';
+ *  equivalent. `'side'` sets the resource in the side column of a
+ *  one-and-a-half layout whose side column is reserved for floats
+ *  (`layout.sideColumnRole: 'floats'`), stacked beside the paragraph that
+ *  first cites it; on a page without such a column it behaves as
+ *  `'column'`. */
+export type ResourceFloatSpan = 'column' | 'page' | 'side';
 /** Rotation of a floated resource on the page, a quarter turn either way:
  *  `'ccw'` turns the resource counter-clockwise — its top faces the left
  *  edge of the page and the reader turns the book clockwise to read it, the
@@ -68,6 +72,17 @@ export interface ResourcePlacement {
    *  the margins are mirrored, flush left otherwise. Ignored for an inline
    *  (`position: 'here'`) embed. */
   rotate?: ResourceRotation;
+  /** Fraction of the column (or page) width the float takes, `0 < width
+   *  < 1` — a narrow table centred in its column. Default: the whole width. */
+  width?: number;
+  /** Where a float narrower than its column sits. Default `'left'`. */
+  align?: 'left' | 'center' | 'right';
+  /** Set the caption beside the figure, in the float-only side column of
+   *  a `oneAndHalf` layout (`layout.sideColumnRole: 'floats'`): the body
+   *  keeps its column, the caption goes to the margin level with the
+   *  figure's top (its bottom for a bottom float). A page without such a
+   *  column keeps the caption under the figure. Column floats only. */
+  captionSide?: boolean;
 }
 
 /** A user-definable category of resource (e.g. "Figure", "Table"). Drives
@@ -352,60 +367,6 @@ export interface PartState {
   palette?: Record<string, string>;
 }
 
-export type PlacementStrategy =
-  | 'topOfColumn'
-  | 'inline'
-  | 'floatLeft'
-  | 'floatRight'
-  | 'fullWidthBreak'
-  | 'margin';
-
-export interface ColumnConfig {
-  count?: number;
-  gutter?: string;
-  columnRule?: {
-    width?: string;
-    style?: string;
-    color?: string;
-  };
-  balancing?: boolean;
-}
-
-export interface ResourcePlacementConfig {
-  defaultStrategy?: PlacementStrategy;
-  deferPlacement?: boolean;
-  preserveAspectRatio?: boolean;
-}
-
-export interface TypographyConfig {
-  orphans?: number;
-  widows?: number;
-  hyphenation?: boolean;
-  ragOptimization?: boolean;
-  spacing?: {
-    beforeHeading?: string;
-    afterHeading?: string;
-    beforeFigure?: string;
-    afterFigure?: string;
-    beforeBlockQuote?: string;
-    afterBlockQuote?: string;
-  };
-  keepTogether?: {
-    headingWithParagraph?: boolean;
-    figureWithCaption?: boolean;
-  };
-}
-
-export interface ReferenceConfig {
-  footnotes?: {
-    placement?: 'columnBottom' | 'pageBottom' | 'endOfSection';
-    marker?: 'number' | 'symbol' | 'custom';
-  };
-  figureNumbering?: boolean;
-  tableNumbering?: boolean;
-  marginNotes?: boolean;
-}
-
 export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
 
 export interface ColorValue {
@@ -505,6 +466,23 @@ export interface ResolvedPageConfig {
 
 export type LayoutType = 'single' | 'double' | 'oneAndHalf';
 
+/** What the narrow column of a `oneAndHalf` layout carries. `'text'` (the
+ *  default): body text flows into it after the main column, as into any
+ *  column. `'floats'`: it is a side channel that never takes body text —
+ *  the flow stays in the main column and the side column receives the
+ *  resources and callouts placed with `span: 'side'`, stacked beside the
+ *  paragraph that first references them (the marginal figures and key
+ *  boxes of a textbook). */
+export type SideColumnRole = 'text' | 'floats';
+
+/** Which edge of the content area the side column of a `oneAndHalf` layout
+ *  sits at. `'right'` (the default) and `'left'` are fixed; `'outer'` /
+ *  `'inner'` follow the page parity when the margins are mirrored — the
+ *  outer edge is the right edge of a recto (odd page) and the left edge of
+ *  a verso. Without mirrored margins `'outer'` is `'right'` and `'inner'`
+ *  is `'left'`. */
+export type SideColumnSide = 'right' | 'left' | 'outer' | 'inner';
+
 export interface ColumnRuleConfig {
   enabled?: boolean;
   color?: ColorValue;
@@ -515,6 +493,10 @@ export interface LayoutConfig {
   layoutType?: LayoutType;
   gutterWidth?: Dimension;
   sideColumnPercent?: number;
+  /** `oneAndHalf` only. Default `'text'`. */
+  sideColumnRole?: SideColumnRole;
+  /** `oneAndHalf` only. Default `'right'`. */
+  sideColumnSide?: SideColumnSide;
   columnRule?: ColumnRuleConfig;
 }
 
@@ -522,6 +504,8 @@ export interface ResolvedLayoutConfig {
   layoutType: LayoutType;
   gutterWidth: Dimension;
   sideColumnPercent: number;
+  sideColumnRole: SideColumnRole;
+  sideColumnSide: SideColumnSide;
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
 }
 
@@ -929,7 +913,10 @@ export interface ResolvedParagraphStyleConfig {
 // ---------------------------------------------------------------------------
 
 /** Horizontal extent of a callout: its column, or the full content width. */
-export type CalloutSpan = 'column' | 'page';
+/** `'side'` sets the box in the float-only side column of a `oneAndHalf`
+ *  layout (`layout.sideColumnRole: 'floats'`), beside the text it
+ *  interrupts; on a page without such a column it lays out as `'column'`. */
+export type CalloutSpan = 'column' | 'page' | 'side';
 /** Where a callout lands: inline in the flow (`'here'`), floated to the
  *  top / bottom band of a page like a resource, or at fixed page coordinates
  *  (`'fixed'` — anchored through {@link CalloutFixedConfig}, out of the
@@ -952,6 +939,16 @@ export type CalloutWidth = 'fill' | 'auto';
 export type CalloutStripeSide = 'left' | 'right' | 'top';
 export type CalloutIconKind = 'none' | 'glyph' | 'resource';
 export type CalloutIconAlign = 'top' | 'center';
+/** Where the in-box icon sits: `'inline'` (the default) in a column of its
+ *  own left of the title and content (or centred on the side stripe);
+ *  `'corner'` as a badge on the box's top-right corner, half over the
+ *  border, taking no room from the content (the icon of a marginal box). */
+export type CalloutIconPosition = 'inline' | 'corner';
+/** Which corner a `position: 'corner'` icon hangs on: `'right'` (the
+ *  default) / `'left'` are fixed; `'outer'` / `'inner'` follow the page
+ *  parity when the margins are mirrored (outer = right on a recto, left on
+ *  a verso), like the side column of a `oneAndHalf` layout. */
+export type CalloutIconCornerSide = 'right' | 'left' | 'outer' | 'inner';
 export type CalloutTextTransform = 'none' | 'uppercase';
 
 export interface CalloutBorderConfig {
@@ -994,6 +991,46 @@ export interface CalloutIconConfig {
   size?: Dimension;
   color?: ColorValue;
   align?: CalloutIconAlign;
+  /** Default `'inline'`. Ignored by the marker. */
+  position?: CalloutIconPosition;
+  /** Corner of a `position: 'corner'` icon. Default `'right'`. */
+  cornerSide?: CalloutIconCornerSide;
+  /** Width of the icon's box when it is not square (a wide strip of
+   *  icons): the picture is fitted into `width` x `size`. Default: `size`. */
+  width?: Dimension;
+}
+
+/** A small tab on the box's top edge carrying the fence's `label`
+ *  attribute — the number of a numbered box ("RECUADRO 1-1"). It rises
+ *  `offset` above the box top (its vertical middle on the edge when
+ *  `offset` is half its height), hugs the corner `position` names, and can
+ *  carry an `icon` resource on its outer side and a `rule` along the top
+ *  edge from the opposite corner up to it. */
+export interface CalloutLabelConfig {
+  /** Defaults to the headings font family. */
+  fontFamily?: string;
+  /** Defaults to the body font size. */
+  fontSize?: Dimension;
+  fontWeight?: number;
+  color?: ColorValue;
+  /** Tab fill. Default: the main colour. */
+  background?: ColorValue;
+  /** Default `'top-right'`. */
+  position?: 'top-right' | 'top-left';
+  /** Tab height. Default `1.4em` of the label size. */
+  height?: Dimension;
+  /** Horizontal padding on each side of the text. Default `0.6em`. */
+  paddingX?: Dimension;
+  /** How far the tab's top rises above the box top. Default `0`. */
+  offset?: Dimension;
+  /** Inset of the tab from the box's side edge. Default `0`. */
+  inset?: Dimension;
+  /** A picture set beside the tab (on the side away from the corner):
+   *  `width` is its width, `gap` the space to the tab. */
+  icon?: { resourceId?: string; width?: Dimension; gap?: Dimension };
+  /** A rule along the box's top edge from the far corner to the tab (or
+   *  its icon). */
+  rule?: { enabled?: boolean; color?: ColorValue; width?: Dimension };
 }
 
 /** Vertical rule drawn between a callout marker and its box. */
@@ -1034,6 +1071,11 @@ export interface CalloutTitleStyleConfig {
   /** Vertical gap between the title and the first child block (also the
    *  horizontal gap between the icon column and the content). */
   gap?: Dimension;
+  /** Tracking after every glyph of the title. Default `0`. */
+  letterSpacing?: Dimension;
+  /** Extra indent of the title from the box's inner left edge (room for a
+   *  corner badge). Default `0`. */
+  indent?: Dimension;
 }
 
 /** Body typography inside the callout. Every field inherits `bodyText`. */
@@ -1042,6 +1084,9 @@ export interface CalloutBodyStyleConfig {
   fontSize?: Dimension;
   lineHeight?: Dimension;
   color?: ColorValue;
+  /** Colour of bold runs in the box (a key term set off in the box's own
+   *  colour). Defaults to `bodyText.boldColor`, i.e. the body colour. */
+  boldColor?: ColorValue;
   textAlign?: 'left' | 'justify';
   hyphenation?: boolean;
   paragraphSpacing?: boolean;
@@ -1057,6 +1102,9 @@ export interface CalloutListStyleConfig {
   indent?: Dimension;
   gap?: Dimension;
   itemSpacing?: Dimension;
+  /** Size and weight of the bullet glyph (inherit `unorderedLists`). */
+  bulletFontSize?: Dimension;
+  bulletFontWeight?: number;
 }
 
 /** A named callout style, selected by `:::callout{type="<id>"}`. */
@@ -1095,6 +1143,12 @@ export interface CalloutStyleConfig {
   stripe?: CalloutStripeConfig;
   /** Default `kind: 'none'`. */
   icon?: CalloutIconConfig;
+  /** The label tab a fence's `label` attribute prints (unset: no tab even
+   *  when the attribute is given). */
+  label?: CalloutLabelConfig;
+  /** Gap between the columns of a `:::columns` group inside the box.
+   *  Default `1.5em`. */
+  columnGap?: Dimension;
   /** Default `kind: 'none'` (no marker column). */
   marker?: CalloutMarkerConfig;
   titleStyle?: CalloutTitleStyleConfig;
@@ -1144,7 +1198,25 @@ export interface ResolvedCalloutStyleConfig {
     size: Dimension;
     color: ColorValue;
     align: CalloutIconAlign;
+    position: CalloutIconPosition;
+    cornerSide: CalloutIconCornerSide;
+    width?: Dimension;
   };
+  label?: {
+    fontFamily: string;
+    fontSize: Dimension;
+    fontWeight: number;
+    color: ColorValue;
+    background: ColorValue;
+    position: 'top-right' | 'top-left';
+    height: Dimension;
+    paddingX: Dimension;
+    offset: Dimension;
+    inset: Dimension;
+    icon: { resourceId: string; width: Dimension; gap: Dimension };
+    rule: { enabled: boolean; color: ColorValue; width: Dimension };
+  };
+  columnGap: Dimension;
   marker: {
     kind: CalloutIconKind;
     glyph: string;
@@ -1165,12 +1237,15 @@ export interface ResolvedCalloutStyleConfig {
     color: ColorValue;
     textTransform: CalloutTextTransform;
     gap: Dimension;
+    letterSpacing: Dimension;
+    indent: Dimension;
   };
   body: {
     fontFamily: string;
     fontSize: Dimension;
     lineHeight: Dimension;
     color: ColorValue;
+    boldColor?: ColorValue;
     textAlign: 'left' | 'justify';
     hyphenation: boolean;
     paragraphSpacing: boolean;
@@ -1182,6 +1257,8 @@ export interface ResolvedCalloutStyleConfig {
     indent: Dimension;
     gap: Dimension;
     itemSpacing: Dimension;
+    bulletFontSize?: Dimension;
+    bulletFontWeight?: number;
   };
   marginTop: Dimension;
   marginBottom: Dimension;
@@ -1297,6 +1374,12 @@ export interface HeadingsConfig {
    *  heading, the heading is pushed to the next column/page so it stays joined
    *  to its text. Default true. */
   keepWithNext?: boolean;
+  /** When true (the default) the flow snaps back onto the baseline grid
+   *  under a heading, so its `marginBottom` is rounded up to whole grid
+   *  lines. `false` keeps the exact margin: the text under the heading may
+   *  sit off the grid until the next snap point (a list's end, a container's
+   *  tail, display math). */
+  snapToGrid?: boolean;
   /** Vertical column balancing — editorial bottom alignment. When a column
    *  ends short of its bottom, extra baseline-grid lines are added above the
    *  column's headings so every column ends flush with the page bottom.
@@ -1359,6 +1442,7 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepWithNext: boolean;
+  snapToGrid: boolean;
   balancing: {
     enabled: boolean;
     maxLinesPerHeading: number;
@@ -1628,13 +1712,6 @@ export interface ResolvedHtmlViewerConfig {
   overrides?: HtmlViewerOverrides;
 }
 
-export interface PostextSectionOverride {
-  selector: string;
-  columns?: ColumnConfig;
-  typography?: TypographyConfig;
-  resourcePlacement?: ResourcePlacementConfig;
-}
-
 export interface MathConfig {
   /** Enable LaTeX rendering. When false, `$...$` / `$$...$$` spans are
    *  still parsed (so warnings track unclosed delimiters) but rendered as
@@ -1812,6 +1889,22 @@ export interface DesignTextElement {
    *  in capitals in the contents). Default `'none'`. */
   textTransform?: 'none' | 'uppercase';
   box?: ElementBoxStyle;
+  /** Drop cap: the first letter set large beside the first `lines` lines
+   *  of the text (default 2), in its own face, weight and colour; `gap`
+   *  is the space between the letter and the text. `fontSize` defaults to
+   *  the size whose cap height spans those lines. Wrapping text only. */
+  dropCap?: {
+    lines?: number;
+    fontFamily?: string;
+    fontWeight?: number;
+    fontSize?: Dimension;
+    color?: ColorValue;
+    gap?: Dimension;
+  };
+  /** First-line indent of every paragraph after the first. A newline in
+   *  the content (or the two characters `\n`, for attribute values)
+   *  separates paragraphs; consecutive newlines count as one. */
+  paragraphIndent?: Dimension;
 }
 
 export interface DesignRuleElement {
@@ -2295,21 +2388,11 @@ export interface PostextConfig {
   header?: HeaderFooterSlot;
   footer?: HeaderFooterSlot;
 
-  columns?: number;
-  gutter?: string;
-
-  columnConfig?: ColumnConfig;
-  resourcePlacement?: ResourcePlacementConfig;
-  typography?: TypographyConfig;
-  references?: ReferenceConfig;
-
-  /** Document locale — used as the fallback hyphenation locale when
-   *  `bodyText.hyphenation.locale` is not explicitly set. */
+  /** Document language. The fallback hyphenation locale when
+   *  `bodyText.hyphenation.locale` is not explicitly set, and the language
+   *  of the table continuation strings (`tableStyle.continuedSuffix` /
+   *  `continuesMarker`) when those are not set. Defaults to `'en-us'`. */
   locale?: HyphenationLocale;
-
-  sectionOverrides?: PostextSectionOverride[];
-
-  renderer?: 'web' | 'pdf';
 
   debug?: DebugConfig;
 

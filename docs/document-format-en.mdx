@@ -206,7 +206,7 @@ Three container names are recognized. What each one renders is set in its own se
   </tbody>
 </table>
 
-The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. A `:::callout` fence takes `type` (the id of a configured callout style — unknown or missing types fall back to the first style), `title` (overrides the style's default title), and `span` / `placement` (`column` or `page`; `here`, `top`, `bottom` or `fixed`) to override the style's extent and position for that box:
+The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. A `:::callout` fence takes `type` (the id of a configured callout style — unknown or missing types fall back to the first style), `title` (overrides the style's default title), and `span` / `placement` (`column`, `page` or `side`; `here`, `top`, `bottom` or `fixed`) to override the style's extent and position for that box:
 
 ```
 :::callout{type="objectives" title="What you will learn" span="page" placement="top"}
@@ -215,7 +215,7 @@ The attributes accepted by each container, and how it is styled, are documented 
 :::
 ```
 
-A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width boxes (`span="page"`) cut the page into column bands; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) are recorded but still placed inline in this version. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
+A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width boxes (`span="page"`) cut the page into column bands; `span="side"` boxes leave the flow into the float-only side column of a one-and-a-half layout (`layout.sideColumnRole: 'floats'`), stacked beside the text they interrupt, and lay out as column boxes where there is no such column; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) are recorded but still placed inline in this version. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
 
 A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
 
@@ -231,6 +231,22 @@ A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"
 With the default heading settings this produces the classic sequence: part page on a right-hand page, blank left-hand page, chapter on the next right-hand page. The page is reported as `role: 'part'` so headers and footers can skip it, and `{partTitle}` / `{partNumber}` resolve to the current part on every following page. See [Parts](/en/docs/configuration#parts) in the configuration reference.
 
 A fence does not need a blank line before it: an opening or closing fence glued directly under a paragraph, list or blockquote ends that block. A container left open at the end of the document is closed automatically there, and the sandbox reports an **Unclosed container** warning pointing at the opening line. A stray `:::` with no container open is left in the text as a visible paragraph rather than dropped silently.
+
+### `:::columns`
+
+Inside a `:::callout`, a `:::columns{count=2}` … `:::` group sets the blocks between its fences in `count` columns of equal width (the style's `columnGap` apart): the run is cut where the columns level best — between blocks, or between the lines of a paragraph or list item, whose tail goes on at the head of the next column without its bullet — and the box grows to the tallest column. Blocks after the group take the full width again. Outside a callout the fences are ignored and the blocks flow as usual. A `breaks` attribute fixes the column starts instead of balancing: `:::columns{count=2 breaks="4"}` opens the second column at the group's fourth block (a comma list for more columns), with no cut inside a paragraph — a text column beside a figure column.
+
+```md
+:::callout{type="summary"}
+:::columns{count=2}
+- Every element is one kind of atom.
+- Electrons live in orbitals.
+- A bond shares or transfers electrons.
+:::
+:::
+```
+
+A `:::callout` fence also accepts `label="…"`: the text a style with a `label` tab prints on the box's top corner (`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`).
 
 ### `:::pagebreak`
 
@@ -338,6 +354,16 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Both flags combine.</td>
     </tr>
     <tr>
+      <td>Superscript</td>
+      <td><code>^text^</code></td>
+      <td>Set at 58% of the text size and raised a third of it — an exponent (<code>10^-8^</code>), an ion charge (<code>Na^+^</code>). The marked text starts and ends with a non-space character; a lone caret in prose stays literal.</td>
+    </tr>
+    <tr>
+      <td>Subscript</td>
+      <td><code>~text~</code></td>
+      <td>Same size, lowered a third of the text size — a chemical index (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Combines with bold and italic (<code>**H~2~O**</code>).</td>
+    </tr>
+    <tr>
       <td>Inline code</td>
       <td><code>`code`</code></td>
       <td>Backticks are stripped; the span is rendered as plain text. Distinct code styling is on the roadmap.</td>
@@ -410,7 +436,7 @@ Here is the floor plan we discussed.
 The keeper's quarters occupy the eastern wing.
 ```
 
-For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`.
+For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`. An inline resource keeps a line of space above it (the float gap), like a float would, unless the block before asks for more.
 
 The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
 
@@ -497,6 +523,16 @@ Each resource has a **placement** that decides where its float lands, resolved p
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
       <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive.</td>
+    </tr>
+    <tr>
+      <td><code>width</code>, <code>align</code></td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
+      <td>A resource narrower than its slot: <code>width</code> is the fraction of the column (or page) width it takes, <code>align</code> where it sits in the slot (a small table centred in its column; a page-wide band whose picture spans one column). Floats and inline <code>::resource</code> embeds alike.</td>
+    </tr>
+    <tr>
+      <td><code>captionSide</code></td>
+      <td><code>true</code> · <code>false</code></td>
+      <td>In a one-and-a-half layout whose side column is reserved for floats (<code>layout.sideColumnRole: 'floats'</code>), a <code>"column"</code> float with <code>captionSide</code> keeps its body in the main column and sets its caption (and note) in the side column, level with the figure's top — or its bottom for a bottom float; the side column gives up that band. A page without such a column keeps the caption under the figure.</td>
     </tr>
     <tr>
       <td><code>span</code></td>

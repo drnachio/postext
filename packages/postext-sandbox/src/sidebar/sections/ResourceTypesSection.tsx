@@ -7,6 +7,7 @@ import type {
   ResourceType,
   ResourceCounterFormat,
   ResourceCounterReset,
+  ResourcePlacement,
 } from 'postext';
 import {
   defaultResourceTypes,
@@ -166,6 +167,16 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const removeType = (id: string) => {
     const next = types.filter((t) => t.id !== id);
     writeTypes(next);
+  };
+
+  /** Merge into a type's `defaultPlacement`; an empty value drops the key. */
+  const updateTypePlacement = (type: ResourceType, partial: Partial<ResourcePlacement>) => {
+    const next: ResourcePlacement = { ...type.defaultPlacement };
+    for (const [k, v] of Object.entries(partial) as [keyof ResourcePlacement, string | undefined][]) {
+      if (v === undefined || v === '') delete next[k];
+      else (next as Record<string, string>)[k] = v;
+    }
+    updateType(type.id, { defaultPlacement: Object.keys(next).length > 0 ? next : undefined });
   };
 
   /** Merge into a type's partial `captionStyle`, keeping untouched keys unset. */
@@ -328,6 +339,65 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
+            </div>
+
+            <div className="mt-2">
+              <CollapsibleSection
+                title={labels.resourceTypePlacementGroup}
+                sectionId={`resource-types.${type.id}.placement`}
+                variant="subsection"
+                hasOverrides={type.defaultPlacement !== undefined && Object.keys(type.defaultPlacement).length > 0}
+                onReset={() => updateType(type.id, { defaultPlacement: undefined })}
+                resetLabel={labels.reset}
+                resetConfirmMessage={labels.resourceTypePlacementResetConfirm}
+              >
+                <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }}>
+                  {labels.resourceTypePlacementHint}
+                </p>
+                <div className="flex flex-col gap-2">
+                  <Field label={labels.resourceTypePlacementPosition}>
+                    <select
+                      value={type.defaultPlacement?.position ?? ''}
+                      onChange={(e) => updateTypePlacement(type, { position: (e.target.value || undefined) as ResourcePlacement['position'] })}
+                      aria-label={labels.resourceTypePlacementPosition}
+                      className={inputClass}
+                      style={inputStyle}
+                    >
+                      <option value="">{labels.resourceTypePlacementInherit}</option>
+                      <option value="auto">{labels.resourceTypePlacementPositionAuto}</option>
+                      <option value="top">{labels.resourceTypePlacementPositionTop}</option>
+                      <option value="bottom">{labels.resourceTypePlacementPositionBottom}</option>
+                      <option value="here">{labels.resourceTypePlacementPositionHere}</option>
+                    </select>
+                  </Field>
+                  <Field label={labels.resourceTypePlacementSpan}>
+                    <select
+                      value={type.defaultPlacement?.span ?? ''}
+                      onChange={(e) => updateTypePlacement(type, { span: (e.target.value || undefined) as ResourcePlacement['span'] })}
+                      aria-label={labels.resourceTypePlacementSpan}
+                      className={inputClass}
+                      style={inputStyle}
+                    >
+                      <option value="">{labels.resourceTypePlacementInherit}</option>
+                      <option value="column">{labels.headingSpanColumn}</option>
+                      <option value="page">{labels.resourceTypePlacementSpanPage}</option>
+                    </select>
+                  </Field>
+                  <Field label={labels.resourceTypePlacementRotate}>
+                    <select
+                      value={type.defaultPlacement?.rotate ?? ''}
+                      onChange={(e) => updateTypePlacement(type, { rotate: (e.target.value || undefined) as ResourcePlacement['rotate'] })}
+                      aria-label={labels.resourceTypePlacementRotate}
+                      className={inputClass}
+                      style={inputStyle}
+                    >
+                      <option value="">{labels.resourceTypePlacementRotateNone}</option>
+                      <option value="ccw">{labels.resourceTypePlacementRotateCcw}</option>
+                      <option value="cw">{labels.resourceTypePlacementRotateCw}</option>
+                    </select>
+                  </Field>
+                </div>
+              </CollapsibleSection>
             </div>
 
             <div className="mt-2">

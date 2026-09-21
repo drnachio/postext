@@ -22,6 +22,9 @@ interface RichToken {
   text: string;
   bold: boolean;
   italic: boolean;
+  script?: 'sup' | 'sub';
+  scriptFont?: string;
+  baselineShift?: number;
   kind: 'text' | 'space';
   width: number;
   breakPoints?: RichBreakPoint[];
@@ -179,6 +182,7 @@ export function reconstructRichLines(
           ...(token.mathRender ? { mathRender: token.mathRender } : {}),
           ...(token.swatch ? { swatch: token.swatch } : {}),
           ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId } : {}),
+          ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
         });
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {

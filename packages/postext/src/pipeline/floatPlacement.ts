@@ -31,6 +31,10 @@ export interface ResolvedPlacement {
   position: ResourceFloatPosition;
   span: ResourceFloatSpan;
   rotate?: ResourceRotation;
+  /** Fraction of the slot width the float takes (`1` = the whole width). */
+  widthFraction: number;
+  align: 'left' | 'center' | 'right';
+  captionSide: boolean;
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
@@ -38,6 +42,12 @@ export interface ResolvedPlacement {
  *  the first free slot after the reference (top or bottom); `'top'` /
  *  `'bottom'` restrict the search to that kind of slot. */
 export interface PlannedFloat {
+  /** Where the flow stood when the float's first reference was reached
+   *  (the top of the citing block, on that page): a `span: 'side'` float
+   *  stacks no higher than this on that page — beside the text that cites
+   *  it. Stamped by the build when the float is enqueued. */
+  refPageIndex?: number;
+  refY?: number;
   resourceId: string;
   firstBlockIdx: number;
   position: 'auto' | 'top' | 'bottom';
@@ -45,6 +55,11 @@ export interface PlannedFloat {
   /** Set turned a quarter turn on the page (always page-span; takes a
    *  whole page). */
   rotate?: ResourceRotation;
+  /** Width fraction, alignment and side caption of the placement (see
+   *  `ResourcePlacement`). */
+  widthFraction?: number;
+  align?: 'left' | 'center' | 'right';
+  captionSide?: boolean;
   /** For the rest of a table split across pages: the first model row still
    *  to place (the header rows are repeated above it). Absent (or `0`) for
    *  a whole resource. */
@@ -54,6 +69,10 @@ export interface PlannedFloat {
    *  later column's slot will do (a page-span rest waits for the next
    *  page). */
   notBefore?: { pageIndex: number; columnIndex: number };
+  /** A floated `:::callout` (`placement: 'top' | 'bottom'`): the content
+   *  index of its opening fence. `resourceId` is then the synthetic
+   *  `callout:<startIdx>`; the build keeps the box's layouter by index. */
+  callout?: { startIdx: number };
 }
 
 /** Resolve a resource's placement: own `placement` → its type's
@@ -70,7 +89,11 @@ export function resolveResourcePlacement(
     ? undefined
     : (resource.placement?.rotate ?? type?.defaultPlacement?.rotate);
   const span = rotate ? 'page' : (resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column');
-  return rotate ? { position, span, rotate } : { position, span };
+  const rawWidth = resource.placement?.width ?? type?.defaultPlacement?.width;
+  const widthFraction = typeof rawWidth === 'number' && rawWidth > 0 && rawWidth < 1 ? rawWidth : 1;
+  const align = resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left';
+  const captionSide = resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide ?? false;
+  return { position, span, widthFraction, align, captionSide, ...(rotate ? { rotate } : {}) };
 }
 
 /**
@@ -99,9 +122,14 @@ export function computeFloatPlan(
     const resource = resourceById.get(resourceId);
     if (!resource) return;
     const type = typeById.get(resource.typeId);
-    const { position, span, rotate } = resolveResourcePlacement(resource, type);
+    const { position, span, rotate, widthFraction, align, captionSide } = resolveResourcePlacement(resource, type);
     if (position === 'here') return;
-    plan.push({ resourceId, firstBlockIdx: blockIdx, position, span, ...(rotate ? { rotate } : {}) });
+    plan.push({
+      resourceId, firstBlockIdx: blockIdx, position, span,
+      ...(rotate ? { rotate } : {}),
+      ...(widthFraction < 1 && !rotate ? { widthFraction, align } : {}),
+      ...(captionSide && span === 'column' ? { captionSide } : {}),
+    });
   };
 
   for (let i = 0; i < blocks.length; i++) {

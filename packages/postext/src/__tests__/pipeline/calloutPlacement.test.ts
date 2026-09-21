@@ -225,9 +225,10 @@ describe(':::callout placement', () => {
     expect(after.fontString).toBe(intro.fontString);
   });
 
-  it('falls back to inline placement for floating placements (top / bottom)', () => {
-    // `span: 'page'` alone is a span block in multi-column layouts (see
-    // spanBlocks.test.ts); a floating placement keeps the inline fallback.
+  it('a floating placement (top) leaves the flow: the box takes the head of the next page', () => {
+    // The page's head is taken by "Intro." when the box arrives, so it waits
+    // for the next page the flow opens (drained at the end of the document)
+    // while "After." stays on the first page, right under "Intro.".
     const doc = build([
       'Intro.',
       '',
@@ -240,9 +241,12 @@ describe(':::callout placement', () => {
     const [frame] = frames(doc);
     expect(frame!.callout!.span).toBe('page');
     expect(frame!.callout!.placement).toBe('top');
-    // Still placed inline at the column width for now (floating boxes pending).
-    expect(frame!.bbox.width).toBeCloseTo(columnOf(doc, frame!).bbox.width, 5);
-    expect(columnOf(doc, frame!).blocks).toContain(frame);
+    expect(frame!.pageIndex).toBe(1);
+    expect(doc.pages[1]!.floats).toContain(frame);
+    expect(frame!.bbox.y).toBeCloseTo(doc.pages[1]!.contentArea.y, 5);
+    expect(columnOf(doc, frame!).blocks).not.toContain(frame);
+    const after = doc.blocks.find((b) => b.type === 'paragraph' && b.lines[0]?.text.startsWith('After'));
+    expect(after!.pageIndex).toBe(0);
   });
 
   it('with no callout styles configured the children flow as ordinary blocks', () => {

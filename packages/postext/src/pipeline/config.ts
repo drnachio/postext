@@ -42,7 +42,7 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
 
 function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const config = applyPaletteToConfig(rawConfig);
-  const bodyText = resolveBodyTextConfig(config?.bodyText);
+  const bodyText = resolveBodyTextConfig(config?.bodyText, config?.locale);
   const headings = resolveHeadingsConfig(config?.headings);
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
   const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText);
@@ -96,9 +96,30 @@ export function computeBaselineGrid(resolved: ResolvedConfig): number {
   return dimensionToPx(lineHeightDim, dpi, bodyFontSizePx);
 }
 
+/** Whether the side column of a `oneAndHalf` layout sits at the left edge
+ *  of the content area on this page. `'outer'` / `'inner'` follow the page
+ *  parity only when the margins are mirrored (a recto's outer edge is its
+ *  right edge, a verso's its left); otherwise they are `'right'` /
+ *  `'left'`. */
+export function sideColumnOnLeft(resolved: ResolvedConfig, isEvenPage: boolean): boolean {
+  const side = resolved.layout.sideColumnSide;
+  const mirrored = resolved.page.margins.mirror === true && isEvenPage;
+  if (side === 'left') return true;
+  if (side === 'right') return false;
+  if (side === 'outer') return mirrored;
+  return !mirrored; // inner
+}
+
+/** Column boxes of a page in reading order. For a `oneAndHalf` layout the
+ *  main column comes first and the side column second whatever their
+ *  geometric order: a float-only side column (`sideColumnRole: 'floats'`)
+ *  is not part of the flow, and a text side column at the left still reads
+ *  after the main column (a marginal column). `isEvenPage` decides the side
+ *  of an `'outer'` / `'inner'` side column. */
 export function computeColumnBboxes(
   contentArea: BoundingBox,
   resolved: ResolvedConfig,
+  isEvenPage = false,
 ): BoundingBox[] {
   const { layoutType, gutterWidth, sideColumnPercent } = resolved.layout;
   const dpi = resolved.page.dpi;
@@ -120,8 +141,20 @@ export function computeColumnBboxes(
   // oneAndHalf
   const sideWidth = contentArea.width * (sideColumnPercent / 100);
   const mainWidth = contentArea.width - sideWidth - gutterPx;
+  if (sideColumnOnLeft(resolved, isEvenPage)) {
+    return [
+      createBoundingBox(contentArea.x + sideWidth + gutterPx, contentArea.y, mainWidth, contentArea.height),
+      createBoundingBox(contentArea.x, contentArea.y, sideWidth, contentArea.height),
+    ];
+  }
   return [
     createBoundingBox(contentArea.x, contentArea.y, mainWidth, contentArea.height),
     createBoundingBox(contentArea.x + mainWidth + gutterPx, contentArea.y, sideWidth, contentArea.height),
   ];
+}
+
+/** Whether the layout carries a float-only side column (a `oneAndHalf`
+ *  layout with `sideColumnRole: 'floats'`). */
+export function hasFloatSideColumn(resolved: ResolvedConfig): boolean {
+  return resolved.layout.layoutType === 'oneAndHalf' && resolved.layout.sideColumnRole === 'floats';
 }

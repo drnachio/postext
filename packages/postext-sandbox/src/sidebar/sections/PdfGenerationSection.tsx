@@ -27,9 +27,9 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
   const cfg = resolvePdfGenerationConfig(raw);
 
   const colorSpaceOptions = [
-    { value: 'cmyk', label: labels.pdfColorSpaceCmyk ?? 'CMYK' },
-    { value: 'rgb', label: labels.pdfColorSpaceRgb ?? 'RGB' },
-    { value: 'grayscale', label: labels.pdfColorSpaceGrayscale ?? 'Grayscale' },
+    { value: 'cmyk', label: labels.pdfColorSpaceCmyk },
+    { value: 'rgb', label: labels.pdfColorSpaceRgb },
+    { value: 'grayscale', label: labels.pdfColorSpaceGrayscale },
   ];
 
   const update = (partial: Partial<PdfGenerationConfig>) => {
@@ -62,7 +62,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
 
   return (
     <CollapsibleSection
-      title={labels.pdfGenerationSection ?? 'PDF Generation'}
+      title={labels.pdfGenerationSection}
       sectionId="pdfGeneration"
       onReset={resetSection}
       hasOverrides={hasOverrides}
@@ -70,7 +70,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
       resetConfirmMessage={labels.resetSectionConfirm}
     >
       <ToggleSwitch
-        label={labels.pdfOutlines ?? 'Bookmarks'}
+        label={labels.pdfOutlines}
         checked={cfg.outlines}
         onChange={(v) => update({ outlines: v })}
         tooltip={
@@ -82,7 +82,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
       />
 
       <ToggleSwitch
-        label={labels.pdfAccessible ?? 'Accessible PDF'}
+        label={labels.pdfAccessible}
         checked={cfg.accessible}
         onChange={(v) => update({ accessible: v })}
         tooltip={
@@ -94,7 +94,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
       />
 
       <ToggleSwitch
-        label={labels.pdfForceColorSpace ?? 'Force color space'}
+        label={labels.pdfForceColorSpace}
         checked={cfg.forceColorSpace}
         onChange={(v) => update({ forceColorSpace: v })}
         tooltip={
@@ -108,7 +108,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
       {cfg.forceColorSpace && (
         <NestedGroup>
           <SelectInput
-            label={labels.pdfColorSpace ?? 'Color space'}
+            label={labels.pdfColorSpace}
             value={cfg.colorSpace}
             options={colorSpaceOptions}
             onChange={(v) => update({ colorSpace: v as PdfColorSpace })}

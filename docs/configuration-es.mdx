@@ -54,7 +54,6 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
 - [Generación de PDF (configuración)](#generación-de-pdf-configuración) — outlines, salida accesible (etiquetada) y espacio de color forzado para el backend PDF.
 - [Depuración](#depuración) — superposiciones visuales y avisos de autoría para el editor.
-- [Configuración avanzada](#configuración-avanzada) — tipos declarados, soporte futuro.
 - [Uso programático](#uso-programático) — `buildDocument`, resolvers, cachés.
 - [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker) — builds fuera del hilo principal con cancelación.
 - [Integrar el visor HTML](#integrar-el-visor-html) y [Generación de PDF](#generación-de-pdf) — recetas completas.
@@ -329,6 +328,18 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td>Ancho de la columna lateral como porcentaje del área de contenido. Solo aplica a la disposición <code>'oneAndHalf'</code>.</td>
     </tr>
     <tr>
+      <td><code>sideColumnRole</code></td>
+      <td><code>'text' | 'floats'</code></td>
+      <td><code>'text'</code></td>
+      <td>Qué lleva la columna lateral: texto corrido (fluye a ella tras la columna principal) o solo los recursos y avisos colocados con <code>span: 'side'</code> — una columna de margen solo para flotantes. Solo en <code>'oneAndHalf'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnSide</code></td>
+      <td><code>'right' | 'left' | 'outer' | 'inner'</code></td>
+      <td><code>'right'</code></td>
+      <td>Borde del área de contenido en el que se sitúa la columna lateral. <code>'outer'</code> / <code>'inner'</code> siguen la paridad de la página cuando los márgenes están espejados (el borde exterior de una página impar es el derecho; el de una par, el izquierdo). Solo en <code>'oneAndHalf'</code>.</td>
+    </tr>
+    <tr>
       <td><code>columnRule</code></td>
       <td><code>ColumnRuleConfig</code></td>
       <td>desactivado</td>
@@ -378,7 +389,7 @@ Dibuja una línea vertical fina en el medianil para separar visualmente las colu
 
 - **`'double'`** — Dos columnas de igual ancho. La disposición editorial clásica — mantiene el ancho de carro en el rango óptimo de 40–50 caracteres para una lectura cómoda.
 
-- **`'oneAndHalf'`** — Una disposición asimétrica con una columna principal y una columna lateral más estrecha. La columna lateral (controlada por `sideColumnPercent`) es ideal para notas al margen, figuras pequeñas o contenido complementario. Valores entre 25–40% funcionan bien.
+- **`'oneAndHalf'`** — Una disposición asimétrica con una columna principal y una columna lateral más estrecha. La columna lateral (controlada por `sideColumnPercent`) es ideal para notas al margen, figuras pequeñas o contenido complementario. Valores entre 25–40% funcionan bien. Con `sideColumnRole: 'floats'` el texto corrido nunca entra en la columna lateral: se convierte en un canal para las figuras, tablas y avisos colocados con `span: 'side'`, apilados junto al párrafo que los cita por primera vez (un recurso que no cabe en lo que queda del canal espera al de la página siguiente), mientras que los flotantes y cajas `span: 'page'` siguen cruzando ambas columnas. Combinada con márgenes espejados y `sideColumnSide: 'outer'`, el canal queda en el borde exterior de cada página — la columna marginal de un manual.
 
 
 ## Encabezados y pies
@@ -434,6 +445,12 @@ Los elementos de texto renderizan una plantilla con sustitución de marcadores. 
       <td><code>'text'</code></td>
       <td>—</td>
       <td>Discriminador.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Id estable, único dentro del bloque. Otros elementos se anclan a él con <code>anchor.to: '#id'</code>. El sandbox asigna uno al crearlo.</td>
     </tr>
     <tr>
       <td><code>content</code></td>
@@ -496,6 +513,48 @@ Los elementos de texto renderizan una plantilla con sustitución de marcadores. 
       <td>Cómo se gestiona el texto que excede el ancho disponible del elemento. <code>'wrap'</code> divide el texto en varias líneas; las variantes de elipsis truncan a una sola línea e insertan <code>…</code> al principio, en el centro o al final; <code>'clip'</code> recorta de forma estricta al rectángulo del elemento sin insertar ningún carácter.</td>
     </tr>
     <tr>
+      <td><code>verticalAlign</code></td>
+      <td><code>'top' | 'middle' | 'bottom'</code></td>
+      <td><code>'middle'</code></td>
+      <td>Dónde se sitúa el texto dentro de una caja más alta que sus líneas — un <code>placement.size.height</code> fijo, o una caja estirada por un vecino anclado.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.2</code></td>
+      <td>Interlineado de las líneas envueltas, como múltiplo de <code>fontSize</code>.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Tracking: espacio adicional que avanza tras cada carácter, espacios incluidos, exactamente como el <code>letter-spacing</code> de CSS. Las medidas crecen con él, así que una caja de ancho automático sigue ajustada.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Transformación de mayúsculas aplicada al texto resuelto, marcadores incluidos — el título de una parte en versales en el índice.</td>
+    </tr>
+    <tr>
+      <td><code>box</code></td>
+      <td><code>ElementBoxStyle</code></td>
+      <td>—</td>
+      <td>Fondo y borde opcionales dibujados tras el texto: <code>backgroundColor</code>, <code>borderColor</code>, <code>borderWidth</code>, <code>borderRadius</code> y un <code>padding</code> por lado que amplía la caja más allá del texto (ver <a href="#elementos-de-caja">Elementos de caja</a> para los campos).</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
+      <td>—</td>
+      <td>Letra capital en un texto que se ajusta: la primera letra, grande, junto a las primeras <code>lines</code> líneas (2 por defecto), con su propia fuente, peso y color, y a <code>gap</code> del texto. <code>fontSize</code> vale por defecto el tamaño cuya altura de mayúscula abarca esas líneas.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría de primera línea de cada párrafo a partir del segundo. Un salto de línea en el contenido —o los dos caracteres <code>\n</code>, en un texto que viene de un atributo— separa párrafos; varios saltos seguidos cuentan como uno.</td>
+    </tr>
+    <tr>
       <td><code>hyphenate</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
@@ -541,7 +600,7 @@ El editor de encabezados del sandbox aplica estas alineaciones implícitas autom
 
 ### Elementos de línea
 
-Los elementos de línea dibujan una línea horizontal dentro del bloque.
+Los elementos de línea dibujan una línea: horizontal a lo ancho del bloque, o vertical a lo alto.
 
 <table>
   <thead>
@@ -558,6 +617,18 @@ Los elementos de línea dibujan una línea horizontal dentro del bloque.
       <td><code>'rule'</code></td>
       <td>—</td>
       <td>Discriminador.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Id estable, único dentro del bloque, para referencias <code>anchor.to: '#id'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'horizontal' | 'vertical'</code></td>
+      <td><code>'horizontal'</code></td>
+      <td>Una línea horizontal recorre <code>placement.size.width</code> (<code>'fill'</code> = hasta el borde del contenedor) y mide <code>thickness</code> de alto. Una vertical recorre <code>placement.size.height</code> (<code>'fill'</code> o sin definir = hasta el borde del contenedor) y mide <code>thickness</code> de ancho — un separador entre el titulillo y el folio.</td>
     </tr>
     <tr>
       <td><code>color</code></td>
@@ -606,6 +677,12 @@ Los elementos de línea dibujan una línea horizontal dentro del bloque.
       <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
       <td><code>'all'</code></td>
       <td>Roles de página en los que aparece la línea (ver el campo <code>pages</code> de los elementos de texto).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>derivado de <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>Posicionamiento avanzado (ver <a href="#posicionamiento-de-elementos">Posicionamiento de elementos</a>). <code>size.width</code> / <code>size.height</code> fijan la longitud de la línea; <code>width: 'fill'</code> es el antiguo <code>'full'</code>.</td>
     </tr>
   </tbody>
 </table>
@@ -938,6 +1015,17 @@ Cuando la alineación del texto está configurada como `'justify'`, la separaci�
 
 Las palabras de menos de 5 caracteres nunca se separan. El motor requiere al menos 2 caracteres antes y 3 caracteres después de un punto de ruptura.
 
+#### Idioma del documento
+
+El `locale` de primer nivel es el idioma del documento en su conjunto. Admite los mismos valores que `hyphenation.locale` y es el valor al que recurre ese campo cuando no está definido, de modo que a un libro en español le basta `locale: 'es'` para separar sílabas en español. También elige el idioma de las cadenas integradas de continuación de tablas (*(cont.)* / *Continued* frente a *Continúa*, ver [Tablas más altas que la página](#tablas-más-altas-que-la-página)) y es el idioma que se etiqueta en un PDF accesible. Sin definir, el motor asume `'en-us'`; el sandbox recurre al idioma de la interfaz y expone el campo al principio de la sección Texto de cuerpo.
+
+```ts
+const config: PostextConfig = {
+  locale: 'es',
+  bodyText: { textAlign: 'justify', hyphenation: { enabled: true } }, // separa sílabas en español
+};
+```
+
 ### Huérfanas, viudas, *runts* y reglas de cohesión
 
 Consulta [Separación silábica y justificación](/es/docs/justification) para entender la mecánica de deméritos que hay detrás. Esta sección es la referencia de las claves de `bodyText` que gobiernan esas penalizaciones.
@@ -1111,6 +1199,12 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
       <td>Cuando es <code>true</code>, un encabezado nunca se coloca como último elemento de una columna o página. Si el siguiente bloque no tuviera al menos <code>bodyText.widowMinLines</code> líneas de hueco tras el encabezado (o una línea cuando <code>bodyText.avoidWidows</code> es <code>false</code>), el encabezado se empuja hacia delante para quedar unido a su texto. Interactúa con <code>bodyText.keepColonWithList</code>: si esa regla tiene que empujar el párrafo de dos puntos por completo, los encabezados que lo preceden en la columna viajan con él en vez de quedar varados.</td>
     </tr>
     <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si el flujo vuelve a la retícula base bajo un título. Con <code>true</code> el <code>marginBottom</code> del título se redondea a líneas enteras de la retícula; con <code>false</code> se conserva el margen exacto y el texto bajo el título puede quedar fuera de la retícula hasta el siguiente punto de ajuste (el final de una lista, la cola de un <code>:::paragraphs</code>, una ecuación) — como muchos libros, que dejan línea y media bajo el título.</td>
+    </tr>
+    <tr>
       <td><code>balancing</code></td>
       <td><code>ColumnBalancingConfig</code></td>
       <td>activado</td>
@@ -1163,6 +1257,18 @@ La última columna de una página solo se equilibra cuando la página fluye de f
       <td><code>number</code></td>
       <td><code>1</code></td>
       <td>Número máximo de líneas de rejilla adicionales tras el final de una misma lista.</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterFloats</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Permite líneas de rejilla adicionales bajo una figura o tabla que encabeza la columna corta (un flotante superior), tras la palanca de los finales de lista, de modo que el texto de debajo baja en lugar de acabar la columna corta.</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterFloat</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Número máximo de líneas de rejilla adicionales bajo un mismo flotante superior.</td>
     </tr>
     <tr>
       <td><code>looseParagraphs</code></td>
@@ -1870,7 +1976,7 @@ type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface ResourcePlacement {
   position?: 'top' | 'bottom' | 'here'; // banda flotante, o en línea en la directiva ::resource
-  span?: 'column' | 'page';             // una sola columna o todo el ancho de contenido
+  span?: 'column' | 'page' | 'side';    // una sola columna, todo el ancho de contenido o la columna lateral solo para flotantes
 }
 
 interface ResourceType {
@@ -1883,6 +1989,12 @@ interface ResourceType {
   counterFormat: ResourceCounterFormat;// cómo se formatea {n}
   captionPrefix: string;               // prefijo del pie, p. ej. "Figura"
   defaultPlacement?: ResourcePlacement;// colocación de respaldo para los recursos de este tipo
+}
+
+interface ResourcePlacement {
+  position?: 'auto' | 'top' | 'bottom' | 'here'; // qué hueco libre puede ocupar el flotante; 'here' = incrustado en línea
+  span?: 'column' | 'page';                      // una columna, o todo el ancho del área de contenido
+  rotate?: 'ccw' | 'cw';                         // un cuarto de vuelta: una tabla apaisada en una página propia
 }
 ```
 
@@ -1938,7 +2050,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code> (opcional)</td>
-      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>. Si tampoco está definida, se aplica el valor integrado <code>auto</code> / <code>column</code>. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución completa.</td>
+      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>: <code>position</code>, <code>span</code> y <code>rotate</code>, cada uno resuelto por separado. Si tampoco está definida, se aplica el valor integrado <code>auto</code> / <code>column</code> / sin girar. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución y <a href="/es/docs/document-format#recursos">Formato del documento › Recursos</a> para lo que hace cada valor, incluidos los recursos girados.</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
@@ -2614,9 +2726,9 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>span</code></td>
-      <td><code>'column' | 'page'</code></td>
+      <td><code>'column' | 'page' | 'side'</code></td>
       <td><code>'column'</code></td>
-      <td>Extensión horizontal: la columna o el ancho completo del área de contenido. Se puede sobrescribir por instancia con el atributo <code>span</code>. En disposiciones multicolumna una caja <code>'page'</code> se convierte en un <em>bloque a ancho de página</em>: divide la página en bandas de columnas y ocupa su propia columna a todo el ancho (ver la sección del contenedor más abajo).</td>
+      <td>Extensión horizontal: la columna, el ancho completo del área de contenido o la columna lateral solo para flotantes de una disposición de columna y media (<code>layout.sideColumnRole: 'floats'</code>) — la caja sale entonces del flujo y se apila en esa columna junto al texto que interrumpe. Se puede sobrescribir por instancia con el atributo <code>span</code>. En disposiciones multicolumna una caja <code>'page'</code> se convierte en un <em>bloque a ancho de página</em>: divide la página en bandas de columnas y ocupa su propia columna a todo el ancho (ver la sección del contenedor más abajo).</td>
     </tr>
     <tr>
       <td><code>placement</code></td>
@@ -2677,9 +2789,9 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>icon</code></td>
-      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align &#125;</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, width, color, align, position, cornerSide &#125;</code></td>
       <td><code>'none'</code>, fuente de encabezados, <code>400</code>, <code>1.5em</code>, color principal, <code>'top'</code></td>
-      <td>Un glifo de texto (<code>kind: 'glyph'</code>) o un recurso bitmap / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) junto al contenido. Con franja lateral el icono se centra sobre la franja; si no, reserva su propia columna (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> lo centra verticalmente sobre el contenido. Una imagen de recurso se ajusta dentro del cuadrado conservando su proporción; un icono más alto que el contenido agranda la caja para contenerlo (y, con <code>align: 'center'</code>, centra el contenido sobre él).</td>
+      <td>Un glifo de texto (<code>kind: 'glyph'</code>) o un recurso bitmap / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) junto al contenido. Con franja lateral el icono se centra sobre la franja; si no, reserva su propia columna (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> lo centra verticalmente sobre el contenido. Una imagen de recurso se ajusta dentro del cuadrado conservando su proporción; un icono más alto que el contenido agranda la caja para contenerlo (y, con <code>align: 'center'</code>, centra el contenido sobre él). Con <code>width</code> la imagen se ajusta a una caja de <code>width</code> × <code>size</code> (una tira ancha de iconos). <code>position: 'corner'</code> cuelga el icono de una esquina superior como una insignia, medio fuera del borde y sin ocupar sitio en el contenido; <code>cornerSide</code> elige la esquina: <code>'right'</code> / <code>'left'</code>, o <code>'outer'</code> / <code>'inner'</code>, que siguen la paridad de la página con márgenes simétricos (exterior = derecha en una página impar, izquierda en una par).</td>
     </tr>
     <tr>
       <td><code>marker</code></td>
@@ -2689,21 +2801,33 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>titleStyle</code></td>
-      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap, letterSpacing, indent &#125;</code></td>
       <td>fuente de encabezados, tamaño del cuerpo, <code>700</code>, <code>false</code>, color principal, <code>'none'</code>, <code>0.5em</code></td>
-      <td>Tipografía del título. <code>gap</code> es el espacio entre el título y el primer hijo (y el hueco de la columna del icono). <code>textTransform: 'uppercase'</code> conserva la longitud del texto.</td>
+      <td>Tipografía del título. <code>gap</code> es el espacio entre el título y el primer hijo (y el hueco de la columna del icono). <code>textTransform: 'uppercase'</code> conserva la longitud del texto. <code>letterSpacing</code> aplica un tracking al título (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> lo desplaza a la derecha del borde interior de la caja (sitio para una insignia de esquina).</td>
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
       <td>hereda de <code>bodyText</code></td>
       <td>Tipografía de los párrafos dentro de la caja. Cada campo hereda del texto de cuerpo cuando no se indica.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
-      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing &#125;</code></td>
+      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing, bulletFontSize, bulletFontWeight &#125;</code></td>
       <td>hereda de <code>unorderedLists</code></td>
-      <td>Tipografía de las listas dentro de la caja (<code>color</code>, <code>indent</code>, <code>gap</code> e <code>itemSpacing</code> se aplican también a las listas ordenadas).</td>
+      <td>Tipografía de las listas dentro de la caja (<code>color</code>, <code>indent</code>, <code>gap</code> e <code>itemSpacing</code> se aplican también a las listas ordenadas). <code>bulletFontSize</code> / <code>bulletFontWeight</code> componen la viñeta en la fuente del cuerpo de la caja a ese tamaño y peso (una viñeta gruesa de color).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, color, background, position, height, paddingX, offset, inset, icon, rule &#125;</code></td>
+      <td>sin definir (sin pestaña)</td>
+      <td>Una pestaña sobre el borde superior de la caja que imprime el atributo <code>label</code> de la valla —el número de un recuadro numerado («RECUADRO 1-1»)—. Se pega a la esquina <code>position</code> (<code>'top-right'</code> / <code>'top-left'</code>) con un retranqueo <code>inset</code>, sobresale <code>offset</code> por encima del borde (ese espacio forma parte del bloque, además de <code>marginTop</code>, y se conserva también en cabeza de columna), mide <code>height</code> de alto con <code>paddingX</code> a cada lado del texto, y puede llevar un recurso <code>icon</code> a su lado (<code>&#123; resourceId, width, gap &#125;</code>, hacia el interior) y un filete <code>rule</code> (<code>&#123; enabled, color, width &#125;</code>) a lo largo del borde superior desde la esquina opuesta hasta ella. Por defecto: fuente de encabezados, tamaño del cuerpo, <code>700</code>, blanco sobre el color principal, <code>1.4em</code> de alto, <code>0.6em</code> de relleno.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>Separación entre las columnas de un grupo <code>:::columns</code> dentro de la caja (véase la sección del contenedor).</td>
     </tr>
     <tr>
       <td><code>marginTop</code> / <code>marginBottom</code></td>
@@ -2736,9 +2860,11 @@ Límites de esta versión:
 - Los flotantes ceden ante una caja indivisible. Cuando el bloque que sigue a la referencia de una figura es un aviso `keepTogether`, no se toma un hueco que dejaría a la caja sin ninguna columna de la banda actual donde caer (la columna de la referencia o una vacía posterior, que antes del flotante la alojaba): la figura pasa a su siguiente hueco, normalmente la página siguiente, y la caja sigue en el flujo — como la compondría un cajista, en lugar de expulsar la caja de la página y dejar la columna con la figura sola.
 - `span: 'page'` en una disposición multicolumna convierte la caja en un **bloque a ancho de página**: se compone al ancho completo del área de contenido y divide la página en bandas de columnas — las columnas de texto que hay encima se cierran en la línea de corte, la caja ocupa su propia columna a todo el ancho y debajo se abre una banda nueva de columnas de texto, de modo que el flujo continúa bajo la caja en todas las columnas. Donde las columnas están *niveladas* — al inicio de una página, justo debajo de un encabezado de apertura con `span: 'page'`, justo debajo de otro bloque a ancho de página o justo debajo de una banda de flotantes superior — la caja simplemente corta ahí. Si llega a mitad de página, con las columnas desiguales, se compone como lo haría un cajista: el texto que hay encima se corta nivelado en todas las columnas (el motor repite la colocación con las columnas de la banda acortadas al mismo número de líneas de rejilla, de modo que el texto desborda de columna en columna de forma natural y siguen aplicándose todas las reglas de huérfanas, viudas y encabezados unidos a su texto), la caja ocupa el ancho de la página y las columnas continúan debajo. El corte cuesta un par de pasadas de colocación adicionales; cuando la línea de corte no dejaría sitio para la caja más el mínimo de líneas viudas de cuerpo por debajo, o ninguna disposición encaja tras unos pocos intentos, la caja pasa al inicio de la página siguiente. Con `headings.balancing.beforeSpan` (el valor por defecto) la banda que deja se corta nivelada tras ella — como la banda de cierre de un capítulo — y, cuando el estilo permite partirla (`keepTogether: false`), la parte de la caja que cabe bajo las columnas niveladas cierra la página y el resto abre la siguiente; con `beforeSpan: false` la página que deja simplemente se equilibra como siempre, sin forzar un salto de página. Un encabezado justo antes de un bloque a ancho de página no viaja con él. En disposiciones de una columna `span: 'page'` es simplemente en línea.
 - `placement: 'fixed'` saca la caja del flujo: se compone (`width: 'auto'` se ajusta al título; `'fill'` toma el ancho de la columna de texto bajo el punto de anclaje) y se fija a la página en la que aparece en el flujo, en la posición que describen `fixed.anchor` / `fixed.offset` — por defecto la esquina inferior izquierda del área de contenido. Las columnas de texto que cubre ceden esa zona (recortada por abajo, o por arriba cuando la columna aún está vacía), exactamente como una banda de flotantes; cuando la zona ya contiene texto, un flotante o un bloque a ancho de página, la caja pasa a la página siguiente. Una caja fija que cierra el capítulo (el bloque siguiente es una apertura de capítulo, un `:::part`, una caja barrera de flotantes o el final del documento) nivela primero las columnas que quedan encima (`headings.balancing.trailing`), de modo que una página de cierre corta termina nivelada con el distintivo debajo. La caja y sus hijos viven en `page.floats` y se pintan fuera del recorte de columna en todos los backends.
-- `placement: 'top' | 'bottom'` se registra en el VDT (`VDTBlock.callout`) pero todavía se coloca en línea al ancho de columna — las cajas flotantes llegan con la siguiente etapa.
+- `placement: 'top' | 'bottom'` hace **flotar** la caja como un recurso: sale del flujo donde aparece y toma la primera banda libre a partir de ese punto — el pie de la página actual (`'bottom'`), o la cabeza / el pie de la siguiente página que abre el flujo — al ancho de la columna (`span: 'column'`) o al ancho completo del área de contenido (`span: 'page'`); el texto que la sigue rellena la página que dejó. Su marco y sus hijos van a `page.floats`, como los de una caja fija. Una caja flotante que encabeza una página nueva se coloca antes que las figuras que esperan esa página, y una figura citada en una página anterior que entonces cabe bajo ella toma el resto de esa página aunque quedaran menos de tres líneas de texto (una página galería: caja más figura, sin texto entre ambas). Una caja `span: 'side'` nunca flota: se apila junto al texto sea cual sea su `placement`.
 - `width: 'auto'` se ajusta solo al título; los hijos se ignoran.
 - Un `:::callout` anidado dentro de otro aviso se aplana en la caja exterior.
+- Un grupo `:::columns{count=N}` … `:::` entre los hijos compone esos hijos en `N` columnas de igual ancho, separadas por `columnGap`, dentro de la caja: la secuencia se corta por los límites de bloque o de línea que mejor nivelan las columnas (un párrafo o elemento de lista cortado a medias sigue en la cabeza de la columna siguiente sin su viñeta), cada columna empieza en la parte superior del grupo y el grupo mide lo que la columna más alta; los hijos posteriores recuperan el ancho completo. Una caja partible (`keepTogether: false`) nunca corta dentro de un grupo. Sirve para un resumen de puntos clave a dos columnas o para las tablas de un recuadro ancho puestas lado a lado.
+- El quinto atributo de la valla, `label`, se imprime en la pestaña `label` del estilo (véase arriba): `:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`; sin estilo de pestaña el atributo se ignora.
 
 En el VDT la caja es un bloque marco de `type: 'callout'` cuya decoración (fondo, franja, icono, título) vive en `designOverlay`, seguido de sus bloques hijos en la misma columna; el marco y cada hijo llevan el `containerId` de la valla. Las imágenes de icono se resuelven como las de los recursos: el registro de imágenes del canvas, la opción `resourceImageUrl` del HTML y el proveedor `resourceBytes` del PDF.
 
@@ -3275,7 +3401,10 @@ interface HtmlViewerConfig {
   maxCharsPerLine?: number;     // Ancho objetivo de columna, en caracteres de la fuente del cuerpo.
   columnGap?: number;            // Espacio horizontal entre columnas en modo multi-columna (px).
   optimalLineBreaking?: boolean; // Usar Knuth–Plass dentro del visor HTML en lugar de greedy.
+  overrides?: HtmlViewerOverrides; // Configuración parcial solo para pantalla, fusionada sobre la del documento.
 }
+
+type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
 ```
 
 <table>
@@ -3306,8 +3435,24 @@ interface HtmlViewerConfig {
       <td><code>false</code></td>
       <td>Activa la división de líneas Knuth–Plass dentro del visor HTML. Está desactivado por defecto porque el visor recompone la maquetación en cada resize o cambio de tamaño — el algoritmo greedy first-fit es lo bastante rápido para sentirse instantáneo. Actívalo cuando quieras los mismos cortes óptimos que usa el backend canvas.</td>
     </tr>
+    <tr>
+      <td><code>overrides</code></td>
+      <td><code>HtmlViewerOverrides</code></td>
+      <td>—</td>
+      <td>Una configuración parcial del documento que solo se aplica en pantalla. El visor HTML la fusiona sobre la configuración del documento antes de componer (<code>applyHtmlViewerOverrides</code>); canvas y PDF la ignoran. Los objetos se fusionan recursivamente; una lista <code>levels</code> (encabezados, listas, índice) se fusiona entrada a entrada por <code>level</code>; cualquier otra lista — los <code>elements</code> de un bloque de diseño, <code>calloutStyles</code>, <code>colorPalette</code>… — sustituye a la lista base por completo. Uso típico: un inicio de capítulo sin las bandas de imprenta, o una página de parte cuyo título se envuelve contra el número en lugar de un ancho fijo de caja de corte. El sandbox lo edita como JSON.</td>
+    </tr>
   </tbody>
 </table>
+
+```ts
+const config: PostextConfig = {
+  headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true } }] },
+  htmlViewer: {
+    // En pantalla, los capítulos siguen de corrido sin el inicio a toda página.
+    overrides: { headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false } }] } },
+  },
+};
+```
 
 El resolver y el stripper siguen el mismo patrón que las demás secciones:
 
@@ -3538,36 +3683,6 @@ debug: {
   },
 }
 ```
-
-
-## Configuración avanzada
-
-Las siguientes secciones de configuración existen solo en el sistema de tipos — el motor de composición todavía no las lee. Se incluyen aquí como señal de hacia dónde va la superficie de configuración.
-
-Dos apartados que vivían aquí ya se han implementado como funcionalidades reales y han salido de esta sección:
-
-- **La colocación de recursos** ya no es un enum futuro (`'topOfColumn'`, `'floatLeft'`, `'fullWidthBreak'`, …). El modelo de flotado implementado usa `position: 'auto' | 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resueltos por recurso, luego por el `defaultPlacement` de su tipo y por último el valor integrado `auto` / `column`. Consulta [Tipos de recurso](#tipos-de-recurso) más arriba y [Formato del documento › Recursos](/es/docs/document-format#recursos).
-- **La numeración automática de figuras/tablas** se implementó como numeración tipada por primera referencia — consulta [Tipos de recurso](#tipos-de-recurso).
-
-### Configuración de columnas
-
-*Solo en el sistema de tipos.* Control granular de columnas: número de columnas explícito, tamaño del medianil, filetes de columna (separadores visuales) y equilibrado de columnas.
-
-### Tipografía
-
-*Solo en el sistema de tipos.* Controles tipográficos avanzados: mínimos de líneas para huérfanas/viudas, optimización de bordes irregulares, espaciado alrededor de encabezados y figuras, y reglas de agrupación para encabezados con párrafos y figuras con pies de foto.
-
-### Referencias
-
-*Solo en el sistema de tipos.* Colocación de notas al pie (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), estilo de marcador (`'number'`, `'symbol'`, `'custom'`) y notas al margen. (La numeración automática de figuras/tablas, que antes figuraba aquí, ya está implementada — consulta [Tipos de recurso](#tipos-de-recurso).)
-
-### Configuraciones por sección
-
-*Solo en el sistema de tipos.* Aplica diferentes ajustes de columnas, tipografía o colocación de recursos a secciones específicas del documento, identificadas mediante selectores tipo CSS.
-
-### Renderizador
-
-*Solo en el sistema de tipos.* Formato de salida objetivo: `'web'` para renderizado HTML/canvas, `'pdf'` para salida de impresión.
 
 
 ## Uso programático
