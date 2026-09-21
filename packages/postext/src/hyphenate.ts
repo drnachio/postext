@@ -37,10 +37,58 @@ export function setHyphenationLocale(locale: HyphenationLocale): void {
   currentLocale = locale;
 }
 
+/** Hyphenated form of each whitespace-delimited token, per locale. The
+ *  same words come back in every paragraph, every pass and every chapter
+ *  of a book; the trie walk is not cheap and its result never changes. */
+const WORD_MEMO_SLOTS = 50_000;
+const wordMemo = new Map<HyphenationLocale, Map<string, string>>();
+
+function memoFor(locale: HyphenationLocale): Map<string, string> {
+  let m = wordMemo.get(locale);
+  if (!m) {
+    m = new Map();
+    wordMemo.set(locale, m);
+  }
+  return m;
+}
+
 /**
  * Hyphenate a full text string by inserting soft hyphens at syllable boundaries
  * using TeX/Liang patterns for the active locale.
  */
 export function hyphenateText(text: string, locale?: HyphenationLocale): string {
-  return getHyphenator(locale ?? currentLocale).hyphenateText(text);
+  const loc = locale ?? currentLocale;
+  const hyphenator = getHyphenator(loc);
+  const memo = memoFor(loc);
+  // Token by token: whitespace never joins a word, so hyphenating the
+  // tokens one at a time gives the text the dictionary would.
+  let out = '';
+  let i = 0;
+  const n = text.length;
+  while (i < n) {
+    let j = i;
+    if (isSpace(text.charCodeAt(j))) {
+      while (j < n && isSpace(text.charCodeAt(j))) j++;
+      out += text.slice(i, j);
+    } else {
+      while (j < n && !isSpace(text.charCodeAt(j))) j++;
+      const word = text.slice(i, j);
+      let hyphenated = memo.get(word);
+      if (hyphenated === undefined) {
+        hyphenated = hyphenator.hyphenateText(word);
+        if (memo.size >= WORD_MEMO_SLOTS) memo.clear();
+        memo.set(word, hyphenated);
+      }
+      out += hyphenated;
+    }
+    i = j;
+  }
+  return out;
+}
+
+function isSpace(code: number): boolean {
+  // The whitespace `\s` matches, as the tokenisers split on it.
+  return code === 0x20 || (code >= 0x09 && code <= 0x0d) || code === 0xa0 || code === 0x1680
+    || (code >= 0x2000 && code <= 0x200a) || code === 0x2028 || code === 0x2029 || code === 0x202f
+    || code === 0x205f || code === 0x3000 || code === 0xfeff;
 }

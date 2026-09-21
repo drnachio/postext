@@ -65,6 +65,11 @@ interface CountersEntry {
   config: PostextConfig;
   resources: Resource[];
   before: LayoutContinuation | undefined;
+  /** `before` serialised: what the entry actually depends on. The chain
+   *  hands every chapter a fresh object whenever an earlier chapter is
+   *  re-counted, so identity alone would re-count the whole tail of the
+   *  book on each keystroke. */
+  beforeKey: string;
   after: LayoutContinuation;
   /** Fingerprint of `after`'s counters. */
   key: string;
@@ -171,9 +176,13 @@ function chapterNumber(outline: readonly OutlineEntry[], before: LayoutContinuat
   return opens ? (before?.headings?.h1 ?? 0) + 1 : null;
 }
 
+const continuationFingerprint = (c: LayoutContinuation | undefined): string => JSON.stringify(c ?? null);
+
 /** A planner keeps the per-chapter counter chain cached, so a keystroke in
- *  chapter 9 re-derives nothing for chapters 1–8 and only the chapters after
- *  the edited one are re-counted. */
+ *  chapter 9 re-derives nothing for chapters 1–8, re-counts chapter 9, and
+ *  re-counts the chapters after it only while what they inherit actually
+ *  changed (an edit inside a paragraph leaves the counters as they were,
+ *  and the chain stops at chapter 10). */
 export function createBookPlanner(): BookPlanner {
   const cache = new Map<string, CountersEntry>();
 
@@ -189,8 +198,11 @@ export function createBookPlanner(): BookPlanner {
       && hit.markdown === chapter.markdown
       && hit.config === config
       && hit.resources === resources
-      && hit.before === before
-    ) return hit;
+      && (hit.before === before || hit.beforeKey === continuationFingerprint(before))
+    ) {
+      // Hand the same `after` object on so the next chapter hits by identity.
+      return hit;
+    }
     const after = continuationAfter({ markdown: chapter.markdown, resources }, config, before);
     const { outline, hasToc } = contentOutline({ markdown: chapter.markdown }, config, before);
     const entry: CountersEntry = {
@@ -198,6 +210,7 @@ export function createBookPlanner(): BookPlanner {
       config,
       resources,
       before,
+      beforeKey: continuationFingerprint(before),
       after,
       key: countersKey(after),
       outline,

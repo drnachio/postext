@@ -28,14 +28,16 @@ function extractBlockText(block: VDTBlock): string {
   return raw;
 }
 
-function collectHeadings(doc: VDTDocument): OutlineEntry[] {
+/** Headings of `doc`, with page indices offset by `base` (the PDF pages of
+ *  the documents rendered before it). */
+function collectHeadings(doc: VDTDocument, base = 0): OutlineEntry[] {
   const entries: OutlineEntry[] = [];
   for (const page of doc.pages) {
     // Part-divider pages sit above the chapters: level 0 so `buildTree`
     // nests the following H1s (level 1) under them.
     if (page.partInfo) {
       const title = `${page.partInfo.number} ${page.partInfo.title.replace(/[ \t]*\\\\[ \t]*/g, ' ')}`.trim();
-      if (title) entries.push({ title, level: 0, pageIndex: page.index, y: 0 });
+      if (title) entries.push({ title, level: 0, pageIndex: base + page.index, y: 0 });
     }
     for (const col of page.columns) {
       for (const block of col.blocks) {
@@ -45,7 +47,7 @@ function collectHeadings(doc: VDTDocument): OutlineEntry[] {
         entries.push({
           title,
           level: block.headingLevel ?? 1,
-          pageIndex: page.index,
+          pageIndex: base + page.index,
           y: block.bbox.y,
         });
       }
@@ -87,15 +89,21 @@ function countDescendants(node: TreeNode): number {
  *  expose clickable bookmarks for every heading, jumping to the heading's
  *  page (and approximate Y position). Also sets `/PageMode /UseOutlines` so
  *  the outlines panel is open when the file is first displayed. */
-export function addOutlines(pdfDoc: PDFDocument, doc: VDTDocument): void {
-  const entries = collectHeadings(doc);
-  if (entries.length === 0) return;
+export function addOutlines(pdfDoc: PDFDocument, input: VDTDocument | VDTDocument[]): void {
+  const docs = Array.isArray(input) ? input : [input];
+  const entries: OutlineEntry[] = [];
+  let base = 0;
+  for (const doc of docs) {
+    entries.push(...collectHeadings(doc, base));
+    base += doc.pages.length;
+  }
+  if (entries.length === 0 || docs.length === 0) return;
   const roots = buildTree(entries);
   if (roots.length === 0) return;
 
   const context: PDFContext = pdfDoc.context;
   const pdfPages = pdfDoc.getPages();
-  const scale = 72 / doc.config.page.dpi;
+  const scale = 72 / docs[0]!.config.page.dpi;
 
   const rootRef = context.nextRef();
 

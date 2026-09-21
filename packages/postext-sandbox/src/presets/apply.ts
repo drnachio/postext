@@ -3,8 +3,8 @@ import { clearMeasurementCache } from 'postext';
 import type { SandboxAction } from '../context/SandboxContext';
 import { invalidateResourceImage } from '../controls/resourceImages';
 import { setCustomFonts } from '../controls/fontLoader';
-import { putBlobAt } from '../storage/blobStore';
-import { putFontFile } from '../storage/fontStorage';
+import { putBlobsAt } from '../storage/blobStore';
+import { putFontFiles } from '../storage/fontStorage';
 import { savePresetApplied, savePresetId } from '../storage/persistence';
 import { hashChapters, hashConfig, hashResources, type DocumentHashSource } from './hash';
 import type { AppliedPresetSnapshot, LoadedPreset, PresetApplyParts } from './types';
@@ -64,17 +64,14 @@ export async function applyPreset(
   const wantsMarkdown = parts === 'all' || parts === 'document';
 
   if (wantsFonts) {
-    await Promise.all(loaded.fonts.map((f) => putFontFile(f)));
+    await putFontFiles(loaded.fonts);
   }
   if (wantsResources) {
-    await Promise.all(
-      loaded.blobs.map(async (b) => {
-        await putBlobAt(b.fileId, b.bytes, b.mime);
-        // The blob may replace an earlier record under the same fileId —
-        // drop any cached decode so viewers re-register it.
-        invalidateResourceImage(b.fileId);
-      }),
-    );
+    // One transaction for the whole set: a book brings hundreds of blobs.
+    await putBlobsAt(loaded.blobs.map((b) => ({ fileId: b.fileId, bytes: b.bytes, contentType: b.mime })));
+    // A blob may replace an earlier record under the same fileId — drop
+    // any cached decode so viewers re-register it.
+    for (const b of loaded.blobs) invalidateResourceImage(b.fileId);
   }
 
   const { id } = loaded.summary;

@@ -331,3 +331,27 @@ describe('plan and layout equivalence', () => {
     expect(sameChapterLayout(l, { ...l, markdown: l.markdown + ' ' })).toBe(false);
   });
 });
+
+describe('createBookPlanner counter cache', () => {
+  it('re-counts only the edited chapter while what the next one inherits is unchanged', () => {
+    const planner = createBookPlanner();
+    const first = planner.plan(chapters, config, resources, {});
+    const edited = chapters.map((c) => (c.id === 'a' ? { ...c, markdown: `${c.markdown}\n\nMore text, no new heading.` } : c));
+    const second = planner.plan(edited, config, resources, {});
+    // Chapter b inherits equal counters (a fresh object): its entry is a
+    // cache hit, so chapter c inherits the very same object as before.
+    expect(second.byId.b!.continuation?.headings).toEqual(first.byId.b!.continuation?.headings);
+    expect(second.byId.c!.continuation?.headings).toBe(first.byId.c!.continuation?.headings);
+    expect(second.byId.c!.continuation?.resourceNumbers).toBe(first.byId.c!.continuation?.resourceNumbers);
+  });
+
+  it('re-counts the chapters after an edit that moves the counters', () => {
+    const planner = createBookPlanner();
+    const first = planner.plan(chapters, config, resources, {});
+    const edited = chapters.map((c) => (c.id === 'a' ? { ...c, markdown: `${c.markdown}\n\n# Extra` } : c));
+    const second = planner.plan(edited, config, resources, {});
+    expect(second.byId.b!.continuation?.headings?.h1).toBe(2);
+    expect(second.byId.c!.continuation?.headings?.h1).toBe(3);
+    expect(second.byId.c!.continuation?.headings).not.toBe(first.byId.c!.continuation?.headings);
+  });
+});

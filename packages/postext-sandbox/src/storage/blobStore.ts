@@ -28,10 +28,37 @@ export function hasIndexedDB(): boolean {
   return typeof indexedDB !== 'undefined';
 }
 
+// One connection per tab, opened on first use and kept: opening the
+// database for every operation cost a round trip each (a preset applies
+// hundreds of blobs, a build reads hundreds back). Dropped when another
+// tab upgrades the schema or the browser closes it, and reopened on demand.
+let dbPromise: Promise<IDBDatabase> | null = null;
+
 /** Open (and, on first use / version bump, create) the shared sandbox DB.
  *  Creates every object store the sandbox uses so callers never race on a
- *  missing store. */
+ *  missing store. The connection is shared and stays open. */
 export function openSandboxDb(): Promise<IDBDatabase> {
+  if (dbPromise) return dbPromise;
+  dbPromise = openSandboxDbFresh().then(
+    (db) => {
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+      };
+      db.onclose = () => {
+        dbPromise = null;
+      };
+      return db;
+    },
+    (err) => {
+      dbPromise = null;
+      throw err;
+    },
+  );
+  return dbPromise;
+}
+
+function openSandboxDbFresh(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
@@ -63,21 +90,52 @@ export function runInStore<T>(
   op: (store: IDBObjectStore) => IDBRequest<T>,
 ): Promise<T> {
   if (!hasIndexedDB()) return Promise.reject(new Error('IndexedDB unavailable'));
-  return openSandboxDb().then(
-    (db) =>
-      new Promise<T>((resolve, reject) => {
-        const tx = db.transaction(storeName, mode);
-        const store = tx.objectStore(storeName);
-        const out = op(store);
-        out.onsuccess = () => resolve(out.result as T);
-        out.onerror = () => reject(out.error ?? tx.error ?? new Error('IndexedDB request failed'));
-        tx.oncomplete = () => db.close();
-        tx.onerror = () => {
-          db.close();
-          reject(tx.error ?? new Error('IndexedDB transaction failed'));
-        };
-      }),
+  return withTransaction(storeName, mode, (store) =>
+    new Promise<T>((resolve, reject) => {
+      const out = op(store);
+      out.onsuccess = () => resolve(out.result as T);
+      out.onerror = () => reject(out.error ?? new Error('IndexedDB request failed'));
+    }),
   );
+}
+
+/** Run `op` inside one transaction on `storeName`; resolves with `op`'s
+ *  result once the transaction completes. A connection the browser closed
+ *  behind our back is reopened once. */
+export function withTransaction<T>(
+  storeName: string,
+  mode: IDBTransactionMode,
+  op: (store: IDBObjectStore) => Promise<T>,
+): Promise<T> {
+  if (!hasIndexedDB()) return Promise.reject(new Error('IndexedDB unavailable'));
+  const attempt = (retry: boolean): Promise<T> => openSandboxDb().then((db) => {
+    let tx: IDBTransaction;
+    try {
+      tx = db.transaction(storeName, mode);
+    } catch (err) {
+      if (retry && (err as { name?: string } | null)?.name === 'InvalidStateError') {
+        dbPromise = null;
+        return attempt(false);
+      }
+      throw err;
+    }
+    return new Promise<T>((resolve, reject) => {
+      let result: T;
+      let failed = false;
+      op(tx.objectStore(storeName)).then(
+        (value) => { result = value; },
+        (err) => {
+          failed = true;
+          reject(err);
+          try { tx.abort(); } catch { /* already done */ }
+        },
+      );
+      tx.oncomplete = () => { if (!failed) resolve(result); };
+      tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
+      tx.onabort = () => { if (!failed) reject(tx.error ?? new Error('IndexedDB transaction aborted')); };
+    });
+  });
+  return attempt(true);
 }
 
 export function generateFileId(): string {
@@ -105,6 +163,15 @@ export function putBlobAt(
   return runInStore(BLOBS_STORE, 'readwrite', (store) =>
     store.put(record) as IDBRequest<IDBValidKey>,
   ).then(() => fileId);
+}
+
+/** Store several records in one transaction (a preset's whole resource
+ *  set), overwriting existing ones. */
+export function putBlobsAt(records: readonly BlobRecord[]): Promise<void> {
+  if (records.length === 0) return Promise.resolve();
+  return withTransaction(BLOBS_STORE, 'readwrite', async (store) => {
+    for (const record of records) store.put(record);
+  });
 }
 
 export function getBlob(fileId: string): Promise<BlobRecord | null> {

@@ -11,7 +11,17 @@ export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
 export function withHyphenationLocale(config: PostextConfig, locale: string): PostextConfig {
   if (config.bodyText?.hyphenation?.locale) return config;
   const hypLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
-  return {
+  // One derived object per (config, locale): the fingerprints keyed on
+  // the config object (layout records, the worker's document cache) then
+  // hit instead of hashing the configuration on every build.
+  let byLocale = derived.get(config);
+  if (!byLocale) {
+    byLocale = new Map();
+    derived.set(config, byLocale);
+  }
+  const hit = byLocale.get(hypLocale);
+  if (hit) return hit;
+  const effective: PostextConfig = {
     ...config,
     bodyText: {
       ...config.bodyText,
@@ -21,4 +31,8 @@ export function withHyphenationLocale(config: PostextConfig, locale: string): Po
       },
     },
   };
+  byLocale.set(hypLocale, effective);
+  return effective;
 }
+
+const derived = new WeakMap<PostextConfig, Map<string, PostextConfig>>();

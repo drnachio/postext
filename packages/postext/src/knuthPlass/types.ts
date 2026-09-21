@@ -62,6 +62,14 @@ export interface KPOptions {
    *  natural solution otherwise. Only positive values are supported.
    *  Default 0 (off). */
   looseness?: number;
+  /** The line index from which `lineWidth` no longer varies (1 when only
+   *  the first line is indented, 0 when no line is). Lets the DP merge
+   *  active nodes that differ only in their line count: from that line on
+   *  two nodes at the same break with the same fitness class face the same
+   *  future, so the cheaper one dominates — without it the set of active
+   *  nodes grows with the paragraph and the search goes quadratic. Ignored
+   *  while `looseness` asks for an exact line count. */
+  lineWidthUniformFrom?: number;
 }
 
 // ---------------------------------------------------------------------------
