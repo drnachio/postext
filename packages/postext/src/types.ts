@@ -45,8 +45,12 @@ export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here';
 /** How wide a floated resource is. `'column'` keeps it within a single column;
  *  `'page'` spans the full content width across all columns (a full-width
  *  float that breaks the column flow). In a single-column layout the two are
- *  equivalent. */
-export type ResourceFloatSpan = 'column' | 'page';
+ *  equivalent. `'side'` sets the resource in the side column of a
+ *  one-and-a-half layout whose side column is reserved for floats
+ *  (`layout.sideColumnRole: 'floats'`), stacked beside the paragraph that
+ *  first cites it; on a page without such a column it behaves as
+ *  `'column'`. */
+export type ResourceFloatSpan = 'column' | 'page' | 'side';
 /** Rotation of a floated resource on the page, a quarter turn either way:
  *  `'ccw'` turns the resource counter-clockwise — its top faces the left
  *  edge of the page and the reader turns the book clockwise to read it, the
@@ -451,6 +455,23 @@ export interface ResolvedPageConfig {
 
 export type LayoutType = 'single' | 'double' | 'oneAndHalf';
 
+/** What the narrow column of a `oneAndHalf` layout carries. `'text'` (the
+ *  default): body text flows into it after the main column, as into any
+ *  column. `'floats'`: it is a side channel that never takes body text —
+ *  the flow stays in the main column and the side column receives the
+ *  resources and callouts placed with `span: 'side'`, stacked beside the
+ *  paragraph that first references them (the marginal figures and key
+ *  boxes of a textbook). */
+export type SideColumnRole = 'text' | 'floats';
+
+/** Which edge of the content area the side column of a `oneAndHalf` layout
+ *  sits at. `'right'` (the default) and `'left'` are fixed; `'outer'` /
+ *  `'inner'` follow the page parity when the margins are mirrored — the
+ *  outer edge is the right edge of a recto (odd page) and the left edge of
+ *  a verso. Without mirrored margins `'outer'` is `'right'` and `'inner'`
+ *  is `'left'`. */
+export type SideColumnSide = 'right' | 'left' | 'outer' | 'inner';
+
 export interface ColumnRuleConfig {
   enabled?: boolean;
   color?: ColorValue;
@@ -461,6 +482,10 @@ export interface LayoutConfig {
   layoutType?: LayoutType;
   gutterWidth?: Dimension;
   sideColumnPercent?: number;
+  /** `oneAndHalf` only. Default `'text'`. */
+  sideColumnRole?: SideColumnRole;
+  /** `oneAndHalf` only. Default `'right'`. */
+  sideColumnSide?: SideColumnSide;
   columnRule?: ColumnRuleConfig;
 }
 
@@ -468,6 +493,8 @@ export interface ResolvedLayoutConfig {
   layoutType: LayoutType;
   gutterWidth: Dimension;
   sideColumnPercent: number;
+  sideColumnRole: SideColumnRole;
+  sideColumnSide: SideColumnSide;
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
 }
 
@@ -875,7 +902,10 @@ export interface ResolvedParagraphStyleConfig {
 // ---------------------------------------------------------------------------
 
 /** Horizontal extent of a callout: its column, or the full content width. */
-export type CalloutSpan = 'column' | 'page';
+/** `'side'` sets the box in the float-only side column of a `oneAndHalf`
+ *  layout (`layout.sideColumnRole: 'floats'`), beside the text it
+ *  interrupts; on a page without such a column it lays out as `'column'`. */
+export type CalloutSpan = 'column' | 'page' | 'side';
 /** Where a callout lands: inline in the flow (`'here'`), floated to the
  *  top / bottom band of a page like a resource, or at fixed page coordinates
  *  (`'fixed'` — anchored through {@link CalloutFixedConfig}, out of the
@@ -898,6 +928,11 @@ export type CalloutWidth = 'fill' | 'auto';
 export type CalloutStripeSide = 'left' | 'right' | 'top';
 export type CalloutIconKind = 'none' | 'glyph' | 'resource';
 export type CalloutIconAlign = 'top' | 'center';
+/** Where the in-box icon sits: `'inline'` (the default) in a column of its
+ *  own left of the title and content (or centred on the side stripe);
+ *  `'corner'` as a badge on the box's top-right corner, half over the
+ *  border, taking no room from the content (the icon of a marginal box). */
+export type CalloutIconPosition = 'inline' | 'corner';
 export type CalloutTextTransform = 'none' | 'uppercase';
 
 export interface CalloutBorderConfig {
@@ -940,6 +975,8 @@ export interface CalloutIconConfig {
   size?: Dimension;
   color?: ColorValue;
   align?: CalloutIconAlign;
+  /** Default `'inline'`. Ignored by the marker. */
+  position?: CalloutIconPosition;
 }
 
 /** Vertical rule drawn between a callout marker and its box. */
@@ -988,6 +1025,9 @@ export interface CalloutBodyStyleConfig {
   fontSize?: Dimension;
   lineHeight?: Dimension;
   color?: ColorValue;
+  /** Colour of bold runs in the box (a key term set off in the box's own
+   *  colour). Defaults to `bodyText.boldColor`, i.e. the body colour. */
+  boldColor?: ColorValue;
   textAlign?: 'left' | 'justify';
   hyphenation?: boolean;
   paragraphSpacing?: boolean;
@@ -1090,6 +1130,7 @@ export interface ResolvedCalloutStyleConfig {
     size: Dimension;
     color: ColorValue;
     align: CalloutIconAlign;
+    position: CalloutIconPosition;
   };
   marker: {
     kind: CalloutIconKind;
@@ -1117,6 +1158,7 @@ export interface ResolvedCalloutStyleConfig {
     fontSize: Dimension;
     lineHeight: Dimension;
     color: ColorValue;
+    boldColor?: ColorValue;
     textAlign: 'left' | 'justify';
     hyphenation: boolean;
     paragraphSpacing: boolean;

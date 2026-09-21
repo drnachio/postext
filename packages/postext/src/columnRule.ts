@@ -28,6 +28,9 @@ export function columnRuleSegments(columns: readonly VDTColumn[]): ColumnRuleSeg
   }
   const segments: ColumnRuleSegment[] = [];
   for (const cols of byBand.values()) {
+    // Reading order is not always geometric order (a side column at the
+    // left of the main column): rule the gutters from left to right.
+    cols.sort((a, b) => a.bbox.x - b.bbox.x);
     for (let i = 0; i < cols.length - 1; i++) {
       const left = cols[i]!.bbox;
       const right = cols[i + 1]!.bbox;

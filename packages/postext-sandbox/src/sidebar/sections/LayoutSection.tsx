@@ -65,6 +65,8 @@ export const LayoutSection = memo(function LayoutSection() {
       const next: LayoutConfig = { ...raw, layoutType };
       delete next.gutterWidth;
       delete next.sideColumnPercent;
+      delete next.sideColumnRole;
+      delete next.sideColumnSide;
       delete next.columnRule;
       const hasKeys = Object.keys(next).length > 0;
       dispatch({
@@ -86,6 +88,18 @@ export const LayoutSection = memo(function LayoutSection() {
   const isTypeDefault = layout.layoutType === D.layoutType;
   const isGutterDefault = dimensionsEqual(layout.gutterWidth, D.gutterWidth);
   const isSideColDefault = layout.sideColumnPercent === D.sideColumnPercent;
+  const isSideRoleDefault = layout.sideColumnRole === D.sideColumnRole;
+  const isSideSideDefault = layout.sideColumnSide === D.sideColumnSide;
+  const SIDE_ROLE_OPTIONS = [
+    { value: 'text', label: labels.sideColumnRoleText },
+    { value: 'floats', label: labels.sideColumnRoleFloats },
+  ];
+  const SIDE_SIDE_OPTIONS = [
+    { value: 'right', label: labels.sideColumnSideRight },
+    { value: 'left', label: labels.sideColumnSideLeft },
+    { value: 'outer', label: labels.sideColumnSideOuter },
+    { value: 'inner', label: labels.sideColumnSideInner },
+  ];
   const isCrEnabledDefault = layout.columnRule.enabled === DEFAULT_COLUMN_RULE.enabled;
   const isCrColorDefault = colorsEqual(layout.columnRule.color, DEFAULT_COLUMN_RULE.color);
   const isCrLineWidthDefault = dimensionsEqual(layout.columnRule.lineWidth, DEFAULT_COLUMN_RULE.lineWidth);
@@ -115,6 +129,8 @@ export const LayoutSection = memo(function LayoutSection() {
           delete next.layoutType;
           delete next.gutterWidth;
           delete next.sideColumnPercent;
+          delete next.sideColumnRole;
+          delete next.sideColumnSide;
           delete next.columnRule;
           dispatch({ type: 'UPDATE_CONFIG', payload: { layout: Object.keys(next).length > 0 ? next : undefined } });
         }}
@@ -146,6 +162,28 @@ export const LayoutSection = memo(function LayoutSection() {
               isDefault={isSideColDefault}
               onReset={() => resetField('sideColumnPercent')}
               suffix="%"
+            />
+          )}
+          {showSideCol && (
+            <SelectInput
+              label={labels.sideColumnRole}
+              value={layout.sideColumnRole}
+              options={SIDE_ROLE_OPTIONS}
+              onChange={(v) => updateLayout({ sideColumnRole: v as LayoutConfig['sideColumnRole'] })}
+              tooltip={labels.sideColumnRoleTooltip}
+              isDefault={isSideRoleDefault}
+              onReset={() => resetField('sideColumnRole')}
+            />
+          )}
+          {showSideCol && (
+            <SelectInput
+              label={labels.sideColumnSide}
+              value={layout.sideColumnSide}
+              options={SIDE_SIDE_OPTIONS}
+              onChange={(v) => updateLayout({ sideColumnSide: v as LayoutConfig['sideColumnSide'] })}
+              tooltip={labels.sideColumnSideTooltip}
+              isDefault={isSideSideDefault}
+              onReset={() => resetField('sideColumnSide')}
             />
           )}
 

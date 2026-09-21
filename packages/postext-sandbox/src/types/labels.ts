@@ -505,6 +505,16 @@ export interface SandboxLabels {
   gutterWidthTooltip: string;
   sideColumnPercent: string;
   sideColumnPercentTooltip: string;
+  sideColumnRole: string;
+  sideColumnRoleTooltip: string;
+  sideColumnRoleText: string;
+  sideColumnRoleFloats: string;
+  sideColumnSide: string;
+  sideColumnSideTooltip: string;
+  sideColumnSideRight: string;
+  sideColumnSideLeft: string;
+  sideColumnSideOuter: string;
+  sideColumnSideInner: string;
   columnRule: string;
   columnRuleTooltip: string;
   columnRuleColor: string;
@@ -945,6 +955,7 @@ export interface SandboxLabels {
   resourceRotateCcw: string;
   resourceRotateCw: string;
   resourcePlacementHintRotated: string;
+  resourceSpanSide: string;
   resourceImageLabel: string;
   resourceSvgLabel: string;
   resourceTableLabel: string;
@@ -1099,6 +1110,7 @@ export interface SandboxLabels {
   calloutStyleSpanTooltip: string;
   calloutStyleSpanColumn: string;
   calloutStyleSpanPage: string;
+  calloutStyleSpanSide: string;
   calloutStylePlacement: string;
   calloutStylePlacementTooltip: string;
   calloutStylePlacementHere: string;

@@ -11,7 +11,7 @@ import {
   type VDTColumn,
 } from '../vdt';
 import type { HeadingBreakParity } from '../types';
-import { computeColumnBboxes } from './config';
+import { computeColumnBboxes, hasFloatSideColumn } from './config';
 import { contentAreaForPage, mirrorContentArea, type PageMetrics } from './buildHelpers';
 import { dimensionToPx } from '../units';
 
@@ -45,9 +45,13 @@ export function createPageWithColumns(
   // document).
   const pageArea = contentAreaForPage({ contentArea, pageWidthPx }, resolved, pageIndex, pageIndexOffset);
   const page = createVDTPage(pageIndex, pageWidthPx, pageHeightPx, pageArea);
-  const colBboxes = computeColumnBboxes(pageArea, resolved);
+  const isEvenPage = (pageIndex + pageIndexOffset + 1) % 2 === 0;
+  const colBboxes = computeColumnBboxes(pageArea, resolved, isEvenPage);
+  const sideIndex = hasFloatSideColumn(resolved) ? colBboxes.length - 1 : -1;
   for (let i = 0; i < colBboxes.length; i++) {
-    page.columns.push(createVDTColumn(i, colBboxes[i]!));
+    const col = createVDTColumn(i, colBboxes[i]!);
+    if (i === sideIndex) col.kind = 'side';
+    page.columns.push(col);
   }
   return page;
 }
@@ -123,9 +127,29 @@ export function pageIsOccupied(page: VDTPage): boolean {
 // column clips to its own bbox.
 // ---------------------------------------------------------------------------
 
-/** Text columns of `band` in reading order (span columns excluded). */
+/** Text columns of `band` in reading order (span and side columns
+ *  excluded). */
 export function bandColumns(page: VDTPage, band: number): VDTColumn[] {
-  return page.columns.filter((c) => c.kind !== 'span' && (c.band ?? 0) === band);
+  return page.columns.filter((c) => c.kind !== 'span' && c.kind !== 'side' && (c.band ?? 0) === band);
+}
+
+/** The float-only side column of `band`, if the page has one (a
+ *  one-and-a-half layout with `sideColumnRole: 'floats'`; part pages and
+ *  single / double layouts have none). */
+export function sideColumnOf(page: VDTPage, band: number): VDTColumn | undefined {
+  return page.columns.find((c) => c.kind === 'side' && (c.band ?? 0) === band);
+}
+
+/** Every float-only side column of the page, band by band. */
+export function sideColumns(page: VDTPage): VDTColumn[] {
+  return page.columns.filter((c) => c.kind === 'side');
+}
+
+/** Bottom of what a side column already holds (absolute y): the top of
+ *  the column when it is still empty, else the foot of the last stacked
+ *  float — where the next `span: 'side'` float goes. */
+export function sideUsedBottom(col: VDTColumn): number {
+  return col.bbox.y + (col.bbox.height - col.availableHeight);
 }
 
 /** Band the cursor's column belongs to (`0` for the plain single-band page). */
@@ -222,6 +246,26 @@ export function closeBandAndInsertSpan(
     if (!firstNew) firstNew = next;
   });
   if (firstNew) cursor.columnIndex = firstNew.index;
+  // The float-only side column is cut like the text columns: the span
+  // block crosses it too. Its stack keeps what it holds above the cut and
+  // goes on in a fresh side column under the span block.
+  const side = sideColumnOf(page, band);
+  if (side) {
+    const sideBottom = side.bbox.y + side.bbox.height;
+    const used = side.bbox.height - side.availableHeight;
+    side.bbox.height = Math.max(0, cutY - side.bbox.y);
+    side.availableHeight = Math.max(0, side.bbox.height - used);
+    const height = sideBottom - newTop;
+    if (height >= 0.5) {
+      const next = createVDTColumn(
+        page.columns.length,
+        createBoundingBox(side.bbox.x, newTop, side.bbox.width, height),
+      );
+      next.kind = 'side';
+      next.band = band + 1;
+      page.columns.push(next);
+    }
+  }
   return spanCol;
 }
 
@@ -235,8 +279,11 @@ export function advanceToNextColumn(
   onNewPage?: (page: VDTPage) => void,
 ): void {
   const page = doc.pages[cursor.pageIndex]!;
-  if (cursor.columnIndex < page.columns.length - 1) {
-    cursor.columnIndex++;
+  // The flow skips float-only side columns: they never take body text.
+  let next = cursor.columnIndex + 1;
+  while (next < page.columns.length && page.columns[next]!.kind === 'side') next++;
+  if (next < page.columns.length) {
+    cursor.columnIndex = next;
   } else {
     // New page
     const newPage = createPageWithColumns(

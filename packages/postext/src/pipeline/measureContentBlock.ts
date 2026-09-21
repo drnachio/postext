@@ -146,7 +146,7 @@ export function measureContentBlock(
     contentBlock = { ...contentBlock, spans: resolveSwatchSpans(contentBlock.spans, resolved.colorPalette) };
   }
 
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch);
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.script);
 
   // List items reserve horizontal space for indent + bullet + gap.
   const {

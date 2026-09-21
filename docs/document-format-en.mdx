@@ -206,7 +206,7 @@ Three container names are recognized. What each one renders is set in its own se
   </tbody>
 </table>
 
-The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. A `:::callout` fence takes `type` (the id of a configured callout style — unknown or missing types fall back to the first style), `title` (overrides the style's default title), and `span` / `placement` (`column` or `page`; `here`, `top`, `bottom` or `fixed`) to override the style's extent and position for that box:
+The attributes accepted by each container, and how it is styled, are documented in [Configuration](/en/docs/configuration). Attribute values follow the same grammar as directives. A `:::callout` fence takes `type` (the id of a configured callout style — unknown or missing types fall back to the first style), `title` (overrides the style's default title), and `span` / `placement` (`column`, `page` or `side`; `here`, `top`, `bottom` or `fixed`) to override the style's extent and position for that box:
 
 ```
 :::callout{type="objectives" title="What you will learn" span="page" placement="top"}
@@ -215,7 +215,7 @@ The attributes accepted by each container, and how it is styled, are documented 
 :::
 ```
 
-A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width boxes (`span="page"`) cut the page into column bands; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) are recorded but still placed inline in this version. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
+A callout is laid out as one unbreakable box — an optional title, then its content typeset with the style's own body and list typography — and moves whole to the next column or page when it does not fit. Full-width boxes (`span="page"`) cut the page into column bands; `span="side"` boxes leave the flow into the float-only side column of a one-and-a-half layout (`layout.sideColumnRole: 'floats'`), stacked beside the text they interrupt, and lay out as column boxes where there is no such column; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) are recorded but still placed inline in this version. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
 
 A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
 
@@ -336,6 +336,16 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Bold italic</td>
       <td><code>***both***</code> or <code>___both___</code></td>
       <td>Both flags combine.</td>
+    </tr>
+    <tr>
+      <td>Superscript</td>
+      <td><code>^text^</code></td>
+      <td>Set at 58% of the text size and raised a third of it — an exponent (<code>10^-8^</code>), an ion charge (<code>Na^+^</code>). The marked text starts and ends with a non-space character; a lone caret in prose stays literal.</td>
+    </tr>
+    <tr>
+      <td>Subscript</td>
+      <td><code>~text~</code></td>
+      <td>Same size, lowered a third of the text size — a chemical index (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Combines with bold and italic (<code>**H~2~O**</code>).</td>
     </tr>
     <tr>
       <td>Inline code</td>

@@ -133,6 +133,7 @@ export function deriveCalloutResolvedConfig(
       fontSize: body.fontSize,
       lineHeight: body.lineHeight,
       color: body.color,
+      boldColor: body.boldColor ?? body.color,
       textAlign: body.textAlign,
       hyphenation: { ...resolved.bodyText.hyphenation, enabled: body.hyphenation },
       paragraphSpacing: body.paragraphSpacing,
@@ -242,7 +243,7 @@ export interface CalloutLayoutResult {
   marginBottomPx: number;
 }
 
-const VALID_SPANS: ReadonlySet<string> = new Set(['column', 'page']);
+const VALID_SPANS: ReadonlySet<string> = new Set(['column', 'page', 'side']);
 const VALID_PLACEMENTS: ReadonlySet<string> = new Set(['here', 'top', 'bottom', 'fixed']);
 
 /** Per-instance span / placement: fence attribute when valid, else the style. */
@@ -357,7 +358,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // so the text must wrap the same way — line `lineFrom` on, nothing lost
   // or doubled.
   const openingMidRun = !!input.continuation && (input.lineFrom ?? 0) > 0;
-  const iconColumnKept = (hasIcon || (openingMidRun && iconPresent(style.icon))) && !sideStripe;
+  const cornerIcon = style.icon.position === 'corner';
+  const iconColumnKept = (hasIcon || (openingMidRun && iconPresent(style.icon))) && !sideStripe && !cornerIcon;
   const iconColumn = iconColumnKept ? px(style.icon.size) + gapPx : 0;
 
   const innerX = (stripeLeft ? stripeW : 0) + padL + iconColumn;
@@ -539,7 +541,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // `align: 'center'` the title and children are centred on the icon.
   let contentBottom = cursorY;
   const contentH = contentBottom - innerTop;
-  if (hasIcon && iconSize > contentH) {
+  if (hasIcon && !cornerIcon && iconSize > contentH) {
     const extra = iconSize - contentH;
     if (style.icon.align === 'center') {
       if (titleBlock) offsetDesignBlock(titleBlock, 0, extra / 2);
@@ -581,12 +583,18 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   if (hasIcon) {
     // Over a side stripe the icon is centred on the stripe; otherwise it
     // sits in its own column left of the content.
-    const iconX = sideStripe
-      ? (stripeLeft ? (stripeW - iconSize) / 2 : boxWidth - stripeW + (stripeW - iconSize) / 2)
-      : innerX - iconColumn;
-    const iconY = style.icon.align === 'center'
-      ? innerTop + (contentBottom - innerTop - iconSize) / 2
-      : innerTop;
+    // A corner badge hangs on the top-right corner, half of it past the
+    // border, flush with the top edge.
+    const iconX = cornerIcon
+      ? boxWidth - iconSize / 2
+      : sideStripe
+        ? (stripeLeft ? (stripeW - iconSize) / 2 : boxWidth - stripeW + (stripeW - iconSize) / 2)
+        : innerX - iconColumn;
+    const iconY = cornerIcon
+      ? 0
+      : style.icon.align === 'center'
+        ? innerTop + (contentBottom - innerTop - iconSize) / 2
+        : innerTop;
     const built = buildIconBlock(style.icon, iconX, iconY, iconSize, ctx);
     if (built) {
       overlayBlocks.push(built.block);
@@ -673,7 +681,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
 // Icons (shared by the in-box icon and the marker)
 // ---------------------------------------------------------------------------
 
-type IconSpec = ResolvedCalloutStyleConfig['icon'];
+type IconSpec = Omit<ResolvedCalloutStyleConfig['icon'], 'position'>;
 
 /** Whether an icon / marker spec draws anything. */
 function iconPresent(spec: IconSpec): boolean {

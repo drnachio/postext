@@ -11,6 +11,8 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   layoutType: 'double',
   gutterWidth: { value: 0.75, unit: 'cm' },
   sideColumnPercent: 33,
+  sideColumnRole: 'text',
+  sideColumnSide: 'right',
   columnRule: { ...DEFAULT_COLUMN_RULE },
 };
 
@@ -21,6 +23,8 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
     layoutType: partial.layoutType ?? DEFAULT_LAYOUT_CONFIG.layoutType,
     gutterWidth: partial.gutterWidth ?? DEFAULT_LAYOUT_CONFIG.gutterWidth,
     sideColumnPercent: partial.sideColumnPercent ?? DEFAULT_LAYOUT_CONFIG.sideColumnPercent,
+    sideColumnRole: partial.sideColumnRole ?? DEFAULT_LAYOUT_CONFIG.sideColumnRole,
+    sideColumnSide: partial.sideColumnSide ?? DEFAULT_LAYOUT_CONFIG.sideColumnSide,
     columnRule: partial.columnRule
       ? {
           enabled: partial.columnRule.enabled ?? DEFAULT_COLUMN_RULE.enabled,
@@ -47,6 +51,14 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
   if (layout.sideColumnPercent !== undefined && layout.sideColumnPercent !== DEFAULT_LAYOUT_CONFIG.sideColumnPercent) {
     result.sideColumnPercent = layout.sideColumnPercent;
+    hasOverride = true;
+  }
+  if (layout.sideColumnRole !== undefined && layout.sideColumnRole !== DEFAULT_LAYOUT_CONFIG.sideColumnRole) {
+    result.sideColumnRole = layout.sideColumnRole;
+    hasOverride = true;
+  }
+  if (layout.sideColumnSide !== undefined && layout.sideColumnSide !== DEFAULT_LAYOUT_CONFIG.sideColumnSide) {
+    result.sideColumnSide = layout.sideColumnSide;
     hasOverride = true;
   }
   if (layout.columnRule) {

@@ -176,14 +176,15 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
     const color = pickSegmentColor(seg, block);
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
     const colorDecl = color !== block.color ? `color:${color};` : '';
+    const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
     if (seg.refResourceId !== undefined) {
       // Anchors carry an explicit color so the UA link blue never leaks in.
       parts.push(
-        `<a href="${refAnchorHref(seg.refResourceId)}" style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;text-decoration:none;${fontDecl}color:${color};">${esc(seg.text)}</a>`,
+        `<a href="${refAnchorHref(seg.refResourceId)}" style="position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;text-decoration:none;${fontDecl}color:${color};">${esc(seg.text)}</a>`,
       );
     } else {
       parts.push(
-        `<span style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
+        `<span style="position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
       );
     }
     x += seg.width;
@@ -274,6 +275,7 @@ interface ResourceLineFonts {
 }
 
 function pickResourceFont(seg: VDTLineSegment, fonts: ResourceLineFonts): string {
+  if (seg.fontString) return seg.fontString;
   if (seg.bold && seg.italic) return fonts.boldItalic;
   if (seg.bold) return fonts.bold;
   if (seg.italic) return fonts.italic;
@@ -313,13 +315,14 @@ function renderResourceLine(
           : color;
       const fontDecl = font !== baseFont ? `font:${font};` : '';
       const colorDecl = segColor !== color ? `color:${segColor};` : '';
+      const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
       if (seg.refResourceId !== undefined) {
         parts.push(
-          `<a href="${refAnchorHref(seg.refResourceId)}" style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;text-decoration:none;${fontDecl}color:${segColor};">${esc(seg.text)}</a>`,
+          `<a href="${refAnchorHref(seg.refResourceId)}" style="position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;text-decoration:none;${fontDecl}color:${segColor};">${esc(seg.text)}</a>`,
         );
       } else {
         parts.push(
-          `<span style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
+          `<span style="position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
         );
       }
       x += seg.width;

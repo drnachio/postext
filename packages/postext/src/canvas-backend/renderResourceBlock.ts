@@ -231,13 +231,13 @@ function paintLine(
         x += seg.width;
         continue;
       }
-      ctx.font = pickFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
+      ctx.font = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
       ctx.fillStyle = seg.refResourceId !== undefined
         ? linkColor
         : seg.captionLabel
           ? labelColor
           : color;
-      ctx.fillText(seg.text, x, line.baseline);
+      ctx.fillText(seg.text, x, line.baseline + (seg.baselineShift ?? 0));
       x += seg.width;
     }
     return;

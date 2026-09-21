@@ -355,6 +355,7 @@ export function ResourceDetail({
             >
               <option value="column">{labels.resourceSpanColumn}</option>
               <option value="page">{labels.resourceSpanPage}</option>
+              <option value="side">{labels.resourceSpanSide}</option>
             </select>
           </div>
           {/* Orientation: a turned resource is always a page-span float on

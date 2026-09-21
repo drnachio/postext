@@ -125,7 +125,8 @@ function CardButton({
   return <IconButton label={label} icon={children} onClick={onClick} destructive={destructive} />;
 }
 
-type IconSpec = ResolvedCalloutStyleConfig['icon'];
+/** The fields the icon and the marker share (the marker has no corner position). */
+type IconSpec = Pick<ResolvedCalloutStyleConfig['icon'], 'kind' | 'glyph' | 'resourceId' | 'fontFamily' | 'fontWeight' | 'size' | 'color' | 'align'>;
 type IconField = keyof CalloutIconConfig;
 
 interface IconFieldsProps {
@@ -336,6 +337,7 @@ function CalloutStyleCard({
   const spanOptions = [
     { value: 'column', label: labels.calloutStyleSpanColumn },
     { value: 'page', label: labels.calloutStyleSpanPage },
+    { value: 'side', label: labels.calloutStyleSpanSide },
   ];
   const placementOptions = [
     { value: 'here', label: labels.calloutStylePlacementHere },

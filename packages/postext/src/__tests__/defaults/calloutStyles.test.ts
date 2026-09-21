@@ -64,6 +64,7 @@ describe('callout style defaults', () => {
       hyphenation: false,
       paragraphSpacing: body.paragraphSpacing,
       firstLineIndent: { value: 1, unit: 'em' },
+      boldColor: { hex: '#295AA3', model: 'hex', paletteId: 'main-color' },
     });
     expect(r!.lists).toEqual({
       bulletChar: '–',
