@@ -68,6 +68,10 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
     runtMinWidth = 0,
   } = options;
   const terminalBreakPosition = items.length - 1;
+  // Merge nodes by fitness class alone once the line width is uniform: the
+  // line count only matters for `lineWidth(line)` (and for a looseness
+  // target, which needs every count kept apart).
+  const uniformFrom = (options.looseness ?? 0) > 0 ? undefined : options.lineWidthUniformFrom;
 
   // Prefix sums over box/glue widths and glue stretch/shrink.
   // sumWidthAt has length items.length + 1: sumWidthAt[k] covers items 0..k-1,
@@ -218,7 +222,9 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
 
       const totalDemerits = a.totalDemerits + d;
 
-      const key = (a.line + 1) * 4 + fc;
+      // Keys of merged nodes (fc alone, 0–3) never collide with the
+      // per-line keys, which start at 4.
+      const key = uniformFrom !== undefined && a.line + 1 >= uniformFrom ? fc : (a.line + 1) * 4 + fc;
       const existing = bestNewNodeByKey.get(key);
       if (existing && existing.totalDemerits <= totalDemerits) {
         continue;
