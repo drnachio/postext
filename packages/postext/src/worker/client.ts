@@ -3,14 +3,17 @@ import type { VDTDocument } from '../vdt';
 import type { BuildProgress } from '../pipeline/build';
 
 export type { BuildProgress } from '../pipeline/build';
-import type { FontPayload, RequestMessage, ResponseMessage } from './protocol';
+import type { BuildStats, FontPayload, RequestMessage, ResponseMessage } from './protocol';
 
-export type { FontPayload } from './protocol';
+export type { BuildStats, FontPayload } from './protocol';
+export type { BuildPassInfo } from '../pipeline/build';
 
 export interface BuildOptions {
   signal?: AbortSignal;
   /** Called as the worker's placement advances (throttled by the worker). */
   onProgress?: (progress: BuildProgress) => void;
+  /** Called with the finished build's pass timings, right before it resolves. */
+  onStats?: (stats: BuildStats) => void;
 }
 
 export interface LayoutWorkerHandle {
@@ -32,6 +35,7 @@ interface Pending {
   reject: (err: unknown) => void;
   onAbort?: () => void;
   onProgress?: (progress: BuildProgress) => void;
+  onStats?: (stats: BuildStats) => void;
 }
 
 export interface CreateLayoutWorkerOptions {
@@ -62,6 +66,7 @@ export function createLayoutWorker(
         return;
       case 'built':
         pending.delete(msg.id);
+        entry.onStats?.(msg.stats);
         entry.resolve(msg.doc);
         return;
       case 'fontsRegistered':
@@ -142,6 +147,7 @@ export function createLayoutWorker(
           },
           onAbort,
           onProgress: opts?.onProgress,
+          onStats: opts?.onStats,
         });
         send({ kind: 'build', id, content, config });
       });

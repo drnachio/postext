@@ -11,6 +11,7 @@ import { drawOverlay } from './overlay';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
+import { perfSpan, type PerfSpan } from '../../perf/marks';
 import {
   LOCALE_TO_HYPHENATION,
   PAGE_GAP,
@@ -92,6 +93,11 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // The canvas internal pixel size is fixed at page dimensions, so browser
   // scaling handles size changes with no paint cost.
   const lastPaintedDocVersionRef = useRef(-1);
+  // Dev perf: the span from a build's start to the paint of its pages, and
+  // the chapter the last build was for (a build of another chapter is a
+  // chapter switch; of the same one, an edit).
+  const paintSpanRef = useRef<PerfSpan | null>(null);
+  const lastBuiltChapterRef = useRef<string | null>(null);
   const deferredSource = useDeferredValue(layoutSource);
   // The book the current `docRef` was built from (offsets in the document
   // are offsets into its markdown).
@@ -294,12 +300,16 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
 
     onGeneratingChangeRef.current?.(true);
     const source = deferredSource.book;
+    paintSpanRef.current?.end({ superseded: true });
+    const switching = lastBuiltChapterRef.current !== deferredSource.chapterId;
+    paintSpanRef.current = perfSpan(switching ? 'canvas.chapter→paint' : 'canvas.edit→paint', { chapter: deferredSource.chapterId });
     layoutWorker.build(
       { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation, outline: deferredSource.plan.outline },
       deferredConfig,
     )
       .then((doc) => {
         if (cancelled) return;
+        lastBuiltChapterRef.current = deferredSource.chapterId;
         docRef.current = doc;
         builtSourceRef.current = source;
         sharedDocRef.current = doc;
@@ -410,6 +420,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       if (lastPaintedDocVersionRef.current !== docVersion) {
         // The pages in view repaint now; the others keep their old pixels
         // and repaint on their next entry (see the observer below).
+        let painted = 0;
         for (const pageIndex of renderedPagesRef.current) {
           if (!visiblePagesRef.current.has(pageIndex)) {
             stalePagesRef.current.add(pageIndex);
@@ -420,9 +431,12 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
           if (canvas && page) {
             renderPageToCanvas(page, doc, canvas, renderOpts);
             stalePagesRef.current.delete(pageIndex);
+            painted++;
           }
         }
         lastPaintedDocVersionRef.current = docVersion;
+        paintSpanRef.current?.end({ pages: doc.pages.length, painted, rebuilt: false });
+        paintSpanRef.current = null;
       }
       lastGeomRef.current = geom;
       return;
@@ -468,6 +482,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     }
     renderedPagesRef.current = renderedSet;
     lastPaintedDocVersionRef.current = docVersion;
+    paintSpanRef.current?.end({ pages: doc.pages.length, painted: renderedSet.size, rebuilt: true });
+    paintSpanRef.current = null;
 
     while (container.firstChild) container.removeChild(container.firstChild);
     container.appendChild(innerDiv);

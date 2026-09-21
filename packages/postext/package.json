@@ -34,6 +34,7 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
+    "bench": "BENCH=1 vitest run __bench__",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
