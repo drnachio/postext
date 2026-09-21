@@ -4,7 +4,7 @@
 // storage or carried by a bundle stay current across sessions.
 
 import { stripConfigDefaults } from 'postext';
-import type { PostextConfig, Resource } from 'postext';
+import type { LayoutContinuation, PostextConfig, Resource } from 'postext';
 import { version as ENGINE_VERSION } from 'postext/package.json';
 
 /** Bumped by hand when the record shape or the layout semantics change
@@ -41,6 +41,45 @@ function hash(text: string): string {
   let h = 5381;
   for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
   return (h >>> 0).toString(16).padStart(8, '0') + text.length.toString(16);
+}
+
+/** Two independent 32-bit hashes side by side: a document cache keyed by
+ *  the text must not confuse two chapters. */
+function hashWide(text: string): string {
+  let a = 5381;
+  let b = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    a = ((a << 5) + a + c) | 0;
+    b = (c + (b << 6) + (b << 16) - b) | 0;
+  }
+  return (a >>> 0).toString(16).padStart(8, '0') + (b >>> 0).toString(16).padStart(8, '0') + text.length.toString(16);
+}
+
+/** Fingerprint of everything one build of a chapter depends on — the key
+ *  the worker's document cache is looked up by. Fonts are left out on
+ *  purpose: the worker drops its cache when a face is (un)registered. */
+export function layoutCacheKey(input: {
+  markdown: string;
+  metadata: unknown;
+  config: PostextConfig;
+  resources: readonly Resource[];
+  continuation: LayoutContinuation | undefined;
+  continuationKey: string;
+  outlineKey: string;
+}): string {
+  const c = input.continuation;
+  return [
+    hashWide(input.markdown),
+    hashWide(JSON.stringify(input.metadata ?? null)),
+    configKeyOf(input.config),
+    resourcesKeyOf(input.resources),
+    input.continuationKey,
+    c?.pageIndexOffset ?? '',
+    c?.pageNumbering?.startAt ?? '',
+    c?.pageNumbering?.format ?? '',
+    input.outlineKey,
+  ].join('|');
 }
 
 const configKeys = new WeakMap<PostextConfig, string>();

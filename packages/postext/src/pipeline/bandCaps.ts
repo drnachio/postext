@@ -192,6 +192,24 @@ export function resolveBandCaps<T extends BandPassReport>(
   initial: T,
   runPass: (bandCaps: ReadonlyMap<number, BandCap>) => T,
 ): { result: T; bandCaps: Map<number, BandCap>; passCount: number } {
+  return drainPasses(resolveBandCapsGen(initial, runPass));
+}
+
+/** Run a pass driver to completion synchronously. */
+export function drainPasses<R>(gen: Generator<void, R, void>): R {
+  for (;;) {
+    const step = gen.next();
+    if (step.done) return step.value;
+  }
+}
+
+/** {@link resolveBandCaps} as a generator that yields after every pass it
+ *  runs, so a host driving the build asynchronously can let a cancel land
+ *  (or the event loop turn) between passes. */
+export function* resolveBandCapsGen<T extends BandPassReport>(
+  initial: T,
+  runPass: (bandCaps: ReadonlyMap<number, BandCap>) => T,
+): Generator<void, { result: T; bandCaps: Map<number, BandCap>; passCount: number }, void> {
   const caps = new Map<number, BandCap>();
   let result = initial;
   let passCount = 1;
@@ -227,6 +245,7 @@ export function resolveBandCaps<T extends BandPassReport>(
     for (const [spanIndex, cap] of caps) tried.add(capKey(spanIndex, cap));
     result = runPass(caps);
     passCount++;
+    yield;
   }
 
   // Never hand back a layout whose columns were capped for a box that did
@@ -242,6 +261,7 @@ export function resolveBandCaps<T extends BandPassReport>(
     }
     result = runPass(caps);
     passCount++;
+    yield;
   }
   return { result, bandCaps: caps, passCount };
 }
@@ -268,6 +288,15 @@ export function resolveTrailingCaps<T extends BandPassReport>(
   spanCaps: ReadonlyMap<number, BandCap>,
   runPass: (bandCaps: ReadonlyMap<number, BandCap>) => T,
 ): { result: T; caps: Map<number, BandCap>; passCount: number } {
+  return drainPasses(resolveTrailingCapsGen(initial, spanCaps, runPass));
+}
+
+/** {@link resolveTrailingCaps} as a generator yielding after every pass. */
+export function* resolveTrailingCapsGen<T extends BandPassReport>(
+  initial: T,
+  spanCaps: ReadonlyMap<number, BandCap>,
+  runPass: (bandCaps: ReadonlyMap<number, BandCap>) => T,
+): Generator<void, { result: T; caps: Map<number, BandCap>; passCount: number }, void> {
   const caps = new Map(spanCaps);
   /** Caps whose band did open under them and overflowed — the only ones a
    *  pass says anything about; a cap that never applied may come back. */
@@ -294,6 +323,7 @@ export function resolveTrailingCaps<T extends BandPassReport>(
   for (let extra = 0; extra < MAX_BAND_PASSES; extra++) {
     result = runPass(caps);
     passCount++;
+    yield;
     if ([...spanCaps.keys()].some((i) => !result.spanPlacedInBand.has(i))) return giveUp();
     const failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
     for (const i of failing) {
@@ -324,6 +354,7 @@ export function resolveTrailingCaps<T extends BandPassReport>(
   if (trailingKeys().length === 0) return giveUp();
   result = runPass(caps);
   passCount++;
+  yield;
   const delivered = [...caps.keys()].every((i) => result.spanPlacedInBand.has(i));
   return delivered ? { result, caps, passCount } : giveUp();
 }

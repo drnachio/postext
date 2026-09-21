@@ -99,29 +99,48 @@ export function sniffBytes(bytes: Uint8Array): Sniffed {
   return 'unknown';
 }
 
-/** Decode WebP bytes to PNG bytes via an offscreen canvas. Browser-only. */
-async function webpToPng(bytes: Uint8Array): Promise<Uint8Array | null> {
-  if (typeof createImageBitmap === 'undefined' || typeof document === 'undefined') return null;
-  try {
-    const blob = new Blob([bytes as BlobPart], { type: 'image/webp' });
-    const bitmap = await createImageBitmap(blob);
-    const canvas = document.createElement('canvas');
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
+/** A PNG of `bitmap`, drawn on whatever canvas the environment has (a
+ *  worker has `OffscreenCanvas`, a document has both). */
+async function bitmapToPng(bitmap: ImageBitmap): Promise<Uint8Array | null> {
+  if (typeof OffscreenCanvas !== 'undefined') {
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
     const c2d = canvas.getContext('2d');
     if (!c2d) return null;
     c2d.drawImage(bitmap, 0, 0);
-    const pngBlob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/png'));
-    if (!pngBlob) return null;
+    const pngBlob = await canvas.convertToBlob({ type: 'image/png' });
     return new Uint8Array(await pngBlob.arrayBuffer());
+  }
+  if (typeof document === 'undefined') return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const c2d = canvas.getContext('2d');
+  if (!c2d) return null;
+  c2d.drawImage(bitmap, 0, 0);
+  const pngBlob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+  if (!pngBlob) return null;
+  return new Uint8Array(await pngBlob.arrayBuffer());
+}
+
+/** Decode WebP bytes to PNG bytes via a canvas. Browser (or worker) only. */
+async function webpToPng(bytes: Uint8Array): Promise<Uint8Array | null> {
+  if (typeof createImageBitmap === 'undefined') return null;
+  try {
+    const blob = new Blob([bytes as BlobPart], { type: 'image/webp' });
+    return await bitmapToPng(await createImageBitmap(blob));
   } catch {
     return null;
   }
 }
 
-/** Rasterise SVG markup to PNG bytes at the given pixel size. Browser-only;
- *  returns null elsewhere or when the SVG does not decode. */
-async function svgToPng(svgText: string, widthPx: number, heightPx: number): Promise<Uint8Array | null> {
+/** Rasterises SVG markup to PNG bytes at a pixel size; null when it cannot. */
+export type SvgRasterizer = (svgText: string, widthPx: number, heightPx: number) => Promise<Uint8Array | null>;
+
+/** Rasterise SVG markup to PNG bytes at the given pixel size, through an
+ *  `Image` and a canvas of the document. Browser main thread only (a
+ *  worker cannot decode SVG); returns null elsewhere or when the SVG does
+ *  not decode. The default {@link SvgRasterizer}. */
+export async function rasterizeSvgWithDom(svgText: string, widthPx: number, heightPx: number): Promise<Uint8Array | null> {
   if (typeof document === 'undefined' || typeof URL === 'undefined' || typeof Image === 'undefined') return null;
   const blob = new Blob([svgText], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
@@ -282,8 +301,14 @@ export async function preloadResourceImages(
   bytesProvider: ResourceBytesProvider | undefined,
   fontCache?: FontCache,
   fontProvider?: PdfFontProvider,
+  /** Map to add to (a book renders several documents into one PDF; a
+   *  resource is embedded once for all of them). */
+  into?: ResourceImageMap,
+  /** How to rasterise an SVG outside the vector subset; the document's
+   *  own `Image` by default (a worker hands the job to its host). */
+  rasterizeSvg: SvgRasterizer = rasterizeSvgWithDom,
 ): Promise<ResourceImageMap> {
-  const out: ResourceImageMap = new Map();
+  const out: ResourceImageMap = into ?? new Map();
   if (!bytesProvider) return out;
   // Inline resources live in doc.blocks; floated resources only exist on
   // their page's float band (page.floats), so both must be walked.
@@ -339,7 +364,7 @@ export async function preloadResourceImages(
         const rasterSvg = wanted.length > 0 && fontProvider
           ? await inlineSvgFontsForRaster(svgText, wanted, fontProvider)
           : svgText;
-        const png = await svgToPng(rasterSvg, (size.w / 72) * RASTER_DPI, (size.h / 72) * RASTER_DPI);
+        const png = await rasterizeSvg(rasterSvg, (size.w / 72) * RASTER_DPI, (size.h / 72) * RASTER_DPI);
         if (png) out.set(fileId, { kind: 'image', image: await pdfDoc.embedPng(png) });
         return;
       }

@@ -118,8 +118,8 @@ import {
   columnBottom,
   bandCapLines,
   bandTop,
-  resolveBandCaps,
-  resolveTrailingCaps,
+  resolveBandCapsGen, drainPasses,
+  resolveTrailingCapsGen,
   type BandCap,
   type BandPassReport,
   bandCapLinesAroundZone,
@@ -146,6 +146,24 @@ export interface BuildDocumentOptions {
    * restarts). A long build can show a bar from it.
    */
   onProgress?: (progress: BuildProgress) => void;
+  /**
+   * Called after every placement pass with its wall time — the engine
+   * re-places the document several times (band caps, column balancing,
+   * contents rounds); dev tooling shows where a build's time went.
+   */
+  onPass?: (info: BuildPassInfo) => void;
+}
+
+/** One placement pass of a build, as reported to {@link BuildDocumentOptions.onPass}. */
+export interface BuildPassInfo {
+  /** 1-based pass within its contents round. */
+  pass: number;
+  /** 0-based round of a document laying out its own contents (see `MAX_TOC_ROUNDS`). */
+  tocRound: number;
+  /** Wall time of the pass in ms. */
+  ms: number;
+  /** Pages the pass produced. */
+  pages: number;
 }
 
 export interface BuildProgress {
@@ -3509,6 +3527,58 @@ export function buildDocument(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
 ): VDTDocument {
+  return drainPasses(buildDocumentGen(content, config, cache, options));
+}
+
+/** Let the event loop turn: `scheduler.yield()` where it exists, else a
+ *  message-channel hop (a `setTimeout(0)` is clamped to 4 ms once nested). */
+export function yieldToEventLoop(): Promise<void> {
+  const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
+  if (scheduler?.yield) return scheduler.yield();
+  if (typeof MessageChannel !== 'undefined') {
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = () => {
+        channel.port1.close();
+        resolve();
+      };
+      channel.port2.postMessage(null);
+    });
+  }
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+/**
+ * {@link buildDocument}, yielding to the event loop between placement
+ * passes. A build is several passes (band caps, column balancing, contents
+ * rounds), each a synchronous re-placement of the document; in a worker
+ * this lets a `cancel` posted mid-build be observed at the next pass
+ * boundary — `shouldCancel` is polled there as well as inside a pass —
+ * instead of after the whole build.
+ */
+export async function buildDocumentAsync(
+  content: PostextContent,
+  config?: PostextConfig,
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions & { yieldBetweenPasses?: () => Promise<void> },
+): Promise<VDTDocument> {
+  const gen = buildDocumentGen(content, config, cache, options);
+  const pause = options?.yieldBetweenPasses ?? yieldToEventLoop;
+  for (;;) {
+    const step = gen.next();
+    if (step.done) return step.value;
+    await pause();
+    if (options?.shouldCancel?.()) throw new BuildCancelledError();
+  }
+}
+
+/** The build as a generator: one `yield` after every placement pass. */
+export function* buildDocumentGen(
+  content: PostextContent,
+  config?: PostextConfig,
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
+): Generator<void, VDTDocument, void> {
   // A document printing its own table of contents (`:::toc` with no
   // host-supplied outline) is laid out with the page labels of the previous
   // build until they no longer change: the contents' own length moves what
@@ -3518,42 +3588,52 @@ export function buildDocument(
     const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content);
     if (hasTocDirective(parsed)) {
       let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);
-      let doc = buildDocumentBalanced({ ...content, outline }, config, cache, options);
+      let doc = yield* buildDocumentBalanced({ ...content, outline }, config, cache, options, 0);
       for (let round = 0; round < MAX_TOC_ROUNDS; round++) {
         const after = outlineFromDoc(doc, outline);
         if (sameOutline(after, outline)) break;
         outline = after;
-        doc = buildDocumentBalanced({ ...content, outline }, config, cache, options);
+        doc = yield* buildDocumentBalanced({ ...content, outline }, config, cache, options, round + 1);
       }
       return doc;
     }
   }
-  return buildDocumentBalanced(content, config, cache, options);
+  return yield* buildDocumentBalanced(content, config, cache, options);
 }
 
-function buildDocumentBalanced(
+const now = (): number => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
+function* buildDocumentBalanced(
   content: PostextContent,
   config?: PostextConfig,
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
-): VDTDocument {
+  tocRound = 0,
+): Generator<void, VDTDocument, void> {
   // Each pass reports its own progress, numbered in build order.
   let passIndex = 0;
   const onProgress = options?.onProgress;
+  const onPass = options?.onPass;
   const passOptions: BuildDocumentOptions | undefined = onProgress
     ? { ...options, onProgress: (p) => onProgress({ ...p, pass: passIndex }) }
     : options;
   const runPass = (hints?: PassHints): PassResult => {
     passIndex++;
-    return buildDocumentPass(content, config, cache, passOptions, hints);
+    const started = onPass ? now() : 0;
+    const result = buildDocumentPass(content, config, cache, passOptions, hints);
+    onPass?.({ pass: passIndex, tocRound, ms: now() - started, pages: result.doc.pages.length });
+    return result;
   };
+  // The first pass is a pass too: let a cancel land before the caps run.
+  const initial = runPass();
+  yield;
 
   // --- Band caps (page-span blocks mid-page) -----------------------------
   // A span block that arrived in an uneven band proposes a cap; the driver
   // re-places the document with it (and grows / drops caps whose band
   // overflowed) before balancing runs. Documents without such blocks get
   // their first pass back untouched — no extra pass.
-  const bands = resolveBandCaps(runPass(), (bandCaps) => runPass({ bandCaps }));
+  const bands = yield* resolveBandCapsGen(initial, (bandCaps) => runPass({ bandCaps }));
   let best = bands.result;
   const bandCaps = bands.bandCaps;
   let passCount = bands.passCount;
@@ -3751,7 +3831,7 @@ function buildDocumentBalanced(
   };
 
   let balancingPasses = 0;
-  const balance = (): void => {
+  function* balance(): Generator<void, void, void> {
     while (balancingPasses < MAX_BALANCING_PASSES_PER_DOCUMENT) {
       const active = segments.filter((s) => !s.done);
       if (active.length === 0) break;
@@ -3810,6 +3890,7 @@ function buildDocumentBalanced(
       const next = runPass(hintsFrom(proposal.lines, proposal.loose, proposal.looseBudget));
       passCount++;
       balancingPasses++;
+      yield;
       const nextGaps = collectColumnGaps(next.doc, next.forcedBreakPages);
       const capPage = pageOfContent(best.doc);
       const accepted: PageRange[] = [];
@@ -3859,10 +3940,10 @@ function buildDocumentBalanced(
       }
       if (accepted.length > 0) best = spliceSegments(next, accepted);
     }
-  };
+  }
 
   resetSegments();
-  balance();
+  yield* balance();
 
   // --- Trailing bands (closing columns cut level) -------------------------
   // Once the balancing levers have settled the earlier pages, level the
@@ -3874,7 +3955,7 @@ function buildDocumentBalanced(
   // fill what the cut left short (a column ending a line under the cap).
   if (balancing.trailing) {
     const frozen = hintsFrom(applied.lines, applied.loose);
-    const trailing = resolveTrailingCaps(
+    const trailing = yield* resolveTrailingCapsGen(
       best,
       bandCaps,
       (caps) => runPass({ ...frozen, bandCaps: caps }),
@@ -3884,7 +3965,7 @@ function buildDocumentBalanced(
       best = trailing.result;
       for (const [i, cap] of trailing.caps) bandCaps.set(i, cap);
       resetSegments();
-      balance();
+      yield* balance();
     }
   }
 

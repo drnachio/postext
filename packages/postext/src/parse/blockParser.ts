@@ -49,35 +49,47 @@ const BLOCK_MATH_FENCE_RE = /^\s*\$\$\s*$/;
  *  (missing/empty id, extra attrs) fall through to paragraph parsing. */
 const RESOURCE_DIRECTIVE_RE = /^::resource\s*\{id="([^"]+)"\}\s*$/;
 
-// Single-slot memo used by parseMarkdownMemo. The returned array and its
-// ContentBlocks are treated as read-only by the rest of the pipeline.
-let _parseMemoInput: string | null = null;
-let _parseMemoResult: { blocks: ContentBlock[]; issues: ParseIssue[] } | null = null;
+// Small LRU memo used by parseMarkdownMemo, keyed by the input string. The
+// returned array and its ContentBlocks are treated as read-only by the rest
+// of the pipeline. A few slots (not one) because a book is counted chapter
+// by chapter — continuation, outline, warnings and the layout itself each
+// parse the same few chapters in turn, and a single slot thrashed between
+// them.
+const PARSE_MEMO_SLOTS = 8;
+const _parseMemo = new Map<string, { blocks: ContentBlock[]; issues: ParseIssue[] }>();
+
+function parseMemoLookup(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const hit = _parseMemo.get(markdown);
+  if (hit) {
+    // Refresh recency: a Map iterates in insertion order.
+    _parseMemo.delete(markdown);
+    _parseMemo.set(markdown, hit);
+    return hit;
+  }
+  const result = parseMarkdownWithIssues(markdown);
+  _parseMemo.set(markdown, result);
+  if (_parseMemo.size > PARSE_MEMO_SLOTS) {
+    const oldest = _parseMemo.keys().next().value;
+    if (oldest !== undefined) _parseMemo.delete(oldest);
+  }
+  return result;
+}
+
+/** @internal Number of inputs the parse memo keeps (tests). */
+export const PARSE_MEMO_CAPACITY = PARSE_MEMO_SLOTS;
 
 /**
  * Memoized wrapper around parseMarkdown: returns the cached result when the
- * input string is byte-for-byte identical to the previous call. This avoids
- * reparsing the whole document on each keystroke when upstream recomputes
- * only because a sibling state changed.
+ * input string is byte-for-byte identical to one of the last few calls.
+ * This avoids reparsing a document on each keystroke when upstream
+ * recomputes only because a sibling state changed.
  */
 export function parseMarkdownMemo(markdown: string): ContentBlock[] {
-  if (_parseMemoResult !== null && _parseMemoInput === markdown) {
-    return _parseMemoResult.blocks;
-  }
-  const result = parseMarkdownWithIssues(markdown);
-  _parseMemoInput = markdown;
-  _parseMemoResult = result;
-  return result.blocks;
+  return parseMemoLookup(markdown).blocks;
 }
 
 export function parseMarkdownWithIssuesMemo(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
-  if (_parseMemoResult !== null && _parseMemoInput === markdown) {
-    return _parseMemoResult;
-  }
-  const result = parseMarkdownWithIssues(markdown);
-  _parseMemoInput = markdown;
-  _parseMemoResult = result;
-  return result;
+  return parseMemoLookup(markdown);
 }
 
 export function parseMarkdown(markdown: string): ContentBlock[] {

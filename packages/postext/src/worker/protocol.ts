@@ -1,6 +1,16 @@
 import type { PostextContent, PostextConfig } from '../types';
 import type { VDTDocument } from '../vdt';
-import type { BuildProgress } from '../pipeline/build';
+import type { BuildPassInfo, BuildProgress } from '../pipeline/build';
+
+/** Where a build's time went (dev tooling; always attached, cheap). */
+export interface BuildStats {
+  /** Every placement pass, in build order. */
+  passes: BuildPassInfo[];
+  /** Wall time of the whole build inside the worker, in ms. */
+  totalMs: number;
+  /** The document came from the worker's cache (no pass was run). */
+  cached?: boolean;
+}
 
 export interface FontPayload {
   family: string;
@@ -31,6 +41,20 @@ export type RequestMessage =
       id: number;
       content: PostextContent;
       config?: PostextConfig;
+      /** Fingerprint of `content.resources`. When it matches the list the
+       *  worker last received, `content.resources` may be left out and the
+       *  worker lays out with the list it already holds — the resources of
+       *  a book (hundreds of tables and figures) are the bulk of a build
+       *  message and change far less often than the text. */
+      resourcesKey?: string;
+      /** Fingerprint of everything the document depends on. The worker
+       *  keeps the last few documents by it: a build whose key it holds
+       *  is answered from the cache, and a finished build is stored under
+       *  it. Omit for a document not worth keeping (screen geometry). */
+      cacheKey?: string;
+      /** False: build (and cache) the document but do not send it back —
+       *  warming the cache for a chapter the reader may open next. */
+      wantDoc?: boolean;
     }
   | {
       kind: 'cancel';
@@ -45,7 +69,9 @@ export type ResponseMessage =
   | {
       kind: 'built';
       id: number;
-      doc: VDTDocument;
+      /** Null when the build asked for no document (`wantDoc: false`). */
+      doc: VDTDocument | null;
+      stats: BuildStats;
     }
   | {
       kind: 'progress';

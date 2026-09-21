@@ -388,6 +388,7 @@ export function measureRichBlock(
       runtPenalty,
       runtMinWidth,
       looseness: options.looseness ?? 0,
+      lineWidthUniformFrom: 1,
     });
     if (breaks.length > 0) {
       const kpLines = reconstructRichLines(
