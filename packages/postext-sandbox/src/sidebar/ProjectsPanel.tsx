@@ -222,7 +222,7 @@ export function ProjectsPanel() {
                 disabled={busy}
                 confirmSwitch={leavingLosesWork}
                 onActivate={() => { void activate(project.id); }}
-                onRename={(name) => { void rename(project.id, name); }}
+                onRename={(name, description) => { void rename(project.id, name, description); }}
                 onDuplicate={() => { void duplicate({ kind: 'project', id: project.id }); }}
                 onExport={() => { void exportProject({ kind: 'project', id: project.id }); }}
                 onDelete={() => { void remove(project.id); }}
@@ -262,7 +262,7 @@ interface ProjectRowProps {
   /** Ask before opening: the active preset has unsaved edits. */
   confirmSwitch: boolean;
   onActivate: () => void;
-  onRename: (name: string) => void;
+  onRename: (name: string, description: string) => void;
   onDuplicate: () => void;
   onExport: () => void;
   onDelete: () => void;
@@ -282,34 +282,72 @@ function ProjectRow({
   const labels = useSandboxLabels();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(project.name);
+  const [descriptionDraft, setDescriptionDraft] = useState(project.description ?? '');
+  const nameRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLInputElement>(null);
+  // Set once the edit is committed or cancelled, so the blur of the field
+  // being unmounted does not commit a second time.
+  const settledRef = useRef(false);
 
   const startRename = () => {
     setDraft(project.name);
+    setDescriptionDraft(project.description ?? '');
+    settledRef.current = false;
     setEditing(true);
   };
-  const commitRename = () => {
+  const cancelRename = () => {
+    settledRef.current = true;
     setEditing(false);
-    const next = draft.trim();
-    if (next && next !== project.name) onRename(next);
+  };
+  // Name and description are one edit: committed together on Enter in
+  // either field, or when focus leaves both.
+  const commitRename = () => {
+    if (settledRef.current) return;
+    settledRef.current = true;
+    setEditing(false);
+    const name = draft.trim() || project.name;
+    const description = descriptionDraft.trim();
+    if (name !== project.name || description !== (project.description ?? '')) onRename(name, description);
+  };
+  const fieldProps = {
+    onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
+      else if (e.key === 'Escape') { e.preventDefault(); cancelRename(); }
+    },
+    onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+      if (e.relatedTarget === nameRef.current || e.relatedTarget === descriptionRef.current) return;
+      commitRename();
+    },
+    style: { borderColor: 'var(--rule)', color: 'var(--foreground)' },
   };
 
   const title = editing ? (
     <input
+      ref={nameRef}
       type="text"
       autoFocus
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
-        else if (e.key === 'Escape') { e.preventDefault(); setEditing(false); }
-      }}
-      onBlur={commitRename}
       aria-label={labels.projectNameLabel}
       className="min-w-0 w-full rounded border bg-transparent px-1.5 py-0.5 text-xs font-medium"
-      style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
+      {...fieldProps}
     />
   ) : (
     project.name
+  );
+  const subtitle = editing ? (
+    <input
+      ref={descriptionRef}
+      type="text"
+      value={descriptionDraft}
+      onChange={(e) => setDescriptionDraft(e.target.value)}
+      aria-label={labels.projectDescriptionLabel}
+      placeholder={labels.projectDescriptionLabel}
+      className="min-w-0 w-full rounded border bg-transparent px-1.5 py-0.5 text-[11px] font-normal"
+      {...fieldProps}
+    />
+  ) : (
+    project.description
   );
 
   const tags = (
@@ -334,9 +372,9 @@ function ProjectRow({
         </span>
       }
       title={title}
-      subtitle={project.description}
+      subtitle={subtitle}
       tags={tags}
-      alignTop={!!project.description}
+      alignTop={editing || !!project.description}
       actions={
         <>
           <IconButton label={labels.projectRename} icon={<Pencil size={13} />} disabled={disabled || editing} onClick={startRename} />

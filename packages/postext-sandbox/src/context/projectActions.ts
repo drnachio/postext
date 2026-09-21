@@ -76,7 +76,9 @@ export interface ProjectActions {
   activate: (id: string) => Promise<void>;
   create: (opts: { from: 'current' | 'blank'; name?: string }) => Promise<string>;
   duplicate: (source: DuplicateSource) => Promise<string>;
-  rename: (id: string, name: string) => Promise<void>;
+  /** Rename a project; `description` replaces its description when given
+   *  (blank clears it). */
+  rename: (id: string, name: string, description?: string) => Promise<void>;
   remove: (id: string) => Promise<void>;
   importBundle: (file: File) => Promise<string>;
   exportProject: (target?: DuplicateSource) => Promise<void>;
@@ -297,10 +299,12 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       }, id));
     });
 
-  const rename: ProjectActions['rename'] = async (id, name) => {
+  const rename: ProjectActions['rename'] = async (id, name, description) => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    const updated = await updateProject(id, { name: trimmed });
+    const patch: Partial<Pick<ProjectRecord, 'name' | 'description'>> = { name: trimmed };
+    if (description !== undefined) patch.description = description.trim() || undefined;
+    const updated = await updateProject(id, patch);
     if (updated) dispatch({ type: 'UPSERT_PROJECT_SUMMARY', payload: toSummary(updated) });
   };
 

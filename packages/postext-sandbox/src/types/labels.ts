@@ -673,6 +673,7 @@ export interface SandboxLabels {
   projectSwitchConfirm: string;
   projectRename: string;
   projectNameLabel: string;
+  projectDescriptionLabel: string;
   projectDuplicate: string;
   projectDelete: string;
   projectDeleteConfirm: string;

@@ -622,6 +622,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   projectSwitchConfirm: 'Open "__name__"? Unsaved changes to the active preset will be lost.',
   projectRename: 'Rename project',
   projectNameLabel: 'Project name',
+  projectDescriptionLabel: 'Project description',
   projectDuplicate: 'Duplicate project',
   projectDelete: 'Delete project',
   projectDeleteConfirm: 'Delete "__name__"? Its resources and fonts are removed with it.',
