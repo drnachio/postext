@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useBookPlan, useSandboxDispatch, useSandboxSelector } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { chapterLayoutFromDoc } from '../book/pagination';
@@ -18,6 +18,8 @@ const PREFETCH_DEBOUNCE_MS = 800;
  *  documents; the active chapter and its edits take some of them. */
 const PREFETCH_AHEAD = 2;
 const PREFETCH_BEHIND = 1;
+/** The longest the background work waits for the tab to go idle first (ms). */
+const PAGINATION_START_TIMEOUT_MS = 2500;
 
 /** Renderless. The previews lay out only the active chapter, whose first
  *  page number depends on the page counts of the chapters before it (and
@@ -40,13 +42,28 @@ export function ChapterPaginator() {
   const storeReady = useSandboxSelector((s) => s.storeReady);
   const layoutWorker = useLayoutWorker('background');
 
+  // Background work waits for the first paint: the store is ready before
+  // the preview has laid out anything, and the chapters after the active
+  // one can start once the tab has drawn (or after a short grace period).
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!storeReady || settled) return;
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    if (w.requestIdleCallback && w.cancelIdleCallback) {
+      const handle = w.requestIdleCallback(() => setSettled(true), { timeout: PAGINATION_START_TIMEOUT_MS });
+      return () => w.cancelIdleCallback!(handle);
+    }
+    const timer = setTimeout(() => setSettled(true), PAGINATION_START_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [storeReady, settled]);
+
   // The active chapter is left to the canvas when that is the tab shown:
   // it lays the chapter out at print geometry and records the layout on
   // every rebuild. The HTML tab lays out for the screen and the PDF tab
   // only on request, so under those the active chapter is handled here.
   const pending = plan.pendingChapterId ? plan.byId[plan.pendingChapterId] : undefined;
   const leftToPreview = activeViewport === 'canvas' && pending?.chapterId === activeChapterId;
-  const pendingId = storeReady && pending && pending.paginated && !leftToPreview ? pending.chapterId : null;
+  const pendingId = storeReady && settled && pending && pending.paginated && !leftToPreview ? pending.chapterId : null;
   const pendingKey = pendingId ? `${pendingId}|${plan.byId[pendingId]!.continuationKey}|${plan.byId[pendingId]!.outlineKey}` : null;
   const chapterMarkdown = pendingId ? chapters.find((c) => c.id === pendingId)?.markdown : undefined;
   // What a background build is keyed on — the chapter, what it inherits
@@ -110,7 +127,7 @@ export function ChapterPaginator() {
   // the first click on a neighbour is answered from the cache.
   const warmedRef = useRef(new Set<string>());
   useEffect(() => {
-    if (!storeReady || plan.pendingChapterId !== null) return;
+    if (!storeReady || !settled || plan.pendingChapterId !== null) return;
     const at = chapters.findIndex((c) => c.id === activeChapterId);
     if (at < 0) return;
     const timer = setTimeout(() => {
@@ -144,7 +161,7 @@ export function ChapterPaginator() {
       }
     }, PREFETCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [storeReady, plan, chapters, activeChapterId, config, resources, locale, layoutWorker]);
+  }, [storeReady, settled, plan, chapters, activeChapterId, config, resources, locale, layoutWorker]);
 
   return null;
 }
