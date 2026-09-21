@@ -32,7 +32,8 @@
     "dev": "tsc --watch",
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bench": "BENCH=1 vitest run __bench__"
   },
   "peerDependencies": {
     "postext": ">=0.1.0"
