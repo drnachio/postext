@@ -6,7 +6,7 @@ describe('settings registry', () => {
   it('lists every section exactly once', () => {
     const ids = SETTINGS_SECTIONS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toHaveLength(20);
+    expect(ids).toHaveLength(22);
   });
   it('points every section and category at an existing label', () => {
     for (const s of SETTINGS_SECTIONS) expect(typeof DEFAULT_LABELS[s.labelKey]).toBe('string');

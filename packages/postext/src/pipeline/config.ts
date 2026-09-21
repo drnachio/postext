@@ -24,7 +24,7 @@ import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt
 
 export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
   const config = applyPaletteToConfig(rawConfig);
-  const bodyText = resolveBodyTextConfig(config?.bodyText);
+  const bodyText = resolveBodyTextConfig(config?.bodyText, config?.locale);
   const headings = resolveHeadingsConfig(config?.headings);
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
   const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText);

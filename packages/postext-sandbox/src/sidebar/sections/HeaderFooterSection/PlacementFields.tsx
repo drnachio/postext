@@ -50,25 +50,25 @@ export function PlacementFields({ placement, slotKind, siblings = [], onChange }
       : kind === 'rule'
         ? labels.headerFooterElementRule
         : kind === 'image'
-          ? (labels.headerFooterElementImage ?? 'Image')
-          : (labels.headerFooterElementBox ?? 'Box');
+          ? labels.headerFooterElementImage
+          : labels.headerFooterElementBox;
 
   const targetOptions = [
-    { value: 'container', label: labels.headerFooterElementAnchorContainer ?? 'Container' },
+    { value: 'container', label: labels.headerFooterElementAnchorContainer },
     { value: 'page', label: labels.headerFooterAnchorToPage },
     { value: 'bleed', label: labels.headerFooterAnchorToBleed },
     ...siblings.map((s) => ({ value: s.id, label: `${kindLabel(s.kind)} #${s.index + 1}` })),
   ];
 
   const ELEMENT_EDGE_OPTIONS: { value: AnchorEdge; label: string }[] = [
-    { value: 'right-of', label: labels.headerFooterElementEdgeRightOf ?? 'Right of' },
-    { value: 'left-of', label: labels.headerFooterElementEdgeLeftOf ?? 'Left of' },
-    { value: 'below', label: labels.headerFooterElementEdgeBelow ?? 'Below' },
-    { value: 'above', label: labels.headerFooterElementEdgeAbove ?? 'Above' },
-    { value: 'align-top', label: labels.headerFooterElementEdgeAlignTop ?? 'Align top' },
-    { value: 'align-bottom', label: labels.headerFooterElementEdgeAlignBottom ?? 'Align bottom' },
-    { value: 'align-left', label: labels.headerFooterElementEdgeAlignLeft ?? 'Align left' },
-    { value: 'align-right', label: labels.headerFooterElementEdgeAlignRight ?? 'Align right' },
+    { value: 'right-of', label: labels.headerFooterElementEdgeRightOf },
+    { value: 'left-of', label: labels.headerFooterElementEdgeLeftOf },
+    { value: 'below', label: labels.headerFooterElementEdgeBelow },
+    { value: 'above', label: labels.headerFooterElementEdgeAbove },
+    { value: 'align-top', label: labels.headerFooterElementEdgeAlignTop },
+    { value: 'align-bottom', label: labels.headerFooterElementEdgeAlignBottom },
+    { value: 'align-left', label: labels.headerFooterElementEdgeAlignLeft },
+    { value: 'align-right', label: labels.headerFooterElementEdgeAlignRight },
   ];
 
   const FRAME_EDGE_LABELS: Record<string, string> = {
@@ -96,18 +96,18 @@ export function PlacementFields({ placement, slotKind, siblings = [], onChange }
   const offsetFields = (
     <>
       <DimensionInput
-        label={labels.headerFooterElementOffsetX ?? 'Offset X'}
+        label={labels.headerFooterElementOffsetX}
         value={placement.offset?.x ?? ZERO}
         onChange={(dim: Dimension) => onChange(applyOffsetX(placement, dim))}
         step={1}
-        tooltip={labels.headerFooterElementOffsetXTooltip ?? 'Horizontal distance from the reference edge. Positive values move right; negative, left.'}
+        tooltip={labels.headerFooterElementOffsetXTooltip}
       />
       <DimensionInput
-        label={labels.headerFooterElementOffsetY ?? 'Offset Y'}
+        label={labels.headerFooterElementOffsetY}
         value={placement.offset?.y ?? ZERO}
         onChange={(dim: Dimension) => onChange(applyOffsetY(placement, dim))}
         step={1}
-        tooltip={labels.headerFooterElementOffsetYTooltip ?? 'Vertical distance from the reference edge. Positive values move down; negative, up.'}
+        tooltip={labels.headerFooterElementOffsetYTooltip}
       />
     </>
   );
@@ -115,26 +115,26 @@ export function PlacementFields({ placement, slotKind, siblings = [], onChange }
   return (
     <>
       <SelectInput
-        label={labels.headerFooterElementAnchorTo ?? 'Anchor to'}
+        label={labels.headerFooterElementAnchorTo}
         value={anchorTargetId(placement)}
         options={targetOptions}
         onChange={(v) => {
           const next = applyAnchorTarget(placement, slotKind, v);
           onChange(next, isElementAnchor(next) ? alignForElementEdge(next.anchor.edge) : undefined);
         }}
-        tooltip={labels.headerFooterElementAnchorToTooltip ?? 'Anchor the element to the slot container, the page or bleed frame, or a sibling element. Element anchors are positioned relative to their target, so a box can push its neighbour when it grows.'}
+        tooltip={labels.headerFooterElementAnchorToTooltip}
       />
       {anchoredToElement ? (
         <>
           <SelectInput
-            label={labels.headerFooterElementEdge ?? 'Relative position'}
+            label={labels.headerFooterElementEdge}
             value={placement.anchor.edge}
             options={ELEMENT_EDGE_OPTIONS}
             onChange={(v) => {
               const edge = v as AnchorEdge;
               onChange(applyElementEdge(placement, edge), alignForElementEdge(edge));
             }}
-            tooltip={labels.headerFooterElementEdgeTooltip ?? 'Edge of the reference element this block hangs from: right, left, above, below, or aligned to one of its sides.'}
+            tooltip={labels.headerFooterElementEdgeTooltip}
           />
           {offsetFields}
         </>
@@ -155,7 +155,7 @@ export function PlacementFields({ placement, slotKind, siblings = [], onChange }
           value={alignFromPlacement(placement)}
           options={ALIGN_OPTIONS}
           onChange={(v) => onChange(applyAlign(placement, slotKind, v as HAlign))}
-          tooltip={labels.headerFooterElementAlignTooltip ?? 'Horizontal alignment of the element inside the container: left, center or right.'}
+          tooltip={labels.headerFooterElementAlignTooltip}
         />
       )}
     </>

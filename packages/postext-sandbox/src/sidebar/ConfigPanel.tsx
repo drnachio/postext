@@ -24,6 +24,8 @@ import { LayoutSection } from './sections/LayoutSection';
 import { HeaderFooterSection } from './sections/HeaderFooterSection';
 import { BodyTextSection } from './sections/BodyTextSection';
 import { HeadingsSection } from './sections/HeadingsSection';
+import { HeadingStylesSection } from './sections/HeadingStylesSection';
+import { TocSection } from './sections/TocSection';
 import { PartsSection } from './sections/PartsSection';
 import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
@@ -49,6 +51,8 @@ const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'parts': PartsSection,
   'bodyText': BodyTextSection,
   'headings': HeadingsSection,
+  'headingStyles': HeadingStylesSection,
+  'toc': TocSection,
   'paragraphStyles': ParagraphStylesSection,
   'unordered-lists': UnorderedListsSection,
   'ordered-lists': OrderedListsSection,

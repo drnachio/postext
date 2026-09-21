@@ -55,6 +55,7 @@ export const WarningsConfigSection = memo(function WarningsConfigSection() {
   const isHeadingHierarchyDefault = w.headingHierarchy === DD.headingHierarchy;
   const isConsecutiveHeadingsDefault = w.consecutiveHeadings === DD.consecutiveHeadings;
   const isListAfterHeadingDefault = w.listAfterHeading === DD.listAfterHeading;
+  const isDesignIssuesDefault = w.designIssues === DD.designIssues;
 
   const hasOverrides = rawDebug?.warnings !== undefined && Object.keys(rawDebug.warnings).length > 0;
 
@@ -106,6 +107,14 @@ export const WarningsConfigSection = memo(function WarningsConfigSection() {
         tooltip={labels.debugWarningsListAfterHeadingTooltip}
         isDefault={isListAfterHeadingDefault}
         onReset={() => resetWarningToggle('listAfterHeading')}
+      />
+      <ToggleSwitch
+        label={labels.debugWarningsDesignIssues}
+        checked={w.designIssues}
+        onChange={(v) => updateWarningToggle('designIssues', v)}
+        tooltip={labels.debugWarningsDesignIssuesTooltip}
+        isDefault={isDesignIssuesDefault}
+        onReset={() => resetWarningToggle('designIssues')}
       />
     </CollapsibleSection>
   );

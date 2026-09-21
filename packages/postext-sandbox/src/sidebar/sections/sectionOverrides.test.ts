@@ -20,6 +20,12 @@ describe('sectionHasOverrides', () => {
     expect(sectionHasOverrides({ ...base, paragraphStyles: [] }, 'paragraphStyles')).toBe(false);
     expect(sectionHasOverrides({ ...base, calloutStyles: [] }, 'calloutStyles')).toBe(true);
     expect(sectionHasOverrides({ ...base, resourceTypes: [] }, 'resource-types')).toBe(true);
+    expect(sectionHasOverrides({ ...base, headingStyles: [] }, 'headingStyles')).toBe(false);
+    expect(sectionHasOverrides({ ...base, headingStyles: [{ id: 'preface' }] }, 'headingStyles')).toBe(true);
+    expect(sectionHasOverrides({ ...base, toc: { leader: { enabled: false } } }, 'toc')).toBe(true);
+  });
+  it('counts the document locale as a body text override', () => {
+    expect(sectionHasOverrides({ ...base, locale: 'es' }, 'bodyText')).toBe(true);
   });
   it('separates debug from warnings inside config.debug', () => {
     const warningsOnly: PostextConfig = { ...base, debug: { warnings: { looseLines: false } } };

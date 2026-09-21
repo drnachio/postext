@@ -63,7 +63,7 @@ export function ImageElementEditor({ raw, resolved, slotKind, siblings = [], onC
   return (
     <>
       <TextInput
-        label={labels.headerFooterImageResource ?? 'Resource'}
+        label={labels.headerFooterImageResource}
         value={raw.resourceId}
         onChange={(v: string) => update({ resourceId: v })}
       />

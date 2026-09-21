@@ -54,7 +54,6 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
 - [Generación de PDF (configuración)](#generación-de-pdf-configuración) — outlines, salida accesible (etiquetada) y espacio de color forzado para el backend PDF.
 - [Depuración](#depuración) — superposiciones visuales y avisos de autoría para el editor.
-- [Configuración avanzada](#configuración-avanzada) — tipos declarados, soporte futuro.
 - [Uso programático](#uso-programático) — `buildDocument`, resolvers, cachés.
 - [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker) — builds fuera del hilo principal con cancelación.
 - [Integrar el visor HTML](#integrar-el-visor-html) y [Generación de PDF](#generación-de-pdf) — recetas completas.
@@ -436,6 +435,12 @@ Los elementos de texto renderizan una plantilla con sustitución de marcadores. 
       <td>Discriminador.</td>
     </tr>
     <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Id estable, único dentro del bloque. Otros elementos se anclan a él con <code>anchor.to: '#id'</code>. El sandbox asigna uno al crearlo.</td>
+    </tr>
+    <tr>
       <td><code>content</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
@@ -496,6 +501,36 @@ Los elementos de texto renderizan una plantilla con sustitución de marcadores. 
       <td>Cómo se gestiona el texto que excede el ancho disponible del elemento. <code>'wrap'</code> divide el texto en varias líneas; las variantes de elipsis truncan a una sola línea e insertan <code>…</code> al principio, en el centro o al final; <code>'clip'</code> recorta de forma estricta al rectángulo del elemento sin insertar ningún carácter.</td>
     </tr>
     <tr>
+      <td><code>verticalAlign</code></td>
+      <td><code>'top' | 'middle' | 'bottom'</code></td>
+      <td><code>'middle'</code></td>
+      <td>Dónde se sitúa el texto dentro de una caja más alta que sus líneas — un <code>placement.size.height</code> fijo, o una caja estirada por un vecino anclado.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.2</code></td>
+      <td>Interlineado de las líneas envueltas, como múltiplo de <code>fontSize</code>.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Tracking: espacio adicional que avanza tras cada carácter, espacios incluidos, exactamente como el <code>letter-spacing</code> de CSS. Las medidas crecen con él, así que una caja de ancho automático sigue ajustada.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Transformación de mayúsculas aplicada al texto resuelto, marcadores incluidos — el título de una parte en versales en el índice.</td>
+    </tr>
+    <tr>
+      <td><code>box</code></td>
+      <td><code>ElementBoxStyle</code></td>
+      <td>—</td>
+      <td>Fondo y borde opcionales dibujados tras el texto: <code>backgroundColor</code>, <code>borderColor</code>, <code>borderWidth</code>, <code>borderRadius</code> y un <code>padding</code> por lado que amplía la caja más allá del texto (ver <a href="#elementos-de-caja">Elementos de caja</a> para los campos).</td>
+    </tr>
+    <tr>
       <td><code>hyphenate</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
@@ -541,7 +576,7 @@ El editor de encabezados del sandbox aplica estas alineaciones implícitas autom
 
 ### Elementos de línea
 
-Los elementos de línea dibujan una línea horizontal dentro del bloque.
+Los elementos de línea dibujan una línea: horizontal a lo ancho del bloque, o vertical a lo alto.
 
 <table>
   <thead>
@@ -558,6 +593,18 @@ Los elementos de línea dibujan una línea horizontal dentro del bloque.
       <td><code>'rule'</code></td>
       <td>—</td>
       <td>Discriminador.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Id estable, único dentro del bloque, para referencias <code>anchor.to: '#id'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'horizontal' | 'vertical'</code></td>
+      <td><code>'horizontal'</code></td>
+      <td>Una línea horizontal recorre <code>placement.size.width</code> (<code>'fill'</code> = hasta el borde del contenedor) y mide <code>thickness</code> de alto. Una vertical recorre <code>placement.size.height</code> (<code>'fill'</code> o sin definir = hasta el borde del contenedor) y mide <code>thickness</code> de ancho — un separador entre el titulillo y el folio.</td>
     </tr>
     <tr>
       <td><code>color</code></td>
@@ -606,6 +653,12 @@ Los elementos de línea dibujan una línea horizontal dentro del bloque.
       <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
       <td><code>'all'</code></td>
       <td>Roles de página en los que aparece la línea (ver el campo <code>pages</code> de los elementos de texto).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>derivado de <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>Posicionamiento avanzado (ver <a href="#posicionamiento-de-elementos">Posicionamiento de elementos</a>). <code>size.width</code> / <code>size.height</code> fijan la longitud de la línea; <code>width: 'fill'</code> es el antiguo <code>'full'</code>.</td>
     </tr>
   </tbody>
 </table>
@@ -938,6 +991,17 @@ Cuando la alineación del texto está configurada como `'justify'`, la separaci�
 
 Las palabras de menos de 5 caracteres nunca se separan. El motor requiere al menos 2 caracteres antes y 3 caracteres después de un punto de ruptura.
 
+#### Idioma del documento
+
+El `locale` de primer nivel es el idioma del documento en su conjunto. Admite los mismos valores que `hyphenation.locale` y es el valor al que recurre ese campo cuando no está definido, de modo que a un libro en español le basta `locale: 'es'` para separar sílabas en español. También elige el idioma de las cadenas integradas de continuación de tablas (*(cont.)* / *Continued* frente a *Continúa*, ver [Tablas más altas que la página](#tablas-más-altas-que-la-página)) y es el idioma que se etiqueta en un PDF accesible. Sin definir, el motor asume `'en-us'`; el sandbox recurre al idioma de la interfaz y expone el campo al principio de la sección Texto de cuerpo.
+
+```ts
+const config: PostextConfig = {
+  locale: 'es',
+  bodyText: { textAlign: 'justify', hyphenation: { enabled: true } }, // separa sílabas en español
+};
+```
+
 ### Huérfanas, viudas, *runts* y reglas de cohesión
 
 Consulta [Separación silábica y justificación](/es/docs/justification) para entender la mecánica de deméritos que hay detrás. Esta sección es la referencia de las claves de `bodyText` que gobiernan esas penalizaciones.
@@ -1163,6 +1227,18 @@ La última columna de una página solo se equilibra cuando la página fluye de f
       <td><code>number</code></td>
       <td><code>1</code></td>
       <td>Número máximo de líneas de rejilla adicionales tras el final de una misma lista.</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterFloats</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Permite líneas de rejilla adicionales bajo una figura o tabla que encabeza la columna corta (un flotante superior), tras la palanca de los finales de lista, de modo que el texto de debajo baja en lugar de acabar la columna corta.</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterFloat</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Número máximo de líneas de rejilla adicionales bajo un mismo flotante superior.</td>
     </tr>
     <tr>
       <td><code>looseParagraphs</code></td>
@@ -1884,6 +1960,12 @@ interface ResourceType {
   captionPrefix: string;               // prefijo del pie, p. ej. "Figura"
   defaultPlacement?: ResourcePlacement;// colocación de respaldo para los recursos de este tipo
 }
+
+interface ResourcePlacement {
+  position?: 'auto' | 'top' | 'bottom' | 'here'; // qué hueco libre puede ocupar el flotante; 'here' = incrustado en línea
+  span?: 'column' | 'page';                      // una columna, o todo el ancho del área de contenido
+  rotate?: 'ccw' | 'cw';                         // un cuarto de vuelta: una tabla apaisada en una página propia
+}
 ```
 
 <table>
@@ -1938,7 +2020,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code> (opcional)</td>
-      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>. Si tampoco está definida, se aplica el valor integrado <code>auto</code> / <code>column</code>. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución completa.</td>
+      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>: <code>position</code>, <code>span</code> y <code>rotate</code>, cada uno resuelto por separado. Si tampoco está definida, se aplica el valor integrado <code>auto</code> / <code>column</code> / sin girar. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución y <a href="/es/docs/document-format#recursos">Formato del documento › Recursos</a> para lo que hace cada valor, incluidos los recursos girados.</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
@@ -3275,7 +3357,10 @@ interface HtmlViewerConfig {
   maxCharsPerLine?: number;     // Ancho objetivo de columna, en caracteres de la fuente del cuerpo.
   columnGap?: number;            // Espacio horizontal entre columnas en modo multi-columna (px).
   optimalLineBreaking?: boolean; // Usar Knuth–Plass dentro del visor HTML en lugar de greedy.
+  overrides?: HtmlViewerOverrides; // Configuración parcial solo para pantalla, fusionada sobre la del documento.
 }
+
+type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
 ```
 
 <table>
@@ -3306,8 +3391,24 @@ interface HtmlViewerConfig {
       <td><code>false</code></td>
       <td>Activa la división de líneas Knuth–Plass dentro del visor HTML. Está desactivado por defecto porque el visor recompone la maquetación en cada resize o cambio de tamaño — el algoritmo greedy first-fit es lo bastante rápido para sentirse instantáneo. Actívalo cuando quieras los mismos cortes óptimos que usa el backend canvas.</td>
     </tr>
+    <tr>
+      <td><code>overrides</code></td>
+      <td><code>HtmlViewerOverrides</code></td>
+      <td>—</td>
+      <td>Una configuración parcial del documento que solo se aplica en pantalla. El visor HTML la fusiona sobre la configuración del documento antes de componer (<code>applyHtmlViewerOverrides</code>); canvas y PDF la ignoran. Los objetos se fusionan recursivamente; una lista <code>levels</code> (encabezados, listas, índice) se fusiona entrada a entrada por <code>level</code>; cualquier otra lista — los <code>elements</code> de un bloque de diseño, <code>calloutStyles</code>, <code>colorPalette</code>… — sustituye a la lista base por completo. Uso típico: un inicio de capítulo sin las bandas de imprenta, o una página de parte cuyo título se envuelve contra el número en lugar de un ancho fijo de caja de corte. El sandbox lo edita como JSON.</td>
+    </tr>
   </tbody>
 </table>
+
+```ts
+const config: PostextConfig = {
+  headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true } }] },
+  htmlViewer: {
+    // En pantalla, los capítulos siguen de corrido sin el inicio a toda página.
+    overrides: { headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false } }] } },
+  },
+};
+```
 
 El resolver y el stripper siguen el mismo patrón que las demás secciones:
 
@@ -3538,36 +3639,6 @@ debug: {
   },
 }
 ```
-
-
-## Configuración avanzada
-
-Las siguientes secciones de configuración existen solo en el sistema de tipos — el motor de composición todavía no las lee. Se incluyen aquí como señal de hacia dónde va la superficie de configuración.
-
-Dos apartados que vivían aquí ya se han implementado como funcionalidades reales y han salido de esta sección:
-
-- **La colocación de recursos** ya no es un enum futuro (`'topOfColumn'`, `'floatLeft'`, `'fullWidthBreak'`, …). El modelo de flotado implementado usa `position: 'auto' | 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resueltos por recurso, luego por el `defaultPlacement` de su tipo y por último el valor integrado `auto` / `column`. Consulta [Tipos de recurso](#tipos-de-recurso) más arriba y [Formato del documento › Recursos](/es/docs/document-format#recursos).
-- **La numeración automática de figuras/tablas** se implementó como numeración tipada por primera referencia — consulta [Tipos de recurso](#tipos-de-recurso).
-
-### Configuración de columnas
-
-*Solo en el sistema de tipos.* Control granular de columnas: número de columnas explícito, tamaño del medianil, filetes de columna (separadores visuales) y equilibrado de columnas.
-
-### Tipografía
-
-*Solo en el sistema de tipos.* Controles tipográficos avanzados: mínimos de líneas para huérfanas/viudas, optimización de bordes irregulares, espaciado alrededor de encabezados y figuras, y reglas de agrupación para encabezados con párrafos y figuras con pies de foto.
-
-### Referencias
-
-*Solo en el sistema de tipos.* Colocación de notas al pie (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), estilo de marcador (`'number'`, `'symbol'`, `'custom'`) y notas al margen. (La numeración automática de figuras/tablas, que antes figuraba aquí, ya está implementada — consulta [Tipos de recurso](#tipos-de-recurso).)
-
-### Configuraciones por sección
-
-*Solo en el sistema de tipos.* Aplica diferentes ajustes de columnas, tipografía o colocación de recursos a secciones específicas del documento, identificadas mediante selectores tipo CSS.
-
-### Renderizador
-
-*Solo en el sistema de tipos.* Formato de salida objetivo: `'web'` para renderizado HTML/canvas, `'pdf'` para salida de impresión.
 
 
 ## Uso programático

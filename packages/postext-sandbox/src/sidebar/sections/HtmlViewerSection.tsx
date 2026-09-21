@@ -1,17 +1,37 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
   resolveHtmlViewerConfig,
   DEFAULT_HTML_VIEWER_CONFIG,
 } from 'postext';
-import type { HtmlViewerConfig } from 'postext';
+import type { HtmlViewerConfig, HtmlViewerOverrides } from 'postext';
 import {
   CollapsibleSection,
   NumberInput,
   ToggleSwitch,
 } from '../../controls';
+import { FieldRow } from '../../controls/FieldRow';
+
+function overridesText(overrides: HtmlViewerOverrides | undefined): string {
+  return overrides && Object.keys(overrides).length > 0 ? JSON.stringify(overrides, null, 2) : '';
+}
+
+/** Parse the screen-only overrides typed as JSON: an object, or nothing.
+ *  Returns `null` when the text is not a JSON object. */
+function parseOverrides(text: string): HtmlViewerOverrides | undefined | null {
+  if (text.trim().length === 0) return undefined;
+  try {
+    const value: unknown = JSON.parse(text);
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
+    const rest = { ...(value as Record<string, unknown>) };
+    delete rest.htmlViewer; // never nest the viewer config inside its own overrides
+    return Object.keys(rest).length > 0 ? (rest as HtmlViewerOverrides) : undefined;
+  } catch {
+    return null;
+  }
+}
 
 export const HtmlViewerSection = memo(function HtmlViewerSection() {
   const dispatch = useSandboxDispatch();
@@ -49,6 +69,28 @@ export const HtmlViewerSection = memo(function HtmlViewerSection() {
 
   const hasOverrides =
     rawHtmlViewer !== undefined && Object.keys(rawHtmlViewer).length > 0;
+
+  // The screen-only overrides are a free partial config, edited as JSON.
+  // The draft is local until it parses; an external change (import, preset
+  // load, reset) replaces the draft.
+  const committedText = overridesText(rawHtmlViewer?.overrides);
+  const [draft, setDraft] = useState(committedText);
+  const [invalid, setInvalid] = useState(false);
+  useEffect(() => {
+    setDraft(committedText);
+    setInvalid(false);
+  }, [committedText]);
+  const commitOverrides = () => {
+    const parsed = parseOverrides(draft);
+    if (parsed === null) {
+      setInvalid(true);
+      return;
+    }
+    setInvalid(false);
+    if (overridesText(parsed) === committedText) return;
+    if (parsed === undefined) resetField('overrides');
+    else updateHtmlViewer({ overrides: parsed });
+  };
 
   return (
     <CollapsibleSection
@@ -92,6 +134,27 @@ export const HtmlViewerSection = memo(function HtmlViewerSection() {
         isDefault={isOptimalLineBreakingDefault}
         onReset={() => resetField('optimalLineBreaking')}
       />
+      <FieldRow
+        stacked
+        label={labels.htmlViewerOverrides}
+        hint={invalid ? labels.htmlViewerOverridesInvalid : labels.htmlViewerOverridesHint}
+        tooltip={labels.htmlViewerOverridesTooltip}
+        isDefault={rawHtmlViewer?.overrides === undefined}
+        onReset={() => resetField('overrides')}
+      >
+        <textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commitOverrides}
+          spellCheck={false}
+          rows={6}
+          aria-label={labels.htmlViewerOverrides}
+          aria-invalid={invalid || undefined}
+          placeholder={'{ "headings": { "levels": [ { "level": 1, "span": "column" } ] } }'}
+          className="min-w-0 w-full resize-y rounded border bg-transparent px-1.5 py-1 font-mono text-xs"
+          style={{ borderColor: invalid ? 'var(--destructive)' : 'var(--rule)', color: 'var(--foreground)' }}
+        />
+      </FieldRow>
     </CollapsibleSection>
   );
 });

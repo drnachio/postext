@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
 import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, dimensionsEqual, colorsEqual } from 'postext';
-import type { BodyTextConfig, HyphenationConfig } from 'postext';
+import type { BodyTextConfig, HyphenationConfig, HyphenationLocale } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -13,7 +13,7 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../../controls';
-import { LOCALE_TO_HYPHENATION, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
+import { LOCALE_TO_HYPHENATION, LOCALE_OPTIONS, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
 import { JustificationSubsection } from './JustificationSubsection';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections';
 
@@ -24,11 +24,18 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.bodyText);
   const locale = useSandboxSelector((s) => s.locale);
-  const bodyText = resolveBodyTextConfig(raw);
+  const documentLocale = useSandboxSelector((s) => s.config.locale);
+  const bodyText = resolveBodyTextConfig(raw, documentLocale);
   const defaultLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
 
-  // Use app locale as the effective default when user hasn't explicitly set one
-  const effectiveHyphenationLocale = raw?.hyphenation?.locale ?? defaultLocale;
+  // The document language is the hyphenation fallback; the app locale
+  // stands in for it while neither is explicitly set.
+  const effectiveHyphenationLocale = raw?.hyphenation?.locale ?? documentLocale ?? defaultLocale;
+  const effectiveDocumentLocale = documentLocale ?? defaultLocale;
+
+  const updateDocumentLocale = (value: HyphenationLocale | undefined) => {
+    dispatch({ type: 'UPDATE_CONFIG', payload: { locale: value } });
+  };
 
   const updateBodyText = (partial: Partial<BodyTextConfig>) => {
     dispatch({
@@ -40,7 +47,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const resetBodyText = () => {
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { bodyText: undefined },
+      payload: { bodyText: undefined, locale: undefined },
     });
   };
 
@@ -74,7 +81,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
     }
   };
 
-  const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
+  const hasOverrides = (raw !== undefined && Object.keys(raw).length > 0) || documentLocale !== undefined;
   const isFontDefault = bodyText.fontFamily === D.fontFamily;
   const isSizeDefault = dimensionsEqual(bodyText.fontSize, D.fontSize);
   const isLineHeightDefault = dimensionsEqual(bodyText.lineHeight, D.lineHeight);
@@ -128,6 +135,15 @@ export const BodyTextSection = memo(function BodyTextSection() {
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
+      <SelectInput
+        label={labels.documentLocale}
+        value={effectiveDocumentLocale}
+        options={LOCALE_OPTIONS}
+        onChange={(v) => updateDocumentLocale(v as HyphenationLocale)}
+        tooltip={labels.documentLocaleTooltip}
+        isDefault={documentLocale === undefined}
+        onReset={() => updateDocumentLocale(undefined)}
+      />
       <FontPicker
         label={labels.bodyFont}
         value={bodyText.fontFamily}

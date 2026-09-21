@@ -18,6 +18,10 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
       return config.header !== undefined || config.footer !== undefined;
     case 'paragraphStyles':
       return (config.paragraphStyles ?? []).length > 0;
+    case 'headingStyles':
+      return (config.headingStyles ?? []).length > 0;
+    case 'bodyText':
+      return hasKeys(config.bodyText) || config.locale !== undefined;
     case 'calloutStyles':
       return config.calloutStyles !== undefined;
     case 'resource-types':
@@ -35,8 +39,8 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'page':
     case 'layout':
     case 'parts':
-    case 'bodyText':
     case 'headings':
+    case 'toc':
     case 'unordered-lists':
     case 'ordered-lists':
     case 'math':

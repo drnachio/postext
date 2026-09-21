@@ -222,11 +222,11 @@ export function HeadingLevelSection({
         </NestedGroup>
       )}
       <SelectInput
-        label={labels.headingSpan ?? 'Span'}
+        label={labels.headingSpan}
         value={resolved.span}
         options={[
-          { value: 'column', label: labels.headingSpanColumn ?? 'Column (default)' },
-          { value: 'page', label: labels.headingSpanPage ?? 'Full page (chapter opener)' },
+          { value: 'column', label: labels.headingSpanColumn },
+          { value: 'page', label: labels.headingSpanPage },
         ]}
         onChange={(v) => onUpdate(level, { span: v as HeadingSpan })}
         tooltip={labels.headingSpanTooltip}
@@ -234,7 +234,7 @@ export function HeadingLevelSection({
         onReset={() => onUpdate(level, { span: 'column' })}
       />
       <ToggleSwitch
-        label={labels.headingAdvancedDesign ?? 'Advanced design'}
+        label={labels.headingAdvancedDesign}
         checked={resolved.advancedDesign.enabled}
         onChange={(v) => updateAdvanced({ enabled: v })}
         tooltip={labels.headingAdvancedDesignTooltip}

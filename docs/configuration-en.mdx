@@ -54,7 +54,6 @@ This reference is long. These are the main blocks:
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
 - [PDF generation (config)](#pdf-generation-config) — outlines, accessible (tagged) output, forced colour space for the PDF backend.
 - [Debug](#debug) — visual overlays and authoring warnings for the editor.
-- [Advanced configuration](#advanced-configuration) — declared types, future support.
 - [Programmatic use](#programmatic-usage) — `buildDocument`, resolvers, caches.
 - [Running layout in a Web Worker](#running-layout-in-a-web-worker) — off-main-thread builds with cancellation.
 - [Integrating the HTML viewer](#integrating-the-html-viewer) and [Generating PDFs](#generating-pdfs) — end-to-end recipes.
@@ -436,6 +435,12 @@ Text elements render a template string with placeholder substitution. Placeholde
       <td>Discriminator.</td>
     </tr>
     <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Stable id, unique within the slot. Other elements anchor to it with <code>anchor.to: '#id'</code>. The sandbox assigns one on creation.</td>
+    </tr>
+    <tr>
       <td><code>content</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
@@ -496,6 +501,36 @@ Text elements render a template string with placeholder substitution. Placeholde
       <td>How the engine handles text that exceeds the element's available width. <code>'wrap'</code> breaks the line into multiple lines; the ellipsis variants truncate to a single line and insert <code>…</code> at the start, middle, or end; <code>'clip'</code> hard-clips to the element's bounding box without inserting any character.</td>
     </tr>
     <tr>
+      <td><code>verticalAlign</code></td>
+      <td><code>'top' | 'middle' | 'bottom'</code></td>
+      <td><code>'middle'</code></td>
+      <td>Where the text sits inside a box taller than its lines — a fixed <code>placement.size.height</code>, or a box stretched by an anchored neighbour.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.2</code></td>
+      <td>Leading of wrapped lines, as a multiple of <code>fontSize</code>.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Tracking: extra space advanced after every character, spaces included, exactly as CSS <code>letter-spacing</code> does. Measured widths grow with it, so an auto-width box stays tight.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Letter-case transform applied to the resolved text, placeholders included — a part title set in capitals in the contents.</td>
+    </tr>
+    <tr>
+      <td><code>box</code></td>
+      <td><code>ElementBoxStyle</code></td>
+      <td>—</td>
+      <td>Optional background and border drawn behind the text: <code>backgroundColor</code>, <code>borderColor</code>, <code>borderWidth</code>, <code>borderRadius</code> and a per-side <code>padding</code> that grows the box beyond the text (see <a href="#box-elements">Box elements</a> for the fields).</td>
+    </tr>
+    <tr>
       <td><code>hyphenate</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
@@ -541,7 +576,7 @@ The sandbox heading editor applies these implied alignments automatically when y
 
 ### Rule elements
 
-Rule elements render a horizontal line across the slot.
+Rule elements render a line: horizontal across the slot, or vertical down it.
 
 <table>
   <thead>
@@ -558,6 +593,18 @@ Rule elements render a horizontal line across the slot.
       <td><code>'rule'</code></td>
       <td>—</td>
       <td>Discriminator.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Stable id, unique within the slot, for <code>anchor.to: '#id'</code> references.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'horizontal' | 'vertical'</code></td>
+      <td><code>'horizontal'</code></td>
+      <td>A horizontal rule runs along <code>placement.size.width</code> (<code>'fill'</code> = to the container edge) and is <code>thickness</code> tall. A vertical rule runs down <code>placement.size.height</code> (<code>'fill'</code> or unset = to the container edge) and is <code>thickness</code> wide — a divider between a running head and a folio.</td>
     </tr>
     <tr>
       <td><code>color</code></td>
@@ -606,6 +653,12 @@ Rule elements render a horizontal line across the slot.
       <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
       <td><code>'all'</code></td>
       <td>Page roles the rule appears on (see the text-element <code>pages</code> field).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>derived from <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>Advanced placement (see <a href="#element-placement">Element placement</a>). <code>size.width</code> / <code>size.height</code> set the rule length; <code>width: 'fill'</code> is the legacy <code>'full'</code>.</td>
     </tr>
   </tbody>
 </table>
@@ -938,6 +991,17 @@ When text alignment is set to `'justify'`, hyphenation prevents excessive word s
 
 Words shorter than 5 characters are never hyphenated. The engine requires at least 2 characters before and 3 characters after a break point.
 
+#### Document language
+
+The top-level `locale` is the language of the document as a whole. It takes the same values as `hyphenation.locale` and is the fallback when that field is unset, so a Spanish book only needs `locale: 'es'` to hyphenate in Spanish. It also picks the language of the built-in table continuation strings (`(cont.)` / *Continued* versus *Continúa*, see [Tables taller than the page](#tables-taller-than-the-page)) and is the language tagged into an accessible PDF. Unset, the engine assumes `'en-us'`; the sandbox falls back to the interface language and exposes the field at the top of the Body text section.
+
+```ts
+const config: PostextConfig = {
+  locale: 'es',
+  bodyText: { textAlign: 'justify', hyphenation: { enabled: true } }, // hyphenates in Spanish
+};
+```
+
 ### Orphans, widows, runts, and keep-together rules
 
 See [Hyphenation & Justification](/en/docs/justification) for the mechanics behind these demerits. This section is the reference for the `bodyText` keys that drive them.
@@ -1163,6 +1227,18 @@ The last column of a page is only balanced when the page flows naturally into th
       <td><code>number</code></td>
       <td><code>1</code></td>
       <td>Maximum extra grid lines after a single list end.</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterFloats</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Allow extra grid lines under a figure or table that heads the short column (a top float), after the list-end lever, so the text below it moves down instead of the column ending short.</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterFloat</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Maximum extra grid lines under a single top float.</td>
     </tr>
     <tr>
       <td><code>looseParagraphs</code></td>
@@ -1884,6 +1960,12 @@ interface ResourceType {
   captionPrefix: string;               // prepended to the caption, e.g. "Figure"
   defaultPlacement?: ResourcePlacement;// fallback placement for this type's resources
 }
+
+interface ResourcePlacement {
+  position?: 'auto' | 'top' | 'bottom' | 'here'; // which free slot a float may take; 'here' = inline embed
+  span?: 'column' | 'page';                      // one column, or the full content width
+  rotate?: 'ccw' | 'cw';                         // a quarter turn: a landscape table on a page of its own
+}
 ```
 
 <table>
@@ -1938,7 +2020,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code> (optional)</td>
-      <td>Placement used by resources of this type that do not set their own <code>placement</code>. When unset, the built-in <code>auto</code> / <code>column</code> default applies. See <a href="#numbering-and-references">Numbering and references</a> below for the full resolution chain.</td>
+      <td>Placement used by resources of this type that do not set their own <code>placement</code>: <code>position</code>, <code>span</code> and <code>rotate</code>, each resolved independently. When unset, the built-in <code>auto</code> / <code>column</code> / upright default applies. See <a href="#numbering-and-references">Numbering and references</a> below for the resolution chain and <a href="/en/docs/document-format#resources">Document format › Resources</a> for what each value does, including turned resources.</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
@@ -3275,7 +3357,10 @@ interface HtmlViewerConfig {
   maxCharsPerLine?: number;     // Target column width, in characters of the body font.
   columnGap?: number;            // Horizontal gap between columns in multi-column mode (px).
   optimalLineBreaking?: boolean; // Use Knuth–Plass inside the HTML viewer instead of greedy.
+  overrides?: HtmlViewerOverrides; // Screen-only partial config merged over the document config.
 }
+
+type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
 ```
 
 <table>
@@ -3306,8 +3391,24 @@ interface HtmlViewerConfig {
       <td><code>false</code></td>
       <td>Enable Knuth–Plass line breaking in the HTML viewer. Off by default because the viewer reruns layout on every resize and font-size change — the greedy first-fit algorithm is fast enough to feel instantaneous. Turn it on when you want the same optimal breaks the canvas backend uses.</td>
     </tr>
+    <tr>
+      <td><code>overrides</code></td>
+      <td><code>HtmlViewerOverrides</code></td>
+      <td>—</td>
+      <td>A partial document config that applies on screen only. The HTML viewer merges it over the document config before laying out (<code>applyHtmlViewerOverrides</code>); canvas and PDF ignore it. Objects merge recursively; a <code>levels</code> array (headings, lists, contents) merges entry by entry on <code>level</code>; every other array — a design slot's <code>elements</code>, <code>calloutStyles</code>, <code>colorPalette</code>… — replaces the base array wholesale. Typical use: a chapter opener without the print bands, or a part page whose title wraps against the number instead of a fixed trim-box width. The sandbox edits it as JSON.</td>
+    </tr>
   </tbody>
 </table>
+
+```ts
+const config: PostextConfig = {
+  headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true } }] },
+  htmlViewer: {
+    // On screen, chapters flow on without the page-span opener.
+    overrides: { headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false } }] } },
+  },
+};
+```
 
 Resolver and stripper follow the same pattern as the other sections:
 
@@ -3538,36 +3639,6 @@ debug: {
   },
 }
 ```
-
-
-## Advanced configuration
-
-The following configuration sections exist in the type system only — the layout engine does not read them yet. They are included here as a signpost for where the configuration surface is heading.
-
-Two stubs that used to live here have shipped as real features and moved out of this section:
-
-- **Resource placement** is no longer a future enum (`'topOfColumn'`, `'floatLeft'`, `'fullWidthBreak'`, …). The shipped float model uses `position: 'auto' | 'top' | 'bottom' | 'here'` and `span: 'column' | 'page'`, resolved per resource, then the type's `defaultPlacement`, then the built-in `auto` / `column`. See [Resource types](#resource-types) above and [Document format › Resources](/en/docs/document-format#resources).
-- **Automatic figure/table numbering** shipped as typed first-reference numbering — see [Resource types](#resource-types).
-
-### Column Config
-
-*Type-system only.* Fine-grained column control: explicit column count, gutter size, column rules (visual separators), and column balancing.
-
-### Typography
-
-*Type-system only.* Advanced typographic controls: orphan/widow minimum line counts, rag optimization, spacing around headings and figures, and keep-together rules for headings with paragraphs and figures with captions.
-
-### References
-
-*Type-system only.* Footnote placement (`'columnBottom'`, `'pageBottom'`, `'endOfSection'`), marker style (`'number'`, `'symbol'`, `'custom'`), and margin notes. (Automatic figure/table numbering, formerly listed here, has shipped — see [Resource types](#resource-types).)
-
-### Section Overrides
-
-*Type-system only.* Apply different column, typography, or resource placement settings to specific sections of the document, matched by CSS-like selectors.
-
-### Renderer
-
-*Type-system only.* Target output format: `'web'` for HTML/canvas rendering, `'pdf'` for print output.
 
 
 ## Programmatic Usage

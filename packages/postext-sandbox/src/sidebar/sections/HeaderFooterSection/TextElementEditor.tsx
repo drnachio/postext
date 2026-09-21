@@ -11,6 +11,8 @@ import type {
   Dimension,
   DimensionUnit,
   ColorValue,
+  ElementSize,
+  VAlign,
 } from 'postext';
 import {
   TextInput,
@@ -34,7 +36,23 @@ import {
 } from './placementAdapter';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
+const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
+const BOX_SIZE_UNITS: DimensionUnit[] = ['pt', 'mm', 'cm', 'in', 'em', 'px'];
 const ZERO: Dimension = { value: 0, unit: 'pt' };
+const DEFAULT_CUSTOM_WIDTH: Dimension = { value: 40, unit: 'mm' };
+const DEFAULT_CUSTOM_HEIGHT: Dimension = { value: 10, unit: 'mm' };
+
+type SizeMode = 'auto' | 'fill' | 'custom';
+
+function sizeMode(size: ElementSize | undefined): SizeMode {
+  if (size === 'fill') return 'fill';
+  if (size && typeof size === 'object') return 'custom';
+  return 'auto';
+}
+
+function sizeDim(size: ElementSize | undefined, fallback: Dimension): Dimension {
+  return size && typeof size === 'object' ? size : fallback;
+}
 
 interface Props {
   raw: DesignTextElement;
@@ -73,8 +91,50 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
   const isWeightDefault = resolved.fontWeight === DEFAULT_TEXT_ELEMENT.fontWeight;
   const isItalicDefault = resolved.italic === DEFAULT_TEXT_ELEMENT.italic;
   const isColorDefault = colorsEqual(resolved.color, DEFAULT_TEXT_ELEMENT.color);
+  const isVerticalAlignDefault = raw.verticalAlign === undefined;
+  const isLineHeightDefault = raw.lineHeight === undefined;
+  const isLetterSpacingDefault = raw.letterSpacing === undefined;
+  const isTextTransformDefault = raw.textTransform === undefined || raw.textTransform === 'none';
+  const widthMode = sizeMode(raw.placement.size?.width);
+  const heightMode = sizeMode(raw.placement.size?.height);
+  const maxWidth = raw.placement.size?.maxWidth;
   const isMarginFromBodyDefault = dimensionsEqual(resolvedMarginFromBody, defaultMarginFromBody);
   const isMarginFromEdgeDefault = dimensionsEqual(resolvedMarginFromEdge, defaultMarginFromEdge);
+
+  /** Merge into `placement.size`, dropping keys set to `undefined`. */
+  const updateSize = (partial: { width?: ElementSize; height?: ElementSize; maxWidth?: ElementSize }) => {
+    const size: NonNullable<DesignTextElement['placement']['size']> = { ...(raw.placement.size ?? {}) };
+    for (const [k, v] of Object.entries(partial) as [keyof typeof size, ElementSize | undefined][]) {
+      if (v === undefined) delete size[k];
+      else size[k] = v;
+    }
+    const placement = { ...raw.placement };
+    if (Object.keys(size).length === 0) delete placement.size;
+    else placement.size = size;
+    update({ placement });
+  };
+  const applySizeMode = (axis: 'width' | 'height', mode: SizeMode) => {
+    const fallback = axis === 'width' ? DEFAULT_CUSTOM_WIDTH : DEFAULT_CUSTOM_HEIGHT;
+    const current = raw.placement.size?.[axis];
+    updateSize({
+      [axis]: mode === 'auto' ? undefined : mode === 'fill' ? 'fill' : sizeDim(current, fallback),
+    });
+  };
+
+  const SIZE_MODE_OPTIONS = [
+    { value: 'auto', label: labels.headerFooterElementSizeAuto },
+    { value: 'fill', label: labels.headerFooterElementSizeFill },
+    { value: 'custom', label: labels.headerFooterElementWidthCustom },
+  ];
+  const VERTICAL_ALIGN_OPTIONS = [
+    { value: 'top', label: labels.headerFooterElementVerticalAlignTop },
+    { value: 'middle', label: labels.headerFooterElementVerticalAlignMiddle },
+    { value: 'bottom', label: labels.headerFooterElementVerticalAlignBottom },
+  ];
+  const TEXT_TRANSFORM_OPTIONS = [
+    { value: 'none', label: labels.headingTextTransformNone },
+    { value: 'uppercase', label: labels.headingTextTransformUppercase },
+  ];
 
   return (
     <>
@@ -97,11 +157,75 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         }
       />
       <SelectInput
+        label={labels.headerFooterElementWidth}
+        value={widthMode}
+        options={SIZE_MODE_OPTIONS}
+        onChange={(v) => applySizeMode('width', v as SizeMode)}
+        tooltip={labels.headerFooterElementTextWidthTooltip}
+        isDefault={widthMode === 'auto'}
+        onReset={() => applySizeMode('width', 'auto')}
+      />
+      {widthMode === 'custom' && (
+        <DimensionInput
+          label={labels.headerFooterElementWidth}
+          value={sizeDim(raw.placement.size?.width, DEFAULT_CUSTOM_WIDTH)}
+          onChange={(dim: Dimension) => updateSize({ width: dim })}
+          min={0}
+          step={1}
+          units={BOX_SIZE_UNITS}
+        />
+      )}
+      {widthMode === 'auto' && (
+        <DimensionInput
+          label={labels.headerFooterElementMaxWidth}
+          value={sizeDim(maxWidth, ZERO)}
+          onChange={(dim: Dimension) => updateSize({ maxWidth: dim.value > 0 ? dim : undefined })}
+          min={0}
+          step={1}
+          units={BOX_SIZE_UNITS}
+          tooltip={labels.headerFooterElementMaxWidthTooltip}
+          isDefault={maxWidth === undefined}
+          onReset={() => updateSize({ maxWidth: undefined })}
+        />
+      )}
+      <SelectInput
+        label={labels.height}
+        value={heightMode}
+        options={SIZE_MODE_OPTIONS}
+        onChange={(v) => applySizeMode('height', v as SizeMode)}
+        tooltip={labels.headerFooterElementTextHeightTooltip}
+        isDefault={heightMode === 'auto'}
+        onReset={() => applySizeMode('height', 'auto')}
+      />
+      {heightMode === 'custom' && (
+        <DimensionInput
+          label={labels.height}
+          value={sizeDim(raw.placement.size?.height, DEFAULT_CUSTOM_HEIGHT)}
+          onChange={(dim: Dimension) => updateSize({ height: dim })}
+          min={0}
+          step={1}
+          units={BOX_SIZE_UNITS}
+        />
+      )}
+      <SelectInput
+        label={labels.headerFooterElementVerticalAlign}
+        value={resolved.verticalAlign}
+        options={VERTICAL_ALIGN_OPTIONS}
+        onChange={(v) => update({ verticalAlign: v as VAlign })}
+        tooltip={labels.headerFooterElementVerticalAlignTooltip}
+        isDefault={isVerticalAlignDefault}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.verticalAlign;
+          onChange(next);
+        }}
+      />
+      <SelectInput
         label={labels.headerFooterElementParity}
         value={raw.parity ?? 'all'}
         options={PARITY_OPTIONS}
         onChange={(v) => update({ parity: v as PageParity })}
-        tooltip={labels.headerFooterElementParityTooltip ?? 'Páginas en las que este elemento se renderiza: todas, solo pares (lado izquierdo en doble página) o solo impares (lado derecho).'}
+        tooltip={labels.headerFooterElementParityTooltip}
       />
       <PagesSelect
         value={raw.pages}
@@ -124,7 +248,7 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         }}
         searchPlaceholder={labels.bodyFontSearch}
         noResultsLabel={labels.bodyFontNoResults}
-        tooltip={labels.headerFooterElementFontFamilyTooltip ?? 'Familia tipográfica del texto de este elemento.'}
+        tooltip={labels.headerFooterElementFontFamilyTooltip}
       />
       <DimensionInput
         label={labels.headerFooterElementFontSize}
@@ -139,7 +263,7 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
           next.fontSize = undefined as unknown as Dimension;
           onChange(next);
         }}
-        tooltip={labels.headerFooterElementFontSizeTooltip ?? 'Tamaño de fuente del texto.'}
+        tooltip={labels.headerFooterElementFontSizeTooltip}
       />
       <NumberInput
         label={labels.headerFooterElementFontWeight}
@@ -154,7 +278,7 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
           next.fontWeight = undefined;
           onChange(next);
         }}
-        tooltip={labels.headerFooterElementFontWeightTooltip ?? 'Grosor de la fuente (100 = fina, 400 = normal, 700 = negrita, 900 = extra negra).'}
+        tooltip={labels.headerFooterElementFontWeightTooltip}
       />
       <ToggleSwitch
         label={labels.headerFooterElementItalic}
@@ -166,7 +290,7 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
           next.italic = undefined;
           onChange(next);
         }}
-        tooltip={labels.headerFooterElementItalicTooltip ?? 'Activa la variante cursiva de la fuente.'}
+        tooltip={labels.headerFooterElementItalicTooltip}
       />
       <ColorPicker
         label={labels.headerFooterElementColor}
@@ -179,23 +303,66 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
           onChange(next);
         }}
         fieldId={`headerFooter-text-color-${raw.id}`}
-        tooltip={labels.headerFooterElementColorTooltip ?? 'Color del texto del elemento.'}
+        tooltip={labels.headerFooterElementColorTooltip}
+      />
+      <NumberInput
+        label={labels.headerFooterElementLineHeight}
+        value={resolved.lineHeight}
+        onChange={(v) => update({ lineHeight: v })}
+        min={0.5}
+        max={4}
+        step={0.05}
+        tooltip={labels.headerFooterElementLineHeightTooltip}
+        isDefault={isLineHeightDefault}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.lineHeight;
+          onChange(next);
+        }}
+      />
+      <DimensionInput
+        label={labels.headerFooterElementLetterSpacing}
+        value={raw.letterSpacing ?? ZERO}
+        onChange={(dim: Dimension) => update({ letterSpacing: dim })}
+        min={0}
+        step={0.1}
+        units={TRACKING_UNITS}
+        tooltip={labels.headerFooterElementLetterSpacingTooltip}
+        isDefault={isLetterSpacingDefault}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.letterSpacing;
+          onChange(next);
+        }}
       />
       <SelectInput
-        label={labels.headerFooterElementOverflow ?? 'Desbordamiento'}
+        label={labels.headingTextTransform}
+        value={raw.textTransform ?? 'none'}
+        options={TEXT_TRANSFORM_OPTIONS}
+        onChange={(v) => update({ textTransform: v as DesignTextElement['textTransform'] })}
+        tooltip={labels.headerFooterElementTextTransformTooltip}
+        isDefault={isTextTransformDefault}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.textTransform;
+          onChange(next);
+        }}
+      />
+      <SelectInput
+        label={labels.headerFooterElementOverflow}
         value={resolved.overflow}
         options={[
-          { value: 'wrap', label: labels.headerFooterElementOverflowWrap ?? 'Pasar a nueva línea' },
-          { value: 'ellipsis-end', label: labels.headerFooterElementOverflowEllipsisEnd ?? 'Elipsis al final (…)' },
-          { value: 'ellipsis-middle', label: labels.headerFooterElementOverflowEllipsisMiddle ?? 'Elipsis en el centro' },
-          { value: 'ellipsis-start', label: labels.headerFooterElementOverflowEllipsisStart ?? 'Elipsis al principio' },
-          { value: 'clip', label: labels.headerFooterElementOverflowClip ?? 'Recortar' },
+          { value: 'wrap', label: labels.headerFooterElementOverflowWrap },
+          { value: 'ellipsis-end', label: labels.headerFooterElementOverflowEllipsisEnd },
+          { value: 'ellipsis-middle', label: labels.headerFooterElementOverflowEllipsisMiddle },
+          { value: 'ellipsis-start', label: labels.headerFooterElementOverflowEllipsisStart },
+          { value: 'clip', label: labels.headerFooterElementOverflowClip },
         ]}
         onChange={(v) => update({ overflow: v as DesignTextElement['overflow'] })}
-        tooltip={labels.headerFooterElementOverflowTooltip ?? 'Qué hacer cuando el texto no cabe en el ancho disponible: pasar a una nueva línea, recortar con puntos suspensivos al inicio/centro/final, o simplemente recortar sin indicador.'}
+        tooltip={labels.headerFooterElementOverflowTooltip}
       />
       <ToggleSwitch
-        label={labels.headerFooterElementHyphenate ?? 'Separación silábica'}
+        label={labels.headerFooterElementHyphenate}
         checked={raw.hyphenate ?? false}
         onChange={(v) => update({ hyphenate: v })}
         isDefault={!raw.hyphenate}
@@ -204,7 +371,7 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
           next.hyphenate = undefined;
           onChange(next);
         }}
-        tooltip={labels.headerFooterElementHyphenateTooltip ?? 'Cuando el modo de desbordamiento es "nueva línea", parte palabras largas por sílabas (guiones) en lugar de desbordarlas. Usa el idioma de silabación del documento.'}
+        tooltip={labels.headerFooterElementHyphenateTooltip}
       />
       {(() => {
         const box: ElementBoxStyle = resolved.box ?? {};
@@ -246,62 +413,62 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         return (
           <>
             <ColorPicker
-              label={labels.headerFooterElementBoxBackgroundColor ?? 'Background'}
+              label={labels.headerFooterElementBoxBackgroundColor}
               value={bg ?? { hex: '#ffffff', model: 'hex' }}
               onChange={(c: ColorValue) => updateBox({ backgroundColor: c })}
               isDefault={!bg}
               onReset={() => updateBox({ backgroundColor: undefined })}
               fieldId={`headerFooter-text-bg-${raw.id}`}
-              tooltip={labels.headerFooterElementBoxBackgroundColorTooltip ?? 'Color de fondo que rellena la caja detrás del texto. Se extiende hasta los bordes del elemento — usa padding para ampliarla más allá del texto.'}
+              tooltip={labels.headerFooterElementBoxBackgroundColorTooltip}
             />
             <ColorPicker
-              label={labels.headerFooterElementBoxBorderColor ?? 'Border color'}
+              label={labels.headerFooterElementBoxBorderColor}
               value={bc ?? { hex: '#000000', model: 'hex' }}
               onChange={(c: ColorValue) => updateBox({ borderColor: c })}
               isDefault={!bc}
               onReset={() => updateBox({ borderColor: undefined })}
               fieldId={`headerFooter-text-border-${raw.id}`}
-              tooltip={labels.headerFooterElementBoxBorderColorTooltip ?? 'Color del borde de la caja. Solo se dibuja si el grosor del borde es mayor que cero.'}
+              tooltip={labels.headerFooterElementBoxBorderColorTooltip}
             />
             <DimensionInput
-              label={labels.headerFooterElementBoxBorderWidth ?? 'Border width'}
+              label={labels.headerFooterElementBoxBorderWidth}
               value={bw}
               onChange={(dim: Dimension) => updateBox({ borderWidth: dim })}
               min={0}
               step={0.1}
               isDefault={bw.value === 0}
               onReset={() => updateBox({ borderWidth: undefined })}
-              tooltip={labels.headerFooterElementBoxBorderWidthTooltip ?? 'Grosor del trazo del borde. En 0 el borde no se dibuja.'}
+              tooltip={labels.headerFooterElementBoxBorderWidthTooltip}
             />
             <DimensionInput
-              label={labels.headerFooterElementBoxBorderRadius ?? 'Border radius'}
+              label={labels.headerFooterElementBoxBorderRadius}
               value={br}
               onChange={(dim: Dimension) => updateBox({ borderRadius: dim })}
               min={0}
               step={0.5}
               isDefault={br.value === 0}
               onReset={() => updateBox({ borderRadius: undefined })}
-              tooltip={labels.headerFooterElementBoxBorderRadiusTooltip ?? 'Radio de redondeo de las esquinas de la caja. Se aplica tanto al fondo como al borde.'}
+              tooltip={labels.headerFooterElementBoxBorderRadiusTooltip}
             />
             <DimensionInput
-              label={labels.headerFooterElementBoxPaddingH ?? 'Padding horizontal'}
+              label={labels.headerFooterElementBoxPaddingH}
               value={padH}
               onChange={updatePaddingH}
               min={0}
               step={0.5}
               isDefault={padH.value === 0}
               onReset={() => updatePaddingH(ZERO)}
-              tooltip={labels.headerFooterElementBoxPaddingHTooltip ?? 'Espacio interno a izquierda y derecha, entre el texto y los bordes de la caja. Permite que el fondo y el borde se extiendan más allá del texto.'}
+              tooltip={labels.headerFooterElementBoxPaddingHTooltip}
             />
             <DimensionInput
-              label={labels.headerFooterElementBoxPaddingV ?? 'Padding vertical'}
+              label={labels.headerFooterElementBoxPaddingV}
               value={padV}
               onChange={updatePaddingV}
               min={0}
               step={0.5}
               isDefault={padV.value === 0}
               onReset={() => updatePaddingV(ZERO)}
-              tooltip={labels.headerFooterElementBoxPaddingVTooltip ?? 'Espacio interno arriba y abajo, entre el texto y los bordes de la caja. Permite que el fondo y el borde se extiendan más allá del texto.'}
+              tooltip={labels.headerFooterElementBoxPaddingVTooltip}
             />
           </>
         );

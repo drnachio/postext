@@ -352,60 +352,6 @@ export interface PartState {
   palette?: Record<string, string>;
 }
 
-export type PlacementStrategy =
-  | 'topOfColumn'
-  | 'inline'
-  | 'floatLeft'
-  | 'floatRight'
-  | 'fullWidthBreak'
-  | 'margin';
-
-export interface ColumnConfig {
-  count?: number;
-  gutter?: string;
-  columnRule?: {
-    width?: string;
-    style?: string;
-    color?: string;
-  };
-  balancing?: boolean;
-}
-
-export interface ResourcePlacementConfig {
-  defaultStrategy?: PlacementStrategy;
-  deferPlacement?: boolean;
-  preserveAspectRatio?: boolean;
-}
-
-export interface TypographyConfig {
-  orphans?: number;
-  widows?: number;
-  hyphenation?: boolean;
-  ragOptimization?: boolean;
-  spacing?: {
-    beforeHeading?: string;
-    afterHeading?: string;
-    beforeFigure?: string;
-    afterFigure?: string;
-    beforeBlockQuote?: string;
-    afterBlockQuote?: string;
-  };
-  keepTogether?: {
-    headingWithParagraph?: boolean;
-    figureWithCaption?: boolean;
-  };
-}
-
-export interface ReferenceConfig {
-  footnotes?: {
-    placement?: 'columnBottom' | 'pageBottom' | 'endOfSection';
-    marker?: 'number' | 'symbol' | 'custom';
-  };
-  figureNumbering?: boolean;
-  tableNumbering?: boolean;
-  marginNotes?: boolean;
-}
-
 export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
 
 export interface ColorValue {
@@ -1628,13 +1574,6 @@ export interface ResolvedHtmlViewerConfig {
   overrides?: HtmlViewerOverrides;
 }
 
-export interface PostextSectionOverride {
-  selector: string;
-  columns?: ColumnConfig;
-  typography?: TypographyConfig;
-  resourcePlacement?: ResourcePlacementConfig;
-}
-
 export interface MathConfig {
   /** Enable LaTeX rendering. When false, `$...$` / `$$...$$` spans are
    *  still parsed (so warnings track unclosed delimiters) but rendered as
@@ -2295,21 +2234,11 @@ export interface PostextConfig {
   header?: HeaderFooterSlot;
   footer?: HeaderFooterSlot;
 
-  columns?: number;
-  gutter?: string;
-
-  columnConfig?: ColumnConfig;
-  resourcePlacement?: ResourcePlacementConfig;
-  typography?: TypographyConfig;
-  references?: ReferenceConfig;
-
-  /** Document locale — used as the fallback hyphenation locale when
-   *  `bodyText.hyphenation.locale` is not explicitly set. */
+  /** Document language. The fallback hyphenation locale when
+   *  `bodyText.hyphenation.locale` is not explicitly set, and the language
+   *  of the table continuation strings (`tableStyle.continuedSuffix` /
+   *  `continuesMarker`) when those are not set. Defaults to `'en-us'`. */
   locale?: HyphenationLocale;
-
-  sectionOverrides?: PostextSectionOverride[];
-
-  renderer?: 'web' | 'pdf';
 
   debug?: DebugConfig;
 
