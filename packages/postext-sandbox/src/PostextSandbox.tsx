@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PostextSandboxProps } from './types';
 import { SandboxProvider, useSandboxSelector, useSandboxDispatch } from './context/SandboxContext';
+import { LayoutServiceProvider } from './worker/LayoutServiceContext';
 import { preloadConfigFonts, getConfigFontFamilies } from './controls/fontLoader';
 import { ActivityBar } from './sidebar/ActivityBar';
 import { SidebarPanel } from './sidebar/SidebarPanel';
@@ -198,6 +199,7 @@ export function PostextSandbox({
   return (
     <div className={className ?? 'h-full w-full'}>
       <SandboxGlobalStyles />
+      <LayoutServiceProvider>
       <SandboxProvider
         initialMarkdown={initialMarkdown}
         initialConfig={initialConfig}
@@ -217,6 +219,7 @@ export function PostextSandbox({
           />
         </TooltipProvider>
       </SandboxProvider>
+      </LayoutServiceProvider>
     </div>
   );
 }

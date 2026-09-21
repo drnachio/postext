@@ -17,6 +17,11 @@ export interface BuildOptions {
   /** Fingerprint of `content.resources`. Consecutive builds with the same
    *  key ship the list once; the worker keeps it (see the protocol). */
   resourcesKey?: string;
+  /** Fingerprint of the whole build; the worker answers a repeat from its
+   *  document cache (see the protocol). */
+  cacheKey?: string;
+  /** @internal False: keep the document in the worker only (see `warm`). */
+  wantDoc?: boolean;
 }
 
 export interface LayoutWorkerHandle {
@@ -30,6 +35,13 @@ export interface LayoutWorkerHandle {
     config?: PostextConfig,
     opts?: BuildOptions,
   ): Promise<VDTDocument>;
+  /** Build into the worker's document cache without sending the document
+   *  back (`cacheKey` required): the next `build` with that key is a hit. */
+  warm(
+    content: PostextContent,
+    config: PostextConfig | undefined,
+    opts: BuildOptions & { cacheKey: string },
+  ): Promise<void>;
   dispose(): void;
 }
 
@@ -73,7 +85,7 @@ export function createLayoutWorker(
       case 'built':
         pending.delete(msg.id);
         entry.onStats?.(msg.stats);
-        entry.resolve(msg.doc);
+        entry.resolve(msg.doc ?? undefined);
         return;
       case 'fontsRegistered':
         pending.delete(msg.id);
@@ -131,6 +143,9 @@ export function createLayoutWorker(
         send({ kind: 'unregisterFonts', id, families });
       });
     },
+    warm(content, config, opts) {
+      return this.build(content, config, { ...opts, wantDoc: false }).then(() => undefined);
+    },
     build(content, config, opts) {
       const id = nextId++;
       return new Promise<VDTDocument>((resolve, reject) => {
@@ -167,7 +182,7 @@ export function createLayoutWorker(
           if (sentResourcesKey === resourcesKey) payload = { ...content, resources: undefined };
           else sentResourcesKey = resourcesKey;
         }
-        send({ kind: 'build', id, content: payload, config, resourcesKey });
+        send({ kind: 'build', id, content: payload, config, resourcesKey, cacheKey: opts?.cacheKey, wantDoc: opts?.wantDoc });
       });
     },
     dispose() {

@@ -602,16 +602,22 @@ export function useSandboxSelector<T>(
   const isEqualRef = useRef(isEqual);
   isEqualRef.current = isEqual;
   const lastStateRef = useRef<SandboxState | null>(null);
+  const lastSelectorRef = useRef<((s: SandboxState) => T) | null>(null);
   const lastResultRef = useRef<T>(undefined as T);
 
   const getSnapshot = () => {
     const s = store.getSnapshot();
-    if (s !== lastStateRef.current) {
+    // Re-select when the state changed, and also when the selector did: a
+    // component re-rendering with a new argument (another chapter's plan)
+    // must not get the value the subscription check computed for the old
+    // one — that check runs before the render, on the same state.
+    if (s !== lastStateRef.current || selectorRef.current !== lastSelectorRef.current) {
       const next = selectorRef.current(s);
       if (lastStateRef.current === null || !isEqualRef.current(lastResultRef.current, next)) {
         lastResultRef.current = next;
       }
       lastStateRef.current = s;
+      lastSelectorRef.current = selectorRef.current;
     }
     return lastResultRef.current;
   };

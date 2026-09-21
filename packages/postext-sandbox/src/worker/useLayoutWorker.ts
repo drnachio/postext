@@ -1,156 +1,52 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { createLayoutWorker } from 'postext/worker';
-import type { BuildProgress, BuildStats, LayoutWorkerHandle } from 'postext/worker';
+import { useCallback, useEffect, useId, useMemo } from 'react';
+import type { BuildProgress } from 'postext/worker';
 
 export type { BuildProgress } from 'postext/worker';
 import type { PostextConfig, PostextContent, VDTDocument } from 'postext';
-import { collectFontPayloadsForFamilies, getConfigFontFamilies, onCustomFontsChanged } from '../controls/fontLoader';
-import { perfSizeKb, perfSpan } from '../perf/marks';
-import { resourcesKeyOf } from '../book/layoutKeys';
+import { useLayoutService } from './LayoutServiceContext';
+import type { LayoutPriority } from './LayoutService';
 
 export interface LayoutWorkerApi {
   /**
-   * Build a VDT document on the worker. Cancels any in-flight build for the
-   * same worker handle (last-wins). Returns the new doc, or rejects with an
-   * `AbortError` if cancelled.
+   * Build a VDT document on the sandbox's shared worker. Cancels any
+   * in-flight build of this component (last-wins). Returns the new doc, or
+   * rejects with an `AbortError` if cancelled.
    */
-  build(content: PostextContent, config?: PostextConfig, opts?: { onProgress?: (progress: BuildProgress) => void }): Promise<VDTDocument>;
-}
-
-interface WorkerBundle {
-  handle: LayoutWorkerHandle;
-  registeredFamilies: Set<string>;
-  fontQueue: Promise<void>;
+  build(
+    content: PostextContent,
+    config: PostextConfig,
+    opts?: { onProgress?: (progress: BuildProgress) => void; cacheKey?: string },
+  ): Promise<VDTDocument>;
+  /**
+   * Warm the worker's document cache for `cacheKey` without receiving the
+   * document. Warm requests queue up (they do not supersede one another)
+   * and are cancelled with the component.
+   */
+  warm(content: PostextContent, config: PostextConfig, cacheKey: string): Promise<void>;
 }
 
 /**
- * One persistent worker per component mount. Fonts are registered lazily the
- * first time each family is seen for this worker. Unmounting disposes the
- * worker and aborts any pending build.
+ * A component's handle on the shared layout service: one client id for
+ * its lifetime, its builds at `priority`, cancelled when it unmounts.
  */
-export function useLayoutWorker(): LayoutWorkerApi {
-  const bundleRef = useRef<WorkerBundle | null>(null);
-  const currentAbortRef = useRef<AbortController | null>(null);
-
-  function ensureBundle(): WorkerBundle | null {
-    if (typeof window === 'undefined') return null;
-    if (!bundleRef.current) {
-      bundleRef.current = {
-        handle: createLayoutWorker(),
-        registeredFamilies: new Set(),
-        fontQueue: Promise.resolve(),
-      };
-    }
-    return bundleRef.current;
-  }
+export function useLayoutWorker(priority: LayoutPriority = 'preview'): LayoutWorkerApi {
+  const service = useLayoutService();
+  const clientId = useId();
 
   useEffect(() => {
-    return () => {
-      currentAbortRef.current?.abort();
-      bundleRef.current?.handle.dispose();
-      bundleRef.current = null;
-    };
-  }, []);
+    return () => { service.cancel(clientId); };
+  }, [service, clientId]);
 
-  // When the custom-font registry changes (family added, variants altered,
-  // or family removed), drop those families from the worker's face set so
-  // the next build re-registers them from fresh bytes.
-  useEffect(() => {
-    const unsub = onCustomFontsChanged((families) => {
-      const bundle = bundleRef.current;
-      if (!bundle) return;
-      const toUnregister = families.filter((f) => bundle.registeredFamilies.has(f));
-      for (const f of families) bundle.registeredFamilies.delete(f);
-      if (toUnregister.length === 0) return;
-      bundle.fontQueue = bundle.fontQueue.then(() =>
-        bundle.handle.unregisterFonts(toUnregister).catch((err) => {
-          console.warn('[useLayoutWorker] font unregister failed', err);
-        }),
-      );
-    });
-    return unsub;
-  }, []);
+  const build = useCallback(
+    (content: PostextContent, config: PostextConfig, opts?: { onProgress?: (progress: BuildProgress) => void; cacheKey?: string }) =>
+      service.build({ clientId, priority, content, config, cacheKey: opts?.cacheKey, onProgress: opts?.onProgress }),
+    [service, clientId, priority],
+  );
+  const warm = useCallback(
+    (content: PostextContent, config: PostextConfig, cacheKey: string) =>
+      service.build({ clientId: `${clientId}:warm:${cacheKey}`, priority, content, config, cacheKey, warmOnly: true }).then(() => undefined),
+    [service, clientId, priority],
+  );
 
-  const ensureFonts = useCallback(async (
-    bundle: WorkerBundle,
-    config?: PostextConfig,
-  ): Promise<void> => {
-    if (!config) return;
-    const families = getConfigFontFamilies(config);
-    const missing = families.filter((f) => !bundle.registeredFamilies.has(f));
-    if (missing.length === 0) {
-      // Already shipped every family the config needs. Just wait for any
-      // in-flight registration so we don't race against a previous call that
-      // is still loading woff2 bytes into the worker.
-      await bundle.fontQueue;
-      return;
-    }
-    // Reserve the missing families up front so a concurrent call can see
-    // them as "in flight" and skip re-fetching the same bytes.
-    for (const f of missing) bundle.registeredFamilies.add(f);
-    const next = bundle.fontQueue.then(async () => {
-      try {
-        const payloads = await collectFontPayloadsForFamilies(missing);
-        if (payloads.length > 0) {
-          await bundle.handle.registerFonts(payloads);
-        }
-        // Families that produced no face (fetch failed, or a custom family
-        // looked up before its definition landed) must be retried by the
-        // next build rather than sit in the worker as "registered".
-        const delivered = new Set(payloads.map((p) => p.family));
-        for (const f of missing) if (!delivered.has(f)) bundle.registeredFamilies.delete(f);
-      } catch (err) {
-        // Failed registration: free the family slots so a retry can fetch
-        // them again on the next build.
-        for (const f of missing) bundle.registeredFamilies.delete(f);
-        console.warn('[useLayoutWorker] font registration failed', err);
-      }
-    });
-    bundle.fontQueue = next;
-    await next;
-  }, []);
-
-  const build = useCallback(async (content: PostextContent, config?: PostextConfig, opts?: { onProgress?: (progress: BuildProgress) => void }) => {
-    const bundle = ensureBundle();
-    if (!bundle) throw new Error('Layout worker unavailable (SSR?)');
-    currentAbortRef.current?.abort();
-    const controller = new AbortController();
-    currentAbortRef.current = controller;
-
-    await ensureFonts(bundle, config);
-    if (controller.signal.aborted) {
-      throw new DOMException('Aborted', 'AbortError');
-    }
-    const span = perfSpan('worker.build', {
-      markdownKb: Math.round(content.markdown.length / 1024),
-      contentKb: perfSizeKb(content),
-      configKb: perfSizeKb(config),
-    });
-    let stats: BuildStats | null = null;
-    try {
-      const doc = await bundle.handle.build(content, config, {
-        signal: controller.signal,
-        onProgress: opts?.onProgress,
-        onStats: (s) => { stats = s; },
-        resourcesKey: content.resources ? resourcesKeyOf(content.resources) : undefined,
-      });
-      const passes = (stats as BuildStats | null)?.passes ?? [];
-      span.end({
-        pages: doc.pages.length,
-        docKb: perfSizeKb(doc),
-        workerMs: (stats as BuildStats | null)?.totalMs,
-        passes: passes.length,
-        iterations: doc.iterationCount,
-        passMs: passes.map((p) => Math.round(p.ms)).join('/'),
-      });
-      return doc;
-    } catch (err) {
-      span.end({ aborted: (err as { name?: string } | null)?.name === 'AbortError' });
-      throw err;
-    } finally {
-      if (currentAbortRef.current === controller) currentAbortRef.current = null;
-    }
-  }, [ensureFonts]);
-
-  return useMemo(() => ({ build }), [build]);
+  return useMemo(() => ({ build, warm }), [build, warm]);
 }
