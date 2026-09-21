@@ -12,6 +12,14 @@ import {
   type PDFPage,
   type PDFFont,
   type Color,
+  PDFHexString,
+  PDFName,
+  beginText,
+  endText,
+  setFillingColor,
+  setFontAndSize,
+  showText,
+  setTextMatrix,
 } from 'pdf-lib';
 import { hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
 import type { PdfColorSpace } from 'postext';
@@ -167,6 +175,46 @@ export function drawLinePx(
   });
 }
 
+// Text is drawn a word at a time (the layout engine positions every
+// word), and pdf-lib's `drawText` shapes each call afresh through fontkit —
+// the same words, over and over. The encoded glyph string of a (font, text)
+// pair never changes, so it is shaped once and reused; the font's resource
+// key on a page likewise.
+const encodedByFont = new WeakMap<PDFFont, Map<string, PDFHexString>>();
+const ENCODE_CACHE_SLOTS = 50_000;
+
+function encodeCached(font: PDFFont, text: string): PDFHexString {
+  let cache = encodedByFont.get(font);
+  if (!cache) {
+    cache = new Map();
+    encodedByFont.set(font, cache);
+  }
+  const hit = cache.get(text);
+  if (hit) return hit;
+  // `encodeText` also registers the glyphs with the font's subset; a first
+  // call per text keeps that side effect.
+  const encoded = font.encodeText(text);
+  if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
+  cache.set(text, encoded);
+  return encoded;
+}
+
+const fontKeysByPage = new WeakMap<PDFPage, Map<PDFFont, PDFName>>();
+
+function fontKeyOn(page: PDFPage, font: PDFFont): PDFName {
+  let keys = fontKeysByPage.get(page);
+  if (!keys) {
+    keys = new Map();
+    fontKeysByPage.set(page, keys);
+  }
+  let key = keys.get(font);
+  if (!key) {
+    key = page.node.newFontDictionary(font.name, font.ref);
+    keys.set(font, key);
+  }
+  return key;
+}
+
 export function drawTextPx(
   ctx: PageCtx,
   text: string,
@@ -178,13 +226,17 @@ export function drawTextPx(
 ): void {
   if (!text) return;
   const { scale, pageHeightPt } = ctx;
-  ctx.page.drawText(text, {
-    x: xPx * scale,
-    y: pageHeightPt - baselinePx * scale,
-    size: sizePx * scale,
-    font,
-    color,
-  });
+  // The operators pdf-lib's `drawText` emits, with the encoding cached.
+  ctx.page.pushOperators(
+    pushGraphicsState(),
+    beginText(),
+    setFillingColor(color),
+    setFontAndSize(fontKeyOn(ctx.page, font), sizePx * scale),
+    setTextMatrix(1, 0, 0, 1, xPx * scale, pageHeightPt - baselinePx * scale),
+    showText(encodeCached(font, text)),
+    endText(),
+    popGraphicsState(),
+  );
 }
 
 export function pushClipRect(

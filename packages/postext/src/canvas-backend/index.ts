@@ -14,6 +14,11 @@ export type { ResourceImageSource, RegisterResourceImageOptions } from './render
 
 export interface RenderPageOptions {
   pageNegative?: boolean;
+  /** Bitmap pixels per page pixel (1 = the page's own resolution, the
+   *  document's dpi). A page shown smaller than its size is painted at the
+   *  size it is shown, times the device pixel ratio: fewer pixels to fill
+   *  and to keep. The drawing itself stays in page pixels. */
+  scale?: number;
 }
 
 export function renderPageToCanvas(
@@ -22,11 +27,13 @@ export function renderPageToCanvas(
   canvas: HTMLCanvasElement,
   options?: RenderPageOptions,
 ): void {
-  canvas.width = Math.round(page.width);
-  canvas.height = Math.round(page.height);
+  const scale = options?.scale && options.scale > 0 ? options.scale : 1;
+  canvas.width = Math.max(1, Math.round(page.width * scale));
+  canvas.height = Math.max(1, Math.round(page.height * scale));
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
+  if (scale !== 1) ctx.scale(scale, scale);
 
   if (options?.pageNegative) {
     ctx.filter = 'invert(1)';
@@ -36,7 +43,7 @@ export function renderPageToCanvas(
   const trimOff = doc.trimOffset;
 
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, page.width, page.height);
 
   if (bgColor && bgColor !== 'transparent') {
     const bleedPx = trimOff > 0 ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi) : 0;
@@ -44,8 +51,8 @@ export function renderPageToCanvas(
     ctx.fillRect(
       trimOff - bleedPx,
       trimOff - bleedPx,
-      canvas.width - (trimOff - bleedPx) * 2,
-      canvas.height - (trimOff - bleedPx) * 2,
+      page.width - (trimOff - bleedPx) * 2,
+      page.height - (trimOff - bleedPx) * 2,
     );
   }
 

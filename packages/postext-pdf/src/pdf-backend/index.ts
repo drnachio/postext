@@ -2,6 +2,7 @@ import {
   PDFDocument,
   BlendMode,
 } from 'pdf-lib';
+import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, VDTBlock, VDTDocument, VDTPage } from 'postext';
 import { computePageTextExtent, dimensionToPx } from 'postext';
@@ -53,6 +54,19 @@ export interface RenderToPdfOptions {
    *  tree, alt text on figures, document language and title, decoration
    *  flagged as artifacts. Defaults to true. */
   accessible?: boolean;
+  /** Called as the render advances: after the fonts and resources are
+   *  embedded, after every page, and before the file is written. */
+  onProgress?: (progress: RenderProgress) => void;
+  /** Rasterises an SVG the vector subset cannot draw. Defaults to the
+   *  document's `Image` + canvas; a worker must supply one (its host's). */
+  rasterizeSvg?: SvgRasterizer;
+}
+
+export interface RenderProgress {
+  phase: 'prepare' | 'pages' | 'save';
+  /** Pages rendered so far, and how many there are. */
+  pages: number;
+  totalPages: number;
 }
 
 export type { PdfFontProvider };
@@ -67,14 +81,17 @@ function languageTag(locale: HyphenationLocale | undefined): string | undefined 
 
 /** Title of the document for the PDF metadata: the declared title, else the
  *  first heading (PDF/UA-1 §7.1 requires one). */
-function documentTitle(doc: VDTDocument): string {
-  const declared = doc.metadata?.title?.trim();
+function documentTitle(docs: readonly VDTDocument[]): string {
+  const declared = docs[0]?.metadata?.title?.trim();
   if (declared) return declared;
   let best: VDTBlock | undefined;
-  for (const block of doc.blocks) {
-    if (block.type !== 'heading') continue;
-    if (!best || (block.headingLevel ?? 1) < (best.headingLevel ?? 1)) best = block;
-    if ((best.headingLevel ?? 1) === 1) break;
+  for (const doc of docs) {
+    for (const block of doc.blocks) {
+      if (block.type !== 'heading') continue;
+      if (!best || (block.headingLevel ?? 1) < (best.headingLevel ?? 1)) best = block;
+      if ((best.headingLevel ?? 1) === 1) break;
+    }
+    if (best && (best.headingLevel ?? 1) === 1) break;
   }
   const text = best?.lines.map((l) => l.text).join(' ').replace(/\s+/g, ' ').trim();
   if (text) return best?.numberPrefix && !text.startsWith(best.numberPrefix) ? `${best.numberPrefix} ${text}` : text;
@@ -238,20 +255,31 @@ function renderPage(
   ctx.tags?.close();
 }
 
+/**
+ * Render one document — or a book, as the documents of its chapters in
+ * order, each laid out with the continuation of the ones before it — into
+ * one PDF. The chapters share fonts, embedded resources and the structure
+ * tree; page indices in contents links are book-absolute already, so they
+ * resolve across chapters.
+ */
 export async function renderToPdf(
-  doc: VDTDocument,
+  input: VDTDocument | VDTDocument[],
   options: RenderToPdfOptions,
 ): Promise<Uint8Array> {
+  const docs = Array.isArray(input) ? input : [input];
+  const first = docs[0];
+  if (!first) throw new Error('postext-pdf: nothing to render');
+  const totalPages = docs.reduce((n, d) => n + d.pages.length, 0);
   const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);
 
-  if (doc.metadata?.title) pdfDoc.setTitle(doc.metadata.title);
-  if (doc.metadata?.author) pdfDoc.setAuthor(doc.metadata.author);
+  if (first.metadata?.title) pdfDoc.setTitle(first.metadata.title);
+  if (first.metadata?.author) pdfDoc.setAuthor(first.metadata.author);
   pdfDoc.setCreator('postext');
   pdfDoc.setProducer('postext-pdf');
 
   const fontCache = new FontCache(pdfDoc, options.fontProvider);
-  await fontCache.preloadFontStrings(collectFontStrings(doc));
+  for (const doc of docs) await fontCache.preloadFontStrings(collectFontStrings(doc));
 
   const missing = fontCache.missing();
   if (missing.length > 0) {
@@ -265,36 +293,53 @@ export async function renderToPdf(
   // Accessible output: the structure tree the pages tag their content into.
   const tree = (options.accessible ?? true)
     ? new StructTree(pdfDoc, {
-        title: documentTitle(doc),
-        author: doc.metadata?.author,
-        lang: languageTag(doc.config.bodyText.hyphenation?.locale),
+        title: documentTitle(docs),
+        author: first.metadata?.author,
+        lang: languageTag(first.config.bodyText.hyphenation?.locale),
         producer: 'postext-pdf',
         creatorTool: 'postext',
       })
     : undefined;
 
-  // Resource images are embedded up front (async) so page rendering stays sync.
-  const resourceImages = await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, options.fontProvider);
-  const resourceCtx: ResourceRenderContext = {
-    images: resourceImages,
-    linkRegistry: new LinkRegistry(doc.pageIndexOffset ?? 0),
-    structure: tree ? new StructureFlow(tree) : undefined,
-  };
+  // Resource images are embedded up front (async) so page rendering stays
+  // sync; one map for every document, so a figure reused across chapters
+  // is embedded once.
+  const resourceImages: ResourceImageMap = new Map();
+  for (const doc of docs) {
+    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, options.fontProvider, resourceImages, options.rasterizeSvg);
+  }
+  options.onProgress?.({ phase: 'prepare', pages: 0, totalPages });
 
-  for (const page of doc.pages) {
-    renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree);
+  // Contents links carry book-absolute page indices; the registry maps them
+  // onto the PDF's pages from the first document's offset.
+  const linkRegistry = new LinkRegistry(first.pageIndexOffset ?? 0);
+  let rendered = 0;
+  for (const doc of docs) {
+    // Block ids restart per document: each gets its own structure flow
+    // (paragraph fragments, lists and callouts never span chapters).
+    const resourceCtx: ResourceRenderContext = {
+      images: resourceImages,
+      linkRegistry,
+      structure: tree ? new StructureFlow(tree) : undefined,
+    };
+    for (const page of doc.pages) {
+      renderPage(pdfDoc, page, doc, fontCache, options.pageNegative ?? false, colorSpace, resourceCtx, tree);
+      rendered++;
+      options.onProgress?.({ phase: 'pages', pages: rendered, totalPages });
+    }
   }
 
   // Attach inline-ref link annotations now that every destination is known.
-  resourceCtx.linkRegistry.finalize(pdfDoc, tree);
+  linkRegistry.finalize(pdfDoc, tree);
 
   if (options.outlines ?? true) {
-    addOutlines(pdfDoc, doc);
+    addOutlines(pdfDoc, docs);
   }
 
-  addPageLabels(pdfDoc, doc);
+  addPageLabels(pdfDoc, docs);
 
   tree?.finalize();
 
+  options.onProgress?.({ phase: 'save', pages: rendered, totalPages });
   return pdfDoc.save();
 }
