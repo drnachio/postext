@@ -292,14 +292,28 @@ describe('layouts.json round trip', () => {
     expect(first.resourcesKey).toBe(resourcesKeyOf(loaded.resources));
   });
 
-  it('writes no pagination when a record is stale or missing', async () => {
+  it('carries the current records only, and no file without any', async () => {
+    const chapterFiles = (built: Awaited<ReturnType<typeof buildBundleFiles>>): string[] =>
+      Object.keys((JSON.parse(dec.decode(built.files['layouts.json']!)) as { chapters: Record<string, unknown> }).chapters);
+    // The chapter files, in book order (their names are numbered).
+    const mdFiles = (built: Awaited<ReturnType<typeof buildBundleFiles>>): string[] => Object.keys(built.files).filter((f) => f.endsWith('.md')).sort();
     const stale = { c1: { ...layoutOf(chapters[0]!, config, resources), markdown: 'edited' }, c2: layoutOf(chapters[1]!, config, resources) };
     const built = await buildBundleFiles(meta, { chapters, config, resources, layouts: stale }, sources);
-    expect(Object.keys(built.files)).not.toContain('layouts.json');
+    expect(chapterFiles(built)).toEqual([mdFiles(built)[1]]);
     const partial = await buildBundleFiles(meta, { chapters, config, resources, layouts: { c1: layoutOf(chapters[0]!, config, resources) } }, sources);
-    expect(Object.keys(partial.files)).not.toContain('layouts.json');
+    expect(chapterFiles(partial)).toEqual([mdFiles(partial)[0]]);
     const none = await buildBundleFiles(meta, { chapters, config, resources }, sources);
     expect(Object.keys(none.files)).not.toContain('layouts.json');
+    const empty = await buildBundleFiles(meta, { chapters, config, resources, layouts: {} }, sources);
+    expect(Object.keys(empty.files)).not.toContain('layouts.json');
+  });
+
+  it('opens a pagination that stops short up to the gap', async () => {
+    const partial = await buildBundleFiles(meta, { chapters, config, resources, layouts: { c1: layoutOf(chapters[0]!, config, resources) } }, sources);
+    const opened = openBundleZip(zipBundle(partial.files));
+    const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
+    expect(Object.keys(loaded.layouts!)).toHaveLength(1);
+    expect(Object.values(loaded.layouts!)[0]!.markdown).toBe('# One\n\nText.');
   });
 
   it('drops a pagination built by another engine or configuration', async () => {

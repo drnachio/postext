@@ -226,7 +226,7 @@ export interface BundlePlan {
   files: PlannedFile[];
   /** Chapter file path → text, in book order. */
   chapterFiles: { path: string; markdown: string }[];
-  /** The pagination file, when every chapter has a current record. */
+  /** The pagination file, when any chapter has a current record. */
   layouts?: BundleLayoutsFile;
   warnings: string[];
 }
@@ -313,7 +313,6 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   const chapterSpecs: PresetChapterSpec[] = [];
   const chapterFiles: BundlePlan['chapterFiles'] = [];
   const layoutChapters: BundleLayoutsFile['chapters'] = {};
-  let layoutsComplete = content.layouts !== undefined;
   content.chapters.forEach((c, i) => {
     const path = chapterFileName(i, c.title, takenChapterNames, content.chapters.length);
     chapterSpecs.push({ title: c.title, file: path });
@@ -333,13 +332,12 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
         outlineKey: layout.outlineKey,
       };
       layoutChapters[path] = rest;
-    } else {
-      layoutsComplete = false;
     }
   });
-  // A partial pagination is worth nothing to a reader (the chapters after
-  // the first gap would be laid out again anyway): all or none.
-  const layouts: BundleLayoutsFile | undefined = layoutsComplete && content.chapters.length > 0
+  // Whatever records are current: the reader takes them in book order and
+  // lays out afresh from the first chapter without one, so a pagination
+  // that stops short still spares the chapters before the gap.
+  const layouts: BundleLayoutsFile | undefined = Object.keys(layoutChapters).length > 0
     ? { version: 1, engine: ENGINE_KEY, configKey: configKeyOf(content.config), resourcesKey: resourcesKeyOf(content.resources), chapters: layoutChapters }
     : undefined;
 

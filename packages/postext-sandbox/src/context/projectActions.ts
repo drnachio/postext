@@ -4,7 +4,7 @@
 
 import type { Dispatch } from 'react';
 import { clearMeasurementCache } from 'postext';
-import type { PostextConfig } from 'postext';
+import type { PostextConfig, Resource } from 'postext';
 import { setCustomFonts } from '../controls/fontLoader';
 import { invalidateResourceImage } from '../controls/resourceImages';
 import { slugify } from '../panels/resources/slugify';
@@ -30,7 +30,8 @@ import {
   saveProjectId,
 } from '../storage/persistence';
 import { cloneBook, singleChapterBook } from '../book/chapterOps';
-import type { BookContent } from '../book/types';
+import type { BookContent, Chapter } from '../book/types';
+import { createBookPlanner } from '../book/pagination';
 import { cloneContentForProject, projectFileId, projectFontFileId, remapContentFileIds } from '../storage/projectFiles';
 import {
   deleteProject,
@@ -46,7 +47,7 @@ import {
 import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
 import type { SandboxAction, SandboxState } from './SandboxContext';
 import type { ChapterLayout } from '../book/types';
-import { deleteChapterLayouts } from '../storage/layouts';
+import { deleteChapterLayouts, getChapterLayouts } from '../storage/layouts';
 
 export interface ProjectActionDeps {
   dispatch: Dispatch<SandboxAction>;
@@ -122,6 +123,24 @@ async function adoptLoadedPreset(loaded: LoadedPreset, projectId: string): Promi
     }),
   ]);
   return remapped.content;
+}
+
+/** The stored layout records of `chapters` that still apply to `config`
+ *  and `resources`, chained from the first chapter — the planner's call,
+ *  as for the working book. A preset or a project that is not active keeps
+ *  its pagination in the 'layouts' store only (written while it was the
+ *  working book); `extra` adds records held in memory, which win. */
+async function storedCurrentLayouts(
+  chapters: readonly Chapter[],
+  config: PostextConfig,
+  resources: Resource[],
+  extra: Record<string, ChapterLayout> = {},
+): Promise<Record<string, ChapterLayout>> {
+  const stored = await getChapterLayouts(chapters.map((c) => c.id)).catch(() => ({}));
+  const plan = createBookPlanner().plan(chapters, config, resources, { ...stored, ...extra });
+  const out: Record<string, ChapterLayout> = {};
+  for (const c of plan.chapters) if (c.layout) out[c.chapterId] = c.layout;
+  return out;
 }
 
 function newRecord(
@@ -357,12 +376,20 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         readBlob = async (fileId) => blobs.get(fileId) ?? fromIdb.readBlob(fileId);
         readFont = async (fileId) => fonts.get(fileId) ?? fromIdb.readFont(fileId);
         meta = { id: loaded.summary.id, name: loaded.summary.name, description: loaded.summary.description, locale: loaded.summary.locale };
-        content = { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources };
+        // Its pagination: the records kept while it was the working book
+        // (still in memory when it is, and unedited).
+        const inMemory = !s.activeProjectId && s.activePresetId === target.id ? deps.currentLayouts() : {};
+        const layouts = await storedCurrentLayouts(loaded.chapters, loaded.config, loaded.resources, inMemory);
+        content = { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources, layouts };
       } else if (target?.kind === 'project' && target.id !== s.activeProjectId) {
         const record = await getProject(target.id);
         if (!record) throw new Error('Project not found');
         meta = { id: record.bundleId ?? (slugify(record.name) || 'project'), name: record.name, description: record.description, locale: record.locale };
-        content = record;
+        // The configuration as the working book had it (`applyRecord`), so
+        // the records written then still fingerprint the same.
+        const config = withDefaultResourceTypes(record.config, s.locale);
+        const layouts = await storedCurrentLayouts(record.chapters, config, record.resources);
+        content = { ...record, config, layouts };
       } else {
         await deps.flushWorkingSave();
         const cur = deps.getState();
