@@ -1,5 +1,5 @@
 import { applyTitleBreaks } from '../parse/inlineFormatting';
-import type { PostextContent, PostextConfig, Resource, ResourceType, HeadingBreakParity, ResolvedCalloutStyleConfig } from '../types';
+import type { PostextContent, PostextConfig, Resource, ResourceType, ResourceRotation, HeadingBreakParity, ResolvedCalloutStyleConfig } from '../types';
 import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import {
@@ -426,6 +426,13 @@ export function buildDocumentPass(
     ox: number,
     oy: number,
   ): void => {
+    // A rotated block keeps its geometry in the upright frame; only the
+    // frame's origin moves on the page.
+    if (rb.rotation) {
+      rb.rotation.originX += ox;
+      rb.rotation.originY += oy;
+      return;
+    }
     for (const ln of rb.captionLines) {
       ln.bbox.x += ox; ln.bbox.y += oy; ln.baseline += oy;
     }
@@ -445,10 +452,17 @@ export function buildDocumentPass(
     }
   };
 
+  /** How a rotated float is set: turned `direction`, its upright frame
+   *  `length` px wide (its extent along the page's height). */
+  type FloatRotation = { direction: ResourceRotation; length: number };
+  const rotationKey = (rotated: FloatRotation | undefined): string =>
+    rotated ? `:${rotated.direction}${rotated.length.toFixed(2)}` : '';
+
   const layoutFloat = (
     resourceId: string,
     width: number,
     slice?: TableSliceSpec,
+    rotated?: FloatRotation,
   ): { block: ResolvedResourceBlock; totalHeight: number; tableRows?: TableRowMetrics } | null => {
     const resource = resourceById.get(resourceId);
     if (!resource) return null;
@@ -462,8 +476,17 @@ export function buildDocumentPass(
       resourceTypes,
       resources,
       ...(slice ? { slice } : {}),
+      ...(rotated ? { rotate: rotated.direction, rotatedLength: rotated.length } : {}),
     });
   };
+
+  /** The rotation of a pending float on a band whose columns keep `avail`
+   *  px: the upright frame is as long as the grid multiple within that
+   *  room, less the float gap, so the band it takes is `avail` at most. */
+  const rotationFor = (f: PlannedFloat, avail: number): FloatRotation | undefined =>
+    f.rotate
+      ? { direction: f.rotate, length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
+      : undefined;
 
   /** Row count of a table resource (0 for anything else). */
   const tableRowCount = (resourceId: string): number =>
@@ -482,11 +505,11 @@ export function buildDocumentPass(
 
   /** Row metrics of a table float laid out in full at a width, memoised. */
   const tableMetricsMemo = new Map<string, TableRowMetrics | null>();
-  const tableMetrics = (resourceId: string, width: number): TableRowMetrics | null => {
-    const key = `${resourceId}:${width.toFixed(2)}`;
+  const tableMetrics = (resourceId: string, width: number, rotated?: FloatRotation): TableRowMetrics | null => {
+    const key = `${resourceId}:${width.toFixed(2)}${rotationKey(rotated)}`;
     const memo = tableMetricsMemo.get(key);
     if (memo !== undefined) return memo;
-    const m = layoutFloat(resourceId, width)?.tableRows ?? null;
+    const m = layoutFloat(resourceId, width, undefined, rotated)?.tableRows ?? null;
     tableMetricsMemo.set(key, m);
     return m;
   };
@@ -494,13 +517,17 @@ export function buildDocumentPass(
   /** Height (and caption baseline) of a float at a given width, memoised —
    *  fit checks run for every pending float on every loop iteration. */
   const floatMeasureMemo = new Map<string, FloatMeasure | null>();
-  const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec): FloatMeasure | null => {
-    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}`;
+  const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation): FloatMeasure | null => {
+    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
-    const laid = layoutFloat(resourceId, width, slice);
+    const laid = layoutFloat(resourceId, width, slice, rotated);
     let m: FloatMeasure | null = null;
-    if (laid) {
+    if (laid && laid.block.rotation) {
+      // A rotated block takes its band whole: no caption baseline to align,
+      // and its upright height is what must fit the band's width.
+      m = { height: laid.totalHeight, rotatedWidth: laid.block.rotation.height };
+    } else if (laid) {
       // A bottom band aligns the float's LAST text line to the grid: the
       // caption's (or the note's) last line when it sits under the body. A
       // caption set above the body (caption bars) leaves the body's bottom
@@ -528,8 +555,12 @@ export function buildDocumentPass(
     x: number,
     width: number,
     slice?: TableSliceSpec,
+    rotated?: FloatRotation,
+    /** A rotated block sits flush to the band's right edge (the spine of a
+     *  verso page) instead of its left. */
+    flushEnd = false,
   ): { block: VDTBlock; height: number } | null => {
-    const laid = layoutFloat(resourceId, width, slice);
+    const laid = layoutFloat(resourceId, width, slice, rotated);
     if (!laid) return null;
     const { block: rb, totalHeight } = laid;
     const id = slice && slice.startRow > 0 ? `float-${resourceId}-cont-${slice.startRow}` : `float-${resourceId}`;
@@ -539,9 +570,24 @@ export function buildDocumentPass(
     blk.snappedToGrid = false;
     blk.bbox = createBoundingBox(x, 0, width, totalHeight);
     blk.lines = [];
-    offsetResourceBlockToAbsolute(rb, x, 0);
+    if (rb.rotation) {
+      // The upright frame's origin: for a counter-clockwise turn the frame's
+      // top-left lands at the bottom-left of the block, for a clockwise one
+      // at its top-right (see `resourceBlockToPage`).
+      const used = Math.min(rb.rotation.height, width);
+      const left = x + (flushEnd ? Math.max(0, width - used) : 0);
+      rb.rotation.originX = rb.rotation.direction === 'ccw' ? left : left + used;
+      rb.rotation.originY = rb.rotation.direction === 'ccw' ? totalHeight : 0;
+    } else {
+      offsetResourceBlockToAbsolute(rb, x, 0);
+    }
     return { block: blk, height: totalHeight };
   };
+
+  /** Whether a rotated float on `page` sits flush to the band's right edge:
+   *  with mirrored margins the spine of a verso (even-numbered) page. */
+  const rotatedFlushEnd = (page: VDTPage): boolean =>
+    !!resolved.page.margins.mirror && (page.index + pageIndexOffset) % 2 === 1;
 
   /** Float bands reserved per column in this pass (the fresh-page flush
    *  sends single-column floats to the least reserved column). */
@@ -591,25 +637,28 @@ export function buildDocumentPass(
     contentArea: BoundingBox,
     avail: number,
     mode: 'fresh' | 'strict',
+    rotated?: FloatRotation,
   ): { slice: TableSliceSpec; rest?: PlannedFloat } | 'skip' | 'none' | null => {
     const rowCount = tableRowCount(f.resourceId);
     if (rowCount === 0) return null;
     const overflow = resolved.tableStyle.overflow;
     if (overflow === 'hide') return 'skip';
-    const metrics = tableMetrics(f.resourceId, width);
+    const metrics = tableMetrics(f.resourceId, width, rotated);
     if (!metrics) return null;
     const startRow = f.startRow ?? 0;
     const firstBody = startRow > 0 ? Math.max(startRow, metrics.headerRowCount) : metrics.headerRowCount;
     if (firstBody >= rowCount) return null;
     // Overhead of a continuing slice at this width — caption, gaps, marker —
     // from a one-row probe; the row heights come from the metrics.
-    const probe = layoutFloat(f.resourceId, width, { startRow, endRow: firstBody + 1, continues: true });
+    const probe = layoutFloat(f.resourceId, width, { startRow, endRow: firstBody + 1, continues: true }, rotated);
     if (!probe) return null;
-    const overhead = probe.totalHeight - probe.block.bodyRect.height;
+    // A rotated table's rows run across the page: the room for them is
+    // the band's width, less the upright overhead.
+    const overhead = (probe.block.rotation ? probe.block.rotation.height : probe.totalHeight) - probe.block.bodyRect.height;
     // A top band rounds up to the grid: the tallest float it holds within
     // `avail` is the grid multiple below it, less the gap.
     const hMax = Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx;
-    let end = planTableSlice(metrics, startRow, hMax - overhead);
+    let end = planTableSlice(metrics, startRow, (rotated ? width : hMax) - overhead);
     const floor = firstBody + 1;
     if (end < floor) {
       // Nothing fits. A fresh page carries the smallest slice anyway (it
@@ -629,8 +678,9 @@ export function buildDocumentPass(
       if (e >= floor && e >= end - MIN_TAIL_ROWS) end = e;
     }
     const fits = (slice: TableSliceSpec): boolean => {
-      const measure = measureFloat(f.resourceId, width, slice);
+      const measure = measureFloat(f.resourceId, width, slice, rotated);
       if (!measure) return true;
+      if (rotated) return (measure.rotatedWidth ?? 0) <= width + 0.01;
       const { need } = measureFloatBand(
         position, measure, targetCols, contentArea, baselineGrid, floatGapPx,
         (c) => trueBottom(c, uncappedBottoms),
@@ -677,12 +727,13 @@ export function buildDocumentPass(
     position: FloatSlotPosition,
     pageSpan: boolean,
     anchorToCap: boolean,
-  ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number } | null => {
+  ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number; rotated: FloatRotation | undefined } | null => {
     const first = targetCols[0]!;
     const width = pageSpan ? page.contentArea.width : first.bbox.width;
     const xLeft = pageSpan ? page.contentArea.x : first.bbox.x;
     const slice = sliceOf(f);
-    const measure = measureFloat(f.resourceId, width, slice);
+    const rotated = rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)));
+    const measure = measureFloat(f.resourceId, width, slice, rotated);
     if (!measure) return null;
     // A bottom band normally anchors to the column's true foot (under a
     // trailing cap, the page bottom — the closing-page figure). Before a
@@ -693,7 +744,7 @@ export function buildDocumentPass(
     const { need, y } = measureFloatBand(
       position, measure, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf,
     );
-    return { need, y, measure, slice, width, xLeft };
+    return { need, y, measure, slice, width, xLeft, rotated };
   };
 
   /** Free height `col` keeps for the flow once a float band `probe` is
@@ -724,11 +775,13 @@ export function buildDocumentPass(
     const first = targetCols[0]!;
     const probe = probeFloatBand(page, f, targetCols, position, pageSpan, anchorToCap);
     if (!probe) return 'skip';
-    const { width, xLeft } = probe;
+    const { width, xLeft, rotated } = probe;
     let { slice, measure, need, y } = probe;
     let rest: PlannedFloat | undefined;
     /** The float was cut to this slot (a table slice). */
     let cut = false;
+    /** A rotated block wider than the band (its upright height). */
+    const tooWide = (m: FloatMeasure): boolean => m.rotatedWidth !== undefined && m.rotatedWidth > width + 0.01;
 
     if (mode === 'fresh') {
       let minAvail = Infinity;
@@ -739,15 +792,16 @@ export function buildDocumentPass(
         if (r.top > 0 || r.bottom > 0) anyReserved = true;
       }
       if (need > minAvail - minTextPx && anyReserved) return 'defer';
-      if (need > minAvail + 0.01) {
-        // Dominating the band: a table is cut to it.
-        const split = splitTableFloat(f, width, position, targetCols, page.contentArea, minAvail, 'fresh');
+      if (need > minAvail + 0.01 || tooWide(measure)) {
+        // Dominating the band: a table is cut to it (a rotated table, to
+        // the band's width).
+        const split = splitTableFloat(f, width, position, targetCols, page.contentArea, minAvail, 'fresh', rotated);
         if (split === 'skip') return 'skip';
         if (split && split !== 'none') {
           slice = split.slice;
           rest = split.rest;
           cut = true;
-          const m = measureFloat(f.resourceId, width, slice);
+          const m = measureFloat(f.resourceId, width, slice, rotated);
           if (!m) return 'skip';
           measure = m;
           ({ need, y } = measureFloatBand(
@@ -757,6 +811,10 @@ export function buildDocumentPass(
         }
       }
     } else {
+      // A rotated block takes a page of its own: it never shares the
+      // current page's foot, and waits for a fresh page to be cut to when
+      // too wide.
+      if (f.rotate || tooWide(measure)) return 'defer';
       for (const c of targetCols) {
         if (position === 'bottom' && uncappedBottoms.has(c) && !anchorToCap) {
           // Trailing cap: the band must lie entirely below the level cut.
@@ -802,7 +860,7 @@ export function buildDocumentPass(
       rest = { ...rest, notBefore: { pageIndex: page.index, columnIndex: targetCols[targetCols.length - 1]!.index } };
     }
 
-    const built = buildFloatBlock(f.resourceId, xLeft, width, slice);
+    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, rotated ? rotatedFlushEnd(page) : false);
     if (!built) return 'skip';
 
     for (const col of targetCols) {
@@ -869,8 +927,9 @@ export function buildDocumentPass(
     return false;
   };
 
+  /** A rotated float takes its page from the top. */
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
-    f.position === 'auto' ? ['top', 'bottom'] : [f.position];
+    f.rotate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
 
   /** Reserve top/bottom bands on a freshly opened page and position as many
    *  pending floats as fit, shrinking the affected columns so body text flows

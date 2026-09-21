@@ -9,6 +9,11 @@ import { parseDirectiveAttrs } from './attrs';
  *  apart even when a paragraph mixes refs and math. */
 export const REF_PLACEHOLDER = '⁣';
 
+/** Atomic plain-text placeholder for an inline colour swatch span
+ *  (`:swatch{…}`), one code unit per swatch like the ref and math
+ *  placeholders, and a code point of its own so the three never collide. */
+export const SWATCH_PLACEHOLDER = '⁤';
+
 /** Forced line break inside a title: `\\` in a heading (or a part `title`)
  *  becomes this LINE SEPARATOR in the plain text. Opener designs render it
  *  as a real line break; the in-column heading, running heads, outlines and
@@ -107,6 +112,63 @@ export function extractInlineRefs(
   }
   out += text.slice(last);
   return { cleaned: out, refs };
+}
+
+/** Metadata of an inline `:swatch{color="…"}` directive: the colour as
+ *  written (a hex, or a palette entry id the pipeline resolves) and its
+ *  source extent. */
+export interface SwatchMeta {
+  color: string;
+  /** Absolute source offset of the leading `:` of `:swatch{…}`. */
+  sourceStart: number;
+  /** Absolute source offset just past the closing `}`. */
+  sourceEnd: number;
+}
+
+/** `:swatch{…}` — same attribute grammar as `:ref{…}`. A swatch without a
+ *  `color` is not a swatch (left as text). */
+const INLINE_SWATCH_RE = /:swatch\{([^}]*)\}/g;
+
+/**
+ * Extract inline `:swatch{…}` colour swatches from a line's text, replacing
+ * each by `SWATCH_PLACEHOLDER` and returning the swatch metadata in order.
+ * Runs right after {@link extractInlineRefs} on its cleaned text.
+ */
+export function extractInlineSwatches(
+  text: string,
+  fallbackStart: number,
+): { cleaned: string; swatches: SwatchMeta[] } {
+  const swatches: SwatchMeta[] = [];
+  let out = '';
+  let last = 0;
+  INLINE_SWATCH_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = INLINE_SWATCH_RE.exec(text)) !== null) {
+    const attrs = parseDirectiveAttrs(m[1]!);
+    const color = attrs.color?.trim();
+    if (color === undefined || color.length === 0) continue;
+    out += text.slice(last, m.index);
+    swatches.push({
+      color,
+      sourceStart: fallbackStart + m.index,
+      sourceEnd: fallbackStart + m.index + m[0].length,
+    });
+    out += SWATCH_PLACEHOLDER;
+    last = m.index + m[0].length;
+  }
+  out += text.slice(last);
+  return { cleaned: out, swatches };
+}
+
+/** Attach a `swatch` to each `SWATCH_PLACEHOLDER` occurrence in order; the
+ *  swatch span is its own entry, like a ref's. */
+export function injectSwatchSpans(spans: InlineSpan[], swatches: SwatchMeta[]): InlineSpan[] {
+  return injectPlaceholderSpans(spans, swatches, SWATCH_PLACEHOLDER, (meta, bold, italic) => ({
+    text: SWATCH_PLACEHOLDER,
+    bold,
+    italic,
+    swatch: { color: meta.color },
+  }));
 }
 
 /** Walk an InlineSpan list and attach a `ref` to each `REF_PLACEHOLDER`

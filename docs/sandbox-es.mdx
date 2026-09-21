@@ -118,7 +118,7 @@ Todo el panel es además una zona de arrastrar y soltar: suelta archivos desde e
 - **Leyenda** — Admite Markdown en línea (negrita, cursiva, código y `:ref`)
 - **Nota** — Una línea de fuente, crédito u observación opcional compuesta en un cuerpo menor bajo el recurso (mismo formato en línea que la leyenda); se estiliza con el grupo *Nota* de la sección de configuración *Leyendas*
 - **Texto alternativo** — Descripción de accesibilidad para la salida HTML
-- **Colocación** — Posición (`top` / `bottom` / `here`) más extensión (`column` / `page`, deshabilitada cuando la posición es `here`), coincidiendo con los valores por defecto del motor: `top` + `column`
+- **Colocación** — Posición (`top` / `bottom` / `here`) más extensión (`column` / `page`, deshabilitada cuando la posición es `here`), coincidiendo con los valores por defecto del motor: `top` + `column`, y una orientación: vertical, o girado un cuarto de vuelta (cabecera a la izquierda o a la derecha) — un recurso girado ocupa una página propia, pegado al lomo, así que el selector de extensión queda deshabilitado
 - **Contenido** — Cargadores de reemplazo para el archivo de mapa de bits o SVG
 - **Código fuente del SVG** — En las figuras SVG, un editor de código bajo el cargador en el que solo admiten ediciones los nodos de texto (el contenido de los elementos `<text>` / `<tspan>`, resaltados en el editor); escribir en cualquier otro sitio se rechaza, y los caracteres `<`, `>` y `&` tecleados dentro de un nodo de texto se escapan para que el archivo siga bien formado. Cada cambio se guarda tras una breve pausa como un archivo almacenado **nuevo** y la figura se vuelve a renderizar (también con el recoloreado a una sola tinta); el editor avisa cuando el SVG no tiene nodos de texto
 - **Vista previa** — Una maqueta en vivo de cómo se verá el recurso, con `#` como marcador del número (los números reales dependen de dónde caiga el recurso en el documento)
@@ -126,7 +126,7 @@ Todo el panel es además una zona de arrastrar y soltar: suelta archivos desde e
 
 **Editor de tablas.** Los recursos de tabla abren un editor de cuadrícula interactivo:
 
-- Barra de herramientas con añadir/quitar fila y columna, combinar/dividir celdas, interruptores de fila y columna de cabecera, y alineación por celda
+- Barra de herramientas con añadir/quitar fila y columna, combinar/dividir celdas, interruptores de fila y columna de cabecera, alineación por celda y un relleno por celda (un selector de color, vinculable a la paleta, con un botón para quitarlo) que se guarda en `TableCell.background` y se muestra en la cuadrícula
 - **Anchos de columna** — Un peso numérico por columna bajo la cuadrícula (`2, 1, 1` da a la primera columna la mitad del ancho; vacío significa anchos iguales), escrito en `table.model.columnWidths`. Añadir o quitar una columna mantiene los pesos alineados; un enlace *Anchos iguales* los borra
 - **Pegar como tabla** — Pegar TSV (o CSV simple con comillas) rellena la cuadrícula
 - **Deshacer/rehacer** — Cmd/Ctrl+Z y Mayús+Cmd/Ctrl+Z
@@ -207,7 +207,7 @@ Renderiza la salida de postext dentro de un contenedor Shadow DOM, garantizando 
 Una barra de herramientas en la parte superior del viewport ofrece:
 
 - **Controles de escala de fuente** — Reduce o aumenta el texto del cuerpo conservando cada medida relativa de la configuración.
-- **Modos de columna** — Columna única (una sola columna alta y desplazable verticalmente) o multi-columna (tantas columnas como el viewport encaje a la medida configurada, con scroll-snap horizontal entre ellas).
+- **Modos de columna** — Columna única (una sola columna alta y desplazable verticalmente) o multi-columna (el número de columnas cuyo ancho más se acerca a la medida configurada, con scroll-snap horizontal entre páginas). Un documento a dos columnas conserva sus páginas de dos columnas, pero el visor puede mostrar un número impar de columnas — tres en lugar de dos estiradas o cuatro apretadas — cuando ese es el ajuste más cercano; la última pertenece entonces a la página siguiente, visible a medias.
 
 La geometría de las columnas está controlada por la sección **Visor HTML** del panel de configuración: `maxCharsPerLine` define la medida objetivo en caracteres de la fuente del cuerpo, `columnGap` el espacio horizontal entre columnas en modo multi y `optimalLineBreaking` alterna el algoritmo Knuth–Plass dentro del visor. Consulta la [referencia de configuración del Visor HTML](/es/docs/configuration#visor-html) y el [ejemplo de integración completo](/es/docs/configuration#integrar-el-visor-html) — el mismo patrón que usa internamente el sandbox.
 

@@ -3,6 +3,7 @@ import type { MathRender } from '../math/types';
 import { getMathRaster } from '../math/rasterCache';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { renderResourceBlock } from './renderResourceBlock';
+import { paintSwatch } from './swatch';
 
 function pickSegmentFont(
   bold: boolean,
@@ -131,6 +132,11 @@ function renderSegments(
       currentFill = '';
       continue;
     }
+    if (seg.kind === 'swatch') {
+      paintSwatch(ctx, x, baseline, seg.width, seg.swatch?.color, style.color);
+      x += seg.width;
+      continue;
+    }
     const font = seg.fontString
       ?? pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
     if (font !== currentFont) {
@@ -152,7 +158,7 @@ function renderSegments(
 
 /** Whether a segment paints differently from the block's plain text. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
-  return !!s.bold || !!s.italic || s.kind === 'math' || s.refResourceId !== undefined
+  return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined;
 }
 

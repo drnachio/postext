@@ -53,6 +53,16 @@ export interface InlineSpan {
   /** Resolved math render — populated by the pipeline before measurement
    *  so the parser remains free of MathJax dependencies. */
   mathRender?: import('../math/types').MathRender;
+  /** Present when this span is an inline `:swatch{color="…"}` — a small
+   *  filled square set on the baseline, the key of a colour legend (a
+   *  table note explaining its cell fills). The `text` is a single
+   *  placeholder char that layout treats atomically. `color` is a hex
+   *  colour or the id of a document palette entry, resolved to a hex by the
+   *  pipeline before measurement; unresolved, the square is drawn as an
+   *  empty outline. */
+  swatch?: {
+    color: string;
+  };
   /** Present when this span is an inline reference to a `Resource`. The
    *  `text` carries placeholder/fallback content; the pipeline resolves the
    *  reference to its computed number/label. */

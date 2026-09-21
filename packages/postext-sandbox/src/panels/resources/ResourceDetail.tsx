@@ -8,6 +8,7 @@ import type {
   ResourcePlacement,
   ResourceFloatPosition as PlacementPosition,
   ResourceFloatSpan as PlacementSpan,
+  ResourceRotation,
 } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, type ResourceFocusTarget } from '../../context/SandboxContext';
 import { InlineMarkdownInput, type InlineSelection } from '../../controls/InlineMarkdownInput';
@@ -116,6 +117,13 @@ export function ResourceDetail({
   const currentPlacement: ResourcePlacement = resource.placement ?? {};
   const placementPosition: PlacementPosition = currentPlacement.position ?? 'auto';
   const placementSpan: PlacementSpan = currentPlacement.span ?? 'column';
+  const placementRotate: ResourceRotation | 'none' = currentPlacement.rotate ?? 'none';
+  const setRotate = (value: string) => {
+    const next: ResourcePlacement = { ...currentPlacement };
+    if (value === 'ccw' || value === 'cw') next.rotate = value;
+    else delete next.rotate;
+    onChange(touch({ placement: next }));
+  };
 
   // The id is edited locally and committed (renamed) on blur / Enter so the
   // detail pane is not remounted on every keystroke.
@@ -313,9 +321,11 @@ export function ResourceDetail({
           hint={
             placementPosition === 'here'
               ? labels.resourcePlacementHintHere
-              : placementSpan === 'page'
-                ? labels.resourcePlacementHintPage
-                : labels.resourcePlacementHintColumn
+              : placementRotate !== 'none'
+                ? labels.resourcePlacementHintRotated
+                : placementSpan === 'page'
+                  ? labels.resourcePlacementHintPage
+                  : labels.resourcePlacementHintColumn
           }
         >
           <div className="flex gap-1.5">
@@ -339,14 +349,28 @@ export function ResourceDetail({
                 onChange(touch({ placement: { ...currentPlacement, span: e.target.value as PlacementSpan } }))
               }
               aria-label={labels.resourceWidthAria}
-              disabled={placementPosition === 'here'}
+              disabled={placementPosition === 'here' || placementRotate !== 'none'}
               className={inputClass}
-              style={{ ...inputStyle, opacity: placementPosition === 'here' ? 0.5 : 1 }}
+              style={{ ...inputStyle, opacity: placementPosition === 'here' || placementRotate !== 'none' ? 0.5 : 1 }}
             >
               <option value="column">{labels.resourceSpanColumn}</option>
               <option value="page">{labels.resourceSpanPage}</option>
             </select>
           </div>
+          {/* Orientation: a turned resource is always a page-span float on
+              a page of its own. */}
+          <select
+            value={placementRotate}
+            onChange={(e) => setRotate(e.target.value)}
+            aria-label={labels.resourceRotateAria}
+            disabled={placementPosition === 'here'}
+            className={`${inputClass} mt-1.5`}
+            style={{ ...inputStyle, opacity: placementPosition === 'here' ? 0.5 : 1 }}
+          >
+            <option value="none">{labels.resourceRotateNone}</option>
+            <option value="ccw">{labels.resourceRotateCcw}</option>
+            <option value="cw">{labels.resourceRotateCw}</option>
+          </select>
         </Field>
 
         {/* Kind-specific controls */}

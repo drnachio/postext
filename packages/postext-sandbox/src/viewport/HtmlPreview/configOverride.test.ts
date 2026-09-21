@@ -40,6 +40,22 @@ describe('buildHtmlConfigOverride', () => {
     expect(out.parts!.margins).toEqual({ ...base.parts!.margins, mirror: false });
   });
 
+  it('scales the whole design through the DPI, leaving font sizes untouched', () => {
+    const withSizes: PostextConfig = {
+      ...base,
+      bodyText: { fontSize: { value: 8, unit: 'pt' } },
+      headings: { levels: [{ level: 1, fontSize: { value: 20, unit: 'pt' } }] },
+    };
+    const out = buildHtmlConfigOverride(withSizes, { ...opts, fontScale: 1.5 });
+    // 144 dpi at scale 1 (8pt = 16px); 216 dpi at scale 1.5 (8pt = 24px).
+    expect(out.page!.dpi).toBe(216);
+    expect(out.bodyText!.fontSize).toEqual({ value: 8, unit: 'pt' });
+    expect(out.headings!.levels!.find((l) => l.level === 1)!.fontSize).toEqual({ value: 20, unit: 'pt' });
+    // Page geometry is in px, so it does not grow with the scale.
+    expect(out.page!.width).toEqual({ value: 800, unit: 'px' });
+    expect(buildHtmlConfigOverride(withSizes, opts).page!.dpi).toBe(144);
+  });
+
   it('strips running heads and leaves absent part margins absent', () => {
     const out = buildHtmlConfigOverride({ ...base, parts: undefined }, opts);
     expect(out.header).toEqual({ elements: [] });

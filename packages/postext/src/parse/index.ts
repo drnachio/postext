@@ -17,6 +17,8 @@ export type {
   TocBlockInfo,
 } from './types';
 export { MATH_PLACEHOLDER } from './inlineMath';
+export { REF_PLACEHOLDER, SWATCH_PLACEHOLDER, extractInlineSwatches, injectSwatchSpans } from './inlineFormatting';
+export type { SwatchMeta } from './inlineFormatting';
 export {
   parseMarkdownMemo,
   parseMarkdownWithIssuesMemo,

@@ -27,6 +27,15 @@ export const RESIZE_DEBOUNCE_MS = 100;
 // matching the conventional web body size at fontScale=1.
 export const HTML_DPI = 144;
 
+/** DPI the viewer lays out with at a given font scale. The toolbar's font
+ *  size buttons scale the DPI rather than any one font size, so every
+ *  absolute dimension in the design (type, paddings, rules, figure widths)
+ *  grows uniformly and callouts, tables and captions keep their proportion
+ *  to the body text. */
+export function htmlViewerDpi(fontScale: number): number {
+  return HTML_DPI * fontScale;
+}
+
 export const PADDING_PX = 24;
 
 export const SHADOW_CSS = `

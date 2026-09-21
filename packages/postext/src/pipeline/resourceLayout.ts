@@ -33,8 +33,10 @@
 
 import type { InlineSpan, RefCase } from '../parse';
 import type {
+  ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
   Resource,
+  ResourceRotation,
   ResourceType,
   TableCell,
   TableModel,
@@ -60,6 +62,7 @@ import { dimensionToPx } from '../units';
 // one span list (`:ref{…}` becomes a one-char placeholder span).
 import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
+import { resolveColorValue } from '../defaults/shared';
 import { resolveBodyStyle } from './styles';
 import type { ResourceNumberingMap } from './resourceNumbering';
 
@@ -72,8 +75,17 @@ export interface ResourceLayoutInput {
   resourceType: ResourceType | undefined;
   number: string;
   resolved: ResolvedConfig;
-  /** Available column width in px. */
+  /** Available column width in px — for a rotated block, the width of the
+   *  band it takes on the page (the extent its upright height may reach). */
   columnWidth: number;
+  /** Set the block turned a quarter turn on the page. Its upright frame is
+   *  then laid out `rotatedLength` px wide (the block's extent along the
+   *  page's height) and the block reports that length as its height on the
+   *  page; the upright height (the footprint's width) is
+   *  `block.rotation.height`. See {@link VDTResourceRotation}. */
+  rotate?: ResourceRotation;
+  /** Upright layout width of a rotated block (px). Defaults to `columnWidth`. */
+  rotatedLength?: number;
   /** Full numbering map — lets inline `:ref`s inside the caption resolve. */
   resourceNumbering: ResourceNumberingMap;
   resourceTypes: ResourceType[];
@@ -109,6 +121,22 @@ export interface TableRowMetrics {
   /** Rows that head the rows below them (a single cell across every column,
    *  or all header cells): a slice never ends on one when it can help it. */
   groupHeaderRow: boolean[];
+}
+
+/** Resolve the colour of every inline `:swatch{…}` span: a `#rgb` / `#rrggbb`
+ *  hex is normalised to six digits; any other value is looked up as a
+ *  document palette entry id. An unresolved colour is left as written (the
+ *  measurer then draws an empty outline). Spans without a swatch pass through. */
+export function resolveSwatchSpans(spans: InlineSpan[], palette: ColorPaletteEntry[] | undefined): InlineSpan[] {
+  return spans.map((span) => {
+    if (!span.swatch) return span;
+    const raw = span.swatch.color.trim();
+    const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(raw);
+    if (short) return { ...span, swatch: { color: `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`.toLowerCase() } };
+    if (/^#[0-9a-f]{6}$/i.test(raw)) return { ...span, swatch: { color: raw.toLowerCase() } };
+    const entry = palette?.find((e) => e.id === raw);
+    return entry ? { ...span, swatch: { color: entry.value.hex } } : span;
+  });
 }
 
 /** Build a label for an inline `:ref` to a resource, honouring its `style` and
@@ -225,6 +253,8 @@ interface TableLayoutStyle {
   /** Gap between a list marker and its text inside a cell (px) — the
    *  document's `unorderedLists.gap` at the body-cell size. */
   listGapPx: number;
+  /** Document palette, for palette-linked cell fills and swatch colours. */
+  palette?: ColorPaletteEntry[];
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -571,6 +601,8 @@ function layoutTable(
     lines: VDTLine[];
     contentHeight: number;
     image: FittedCellImage | null;
+    /** The cell's own fill (hex), when it has one. */
+    background: string | undefined;
   }
   const measured: Measured[] = [];
   const rowMinHeight = new Array<number>(rowCount).fill(body.lineHeightPx);
@@ -599,13 +631,13 @@ function layoutTable(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const spans = resolveRefSpans(
+      const spans = resolveSwatchSpans(resolveRefSpans(
         parseRefAwareSpans(cell.content),
         resourceNumbering,
         resourceTypes,
         resources,
         refStyle,
-      );
+      ), style.palette);
       const m = measureCellContent(
         spans,
         set,
@@ -621,6 +653,9 @@ function layoutTable(
       const lines = image && textHeight > 0 ? shiftLines(m.lines, 0, textY) : m.lines;
       const stackHeight = image ? textY + textHeight : textHeight;
       const contentHeight = Math.max(set.lineHeightPx, stackHeight) + cellPaddingPx * 2;
+      const background = cell.background && !cell.hiddenBy
+        ? resolveColorValue(cell.background, style.palette, cell.background).hex
+        : undefined;
       measured.push({
         row: r,
         sliceRow: si,
@@ -633,6 +668,7 @@ function layoutTable(
         lines,
         contentHeight,
         image,
+        background,
       });
       // Single-row cells drive their row's minimum height directly.
       if (rowSpan === 1) {
@@ -714,6 +750,7 @@ function layoutTable(
       rect,
       lines: placed,
       ...(image ? { image } : {}),
+      ...(m.background !== undefined ? { background: m.background } : {}),
     };
   });
 
@@ -758,11 +795,16 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     resourceType,
     number,
     resolved,
-    columnWidth,
+    columnWidth: footprintWidth,
     resourceNumbering,
     resourceTypes,
     resources,
+    rotate,
   } = input;
+  // A rotated block is laid out upright, `rotatedLength` wide; its upright
+  // height must then fit the band's width on the page (`footprintWidth`).
+  const columnWidth = rotate ? Math.max(1, input.rotatedLength ?? footprintWidth) : footprintWidth;
+  const palette = resolved.colorPalette;
   // A slice only applies to tables; a slice covering the whole table from
   // row 0 is the full table (no continuation marks).
   const model = resource.kind === 'table' ? resource.table?.model : undefined;
@@ -847,6 +889,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       bodyBackground: ts.bodyBackgroundEnabled ? ts.bodyBackground.hex : undefined,
       rules: ts.rules,
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
+      palette,
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -894,13 +937,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const prefixText = captionPrefix.length > 0
       ? `${captionPrefix}${NBSP}${number}.${number ? ' ' : ''}`
       : '';
-    const resolvedSpans = resolveRefSpans(
+    const resolvedSpans = resolveSwatchSpans(resolveRefSpans(
       parseRefAwareSpans(captionText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    );
+    ), palette);
     // Description spans pick up the configured slant on top of their own markup.
     const descSpans: InlineSpan[] = cs.descriptionItalic
       ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
@@ -946,13 +989,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // The note closes the table: a slice that continues holds it back for
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
-    const noteSpans = resolveRefSpans(
+    const noteSpans = resolveSwatchSpans(resolveRefSpans(
       parseRefAwareSpans(noteText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    );
+    ), palette);
     const slanted: InlineSpan[] = cs.note.italic
       ? noteSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : noteSpans;
@@ -999,6 +1042,18 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   const continuesHeight = measuredContinues.length > 0
     ? measuredContinues.length * noteLineHeightPx + noteGapPx
     : 0;
+
+  // A rotated figure must also fit the band's width with its caption and
+  // note: scale the image down when the stack would run past it (a table
+  // is cut between rows by the placer instead).
+  if (rotate && (resource.kind === 'bitmap' || resource.kind === 'svg')) {
+    const room = footprintWidth - captionHeight - noteHeight - continuesHeight;
+    if (bodyHeight > room && bodyHeight > 0) {
+      const k = Math.max(0.01, room) / bodyHeight;
+      bodyWidth *= k;
+      bodyHeight *= k;
+    }
+  }
 
   // --- Vertical stacking -------------------------------------------------
   // above: [caption band] gap [body] noteGap [note]
@@ -1067,5 +1122,12 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     continuesLines,
   };
 
+  if (rotate) {
+    // The inner geometry stays in the upright frame; the placer sets the
+    // origin when it positions the block. On the page the block is as tall
+    // as the upright frame is wide.
+    block.rotation = { direction: rotate, originX: 0, originY: 0, width: columnWidth, height: totalHeight };
+    return tableRows ? { block, totalHeight: columnWidth, tableRows } : { block, totalHeight: columnWidth };
+  }
   return tableRows ? { block, totalHeight, tableRows } : { block, totalHeight };
 }

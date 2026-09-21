@@ -1,6 +1,6 @@
 import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
-import { BREAK_PLACEHOLDER, REF_PLACEHOLDER } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, REF_PLACEHOLDER, SWATCH_PLACEHOLDER } from './inlineFormatting';
 
 /**
  * Build a per-character map from plain text to absolute source offsets.
@@ -53,6 +53,21 @@ export function computeSourceMap(
           && markdown[r + 4] === '{'
         )
       ) r++;
+      if (r >= blockSrcEnd) {
+        map[p] = blockSrcEnd;
+        continue;
+      }
+      map[p] = r;
+      let j = r;
+      while (j < blockSrcEnd && markdown[j] !== '}') j++;
+      if (j < blockSrcEnd) j++; // consume the closing `}`
+      r = j;
+      continue;
+    }
+    // Swatch placeholder: the plain char represents `:swatch{…}`. Same
+    // alignment rule as a ref: map to the leading `:`, skip past the `}`.
+    if (ch === SWATCH_PLACEHOLDER) {
+      while (r < blockSrcEnd && !markdown.startsWith(':swatch{', r)) r++;
       if (r >= blockSrcEnd) {
         map[p] = blockSrcEnd;
         continue;

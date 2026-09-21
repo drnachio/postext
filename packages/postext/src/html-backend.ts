@@ -167,6 +167,11 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
       x += seg.width;
       continue;
     }
+    if (seg.kind === 'swatch') {
+      parts.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, block.color));
+      x += seg.width;
+      continue;
+    }
     const font = quoteFontString(pickSegmentFont(seg, block));
     const color = pickSegmentColor(seg, block);
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
@@ -184,6 +189,18 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
     x += seg.width;
   }
   return parts.join('');
+}
+
+/** Inline colour swatch (`:swatch{…}`): a square of `side` px on the line's
+ *  baseline (`baselineOffset` from the line top), filled with `fill` when
+ *  the colour resolved and outlined in the text colour. */
+function renderSwatch(x: number, baselineOffset: number, side: number, fill: string | undefined, ink: string): string {
+  const stroke = Math.max(0.5, side * 0.06);
+  return (
+    `<span aria-hidden="true" style="position:absolute;left:${x.toFixed(3)}px;top:${(baselineOffset - side).toFixed(3)}px;` +
+    `width:${side.toFixed(3)}px;height:${side.toFixed(3)}px;box-sizing:border-box;` +
+    `border:${stroke.toFixed(2)}px solid ${ink};${fill ? `background:${fill};` : ''}"></span>`
+  );
 }
 
 function renderBullet(block: VDTBlock): string {
@@ -283,6 +300,11 @@ function renderResourceLine(
         x += seg.width;
         continue;
       }
+      if (seg.kind === 'swatch') {
+        parts.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, color));
+        x += seg.width;
+        continue;
+      }
       const font = quoteFontString(pickResourceFont(seg, fonts));
       const segColor = seg.refResourceId !== undefined
         ? linkColor
@@ -349,10 +371,10 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
   const t = rb.table;
   if (!t) return '';
   const parts: string[] = [];
-  // Cell backgrounds first (header tint / body fill), then borders, then text
-  // — same paint order as the canvas backend.
+  // Cell backgrounds first (the cell's own fill, else the header tint / body
+  // fill), then borders, then text — same paint order as the canvas backend.
   for (const cell of t.cells) {
-    const fill = cell.isHeader ? t.headerBackground : t.bodyBackground;
+    const fill = cell.background ?? (cell.isHeader ? t.headerBackground : t.bodyBackground);
     if (!fill) continue;
     parts.push(
       `<div aria-hidden="true" style="position:absolute;` +
@@ -420,20 +442,21 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
   const rb = block.resourceBlock;
   if (!rb) return '';
   const parts: string[] = [];
-  const bx = block.bbox.x + rb.bodyRect.x;
-  const by = block.bbox.y + rb.bodyRect.y;
+  // A rotated block: its geometry is in the upright frame, emitted inside a
+  // wrapper turned a quarter turn about the frame's origin on the page.
+  const rot = rb.rotation;
+  const bx = (rot ? 0 : block.bbox.x) + rb.bodyRect.x;
+  const by = (rot ? 0 : block.bbox.y) + rb.bodyRect.y;
   const bw = rb.bodyRect.width;
   const bh = rb.bodyRect.height;
 
   // Zero-size anchor at the embed's top-left — the target of `:ref` links.
   // A continued slice of a split table is not a target: links land on the
   // first slice.
-  if (rb.resource.id && !rb.slice?.continued) {
-    parts.push(
-      `<span id="${esc(resourceAnchorId(rb.resource.id))}" style="position:absolute;` +
-      `left:${block.bbox.x}px;top:${block.bbox.y}px;width:0;height:0;"></span>`,
-    );
-  }
+  const anchor = rb.resource.id && !rb.slice?.continued
+    ? `<span id="${esc(resourceAnchorId(rb.resource.id))}" style="position:absolute;` +
+      `left:${block.bbox.x}px;top:${block.bbox.y}px;width:0;height:0;"></span>`
+    : '';
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
     const url = rb.fileId ? options.resourceImageUrl?.(rb.fileId) : undefined;
@@ -470,7 +493,14 @@ function renderResourceBlockHtml(block: VDTBlock, options: RenderHtmlOptions): s
   for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
     parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor));
   }
-  return parts.join('');
+  if (!rot) return anchor + parts.join('');
+  return (
+    anchor +
+    `<div style="position:absolute;left:${rot.originX}px;top:${rot.originY}px;width:0;height:0;` +
+    `transform:rotate(${rot.direction === 'ccw' ? -90 : 90}deg);transform-origin:0 0;">` +
+    parts.join('') +
+    '</div>'
+  );
 }
 
 function extractFontSizePx(fontString: string): number {

@@ -29,7 +29,7 @@ import { attachSlotClickHandler } from '../CanvasPreview/interaction';
 import { usePageNavigator } from '../usePageNavigator';
 import {
   type ColumnMode,
-  HTML_DPI,
+  htmlViewerDpi,
   PADDING_PX,
   RESIZE_DEBOUNCE_MS,
   SHADOW_CSS,
@@ -37,6 +37,7 @@ import {
   composePageBackground,
 } from './constants';
 import { buildHtmlConfigOverride, measureColumnWidthPx } from './configOverride';
+import { pickPageGeometry } from './pageGeometry';
 import { cssEscape, measureBodyBaselineOffset } from './baseline';
 
 interface HtmlPreviewProps {
@@ -264,8 +265,10 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     const bodyFontFamily = currentConfig.bodyText?.fontFamily ?? 'EB Garamond';
     const bodyFontWeight = currentConfig.bodyText?.fontWeight ?? 400;
     const baseBodySize = currentConfig.bodyText?.fontSize ?? { value: 8, unit: 'pt' as const };
-    const scaledBodyDim = { value: baseBodySize.value * currentFontScale, unit: baseBodySize.unit };
-    const scaledBodyPx = dimensionToPx(scaledBodyDim, HTML_DPI);
+    // Same DPI the layout runs at (see buildHtmlConfigOverride): the font
+    // scale lives in the DPI, so the measured column tracks it.
+    const viewerDpi = htmlViewerDpi(currentFontScale);
+    const scaledBodyPx = dimensionToPx(baseBodySize, viewerDpi);
     const targetColumnPx = measureColumnWidthPx(
       columnWidthSample,
       bodyFontFamily,
@@ -278,30 +281,24 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     // viewer page may span two text columns (or one-and-a-half) plus gutter.
     const layoutResolved = resolveLayoutConfig(currentConfig.layout);
     const docLayoutType = currentColumnMode === 'single' ? 'single' : layoutResolved.layoutType;
-    const gutterPx = dimensionToPx(layoutResolved.gutterWidth, HTML_DPI);
+    const gutterPx = dimensionToPx(layoutResolved.gutterWidth, viewerDpi);
     const sideFraction = layoutResolved.sideColumnPercent / 100;
 
-    // Page width that gives each main text column the target measure.
-    const pageTargetPx =
-      docLayoutType === 'double'
-        ? targetColumnPx * 2 + gutterPx
-        : docLayoutType === 'oneAndHalf'
-          ? (targetColumnPx + gutterPx) / Math.max(1 - sideFraction, 0.5)
-          : targetColumnPx;
-
     const innerViewportW = Math.max(viewportWidth - PADDING_PX * 2, 100);
-    let pageWidthPx: number;
-    if (currentColumnMode === 'single') {
-      pageWidthPx = Math.min(targetColumnPx, innerViewportW);
-    } else {
-      const maxVisible = Math.max(
-        1,
-        Math.floor((innerViewportW + columnGapPx) / (pageTargetPx + columnGapPx)),
-      );
-      pageWidthPx =
-        (innerViewportW - columnGapPx * (maxVisible - 1)) / maxVisible;
-    }
-    pageWidthPx = Math.max(Math.floor(pageWidthPx), 80);
+    // Multi mode shows the number of text columns closest to the target
+    // measure — three columns of a double layout when three is the nearest
+    // fit, rather than two stretched or four squeezed (see pickPageGeometry).
+    const pageWidthPx =
+      currentColumnMode === 'single'
+        ? Math.max(Math.floor(Math.min(targetColumnPx, innerViewportW)), 80)
+        : pickPageGeometry({
+            innerViewportW,
+            columnGapPx,
+            gutterPx,
+            targetColumnPx,
+            layoutType: docLayoutType,
+            sideFraction,
+          }).pageWidthPx;
     columnGeomRef.current = { pageWidthPx, columnGapPx };
 
     const configOverride = buildHtmlConfigOverride(currentConfig, {

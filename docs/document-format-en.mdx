@@ -418,6 +418,8 @@ Table resources draw their own grid, styled through [Configuration › Table sty
 
 A table cell can also hold an image. `TableCell.image` names a bitmap or SVG resource by id (`{ "resourceId": "fig-arm", "width": 0.7 }`): the image is drawn inside the cell — never numbered, floated or captioned — fitted to the cell's inner width (or the fraction of it given by `width`, default `1`) with its aspect ratio kept, aligned like the cell's text, and any cell text runs under it. The row grows to hold it. In the sandbox's table editor the image button of the toolbar picks the resource for the active cell and a width field sets the fraction. An id that matches no image resource leaves the cell text-only.
 
+A cell can carry its own fill. `TableCell.background` is a colour value (`{ "hex": "#c1dfd6", "model": "hex" }`, optionally linked to a document palette entry with `paletteId`) painted instead of the style's header or body background — a compatibility matrix shades its cells green, red and yellow this way. The sandbox's table editor sets it from the fill control of the toolbar. To key such fills, the caption, the note and any text block accept an inline **colour swatch**: `:swatch{color="#c1dfd6"}` (a hex, or the id of a palette entry — `:swatch{color="table-compatible"}`) sets a small square on the baseline, three quarters of the font size, filled with the colour and outlined in the text colour, so a note can read `:swatch{color="ok"}: compatible; :swatch{color="no"}: incompatible`. A colour that resolves to nothing draws an empty outline.
+
 SVG resources can additionally be recoloured for single-spot-colour printing via `diagramStyle.singleInk` (default `false`). When enabled, every colour in an SVG diagram is remapped to a luminance-mapped tint of `diagramStyle.inkColor` (which defaults to the main palette colour, `#295AA3`) — white maps to paper, black to the full ink — so figures reproduce faithfully when the document is printed with a single spot colour. See [Configuration › Diagram style](/en/docs/configuration#diagram-style).
 
 A malformed embed (missing or empty `id`, extra attributes) is not promoted to a resource block; it falls through to ordinary paragraph parsing and remains visible in the output, and the sandbox surfaces a warning.
@@ -500,6 +502,11 @@ Each resource has a **placement** that decides where its float lands, resolved p
       <td><code>span</code></td>
       <td><code>"column"</code> · <code>"page"</code></td>
       <td>Occupy a single column, or break the column flow and span the full content width across all columns. In a single-column layout the two are identical.</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>"ccw"</code> · <code>"cw"</code></td>
+      <td>Set the resource turned a quarter turn — a landscape table in a portrait book. <code>"ccw"</code> turns it counter-clockwise, its top facing the left edge of the page (the reader turns the book clockwise), the usual convention; <code>"cw"</code> the other way. A turned resource is always a page-span float on a page of its own: it is laid out across the height of the content area, sits flush to the spine when the margins are mirrored (flush left otherwise), and a table too wide for one page is cut between rows and continues, turned, on the following pages with its header repeated, exactly like an upright table taller than a page. A turned figure is scaled to fit the page. Ignored for an inline (<code>"here"</code>) embed.</td>
     </tr>
   </tbody>
 </table>

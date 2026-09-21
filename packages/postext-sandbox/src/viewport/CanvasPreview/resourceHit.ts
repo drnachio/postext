@@ -1,5 +1,5 @@
 import type { VDTDocument } from 'postext';
-import { mapInlineSnippet } from 'postext';
+import { mapInlineSnippet, resourceBlockRectToPage, resourceBlockToLocal } from 'postext';
 import type { ResourceFocusTarget } from '../../context/SandboxContext';
 import { hitSvgTextIndex, type SvgTextIndex } from '../../controls/svgSource';
 import { resourceBlocksOnPage, segmentPlainLength } from './geometry';
@@ -232,39 +232,42 @@ export function resourceTextAtPixel(
     if (!inside(block.bbox, xPage, yPage)) continue;
     const rb = block.resourceBlock!;
     const resourceId = rb.resource.id;
+    // A rotated block keeps its geometry in its upright frame: test the
+    // point there.
+    const { x: xLocal, y: yLocal } = resourceBlockToLocal(rb, xPage, yPage);
 
     for (const kind of ['caption', 'note'] as const) {
       const lines = kind === 'caption' ? rb.captionLines : rb.noteLines;
-      const hitIdx = lines.findIndex((l) => yPage >= l.bbox.y && yPage <= l.bbox.y + l.bbox.height);
+      const hitIdx = lines.findIndex((l) => yLocal >= l.bbox.y && yLocal <= l.bbox.y + l.bbox.height);
       if (hitIdx < 0) continue;
       const run = resolveResourceRun(rb, { kind });
       if (!run) continue;
-      return { resourceId, target: { kind }, offset: offsetInRun(run, hitIdx, xPage) };
+      return { resourceId, target: { kind }, offset: offsetInRun(run, hitIdx, xLocal) };
     }
 
     if (rb.table) {
       for (const cell of rb.table.cells) {
-        if (!inside(cell.rect, xPage, yPage)) continue;
+        if (!inside(cell.rect, xLocal, yLocal)) continue;
         const target: ResourceFocusTarget = { kind: 'cell', row: cell.row, col: cell.col };
         if (cell.lines.length === 0) return { resourceId, target, offset: 0 };
         const run = resolveResourceRun(rb, target);
         if (!run) return { resourceId, target, offset: 0 };
-        const idx = nearestLineIndex(run.lines, yPage);
-        return { resourceId, target, offset: idx < 0 ? 0 : offsetInRun(run, idx, xPage) };
+        const idx = nearestLineIndex(run.lines, yLocal);
+        return { resourceId, target, offset: idx < 0 ? 0 : offsetInRun(run, idx, xLocal) };
       }
     }
 
     if (rb.kind === 'svg' && rb.fileId && svgIndexFor) {
       const body = {
-        x: block.bbox.x + rb.bodyRect.x,
-        y: block.bbox.y + rb.bodyRect.y,
+        x: (rb.rotation ? 0 : block.bbox.x) + rb.bodyRect.x,
+        y: (rb.rotation ? 0 : block.bbox.y) + rb.bodyRect.y,
         width: rb.bodyRect.width,
         height: rb.bodyRect.height,
       };
-      if (body.width > 0 && body.height > 0 && inside(body, xPage, yPage)) {
+      if (body.width > 0 && body.height > 0 && inside(body, xLocal, yLocal)) {
         const index = svgIndexFor(rb.fileId);
         if (index) {
-          const offset = hitSvgTextIndex(index, (xPage - body.x) / body.width, (yPage - body.y) / body.height);
+          const offset = hitSvgTextIndex(index, (xLocal - body.x) / body.width, (yLocal - body.y) / body.height);
           if (offset !== null) return { resourceId, target: { kind: 'svgText' }, offset };
         }
       }
@@ -284,13 +287,12 @@ export function svgBodyRectFor(
   for (const block of resourceBlocksOnPage(doc, pageIndex)) {
     const rb = block.resourceBlock!;
     if (rb.resource.id !== resourceId || rb.kind !== 'svg' || !rb.fileId) continue;
-    return {
-      x: block.bbox.x + rb.bodyRect.x,
-      y: block.bbox.y + rb.bodyRect.y,
-      width: rb.bodyRect.width,
-      height: rb.bodyRect.height,
-      fileId: rb.fileId,
-    };
+    // A rotated figure's body, as the box it takes on the page (its
+    // content turned inside it).
+    const body = rb.rotation
+      ? resourceBlockRectToPage(rb, rb.bodyRect)
+      : { x: block.bbox.x + rb.bodyRect.x, y: block.bbox.y + rb.bodyRect.y, width: rb.bodyRect.width, height: rb.bodyRect.height };
+    return { ...body, fileId: rb.fileId };
   }
   return null;
 }

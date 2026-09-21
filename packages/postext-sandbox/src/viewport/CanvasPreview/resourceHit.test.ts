@@ -111,6 +111,38 @@ describe('resourceTextAtPixel', () => {
   });
 });
 
+describe('a rotated block', () => {
+  // The same table set turned counter-clockwise: its upright frame (260 ×
+  // 120) lands with its top-left at page (300, 400) — the frame's x axis
+  // runs up the page, its y axis runs right.
+  const turned = {
+    ...rb,
+    rotation: { direction: 'ccw', originX: 300, originY: 400, width: 260, height: 120 },
+  } as unknown as ResolvedResourceBlock;
+  const turnedBlock = {
+    type: 'resource', pageIndex: 0, bbox: rect(300, 140, 120, 260), lines: [], resourceBlock: turned,
+  } as unknown as VDTBlock;
+  const turnedDoc = { pages: [{ index: 0, floats: [] }], blocks: [turnedBlock] } as unknown as VDTDocument;
+
+  it('hit-tests cells in the upright frame', () => {
+    // Upright (56, 20) — 1px into "text" of cell (0,0) — is page (300 + 20, 400 - 56).
+    const hit = resourceTextAtPixel(turnedDoc, 0, 320, 344);
+    expect(hit).toEqual({ resourceId: 't', target: { kind: 'cell', row: 0, col: 0 }, offset: C00.indexOf('text') });
+    // Upright (11, 70): the second line of cell (1,0).
+    expect(resourceTextAtPixel(turnedDoc, 0, 370, 389)).toEqual({ resourceId: 't', target: { kind: 'cell', row: 1, col: 0 }, offset: C10.indexOf('beta') });
+  });
+
+  it('hit-tests the caption in the upright frame', () => {
+    // Upright (15, 110) → page (410, 385).
+    expect(resourceTextAtPixel(turnedDoc, 0, 410, 385)).toEqual({ resourceId: 't', target: { kind: 'caption' }, offset: 0 });
+  });
+
+  it('misses a page point that only the upright cells would cover', () => {
+    // Page (56, 20) is outside the turned block.
+    expect(resourceTextAtPixel(turnedDoc, 0, 56, 20)).toBeNull();
+  });
+});
+
 describe('reverse mapping (highlight x for a snippet offset)', () => {
   it('places the caption description after the label', () => {
     const run = resolveResourceRun(rb, { kind: 'caption' })!;
