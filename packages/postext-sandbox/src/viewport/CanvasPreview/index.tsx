@@ -11,6 +11,7 @@ import { drawOverlay } from './overlay';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
+import { layoutCacheKey } from '../../book/layoutKeys';
 import { perfSpan, type PerfSpan } from '../../perf/marks';
 import {
   LOCALE_TO_HYPHENATION,
@@ -98,6 +99,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // chapter switch; of the same one, an edit).
   const paintSpanRef = useRef<PerfSpan | null>(null);
   const lastBuiltChapterRef = useRef<string | null>(null);
+  const perfInputsRef = useRef<{ source: unknown; resources: unknown; config: unknown; rebuildKey: number }>({ source: null, resources: null, config: null, rebuildKey: -1 });
   const deferredSource = useDeferredValue(layoutSource);
   // The book the current `docRef` was built from (offsets in the document
   // are offsets into its markdown).
@@ -119,7 +121,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       },
     };
   }, [rawDeferredConfig, locale]);
-  const layoutWorker = useLayoutWorker();
+  const layoutWorker = useLayoutWorker('preview');
   // `rebuildKey` only bumps for events that invalidate measurements (fonts
   // loaded, math engine ready). Container resize does NOT bump this — the
   // VDT is in PT units and is independent of the CSS display size.
@@ -302,10 +304,37 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     const source = deferredSource.book;
     paintSpanRef.current?.end({ superseded: true });
     const switching = lastBuiltChapterRef.current !== deferredSource.chapterId;
-    paintSpanRef.current = perfSpan(switching ? 'canvas.chapter→paint' : 'canvas.edit→paint', { chapter: deferredSource.chapterId });
+    const prevInputs = perfInputsRef.current;
+    const changed = [
+      prevInputs.source !== deferredSource && 'source',
+      prevInputs.resources !== deferredResources && 'resources',
+      prevInputs.config !== deferredConfig && 'config',
+      prevInputs.rebuildKey !== rebuildKey && 'rebuildKey',
+    ].filter(Boolean).join('+');
+    perfInputsRef.current = { source: deferredSource, resources: deferredResources, config: deferredConfig, rebuildKey };
+    paintSpanRef.current = perfSpan(switching ? 'canvas.chapter→paint' : 'canvas.edit→paint', {
+      chapter: deferredSource.chapterId.slice(-24),
+      changed,
+      offset: deferredSource.continuation?.pageIndexOffset,
+      startAt: deferredSource.continuation?.pageNumbering?.startAt,
+      ck: deferredSource.plan.continuationKey.slice(0, 16),
+      ok: deferredSource.plan.outlineKey.slice(0, 8),
+      md: source.markdown.length,
+    });
     layoutWorker.build(
       { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation, outline: deferredSource.plan.outline },
       deferredConfig,
+      {
+        cacheKey: layoutCacheKey({
+          markdown: source.markdown,
+          metadata: source.metadata,
+          config: deferredConfig,
+          resources: deferredResources,
+          continuation: deferredSource.continuation,
+          continuationKey: deferredSource.plan.continuationKey,
+          outlineKey: deferredSource.plan.outlineKey,
+        }),
+      },
     )
       .then((doc) => {
         if (cancelled) return;

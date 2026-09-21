@@ -8,6 +8,8 @@ export interface BuildStats {
   passes: BuildPassInfo[];
   /** Wall time of the whole build inside the worker, in ms. */
   totalMs: number;
+  /** The document came from the worker's cache (no pass was run). */
+  cached?: boolean;
 }
 
 export interface FontPayload {
@@ -45,6 +47,11 @@ export type RequestMessage =
        *  a book (hundreds of tables and figures) are the bulk of a build
        *  message and change far less often than the text. */
       resourcesKey?: string;
+      /** Fingerprint of everything the document depends on. The worker
+       *  keeps the last few documents by it: a build whose key it holds
+       *  is answered from the cache, and a finished build is stored under
+       *  it. Omit for a document not worth keeping (screen geometry). */
+      cacheKey?: string;
     }
   | {
       kind: 'cancel';

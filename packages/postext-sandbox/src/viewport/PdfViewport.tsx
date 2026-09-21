@@ -12,6 +12,7 @@ import { renderToPdf } from 'postext-pdf';
 import { useBookPages, useChapterPlan, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { chapterLayoutFromDoc } from '../book/pagination';
+import { layoutCacheKey } from '../book/layoutKeys';
 import type { ComposedBook } from '../book/types';
 import { ensureConfigFontsLoaded, onCustomFontsChanged } from '../controls/fontLoader';
 import { readViewHash } from '../storage/viewHash';
@@ -57,7 +58,7 @@ export function PdfViewport() {
   const renderedContinuationRef = useRef<string | null>(null);
   const renderedConfigRef = useRef<PostextConfig | null>(null);
   const renderedResourcesRef = useRef<Resource[] | null>(null);
-  const layoutWorker = useLayoutWorker();
+  const layoutWorker = useLayoutWorker('pdf');
 
   const book = useMemo(
     () => (scope === 'book' ? composeBookMemo(chapters) : chapterSource.book),
@@ -112,7 +113,22 @@ export function PdfViewport() {
       const doc = await layoutWorker.build(
         { markdown: snapshotSource.markdown, metadata: snapshotSource.metadata, resources: snapshotResources, continuation: snapshotContinuation, outline: snapshotOutline },
         snapshotConfig,
-        { onProgress: setProgress },
+        {
+          onProgress: setProgress,
+          // A chapter's document is the one the canvas shows: worth
+          // keeping. The whole book is not (and is laid out afresh).
+          cacheKey: snapshotChapter
+            ? layoutCacheKey({
+              markdown: snapshotSource.markdown,
+              metadata: snapshotSource.metadata,
+              config: snapshotConfig,
+              resources: snapshotResources,
+              continuation: snapshotContinuation,
+              continuationKey: snapshotChapter.plan.continuationKey,
+              outlineKey: snapshotChapter.plan.outlineKey,
+            })
+            : undefined,
+        },
       );
       layoutSpan.end({ pages: doc.pages.length });
       setPhase('render');

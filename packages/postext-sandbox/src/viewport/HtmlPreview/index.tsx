@@ -77,7 +77,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const builtSourceRef = useRef<ComposedBook | null>(null);
   const deferredResources = useDeferredValue(state.resources);
 
-  const layoutWorker = useLayoutWorker();
+  const layoutWorker = useLayoutWorker('preview');
   const scrollHostRef = useRef<HTMLDivElement | null>(null);
   const contentHostRef = useRef<HTMLDivElement | null>(null);
   const viewportSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });

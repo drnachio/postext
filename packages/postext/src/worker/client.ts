@@ -17,6 +17,9 @@ export interface BuildOptions {
   /** Fingerprint of `content.resources`. Consecutive builds with the same
    *  key ship the list once; the worker keeps it (see the protocol). */
   resourcesKey?: string;
+  /** Fingerprint of the whole build; the worker answers a repeat from its
+   *  document cache (see the protocol). */
+  cacheKey?: string;
 }
 
 export interface LayoutWorkerHandle {
@@ -167,7 +170,7 @@ export function createLayoutWorker(
           if (sentResourcesKey === resourcesKey) payload = { ...content, resources: undefined };
           else sentResourcesKey = resourcesKey;
         }
-        send({ kind: 'build', id, content: payload, config, resourcesKey });
+        send({ kind: 'build', id, content: payload, config, resourcesKey, cacheKey: opts?.cacheKey });
       });
     },
     dispose() {

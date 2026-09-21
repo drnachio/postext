@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useBookPlan, useSandboxDispatch, useSandboxSelector } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { chapterLayoutFromDoc } from '../book/pagination';
+import { layoutCacheKey } from '../book/layoutKeys';
 import { withHyphenationLocale } from '../controls/hyphenation';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
@@ -30,7 +31,7 @@ export function ChapterPaginator() {
   const resources = useSandboxSelector((s) => s.resources);
   const locale = useSandboxSelector((s) => s.locale);
   const storeReady = useSandboxSelector((s) => s.storeReady);
-  const layoutWorker = useLayoutWorker();
+  const layoutWorker = useLayoutWorker('background');
 
   // The active chapter is left to the canvas when that is the tab shown:
   // it lays the chapter out at print geometry and records the layout on
@@ -66,9 +67,21 @@ export function ChapterPaginator() {
     if (!chapterPlan || !chapterPlan.paginated || !target) return;
     let cancelled = false;
     const book = composeBookMemo(currentChapters, id);
+    const effectiveConfig = withHyphenationLocale(currentConfig, currentLocale);
     layoutWorker.build(
       { markdown: book.markdown, metadata: book.metadata, resources: currentResources, continuation: chapterPlan.continuation, outline: chapterPlan.outline },
-      withHyphenationLocale(currentConfig, currentLocale),
+      effectiveConfig,
+      {
+        cacheKey: layoutCacheKey({
+          markdown: book.markdown,
+          metadata: book.metadata,
+          config: effectiveConfig,
+          resources: currentResources,
+          continuation: chapterPlan.continuation,
+          continuationKey: chapterPlan.continuationKey,
+          outlineKey: chapterPlan.outlineKey,
+        }),
+      },
     )
       .then((doc) => {
         if (cancelled) return;
