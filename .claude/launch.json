@@ -9,15 +9,6 @@
       ],
       "port": 3000,
       "autoPort": true
-    },
-    {
-      "name": "web-colymedia",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": [
-        "-c",
-        "cd /private/tmp/claude-501/-Users-ignacioferropicon-dev-postext/c2e45ae2-1efe-43dc-8900-939698bf71d9/scratchpad/wt/apps/web && exec ./node_modules/.bin/next dev -p 3001"
-      ],
-      "port": 3001
     }
   ]
 }
