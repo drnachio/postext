@@ -608,6 +608,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     projectSwitchConfirm: t("projectSwitchConfirm"),
     projectRename: t("projectRename"),
     projectNameLabel: t("projectNameLabel"),
+    projectDescriptionLabel: t("projectDescriptionLabel"),
     projectDuplicate: t("projectDuplicate"),
     projectDelete: t("projectDelete"),
     projectDeleteConfirm: t("projectDeleteConfirm"),

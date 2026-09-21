@@ -1143,6 +1143,7 @@
     "projectSwitchConfirm": "¿Abrir «__name__»? Se perderán los cambios sin guardar del preset activo.",
     "projectRename": "Renombrar proyecto",
     "projectNameLabel": "Nombre del proyecto",
+    "projectDescriptionLabel": "Descripción del proyecto",
     "projectDuplicate": "Duplicar proyecto",
     "projectDelete": "Eliminar proyecto",
     "projectDeleteConfirm": "¿Eliminar «__name__»? Sus recursos y fuentes se eliminarán con él.",
