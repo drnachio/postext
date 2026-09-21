@@ -52,6 +52,9 @@ export type RequestMessage =
        *  is answered from the cache, and a finished build is stored under
        *  it. Omit for a document not worth keeping (screen geometry). */
       cacheKey?: string;
+      /** False: build (and cache) the document but do not send it back —
+       *  warming the cache for a chapter the reader may open next. */
+      wantDoc?: boolean;
     }
   | {
       kind: 'cancel';
@@ -66,7 +69,8 @@ export type ResponseMessage =
   | {
       kind: 'built';
       id: number;
-      doc: VDTDocument;
+      /** Null when the build asked for no document (`wantDoc: false`). */
+      doc: VDTDocument | null;
       stats: BuildStats;
     }
   | {

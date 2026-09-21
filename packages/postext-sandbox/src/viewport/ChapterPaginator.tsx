@@ -11,6 +11,13 @@ import { useLayoutWorker } from '../worker/useLayoutWorker';
 
 /** Pause before a preceding chapter is laid out in the background (ms). */
 const PAGINATION_DEBOUNCE_MS = 300;
+/** Pause after the reader settles on a chapter before the chapters around
+ *  it are laid out into the worker's cache (ms). */
+const PREFETCH_DEBOUNCE_MS = 800;
+/** Chapters warmed after / before the active one. The worker keeps eight
+ *  documents; the active chapter and its edits take some of them. */
+const PREFETCH_AHEAD = 2;
+const PREFETCH_BEHIND = 1;
 
 /** Renderless. The previews lay out only the active chapter, whose first
  *  page number depends on the page counts of the chapters before it (and
@@ -96,6 +103,48 @@ export function ChapterPaginator() {
       cancelled = true;
     };
   }, [debounced, config, resources, locale, layoutWorker, dispatch]);
+
+  // Once every chapter is paginated, the chapters the reader is likely to
+  // open next are laid out into the worker's document cache — a fresh
+  // worker (a reload) holds none, however current the records are — so
+  // the first click on a neighbour is answered from the cache.
+  const warmedRef = useRef(new Set<string>());
+  useEffect(() => {
+    if (!storeReady || plan.pendingChapterId !== null) return;
+    const at = chapters.findIndex((c) => c.id === activeChapterId);
+    if (at < 0) return;
+    const timer = setTimeout(() => {
+      const indices: number[] = [];
+      for (let i = 1; i <= PREFETCH_AHEAD; i++) indices.push(at + i);
+      for (let i = 1; i <= PREFETCH_BEHIND; i++) indices.push(at - i);
+      const effectiveConfig = withHyphenationLocale(config, locale);
+      for (const index of indices) {
+        const chapter = chapters[index];
+        const chapterPlan = chapter ? plan.byId[chapter.id] : undefined;
+        if (!chapter || !chapterPlan || !chapterPlan.paginated) continue;
+        const book = composeBookMemo(chapters, chapter.id);
+        const key = layoutCacheKey({
+          markdown: book.markdown,
+          metadata: book.metadata,
+          config: effectiveConfig,
+          resources,
+          continuation: chapterPlan.continuation,
+          continuationKey: chapterPlan.continuationKey,
+          outlineKey: chapterPlan.outlineKey,
+        });
+        if (warmedRef.current.has(key)) continue;
+        warmedRef.current.add(key);
+        layoutWorker
+          .warm(
+            { markdown: book.markdown, metadata: book.metadata, resources, continuation: chapterPlan.continuation, outline: chapterPlan.outline },
+            effectiveConfig,
+            key,
+          )
+          .catch(() => { warmedRef.current.delete(key); });
+      }
+    }, PREFETCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [storeReady, plan, chapters, activeChapterId, config, resources, locale, layoutWorker]);
 
   return null;
 }

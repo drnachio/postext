@@ -24,6 +24,7 @@ function fakeHandle() {
     registerFonts: async () => {},
     unregisterFonts: async () => {},
     dispose: () => {},
+    warm: (content, config, opts) => handle.build(content, config, { ...opts, wantDoc: false }).then(() => undefined),
     build: (content, _config, opts) =>
       new Promise<VDTDocument>((resolve, reject) => {
         const entry: FakeBuild = {

@@ -22,6 +22,9 @@ export interface LayoutRequest {
    *  the last few documents by it. Omit for a document not worth keeping. */
   cacheKey?: string;
   onProgress?: (progress: BuildProgress) => void;
+  /** Warm the worker's cache only: the document is built and kept there,
+   *  not sent back (needs `cacheKey`). Resolves with `undefined`. */
+  warmOnly?: boolean;
 }
 
 export interface LayoutService {
@@ -29,7 +32,8 @@ export interface LayoutService {
    *  when a later request from the same client supersedes this one, or
    *  when the client is cancelled. */
   build(request: LayoutRequest): Promise<VDTDocument>;
-  /** Drop whatever `clientId` has pending (a component unmounting). */
+  /** Drop whatever `clientId` has pending (a component unmounting), and
+   *  the requests of its sub-clients (`clientId:…`). */
   cancel(clientId: string): void;
   dispose(): void;
   /** Disposed services reject every build: the host makes a new one. */
@@ -129,23 +133,27 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
     try {
       await ensureFonts(request.config);
       if (controller.signal.aborted) throw abortError();
-      const doc = await handle.build(request.content, request.config, {
+      const buildOptions = {
         signal: controller.signal,
         onProgress: request.onProgress,
-        onStats: (s) => { stats = s; },
+        onStats: (s: BuildStats) => { stats = s; },
         resourcesKey: request.content.resources ? resourcesKeyOf(request.content.resources) : undefined,
         cacheKey: request.cacheKey,
-      });
+      };
+      const doc = request.warmOnly && request.cacheKey
+        ? await handle.warm(request.content, request.config, { ...buildOptions, cacheKey: request.cacheKey }).then(() => null)
+        : await handle.build(request.content, request.config, buildOptions);
       const built = stats as BuildStats | null;
       span.end({
-        pages: doc.pages.length,
-        docKb: perfSizeKb(doc),
+        warm: !!request.warmOnly,
+        pages: doc?.pages.length,
+        docKb: doc ? perfSizeKb(doc) : 0,
         cached: built?.cached ?? false,
         workerMs: built?.totalMs,
         passes: built?.passes.length,
         passMs: built?.passes.map((p) => Math.round(p.ms)).join('/'),
       });
-      entry.resolve(doc);
+      entry.resolve(doc as VDTDocument);
     } catch (err) {
       const aborted = (err as { name?: string } | null)?.name === 'AbortError';
       if (aborted && entry.requeue && !entry.dropped && !disposed) {
@@ -197,14 +205,15 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
       });
     },
     cancel(clientId) {
+      const owned = (id: string) => id === clientId || id.startsWith(`${clientId}:`);
       for (let i = queue.length - 1; i >= 0; i--) {
         const q = queue[i]!;
-        if (q.request.clientId === clientId) {
+        if (owned(q.request.clientId)) {
           queue.splice(i, 1);
           q.reject(abortError());
         }
       }
-      if (active?.request.clientId === clientId) interrupt(active, false);
+      if (active && owned(active.request.clientId)) interrupt(active, false);
     },
     dispose() {
       if (disposed) return;

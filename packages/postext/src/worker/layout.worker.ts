@@ -152,7 +152,7 @@ async function runBuild(msg: BuildRequest): Promise<void> {
   try {
     const cached = msg.cacheKey ? docCacheGet(msg.cacheKey) : undefined;
     if (cached) {
-      post({ kind: 'built', id: msg.id, doc: cached, stats: { passes: [], totalMs: 0, cached: true } });
+      post({ kind: 'built', id: msg.id, doc: msg.wantDoc === false ? null : cached, stats: { passes: [], totalMs: 0, cached: true } });
       return;
     }
     // Bring MathJax up before the build path calls renderMath — otherwise
@@ -187,7 +187,7 @@ async function runBuild(msg: BuildRequest): Promise<void> {
       post({ kind: 'cancelled', id: msg.id });
     } else {
       if (msg.cacheKey) docCachePut(msg.cacheKey, doc);
-      post({ kind: 'built', id: msg.id, doc, stats: { passes, totalMs: performance.now() - startedAt } });
+      post({ kind: 'built', id: msg.id, doc: msg.wantDoc === false ? null : doc, stats: { passes, totalMs: performance.now() - startedAt } });
     }
   } catch (err) {
     if (err instanceof BuildCancelledError) {

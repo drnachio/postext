@@ -17,6 +17,12 @@ export interface LayoutWorkerApi {
     config: PostextConfig,
     opts?: { onProgress?: (progress: BuildProgress) => void; cacheKey?: string },
   ): Promise<VDTDocument>;
+  /**
+   * Warm the worker's document cache for `cacheKey` without receiving the
+   * document. Warm requests queue up (they do not supersede one another)
+   * and are cancelled with the component.
+   */
+  warm(content: PostextContent, config: PostextConfig, cacheKey: string): Promise<void>;
 }
 
 /**
@@ -36,6 +42,11 @@ export function useLayoutWorker(priority: LayoutPriority = 'preview'): LayoutWor
       service.build({ clientId, priority, content, config, cacheKey: opts?.cacheKey, onProgress: opts?.onProgress }),
     [service, clientId, priority],
   );
+  const warm = useCallback(
+    (content: PostextContent, config: PostextConfig, cacheKey: string) =>
+      service.build({ clientId: `${clientId}:warm:${cacheKey}`, priority, content, config, cacheKey, warmOnly: true }).then(() => undefined),
+    [service, clientId, priority],
+  );
 
-  return useMemo(() => ({ build }), [build]);
+  return useMemo(() => ({ build, warm }), [build, warm]);
 }
