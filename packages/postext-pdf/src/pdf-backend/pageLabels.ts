@@ -30,13 +30,16 @@ const STYLE_CODE: Record<string, 'D' | 'R' | 'r' | 'A' | 'a' | null> = {
  *  `doc.pages` is empty. Alpha runs whose max value exceeds 26 fall back
  *  to per-page `/P` prefix entries so PDF viewers show the exact postext
  *  label (`AA`, `AB`, …) rather than the PDF repeated-letter scheme. */
-export function addPageLabels(pdfDoc: PDFDocument, doc: VDTDocument): void {
-  if (doc.pages.length === 0) return;
+export function addPageLabels(pdfDoc: PDFDocument, input: VDTDocument | VDTDocument[]): void {
+  const docs = Array.isArray(input) ? input : [input];
+  // One page list for the whole PDF: a book is several documents in a row.
+  const pages = docs.flatMap((doc) => doc.pages);
+  if (pages.length === 0) return;
 
   const ctx = pdfDoc.context;
   const nums = PDFArray.withContext(ctx);
   const runs: PageLabelRun[] = collectPageLabelRuns(
-    doc.pages.map((p) => ({
+    pages.map((p) => ({
       value: p.pageNumberValue,
       label: p.pageLabel,
       format: p.pageNumberFormat,
@@ -49,7 +52,7 @@ export function addPageLabels(pdfDoc: PDFDocument, doc: VDTDocument): void {
 
     if (isAlpha && run.maxValue > 26) {
       for (let i = run.startPageIndex; i <= run.endPageIndex; i++) {
-        const page = doc.pages[i]!;
+        const page = pages[i]!;
         const dict = PDFDict.withContext(ctx);
         dict.set(PDFName.of('P'), PDFString.of(page.pageLabel));
         nums.push(PDFNumber.of(i));
