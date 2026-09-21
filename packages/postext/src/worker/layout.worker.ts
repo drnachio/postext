@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 
 import { buildDocument, BuildCancelledError } from '../pipeline';
+import type { BuildPassInfo } from '../pipeline/build';
 import { initMathEngine, isMathReady } from '../math';
 import { createMeasurementCache, clearMeasurementCache } from '../measure';
 import type { MeasurementCache } from '../measure';
@@ -123,8 +124,11 @@ ctx.addEventListener('message', async (event: MessageEvent<RequestMessage>) => {
         // flooding the main thread.
         let lastProgressAt = 0;
         let lastPages = -1;
+        const passes: BuildPassInfo[] = [];
+        const startedAt = performance.now();
         const doc = buildDocument(msg.content, msg.config, measurementCache, {
           shouldCancel: () => cancelRequestedFor === msg.id,
+          onPass: (info) => { passes.push(info); },
           onProgress: (progress) => {
             const now = Date.now();
             if (progress.pages === lastPages && now - lastProgressAt < PROGRESS_INTERVAL_MS) return;
@@ -137,7 +141,7 @@ ctx.addEventListener('message', async (event: MessageEvent<RequestMessage>) => {
           cancelRequestedFor = null;
           post({ kind: 'cancelled', id: msg.id });
         } else {
-          post({ kind: 'built', id: msg.id, doc });
+          post({ kind: 'built', id: msg.id, doc, stats: { passes, totalMs: performance.now() - startedAt } });
         }
       } catch (err) {
         if (err instanceof BuildCancelledError) {

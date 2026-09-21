@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { createLayoutWorker } from 'postext/worker';
-import type { BuildProgress, LayoutWorkerHandle } from 'postext/worker';
+import type { BuildProgress, BuildStats, LayoutWorkerHandle } from 'postext/worker';
 
 export type { BuildProgress } from 'postext/worker';
 import type { PostextConfig, PostextContent, VDTDocument } from 'postext';
 import { collectFontPayloadsForFamilies, getConfigFontFamilies, onCustomFontsChanged } from '../controls/fontLoader';
+import { perfSizeKb, perfSpan } from '../perf/marks';
 
 export interface LayoutWorkerApi {
   /**
@@ -119,8 +120,31 @@ export function useLayoutWorker(): LayoutWorkerApi {
     if (controller.signal.aborted) {
       throw new DOMException('Aborted', 'AbortError');
     }
+    const span = perfSpan('worker.build', {
+      markdownKb: Math.round(content.markdown.length / 1024),
+      contentKb: perfSizeKb(content),
+      configKb: perfSizeKb(config),
+    });
+    let stats: BuildStats | null = null;
     try {
-      return await bundle.handle.build(content, config, { signal: controller.signal, onProgress: opts?.onProgress });
+      const doc = await bundle.handle.build(content, config, {
+        signal: controller.signal,
+        onProgress: opts?.onProgress,
+        onStats: (s) => { stats = s; },
+      });
+      const passes = (stats as BuildStats | null)?.passes ?? [];
+      span.end({
+        pages: doc.pages.length,
+        docKb: perfSizeKb(doc),
+        workerMs: (stats as BuildStats | null)?.totalMs,
+        passes: passes.length,
+        iterations: doc.iterationCount,
+        passMs: passes.map((p) => Math.round(p.ms)).join('/'),
+      });
+      return doc;
+    } catch (err) {
+      span.end({ aborted: (err as { name?: string } | null)?.name === 'AbortError' });
+      throw err;
     } finally {
       if (currentAbortRef.current === controller) currentAbortRef.current = null;
     }

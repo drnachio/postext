@@ -17,6 +17,7 @@ import { ensureConfigFontsLoaded, onCustomFontsChanged } from '../controls/fontL
 import { readViewHash } from '../storage/viewHash';
 import { withHyphenationLocale } from '../controls/hyphenation';
 import { useLayoutWorker, type BuildProgress } from '../worker/useLayoutWorker';
+import { perfSpan } from '../perf/marks';
 import { buildPdfResourceBytes } from './pdfResourceBytes';
 import { PdfPreview } from './PdfPreview';
 import { PdfToolbar } from './PdfToolbar';
@@ -104,13 +105,16 @@ export function PdfViewport() {
     const snapshotConfig = effectiveConfig;
     const snapshotStateConfig = config;
     const snapshotResources = resources;
+    const total = perfSpan('pdf.total', { scope });
     try {
       await ensureConfigFontsLoaded(snapshotConfig);
+      const layoutSpan = perfSpan('pdf.layout', { scope });
       const doc = await layoutWorker.build(
         { markdown: snapshotSource.markdown, metadata: snapshotSource.metadata, resources: snapshotResources, continuation: snapshotContinuation, outline: snapshotOutline },
         snapshotConfig,
         { onProgress: setProgress },
       );
+      layoutSpan.end({ pages: doc.pages.length });
       setPhase('render');
       // A chapter render counts as its layout for the chapters after it.
       if (snapshotChapter) {
@@ -119,7 +123,10 @@ export function PdfViewport() {
       }
       const debug = resolveDebugConfig(snapshotConfig.debug);
       const pdfGen = resolvePdfGenerationConfig(snapshotConfig.pdfGeneration);
+      const bytesSpan = perfSpan('pdf.resourceBytes');
       const resourceBytes = await buildPdfResourceBytes(snapshotResources, snapshotConfig);
+      bytesSpan.end({ resources: resourceBytes.size });
+      const renderSpan = perfSpan('pdf.render', { pages: doc.pages.length });
       const bytes = await renderToPdf(doc, {
         fontProvider: providerRef.current,
         pageNegative: debug.pageNegative.enabled,
@@ -128,6 +135,8 @@ export function PdfViewport() {
         accessible: pdfGen.accessible,
         resourceBytes: (fileId) => resourceBytes.get(fileId),
       });
+      renderSpan.end({ kb: Math.round(bytes.byteLength / 1024) });
+      total.end({ pages: doc.pages.length, kb: Math.round(bytes.byteLength / 1024) });
       bytesRef.current = bytes;
       const copy = bytes.slice();
       const blob = new Blob([copy.buffer], { type: 'application/pdf' });
@@ -141,6 +150,7 @@ export function PdfViewport() {
       renderedResourcesRef.current = snapshotResources;
       setDirty(false);
     } catch (err) {
+      total.end({ error: true });
       console.error('[PdfViewport] Render error:', err);
       setError(err instanceof Error ? err.message : String(err));
       bytesRef.current = null;

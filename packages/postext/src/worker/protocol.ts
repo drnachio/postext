@@ -1,6 +1,14 @@
 import type { PostextContent, PostextConfig } from '../types';
 import type { VDTDocument } from '../vdt';
-import type { BuildProgress } from '../pipeline/build';
+import type { BuildPassInfo, BuildProgress } from '../pipeline/build';
+
+/** Where a build's time went (dev tooling; always attached, cheap). */
+export interface BuildStats {
+  /** Every placement pass, in build order. */
+  passes: BuildPassInfo[];
+  /** Wall time of the whole build inside the worker, in ms. */
+  totalMs: number;
+}
 
 export interface FontPayload {
   family: string;
@@ -46,6 +54,7 @@ export type ResponseMessage =
       kind: 'built';
       id: number;
       doc: VDTDocument;
+      stats: BuildStats;
     }
   | {
       kind: 'progress';

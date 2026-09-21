@@ -142,6 +142,24 @@ export interface BuildDocumentOptions {
    * restarts). A long build can show a bar from it.
    */
   onProgress?: (progress: BuildProgress) => void;
+  /**
+   * Called after every placement pass with its wall time — the engine
+   * re-places the document several times (band caps, column balancing,
+   * contents rounds); dev tooling shows where a build's time went.
+   */
+  onPass?: (info: BuildPassInfo) => void;
+}
+
+/** One placement pass of a build, as reported to {@link BuildDocumentOptions.onPass}. */
+export interface BuildPassInfo {
+  /** 1-based pass within its contents round. */
+  pass: number;
+  /** 0-based round of a document laying out its own contents (see `MAX_TOC_ROUNDS`). */
+  tocRound: number;
+  /** Wall time of the pass in ms. */
+  ms: number;
+  /** Pages the pass produced. */
+  pages: number;
 }
 
 export interface BuildProgress {
@@ -3253,12 +3271,12 @@ export function buildDocument(
     const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content);
     if (hasTocDirective(parsed)) {
       let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);
-      let doc = buildDocumentBalanced({ ...content, outline }, config, cache, options);
+      let doc = buildDocumentBalanced({ ...content, outline }, config, cache, options, 0);
       for (let round = 0; round < MAX_TOC_ROUNDS; round++) {
         const after = outlineFromDoc(doc, outline);
         if (sameOutline(after, outline)) break;
         outline = after;
-        doc = buildDocumentBalanced({ ...content, outline }, config, cache, options);
+        doc = buildDocumentBalanced({ ...content, outline }, config, cache, options, round + 1);
       }
       return doc;
     }
@@ -3266,21 +3284,28 @@ export function buildDocument(
   return buildDocumentBalanced(content, config, cache, options);
 }
 
+const now = (): number => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
 function buildDocumentBalanced(
   content: PostextContent,
   config?: PostextConfig,
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
+  tocRound = 0,
 ): VDTDocument {
   // Each pass reports its own progress, numbered in build order.
   let passIndex = 0;
   const onProgress = options?.onProgress;
+  const onPass = options?.onPass;
   const passOptions: BuildDocumentOptions | undefined = onProgress
     ? { ...options, onProgress: (p) => onProgress({ ...p, pass: passIndex }) }
     : options;
   const runPass = (hints?: PassHints): PassResult => {
     passIndex++;
-    return buildDocumentPass(content, config, cache, passOptions, hints);
+    const started = onPass ? now() : 0;
+    const result = buildDocumentPass(content, config, cache, passOptions, hints);
+    onPass?.({ pass: passIndex, tocRound, ms: now() - started, pages: result.doc.pages.length });
+    return result;
   };
 
   // --- Band caps (page-span blocks mid-page) -----------------------------
