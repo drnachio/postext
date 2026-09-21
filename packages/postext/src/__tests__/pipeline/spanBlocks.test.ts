@@ -300,12 +300,19 @@ describe('page-span callouts (span blocks, stage 1)', () => {
     expect(after.bbox.y).toBeGreaterThan(frame!.bbox.y + frame!.bbox.height);
   });
 
-  it('floating placements (top / bottom) still fall back to inline placement', () => {
+  it('a floating placement (bottom) takes the foot of the page as a float band, not a span block', () => {
     const doc = build(['Intro.', '', ':::callout{span="page" placement="bottom"}', filler(1), ':::', '', 'After.'].join('\n'));
     const [frame] = frames(doc);
+    const page = doc.pages[0]!;
     expect(frame!.callout!.placement).toBe('bottom');
-    expect(spanColumns(doc.pages[0]!)).toHaveLength(0);
-    expect(frame!.bbox.width).toBeCloseTo(columnOf(doc, frame!).bbox.width, 5);
+    expect(spanColumns(page)).toHaveLength(0);
+    expect(page.floats).toContain(frame);
+    expect(frame!.bbox.width).toBeCloseTo(page.contentArea.width, 5);
+    expect(frame!.bbox.y + frame!.bbox.height).toBeLessThanOrEqual(page.contentArea.y + page.contentArea.height + 0.01);
+    // The text columns end above the band; "After." flows on above it.
+    for (const col of textColumns(page, 0)) expect(col.bbox.y + col.bbox.height).toBeLessThanOrEqual(frame!.bbox.y + 0.01);
+    const after = doc.blocks.find((b) => b.type === 'paragraph' && b.lines[0]?.text.startsWith('After'));
+    expect(after!.pageIndex).toBe(0);
   });
 
   it('span band is cut inside float-reduced column extents (top and bottom floats)', () => {

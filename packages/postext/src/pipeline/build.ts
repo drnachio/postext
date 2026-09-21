@@ -1,5 +1,5 @@
 import { applyTitleBreaks } from '../parse/inlineFormatting';
-import type { PostextContent, PostextConfig, Resource, ResourceType, ResourceRotation, HeadingBreakParity, ResolvedCalloutStyleConfig } from '../types';
+import type { PostextContent, PostextConfig, Resource, ResourceType, ResourceRotation, HeadingBreakParity, ResolvedCalloutStyleConfig, CalloutSpan } from '../types';
 import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import {
@@ -453,6 +453,50 @@ export function buildDocumentPass(
       pendingFloats.push(stamped);
     }
   };
+  /** Floated boxes (`placement: 'top' | 'bottom'`, `span` column / page):
+   *  a `:::callout` that leaves the flow like a resource and takes the
+   *  first free band after the point it occurs at — the foot of the
+   *  current page, or the head / foot of a page the flow opens later —
+   *  while the text after it fills the page it left. Keyed by the fence's
+   *  content index; the pending float carries the synthetic id
+   *  `callout:<idx>` (see `calloutFloatOf`). */
+  const calloutFloats = new Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter }>();
+  const CALLOUT_FLOAT_PREFIX = 'callout:';
+  const calloutFloatOf = (resourceId: string) =>
+    resourceId.startsWith(CALLOUT_FLOAT_PREFIX) ? calloutFloats.get(Number(resourceId.slice(CALLOUT_FLOAT_PREFIX.length))) : undefined;
+  /** Boxes laid out for a band, waiting for the band's `y` (built in
+   *  `buildFloatBlock`, committed in `commitFloatBlock`). */
+  const calloutFloatResults = new Map<VDTBlock, { result: CalloutLayoutResult; startIdx: number; plan: PlannedCallout }>();
+  /** Pages whose head or foot a floated box took (see the gallery rule in
+   *  `placeFloatInColumns`). */
+  const calloutBandPages = new Set<VDTPage>();
+  const enqueueCalloutFloat = (
+    startIdx: number,
+    plan: PlannedCallout,
+    style: ResolvedCalloutStyleConfig,
+    L: CalloutLayouter,
+    placement: 'top' | 'bottom',
+    span: CalloutSpan,
+  ): void => {
+    const key = `${CALLOUT_FLOAT_PREFIX}${startIdx}`;
+    // A keep-with-next replay passes the fence again: enqueue once.
+    if (!enqueuedFloatIds.has(key)) {
+      enqueuedFloatIds.add(key);
+      calloutFloats.set(startIdx, { plan, style, L });
+      const page = doc.pages[cursor.pageIndex];
+      const col = page?.columns[cursor.columnIndex];
+      pendingFloats.push({
+        resourceId: key,
+        firstBlockIdx: startIdx,
+        position: placement,
+        span: span === 'page' ? 'page' : 'column',
+        callout: { startIdx },
+        ...(col ? { refPageIndex: page!.index, refY: col.bbox.y + (col.bbox.height - col.availableHeight) } : {}),
+      });
+    }
+    // Floats first referenced inside the box enqueue in reading order.
+    for (let i = startIdx + 1; i <= plan.endIdx; i++) enqueueFloatsFor(i);
+  };
   const floatGapPx = bodyStyle.lineHeightPx;
   const minTextPx = bodyStyle.lineHeightPx * 3;
   /** Fewest body rows the closing slice of a split table carries. */
@@ -566,6 +610,15 @@ export function buildDocumentPass(
     const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
+    const cf = calloutFloatOf(resourceId);
+    if (cf) {
+      // A floated box: its frame at the band's width, title and icon
+      // included; no caption baseline to align.
+      const r = cf.L.layoutRange(CUT_START, cf.L.end, width, 'float-probe', false);
+      const mc: FloatMeasure = { height: r.totalHeight };
+      floatMeasureMemo.set(key, mc);
+      return mc;
+    }
     const laid = layoutFloat(resourceId, width, slice, rotated, aside);
     let m: FloatMeasure | null = null;
     if (laid && laid.block.rotation) {
@@ -606,7 +659,17 @@ export function buildDocumentPass(
      *  verso page) instead of its left. */
     flushEnd = false,
     aside?: CaptionAside,
+    /** The page is a verso of mirrored margins (a floated box's `'outer'`
+     *  corner icon hangs on the left there). */
+    mirrored = false,
   ): { block: VDTBlock; height: number } | null => {
+    const cf = calloutFloatOf(resourceId);
+    if (cf) {
+      const startIdx = Number(resourceId.slice(CALLOUT_FLOAT_PREFIX.length));
+      const result = cf.L.layoutRange(CUT_START, cf.L.end, width, `block-${blockIdCounter++}`, false, mirrored);
+      calloutFloatResults.set(result.frame, { result, startIdx, plan: cf.plan });
+      return { block: result.frame, height: result.totalHeight };
+    }
     const laid = layoutFloat(resourceId, width, slice, rotated, aside);
     if (!laid) return null;
     const { block: rb, totalHeight } = laid;
@@ -846,6 +909,45 @@ export function buildDocumentPass(
     return Math.max(0, col.availableHeight - (col.bbox.height - newHeight));
   };
 
+  /** Set a built float at its band position and hand it to the page: a
+   *  resource block into `page.floats`; a floated box's frame and children
+   *  into `page.floats` and `doc.blocks`, the way a fixed box goes. */
+  const commitFloatBlock = (
+    page: VDTPage,
+    col: VDTColumn,
+    built: { block: VDTBlock; height: number },
+    x: number,
+    y: number,
+    width: number,
+  ): void => {
+    const cf = calloutFloatResults.get(built.block);
+    if (cf) {
+      calloutFloatResults.delete(built.block);
+      const { result, startIdx, plan } = cf;
+      const frame = result.frame;
+      stampCalloutSource(frame, startIdx, plan);
+      frame.pageIndex = page.index;
+      frame.columnIndex = col.index;
+      offsetCalloutToAbsolute(result, x, y);
+      const floats = (page.floats ??= []);
+      doc.blocks.push(frame);
+      floats.push(frame);
+      for (const child of result.children) {
+        child.pageIndex = frame.pageIndex;
+        child.columnIndex = frame.columnIndex;
+        doc.blocks.push(child);
+        floats.push(child);
+      }
+      calloutBandPages.add(page);
+      return;
+    }
+    offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
+    built.block.bbox = createBoundingBox(x, y, width, built.height);
+    built.block.pageIndex = page.index;
+    built.block.columnIndex = col.index;
+    (page.floats ??= []).push(built.block);
+  };
+
   const placeFloatInColumns = (
     page: VDTPage,
     f: PlannedFloat,
@@ -879,15 +981,13 @@ export function buildDocumentPass(
       const built = buildFloatBlock(f.resourceId, xLeft, width, slice);
       if (!built) return 'skip';
       first.availableHeight = Math.max(0, first.availableHeight - need);
-      offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
-      built.block.bbox = createBoundingBox(xLeft, y, width, built.height);
-      built.block.pageIndex = page.index;
-      built.block.columnIndex = first.index;
-      (page.floats ??= []).push(built.block);
+      commitFloatBlock(page, first, built, xLeft, y, width);
       floatsPlaced++;
       return 'placed';
     }
 
+    /** Gallery page (see below): the band takes the columns' whole room. */
+    let galleryFill = false;
     if (mode === 'fresh') {
       let minAvail = Infinity;
       let anyReserved = false;
@@ -896,7 +996,18 @@ export function buildDocumentPass(
         const r = reservedOf(c);
         if (r.top > 0 || r.bottom > 0) anyReserved = true;
       }
-      if (need > minAvail - minTextPx && anyReserved) return 'defer';
+      if (need > minAvail - minTextPx && anyReserved) {
+        // Gallery page: a float cited on an earlier page that arrives
+        // under a floated box heading this page takes the rest of the
+        // page — the compositor's box-plus-figure page — rather than
+        // waiting for the next one and leaving a line or two stranded
+        // between the bands. Only a float that fits whole.
+        const gallery = need <= minAvail + 0.01
+          && f.refPageIndex !== undefined && f.refPageIndex < page.index
+          && calloutBandPages.has(page) && !calloutFloatOf(f.resourceId);
+        if (!gallery) return 'defer';
+        galleryFill = true;
+      }
       if (need > minAvail + 0.01 || tooWide(measure)) {
         // Dominating the band: a table is cut to it (a rotated table, to
         // the band's width).
@@ -965,7 +1076,7 @@ export function buildDocumentPass(
       rest = { ...rest, notBefore: { pageIndex: page.index, columnIndex: targetCols[targetCols.length - 1]!.index } };
     }
 
-    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, rotated ? rotatedFlushEnd(page) : false, aside);
+    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, rotated ? rotatedFlushEnd(page) : false, aside, mirroredOf(page));
     if (!built) return 'skip';
 
     // The caption beside the figure takes its band of the side column: a
@@ -1011,11 +1122,10 @@ export function buildDocumentPass(
       floatReserved.set(col, r);
     }
 
-    offsetResourceBlockToAbsolute(built.block.resourceBlock!, 0, y);
-    built.block.bbox = createBoundingBox(xLeft, y, width, built.height);
-    built.block.pageIndex = page.index;
-    built.block.columnIndex = first.index;
-    (page.floats ??= []).push(built.block);
+    // A gallery page keeps no text room between its bands.
+    if (galleryFill) for (const col of targetCols) col.availableHeight = 0;
+
+    commitFloatBlock(page, first, built, xLeft, y, width);
     floatsPlaced++;
     return rest ? { rest } : 'placed';
   };
@@ -1063,6 +1173,11 @@ export function buildDocumentPass(
    *  numbering sequence (see `heldBack`), never the other sequence. */
   const flushFloatsIntoPage = (page: VDTPage): void => {
     if (pendingFloats.length === 0) { flushSideBoxesIntoPage(page); return; }
+    // A floated box heading the page goes first: the figures then take
+    // the foot under it (a figure set first would claim the foot and push
+    // the box on by the text-room rule). Stable: sequences keep their order.
+    const headFirst = (f: PlannedFloat): number => (f.callout && f.position === 'top' ? 0 : 1);
+    pendingFloats.sort((a, b) => headFirst(a) - headFirst(b));
     const textCols = page.columns.filter((c) => c.kind !== 'span' && c.kind !== 'side');
     if (textCols.length === 0) return;
     const sideCols = sideColumns(page);
@@ -1245,7 +1360,7 @@ export function buildDocumentPass(
     const style = plan ? pickCalloutStyle(resolved.calloutStyles, plan.attrs.type) : undefined;
     if (!style) return false;
     const { span, placement } = resolveCalloutAttrs(style, plan!.attrs);
-    if (span !== 'page' || placement === 'fixed') return false;
+    if (span !== 'page' || placement !== 'here') return false;
     return multiColumnBand(doc.pages[cursor.pageIndex]!);
   };
 
@@ -2488,6 +2603,14 @@ export function buildDocumentPass(
       placeCalloutFixed(startIdx, plan, style, layoutAt);
       return undefined;
     }
+    // Floated boxes leave it too: they take the first free band after
+    // this point (the foot of the current page, or the head / foot of a
+    // page the flow opens later) and the text after them fills the page.
+    // A side box always stacks beside the text it interrupts.
+    if ((placement === 'top' || placement === 'bottom') && span !== 'side') {
+      enqueueCalloutFloat(startIdx, plan, style, L, placement, span);
+      return undefined;
+    }
     // Page-span boxes split a multi-column page into column bands (stage 1
     // of span blocks). Floating placements keep the inline fallback.
     {
@@ -2500,8 +2623,9 @@ export function buildDocumentPass(
       ) {
         return undefined;
       }
-      // Side boxes stack in the float-only side column beside the text.
-      if (span === 'side' && placement === 'here' && placeCalloutSide(startIdx, plan, style)) {
+      // Side boxes stack in the float-only side column beside the text
+      // (whatever their placement: a side box never floats to a band).
+      if (span === 'side' && placeCalloutSide(startIdx, plan, style)) {
         return undefined;
       }
     }

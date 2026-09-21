@@ -69,6 +69,10 @@ export interface PlannedFloat {
    *  later column's slot will do (a page-span rest waits for the next
    *  page). */
   notBefore?: { pageIndex: number; columnIndex: number };
+  /** A floated `:::callout` (`placement: 'top' | 'bottom'`): the content
+   *  index of its opening fence. `resourceId` is then the synthetic
+   *  `callout:<startIdx>`; the build keeps the box's layouter by index. */
+  callout?: { startIdx: number };
 }
 
 /** Resolve a resource's placement: own `placement` → its type's
