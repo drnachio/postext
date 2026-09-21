@@ -22,7 +22,25 @@ import {
 import { dimensionToPx } from '../units';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
 
+// Resolved configs are never mutated (derived variants spread them), so
+// one resolution per config object serves every pass of a build and every
+// chapter counted against the same config on the main thread.
+const resolvedByConfig = new WeakMap<PostextConfig, ResolvedConfig>();
+let resolvedDefault: ResolvedConfig | null = null;
+
 export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
+  if (!rawConfig) {
+    if (!resolvedDefault) resolvedDefault = resolveAllConfigUncached(undefined);
+    return resolvedDefault;
+  }
+  const hit = resolvedByConfig.get(rawConfig);
+  if (hit) return hit;
+  const resolved = resolveAllConfigUncached(rawConfig);
+  resolvedByConfig.set(rawConfig, resolved);
+  return resolved;
+}
+
+function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const config = applyPaletteToConfig(rawConfig);
   const bodyText = resolveBodyTextConfig(config?.bodyText);
   const headings = resolveHeadingsConfig(config?.headings);

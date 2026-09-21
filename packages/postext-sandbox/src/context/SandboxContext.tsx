@@ -547,6 +547,8 @@ interface SandboxStore {
    *  last rendered. Null until the first successful build. Updated together
    *  with a `BUMP_DOC_VERSION` dispatch so consumers can react. */
   docRef: MutableRefObject<VDTDocument | null>;
+  /** The warnings last computed (debounced after the inputs change). */
+  warningsRef: MutableRefObject<Warning[]>;
   /** The composed book `docRef` was built from (offsets in the document are
    *  offsets into `docSourceRef.current.markdown`). */
   docSourceRef: MutableRefObject<ComposedBook | null>;
@@ -753,11 +755,13 @@ export function useSandboxDocSourceRef(): MutableRefObject<ComposedBook | null> 
   return useStore().docSourceRef;
 }
 
-/** Warnings for the current document, chapter-attributed. Recomputed when
- *  the chapters, config, resources or the built document change. */
+/** Warnings for the current document, chapter-attributed. Recomputed a
+ *  moment after the chapters, config, resources or the built document
+ *  change — off the keystroke path, which only dispatches. */
 export function useSandboxWarnings(): Warning[] {
   const store = useStore();
-  return useSandboxSelector((s) => store.getWarnings(s));
+  const read = () => store.warningsRef.current;
+  return useSyncExternalStore(store.subscribe, read, read);
 }
 
 const SAMPLE_DOCUMENTS = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES];
@@ -850,6 +854,8 @@ const PRESET_NOTICE_MS = 4000;
 const WORKING_SAVE_MS = 1000;
 /** Debounce of the chapter layout records' write to storage. */
 const LAYOUTS_SAVE_MS = 400;
+/** Pause after the last change before the warnings are recomputed. */
+const WARNINGS_DEBOUNCE_MS = 400;
 /** Debounce for the blob/font garbage collection sweep. */
 const GC_DEBOUNCE_MS = 2000;
 
@@ -1416,6 +1422,18 @@ export function SandboxProvider({
     for (const cb of listenersRef.current) cb();
   }, [state]);
 
+  // Warnings parse the active chapter and walk the built document: not
+  // on every keystroke, but once the inputs have settled.
+  const warningsRef = useRef<Warning[]>([]);
+  const { chapters: warnChapters, activeChapterId: warnChapterId, config: warnConfig, resources: warnResources, docVersion: warnDocVersion } = state;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      warningsRef.current = getWarningsRef.current(stateRef.current);
+      for (const cb of listenersRef.current) cb();
+    }, WARNINGS_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [warnChapters, warnChapterId, warnConfig, warnResources, warnDocVersion]);
+
   const projectActions = useMemo<ProjectActions>(() => createProjectActions({
     dispatch,
     getState: () => stateRef.current,
@@ -1451,6 +1469,7 @@ export function SandboxProvider({
     dispatch,
     editorStatesRef,
     docRef,
+    warningsRef,
     docSourceRef,
     getWarnings: (s) => getWarningsRef.current(s),
     getPlan: (s) => getPlanRef.current(s),

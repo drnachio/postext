@@ -6,6 +6,7 @@ import { initMathEngine, isMathReady } from '../math';
 import { createMeasurementCache, clearMeasurementCache } from '../measure';
 import type { MeasurementCache } from '../measure';
 import type { RequestMessage, ResponseMessage, FontPayload } from './protocol';
+import type { PostextContent, Resource } from '../types';
 
 const ctx: DedicatedWorkerGlobalScope = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -13,6 +14,20 @@ const registeredFaces = new Set<string>();
 let measurementCache: MeasurementCache = createMeasurementCache();
 let currentBuildId: number | null = null;
 let cancelRequestedFor: number | null = null;
+/** The resource list of the last build that carried one, by fingerprint. */
+let heldResources: { key: string; resources: Resource[] } | null = null;
+
+/** The build's content with its resources filled in from the held list
+ *  when the message left them out (see `resourcesKey` in the protocol). */
+function withHeldResources(content: PostextContent, resourcesKey: string | undefined): PostextContent {
+  if (!resourcesKey) return content;
+  if (content.resources) {
+    heldResources = { key: resourcesKey, resources: content.resources };
+    return content;
+  }
+  if (heldResources?.key === resourcesKey) return { ...content, resources: heldResources.resources };
+  return content;
+}
 
 function faceKey(p: Pick<FontPayload, 'family' | 'weight' | 'style' | 'unicodeRange'>): string {
   return `${p.family}|${p.weight}|${p.style}|${p.unicodeRange ?? ''}`;
@@ -104,6 +119,7 @@ ctx.addEventListener('message', async (event: MessageEvent<RequestMessage>) => {
     }
     case 'build': {
       currentBuildId = msg.id;
+      const content = withHeldResources(msg.content, msg.resourcesKey);
       // Yield once so a cancel posted right after the build can be observed
       // before we start the CPU-bound work.
       await Promise.resolve();
@@ -112,7 +128,7 @@ ctx.addEventListener('message', async (event: MessageEvent<RequestMessage>) => {
         // otherwise the VDT receives placeholder MathRenders and inline
         // formulas paint as grey boxes instead of glyphs. Skipped for docs
         // that contain no `$…$`.
-        if (!isMathReady() && /\$/.test(msg.content.markdown)) {
+        if (!isMathReady() && /\$/.test(content.markdown)) {
           await initMathEngine();
           if (cancelRequestedFor === msg.id) {
             post({ kind: 'cancelled', id: msg.id });
@@ -126,7 +142,7 @@ ctx.addEventListener('message', async (event: MessageEvent<RequestMessage>) => {
         let lastPages = -1;
         const passes: BuildPassInfo[] = [];
         const startedAt = performance.now();
-        const doc = buildDocument(msg.content, msg.config, measurementCache, {
+        const doc = buildDocument(content, msg.config, measurementCache, {
           shouldCancel: () => cancelRequestedFor === msg.id,
           onPass: (info) => { passes.push(info); },
           onProgress: (progress) => {
