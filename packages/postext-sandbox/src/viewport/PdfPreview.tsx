@@ -5,6 +5,7 @@ import { FileText } from 'lucide-react';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { pdfPageFragment } from '../storage/viewHash';
 import type { BuildProgress } from '../worker/useLayoutWorker';
+import type { RenderProgress } from 'postext-pdf/worker';
 
 interface PdfPreviewProps {
   bytesUrl: string | null;
@@ -14,11 +15,13 @@ interface PdfPreviewProps {
   /** Placement progress of the running generation (null before the first
    *  report), and which phase it is in. */
   progress: BuildProgress | null;
+  /** How far the PDF itself is written (pages rendered), once in `render`. */
+  renderProgress?: RenderProgress | null;
   phase: 'layout' | 'render' | null;
   error: string | null;
 }
 
-export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generating, progress, phase, error }: PdfPreviewProps) {
+export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generating, progress, renderProgress = null, phase, error }: PdfPreviewProps) {
   const labels = useSandboxLabels();
   // Open the viewer at the reader's page, resolved by the viewport for
   // each new document (a change of `openPage` alone must not reload it).
@@ -95,7 +98,7 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
                 ? labels.pdfProgressLayout.replace('__pass__', String(progress.pass)).replace('__page__', String(progress.pages + 1))
                 : labels.pdfGenerating}
           </p>
-          <GenerationBar progress={progress} phase={phase} />
+          <GenerationBar progress={progress} renderProgress={renderProgress} phase={phase} />
         </div>
       )}
     </div>
@@ -105,12 +108,17 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
 /** A bar for the generation: the share of the document's blocks placed in
  *  the running pass (the engine re-places the document a few times, so the
  *  bar refills per pass), then full and pulsing while the PDF is written. */
-function GenerationBar({ progress, phase }: { progress: BuildProgress | null; phase: 'layout' | 'render' | null }) {
+function GenerationBar({ progress, renderProgress, phase }: { progress: BuildProgress | null; renderProgress: RenderProgress | null; phase: 'layout' | 'render' | null }) {
+  // While the PDF is written the bar follows the pages rendered; it fills
+  // and pulses for the parts that report nothing (fonts, the file itself).
   const fraction = phase === 'render'
-    ? 1
+    ? renderProgress && renderProgress.phase === 'pages' && renderProgress.totalPages > 0
+      ? Math.min(1, renderProgress.pages / renderProgress.totalPages)
+      : 1
     : progress && progress.totalBlocks > 0
       ? Math.min(1, progress.blocks / progress.totalBlocks)
       : 0;
+  const pulse = phase === 'render' && !(renderProgress && renderProgress.phase === 'pages');
   return (
     <div
       role="progressbar"
@@ -126,7 +134,7 @@ function GenerationBar({ progress, phase }: { progress: BuildProgress | null; ph
           width: `${fraction * 100}%`,
           backgroundColor: 'var(--gilt)',
           transition: 'width 120ms linear',
-          animation: phase === 'render' ? 'postext-pulse 1s ease-in-out infinite' : undefined,
+          animation: pulse ? 'postext-pulse 1s ease-in-out infinite' : undefined,
         }}
       />
     </div>
