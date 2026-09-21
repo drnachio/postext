@@ -29,37 +29,71 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
+// One connection per tab, kept open (see blobStore.ts).
+let dbPromise: Promise<IDBDatabase> | null = null;
+
+function openShared(): Promise<IDBDatabase> {
+  if (dbPromise) return dbPromise;
+  dbPromise = openDb().then(
+    (db) => {
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+      };
+      db.onclose = () => {
+        dbPromise = null;
+      };
+      return db;
+    },
+    (err) => {
+      dbPromise = null;
+      throw err;
+    },
+  );
+  return dbPromise;
+}
+
 function runInStore<T>(
   mode: IDBTransactionMode,
   op: (store: IDBObjectStore) => IDBRequest<T> | Promise<T>,
 ): Promise<T> {
   if (!hasIndexedDB()) return Promise.reject(new Error('IndexedDB unavailable'));
-  return openDb().then(
-    (db) =>
-      new Promise<T>((resolve, reject) => {
-        const tx = db.transaction(STORE, mode);
-        const store = tx.objectStore(STORE);
-        const out = op(store);
-        if (out instanceof Promise) {
-          out.then(resolve, reject);
-          tx.oncomplete = () => db.close();
-          tx.onerror = () => {
-            db.close();
-            reject(tx.error ?? new Error('IndexedDB transaction failed'));
-          };
-          return;
-        }
-        out.onsuccess = () => {
-          resolve(out.result as T);
-        };
+  const attempt = (retry: boolean): Promise<T> => openShared().then((db) => {
+    let tx: IDBTransaction;
+    try {
+      tx = db.transaction(STORE, mode);
+    } catch (err) {
+      if (retry && (err as { name?: string } | null)?.name === 'InvalidStateError') {
+        dbPromise = null;
+        return attempt(false);
+      }
+      throw err;
+    }
+    return new Promise<T>((resolve, reject) => {
+      const store = tx.objectStore(STORE);
+      const out = op(store);
+      if (out instanceof Promise) {
+        out.then(resolve, reject);
+      } else {
+        out.onsuccess = () => resolve(out.result as T);
         out.onerror = () => reject(out.error ?? tx.error ?? new Error('IndexedDB request failed'));
-        tx.oncomplete = () => db.close();
-        tx.onerror = () => {
-          db.close();
-          reject(tx.error ?? new Error('IndexedDB transaction failed'));
-        };
-      }),
-  );
+      }
+      tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
+    });
+  });
+  return attempt(true);
+}
+
+/** Store several font files in one transaction (a preset's fonts). */
+export function putFontFiles(files: readonly StoredFontFile[]): Promise<void> {
+  if (files.length === 0) return Promise.resolve();
+  return runInStore('readwrite', (store) => new Promise<void>((resolve, reject) => {
+    let last: IDBRequest | null = null;
+    for (const file of files) last = store.put(file);
+    if (!last) { resolve(); return; }
+    last.onsuccess = () => resolve();
+    last.onerror = () => reject(last!.error ?? new Error('IndexedDB request failed'));
+  }));
 }
 
 export function putFontFile(file: StoredFontFile): Promise<void> {

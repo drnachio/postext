@@ -3,14 +3,25 @@ import type { VDTDocument } from '../vdt';
 import type { BuildProgress } from '../pipeline/build';
 
 export type { BuildProgress } from '../pipeline/build';
-import type { FontPayload, RequestMessage, ResponseMessage } from './protocol';
+import type { BuildStats, FontPayload, RequestMessage, ResponseMessage } from './protocol';
 
-export type { FontPayload } from './protocol';
+export type { BuildStats, FontPayload } from './protocol';
+export type { BuildPassInfo } from '../pipeline/build';
 
 export interface BuildOptions {
   signal?: AbortSignal;
   /** Called as the worker's placement advances (throttled by the worker). */
   onProgress?: (progress: BuildProgress) => void;
+  /** Called with the finished build's pass timings, right before it resolves. */
+  onStats?: (stats: BuildStats) => void;
+  /** Fingerprint of `content.resources`. Consecutive builds with the same
+   *  key ship the list once; the worker keeps it (see the protocol). */
+  resourcesKey?: string;
+  /** Fingerprint of the whole build; the worker answers a repeat from its
+   *  document cache (see the protocol). */
+  cacheKey?: string;
+  /** @internal False: keep the document in the worker only (see `warm`). */
+  wantDoc?: boolean;
 }
 
 export interface LayoutWorkerHandle {
@@ -24,6 +35,13 @@ export interface LayoutWorkerHandle {
     config?: PostextConfig,
     opts?: BuildOptions,
   ): Promise<VDTDocument>;
+  /** Build into the worker's document cache without sending the document
+   *  back (`cacheKey` required): the next `build` with that key is a hit. */
+  warm(
+    content: PostextContent,
+    config: PostextConfig | undefined,
+    opts: BuildOptions & { cacheKey: string },
+  ): Promise<void>;
   dispose(): void;
 }
 
@@ -32,6 +50,7 @@ interface Pending {
   reject: (err: unknown) => void;
   onAbort?: () => void;
   onProgress?: (progress: BuildProgress) => void;
+  onStats?: (stats: BuildStats) => void;
 }
 
 export interface CreateLayoutWorkerOptions {
@@ -51,6 +70,9 @@ export function createLayoutWorker(
   let nextId = 1;
   let disposed = false;
   const pending = new Map<number, Pending>();
+  /** Fingerprint of the resource list the worker holds (messages are
+   *  handled in order, so once sent it is there for every later build). */
+  let sentResourcesKey: string | null = null;
 
   worker.addEventListener('message', (event: MessageEvent<ResponseMessage>) => {
     const msg = event.data;
@@ -62,7 +84,8 @@ export function createLayoutWorker(
         return;
       case 'built':
         pending.delete(msg.id);
-        entry.resolve(msg.doc);
+        entry.onStats?.(msg.stats);
+        entry.resolve(msg.doc ?? undefined);
         return;
       case 'fontsRegistered':
         pending.delete(msg.id);
@@ -120,6 +143,9 @@ export function createLayoutWorker(
         send({ kind: 'unregisterFonts', id, families });
       });
     },
+    warm(content, config, opts) {
+      return this.build(content, config, { ...opts, wantDoc: false }).then(() => undefined);
+    },
     build(content, config, opts) {
       const id = nextId++;
       return new Promise<VDTDocument>((resolve, reject) => {
@@ -127,9 +153,15 @@ export function createLayoutWorker(
           reject(new DOMException('Aborted', 'AbortError'));
           return;
         }
+        // Abort settles the promise right away and forgets the id: the
+        // worker is asked to stop, but whatever it still posts for this
+        // build (a `built` it could not interrupt) is dropped on arrival
+        // instead of resolving a caller that moved on.
         const onAbort = () => {
           if (!pending.has(id)) return;
-          send({ kind: 'cancel', id });
+          pending.delete(id);
+          try { send({ kind: 'cancel', id }); } catch { /* disposed */ }
+          reject(new DOMException('Aborted', 'AbortError'));
         };
         if (opts?.signal) {
           opts.signal.addEventListener('abort', onAbort, { once: true });
@@ -142,8 +174,15 @@ export function createLayoutWorker(
           },
           onAbort,
           onProgress: opts?.onProgress,
+          onStats: opts?.onStats,
         });
-        send({ kind: 'build', id, content, config });
+        let payload = content;
+        const resourcesKey = opts?.resourcesKey;
+        if (resourcesKey && content.resources) {
+          if (sentResourcesKey === resourcesKey) payload = { ...content, resources: undefined };
+          else sentResourcesKey = resourcesKey;
+        }
+        send({ kind: 'build', id, content: payload, config, resourcesKey, cacheKey: opts?.cacheKey, wantDoc: opts?.wantDoc });
       });
     },
     dispose() {

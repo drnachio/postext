@@ -11,6 +11,8 @@ import { drawOverlay } from './overlay';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
+import { layoutCacheKey } from '../../book/layoutKeys';
+import { perfSpan, type PerfSpan } from '../../perf/marks';
 import {
   LOCALE_TO_HYPHENATION,
   PAGE_GAP,
@@ -26,6 +28,12 @@ const NO_SELECTION: EditorSelection = { from: -1, to: -1, head: -1 };
  *  beyond it the pages farthest from the reader are released and repainted
  *  on their next entry. */
 const PAINTED_PAGES_BUDGET_BYTES = 512 * 1024 * 1024;
+/** Bitmaps are painted at the size the page is shown (× device pixels),
+ *  never above the page's own resolution. A repaint is worth it when the
+ *  page grows past this factor (it would blur) or shrinks below the other
+ *  (the bitmap would waste memory). */
+const BITMAP_GROW_REPAINT = 1.15;
+const BITMAP_SHRINK_REPAINT = 0.5;
 /** Never trim below this many pages, whatever their size. */
 const MIN_PAINTED_PAGES = 6;
 import { buildPagesDom } from './pageDom';
@@ -92,6 +100,29 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // The canvas internal pixel size is fixed at page dimensions, so browser
   // scaling handles size changes with no paint cost.
   const lastPaintedDocVersionRef = useRef(-1);
+  // Bitmap pixels per page pixel of the painted pages, and the options the
+  // last layout painted with (so a rescale can repaint without React).
+  const bitmapScaleRef = useRef(1);
+  const renderOptsRef = useRef<RenderPageOptions>({});
+  const paintOptions = (): RenderPageOptions => ({ ...renderOptsRef.current, scale: bitmapScaleRef.current });
+  const paintOptionsRef = useRef(paintOptions);
+  paintOptionsRef.current = paintOptions;
+  /** The scale a page shown `displayWidth` CSS px wide wants, capped at
+   *  the page's own resolution. */
+  const wantedBitmapScale = (displayWidth: number, pageWidthPx: number): number => {
+    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    return Math.min(1, (displayWidth * dpr) / pageWidthPx);
+  };
+  const needsRescale = (wanted: number): boolean => {
+    const current = bitmapScaleRef.current;
+    return wanted > current * BITMAP_GROW_REPAINT || wanted < current * BITMAP_SHRINK_REPAINT;
+  };
+  // Dev perf: the span from a build's start to the paint of its pages, and
+  // the chapter the last build was for (a build of another chapter is a
+  // chapter switch; of the same one, an edit).
+  const paintSpanRef = useRef<PerfSpan | null>(null);
+  const lastBuiltChapterRef = useRef<string | null>(null);
+  const perfInputsRef = useRef<{ source: unknown; resources: unknown; config: unknown; rebuildKey: number }>({ source: null, resources: null, config: null, rebuildKey: -1 });
   const deferredSource = useDeferredValue(layoutSource);
   // The book the current `docRef` was built from (offsets in the document
   // are offsets into its markdown).
@@ -113,7 +144,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       },
     };
   }, [rawDeferredConfig, locale]);
-  const layoutWorker = useLayoutWorker();
+  const layoutWorker = useLayoutWorker('preview');
   // `rebuildKey` only bumps for events that invalidate measurements (fonts
   // loaded, math engine ready). Container resize does NOT bump this — the
   // VDT is in PT units and is independent of the CSS display size.
@@ -165,6 +196,23 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     if (prev) {
       prev.displayWidth = displayWidth;
       prev.displayHeight = displayHeight;
+      // Shown much larger (or much smaller) than painted: repaint what is
+      // in view at the new size; the rest repaints when it next scrolls in.
+      const wanted = wantedBitmapScale(displayWidth, prev.pageWidthPx);
+      const doc = docRef.current;
+      if (doc && needsRescale(wanted)) {
+        bitmapScaleRef.current = wanted;
+        const opts = paintOptionsRef.current();
+        for (const pageIndex of renderedPagesRef.current) {
+          if (!visiblePagesRef.current.has(pageIndex)) {
+            stalePagesRef.current.add(pageIndex);
+            continue;
+          }
+          const canvas = canvasMapRef.current.get(pageIndex);
+          const page = doc.pages[pageIndex];
+          if (canvas && page) renderPageToCanvas(page, doc, canvas, opts);
+        }
+      }
     }
   }, []);
 
@@ -294,12 +342,43 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
 
     onGeneratingChangeRef.current?.(true);
     const source = deferredSource.book;
+    paintSpanRef.current?.end({ superseded: true });
+    const switching = lastBuiltChapterRef.current !== deferredSource.chapterId;
+    const prevInputs = perfInputsRef.current;
+    const changed = [
+      prevInputs.source !== deferredSource && 'source',
+      prevInputs.resources !== deferredResources && 'resources',
+      prevInputs.config !== deferredConfig && 'config',
+      prevInputs.rebuildKey !== rebuildKey && 'rebuildKey',
+    ].filter(Boolean).join('+');
+    perfInputsRef.current = { source: deferredSource, resources: deferredResources, config: deferredConfig, rebuildKey };
+    paintSpanRef.current = perfSpan(switching ? 'canvas.chapter→paint' : 'canvas.edit→paint', {
+      chapter: deferredSource.chapterId.slice(-24),
+      changed,
+      offset: deferredSource.continuation?.pageIndexOffset,
+      startAt: deferredSource.continuation?.pageNumbering?.startAt,
+      ck: deferredSource.plan.continuationKey.slice(0, 16),
+      ok: deferredSource.plan.outlineKey.slice(0, 8),
+      md: source.markdown.length,
+    });
     layoutWorker.build(
       { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation, outline: deferredSource.plan.outline },
       deferredConfig,
+      {
+        cacheKey: layoutCacheKey({
+          markdown: source.markdown,
+          metadata: source.metadata,
+          config: deferredConfig,
+          resources: deferredResources,
+          continuation: deferredSource.continuation,
+          continuationKey: deferredSource.plan.continuationKey,
+          outlineKey: deferredSource.plan.outlineKey,
+        }),
+      },
     )
       .then((doc) => {
         if (cancelled) return;
+        lastBuiltChapterRef.current = deferredSource.chapterId;
         docRef.current = doc;
         builtSourceRef.current = source;
         sharedDocRef.current = doc;
@@ -383,9 +462,15 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     const { displayWidth, displayHeight } = computeDisplaySizeRef.current(containerW, containerH);
 
     const debugConfig = resolveDebugConfig(deferredConfig.debug);
-    const renderOpts: RenderPageOptions = { pageNegative: debugConfig.pageNegative.enabled };
+    renderOptsRef.current = { pageNegative: debugConfig.pageNegative.enabled };
     const pageWidthPx = firstPage.width;
     const pageHeightPx = firstPage.height;
+    const wantedScale = wantedBitmapScale(displayWidth, pageWidthPx);
+    // A structural rebuild repaints everything anyway: take the exact
+    // scale. A repaint of the same structure keeps the bitmaps unless the
+    // page is shown much larger or smaller than they were painted.
+    if (needsRescale(wantedScale) || lastGeomRef.current === null) bitmapScaleRef.current = wantedScale;
+    const renderOpts: RenderPageOptions = paintOptions();
 
     const geom: GeomSnapshot = {
       pageCount: doc.pages.length,
@@ -410,6 +495,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       if (lastPaintedDocVersionRef.current !== docVersion) {
         // The pages in view repaint now; the others keep their old pixels
         // and repaint on their next entry (see the observer below).
+        let painted = 0;
         for (const pageIndex of renderedPagesRef.current) {
           if (!visiblePagesRef.current.has(pageIndex)) {
             stalePagesRef.current.add(pageIndex);
@@ -420,9 +506,12 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
           if (canvas && page) {
             renderPageToCanvas(page, doc, canvas, renderOpts);
             stalePagesRef.current.delete(pageIndex);
+            painted++;
           }
         }
         lastPaintedDocVersionRef.current = docVersion;
+        paintSpanRef.current?.end({ pages: doc.pages.length, painted, rebuilt: false, bitmapScale: Math.round(bitmapScaleRef.current * 100) / 100 });
+        paintSpanRef.current = null;
       }
       lastGeomRef.current = geom;
       return;
@@ -431,6 +520,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // Structure changed — tear down and rebuild the page DOM. Keep the old
     // DOM in place until the new one is fully built and painted so fast
     // typing doesn't flash blank.
+    bitmapScaleRef.current = wantedScale;
+    renderOpts.scale = wantedScale;
     observerRef.current?.disconnect();
     canvasMapRef.current.clear();
     overlayMapRef.current.clear();
@@ -468,6 +559,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     }
     renderedPagesRef.current = renderedSet;
     lastPaintedDocVersionRef.current = docVersion;
+    paintSpanRef.current?.end({ pages: doc.pages.length, painted: renderedSet.size, rebuilt: true, bitmapScale: Math.round(bitmapScaleRef.current * 100) / 100 });
+    paintSpanRef.current = null;
 
     while (container.firstChild) container.removeChild(container.firstChild);
     container.appendChild(innerDiv);
@@ -478,10 +571,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // Only when the painted bitmaps exceed the memory budget is the page
     // farthest from the one just painted released — a 300 dpi page is
     // ~30 MB, and a long chapter kept whole would starve the GPU.
-    const pageBytes = Math.round(pageWidthPx) * Math.round(pageHeightPx) * 4;
+    const pageBytes = () => {
+      const s = bitmapScaleRef.current;
+      return Math.round(pageWidthPx * s) * Math.round(pageHeightPx * s) * 4;
+    };
     const trimPaintedPages = (anchor: number) => {
       const rendered = renderedPagesRef.current;
-      while (rendered.size * pageBytes > PAINTED_PAGES_BUDGET_BYTES && rendered.size > MIN_PAINTED_PAGES) {
+      while (rendered.size * pageBytes() > PAINTED_PAGES_BUDGET_BYTES && rendered.size > MIN_PAINTED_PAGES) {
         let victim = -1;
         let farthest = -1;
         for (const idx of rendered) {
@@ -514,7 +610,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
           if (renderedPagesRef.current.has(idx) && !stalePagesRef.current.has(idx)) continue;
           const canvas = canvasMapRef.current.get(idx);
           if (!canvas || !docRef.current) continue;
-          renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, renderOpts);
+          renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, paintOptionsRef.current());
           renderedPagesRef.current.add(idx);
           stalePagesRef.current.delete(idx);
           trimPaintedPages(idx);
