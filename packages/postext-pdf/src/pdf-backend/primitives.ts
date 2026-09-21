@@ -8,6 +8,7 @@ import {
   rectangle,
   clip,
   endPath,
+  concatTransformationMatrix,
   type PDFPage,
   type PDFFont,
   type Color,
@@ -25,6 +26,65 @@ export interface PageCtx {
    *  document is not tagged. Renderers route each drawing call to a
    *  structure element or flag it as an artifact through it. */
   tags?: PageTagger;
+  /** Set while a transform is pushed (a rotated resource block): maps a
+   *  rect `[x1, y1, x2, y2]` in points of the transformed frame — what the
+   *  `*Px` helpers compute — to page user space, for the annotation and
+   *  structure rects that live outside the content stream. */
+  mapRectPt?: (rect: [number, number, number, number]) => [number, number, number, number];
+}
+
+/** A PDF transformation matrix `[a b c d e f]` (`x' = a·x + c·y + e`,
+ *  `y' = b·x + d·y + f`). */
+export type PdfMatrix = [number, number, number, number, number, number];
+
+/** Apply `m` to a point. */
+export function applyMatrix(m: PdfMatrix, x: number, y: number): { x: number; y: number } {
+  return { x: m[0] * x + m[2] * y + m[4], y: m[1] * x + m[3] * y + m[5] };
+}
+
+/** Push a graphics state with `m` concatenated onto the CTM. Everything
+ *  drawn until {@link popTransform} goes through it. */
+export function pushTransform(ctx: PageCtx, m: PdfMatrix): void {
+  ctx.tags?.close();
+  ctx.page.pushOperators(pushGraphicsState(), concatTransformationMatrix(...m));
+}
+
+export function popTransform(ctx: PageCtx): void {
+  ctx.tags?.close();
+  ctx.page.pushOperators(popGraphicsState());
+}
+
+/** Map a rect `[x1, y1, x2, y2]` through `m`, re-normalised to min / max. */
+export function mapRectThrough(m: PdfMatrix, rect: [number, number, number, number]): [number, number, number, number] {
+  const a = applyMatrix(m, rect[0], rect[1]);
+  const b = applyMatrix(m, rect[2], rect[3]);
+  return [Math.min(a.x, b.x), Math.min(a.y, b.y), Math.max(a.x, b.x), Math.max(a.y, b.y)];
+}
+
+/** Inline colour swatch (`:swatch{…}`): a square of `sidePx` on the
+ *  baseline, filled with `fill` (hex) when resolved and outlined in `ink`. */
+export function drawSwatchPx(
+  ctx: PageCtx,
+  xPx: number,
+  baselinePx: number,
+  sidePx: number,
+  fill: string | undefined,
+  ink: Color,
+): void {
+  const { scale, pageHeightPt } = ctx;
+  const strokePx = Math.max(0.5, sidePx * 0.06);
+  const x = (xPx + strokePx / 2) * scale;
+  const y = pageHeightPt - (baselinePx - strokePx / 2) * scale;
+  const side = (sidePx - strokePx) * scale;
+  ctx.page.drawRectangle({
+    x,
+    y,
+    width: side,
+    height: side,
+    ...(fill ? { color: colorFromHex(fill, ctx.colorSpace) } : {}),
+    borderColor: ink,
+    borderWidth: Math.max(0.01, strokePx * scale),
+  });
 }
 
 export function makeScale(dpi: number): number {

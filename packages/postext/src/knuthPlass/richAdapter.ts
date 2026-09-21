@@ -28,6 +28,8 @@ interface RichToken {
   hyphenWidth?: number;
   mathRender?: import('../math/types').MathRender;
   refResourceId?: string;
+  /** An inline colour swatch (atomic square; see `measure/rich.ts`). */
+  swatch?: { color?: string };
   /** Bare break points (URL joints): no hyphen is appended at the break. */
   bareBreaks?: boolean;
 }
@@ -169,12 +171,13 @@ export function reconstructRichLines(
           : token.text;
         const cleanText = cleanSoftHyphens(subText);
         lineSegments.push({
-          kind: token.mathRender ? 'math' : 'text',
+          kind: token.mathRender ? 'math' : token.swatch ? 'swatch' : 'text',
           text: cleanText,
           width: it.width,
           bold: meta.bold || undefined,
           italic: meta.italic || undefined,
           ...(token.mathRender ? { mathRender: token.mathRender } : {}),
+          ...(token.swatch ? { swatch: token.swatch } : {}),
           ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId } : {}),
         });
         textParts.push(cleanText);

@@ -118,7 +118,7 @@ The whole panel is also a drag-and-drop target: drop files from disk and they up
 - **Caption** — Supports inline Markdown (bold, italic, code, and `:ref`)
 - **Note** — An optional source line, credit, or remark set in a smaller run under the resource (same inline formatting as the caption); styled by the *Note* group of the *Captions* configuration section
 - **Alt text** — Accessibility description for the HTML output
-- **Placement** — Position (`top` / `bottom` / `here`) plus span (`column` / `page`, disabled when the position is `here`), matching the engine defaults of `top` + `column`
+- **Placement** — Position (`top` / `bottom` / `here`) plus span (`column` / `page`, disabled when the position is `here`), matching the engine defaults of `top` + `column`, and an orientation: upright, or turned a quarter turn (top to the left, or to the right) — a turned resource takes a page of its own, flush to the spine, so the span select is disabled
 - **Payload** — Replace uploaders for the bitmap or SVG file
 - **SVG source** — For SVG figures, a source editor under the uploader where only the text nodes (the content of `<text>` / `<tspan>` elements, tinted in the editor) accept edits; typing anywhere else is rejected, and `<`, `>` and `&` typed into a text node are escaped so the file stays well-formed. Each change is saved after a short pause as a **new** stored file and the figure re-renders (single-ink recolouring included); the editor notes when the SVG has no text nodes
 - **Preview** — A live mock embed showing how the resource will look, with `#` standing in for the number (real numbers depend on where the resource lands in the document)
@@ -126,7 +126,7 @@ The whole panel is also a drag-and-drop target: drop files from disk and they up
 
 **Table editor.** Table resources open an interactive grid editor:
 
-- Toolbar with add/remove row and column, merge/split cells, header-row and header-column toggles, and per-cell alignment
+- Toolbar with add/remove row and column, merge/split cells, header-row and header-column toggles, per-cell alignment, and a per-cell fill (a colour picker, palette-linkable, with a clear button) written to `TableCell.background` and shown in the grid
 - **Column widths** — One numeric weight per column under the grid (`2, 1, 1` gives the first column half the width; empty means equal widths), written to `table.model.columnWidths`. Adding or removing a column keeps the weights aligned; an *Equal widths* link clears them
 - **Paste-as-table** — Pasting TSV (or simple quoted CSV) fills the grid
 - **Undo/redo** — Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z
@@ -207,7 +207,7 @@ Renders the postext output inside a Shadow DOM container, ensuring complete styl
 A toolbar at the top of the viewport provides:
 
 - **Font-scale controls** — Shrink or grow body text while preserving every relative measurement in the configuration.
-- **Column modes** — Single (one tall scrollable column) or multi (as many columns as the viewport fits at the configured measure, with horizontal scroll-snap between them).
+- **Column modes** — Single (one tall scrollable column) or multi (the number of columns whose width comes closest to the configured measure, with horizontal scroll-snap between pages). A double-column document keeps its two-column pages, but the viewer may show an odd number of columns — three rather than two stretched or four squeezed — when that is the nearest fit; the last one then belongs to the next page, half in view.
 
 Column geometry is driven by the **HTML Viewer** section of the configuration sidebar: `maxCharsPerLine` sets the target measure in characters of the body font, `columnGap` the horizontal gap between columns in multi mode, and `optimalLineBreaking` toggles Knuth–Plass inside the viewer. See the [HTML Viewer configuration reference](/en/docs/configuration#html-viewer) and the end-to-end [integration example](/en/docs/configuration#integrating-the-html-viewer) for the same pattern used internally by the sandbox.
 

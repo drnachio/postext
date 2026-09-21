@@ -9,7 +9,7 @@ import { version as ENGINE_VERSION } from 'postext/package.json';
 
 /** Bumped by hand when the record shape or the layout semantics change
  *  between engine releases (development builds share a version). */
-const RECORD_FORMAT = 2;
+const RECORD_FORMAT = 3;
 
 /** The layout engine a record was built with (the `postext` version and
  *  the record format). A record from another is recomputed. */
@@ -58,11 +58,14 @@ export function configKeyOf(config: PostextConfig): string {
 }
 
 /** Fingerprint of the resource records (captions, sizes, placement — not
- *  the stored files' ids). */
+ *  the stored files' ids). Order-independent: a preset applies its
+ *  resources in manifest order while storage hands them back sorted by
+ *  id, and a layout depends on the set, never on its order. */
 export function resourcesKeyOf(resources: readonly Resource[]): string {
   let key = resourceKeys.get(resources);
   if (key === undefined) {
-    key = hash(stableStringify(resources));
+    const sorted = [...resources].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    key = hash(stableStringify(sorted));
     resourceKeys.set(resources, key);
   }
   return key;

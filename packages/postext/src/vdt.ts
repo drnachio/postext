@@ -89,13 +89,18 @@ export type VDTBlockType =
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
 export interface VDTLineSegment {
-  kind: 'text' | 'space' | 'math';
+  kind: 'text' | 'space' | 'math' | 'swatch';
   text: string;
   width: number;
   bold?: boolean;
   italic?: boolean;
   /** Present when `kind === 'math'`. The rendered formula. */
   mathRender?: MathRender;
+  /** Present when `kind === 'swatch'`: an inline colour swatch (`:swatch{…}`),
+   *  a square of `width` px filled with `color` (a hex; absent when the
+   *  colour did not resolve — the square is then an empty outline), sitting
+   *  on the baseline and outlined in the text colour. */
+  swatch?: { color?: string };
   /** Present when this segment renders an inline `:ref{…}` to a resource.
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */
@@ -178,6 +183,9 @@ export interface VDTResourceTableCell {
   lines: VDTLine[];
   /** The cell's embedded image, when it has one and the resource resolved. */
   image?: VDTResourceTableCellImage;
+  /** The cell's own fill (hex, `TableCell.background` resolved through the
+   *  palette), painted instead of the table's header / body fill. */
+  background?: string;
 }
 
 /** Laid-out table geometry for a `kind: 'table'` resource block. */
@@ -240,12 +248,77 @@ export interface VDTTableSlice {
 }
 
 /** The resolved, measured content of a resource block. */
+/** A resource block set turned a quarter turn on the page (a landscape
+ *  table in a portrait book). The block's inner geometry — `bodyRect`, the
+ *  table cells, the caption, note and marker lines, the caption bar — is
+ *  then expressed in the block's own upright frame (its top-left at
+ *  `(0, 0)`, `width` × `height` px), and this record maps that frame onto
+ *  the page: the upright origin lands at page point `(originX, originY)`
+ *  and, for `'ccw'`, the upright x axis runs up the page and the y axis
+ *  runs right (`'cw'`: x down, y left). See {@link resourceBlockToPage} and
+ *  {@link resourceBlockToLocal}. An upright block has no `rotation` and its
+ *  inner geometry is in page coordinates once placed. */
+export interface VDTResourceRotation {
+  direction: 'ccw' | 'cw';
+  /** Page x of the upright frame's top-left corner. */
+  originX: number;
+  /** Page y of the upright frame's top-left corner. */
+  originY: number;
+  /** Width of the upright frame (its extent along the page's height). */
+  width: number;
+  /** Height of the upright frame (its extent along the page's width). */
+  height: number;
+}
+
+/** Map a point of a resource block's inner frame to page coordinates: the
+ *  identity for an upright block, the rotation for a turned one. */
+export function resourceBlockToPage(
+  rb: Pick<ResolvedResourceBlock, 'rotation'>,
+  x: number,
+  y: number,
+): { x: number; y: number } {
+  const r = rb.rotation;
+  if (!r) return { x, y };
+  return r.direction === 'ccw'
+    ? { x: r.originX + y, y: r.originY - x }
+    : { x: r.originX - y, y: r.originY + x };
+}
+
+/** Map a page point into a resource block's inner frame (the inverse of
+ *  {@link resourceBlockToPage}). */
+export function resourceBlockToLocal(
+  rb: Pick<ResolvedResourceBlock, 'rotation'>,
+  xPage: number,
+  yPage: number,
+): { x: number; y: number } {
+  const r = rb.rotation;
+  if (!r) return { x: xPage, y: yPage };
+  return r.direction === 'ccw'
+    ? { x: r.originY - yPage, y: xPage - r.originX }
+    : { x: yPage - r.originY, y: r.originX - xPage };
+}
+
+/** Map an axis-aligned rect of a resource block's inner frame to the page:
+ *  a quarter turn keeps it axis-aligned, with width and height swapped. */
+export function resourceBlockRectToPage(
+  rb: Pick<ResolvedResourceBlock, 'rotation'>,
+  rect: BoundingBox,
+): BoundingBox {
+  if (!rb.rotation) return rect;
+  const a = resourceBlockToPage(rb, rect.x, rect.y);
+  const b = resourceBlockToPage(rb, rect.x + rect.width, rect.y + rect.height);
+  return createBoundingBox(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+}
+
 export interface ResolvedResourceBlock {
   /** The source resource. */
   resource: Resource;
   kind: 'bitmap' | 'svg' | 'table';
   /** Present when the block is one slice of a table split across pages. */
   slice?: VDTTableSlice;
+  /** Present when the block is set turned on the page; the inner geometry
+   *  is then in the block's upright frame (see {@link VDTResourceRotation}). */
+  rotation?: VDTResourceRotation;
   /** Rendered number string (e.g. `"1.7"`) for this resource. */
   number: string;
   /** Caption prefix from the resource type (e.g. `"Figure"`). */

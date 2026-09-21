@@ -1,4 +1,5 @@
 import type {
+  ColorValue,
   TableCell,
   TableCellAlign,
   TableCellImage,
@@ -47,6 +48,7 @@ const cloneCell = (cell: TableCell): TableCell => {
   if (cell.align !== undefined) next.align = cell.align;
   if (cell.verticalAlign !== undefined) next.verticalAlign = cell.verticalAlign;
   if (cell.image !== undefined) next.image = cloneImage(cell.image);
+  if (cell.background !== undefined) next.background = { ...cell.background };
   if (cell.hiddenBy !== undefined) {
     next.hiddenBy = { row: cell.hiddenBy.row, col: cell.hiddenBy.col };
   }
@@ -197,6 +199,25 @@ export const setCellImage = (
   const cell = cloneCell(rows[at.row][at.col]);
   if (image === undefined) delete cell.image;
   else cell.image = cloneImage(image);
+  rows[at.row][at.col] = cell;
+  return withRows(m, rows);
+};
+
+/**
+ * Set (or clear, with `undefined`) the fill colour of the cell at `at`
+ * (`TableCell.background`), painted instead of the table style's header /
+ * body fill.
+ */
+export const setCellBackground = (
+  m: TableModel,
+  at: CellPos,
+  background: ColorValue | undefined,
+): TableModel => {
+  const rows = cloneRows(m);
+  if (!inBounds(rows, at)) return withRows(m, rows);
+  const cell = cloneCell(rows[at.row][at.col]);
+  if (background === undefined) delete cell.background;
+  else cell.background = { ...background };
   rows[at.row][at.col] = cell;
   return withRows(m, rows);
 };

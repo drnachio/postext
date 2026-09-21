@@ -119,7 +119,7 @@ async function collectFiles(
   }
   for (const entry of entries) {
     const name = entry.name;
-    if (name.startsWith(".") || name === "node_modules") continue;
+    if (name.startsWith(".") || name === "node_modules" || name === "__pycache__") continue;
     const abs = path.join(dir, name);
     const relPath = rel ? `${rel}/${name}` : name;
     if (entry.isDirectory()) {
@@ -138,8 +138,8 @@ async function collectFiles(
 
 /**
  * Fingerprint a preset directory from file metadata only: walk it
- * recursively (depth <= `FINGERPRINT_MAX_DEPTH`, skipping dotfiles and
- * `node_modules`), sort the relative paths and sha1 one
+ * recursively (depth <= `FINGERPRINT_MAX_DEPTH`, skipping dotfiles,
+ * `node_modules` and `__pycache__`), sort the relative paths and sha1 one
  * `"<relpath>:<mtimeMs>:<size>"` line per file. Any change to a file's
  * modification time or size, or a file added/removed/renamed, changes the
  * result; nothing is read from the files themselves.

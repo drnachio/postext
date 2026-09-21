@@ -47,6 +47,12 @@ export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here';
  *  float that breaks the column flow). In a single-column layout the two are
  *  equivalent. */
 export type ResourceFloatSpan = 'column' | 'page';
+/** Rotation of a floated resource on the page, a quarter turn either way:
+ *  `'ccw'` turns the resource counter-clockwise — its top faces the left
+ *  edge of the page and the reader turns the book clockwise to read it, the
+ *  convention for landscape tables in a portrait book; `'cw'` turns it
+ *  clockwise, its top facing the right edge. */
+export type ResourceRotation = 'ccw' | 'cw';
 
 /** Placement of a resource on the page. Resolved per resource, falling back to
  *  its {@link ResourceType.defaultPlacement} and then the built-in default
@@ -54,6 +60,14 @@ export type ResourceFloatSpan = 'column' | 'page';
 export interface ResourcePlacement {
   position?: ResourceFloatPosition;
   span?: ResourceFloatSpan;
+  /** Set the resource turned a quarter turn on the page (a landscape table
+   *  in a portrait book). A rotated resource is always a page-span float:
+   *  it is laid out across the height of the page's content area, takes a
+   *  whole page (a table too wide for one page continues on the next, cut
+   *  between rows like an upright table), and sits flush to the spine when
+   *  the margins are mirrored, flush left otherwise. Ignored for an inline
+   *  (`position: 'here'`) embed. */
+  rotate?: ResourceRotation;
 }
 
 /** A user-definable category of resource (e.g. "Figure", "Table"). Drives
@@ -128,6 +142,10 @@ export interface TableCell {
   isHeader?: boolean;
   align?: TableCellAlign;
   verticalAlign?: TableCellVerticalAlign;
+  /** Fill colour of this cell, painted instead of the table style's header
+   *  / body background. A palette-linked value (`paletteId`) follows the
+   *  document palette. Absent: the style's fill (or none) applies. */
+  background?: ColorValue;
   /** When set, this cell is covered by a merge whose primary (top-left) cell
    *  is at the referenced position. Hidden cells are skipped during rendering
    *  and restored on unmerge. */

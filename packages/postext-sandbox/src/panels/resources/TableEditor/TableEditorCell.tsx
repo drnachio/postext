@@ -118,7 +118,9 @@ export function TableEditorCell({
         border: `1px solid ${active || selected ? 'var(--gilt)' : 'var(--rule)'}`,
         padding: 0,
         verticalAlign: cell.verticalAlign ?? 'top',
-        backgroundColor: selected && !active ? 'var(--surface)' : undefined,
+        // The cell's own fill shows in the grid, as on the page; a
+        // range selection overrides it while it lasts.
+        backgroundColor: selected && !active ? 'var(--surface)' : cell.background?.hex,
         minWidth: 64,
       }}
     >

@@ -36,7 +36,18 @@ import type {
 import { applySingleInkToSvg, resolveColorValue } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
-import { type PageCtx, drawTextPx, drawLinePx, fillRectPx, colorFromHex } from './primitives';
+import {
+  type PageCtx,
+  type PdfMatrix,
+  drawTextPx,
+  drawLinePx,
+  drawSwatchPx,
+  fillRectPx,
+  colorFromHex,
+  mapRectThrough,
+  pushTransform,
+  popTransform,
+} from './primitives';
 import { LinkRegistry } from './links';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
@@ -425,6 +436,12 @@ function paintLine(
         x += seg.width;
         continue;
       }
+      if (seg.kind === 'swatch') {
+        tagContent(ctx, elem);
+        drawSwatchPx(ctx, x, line.baseline, seg.width, seg.swatch?.color, color);
+        x += seg.width;
+        continue;
+      }
       const fontStr = pickFont(!!seg.bold, !!seg.italic, fonts);
       const font = fontCache.get(fontStr) ?? baseFont;
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
@@ -439,7 +456,8 @@ function paintLine(
         const y2 = pageHeightPt - (line.bbox.y) * scale;
         const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
         const x2 = (x + seg.width) * scale;
-        linkRegistry.addLink(ctx.page, [x1, y1, x2, y2], refId, link ? { elem: link, contents: seg.text } : undefined);
+        const rect: [number, number, number, number] = [x1, y1, x2, y2];
+        linkRegistry.addLink(ctx.page, ctx.mapRectPt ? ctx.mapRectPt(rect) : rect, refId, link ? { elem: link, contents: seg.text } : undefined);
       }
       x += seg.width;
     }
@@ -453,12 +471,13 @@ function paintLine(
  *  space, bottom-up) and block placement. */
 function figureLayout(ctx: PageCtx, xPx: number, yPx: number, wPx: number, hPx: number): StructAttrs['attributes'] {
   const { scale, pageHeightPt } = ctx;
-  const bbox = ctx.page.doc.context.obj([
+  const rect: [number, number, number, number] = [
     xPx * scale,
     pageHeightPt - (yPx + hPx) * scale,
     (xPx + wPx) * scale,
     pageHeightPt - yPx * scale,
-  ]);
+  ];
+  const bbox = ctx.page.doc.context.obj(ctx.mapRectPt ? ctx.mapRectPt(rect) : rect);
   return [{ owner: 'Layout', entries: { BBox: bbox, Placement: 'Block' } }];
 }
 
@@ -549,9 +568,9 @@ function renderTable(
     boldItalic: t.headerBoldItalicFontString,
   };
 
-  // Cell backgrounds (header tint / body fill).
+  // Cell backgrounds (the cell's own fill, else the header tint / body fill).
   for (const cell of t.cells) {
-    const fill = cell.isHeader ? headerBg : bodyBg;
+    const fill = cell.background ? colorFromHex(cell.background, ctx.colorSpace) : cell.isHeader ? headerBg : bodyBg;
     if (fill) fillRectPx(ctx, cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height, fill);
   }
   // Borders: the full cell grid, horizontal rules only, or the outer frame.
@@ -626,11 +645,26 @@ export function renderResourceBlock(
 ): void {
   const rb = block.resourceBlock;
   if (!rb) return;
-  const bx = block.bbox.x + rb.bodyRect.x;
-  const by = block.bbox.y + rb.bodyRect.y;
+  const { scale, pageHeightPt } = ctx;
+  // A rotated block: its geometry is in the upright frame. A quarter-turn
+  // matrix lands that frame on the page — set up so the `*Px` helpers, which
+  // flip y against the page height, keep working unchanged inside it — and
+  // the rects that live outside the content stream (link annotations,
+  // structure bounding boxes) go through the same matrix.
+  const rot = rb.rotation;
+  let matrix: PdfMatrix | undefined;
+  if (rot) {
+    matrix = rot.direction === 'ccw'
+      ? [0, 1, -1, 0, rot.originX * scale + pageHeightPt, pageHeightPt - rot.originY * scale]
+      : [0, -1, 1, 0, rot.originX * scale - pageHeightPt, pageHeightPt - rot.originY * scale];
+    pushTransform(ctx, matrix);
+    const m = matrix;
+    ctx.mapRectPt = (r) => mapRectThrough(m, r);
+  }
+  const bx = (rot ? 0 : block.bbox.x) + rb.bodyRect.x;
+  const by = (rot ? 0 : block.bbox.y) + rb.bodyRect.y;
   const bw = rb.bodyRect.width;
   const bh = rb.bodyRect.height;
-  const { scale, pageHeightPt } = ctx;
   const linkColor = colorFromHex(rb.linkColor, ctx.colorSpace);
   const continued = !!rb.slice?.continued;
 
@@ -713,5 +747,9 @@ export function renderResourceBlock(
     for (const line of rb.continuesLines) {
       paintLine(ctx, line, noteFonts, fontCache, noteColor, linkColor, linkRegistry, (seg) => seg.refResourceId);
     }
+  }
+  if (matrix) {
+    popTransform(ctx);
+    delete ctx.mapRectPt;
   }
 }

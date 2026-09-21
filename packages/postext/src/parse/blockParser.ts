@@ -8,7 +8,7 @@
 import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineRefs, injectRefSpans, parseInlineFormatting, stripInlineFormatting, titleBreakIndices } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineRefs, extractInlineSwatches, injectRefSpans, injectSwatchSpans, parseInlineFormatting, stripInlineFormatting, titleBreakIndices } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
 export { parseDirectiveAttrs } from './attrs';
@@ -311,19 +311,20 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       // Inline pre-passes run refs -> math -> formatting so a ref's `text="…"`
       // attribute is shielded from the later math/formatting scanners.
       const refExtract = extractInlineRefs(headingRawContent, contentAbsStart);
+      const swExtract = extractInlineSwatches(refExtract.cleaned, contentAbsStart);
       const { cleaned, maths, issues: mathIssues } = extractInlineMath(
-        refExtract.cleaned,
+        swExtract.cleaned,
         null,
         contentAbsStart,
         srcEnd,
       );
       issues.push(...mathIssues);
       const rawText = stripInlineFormatting(cleaned);
-      const rawSpans = injectRefSpans(
+      const rawSpans = injectRefSpans(injectSwatchSpans(
         injectMathSpans(
           [{ text: rawText, bold: false, italic: false }],
           maths,
-        ),
+        ), swExtract.swatches),
         refExtract.refs,
       );
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
@@ -391,10 +392,11 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
           const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
           const refExtract = extractInlineRefs(itemText, itemSrcStart);
-          const mathExtract = extractInlineMath(refExtract.cleaned, null, itemSrcStart, srcEnd);
+          const swExtract = extractInlineSwatches(refExtract.cleaned, itemSrcStart);
+          const mathExtract = extractInlineMath(swExtract.cleaned, null, itemSrcStart, srcEnd);
           issues.push(...mathExtract.issues);
-          const rawSpans = injectRefSpans(
-            injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths),
+          const rawSpans = injectRefSpans(injectSwatchSpans(
+            injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
             refExtract.refs,
           );
           const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
@@ -446,10 +448,11 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
       const refExtract = extractInlineRefs(quoteLines.join(' '), srcStart);
-      const mathExtract = extractInlineMath(refExtract.cleaned, null, srcStart, srcEnd);
+      const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
+      const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectRefSpans(
-        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths),
+      const rawSpans = injectRefSpans(injectSwatchSpans(
+        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
         refExtract.refs,
       );
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
@@ -485,10 +488,11 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
       const refExtract = extractInlineRefs(paraLines.join(' '), srcStart);
-      const mathExtract = extractInlineMath(refExtract.cleaned, null, srcStart, srcEnd);
+      const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
+      const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectRefSpans(
-        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths),
+      const rawSpans = injectRefSpans(injectSwatchSpans(
+        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
         refExtract.refs,
       );
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);

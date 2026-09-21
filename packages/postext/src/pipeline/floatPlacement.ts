@@ -22,12 +22,15 @@ import type {
   ResourceType,
   ResourceFloatPosition,
   ResourceFloatSpan,
+  ResourceRotation,
 } from '../types';
 
-/** Resolved placement for a resource: never `undefined` fields. */
+/** Resolved placement for a resource: never `undefined` fields (but
+ *  `rotate`, absent for an upright resource). */
 export interface ResolvedPlacement {
   position: ResourceFloatPosition;
   span: ResourceFloatSpan;
+  rotate?: ResourceRotation;
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
@@ -39,6 +42,9 @@ export interface PlannedFloat {
   firstBlockIdx: number;
   position: 'auto' | 'top' | 'bottom';
   span: ResourceFloatSpan;
+  /** Set turned a quarter turn on the page (always page-span; takes a
+   *  whole page). */
+  rotate?: ResourceRotation;
   /** For the rest of a table split across pages: the first model row still
    *  to place (the header rows are repeated above it). Absent (or `0`) for
    *  a whole resource. */
@@ -51,15 +57,20 @@ export interface PlannedFloat {
 }
 
 /** Resolve a resource's placement: own `placement` → its type's
- *  `defaultPlacement` → the built-in default (`auto` / `column`). */
+ *  `defaultPlacement` → the built-in default (`auto` / `column`). A rotated
+ *  resource is always a page-span float; an inline (`here`) embed is never
+ *  rotated. */
 export function resolveResourcePlacement(
   resource: Resource,
   type: ResourceType | undefined,
 ): ResolvedPlacement {
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
-  const span = resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column';
-  return { position, span };
+  const rotate = position === 'here'
+    ? undefined
+    : (resource.placement?.rotate ?? type?.defaultPlacement?.rotate);
+  const span = rotate ? 'page' : (resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column');
+  return rotate ? { position, span, rotate } : { position, span };
 }
 
 /**
@@ -88,9 +99,9 @@ export function computeFloatPlan(
     const resource = resourceById.get(resourceId);
     if (!resource) return;
     const type = typeById.get(resource.typeId);
-    const { position, span } = resolveResourcePlacement(resource, type);
+    const { position, span, rotate } = resolveResourcePlacement(resource, type);
     if (position === 'here') return;
-    plan.push({ resourceId, firstBlockIdx: blockIdx, position, span });
+    plan.push({ resourceId, firstBlockIdx: blockIdx, position, span, ...(rotate ? { rotate } : {}) });
   };
 
   for (let i = 0; i < blocks.length; i++) {

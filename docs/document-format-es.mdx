@@ -418,6 +418,8 @@ Los recursos de tabla dibujan su propia rejilla, con estilo definido en [Configu
 
 Una celda de tabla también puede contener una imagen. `TableCell.image` nombra un recurso de imagen o SVG por su id (`{ "resourceId": "fig-brazo", "width": 0.7 }`): la imagen se dibuja dentro de la celda — nunca se numera, flota ni lleva pie — ajustada al ancho interior de la celda (o a la fracción que indique `width`, por defecto `1`) conservando su proporción, alineada como el texto de la celda, y el texto de la celda, si lo hay, va debajo. La fila crece para alojarla. En el editor de tablas del sandbox, el botón de imagen de la barra elige el recurso para la celda activa y un campo de ancho fija la fracción. Un id que no corresponda a ningún recurso de imagen deja la celda solo con texto.
 
+Una celda puede llevar su propio relleno. `TableCell.background` es un valor de color (`{ "hex": "#c1dfd6", "model": "hex" }`, opcionalmente vinculado a una entrada de la paleta del documento con `paletteId`) que se pinta en lugar del fondo de cabecera o de cuerpo del estilo — así sombrea sus celdas en verde, rojo y amarillo una matriz de compatibilidades. En el editor de tablas del sandbox se fija con el control de relleno de la barra. Para dar la clave de esos rellenos, la leyenda, la nota y cualquier bloque de texto admiten una **muestra de color** en línea: `:swatch{color="#c1dfd6"}` (un hexadecimal, o el id de una entrada de la paleta — `:swatch{color="table-compatible"}`) compone un pequeño cuadrado sobre la línea base, de tres cuartos del cuerpo, relleno con el color y perfilado con el color del texto, de modo que una nota puede decir `:swatch{color="ok"}: compatibles; :swatch{color="no"}: incompatibles`. Un color que no resuelve a nada dibuja solo el perfil.
+
 Los recursos SVG pueden además recolorearse para impresión a una sola tinta plana mediante `diagramStyle.singleInk` (por defecto `false`). Al activarlo, cada color del diagrama SVG se reasigna a un matiz de `diagramStyle.inkColor` según su luminancia (por defecto el color principal de la paleta, `#295AA3`) — el blanco se asigna al papel y el negro a la tinta plena — de modo que las figuras se reproducen con fidelidad cuando el documento se imprime con una única tinta plana. Ver [Configuración › Estilo de diagramas](/es/docs/configuration#estilo-de-diagramas).
 
 Una inserción mal formada (sin `id`, con `id` vacío o con atributos de más) no se promueve a bloque de recurso; recae en el parseo de párrafo normal y sigue siendo visible en la salida, y el sandbox muestra un aviso.
@@ -500,6 +502,11 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
       <td><code>span</code></td>
       <td><code>"column"</code> · <code>"page"</code></td>
       <td>Ocupa una sola columna, o rompe el flujo de columnas y abarca todo el ancho del contenido cruzando todas las columnas. En una maquetación de una sola columna ambas opciones son idénticas.</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>"ccw"</code> · <code>"cw"</code></td>
+      <td>Compone el recurso girado un cuarto de vuelta — una tabla apaisada en un libro vertical. <code>"ccw"</code> lo gira en sentido antihorario, con la cabecera hacia el borde izquierdo de la página (el lector gira el libro en sentido horario), la convención habitual; <code>"cw"</code> en el otro sentido. Un recurso girado es siempre un flotante a todo el ancho en una página propia: se compone a lo largo de la altura del área de contenido, queda pegado al lomo cuando los márgenes son simétricos (a la izquierda si no) y una tabla demasiado ancha para una página se corta entre filas y continúa, girada, en las páginas siguientes con la cabecera repetida, exactamente como una tabla vertical más alta que la página. Una figura girada se escala para caber en la página. Se ignora en un embebido en línea (<code>"here"</code>).</td>
     </tr>
   </tbody>
 </table>

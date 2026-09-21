@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
+  ColorValue,
   TableCell,
   TableCellAlign,
   TableCellPos,
@@ -15,6 +16,7 @@ import {
   removeColumn,
   removeRow,
   setAlignment,
+  setCellBackground,
   setCellContent,
   setCellImage,
   unmergeCell,
@@ -342,6 +344,11 @@ export function TableEditor({
       : { resourceId: activeImage.resourceId, width: fraction }));
   };
 
+  // Fill of the active cell: a colour (palette-linked or not), or none.
+  const handleSetBackground = (color: ColorValue | undefined) => {
+    commit(setCellBackground(model, active, color));
+  };
+
   const handlePasteTsv = async () => {
     let text = '';
     try {
@@ -460,6 +467,8 @@ export function TableEditor({
           imageOptions={imageOptions}
           activeImageId={undefined}
           onSetImage={() => {}}
+          activeBackground={undefined}
+          onSetBackground={() => {}}
         />
         <p className="text-xs" style={{ color: 'var(--slate)' }}>
           {labels.tableEditorEmpty}
@@ -493,6 +502,8 @@ export function TableEditor({
         imageOptions={imageOptions}
         activeImageId={activeImage?.resourceId}
         onSetImage={handleSetImage}
+        activeBackground={activeCell?.background}
+        onSetBackground={handleSetBackground}
       />
 
       {activeImage && (

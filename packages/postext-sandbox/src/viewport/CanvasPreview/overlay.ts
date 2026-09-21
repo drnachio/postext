@@ -1,4 +1,5 @@
 import type { VDTBlock, VDTDocument, ResolvedDebugConfig } from 'postext';
+import { resourceBlockRectToPage } from 'postext';
 import type { ResourceSelection } from '../../context/SandboxContext';
 import { getSvgTextIndex } from '../../controls/svgTextIndex';
 import { svgSourceOffsetToCaret, svgSourceRangeToBoxes, type SvgCharBox } from '../../controls/svgSource';
@@ -74,13 +75,24 @@ export function drawResourceSelection(
   const rb = block.resourceBlock!;
   const run = resolveResourceRun(rb, sel.target);
   if (!run) return;
+  // The run's geometry is in the block's frame — the page for an upright
+  // block, its upright frame for a rotated one, where a caret turns with it.
+  const runCaret = (x: number, y: number, h: number) => {
+    if (!rb.rotation) { caret(x, y, h); return; }
+    const r = resourceBlockRectToPage(rb, { x: x - 1, y, width: 2, height: h });
+    appendRect(group, r.x, r.y, r.width, r.height, caretFill);
+  };
+  const runRect = (x: number, y: number, w: number, h: number) => {
+    const r = resourceBlockRectToPage(rb, { x, y, width: w, height: h });
+    appendRect(group, r.x, r.y, Math.max(1, r.width), Math.max(1, r.height), rangeFill);
+  };
 
   if (run.lines.length === 0) {
     // Empty run: an empty cell still has a rect to put the caret in.
     if (collapsed && sel.target.kind === 'cell') {
       const t = sel.target;
       const found = rb.table?.cells.find((c) => c.row === t.row && c.col === t.col);
-      if (found) caret(found.rect.x + 3, found.rect.y + 2, Math.max(1, Math.min(found.rect.height - 4, 16)));
+      if (found) runCaret(found.rect.x + 3, found.rect.y + 2, Math.max(1, Math.min(found.rect.height - 4, 16)));
     }
     return;
   }
@@ -98,11 +110,11 @@ export function drawResourceSelection(
       if (plainHead < st.plainStart || (plainHead > st.plainEnd && !isLast)) continue;
       if (plainHead > st.plainEnd && isLast) {
         const line = run.lines[i]!;
-        caret(xForPlainInResourceLine(line, st, st.plainEnd), line.bbox.y, line.bbox.height);
+        runCaret(xForPlainInResourceLine(line, st, st.plainEnd), line.bbox.y, line.bbox.height);
         return;
       }
       const line = run.lines[i]!;
-      caret(xForPlainInResourceLine(line, st, plainHead), line.bbox.y, line.bbox.height);
+      runCaret(xForPlainInResourceLine(line, st, plainHead), line.bbox.y, line.bbox.height);
       return;
     }
     return;
@@ -116,7 +128,7 @@ export function drawResourceSelection(
     const line = run.lines[i]!;
     const x1 = xForPlainInResourceLine(line, st, lo);
     const x2 = xForPlainInResourceLine(line, st, hi);
-    appendRect(group, x1, line.bbox.y, Math.max(1, x2 - x1), line.bbox.height, rangeFill);
+    runRect(x1, line.bbox.y, Math.max(1, x2 - x1), line.bbox.height);
   }
 }
 

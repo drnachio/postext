@@ -3,7 +3,7 @@ import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, drawLinePx, drawTextPx, colorFromHex } from './primitives';
+import { type PageCtx, drawLinePx, drawSwatchPx, drawTextPx, colorFromHex } from './primitives';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
 import {
@@ -94,6 +94,12 @@ function renderSegments(
         tagContent(ctx, formula);
       }
       renderMathSegment(ctx, seg, x, baseline, blockColor);
+      x += seg.width;
+      continue;
+    }
+    if (seg.kind === 'swatch') {
+      tagContent(ctx, elem);
+      drawSwatchPx(ctx, x, baseline, seg.width, seg.swatch?.color, blockColor);
       x += seg.width;
       continue;
     }
@@ -191,7 +197,7 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one drawTextPx
   // paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.refResourceId !== undefined || s.fontString !== undefined || s.color !== undefined)) {
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.refResourceId !== undefined || s.fontString !== undefined || s.color !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }

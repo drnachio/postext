@@ -3,7 +3,7 @@ import type { NumeralStyle, PostextConfig, Resource, VDTDocument } from 'postext
 import { chapterLayoutFromDoc, chapterPageLabels, createBookPlanner, sameChapterLayout, sameLayoutInputs } from './pagination';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
 import { newChapter } from './chapterOps';
-import type { ChapterLayout, ChapterPlan } from './types';
+import type { Chapter, ChapterLayout, ChapterPlan } from './types';
 
 const figure = (id: string): Resource => ({
   id, typeId: 'figure', kind: 'bitmap', caption: `Figure ${id}.`, createdAt: 0, updatedAt: 0,
@@ -18,8 +18,8 @@ const chapters = [
 const config: PostextConfig = {};
 const resources = [figure('f1'), figure('f2')];
 
-function layoutFor(plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount: number }): ChapterLayout {
-  const chapter = chapters.find((c) => c.id === plan.chapterId)!;
+function layoutFor(plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount: number }, book: readonly Chapter[] = chapters): ChapterLayout {
+  const chapter = book.find((c) => c.id === plan.chapterId)!;
   return {
     chapterId: plan.chapterId,
     markdown: chapter.markdown,
@@ -32,7 +32,7 @@ function layoutFor(plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount
     firstContentPageFormat: 'decimal',
     lastPageNumber: { delta: over.pageCount - 1 },
     lastPageFormat: 'decimal',
-    outline: [],
+    outlinePages: [],
     outlineKey: '',
     ...over,
   };
@@ -163,6 +163,98 @@ describe('createBookPlanner', () => {
     expect(p.pendingChapterId).toBe('a');
   });
 
+  it('keeps the pages of a chapter printing the contents when only the outline changed', () => {
+    const book = [
+      newChapter('front', 'Front', '# Contents {style="front"}\n\n:::toc\n:::', 1),
+      ...chapters,
+    ];
+    const cfg: PostextConfig = { headingStyles: [{ id: 'front', numbered: false }] };
+    const layoutIn = (plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount: number }): ChapterLayout => ({
+      ...layoutFor(plan, over, book), configKey: configKeyOf(cfg),
+    });
+    const planner = createBookPlanner();
+    const p0 = planner.plan(book, cfg, resources, {});
+    expect(p0.byId.front!.outline).toBeDefined();
+    expect(p0.byId.a!.outline).toBeUndefined();
+    expect(p0.byId.front!.outlineKey).not.toBe('');
+    // The front matter laid out with the outline as it stood (no page
+    // labels yet): its own heading's label enters the outline, so it is
+    // stale at once — but paginated, and a is next.
+    const front0 = layoutIn(p0.byId.front!, { pageCount: 2, outlineKey: p0.byId.front!.outlineKey, outlinePages: [{ index: 0, number: { delta: 0 }, format: 'decimal' }] });
+    const p1 = planner.plan(book, cfg, resources, { front: front0 });
+    expect(p1.byId.front!.outlineStale).toBe(true);
+    expect(p1.byId.a!.paginated).toBe(true);
+    expect(p1.pendingChapterId).toBe('a');
+    // Laid out again with that outline; then chapter a lands and its
+    // labels enter the book outline.
+    const front = { ...front0, outlineKey: p1.byId.front!.outlineKey };
+    expect(planner.plan(book, cfg, resources, { front }).byId.front!.outlineStale).toBe(false);
+    const a = layoutIn(p1.byId.a!, { pageCount: 3, outlinePages: [{ index: 0, number: { delta: 0 }, format: 'decimal' }] });
+    const p2 = planner.plan(book, cfg, resources, { front, a });
+    // The contents are stale, the front matter's pages are not: b is
+    // paginated and next in line; the contents wait for the book.
+    expect(p2.byId.front!.layout).toBe(front);
+    expect(p2.byId.front!.outlineStale).toBe(true);
+    expect(p2.byId.front!.outlineKey).not.toBe(front.outlineKey);
+    expect(p2.byId.a!.outlineStale).toBe(false);
+    expect(p2.byId.b!.paginated).toBe(true);
+    expect(p2.byId.b!.continuation?.pageIndexOffset).toBe(5);
+    expect(p2.pendingChapterId).toBe('b');
+    expect(p2.byId.front!.outline!.find((e) => e.title === 'One')).toMatchObject({ pageLabel: '3', pageIndex: 2 });
+    const b = layoutIn(p2.byId.b!, { pageCount: 2 });
+    const c = layoutIn(planner.plan(book, cfg, resources, { front, a, b }).byId.c!, { pageCount: 1 });
+    const p3 = planner.plan(book, cfg, resources, { front, a, b, c });
+    expect(p3.pendingChapterId).toBe('front');
+    expect(sameLayoutInputs(p2.byId.b!, p3.byId.b!)).toBe(true);
+    // Laid out again with the current outline: nothing is left, and the
+    // chapters after it saw no change in their inputs.
+    const front2 = { ...front, outlineKey: p3.byId.front!.outlineKey };
+    const p4 = planner.plan(book, cfg, resources, { front: front2, a, b, c });
+    expect(p4.byId.front!.outlineStale).toBe(false);
+    expect(p4.pendingChapterId).toBeNull();
+    expect(sameLayoutInputs(p3.byId.a!, p4.byId.a!)).toBe(true);
+    expect(p4.byId.front!.outlineKey).toBe(p3.byId.front!.outlineKey);
+  });
+
+  it('places outline entries on the current page chain', () => {
+    const planner = createBookPlanner();
+    const book = [newChapter('front', 'Front', ':::toc\n:::', 1), ...chapters];
+    const layoutIn = (plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount: number }): ChapterLayout => layoutFor(plan, over, book);
+    const p0 = planner.plan(book, config, resources, {});
+    const front = layoutIn(p0.byId.front!, { pageCount: 2, firstContentPageFormat: 'lower-roman', lastPageFormat: 'lower-roman' });
+    const p1 = planner.plan(book, config, resources, { front });
+    // Chapter a restarts the numbering at 1 on its first page; its heading
+    // sits there, a sub-entry of b on b's second page.
+    const a = layoutIn(p1.byId.a!, { pageCount: 3, firstContentPageNumber: { value: 1 }, lastPageNumber: { value: 3 }, outlinePages: [{ index: 0, number: { value: 1 }, format: 'decimal' }] });
+    const p2 = planner.plan(book, config, resources, { front, a });
+    const b = layoutIn(p2.byId.b!, { pageCount: 2, outlinePages: [{ index: 0, number: { delta: 0 }, format: 'decimal' }, { index: 1, number: { delta: 1 }, format: 'decimal' }] });
+    const p3 = planner.plan(book, config, resources, { front, a, b });
+    const titles = (plan: ChapterPlan) => plan.outline!.map((e) => `${e.title}@${e.pageLabel ?? '?'}/${e.pageIndex ?? '?'}`);
+    expect(titles(p3.byId.front!)).toEqual(['One@1/2', 'Two@4/5', 'Detail@5/6', 'Three@?/?']);
+    // The front matter growing by two pages keeps every record (same
+    // parity) and moves the labels with the chain.
+    const front2 = { ...front, pageCount: 4, lastPageNumber: { delta: 3 } };
+    const p4 = planner.plan(book, config, resources, { front: front2, a, b });
+    expect(p4.byId.a!.layout).toBe(a);
+    expect(p4.byId.b!.layout).toBe(b);
+    expect(titles(p4.byId.front!)).toEqual(['One@1/4', 'Two@4/7', 'Detail@5/8', 'Three@?/?']);
+    // A record whose entry count no longer matches the text is left out.
+    const p5 = planner.plan(book, config, resources, { front, a, b: { ...b, outlinePages: [] } });
+    expect(titles(p5.byId.front!)).toEqual(['One@1/2', 'Two@?/?', 'Detail@?/?', 'Three@?/?']);
+  });
+
+  it('keys records on the resource set, not its order', () => {
+    const planner = createBookPlanner();
+    const p0 = planner.plan(chapters, config, resources, {});
+    const a = layoutFor(p0.byId.a!, { pageCount: 3 });
+    // Storage hands the resources back sorted by id; a preset applies them
+    // in manifest order. Either way the record holds.
+    const reversed = [...resources].reverse();
+    expect(resourcesKeyOf(reversed)).toBe(resourcesKeyOf(resources));
+    expect(planner.plan(chapters, config, reversed, { a }).byId.a!.layout).toBe(a);
+    expect(resourcesKeyOf([resources[0]!])).not.toBe(resourcesKeyOf(resources));
+  });
+
   it('reuses the counter chain across plans', () => {
     const planner = createBookPlanner();
     const p1 = planner.plan(chapters, config, resources, {});
@@ -178,7 +270,7 @@ describe('chapterLayoutFromDoc', () => {
     blocks: blockPages.map((pageIndex) => ({ pageIndex })),
     ...(restarts ? { pageNumberRestarts: restarts } : {}),
   } as unknown as VDTDocument);
-  const plan = (paginated: boolean): ChapterPlan => ({ chapterId: 'b', index: 1, number: 2, continuation: undefined, paginated, continuationKey: 'k', outlineKey: '', layout: null });
+  const plan = (paginated: boolean): ChapterPlan => ({ chapterId: 'b', index: 1, number: 2, continuation: undefined, paginated, continuationKey: 'k', outlineKey: '', layout: null, outlineStale: false });
   const inputs = { markdown: '# B', config, resources };
 
   it('records page count, leading blanks and how the numbering ends', () => {

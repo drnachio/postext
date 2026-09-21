@@ -76,6 +76,9 @@ export interface FloatMeasure {
   height: number;
   /** Block-relative baseline of the caption's last line, when captioned. */
   lastCaptionBaseline?: number;
+  /** For a rotated block: the width it takes on the page (its upright
+   *  height), which must fit the band's width. */
+  rotatedWidth?: number;
 }
 
 /** Band geometry for one slot. Both kinds are corrected against the baseline

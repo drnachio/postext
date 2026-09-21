@@ -939,6 +939,11 @@ export interface SandboxLabels {
   resourceWidthAria: string;
   resourceSpanColumn: string;
   resourceSpanPage: string;
+  resourceRotateAria: string;
+  resourceRotateNone: string;
+  resourceRotateCcw: string;
+  resourceRotateCw: string;
+  resourcePlacementHintRotated: string;
   resourceImageLabel: string;
   resourceSvgLabel: string;
   resourceTableLabel: string;
@@ -1005,6 +1010,8 @@ export interface SandboxLabels {
   tableEditorImageWidth: string;
   tableEditorImageWidthHint: string;
   tableEditorImageChipAria: string;
+  tableEditorCellBackground: string;
+  tableEditorCellBackgroundNone: string;
   fontLabel: string;
   sizeLabel: string;
   colorLabel: string;

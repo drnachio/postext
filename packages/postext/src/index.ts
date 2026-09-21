@@ -13,7 +13,7 @@ export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, ini
 export type { MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure';
 export { hyphenateText, setHyphenationLocale } from './hyphenate';
 export { parseMarkdown } from './parse';
-export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setAlignment, parseTSV } from './table/model';
+export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setCellBackground, setAlignment, parseTSV } from './table/model';
 export type { CellPos, CellRange } from './table/model';
 export { extractFrontmatter } from './frontmatter';
 export type { ParsedFrontmatter } from './frontmatter';
@@ -53,6 +53,7 @@ export type {
   ResourceCounterReset,
   ResourceFloatPosition,
   ResourceFloatSpan,
+  ResourceRotation,
   ResourcePlacement,
   Resource,
   TableCell,
@@ -236,10 +237,12 @@ export type {
   VDTResourceTableCell,
   VDTResourceTableCellImage,
   VDTResourceTableLayout,
+  VDTResourceRotation,
 } from './vdt';
+export { resourceBlockToPage, resourceBlockToLocal, resourceBlockRectToPage } from './vdt';
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo } from './parse';
-export { parseMarkdownWithIssues, MATH_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS } from './parse';
+export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS } from './parse';
 export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet } from './parse';
 export type { InlineSnippetMapping } from './parse';
 export { buildPageLabels, collectPageLabelRuns, formatNumeral } from './numbering';

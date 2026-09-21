@@ -9,13 +9,19 @@ import {
   FileCode,
   Image as ImageIcon,
   Merge,
+  PaintBucket,
   Rows,
   Split,
   Trash2,
+  X,
 } from 'lucide-react';
-import type { TableCellAlign } from 'postext';
+import type { ColorValue, TableCellAlign } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext';
+import { ColorPicker } from '../../../controls/ColorPicker';
 import { Menu, MenuItem, MenuSeparator } from '../../../ui';
+
+/** Fill offered when the active cell has none: white, the paper. */
+const NO_FILL: ColorValue = { hex: '#ffffff', model: 'hex' };
 
 /** An image-bearing resource the active cell can embed. */
 export interface TableEditorImageOption {
@@ -56,6 +62,10 @@ interface TableEditorToolbarProps {
   activeImageId: string | undefined;
   /** Embed the given resource in the active cell (`undefined` clears it). */
   onSetImage: (resourceId: string | undefined) => void;
+  /** Fill colour of the active cell (`TableCell.background`), if any. */
+  activeBackground: ColorValue | undefined;
+  /** Set the active cell's fill (`undefined` clears it). */
+  onSetBackground: (color: ColorValue | undefined) => void;
 }
 
 const btnBase =
@@ -124,10 +134,13 @@ export function TableEditorToolbar({
   imageOptions,
   activeImageId,
   onSetImage,
+  activeBackground,
+  onSetBackground,
 }: TableEditorToolbarProps) {
   const labels = useSandboxLabels();
   const iconSize = 13;
   const imageActive = activeImageId !== undefined;
+  const fillActive = activeBackground !== undefined;
   return (
     <div
       className="flex flex-wrap items-center gap-1.5 rounded border p-1"
@@ -244,6 +257,27 @@ export function TableEditorToolbar({
             ))
           )}
         </Menu>
+      </Group>
+      <Divider />
+      <Group>
+        <span
+          className="flex items-center gap-1"
+          title={labels.tableEditorCellBackground}
+          aria-label={labels.tableEditorCellBackground}
+          style={{ color: fillActive ? 'var(--foreground)' : 'var(--slate)' }}
+        >
+          <PaintBucket size={iconSize} aria-hidden="true" />
+          <ColorPicker
+            label={labels.tableEditorCellBackground}
+            value={activeBackground ?? NO_FILL}
+            onChange={onSetBackground}
+            isDefault={!fillActive}
+            hideLabel
+          />
+        </span>
+        <Btn label={labels.tableEditorCellBackgroundNone} onClick={() => onSetBackground(undefined)} disabled={!fillActive}>
+          <X size={iconSize} aria-hidden="true" />
+        </Btn>
       </Group>
       <Divider />
       <Group>

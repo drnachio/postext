@@ -1,4 +1,5 @@
 import type { VDTDocument } from 'postext';
+import { resourceBlockToLocal } from 'postext';
 import { bandCharAtX, bandLineBoxes, bandPlainToSource, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
 
 type VDTBlock = VDTDocument['blocks'][number];
@@ -15,6 +16,7 @@ type VDTSegment = NonNullable<VDTLine['segments']>[number];
  */
 export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean): number {
   if (seg.refResourceId !== undefined) return 1;
+  if (seg.kind === 'swatch') return 1;
   if (dropTrailingHyphen && seg.text.endsWith('-')) return Math.max(0, seg.text.length - 1);
   return seg.text.length;
 }
@@ -139,11 +141,13 @@ export function refResourceIdAtPixel(
     if (yPage < b.bbox.y || yPage > b.bbox.y + b.bbox.height) continue;
     const rb = b.resourceBlock;
     if (rb) {
-      const inCaption = refInResourceLines(rb.captionLines, xPage, yPage);
+      // A rotated block keeps its lines in its upright frame.
+      const p = resourceBlockToLocal(rb, xPage, yPage);
+      const inCaption = refInResourceLines(rb.captionLines, p.x, p.y);
       if (inCaption !== null) return inCaption;
       if (rb.table) {
         for (const cell of rb.table.cells) {
-          const inCell = refInResourceLines(cell.lines, xPage, yPage);
+          const inCell = refInResourceLines(cell.lines, p.x, p.y);
           if (inCell !== null) return inCell;
         }
       }

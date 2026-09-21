@@ -14,6 +14,7 @@
  */
 
 import type { VDTBlock, VDTLine, ResolvedResourceBlock } from '../vdt';
+import { paintSwatch } from './swatch';
 
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
@@ -225,6 +226,11 @@ function paintLine(
         x += seg.width;
         continue;
       }
+      if (seg.kind === 'swatch') {
+        paintSwatch(ctx, x, line.baseline, seg.width, seg.swatch?.color, color);
+        x += seg.width;
+        continue;
+      }
       ctx.font = pickFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
       ctx.fillStyle = seg.refResourceId !== undefined
         ? linkColor
@@ -271,9 +277,10 @@ function renderTable(
 ): void {
   const t = rb.table;
   if (!t) return;
-  // Cell backgrounds first (header tint / body fill), then borders, then text.
+  // Cell backgrounds first (the cell's own fill, else the header tint / body
+  // fill), then borders, then text.
   for (const cell of t.cells) {
-    const fill = cell.isHeader ? t.headerBackground : t.bodyBackground;
+    const fill = cell.background ?? (cell.isHeader ? t.headerBackground : t.bodyBackground);
     if (fill) {
       ctx.fillStyle = fill;
       ctx.fillRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
@@ -330,8 +337,16 @@ export function renderResourceBlock(
 ): void {
   const rb = block.resourceBlock;
   if (!rb) return;
-  const bx = block.bbox.x + rb.bodyRect.x;
-  const by = block.bbox.y + rb.bodyRect.y;
+  // A rotated block: its geometry is in the upright frame, painted through
+  // the quarter-turn transform that lands the frame on the page.
+  const rot = rb.rotation;
+  if (rot) {
+    ctx.save();
+    ctx.translate(rot.originX, rot.originY);
+    ctx.rotate(rot.direction === 'ccw' ? -Math.PI / 2 : Math.PI / 2);
+  }
+  const bx = (rot ? 0 : block.bbox.x) + rb.bodyRect.x;
+  const by = (rot ? 0 : block.bbox.y) + rb.bodyRect.y;
   const bw = rb.bodyRect.width;
   const bh = rb.bodyRect.height;
 
@@ -370,4 +385,5 @@ export function renderResourceBlock(
     );
   }
   ctx.restore();
+  if (rot) ctx.restore();
 }

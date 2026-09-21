@@ -22,7 +22,7 @@ import {
 } from './buildHelpers';
 import { resolveBlockKind, type BlockKind, type BlockKindContext } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
-import { resolveRefSpans } from './resourceLayout';
+import { resolveRefSpans, resolveSwatchSpans } from './resourceLayout';
 import type { ResourceNumberingMap } from './resourceNumbering';
 import { measureTocBlock } from './toc';
 
@@ -141,7 +141,12 @@ export function measureContentBlock(
     };
   }
 
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref);
+  // Inline colour swatches: a palette id resolves to its hex here.
+  if (contentBlock.spans.some((s) => s.swatch)) {
+    contentBlock = { ...contentBlock, spans: resolveSwatchSpans(contentBlock.spans, resolved.colorPalette) };
+  }
+
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch);
 
   // List items reserve horizontal space for indent + bullet + gap.
   const {

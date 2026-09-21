@@ -42,6 +42,17 @@ export interface RichToken {
   /** True when this token belongs to a caption's numbered label. Flows to the
    *  segment so renderers can apply the label colour. */
   captionLabel?: boolean;
+  /** When present, this token is an inline colour swatch (`:swatch{…}`): an
+   *  atomic square of `width` px, filled with `color` (hex) when resolved. */
+  swatch?: { color?: string };
+}
+
+/** Side of an inline colour swatch: three quarters of the font size (the
+ *  height of a capital), read from the `px` size of the CSS font string. */
+export function swatchSidePx(font: string): number {
+  const m = /(\d*\.?\d+)px/.exec(font);
+  const size = m ? Number(m[1]) : 16;
+  return Math.max(1, size * 0.75);
 }
 
 function pickSpanFont(
@@ -175,6 +186,20 @@ function tokenizeSpans(
         kind: 'text',
         width: measureTextWidth(span.text, refFont) + track(span.text),
         refResourceId: span.ref.resourceId,
+      });
+      continue;
+    }
+    // Swatch spans are atomic too: one square box the size of a capital.
+    if (span.swatch) {
+      const swatchFont = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+      tokens.push({
+        text: span.text,
+        bold: span.bold,
+        italic: span.italic,
+        captionLabel: span.captionLabel,
+        kind: 'text',
+        width: swatchSidePx(swatchFont),
+        swatch: /^#[0-9a-f]{6}$/i.test(span.swatch.color) ? { color: span.swatch.color } : {},
       });
       continue;
     }
@@ -399,7 +424,7 @@ export function measureRichBlock(
 
       // A word wider than the whole line: divide it rather than let it run
       // past the measure (syllable first, then character).
-      if (lineTokens.length === 0 && token.kind === 'text' && !token.mathRender && token.refResourceId === undefined && token.width > lineMaxWidth) {
+      if (lineTokens.length === 0 && token.kind === 'text' && !token.mathRender && !token.swatch && token.refResourceId === undefined && token.width > lineMaxWidth) {
         const font = pickSpanFont(token.bold, token.italic, normalFont, boldFont, italicFont, boldItalicFont);
         const split = emergencySplit(token, font, letterSpacingPx, lineMaxWidth);
         if (split) {
@@ -438,12 +463,13 @@ export function measureRichBlock(
 
     // Build segments for justified rendering
     const segments: VDTLineSegment[] = lineTokens.map((t) => ({
-      kind: t.mathRender ? ('math' as const) : t.kind,
+      kind: t.mathRender ? ('math' as const) : t.swatch ? ('swatch' as const) : t.kind,
       text: cleanSoftHyphens(t.text),
       width: t.width,
       bold: t.bold || undefined,
       italic: t.italic || undefined,
       ...(t.mathRender ? { mathRender: t.mathRender } : {}),
+      ...(t.swatch ? { swatch: t.swatch } : {}),
       ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId } : {}),
       ...(t.captionLabel ? { captionLabel: true } : {}),
     }));

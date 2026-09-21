@@ -85,6 +85,13 @@ export function presetFileId(presetId: string, file: string): string {
   return `preset:${presetId}:${slugify(file)}`;
 }
 
+/** Deterministic chapter id for a preset chapter file, so re-applying the
+ *  preset (a reset, a reload from disk) keeps the chapter ids — and with
+ *  them the layout records of the chapters whose text did not change. */
+export function presetChapterId(presetId: string, file: string): string {
+  return `preset-chapter:${presetId}:${slugify(file)}`;
+}
+
 /** Deterministic font-file id; see `presetFileId`. */
 export function presetFontFileId(presetId: string, file: string): string {
   return `preset-font:${presetId}:${slugify(file)}`;

@@ -5,7 +5,10 @@
 import type { DocumentMetadata, LayoutContinuation, NumeralStyle, OutlineEntry } from 'postext';
 
 export interface Chapter {
-  /** Random UUID; stable across rename/reorder; unique across projects. */
+  /** Stable across rename/reorder; unique across projects. Random for a
+   *  new or cloned chapter; derived from the preset id and chapter file for
+   *  a chapter a preset applies (`presetChapterId`), so re-applying the
+   *  preset keeps the ids and the layout records keyed on them. */
   id: string;
   /** Shown in the UI only; never injected into the markdown. */
   title: string;
@@ -77,13 +80,26 @@ export type BookPages = Record<string, ChapterPages>;
  *  restart set. */
 export type ChapterPageNumber = { delta: number } | { value: number };
 
+/** Where an outline entry of a chapter landed, in terms that stay valid
+ *  when the chapters before it shift: the page's index within the chapter
+ *  and how it is numbered (see {@link ChapterPageNumber}). */
+export interface OutlinePage {
+  /** 0-based index of the page among the chapter's own pages. */
+  index: number;
+  number: ChapterPageNumber;
+  format: NumeralStyle;
+}
+
 /** What the last layout of a chapter on its own recorded, with the inputs
  *  it was built from so a stale record is told from a current one. Page
  *  numbers are not part of the inputs: a chapter's page count only depends
  *  on the parity and format it starts with, so shifting the chapters before
- *  it keeps the record valid. Plain data: records persist with the book
- *  (storage, bundles) so reopening it needs no relayout, and the
- *  fingerprints (`layoutKeys.ts`) tell a current record from a stale one. */
+ *  it keeps the record valid. Nor is the book outline a chapter printing
+ *  the contents was laid out with: its pages hold while the contents' rows
+ *  go stale (see {@link ChapterPlan.outlineStale}). Plain data: records
+ *  persist with the book (storage, bundles) so reopening it needs no
+ *  relayout, and the fingerprints (`layoutKeys.ts`) tell a current record
+ *  from a stale one. */
 export interface ChapterLayout {
   chapterId: string;
   markdown: string;
@@ -107,9 +123,11 @@ export interface ChapterLayout {
   lastPageNumber: ChapterPageNumber;
   /** Page-number format on the last page. */
   lastPageFormat: NumeralStyle;
-  /** The chapter's outline — its headings and parts with the page label
-   *  each landed on — the book's table of contents is assembled from. */
-  outline: OutlineEntry[];
+  /** Where each entry of the chapter's outline (its headings and parts, in
+   *  the order `contentOutline` gives them from the text) landed; null for
+   *  an entry that reached no page. The book's table of contents is
+   *  assembled from these, placed on the current page chain. */
+  outlinePages: (OutlinePage | null)[];
   /** {@link ChapterPlan.outlineKey} at build time: the book outline a
    *  chapter printing the contents was laid out with (`''` otherwise). */
   outlineKey: string;
@@ -142,8 +160,14 @@ export interface ChapterPlan {
   outline?: OutlineEntry[];
   /** Fingerprint of `outline` (`''` when the chapter prints no contents). */
   outlineKey: string;
-  /** The current layout record, when one matches every input. */
+  /** The current layout record, when one matches every input its pages
+   *  depend on (text, configuration, resources, engine, what it inherits). */
   layout: ChapterLayout | null;
+  /** True when `layout` was built with another book outline than the
+   *  current one: the chapter's pages are known and the chapters after it
+   *  stay paginated, but its contents print outdated rows until it is laid
+   *  out again. Only a chapter printing the contents can be stale. */
+  outlineStale: boolean;
 }
 
 export interface BookPlan {
@@ -151,7 +175,9 @@ export interface BookPlan {
   byId: Record<string, ChapterPlan>;
   /** Pages of every chapter whose layout (and its predecessors') is known. */
   bookPages: BookPages;
-  /** The first chapter without a current layout, in book order; null when
-   *  every chapter is paginated. */
+  /** The chapter to lay out next in the background: the first one whose
+   *  pages are unknown, in book order — else, once every chapter is
+   *  paginated, the first one whose contents are stale
+   *  ({@link ChapterPlan.outlineStale}). Null when nothing is left. */
   pendingChapterId: string | null;
 }

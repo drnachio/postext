@@ -92,8 +92,10 @@ function bookFromLoaded(loaded: LoadedPreset): BookContent {
 }
 
 async function adoptLoadedPreset(loaded: LoadedPreset, projectId: string): Promise<ProjectContent> {
+  // A preset's chapters carry ids derived from the preset (so re-applying
+  // it keeps them); a project gets its own, unique across projects.
   const remapped = remapContentFileIds(
-    { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources },
+    { ...cloneBook(bookFromLoaded(loaded), generateChapterId), config: loaded.config, resources: loaded.resources },
     (_old, kind, hint) => (kind === 'blob' ? projectFileId(projectId, hint) : projectFontFileId(projectId, hint)),
   );
   const blobByOld = new Map(loaded.blobs.map((b) => [b.fileId, b]));

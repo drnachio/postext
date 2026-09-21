@@ -4,7 +4,7 @@ import {
   resolveHeadingsConfig,
 } from 'postext';
 import type { LayoutType, PostextConfig } from 'postext';
-import { HTML_DPI, LOCALE_TO_HYPHENATION, PADDING_PX, type ColumnMode } from './constants';
+import { htmlViewerDpi, LOCALE_TO_HYPHENATION, PADDING_PX, type ColumnMode } from './constants';
 
 /** Layout config for one HTML viewer pass. `base` is the document config as
  *  the viewer sees it — pass it through `applyHtmlViewerOverrides` first so
@@ -37,10 +37,12 @@ export function buildHtmlConfigOverride(
     optimalLineBreaking,
   } = opts;
 
-  // Body font-size override — screen rendering uses pt at HTML_DPI so the
-  // default 8pt ≈ 16px at fontScale=1.
-  const baseFontSize = base.bodyText?.fontSize ?? { value: 8, unit: 'pt' as const };
-  const scaledFontSize = { value: baseFontSize.value * fontScale, unit: baseFontSize.unit };
+  // Font scale: the viewer renders at HTML_DPI (8pt ≈ 16px at fontScale=1)
+  // and scales by changing the DPI itself, so every absolute size in the
+  // design — body, headings, callouts, tables, captions, list markers,
+  // paddings, rules, figure widths — grows by the same factor and the
+  // layout keeps its proportions. Page geometry is in px and stays put.
+  const dpi = htmlViewerDpi(fontScale);
 
   const hypLocale =
     base.bodyText?.hyphenation?.locale ?? LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
@@ -57,17 +59,13 @@ export function buildHtmlConfigOverride(
       ? Math.max(viewportHeightPx * 20, 200_000)
       : Math.max(viewportHeightPx - PADDING_PX * 2, 400);
 
-  // Headings use absolute pt sizes, so they don't scale through em cascades.
-  // Resolve the user's partial headings config and emit explicit per-level
-  // overrides with scaled fontSize so fontScale acts as a uniform multiplier.
   // The viewer has no leaves — a "page" is a scroll unit, never a recto or a
   // verso — so odd/even break parity (and the blank pages it pads with) is
   // meaningless here. Chapter and part breaks keep their page break but drop
   // the parity.
   const resolvedHeadings = resolveHeadingsConfig(base.headings);
-  const scaledHeadingLevels = resolvedHeadings.levels.map((lvl) => ({
+  const headingLevels = resolvedHeadings.levels.map((lvl) => ({
     ...lvl,
-    fontSize: { value: lvl.fontSize.value * fontScale, unit: lvl.fontSize.unit },
     breakBefore: { ...lvl.breakBefore, parity: 'any' as const },
   }));
   const parts: PostextConfig['parts'] = {
@@ -81,7 +79,7 @@ export function buildHtmlConfigOverride(
     ...base,
     page: {
       ...base.page,
-      dpi: HTML_DPI,
+      dpi,
       width: { value: pageWidthPx, unit: 'px' },
       height: { value: pageHeightPx, unit: 'px' },
       margins: {
@@ -102,7 +100,6 @@ export function buildHtmlConfigOverride(
     },
     bodyText: {
       ...base.bodyText,
-      fontSize: scaledFontSize,
       optimalLineBreaking,
       hyphenation: {
         ...(base.bodyText?.hyphenation ?? {}),
@@ -121,7 +118,7 @@ export function buildHtmlConfigOverride(
     },
     headings: {
       ...base.headings,
-      levels: scaledHeadingLevels,
+      levels: headingLevels,
     },
     parts,
     // The HTML viewer is a continuous reading surface, not a page: running
