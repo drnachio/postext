@@ -67,7 +67,11 @@ const abortError = (): DOMException => new DOMException('Aborted', 'AbortError')
  * cancelled and rejected.
  */
 export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): LayoutService {
-  const handle = options?.handle ?? createLayoutWorker();
+  // The worker is spawned on first use, not on creation: the provider's
+  // state initialiser also runs while the page is rendered on the server
+  // (Next.js prerender), where `Worker` does not exist.
+  let handle: LayoutWorkerHandle | null = options?.handle ?? null;
+  const worker = (): LayoutWorkerHandle => (handle ??= createLayoutWorker());
   const queue: Entry[] = [];
   let active: Entry | null = null;
   let disposed = false;
@@ -80,7 +84,7 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
     for (const f of families) registeredFamilies.delete(f);
     if (toUnregister.length === 0) return;
     fontQueue = fontQueue.then(() =>
-      handle.unregisterFonts(toUnregister).catch((err) => {
+      worker().unregisterFonts(toUnregister).catch((err) => {
         console.warn('[LayoutService] font unregister failed', err);
       }),
     );
@@ -97,7 +101,7 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
     const next = fontQueue.then(async () => {
       try {
         const payloads = await collectFontPayloadsForFamilies(missing);
-        if (payloads.length > 0) await handle.registerFonts(payloads);
+        if (payloads.length > 0) await worker().registerFonts(payloads);
         const delivered = new Set(payloads.map((p) => p.family));
         for (const f of missing) if (!delivered.has(f)) registeredFamilies.delete(f);
       } catch (err) {
@@ -141,8 +145,8 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
         cacheKey: request.cacheKey,
       };
       const doc = request.warmOnly && request.cacheKey
-        ? await handle.warm(request.content, request.config, { ...buildOptions, cacheKey: request.cacheKey }).then(() => null)
-        : await handle.build(request.content, request.config, buildOptions);
+        ? await worker().warm(request.content, request.config, { ...buildOptions, cacheKey: request.cacheKey }).then(() => null)
+        : await worker().build(request.content, request.config, buildOptions);
       const built = stats as BuildStats | null;
       span.end({
         warm: !!request.warmOnly,
@@ -221,7 +225,7 @@ export function createLayoutService(options?: { handle?: LayoutWorkerHandle }): 
       unsubscribeFonts();
       for (const q of queue.splice(0)) q.reject(abortError());
       if (active) interrupt(active, false);
-      handle.dispose();
+      handle?.dispose();
     },
   };
 }
