@@ -2803,7 +2803,7 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>titleStyle</code></td>
       <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap, letterSpacing, indent &#125;</code></td>
       <td>fuente de encabezados, tamaño del cuerpo, <code>700</code>, <code>false</code>, color principal, <code>'none'</code>, <code>0.5em</code></td>
-      <td>Tipografía del título. <code>gap</code> es el espacio entre el título y el primer hijo (y el hueco de la columna del icono). <code>textTransform: 'uppercase'</code> conserva la longitud del texto. <code>letterSpacing</code> aplica un tracking al título (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> lo desplaza a la derecha del borde interior de la caja (sitio para una insignia de esquina).</td>
+      <td>Tipografía del título. <code>gap</code> es el espacio entre el título y el primer hijo (y el hueco de la columna del icono). <code>textTransform: 'uppercase'</code> conserva la longitud del texto. <code>letterSpacing</code> aplica un tracking al título (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> lo desplaza a la derecha del borde interior de la caja. Una insignia de esquina que cuelga del lado del título (la esquina izquierda) reserva antes su propio sitio — su mitad interior más <code>gap</code> — de modo que el título la libra caiga en la página que caiga; <code>indent</code> solo añade a partir de ahí.</td>
     </tr>
     <tr>
       <td><code>body</code></td>

@@ -369,6 +369,11 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Backticks are stripped; the span is rendered as plain text. Distinct code styling is on the roadmap.</td>
     </tr>
     <tr>
+      <td>Escape</td>
+      <td><code>\*</code>, <code>\_</code>, <code>\^</code>, <code>\~</code>, <code>\`</code></td>
+      <td>A backslash sets the marker character itself — the asterisk of a table footnote (<code>\* pOH = −log [OH^−^]</code>), a literal caret — instead of opening a span. Works in the body and in captions, cells and notes.</td>
+    </tr>
+    <tr>
       <td>Link</td>
       <td><code>[text](https://…)</code></td>
       <td>The visible text is kept in the flow; the URL is discarded by the current renderer. Link handling is on the roadmap.</td>

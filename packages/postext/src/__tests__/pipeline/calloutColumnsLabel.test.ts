@@ -136,6 +136,29 @@ describe('callout label tab, title tracking and corner icon side', () => {
     if (verso) expect(icon.bbox.x).toBeLessThan(frame.bbox.x);
     else expect(icon.bbox.x + icon.bbox.width).toBeGreaterThan(frame.bbox.x + frame.bbox.width);
   });
+
+  it('a corner icon on the left pushes the title past it; on the right the title starts at the inner edge', () => {
+    const side = (cornerSide: 'left' | 'right'): PostextConfig => ({
+      ...PAGE,
+      calloutStyles: [{
+        id: 'c', name: 'C', title: 'Title', padding: { left: pt(4) },
+        icon: { kind: 'glyph', glyph: 'X', position: 'corner', cornerSide, size: pt(20) },
+        titleStyle: { indent: pt(0), gap: pt(6) },
+      }],
+    });
+    const md = `:::callout{type="c"}\n${para(1)}\n:::`;
+    const titleOf = (doc: VDTDocument) => {
+      const frame = frameOf(doc);
+      const title = frame.designOverlay!.blocks.find((b) => b.kind === 'text' && b.lines[0]?.text === 'Title') as VDTDesignTextBlock;
+      return { frame, title };
+    };
+    const k = 300 / 72;
+    const r = titleOf(build(md, side('right')));
+    expect(r.title.bbox.x).toBeCloseTo(r.frame.bbox.x + 4 * k, 3);
+    const l = titleOf(build(md, side('left')));
+    // Half the icon (10 pt) plus the 6 pt gap from the box edge.
+    expect(l.title.bbox.x).toBeCloseTo(l.frame.bbox.x + 16 * k, 3);
+  });
 });
 
 describe('float width fraction and side captions', () => {

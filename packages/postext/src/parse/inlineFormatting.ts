@@ -189,8 +189,22 @@ export function injectRefSpans(spans: InlineSpan[], refs: RefMeta[]): InlineSpan
  * Strip inline markdown formatting for plain-text extraction.
  * Handles bold, italic, code, links, and images.
  */
+/** Backslash escapes (CommonMark): `\*`, `\_`, `\^`, `\~` and `` \` `` set
+ *  the character itself instead of opening a marker — a footnote asterisk
+ *  in a table note, a literal caret. Protected behind private-use
+ *  placeholders while the marker regexes run, restored in the spans. */
+const ESCAPE_RE = /\\([*_^~`])/g;
+const ESCAPE_BASE = 0xe100;
+const ESCAPED_RE = /[\ue100-\ue17f]/g;
+export function protectEscapes(text: string): string {
+  return text.replace(ESCAPE_RE, (_, c: string) => String.fromCharCode(ESCAPE_BASE + c.charCodeAt(0)));
+}
+export function restoreEscapes(text: string): string {
+  return text.replace(ESCAPED_RE, (m) => String.fromCharCode(m.charCodeAt(0) - ESCAPE_BASE));
+}
+
 export function stripInlineFormatting(text: string): string {
-  return text
+  return restoreEscapes(protectEscapes(text)
     .replace(/!\[.*?\]\(.*?\)/g, '')        // images
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links
     .replace(/\*\*(.+?)\*\*/g, '$1')         // bold
@@ -200,7 +214,7 @@ export function stripInlineFormatting(text: string): string {
     .replace(/`(.+?)`/g, '$1')              // inline code
     .replace(SUPERSCRIPT_RE, '$1')           // superscript
     .replace(SUBSCRIPT_RE, '$1')             // subscript
-    .trim();
+    .trim());
 }
 
 /** `^text^` (superscript) and `~text~` (subscript): the marked text starts
@@ -265,7 +279,7 @@ function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, ou
  * Recognizes ***bold italic***, **bold**, *italic* (and underscore equivalents).
  */
 export function parseInlineFormatting(text: string): InlineSpan[] {
-  const cleaned = stripNonEmphasisFormatting(text);
+  const cleaned = stripNonEmphasisFormatting(protectEscapes(text));
   const spans: InlineSpan[] = [];
 
   // Triple markers (bold+italic) first, then double (bold) — longest first.
@@ -298,5 +312,6 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
     }
   }
 
+  for (const s of spans) if (ESCAPED_RE.test(s.text)) s.text = restoreEscapes(s.text);
   return spans;
 }
