@@ -368,6 +368,11 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // or doubled.
   const openingMidRun = !!input.continuation && (input.lineFrom ?? 0) > 0;
   const cornerIcon = style.icon.position === 'corner';
+  // A corner badge hangs on the top-right corner — or the left one, for an
+  // `'outer'` badge on a verso of mirrored margins (`'inner'` on a recto).
+  const cornerRight = style.icon.cornerSide === 'right'
+    || (style.icon.cornerSide === 'outer' && !input.mirrored)
+    || (style.icon.cornerSide === 'inner' && !!input.mirrored);
   const iconColumnKept = (hasIcon || (openingMidRun && iconPresent(style.icon))) && !sideStripe && !cornerIcon;
   const iconColumn = iconColumnKept ? iconBoxW + gapPx : 0;
 
@@ -387,7 +392,11 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   );
   const titleLineHeight = titleFontPx * 1.2;
   const titleTrackingPx = Math.max(0, dimensionToPx(style.titleStyle.letterSpacing, dpi, titleFontPx));
-  const titleIndentPx = Math.max(0, dimensionToPx(style.titleStyle.indent, dpi, titleFontPx));
+  // A corner badge on the left hangs half over the title's side: the title
+  // starts past it (its inner half plus the icon gap), at least — a
+  // configured `indent` only adds beyond that room.
+  const cornerLeftRoom = hasIcon && cornerIcon && !cornerRight ? Math.max(0, iconSize / 2 + gapPx - padL) : 0;
+  const titleIndentPx = Math.max(cornerLeftRoom, dimensionToPx(style.titleStyle.indent, dpi, titleFontPx));
   const hasTitle = !input.continuation && titleText.trim().length > 0;
   const titleWidthOf = (t: string): number => measureTextWidth(t, titleFont) + titleTrackingPx * t.length;
 
@@ -739,11 +748,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   if (hasIcon) {
     // Over a side stripe the icon is centred on the stripe; otherwise it
     // sits in its own column left of the content.
-    // A corner badge hangs on the top-right corner, half of it past the
-    // border, flush with the top edge.
-    const cornerRight = style.icon.cornerSide === 'right'
-      || (style.icon.cornerSide === 'outer' && !input.mirrored)
-      || (style.icon.cornerSide === 'inner' && !!input.mirrored);
+    // A corner badge hangs on its corner half past the border, flush with
+    // the top edge.
     const iconX = cornerIcon
       ? (cornerRight ? boxWidth - iconSize / 2 : -iconSize / 2)
       : sideStripe

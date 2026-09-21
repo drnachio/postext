@@ -2803,7 +2803,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>titleStyle</code></td>
       <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap, letterSpacing, indent &#125;</code></td>
       <td>headings font, body size, <code>700</code>, <code>false</code>, main colour, <code>'none'</code>, <code>0.5em</code>, <code>0</code>, <code>0</code></td>
-      <td>Title typography. <code>gap</code> is the space between the title and the first child (and the icon column gap). <code>textTransform: 'uppercase'</code> is length-preserving. <code>letterSpacing</code> tracks the title (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> pushes it right of the box's inner edge (room for a corner badge).</td>
+      <td>Title typography. <code>gap</code> is the space between the title and the first child (and the icon column gap). <code>textTransform: 'uppercase'</code> is length-preserving. <code>letterSpacing</code> tracks the title (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> pushes it right of the box's inner edge. A corner badge hanging on the title's side (the left corner) reserves its own room first — the badge's inner half plus <code>gap</code> — so the title clears it whichever page it lands on; <code>indent</code> only adds beyond that.</td>
     </tr>
     <tr>
       <td><code>body</code></td>
