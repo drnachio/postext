@@ -7,7 +7,7 @@
 
 import { contentOutline, continuationAfter, formatNumeral, outlineFromDoc, outlineKey, resolvePageConfig } from 'postext';
 import type { LayoutContinuation, NumeralStyle, OutlineEntry, PostextConfig, Resource, VDTDocument } from 'postext';
-import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPlan } from './types';
+import type { BookPages, BookPlan, Chapter, ChapterLayout, ChapterPageNumber, ChapterPages, ChapterPlan, OutlinePage } from './types';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys';
 
 /** The page number `n` resolves to when the chapter's first page is
@@ -18,6 +18,38 @@ function resolvePageNumber(n: ChapterPageNumber, start: number): number {
 
 function samePageNumber(a: ChapterPageNumber, b: ChapterPageNumber): boolean {
   return 'delta' in a ? 'delta' in b && a.delta === b.delta : 'value' in b && a.value === b.value;
+}
+
+function sameOutlinePages(a: readonly (OutlinePage | null)[], b: readonly (OutlinePage | null)[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (!x || !y) {
+      if (x !== y) return false;
+      continue;
+    }
+    if (x.index !== y.index || x.format !== y.format || !samePageNumber(x.number, y.number)) return false;
+  }
+  return true;
+}
+
+/** Where a chapter's pages start in the book. */
+interface PageStart {
+  physical: number;
+  number: number;
+  format: NumeralStyle;
+}
+
+/** The chapter's outline with the page each entry landed on, as the chain
+ *  currently places the chapter: `text` is the outline of its text (no
+ *  pages), `pages` where the record says each entry went. */
+function placeOutline(text: readonly OutlineEntry[], pages: readonly (OutlinePage | null)[], start: PageStart): OutlineEntry[] {
+  return text.map((entry, i) => {
+    const page = pages[i];
+    if (!page) return entry;
+    return { ...entry, pageLabel: formatNumeral(resolvePageNumber(page.number, start.number), page.format), pageIndex: start.physical + page.index };
+  });
 }
 
 /** The labels printed on a chapter's first and last pages (`XIII`, `15`),
@@ -65,26 +97,24 @@ function countersKey(c: LayoutContinuation | undefined): string {
   return `${headings}|${counters}|${numbers}|${part}`;
 }
 
-/** Whether `layout` was built from the chapter's current inputs: its text,
- *  the configuration and resources (by fingerprint), the engine, and what
- *  it inherits. */
+/** Whether `layout` was built from the inputs the chapter's pages depend
+ *  on: its text, the configuration and resources (by fingerprint), the
+ *  engine, and what it inherits. The book outline a chapter printing the
+ *  contents was laid out with is not one of them (see
+ *  {@link ChapterPlan.outlineStale}). */
 export function chapterLayoutIsCurrent(
   layout: ChapterLayout | undefined,
   chapter: Chapter,
   config: PostextConfig,
   resources: Resource[],
   continuationKey: string,
-  /** The book outline the chapter must have been laid out with (a chapter
-   *  printing the contents); not checked when omitted. */
-  outlineKeyOf?: string,
 ): layout is ChapterLayout {
   return !!layout
     && layout.markdown === chapter.markdown
     && layout.engine === ENGINE_KEY
     && layout.configKey === configKeyOf(config)
     && layout.resourcesKey === resourcesKeyOf(resources)
-    && layout.continuationKey === continuationKey
-    && (outlineKeyOf === undefined || layout.outlineKey === outlineKeyOf);
+    && layout.continuationKey === continuationKey;
 }
 
 /** Whether two plans of a chapter hand the engine the same inputs — the
@@ -130,7 +160,7 @@ export function sameChapterLayout(a: ChapterLayout | undefined, b: ChapterLayout
     && samePageNumber(a.lastPageNumber, b.lastPageNumber)
     && a.lastPageFormat === b.lastPageFormat
     && a.outlineKey === b.outlineKey
-    && outlineKey(a.outline) === outlineKey(b.outline);
+    && sameOutlinePages(a.outlinePages, b.outlinePages);
 }
 
 /** The number of a chapter whose outline is `outline`, after the counters
@@ -180,22 +210,8 @@ export function createBookPlanner(): BookPlanner {
   return {
     plan(chapters, config, resources, layouts) {
       const numbering = resolvePageConfig(config.page).pageNumbering;
-      const plans: ChapterPlan[] = [];
-      const byId: Record<string, ChapterPlan> = {};
-      const bookPages: BookPages = {};
-      let pendingChapterId: string | null = null;
-      // Counters inherited by the chapter being planned (undefined = first).
-      let counters: LayoutContinuation | undefined;
-      let countersFingerprint = '';
-      // Pages before the chapter being planned; null once unknown.
-      let pages: { physical: number; number: number; format: NumeralStyle } | null = { physical: 0, number: numbering.startAt, format: numbering.format };
 
-      // The book's outline: every chapter's headings and parts, with the
-      // page labels of the chapters whose layout is current — a chapter
-      // printing the contents (`:::toc`) is laid out with it and again
-      // whenever it changes. Assembled first, over the counter chain, so
-      // the chapter with the contents (usually the front matter, before
-      // every other chapter) sees the whole book.
+      // The counter chain: what each chapter inherits, pure over the text.
       const entries: CountersEntry[] = [];
       {
         let before: LayoutContinuation | undefined;
@@ -205,41 +221,91 @@ export function createBookPlanner(): BookPlanner {
           before = entry.after;
         }
       }
+
+      // The page chain: where each chapter starts, from the current record
+      // of every chapter before it (null once one has none). A record's
+      // pages hold whatever book outline it was laid out with — the
+      // contents' rows do not move the pages after them — so the chain is
+      // settled before the outline is assembled and never re-broken by it.
+      const starts: (PageStart | null)[] = [];
+      const keys: string[] = [];
+      const records: (ChapterLayout | null)[] = [];
+      let pendingChapterId: string | null = null;
+      {
+        let pages: PageStart | null = { physical: 0, number: numbering.startAt, format: numbering.format };
+        let countersFingerprint = '';
+        chapters.forEach((chapter, index) => {
+          const continuationKey = index === 0
+            ? 'first'
+            : pages
+              ? `${countersFingerprint}|${pages.physical % 2}|${pages.format}`
+              : `${countersFingerprint}|?`;
+          const stored = layouts[chapter.id];
+          const layout = pages && chapterLayoutIsCurrent(stored, chapter, config, resources, continuationKey) ? stored : null;
+          starts.push(pages);
+          keys.push(continuationKey);
+          records.push(layout);
+          if (layout && pages) {
+            pages = {
+              physical: pages.physical + layout.pageCount,
+              number: resolvePageNumber(layout.lastPageNumber, pages.number) + 1,
+              format: layout.lastPageFormat,
+            };
+          } else {
+            if (pendingChapterId === null && pages) pendingChapterId = chapter.id;
+            pages = null;
+          }
+          countersFingerprint = entries[index]!.key;
+        });
+      }
+
+      // The book's outline: every chapter's headings and parts, with the
+      // page labels of the chapters the chain places (their records say
+      // where each entry landed within the chapter). A chapter printing the
+      // contents (`:::toc`) is laid out with it; when it changes, that
+      // chapter's record goes stale — its pages hold, its rows do not.
       const anyToc = entries.some((e) => e.hasToc);
       const bookOutline: OutlineEntry[] = anyToc
-        ? chapters.flatMap((chapter, index) => {
-          const stored = layouts[chapter.id];
-          const entry = entries[index]!;
-          // A record built from the chapter's current text carries the
-          // page labels; its outline is preferred whenever its titles
-          // match the text (the page chain may still move it).
-          return stored && stored.markdown === chapter.markdown && stored.configKey === configKeyOf(config) && stored.outline.length === entry.outline.length
-            ? stored.outline
-            : entry.outline;
+        ? chapters.flatMap((_chapter, index) => {
+          const text = entries[index]!.outline;
+          const layout = records[index];
+          const start = starts[index];
+          return layout && start && layout.outlinePages.length === text.length
+            ? placeOutline(text, layout.outlinePages, start)
+            : text;
         })
         : [];
       const bookOutlineKey = anyToc ? outlineKey(bookOutline) : '';
 
+      const plans: ChapterPlan[] = [];
+      const byId: Record<string, ChapterPlan> = {};
+      const bookPages: BookPages = {};
+      let stalePendingId: string | null = null;
+      // Counters inherited by the chapter being planned (undefined = first).
+      let counters: LayoutContinuation | undefined;
       chapters.forEach((chapter, index) => {
         const first = index === 0;
-        const paginated = pages !== null;
+        const pages = starts[index]!;
         const continuation: LayoutContinuation | undefined = first
           ? undefined
           : {
             ...counters,
             ...(pages ? { pageIndexOffset: pages.physical, pageNumbering: { format: pages.format, startAt: pages.number } } : {}),
           };
-        const continuationKey = first
-          ? 'first'
-          : pages
-            ? `${countersFingerprint}|${pages.physical % 2}|${pages.format}`
-            : `${countersFingerprint}|?`;
         const hasToc = entries[index]!.hasToc;
         const chapterOutlineKey = hasToc ? bookOutlineKey : '';
-        const stored = layouts[chapter.id];
-        const layout = paginated && chapterLayoutIsCurrent(stored, chapter, config, resources, continuationKey, chapterOutlineKey) ? stored : null;
+        const layout = records[index]!;
+        const outlineStale = layout !== null && layout.outlineKey !== chapterOutlineKey;
+        if (outlineStale && stalePendingId === null) stalePendingId = chapter.id;
         const plan: ChapterPlan = {
-          chapterId: chapter.id, index, number: chapterNumber(entries[index]!.outline, counters), continuation, paginated, continuationKey, layout,
+          chapterId: chapter.id,
+          index,
+          number: chapterNumber(entries[index]!.outline, counters),
+          continuation,
+          paginated: pages !== null,
+          continuationKey: keys[index]!,
+          layout,
+          outlineStale,
           ...(hasToc ? { outline: bookOutline } : {}),
           outlineKey: chapterOutlineKey,
         };
@@ -255,22 +321,14 @@ export function createBookPlanner(): BookPlanner {
             lastPageNumberFormat: layout.lastPageFormat,
             pageCount: Math.max(0, layout.pageCount - layout.leadingBlankPages),
           };
-          pages = {
-            physical: pages.physical + layout.pageCount,
-            number: resolvePageNumber(layout.lastPageNumber, pages.number) + 1,
-            format: layout.lastPageFormat,
-          };
-        } else {
-          if (pendingChapterId === null && pages) pendingChapterId = chapter.id;
-          pages = null;
         }
 
-        const entry = entries[index]!;
-        counters = entry.after;
-        countersFingerprint = entry.key;
+        counters = entries[index]!.after;
       });
 
-      return { chapters: plans, byId, bookPages, pendingChapterId };
+      // A chapter whose pages are unknown comes first: the contents are
+      // refreshed once the book is paginated, not once per chapter.
+      return { chapters: plans, byId, bookPages, pendingChapterId: pendingChapterId ?? stalePendingId };
     },
   };
 }
@@ -309,6 +367,16 @@ export function chapterLayoutFromDoc(
       ? { value: doc.pages[index]!.pageNumberValue }
       : { delta: doc.pages[index]!.pageNumberValue - firstPage.pageNumberValue }
   );
+  // Where each outline entry landed, relative to the chapter's own pages
+  // (the document's offset taken back out) and numbered like its pages.
+  const offset = doc.pageIndexOffset ?? 0;
+  const text = contentOutline({ markdown: inputs.markdown }, inputs.config, plan.continuation).outline;
+  const outlinePages = outlineFromDoc(doc, text).map((entry): OutlinePage | null => {
+    if (entry.pageIndex === undefined) return null;
+    const index = entry.pageIndex - offset;
+    const page = doc.pages[index];
+    return page ? { index, number: numberOf(index), format: page.pageNumberFormat } : null;
+  });
   return {
     chapterId: plan.chapterId,
     markdown: inputs.markdown,
@@ -322,7 +390,7 @@ export function chapterLayoutFromDoc(
     firstContentPageFormat: firstContentPage.pageNumberFormat,
     lastPageNumber: numberOf(pageCount - 1),
     lastPageFormat: lastPage.pageNumberFormat,
-    outline: outlineFromDoc(doc, contentOutline({ markdown: inputs.markdown }, inputs.config, plan.continuation).outline),
+    outlinePages,
     outlineKey: plan.outlineKey,
   };
 }

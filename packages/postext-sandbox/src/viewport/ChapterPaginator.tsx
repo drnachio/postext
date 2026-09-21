@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useBookPlan, useSandboxDispatch, useSandboxSelector } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { chapterLayoutFromDoc } from '../book/pagination';
@@ -16,7 +16,10 @@ const PAGINATION_DEBOUNCE_MS = 300;
  *  the chapter list shows every chapter's page range). Those counts come
  *  from the layout that last showed each chapter — or, for a chapter never
  *  visited (or edited since), from a background layout done here, one
- *  chapter at a time in book order, on a worker of its own. */
+ *  chapter at a time in book order, on a worker of its own. Once every
+ *  chapter is paginated, a chapter printing the contents with rows that
+ *  went stale (a page count before it changed) is laid out again, once:
+ *  its pages hold meanwhile, so nothing after it moves. */
 export function ChapterPaginator() {
   const dispatch = useSandboxDispatch();
   const plan = useBookPlan();
@@ -37,18 +40,26 @@ export function ChapterPaginator() {
   const leftToPreview = activeViewport === 'canvas' && pending?.chapterId === activeChapterId;
   const pendingId = storeReady && pending && pending.paginated && !leftToPreview ? pending.chapterId : null;
   const pendingKey = pendingId ? `${pendingId}|${plan.byId[pendingId]!.continuationKey}|${plan.byId[pendingId]!.outlineKey}` : null;
-  const debouncedKey = useDebouncedValue(pendingKey, PAGINATION_DEBOUNCE_MS);
+  const chapterMarkdown = pendingId ? chapters.find((c) => c.id === pendingId)?.markdown : undefined;
+  // What a background build is keyed on — the chapter, what it inherits
+  // and its text — as one value, debounced as one: a chapter landing moves
+  // the pending one on, and both its key and its text change at once. A
+  // trigger per field would fire the effect twice (the old key with the
+  // new text first), building the chapter that just landed once more.
+  const trigger = useMemo(
+    () => (pendingKey && chapterMarkdown !== undefined ? { key: pendingKey, markdown: chapterMarkdown } : null),
+    [pendingKey, chapterMarkdown],
+  );
+  const debounced = useDebouncedValue(trigger, PAGINATION_DEBOUNCE_MS);
 
   // The latest inputs, read when a build starts so typing in the active
   // chapter (which re-plans the book) does not restart a build in flight.
   const latest = useRef({ plan, chapters, config, resources, locale });
   latest.current = { plan, chapters, config, resources, locale };
-  const chapter = pendingId ? chapters.find((c) => c.id === pendingId) : undefined;
-  const chapterMarkdown = chapter?.markdown;
 
   useEffect(() => {
-    if (!debouncedKey || chapterMarkdown === undefined) return;
-    const id = debouncedKey.slice(0, debouncedKey.indexOf('|'));
+    if (!debounced) return;
+    const id = debounced.key.slice(0, debounced.key.indexOf('|'));
     const { plan: currentPlan, chapters: currentChapters, config: currentConfig, resources: currentResources, locale: currentLocale } = latest.current;
     const chapterPlan = currentPlan.byId[id];
     const target = currentChapters.find((c) => c.id === id);
@@ -71,7 +82,7 @@ export function ChapterPaginator() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedKey, chapterMarkdown, config, resources, locale, layoutWorker, dispatch]);
+  }, [debounced, config, resources, locale, layoutWorker, dispatch]);
 
   return null;
 }

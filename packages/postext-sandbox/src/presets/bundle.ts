@@ -13,21 +13,7 @@ import { svgIntrinsicSize } from '../panels/resources/svgIntrinsic';
 import { slugify, uniqueSlug } from '../panels/resources/slugify';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
 import type { Chapter, ChapterLayout } from '../book/types';
-import { generateId } from '../storage/ids';
-import {
-  chapterFileName,
-  extensionForResource,
-  fontsToCustomFonts,
-  isBitmapFile,
-  isPdfFile,
-  isPresetManifest,
-  isSvgFile,
-  mimeForFile,
-  pickChapterSpecs,
-  presetFileId,
-  presetFontFileId,
-  resourceFromSpec,
-} from './manifest';
+import { chapterFileName, extensionForResource, fontsToCustomFonts, isBitmapFile, isPdfFile, isPresetManifest, isSvgFile, mimeForFile, pickChapterSpecs, presetChapterId, presetFileId, presetFontFileId, resourceFromSpec } from './manifest';
 import type {
   LoadedPreset,
   LoadedPresetBlob,
@@ -63,7 +49,10 @@ export interface ParseBundleOptions {
   summary: PresetSummary;
   ids?: BundleIdScheme;
   onWarning?: (message: string) => void;
-  /** Id generator for the loaded chapters (defaults to random ids). */
+  /** Id generator for the loaded chapters. Defaults to ids derived from
+   *  the preset id and the chapter file (`presetChapterId`), so applying
+   *  the same preset again yields the same ids; a project imports with
+   *  random ids (chapter ids are unique across projects). */
   chapterIds?: () => string;
   /** Fallback title for a chapter without a heading (`n` is 1-based). */
   untitledChapter?: (n: number) => string;
@@ -95,7 +84,7 @@ export async function parseBundle(
   }
   const presetId = manifest.id;
   const scheme = ids ?? presetIdScheme(presetId);
-  const nextId = chapterIds ?? (() => generateId('chapter'));
+  const idOf = (file: string): string => (chapterIds ? chapterIds() : presetChapterId(presetId, file));
   const untitled = untitledChapter ?? ((n: number) => `Chapter ${n}`);
 
   const decoder = new TextDecoder();
@@ -104,7 +93,7 @@ export async function parseBundle(
   for (let i = 0; i < specs.length; i++) {
     const spec = specs[i]!;
     const text = decoder.decode(await readFile(spec.file));
-    chapters.push(newChapter(nextId(), spec.title || deriveChapterTitle(text, untitled(i + 1)), text));
+    chapters.push(newChapter(idOf(spec.file), spec.title || deriveChapterTitle(text, untitled(i + 1)), text));
   }
 
   const blobs: LoadedPresetBlob[] = [];
@@ -340,7 +329,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
         firstContentPageFormat: layout.firstContentPageFormat,
         lastPageNumber: layout.lastPageNumber,
         lastPageFormat: layout.lastPageFormat,
-        outline: layout.outline,
+        outlinePages: layout.outlinePages,
         outlineKey: layout.outlineKey,
       };
       layoutChapters[path] = rest;

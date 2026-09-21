@@ -215,12 +215,13 @@ describe("fingerprintDirectory", () => {
     expect((await fingerprintDirectory(dir)).fingerprint).toBe(one.fingerprint);
   });
 
-  it("ignores dotfiles, dot-directories and node_modules", async () => {
+  it("ignores dotfiles, dot-directories, node_modules and __pycache__", async () => {
     await write("preset.json", "{}");
     const clean = await fingerprintDirectory(dir);
     await write(".DS_Store", "x");
     await write(".git/HEAD", "ref");
     await write("node_modules/pkg/index.json", "{}");
+    await write("__pycache__/build_preset.cpython-312.pyc", "x");
     const noisy = await fingerprintDirectory(dir);
     expect(noisy).toEqual(clean);
   });

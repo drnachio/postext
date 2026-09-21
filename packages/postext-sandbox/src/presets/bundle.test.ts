@@ -56,6 +56,17 @@ describe('parseBundle', () => {
     expect(loaded.config.customFonts?.[0].variants[0].fileId).toBe('preset-font:brochure:fonts-body-ttf');
   });
 
+  it('gives preset chapters ids that survive applying the preset again', async () => {
+    const m = manifest({ markdown: { en: 'en.md' } });
+    const once = await parseBundle(m, readerFrom({ 'en.md': 'EN' }), { locale: 'en', summary });
+    const twice = await parseBundle(m, readerFrom({ 'en.md': 'EN' }), { locale: 'en', summary });
+    expect(once.chapters.map((c) => c.id)).toEqual(twice.chapters.map((c) => c.id));
+    expect(once.chapters[0]!.id).toBe(`preset-chapter:${m.id}:en-md`);
+    let n = 0;
+    const custom = await parseBundle(m, readerFrom({ 'en.md': 'EN' }), { locale: 'en', summary, chapterIds: () => `c${++n}` });
+    expect(custom.chapters[0]!.id).toBe('c1');
+  });
+
   it('honours a custom id scheme and picks locale markdown', async () => {
     const loaded = await parseBundle(
       manifest({
@@ -251,7 +262,7 @@ describe('layouts.json round trip', () => {
     firstContentPageFormat: 'decimal',
     lastPageNumber: { delta: 2 },
     lastPageFormat: 'decimal',
-    outline: [{ kind: 'heading', level: 1, title: 'One', number: '1', numbered: true, listed: true, pageLabel: '1', pageIndex: 0 }],
+    outlinePages: [{ index: 0, number: { delta: 0 }, format: 'decimal' }],
     outlineKey: '',
   });
   const chapters = [newChapter('c1', 'One', '# One\n\nText.', 1), newChapter('c2', 'Two', '# Two', 1)];
@@ -275,7 +286,7 @@ describe('layouts.json round trip', () => {
     const first = loaded.layouts!['new-1']!;
     expect(first.markdown).toBe('# One\n\nText.');
     expect(first.pageCount).toBe(3);
-    expect(first.outline[0]!.pageIndex).toBe(0);
+    expect(first.outlinePages[0]).toEqual({ index: 0, number: { delta: 0 }, format: 'decimal' });
     // The imported configuration and resources fingerprint like the exported ones.
     expect(first.configKey).toBe(configKeyOf(loaded.config));
     expect(first.resourcesKey).toBe(resourcesKeyOf(loaded.resources));
