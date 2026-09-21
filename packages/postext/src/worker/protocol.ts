@@ -39,6 +39,12 @@ export type RequestMessage =
       id: number;
       content: PostextContent;
       config?: PostextConfig;
+      /** Fingerprint of `content.resources`. When it matches the list the
+       *  worker last received, `content.resources` may be left out and the
+       *  worker lays out with the list it already holds — the resources of
+       *  a book (hundreds of tables and figures) are the bulk of a build
+       *  message and change far less often than the text. */
+      resourcesKey?: string;
     }
   | {
       kind: 'cancel';

@@ -6,6 +6,7 @@ export type { BuildProgress } from 'postext/worker';
 import type { PostextConfig, PostextContent, VDTDocument } from 'postext';
 import { collectFontPayloadsForFamilies, getConfigFontFamilies, onCustomFontsChanged } from '../controls/fontLoader';
 import { perfSizeKb, perfSpan } from '../perf/marks';
+import { resourcesKeyOf } from '../book/layoutKeys';
 
 export interface LayoutWorkerApi {
   /**
@@ -131,6 +132,7 @@ export function useLayoutWorker(): LayoutWorkerApi {
         signal: controller.signal,
         onProgress: opts?.onProgress,
         onStats: (s) => { stats = s; },
+        resourcesKey: content.resources ? resourcesKeyOf(content.resources) : undefined,
       });
       const passes = (stats as BuildStats | null)?.passes ?? [];
       span.end({
