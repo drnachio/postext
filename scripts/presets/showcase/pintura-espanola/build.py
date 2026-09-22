@@ -404,9 +404,15 @@ def render_plates(works: list[dict]) -> dict[str, dict]:
     return out
 
 
+def size_text(w: dict, lang: str) -> str:
+    """Dimensions with the locale's decimal mark (the works list uses the
+    Spanish comma)."""
+    return w["size"] if lang == "es" else w["size"].replace(",", ".")
+
+
 def tombstone(w: dict, lang: str) -> str:
     museum = ed.BOOK[lang]["museum"][w["museum"]]
-    return " · ".join(x for x in [w["date"], w["medium"][lang], w["size"], museum, w["accession"]] if x)
+    return " · ".join(x for x in [w["date"], w["medium"][lang], size_text(w, lang), museum, w["accession"]] if x)
 
 
 def caption(w: dict, lang: str, artists: dict) -> str:

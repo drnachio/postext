@@ -6,7 +6,7 @@ Candia, 1541 – Toledo, 1614
 Doménikos Theotokópoulos, most widely known as El Greco, was a Greek painter, sculptor and architect of the Spanish Renaissance, regarded as one of the greatest artists of all time. El Greco was a nickname, and the artist normally signed his paintings with his full birth name in Greek letters often adding the word (Krḗs), which means "Cretan" in Ancient Greek. El Greco was born in the Kingdom of Candia (modern Crete), which was at that time part of the Republic of Venice, and the center of Post-Byzantine art. He trained and became a master within that tradition before traveling at age 26 to Venice, as other Greek artists had done.
 :::
 
-# View of Toledo {lead="View of Toledo, is one of the two surviving landscapes painted by El Greco, along with View and Plan of Toledo. View of Toledo is held by the Metropolitan Museum of Art in New York City." catlabel="Cat." cat="1" tombstone="ca. 1599–1600 · Oil on canvas · 121,3 × 108,6 cm · The Metropolitan Museum of Art, New York · 29.100.6"}
+# View of Toledo {lead="View of Toledo, is one of the two surviving landscapes painted by El Greco, along with View and Plan of Toledo. View of Toledo is held by the Metropolitan Museum of Art in New York City." catlabel="Cat." cat="1" tombstone="ca. 1599–1600 · Oil on canvas · 121.3 × 108.6 cm · The Metropolitan Museum of Art, New York · 29.100.6"}
 
 View of Toledo is among the best known depictions of the sky in Western art, along with Vincent van Gogh's The Starry Night and the landscapes of J. M. W. Turner and Claude Monet. Art historian Keith Christiansen included View of Toledo among the artist's most ambitious masterpieces, describing it as one of Western art's most celebrated landscapes. :ref{id="greco-toledo" case="lower"}
 
