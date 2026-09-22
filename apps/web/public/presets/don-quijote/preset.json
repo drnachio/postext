@@ -1,0 +1,3762 @@
+{
+ "version": 2,
+ "id": "don-quijote",
+ "name": "Don Quijote · Gustave Doré",
+ "description": "Edición literaria a columna y media con glosas al margen y láminas de Doré · A column-and-a-half literary edition with margin glosses and Doré's plates",
+ "locale": "es",
+ "locales": [
+  "es",
+  "en"
+ ],
+ "thumbnail": "thumbnail.jpg",
+ "license": "Public domain · CC BY 4.0",
+ "credits": "Cervantes · Ormsby · Doré · Project Gutenberg · Wikimedia Commons",
+ "tags": [
+  "book",
+  "one-and-a-half",
+  "margin-notes",
+  "front-matter"
+ ],
+ "chapters": {
+  "es": [
+   {
+    "title": "El ingenioso hidalgo don Quijote de la Mancha",
+    "file": "chapters/es/00-portada.md"
+   },
+   {
+    "title": "Prólogo",
+    "file": "chapters/es/01-prologo.md"
+   },
+   {
+    "title": "Índice",
+    "file": "chapters/es/02-indice.md"
+   },
+   {
+    "title": "Que trata de la condición y ejercicio del famoso hidalgo don Quijote de la Mancha",
+    "file": "chapters/es/03-capitulo-01.md"
+   },
+   {
+    "title": "Que trata de la primera salida que de su tierra hizo el ingenioso don Quijote",
+    "file": "chapters/es/04-capitulo-02.md"
+   },
+   {
+    "title": "Donde se cuenta la graciosa manera que tuvo don Quijote en armarse caballero",
+    "file": "chapters/es/05-capitulo-03.md"
+   },
+   {
+    "title": "De lo que le sucedió a nuestro caballero cuando salió de la venta",
+    "file": "chapters/es/06-capitulo-04.md"
+   },
+   {
+    "title": "Donde se prosigue la narración de la desgracia de nuestro caballero",
+    "file": "chapters/es/07-capitulo-05.md"
+   },
+   {
+    "title": "Del donoso y grande escrutinio que el cura y el barbero hicieron en la librería de nuestro ingenioso hidalgo",
+    "file": "chapters/es/08-capitulo-06.md"
+   },
+   {
+    "title": "De la segunda salida de nuestro buen caballero don Quijote de la Mancha",
+    "file": "chapters/es/09-capitulo-07.md"
+   },
+   {
+    "title": "Del buen suceso que el valeroso don Quijote tuvo en la espantable y jamás imaginada aventura de los molinos de viento, con otros sucesos dignos de felice recordación",
+    "file": "chapters/es/10-capitulo-08.md"
+   },
+   {
+    "title": "Créditos",
+    "file": "chapters/es/11-creditos.md"
+   }
+  ],
+  "en": [
+   {
+    "title": "The Ingenious Gentleman Don Quixote of La Mancha",
+    "file": "chapters/en/00-portada.md"
+   },
+   {
+    "title": "The Author’s Preface",
+    "file": "chapters/en/01-prologo.md"
+   },
+   {
+    "title": "Contents",
+    "file": "chapters/en/02-indice.md"
+   },
+   {
+    "title": "Which treats of the character and pursuits of the famous gentleman Don Quixote of La Mancha",
+    "file": "chapters/en/03-chapter-01.md"
+   },
+   {
+    "title": "Which treats of the first sally the ingenious Don Quixote made from home",
+    "file": "chapters/en/04-chapter-02.md"
+   },
+   {
+    "title": "Wherein is related the droll way in which Don Quixote had himself dubbed a knight",
+    "file": "chapters/en/05-chapter-03.md"
+   },
+   {
+    "title": "Of what happened to our knight when he left the inn",
+    "file": "chapters/en/06-chapter-04.md"
+   },
+   {
+    "title": "In which the narrative of our knight’s mishap is continued",
+    "file": "chapters/en/07-chapter-05.md"
+   },
+   {
+    "title": "Of the diverting and important scrutiny which the curate and the barber made in the library of our ingenious gentleman",
+    "file": "chapters/en/08-chapter-06.md"
+   },
+   {
+    "title": "Of the second sally of our worthy knight Don Quixote of La Mancha",
+    "file": "chapters/en/09-chapter-07.md"
+   },
+   {
+    "title": "Of the good fortune which the valiant Don Quixote had in the terrible and undreamt-of adventure of the windmills, with other occurrences worthy to be fitly recorded",
+    "file": "chapters/en/10-chapter-08.md"
+   },
+   {
+    "title": "Credits",
+    "file": "chapters/en/11-credits.md"
+   }
+  ]
+ },
+ "config": {
+  "locale": "es",
+  "page": {
+   "sizePreset": "custom",
+   "width": {
+    "value": 155.0,
+    "unit": "mm"
+   },
+   "height": {
+    "value": 235.0,
+    "unit": "mm"
+   },
+   "margins": {
+    "top": {
+     "value": 22.0,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 20.0,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 18.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 15.0,
+     "unit": "mm"
+    },
+    "mirror": true
+   },
+   "baselineGrid": {
+    "enabled": false
+   },
+   "pageNumbering": {
+    "format": "lower-roman",
+    "startAt": 1
+   }
+  },
+  "layout": {
+   "layoutType": "oneAndHalf",
+   "gutterWidth": {
+    "value": 6.0,
+    "unit": "mm"
+   },
+   "sideColumnPercent": 26.0,
+   "sideColumnRole": "floats",
+   "sideColumnSide": "outer"
+  },
+  "bodyText": {
+   "fontFamily": "Alegreya",
+   "fontSize": {
+    "value": 10.5,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 14,
+    "unit": "pt"
+   },
+   "textAlign": "justify",
+   "firstLineIndent": {
+    "value": 5,
+    "unit": "mm"
+   },
+   "indentAfterHeading": false,
+   "paragraphSpacing": false,
+   "color": {
+    "hex": "#1f1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "boldColor": {
+    "hex": "#1f1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "italicColor": {
+    "hex": "#1f1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "referenceColor": {
+    "hex": "#1f1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "referenceBold": false,
+   "referenceItalic": true,
+   "hyphenation": {
+    "enabled": true,
+    "locale": "es"
+   },
+   "avoidWidows": true,
+   "avoidOrphans": true,
+   "optimalLineBreaking": true
+  },
+  "headings": {
+   "fontFamily": "Playfair Display",
+   "color": {
+    "hex": "#1f1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "keepWithNext": true,
+   "levels": [
+    {
+     "level": 1,
+     "numberingTemplate": "{1:I}",
+     "fontSize": {
+      "value": 16,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 20,
+      "unit": "pt"
+     },
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "odd"
+     },
+     "advancedDesign": {
+      "enabled": true,
+      "minHeight": {
+       "value": 52,
+       "unit": "mm"
+      },
+      "slot": {
+       "elements": [
+        {
+         "kind": "text",
+         "id": "chapterLabel",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 2,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 85.84,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "Capítulo {number}",
+         "fontFamily": "Alegreya SC",
+         "fontSize": {
+          "value": 11,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "center",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#7f2a26",
+          "model": "hex",
+          "paletteId": "accent"
+         },
+         "letterSpacing": {
+          "value": 1.2,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "chapterTitle",
+         "placement": {
+          "anchor": {
+           "to": "#chapterLabel",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 3,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 85.84,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "Playfair Display",
+         "fontSize": {
+          "value": 15,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": true,
+         "align": "center",
+         "verticalAlign": "middle",
+         "lineHeight": 1.25,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#1f1a17",
+          "model": "hex",
+          "paletteId": "ink"
+         }
+        },
+        {
+         "kind": "rule",
+         "id": "chapterRule",
+         "direction": "horizontal",
+         "placement": {
+          "anchor": {
+           "to": "#chapterTitle",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 33.92,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 4,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 18,
+            "unit": "mm"
+           }
+          }
+         },
+         "color": {
+          "hex": "#7f2a26",
+          "model": "hex",
+          "paletteId": "accent"
+         },
+         "thickness": {
+          "value": 0.6,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "lead",
+         "placement": {
+          "anchor": {
+           "to": "#chapterRule",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": -33.92,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 5,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 85.84,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{attr.lead}",
+         "fontFamily": "Alegreya",
+         "fontSize": {
+          "value": 10.5,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.333,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#1f1a17",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "hyphenate": true,
+         "dropCap": {
+          "lines": 3,
+          "fontFamily": "Playfair Display",
+          "fontWeight": 400,
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "gap": {
+           "value": 1.5,
+           "unit": "mm"
+          }
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "level": 2,
+     "fontSize": {
+      "value": 12,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 15,
+      "unit": "pt"
+     },
+     "italic": true,
+     "marginTop": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 6,
+      "unit": "pt"
+     }
+    }
+   ]
+  },
+  "headingStyles": [
+   {
+    "id": "portada",
+    "name": "Portada",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 235.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "coverBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#f5f0e6",
+          "model": "hex",
+          "paletteId": "cream"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "coverPlate",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 18.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 16.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 150.2,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "x-enchantment"
+       },
+       {
+        "kind": "text",
+        "id": "coverTitle",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 18.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 173.2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{title}",
+        "fontFamily": "Playfair Display",
+        "fontSize": {
+         "value": 21,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.12,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverAuthor",
+        "placement": {
+         "anchor": {
+          "to": "#coverTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{author}",
+        "fontFamily": "Alegreya SC",
+        "fontSize": {
+         "value": 12,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverEdition",
+        "placement": {
+         "anchor": {
+          "to": "#coverAuthor",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.edition}",
+        "fontFamily": "Alegreya",
+        "fontSize": {
+         "value": 8.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#6b625a",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverIllustrator",
+        "placement": {
+         "anchor": {
+          "to": "#coverEdition",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.illustrator}",
+        "fontFamily": "Alegreya",
+        "fontSize": {
+         "value": 8.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#6b625a",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "layout": {
+     "layoutType": "single"
+    }
+   },
+   {
+    "id": "preliminar",
+    "name": "Preliminar",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 52,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Playfair Display",
+        "fontSize": {
+         "value": 20,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 52.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 18,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#7f2a26",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "thickness": {
+         "value": 0.6,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "lead",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 30,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 85.84,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.lead}",
+        "fontFamily": "Alegreya",
+        "fontSize": {
+         "value": 10.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.333,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true,
+        "dropCap": {
+         "lines": 3,
+         "fontFamily": "Playfair Display",
+         "fontWeight": 400,
+         "color": {
+          "hex": "#7f2a26",
+          "model": "hex",
+          "paletteId": "accent"
+         },
+         "gap": {
+          "value": 1.5,
+          "unit": "mm"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "indice",
+    "name": "Índice",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 32,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Playfair Display",
+        "fontSize": {
+         "value": 20,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 52.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 18,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#7f2a26",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "thickness": {
+         "value": 0.6,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "layout": {
+     "layoutType": "single"
+    }
+   }
+  ],
+  "paragraphStyles": [
+   {
+    "id": "colofon",
+    "name": "Colofón",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 150,
+     "unit": "mm"
+    },
+    "color": {
+     "hex": "#6b625a",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "creditos",
+    "name": "Créditos",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 5,
+     "unit": "pt"
+    }
+   }
+  ],
+  "calloutStyles": [
+   {
+    "id": "nota",
+    "name": "Glosa al margen",
+    "span": "side",
+    "placement": "here",
+    "backgroundEnabled": false,
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 1.2,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "top",
+     "width": {
+      "value": 0.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#a59a8b",
+      "model": "hex",
+      "paletteId": "rule"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Alegreya SC",
+     "fontSize": {
+      "value": 8,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "color": {
+      "hex": "#7f2a26",
+      "model": "hex",
+      "paletteId": "accent"
+     },
+     "gap": {
+      "value": 0.6,
+      "unit": "mm"
+     },
+     "letterSpacing": {
+      "value": 0.3,
+      "unit": "pt"
+     }
+    },
+    "body": {
+     "fontFamily": "Alegreya",
+     "fontSize": {
+      "value": 7.8,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 10,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": false,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   }
+  ],
+  "parts": {
+   "breakBefore": {
+    "parity": "odd"
+   },
+   "breakAfter": {
+    "enabled": true,
+    "parity": "odd"
+   },
+   "margins": {
+    "top": {
+     "value": 112,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 24,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 34,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 34,
+     "unit": "mm"
+    }
+   },
+   "design": {
+    "elements": [
+     {
+      "kind": "box",
+      "id": "partBg",
+      "placement": {
+       "anchor": {
+        "to": "bleed",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": "fill",
+        "height": "fill"
+       }
+      },
+      "style": {
+       "backgroundColor": {
+        "hex": "#f5f0e6",
+        "model": "hex",
+        "paletteId": "cream"
+       },
+       "borderRadius": {
+        "value": 0,
+        "unit": "mm"
+       }
+      }
+     },
+     {
+      "kind": "text",
+      "id": "partLabel",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 62,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 122.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "Parte {numberRoman}",
+      "fontFamily": "Alegreya SC",
+      "fontSize": {
+       "value": 11,
+       "unit": "pt"
+      },
+      "fontWeight": 400,
+      "italic": false,
+      "align": "center",
+      "verticalAlign": "middle",
+      "lineHeight": 1.2,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#7f2a26",
+       "model": "hex",
+       "paletteId": "accent"
+      },
+      "letterSpacing": {
+       "value": 1.5,
+       "unit": "pt"
+      }
+     },
+     {
+      "kind": "text",
+      "id": "partTitle",
+      "placement": {
+       "anchor": {
+        "to": "#partLabel",
+        "edge": "below"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 5,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 122.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "{titleText}",
+      "fontFamily": "Playfair Display",
+      "fontSize": {
+       "value": 30,
+       "unit": "pt"
+      },
+      "fontWeight": 400,
+      "italic": false,
+      "align": "center",
+      "verticalAlign": "middle",
+      "lineHeight": 1.1,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#1f1a17",
+       "model": "hex",
+       "paletteId": "ink"
+      }
+     },
+     {
+      "kind": "rule",
+      "id": "partRule",
+      "direction": "horizontal",
+      "placement": {
+       "anchor": {
+        "to": "#partTitle",
+        "edge": "below"
+       },
+       "offset": {
+        "x": {
+         "value": 52.0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 6,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 18,
+         "unit": "mm"
+        }
+       }
+      },
+      "color": {
+       "hex": "#7f2a26",
+       "model": "hex",
+       "paletteId": "accent"
+      },
+      "thickness": {
+       "value": 0.6,
+       "unit": "pt"
+      }
+     }
+    ]
+   },
+   "bodyStyle": {
+    "fontFamily": "Alegreya",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "textAlign": "left",
+    "numberColor": {
+     "hex": "#7f2a26",
+     "model": "hex",
+     "paletteId": "accent"
+    },
+    "orderedLists": {
+     "numberFormat": "upper-roman",
+     "separator": ".",
+     "gap": {
+      "value": 2.5,
+      "unit": "mm"
+     },
+     "indent": {
+      "value": 9,
+      "unit": "mm"
+     },
+     "fontFamily": "Alegreya SC",
+     "itemSpacing": {
+      "value": 2,
+      "unit": "pt"
+     }
+    }
+   }
+  },
+  "toc": {
+   "levels": [
+    {
+     "level": 1,
+     "fontFamily": "Alegreya",
+     "fontSize": {
+      "value": 10.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 15,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "numberWidth": {
+      "value": 11,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "numberFontFamily": "Alegreya SC",
+     "numberFontSize": {
+      "value": 10,
+      "unit": "pt"
+     },
+     "numberColor": {
+      "hex": "#7f2a26",
+      "model": "hex",
+      "paletteId": "accent"
+     },
+     "marginTop": {
+      "value": 3,
+      "unit": "pt"
+     }
+    }
+   ],
+   "unnumbered": {
+    "italic": true,
+    "color": {
+     "hex": "#1f1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   },
+   "pageNumber": {
+    "fontFamily": "Alegreya SC",
+    "fontSize": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "width": {
+     "value": 9,
+     "unit": "mm"
+    }
+   },
+   "leader": {
+    "enabled": true,
+    "char": ".",
+    "gap": {
+     "value": 1.2,
+     "unit": "mm"
+    }
+   },
+   "parts": {
+    "enabled": true,
+    "height": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "design": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "tocPart",
+       "placement": {
+        "anchor": {
+         "to": "container",
+         "edge": "left"
+        },
+        "offset": {
+         "x": {
+          "value": 0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 122.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{titleText}",
+       "fontFamily": "Alegreya SC",
+       "fontSize": {
+        "value": 10,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "wrap",
+       "color": {
+        "hex": "#7f2a26",
+        "model": "hex",
+        "paletteId": "accent"
+       },
+       "letterSpacing": {
+        "value": 1,
+        "unit": "pt"
+       }
+      }
+     ]
+    }
+   }
+  },
+  "header": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 15.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Alegreya SC",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "authorEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 90,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "Miguel de Cervantes",
+     "fontFamily": "Alegreya SC",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "titleOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 90,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{chapterTitle}",
+     "fontFamily": "Alegreya",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": true,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "folioOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -15.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Alegreya SC",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "body"
+    }
+   ]
+  },
+  "footer": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioOpener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -11.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Alegreya SC",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "pages": "opener"
+    }
+   ]
+  },
+  "captionStyle": {
+   "fontFamily": "Alegreya",
+   "fontSize": {
+    "value": 8.5,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#1f1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "align": "left",
+   "gap": {
+    "value": 1.6,
+    "unit": "mm"
+   },
+   "labelBold": false,
+   "labelColor": {
+    "hex": "#7f2a26",
+    "model": "hex",
+    "paletteId": "accent"
+   },
+   "descriptionItalic": true,
+   "note": {
+    "fontSize": {
+     "value": 6.8,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6b625a",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "italic": false,
+    "gap": {
+     "value": 0.8,
+     "unit": "mm"
+    }
+   }
+  },
+  "unorderedLists": {
+   "bulletChar": "•",
+   "color": {
+    "hex": "#7f2a26",
+    "model": "hex",
+    "paletteId": "accent"
+   }
+  },
+  "orderedLists": {
+   "color": {
+    "hex": "#7f2a26",
+    "model": "hex",
+    "paletteId": "accent"
+   }
+  },
+  "colorPalette": [
+   {
+    "id": "ink",
+    "name": "Tinta",
+    "value": {
+     "hex": "#1f1a17",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "accent",
+    "name": "Rojo de rúbricas",
+    "value": {
+     "hex": "#7f2a26",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "cream",
+    "name": "Crema de portadillas",
+    "value": {
+     "hex": "#f5f0e6",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "rule",
+    "name": "Filetes",
+    "value": {
+     "hex": "#a59a8b",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "muted",
+    "name": "Gris de notas",
+    "value": {
+     "hex": "#6b625a",
+     "model": "hex"
+    }
+   }
+  ],
+  "resourceTypes": [
+   {
+    "id": "figure",
+    "name": "Lámina",
+    "namePlural": "Láminas",
+    "shortLabel": "lámina",
+    "captionPrefix": "Lámina",
+    "numberingTemplate": "{n}",
+    "resetOn": "never",
+    "counterFormat": "roman-upper",
+    "defaultPlacement": {
+     "position": "auto",
+     "span": "page",
+     "width": 1
+    }
+   },
+   {
+    "id": "ornament",
+    "name": "Viñeta",
+    "namePlural": "Viñetas",
+    "shortLabel": "",
+    "captionPrefix": "",
+    "numberingTemplate": "{n}",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "here",
+     "span": "column",
+     "width": 0.8,
+     "align": "center"
+    }
+   }
+  ],
+  "pdfGeneration": {
+   "outlines": true
+  }
+ },
+ "localized": {
+  "es": {
+   "config": {
+    "locale": "es",
+    "bodyText": {
+     "fontFamily": "Alegreya",
+     "fontSize": {
+      "value": 10.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "textAlign": "justify",
+     "firstLineIndent": {
+      "value": 5,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": false,
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceBold": false,
+     "referenceItalic": true,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "es"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "headings": {
+     "fontFamily": "Playfair Display",
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "keepWithNext": true,
+     "levels": [
+      {
+       "level": 1,
+       "numberingTemplate": "{1:I}",
+       "fontSize": {
+        "value": 16,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 20,
+        "unit": "pt"
+       },
+       "span": "page",
+       "breakBefore": {
+        "enabled": true,
+        "parity": "odd"
+       },
+       "advancedDesign": {
+        "enabled": true,
+        "minHeight": {
+         "value": 52,
+         "unit": "mm"
+        },
+        "slot": {
+         "elements": [
+          {
+           "kind": "text",
+           "id": "chapterLabel",
+           "placement": {
+            "anchor": {
+             "to": "container",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 2,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 85.84,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "Capítulo {number}",
+           "fontFamily": "Alegreya SC",
+           "fontSize": {
+            "value": 11,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "center",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#7f2a26",
+            "model": "hex",
+            "paletteId": "accent"
+           },
+           "letterSpacing": {
+            "value": 1.2,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "chapterTitle",
+           "placement": {
+            "anchor": {
+             "to": "#chapterLabel",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 3,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 85.84,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{titleText}",
+           "fontFamily": "Playfair Display",
+           "fontSize": {
+            "value": 15,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": true,
+           "align": "center",
+           "verticalAlign": "middle",
+           "lineHeight": 1.25,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#1f1a17",
+            "model": "hex",
+            "paletteId": "ink"
+           }
+          },
+          {
+           "kind": "rule",
+           "id": "chapterRule",
+           "direction": "horizontal",
+           "placement": {
+            "anchor": {
+             "to": "#chapterTitle",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 33.92,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 18,
+              "unit": "mm"
+             }
+            }
+           },
+           "color": {
+            "hex": "#7f2a26",
+            "model": "hex",
+            "paletteId": "accent"
+           },
+           "thickness": {
+            "value": 0.6,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "lead",
+           "placement": {
+            "anchor": {
+             "to": "#chapterRule",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": -33.92,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 5,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 85.84,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.lead}",
+           "fontFamily": "Alegreya",
+           "fontSize": {
+            "value": 10.5,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.333,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#1f1a17",
+            "model": "hex",
+            "paletteId": "ink"
+           },
+           "hyphenate": true,
+           "dropCap": {
+            "lines": 3,
+            "fontFamily": "Playfair Display",
+            "fontWeight": 400,
+            "color": {
+             "hex": "#7f2a26",
+             "model": "hex",
+             "paletteId": "accent"
+            },
+            "gap": {
+             "value": 1.5,
+             "unit": "mm"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      {
+       "level": 2,
+       "fontSize": {
+        "value": 12,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 15,
+        "unit": "pt"
+       },
+       "italic": true,
+       "marginTop": {
+        "value": 14,
+        "unit": "pt"
+       },
+       "marginBottom": {
+        "value": 6,
+        "unit": "pt"
+       }
+      }
+     ]
+    },
+    "parts": {
+     "breakBefore": {
+      "parity": "odd"
+     },
+     "breakAfter": {
+      "enabled": true,
+      "parity": "odd"
+     },
+     "margins": {
+      "top": {
+       "value": 112,
+       "unit": "mm"
+      },
+      "bottom": {
+       "value": 24,
+       "unit": "mm"
+      },
+      "left": {
+       "value": 34,
+       "unit": "mm"
+      },
+      "right": {
+       "value": 34,
+       "unit": "mm"
+      }
+     },
+     "design": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "partBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#f5f0e6",
+          "model": "hex",
+          "paletteId": "cream"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 62,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Parte {numberRoman}",
+        "fontFamily": "Alegreya SC",
+        "fontSize": {
+         "value": 11,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#7f2a26",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "letterSpacing": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partTitle",
+        "placement": {
+         "anchor": {
+          "to": "#partLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Playfair Display",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.1,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "partRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#partTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 52.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 18,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#7f2a26",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "thickness": {
+         "value": 0.6,
+         "unit": "pt"
+        }
+       }
+      ]
+     },
+     "bodyStyle": {
+      "fontFamily": "Alegreya",
+      "fontSize": {
+       "value": 9.5,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 14,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1a17",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "textAlign": "left",
+      "numberColor": {
+       "hex": "#7f2a26",
+       "model": "hex",
+       "paletteId": "accent"
+      },
+      "orderedLists": {
+       "numberFormat": "upper-roman",
+       "separator": ".",
+       "gap": {
+        "value": 2.5,
+        "unit": "mm"
+       },
+       "indent": {
+        "value": 9,
+        "unit": "mm"
+       },
+       "fontFamily": "Alegreya SC",
+       "itemSpacing": {
+        "value": 2,
+        "unit": "pt"
+       }
+      }
+     }
+    },
+    "resourceTypes": [
+     {
+      "id": "figure",
+      "name": "Lámina",
+      "namePlural": "Láminas",
+      "shortLabel": "lámina",
+      "captionPrefix": "Lámina",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "roman-upper",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "page",
+       "width": 1
+      }
+     },
+     {
+      "id": "ornament",
+      "name": "Viñeta",
+      "namePlural": "Viñetas",
+      "shortLabel": "",
+      "captionPrefix": "",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "here",
+       "span": "column",
+       "width": 0.8,
+       "align": "center"
+      }
+     }
+    ]
+   },
+   "resources": [
+    {
+     "id": "c01-plate-library",
+     "caption": "«Se le pasaban las noches leyendo de claro en claro, y los días de turbio en turbio.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Se le pasaban las noches leyendo de claro en claro, y los días de turbio en turbio.»"
+    },
+    {
+     "id": "c01-tail",
+     "caption": "«Fue luego a ver su rocín.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Fue luego a ver su rocín.»"
+    },
+    {
+     "id": "c02-inn",
+     "caption": "«A la puerta de la venta estaban dos mujeres mozas.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«A la puerta de la venta estaban dos mujeres mozas.»"
+    },
+    {
+     "id": "c02-wine",
+     "caption": "«Puesto el un cabo en la boca, por el otro le iban echando el vino.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Puesto el un cabo en la boca, por el otro le iban echando el vino.»"
+    },
+    {
+     "id": "c03-plate-vigil",
+     "caption": "«Con gentil continente, se comenzó a pasear delante de la pila.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Con gentil continente, se comenzó a pasear delante de la pila.»"
+    },
+    {
+     "id": "c03-innkeeper",
+     "caption": "«Diole con ella, después, un gentil espaldarazo, siempre murmurando entre dientes.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Diole con ella, después, un gentil espaldarazo, siempre murmurando entre dientes.»"
+    },
+    {
+     "id": "c03-knighted",
+     "caption": "«Una de aquellas señoras le ciñó la espada.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Una de aquellas señoras le ciñó la espada.»"
+    },
+    {
+     "id": "c04-plate-andres",
+     "caption": "«Descortés caballero, mal parece tomaros con quien defender no se puede.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Descortés caballero, mal parece tomaros con quien defender no se puede.»"
+    },
+    {
+     "id": "c04-plate-beaten",
+     "caption": "«Llegándose a él, tomó la lanza y, después de haberla hecho pedazos, comenzó a dar tantos palos…»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Llegándose a él, tomó la lanza y, después de haberla hecho pedazos, comenzó a dar tantos palos…»"
+    },
+    {
+     "id": "c04-fallen",
+     "caption": "«Tornó a probar si se podía levantar; pero no lo pudo conseguir.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Tornó a probar si se podía levantar; pero no lo pudo conseguir.»"
+    },
+    {
+     "id": "c05-plate-neighbour",
+     "caption": "«El labrador le puso sobre su jumento y recogió las armas.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«El labrador le puso sobre su jumento y recogió las armas.»"
+    },
+    {
+     "id": "c05-home",
+     "caption": "«Abran vuestras mercedes al señor Valdovinos y al señor marqués de Mantua, que viene malferido.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Abran vuestras mercedes al señor Valdovinos y al señor marqués de Mantua, que viene malferido.»"
+    },
+    {
+     "id": "c06-books",
+     "caption": "«El ama los quemó aquella noche en el corral.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«El ama los quemó aquella noche en el corral.»"
+    },
+    {
+     "id": "c07-plate-sancho",
+     "caption": "«Tanto le dijo, tanto le persuadió y prometió, que el pobre villano se determinó de salirse con él.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Tanto le dijo, tanto le persuadió y prometió, que el pobre villano se determinó de salirse con él.»"
+    },
+    {
+     "id": "c08-plate-windmills",
+     "caption": "«Dio el viento un poco de aire en las grandes aspas, y arremetió a todo el galope de Rocinante.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Dio el viento un poco de aire en las grandes aspas, y arremetió a todo el galope de Rocinante.»"
+    },
+    {
+     "id": "c08-plate-fallen",
+     "caption": "«Acudió Sancho Panza a socorrerle, a todo el correr de su asno.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Acudió Sancho Panza a socorrerle, a todo el correr de su asno.»"
+    }
+   ]
+  },
+  "en": {
+   "config": {
+    "locale": "en-us",
+    "bodyText": {
+     "fontFamily": "Alegreya",
+     "fontSize": {
+      "value": 10.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "textAlign": "justify",
+     "firstLineIndent": {
+      "value": 5,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": false,
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceBold": false,
+     "referenceItalic": true,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "en-us"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "headings": {
+     "fontFamily": "Playfair Display",
+     "color": {
+      "hex": "#1f1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "keepWithNext": true,
+     "levels": [
+      {
+       "level": 1,
+       "numberingTemplate": "{1:I}",
+       "fontSize": {
+        "value": 16,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 20,
+        "unit": "pt"
+       },
+       "span": "page",
+       "breakBefore": {
+        "enabled": true,
+        "parity": "odd"
+       },
+       "advancedDesign": {
+        "enabled": true,
+        "minHeight": {
+         "value": 52,
+         "unit": "mm"
+        },
+        "slot": {
+         "elements": [
+          {
+           "kind": "text",
+           "id": "chapterLabel",
+           "placement": {
+            "anchor": {
+             "to": "container",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 2,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 85.84,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "Chapter {number}",
+           "fontFamily": "Alegreya SC",
+           "fontSize": {
+            "value": 11,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "center",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#7f2a26",
+            "model": "hex",
+            "paletteId": "accent"
+           },
+           "letterSpacing": {
+            "value": 1.2,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "chapterTitle",
+           "placement": {
+            "anchor": {
+             "to": "#chapterLabel",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 3,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 85.84,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{titleText}",
+           "fontFamily": "Playfair Display",
+           "fontSize": {
+            "value": 15,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": true,
+           "align": "center",
+           "verticalAlign": "middle",
+           "lineHeight": 1.25,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#1f1a17",
+            "model": "hex",
+            "paletteId": "ink"
+           }
+          },
+          {
+           "kind": "rule",
+           "id": "chapterRule",
+           "direction": "horizontal",
+           "placement": {
+            "anchor": {
+             "to": "#chapterTitle",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 33.92,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 18,
+              "unit": "mm"
+             }
+            }
+           },
+           "color": {
+            "hex": "#7f2a26",
+            "model": "hex",
+            "paletteId": "accent"
+           },
+           "thickness": {
+            "value": 0.6,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "lead",
+           "placement": {
+            "anchor": {
+             "to": "#chapterRule",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": -33.92,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 5,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 85.84,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.lead}",
+           "fontFamily": "Alegreya",
+           "fontSize": {
+            "value": 10.5,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.333,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#1f1a17",
+            "model": "hex",
+            "paletteId": "ink"
+           },
+           "hyphenate": true,
+           "dropCap": {
+            "lines": 3,
+            "fontFamily": "Playfair Display",
+            "fontWeight": 400,
+            "color": {
+             "hex": "#7f2a26",
+             "model": "hex",
+             "paletteId": "accent"
+            },
+            "gap": {
+             "value": 1.5,
+             "unit": "mm"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      {
+       "level": 2,
+       "fontSize": {
+        "value": 12,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 15,
+        "unit": "pt"
+       },
+       "italic": true,
+       "marginTop": {
+        "value": 14,
+        "unit": "pt"
+       },
+       "marginBottom": {
+        "value": 6,
+        "unit": "pt"
+       }
+      }
+     ]
+    },
+    "parts": {
+     "breakBefore": {
+      "parity": "odd"
+     },
+     "breakAfter": {
+      "enabled": true,
+      "parity": "odd"
+     },
+     "margins": {
+      "top": {
+       "value": 112,
+       "unit": "mm"
+      },
+      "bottom": {
+       "value": 24,
+       "unit": "mm"
+      },
+      "left": {
+       "value": 34,
+       "unit": "mm"
+      },
+      "right": {
+       "value": 34,
+       "unit": "mm"
+      }
+     },
+     "design": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "partBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#f5f0e6",
+          "model": "hex",
+          "paletteId": "cream"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 62,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Part {numberRoman}",
+        "fontFamily": "Alegreya SC",
+        "fontSize": {
+         "value": 11,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#7f2a26",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "letterSpacing": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partTitle",
+        "placement": {
+         "anchor": {
+          "to": "#partLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Playfair Display",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.1,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "partRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#partTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 52.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 18,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#7f2a26",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "thickness": {
+         "value": 0.6,
+         "unit": "pt"
+        }
+       }
+      ]
+     },
+     "bodyStyle": {
+      "fontFamily": "Alegreya",
+      "fontSize": {
+       "value": 9.5,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 14,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1a17",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "textAlign": "left",
+      "numberColor": {
+       "hex": "#7f2a26",
+       "model": "hex",
+       "paletteId": "accent"
+      },
+      "orderedLists": {
+       "numberFormat": "upper-roman",
+       "separator": ".",
+       "gap": {
+        "value": 2.5,
+        "unit": "mm"
+       },
+       "indent": {
+        "value": 9,
+        "unit": "mm"
+       },
+       "fontFamily": "Alegreya SC",
+       "itemSpacing": {
+        "value": 2,
+        "unit": "pt"
+       }
+      }
+     }
+    },
+    "resourceTypes": [
+     {
+      "id": "figure",
+      "name": "Plate",
+      "namePlural": "Plates",
+      "shortLabel": "plate",
+      "captionPrefix": "Plate",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "roman-upper",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "page",
+       "width": 1
+      }
+     },
+     {
+      "id": "ornament",
+      "name": "Vignette",
+      "namePlural": "Vignettes",
+      "shortLabel": "",
+      "captionPrefix": "",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "here",
+       "span": "column",
+       "width": 0.8,
+       "align": "center"
+      }
+     }
+    ]
+   },
+   "resources": [
+    {
+     "id": "c01-plate-library",
+     "caption": "“A world of disorderly notions, picked out of his books, crowded into his imagination.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“A world of disorderly notions, picked out of his books, crowded into his imagination.”"
+    },
+    {
+     "id": "c01-tail",
+     "caption": "“He next proceeded to inspect his hack.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“He next proceeded to inspect his hack.”"
+    },
+    {
+     "id": "c02-inn",
+     "caption": "“At the door were standing two young women.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“At the door were standing two young women.”"
+    },
+    {
+     "id": "c02-wine",
+     "caption": "“Putting one end in his mouth, they poured the wine into him through the other.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Putting one end in his mouth, they poured the wine into him through the other.”"
+    },
+    {
+     "id": "c03-plate-vigil",
+     "caption": "“With a graceful bearing he began pacing to and fro before the trough.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“With a graceful bearing he began pacing to and fro before the trough.”"
+    },
+    {
+     "id": "c03-innkeeper",
+     "caption": "“After it, with his own sword, a slap on the shoulder, all the while muttering between his teeth.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“After it, with his own sword, a slap on the shoulder, all the while muttering between his teeth.”"
+    },
+    {
+     "id": "c03-knighted",
+     "caption": "“One of the ladies girded on his sword.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“One of the ladies girded on his sword.”"
+    },
+    {
+     "id": "c04-plate-andres",
+     "caption": "“Discourteous knight, it ill becomes you to assail one who cannot defend himself.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Discourteous knight, it ill becomes you to assail one who cannot defend himself.”"
+    },
+    {
+     "id": "c04-plate-beaten",
+     "caption": "“Coming up to him, he seized his lance, and having broken it in pieces, began to belabour him.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Coming up to him, he seized his lance, and having broken it in pieces, began to belabour him.”"
+    },
+    {
+     "id": "c04-fallen",
+     "caption": "“He again tried to rise, but was unable.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“He again tried to rise, but was unable.”"
+    },
+    {
+     "id": "c05-plate-neighbour",
+     "caption": "“The peasant set him on his ass and gathered up the arms.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“The peasant set him on his ass and gathered up the arms.”"
+    },
+    {
+     "id": "c05-home",
+     "caption": "“Open, your worships, to Señor Baldwin and to Señor the Marquis of Mantua, who comes badly wounded.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Open, your worships, to Señor Baldwin and to Señor the Marquis of Mantua, who comes badly wounded.”"
+    },
+    {
+     "id": "c06-books",
+     "caption": "“The housekeeper burned them that night in the yard.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“The housekeeper burned them that night in the yard.”"
+    },
+    {
+     "id": "c07-plate-sancho",
+     "caption": "“So much did he say, so much did he persuade and promise, that the poor clown made up his mind to go with him.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“So much did he say, so much did he persuade and promise, that the poor clown made up his mind to go with him.”"
+    },
+    {
+     "id": "c08-plate-windmills",
+     "caption": "“A slight breeze sprang up, and the great sails began to move; at Rocinante’s fullest gallop he charged.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“A slight breeze sprang up, and the great sails began to move; at Rocinante’s fullest gallop he charged.”"
+    },
+    {
+     "id": "c08-plate-fallen",
+     "caption": "“Sancho hastened to his assistance as fast as his ass could go.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Sancho hastened to his assistance as fast as his ass could go.”"
+    }
+   ]
+  }
+ },
+ "resources": [
+  {
+   "id": "prologo-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/prologo-head.jpg",
+   "width": 1600,
+   "height": 1056,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "prologo-tail",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/prologo-tail.jpg",
+   "width": 579,
+   "height": 823,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.42,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c01-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c01-head.jpg",
+   "width": 1600,
+   "height": 1078,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c01-plate-library",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c01-plate-library.jpg",
+   "width": 1900,
+   "height": 2400,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Se le pasaban las noches leyendo de claro en claro, y los días de turbio en turbio.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Se le pasaban las noches leyendo de claro en claro, y los días de turbio en turbio.»"
+  },
+  {
+   "id": "c01-tail",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c01-tail.jpg",
+   "width": 1291,
+   "height": 972,
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   },
+   "caption": "«Fue luego a ver su rocín.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Fue luego a ver su rocín.»"
+  },
+  {
+   "id": "c02-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c02-head.jpg",
+   "width": 1600,
+   "height": 680,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c02-inn",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c02-inn.jpg",
+   "width": 1127,
+   "height": 459,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«A la puerta de la venta estaban dos mujeres mozas.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«A la puerta de la venta estaban dos mujeres mozas.»"
+  },
+  {
+   "id": "c02-wine",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c02-wine.jpg",
+   "width": 1122,
+   "height": 685,
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   },
+   "caption": "«Puesto el un cabo en la boca, por el otro le iban echando el vino.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Puesto el un cabo en la boca, por el otro le iban echando el vino.»"
+  },
+  {
+   "id": "c03-plate-vigil",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c03-plate-vigil.jpg",
+   "width": 1921,
+   "height": 2400,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Con gentil continente, se comenzó a pasear delante de la pila.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Con gentil continente, se comenzó a pasear delante de la pila.»"
+  },
+  {
+   "id": "c03-innkeeper",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c03-innkeeper.jpg",
+   "width": 1600,
+   "height": 1068,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Diole con ella, después, un gentil espaldarazo, siempre murmurando entre dientes.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Diole con ella, después, un gentil espaldarazo, siempre murmurando entre dientes.»"
+  },
+  {
+   "id": "c03-knighted",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c03-knighted.jpg",
+   "width": 1600,
+   "height": 980,
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   },
+   "caption": "«Una de aquellas señoras le ciñó la espada.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Una de aquellas señoras le ciñó la espada.»"
+  },
+  {
+   "id": "c04-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c04-head.jpg",
+   "width": 1600,
+   "height": 630,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c04-plate-andres",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c04-plate-andres.jpg",
+   "width": 1923,
+   "height": 2400,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Descortés caballero, mal parece tomaros con quien defender no se puede.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Descortés caballero, mal parece tomaros con quien defender no se puede.»"
+  },
+  {
+   "id": "c04-plate-beaten",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c04-plate-beaten.jpg",
+   "width": 2400,
+   "height": 1932,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Llegándose a él, tomó la lanza y, después de haberla hecho pedazos, comenzó a dar tantos palos…»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Llegándose a él, tomó la lanza y, después de haberla hecho pedazos, comenzó a dar tantos palos…»"
+  },
+  {
+   "id": "c04-fallen",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c04-fallen.jpg",
+   "width": 1407,
+   "height": 978,
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   },
+   "caption": "«Tornó a probar si se podía levantar; pero no lo pudo conseguir.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Tornó a probar si se podía levantar; pero no lo pudo conseguir.»"
+  },
+  {
+   "id": "c05-plate-neighbour",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c05-plate-neighbour.jpg",
+   "width": 1117,
+   "height": 1433,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«El labrador le puso sobre su jumento y recogió las armas.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«El labrador le puso sobre su jumento y recogió las armas.»"
+  },
+  {
+   "id": "c05-home",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c05-home.jpg",
+   "width": 1125,
+   "height": 667,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Abran vuestras mercedes al señor Valdovinos y al señor marqués de Mantua, que viene malferido.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Abran vuestras mercedes al señor Valdovinos y al señor marqués de Mantua, que viene malferido.»"
+  },
+  {
+   "id": "c05-tail",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c05-tail.jpg",
+   "width": 559,
+   "height": 355,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.42,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c06-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c06-head.jpg",
+   "width": 1114,
+   "height": 535,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c06-books",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c06-books.jpg",
+   "width": 547,
+   "height": 383,
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   },
+   "caption": "«El ama los quemó aquella noche en el corral.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«El ama los quemó aquella noche en el corral.»"
+  },
+  {
+   "id": "c07-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c07-head.jpg",
+   "width": 1097,
+   "height": 743,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c07-plate-sancho",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c07-plate-sancho.jpg",
+   "width": 1133,
+   "height": 1425,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Tanto le dijo, tanto le persuadió y prometió, que el pobre villano se determinó de salirse con él.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Tanto le dijo, tanto le persuadió y prometió, que el pobre villano se determinó de salirse con él.»"
+  },
+  {
+   "id": "c07-tail",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c07-tail.jpg",
+   "width": 589,
+   "height": 747,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.42,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c08-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c08-head.jpg",
+   "width": 1103,
+   "height": 727,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c08-plate-windmills",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c08-plate-windmills.jpg",
+   "width": 1923,
+   "height": 2400,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Dio el viento un poco de aire en las grandes aspas, y arremetió a todo el galope de Rocinante.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Dio el viento un poco de aire en las grandes aspas, y arremetió a todo el galope de Rocinante.»"
+  },
+  {
+   "id": "c08-plate-fallen",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c08-plate-fallen.jpg",
+   "width": 1097,
+   "height": 1405,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Acudió Sancho Panza a socorrerle, a todo el correr de su asno.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Acudió Sancho Panza a socorrerle, a todo el correr de su asno.»"
+  },
+  {
+   "id": "c08-tail",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c08-tail.jpg",
+   "width": 707,
+   "height": 445,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.42,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "x-enchantment",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/x-enchantment.jpg",
+   "width": 1950,
+   "height": 2400,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 1
+   },
+   "caption": "",
+   "altText": "Don Quijote y Sancho Panza, por Gustave Doré"
+  }
+ ],
+ "fonts": [
+  {
+   "name": "Alegreya",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/Alegreya-Regular.ttf"
+    },
+    {
+     "weight": 500,
+     "style": "normal",
+     "file": "fonts/Alegreya-Medium.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/Alegreya-Bold.ttf"
+    },
+    {
+     "weight": 800,
+     "style": "normal",
+     "file": "fonts/Alegreya-ExtraBold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/Alegreya-Italic.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "italic",
+     "file": "fonts/Alegreya-BoldItalic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "Alegreya SC",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/AlegreyaSC-Regular.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/AlegreyaSC-Italic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "Playfair Display",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/PlayfairDisplay-Regular.ttf"
+    },
+    {
+     "weight": 500,
+     "style": "normal",
+     "file": "fonts/PlayfairDisplay-Medium.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/PlayfairDisplay-Bold.ttf"
+    },
+    {
+     "weight": 900,
+     "style": "normal",
+     "file": "fonts/PlayfairDisplay-Black.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/PlayfairDisplay-Italic.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "italic",
+     "file": "fonts/PlayfairDisplay-BoldItalic.ttf"
+    }
+   ]
+  }
+ ]
+}

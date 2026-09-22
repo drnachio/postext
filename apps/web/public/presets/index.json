@@ -1,4 +1,25 @@
 {
   "version": 1,
-  "presets": []
+  "presets": [
+    {
+      "id": "don-quijote",
+      "dir": "don-quijote",
+      "name": "Don Quijote · Gustave Doré",
+      "description": "Edición literaria a columna y media con glosas al margen y láminas de Doré · A column-and-a-half literary edition with margin glosses and Doré's plates",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "Public domain · CC BY 4.0",
+      "credits": "Cervantes · Ormsby · Doré · Project Gutenberg · Wikimedia Commons",
+      "tags": [
+        "book",
+        "one-and-a-half",
+        "margin-notes",
+        "front-matter"
+      ]
+    }
+  ]
 }
