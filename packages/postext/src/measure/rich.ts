@@ -11,6 +11,7 @@ import {
 import { SOFT_HYPHEN } from './types';
 import type { MeasuredBlock, MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
+import { isRuntLastLine } from './runts';
 import { computeJustifiedSpaceRatio } from './plain';
 
 export interface RichBreakPoint {
@@ -395,7 +396,11 @@ export function measureRichBlock(
         items, breaks, tokens, lineHeightPx,
         lineWidthFn, lineIndentFn, normalSpaceWidth, textAlign,
       );
-      return { lines: kpLines, totalHeight: kpLines.length * lineHeightPx };
+      return {
+        lines: kpLines,
+        totalHeight: kpLines.length * lineHeightPx,
+        ...(isRuntLastLine(kpLines, runtMinWidth) ? { lastLineRunt: true } : {}),
+      };
     }
     // Fallback to greedy if K-P produced no breaks
   }

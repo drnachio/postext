@@ -611,6 +611,17 @@ export interface BodyTextConfig {
   /** When true, list items also receive the runt penalty (not just paragraphs).
    *  Only effective when `avoidRunts` is true. Default true. */
   avoidRuntsInLists?: boolean;
+  /** When the penalty above could not keep a paragraph from ending in a
+   *  runt, set the paragraph one line shorter instead — the compositor's
+   *  fix: the spaces of every line tighten (never past `minWordSpacing`)
+   *  and, when that alone does not carry the line, a little negative
+   *  tracking joins in, up to `maxRuntTracking`. Needs
+   *  `optimalLineBreaking` and `avoidRunts`. Default true. */
+  tightenRunts?: boolean;
+  /** Most tracking a runt fix may take, in thousandths of an em (the
+   *  InDesign unit: 10 = 0.01 em per character), applied as a tightening.
+   *  0 leaves the fix to word spacing alone. Default 10. */
+  maxRuntTracking?: number;
   /** When true, a paragraph ending with a colon that directly introduces a
    *  list is kept joined to the list: if placing the paragraph would leave no
    *  room for the first list item in the same column/page, the colon-bearing
@@ -656,6 +667,8 @@ export interface ResolvedBodyTextConfig {
   runtMinCharacters: number;
   runtPenalty: number;
   avoidRuntsInLists: boolean;
+  tightenRunts: boolean;
+  maxRuntTracking: number;
   keepColonWithList: boolean;
 }
 
@@ -1785,6 +1798,13 @@ export interface CustomFontFamily {
   /** Family name — used anywhere a Google Font family name would be used. */
   name: string;
   variants: CustomFontVariant[];
+  /** False when the family's files may be used to set this document but not
+   *  copied out of it — a licensed typeface a bundle is allowed to show but
+   *  not to hand on. Rendering and PDF embedding are unaffected; what honours
+   *  the flag is whoever writes the files back out (the sandbox's bundle
+   *  export drops the family's files and its `fonts[]` entry). Defaults to
+   *  true. */
+  redistributable?: boolean;
 }
 
 export type PageParity = 'all' | 'odd' | 'even';
@@ -2292,6 +2312,9 @@ export interface TocConfig {
   parts?: {
     /** Default `true`. */
     enabled?: boolean;
+    /** Open a fresh page before every part row but the first, so each
+     *  part's chapters are listed on a page of their own. Default `false`. */
+    breakBefore?: boolean;
     /** Row design; its container is the row (column width × `height`).
      *  Placeholders: `{number}`, `{numberRoman}`…, `{titleText}` and
      *  `{pageNumber}` (the part page's label). Palette-linked colours take
@@ -2352,6 +2375,7 @@ export interface ResolvedTocConfig {
   };
   parts: {
     enabled: boolean;
+    breakBefore: boolean;
     design: ResolvedDesignSlot;
     height: Dimension;
     marginTop: Dimension;

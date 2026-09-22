@@ -1124,6 +1124,18 @@ Beyond hyphenation and spacing bounds, the body-text configuration exposes the s
       <td>When <code>true</code>, list items also receive the runt penalty. Only effective when <code>avoidRunts</code> is <code>true</code>.</td>
     </tr>
     <tr>
+      <td><code>tightenRunts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When the penalty could not avoid a runt, set the paragraph one line shorter instead: the word spaces tighten (never past <code>minWordSpacing</code>) and, if that alone does not carry the line, a little negative tracking joins in. Needs <code>optimalLineBreaking</code> and <code>avoidRunts</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxRuntTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>Most tracking a runt fix may take, in thousandths of an em (the InDesign unit: 10 = 0.01 em per character), applied as a tightening. <code>0</code> leaves the fix to word spacing alone.</td>
+    </tr>
+    <tr>
       <td><code>slackWeight</code></td>
       <td><code>number</code></td>
       <td><code>10</code></td>
@@ -3199,6 +3211,12 @@ const config: PostextConfig = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Whether part dividers get a row.</td>
+    </tr>
+    <tr>
+      <td><code>parts.breakBefore</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Open a fresh page before every part row but the first, so each part's chapters are listed on a page of their own.</td>
     </tr>
     <tr>
       <td><code>parts.design</code></td>

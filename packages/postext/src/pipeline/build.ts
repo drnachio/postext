@@ -238,8 +238,10 @@ export interface PassResult extends BandPassReport {
  * tracking up to `maxTracking` — and keeps the first measurement that gains
  * exactly the requested lines within the word-spacing limit (a rung that
  * gains the line on its own, without needing the looseness target, counts
- * too). Falls back to the plain measurement when no rung works, recording
- * the outcome either way.
+ * too). A solution whose extra line is a runt is refused: filling a
+ * column's foot is no reason to leave a syllable alone at the end of a
+ * paragraph. Falls back to the plain measurement when no rung works,
+ * recording the outcome either way.
  */
 function measureLooseParagraph(
   rawBlock: Parameters<typeof measureContentBlock>[0],
@@ -260,7 +262,7 @@ function measureLooseParagraph(
       looseness: extraLines,
       trackingEm: tracking > 0 ? tracking / 1000 : undefined,
     });
-    if (loose && loose.measured.lines.length === target) {
+    if (loose && loose.measured.lines.length === target && !loose.measured.lastLineRunt) {
       looseOutcome.set(blockIdx, tracking);
       return loose;
     }
