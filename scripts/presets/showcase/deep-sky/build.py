@@ -7,9 +7,11 @@ into `apps/web/public/presets/deep-sky/` and register it in the public
     python3 scripts/presets/showcase/deep-sky/build.py
 
 A two-column astronomy magazine: eight ESO / NSF NOIRLab press releases
-(CC BY 4.0, Spanish and English), each opened by a section-coloured band
-and a page-wide hero image, with a fact box, a pull quote, column and
-page-wide images, a coloured-cell table and a self-numbering contents page.
+(CC BY 4.0, Spanish and English) gathered into four section chapters —
+Solar System, Stars, Galaxies, Cosmos. Each feature is a second-level
+heading opened by a section-coloured band and a page-wide hero image, with
+a fact box, a pull quote, column and page-wide images, a coloured-cell
+table and a self-numbering contents page.
 """
 from __future__ import annotations
 
@@ -43,7 +45,22 @@ M_TOP, M_BOTTOM, M_INNER, M_OUTER = 24.0, 20.0, 16.0, 14.0
 TEXT_W = PAGE_W - M_INNER - M_OUTER  # 195
 GUTTER = 6.0
 COL_W = (TEXT_W - GUTTER) / 2
-OPENER_H = 84.0
+OPENER_H = 95.0
+
+# Every type measure of the magazine — size, leading, letterspacing and the
+# space set between blocks — is a third larger than the first draft's, so the
+# two columns read comfortably on screen and in print.
+TYPE_SCALE = 1.3
+
+
+def ts(value: float) -> float:
+    """A type measure in points, scaled."""
+    return round(value * TYPE_SCALE, 2)
+
+
+def tp(value: float) -> dict:
+    """`ts` as a point dimension."""
+    return pt(ts(value))
 
 COLOURS = {
     "ink": "#14181d",
@@ -85,16 +102,20 @@ def B(id_, **kw):
 # --- design ------------------------------------------------------------------------
 
 
-def running_heads() -> dict:
-    y = M_TOP - 10.0
+def running_heads(lang: str) -> dict:
+    """Verso: the magazine; recto: the section the page belongs to. The
+    articles are second-level headings now, so the running head names the
+    section (the part the page sits in), not the feature."""
+    y = M_TOP - 11.0
+    title = ed.BOOK[lang]["title"]
     return {
         "elements": [
             B("headBandEven", anchor=at("page", "top-left"), offset=(M_OUTER, y - 1), width=3, height=3, fill="band", parity="even", pages="body"),
-            T("folioEven", "{pageNumber}", anchor=at("page", "top-left"), offset=(M_OUTER + 5, y), size_pt=8.5, family=SANS, weight=700, parity="even", pages="body", overflow="ellipsis-end"),
-            T("titleEven", "Cielo profundo · {partTitle}", anchor=at("page", "top-right"), offset=(-M_INNER, y), width=120, size_pt=7.5, family=SANS, align="right", parity="even", pages="body", overflow="ellipsis-end", textTransform="uppercase", letterSpacing=pt(1.2), color="muted"),
-            T("chapterOdd", "{chapterTitle}", anchor=at("page", "top-left"), offset=(M_INNER, y), width=140, size_pt=7.5, family=SANS, parity="odd", pages="body", overflow="ellipsis-end", textTransform="uppercase", letterSpacing=pt(1.2), color="muted"),
+            T("folioEven", "{pageNumber}", anchor=at("page", "top-left"), offset=(M_OUTER + 5, y), size_pt=ts(8.5), family=SANS, weight=700, parity="even", pages="body", overflow="ellipsis-end"),
+            T("titleEven", title, anchor=at("page", "top-right"), offset=(-M_INNER, y), width=120, size_pt=ts(7.5), family=SANS, align="right", parity="even", pages="body", overflow="ellipsis-end", textTransform="uppercase", letterSpacing=tp(1.2), color="muted"),
+            T("chapterOdd", "{partNumber} · {partTitle}", anchor=at("page", "top-left"), offset=(M_INNER, y), width=140, size_pt=ts(7.5), family=SANS, parity="odd", pages="body", overflow="ellipsis-end", textTransform="uppercase", letterSpacing=tp(1.2), color="muted"),
             B("headBandOdd", anchor=at("page", "top-right"), offset=(-M_OUTER, y - 1), width=3, height=3, fill="band", parity="odd", pages="body"),
-            T("folioOdd", "{pageNumber}", anchor=at("page", "top-right"), offset=(-(M_OUTER + 5), y), size_pt=8.5, family=SANS, weight=700, align="right", parity="odd", pages="body", overflow="ellipsis-end"),
+            T("folioOdd", "{pageNumber}", anchor=at("page", "top-right"), offset=(-(M_OUTER + 5), y), size_pt=ts(8.5), family=SANS, weight=700, align="right", parity="odd", pages="body", overflow="ellipsis-end"),
         ]
     }
 
@@ -102,13 +123,14 @@ def running_heads() -> dict:
 def opener_footer() -> dict:
     return {
         "elements": [
-            T("folioOpener", "{pageNumber}", anchor=at("page", "bottom"), offset=(0, -(M_BOTTOM - 8)), width=30, size_pt=8.5, family=SANS, weight=700, align="center", pages="opener", overflow="ellipsis-end"),
+            T("folioOpener", "{pageNumber}", anchor=at("page", "bottom"), offset=(0, -(M_BOTTOM - 8)), width=30, size_pt=ts(8.5), family=SANS, weight=700, align="center", pages="opener", overflow="ellipsis-end"),
         ]
     }
 
 
-def chapter_opener() -> dict:
-    """A dark full-bleed band across the head of the page: section kicker in
+def feature_opener() -> dict:
+    """The opening page of a feature (a second-level heading): a dark
+    full-bleed band across the head of the page, with the section kicker in
     the section colour, the headline in white, the standfirst, then the
     source and date. The hero image floats in right below it."""
     return {
@@ -118,10 +140,10 @@ def chapter_opener() -> dict:
             "elements": [
                 B("openerBg", anchor=at("bleed", "top-left"), height=M_TOP + OPENER_H + 3, fill="ink"),
                 B("openerStripe", anchor=at("bleed", "top-left"), height=3, fill="band"),
-                T("kicker", "{partTitle}", anchor=at("container", "top-left"), offset=(0, 2), width=TEXT_W, size_pt=9, family=SANS, weight=700, color="band", textTransform="uppercase", letterSpacing=pt(2)),
-                T("headline", "{titleText}", anchor=at("#kicker", "below"), offset=(0, 3), width=TEXT_W, size_pt=27, family=DISPLAY, weight=700, line_height=1.06, color="white"),
-                T("standfirst", "{attr.lead}", anchor=at("#headline", "below"), offset=(0, 4), width=TEXT_W - 40, size_pt=11.5, italic=True, line_height=1.3, color="white", hyphenate=True),
-                T("dateline", "{attr.source} · {attr.date}", anchor=at("#standfirst", "below"), offset=(0, 4), width=TEXT_W, size_pt=7.5, family=SANS, color="band", textTransform="uppercase", letterSpacing=pt(1.4)),
+                T("kicker", "{partTitle}", anchor=at("container", "top-left"), offset=(0, -3), width=TEXT_W, size_pt=ts(9), family=SANS, weight=700, color="band", textTransform="uppercase", letterSpacing=tp(2)),
+                T("headline", "{titleText}", anchor=at("#kicker", "below"), offset=(0, 3), width=TEXT_W, size_pt=ts(27), family=DISPLAY, weight=700, line_height=1.06, color="white"),
+                T("standfirst", "{attr.lead}", anchor=at("#headline", "below"), offset=(0, 4), width=TEXT_W - 30, size_pt=ts(11.5), italic=True, line_height=1.3, color="white", hyphenate=True),
+                T("dateline", "{attr.source} · {attr.date}", anchor=at("#standfirst", "below"), offset=(0, 4), width=TEXT_W, size_pt=ts(7.5), family=SANS, color="band", textTransform="uppercase", letterSpacing=tp(1.4)),
             ]
         },
     }
@@ -130,12 +152,12 @@ def chapter_opener() -> dict:
 def front_opener() -> dict:
     return {
         "enabled": True,
-        "minHeight": mm(34),
+        "minHeight": mm(30),
         "slot": {
             "elements": [
                 B("frontStripe", anchor=at("bleed", "top-left"), height=3, fill="band"),
-                T("frontTitle", "{titleText}", anchor=at("container", "top-left"), offset=(0, 4), width=TEXT_W, size_pt=27, family=DISPLAY, weight=700, line_height=1.06),
-                R("frontRule", anchor=at("#frontTitle", "below"), offset=(0, 5), width=30, color="band", thickness=1.5),
+                T("frontTitle", "{titleText}", anchor=at("container", "top-left"), offset=(0, 1), width=TEXT_W, size_pt=ts(27), family=DISPLAY, weight=700, line_height=1.06),
+                R("frontRule", anchor=at("#frontTitle", "below"), offset=(0, 4), width=30, color="band", thickness=1.5),
             ]
         },
     }
@@ -151,10 +173,10 @@ def cover_design() -> dict:
             "elements": [
                 B("coverBg", anchor=at("bleed", "top-left"), fill="ink"),
                 image_el("coverImage", "noirlab2612a", anchor=at("bleed", "top-left"), width=img_w, height=img_h),
-                T("coverIssue", "{attr.issue}", anchor=at("page", "top-left"), offset=(M_INNER, img_h + 8), width=TEXT_W, size_pt=8.5, family=SANS, weight=700, color="band", textTransform="uppercase", letterSpacing=pt(2)),
-                T("coverTitle", "{title}", anchor=at("#coverIssue", "below"), offset=(0, 4), width=TEXT_W, size_pt=64, family=DISPLAY, weight=700, line_height=0.98, color="white"),
-                T("coverSubtitle", "{subtitle}", anchor=at("#coverTitle", "below"), offset=(0, 6), width=TEXT_W - 30, size_pt=15, italic=True, line_height=1.25, color="white"),
-                T("coverPublisher", "{attr.publisher}", anchor=at("page", "bottom-left"), offset=(M_INNER, -16), width=TEXT_W, size_pt=8, family=SANS, color="muted", textTransform="uppercase", letterSpacing=pt(1.4)),
+                T("coverIssue", "{attr.issue}", anchor=at("page", "top-left"), offset=(M_INNER, img_h + 8), width=TEXT_W, size_pt=ts(8.5), family=SANS, weight=700, color="band", textTransform="uppercase", letterSpacing=tp(2)),
+                T("coverTitle", "{title}", anchor=at("#coverIssue", "below"), offset=(0, 4), width=TEXT_W, size_pt=ts(64), family=DISPLAY, weight=700, line_height=0.98, color="white"),
+                T("coverSubtitle", "{subtitle}", anchor=at("#coverTitle", "below"), offset=(0, 6), width=TEXT_W - 20, size_pt=ts(15), italic=True, line_height=1.25, color="white"),
+                T("coverPublisher", "{attr.publisher}", anchor=at("page", "bottom-left"), offset=(M_INNER, -16), width=TEXT_W, size_pt=ts(8), family=SANS, color="muted", textTransform="uppercase", letterSpacing=tp(1.4)),
             ]
         },
     }
@@ -164,9 +186,9 @@ def part_design(label: str) -> dict:
     return {
         "elements": [
             B("partBg", anchor=at("bleed", "top-left"), fill="band"),
-            T("partLabel", label, anchor=at("page", "top-left"), offset=(M_INNER, 60), width=TEXT_W, size_pt=10, family=SANS, weight=700, color="white", textTransform="uppercase", letterSpacing=pt(2.5)),
-            T("partNumber", "{numberDecimal}", anchor=at("#partLabel", "below"), offset=(0, 2), width=TEXT_W, size_pt=120, family=DISPLAY, weight=700, line_height=1.0, color="white"),
-            T("partTitle", "{titleText}", anchor=at("#partNumber", "below"), offset=(0, 4), width=TEXT_W, size_pt=40, family=DISPLAY, weight=700, line_height=1.02, color="white"),
+            T("partLabel", label, anchor=at("page", "top-left"), offset=(M_INNER, 56), width=TEXT_W, size_pt=ts(10), family=SANS, weight=700, color="white", textTransform="uppercase", letterSpacing=tp(2.5)),
+            T("partNumber", "{numberDecimal}", anchor=at("#partLabel", "below"), offset=(0, 2), width=TEXT_W, size_pt=ts(120), family=DISPLAY, weight=700, line_height=1.0, color="white"),
+            T("partTitle", "{titleText}", anchor=at("#partNumber", "below"), offset=(0, 4), width=TEXT_W, size_pt=ts(40), family=DISPLAY, weight=700, line_height=1.02, color="white"),
         ]
     }
 
@@ -179,9 +201,9 @@ def callout_styles() -> list[dict]:
             "padding": {"top": mm(3), "right": mm(3.5), "bottom": mm(2.5), "left": mm(3.5)},
             "stripe": {"enabled": True, "side": "top", "width": pt(2.5), "color": col("band")},
             "icon": {"kind": "none"},
-            "titleStyle": {"fontFamily": SANS, "fontSize": pt(7.5), "fontWeight": 700, "color": col("band"), "textTransform": "uppercase", "letterSpacing": pt(1.6), "gap": mm(1.8)},
-            "body": {"fontFamily": TEXT, "fontSize": pt(8.5), "lineHeight": pt(11.5), "color": col("ink"), "boldColor": col("ink"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
-            "marginTop": pt(4), "marginBottom": pt(10), "keepTogether": True,
+            "titleStyle": {"fontFamily": SANS, "fontSize": tp(7.5), "fontWeight": 700, "color": col("band"), "textTransform": "uppercase", "letterSpacing": tp(1.6), "gap": mm(1.8)},
+            "body": {"fontFamily": TEXT, "fontSize": tp(8.5), "lineHeight": tp(11.5), "color": col("ink"), "boldColor": col("ink"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
+            "marginTop": tp(4), "marginBottom": tp(10), "keepTogether": True,
         },
         {
             "id": "cita", "name": "Cita destacada", "span": "column", "placement": "here",
@@ -189,17 +211,17 @@ def callout_styles() -> list[dict]:
             "padding": {"top": mm(3), "right": mm(0), "bottom": mm(2), "left": mm(0)},
             "stripe": {"enabled": True, "side": "top", "width": pt(2.5), "color": col("band")},
             "icon": {"kind": "none"},
-            "body": {"fontFamily": DISPLAY, "fontSize": pt(13), "lineHeight": pt(16), "color": col("band"), "boldColor": col("band"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": False, "firstLineIndent": mm(0)},
-            "marginTop": pt(6), "marginBottom": pt(10), "keepTogether": True,
+            "body": {"fontFamily": DISPLAY, "fontSize": tp(13), "lineHeight": tp(16), "color": col("band"), "boldColor": col("band"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": False, "firstLineIndent": mm(0)},
+            "marginTop": tp(6), "marginBottom": tp(10), "keepTogether": True,
         },
         {
             "id": "datos", "name": "Datos", "span": "page", "placement": "here",
             "backgroundEnabled": True, "background": col("ink"), "border": {"enabled": False}, "borderRadius": mm(0),
-            "padding": {"top": mm(5), "right": mm(6), "bottom": mm(4), "left": mm(6)},
+            "padding": {"top": mm(3.5), "right": mm(6), "bottom": mm(3), "left": mm(6)},
             "icon": {"kind": "none"}, "columnGap": mm(8),
-            "titleStyle": {"fontFamily": SANS, "fontSize": pt(7.5), "fontWeight": 700, "color": col("band"), "textTransform": "uppercase", "letterSpacing": pt(1.6), "gap": mm(3)},
-            "body": {"fontFamily": DISPLAY, "fontSize": pt(10), "lineHeight": pt(14), "color": col("white"), "boldColor": col("white"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
-            "marginTop": pt(8), "marginBottom": pt(12), "keepTogether": True,
+            "titleStyle": {"fontFamily": SANS, "fontSize": tp(7.5), "fontWeight": 700, "color": col("band"), "textTransform": "uppercase", "letterSpacing": tp(1.6), "gap": mm(3)},
+            "body": {"fontFamily": DISPLAY, "fontSize": tp(10), "lineHeight": tp(14), "color": col("white"), "boldColor": col("white"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
+            "marginTop": tp(2), "marginBottom": tp(4), "keepTogether": True,
         },
     ]
 
@@ -215,7 +237,7 @@ def resource_types(lang: str) -> list[dict]:
 
 def body_text(lang: str) -> dict:
     return {
-        "fontFamily": TEXT, "fontSize": pt(9.5), "lineHeight": pt(13), "textAlign": "justify",
+        "fontFamily": TEXT, "fontSize": tp(9.5), "lineHeight": tp(13), "textAlign": "justify",
         "firstLineIndent": mm(4), "indentAfterHeading": False, "paragraphSpacing": False,
         "color": col("ink"), "boldColor": col("ink"), "italicColor": col("ink"),
         "referenceColor": col("band"), "referenceBold": False, "referenceItalic": True,
@@ -225,42 +247,56 @@ def body_text(lang: str) -> dict:
 
 
 def headings(lang: str) -> dict:
+    """Level 1 is the front matter (cover, editorial, contents, credits,
+    each through a heading style); the features are level 2, numbered
+    straight through the issue and opened by the dark band; level 3 is a
+    subhead inside a feature."""
     return {
         "fontFamily": DISPLAY, "color": col("ink"), "keepWithNext": True,
         "levels": [
-            {"level": 1, "fontSize": pt(22), "lineHeight": pt(26), "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": chapter_opener()},
-            {"level": 2, "fontSize": pt(12), "lineHeight": pt(15), "fontWeight": 700, "marginTop": pt(12), "marginBottom": pt(4)},
+            {"level": 1, "fontSize": tp(22), "lineHeight": tp(26), "span": "page", "breakBefore": {"enabled": True, "parity": "any"}},
+            # A feature always opens on the left-hand page of a spread, so
+            # the dark band and its hero image are seen as one opening; a
+            # blank page is inserted when the next page would be a recto.
+            {"level": 2, "fontSize": tp(22), "lineHeight": tp(26), "numberingTemplate": "{2}", "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": feature_opener()},
+            {"level": 3, "fontSize": tp(12), "lineHeight": tp(15), "fontWeight": 700, "marginTop": tp(12), "marginBottom": tp(4)},
         ],
     }
 
 
 def parts(lang: str) -> dict:
+    """A section divider always opens a right-hand page, and never faces the
+    last page of the section before it: `always-odd` lays one blank leaf
+    between them and pads a second when the parity asks for it."""
     return {
-        "breakBefore": {"parity": "odd"},
+        "breakBefore": {"parity": "always-odd"},
         "breakAfter": {"enabled": True, "parity": "any"},
         "margins": {"top": mm(200), "bottom": mm(24), "left": mm(M_INNER), "right": mm(60)},
         "design": part_design(ed.BOOK[lang]["part_label"]),
         "bodyStyle": {
-            "fontFamily": TEXT, "fontSize": pt(11), "lineHeight": pt(16), "color": col("white"), "textAlign": "left", "numberColor": col("white"),
-            "orderedLists": {"numberFormat": "arabic", "separator": "", "gap": mm(3), "indent": mm(9), "fontFamily": SANS, "numberFontSize": pt(9), "itemSpacing": pt(2)},
+            "fontFamily": TEXT, "fontSize": tp(11), "lineHeight": tp(16), "color": col("white"), "textAlign": "left", "numberColor": col("white"),
+            "orderedLists": {"numberFormat": "arabic", "separator": "", "gap": mm(3), "indent": mm(9), "fontFamily": SANS, "numberFontSize": tp(9), "itemSpacing": tp(2)},
         },
     }
 
 
 def toc_config() -> dict:
     return {
+        # Level 1 is the front matter (unnumbered); level 2 the features,
+        # listed under the band of the section they belong to.
         "levels": [
-            {"level": 1, "fontFamily": DISPLAY, "fontSize": pt(11), "lineHeight": pt(15), "fontWeight": 700, "color": col("ink"), "numberWidth": mm(10), "numberGap": mm(2), "numberFontFamily": SANS, "numberFontSize": pt(9), "numberColor": col("band"), "marginTop": pt(6)},
+            {"level": 1, "fontFamily": DISPLAY, "fontSize": tp(11), "lineHeight": tp(13.5), "fontWeight": 700, "color": col("ink"), "numberWidth": mm(10), "numberGap": mm(2), "numberFontFamily": SANS, "numberFontSize": tp(9), "numberColor": col("band"), "marginTop": tp(3)},
+            {"level": 2, "fontFamily": DISPLAY, "fontSize": tp(11), "lineHeight": tp(13.5), "fontWeight": 700, "color": col("ink"), "numberWidth": mm(10), "numberGap": mm(2), "numberFontFamily": SANS, "numberFontSize": tp(9), "numberColor": col("band"), "marginTop": tp(3)},
         ],
         "unnumbered": {"fontFamily": TEXT, "fontWeight": 400, "italic": True, "color": col("ink")},
-        "pageNumber": {"fontFamily": SANS, "fontSize": pt(9), "fontWeight": 700, "color": col("ink"), "width": mm(9)},
+        "pageNumber": {"fontFamily": SANS, "fontSize": tp(9), "fontWeight": 700, "color": col("ink"), "width": mm(9)},
         "leader": {"enabled": False},
-        "subtitle": {"enabled": True, "attr": "standfirst", "fontFamily": TEXT, "fontSize": pt(8.5), "italic": True, "color": col("muted"), "indent": mm(12)},
+        "subtitle": {"enabled": True, "attr": "standfirst", "fontFamily": TEXT, "fontSize": tp(7.5), "italic": True, "color": col("muted"), "indent": mm(10)},
         "parts": {
-            "enabled": True, "height": pt(20), "marginTop": pt(16), "marginBottom": pt(4),
+            "enabled": True, "height": tp(15), "marginTop": tp(8), "marginBottom": tp(2),
             "design": {"elements": [
                 B("tocPartBand", anchor=at("container", "left"), offset=(0, 0), width=6, height=6, fill="band"),
-                T("tocPart", "{titleText}", anchor=at("#tocPartBand", "right-of"), offset=(3, 0), width=150, size_pt=9, family=SANS, weight=700, textTransform="uppercase", letterSpacing=pt(2), color="band"),
+                T("tocPart", "{titleText}", anchor=at("#tocPartBand", "right-of"), offset=(3, 0), width=150, size_pt=ts(9), family=SANS, weight=700, textTransform="uppercase", letterSpacing=tp(2), color="band"),
             ]},
         },
     }
@@ -277,10 +313,10 @@ def heading_styles() -> list[dict]:
 
 def paragraph_styles() -> list[dict]:
     return [
-        {"id": "colofon", "name": "Colofón", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "color": col("muted")},
-        {"id": "fuente", "name": "Fuente", "fontFamily": SANS, "fontSize": pt(7), "lineHeight": pt(9.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(4), "marginTop": pt(12), "color": col("muted")},
-        {"id": "editorial", "name": "Editorial", "fontSize": pt(10.5), "lineHeight": pt(14.5), "textAlign": "justify", "firstLineIndent": mm(0), "spaceBetween": pt(7)},
-        {"id": "creditos", "name": "Créditos", "fontSize": pt(9.5), "lineHeight": pt(13), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6)},
+        {"id": "colofon", "name": "Colofón", "fontSize": tp(8.5), "lineHeight": tp(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": tp(6), "color": col("muted")},
+        {"id": "fuente", "name": "Fuente", "fontFamily": SANS, "fontSize": tp(7), "lineHeight": tp(9.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": tp(4), "marginTop": tp(12), "color": col("muted")},
+        {"id": "editorial", "name": "Editorial", "fontSize": tp(10.5), "lineHeight": tp(14.5), "textAlign": "justify", "firstLineIndent": mm(0), "spaceBetween": tp(3.5)},
+        {"id": "creditos", "name": "Créditos", "fontSize": tp(9.5), "lineHeight": tp(13), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": tp(6)},
     ]
 
 
@@ -300,17 +336,17 @@ def shared_config() -> dict:
         "calloutStyles": callout_styles(),
         "parts": parts("es"),
         "toc": toc_config(),
-        "header": running_heads(),
+        "header": running_heads("es"),
         "footer": opener_footer(),
         "captionStyle": {
-            "fontFamily": SANS, "fontSize": pt(7.5), "color": col("ink"), "align": "left", "gap": mm(1.6),
+            "fontFamily": SANS, "fontSize": tp(7.5), "color": col("ink"), "align": "left", "gap": mm(1.6),
             "labelBold": True, "labelColor": col("band"), "descriptionItalic": False,
-            "note": {"fontSize": pt(6.3), "color": col("muted"), "italic": False, "gap": mm(0.6)},
+            "note": {"fontSize": tp(6.3), "color": col("muted"), "italic": False, "gap": mm(0.6)},
         },
         "tableStyle": {
-            "bodyFontFamily": SANS, "bodyFontSize": pt(8.5), "bodyLineHeight": pt(11), "bodyColor": col("ink"),
-            "headerFontFamily": SANS, "headerFontSize": pt(8), "headerBold": True, "headerBackgroundEnabled": True, "headerBackground": col("ink"),
-            "borderColor": col("rule"), "borderWidth": pt(0.5), "cellPadding": mm(1.6), "rules": "horizontal",
+            "bodyFontFamily": SANS, "bodyFontSize": tp(8.5), "bodyLineHeight": tp(11), "bodyColor": col("ink"),
+            "headerFontFamily": SANS, "headerFontSize": tp(8), "headerBold": True, "headerBackgroundEnabled": True, "headerBackground": col("ink"),
+            "borderColor": col("rule"), "borderWidth": pt(0.5), "cellPadding": mm(1.3), "rules": "horizontal",
         },
         "unorderedLists": {"bulletChar": "•", "color": col("band")},
         "orderedLists": {"color": col("band")},
@@ -321,7 +357,7 @@ def shared_config() -> dict:
 
 
 def localized_config(lang: str) -> dict:
-    return {"locale": "es" if lang == "es" else "en-us", "bodyText": body_text(lang), "headings": headings(lang), "parts": parts(lang), "resourceTypes": resource_types(lang)}
+    return {"locale": "es" if lang == "es" else "en-us", "bodyText": body_text(lang), "headings": headings(lang), "parts": parts(lang), "resourceTypes": resource_types(lang), "header": running_heads(lang)}
 
 
 # --- images -------------------------------------------------------------------------
@@ -435,7 +471,10 @@ def pull_quote(paragraphs: list[str]) -> tuple[int, str] | None:
     return None
 
 
-def feature_markdown(lang: str, spec: dict, r: rel.Release, first_in_part: dict | None, first_feature: bool) -> tuple[str, str]:
+def feature_markdown(lang: str, spec: dict, r: rel.Release) -> tuple[str, str]:
+    """One feature of the issue: a second-level heading carrying the
+    standfirst and dateline its opener prints, the hero image, the fact box,
+    a pull quote and the source line."""
     book = ed.BOOK[lang]
     paragraphs = [p for p in r.paragraphs if not p.startswith(ed.DROP_PARAGRAPH_PREFIXES)]
     standfirst = r.subtitle
@@ -446,17 +485,10 @@ def feature_markdown(lang: str, spec: dict, r: rel.Release, first_in_part: dict 
     paragraphs[0] = rest
     if not rest:
         paragraphs.pop(0)
-    head = ""
-    if first_feature:
-        head += ':::numbering{format="decimal" startAt=1}\n\n'
-    if first_in_part:
-        members = [s for s in ed.RELEASES if s["part"] == first_in_part["id"]]
-        items = "\n".join(f"{j + 1}. {PARSED[lang][m['id']].title}" for j, m in enumerate(members))
-        head += f':::part{{number="{first_in_part["number"]}" title="{attr_value(first_in_part["title"][lang])}" palette="band={first_in_part["band"]}"}}\n{items}\n:::\n\n'
     attrs = f'lead="{attr_value(lead)}" source="{book["org"][spec["org"]]}" date="{attr_value(r.date)}" release="{spec["id"]}"'
     if standfirst:
         attrs += f' standfirst="{attr_value(standfirst)}"'
-    out = [head + f"# {r.title} {{{attrs}}}", ""]
+    out = [f"## {r.title} {{{attrs}}}", ""]
     images = list(spec["roles"].items())
     refs: dict[int, list[str]] = {}
     for k, (img, role) in enumerate(images):
@@ -514,13 +546,16 @@ def write_chapters(images: dict[str, dict]) -> dict[str, list[dict]]:
         emit("editorial", book["editorial"], "\n".join(editorial))
         emit("sumario" if lang == "es" else "contents", book["contents"], f'# {book["contents"]} {{style="sumario" toc="false"}}\n\n:::toc\n')
 
-        first = True
-        for part in ed.PARTS:
+        # One chapter per section: the part divider, then its features as
+        # second-level headings. The first one opens the body numbering.
+        for n, part in enumerate(ed.PARTS):
             members = [s for s in ed.RELEASES if s["part"] == part["id"]]
-            for i, spec in enumerate(members):
-                title, body = feature_markdown(lang, spec, PARSED[lang][spec["id"]], part if i == 0 else None, first)
-                first = False
-                emit(spec["id"], title, body)
+            items = "\n".join(f"{j + 1}. {PARSED[lang][m['id']].title}" for j, m in enumerate(members))
+            head = ':::numbering{format="decimal" startAt=1}\n\n' if n == 0 else ""
+            head += (f':::part{{number="{part["number"]}" title="{attr_value(part["title"][lang])}"'
+                     f' palette="band={part["band"]}"}}\n{items}\n:::\n')
+            body = [head] + [feature_markdown(lang, spec, PARSED[lang][spec["id"]])[1] for spec in members]
+            emit(part["id"], part["title"][lang], "\n".join(body))
 
         paras = "\n\n".join(ed.CREDITS[lang])
         img_lines = "\n\n".join(f"[{img}]({images[img]['page']}) — {images[img]['credit']}" for spec in ed.RELEASES for img in spec["roles"])
@@ -591,7 +626,11 @@ def write_manifest(chapters, resources, wording, fonts) -> dict:
         "tags": ["magazine", "two-column", "parts", "tables"],
     }
     manifest = {
-        "version": 2, **meta, "chapters": chapters, "config": shared_config(),
+        "version": 2, **meta,
+        # The issue is read as one magazine: the sandbox opens it with the
+        # canvas laying out the whole book.
+        "view": {"canvasScope": "book"},
+        "chapters": chapters, "config": shared_config(),
         "localized": {lang: {"config": localized_config(lang), "resources": wording[lang]} for lang in LANGS},
         "resources": resources, "fonts": fonts,
     }
