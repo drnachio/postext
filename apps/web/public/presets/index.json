@@ -60,6 +60,26 @@
         "maps",
         "parts"
       ]
+    },
+    {
+      "id": "pintura-espanola",
+      "dir": "pintura-espanola",
+      "name": "Pintura española · Spanish Painting",
+      "description": "Catálogo de exposición a una columna: ficha y comentario frente a la lámina a página · A single-column exhibition catalogue, entry and commentary facing the full-page plate",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC0 · CC BY-SA 4.0",
+      "credits": "The Met · National Gallery of Art · Cleveland Museum of Art · Museo Sorolla · Wikipedia",
+      "tags": [
+        "catalogue",
+        "single-column",
+        "plates",
+        "parts"
+      ]
     }
   ]
 }
