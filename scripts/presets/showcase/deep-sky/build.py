@@ -152,7 +152,7 @@ def feature_opener() -> dict:
 def front_opener() -> dict:
     return {
         "enabled": True,
-        "minHeight": mm(30),
+        "minHeight": mm(25),
         "slot": {
             "elements": [
                 B("frontStripe", anchor=at("bleed", "top-left"), height=3, fill="band"),
@@ -217,11 +217,11 @@ def callout_styles() -> list[dict]:
         {
             "id": "datos", "name": "Datos", "span": "page", "placement": "here",
             "backgroundEnabled": True, "background": col("ink"), "border": {"enabled": False}, "borderRadius": mm(0),
-            "padding": {"top": mm(3.5), "right": mm(6), "bottom": mm(3), "left": mm(6)},
+            "padding": {"top": mm(2.5), "right": mm(6), "bottom": mm(2.5), "left": mm(6)},
             "icon": {"kind": "none"}, "columnGap": mm(8),
             "titleStyle": {"fontFamily": SANS, "fontSize": tp(7.5), "fontWeight": 700, "color": col("band"), "textTransform": "uppercase", "letterSpacing": tp(1.6), "gap": mm(3)},
             "body": {"fontFamily": DISPLAY, "fontSize": tp(10), "lineHeight": tp(14), "color": col("white"), "boldColor": col("white"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
-            "marginTop": tp(2), "marginBottom": tp(4), "keepTogether": True,
+            "marginTop": tp(1), "marginBottom": tp(2), "keepTogether": True,
         },
     ]
 
@@ -315,8 +315,8 @@ def paragraph_styles() -> list[dict]:
     return [
         {"id": "colofon", "name": "Colofón", "fontSize": tp(8.5), "lineHeight": tp(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": tp(6), "color": col("muted")},
         {"id": "fuente", "name": "Fuente", "fontFamily": SANS, "fontSize": tp(7), "lineHeight": tp(9.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": tp(4), "marginTop": tp(12), "color": col("muted")},
-        {"id": "editorial", "name": "Editorial", "fontSize": tp(10.5), "lineHeight": tp(14.5), "textAlign": "justify", "firstLineIndent": mm(0), "spaceBetween": tp(3.5)},
-        {"id": "creditos", "name": "Créditos", "fontSize": tp(9.5), "lineHeight": tp(13), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": tp(6)},
+        {"id": "editorial", "name": "Editorial", "fontSize": tp(10.5), "lineHeight": tp(14.5), "textAlign": "justify", "firstLineIndent": mm(0), "spaceBetween": tp(2.5)},
+        {"id": "creditos", "name": "Créditos", "fontSize": tp(7.5), "lineHeight": tp(10), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": tp(3.5)},
     ]
 
 
@@ -346,7 +346,7 @@ def shared_config() -> dict:
         "tableStyle": {
             "bodyFontFamily": SANS, "bodyFontSize": tp(8.5), "bodyLineHeight": tp(11), "bodyColor": col("ink"),
             "headerFontFamily": SANS, "headerFontSize": tp(8), "headerBold": True, "headerBackgroundEnabled": True, "headerBackground": col("ink"),
-            "borderColor": col("rule"), "borderWidth": pt(0.5), "cellPadding": mm(1.3), "rules": "horizontal",
+            "borderColor": col("rule"), "borderWidth": pt(0.5), "cellPadding": mm(1.0), "rules": "horizontal",
         },
         "unorderedLists": {"bulletChar": "•", "color": col("band")},
         "orderedLists": {"color": col("band")},

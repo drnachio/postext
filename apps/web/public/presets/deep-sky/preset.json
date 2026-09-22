@@ -835,7 +835,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 30,
+      "value": 25,
       "unit": "mm"
      },
      "slot": {
@@ -975,7 +975,7 @@
     "advancedDesign": {
      "enabled": true,
      "minHeight": {
-      "value": 30,
+      "value": 25,
       "unit": "mm"
      },
      "slot": {
@@ -1181,7 +1181,7 @@
      "unit": "mm"
     },
     "spaceBetween": {
-     "value": 4.55,
+     "value": 3.25,
      "unit": "pt"
     }
    },
@@ -1189,11 +1189,11 @@
     "id": "creditos",
     "name": "Créditos",
     "fontSize": {
-     "value": 12.35,
+     "value": 9.75,
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 16.9,
+     "value": 13.0,
      "unit": "pt"
     },
     "textAlign": "left",
@@ -1202,7 +1202,7 @@
      "unit": "mm"
     },
     "spaceBetween": {
-     "value": 7.8,
+     "value": 4.55,
      "unit": "pt"
     }
    }
@@ -1425,7 +1425,7 @@
     },
     "padding": {
      "top": {
-      "value": 3.5,
+      "value": 2.5,
       "unit": "mm"
      },
      "right": {
@@ -1433,7 +1433,7 @@
       "unit": "mm"
      },
      "bottom": {
-      "value": 3,
+      "value": 2.5,
       "unit": "mm"
      },
      "left": {
@@ -1499,11 +1499,11 @@
      }
     },
     "marginTop": {
-     "value": 2.6,
+     "value": 1.3,
      "unit": "pt"
     },
     "marginBottom": {
-     "value": 5.2,
+     "value": 2.6,
      "unit": "pt"
     },
     "keepTogether": true
@@ -2401,7 +2401,7 @@
     "unit": "pt"
    },
    "cellPadding": {
-    "value": 1.3,
+    "value": 1.0,
     "unit": "mm"
    },
    "rules": "horizontal"
