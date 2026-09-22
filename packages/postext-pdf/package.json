@@ -4,6 +4,18 @@
   "description": "Browser-native PDF renderer for Postext documents. Consumes the same VDT as the canvas/HTML backends and produces a physical PDF with faithful glyph positioning, justification, crop marks, and baseline grid.",
   "type": "module",
   "license": "MIT",
+  "homepage": "https://postext.dev/",
+  "keywords": [
+    "postext",
+    "pdf",
+    "typesetting",
+    "layout",
+    "pdf-lib",
+    "woff2",
+    "fonts",
+    "print",
+    "typography"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/drnachio/postext.git",
@@ -33,7 +45,8 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "bench": "BENCH=1 vitest run __bench__"
+    "bench": "BENCH=1 vitest run __bench__",
+    "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
     "postext": ">=0.1.0"
