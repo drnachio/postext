@@ -1,4 +1,4 @@
-import type { VDTDocument, VDTPage } from '../vdt';
+import type { VDTBlock, VDTDocument, VDTPage } from '../vdt';
 import { computePageTextExtent } from '../vdt';
 import { dimensionToPx } from '../units';
 import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentArea } from './decorations';
@@ -87,14 +87,19 @@ export function renderPageToCanvas(
   // Clip to column bounds, widened horizontally by a small buffer so that
   // glyph ink extending past its advance width (e.g. the tail of an "s" at the
   // column edge) is not chopped. Between-column gutters absorb the buffer.
+  // A block's design overlay may hang past the column on purpose — a
+  // callout's corner badge sits half outside its box, which for a
+  // page-wide box is half outside the column — so the clip also grows to
+  // take in every overlay block of the column.
   const clipOverhang = dimensionToPx({ value: 2, unit: 'pt' }, doc.config.page.dpi);
   for (const col of page.columns) {
+    const [left, right] = designOverlayOverhang(col.blocks, col.bbox.x, col.bbox.x + col.bbox.width);
     ctx.save();
     ctx.beginPath();
     ctx.rect(
-      col.bbox.x - clipOverhang,
+      col.bbox.x - clipOverhang - left,
       col.bbox.y,
-      col.bbox.width + clipOverhang * 2,
+      col.bbox.width + clipOverhang * 2 + left + right,
       col.bbox.height,
     );
     ctx.clip();
@@ -127,6 +132,21 @@ export function renderPageToCanvas(
   }
 
   renderCutLines(ctx, page, doc);
+}
+
+/** How far the design overlays of `blocks` reach past `x0` on the left and
+ *  `x1` on the right, in px (0 when they stay inside). */
+function designOverlayOverhang(blocks: VDTBlock[], x0: number, x1: number): [number, number] {
+  let left = 0;
+  let right = 0;
+  for (const block of blocks) {
+    if (!block.designOverlay || block.hidden) continue;
+    for (const b of block.designOverlay.blocks) {
+      left = Math.max(left, x0 - b.bbox.x);
+      right = Math.max(right, b.bbox.x + b.bbox.width - x1);
+    }
+  }
+  return [left, right];
 }
 
 export function renderPage(page: VDTPage, doc: VDTDocument): HTMLCanvasElement {

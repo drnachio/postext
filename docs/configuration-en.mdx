@@ -2741,9 +2741,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>placement</code></td>
-      <td><code>'here' | 'top' | 'bottom' | 'fixed'</code></td>
+      <td><code>'here' | 'auto' | 'top' | 'bottom' | 'fixed'</code></td>
       <td><code>'here'</code></td>
-      <td>Where the box goes. <code>'here'</code> sets it inline in the flow; <code>'top'</code> / <code>'bottom'</code> <strong>float</strong> it like a resource — it leaves the flow where it occurs and takes the first free band at or after that point (the foot of the current page, or the head / foot of the next page the flow opens), and the text after it fills the page around it; <code>'fixed'</code> anchors it at page coordinates through <code>fixed</code> below, out of the column flow. See the container section for the details. Overridable per instance with the <code>placement</code> attribute.</td>
+      <td>Where the box goes. <code>'here'</code> sets it inline in the flow; <code>'top'</code> / <code>'bottom'</code> <strong>float</strong> it like a resource (<code>'auto'</code> takes whichever band is free first, head or foot) — it leaves the flow where it occurs and takes the first free band at or after that point (the foot of the current page, or the head / foot of the next page the flow opens), and the text after it fills the page around it; <code>'fixed'</code> anchors it at page coordinates through <code>fixed</code> below, out of the column flow. See the container section for the details. Overridable per instance with the <code>placement</code> attribute.</td>
     </tr>
     <tr>
       <td><code>fixed</code></td>

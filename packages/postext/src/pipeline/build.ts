@@ -205,6 +205,11 @@ export interface PassHints {
   balanceLooseBudget?: ReadonlyMap<number, LooseBudget>;
   /** Band caps keyed by the span block's content index (see `bandCaps.ts`). */
   bandCaps?: ReadonlyMap<number, BandCap>;
+  /** Figures (resource ids) whose side caption (`placement.captionSide`)
+   *  goes under the figure instead: an earlier pass found the side column
+   *  too short for a side box or side float once the caption had taken its
+   *  foot, and the box spilled over the caption. */
+  captionUnder?: ReadonlySet<string>;
 }
 
 export interface PassResult extends BandPassReport {
@@ -221,6 +226,10 @@ export interface PassResult extends BandPassReport {
    *  of the ladder did, so the driver can blacklist it. Candidates left
    *  untried because their column's budget was already met are absent. */
   looseOutcome: Map<number, number | null>;
+  /** Figures whose side caption this pass found in the way of a side box or
+   *  side float that had to overflow the side column: candidates for
+   *  `PassHints.captionUnder` in the next pass. */
+  captionUnderProposals: Set<string>;
 }
 
 /**
@@ -277,7 +286,14 @@ export function buildDocumentPass(
   options?: BuildDocumentOptions,
   hints: PassHints = {},
 ): PassResult {
-  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder } = hints;
+  const captionUnderProposals = new Set<string>();
+  /** Side columns whose foot a figure's side caption has cut, by the figure. */
+  const asideCutBy = new WeakMap<VDTColumn, string>();
+  /** A side column that does not run the page's whole content height: a
+   *  band above (a page-span box, a top float band) or a caption below has
+   *  shortened it, so what does not fit it may still fit a full column. */
+  const shortSideColumn = (page: VDTPage, col: VDTColumn): boolean => col.bbox.height < page.contentArea.height - 0.5;
   const resolved = resolveAllConfig(config);
   // Tracking rungs a loose paragraph may climb: none, then 5‰ steps up to
   // the cap (`headings.balancing.maxTracking`, thousandths of an em), the
@@ -453,7 +469,7 @@ export function buildDocumentPass(
       pendingFloats.push(stamped);
     }
   };
-  /** Floated boxes (`placement: 'top' | 'bottom'`, `span` column / page):
+  /** Floated boxes (`placement: 'auto' | 'top' | 'bottom'`, `span` column / page):
    *  a `:::callout` that leaves the flow like a resource and takes the
    *  first free band after the point it occurs at — the foot of the
    *  current page, or the head / foot of a page the flow opens later —
@@ -475,7 +491,7 @@ export function buildDocumentPass(
     plan: PlannedCallout,
     style: ResolvedCalloutStyleConfig,
     L: CalloutLayouter,
-    placement: 'top' | 'bottom',
+    placement: 'auto' | 'top' | 'bottom',
     span: CalloutSpan,
   ): void => {
     const key = `${CALLOUT_FLOAT_PREFIX}${startIdx}`;
@@ -853,7 +869,7 @@ export function buildDocumentPass(
     // The caption beside the figure, in the band's side column.
     let aside: CaptionAside | undefined;
     let sideCol: VDTColumn | undefined;
-    if (f.captionSide && !pageSpan && !side && !rotated) {
+    if (f.captionSide && !pageSpan && !side && !rotated && !captionUnder?.has(f.resourceId)) {
       const sc = sideColumnOf(page, first.band ?? 0);
       if (sc && sc.bbox.width > 0.5) {
         sideCol = sc;
@@ -887,6 +903,19 @@ export function buildDocumentPass(
           aside = shifted;
           ({ need, y } = measureFloatBand(position, m2, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf));
           return { need, y, measure: m2, slice, width, xLeft, rotated, aside, sideCol };
+        }
+      }
+    }
+    // A bottom float's caption cuts the side column's foot; when the side
+    // stack already reaches into that band (a box set beside the text
+    // above), the caption goes under the figure instead of behind the box.
+    if (aside && sideCol && position === 'bottom' && measure.asideHeight !== undefined) {
+      const captionTop = y + measure.height - measure.asideHeight - floatGapPx;
+      if (sideUsedBottom(sideCol) > captionTop + 0.5) {
+        const plain = measureFloat(f.resourceId, width, slice, rotated);
+        if (plain) {
+          ({ need, y } = measureFloatBand(position, plain, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf));
+          return { need, y, measure: plain, slice, width, xLeft, rotated };
         }
       }
     }
@@ -977,6 +1006,14 @@ export function buildDocumentPass(
       // when even an empty column cannot hold it (a dominating figure).
       if (need > first.availableHeight + 0.01) {
         if (mode === 'strict' || sideUsedBottom(first) > first.bbox.y + 0.5) return 'defer';
+        // An empty column shortened by a band above it (a page-span box,
+        // a top float) is no measure of the float: when a full column
+        // would hold it, it waits for one instead of overflowing this one.
+        if (shortSideColumn(page, first) && measure.height <= page.contentArea.height + 0.01) return 'defer';
+        // Overflowing a column a side caption has shortened: the next pass
+        // sets that caption under its figure and gives the column back.
+        const cutBy = asideCutBy.get(first);
+        if (cutBy !== undefined) captionUnderProposals.add(cutBy);
       }
       const built = buildFloatBlock(f.resourceId, xLeft, width, slice);
       if (!built) return 'skip';
@@ -1092,6 +1129,7 @@ export function buildDocumentPass(
         const cut = Math.max(0, sideCol.bbox.y + sideCol.bbox.height - (y + built.height - measure.asideHeight - floatGapPx));
         sideCol.bbox.height = Math.max(0, sideCol.bbox.height - cut);
         sideCol.availableHeight = Math.max(0, sideCol.availableHeight - cut);
+        if (cut > 0.5) asideCutBy.set(sideCol, f.resourceId);
       }
     }
 
@@ -2530,6 +2568,13 @@ export function buildDocumentPass(
     }
     if (!fits()) {
       if (mode === 'strict' || used > side.bbox.y + 0.5) return false;
+      // A box that a full side column would hold waits for one rather than
+      // overflowing an empty column a band above has shortened.
+      if (shortSideColumn(page, side) && result.totalHeight <= page.contentArea.height + 0.01) return false;
+      // Same as a side float: a box that overflows a caption-shortened
+      // column asks for that caption to go under its figure.
+      const cutBy = asideCutBy.get(side);
+      if (cutBy !== undefined) captionUnderProposals.add(cutBy);
     }
     const frame = result.frame;
     stampCalloutSource(frame, startIdx, plan);
@@ -2607,7 +2652,7 @@ export function buildDocumentPass(
     // this point (the foot of the current page, or the head / foot of a
     // page the flow opens later) and the text after them fills the page.
     // A side box always stacks beside the text it interrupts.
-    if ((placement === 'top' || placement === 'bottom') && span !== 'side') {
+    if ((placement === 'auto' || placement === 'top' || placement === 'bottom') && span !== 'side') {
       enqueueCalloutFloat(startIdx, plan, style, L, placement, span);
       return undefined;
     }
@@ -3638,7 +3683,7 @@ export function buildDocumentPass(
   doc.converged = true;
   doc.iterationCount = 1;
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, captionUnderProposals };
 }
 
 /** Passes a document printing its own contents gets at most, beyond the
@@ -3741,16 +3786,29 @@ function* buildDocumentBalanced(
   const passOptions: BuildDocumentOptions | undefined = onProgress
     ? { ...options, onProgress: (p) => onProgress({ ...p, pass: passIndex }) }
     : options;
+  // Side captions moved under their figure (see `PassHints.captionUnder`):
+  // once a pass asks for one, every later pass keeps it.
+  const captionUnder = new Set<string>();
   const runPass = (hints?: PassHints): PassResult => {
     passIndex++;
     const started = onPass ? now() : 0;
-    const result = buildDocumentPass(content, config, cache, passOptions, hints);
+    const result = buildDocumentPass(content, config, cache, passOptions, { ...hints, captionUnder });
+    for (const id of result.captionUnderProposals) captionUnder.add(id);
     onPass?.({ pass: passIndex, tocRound, ms: now() - started, pages: result.doc.pages.length });
     return result;
   };
   // The first pass is a pass too: let a cancel land before the caps run.
-  const initial = runPass();
+  let initial = runPass();
   yield;
+  // A side box or side float spilled over a figure's side caption: place
+  // again with that caption under the figure (a moved caption can free or
+  // crowd another side column, hence the short loop).
+  for (let round = 0; round < 3 && initial.captionUnderProposals.size > 0; round++) {
+    const before = captionUnder.size;
+    initial = runPass();
+    yield;
+    if (captionUnder.size === before) break;
+  }
 
   // --- Band caps (page-span blocks mid-page) -----------------------------
   // A span block that arrived in an uneven band proposes a cap; the driver
@@ -3916,6 +3974,7 @@ function* buildDocumentBalanced(
       spanPlacedInBand: mergeSet(best.spanPlacedInBand, next.spanPlacedInBand),
       bandCapsApplied: mergeSet(best.bandCapsApplied, next.bandCapsApplied),
       looseOutcome: mergeMap(best.looseOutcome, next.looseOutcome),
+      captionUnderProposals: new Set([...best.captionUnderProposals, ...next.captionUnderProposals]),
     };
   };
 

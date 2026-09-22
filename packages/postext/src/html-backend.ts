@@ -116,6 +116,35 @@ function renderMathSegmentSvg(seg: VDTLineSegment, xPx: number, line: VDTLine, b
   return `<span style="position:absolute;left:${xPx.toFixed(3)}px;top:${topOffset.toFixed(3)}px;display:inline-block;line-height:0;">${svg}</span>`;
 }
 
+/** One text segment of a line, absolutely positioned at `x` / `top` inside
+ *  the line box. The wrapper inherits the line's font, so its line box —
+ *  and the baseline the text sits on — is the block face's; a segment set
+ *  in another face (a bold `:ref`, a superscript, an italic run whose
+ *  family differs) goes in an inner inline box with `line-height: 0`,
+ *  which aligns on that baseline without growing or shifting the line
+ *  box. A face with other vertical metrics would otherwise float its own
+ *  baseline higher or lower than the surrounding text. */
+function renderTextSegment(
+  seg: VDTLineSegment,
+  x: number,
+  top: string,
+  fontDecl: string,
+  colorDecl: string,
+  color: string,
+): string {
+  const pos = `position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;`;
+  const text = esc(seg.text);
+  if (seg.refResourceId !== undefined) {
+    // Anchors carry an explicit color so the UA link blue never leaks in.
+    const inner = `<a href="${refAnchorHref(seg.refResourceId)}" style="text-decoration:none;${fontDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
+    return `<span style="${pos}">${inner}</span>`;
+  }
+  if (fontDecl) {
+    return `<span style="${pos}"><span style="${fontDecl}line-height:0;${colorDecl}">${text}</span></span>`;
+  }
+  return `<span style="${pos}${colorDecl}">${text}</span>`;
+}
+
 function renderSegments(line: VDTLine, block: VDTBlock): string {
   if (!line.segments || line.segments.length === 0) {
     const plainIndent = line.bbox.x - block.bbox.x;
@@ -177,16 +206,7 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
     const colorDecl = color !== block.color ? `color:${color};` : '';
     const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-    if (seg.refResourceId !== undefined) {
-      // Anchors carry an explicit color so the UA link blue never leaks in.
-      parts.push(
-        `<a href="${refAnchorHref(seg.refResourceId)}" style="position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;text-decoration:none;${fontDecl}color:${color};">${esc(seg.text)}</a>`,
-      );
-    } else {
-      parts.push(
-        `<span style="position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
-      );
-    }
+    parts.push(renderTextSegment(seg, x, top, fontDecl, colorDecl, color));
     x += seg.width;
   }
   return parts.join('');
@@ -316,15 +336,7 @@ function renderResourceLine(
       const fontDecl = font !== baseFont ? `font:${font};` : '';
       const colorDecl = segColor !== color ? `color:${segColor};` : '';
       const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-      if (seg.refResourceId !== undefined) {
-        parts.push(
-          `<a href="${refAnchorHref(seg.refResourceId)}" style="position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;text-decoration:none;${fontDecl}color:${segColor};">${esc(seg.text)}</a>`,
-        );
-      } else {
-        parts.push(
-          `<span style="position:absolute;left:${x.toFixed(3)}px;top:${top};white-space:pre;${fontDecl}${colorDecl}">${esc(seg.text)}</span>`,
-        );
-      }
+      parts.push(renderTextSegment(seg, x, top, fontDecl, colorDecl, segColor));
       x += seg.width;
     }
   } else {

@@ -428,6 +428,7 @@ function CalloutStyleCard({
   ];
   const placementOptions = [
     { value: 'here', label: labels.calloutStylePlacementHere },
+    { value: 'auto', label: labels.calloutStylePlacementAuto },
     { value: 'top', label: labels.calloutStylePlacementTop },
     { value: 'bottom', label: labels.calloutStylePlacementBottom },
     { value: 'fixed', label: labels.calloutStylePlacementFixed },
