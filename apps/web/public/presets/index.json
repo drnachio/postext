@@ -22,6 +22,26 @@
       ]
     },
     {
+      "id": "deep-sky",
+      "dir": "deep-sky",
+      "name": "Cielo profundo · Deep Sky",
+      "description": "Revista de astronomía a dos columnas con aperturas a sangre, recuadros y citas · A two-column astronomy magazine with full-bleed openers, boxes and pull quotes",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0",
+      "credits": "ESO · NSF NOIRLab",
+      "tags": [
+        "magazine",
+        "two-column",
+        "parts",
+        "tables"
+      ]
+    },
+    {
       "id": "don-quijote",
       "dir": "don-quijote",
       "name": "Don Quijote · Gustave Doré",

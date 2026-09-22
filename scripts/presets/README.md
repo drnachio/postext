@@ -217,3 +217,28 @@ extract_tables.py <pdf> [--pages 12] [--header-rows 1] [--strategy lines_strict|
 Runs PyMuPDF `page.find_tables()` and prints one `TableModel` per detected
 table. Merged cells are not detected (every cell is 1x1); add `colSpan`/`rowSpan`
 by hand if needed.
+
+## Showcase bundles (public presets)
+
+The public presets served by the web app from `apps/web/public/presets/` are
+generated, never edited by hand. Each lives in `scripts/presets/showcase/<id>/`:
+
+- `fetch.py` downloads the sources into a git-ignored `source/` folder (public
+  domain / CC BY / CC BY-SA material only, plus OFL fonts from google/fonts) and
+  records where every file came from;
+- `editorial.py` holds the wording written for the preset (captions, fact
+  files, part titles, credits) in Spanish and English;
+- `build.py` processes the images, instances the variable fonts, writes the
+  chapters per locale, the manifest with its `localized` overrides, `CREDITS.md`,
+  `thumbnail.jpg` (a rendered cover kept next to the script) and
+  `fingerprint.json`, and registers the bundle in `index.json`.
+
+`_common.py` carries the shared helpers (units, design elements, font
+instancing, fingerprint, registration). Current bundles: `don-quijote`
+(book, column-and-a-half with margin glosses), `art-forms-nature` (plate book
+with side captions) and `deep-sky` (two-column magazine).
+
+```sh
+python3 scripts/presets/showcase/deep-sky/fetch.py
+python3 scripts/presets/showcase/deep-sky/build.py
+```
