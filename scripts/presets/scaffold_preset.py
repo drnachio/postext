@@ -284,6 +284,22 @@ def upsert_index(index_path: str, entry: dict) -> None:
         handle.write("\n")
 
 
+def showcase_meta(args) -> dict:
+    """The optional showcase fields (`locales`, `thumbnail`, `license`, `credits`, `tags`)."""
+    meta: dict = {}
+    if args.locales:
+        meta["locales"] = [l.strip() for l in args.locales.split(",") if l.strip()]
+    if args.thumbnail:
+        meta["thumbnail"] = args.thumbnail
+    if args.license:
+        meta["license"] = args.license
+    if args.credits:
+        meta["credits"] = args.credits
+    if args.tags:
+        meta["tags"] = [t.strip() for t in args.tags.split(",") if t.strip()]
+    return meta
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -294,6 +310,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--description", default="", help="one-line description")
     parser.add_argument("--locale", default="en", help="document locale (default: en)")
     parser.add_argument("--default", action="store_true", help="mark as the default preset")
+    parser.add_argument("--locales", help="comma-separated locales the bundle carries (showcase metadata)")
+    parser.add_argument("--thumbnail", help="preview image relative to the preset dir, e.g. thumbnail.jpg")
+    parser.add_argument("--license", help="licence label shown in the picker, e.g. 'CC BY 4.0'")
+    parser.add_argument("--credits", help="one-line credits shown under the description")
+    parser.add_argument("--tags", help="comma-separated free-form tags")
     parser.add_argument(
         "--markdown", metavar="FILE", help="markdown file (relative to the preset dir; default: first *.md)"
     )
@@ -343,6 +364,8 @@ def main(argv: list[str] | None = None) -> int:
     preset["locale"] = args.locale
     if args.default:
         preset["default"] = True
+    showcase = showcase_meta(args)
+    preset.update(showcase)
     preset["markdown"] = {args.locale: markdown} if markdown else {}
     preset["config"] = {}
     preset["resources"] = resources
@@ -363,6 +386,7 @@ def main(argv: list[str] | None = None) -> int:
     entry["locale"] = args.locale
     if args.default:
         entry["default"] = True
+    entry.update(showcase)
     index_path = (
         os.path.abspath(args.index) if args.index else os.path.join(os.path.dirname(preset_dir), "index.json")
     )

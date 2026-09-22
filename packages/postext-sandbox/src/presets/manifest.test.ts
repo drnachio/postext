@@ -57,6 +57,14 @@ describe('isPresetIndex', () => {
     expect(isPresetIndex({ version: 1, presets: [{ id: 'a', dir: 'a', name: 'A' }] })).toBe(true);
     expect(isPresetIndex({ version: 1, presets: [] })).toBe(true);
   });
+  it('accepts showcase metadata and rejects mistyped fields', () => {
+    const meta = { locales: ['es', 'en'], thumbnail: 'thumbnail.jpg', license: 'CC BY 4.0', credits: 'ESO', tags: ['magazine'] };
+    expect(isPresetIndex({ version: 1, presets: [{ id: 'a', dir: 'a', name: 'A', ...meta }] })).toBe(true);
+    expect(isPresetManifest(manifestV2(meta))).toBe(true);
+    expect(isPresetIndex({ version: 1, presets: [{ id: 'a', dir: 'a', name: 'A', locales: 'es' }] })).toBe(false);
+    expect(isPresetIndex({ version: 1, presets: [{ id: 'a', dir: 'a', name: 'A', tags: [1] }] })).toBe(false);
+    expect(isPresetManifest({ ...manifestV2(), license: 4 })).toBe(false);
+  });
 
   it('rejects malformed input', () => {
     expect(isPresetIndex(null)).toBe(false);

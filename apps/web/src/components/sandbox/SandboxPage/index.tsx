@@ -9,8 +9,12 @@ import { buildSandboxLabels } from "./labels";
 
 // Private preset bundles are served by /api/private-presets only in local dev
 // (POSTEXT_PRIVATE_PRESETS_DIR); production never advertises the source.
-const PRESET_SOURCES: { url: string; private?: boolean }[] =
-  process.env.NODE_ENV === "production" ? [] : [{ url: "/api/private-presets", private: true }];
+// The public showcase bundles ship with the app under `public/presets/`;
+// private bundles are only served by the dev-only API route.
+const PRESET_SOURCES: { url: string; private?: boolean }[] = [
+  { url: "/presets" },
+  ...(process.env.NODE_ENV === "production" ? [] : [{ url: "/api/private-presets", private: true }]),
+];
 
 export function SandboxPage() {
   const t = useTranslations("Sandbox");

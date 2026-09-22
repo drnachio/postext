@@ -23,8 +23,27 @@ function isNonEmptyString(v: unknown): v is string {
   return typeof v === 'string' && v.length > 0;
 }
 
+function isOptionalString(v: unknown): boolean {
+  return v === undefined || typeof v === 'string';
+}
+
+function isOptionalStringList(v: unknown): boolean {
+  return v === undefined || (Array.isArray(v) && v.every(isNonEmptyString));
+}
+
+/** The optional showcase fields (`PresetShowcaseMeta`): wrong types reject
+ *  the entry rather than being silently dropped. */
+function hasValidShowcaseMeta(v: Record<string, unknown>): boolean {
+  return isOptionalStringList(v.locales)
+    && isOptionalString(v.thumbnail)
+    && isOptionalString(v.license)
+    && isOptionalString(v.credits)
+    && isOptionalStringList(v.tags);
+}
+
 function isIndexEntry(v: unknown): v is PresetIndexEntry {
-  return isRecord(v) && isNonEmptyString(v.id) && isNonEmptyString(v.dir) && isNonEmptyString(v.name);
+  return isRecord(v) && isNonEmptyString(v.id) && isNonEmptyString(v.dir) && isNonEmptyString(v.name)
+    && hasValidShowcaseMeta(v);
 }
 
 export function isPresetIndex(data: unknown): data is PresetIndex {
@@ -63,6 +82,7 @@ export function isPresetManifest(data: unknown): data is PresetManifest {
   if (!isNonEmptyString(data.id) || !isNonEmptyString(data.name)) return false;
   if (data.version === 1 && !isMarkdownField(data.markdown)) return false;
   if (data.version === 2 && !isChaptersField(data.chapters)) return false;
+  if (!hasValidShowcaseMeta(data)) return false;
   if (data.config !== undefined && !isRecord(data.config)) return false;
   if (data.resources !== undefined) {
     if (!Array.isArray(data.resources)) return false;
