@@ -1127,6 +1127,7 @@ export interface SandboxLabels {
   calloutStylePlacement: string;
   calloutStylePlacementTooltip: string;
   calloutStylePlacementHere: string;
+  calloutStylePlacementAuto: string;
   calloutStylePlacementTop: string;
   calloutStylePlacementBottom: string;
   calloutStylePlacementFixed: string;

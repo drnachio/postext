@@ -446,6 +446,7 @@
     "calloutStylePlacement": "Colocación",
     "calloutStylePlacementTooltip": "Aquí: en línea con el texto. Arriba o abajo: flotado en esa banda de la página como un recurso. Fija: anclada a coordenadas de página, fuera del flujo de columnas",
     "calloutStylePlacementHere": "Aquí",
+    "calloutStylePlacementAuto": "Automático",
     "calloutStylePlacementTop": "Arriba",
     "calloutStylePlacementBottom": "Abajo",
     "calloutStylePlacementFixed": "Fija",

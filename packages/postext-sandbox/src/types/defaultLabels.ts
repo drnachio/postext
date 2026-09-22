@@ -1018,6 +1018,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   calloutStylePlacement: 'Placement',
   calloutStylePlacementTooltip: 'Here: inline in the text flow. Top or bottom: floated to that band of the page like a resource. Fixed: pinned to page coordinates, out of the column flow',
   calloutStylePlacementHere: 'Here',
+  calloutStylePlacementAuto: 'Auto',
   calloutStylePlacementTop: 'Top',
   calloutStylePlacementBottom: 'Bottom',
   calloutStylePlacementFixed: 'Fixed',

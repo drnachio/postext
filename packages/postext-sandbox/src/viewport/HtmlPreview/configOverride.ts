@@ -127,9 +127,19 @@ export function buildHtmlConfigOverride(
     parts,
     // The HTML viewer is a continuous reading surface, not a page: running
     // headers and footers (folios, running titles, page-edge tabs anchored
-    // to the bleed) have no place on it.
+    // to the bleed) have no place on it — neither the document's nor the
+    // ones a heading style sets for its section's pages.
     header: { elements: [] },
     footer: { elements: [] },
+    ...(base.headingStyles
+      ? {
+          headingStyles: base.headingStyles.map((style) => ({
+            ...style,
+            header: { elements: [] },
+            footer: { elements: [] },
+          })),
+        }
+      : {}),
   };
 }
 

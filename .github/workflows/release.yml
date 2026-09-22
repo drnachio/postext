@@ -3,6 +3,9 @@
 #
 # 1. Go to https://www.npmjs.com → Avatar → Access Tokens → Generate New Token
 #    Select type: "Automation" (bypasses 2FA for CI)
+#    A granular token must grant read/write on BOTH packages: postext and
+#    postext-pdf (E403 on publish = the token does not cover that package,
+#    E404 = the token expired).
 # 2. Go to https://github.com/drnachio/postext/settings/secrets/actions
 #    Click "New repository secret"
 #    Name:  NPM_TOKEN
@@ -94,13 +97,41 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Bumped to v$VERSION (${{ steps.bump.outputs.type }})"
 
-      # Build & test the package
-      - run: pnpm turbo run build --filter=postext
-      - run: pnpm turbo run test --filter=postext
+      # Same for postext-pdf. Its first release publishes the version in the
+      # repo as-is; later runs bump with the same label-derived type.
+      - name: Bump postext-pdf version
+        id: version_pdf
+        working-directory: packages/postext-pdf
+        run: |
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          if NPM_VERSION=$(npm view postext-pdf version 2>/dev/null); then
+            BASE=$(printf '%s\n%s\n' "$NPM_VERSION" "$LOCAL_VERSION" | sort -V | tail -1)
+            if [ "$BASE" != "$LOCAL_VERSION" ]; then
+              echo "Repo at $LOCAL_VERSION but npm at $NPM_VERSION — syncing to $BASE first"
+              npm version "$BASE" --no-git-tag-version --allow-same-version
+            fi
+            npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
+          else
+            echo "postext-pdf is not on npm yet — publishing $LOCAL_VERSION as its first release"
+          fi
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "postext-pdf at v$VERSION"
+
+      # Build & test both packages (postext-pdf builds against the freshly
+      # bumped workspace postext)
+      - run: pnpm turbo run build --filter=postext --filter=postext-pdf
+      - run: pnpm turbo run test --filter=postext --filter=postext-pdf
 
       # Publish to npm
-      - name: Publish to npm
+      - name: Publish postext to npm
         working-directory: packages/postext
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish postext-pdf to npm
+        working-directory: packages/postext-pdf
         run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -110,10 +141,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/postext/package.json
-          git commit -m "chore: release v${{ steps.version.outputs.version }}"
-          # Annotated tag: --follow-tags only pushes annotated tags, not lightweight ones
+          git add packages/postext/package.json packages/postext-pdf/package.json
+          # "chore: release" is the loop guard on this workflow's `if`
+          git commit -m "chore: release v${{ steps.version.outputs.version }} (postext-pdf v${{ steps.version_pdf.outputs.version }})"
+          # Annotated tags: --follow-tags only pushes annotated tags, not lightweight ones
           git tag -a "v${{ steps.version.outputs.version }}" -m "v${{ steps.version.outputs.version }}"
+          git tag -a "postext-pdf-v${{ steps.version_pdf.outputs.version }}" -m "postext-pdf v${{ steps.version_pdf.outputs.version }}"
           git push origin main --follow-tags
 
       # Keep develop in sync with the version bump

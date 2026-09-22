@@ -918,10 +918,12 @@ export interface ResolvedParagraphStyleConfig {
  *  interrupts; on a page without such a column it lays out as `'column'`. */
 export type CalloutSpan = 'column' | 'page' | 'side';
 /** Where a callout lands: inline in the flow (`'here'`), floated to the
- *  top / bottom band of a page like a resource, or at fixed page coordinates
- *  (`'fixed'` — anchored through {@link CalloutFixedConfig}, out of the
- *  column flow; text columns it overlaps are shortened around it). */
-export type CalloutPlacement = 'here' | 'top' | 'bottom' | 'fixed';
+ *  top / bottom band of a page like a resource (`'auto'` takes whichever
+ *  band comes first — the foot of the current page before the head of the
+ *  next), or at fixed page coordinates (`'fixed'` — anchored through
+ *  {@link CalloutFixedConfig}, out of the column flow; text columns it
+ *  overlaps are shortened around it). */
+export type CalloutPlacement = 'here' | 'auto' | 'top' | 'bottom' | 'fixed';
 
 /** Position of a `placement: 'fixed'` callout on the page where it occurs in
  *  the flow. The anchor's `container` is the page content area (mirrored on

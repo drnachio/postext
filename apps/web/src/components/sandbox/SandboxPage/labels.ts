@@ -1000,6 +1000,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     calloutStylePlacement: t("calloutStylePlacement"),
     calloutStylePlacementTooltip: t("calloutStylePlacementTooltip"),
     calloutStylePlacementHere: t("calloutStylePlacementHere"),
+    calloutStylePlacementAuto: t("calloutStylePlacementAuto"),
     calloutStylePlacementTop: t("calloutStylePlacementTop"),
     calloutStylePlacementBottom: t("calloutStylePlacementBottom"),
     calloutStylePlacementFixed: t("calloutStylePlacementFixed"),

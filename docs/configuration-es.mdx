@@ -2741,9 +2741,9 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>placement</code></td>
-      <td><code>'here' | 'top' | 'bottom' | 'fixed'</code></td>
+      <td><code>'here' | 'auto' | 'top' | 'bottom' | 'fixed'</code></td>
       <td><code>'here'</code></td>
-      <td>Dónde va la caja. <code>'here'</code> la deja en línea en el flujo; <code>'top'</code> / <code>'bottom'</code> la hacen <strong>flotar</strong> como un recurso — sale del flujo donde aparece y ocupa la primera banda libre en ese punto o después (el pie de la página actual, o la cabecera / el pie de la siguiente página que abre el flujo), y el texto que la sigue rellena la página a su alrededor; <code>'fixed'</code> la ancla a coordenadas de página mediante <code>fixed</code>, fuera del flujo de columnas. Ver la sección del contenedor para los detalles. Se puede sobrescribir por instancia con el atributo <code>placement</code>.</td>
+      <td>Dónde va la caja. <code>'here'</code> la deja en línea en el flujo; <code>'top'</code> / <code>'bottom'</code> la hacen <strong>flotar</strong> como un recurso (<code>'auto'</code> toma la primera banda que quede libre, la cabecera o el pie) — sale del flujo donde aparece y ocupa la primera banda libre en ese punto o después (el pie de la página actual, o la cabecera / el pie de la siguiente página que abre el flujo), y el texto que la sigue rellena la página a su alrededor; <code>'fixed'</code> la ancla a coordenadas de página mediante <code>fixed</code>, fuera del flujo de columnas. Ver la sección del contenedor para los detalles. Se puede sobrescribir por instancia con el atributo <code>placement</code>.</td>
     </tr>
     <tr>
       <td><code>fixed</code></td>
