@@ -244,7 +244,11 @@ and commentary while the plate floats onto the facing recto) and `senales`
 (EEA Signals 2020 in Spanish and English, read from the PDFs by type role in
 `extract.py`, with CC0 Unsplash photographs from Wikimedia Commons in place
 of the original pictures and the infographics transcribed as data panels in
-`editorial.py`).
+`editorial.py`) and `openstax-fisica` (the first two chapters of OpenStax's
+*Física universitaria, volumen 1* and *Physics*, CC BY 4.0, converted from
+the CNXML modules by `cnxml.py` — MathML formulas become LaTeX — into a
+column-and-a-half textbook with side-column figures, worked examples and
+checks).
 
 ```sh
 python3 scripts/presets/showcase/deep-sky/fetch.py
