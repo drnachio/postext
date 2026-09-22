@@ -6,6 +6,17 @@ import {
 import type { LayoutType, PostextConfig } from 'postext';
 import { htmlViewerDpi, LOCALE_TO_HYPHENATION, PADDING_PX, type ColumnMode } from './constants';
 
+/** A heading's design slot on screen: page- and bleed-anchored bands, cover
+ *  art and the height they reserve are placed in millimetres on a printed
+ *  leaf, so on a scroll surface of another shape they land over the text.
+ *  The viewer sets the heading as type instead. */
+function flatDesign<T extends { enabled?: boolean }>(
+  advancedDesign: T | undefined,
+): { advancedDesign?: T } {
+  if (!advancedDesign) return {};
+  return { advancedDesign: { ...advancedDesign, enabled: false } };
+}
+
 /** Layout config for one HTML viewer pass. `base` is the document config as
  *  the viewer sees it — pass it through `applyHtmlViewerOverrides` first so
  *  the screen-only `htmlViewer.overrides` take part in the heading scaling
@@ -67,12 +78,19 @@ export function buildHtmlConfigOverride(
   const headingLevels = resolvedHeadings.levels.map((lvl) => ({
     ...lvl,
     breakBefore: { ...lvl.breakBefore, parity: 'any' as const },
+    ...flatDesign(lvl.advancedDesign),
   }));
   const parts: PostextConfig['parts'] = {
     ...base.parts,
     breakBefore: { ...base.parts?.breakBefore, parity: 'any' },
-    breakAfter: { ...base.parts?.breakAfter, parity: 'any' },
-    ...(base.parts?.margins ? { margins: { ...base.parts.margins, mirror: false } } : {}),
+    // A part opens a scroll unit of its own; the blank verso that follows
+    // its leaf in print would only be an empty screen here.
+    breakAfter: { enabled: false, parity: 'any' },
+    // The divider's page design and the margins that leave room for it are
+    // built for the leaf, not for this surface.
+    design: { elements: [] },
+    versoDesign: { elements: [] },
+    margins: undefined,
   };
 
   return {
@@ -137,6 +155,11 @@ export function buildHtmlConfigOverride(
             ...style,
             header: { elements: [] },
             footer: { elements: [] },
+            // A style's page geometry belongs to the leaf it was measured
+            // for — a cover's text box in the lower corner of a 225 mm page
+            // leaves no content area at all on a viewer page.
+            margins: undefined,
+            ...flatDesign(style.advancedDesign),
           })),
         }
       : {}),
