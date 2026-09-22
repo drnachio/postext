@@ -2,26 +2,6 @@
   "version": 1,
   "presets": [
     {
-      "id": "art-forms-nature",
-      "dir": "art-forms-nature",
-      "name": "Formas artísticas de la naturaleza · Haeckel",
-      "description": "Libro de láminas a columna y media con fichas y pies laterales · A column-and-a-half plate book with fact files and side captions",
-      "locale": "es",
-      "locales": [
-        "es",
-        "en"
-      ],
-      "thumbnail": "thumbnail.jpg",
-      "license": "Public domain · CC BY-SA 4.0",
-      "credits": "Ernst Haeckel · Wikipedia · Library of Congress · Wikimedia Commons",
-      "tags": [
-        "plates",
-        "one-and-a-half",
-        "side-captions",
-        "parts"
-      ]
-    },
-    {
       "id": "deep-sky",
       "dir": "deep-sky",
       "name": "Cielo profundo · Deep Sky",
@@ -59,6 +39,26 @@
         "one-and-a-half",
         "margin-notes",
         "front-matter"
+      ]
+    },
+    {
+      "id": "espana-en-mapas",
+      "dir": "espana-en-mapas",
+      "name": "España en mapas · Atlas Nacional",
+      "description": "Capítulo de historia del Atlas Nacional de España a dos columnas con mapas a página · The National Atlas of Spain history chapter, two columns with page-wide maps",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0 ign.es",
+      "credits": "Instituto Geográfico Nacional · Atlas Nacional de España",
+      "tags": [
+        "atlas",
+        "two-column",
+        "maps",
+        "parts"
       ]
     }
   ]

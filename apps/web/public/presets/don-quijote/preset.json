@@ -733,6 +733,24 @@
     },
     "layout": {
      "layoutType": "single"
+    },
+    "margins": {
+     "top": {
+      "value": 165.0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 20.0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 68.0,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 15.0,
+      "unit": "mm"
+     }
     }
    },
    {
@@ -1021,10 +1039,6 @@
     "spaceBetween": {
      "value": 6,
      "unit": "pt"
-    },
-    "marginTop": {
-     "value": 150,
-     "unit": "mm"
     },
     "color": {
      "hex": "#6b625a",
@@ -1536,49 +1550,6 @@
    "elements": [
     {
      "kind": "text",
-     "id": "folioEven",
-     "placement": {
-      "anchor": {
-       "to": "page",
-       "edge": "top-left"
-      },
-      "offset": {
-       "x": {
-        "value": 15.0,
-        "unit": "mm"
-       },
-       "y": {
-        "value": 12.0,
-        "unit": "mm"
-       }
-      },
-      "size": {
-       "width": "auto",
-       "height": "auto"
-      }
-     },
-     "content": "{pageNumber}",
-     "fontFamily": "Alegreya SC",
-     "fontSize": {
-      "value": 9,
-      "unit": "pt"
-     },
-     "fontWeight": 400,
-     "italic": false,
-     "align": "left",
-     "verticalAlign": "middle",
-     "lineHeight": 1.2,
-     "overflow": "ellipsis-end",
-     "color": {
-      "hex": "#1f1a17",
-      "model": "hex",
-      "paletteId": "ink"
-     },
-     "parity": "even",
-     "pages": "body"
-    },
-    {
-     "kind": "text",
      "id": "authorEven",
      "placement": {
       "anchor": {
@@ -1668,27 +1639,34 @@
      },
      "parity": "odd",
      "pages": "body"
-    },
+    }
+   ]
+  },
+  "footer": {
+   "elements": [
     {
      "kind": "text",
-     "id": "folioOdd",
+     "id": "folioBody",
      "placement": {
       "anchor": {
        "to": "page",
-       "edge": "top-right"
+       "edge": "bottom"
       },
       "offset": {
        "x": {
-        "value": -15.0,
+        "value": 0,
         "unit": "mm"
        },
        "y": {
-        "value": 12.0,
+        "value": -11.0,
         "unit": "mm"
        }
       },
       "size": {
-       "width": "auto",
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
        "height": "auto"
       }
      },
@@ -1700,7 +1678,7 @@
      },
      "fontWeight": 400,
      "italic": false,
-     "align": "right",
+     "align": "center",
      "verticalAlign": "middle",
      "lineHeight": 1.2,
      "overflow": "ellipsis-end",
@@ -1709,13 +1687,8 @@
       "model": "hex",
       "paletteId": "ink"
      },
-     "parity": "odd",
      "pages": "body"
-    }
-   ]
-  },
-  "footer": {
-   "elements": [
+    },
     {
      "kind": "text",
      "id": "folioOpener",
@@ -3248,10 +3221,9 @@
    "width": 579,
    "height": 823,
    "placement": {
-    "position": "here",
-    "span": "column",
-    "width": 0.42,
-    "align": "center"
+    "position": "auto",
+    "span": "side",
+    "width": 1
    },
    "caption": "",
    "altText": "Gustave Doré"
