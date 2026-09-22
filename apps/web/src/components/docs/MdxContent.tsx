@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { compileMDX } from "next-mdx-remote/rsc";
-import rehypePrettyCode from "rehype-pretty-code";
-import rehypeSlug from "rehype-slug";
+import { compileDocsMdx } from "@/lib/mdx";
 import * as illustrations from "./illustrations";
+import { CodePenExample } from "./CodePenExample";
 
 function createHeading(level: 1 | 2 | 3) {
   const Tag = `h${level}` as const;
@@ -42,6 +41,7 @@ const components = {
   h3: createHeading(3),
   a: MdxLink,
   ...illustrations,
+  CodePenExample,
 };
 
 function wrapScrollableElements(source: string): string {
@@ -85,28 +85,7 @@ export async function MdxContent({ source, skipTitle }: MdxContentProps) {
 
   cleaned = wrapScrollableElements(cleaned);
 
-  const { content } = await compileMDX({
-    source: cleaned,
-    components,
-    options: {
-      parseFrontmatter: false,
-      mdxOptions: {
-        rehypePlugins: [
-          rehypeSlug,
-          [
-            rehypePrettyCode,
-            {
-              theme: {
-                dark: "github-dark",
-                light: "github-light",
-              },
-              keepBackground: false,
-            },
-          ],
-        ],
-      },
-    },
-  });
+  const { content } = await compileDocsMdx(cleaned, components);
 
   return (
     <div className="docs-content prose prose-invert max-w-none">

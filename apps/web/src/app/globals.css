@@ -605,3 +605,85 @@ html { font-size: 18px; }
   height: auto;
   border-radius: 8px;
 }
+/* ── Docs: CodePen examples ─────────────────────────────────────────── */
+.docs-content .docs-codepen {
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.docs-content .docs-codepen-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.8rem;
+  color: var(--slate);
+}
+.docs-content .docs-codepen-title {
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.docs-content .docs-codepen-run {
+  flex-shrink: 0;
+  border: 1px solid var(--gilt);
+  border-radius: 4px;
+  padding: 0.3rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--gilt);
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+.docs-content .docs-codepen-run:hover:not(:disabled) {
+  color: var(--background);
+  background: var(--gilt);
+}
+.docs-content .docs-codepen-run:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.docs-content .docs-codepen-code pre {
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+  max-height: 32rem;
+  overflow: auto;
+}
+.docs-content .docs-codepen-code figure {
+  margin: 0;
+}
+.docs-content .docs-codepen-code details {
+  border-top: 1px solid var(--rule);
+}
+.docs-content .docs-codepen-code summary {
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--slate);
+  cursor: pointer;
+}
+.docs-content .docs-codepen-code summary:hover {
+  color: var(--foreground);
+}
+.docs-content .docs-codepen-embed iframe {
+  display: block;
+  width: 100%;
+}
+.docs-content .docs-codepen-note {
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  text-align: left;
+  border-top: 1px solid var(--rule);
+  font-size: 0.75rem;
+  color: var(--slate);
+}
+.docs-content .docs-codepen-error {
+  color: var(--foreground);
+}

@@ -30,6 +30,13 @@
     "openMenu": "Open navigation menu",
     "closeMenu": "Close navigation menu"
   },
+  "CodePen": {
+    "run": "Run on CodePen",
+    "loading": "Loading CodePen…",
+    "hint": "Loads an interactive editor from codepen.io. The example imports the latest postext release from a CDN.",
+    "error": "CodePen could not be loaded. Check your network or a content blocker, then try again.",
+    "panel": "{file}"
+  },
   "DocsSearch": {
     "triggerPlaceholder": "Search documentation…",
     "triggerAriaLabel": "Open documentation search",
@@ -763,7 +770,7 @@
     "presetActive": "Active",
     "presetPrivate": "Private",
     "presetDefault": "Default",
-    "presetLoading": "Loading preset\u2026",
+    "presetLoading": "Loading preset…",
     "presetLoadError": "The preset could not be loaded",
     "presetUnavailable": "Not available in this build",
     "presetUpdatedFromDisk": "Preset updated from disk",

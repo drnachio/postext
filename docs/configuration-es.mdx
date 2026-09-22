@@ -3822,6 +3822,12 @@ Para renderizar todas las páginas, itera sobre `vdt.pages`:
 const bitmaps = vdt.pages.map((page) => renderPage(page, vdt));
 ```
 
+#### Ejemplo en vivo: una página como imagen
+
+Todo lo anterior, ejecutándose en el navegador. El pen importa la última versión publicada de `postext` desde un CDN, espera a las fuentes web, compone un documento corto a dos columnas, pinta su primera página en un canvas y ofrece ese bitmap como PNG. Pulsa *Ejecutar en CodePen* para cargar el editor y cambiar el markdown o la configuración; la página se repinta con cada edición.
+
+<CodePenExample name="render-page" title="Postext · renderizar una página como imagen" description="Compone un documento markdown con postext y rasteriza su primera página a un canvas / PNG." height={600} />
+
 ### Resolver valores por defecto
 
 Las funciones de resolución rellenan los valores por defecto para objetos de configuración parciales. Esto es útil cuando necesitas una configuración completa para inspección o comparación:
@@ -4140,6 +4146,12 @@ Las piezas clave de la API pública:
 - **`resolveHtmlViewerConfig(partial)`** — completa los valores por defecto del visor HTML (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — primitivas de medida usadas para derivar un ancho de columna real en píxeles a partir de un objetivo en caracteres.
 - **`createMeasurementCache` / `clearMeasurementCache`** — cachés enchufables para reutilizar medidas entre recomposiciones.
+
+### Ejemplo en vivo: una cadena HTML
+
+El recorrido completo en JavaScript plano, antes de la integración con React de más abajo: construir el documento, pasar el `VDTDocument` a `renderToHtml` y volcar la cadena en un contenedor. `mode: 'single'` apila las páginas en vertical; `background` les da color, porque por defecto las páginas son transparentes. El pen también imprime el marcado generado, para que veas las líneas posicionadas de forma absoluta que emite el renderizador: el navegador las pinta, pero nunca las recompone.
+
+<CodePenExample name="render-html" title="Postext · renderizar un documento a HTML" description="Compone un documento markdown con postext y renderízalo a una cadena HTML." height={600} />
 
 ### Integración mínima
 
@@ -4460,6 +4472,12 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 ```
 
 **Importante:** llama a `ensureConfigFontsLoaded(config)` (o equivalente) *antes* de `buildDocument` cuando tu configuración referencie web fonts. La maquetación se mide contra las métricas de fuente que el navegador tenga en ese momento para esa familia — si la fuente real aún no ha llegado, el VDT se mide contra una de reserva y el PDF no coincidirá con la salida de canvas o HTML. El sandbox lo hace explícitamente antes de cada render (ver `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
+
+### Ejemplo en vivo: un PDF en el navegador
+
+El flujo completo de arriba, ejecutándose en el navegador: el pen importa `postext` y `postext-pdf` desde un CDN, carga las fuentes web, construye el documento, incrusta los cortes de Fontsource a través del proveedor de fuentes y entrega los bytes a un enlace que abre el archivo en una pestaña nueva y a otro de descarga. El PDF resultante tiene los mismos saltos de línea que la salida en canvas y HTML, fuentes incrustadas reales y marcadores de esquema.
+
+<CodePenExample name="render-pdf" title="Postext · generar un PDF en el navegador" description="Compone un documento markdown con postext y renderízalo a PDF con postext-pdf." height={600} />
 
 ### PDFs listos para imprenta
 

@@ -60,7 +60,7 @@ The web has had responsive layout (flexbox, grid) for over a decade. What it has
 
 ### A decade of trying
 
-This problem is not new. The [Content First](https://blog.binpar.com/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293) project, started around 2014, was an early attempt to bring editorial layout quality to the web. I built column-based layouts, experimented with text flow algorithms, and ran into the same wall repeatedly: **you cannot make good layout decisions without knowing exactly how much space text will occupy.**
+This problem is not new. The [Content First](https://medium.com/binpar/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293) project, started around 2014, was an early attempt to bring editorial layout quality to the web. I built column-based layouts, experimented with text flow algorithms, and ran into the same wall repeatedly: **you cannot make good layout decisions without knowing exactly how much space text will occupy.**
 
 DOM-based measurement is expensive. Every time you ask the browser "how tall is this paragraph at this width?", you trigger a layout reflow. Do this hundreds of times for a complex layout and the page becomes unusable. I needed a way to measure text that was fast enough to run speculatively — trying different layouts, different column widths, different break points — without blocking the main thread.
 
