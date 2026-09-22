@@ -3207,10 +3207,13 @@ export function buildDocumentPass(
             addBalanceExtra(curCol, extraPx);
           }
         }
-      } else if (partIndex === 0 && reservedOf(curCol).top > 0) {
+      } else if (reservedOf(curCol).top > 0) {
         // Column balancing: extra grid lines between the float band at the
         // head of this column and its first block (the after-float lever).
-        const extraPx = balanceExtraPx?.get(blockIdx);
+        // A paragraph resuming from the column before is levered on its own
+        // fragment, so the room lands under the figure and not back at the
+        // paragraph's start.
+        const extraPx = balanceExtraPx?.get(balanceKey(blockIdx, partIndex));
         if (extraPx) {
           spacingBefore += extraPx;
           addBalanceExtra(curCol, extraPx);
