@@ -2,26 +2,6 @@
   "version": 1,
   "presets": [
     {
-      "id": "art-forms-nature",
-      "dir": "art-forms-nature",
-      "name": "Formas artísticas de la naturaleza · Haeckel",
-      "description": "Libro de láminas a columna y media con fichas y pies laterales · A column-and-a-half plate book with fact files and side captions",
-      "locale": "es",
-      "locales": [
-        "es",
-        "en"
-      ],
-      "thumbnail": "thumbnail.jpg",
-      "license": "Public domain · CC BY-SA 4.0",
-      "credits": "Ernst Haeckel · Wikipedia · Library of Congress · Wikimedia Commons",
-      "tags": [
-        "plates",
-        "one-and-a-half",
-        "side-captions",
-        "parts"
-      ]
-    },
-    {
       "id": "deep-sky",
       "dir": "deep-sky",
       "name": "Cielo profundo · Deep Sky",
@@ -59,6 +39,87 @@
         "one-and-a-half",
         "margin-notes",
         "front-matter"
+      ]
+    },
+    {
+      "id": "espana-en-mapas",
+      "dir": "espana-en-mapas",
+      "name": "España en mapas · Atlas Nacional",
+      "description": "Capítulo de historia del Atlas Nacional de España a dos columnas con mapas a página · The National Atlas of Spain history chapter, two columns with page-wide maps",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0 ign.es",
+      "credits": "Instituto Geográfico Nacional · Atlas Nacional de España",
+      "tags": [
+        "atlas",
+        "two-column",
+        "maps",
+        "parts"
+      ]
+    },
+    {
+      "id": "openstax-fisica",
+      "dir": "openstax-fisica",
+      "name": "Física universitaria · Physics (OpenStax)",
+      "description": "Libro de texto a columna y media con ejemplos resueltos, comprobaciones, tablas y fórmulas · A column-and-a-half textbook with worked examples, checks, tables and formulas",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0",
+      "credits": "OpenStax, Rice University",
+      "tags": [
+        "textbook",
+        "one-and-a-half",
+        "math",
+        "callouts",
+        "tables"
+      ]
+    },
+    {
+      "id": "pintura-espanola",
+      "dir": "pintura-espanola",
+      "name": "Pintura española · Spanish Painting",
+      "description": "Catálogo de exposición a una columna: ficha y comentario frente a la lámina a página · A single-column exhibition catalogue, entry and commentary facing the full-page plate",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC0 · CC BY-SA 4.0",
+      "credits": "The Met · National Gallery of Art · Cleveland Museum of Art · Museo Sorolla · Wikipedia",
+      "tags": [
+        "catalogue",
+        "single-column",
+        "plates",
+        "parts"
+      ]
+    },
+    {
+      "id": "senales",
+      "dir": "senales",
+      "name": "Señales 2020 · Signals 2020",
+      "description": "Revista de la Agencia Europea de Medio Ambiente a dos columnas con aperturas fotográficas, recuadros, citas y paneles de datos · A two-column EEA magazine with photo openers, boxes, pull quotes and data panels",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "© EEA 2020, reproduction authorised · CC0 photos",
+      "credits": "Agencia Europea de Medio Ambiente · Unsplash",
+      "tags": [
+        "magazine",
+        "two-column",
+        "callouts",
+        "tables"
       ]
     }
   ]

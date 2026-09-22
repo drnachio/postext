@@ -302,6 +302,9 @@ export function pixelToSourceOffset(
   for (const b of doc.blocks) {
     if (b.pageIndex !== pageIndex) continue;
     if (isHiddenUnderBand(b, bandTitles)) continue;
+    // A heading drawn through an advanced design keeps invisible in-column
+    // lines; its glyphs belong to the overlay's text blocks (handled above).
+    if (b.designOverlay) continue;
     // A callout frame spans its whole box but carries no text of its own;
     // its children follow in `doc.blocks` and own the clickable glyphs.
     if (b.type === 'callout') continue;

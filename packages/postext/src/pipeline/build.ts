@@ -351,8 +351,9 @@ export function buildDocumentPass(
   doc.pages.push(firstPage);
 
   // Extract frontmatter, then parse the remaining markdown body
-  const { metadata: frontmatterMeta, content: markdownBody, contentOffset: bodyOffset } = extractFrontmatter(content.markdown);
+  const { metadata: frontmatterMeta, content: markdownBody, contentOffset: bodyOffset, fieldSources } = extractFrontmatter(content.markdown);
   doc.metadata = { ...(content.metadata ?? {}), ...frontmatterMeta };
+  if (fieldSources) doc.metadataSources = fieldSources;
   const parsedBlocks = parseMarkdownMemo(markdownBody);
   const headingStart = continuation?.headings;
   // `:::toc` expands into the entries of the book's outline — the one the

@@ -17,13 +17,27 @@ export interface BandLineBox {
   plainStart: number;
 }
 
-/** Band text blocks of a page that carry a source range. */
+/** Design text blocks of a page that carry a source range: the opener
+ *  band, the running heads, and the advanced-design overlays of the page's
+ *  headings (cover pages, in-column openers, `:::toc` part rows). */
 export function bandTitleBlocks(doc: VDTDocument, pageIndex: number): VDTDesignTextBlock[] {
-  const band = doc.pages[pageIndex]?.openerBand;
-  if (!band) return [];
-  return band.blocks.filter(
-    (b): b is VDTDesignTextBlock => b.kind === 'text' && b.sourceStart !== undefined && b.sourceEnd !== undefined,
-  );
+  const page = doc.pages[pageIndex];
+  if (!page) return [];
+  const slots = [page.openerBand, page.header, page.footer];
+  for (const b of doc.blocks) {
+    if (b.pageIndex === pageIndex && b.designOverlay) slots.push(b.designOverlay);
+  }
+  for (const b of page.floats ?? []) {
+    if (b.designOverlay) slots.push(b.designOverlay);
+  }
+  const out: VDTDesignTextBlock[] = [];
+  for (const slot of slots) {
+    if (!slot) continue;
+    for (const b of slot.blocks) {
+      if (b.kind === 'text' && b.sourceStart !== undefined && b.sourceEnd !== undefined) out.push(b);
+    }
+  }
+  return out;
 }
 
 /** A flow heading rendered through an opener band keeps invisible lines

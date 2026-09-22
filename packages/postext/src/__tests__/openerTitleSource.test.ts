@@ -54,15 +54,19 @@ const config: PostextConfig = {
 };
 
 describe('opener band title source mapping', () => {
-  it('stamps the heading text range on the {titleText} element only', () => {
+  it('stamps the heading text range on {titleText}, the heading line on {chapterNumber} and the value on {attr.*}', () => {
     const markdown = '# Health and Illness {author="J. Doe"}\n\nBody text after the opener.';
     const doc = buildDocument({ markdown }, config);
     const band = doc.pages[0]!.openerBand;
     expect(band).toBeDefined();
     const texts = band!.blocks.filter((b): b is VDTDesignTextBlock => b.kind === 'text');
     const withSource = texts.filter((b) => b.sourceStart !== undefined);
-    expect(withSource).toHaveLength(2);
-    const [title, author] = withSource;
+    expect(withSource).toHaveLength(3);
+    const [title, label, author] = withSource;
+    // `Chapter {chapterNumber}` maps to the whole heading line, without a per-glyph map.
+    expect(label!.sourceStart).toBe(0);
+    expect(markdown.slice(label!.sourceStart, label!.sourceEnd).startsWith('# Health and Illness')).toBe(true);
+    expect(label!.sourceMap).toBeUndefined();
     expect(markdown.slice(title!.sourceStart, title!.sourceEnd)).toBe('Health and Illness');
     expect(title!.sourceText).toBe('Health and Illness');
     expect(title!.sourceMap).toHaveLength('Health and Illness'.length);

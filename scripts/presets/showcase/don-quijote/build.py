@@ -173,22 +173,24 @@ def at(to: str, edge: str) -> dict:
 
 
 def running_heads() -> dict:
-    """Verso: folio outer + author; recto: chapter title + folio outer. Body
-    pages only; opener pages carry a centred folio in the footer."""
+    """Verso: author; recto: chapter title. Body pages only — the folio sits
+    centred at the foot of every page (see `folio_footer`)."""
     y = M_TOP - 10.0
     return {
         "elements": [
-            text("folioEven", "{pageNumber}", anchor=at("page", "top-left"), offset=(M_OUTER, y), size=9, family="Alegreya SC", parity="even", pages="body", overflow="ellipsis-end"),
             text("authorEven", "Miguel de Cervantes", anchor=at("page", "top"), offset=(0, y), width=90, size=9, family="Alegreya SC", align="center", parity="even", pages="body", overflow="ellipsis-end"),
             text("titleOdd", "{chapterTitle}", anchor=at("page", "top"), offset=(0, y), width=90, size=9, italic=True, align="center", parity="odd", pages="body", overflow="ellipsis-end"),
-            text("folioOdd", "{pageNumber}", anchor=at("page", "top-right"), offset=(-M_OUTER, y), size=9, family="Alegreya SC", align="right", parity="odd", pages="body", overflow="ellipsis-end"),
         ]
     }
 
 
-def opener_footer() -> dict:
+def folio_footer() -> dict:
+    """Centred folio at the foot of body and opener pages, roman in the front
+    matter and arabic in the body alike; part pages and blank versos carry
+    none (the cover style blanks its footer)."""
     return {
         "elements": [
+            text("folioBody", "{pageNumber}", anchor=at("page", "bottom"), offset=(0, -(M_BOTTOM - 9)), width=30, size=9, family="Alegreya SC", align="center", pages="body", overflow="ellipsis-end"),
             text("folioOpener", "{pageNumber}", anchor=at("page", "bottom"), offset=(0, -(M_BOTTOM - 9)), width=30, size=9, family="Alegreya SC", align="center", pages="opener", overflow="ellipsis-end"),
         ]
     }
@@ -436,6 +438,8 @@ def heading_styles() -> list[dict]:
             "header": empty,
             "footer": empty,
             "layout": {"layoutType": "single"},
+            # The verso: the colophon sits low, on a narrow measure.
+            "margins": {"top": mm(PAGE_H - 70), "bottom": mm(M_BOTTOM), "left": mm(PAGE_W - M_OUTER - 72), "right": mm(M_OUTER)},
         },
         {
             "id": "preliminar",
@@ -460,7 +464,7 @@ def heading_styles() -> list[dict]:
 
 def paragraph_styles() -> list[dict]:
     return [
-        {"id": "colofon", "name": "Colofón", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "marginTop": mm(150), "color": col("muted")},
+        {"id": "colofon", "name": "Colofón", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "color": col("muted")},
         {"id": "creditos", "name": "Créditos", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(5)},
     ]
 
@@ -491,7 +495,7 @@ def shared_config() -> dict:
         "parts": parts("es"),
         "toc": toc_config(),
         "header": running_heads(),
-        "footer": opener_footer(),
+        "footer": folio_footer(),
         "captionStyle": {
             "fontFamily": "Alegreya",
             "fontSize": pt(8.5),
@@ -557,12 +561,15 @@ def process_plates(meta: list[dict]) -> dict[str, dict]:
     return out
 
 
+SIDE_TAIL_LEAD = 1
+
 PLACEMENTS = {
     "full": {"position": "top", "span": "page", "width": 1},
     "page": {"position": "top", "span": "page", "width": 1},
     "side": {"position": "auto", "span": "side", "width": 1},
     "head": {"position": "here", "span": "column", "width": 0.86, "align": "center"},
     "tail": {"position": "here", "span": "column", "width": 0.42, "align": "center"},
+    "sidetail": {"position": "auto", "span": "side", "width": 1},
     "cover": {"position": "here", "span": "column", "width": 1},
 }
 
@@ -716,9 +723,16 @@ def compose_section(key: str, section: g.Section, lang: str) -> tuple[str, str]:
     lines: list[str] = []
     head = [s for s, sp in ed.PLATES.items() if s.startswith(key) and sp["role"] == "head"]
     tail = [s for s, sp in ed.PLATES.items() if s.startswith(key) and sp["role"] == "tail"]
+    # A closing vignette floated into the outer column: the directive goes a
+    # few paragraphs before the end so it lands on the section's last page.
+    side_tail = [s for s, sp in ed.PLATES.items() if s.startswith(key) and sp["role"] == "sidetail"]
+    side_tail_at = max(0, len(paragraphs) - SIDE_TAIL_LEAD)
     for slug in head:
         lines.append(f'::resource{{id="{slug}"}}\n')
     for i, p in enumerate(paragraphs):
+        if i == side_tail_at:
+            for slug in side_tail:
+                lines.append(f'::resource{{id="{slug}"}}\n')
         para = md_paragraph(p)
         for slug in refs.get(i, []):
             para += f' (:ref{{id="{slug}" case="lower"}})'

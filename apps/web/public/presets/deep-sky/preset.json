@@ -815,6 +815,24 @@
     },
     "layout": {
      "layoutType": "single"
+    },
+    "margins": {
+     "top": {
+      "value": 217.0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 20.0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 126.0,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 14.0,
+      "unit": "mm"
+     }
     }
    },
    {

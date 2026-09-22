@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractFrontmatter } from "../frontmatter";
+import { extractFrontmatter, frontmatterFieldSources } from "../frontmatter";
 
 describe("extractFrontmatter", () => {
   it("parses a YAML frontmatter block and strips it from the content", () => {
@@ -42,5 +42,17 @@ Body`;
     const { metadata } = extractFrontmatter(input);
     expect(metadata.title).toBe("T");
     expect(metadata.customKey).toBe("custom value");
+  });
+
+  it("records the source range of every field value, quotes excluded", () => {
+    const input = `---\ntitle: "Hello world"\nauthor: Ignacio\nsubtitle:   'Sub'  \n---\n\n# Heading`;
+    const { fieldSources } = extractFrontmatter(input);
+    expect(fieldSources).toBeDefined();
+    const slice = (k: string) => input.slice(fieldSources![k]!.start, fieldSources![k]!.end);
+    expect(slice("title")).toBe("Hello world");
+    expect(slice("author")).toBe("Ignacio");
+    expect(slice("subtitle")).toBe("Sub");
+    expect(frontmatterFieldSources("# No frontmatter")).toBeUndefined();
+    expect(extractFrontmatter("# Heading").fieldSources).toBeUndefined();
   });
 });

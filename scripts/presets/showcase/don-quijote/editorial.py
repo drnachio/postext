@@ -49,11 +49,12 @@ PLATE_NOTE = {
 }
 
 # Plates: slug → role and captions. Roles: "head" (ornament set inline at the
-# chapter start), "tail" (ornament at the end), "page" (page-wide float),
+# chapter start), "tail" (ornament at the end), "sidetail" (ornament floated
+# into the outer column near the end), "page" (page-wide float),
 # "side" (float in the outer column), "full" (page-wide plate, own page).
 PLATES = {
     "prologo-head": {"role": "head"},
-    "prologo-tail": {"role": "tail"},
+    "prologo-tail": {"role": "sidetail"},
     "c01-head": {"role": "head"},
     "c01-plate-library": {
         "role": "full",

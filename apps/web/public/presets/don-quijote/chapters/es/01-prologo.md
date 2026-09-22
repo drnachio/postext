@@ -50,6 +50,6 @@ Y con estos latinicos y otros tales os tendrán siquiera por gramático, que el 
 
 Con silencio grande estuve escuchando lo que mi amigo me decía, y de tal manera se imprimieron en mí sus razones que, sin ponerlas en disputa, las aprobé por buenas y de ellas mismas quise hacer este prólogo; en el cual verás, lector suave, la discreción de mi amigo, la buena ventura mía en hallar en tiempo tan necesitado tal consejero, y el alivio tuyo en hallar tan sincera y tan sin revueltas la historia del famoso don Quijote de la Mancha, de quien hay opinión, por todos los habitadores del distrito del campo de Montiel, que fue el más casto enamorado y el más valiente caballero que de muchos años a esta parte se vio en aquellos contornos. Yo no quiero encarecerte el servicio que te hago en darte a conocer tan noble y tan honrado caballero, pero quiero que me agradezcas el conocimiento que tendrás del famoso Sancho Panza, su escudero, en quien, a mi parecer, te doy cifradas todas las gracias escuderiles que en la caterva de los libros vanos de caballerías están esparcidas.
 
-Y con esto, Dios te dé salud, y a mí no olvide. Vale.
-
 ::resource{id="prologo-tail"}
+
+Y con esto, Dios te dé salud, y a mí no olvide. Vale.

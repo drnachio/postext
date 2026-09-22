@@ -726,6 +726,9 @@ export interface VDTDocument {
   converged: boolean;
   iterationCount: number;
   metadata: DocumentMetadata;
+  /** Source range of each frontmatter field value, so design text set from
+   *  `{title}`, `{author}`… can map a click back to the editor. */
+  metadataSources?: Record<string, { start: number; end: number }>;
   /** Physical pages before page 0 (`PostextContent.continuation`): shifts
    *  parity everywhere. Absent or 0 for a self-contained document. */
   pageIndexOffset?: number;
