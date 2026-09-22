@@ -98,6 +98,15 @@ export interface PresetChapterSpec {
   file: string;
 }
 
+/** What a bilingual bundle changes per locale on top of its shared `config`
+ *  and `resources`: top-level config keys replaced wholesale for that locale
+ *  (`resourceTypes` with translated caption prefixes, say) and the wording of
+ *  resources — caption, note, alt text, a table's cells — merged by id. */
+export interface PresetLocaleOverrides {
+  config?: Partial<PostextConfig>;
+  resources?: (Pick<PresetResourceSpec, 'id'> & Partial<Pick<PresetResourceSpec, 'caption' | 'note' | 'altText' | 'table'>>)[];
+}
+
 interface PresetManifestBase extends PresetShowcaseMeta {
   id: string;
   name: string;
@@ -107,6 +116,9 @@ interface PresetManifestBase extends PresetShowcaseMeta {
   config?: PostextConfig;
   resources?: PresetResourceSpec[];
   fonts?: PresetFontFamilySpec[];
+  /** Locale → overrides, resolved with the same rules as a locale → chapters
+   *  map (exact tag, base language, the manifest's locale, first entry). */
+  localized?: Record<string, PresetLocaleOverrides>;
 }
 
 /** `preset.json` (version 1): a single markdown document. Still accepted

@@ -32,6 +32,27 @@ const manifest = (over: Partial<PresetManifestV1> = {}): PresetManifestV1 => ({
 });
 
 describe('parseBundle', () => {
+  it('applies the locale overrides to resources and config', async () => {
+    const m = manifest({
+      markdown: { en: 'en.md', es: 'es.md' },
+      resources: [{ id: 'fig', typeId: 'figure', kind: 'svg', file: 'resources/fig.svg', caption: 'shared' }],
+      config: { resourceTypes: [{ id: 'figure', name: 'Figure', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal', captionPrefix: 'Plate' }] },
+      localized: {
+        es: {
+          config: { resourceTypes: [{ id: 'figure', name: 'Lámina', shortLabel: 'Lám.', numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal', captionPrefix: 'Lámina' }] },
+          resources: [{ id: 'fig', caption: 'La biblioteca', note: 'Doré' }],
+        },
+      },
+    });
+    const files = { 'en.md': 'EN', 'es.md': 'ES', 'resources/fig.svg': SVG };
+    const es = await parseBundle(m, readerFrom(files), { locale: 'es', summary });
+    expect(es.resources[0]!.caption).toBe('La biblioteca');
+    expect(es.resources[0]!.note).toBe('Doré');
+    expect(es.config.resourceTypes?.[0]!.captionPrefix).toBe('Lámina');
+    const en = await parseBundle(m, readerFrom(files), { locale: 'en', summary });
+    expect(en.resources[0]!.caption).toBe('shared');
+    expect(en.config.resourceTypes?.[0]!.captionPrefix).toBe('Plate');
+  });
   it('reads markdown, inline tables, files and fonts with preset ids by default', async () => {
     const loaded = await parseBundle(
       manifest({

@@ -6,6 +6,7 @@ import {
   isPresetManifest,
   mimeForFile,
   pickChapterSpecs,
+  pickLocaleOverrides,
   pickMarkdownFile,
   presetFileId,
   presetFontFileId,
@@ -43,6 +44,19 @@ describe('v2 manifests', () => {
     const localized = manifestV2({ chapters: { en: [{ title: 'E', file: 'en.md' }], es: [{ title: 'S', file: 'es.md' }] }, locale: 'es' });
     expect(pickChapterSpecs(localized, 'es-ES')[0]!.file).toBe('es.md');
     expect(pickChapterSpecs(localized, 'fr')[0]!.file).toBe('es.md');
+  });
+  it('resolves per-locale overrides with the chapters\' locale', () => {
+    const localized = {
+      en: { config: { resourceTypes: [] }, resources: [{ id: 'fig', caption: 'Plate' }] },
+      es: { resources: [{ id: 'fig', caption: 'Lámina' }] },
+    };
+    const m = manifestV2({ chapters: { en: [{ title: 'E', file: 'en.md' }], es: [{ title: 'S', file: 'es.md' }] }, locale: 'es', localized });
+    expect(isPresetManifest(m)).toBe(true);
+    expect(pickLocaleOverrides(m, 'es-MX')).toBe(localized.es);
+    expect(pickLocaleOverrides(m, 'en')).toBe(localized.en);
+    expect(pickLocaleOverrides(m, 'fr')).toBe(localized.es);
+    expect(pickLocaleOverrides(manifestV2(), 'en')).toBeNull();
+    expect(isPresetManifest(manifestV2({ localized: { en: { resources: [{ caption: 'x' }] } } } as never))).toBe(false);
   });
   it('names chapter files with a padded ordinal and a unique slug', () => {
     const taken = new Set<string>();

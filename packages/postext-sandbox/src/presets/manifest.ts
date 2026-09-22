@@ -10,6 +10,7 @@ import type {
   PresetFontFamilySpec,
   PresetIndex,
   PresetIndexEntry,
+  PresetLocaleOverrides,
   PresetManifest,
   PresetManifestV1,
   PresetResourceSpec,
@@ -75,6 +76,20 @@ function isChaptersField(v: unknown): v is PresetChapterSpec[] | Record<string, 
   return values.length > 0 && values.every(isChapterList);
 }
 
+function isLocaleOverrides(v: unknown): v is PresetLocaleOverrides {
+  if (!isRecord(v)) return false;
+  if (v.config !== undefined && !isRecord(v.config)) return false;
+  if (v.resources !== undefined) {
+    if (!Array.isArray(v.resources)) return false;
+    if (!v.resources.every((r) => isRecord(r) && isNonEmptyString(r.id))) return false;
+  }
+  return true;
+}
+
+function isLocalizedField(v: unknown): v is Record<string, PresetLocaleOverrides> {
+  return isRecord(v) && Object.values(v).every(isLocaleOverrides);
+}
+
 /** Accepts both manifest versions: v1 (`markdown`) and v2 (`chapters`). */
 export function isPresetManifest(data: unknown): data is PresetManifest {
   if (!isRecord(data)) return false;
@@ -83,6 +98,7 @@ export function isPresetManifest(data: unknown): data is PresetManifest {
   if (data.version === 1 && !isMarkdownField(data.markdown)) return false;
   if (data.version === 2 && !isChaptersField(data.chapters)) return false;
   if (!hasValidShowcaseMeta(data)) return false;
+  if (data.localized !== undefined && !isLocalizedField(data.localized)) return false;
   if (data.config !== undefined && !isRecord(data.config)) return false;
   if (data.resources !== undefined) {
     if (!Array.isArray(data.resources)) return false;
@@ -126,23 +142,50 @@ export function pickMarkdownFile(manifest: PresetManifestV1, locale: string): st
   return pickByLocale(md, locale, manifest.locale);
 }
 
-/** Pick the entry of a locale → value map for `locale`: exact tag, base
- *  language, the manifest's own locale, then the first entry. */
-function pickByLocale<T>(map: Record<string, T>, locale: string, manifestLocale?: string): T {
+/** The key of a locale → value map that serves `locale`: exact tag, base
+ *  language, the manifest's own locale, then the first key. */
+function pickLocaleKey(keys: string[], locale: string, manifestLocale?: string): string {
   const wanted = locale.toLowerCase();
-  const keys = Object.keys(map);
   const byLower = new Map(keys.map((k) => [k.toLowerCase(), k]));
   const exact = byLower.get(wanted);
-  if (exact) return map[exact]!;
+  if (exact) return exact;
   const base = wanted.split(/[-_]/)[0]!;
   const baseKey = byLower.get(base);
-  if (baseKey) return map[baseKey]!;
+  if (baseKey) return baseKey;
   if (manifestLocale) {
     const own = byLower.get(manifestLocale.toLowerCase())
       ?? byLower.get(manifestLocale.toLowerCase().split(/[-_]/)[0]!);
-    if (own) return map[own]!;
+    if (own) return own;
   }
-  return map[keys[0]!]!;
+  return keys[0]!;
+}
+
+/** Pick the entry of a locale → value map for `locale` (see `pickLocaleKey`). */
+function pickByLocale<T>(map: Record<string, T>, locale: string, manifestLocale?: string): T {
+  return map[pickLocaleKey(Object.keys(map), locale, manifestLocale)]!;
+}
+
+/** The per-locale overrides that apply to `locale`, or null when the
+ *  manifest has none. A bundle whose chapters are a locale map applies the
+ *  overrides of the locale its chapters were picked from, so text and
+ *  wording never disagree. */
+export function pickLocaleOverrides(manifest: PresetManifest, locale: string): PresetLocaleOverrides | null {
+  const localized = manifest.localized;
+  if (!localized || Object.keys(localized).length === 0) return null;
+  const chapterMap = manifest.version === 2 && !Array.isArray(manifest.chapters) ? manifest.chapters
+    : manifest.version === 1 && typeof manifest.markdown !== 'string' ? manifest.markdown
+      : null;
+  const key = chapterMap
+    ? pickLocaleKey(Object.keys(chapterMap), locale, manifest.locale)
+    : pickLocaleKey(Object.keys(localized), locale, manifest.locale);
+  // Only that locale's own overrides (exact tag or base language) apply: a
+  // locale without any keeps the shared wording.
+  const wanted = key.toLowerCase();
+  const base = wanted.split(/[-_]/)[0]!;
+  const keys = Object.keys(localized);
+  const found = keys.find((k) => k.toLowerCase() === wanted)
+    ?? keys.find((k) => k.toLowerCase().split(/[-_]/)[0] === base);
+  return found ? localized[found]! : null;
 }
 
 /** The chapter files to read for `locale`: a v1 manifest yields a single
