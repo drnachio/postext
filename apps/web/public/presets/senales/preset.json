@@ -1,0 +1,5626 @@
+{
+ "version": 2,
+ "id": "senales",
+ "name": "Señales 2020 · Signals 2020",
+ "description": "Revista de la Agencia Europea de Medio Ambiente a dos columnas con aperturas fotográficas, recuadros, citas y paneles de datos · A two-column EEA magazine with photo openers, boxes, pull quotes and data panels",
+ "locale": "es",
+ "locales": [
+  "es",
+  "en"
+ ],
+ "thumbnail": "thumbnail.jpg",
+ "license": "© EEA 2020, reproduction authorised · CC0 photos",
+ "credits": "Agencia Europea de Medio Ambiente · Unsplash",
+ "tags": [
+  "magazine",
+  "two-column",
+  "callouts",
+  "tables"
+ ],
+ "chapters": {
+  "es": [
+   {
+    "title": "Señales 2020",
+    "file": "chapters/es/00-portada.md"
+   },
+   {
+    "title": "Índice",
+    "file": "chapters/es/01-sumario.md"
+   },
+   {
+    "title": "Hacia una contaminación cero en Europa",
+    "file": "chapters/es/02-editorial.md"
+   },
+   {
+    "title": "Una mejor calidad del aire mejora la salud y la productividad de las personas",
+    "file": "chapters/es/03-aire.md"
+   },
+   {
+    "title": "Garantizar un agua limpia para las personas y la naturaleza",
+    "file": "chapters/es/04-agua.md"
+   },
+   {
+    "title": "La contaminación de la tierra y del suelo: generalizada, nociva y creciente",
+    "file": "chapters/es/05-suelo.md"
+   },
+   {
+    "title": "Vivir de forma más saludable en un mundo de sustancias químicas",
+    "file": "chapters/es/06-quimicos.md"
+   },
+   {
+    "title": "¿Paga el que contamina?",
+    "file": "chapters/es/07-quien-contamina-paga.md"
+   },
+   {
+    "title": "El reto de reducir la contaminación industrial",
+    "file": "chapters/es/08-industria.md"
+   },
+   {
+    "title": "La contaminación acústica sigue estando muy extendida en toda Europa, pero hay formas de bajar el volumen",
+    "file": "chapters/es/09-ruido.md"
+   },
+   {
+    "title": "Cómo abordar los riesgos medioambientales para la salud",
+    "file": "chapters/es/10-salud.md"
+   },
+   {
+    "title": "Referencias",
+    "file": "chapters/es/11-referencias.md"
+   },
+   {
+    "title": "Créditos y fuentes",
+    "file": "chapters/es/12-creditos.md"
+   }
+  ],
+  "en": [
+   {
+    "title": "Signals 2020",
+    "file": "chapters/en/00-portada.md"
+   },
+   {
+    "title": "Contents",
+    "file": "chapters/en/01-contents.md"
+   },
+   {
+    "title": "Towards zero pollution in Europe",
+    "file": "chapters/en/02-editorial.md"
+   },
+   {
+    "title": "Improving air quality improves people’s health and productivity",
+    "file": "chapters/en/03-aire.md"
+   },
+   {
+    "title": "Ensuring clean waters for people and nature",
+    "file": "chapters/en/04-agua.md"
+   },
+   {
+    "title": "Land and soil pollution — widespread, harmful and growing",
+    "file": "chapters/en/05-suelo.md"
+   },
+   {
+    "title": "Living healthily in a chemical world",
+    "file": "chapters/en/06-quimicos.md"
+   },
+   {
+    "title": "Does the polluter pay?",
+    "file": "chapters/en/07-quien-contamina-paga.md"
+   },
+   {
+    "title": "The challenge of reducing industrial pollution",
+    "file": "chapters/en/08-industria.md"
+   },
+   {
+    "title": "Noise pollution is still widespread across Europe, but there are ways to reduce the volume",
+    "file": "chapters/en/09-ruido.md"
+   },
+   {
+    "title": "Addressing environmental risks to health",
+    "file": "chapters/en/10-salud.md"
+   },
+   {
+    "title": "References",
+    "file": "chapters/en/11-references.md"
+   },
+   {
+    "title": "Credits and sources",
+    "file": "chapters/en/12-credits.md"
+   }
+  ]
+ },
+ "config": {
+  "locale": "es",
+  "page": {
+   "sizePreset": "custom",
+   "width": {
+    "value": 168.0,
+    "unit": "mm"
+   },
+   "height": {
+    "value": 237.0,
+    "unit": "mm"
+   },
+   "margins": {
+    "top": {
+     "value": 22.0,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 20.0,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 16.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 14.0,
+     "unit": "mm"
+    },
+    "mirror": true
+   },
+   "baselineGrid": {
+    "enabled": false
+   },
+   "pageNumbering": {
+    "format": "decimal",
+    "startAt": 1
+   }
+  },
+  "layout": {
+   "layoutType": "double",
+   "gutterWidth": {
+    "value": 6.0,
+    "unit": "mm"
+   }
+  },
+  "bodyText": {
+   "fontFamily": "Open Sans",
+   "fontSize": {
+    "value": 9.3,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 13.2,
+    "unit": "pt"
+   },
+   "textAlign": "left",
+   "firstLineIndent": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "indentAfterHeading": false,
+   "paragraphSpacing": true,
+   "color": {
+    "hex": "#1c1f22",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "boldColor": {
+    "hex": "#1c1f22",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "italicColor": {
+    "hex": "#1c1f22",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "referenceColor": {
+    "hex": "#1f6f8b",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "referenceBold": false,
+   "referenceItalic": true,
+   "hyphenation": {
+    "enabled": true,
+    "locale": "es"
+   },
+   "avoidWidows": true,
+   "avoidOrphans": true,
+   "optimalLineBreaking": true
+  },
+  "headings": {
+   "fontFamily": "Outfit",
+   "color": {
+    "hex": "#1c1f22",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "keepWithNext": true,
+   "levels": [
+    {
+     "level": 1,
+     "fontSize": {
+      "value": 23,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 26,
+      "unit": "pt"
+     },
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "odd"
+     },
+     "advancedDesign": {
+      "enabled": true,
+      "minHeight": {
+       "value": 34,
+       "unit": "mm"
+      },
+      "slot": {
+       "elements": [
+        {
+         "kind": "box",
+         "id": "frontStripe",
+         "placement": {
+          "anchor": {
+           "to": "bleed",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 0,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": "fill",
+           "height": {
+            "value": 3,
+            "unit": "mm"
+           }
+          }
+         },
+         "style": {
+          "backgroundColor": {
+           "hex": "#1f6f8b",
+           "model": "hex",
+           "paletteId": "band"
+          },
+          "borderRadius": {
+           "value": 0,
+           "unit": "mm"
+          }
+         }
+        },
+        {
+         "kind": "text",
+         "id": "frontTitle",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 4,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 138.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "Outfit",
+         "fontSize": {
+          "value": 24,
+          "unit": "pt"
+         },
+         "fontWeight": 800,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.06,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#1c1f22",
+          "model": "hex",
+          "paletteId": "ink"
+         }
+        },
+        {
+         "kind": "rule",
+         "id": "frontRule",
+         "direction": "horizontal",
+         "placement": {
+          "anchor": {
+           "to": "#frontTitle",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 5,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 30,
+            "unit": "mm"
+           }
+          }
+         },
+         "color": {
+          "hex": "#1f6f8b",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "thickness": {
+          "value": 1.5,
+          "unit": "pt"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "level": 2,
+     "fontSize": {
+      "value": 11.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "marginTop": {
+      "value": 12,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 3,
+      "unit": "pt"
+     }
+    }
+   ]
+  },
+  "headingStyles": [
+   {
+    "id": "portada",
+    "name": "Portada",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 237.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "coverBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#1c1f22",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "coverPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 227.7,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 152.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-cover"
+       },
+       {
+        "kind": "box",
+        "id": "coverRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 149.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#1f6f8b",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverSeries",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 160.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.series}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.4,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverTitle",
+        "placement": {
+         "anchor": {
+          "to": "#coverSeries",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{title}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 48,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.0,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverSubtitle",
+        "placement": {
+         "anchor": {
+          "to": "#coverTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 118.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{subtitle}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 14,
+         "unit": "pt"
+        },
+        "fontWeight": 500,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.25,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#cfd4d8",
+         "model": "hex",
+         "paletteId": "rule"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverPublisher",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "bottom-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": -13,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.publisher}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 7,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#676c72",
+         "model": "hex",
+         "paletteId": "muted"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 1.4,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "layout": {
+     "layoutType": "single"
+    },
+    "margins": {
+     "top": {
+      "value": 159.0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 20.0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 74.0,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 14.0,
+      "unit": "mm"
+     }
+    }
+   },
+   {
+    "id": "sumario",
+    "name": "Sumario",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 34,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "frontStripe",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#1f6f8b",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 24,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 30,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "thickness": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "layout": {
+     "layoutType": "single"
+    }
+   },
+   {
+    "id": "preliminar",
+    "name": "Página de texto",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "any"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 34,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "frontStripe",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#1f6f8b",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 24,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 30,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "thickness": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-editorial",
+    "name": "Editorial",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 155.1,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 116.1,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-cover"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 113.1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#1f6f8b",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 122.1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-aire",
+    "name": "Aire",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 136.9,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 97.9,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-air-1"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 94.9,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#2a7f97",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 103.9,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-agua",
+    "name": "Agua",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 155.1,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 116.1,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-water-1"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 113.1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#2b6ca3",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 122.1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-suelo",
+    "name": "Tierra y suelo",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 154.9,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 115.9,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-soil-1"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 112.9,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#8a6a3b",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 121.9,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-quimicos",
+    "name": "Sustancias químicas",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 155.1,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 116.1,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-chemicals-1"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 113.1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#6b4c9a",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 122.1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-quien-contamina-paga",
+    "name": "Entrevista",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 137.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 98.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-polluter-1"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 95.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#4a4a45",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 104.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-industria",
+    "name": "Industria",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 155.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 116.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-industry-1"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 113.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#b5542a",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 122.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-ruido",
+    "name": "Ruido",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 138.6,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 99.6,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-noise-1"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 96.6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#c0392b",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 105.6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "art-salud",
+    "name": "Entrevista",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 155.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "openerPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 116.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "photo-health-1"
+       },
+       {
+        "kind": "box",
+        "id": "openerRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 113.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#3c8a55",
+          "model": "hex"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "kicker",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 122.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.kicker}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f6f8b",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "headline",
+        "placement": {
+         "anchor": {
+          "to": "#kicker",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Outfit",
+        "fontSize": {
+         "value": 23,
+         "unit": "pt"
+        },
+        "fontWeight": 800,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "standfirst",
+        "placement": {
+         "anchor": {
+          "to": "#headline",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 138.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.standfirst}",
+        "fontFamily": "Open Sans",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1f22",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "paragraphStyles": [
+   {
+    "id": "pregunta",
+    "name": "Pregunta",
+    "fontFamily": "Open Sans",
+    "fontSize": {
+     "value": 9.6,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13.2,
+     "unit": "pt"
+    },
+    "fontWeight": 700,
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f6f8b",
+     "model": "hex",
+     "paletteId": "band"
+    }
+   },
+   {
+    "id": "firma",
+    "name": "Firma",
+    "fontFamily": "Outfit",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 12.5,
+     "unit": "pt"
+    },
+    "fontWeight": 500,
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 4,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#676c72",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "fuentes",
+    "name": "Fuentes",
+    "fontFamily": "Open Sans",
+    "fontSize": {
+     "value": 7.2,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 9.8,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 3,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#676c72",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "colofon",
+    "name": "Colofón",
+    "fontFamily": "Open Sans",
+    "fontSize": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#676c72",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "creditos",
+    "name": "Créditos",
+    "fontFamily": "Open Sans",
+    "fontSize": {
+     "value": 9.3,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13.2,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "referencia",
+    "name": "Referencia",
+    "fontFamily": "Open Sans",
+    "fontSize": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 3,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1c1f22",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   }
+  ],
+  "calloutStyles": [
+   {
+    "id": "recuadro",
+    "name": "Recuadro",
+    "span": "page",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#e8f0f3",
+     "model": "hex",
+     "paletteId": "tint"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 4,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 5,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 3.5,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 5,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "left",
+     "width": {
+      "value": 3,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "columnGap": {
+     "value": 6,
+     "unit": "mm"
+    },
+    "titleStyle": {
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "gap": {
+      "value": 2,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Open Sans",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 12.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "keepTogether": false
+   },
+   {
+    "id": "cita",
+    "name": "Cita destacada",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": false,
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "top",
+     "width": {
+      "value": 2.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "body": {
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 13,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 16,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "boldColor": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textAlign": "left",
+     "hyphenation": false,
+     "paragraphSpacing": false,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   },
+   {
+    "id": "datos",
+    "name": "Datos",
+    "span": "page",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#f2f1ed",
+     "model": "hex",
+     "paletteId": "grey"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 4,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 5,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 3.5,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 5,
+      "unit": "mm"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "columnGap": {
+     "value": 6,
+     "unit": "mm"
+    },
+    "titleStyle": {
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 8,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.8,
+      "unit": "pt"
+     },
+     "gap": {
+      "value": 2.5,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Open Sans",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 11.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "keepTogether": false
+   },
+   {
+    "id": "cifras",
+    "name": "Cifras",
+    "span": "page",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#1c1f22",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 5,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 6,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 4,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 6,
+      "unit": "mm"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "columnGap": {
+     "value": 8,
+     "unit": "mm"
+    },
+    "titleStyle": {
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 8,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.8,
+      "unit": "pt"
+     },
+     "gap": {
+      "value": 3,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 10,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#ffffff",
+      "model": "hex",
+      "paletteId": "white"
+     },
+     "boldColor": {
+      "hex": "#ffffff",
+      "model": "hex",
+      "paletteId": "white"
+     },
+     "textAlign": "left",
+     "hyphenation": false,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   }
+  ],
+  "toc": {
+   "levels": [
+    {
+     "level": 1,
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 16,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "numberWidth": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "marginTop": {
+      "value": 6,
+      "unit": "pt"
+     }
+    }
+   ],
+   "unnumbered": {
+    "fontFamily": "Outfit",
+    "italic": false,
+    "color": {
+     "hex": "#1c1f22",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   },
+   "pageNumber": {
+    "fontFamily": "Outfit",
+    "fontSize": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "fontWeight": 700,
+    "color": {
+     "hex": "#1f6f8b",
+     "model": "hex",
+     "paletteId": "band"
+    },
+    "width": {
+     "value": 10,
+     "unit": "mm"
+    }
+   },
+   "leader": {
+    "enabled": true,
+    "char": ".",
+    "gap": {
+     "value": 1.2,
+     "unit": "mm"
+    }
+   }
+  },
+  "parts": {
+   "design": {
+    "elements": [
+     {
+      "kind": "text",
+      "id": "partTitle",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 16.0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 60,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 138.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "{titleText}",
+      "fontFamily": "Outfit",
+      "fontSize": {
+       "value": 30,
+       "unit": "pt"
+      },
+      "fontWeight": 800,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.2,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#1c1f22",
+       "model": "hex",
+       "paletteId": "ink"
+      }
+     }
+    ]
+   }
+  },
+  "header": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 14.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "chapterEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 22.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 110,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{chapterTitle}",
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 500,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#676c72",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "even",
+     "pages": "body",
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.2,
+      "unit": "pt"
+     }
+    },
+    {
+     "kind": "text",
+     "id": "titleOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -22.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 120,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "Señales 2020 · Hacia una contaminación cero en Europa",
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 500,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#676c72",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "odd",
+     "pages": "body",
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.2,
+      "unit": "pt"
+     }
+    },
+    {
+     "kind": "text",
+     "id": "folioOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -14.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "body"
+    }
+   ]
+  },
+  "footer": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioOpener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "pages": "opener"
+    }
+   ]
+  },
+  "captionStyle": {
+   "fontFamily": "Outfit",
+   "fontSize": {
+    "value": 7.5,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#1c1f22",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "align": "left",
+   "gap": {
+    "value": 1.6,
+    "unit": "mm"
+   },
+   "labelBold": true,
+   "labelColor": {
+    "hex": "#1f6f8b",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "descriptionItalic": false,
+   "note": {
+    "fontSize": {
+     "value": 6.3,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#676c72",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "italic": false,
+    "gap": {
+     "value": 0.6,
+     "unit": "mm"
+    }
+   }
+  },
+  "tableStyle": {
+   "bodyFontFamily": "Open Sans",
+   "bodyFontSize": {
+    "value": 8.5,
+    "unit": "pt"
+   },
+   "bodyLineHeight": {
+    "value": 11.5,
+    "unit": "pt"
+   },
+   "bodyColor": {
+    "hex": "#1c1f22",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "headerFontFamily": "Outfit",
+   "headerFontSize": {
+    "value": 8.5,
+    "unit": "pt"
+   },
+   "headerBold": true,
+   "headerBackgroundEnabled": true,
+   "headerBackground": {
+    "hex": "#1f6f8b",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "headerColor": {
+    "hex": "#ffffff",
+    "model": "hex",
+    "paletteId": "white"
+   },
+   "borderColor": {
+    "hex": "#cfd4d8",
+    "model": "hex",
+    "paletteId": "rule"
+   },
+   "borderWidth": {
+    "value": 0.5,
+    "unit": "pt"
+   },
+   "cellPadding": {
+    "value": 1.8,
+    "unit": "mm"
+   },
+   "rules": "horizontal"
+  },
+  "unorderedLists": {
+   "bulletChar": "•",
+   "color": {
+    "hex": "#1f6f8b",
+    "model": "hex",
+    "paletteId": "band"
+   }
+  },
+  "orderedLists": {
+   "color": {
+    "hex": "#1f6f8b",
+    "model": "hex",
+    "paletteId": "band"
+   }
+  },
+  "colorPalette": [
+   {
+    "id": "ink",
+    "name": "Tinta",
+    "value": {
+     "hex": "#1c1f22",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "paper",
+    "name": "Papel",
+    "value": {
+     "hex": "#ffffff",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "white",
+    "name": "Blanco",
+    "value": {
+     "hex": "#ffffff",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "band",
+    "name": "Color de la revista",
+    "value": {
+     "hex": "#1f6f8b",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "tint",
+    "name": "Fondo de recuadros",
+    "value": {
+     "hex": "#e8f0f3",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "grey",
+    "name": "Fondo de datos",
+    "value": {
+     "hex": "#f2f1ed",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "rule",
+    "name": "Filetes",
+    "value": {
+     "hex": "#cfd4d8",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "muted",
+    "name": "Gris de notas",
+    "value": {
+     "hex": "#676c72",
+     "model": "hex"
+    }
+   }
+  ],
+  "resourceTypes": [
+   {
+    "id": "photo",
+    "name": "Foto",
+    "namePlural": "Fotos",
+    "shortLabel": "foto",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "auto",
+     "span": "page",
+     "width": 1
+    }
+   },
+   {
+    "id": "table",
+    "name": "Tabla",
+    "namePlural": "Tablas",
+    "shortLabel": "tabla",
+    "captionPrefix": "Tabla",
+    "numberingTemplate": "{n}",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "here",
+     "span": "page"
+    },
+    "captionStyle": {
+     "position": "above"
+    }
+   }
+  ],
+  "pdfGeneration": {
+   "outlines": true
+  }
+ },
+ "localized": {
+  "es": {
+   "config": {
+    "locale": "es",
+    "bodyText": {
+     "fontFamily": "Open Sans",
+     "fontSize": {
+      "value": 9.3,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 13.2,
+      "unit": "pt"
+     },
+     "textAlign": "left",
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": true,
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "referenceBold": false,
+     "referenceItalic": true,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "es"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "folioEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 14.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Outfit",
+       "fontSize": {
+        "value": 8.5,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1c1f22",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "chapterEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 22.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 110,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "Outfit",
+       "fontSize": {
+        "value": 7.5,
+        "unit": "pt"
+       },
+       "fontWeight": 500,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#676c72",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "even",
+       "pages": "body",
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 1.2,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "titleOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -22.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 120,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "Señales 2020 · Hacia una contaminación cero en Europa",
+       "fontFamily": "Outfit",
+       "fontSize": {
+        "value": 7.5,
+        "unit": "pt"
+       },
+       "fontWeight": 500,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#676c72",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "odd",
+       "pages": "body",
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 1.2,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "folioOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -14.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Outfit",
+       "fontSize": {
+        "value": 8.5,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1c1f22",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      }
+     ]
+    },
+    "resourceTypes": [
+     {
+      "id": "photo",
+      "name": "Foto",
+      "namePlural": "Fotos",
+      "shortLabel": "foto",
+      "captionPrefix": "",
+      "numberingTemplate": "",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "page",
+       "width": 1
+      }
+     },
+     {
+      "id": "table",
+      "name": "Tabla",
+      "namePlural": "Tablas",
+      "shortLabel": "tabla",
+      "captionPrefix": "Tabla",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "here",
+       "span": "page"
+      },
+      "captionStyle": {
+       "position": "above"
+      }
+     }
+    ]
+   },
+   "resources": [
+    {
+     "id": "photo-cover",
+     "caption": "Fotografía: Sandro Katalina · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Copenhagen, Denmark (Unsplash A3Hbc08ZdlU)"
+    },
+    {
+     "id": "photo-editorial",
+     "caption": "Fotografía: Johan Mouchet · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Bike on street Copenhagen (Unsplash)"
+    },
+    {
+     "id": "photo-air-1",
+     "caption": "Fotografía: Dan Gold danielcgold · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "In the morning traffic (Unsplash)"
+    },
+    {
+     "id": "photo-air-2",
+     "caption": "Fotografía: Nick Hawkins nhawkns · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Skyscrapers in fog (Unsplash)"
+    },
+    {
+     "id": "photo-water-1",
+     "caption": "Fotografía: Ales Krivec · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Clouds mirrored in a mountain lake (Unsplash)"
+    },
+    {
+     "id": "photo-water-2",
+     "caption": "Fotografía: Joseph Milla · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Breaking waves (Unsplash zIU96X1f4pM)"
+    },
+    {
+     "id": "photo-soil-1",
+     "caption": "Fotografía: Rowan Heuvel insolitus · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Castellina In Chianti (Unsplash)"
+    },
+    {
+     "id": "photo-soil-2",
+     "caption": "Fotografía: meriç tuna tuna59 · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Harvesting the Wheat Crop (Unsplash)"
+    },
+    {
+     "id": "photo-chemicals-1",
+     "caption": "Fotografía: chuttersnap · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Plants in beakers (Unsplash)"
+    },
+    {
+     "id": "photo-chemicals-2",
+     "caption": "Fotografía: chuttersnap · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Pile of graduated cylinders"
+    },
+    {
+     "id": "photo-polluter-1",
+     "caption": "Fotografía: Viktor Kiryanov vki · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Sunset above power plant (Unsplash)"
+    },
+    {
+     "id": "photo-polluter-2",
+     "caption": "Fotografía: Scott Webb · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Power Plant (Unsplash)"
+    },
+    {
+     "id": "photo-industry-1",
+     "caption": "Fotografía: Kartik Bhattacharjee · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Powerhouse (Unsplash)"
+    },
+    {
+     "id": "photo-industry-2",
+     "caption": "Fotografía: Jason Blackeye jeisblack · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Wind Turbines (Unsplash)"
+    },
+    {
+     "id": "photo-noise-1",
+     "caption": "Fotografía: Viktor Kiryanov vki · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Car trails on the Highway, Delyan, Bulgaria (Unsplash)"
+    },
+    {
+     "id": "photo-noise-2",
+     "caption": "Fotografía: Luca Bravo · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Airplane over white buildings (Unsplash)"
+    },
+    {
+     "id": "photo-health-1",
+     "caption": "Fotografía: Hannah Donze · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Walk in a thawing forest (Unsplash)"
+    },
+    {
+     "id": "photo-health-2",
+     "caption": "Fotografía: Clem Onojeghuo clemono2 · Unsplash, CC0",
+     "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+     "altText": "Biking through Edinburgh (Unsplash)"
+    },
+    {
+     "id": "tabla-17",
+     "caption": "Proporción de la población urbana de la UE expuesta a concentraciones de contaminantes del aire por encima de los valores de referencia de la UE y la OMS en 2016-2018",
+     "note": "Fuentes: Informe de la AEMA «Medio ambiente sano, vidas sanas».",
+     "table": {
+      "model": {
+       "rows": [
+        [
+         {
+          "content": "Contaminante",
+          "isHeader": true
+         },
+         {
+          "content": "Valores límite/objetivo de la UE",
+          "isHeader": true
+         },
+         {
+          "content": "Directrices de la OMS",
+          "isHeader": true
+         }
+        ],
+        [
+         {
+          "content": "**PM2.5**"
+         },
+         {
+          "content": "4-8 %"
+         },
+         {
+          "content": "74-78 %"
+         }
+        ],
+        [
+         {
+          "content": "**PM10**"
+         },
+         {
+          "content": "13-17 %"
+         },
+         {
+          "content": "43-48 %"
+         }
+        ],
+        [
+         {
+          "content": "**O3**"
+         },
+         {
+          "content": "12-34 %"
+         },
+         {
+          "content": "96-99 %"
+         }
+        ],
+        [
+         {
+          "content": "**NO2**"
+         },
+         {
+          "content": "4-7 %"
+         },
+         {
+          "content": "4-7 %"
+         }
+        ],
+        [
+         {
+          "content": "**BaP**"
+         },
+         {
+          "content": "15-20 %"
+         },
+         {
+          "content": "75-90 %"
+         }
+        ],
+        [
+         {
+          "content": "**SO2**"
+         },
+         {
+          "content": "< 1 %"
+         },
+         {
+          "content": "19-31 %"
+         }
+        ]
+       ],
+       "headerRowCount": 1,
+       "columnWidths": [
+        1.2,
+        2,
+        2
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "en": {
+   "config": {
+    "locale": "en-us",
+    "bodyText": {
+     "fontFamily": "Open Sans",
+     "fontSize": {
+      "value": 9.3,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 13.2,
+      "unit": "pt"
+     },
+     "textAlign": "left",
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": true,
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "referenceBold": false,
+     "referenceItalic": true,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "en-us"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "folioEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 14.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Outfit",
+       "fontSize": {
+        "value": 8.5,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1c1f22",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "chapterEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 22.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 110,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "Outfit",
+       "fontSize": {
+        "value": 7.5,
+        "unit": "pt"
+       },
+       "fontWeight": 500,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#676c72",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "even",
+       "pages": "body",
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 1.2,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "titleOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -22.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 120,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "Signals 2020 · Towards zero pollution in Europe",
+       "fontFamily": "Outfit",
+       "fontSize": {
+        "value": 7.5,
+        "unit": "pt"
+       },
+       "fontWeight": 500,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#676c72",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "odd",
+       "pages": "body",
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 1.2,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "folioOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -14.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Outfit",
+       "fontSize": {
+        "value": 8.5,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1c1f22",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      }
+     ]
+    },
+    "resourceTypes": [
+     {
+      "id": "photo",
+      "name": "Photo",
+      "namePlural": "Photos",
+      "shortLabel": "photo",
+      "captionPrefix": "",
+      "numberingTemplate": "",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "page",
+       "width": 1
+      }
+     },
+     {
+      "id": "table",
+      "name": "Table",
+      "namePlural": "Tables",
+      "shortLabel": "table",
+      "captionPrefix": "Table",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "here",
+       "span": "page"
+      },
+      "captionStyle": {
+       "position": "above"
+      }
+     }
+    ]
+   },
+   "resources": [
+    {
+     "id": "photo-cover",
+     "caption": "Photograph: Sandro Katalina · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Copenhagen, Denmark (Unsplash A3Hbc08ZdlU)"
+    },
+    {
+     "id": "photo-editorial",
+     "caption": "Photograph: Johan Mouchet · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Bike on street Copenhagen (Unsplash)"
+    },
+    {
+     "id": "photo-air-1",
+     "caption": "Photograph: Dan Gold danielcgold · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "In the morning traffic (Unsplash)"
+    },
+    {
+     "id": "photo-air-2",
+     "caption": "Photograph: Nick Hawkins nhawkns · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Skyscrapers in fog (Unsplash)"
+    },
+    {
+     "id": "photo-water-1",
+     "caption": "Photograph: Ales Krivec · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Clouds mirrored in a mountain lake (Unsplash)"
+    },
+    {
+     "id": "photo-water-2",
+     "caption": "Photograph: Joseph Milla · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Breaking waves (Unsplash zIU96X1f4pM)"
+    },
+    {
+     "id": "photo-soil-1",
+     "caption": "Photograph: Rowan Heuvel insolitus · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Castellina In Chianti (Unsplash)"
+    },
+    {
+     "id": "photo-soil-2",
+     "caption": "Photograph: meriç tuna tuna59 · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Harvesting the Wheat Crop (Unsplash)"
+    },
+    {
+     "id": "photo-chemicals-1",
+     "caption": "Photograph: chuttersnap · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Plants in beakers (Unsplash)"
+    },
+    {
+     "id": "photo-chemicals-2",
+     "caption": "Photograph: chuttersnap · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Pile of graduated cylinders"
+    },
+    {
+     "id": "photo-polluter-1",
+     "caption": "Photograph: Viktor Kiryanov vki · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Sunset above power plant (Unsplash)"
+    },
+    {
+     "id": "photo-polluter-2",
+     "caption": "Photograph: Scott Webb · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Power Plant (Unsplash)"
+    },
+    {
+     "id": "photo-industry-1",
+     "caption": "Photograph: Kartik Bhattacharjee · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Powerhouse (Unsplash)"
+    },
+    {
+     "id": "photo-industry-2",
+     "caption": "Photograph: Jason Blackeye jeisblack · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Wind Turbines (Unsplash)"
+    },
+    {
+     "id": "photo-noise-1",
+     "caption": "Photograph: Viktor Kiryanov vki · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Car trails on the Highway, Delyan, Bulgaria (Unsplash)"
+    },
+    {
+     "id": "photo-noise-2",
+     "caption": "Photograph: Luca Bravo · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Airplane over white buildings (Unsplash)"
+    },
+    {
+     "id": "photo-health-1",
+     "caption": "Photograph: Hannah Donze · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Walk in a thawing forest (Unsplash)"
+    },
+    {
+     "id": "photo-health-2",
+     "caption": "Photograph: Clem Onojeghuo clemono2 · Unsplash, CC0",
+     "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
+     "altText": "Biking through Edinburgh (Unsplash)"
+    },
+    {
+     "id": "tabla-17",
+     "caption": "Share of the EU urban population exposed to air pollutant concentrations above EU and WHO reference values in 2016-2018",
+     "note": "Sources: EEA report ‘Healthy environment, healthy lives’.",
+     "table": {
+      "model": {
+       "rows": [
+        [
+         {
+          "content": "Pollutant",
+          "isHeader": true
+         },
+         {
+          "content": "EU limit/target values",
+          "isHeader": true
+         },
+         {
+          "content": "WHO guidelines",
+          "isHeader": true
+         }
+        ],
+        [
+         {
+          "content": "**PM2.5**"
+         },
+         {
+          "content": "4-8 %"
+         },
+         {
+          "content": "74-78 %"
+         }
+        ],
+        [
+         {
+          "content": "**PM10**"
+         },
+         {
+          "content": "13-17 %"
+         },
+         {
+          "content": "43-48 %"
+         }
+        ],
+        [
+         {
+          "content": "**O3**"
+         },
+         {
+          "content": "12-34 %"
+         },
+         {
+          "content": "96-99 %"
+         }
+        ],
+        [
+         {
+          "content": "**NO2**"
+         },
+         {
+          "content": "4-7 %"
+         },
+         {
+          "content": "4-7 %"
+         }
+        ],
+        [
+         {
+          "content": "**BaP**"
+         },
+         {
+          "content": "15-20 %"
+         },
+         {
+          "content": "75-90 %"
+         }
+        ],
+        [
+         {
+          "content": "**SO2**"
+         },
+         {
+          "content": "< 1 %"
+         },
+         {
+          "content": "19-31 %"
+         }
+        ]
+       ],
+       "headerRowCount": 1,
+       "columnWidths": [
+        1.2,
+        2,
+        2
+       ]
+      }
+     }
+    }
+   ]
+  }
+ },
+ "resources": [
+  {
+   "id": "photo-cover",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/cover.jpg",
+   "width": 2400,
+   "height": 1602,
+   "caption": "Fotografía: Sandro Katalina · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Copenhagen, Denmark (Unsplash A3Hbc08ZdlU)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-editorial",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/editorial.jpg",
+   "width": 2400,
+   "height": 1600,
+   "caption": "Fotografía: Johan Mouchet · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Bike on street Copenhagen (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-air-1",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/air-1.jpg",
+   "width": 2400,
+   "height": 1350,
+   "caption": "Fotografía: Dan Gold danielcgold · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "In the morning traffic (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-air-2",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/air-2.jpg",
+   "width": 2400,
+   "height": 1600,
+   "caption": "Fotografía: Nick Hawkins nhawkns · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Skyscrapers in fog (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-water-1",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/water-1.jpg",
+   "width": 2400,
+   "height": 1602,
+   "caption": "Fotografía: Ales Krivec · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Clouds mirrored in a mountain lake (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-water-2",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/water-2.jpg",
+   "width": 2400,
+   "height": 1600,
+   "caption": "Fotografía: Joseph Milla · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Breaking waves (Unsplash zIU96X1f4pM)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-soil-1",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/soil-1.jpg",
+   "width": 2400,
+   "height": 1599,
+   "caption": "Fotografía: Rowan Heuvel insolitus · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Castellina In Chianti (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-soil-2",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/soil-2.jpg",
+   "width": 2400,
+   "height": 1350,
+   "caption": "Fotografía: meriç tuna tuna59 · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Harvesting the Wheat Crop (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-chemicals-1",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/chemicals-1.jpg",
+   "width": 2400,
+   "height": 1602,
+   "caption": "Fotografía: chuttersnap · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Plants in beakers (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-chemicals-2",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/chemicals-2.jpg",
+   "width": 2400,
+   "height": 1602,
+   "caption": "Fotografía: chuttersnap · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Pile of graduated cylinders",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-polluter-1",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/polluter-1.jpg",
+   "width": 2400,
+   "height": 1352,
+   "caption": "Fotografía: Viktor Kiryanov vki · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Sunset above power plant (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-polluter-2",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/polluter-2.jpg",
+   "width": 2400,
+   "height": 1600,
+   "caption": "Fotografía: Scott Webb · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Power Plant (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-industry-1",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/industry-1.jpg",
+   "width": 2400,
+   "height": 1600,
+   "caption": "Fotografía: Kartik Bhattacharjee · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Powerhouse (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-industry-2",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/industry-2.jpg",
+   "width": 2400,
+   "height": 1600,
+   "caption": "Fotografía: Jason Blackeye jeisblack · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Wind Turbines (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-noise-1",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/noise-1.jpg",
+   "width": 2400,
+   "height": 1374,
+   "caption": "Fotografía: Viktor Kiryanov vki · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Car trails on the Highway, Delyan, Bulgaria (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-noise-2",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/noise-2.jpg",
+   "width": 2400,
+   "height": 1500,
+   "caption": "Fotografía: Luca Bravo · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Airplane over white buildings (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-health-1",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/health-1.jpg",
+   "width": 2400,
+   "height": 1600,
+   "caption": "Fotografía: Hannah Donze · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Walk in a thawing forest (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "photo-health-2",
+   "typeId": "photo",
+   "kind": "bitmap",
+   "file": "resources/health-2.jpg",
+   "width": 2400,
+   "height": 1738,
+   "caption": "Fotografía: Clem Onojeghuo clemono2 · Unsplash, CC0",
+   "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
+   "altText": "Biking through Edinburgh (Unsplash)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "tabla-17",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "Proporción de la población urbana de la UE expuesta a concentraciones de contaminantes del aire por encima de los valores de referencia de la UE y la OMS en 2016-2018",
+   "note": "Fuentes: Informe de la AEMA «Medio ambiente sano, vidas sanas».",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Contaminante",
+        "isHeader": true
+       },
+       {
+        "content": "Valores límite/objetivo de la UE",
+        "isHeader": true
+       },
+       {
+        "content": "Directrices de la OMS",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "**PM2.5**"
+       },
+       {
+        "content": "4-8 %"
+       },
+       {
+        "content": "74-78 %"
+       }
+      ],
+      [
+       {
+        "content": "**PM10**"
+       },
+       {
+        "content": "13-17 %"
+       },
+       {
+        "content": "43-48 %"
+       }
+      ],
+      [
+       {
+        "content": "**O3**"
+       },
+       {
+        "content": "12-34 %"
+       },
+       {
+        "content": "96-99 %"
+       }
+      ],
+      [
+       {
+        "content": "**NO2**"
+       },
+       {
+        "content": "4-7 %"
+       },
+       {
+        "content": "4-7 %"
+       }
+      ],
+      [
+       {
+        "content": "**BaP**"
+       },
+       {
+        "content": "15-20 %"
+       },
+       {
+        "content": "75-90 %"
+       }
+      ],
+      [
+       {
+        "content": "**SO2**"
+       },
+       {
+        "content": "< 1 %"
+       },
+       {
+        "content": "19-31 %"
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1.2,
+      2,
+      2
+     ]
+    }
+   }
+  }
+ ],
+ "fonts": [
+  {
+   "name": "Open Sans",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/OpenSans-Regular.ttf"
+    },
+    {
+     "weight": 600,
+     "style": "normal",
+     "file": "fonts/OpenSans-SemiBold.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/OpenSans-Bold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/OpenSans-Italic.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "italic",
+     "file": "fonts/OpenSans-BoldItalic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "Outfit",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/Outfit-Regular.ttf"
+    },
+    {
+     "weight": 500,
+     "style": "normal",
+     "file": "fonts/Outfit-Medium.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/Outfit-Bold.ttf"
+    },
+    {
+     "weight": 800,
+     "style": "normal",
+     "file": "fonts/Outfit-ExtraBold.ttf"
+    }
+   ]
+  }
+ ]
+}

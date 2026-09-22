@@ -80,6 +80,26 @@
         "plates",
         "parts"
       ]
+    },
+    {
+      "id": "senales",
+      "dir": "senales",
+      "name": "Señales 2020 · Signals 2020",
+      "description": "Revista de la Agencia Europea de Medio Ambiente a dos columnas con aperturas fotográficas, recuadros, citas y paneles de datos · A two-column EEA magazine with photo openers, boxes, pull quotes and data panels",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "© EEA 2020, reproduction authorised · CC0 photos",
+      "credits": "Agencia Europea de Medio Ambiente · Unsplash",
+      "tags": [
+        "magazine",
+        "two-column",
+        "callouts",
+        "tables"
+      ]
     }
   ]
 }
