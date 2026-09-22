@@ -17,6 +17,8 @@ name: Release
 on:
   push:
     branches: [main]
+    # A merge that only touches the workflows is not a release
+    paths-ignore: ['.github/**']
   # Manual recovery: re-run a release without a new merge (e.g. after fixing NPM_TOKEN)
   workflow_dispatch:
 
@@ -117,8 +119,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/postext/package.json packages/postext-pdf/package.json
+          # Versions raised by hand are already committed: then only tag.
           # "chore: release" is the loop guard on this workflow's `if`
-          git commit -m "chore: release v${{ steps.version.outputs.version }} (postext-pdf v${{ steps.version_pdf.outputs.version }})"
+          if git diff --cached --quiet; then
+            echo "Manifests already at the released versions — nothing to commit"
+          else
+            git commit -m "chore: release v${{ steps.version.outputs.version }} (postext-pdf v${{ steps.version_pdf.outputs.version }})"
+          fi
           # Annotated tags: --follow-tags only pushes annotated tags, not lightweight ones
           git tag -a "v${{ steps.version.outputs.version }}" -m "v${{ steps.version.outputs.version }}"
           git tag -a "postext-pdf-v${{ steps.version_pdf.outputs.version }}" -m "postext-pdf v${{ steps.version_pdf.outputs.version }}"
