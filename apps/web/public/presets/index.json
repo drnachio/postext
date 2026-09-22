@@ -62,6 +62,27 @@
       ]
     },
     {
+      "id": "openstax-fisica",
+      "dir": "openstax-fisica",
+      "name": "Física universitaria · Physics (OpenStax)",
+      "description": "Libro de texto a columna y media con ejemplos resueltos, comprobaciones, tablas y fórmulas · A column-and-a-half textbook with worked examples, checks, tables and formulas",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0",
+      "credits": "OpenStax, Rice University",
+      "tags": [
+        "textbook",
+        "one-and-a-half",
+        "math",
+        "callouts",
+        "tables"
+      ]
+    },
+    {
       "id": "pintura-espanola",
       "dir": "pintura-espanola",
       "name": "Pintura española · Spanish Painting",
