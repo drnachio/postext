@@ -24,6 +24,9 @@ export function hexToRgb(hex: string): RgbTuple {
     const r = parseInt(s[0]! + s[0]!, 16);
     const g = parseInt(s[1]! + s[1]!, 16);
     const b = parseInt(s[2]! + s[2]!, 16);
+    if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
+      return { r: 0, g: 0, b: 0 };  // `none`, `red`… are not hex digits
+    }
     return { r: r / 255, g: g / 255, b: b / 255 };
   }
   if (s.length === 6 || s.length === 8) {

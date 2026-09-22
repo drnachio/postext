@@ -36,7 +36,11 @@ function renderMathRender(
   const x = topLeftXPx * pxToPt - render.viewBox.minX * S;
   const y = pageHeightPt - topLeftYPx * pxToPt + render.viewBox.minY * S;
   for (const path of render.paths) {
-    const color = path.fill === 'currentColor' ? fallbackColor : colorFromHex(path.fill, ctx.colorSpace);
+    // MathJax fills are `currentColor` or a hex; an unpainted path (`none`,
+    // as a stroke-only rule leaves after flattening) draws nothing, and any
+    // other keyword falls back to the text colour.
+    if (path.fill === 'none') continue;
+    const color = path.fill.startsWith('#') ? colorFromHex(path.fill, ctx.colorSpace) : fallbackColor;
     ctx.page.drawSvgPath(path.d, { x, y, scale: S, color });
   }
 }
