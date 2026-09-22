@@ -299,7 +299,15 @@ SENTENCE_END = re.compile(r"(?<=[.!?…»”)])\s+")
 
 
 def split_lead(paragraph: str, target: int = 260) -> tuple[str, str]:
-    sentences = SENTENCE_END.split(paragraph)
+    """First sentence(s) of a paragraph, up to about `target` characters. A
+    period inside an italic run (a book title such as *Spain in maps. A
+    geographical synthesis*) is not a sentence end."""
+    sentences: list[str] = []
+    for s in SENTENCE_END.split(paragraph):
+        if sentences and sentences[-1].count("*") % 2:
+            sentences[-1] += " " + s
+        else:
+            sentences.append(s)
     lead, length = [], 0
     for s in sentences:
         if lead and length + len(s) > target:
