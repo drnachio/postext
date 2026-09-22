@@ -123,7 +123,7 @@ def article_opener(photo: str, aspect: float, colour: str) -> dict:
                 image_el("openerPhoto", photo, anchor=at("bleed", "top-left"), width=img_w, height=img_h),
                 B("openerRule", anchor=at("bleed", "top-left"), offset=(0, y), height=3, fill="band", style={"backgroundColor": lit(colour), "borderRadius": mm(0)}),
                 T("kicker", "{attr.kicker}", anchor=at("page", "top-left"), offset=(M_INNER, y + 9), width=TEXT_W, size_pt=8, family=DISPLAY, weight=700, color="band", textTransform="uppercase", letterSpacing=pt(2.2)),
-                T("headline", "{titleText}", anchor=at("#kicker", "below"), offset=(0, 2.5), width=TEXT_W, size_pt=23, family=DISPLAY, weight=800, line_height=1.06),
+                T("headline", "{number}. {titleText}", anchor=at("#kicker", "below"), offset=(0, 2.5), width=TEXT_W, size_pt=23, family=DISPLAY, weight=800, line_height=1.06),
                 T("standfirst", "{attr.standfirst}", anchor=at("#headline", "below"), offset=(0, 4), width=TEXT_W, size_pt=10, weight=600, line_height=1.4, hyphenate=True),
             ]
         },
@@ -230,7 +230,7 @@ def headings() -> dict:
     return {
         "fontFamily": DISPLAY, "color": col("ink"), "keepWithNext": True,
         "levels": [
-            {"level": 1, "fontSize": pt(23), "lineHeight": pt(26), "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": front_opener()},
+            {"level": 1, "fontSize": pt(23), "lineHeight": pt(26), "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "numberingTemplate": "{1}", "advancedDesign": front_opener()},
             {"level": 2, "fontSize": pt(11.5), "lineHeight": pt(14), "fontWeight": 700, "color": col("band"), "marginTop": pt(12), "marginBottom": pt(3)},
         ],
     }
@@ -239,7 +239,7 @@ def headings() -> dict:
 def toc_config() -> dict:
     return {
         "levels": [
-            {"level": 1, "fontFamily": DISPLAY, "fontSize": pt(11), "lineHeight": pt(16), "fontWeight": 700, "color": col("ink"), "numberWidth": mm(0), "numberGap": mm(0), "marginTop": pt(6)},
+            {"level": 1, "fontFamily": DISPLAY, "fontSize": pt(11), "lineHeight": pt(16), "fontWeight": 700, "color": col("ink"), "numberColor": col("band"), "numberWidth": mm(6), "numberGap": mm(2), "marginTop": pt(6)},
         ],
         "unnumbered": {"fontFamily": DISPLAY, "italic": False, "color": col("ink")},
         "pageNumber": {"fontFamily": DISPLAY, "fontSize": pt(10), "fontWeight": 700, "color": col("band"), "width": mm(10)},
@@ -257,7 +257,7 @@ def heading_styles(photos: dict[str, dict]) -> list[dict]:
     ]
     for spec in ed.ARTICLES:
         pid = spec["photos"][0]
-        styles.append({"id": f"art-{spec['slug']}", "name": spec["kicker"]["es"], "numbered": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": article_opener(f"photo-{pid}", photos[pid]["aspect"], spec["colour"])})
+        styles.append({"id": f"art-{spec['slug']}", "name": spec["kicker"]["es"], "numbered": True, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": article_opener(f"photo-{pid}", photos[pid]["aspect"], spec["colour"])})
     return styles
 
 
@@ -558,7 +558,10 @@ def write_manifest(chapters, resources, wording, fonts, photos) -> dict:
         "tags": ["magazine", "two-column", "callouts", "tables"],
     }
     manifest = {
-        "version": 2, **meta, "chapters": chapters, "config": shared_config(photos),
+        # The magazine is read straight through, so the sandbox opens it with
+        # the canvas laying out the whole book (and the PDF defaulting to it).
+        "version": 2, **meta, "view": {"canvasScope": "book"},
+        "chapters": chapters, "config": shared_config(photos),
         "localized": {lang: {"config": localized_config(lang), "resources": wording[lang]} for lang in LANGS},
         "resources": resources, "fonts": fonts,
     }

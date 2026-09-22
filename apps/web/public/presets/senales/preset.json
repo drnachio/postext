@@ -17,6 +17,9 @@
   "callouts",
   "tables"
  ],
+ "view": {
+  "canvasScope": "book"
+ },
  "chapters": {
   "es": [
    {
@@ -244,6 +247,7 @@
       "enabled": true,
       "parity": "odd"
      },
+     "numberingTemplate": "{1}",
      "advancedDesign": {
       "enabled": true,
       "minHeight": {
@@ -1026,7 +1030,7 @@
    {
     "id": "art-editorial",
     "name": "Editorial",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -1183,7 +1187,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -1253,7 +1257,7 @@
    {
     "id": "art-aire",
     "name": "Aire",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -1410,7 +1414,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -1480,7 +1484,7 @@
    {
     "id": "art-agua",
     "name": "Agua",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -1637,7 +1641,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -1707,7 +1711,7 @@
    {
     "id": "art-suelo",
     "name": "Tierra y suelo",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -1864,7 +1868,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -1934,7 +1938,7 @@
    {
     "id": "art-quimicos",
     "name": "Sustancias químicas",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -2091,7 +2095,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -2161,7 +2165,7 @@
    {
     "id": "art-quien-contamina-paga",
     "name": "Entrevista",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -2318,7 +2322,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -2388,7 +2392,7 @@
    {
     "id": "art-industria",
     "name": "Industria",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -2545,7 +2549,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -2615,7 +2619,7 @@
    {
     "id": "art-ruido",
     "name": "Ruido",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -2772,7 +2776,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -2842,7 +2846,7 @@
    {
     "id": "art-salud",
     "name": "Entrevista",
-    "numbered": false,
+    "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
@@ -2999,7 +3003,7 @@
           "height": "auto"
          }
         },
-        "content": "{titleText}",
+        "content": "{number}. {titleText}",
         "fontFamily": "Outfit",
         "fontSize": {
          "value": 23,
@@ -3659,12 +3663,17 @@
       "model": "hex",
       "paletteId": "ink"
      },
+     "numberColor": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
      "numberWidth": {
-      "value": 0,
+      "value": 6,
       "unit": "mm"
      },
      "numberGap": {
-      "value": 0,
+      "value": 2,
       "unit": "mm"
      },
      "marginTop": {
