@@ -3822,6 +3822,12 @@ To render every page, iterate over `vdt.pages`:
 const bitmaps = vdt.pages.map((page) => renderPage(page, vdt));
 ```
 
+#### Live example: a page as an image
+
+Everything above, running in the browser. The pen imports the latest `postext` release from a CDN, waits for the web fonts, lays out a short two-column document, paints its first page to a canvas and offers that bitmap as a PNG. Press *Run on CodePen* to load the editor and change the markdown or the configuration; the page repaints on every edit.
+
+<CodePenExample name="render-page" title="Postext · render a page to an image" description="Lay out a markdown document with postext and rasterise its first page to a canvas / PNG." height={600} />
+
 ### Resolving defaults
 
 Resolver functions fill in default values for partial configuration objects. This is useful when you need a complete configuration for inspection or comparison:
@@ -4141,6 +4147,12 @@ The key pieces from the public API:
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — measurement primitives used to derive an actual pixel column width from a target character count.
 - **`createMeasurementCache` / `clearMeasurementCache`** — pluggable caches so you can reuse measurements across re-layouts.
 
+### Live example: an HTML string
+
+The whole round trip in plain JavaScript, before the React integration below: build the document, hand the `VDTDocument` to `renderToHtml`, and drop the string into a container. `mode: 'single'` stacks the pages vertically; `background` gives them a colour, since pages are transparent by default. The pen also prints the generated markup, so you can see the absolutely positioned lines the renderer emits — the browser paints them but never reflows them.
+
+<CodePenExample name="render-html" title="Postext · render a document to HTML" description="Lay out a markdown document with postext and render it to an HTML string." height={600} />
+
 ### Minimal integration
 
 The snippet below is the shortest useful integration: build the document at the current viewport size, render it into a container, and re-run on resize.
@@ -4458,6 +4470,12 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 ```
 
 **Important:** call `ensureConfigFontsLoaded(config)` (or equivalent) *before* `buildDocument` when your config references web fonts. Layout is measured against whatever font metrics the browser currently has for that family — if the real font has not landed yet, the VDT is measured against a fallback and the PDF will not match the canvas or HTML output. The sandbox does this explicitly before every render (see `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
+
+### Live example: a PDF in the browser
+
+The complete flow above, running in the browser: the pen imports `postext` and `postext-pdf` from a CDN, loads the web fonts, builds the document, embeds the Fontsource cuts through the font provider and hands the bytes to a link that opens the file in a new tab, and to a download link. The PDF you get has the same line breaks as the canvas and HTML output, real embedded fonts, and outline bookmarks.
+
+<CodePenExample name="render-pdf" title="Postext · generate a PDF in the browser" description="Lay out a markdown document with postext and render it to a PDF with postext-pdf." height={600} />
 
 ### Print-ready PDFs
 

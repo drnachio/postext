@@ -1,0 +1,29 @@
+body {
+  margin: 16px;
+  font-family: system-ui, sans-serif;
+  background: #e8e8e8;
+}
+/* The page is wider than this pane: let it scroll instead of clipping it.
+   The renderer centres pages with an inline style, hence the !important. */
+#viewer {
+  overflow: auto;
+}
+#viewer .pt-doc {
+  align-items: flex-start !important;
+}
+/* Each page is a .pt-page block; the renderer positions every line inside it. */
+#viewer .pt-page {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+details {
+  margin-top: 16px;
+}
+#source {
+  max-height: 240px;
+  overflow: auto;
+  padding: 8px;
+  background: #fff;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
