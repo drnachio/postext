@@ -130,6 +130,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isMarginBottomDefault = dimensionsEqual(headings.marginBottom, D.marginBottom);
   const isTextAlignDefault = headings.textAlign === D.textAlign;
   const isKeepWithNextDefault = headings.keepWithNext === D.keepWithNext;
+  const isSnapToGridDefault = headings.snapToGrid === D.snapToGrid;
   const isBalEnabledDefault = headings.balancing.enabled === DEFAULT_COLUMN_BALANCING.enabled;
   const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
   const isBalAfterListsDefault = headings.balancing.stretchAfterLists === DEFAULT_COLUMN_BALANCING.stretchAfterLists;
@@ -244,6 +245,15 @@ export const HeadingsSection = memo(function HeadingsSection() {
         tooltip={labels.headingsKeepWithNextTooltip}
         isDefault={isKeepWithNextDefault}
         onReset={() => resetField('keepWithNext')}
+      />
+
+      <ToggleSwitch
+        label={labels.headingsSnapToGrid}
+        checked={headings.snapToGrid}
+        onChange={(v) => updateHeadings({ snapToGrid: v })}
+        tooltip={labels.headingsSnapToGridTooltip}
+        isDefault={isSnapToGridDefault}
+        onReset={() => resetField('snapToGrid')}
       />
 
       <ToggleSwitch

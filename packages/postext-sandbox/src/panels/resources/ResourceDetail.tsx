@@ -124,6 +124,16 @@ export function ResourceDetail({
     else delete next.rotate;
     onChange(touch({ placement: next }));
   };
+  /** Merge one placement key; `undefined` drops it so the resource falls
+   *  back to its type's default placement. */
+  const setPlacementKey = <K extends keyof ResourcePlacement>(key: K, value: ResourcePlacement[K] | undefined) => {
+    const next: ResourcePlacement = { ...currentPlacement };
+    if (value === undefined) delete next[key];
+    else next[key] = value;
+    onChange(touch({ placement: next }));
+  };
+  const placementWidthPercent = Math.round((currentPlacement.width ?? 1) * 100);
+  const placementAlign = currentPlacement.align ?? 'left';
 
   // The id is edited locally and committed (renamed) on blur / Enter so the
   // detail pane is not remounted on every keystroke.
@@ -372,6 +382,60 @@ export function ResourceDetail({
             <option value="ccw">{labels.resourceRotateCcw}</option>
             <option value="cw">{labels.resourceRotateCw}</option>
           </select>
+          {/* Width fraction, alignment of a narrower float and the caption
+              beside the figure (side column of a column-and-a-half layout). */}
+          {placementPosition !== 'here' && placementRotate === 'none' && (
+            <div className="mt-1.5 flex flex-col gap-1.5">
+              <div className="flex gap-1.5">
+                <select
+                  value={String(placementWidthPercent)}
+                  onChange={(e) => {
+                    const pct = Number(e.target.value);
+                    setPlacementKey('width', pct >= 100 ? undefined : pct / 100);
+                  }}
+                  aria-label={labels.resourceTypePlacementWidth}
+                  title={labels.resourceTypePlacementWidthTooltip}
+                  className={inputClass}
+                  style={inputStyle}
+                >
+                  {[100, 90, 80, 75, 70, 66, 60, 50, 40, 33, 30, 25].map((pct) => (
+                    <option key={pct} value={String(pct)}>
+                      {labels.resourceTypePlacementWidth} {pct}%
+                    </option>
+                  ))}
+                  {![100, 90, 80, 75, 70, 66, 60, 50, 40, 33, 30, 25].includes(placementWidthPercent) && (
+                    <option value={String(placementWidthPercent)}>
+                      {labels.resourceTypePlacementWidth} {placementWidthPercent}%
+                    </option>
+                  )}
+                </select>
+                <select
+                  value={placementAlign}
+                  onChange={(e) => setPlacementKey('align', e.target.value === 'left' ? undefined : (e.target.value as ResourcePlacement['align']))}
+                  aria-label={labels.resourceTypePlacementAlign}
+                  title={labels.resourceTypePlacementAlignTooltip}
+                  disabled={placementWidthPercent >= 100}
+                  className={inputClass}
+                  style={{ ...inputStyle, opacity: placementWidthPercent >= 100 ? 0.5 : 1 }}
+                >
+                  <option value="left">{labels.headerFooterElementAlignLeft}</option>
+                  <option value="center">{labels.headerFooterElementAlignCenter}</option>
+                  <option value="right">{labels.headerFooterElementAlignRight}</option>
+                </select>
+              </div>
+              {placementSpan === 'column' && (
+                <label className="flex cursor-pointer items-center gap-2 text-xs" style={{ color: 'var(--foreground)' }} title={labels.resourceTypePlacementCaptionSideTooltip}>
+                  <input
+                    type="checkbox"
+                    checked={currentPlacement.captionSide ?? false}
+                    onChange={(e) => setPlacementKey('captionSide', e.target.checked ? true : undefined)}
+                    aria-label={labels.resourceTypePlacementCaptionSide}
+                  />
+                  {labels.resourceTypePlacementCaptionSide}
+                </label>
+              )}
+            </div>
+          )}
         </Field>
 
         {/* Kind-specific controls */}

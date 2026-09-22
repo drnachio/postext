@@ -9,7 +9,10 @@ import type {
   CalloutFixedConfig,
   CalloutIconAlign,
   CalloutIconConfig,
+  CalloutIconCornerSide,
   CalloutIconKind,
+  CalloutIconPosition,
+  CalloutLabelConfig,
   CalloutListStyleConfig,
   CalloutMarkerConfig,
   CalloutMarkerRuleConfig,
@@ -61,6 +64,7 @@ const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const SPACING_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const STROKE_UNITS: DimensionUnit[] = ['pt', 'px', 'mm'];
 const OFFSET_UNITS: DimensionUnit[] = ['mm', 'pt', 'px', 'em'];
+const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
@@ -89,7 +93,7 @@ function nextStyleId(existing: CalloutStyleConfig[]): string {
 }
 
 /** Sub-objects of a callout style that are edited field by field. */
-type Group = 'border' | 'padding' | 'stripe' | 'icon' | 'marker' | 'titleStyle' | 'body' | 'lists';
+type Group = 'border' | 'padding' | 'stripe' | 'icon' | 'label' | 'marker' | 'titleStyle' | 'body' | 'lists';
 type GroupConfig<G extends Group> = NonNullable<CalloutStyleConfig[G]>;
 
 function iconLabel(r: Resource): string {
@@ -125,8 +129,10 @@ function CardButton({
   return <IconButton label={label} icon={children} onClick={onClick} destructive={destructive} />;
 }
 
-/** The fields the icon and the marker share (the marker has no corner position). */
-type IconSpec = Pick<ResolvedCalloutStyleConfig['icon'], 'kind' | 'glyph' | 'resourceId' | 'fontFamily' | 'fontWeight' | 'size' | 'color' | 'align'>;
+/** The fields the icon and the marker share; the position fields exist on
+ *  the in-box icon only (the marker always sits in its own column). */
+type IconSpec = Pick<ResolvedCalloutStyleConfig['icon'], 'kind' | 'glyph' | 'resourceId' | 'fontFamily' | 'fontWeight' | 'size' | 'color' | 'align'> &
+  Partial<Pick<ResolvedCalloutStyleConfig['icon'], 'position' | 'cornerSide' | 'width'>>;
 type IconField = keyof CalloutIconConfig;
 
 interface IconFieldsProps {
@@ -139,11 +145,13 @@ interface IconFieldsProps {
   onReset: (field: IconField) => void;
   fieldId: string;
   iconResources: Resource[];
+  /** Show the inline / corner position controls (in-box icon only). */
+  withPosition?: boolean;
 }
 
 /** Kind / glyph / resource / size / alignment controls shared by the in-box
  *  icon and the marker (the same `CalloutIconConfig` shape). */
-function IconFields({ value, kindLabel, kindTooltip, update, isDefault, onReset, fieldId, iconResources }: IconFieldsProps) {
+function IconFields({ value, kindLabel, kindTooltip, update, isDefault, onReset, fieldId, iconResources, withPosition }: IconFieldsProps) {
   const labels = useSandboxLabels();
   const kindOptions = [
     { value: 'none', label: labels.calloutStyleIconKindNone },
@@ -153,6 +161,16 @@ function IconFields({ value, kindLabel, kindTooltip, update, isDefault, onReset,
   const alignOptions = [
     { value: 'top', label: labels.calloutStyleIconAlignTop },
     { value: 'center', label: labels.calloutStyleIconAlignCenter },
+  ];
+  const positionOptions = [
+    { value: 'inline', label: labels.calloutStyleIconPositionInline },
+    { value: 'corner', label: labels.calloutStyleIconPositionCorner },
+  ];
+  const cornerSideOptions = [
+    { value: 'right', label: labels.sideColumnSideRight },
+    { value: 'left', label: labels.sideColumnSideLeft },
+    { value: 'outer', label: labels.sideColumnSideOuter },
+    { value: 'inner', label: labels.sideColumnSideInner },
   ];
   const resourceOptions = [
     { value: '', label: labels.calloutStyleIconResourceNone },
@@ -237,14 +255,48 @@ function IconFields({ value, kindLabel, kindTooltip, update, isDefault, onReset,
             isDefault={isDefault('size')}
             onReset={() => onReset('size')}
           />
-          <SelectInput
-            label={labels.calloutStyleIconAlign}
-            value={value.align}
-            options={alignOptions}
-            onChange={(v) => update({ align: v as CalloutIconAlign })}
-            isDefault={isDefault('align')}
-            onReset={() => onReset('align')}
+          <DimensionInput
+            label={labels.calloutStyleIconWidth}
+            value={value.width ?? value.size}
+            onChange={(v) => update({ width: v })}
+            min={0}
+            step={0.1}
+            units={SPACING_UNITS}
+            tooltip={labels.calloutStyleIconWidthTooltip}
+            isDefault={isDefault('width')}
+            onReset={() => onReset('width')}
           />
+          {withPosition && (
+            <SelectInput
+              label={labels.calloutStyleIconPosition}
+              value={value.position ?? 'inline'}
+              options={positionOptions}
+              onChange={(v) => update({ position: v as CalloutIconPosition })}
+              tooltip={labels.calloutStyleIconPositionTooltip}
+              isDefault={isDefault('position')}
+              onReset={() => onReset('position')}
+            />
+          )}
+          {withPosition && value.position === 'corner' ? (
+            <SelectInput
+              label={labels.calloutStyleIconCornerSide}
+              value={value.cornerSide ?? 'right'}
+              options={cornerSideOptions}
+              onChange={(v) => update({ cornerSide: v as CalloutIconCornerSide })}
+              tooltip={labels.calloutStyleIconCornerSideTooltip}
+              isDefault={isDefault('cornerSide')}
+              onReset={() => onReset('cornerSide')}
+            />
+          ) : (
+            <SelectInput
+              label={labels.calloutStyleIconAlign}
+              value={value.align}
+              options={alignOptions}
+              onChange={(v) => update({ align: v as CalloutIconAlign })}
+              isDefault={isDefault('align')}
+              onReset={() => onReset('align')}
+            />
+          )}
         </>
       )}
     </>
@@ -256,6 +308,8 @@ interface CalloutStyleCardProps {
   resolved: ResolvedCalloutStyleConfig;
   otherIds: Set<string>;
   iconResources: Resource[];
+  /** Resolved document list values the optional bullet fields fall back to. */
+  listDefaults: { bulletFontSize: Dimension; bulletFontWeight: number };
   onChange: (partial: Partial<CalloutStyleConfig>) => void;
   onResetField: (field: keyof CalloutStyleConfig) => void;
   onRename: (nextId: string) => void;
@@ -272,6 +326,7 @@ function CalloutStyleCard({
   resolved,
   otherIds,
   iconResources,
+  listDefaults,
   onChange,
   onResetField,
   onRename,
@@ -330,6 +385,38 @@ function CalloutStyleCard({
     else resetGroupField('marker', 'rule');
   };
   const markerRuleUnset = (field: keyof CalloutMarkerRuleConfig) => style.marker?.rule?.[field] === undefined;
+  const label = (partial: Partial<CalloutLabelConfig>) => updateGroup('label', partial);
+  /** `label.icon` / `label.rule` are nested one level deeper, like the
+   *  marker rule: merge there and drop the sub-object when nothing is left. */
+  const updateLabelIcon = (partial: Partial<NonNullable<CalloutLabelConfig['icon']>>) =>
+    label({ icon: { ...style.label?.icon, ...partial } });
+  const resetLabelIconField = (field: keyof NonNullable<CalloutLabelConfig['icon']>) => {
+    const icon = { ...style.label?.icon };
+    delete icon[field];
+    if (Object.keys(icon).length > 0) label({ icon });
+    else resetGroupField('label', 'icon');
+  };
+  const labelIconUnset = (field: keyof NonNullable<CalloutLabelConfig['icon']>) => style.label?.icon?.[field] === undefined;
+  const updateLabelRule = (partial: Partial<NonNullable<CalloutLabelConfig['rule']>>) =>
+    label({ rule: { ...style.label?.rule, ...partial } });
+  const resetLabelRuleField = (field: keyof NonNullable<CalloutLabelConfig['rule']>) => {
+    const rule = { ...style.label?.rule };
+    delete rule[field];
+    if (Object.keys(rule).length > 0) label({ rule });
+    else resetGroupField('label', 'rule');
+  };
+  const labelRuleUnset = (field: keyof NonNullable<CalloutLabelConfig['rule']>) => style.label?.rule?.[field] === undefined;
+  const labelResourceOptions = [
+    { value: '', label: labels.calloutStyleIconResourceNone },
+    ...iconResources.map((r) => ({ value: r.id, label: iconLabel(r) })),
+  ];
+  if (resolved.label?.icon.resourceId && !iconResources.some((r) => r.id === resolved.label?.icon.resourceId)) {
+    labelResourceOptions.push({ value: resolved.label.icon.resourceId, label: resolved.label.icon.resourceId });
+  }
+  const labelPositionOptions = [
+    { value: 'top-right', label: labels.calloutStyleLabelPositionTopRight },
+    { value: 'top-left', label: labels.calloutStyleLabelPositionTopLeft },
+  ];
   const title = (partial: Partial<CalloutTitleStyleConfig>) => updateGroup('titleStyle', partial);
   const body = (partial: Partial<CalloutBodyStyleConfig>) => updateGroup('body', partial);
   const lists = (partial: Partial<CalloutListStyleConfig>) => updateGroup('lists', partial);
@@ -622,6 +709,17 @@ function CalloutStyleCard({
         isDefault={unset('marginBottom')}
         onReset={() => onResetField('marginBottom')}
       />
+      <DimensionInput
+        label={labels.calloutStyleColumnGap}
+        value={resolved.columnGap}
+        onChange={(v) => onChange({ columnGap: v })}
+        min={0}
+        step={0.1}
+        units={SPACING_UNITS}
+        tooltip={labels.calloutStyleColumnGapTooltip}
+        isDefault={unset('columnGap')}
+        onReset={() => onResetField('columnGap')}
+      />
 
       <CollapsibleSection
         title={labels.calloutStyleBorderGroup}
@@ -746,7 +844,184 @@ function CalloutStyleCard({
           onReset={(f) => resetGroupField('icon', f)}
           fieldId={`${fieldId}-icon`}
           iconResources={iconResources}
+          withPosition
         />
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title={labels.calloutStyleLabelGroup}
+        sectionId={`${sectionId}.label`}
+        variant="subsection"
+      >
+        <ToggleSwitch
+          label={labels.calloutStyleLabel}
+          checked={resolved.label !== undefined}
+          onChange={(v) => (v ? onChange({ label: { ...style.label } }) : onResetField('label'))}
+          tooltip={labels.calloutStyleLabelTooltip}
+          isDefault={unset('label')}
+          onReset={() => onResetField('label')}
+        />
+        {resolved.label && (
+          <>
+            <FontPicker
+              label={labels.calloutStyleLabelFont}
+              value={resolved.label.fontFamily}
+              onChange={(v) => label({ fontFamily: v })}
+              isDefault={groupUnset('label', 'fontFamily')}
+              onReset={() => resetGroupField('label', 'fontFamily')}
+              searchPlaceholder={labels.headingFontSearch}
+              noResultsLabel={labels.headingFontNoResults}
+            />
+            <DimensionInput
+              label={labels.calloutStyleLabelSize}
+              value={resolved.label.fontSize}
+              onChange={(v) => label({ fontSize: v })}
+              min={1}
+              step={0.5}
+              units={FONT_SIZE_UNITS}
+              isDefault={groupUnset('label', 'fontSize')}
+              onReset={() => resetGroupField('label', 'fontSize')}
+            />
+            <NumberInput
+              label={labels.calloutStyleLabelWeight}
+              value={resolved.label.fontWeight}
+              onChange={(v) => label({ fontWeight: v })}
+              min={100}
+              max={900}
+              step={10}
+              isDefault={groupUnset('label', 'fontWeight')}
+              onReset={() => resetGroupField('label', 'fontWeight')}
+            />
+            <ColorPicker
+              label={labels.calloutStyleLabelColor}
+              value={resolved.label.color}
+              onChange={(v) => label({ color: v })}
+              isDefault={groupUnset('label', 'color')}
+              onReset={() => resetGroupField('label', 'color')}
+              fieldId={`${fieldId}-label`}
+            />
+            <ColorPicker
+              label={labels.calloutStyleLabelBackground}
+              value={resolved.label.background}
+              onChange={(v) => label({ background: v })}
+              isDefault={groupUnset('label', 'background')}
+              onReset={() => resetGroupField('label', 'background')}
+              fieldId={`${fieldId}-label-bg`}
+            />
+            <SelectInput
+              label={labels.calloutStyleLabelPosition}
+              value={resolved.label.position}
+              options={labelPositionOptions}
+              onChange={(v) => label({ position: v as NonNullable<CalloutLabelConfig['position']> })}
+              isDefault={groupUnset('label', 'position')}
+              onReset={() => resetGroupField('label', 'position')}
+            />
+            <DimensionInput
+              label={labels.calloutStyleLabelHeight}
+              value={resolved.label.height}
+              onChange={(v) => label({ height: v })}
+              min={0}
+              step={0.1}
+              units={SPACING_UNITS}
+              isDefault={groupUnset('label', 'height')}
+              onReset={() => resetGroupField('label', 'height')}
+            />
+            <DimensionInput
+              label={labels.calloutStyleLabelPaddingX}
+              value={resolved.label.paddingX}
+              onChange={(v) => label({ paddingX: v })}
+              min={0}
+              step={0.05}
+              units={SPACING_UNITS}
+              isDefault={groupUnset('label', 'paddingX')}
+              onReset={() => resetGroupField('label', 'paddingX')}
+            />
+            <DimensionInput
+              label={labels.calloutStyleLabelOffset}
+              value={resolved.label.offset}
+              onChange={(v) => label({ offset: v })}
+              min={0}
+              step={0.05}
+              units={SPACING_UNITS}
+              tooltip={labels.calloutStyleLabelOffsetTooltip}
+              isDefault={groupUnset('label', 'offset')}
+              onReset={() => resetGroupField('label', 'offset')}
+            />
+            <DimensionInput
+              label={labels.calloutStyleLabelInset}
+              value={resolved.label.inset}
+              onChange={(v) => label({ inset: v })}
+              min={0}
+              step={0.05}
+              units={SPACING_UNITS}
+              isDefault={groupUnset('label', 'inset')}
+              onReset={() => resetGroupField('label', 'inset')}
+            />
+            <SelectInput
+              label={labels.calloutStyleLabelIcon}
+              value={resolved.label.icon.resourceId}
+              options={labelResourceOptions}
+              onChange={(v) => updateLabelIcon({ resourceId: v })}
+              tooltip={labels.calloutStyleLabelIconTooltip}
+              isDefault={labelIconUnset('resourceId')}
+              onReset={() => resetLabelIconField('resourceId')}
+            />
+            {resolved.label.icon.resourceId && (
+              <>
+                <DimensionInput
+                  label={labels.calloutStyleLabelIconWidth}
+                  value={resolved.label.icon.width}
+                  onChange={(v) => updateLabelIcon({ width: v })}
+                  min={0}
+                  step={0.1}
+                  units={SPACING_UNITS}
+                  isDefault={labelIconUnset('width')}
+                  onReset={() => resetLabelIconField('width')}
+                />
+                <DimensionInput
+                  label={labels.calloutStyleLabelIconGap}
+                  value={resolved.label.icon.gap}
+                  onChange={(v) => updateLabelIcon({ gap: v })}
+                  min={0}
+                  step={0.05}
+                  units={SPACING_UNITS}
+                  isDefault={labelIconUnset('gap')}
+                  onReset={() => resetLabelIconField('gap')}
+                />
+              </>
+            )}
+            <ToggleSwitch
+              label={labels.calloutStyleLabelRule}
+              checked={resolved.label.rule.enabled}
+              onChange={(v) => updateLabelRule({ enabled: v })}
+              tooltip={labels.calloutStyleLabelRuleTooltip}
+              isDefault={labelRuleUnset('enabled')}
+              onReset={() => resetLabelRuleField('enabled')}
+            />
+            {resolved.label.rule.enabled && (
+              <>
+                <ColorPicker
+                  label={labels.calloutStyleLabelRuleColor}
+                  value={resolved.label.rule.color}
+                  onChange={(v) => updateLabelRule({ color: v })}
+                  isDefault={labelRuleUnset('color')}
+                  onReset={() => resetLabelRuleField('color')}
+                  fieldId={`${fieldId}-label-rule`}
+                />
+                <DimensionInput
+                  label={labels.calloutStyleLabelRuleWidth}
+                  value={resolved.label.rule.width}
+                  onChange={(v) => updateLabelRule({ width: v })}
+                  min={0}
+                  step={0.25}
+                  units={STROKE_UNITS}
+                  isDefault={labelRuleUnset('width')}
+                  onReset={() => resetLabelRuleField('width')}
+                />
+              </>
+            )}
+          </>
+        )}
       </CollapsibleSection>
 
       <CollapsibleSection
@@ -759,8 +1034,8 @@ function CalloutStyleCard({
           kindLabel={labels.calloutStyleMarkerKind}
           kindTooltip={labels.calloutStyleMarkerKindTooltip}
           update={marker}
-          isDefault={(f) => groupUnset('marker', f)}
-          onReset={(f) => resetGroupField('marker', f)}
+          isDefault={(f) => groupUnset('marker', f as keyof CalloutMarkerConfig)}
+          onReset={(f) => resetGroupField('marker', f as keyof CalloutMarkerConfig)}
           fieldId={`${fieldId}-marker`}
           iconResources={iconResources}
         />
@@ -890,6 +1165,27 @@ function CalloutStyleCard({
           isDefault={groupUnset('titleStyle', 'gap')}
           onReset={() => resetGroupField('titleStyle', 'gap')}
         />
+        <DimensionInput
+          label={labels.calloutStyleTitleLetterSpacing}
+          value={resolved.titleStyle.letterSpacing}
+          onChange={(v) => title({ letterSpacing: v })}
+          min={-5}
+          step={0.05}
+          units={TRACKING_UNITS}
+          isDefault={groupUnset('titleStyle', 'letterSpacing')}
+          onReset={() => resetGroupField('titleStyle', 'letterSpacing')}
+        />
+        <DimensionInput
+          label={labels.calloutStyleTitleIndent}
+          value={resolved.titleStyle.indent}
+          onChange={(v) => title({ indent: v })}
+          min={0}
+          step={0.1}
+          units={SPACING_UNITS}
+          tooltip={labels.calloutStyleTitleIndentTooltip}
+          isDefault={groupUnset('titleStyle', 'indent')}
+          onReset={() => resetGroupField('titleStyle', 'indent')}
+        />
       </CollapsibleSection>
 
       <CollapsibleSection
@@ -937,6 +1233,15 @@ function CalloutStyleCard({
           isDefault={groupUnset('body', 'color')}
           onReset={() => resetGroupField('body', 'color')}
           fieldId={`${fieldId}-body`}
+        />
+        <ColorPicker
+          label={labels.calloutStyleBodyBoldColor}
+          value={resolved.body.boldColor ?? resolved.body.color}
+          onChange={(v) => body({ boldColor: v })}
+          tooltip={labels.calloutStyleBodyBoldColorTooltip}
+          isDefault={groupUnset('body', 'boldColor')}
+          onReset={() => resetGroupField('body', 'boldColor')}
+          fieldId={`${fieldId}-body-bold`}
         />
         <SelectInput
           label={labels.alignmentLabel}
@@ -992,6 +1297,26 @@ function CalloutStyleCard({
           widthCh={6}
           isDefault={groupUnset('lists', 'bulletChar')}
           onReset={() => resetGroupField('lists', 'bulletChar')}
+        />
+        <DimensionInput
+          label={labels.calloutStyleListsBulletSize}
+          value={resolved.lists.bulletFontSize ?? listDefaults.bulletFontSize}
+          onChange={(v) => lists({ bulletFontSize: v })}
+          min={1}
+          step={0.5}
+          units={FONT_SIZE_UNITS}
+          isDefault={groupUnset('lists', 'bulletFontSize')}
+          onReset={() => resetGroupField('lists', 'bulletFontSize')}
+        />
+        <NumberInput
+          label={labels.calloutStyleListsBulletWeight}
+          value={resolved.lists.bulletFontWeight ?? listDefaults.bulletFontWeight}
+          onChange={(v) => lists({ bulletFontWeight: v })}
+          min={100}
+          max={900}
+          step={10}
+          isDefault={groupUnset('lists', 'bulletFontWeight')}
+          onReset={() => resetGroupField('lists', 'bulletFontWeight')}
         />
         <ColorPicker
           label={labels.colorLabel}
@@ -1128,6 +1453,7 @@ export const CalloutStylesSection = memo(function CalloutStylesSection() {
           resolved={resolved[i] ?? resolveOne(style)}
           otherIds={new Set(styles.filter((s) => s.id !== style.id).map((s) => s.id))}
           iconResources={iconResources}
+          listDefaults={{ bulletFontSize: unorderedLists.bulletFontSize, bulletFontWeight: unorderedLists.fontWeight }}
           onChange={(partial) => updateStyle(style.id, partial)}
           onResetField={(field) => resetStyleField(style.id, field)}
           onRename={(nextId) => renameStyle(style.id, nextId)}

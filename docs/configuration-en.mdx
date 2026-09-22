@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-06-10',
+  lastUpdated: '2026-09-22',
   readingTime: '30 min',
   order: 3,
 };
@@ -14,7 +14,7 @@ export const metadata = {
 
 **Every layout decision in Postext is driven by a single configuration object.**
 
-`PostextConfig` controls page dimensions, column layout, body text typography, heading styles, and more. Every property is optional — Postext ships with sensible defaults inspired by traditional book typography. You only need to specify what you want to change.
+`PostextConfig` controls page dimensions, column layout, body text typography, heading styles, the document language (`locale`), and more. Every property is optional — Postext ships with sensible defaults inspired by traditional book typography. You only need to specify what you want to change.
 
 ```ts
 import { buildDocument } from 'postext';
@@ -38,6 +38,7 @@ This reference is long. These are the main blocks:
 - [Layout](#layout) — column count, gutters, rules.
 - [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
+- [Document language](#document-language) — the top-level `locale`: hyphenation fallback, table continuation strings, the language tagged into an accessible PDF.
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
@@ -430,6 +431,8 @@ To opt out of the built-in defaults, set `header: { elements: [] }` (or `footer:
 
 Text elements render a template string with placeholder substitution. Placeholders use `{name}` syntax; `{{` and `}}` emit literal braces.
 
+The defaults in the table below are those of a text element you add yourself. The built-in header and footer described under **Built-in defaults** above are ready-made elements with their own values (Open Sans 8pt/600 in the palette's main colour), not the element defaults.
+
 <table>
   <thead>
     <tr>
@@ -689,7 +692,7 @@ Rule elements render a line: horizontal across the slot, or vertical down it.
 
 ### Box elements
 
-Box elements paint a rounded rectangle inside the slot — useful as a backdrop behind text in chapter openers, sidebars or footers. Box elements are positioned exclusively through the `placement` field; they have no legacy flat shorthand.
+Box elements paint a rounded rectangle inside the slot — useful as a backdrop behind text in chapter openers, sidebars or footers. Box elements are positioned exclusively through the `placement` field; they have no legacy flat shorthand. Fill, stroke and corner radius live in the nested `style` object (`ElementBoxStyle`), as in the JSON example under "Element placement".
 
 <table>
   <thead>
@@ -708,25 +711,31 @@ Box elements paint a rounded rectangle inside the slot — useful as a backdrop 
       <td>Discriminator.</td>
     </tr>
     <tr>
-      <td><code>backgroundColor</code></td>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Stable id, unique within the slot. Sibling elements anchor to it with <code>anchor.to: '#id'</code>. The sandbox assigns one on creation.</td>
+    </tr>
+    <tr>
+      <td><code>style.backgroundColor</code></td>
       <td><code>ColorValue</code></td>
       <td><code>transparent</code></td>
       <td>Fill colour. Set to <code>transparent</code> for an outline-only box.</td>
     </tr>
     <tr>
-      <td><code>borderColor</code></td>
+      <td><code>style.borderColor</code></td>
       <td><code>ColorValue</code></td>
       <td><code>transparent</code></td>
       <td>Stroke colour.</td>
     </tr>
     <tr>
-      <td><code>borderWidth</code></td>
+      <td><code>style.borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0 pt</code></td>
       <td>Stroke width. Strokes are painted on the inside of the box's bounding rectangle so the outer dimensions stay constant.</td>
     </tr>
     <tr>
-      <td><code>borderRadius</code></td>
+      <td><code>style.borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0 pt</code></td>
       <td>Corner radius. Clamped to half the smaller side at render time.</td>
@@ -1361,7 +1370,7 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Reserved for automatic heading numbering (e.g. <code>'Chapter {n}. '</code>). Currently stored on the resolved config and carried through the pipeline; rendering will honour it in an upcoming release.</td>
+      <td>Template of the level's automatic number. A token <code>{'{1}'}</code> … <code>{'{6}'}</code> prints the running counter of that heading level, optionally formatted by a suffix — <code>{'{1:I}'}</code> upper roman, <code>{'{1:i}'}</code> lower roman, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alphabetic, <code>{'{1:01}'}</code> zero-padded — and any other text is literal (<code>'Chapter {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>; a backslash escapes a literal brace). A token whose counter is still empty collapses together with its adjacent separator. Empty (the default) means no automatic number. The rendered number is prepended to the title in the flow, feeds the <code>{'{number}'}</code> placeholder of an advanced design slot (where the prefix itself is not prepended) and is printed in the table of contents.</td>
     </tr>
     <tr>
       <td><code>breakBefore</code></td>
@@ -1866,7 +1875,7 @@ This yields the classic nested mix:
 
 ## Math
 
-The `math` property controls how LaTeX formulas inside `$...$` (inline) and `$$...$$` (display) delimiters are parsed and rendered. The underlying engine is KaTeX, rasterised to the canvas and embedded as scalable glyphs in the PDF.
+The `math` property controls how LaTeX formulas inside `$...$` (inline) and `$$...$$` (display) delimiters are parsed and rendered. The underlying engine is MathJax (the `mathjax-full` package) in SVG output mode, rasterised to the canvas and embedded as scalable glyphs in the PDF.
 
 ```ts
 interface MathConfig {
@@ -1975,8 +1984,12 @@ type ResourceCounterFormat =
 type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface ResourcePlacement {
-  position?: 'top' | 'bottom' | 'here'; // float band, or inline at the ::resource directive
-  span?: 'column' | 'page' | 'side';    // single column, full content width, or the float-only side column
+  position?: 'auto' | 'top' | 'bottom' | 'here'; // which free slot a float may take; 'here' = inline embed at the ::resource directive
+  span?: 'column' | 'page' | 'side';             // one column, the full content width, or the float-only side column
+  rotate?: 'ccw' | 'cw';                         // a quarter turn: a landscape table on a page of its own
+  width?: number;                                // fraction (0 < width < 1) of the column or page width; default: the whole width
+  align?: 'left' | 'center' | 'right';           // where a float narrower than its column sits; default 'left'
+  captionSide?: boolean;                         // caption beside the figure, in the side column of a oneAndHalf layout (column floats only)
 }
 
 interface ResourceType {
@@ -1990,13 +2003,9 @@ interface ResourceType {
   captionPrefix: string;               // prepended to the caption, e.g. "Figure"
   defaultPlacement?: ResourcePlacement;// fallback placement for this type's resources
 }
-
-interface ResourcePlacement {
-  position?: 'auto' | 'top' | 'bottom' | 'here'; // which free slot a float may take; 'here' = inline embed
-  span?: 'column' | 'page';                      // one column, or the full content width
-  rotate?: 'ccw' | 'cw';                         // a quarter turn: a landscape table on a page of its own
-}
 ```
+
+`ResourcePlacement` is the same shape a resource sets on its own `placement`. `position` picks the kind of free slot a float may take — `auto` (the default) takes the first one after the first reference, `top` / `bottom` restrict it to that kind of band, `here` embeds the resource inline. `span` sets the float's extent: one column, the full content width, or the float-only side column of a column-and-a-half layout. `rotate` turns the resource a quarter turn and makes it a page-span float on a page of its own. `width` narrows a float to a fraction of its column (or of the page for a page-span float) — a small table in a wide column, say. `align` says where such a narrower float sits — left by default, centre or right. `captionSide` sets the caption beside the figure in the float-only side column of a column-and-a-half layout (`layout.sideColumnRole: 'floats'`), level with the figure's top (its bottom for a bottom float); it applies to column floats only, and a page without such a column keeps the caption under the figure. When neither the resource nor its type sets a placement, the built-in default is `auto` / `column`.
 
 <table>
   <thead>
@@ -2050,7 +2059,7 @@ interface ResourcePlacement {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code> (optional)</td>
-      <td>Placement used by resources of this type that do not set their own <code>placement</code>: <code>position</code>, <code>span</code> and <code>rotate</code>, each resolved independently. When unset, the built-in <code>auto</code> / <code>column</code> / upright default applies. See <a href="#numbering-and-references">Numbering and references</a> below for the resolution chain and <a href="/en/docs/document-format#resources">Document format › Resources</a> for what each value does, including turned resources.</td>
+      <td>Placement used by resources of this type that do not set their own <code>placement</code>: <code>position</code>, <code>span</code>, <code>rotate</code>, <code>width</code>, <code>align</code> and <code>captionSide</code>, each resolved independently. When neither the resource nor the type sets a field, the built-in default applies: <code>auto</code> / <code>column</code>, upright, the whole width, left-aligned, caption under the figure. See <a href="#numbering-and-references">Numbering and references</a> below for the resolution chain and <a href="/en/docs/document-format#resources">Document format › Resources</a> for what each value does, including turned resources.</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
@@ -2098,7 +2107,7 @@ Any other text is literal. A backslash escapes a literal `{`, `}`, or `\`. When 
 
 ### Numbering and references
 
-The number a resource type produces is what `:ref` prints and what the caption prefix precedes. `:ref{id}` is the primary form: the first reference in reading order **incorporates** the resource, which floats to the first free slot after that reference — the bottom of the referencing column, the top or bottom of the next empty column, or a band of the next page (per its resolved placement — `position: 'auto' | 'top' | 'bottom' | 'here'` and `span: 'column' | 'page'`, resolved per resource, then the type's `defaultPlacement`, then the built-in `auto` / `column`; `'top'` / `'bottom'` restrict the search to that kind of slot). The `::resource{id}` block embed is optional and only needed for `placement.position: 'here'` — an inline, non-floating embed at an exact point in the flow. The full document-side grammar — both forms plus `:ref`'s `style` and `text` options — is documented in [Document format › Resources](/en/docs/document-format#resources), including how first-reference order drives the count.
+The number a resource type produces is what `:ref` prints and what the caption prefix precedes. `:ref{id}` is the primary form: the first reference in reading order **incorporates** the resource, which floats to the first free slot after that reference — the bottom of the referencing column, the top or bottom of the next empty column, or a band of the next page (per its resolved placement — `position: 'auto' | 'top' | 'bottom' | 'here'` and `span: 'column' | 'page' | 'side'`, plus `rotate`, `width`, `align` and `captionSide`, resolved per resource, then the type's `defaultPlacement`, then the built-in `auto` / `column`; `'top'` / `'bottom'` restrict the search to that kind of slot). The `::resource{id}` block embed is optional and only needed for `placement.position: 'here'` — an inline, non-floating embed at an exact point in the flow. The full document-side grammar — both forms plus `:ref`'s `style` and `text` options — is documented in [Document format › Resources](/en/docs/document-format#resources), including how first-reference order drives the count.
 
 This mirrors heading numbering: just as a heading level carries a `numberingTemplate`, a resource type carries one too — but the resource counter (`{n}`) advances per first-reference rather than per heading, and `resetOn` ties it back to the heading hierarchy.
 
@@ -2734,7 +2743,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>placement</code></td>
       <td><code>'here' | 'top' | 'bottom' | 'fixed'</code></td>
       <td><code>'here'</code></td>
-      <td>Inline in the flow, floated to a top / bottom page band like a resource, or <code>'fixed'</code>: pinned to page coordinates through <code>fixed</code> below, out of the column flow (see the container section). Overridable per instance with the <code>placement</code> attribute. Floating placements are recorded on the VDT but still placed inline at column width for now.</td>
+      <td>Where the box goes. <code>'here'</code> sets it inline in the flow; <code>'top'</code> / <code>'bottom'</code> <strong>float</strong> it like a resource — it leaves the flow where it occurs and takes the first free band at or after that point (the foot of the current page, or the head / foot of the next page the flow opens), and the text after it fills the page around it; <code>'fixed'</code> anchors it at page coordinates through <code>fixed</code> below, out of the column flow. See the container section for the details. Overridable per instance with the <code>placement</code> attribute.</td>
     </tr>
     <tr>
       <td><code>fixed</code></td>
@@ -3520,7 +3529,7 @@ interface PdfGenerationConfig {
       <td><code>accessible</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Emit an accessible, tagged PDF oriented to PDF/UA-1: a logical structure tree in reading order (headings that never skip a level, paragraphs, lists, block quotes, callouts, tables with header cells, figures with their alt text and captions, formulas, clickable refs as links), the document title and language (`bodyText.locale`), the PDF/UA identification in the XMP metadata, and every decorative mark (page background, rules, baseline grid, running headers and footers, cut marks, repeated table headers) flagged as an artifact so screen readers skip it. A figure without `altText` falls back to its caption, then to its label. Turn off only for print masters where the extra structure is unwanted.</td>
+      <td>Emit an accessible, tagged PDF oriented to PDF/UA-1: a logical structure tree in reading order (headings that never skip a level, paragraphs, lists, block quotes, callouts, tables with header cells, figures with their alt text and captions, formulas, clickable refs as links), the document title and language (the top-level `locale`), the PDF/UA identification in the XMP metadata, and every decorative mark (page background, rules, baseline grid, running headers and footers, cut marks, repeated table headers) flagged as an artifact so screen readers skip it. A figure without `altText` falls back to its caption, then to its label. Turn off only for print masters where the extra structure is unwanted.</td>
     </tr>
   </tbody>
 </table>
@@ -3557,14 +3566,11 @@ See [Generating PDFs](#generating-pdfs) below for the end-to-end export recipe.
 
 The `debug` property groups two kinds of authoring aids: visual overlays that keep the source text and the rendered layout in sync, and a set of warnings that surface typographic or structural problems in the editor's warnings panel. Neither affects exported output.
 
-### Visual overlays
-
 <table>
   <thead>
     <tr>
       <th style={{ width: '180px' }}>Property</th>
       <th style={{ width: '200px' }}>Type</th>
-      <th style={{ width: '200px' }}>Default</th>
       <th>Description</th>
     </tr>
   </thead>
@@ -3572,25 +3578,89 @@ The `debug` property groups two kinds of authoring aids: visual overlays that ke
     <tr>
       <td><code>cursorSync</code></td>
       <td><code>SyncIndicatorConfig</code></td>
-      <td>enabled, <code>#2563eb</code></td>
-      <td>Shows a caret in the rendered layout mirroring the source cursor position.</td>
+      <td>Caret mirrored into the rendered layout — see <a href="#visual-overlays">Visual overlays</a>.</td>
     </tr>
     <tr>
       <td><code>selectionSync</code></td>
       <td><code>SyncIndicatorConfig</code></td>
-      <td>enabled, <code>#fde04780</code></td>
-      <td>Highlights the rendered range matching the source selection.</td>
+      <td>Source selection highlighted on the page — see <a href="#visual-overlays">Visual overlays</a>.</td>
     </tr>
     <tr>
       <td><code>looseLineHighlight</code></td>
       <td><code>LooseLineHighlightConfig</code></td>
-      <td>disabled, <code>#ff000040</code>, <code>3</code></td>
-      <td>Paints an overlay on justified lines whose word spacing exceeds the given multiplier of the normal space width.</td>
+      <td>Overlay on loose justified lines — see <a href="#visual-overlays">Visual overlays</a>.</td>
     </tr>
     <tr>
       <td><code>pageNegative</code></td>
       <td><code>{'{ enabled: boolean }'}</code></td>
-      <td>disabled</td>
+      <td>High-contrast negative of the page — see <a href="#visual-overlays">Visual overlays</a>.</td>
+    </tr>
+    <tr>
+      <td><code>warnings</code></td>
+      <td><code>WarningsToggleConfig</code></td>
+      <td>One boolean per kind of authoring warning shown in the editor — see <a href="#warnings">Warnings</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Visual overlays
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Property</th>
+      <th style={{ width: '120px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Shows a caret in the rendered layout mirroring the source cursor position.</td>
+    </tr>
+    <tr>
+      <td><code>cursorSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#2563eb</code></td>
+      <td>Colour of that caret.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Highlights the rendered range matching the source selection.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fde04780</code></td>
+      <td>Colour of the highlight — a translucent yellow by default.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Paints an overlay on justified lines whose word spacing exceeds <code>threshold</code> times the normal space width.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>Colour of that overlay.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Multiplier of the normal space width above which a justified line counts as loose. The <code>looseLines</code> warning uses the same threshold.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
       <td>Renders a high-contrast negative overlay over the page — useful for visually auditing the overall shape of a spread (text density, column balance, whitespace) at a glance, without being distracted by glyph detail.</td>
     </tr>
   </tbody>
@@ -3767,9 +3837,9 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 8, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Available resolvers: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveTableStyleConfig`, `resolveCaptionStyleConfig`, `resolveDiagramStyleConfig`, `resolveHeaderFooterConfig`, `resolveMathConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`, `resolvePdfGenerationConfig`. Color palettes are applied separately through `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)`, and `resolveColorValue(value, palette, fallback)` — see [Color Palette](#color-palette).
+Available resolvers, one per top-level section: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveHeadingStylesConfig`, `resolveTocConfig`, `resolvePartsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveMathConfig`, `resolveTableStyleConfig`, `resolveCaptionStyleConfig`, `resolveDiagramStyleConfig`, `resolveParagraphStylesConfig`, `resolveCalloutStylesConfig`, `resolveHeaderFooterConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`, `resolvePdfGenerationConfig` — plus `resolveDesignSlot` for a single design slot. Color palettes are applied separately through `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)`, and `resolveColorValue(value, palette, fallback)` — see [Color Palette](#color-palette).
 
-`resolveUnorderedListsConfig` and `resolveOrderedListsConfig` are the only resolvers that take a second argument — the already-resolved `ResolvedBodyTextConfig` — because list defaults for `fontFamily` and `color` cascade from body text:
+Resolvers whose defaults cascade from another section take that section, already resolved, as a further argument. `resolveUnorderedListsConfig` and `resolveOrderedListsConfig` take the resolved body text, because list defaults for `fontFamily` and `color` cascade from it; `resolveCalloutStylesConfig` takes the resolved body text, headings and unordered lists (see the example in [Callout styles](#callout-styles)), and `resolveHeadingStylesConfig` the resolved page, body text and both list sections. Check the package's type declarations for the exact signature of each:
 
 ```ts
 import { resolveBodyTextConfig, resolveUnorderedListsConfig } from 'postext';
@@ -3779,7 +3849,7 @@ const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
 // => lists.fontFamily === 'Inter' (inherited)
 ```
 
-Static default bundles — the values used when no cascade is involved — are exported too: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `DEFAULT_PAGE_NUMBERING`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_MATH_CONFIG`, `DEFAULT_DIAGRAM_STYLE_CONFIG`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_PDF_GENERATION_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`, plus the header/footer element defaults (`DEFAULT_HEADER_FOOTER_SLOT`, `DEFAULT_HEADER_SLOT`, `DEFAULT_FOOTER_SLOT`, `DEFAULT_TEXT_ELEMENT`, `DEFAULT_RULE_ELEMENT`) and the locale-aware `defaultResourceTypes(locale)` (see [Resource types](#resource-types)).
+Static default bundles — the values used when no cascade is involved — are exported too: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `DEFAULT_PAGE_NUMBERING`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_COLUMN_BALANCING`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_PARAGRAPH_STYLES`, `DEFAULT_CALLOUT_STYLES`, `DEFAULT_CALLOUT_STYLE_STATIC`, `DEFAULT_PARTS_CONFIG`, `DEFAULT_HEADING_STYLES`, `DEFAULT_TOC_CONFIG`, `DEFAULT_MATH_CONFIG`, `DEFAULT_DIAGRAM_STYLE_CONFIG`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_PDF_GENERATION_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`, plus the header/footer element defaults (`DEFAULT_HEADER_FOOTER_SLOT`, `DEFAULT_HEADER_SLOT`, `DEFAULT_FOOTER_SLOT`, `DEFAULT_TEXT_ELEMENT`, `DEFAULT_RULE_ELEMENT`, `DEFAULT_BOX_ELEMENT`) and the locale-aware `defaultResourceTypes(locale)` (see [Resource types](#resource-types)).
 
 ### Stripping defaults
 
@@ -3792,7 +3862,7 @@ const minimal = stripConfigDefaults(fullConfig);
 // Only properties that differ from defaults remain
 ```
 
-Individual strippers are also available: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripHeaderFooterDefaults`, `stripMathDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
+Individual strippers are also available, one per resolver: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripHeadingStylesDefaults`, `stripTocDefaults`, `stripPartsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripMathDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripParagraphStylesDefaults`, `stripCalloutStylesDefaults`, `stripHeaderFooterDefaults`, `stripDesignSlotDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
 
 ### Parsing
 

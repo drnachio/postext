@@ -166,6 +166,55 @@ export function OrderedListLevelSection({
         onReset={() => onReset(level, 'verticalOffset')}
         units={OFFSET_UNITS}
       />
+      <FontPicker
+        label={labels.orderedListsSeparatorFont}
+        value={resolved.separatorFontFamily}
+        onChange={(f) => onUpdate(level, { separatorFontFamily: f })}
+        tooltip={labels.orderedListsSeparatorFontTooltip}
+        isDefault={raw?.separatorFontFamily === undefined}
+        onReset={() => onReset(level, 'separatorFontFamily')}
+        searchPlaceholder={labels.orderedListsFontSearch}
+        noResultsLabel={labels.orderedListsFontNoResults}
+      />
+      <ColorPicker
+        label={labels.orderedListsSeparatorColor}
+        value={resolved.separatorColor}
+        onChange={(color) => onUpdate(level, { separatorColor: color })}
+        tooltip={labels.orderedListsSeparatorColorTooltip}
+        isDefault={raw?.separatorColor === undefined}
+        onReset={() => onReset(level, 'separatorColor')}
+        fieldId={`ol-l${level}-separator-color`}
+      />
+      <NumberInput
+        label={labels.orderedListsSeparatorFontWeight}
+        value={resolved.separatorFontWeight}
+        onChange={(w) => onUpdate(level, { separatorFontWeight: w })}
+        min={100}
+        max={900}
+        step={10}
+        tooltip={labels.orderedListsSeparatorFontWeightTooltip}
+        isDefault={raw?.separatorFontWeight === undefined}
+        onReset={() => onReset(level, 'separatorFontWeight')}
+      />
+      <ToggleSwitch
+        label={labels.orderedListsSeparatorItalic}
+        checked={resolved.separatorItalic}
+        onChange={(v) => onUpdate(level, { separatorItalic: v })}
+        tooltip={labels.orderedListsSeparatorItalicTooltip}
+        isDefault={raw?.separatorItalic === undefined}
+        onReset={() => onReset(level, 'separatorItalic')}
+      />
+      <DimensionInput
+        label={labels.orderedListsSeparatorGap}
+        value={resolved.separatorGap}
+        onChange={(dim) => onUpdate(level, { separatorGap: dim })}
+        min={0}
+        step={0.05}
+        tooltip={labels.orderedListsSeparatorGapTooltip}
+        isDefault={raw?.separatorGap === undefined}
+        onReset={() => onReset(level, 'separatorGap')}
+        units={INDENT_UNITS}
+      />
     </CollapsibleSection>
   );
 }

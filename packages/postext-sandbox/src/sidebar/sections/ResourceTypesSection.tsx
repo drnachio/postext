@@ -23,7 +23,7 @@ import {
   useSandboxResources,
 } from '../../context/SandboxContext';
 import type { SandboxLabels } from '../../types/labels';
-import { CollapsibleSection } from '../../controls';
+import { CollapsibleSection, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
@@ -172,9 +172,9 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   /** Merge into a type's `defaultPlacement`; an empty value drops the key. */
   const updateTypePlacement = (type: ResourceType, partial: Partial<ResourcePlacement>) => {
     const next: ResourcePlacement = { ...type.defaultPlacement };
-    for (const [k, v] of Object.entries(partial) as [keyof ResourcePlacement, string | undefined][]) {
-      if (v === undefined || v === '') delete next[k];
-      else (next as Record<string, string>)[k] = v;
+    for (const [k, v] of Object.entries(partial) as [keyof ResourcePlacement, ResourcePlacement[keyof ResourcePlacement]][]) {
+      if (v === undefined || (v as unknown) === '') delete next[k];
+      else (next as Record<string, unknown>)[k] = v;
     }
     updateType(type.id, { defaultPlacement: Object.keys(next).length > 0 ? next : undefined });
   };
@@ -381,8 +381,42 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                       <option value="">{labels.resourceTypePlacementInherit}</option>
                       <option value="column">{labels.headingSpanColumn}</option>
                       <option value="page">{labels.resourceTypePlacementSpanPage}</option>
+                      <option value="side">{labels.resourceSpanSide}</option>
                     </select>
                   </Field>
+                  <NumberInput
+                    label={labels.resourceTypePlacementWidth}
+                    value={Math.round((type.defaultPlacement?.width ?? 1) * 100)}
+                    onChange={(v) => updateTypePlacement(type, { width: v >= 100 ? undefined : Math.max(1, v) / 100 })}
+                    min={10}
+                    max={100}
+                    step={5}
+                    suffix="%"
+                    tooltip={labels.resourceTypePlacementWidthTooltip}
+                    isDefault={type.defaultPlacement?.width === undefined}
+                    onReset={() => updateTypePlacement(type, { width: undefined })}
+                  />
+                  <SelectInput
+                    label={labels.resourceTypePlacementAlign}
+                    value={type.defaultPlacement?.align ?? 'left'}
+                    options={[
+                      { value: 'left', label: labels.headerFooterElementAlignLeft },
+                      { value: 'center', label: labels.headerFooterElementAlignCenter },
+                      { value: 'right', label: labels.headerFooterElementAlignRight },
+                    ]}
+                    onChange={(v) => updateTypePlacement(type, { align: v as ResourcePlacement['align'] })}
+                    tooltip={labels.resourceTypePlacementAlignTooltip}
+                    isDefault={type.defaultPlacement?.align === undefined}
+                    onReset={() => updateTypePlacement(type, { align: undefined })}
+                  />
+                  <ToggleSwitch
+                    label={labels.resourceTypePlacementCaptionSide}
+                    checked={type.defaultPlacement?.captionSide ?? false}
+                    onChange={(v) => updateTypePlacement(type, { captionSide: v || undefined })}
+                    tooltip={labels.resourceTypePlacementCaptionSideTooltip}
+                    isDefault={type.defaultPlacement?.captionSide === undefined}
+                    onReset={() => updateTypePlacement(type, { captionSide: undefined })}
+                  />
                   <Field label={labels.resourceTypePlacementRotate}>
                     <select
                       value={type.defaultPlacement?.rotate ?? ''}

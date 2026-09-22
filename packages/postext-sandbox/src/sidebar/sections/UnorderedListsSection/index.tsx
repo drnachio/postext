@@ -57,6 +57,23 @@ export const UnorderedListsSection = memo(function UnorderedListsSection() {
     });
   };
 
+  /** Drop every task-list key in one dispatch: `UPDATE_CONFIG` replaces the
+   *  whole `unorderedLists` object, so successive single-field resets would
+   *  each start from the same stale `raw` and only the last would survive. */
+  const resetTaskFields = () => {
+    if (!raw) return;
+    const next = { ...raw };
+    delete next.taskCheckboxChar;
+    delete next.taskCheckedChar;
+    delete next.taskCompletedStrikethrough;
+    delete next.taskCompletedColor;
+    const hasKeys = Object.keys(next).length > 0;
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { unorderedLists: hasKeys ? next : undefined },
+    });
+  };
+
   const updateLevel = (level: number, partial: Partial<UnorderedListLevelConfig>) => {
     const currentLevels = raw?.levels ?? [];
     const existing = currentLevels.find((l) => l.level === level);
@@ -307,12 +324,7 @@ export const UnorderedListsSection = memo(function UnorderedListsSection() {
       <CollapsibleSection
         title={labels.taskLists}
         sectionId="unordered-lists-task"
-        onReset={() => {
-          resetField('taskCheckboxChar');
-          resetField('taskCheckedChar');
-          resetField('taskCompletedStrikethrough');
-          resetField('taskCompletedColor');
-        }}
+        onReset={resetTaskFields}
         hasOverrides={
           !isTaskCheckboxDefault ||
           !isTaskCheckedDefault ||

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-06-10',
+  lastUpdated: '2026-09-22',
   readingTime: '30 min',
   order: 3,
 };
@@ -14,7 +14,7 @@ export const metadata = {
 
 **Cada decisión de composición en Postext está controlada por un único objeto de configuración.**
 
-`PostextConfig` controla las dimensiones de página, la disposición de columnas, la tipografía del cuerpo de texto, los estilos de encabezado y más. Todas las propiedades son opcionales — Postext incluye valores por defecto sensatos, inspirados en la tipografía tradicional de libros. Solo necesitas especificar lo que quieras cambiar.
+`PostextConfig` controla las dimensiones de página, la disposición de columnas, la tipografía del cuerpo de texto, los estilos de encabezado, el idioma del documento (`locale`) y más. Todas las propiedades son opcionales — Postext incluye valores por defecto sensatos, inspirados en la tipografía tradicional de libros. Solo necesitas especificar lo que quieras cambiar.
 
 ```ts
 import { buildDocument } from 'postext';
@@ -38,6 +38,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Disposición](#disposición) — número de columnas, medianil, filetes.
 - [Encabezados y pies](#encabezados-y-pies) — elementos de texto y línea por página con marcadores, paridad y alineación.
 - [Texto de cuerpo](#texto-de-cuerpo) — tipografía, separación silábica, viudas y huérfanas.
+- [Idioma del documento](#idioma-del-documento) — el `locale` de primer nivel: respaldo de la separación silábica, cadenas de continuación de tablas, lengua etiquetada en un PDF accesible.
 - [Encabezados](#encabezados) — valores generales y sobrescrituras H1–H6.
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
 - [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
@@ -430,6 +431,8 @@ Para renunciar a los valores por defecto, establece `header: { elements: [] }` (
 
 Los elementos de texto renderizan una plantilla con sustitución de marcadores. Los marcadores usan la sintaxis `{nombre}`; `{{` y `}}` se emiten como llaves literales.
 
+Los valores por defecto de la tabla siguiente son los de un elemento de texto que añades tú. El encabezado y el pie integrados descritos en **Valores por defecto incluidos** son elementos ya hechos con sus propios valores (Open Sans 8pt/600 en el color principal de la paleta), no los valores por defecto del elemento.
+
 <table>
   <thead>
     <tr>
@@ -689,7 +692,7 @@ Los elementos de línea dibujan una línea: horizontal a lo ancho del bloque, o 
 
 ### Elementos de caja
 
-Los elementos de caja pintan un rectángulo redondeado dentro del bloque — útiles como fondo tras un texto en aperturas de capítulo, columnas laterales o pies. Las cajas se posicionan exclusivamente mediante el campo `placement`; no tienen variante plana heredada.
+Los elementos de caja pintan un rectángulo redondeado dentro del bloque — útiles como fondo tras un texto en aperturas de capítulo, columnas laterales o pies. Las cajas se posicionan exclusivamente mediante el campo `placement`; no tienen variante plana heredada. El relleno, el trazo y el radio de esquina viven en el objeto anidado `style` (`ElementBoxStyle`), como en el ejemplo JSON de «Posicionamiento de elementos».
 
 <table>
   <thead>
@@ -708,25 +711,31 @@ Los elementos de caja pintan un rectángulo redondeado dentro del bloque — út
       <td>Discriminador.</td>
     </tr>
     <tr>
-      <td><code>backgroundColor</code></td>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Id estable, único dentro del bloque. Los elementos hermanos se anclan a él con <code>anchor.to: '#id'</code>. El sandbox asigna uno al crear el elemento.</td>
+    </tr>
+    <tr>
+      <td><code>style.backgroundColor</code></td>
       <td><code>ColorValue</code></td>
       <td><code>transparent</code></td>
       <td>Color de relleno. Pon <code>transparent</code> para una caja solo de borde.</td>
     </tr>
     <tr>
-      <td><code>borderColor</code></td>
+      <td><code>style.borderColor</code></td>
       <td><code>ColorValue</code></td>
       <td><code>transparent</code></td>
       <td>Color del trazo.</td>
     </tr>
     <tr>
-      <td><code>borderWidth</code></td>
+      <td><code>style.borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0 pt</code></td>
       <td>Grosor del trazo. El trazo se pinta hacia el interior del rectángulo de la caja, así las dimensiones exteriores no varían.</td>
     </tr>
     <tr>
-      <td><code>borderRadius</code></td>
+      <td><code>style.borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0 pt</code></td>
       <td>Radio de esquina. Se acota a la mitad del lado más corto en tiempo de renderizado.</td>
@@ -1361,7 +1370,7 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Reservado para numeración automática de encabezados (por ejemplo, <code>'Capítulo {n}. '</code>). Actualmente se almacena en la configuración resuelta y se propaga a través del pipeline; el renderizado lo respetará en una próxima versión.</td>
+      <td>Plantilla del número automático del nivel. Un token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprime el contador acumulado de ese nivel de encabezado, opcionalmente formateado con un sufijo — <code>{'{1:I}'}</code> romanos en mayúscula, <code>{'{1:i}'}</code> romanos en minúscula, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabético, <code>{'{1:01}'}</code> con cero a la izquierda — y el resto del texto es literal (<code>'Capítulo {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>; una barra invertida escapa una llave literal). Un token cuyo contador aún está vacío se pliega junto con el separador contiguo. Vacía (el valor por defecto) significa sin número automático. El número resultante se antepone al título en el flujo, alimenta el marcador <code>{'{number}'}</code> de una ranura de diseño avanzado (donde el prefijo no se antepone) y se imprime en el índice de contenidos.</td>
     </tr>
     <tr>
       <td><code>breakBefore</code></td>
@@ -1866,7 +1875,7 @@ Esto produce la clásica combinación anidada:
 
 ## Matemáticas
 
-La propiedad `math` controla cómo se analizan y se renderizan las fórmulas LaTeX escritas entre delimitadores `$...$` (en línea) y `$$...$$` (en bloque). El motor subyacente es KaTeX, rasterizado en el canvas e incrustado como glifos escalables en el PDF.
+La propiedad `math` controla cómo se analizan y se renderizan las fórmulas LaTeX escritas entre delimitadores `$...$` (en línea) y `$$...$$` (en bloque). El motor subyacente es MathJax (el paquete `mathjax-full`) en modo de salida SVG, rasterizado en el canvas e incrustado como glifos escalables en el PDF.
 
 ```ts
 interface MathConfig {
@@ -1975,8 +1984,12 @@ type ResourceCounterFormat =
 type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface ResourcePlacement {
-  position?: 'top' | 'bottom' | 'here'; // banda flotante, o en línea en la directiva ::resource
-  span?: 'column' | 'page' | 'side';    // una sola columna, todo el ancho de contenido o la columna lateral solo para flotantes
+  position?: 'auto' | 'top' | 'bottom' | 'here'; // qué hueco libre puede ocupar el flotante; 'here' = incrustado en línea en la directiva ::resource
+  span?: 'column' | 'page' | 'side';             // una columna, todo el ancho de contenido o la columna lateral solo para flotantes
+  rotate?: 'ccw' | 'cw';                         // un cuarto de vuelta: una tabla apaisada en una página propia
+  width?: number;                                // fracción (0 < width < 1) del ancho de la columna o de la página; por defecto, todo el ancho
+  align?: 'left' | 'center' | 'right';           // dónde se sitúa un flotante más estrecho que su columna; por defecto 'left'
+  captionSide?: boolean;                         // pie junto a la figura, en la columna lateral de una disposición oneAndHalf (solo flotantes de columna)
 }
 
 interface ResourceType {
@@ -1990,13 +2003,9 @@ interface ResourceType {
   captionPrefix: string;               // prefijo del pie, p. ej. "Figura"
   defaultPlacement?: ResourcePlacement;// colocación de respaldo para los recursos de este tipo
 }
-
-interface ResourcePlacement {
-  position?: 'auto' | 'top' | 'bottom' | 'here'; // qué hueco libre puede ocupar el flotante; 'here' = incrustado en línea
-  span?: 'column' | 'page';                      // una columna, o todo el ancho del área de contenido
-  rotate?: 'ccw' | 'cw';                         // un cuarto de vuelta: una tabla apaisada en una página propia
-}
 ```
+
+`ResourcePlacement` tiene la misma forma que el `placement` que un recurso define por su cuenta. `position` elige la clase de hueco libre que puede ocupar el flotante — `auto` (el valor por defecto) toma el primero tras la primera referencia, `top` / `bottom` lo limitan a esa clase de banda, `here` incrusta el recurso en línea. `span` fija la extensión del flotante: una columna, todo el ancho de contenido o la columna lateral solo para flotantes de una disposición de columna y media. `rotate` gira el recurso un cuarto de vuelta y lo convierte en un flotante a ancho de página en una página propia. `width` estrecha el flotante a una fracción de su columna (o de la página, en un flotante a ancho de página) — una tabla pequeña en una columna ancha, por ejemplo. `align` indica dónde se sitúa ese flotante más estrecho — a la izquierda por defecto, centrado o a la derecha. `captionSide` pone el pie junto a la figura en la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), a la altura del borde superior de la figura (del inferior en un flotante de pie); solo se aplica a los flotantes de columna, y una página sin esa columna mantiene el pie bajo la figura. Cuando ni el recurso ni su tipo definen una colocación, el valor integrado es `auto` / `column`.
 
 <table>
   <thead>
@@ -2050,7 +2059,7 @@ interface ResourcePlacement {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code> (opcional)</td>
-      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>: <code>position</code>, <code>span</code> y <code>rotate</code>, cada uno resuelto por separado. Si tampoco está definida, se aplica el valor integrado <code>auto</code> / <code>column</code> / sin girar. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución y <a href="/es/docs/document-format#recursos">Formato del documento › Recursos</a> para lo que hace cada valor, incluidos los recursos girados.</td>
+      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>: <code>position</code>, <code>span</code>, <code>rotate</code>, <code>width</code>, <code>align</code> y <code>captionSide</code>, cada uno resuelto por separado. Cuando ni el recurso ni el tipo definen un campo, se aplica el valor integrado: <code>auto</code> / <code>column</code>, sin girar, todo el ancho, alineado a la izquierda, pie bajo la figura. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución y <a href="/es/docs/document-format#recursos">Formato del documento › Recursos</a> para lo que hace cada valor, incluidos los recursos girados.</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
@@ -2098,7 +2107,7 @@ Cualquier otro texto es literal. Una barra invertida escapa un `{`, `}` o `\` li
 
 ### Numeración y referencias
 
-El número que produce un tipo de recurso es lo que imprime `:ref` y lo que sigue al prefijo del pie. `:ref{id}` es la forma principal: la primera referencia en orden de lectura **incorpora** el recurso, que flota al primer hueco libre tras esa referencia — el final de la columna de la referencia, el principio o el final de la siguiente columna vacía, o una banda de la página siguiente (según su colocación resuelta — `position: 'auto' | 'top' | 'bottom' | 'here'` y `span: 'column' | 'page'`, resuelta por recurso, luego por el `defaultPlacement` de su tipo, y por último el valor integrado `auto` / `column`; `'top'` / `'bottom'` limitan la búsqueda a huecos de ese tipo). La inserción en bloque `::resource{id}` es opcional y solo se necesita para `placement.position: 'here'` — una inserción en línea, sin flotado, en un punto exacto del flujo. La gramática completa del lado del documento — ambas formas más las opciones `style` y `text` de `:ref` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
+El número que produce un tipo de recurso es lo que imprime `:ref` y lo que sigue al prefijo del pie. `:ref{id}` es la forma principal: la primera referencia en orden de lectura **incorpora** el recurso, que flota al primer hueco libre tras esa referencia — el final de la columna de la referencia, el principio o el final de la siguiente columna vacía, o una banda de la página siguiente (según su colocación resuelta — `position: 'auto' | 'top' | 'bottom' | 'here'` y `span: 'column' | 'page' | 'side'`, más `rotate`, `width`, `align` y `captionSide`, resuelta por recurso, luego por el `defaultPlacement` de su tipo, y por último el valor integrado `auto` / `column`; `'top'` / `'bottom'` limitan la búsqueda a huecos de ese tipo). La inserción en bloque `::resource{id}` es opcional y solo se necesita para `placement.position: 'here'` — una inserción en línea, sin flotado, en un punto exacto del flujo. La gramática completa del lado del documento — ambas formas más las opciones `style` y `text` de `:ref` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
 
 Esto refleja la numeración de encabezados: igual que un nivel de encabezado lleva un `numberingTemplate`, un tipo de recurso también lo lleva — pero el contador del recurso (`{n}`) avanza por primera referencia en lugar de por encabezado, y `resetOn` lo ata de vuelta a la jerarquía de encabezados.
 
@@ -2734,7 +2743,7 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>placement</code></td>
       <td><code>'here' | 'top' | 'bottom' | 'fixed'</code></td>
       <td><code>'here'</code></td>
-      <td>En línea en el flujo, flotando a una banda superior / inferior de la página como un recurso, o <code>'fixed'</code>: fijada a coordenadas de página mediante <code>fixed</code>, fuera del flujo de columnas (ver la sección del contenedor). Se puede sobrescribir por instancia con el atributo <code>placement</code>. Las colocaciones flotantes se registran en el VDT pero por ahora se colocan en línea al ancho de columna.</td>
+      <td>Dónde va la caja. <code>'here'</code> la deja en línea en el flujo; <code>'top'</code> / <code>'bottom'</code> la hacen <strong>flotar</strong> como un recurso — sale del flujo donde aparece y ocupa la primera banda libre en ese punto o después (el pie de la página actual, o la cabecera / el pie de la siguiente página que abre el flujo), y el texto que la sigue rellena la página a su alrededor; <code>'fixed'</code> la ancla a coordenadas de página mediante <code>fixed</code>, fuera del flujo de columnas. Ver la sección del contenedor para los detalles. Se puede sobrescribir por instancia con el atributo <code>placement</code>.</td>
     </tr>
     <tr>
       <td><code>fixed</code></td>
@@ -3520,7 +3529,7 @@ interface PdfGenerationConfig {
       <td><code>accessible</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Genera un PDF accesible y etiquetado, orientado a PDF/UA-1: un árbol de estructura lógica en orden de lectura (títulos que nunca saltan de nivel, párrafos, listas, citas, callouts, tablas con celdas de cabecera, figuras con su texto alternativo y su pie, fórmulas, referencias como enlaces), el título y el idioma del documento (`bodyText.locale`), la identificación PDF/UA en los metadatos XMP, y toda marca decorativa (fondo de página, filetes, rejilla base, cabeceras y pies corridos, marcas de corte, cabeceras de tabla repetidas) señalada como artefacto para que los lectores de pantalla la omitan. Una figura sin `altText` usa su pie y, si no lo tiene, su etiqueta. Desactívalo solo para masters de imprenta donde la estructura adicional sobre.</td>
+      <td>Genera un PDF accesible y etiquetado, orientado a PDF/UA-1: un árbol de estructura lógica en orden de lectura (títulos que nunca saltan de nivel, párrafos, listas, citas, callouts, tablas con celdas de cabecera, figuras con su texto alternativo y su pie, fórmulas, referencias como enlaces), el título y el idioma del documento (el `locale` de primer nivel), la identificación PDF/UA en los metadatos XMP, y toda marca decorativa (fondo de página, filetes, rejilla base, cabeceras y pies corridos, marcas de corte, cabeceras de tabla repetidas) señalada como artefacto para que los lectores de pantalla la omitan. Una figura sin `altText` usa su pie y, si no lo tiene, su etiqueta. Desactívalo solo para masters de imprenta donde la estructura adicional sobre.</td>
     </tr>
   </tbody>
 </table>
@@ -3557,14 +3566,11 @@ Consulta [Generación de PDF](#generación-de-pdf) más abajo para la receta com
 
 La propiedad `debug` agrupa dos tipos de ayudas de autoría: superposiciones visuales que mantienen sincronizados el texto fuente y la composición renderizada, y un conjunto de avisos que muestran en el panel de avisos del editor los problemas tipográficos o estructurales del documento. Ninguno de los dos afecta a la salida exportada.
 
-### Superposiciones visuales
-
 <table>
   <thead>
     <tr>
       <th style={{ width: '180px' }}>Propiedad</th>
       <th style={{ width: '200px' }}>Tipo</th>
-      <th style={{ width: '200px' }}>Por defecto</th>
       <th>Descripción</th>
     </tr>
   </thead>
@@ -3572,25 +3578,89 @@ La propiedad `debug` agrupa dos tipos de ayudas de autoría: superposiciones vis
     <tr>
       <td><code>cursorSync</code></td>
       <td><code>SyncIndicatorConfig</code></td>
-      <td>activado, <code>#2563eb</code></td>
-      <td>Muestra un cursor en la composición renderizada que refleja la posición del cursor en la fuente.</td>
+      <td>Cursor reflejado en la composición renderizada — ver <a href="#superposiciones-visuales">Superposiciones visuales</a>.</td>
     </tr>
     <tr>
       <td><code>selectionSync</code></td>
       <td><code>SyncIndicatorConfig</code></td>
-      <td>activado, <code>#fde04780</code></td>
-      <td>Resalta el rango renderizado que coincide con la selección en la fuente.</td>
+      <td>Selección de la fuente resaltada en la página — ver <a href="#superposiciones-visuales">Superposiciones visuales</a>.</td>
     </tr>
     <tr>
       <td><code>looseLineHighlight</code></td>
       <td><code>LooseLineHighlightConfig</code></td>
-      <td>desactivado, <code>#ff000040</code>, <code>3</code></td>
-      <td>Pinta una superposición sobre las líneas justificadas cuyo espaciado entre palabras supera el multiplicador indicado del ancho del espacio normal.</td>
+      <td>Superposición sobre las líneas justificadas flojas — ver <a href="#superposiciones-visuales">Superposiciones visuales</a>.</td>
     </tr>
     <tr>
       <td><code>pageNegative</code></td>
       <td><code>{'{ enabled: boolean }'}</code></td>
-      <td>desactivado</td>
+      <td>Negativo de alto contraste de la página — ver <a href="#superposiciones-visuales">Superposiciones visuales</a>.</td>
+    </tr>
+    <tr>
+      <td><code>warnings</code></td>
+      <td><code>WarningsToggleConfig</code></td>
+      <td>Un booleano por cada clase de aviso de autoría que muestra el editor — ver <a href="#avisos">Avisos</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Superposiciones visuales
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Muestra un cursor en la composición renderizada que refleja la posición del cursor en la fuente.</td>
+    </tr>
+    <tr>
+      <td><code>cursorSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#2563eb</code></td>
+      <td>Color de ese cursor.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Resalta el rango renderizado que coincide con la selección en la fuente.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fde04780</code></td>
+      <td>Color del resaltado — un amarillo translúcido por defecto.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pinta una superposición sobre las líneas justificadas cuyo espaciado entre palabras supera <code>threshold</code> veces el ancho del espacio normal.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>Color de esa superposición.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Multiplicador del ancho del espacio normal a partir del cual una línea justificada cuenta como floja. El aviso <code>looseLines</code> usa el mismo umbral.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
       <td>Renderiza una superposición en negativo de alto contraste sobre la página — útil para auditar visualmente la forma general de una doble página (densidad de texto, equilibrio de columnas, espacio en blanco) de un vistazo, sin distraerse con el detalle de los glifos.</td>
     </tr>
   </tbody>
@@ -3767,9 +3837,9 @@ const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
 // => { fontFamily: 'Inter', fontSize: { value: 8, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
 ```
 
-Resolvers disponibles: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveTableStyleConfig`, `resolveCaptionStyleConfig`, `resolveDiagramStyleConfig`, `resolveHeaderFooterConfig`, `resolveMathConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`, `resolvePdfGenerationConfig`. Las paletas de color se aplican por separado con `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)` y `resolveColorValue(value, palette, fallback)` — ver [Paleta de colores](#paleta-de-colores).
+Resolvers disponibles, uno por sección de primer nivel: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveHeadingStylesConfig`, `resolveTocConfig`, `resolvePartsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveMathConfig`, `resolveTableStyleConfig`, `resolveCaptionStyleConfig`, `resolveDiagramStyleConfig`, `resolveParagraphStylesConfig`, `resolveCalloutStylesConfig`, `resolveHeaderFooterConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`, `resolvePdfGenerationConfig` — más `resolveDesignSlot` para una sola ranura de diseño. Las paletas de color se aplican por separado con `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)` y `resolveColorValue(value, palette, fallback)` — ver [Paleta de colores](#paleta-de-colores).
 
-`resolveUnorderedListsConfig` y `resolveOrderedListsConfig` son los únicos resolvers que aceptan un segundo argumento — el `ResolvedBodyTextConfig` ya resuelto — porque las listas heredan `fontFamily` y `color` del cuerpo de texto:
+Los resolvers cuyos valores por defecto heredan de otra sección reciben esa sección, ya resuelta, como argumento adicional. `resolveUnorderedListsConfig` y `resolveOrderedListsConfig` reciben el cuerpo de texto resuelto, porque las listas heredan de él `fontFamily` y `color`; `resolveCalloutStylesConfig` recibe el cuerpo de texto, los encabezados y las listas no ordenadas resueltos (ver el ejemplo en [Estilos de aviso](#estilos-de-aviso)), y `resolveHeadingStylesConfig` la página, el cuerpo de texto y las dos secciones de listas resueltas. Consulta las declaraciones de tipos del paquete para la firma exacta de cada uno:
 
 ```ts
 import { resolveBodyTextConfig, resolveUnorderedListsConfig } from 'postext';
@@ -3779,7 +3849,7 @@ const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
 // => lists.fontFamily === 'Inter' (heredado)
 ```
 
-También se exportan los paquetes de valores por defecto estáticos — los que se usan cuando no hay herencia: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `DEFAULT_PAGE_NUMBERING`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_MATH_CONFIG`, `DEFAULT_DIAGRAM_STYLE_CONFIG`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_PDF_GENERATION_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`, además de los valores por defecto de los elementos de encabezado/pie (`DEFAULT_HEADER_FOOTER_SLOT`, `DEFAULT_HEADER_SLOT`, `DEFAULT_FOOTER_SLOT`, `DEFAULT_TEXT_ELEMENT`, `DEFAULT_RULE_ELEMENT`) y la función sensible al idioma `defaultResourceTypes(locale)` (ver [Tipos de recurso](#tipos-de-recurso)).
+También se exportan los paquetes de valores por defecto estáticos — los que se usan cuando no hay herencia: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `DEFAULT_PAGE_NUMBERING`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_COLUMN_BALANCING`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_PARAGRAPH_STYLES`, `DEFAULT_CALLOUT_STYLES`, `DEFAULT_CALLOUT_STYLE_STATIC`, `DEFAULT_PARTS_CONFIG`, `DEFAULT_HEADING_STYLES`, `DEFAULT_TOC_CONFIG`, `DEFAULT_MATH_CONFIG`, `DEFAULT_DIAGRAM_STYLE_CONFIG`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_PDF_GENERATION_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`, además de los valores por defecto de los elementos de encabezado/pie (`DEFAULT_HEADER_FOOTER_SLOT`, `DEFAULT_HEADER_SLOT`, `DEFAULT_FOOTER_SLOT`, `DEFAULT_TEXT_ELEMENT`, `DEFAULT_RULE_ELEMENT`, `DEFAULT_BOX_ELEMENT`) y la función sensible al idioma `defaultResourceTypes(locale)` (ver [Tipos de recurso](#tipos-de-recurso)).
 
 ### Eliminar valores por defecto
 
@@ -3792,7 +3862,7 @@ const minimal = stripConfigDefaults(fullConfig);
 // Solo permanecen las propiedades que difieren de los valores por defecto
 ```
 
-También están disponibles funciones individuales: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripHeaderFooterDefaults`, `stripMathDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
+También están disponibles funciones individuales, una por resolver: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripHeadingStylesDefaults`, `stripTocDefaults`, `stripPartsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripMathDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripParagraphStylesDefaults`, `stripCalloutStylesDefaults`, `stripHeaderFooterDefaults`, `stripDesignSlotDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
 
 ### Parseo
 
