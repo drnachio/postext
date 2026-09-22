@@ -42,6 +42,10 @@ export function ChapterList({ title }: { title: ReactNode }) {
     else if (rect.bottom > box.bottom) scroller.scrollTop += rect.bottom - box.bottom;
   }, [activeIndex, listRef]);
 
+  // A book that numbers nothing (a magazine's front matter plus sections
+  // carried by parts) would show a column of dashes: drop it.
+  const anyNumbered = chapters.some((c) => plan.byId[c.id]?.number != null);
+
   const add = () => {
     const chapter = newChapter(generateChapterId(), labels.chapterUntitled.replace('__n__', String(chapters.length + 1)));
     dispatch({ type: 'ADD_CHAPTER', payload: { chapter } });
@@ -72,7 +76,7 @@ export function ChapterList({ title }: { title: ReactNode }) {
               index={i}
               total={chapters.length}
               isActive={c.id === activeChapterId}
-              number={plan.byId[c.id]?.number ?? null}
+              number={anyNumbered ? plan.byId[c.id]?.number ?? null : undefined}
               pages={plan.bookPages[c.id] ?? null}
               dragging={drag?.id === c.id}
               handleProps={handleProps(c.id, i)}
@@ -99,8 +103,9 @@ interface ChapterRowProps {
   total: number;
   isActive: boolean;
   /** The chapter's number in the book, or null for an unnumbered one
-   *  (the front matter) — shown as a dash. */
-  number: number | null;
+   *  (the front matter) — shown as a dash. `undefined` in a book that
+   *  numbers no chapter at all: the number column goes away. */
+  number: number | null | undefined;
   pages: ChapterPages | null;
   /** Whether this row is the one being dragged (drawn faded). */
   dragging: boolean;
@@ -132,7 +137,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
   const pagesText = range
     ? labels.chapterPages.replace('__from__', range.from).replace('__to__', range.to)
     : labels.chapterPagesUnknown;
-  const numberText = number === null ? '–' : String(number);
+  const numberText = number === null ? '–' : number === undefined ? '' : String(number);
   const subtitle = `${pagesText} · ${labels.chapterWords.replace('__n__', words.toLocaleString())}`;
 
   const ask = (message: string, action: () => void) => {
@@ -167,7 +172,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
         className={cn(dragging && 'opacity-40')}
         onSelect={editing ? undefined : () => dispatch({ type: 'SET_ACTIVE_CHAPTER', payload: chapter.id })}
         onDoubleClick={editing ? undefined : startRename}
-        ariaLabel={`${numberText} ${chapter.title}`}
+        ariaLabel={numberText ? `${numberText} ${chapter.title}` : chapter.title}
         handle={
           <button
             type="button"
@@ -184,7 +189,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
             <GripVertical size={12} aria-hidden="true" />
           </button>
         }
-        leading={
+        leading={number === undefined ? undefined : (
           // The chapter number alone marks the row (the selected one is
           // framed and set in gilt): large enough to span the title and its
           // page line, right-aligned in a slot wide enough for two digits.
@@ -195,7 +200,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
           >
             {numberText}
           </span>
-        }
+        )}
         title={title}
         subtitle={subtitle}
         actions={
