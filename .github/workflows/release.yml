@@ -78,45 +78,20 @@ jobs:
 
             core.setOutput('type', bump);
 
-      # Bump version in package.json (no git tag yet)
+      # Bump versions in package.json (no git tag yet). See the script for
+      # the three cases: bump, release a hand-raised version as-is, or sync
+      # with npm when a previous run failed to push its bump commit.
       - name: Bump version
         id: version
-        working-directory: packages/postext
         run: |
-          # If a previous run published but failed to push the bump commit,
-          # the repo lags the registry — rebase the bump on whichever is higher.
-          NPM_VERSION=$(npm view postext version 2>/dev/null || echo "0.0.0")
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          BASE=$(printf '%s\n%s\n' "$NPM_VERSION" "$LOCAL_VERSION" | sort -V | tail -1)
-          if [ "$BASE" != "$LOCAL_VERSION" ]; then
-            echo "Repo at $LOCAL_VERSION but npm at $NPM_VERSION — syncing to $BASE first"
-            npm version "$BASE" --no-git-tag-version --allow-same-version
-          fi
-          npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(.github/scripts/release-version.sh packages/postext postext ${{ steps.bump.outputs.type }} | tee /dev/stderr | tail -1)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Bumped to v$VERSION (${{ steps.bump.outputs.type }})"
 
-      # Same for postext-pdf. Its first release publishes the version in the
-      # repo as-is; later runs bump with the same label-derived type.
       - name: Bump postext-pdf version
         id: version_pdf
-        working-directory: packages/postext-pdf
         run: |
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          if NPM_VERSION=$(npm view postext-pdf version 2>/dev/null); then
-            BASE=$(printf '%s\n%s\n' "$NPM_VERSION" "$LOCAL_VERSION" | sort -V | tail -1)
-            if [ "$BASE" != "$LOCAL_VERSION" ]; then
-              echo "Repo at $LOCAL_VERSION but npm at $NPM_VERSION — syncing to $BASE first"
-              npm version "$BASE" --no-git-tag-version --allow-same-version
-            fi
-            npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
-          else
-            echo "postext-pdf is not on npm yet — publishing $LOCAL_VERSION as its first release"
-          fi
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(.github/scripts/release-version.sh packages/postext-pdf postext-pdf ${{ steps.bump.outputs.type }} | tee /dev/stderr | tail -1)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "postext-pdf at v$VERSION"
 
       # Build & test both packages (postext-pdf builds against the freshly
       # bumped workspace postext)
