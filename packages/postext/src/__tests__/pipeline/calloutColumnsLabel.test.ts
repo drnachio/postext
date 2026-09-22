@@ -16,7 +16,6 @@ class StubCtx {
 };
 
 const pt = (value: number) => ({ value, unit: 'pt' as const });
-const mm = (value: number) => ({ value, unit: 'mm' as const });
 
 const PAGE: PostextConfig = {
   page: { width: pt(500), height: pt(700), margins: { top: pt(20), bottom: pt(20), left: pt(30), right: pt(20), mirror: true } },

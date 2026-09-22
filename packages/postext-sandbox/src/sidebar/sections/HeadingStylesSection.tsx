@@ -233,6 +233,16 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
     { value: 'double', label: labels.layoutDouble },
     { value: 'oneAndHalf', label: labels.layoutOneAndHalf },
   ];
+  const SIDE_ROLE_OPTIONS = [
+    { value: 'text', label: labels.sideColumnRoleText },
+    { value: 'floats', label: labels.sideColumnRoleFloats },
+  ];
+  const SIDE_SIDE_OPTIONS = [
+    { value: 'right', label: labels.sideColumnSideRight },
+    { value: 'left', label: labels.sideColumnSideLeft },
+    { value: 'outer', label: labels.sideColumnSideOuter },
+    { value: 'inner', label: labels.sideColumnSideInner },
+  ];
 
   const marginField = (side: MarginSide, label: string) => (
     <DimensionInput
@@ -601,6 +611,28 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
                 isDefault={layout?.sideColumnPercent === undefined}
                 onReset={() => resetLayoutField('sideColumnPercent')}
                 suffix="%"
+              />
+            )}
+            {showSideCol && (
+              <SelectInput
+                label={labels.sideColumnRole}
+                value={resolvedLayout.sideColumnRole}
+                options={SIDE_ROLE_OPTIONS}
+                onChange={(v) => updateLayout({ sideColumnRole: v as LayoutConfig['sideColumnRole'] })}
+                tooltip={labels.sideColumnRoleTooltip}
+                isDefault={layout?.sideColumnRole === undefined}
+                onReset={() => resetLayoutField('sideColumnRole')}
+              />
+            )}
+            {showSideCol && (
+              <SelectInput
+                label={labels.sideColumnSide}
+                value={resolvedLayout.sideColumnSide}
+                options={SIDE_SIDE_OPTIONS}
+                onChange={(v) => updateLayout({ sideColumnSide: v as LayoutConfig['sideColumnSide'] })}
+                tooltip={labels.sideColumnSideTooltip}
+                isDefault={layout?.sideColumnSide === undefined}
+                onReset={() => resetLayoutField('sideColumnSide')}
               />
             )}
             <ToggleSwitch

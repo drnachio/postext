@@ -107,7 +107,7 @@ export interface ResourceType {
    *  follows this prefix. */
   captionPrefix: string;
   /** Default placement for resources of this type, used when a resource does
-   *  not specify its own `placement`. Falls back to `top` / `column`. */
+   *  not specify its own `placement`. Falls back to `auto` / `column`. */
   defaultPlacement?: ResourcePlacement;
   /** Optional partial caption-style override for resources of this type.
    *  Only the keys set here replace the resolved global `captionStyle`; the
@@ -601,7 +601,7 @@ export interface BodyTextConfig {
   /** Approximate minimum character count for the last line of a paragraph.
    *  Interpreted internally as `runtMinCharacters * normalSpaceWidth` pixels, so
    *  the real test is "is the last line visually shorter than N characters'
-   *  worth of space-width content". Default 5. */
+   *  worth of space-width content". Default 20. */
   runtMinCharacters?: number;
   /** Equivalent-badness added to the last line when it is shorter than the
    *  runt threshold. Feeds into the Knuth–Plass squared demerit on the same
@@ -1052,7 +1052,7 @@ export interface CalloutMarkerRuleConfig {
  *  column (`size` + rule width + `gap`); the box keeps its own background,
  *  padding and icon. `align` positions the marker, the rule and the box
  *  against each other when their heights differ. */
-export interface CalloutMarkerConfig extends CalloutIconConfig {
+export interface CalloutMarkerConfig extends Omit<CalloutIconConfig, 'position' | 'cornerSide' | 'width'> {
   /** Space between the marker column (after the rule) and the box. Default
    *  `0.5em`. */
   gap?: Dimension;
