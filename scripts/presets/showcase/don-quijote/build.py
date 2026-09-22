@@ -659,9 +659,15 @@ def attr_value(s: str) -> str:
     return s.replace('"', "”").replace("\\", "")
 
 
+GUTENBERG_ITALIC = re.compile(r"_([^_]+?)_")
+
+
 def md_paragraph(p: str) -> str:
-    # Gutenberg's plain quotes are fine; protect asterisks and underscores.
-    return p.replace("*", "\\*").replace("_", "\\_")
+    """Gutenberg marks italics as `_text_` (Ormsby's book titles and Latin
+    tags): turn them into markdown emphasis and escape any stray marker."""
+    p = p.replace("*", "\\*")
+    p = GUTENBERG_ITALIC.sub(lambda m: "*" + m.group(1).strip() + "*", p)
+    return p.replace("_", "\\_")
 
 
 def gloss_block(lemma: str, body: str) -> str:
