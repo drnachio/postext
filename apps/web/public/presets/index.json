@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "art-forms-nature",
+      "dir": "art-forms-nature",
+      "name": "Formas artísticas de la naturaleza · Haeckel",
+      "description": "Libro de láminas a columna y media con fichas y pies laterales · A column-and-a-half plate book with fact files and side captions",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "Public domain · CC BY-SA 4.0",
+      "credits": "Ernst Haeckel · Wikipedia · Library of Congress · Wikimedia Commons",
+      "tags": [
+        "plates",
+        "one-and-a-half",
+        "side-captions",
+        "parts"
+      ]
+    },
+    {
+      "id": "deep-sky",
+      "dir": "deep-sky",
+      "name": "Cielo profundo · Deep Sky",
+      "description": "Revista de astronomía a dos columnas con aperturas a sangre, recuadros y citas · A two-column astronomy magazine with full-bleed openers, boxes and pull quotes",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0",
+      "credits": "ESO · NSF NOIRLab",
+      "tags": [
+        "magazine",
+        "two-column",
+        "parts",
+        "tables"
+      ]
+    },
+    {
+      "id": "don-quijote",
+      "dir": "don-quijote",
+      "name": "Don Quijote · Gustave Doré",
+      "description": "Edición literaria a columna y media con glosas al margen y láminas de Doré · A column-and-a-half literary edition with margin glosses and Doré's plates",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "Public domain · CC BY 4.0",
+      "credits": "Cervantes · Ormsby · Doré · Project Gutenberg · Wikimedia Commons",
+      "tags": [
+        "book",
+        "one-and-a-half",
+        "margin-notes",
+        "front-matter"
+      ]
+    }
+  ]
+}

@@ -15,7 +15,25 @@ export interface PresetSourceSpec {
   private?: boolean;
 }
 
-export interface PresetSummary {
+/** Optional showcase metadata shared by index entries, manifests and
+ *  summaries: everything the preset picker can show beyond name and
+ *  description. All fields are optional and purely descriptive. */
+export interface PresetShowcaseMeta {
+  /** Every locale the bundle carries chapters for (a bilingual bundle lists
+   *  both); `locale` stays the primary one. */
+  locales?: string[];
+  /** Preview image (`thumbnail.jpg`), relative to the preset directory. */
+  thumbnail?: string;
+  /** Licence of the bundled content, as a short label (`CC BY 4.0`,
+   *  `Public domain`, `CC BY-SA 4.0`). */
+  license?: string;
+  /** One-line credit for the content and imagery sources. */
+  credits?: string;
+  /** Free-form tags (`two-column`, `magazine`, `book`). */
+  tags?: string[];
+}
+
+export interface PresetSummary extends PresetShowcaseMeta {
   id: string;
   name: string;
   description?: string;
@@ -26,10 +44,12 @@ export interface PresetSummary {
   /** False when the preset was active in a previous session but its source
    *  no longer lists it (e.g. a private source not served in this build). */
   available: boolean;
+  /** Absolute URL of `thumbnail` for remote presets. */
+  thumbnailUrl?: string;
 }
 
 /** `index.json` at a source's base URL. */
-export interface PresetIndexEntry {
+export interface PresetIndexEntry extends PresetShowcaseMeta {
   id: string;
   /** Directory (relative to the base URL) holding `preset.json` and files. */
   dir: string;
@@ -78,7 +98,16 @@ export interface PresetChapterSpec {
   file: string;
 }
 
-interface PresetManifestBase {
+/** What a bilingual bundle changes per locale on top of its shared `config`
+ *  and `resources`: top-level config keys replaced wholesale for that locale
+ *  (`resourceTypes` with translated caption prefixes, say) and the wording of
+ *  resources — caption, note, alt text, a table's cells — merged by id. */
+export interface PresetLocaleOverrides {
+  config?: Partial<PostextConfig>;
+  resources?: (Pick<PresetResourceSpec, 'id'> & Partial<Pick<PresetResourceSpec, 'caption' | 'note' | 'altText' | 'table'>>)[];
+}
+
+interface PresetManifestBase extends PresetShowcaseMeta {
   id: string;
   name: string;
   description?: string;
@@ -87,6 +116,9 @@ interface PresetManifestBase {
   config?: PostextConfig;
   resources?: PresetResourceSpec[];
   fonts?: PresetFontFamilySpec[];
+  /** Locale → overrides, resolved with the same rules as a locale → chapters
+   *  map (exact tag, base language, the manifest's locale, first entry). */
+  localized?: Record<string, PresetLocaleOverrides>;
 }
 
 /** `preset.json` (version 1): a single markdown document. Still accepted

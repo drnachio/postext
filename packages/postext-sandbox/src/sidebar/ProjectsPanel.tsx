@@ -441,15 +441,49 @@ function PresetRow({
   const labels = useSandboxLabels();
   const confirmMessage = labels.presetLoadConfirm.replace('__name__', preset.name);
 
+  // A bilingual bundle lists every locale it carries; the primary one
+  // otherwise.
+  const locales = preset.locales && preset.locales.length > 0
+    ? preset.locales
+    : preset.locale ? [preset.locale] : [];
   const tags = (
     <>
-      {preset.locale && <RowTag>{preset.locale}</RowTag>}
+      {locales.map((l) => <RowTag key={l}>{l}</RowTag>)}
+      {preset.license && <RowTag>{preset.license}</RowTag>}
       {preset.source === 'private' && <RowTag>{labels.presetPrivate}</RowTag>}
       {preset.default && <RowTag>{labels.presetDefault}</RowTag>}
       {isActive && <RowTag accent>{labels.presetActive}</RowTag>}
     </>
   );
-  const subtitle = preset.available ? preset.description : labels.presetUnavailable;
+  const subtitle = !preset.available
+    ? labels.presetUnavailable
+    : preset.credits
+      ? (
+        <>
+          {preset.description && <span>{preset.description}</span>}
+          <span className="mt-0.5 block italic">{preset.credits}</span>
+        </>
+      )
+      : preset.description;
+  // Showcase presets carry a page thumbnail; the check mark of the active
+  // preset sits over it.
+  const leading = preset.thumbnailUrl ? (
+    <span
+      className="relative flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded-sm border"
+      style={{ borderColor: 'var(--rule)', background: 'var(--surface)' }}
+    >
+      <img src={preset.thumbnailUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+      {isActive && (
+        <span className="absolute inset-0 flex items-center justify-center" style={{ color: 'var(--gilt)', background: 'color-mix(in srgb, var(--background) 60%, transparent)' }}>
+          <Check size={13} aria-hidden="true" />
+        </span>
+      )}
+    </span>
+  ) : (
+    <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--gilt)' }}>
+      {isActive && <Check size={13} aria-hidden="true" />}
+    </span>
+  );
 
   const row = (open?: () => void) => (
     <ListRow
@@ -458,11 +492,7 @@ function PresetRow({
       className={isActive ? 'rounded-none border-0' : undefined}
       onSelect={isActive ? undefined : open}
       ariaLabel={isActive ? `${preset.name} (${labels.presetActive})` : `${labels.presetLoad}: ${preset.name}`}
-      leading={
-        <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--gilt)' }}>
-          {isActive && <Check size={13} aria-hidden="true" />}
-        </span>
-      }
+      leading={leading}
       title={preset.name}
       subtitle={subtitle}
       tags={tags}

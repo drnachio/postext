@@ -13,7 +13,7 @@ import { svgIntrinsicSize } from '../panels/resources/svgIntrinsic';
 import { slugify, uniqueSlug } from '../panels/resources/slugify';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
 import type { Chapter, ChapterLayout } from '../book/types';
-import { chapterFileName, extensionForResource, fontsToCustomFonts, isBitmapFile, isPdfFile, isPresetManifest, isSvgFile, mimeForFile, pickChapterSpecs, presetChapterId, presetFileId, presetFontFileId, resourceFromSpec } from './manifest';
+import { chapterFileName, extensionForResource, fontsToCustomFonts, isBitmapFile, isPdfFile, isPresetManifest, isSvgFile, mimeForFile, pickChapterSpecs, pickLocaleOverrides, presetChapterId, presetFileId, presetFontFileId, resourceFromSpec } from './manifest';
 import type {
   LoadedPreset,
   LoadedPresetBlob,
@@ -96,9 +96,18 @@ export async function parseBundle(
     chapters.push(newChapter(idOf(spec.file), spec.title || deriveChapterTitle(text, untitled(i + 1)), text));
   }
 
+  // A bilingual bundle's per-locale wording: resource captions, notes and
+  // alt texts merged by id, config keys replaced wholesale.
+  const overrides = pickLocaleOverrides(manifest, locale);
+  const wordingById = new Map((overrides?.resources ?? []).map((r) => [r.id, r]));
+  const localizedSpecs: PresetResourceSpec[] = (manifest.resources ?? []).map((spec) => {
+    const wording = wordingById.get(spec.id);
+    return wording ? { ...spec, ...wording, id: spec.id } : spec;
+  });
+
   const blobs: LoadedPresetBlob[] = [];
   const resources: Resource[] = await Promise.all(
-    (manifest.resources ?? []).map(async (spec) => {
+    localizedSpecs.map(async (spec) => {
       const file = spec.file;
       if (!file) return resourceFromSpec(presetId, spec);
       const mime = mimeForFile(file);
@@ -140,7 +149,7 @@ export async function parseBundle(
     })),
   );
 
-  const baseConfig = { ...createDefaultConfig(locale), ...(manifest.config ?? {}) };
+  const baseConfig = { ...createDefaultConfig(locale), ...(manifest.config ?? {}), ...(overrides?.config ?? {}) };
   const customFonts = [...(manifest.config?.customFonts ?? []), ...fontSet.families];
   const config = customFonts.length > 0 ? { ...baseConfig, customFonts } : baseConfig;
 
@@ -171,6 +180,10 @@ export async function parseBundle(
       ...summary,
       description: manifest.description ?? summary.description,
       locale: manifest.locale ?? summary.locale,
+      ...(manifest.locales ? { locales: manifest.locales } : {}),
+      ...(manifest.license ? { license: manifest.license } : {}),
+      ...(manifest.credits ? { credits: manifest.credits } : {}),
+      ...(manifest.tags ? { tags: manifest.tags } : {}),
     },
     chapters,
     config,
