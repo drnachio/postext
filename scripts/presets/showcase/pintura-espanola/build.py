@@ -582,7 +582,10 @@ def write_manifest(chapters, resources, wording, fonts, cover_resource, aspect) 
         "tags": ["catalogue", "single-column", "plates", "parts"],
     }
     manifest = {
-        "version": 2, **meta, "chapters": chapters, "config": shared_config(cover_resource, aspect),
+        # A catalogue is read as one sequence of facing spreads: the sandbox
+        # opens it with the canvas laying out the whole book.
+        "version": 2, **meta, "view": {"canvasScope": "book"},
+        "chapters": chapters, "config": shared_config(cover_resource, aspect),
         "localized": {lang: {"config": localized_config(lang), "resources": wording[lang]} for lang in LANGS},
         "resources": resources, "fonts": fonts,
     }

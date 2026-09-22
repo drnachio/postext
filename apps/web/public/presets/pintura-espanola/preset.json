@@ -17,6 +17,9 @@
   "plates",
   "parts"
  ],
+ "view": {
+  "canvasScope": "book"
+ },
  "chapters": {
   "es": [
    {
