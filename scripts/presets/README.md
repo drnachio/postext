@@ -236,11 +236,9 @@ generated, never edited by hand. Each lives in `scripts/presets/showcase/<id>/`:
 `_common.py` carries the shared helpers (units, design elements, font
 instancing, fingerprint, registration). Current bundles: `don-quijote`
 (book, column-and-a-half with margin glosses), `deep-sky` (two-column
-magazine), `espana-en-mapas` (the history chapter of the IGN's Atlas
-Nacional de España, CC BY 4.0, re-set in two columns with page-wide maps
-cropped per language by `extract.py`), `pintura-espanola` (an exhibition
-catalogue of CC0 museum plates: each work opens on a verso with its entry
-and commentary while the plate floats onto the facing recto) and `senales`
+magazine), `pintura-espanola` (an exhibition catalogue of CC0 museum
+plates: each work opens on a verso with its entry and commentary while the
+plate floats onto the facing recto) and `senales`
 (EEA Signals 2020 in Spanish and English, read from the PDFs by type role in
 `extract.py`, with CC0 Unsplash photographs from Wikimedia Commons in place
 of the original pictures and the infographics transcribed as data panels in
