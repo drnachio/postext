@@ -194,7 +194,7 @@ export function attachSlotClickHandler(
     if (activePanelRef.current !== 'markdown') {
       dispatch({ type: 'SET_PANEL', payload: 'markdown' });
     }
-    dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: toChapterFocus(sourceOfPage(), anchor, head, selectWord) });
+    dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: { ...toChapterFocus(sourceOfPage(), anchor, head, selectWord), fromViewer: true } });
   };
 
   // Open the Resources panel on a resource (no editor selection).

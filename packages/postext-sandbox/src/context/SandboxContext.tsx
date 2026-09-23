@@ -82,6 +82,10 @@ export interface PendingEditorFocus {
   anchor: number;
   head: number;
   selectWord: boolean;
+  /** Set when the request comes from a click or a selection on a page of
+   *  the preview: a chapter switch it causes keeps the viewer where it is
+   *  (the reader is already looking at the chapter). */
+  fromViewer?: boolean;
 }
 
 /** Which editable run of a resource a preview click / panel selection refers
