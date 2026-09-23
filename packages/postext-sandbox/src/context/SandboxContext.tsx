@@ -83,6 +83,10 @@ export interface PendingEditorFocus {
   anchor: number;
   head: number;
   selectWord: boolean;
+  /** Set when the request comes from a click or a selection on a page of
+   *  the preview: a chapter switch it causes keeps the viewer where it is
+   *  (the reader is already looking at the chapter). */
+  fromViewer?: boolean;
 }
 
 /** Which editable run of a resource a preview click / panel selection refers
@@ -163,6 +167,12 @@ export interface SandboxState {
   labels: SandboxLabels;
   locale: string;
   selection: EditorSelection;
+  /** The editor selection was placed from the preview (a click or a drag on
+   *  a page), not by the reader in the editor: the previews show it where
+   *  it is and do not scroll to follow it. Set by a viewer focus request and
+   *  kept through the selections the editor reports while it is in flight;
+   *  the next selection made in the editor clears it. */
+  selectionFromViewer: boolean;
   editorFocused: boolean;
   /** A request to place the editor caret. `chapterId` (when set) switches
    *  the active chapter first; offsets are chapter-local. */
@@ -407,7 +417,11 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       ) {
         return state;
       }
-      return { ...state, selection: action.payload };
+      return {
+        ...state,
+        selection: action.payload,
+        selectionFromViewer: state.pendingEditorFocus !== null ? state.selectionFromViewer : false,
+      };
     case 'SET_EDITOR_FOCUSED':
       if (state.editorFocused === action.payload) return state;
       return { ...state, editorFocused: action.payload };
@@ -427,7 +441,11 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       const base = target && target !== state.activeChapterId && state.chapters.some((c) => c.id === target)
         ? withBook(state, { ...bookOf(state), activeChapterId: target })
         : state;
-      return { ...base, pendingEditorFocus: action.payload };
+      return {
+        ...base,
+        pendingEditorFocus: action.payload,
+        selectionFromViewer: action.payload ? action.payload.fromViewer === true : state.selectionFromViewer,
+      };
     }
     case 'SET_ACTIVE_RESOURCE':
       if (state.activeResourceId === action.payload) return state;
@@ -1011,6 +1029,7 @@ export function SandboxProvider({
       labels: mergedLabels,
       locale: locale ?? 'en',
       selection: { from: 0, to: 0, head: 0 },
+      selectionFromViewer: false,
       editorFocused: false,
       pendingEditorFocus: null,
       activeResourceId: null,

@@ -26,6 +26,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     labels: DEFAULT_LABELS,
     locale: 'en',
     selection: { from: 0, to: 0, head: 0 },
+    selectionFromViewer: false,
     editorFocused: false,
     pendingEditorFocus: null,
     activeResourceId: null,
