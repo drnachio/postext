@@ -156,6 +156,12 @@ Everything below ships today — see the [Roadmap](#roadmap) for what's still in
 - Every behavior above is driven by a single configuration object with sensible defaults — an empty config produces a well-typeset document, and each section (page, layout, body text, headings, lists, math, resource types, …) can be overridden independently.
 - Color palettes let a whole document re-ink from one place.
 
+### Agent skill: port existing publications
+
+- **`postext-port`** teaches a coding agent (Claude Code, Codex, Cursor, Gemini CLI, Copilot, …) to turn an existing publication — a PDF, Word, PowerPoint, EPUB, HTML, InDesign (IDML), LaTeX or scanned source — into a Postext project that follows the original layout: measured config manifest, curated chapters, resources and fonts.
+- It bundles verified references (document format, configuration, project format, per-source playbooks, the unusual cases solved in every preset) and scripts: type-role PDF extraction, figure and table cutting, pandoc/IDML converters, font and image tools, a linter, a headless renderer and page-by-page comparison.
+- Install it with `npx skills add drnachio/postext --skill postext-port`, or in Claude Code with `/plugin marketplace add drnachio/postext` + `/plugin install postext@postext`. See [the Skill docs](https://postext.dev/en/docs/skill).
+
 ---
 
 ## Project Structure
@@ -170,6 +176,8 @@ postext/
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
 ├── docs/                         # Bilingual MDX documentation (<topic>-en.mdx / <topic>-es.mdx)
+├── plugins/postext/              # Agent skill `postext-port` (Claude Code plugin + skills.sh)
+├── .claude-plugin/               # Claude Code plugin marketplace manifest
 ├── turbo.json                    # Turborepo task pipeline
 ├── pnpm-workspace.yaml           # pnpm workspace definition
 └── package.json                  # Root scripts (delegate to turbo)

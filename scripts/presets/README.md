@@ -21,6 +21,12 @@ with `POSTEXT_PRIVATE_PRESETS_DIR`.
 
 Every script answers `--help`.
 
+The agent skill in `plugins/postext/skills/postext-port/` carries an extended,
+maintained copy of these tools (plus type-role PDF extraction, pandoc and IDML
+converters, figure cutting, a project linter, a headless renderer and
+page-by-page comparison) and the full porting workflow. Prefer it for new
+ports; see `docs/skill-en.mdx`.
+
 ## Workflow
 
 ```sh
