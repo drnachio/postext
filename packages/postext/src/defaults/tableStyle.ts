@@ -1,6 +1,8 @@
 import type {
   TableStyleConfig,
   ResolvedTableStyleConfig,
+  NamedTableStyleConfig,
+  ResolvedNamedTableStyleConfig,
   ResolvedBodyTextConfig,
   ColorValue,
 } from '../types';
@@ -27,6 +29,7 @@ const STATIC_DEFAULTS = {
   // 0.375em ≈ 0.25 × the 1.5em line height — matches the previous padding.
   cellPadding: { value: 0.375, unit: 'em' as const },
   rules: 'grid' as const,
+  borderRadius: { value: 0, unit: 'pt' as const },
   overflow: 'split' as const,
   continuesMarkerEnabled: true,
 } satisfies Partial<ResolvedTableStyleConfig>;
@@ -77,6 +80,7 @@ export function resolveTableStyleConfig(
     borderWidth: p.borderWidth ?? STATIC_DEFAULTS.borderWidth,
     cellPadding: p.cellPadding ?? STATIC_DEFAULTS.cellPadding,
     rules: p.rules ?? STATIC_DEFAULTS.rules,
+    borderRadius: p.borderRadius ?? STATIC_DEFAULTS.borderRadius,
     overflow: p.overflow ?? STATIC_DEFAULTS.overflow,
     continuedSuffix: p.continuedSuffix ?? strings.continuedSuffix,
     continuesMarkerEnabled: p.continuesMarkerEnabled ?? STATIC_DEFAULTS.continuesMarkerEnabled,
@@ -124,8 +128,59 @@ export function stripTableStyleDefaults(
   if (tableStyle.borderWidth !== undefined && !dimensionsEqual(tableStyle.borderWidth, STATIC_DEFAULTS.borderWidth)) { r.borderWidth = tableStyle.borderWidth; has = true; }
   if (tableStyle.cellPadding !== undefined && !dimensionsEqual(tableStyle.cellPadding, STATIC_DEFAULTS.cellPadding)) { r.cellPadding = tableStyle.cellPadding; has = true; }
   if (tableStyle.rules !== undefined && tableStyle.rules !== STATIC_DEFAULTS.rules) { r.rules = tableStyle.rules; has = true; }
+  if (tableStyle.borderRadius !== undefined && tableStyle.borderRadius.value !== 0) { r.borderRadius = tableStyle.borderRadius; has = true; }
   if (tableStyle.overflow !== undefined && tableStyle.overflow !== STATIC_DEFAULTS.overflow) { r.overflow = tableStyle.overflow; has = true; }
   if (tableStyle.continuesMarkerEnabled !== undefined && tableStyle.continuesMarkerEnabled !== STATIC_DEFAULTS.continuesMarkerEnabled) { r.continuesMarkerEnabled = tableStyle.continuesMarkerEnabled; has = true; }
 
   return has ? r : undefined;
+}
+
+/** The fields of a partial style that are actually set (an explicit
+ *  `undefined` must not mask the value it would inherit). */
+function definedFields(style: TableStyleConfig): TableStyleConfig {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(style)) if (v !== undefined) out[k] = v;
+  return out as TableStyleConfig;
+}
+
+/** Resolve the named table styles: each one is laid over the document's
+ *  `tableStyle` partial and resolved like it, so an unset field reads the
+ *  global table style first and the body text after that. */
+export function resolveTableStylesConfig(
+  styles: NamedTableStyleConfig[] | undefined,
+  base: TableStyleConfig | undefined,
+  bodyText: ResolvedBodyTextConfig,
+  locale?: string,
+): ResolvedNamedTableStyleConfig[] {
+  return (styles ?? []).map(({ id, name, ...fields }) => ({
+    id,
+    name: name ?? id,
+    ...resolveTableStyleConfig({ ...definedFields(base ?? {}), ...definedFields(fields) }, bodyText, locale),
+  }));
+}
+
+/** Drop unset fields and a `name` equal to the `id`. Unlike
+ *  {@link stripTableStyleDefaults}, a field equal to its static default is
+ *  kept: a named style inherits the global `tableStyle`, so `borders: true`
+ *  still matters when the global style turns borders off. Returns
+ *  `undefined` when no styles remain. */
+export function stripTableStylesDefaults(
+  styles: NamedTableStyleConfig[] | undefined,
+): NamedTableStyleConfig[] | undefined {
+  if (!styles || styles.length === 0) return undefined;
+  return styles.map(({ id, name, ...fields }) => ({
+    id,
+    ...(name !== undefined && name !== id ? { name } : {}),
+    ...definedFields(fields),
+  }));
+}
+
+/** The resolved style a table resource is set in: the named style its
+ *  `table.styleId` selects, else the document's `tableStyle`. */
+export function pickTableStyle(
+  resolved: { tableStyle: ResolvedTableStyleConfig; tableStyles?: readonly ResolvedNamedTableStyleConfig[] },
+  styleId: string | undefined,
+): ResolvedTableStyleConfig {
+  if (!styleId) return resolved.tableStyle;
+  return resolved.tableStyles?.find((s) => s.id === styleId) ?? resolved.tableStyle;
 }

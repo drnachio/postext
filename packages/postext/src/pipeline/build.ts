@@ -111,6 +111,7 @@ import {
   type ResourceNumberingMap,
 } from './resourceNumbering';
 import { defaultResourceTypes } from '../defaults/resourceTypes';
+import { pickTableStyle } from '../defaults/tableStyle';
 import { buildHeadersAndFooters, measureHeadingAdvancedDesignHeight } from './headerFooter';
 import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey } from './columnBalancing';
 import {
@@ -604,6 +605,11 @@ export function buildDocumentPass(
   const tableRowCount = (resourceId: string): number =>
     resourceById.get(resourceId)?.table?.model.rows.length ?? 0;
 
+  /** What a table resource does when taller than the page — its own
+   *  (named) style's `overflow`. */
+  const tableOverflow = (resourceId: string) =>
+    pickTableStyle(resolved, resourceById.get(resourceId)?.table?.styleId).overflow;
+
   /** The slice a pending float stands for: the whole resource, or — for the
    *  rest of a split table — its remaining rows, laid out as the closing
    *  slice (no marker; the note). */
@@ -754,7 +760,7 @@ export function buildDocumentPass(
    * The slice of a table float that fits a fresh band of `avail` px, when
    * the whole (rest of the) table does not: the leading rows within the
    * band, cut where `planTableSlice` allows, verified against the band
-   * geometry and shrunk row by row until it fits. `tableStyle.overflow`
+   * geometry and shrunk row by row until it fits. The table style's `overflow`
    * decides what becomes of the rows left over — a rest float to continue
    * on the next page (`'split'`), nothing (`'clip'`) — or, for `'hide'`,
    * that the table is dropped. Returns null for a figure or a table with
@@ -774,7 +780,7 @@ export function buildDocumentPass(
   ): { slice: TableSliceSpec; rest?: PlannedFloat } | 'skip' | 'none' | null => {
     const rowCount = tableRowCount(f.resourceId);
     if (rowCount === 0) return null;
-    const overflow = resolved.tableStyle.overflow;
+    const overflow = tableOverflow(f.resourceId);
     if (overflow === 'hide') return 'skip';
     const metrics = tableMetrics(f.resourceId, width, rotated);
     if (!metrics) return null;
@@ -1088,7 +1094,7 @@ export function buildDocumentPass(
         // long table beside the text that cites it, not pages later. A
         // table that clips or hides when too tall keeps to fresh pages.
         if (position !== 'top' || pageSpan || c.blocks.length > 0) return 'defer';
-        if (resolved.tableStyle.overflow !== 'split') return 'defer';
+        if (tableOverflow(f.resourceId) !== 'split') return 'defer';
         const split = splitTableFloat(
           f, width, position, targetCols, page.contentArea,
           c.availableHeight - (hasBand ? minTextPx : 0), 'strict',

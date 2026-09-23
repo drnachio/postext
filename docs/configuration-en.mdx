@@ -43,7 +43,7 @@ This reference is long. These are the main blocks:
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
 - [Resource types](#resource-types) — typed numbering for figures, tables, and custom kinds.
-- [Table style](#table-style) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
+- [Table style](#table-style) (with [named table styles](#named-table-styles)) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
 - [Diagram style](#diagram-style) — single-ink recolouring of embedded SVG diagrams for spot-colour printing.
 - [Paragraph styles](#paragraph-styles) — named styles for `:::paragraphs` containers: bibliographies, glossaries, notes.
 - [Callout styles](#callout-styles) — boxed notes, tips and objectives for `:::callout` containers.
@@ -2134,7 +2134,7 @@ This mirrors heading numbering: just as a heading level carries a `numberingTemp
 
 ## Table style
 
-The `tableStyle` property controls the typography and decoration of table resources. Body and header cells are styled independently. Font family, size, and colours inherit the resolved body text when unset, so a document with no `tableStyle` renders tables with body-text typography.
+The `tableStyle` property controls the typography and decoration of table resources — every table's, unless it picks a [named table style](#named-table-styles). Body and header cells are styled independently. Font family, size, and colours inherit the resolved body text when unset, so a document with no `tableStyle` renders tables with body-text typography.
 
 ```ts
 const config: PostextConfig = {
@@ -2260,6 +2260,12 @@ const config: PostextConfig = {
       <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, or none.</td>
     </tr>
     <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Corner radius of the table's outer frame. The frame is stroked round (with <code>grid</code> or <code>outer</code> rules), the cell fills and the header background are clipped to it — also with <code>rules: 'none'</code> or borders off — and horizontal rules are trimmed to its outer contour; the inner rules stay straight. A table split across pages rounds the top corners of its first part and the bottom corners of its last. Clamped to half the table's width and height.</td>
+    </tr>
+    <tr>
       <td><code>overflow</code></td>
       <td><code>'split' | 'clip' | 'hide'</code></td>
       <td><code>'split'</code></td>
@@ -2287,6 +2293,39 @@ const config: PostextConfig = {
 </table>
 
 Border widths are kept fractional: a `0.5pt` rule is stroked as a hairline in the PDF and on screen rather than being rounded up to a full pixel (the floor is 0.25px).
+
+### Named table styles
+
+A document rarely sets every table alike: a checklist in a navy grid with a rounded frame, an option row boxed by its outer frame only, a data table in plain horizontal rules. `tableStyles` declares named variants, and a table resource picks one with `table.styleId`. Every field a style leaves unset is read from `tableStyle` first and from the body text after that, so a style states only what sets its tables apart. A table without a `styleId`, or with an id no style declares, keeps `tableStyle` — a document without `tableStyles` renders exactly as before.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    borderColor: { hex: '#163a76', model: 'hex' },
+    borderWidth: { value: 1.3, unit: 'pt' },
+    borderRadius: { value: 10, unit: 'pt' },
+  },
+  tableStyles: [
+    {
+      id: 'option',
+      name: 'Option row',
+      rules: 'outer',
+      borderColor: { hex: '#7a9cc6', model: 'hex' },
+      borderWidth: { value: 1, unit: 'pt' },
+      borderRadius: { value: 8, unit: 'pt' },
+      headerBackgroundEnabled: false,
+    },
+  ],
+};
+
+// In the resources: this table is set in the "option" style.
+const resource: Resource = {
+  id: 'choices', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
+  table: { model: { rows: [/* … */] }, styleId: 'option' },
+};
+```
+
+Each entry takes every `tableStyle` field plus `id` (what `table.styleId` references) and an optional `name` for the editor (defaults to the id). Everything a style can set applies per table — typography, fills, borders, rules, corner radius, padding and the overflow behaviour with its continuation strings. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` returns the resolved list, `pickTableStyle(resolved, styleId)` the style a table is set in, and `stripTableStylesDefaults` drops the unset fields (it keeps a field equal to its built-in default, which still overrides a different `tableStyle` value).
 
 ### Tables taller than the page
 

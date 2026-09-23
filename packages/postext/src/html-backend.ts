@@ -13,7 +13,9 @@ import type {
   VDTDesignBoxStyle,
   BoundingBox,
   ResolvedResourceBlock,
+  RoundedOutline,
 } from './vdt';
+import { tableFrameOutline } from './vdt';
 
 export interface RenderHtmlOptions {
   /** Layout mode: single vertical column or many columns laid out horizontally. */
@@ -382,22 +384,42 @@ function renderFittedImage(
   );
 }
 
+/** Wrap absolutely positioned page markup in a box clipped to a rounded
+ *  outline: the box sits on the outline and rounds its corners, and an inner
+ *  layer shifted back by the box's offset keeps the children's page
+ *  coordinates. */
+function clipToOutline(html: string, o: RoundedOutline): string {
+  if (!html) return '';
+  const radius = o.radii.map((r) => `${r}px`).join(' ');
+  return (
+    `<div aria-hidden="true" style="position:absolute;left:${o.x}px;top:${o.y}px;` +
+    `width:${o.width}px;height:${o.height}px;overflow:hidden;border-radius:${radius};">` +
+    `<div style="position:absolute;left:${-o.x}px;top:${-o.y}px;">${html}</div></div>`
+  );
+}
+
 function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, options: RenderHtmlOptions): string {
   const t = rb.table;
   if (!t) return '';
   const parts: string[] = [];
+  // A rounded frame clips the fills to the frame line and the inner rules
+  // to its outer contour, then is drawn round on top.
+  const rounded = t.frameRadii !== undefined;
+  const outline = (outset: number) => tableFrameOutline(t, bx, by, rb.bodyRect.width, outset);
   // Cell backgrounds first (the cell's own fill, else the header tint / body
   // fill), then borders, then text — same paint order as the canvas backend.
+  const fills: string[] = [];
   for (const cell of t.cells) {
     const fill = cell.background ?? (cell.isHeader ? t.headerBackground : t.bodyBackground);
     if (!fill) continue;
-    parts.push(
+    fills.push(
       `<div aria-hidden="true" style="position:absolute;` +
       `left:${cell.rect.x}px;top:${cell.rect.y}px;` +
       `width:${cell.rect.width}px;height:${cell.rect.height}px;` +
       `background:${fill};"></div>`,
     );
   }
+  parts.push(rounded ? clipToOutline(fills.join(''), outline(0)) : fills.join(''));
   if (t.borderWidthPx > 0) {
     // Border boxes are inflated by half the stroke so the border centres on
     // the cell edge — adjacent cells overlap exactly, like canvas strokeRect.
@@ -408,19 +430,31 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
       `left:${x - bw / 2}px;top:${y - bw / 2}px;` +
       `width:${w + bw}px;height:${h + bw}px;` +
       `${sides}box-sizing:border-box;"></div>`;
+    const lines: string[] = [];
     if (rules === 'grid') {
       for (const cell of t.cells) {
-        parts.push(borderBox(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height,
+        lines.push(borderBox(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height,
           `border:${bw}px solid ${t.borderColor};`));
       }
     } else if (rules === 'horizontal') {
       for (const cell of t.cells) {
-        parts.push(borderBox(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height,
+        lines.push(borderBox(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height,
           `border-top:${bw}px solid ${t.borderColor};border-bottom:${bw}px solid ${t.borderColor};`));
       }
-    } else if (rules === 'outer') {
+    } else if (rules === 'outer' && !rounded) {
       const tableHeight = t.rowEdges[t.rowEdges.length - 1] ?? rb.bodyRect.height;
-      parts.push(borderBox(bx, by, rb.bodyRect.width, tableHeight, `border:${bw}px solid ${t.borderColor};`));
+      lines.push(borderBox(bx, by, rb.bodyRect.width, tableHeight, `border:${bw}px solid ${t.borderColor};`));
+    }
+    parts.push(rounded ? clipToOutline(lines.join(''), outline(bw / 2)) : lines.join(''));
+    if (rounded && (rules === 'grid' || rules === 'outer')) {
+      // The frame's border box is its outer contour, so its radii are the
+      // outer ones.
+      const o = outline(bw / 2);
+      parts.push(
+        `<div aria-hidden="true" style="position:absolute;left:${o.x}px;top:${o.y}px;` +
+        `width:${o.width}px;height:${o.height}px;border:${bw}px solid ${t.borderColor};` +
+        `border-radius:${o.radii.map((r) => `${r}px`).join(' ')};box-sizing:border-box;"></div>`,
+      );
     }
   }
   const bodyFonts: ResourceLineFonts = {

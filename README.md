@@ -129,7 +129,7 @@ Everything below ships today — see the [Roadmap](#roadmap) for what's still in
 
 ### Styling configuration
 
-- `tableStyle` — table body and header typography fully independent of body text.
+- `tableStyle` — table body and header typography fully independent of body text; `tableStyles` adds named variants a table picks with `table.styleId`, and `borderRadius` rounds the outer frame.
 - `captionStyle` — caption typeface, weight, and color.
 - `diagramStyle.singleInk` — recolors SVG diagrams to luminance-mapped tints of a single ink, so diagrams survive single-spot-colour printing.
 

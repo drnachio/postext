@@ -10,6 +10,7 @@ import type {
   ResolvedBodyTextConfig,
   ResolvedHeadingsConfig,
   ResolvedTableStyleConfig,
+  ResolvedNamedTableStyleConfig,
   TableRules,
   ResolvedCaptionStyleConfig,
   ResolvedDiagramStyleConfig,
@@ -51,6 +52,9 @@ export interface ResolvedConfig {
   bodyText: ResolvedBodyTextConfig;
   headings: ResolvedHeadingsConfig;
   tableStyle: ResolvedTableStyleConfig;
+  /** Named table styles (`tableStyles`), each already laid over
+   *  `tableStyle`; a table picks one with `table.styleId`. */
+  tableStyles: ResolvedNamedTableStyleConfig[];
   captionStyle: ResolvedCaptionStyleConfig;
   diagramStyle: ResolvedDiagramStyleConfig;
   paragraphStyles: ResolvedParagraphStyleConfig[];
@@ -225,6 +229,46 @@ export interface VDTResourceTableLayout {
   rowEdges: number[];
   /** Which rules to stroke with `borderWidthPx` (`'grid'` when absent). */
   rules?: TableRules;
+  /** Radii (px) of the outer frame's corners — top-left, top-right,
+   *  bottom-right, bottom-left — from `tableStyle.borderRadius`, clamped to
+   *  half the table's width and height. The frame is stroked round and the
+   *  cell fills are clipped to it. A part of a split table keeps square the
+   *  corners where it continues. Absent for a square frame. */
+  frameRadii?: [number, number, number, number];
+}
+
+/** A rounded outline: a rect and its corner radii (top-left, top-right,
+ *  bottom-right, bottom-left). */
+export interface RoundedOutline {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  radii: [number, number, number, number];
+}
+
+/** The outer frame of a laid-out table whose body starts at `(x, y)` and is
+ *  `width` px wide, grown by `outset` px on every side — its radii grow
+ *  alike, a square corner stays square. With `outset = 0` it is the line
+ *  the frame is stroked along and the fills are clipped to; with half the
+ *  border width it is the frame's outer contour. */
+export function tableFrameOutline(
+  table: Pick<VDTResourceTableLayout, 'rowEdges' | 'frameRadii'>,
+  x: number,
+  y: number,
+  width: number,
+  outset = 0,
+): RoundedOutline {
+  const height = table.rowEdges[table.rowEdges.length - 1] ?? 0;
+  const grow = (r: number) => (r > 0 ? r + outset : 0);
+  const [tl, tr, br, bl] = table.frameRadii ?? [0, 0, 0, 0];
+  return {
+    x: x - outset,
+    y: y - outset,
+    width: width + outset * 2,
+    height: height + outset * 2,
+    radii: [grow(tl), grow(tr), grow(br), grow(bl)],
+  };
 }
 
 /** Background bar painted behind a resource caption (issue #49 §7). */

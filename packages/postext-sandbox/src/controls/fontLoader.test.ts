@@ -60,6 +60,15 @@ describe('getConfigFontFamilies', () => {
     }
     expect(new Set(families).size).toBe(families.length);
   });
+
+  it('collects the table style fonts, named styles included', () => {
+    const families = getConfigFontFamilies({
+      tableStyle: { headerFontFamily: 'Header Sans' },
+      tableStyles: [{ id: 'option', bodyFontFamily: 'Cell Serif' }, { id: 'plain' }],
+    });
+    expect(families).toContain('Header Sans');
+    expect(families).toContain('Cell Serif');
+  });
 });
 
 describe('collectFontUsage / missingUsedVariants', () => {

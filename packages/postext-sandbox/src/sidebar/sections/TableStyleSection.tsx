@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { resolveBodyTextConfig, resolveTableStyleConfig } from 'postext';
-import type { TableStyleConfig, TableRules, TableOverflow, DimensionUnit } from 'postext';
+import type { TableStyleConfig, ResolvedTableStyleConfig, TableRules, TableOverflow, DimensionUnit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -16,41 +16,36 @@ import {
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em'];
 const BORDER_UNITS: DimensionUnit[] = ['pt', 'px'];
+const RADIUS_UNITS: DimensionUnit[] = ['pt', 'px', 'mm'];
 const SPACING_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
-/** Config-panel section for styling embedded table resources: body and header
- *  typography, fills, borders, and cell padding. Unset fields inherit the body
- *  text, so this section is purely additive overrides. */
-export const TableStyleSection = memo(function TableStyleSection() {
-  const dispatch = useSandboxDispatch();
+export interface TableStyleFieldsProps {
+  /** The stored (partial) style being edited. */
+  raw: TableStyleConfig | undefined;
+  /** The same style resolved — what each control shows. */
+  resolved: ResolvedTableStyleConfig;
+  onChange: (partial: Partial<TableStyleConfig>) => void;
+  onResetField: (field: keyof TableStyleConfig) => void;
+  /** Prefix of the subsections' remembered open state. */
+  sectionIdPrefix: string;
+  /** Prefix of the colour pickers' field ids. */
+  fieldIdPrefix: string;
+}
+
+/** The table style controls — body and header typography, fills, borders,
+ *  padding and continuation — shared by the document's table style and
+ *  every named style. A control shows the resolved value and offers a reset
+ *  while its key is set. */
+export function TableStyleFields({
+  raw,
+  resolved: ts,
+  onChange: update,
+  onResetField: resetField,
+  sectionIdPrefix,
+  fieldIdPrefix,
+}: TableStyleFieldsProps) {
   const labels = useSandboxLabels();
-  const raw = useSandboxSelector((s) => s.config.tableStyle);
-  const bodyTextRaw = useSandboxSelector((s) => s.config.bodyText);
-  // Continuation strings default per document language, the way the engine
-  // resolves them: the config locale, else the hyphenation locale (which the
-  // preview derives from the app locale when unset).
-  const docLocale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? s.locale);
-  const bodyText = resolveBodyTextConfig(bodyTextRaw);
-  const ts = resolveTableStyleConfig(raw, bodyText, docLocale);
-
-  const update = (partial: Partial<TableStyleConfig>) => {
-    dispatch({ type: 'UPDATE_CONFIG', payload: { tableStyle: { ...raw, ...partial } } });
-  };
-  const resetSection = () => {
-    dispatch({ type: 'UPDATE_CONFIG', payload: { tableStyle: undefined } });
-  };
-  const resetField = (field: keyof TableStyleConfig) => {
-    if (!raw) return;
-    const next = { ...raw };
-    delete next[field];
-    dispatch({
-      type: 'UPDATE_CONFIG',
-      payload: { tableStyle: Object.keys(next).length > 0 ? next : undefined },
-    });
-  };
   const unset = (field: keyof TableStyleConfig) => raw?.[field] === undefined;
-
-  const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
 
   const rulesOptions = [
     { value: 'grid', label: labels.tableRulesGrid },
@@ -65,15 +60,8 @@ export const TableStyleSection = memo(function TableStyleSection() {
   ];
 
   return (
-    <CollapsibleSection
-      title={labels.tableStyleSection}
-      sectionId="tableStyle"
-      onReset={resetSection}
-      hasOverrides={hasOverrides}
-      resetLabel={labels.reset}
-      resetConfirmMessage={labels.resetSectionConfirm}
-    >
-      <CollapsibleSection title={labels.tableBodyGroup} sectionId="tableStyle.body" variant="subsection">
+    <>
+      <CollapsibleSection title={labels.tableBodyGroup} sectionId={`${sectionIdPrefix}.body`} variant="subsection">
         <FontPicker
           label={labels.fontLabel}
           value={ts.bodyFontFamily}
@@ -96,7 +84,7 @@ export const TableStyleSection = memo(function TableStyleSection() {
           onChange={(v) => update({ bodyColor: v })}
           isDefault={unset('bodyColor')}
           onReset={() => resetField('bodyColor')}
-          fieldId="tableStyle-bodyColor"
+          fieldId={`${fieldIdPrefix}-bodyColor`}
         />
         <ToggleSwitch
           label={labels.tableBodyFill}
@@ -112,12 +100,12 @@ export const TableStyleSection = memo(function TableStyleSection() {
             onChange={(v) => update({ bodyBackground: v })}
             isDefault={unset('bodyBackground')}
             onReset={() => resetField('bodyBackground')}
-            fieldId="tableStyle-bodyBackground"
+            fieldId={`${fieldIdPrefix}-bodyBackground`}
           />
         )}
       </CollapsibleSection>
 
-      <CollapsibleSection title={labels.tableHeaderGroup} sectionId="tableStyle.header" variant="subsection">
+      <CollapsibleSection title={labels.tableHeaderGroup} sectionId={`${sectionIdPrefix}.header`} variant="subsection">
         <FontPicker
           label={labels.fontLabel}
           value={ts.headerFontFamily}
@@ -140,7 +128,7 @@ export const TableStyleSection = memo(function TableStyleSection() {
           onChange={(v) => update({ headerColor: v })}
           isDefault={unset('headerColor')}
           onReset={() => resetField('headerColor')}
-          fieldId="tableStyle-headerColor"
+          fieldId={`${fieldIdPrefix}-headerColor`}
         />
         <ToggleSwitch
           label={labels.bold}
@@ -170,12 +158,12 @@ export const TableStyleSection = memo(function TableStyleSection() {
             onChange={(v) => update({ headerBackground: v })}
             isDefault={unset('headerBackground')}
             onReset={() => resetField('headerBackground')}
-            fieldId="tableStyle-headerBackground"
+            fieldId={`${fieldIdPrefix}-headerBackground`}
           />
         )}
       </CollapsibleSection>
 
-      <CollapsibleSection title={labels.tableBordersGroup} sectionId="tableStyle.borders" variant="subsection">
+      <CollapsibleSection title={labels.tableBordersGroup} sectionId={`${sectionIdPrefix}.borders`} variant="subsection">
         <ToggleSwitch
           label={labels.tableBorders}
           checked={ts.borders}
@@ -200,7 +188,7 @@ export const TableStyleSection = memo(function TableStyleSection() {
               onChange={(v) => update({ borderColor: v })}
               isDefault={unset('borderColor')}
               onReset={() => resetField('borderColor')}
-              fieldId="tableStyle-borderColor"
+              fieldId={`${fieldIdPrefix}-borderColor`}
             />
             <DimensionInput
               label={labels.tableBorderWidth}
@@ -215,6 +203,17 @@ export const TableStyleSection = memo(function TableStyleSection() {
           </>
         )}
         <DimensionInput
+          label={labels.tableBorderRadius}
+          value={ts.borderRadius}
+          onChange={(v) => update({ borderRadius: v })}
+          min={0}
+          step={0.5}
+          units={RADIUS_UNITS}
+          tooltip={labels.tableBorderRadiusTooltip}
+          isDefault={unset('borderRadius')}
+          onReset={() => resetField('borderRadius')}
+        />
+        <DimensionInput
           label={labels.tableCellPadding}
           value={ts.cellPadding}
           onChange={(v) => update({ cellPadding: v })}
@@ -226,7 +225,7 @@ export const TableStyleSection = memo(function TableStyleSection() {
         />
       </CollapsibleSection>
 
-      <CollapsibleSection title={labels.tableContinuationGroup} sectionId="tableStyle.continuation" variant="subsection">
+      <CollapsibleSection title={labels.tableContinuationGroup} sectionId={`${sectionIdPrefix}.continuation`} variant="subsection">
         <SelectInput
           label={labels.tableOverflow}
           value={ts.overflow}
@@ -265,6 +264,61 @@ export const TableStyleSection = memo(function TableStyleSection() {
           </>
         )}
       </CollapsibleSection>
+    </>
+  );
+}
+
+/** Config-panel section for styling embedded table resources: body and header
+ *  typography, fills, borders, and cell padding. Unset fields inherit the body
+ *  text, so this section is purely additive overrides. Named styles
+ *  (`tableStyles`) inherit it in turn. */
+export const TableStyleSection = memo(function TableStyleSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.tableStyle);
+  const bodyTextRaw = useSandboxSelector((s) => s.config.bodyText);
+  // Continuation strings default per document language, the way the engine
+  // resolves them: the config locale, else the hyphenation locale (which the
+  // preview derives from the app locale when unset).
+  const docLocale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? s.locale);
+  const bodyText = resolveBodyTextConfig(bodyTextRaw);
+  const ts = resolveTableStyleConfig(raw, bodyText, docLocale);
+
+  const update = (partial: Partial<TableStyleConfig>) => {
+    dispatch({ type: 'UPDATE_CONFIG', payload: { tableStyle: { ...raw, ...partial } } });
+  };
+  const resetSection = () => {
+    dispatch({ type: 'UPDATE_CONFIG', payload: { tableStyle: undefined } });
+  };
+  const resetField = (field: keyof TableStyleConfig) => {
+    if (!raw) return;
+    const next = { ...raw };
+    delete next[field];
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { tableStyle: Object.keys(next).length > 0 ? next : undefined },
+    });
+  };
+
+  const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
+
+  return (
+    <CollapsibleSection
+      title={labels.tableStyleSection}
+      sectionId="tableStyle"
+      onReset={resetSection}
+      hasOverrides={hasOverrides}
+      resetLabel={labels.reset}
+      resetConfirmMessage={labels.resetSectionConfirm}
+    >
+      <TableStyleFields
+        raw={raw}
+        resolved={ts}
+        onChange={update}
+        onResetField={resetField}
+        sectionIdPrefix="tableStyle"
+        fieldIdPrefix="tableStyle"
+      />
     </CollapsibleSection>
   );
 });

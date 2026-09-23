@@ -24,6 +24,7 @@ export type SettingsSectionId =
   | 'resource-types'
   | 'captionStyle'
   | 'tableStyle'
+  | 'tableStyles'
   | 'diagramStyle'
   | 'calloutStyles'
   | 'htmlViewer'
@@ -72,6 +73,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'resource-types', category: 'figures', labelKey: 'resourceTypesSection', configKeys: ['resourceTypes'] },
   { id: 'captionStyle', category: 'figures', labelKey: 'captionStyleSection', configKeys: ['captionStyle'] },
   { id: 'tableStyle', category: 'figures', labelKey: 'tableStyleSection', configKeys: ['tableStyle'] },
+  { id: 'tableStyles', category: 'figures', labelKey: 'tableStylesSection', configKeys: ['tableStyles'] },
   { id: 'diagramStyle', category: 'figures', labelKey: 'diagramStyleSection', configKeys: ['diagramStyle'] },
   { id: 'calloutStyles', category: 'figures', labelKey: 'calloutStylesSection', configKeys: ['calloutStyles'] },
   // Output

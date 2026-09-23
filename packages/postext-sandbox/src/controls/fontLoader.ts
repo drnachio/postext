@@ -170,6 +170,13 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
       if (family) families.add(family);
     }
   }
+  // Table styles: body and header cell fonts of the document's table style
+  // and of every named one. Unset fields inherit the body family.
+  for (const style of [config.tableStyle, ...(config.tableStyles ?? [])]) {
+    for (const family of [style?.bodyFontFamily, style?.headerFontFamily]) {
+      if (family) families.add(family);
+    }
+  }
   // Part list overrides (partial configs applied inside `:::part`).
   const partLists = [config.parts?.bodyStyle?.unorderedLists, config.parts?.bodyStyle?.orderedLists];
   for (const lists of partLists) {

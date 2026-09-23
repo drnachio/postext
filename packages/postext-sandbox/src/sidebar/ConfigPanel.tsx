@@ -31,6 +31,7 @@ import { UnorderedListsSection } from './sections/UnorderedListsSection';
 import { OrderedListsSection } from './sections/OrderedListsSection';
 import { MathSection } from './sections/MathSection';
 import { TableStyleSection } from './sections/TableStyleSection';
+import { TableStylesSection } from './sections/TableStylesSection';
 import { CaptionStyleSection } from './sections/CaptionStyleSection';
 import { ParagraphStylesSection } from './sections/ParagraphStylesSection';
 import { CalloutStylesSection } from './sections/CalloutStylesSection';
@@ -60,6 +61,7 @@ const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'resource-types': ResourceTypesSection,
   'captionStyle': CaptionStyleSection,
   'tableStyle': TableStyleSection,
+  'tableStyles': TableStylesSection,
   'diagramStyle': DiagramStyleSection,
   'calloutStyles': CalloutStylesSection,
   'htmlViewer': HtmlViewerSection,

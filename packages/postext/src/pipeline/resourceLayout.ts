@@ -62,6 +62,7 @@ import { dimensionToPx } from '../units';
 // one span list (`:ref{…}` becomes a one-char placeholder span).
 import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
+import { pickTableStyle } from '../defaults/tableStyle';
 import { resolveColorValue } from '../defaults/shared';
 import { resolveBodyStyle } from './styles';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -841,6 +842,8 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       }
     : undefined;
 
+  // The style a table is set in: its named style, else the document's.
+  const tableStyle = pickTableStyle(resolved, resource.table?.styleId);
   const bodyStyle = resolveBodyStyle(resolved);
   const dpi = resolved.page.dpi;
   // Normal / bold weights reused for table + caption font sets.
@@ -877,7 +880,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     bodyWidth = Math.min(columnWidth, input.maxBodyWidth ?? columnWidth);
     bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * 0.75;
   } else if (resource.kind === 'table' && resource.table) {
-    const ts = resolved.tableStyle;
+    const ts = tableStyle;
     const bodyFontPx = dimensionToPx(ts.bodyFontSize, dpi);
     const headerFontPx = dimensionToPx(ts.headerFontSize, dpi);
     // Header weight/slant: the header's base run is bold (and/or italic) by
@@ -924,7 +927,15 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       refStyle,
       slice ? tableSliceRows(resource.table.model, slice) : undefined,
     );
-    table = layout;
+    // Rounded outer frame: a part of a split table rounds only the ends
+    // the table really has — the top on the first part, the bottom on the
+    // last.
+    const radiusPx = Math.min(dimensionToPx(ts.borderRadius, dpi, bodyFontPx), columnWidth / 2, height / 2);
+    const top = slice?.continued ? 0 : radiusPx;
+    const bottom = slice?.continues ? 0 : radiusPx;
+    table = radiusPx > 0 && (top > 0 || bottom > 0)
+      ? { ...layout, frameRadii: [top, top, bottom, bottom] }
+      : layout;
     tableRows = metrics;
     bodyWidth = columnWidth;
     bodyHeight = height;
@@ -973,7 +984,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       : resolvedSpans;
     // A continued table slice: "Table 6-4. Title (cont.)" — the suffix is
     // set in italics after the description, glued to it by a plain space.
-    const suffix = slice?.continued ? resolved.tableStyle.continuedSuffix.trim() : '';
+    const suffix = slice?.continued ? tableStyle.continuedSuffix.trim() : '';
     const suffixSpans: InlineSpan[] = suffix.length > 0
       ? [{ text: `${descSpans.length > 0 ? ' ' : ''}${suffix}`, bold: false, italic: true }]
       : [];
@@ -1042,7 +1053,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // "Continued" under a slice that goes on: the note's typeface and size,
   // italic, flush right — where the note would sit.
   let measuredContinues: VDTLine[] = [];
-  const ts = resolved.tableStyle;
+  const ts = tableStyle;
   const markerText = slice?.continues && ts.continuesMarkerEnabled ? ts.continuesMarker.trim() : '';
   if (markerText.length > 0) {
     const measured = measureRichBlock(

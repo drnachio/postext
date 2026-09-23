@@ -987,6 +987,10 @@ export interface SandboxLabels {
   resourceImageLabel: string;
   resourceSvgLabel: string;
   resourceTableLabel: string;
+  resourceTableStyleLabel: string;
+  resourceTableStyleHint: string;
+  resourceTableStyleDefault: string;
+  resourceTableStyleMissing: string;
   resourcePreviewEmptyTable: string;
   resourcePreviewNoContent: string;
   uploadSvgInvalid: string;
@@ -1089,6 +1093,20 @@ export interface SandboxLabels {
   tableContinuedSuffixTooltip: string;
   tableContinuesMarkerEnabled: string;
   tableContinuesMarker: string;
+  tableBorderRadius: string;
+  tableBorderRadiusTooltip: string;
+  tableStylesSection: string;
+  tableStylesResetConfirm: string;
+  tableStylesEmpty: string;
+  tableStyleAdd: string;
+  tableStyleNewName: string;
+  tableStyleDelete: string;
+  tableStyleDeleteConfirm: string;
+  tableStyleIdAria: string;
+  tableStyleIdHintDuplicate: string;
+  tableStyleUsageHint: string;
+  tableStyleNameLabel: string;
+  tableStyleNameAria: string;
   // --- Caption styling section ---
   captionStyleSection: string;
   captionGap: string;

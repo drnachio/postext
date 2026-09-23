@@ -43,7 +43,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
 - [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
 - [Tipos de recurso](#tipos-de-recurso) — numeración tipada para figuras, tablas y tipos personalizados.
-- [Estilo de tablas](#estilo-de-tablas) y [Estilo de pies de recurso](#estilo-de-pies-de-recurso) — tipografía y decoración de las tablas-recurso y sus pies.
+- [Estilo de tablas](#estilo-de-tablas) (con [estilos de tabla con nombre](#estilos-de-tabla-con-nombre)) y [Estilo de pies de recurso](#estilo-de-pies-de-recurso) — tipografía y decoración de las tablas-recurso y sus pies.
 - [Estilo de diagramas](#estilo-de-diagramas) — recoloreado a una sola tinta de los diagramas SVG incrustados para impresión con tinta plana.
 - [Estilos de párrafo](#estilos-de-párrafo) — estilos con nombre para contenedores `:::paragraphs`: bibliografías, glosarios, notas.
 - [Estilos de aviso](#estilos-de-aviso) — notas, consejos y objetivos en caja para contenedores `:::callout`.
@@ -2134,7 +2134,7 @@ Esto refleja la numeración de encabezados: igual que un nivel de encabezado lle
 
 ## Estilo de tablas
 
-La propiedad `tableStyle` controla la tipografía y la decoración de las tablas-recurso. Las celdas de cuerpo y de cabecera se estilizan de forma independiente. La familia tipográfica, el tamaño y los colores heredan del texto de cuerpo resuelto cuando no se indican, de modo que un documento sin `tableStyle` renderiza las tablas con la tipografía del cuerpo.
+La propiedad `tableStyle` controla la tipografía y la decoración de las tablas-recurso —de todas, salvo las que eligen un [estilo de tabla con nombre](#estilos-de-tabla-con-nombre)—. Las celdas de cuerpo y de cabecera se estilizan de forma independiente. La familia tipográfica, el tamaño y los colores heredan del texto de cuerpo resuelto cuando no se indican, de modo que un documento sin `tableStyle` renderiza las tablas con la tipografía del cuerpo.
 
 ```ts
 const config: PostextConfig = {
@@ -2260,6 +2260,12 @@ const config: PostextConfig = {
       <td>Qué filetes trazar cuando <code>borders</code> está activo: la rejilla completa de celdas, solo filetes horizontales (borde superior e inferior de cada fila, sin verticales), solo el marco exterior, o ninguno.</td>
     </tr>
     <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Radio de las esquinas del marco exterior de la tabla. El marco se traza redondeado (con los filetes <code>grid</code> u <code>outer</code>), los fondos de las celdas y de la cabecera se recortan a él —también con <code>rules: 'none'</code> o sin bordes— y los filetes horizontales se recortan a su contorno exterior; los filetes interiores siguen rectos. Una tabla partida entre páginas redondea las esquinas superiores de su primera parte y las inferiores de la última. Se limita a la mitad del ancho y del alto de la tabla.</td>
+    </tr>
+    <tr>
       <td><code>overflow</code></td>
       <td><code>'split' | 'clip' | 'hide'</code></td>
       <td><code>'split'</code></td>
@@ -2287,6 +2293,39 @@ const config: PostextConfig = {
 </table>
 
 Los grosores de borde se conservan fraccionarios: un filete de `0.5pt` se traza como línea fina en el PDF y en pantalla en lugar de redondearse a un píxel completo (el mínimo es 0.25px).
+
+### Estilos de tabla con nombre
+
+Un documento pocas veces compone todas sus tablas igual: una lista de comprobación en una cuadrícula azul marino con el marco redondeado, una fila de opciones encerrada solo por su marco exterior, una tabla de datos con filetes horizontales. `tableStyles` declara variantes con nombre, y un recurso de tabla elige una con `table.styleId`. Cada campo que un estilo deja sin definir se lee primero de `tableStyle` y después del texto de cuerpo, de modo que un estilo solo indica lo que distingue a sus tablas. Una tabla sin `styleId`, o con un id que ningún estilo declara, conserva `tableStyle`: un documento sin `tableStyles` se compone exactamente igual que antes.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    borderColor: { hex: '#163a76', model: 'hex' },
+    borderWidth: { value: 1.3, unit: 'pt' },
+    borderRadius: { value: 10, unit: 'pt' },
+  },
+  tableStyles: [
+    {
+      id: 'option',
+      name: 'Fila de opciones',
+      rules: 'outer',
+      borderColor: { hex: '#7a9cc6', model: 'hex' },
+      borderWidth: { value: 1, unit: 'pt' },
+      borderRadius: { value: 8, unit: 'pt' },
+      headerBackgroundEnabled: false,
+    },
+  ],
+};
+
+// En los recursos: esta tabla se compone con el estilo "option".
+const resource: Resource = {
+  id: 'choices', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
+  table: { model: { rows: [/* … */] }, styleId: 'option' },
+};
+```
+
+Cada entrada admite todos los campos de `tableStyle` más `id` (lo que referencia `table.styleId`) y un `name` opcional para el editor (por defecto, el id). Todo lo que un estilo puede definir se aplica por tabla: tipografía, fondos, bordes, filetes, radio de las esquinas, relleno y el comportamiento de desbordamiento con sus cadenas de continuación. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` devuelve la lista resuelta, `pickTableStyle(resolved, styleId)` el estilo con el que se compone una tabla, y `stripTableStylesDefaults` elimina los campos sin definir (conserva un campo igual a su valor por defecto, que sigue sustituyendo a un valor distinto de `tableStyle`).
 
 ### Tablas más altas que la página
 

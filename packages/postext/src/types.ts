@@ -227,6 +227,10 @@ export interface Resource {
   /** Present when `kind === 'table'`. */
   table?: {
     model: TableModel;
+    /** Id of a named table style (`PostextConfig.tableStyles`) the table is
+     *  set in. Unset, or an id no style declares, falls back to the
+     *  document's `tableStyle`. */
+    styleId?: string;
   };
   /** Optional per-resource placement override. When unset, the resource's
    *  type default (then `top` / `column`) applies. A `position` of `'top'` or
@@ -721,6 +725,12 @@ export interface TableStyleConfig {
   cellPadding?: Dimension;
   /** Which rules to stroke when {@link borders} is on. Default `'grid'`. */
   rules?: TableRules;
+  /** Corner radius of the table's outer frame. Default `0` (square). The
+   *  cell fills are clipped to the rounded frame, whatever the rules (with
+   *  `'none'` the fills alone show the rounded shape); the inner rules stay
+   *  straight. A table split across pages rounds the top corners of its
+   *  first part and the bottom corners of its last. */
+  borderRadius?: Dimension;
   /** What happens to a table taller than the space a page offers: continue
    *  it on the following pages (`'split'`, the default), keep only the rows
    *  that fit (`'clip'`), or leave it out (`'hide'`). See {@link TableOverflow}. */
@@ -734,6 +744,22 @@ export interface TableStyleConfig {
   /** Text of that marker, set right-aligned under the slice in the note
    *  style. Defaults to `"Continued"` (`"Continúa"` for Spanish documents). */
   continuesMarker?: string;
+}
+
+/** A named table style (`PostextConfig.tableStyles`), picked per table by
+ *  `Resource.table.styleId`. Every field left unset inherits the document's
+ *  {@link TableStyleConfig} (`tableStyle`), and through it the body text —
+ *  so a style only states what sets its tables apart. */
+export interface NamedTableStyleConfig extends TableStyleConfig {
+  /** Identifier a table resource references with `table.styleId`. */
+  id: string;
+  /** Human-readable name (editor UI only). Defaults to {@link id}. */
+  name?: string;
+}
+
+export interface ResolvedNamedTableStyleConfig extends ResolvedTableStyleConfig {
+  id: string;
+  name: string;
 }
 
 /** Rule pattern of a table: the full cell grid, horizontal rules only (top
@@ -764,6 +790,7 @@ export interface ResolvedTableStyleConfig {
   borderWidth: Dimension;
   cellPadding: Dimension;
   rules: TableRules;
+  borderRadius: Dimension;
   overflow: TableOverflow;
   continuedSuffix: string;
   continuesMarkerEnabled: boolean;
@@ -2415,6 +2442,10 @@ export interface PostextConfig {
   headings?: HeadingsConfig;
   /** Styling for embedded table resources. */
   tableStyle?: TableStyleConfig;
+  /** Named table styles a table resource selects with `table.styleId`;
+   *  unset fields inherit {@link tableStyle}. Tables without a (known)
+   *  style id keep `tableStyle`. */
+  tableStyles?: NamedTableStyleConfig[];
   /** Styling for resource captions (numbered label + description). */
   captionStyle?: CaptionStyleConfig;
   /** Styling for embedded SVG diagrams (single-ink reproduction). */

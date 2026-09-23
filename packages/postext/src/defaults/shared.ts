@@ -1,4 +1,4 @@
-import type { CaptionStyleConfig, ColorValue, ColorPaletteEntry, Dimension, OrderedListsConfig, PartsBodyStyleConfig, PostextConfig, UnorderedListsConfig } from '../types';
+import type { CaptionStyleConfig, ColorValue, ColorPaletteEntry, Dimension, OrderedListsConfig, PartsBodyStyleConfig, PostextConfig, ResolvedTableStyleConfig, TableStyleConfig, UnorderedListsConfig } from '../types';
 import type { ResolvedConfig } from '../vdt';
 
 export const DEFAULT_MAIN_COLOR_ID = 'main-color';
@@ -76,6 +76,31 @@ function resolveRequired(value: ColorValue, palette: ColorPaletteEntry[] | undef
   return { hex: entry.value.hex, model: entry.value.model };
 }
 
+/** A resolved table style (the document's or a named one) with its colours
+ *  read through the palette. */
+function paletteResolvedTableStyle<T extends ResolvedTableStyleConfig>(ts: T, palette: ColorPaletteEntry[]): T {
+  return {
+    ...ts,
+    bodyColor: resolveRequired(ts.bodyColor, palette),
+    headerColor: resolveRequired(ts.headerColor, palette),
+    headerBackground: resolveRequired(ts.headerBackground, palette),
+    bodyBackground: resolveRequired(ts.bodyBackground, palette),
+    borderColor: resolveRequired(ts.borderColor, palette),
+  };
+}
+
+/** A partial table style with its set colours read through the palette. */
+function paletteTableStyle<T extends TableStyleConfig>(ts: T, palette: ColorPaletteEntry[] | undefined): T {
+  return {
+    ...ts,
+    bodyColor: resolveColor(ts.bodyColor, palette),
+    headerColor: resolveColor(ts.headerColor, palette),
+    headerBackground: resolveColor(ts.headerBackground, palette),
+    bodyBackground: resolveColor(ts.bodyBackground, palette),
+    borderColor: resolveColor(ts.borderColor, palette),
+  };
+}
+
 export function applyPaletteToResolvedConfig(
   resolved: ResolvedConfig,
   palette: ColorPaletteEntry[] | undefined,
@@ -112,14 +137,8 @@ export function applyPaletteToResolvedConfig(
         separatorColor: resolveRequired(l.separatorColor, palette),
       })),
     },
-    tableStyle: {
-      ...resolved.tableStyle,
-      bodyColor: resolveRequired(resolved.tableStyle.bodyColor, palette),
-      headerColor: resolveRequired(resolved.tableStyle.headerColor, palette),
-      headerBackground: resolveRequired(resolved.tableStyle.headerBackground, palette),
-      bodyBackground: resolveRequired(resolved.tableStyle.bodyBackground, palette),
-      borderColor: resolveRequired(resolved.tableStyle.borderColor, palette),
-    },
+    tableStyle: paletteResolvedTableStyle(resolved.tableStyle, palette),
+    tableStyles: resolved.tableStyles.map((s) => paletteResolvedTableStyle(s, palette)),
     captionStyle: {
       ...resolved.captionStyle,
       color: resolveRequired(resolved.captionStyle.color, palette),
@@ -275,14 +294,11 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
   }
 
   if (config.tableStyle) {
-    next.tableStyle = {
-      ...config.tableStyle,
-      bodyColor: resolveColor(config.tableStyle.bodyColor, palette),
-      headerColor: resolveColor(config.tableStyle.headerColor, palette),
-      headerBackground: resolveColor(config.tableStyle.headerBackground, palette),
-      bodyBackground: resolveColor(config.tableStyle.bodyBackground, palette),
-      borderColor: resolveColor(config.tableStyle.borderColor, palette),
-    };
+    next.tableStyle = paletteTableStyle(config.tableStyle, palette);
+  }
+
+  if (config.tableStyles) {
+    next.tableStyles = config.tableStyles.map((s) => paletteTableStyle(s, palette));
   }
 
   if (config.captionStyle) {
