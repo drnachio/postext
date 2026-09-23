@@ -1,3 +1,5 @@
+:::pagebreak{parity="always-odd"}
+
 # Créditos {style="preliminar"}
 
 :::paragraphs{style="creditos"}
@@ -37,11 +39,33 @@ Lámina XI. [Cap V Dom Quixote é ajudado por um lavrador seu vizinho](https://c
 
 Lámina XII. [Cap V Dom Quixote chega a casa](https://commons.wikimedia.org/wiki/File:Cap_V_Dom_Quixote_chega_a_casa.jpg)
 
-Lámina XIII. [Cap VI A queima dos livros Doré](https://commons.wikimedia.org/wiki/File:Cap_VI_A_queima_dos_livros_Dor%C3%A9.jpg)
+Lámina XIII. [Cap V Dom Quixote acompanhado pelo lavrador vizinho](https://commons.wikimedia.org/wiki/File:Cap_V_Dom_Quixote_acompanhado_pelo_lavrador_vizinho.jpg)
 
-Lámina XIV. [Cap VII D. Quixote convence Sancho Pança II G Doré](https://commons.wikimedia.org/wiki/File:Cap_VII_D._Quixote_convence_Sancho_Pan%C3%A7a_II_G_Dor%C3%A9.jpg)
+Lámina XIV. [Cap VI A queima dos livros Doré](https://commons.wikimedia.org/wiki/File:Cap_VI_A_queima_dos_livros_Dor%C3%A9.jpg)
 
-Lámina XV. [Adventure with the Windmills](https://commons.wikimedia.org/wiki/File:Adventure_with_the_Windmills.jpg)
+Lámina XV. [Cap VII D. Quixote convence Sancho Pança II G Doré](https://commons.wikimedia.org/wiki/File:Cap_VII_D._Quixote_convence_Sancho_Pan%C3%A7a_II_G_Dor%C3%A9.jpg)
 
-Lámina XVI. [Cap VIII Dom Quixote caido Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_VIII_Dom_Quixote_caido_Gustave_Dor%C3%A9.jpg)
+Lámina XVI. [Cap VII A Varredura das histórias fantásticas Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_VII_A_Varredura_das_hist%C3%B3rias_fant%C3%A1sticas_Gustave_Dor%C3%A9.jpg)
+
+Lámina XVII. [Adventure with the Windmills](https://commons.wikimedia.org/wiki/File:Adventure_with_the_Windmills.jpg)
+
+Lámina XVIII. [Cap VIII Dom Quixote caido Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_VIII_Dom_Quixote_caido_Gustave_Dor%C3%A9.jpg)
+
+Lámina XIX. [Cap VIII Sancho Pança ajuda Dom Quixote a montar a cavalo Doré](https://commons.wikimedia.org/wiki/File:Cap_VIII_Sancho_Pan%C3%A7a_ajuda_Dom_Quixote_a_montar_a_cavalo_Dor%C3%A9.jpg)
+
+Lámina XX. [Cap IX As Damas pedem a Dom Quixote para poupar a vida do escudeiro G Doré](https://commons.wikimedia.org/wiki/File:Cap_IX_As_Damas_pedem_a_Dom_Quixote_para_poupar_a_vida_do_escudeiro_G_Dor%C3%A9.jpg)
+
+Lámina XXI. [Cap X Dom Quixote e Sancho Pança pernoitam ao relento](https://commons.wikimedia.org/wiki/File:Cap_X_Dom_Quixote_e_Sancho_Pan%C3%A7a_pernoitam_ao_relento.jpg)
+
+Lámina XXII. [Cap XI Discurso de Dom Quixote aos Cabreiros](https://commons.wikimedia.org/wiki/File:Cap_XI_Discurso_de_Dom_Quixote_aos_Cabreiros.jpg)
+
+Lámina XXIII. [Cap XI Um Cabreiro trata a orelha de Dom Quixote](https://commons.wikimedia.org/wiki/File:Cap_XI_Um_Cabreiro_trata_a_orelha_de_Dom_Quixote.jpg)
+
+Lámina XXIV. [Cap XII Sancho Pança a dormir entre Rocinante e o jumento](https://commons.wikimedia.org/wiki/File:Cap_XII_Sancho_Pan%C3%A7a_a_dormir_entre_Rocinante_e_o_jumento.jpg)
+
+Lámina XXV. [Cap XIII O túmulo de Crisóstomo](https://commons.wikimedia.org/wiki/File:Cap_XIII_O_t%C3%BAmulo_de_Cris%C3%B3stomo.jpg)
+
+Lámina XXVI. [Cap XIV Funeral de Crisóstomo Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_XIV_Funeral_de_Cris%C3%B3stomo_Gustave_Dor%C3%A9.jpg)
+
+Lámina XXVII. [Cap XIV O Amor e a Morte Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_XIV_O_Amor_e_a_Morte_Gustave_Dor%C3%A9.jpg)
 :::

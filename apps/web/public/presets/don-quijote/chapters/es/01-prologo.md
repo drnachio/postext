@@ -36,11 +36,19 @@ Non bene pro toto libertas venditur auro.
 
 Y luego, en el margen, citar a Horacio, o a quien lo dijo. Si tratáredes del poder de la muerte, acudir luego con:
 
-Pallida mors aequo pulsat pede pauperum tabernas, Regumque turres.
+:::paragraphs{style="verso"}
+Pallida mors aequo pulsat pede pauperum tabernas,
+
+Regumque turres.
+:::
 
 Si de la amistad y amor que Dios manda que se tenga al enemigo, entraros luego al punto por la Escritura Divina, que lo podéis hacer con tantico de curiosidad, y decir las palabras, por lo menos, del mismo Dios: Ego autem dico vobis: diligite inimicos vestros. Si tratáredes de malos pensamientos, acudid con el Evangelio: De corde exeunt cogitationes malae. Si de la instabilidad de los amigos, ahí está Catón, que os dará su dístico:
 
-Donec eris felix, multos numerabis amicos, tempora si fuerint nubila, solus eris.
+:::paragraphs{style="verso"}
+Donec eris felix, multos numerabis amicos,
+
+tempora si fuerint nubila, solus eris.
+:::
 
 Y con estos latinicos y otros tales os tendrán siquiera por gramático, que el serlo no es de poca honra y provecho el día de hoy.
 

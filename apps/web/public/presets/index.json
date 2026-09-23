@@ -2,6 +2,28 @@
   "version": 1,
   "presets": [
     {
+      "id": "bioquimica-feduchi",
+      "dir": "bioquimica-feduchi",
+      "name": "Bioquímica Feduchi Capítulo 1",
+      "description": "Manual de bioquímica a columna y media: columna principal junto al lomo y columna exterior con figuras, conceptos clave y actividades · A column-and-a-half biochemistry textbook, the main column at the spine and an outer column of figures, key concepts and activities",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "© Editorial Médica Panamericana, reproduced with permission",
+      "credits": "Feduchi, Romero, Yáñez, Blasco, García-Hoz · Editorial Médica Panamericana",
+      "tags": [
+        "textbook",
+        "one-and-a-half",
+        "callouts",
+        "tables",
+        "figures",
+        "parts"
+      ]
+    },
+    {
       "id": "deep-sky",
       "dir": "deep-sky",
       "name": "Cielo profundo · Deep Sky",

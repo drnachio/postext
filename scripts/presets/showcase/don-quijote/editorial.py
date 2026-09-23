@@ -14,9 +14,10 @@ BOOK = {
         "title": "El ingenioso hidalgo don Quijote de la Mancha",
         "short": "Don Quijote de la Mancha",
         "author": "Miguel de Cervantes Saavedra",
-        "edition": "Primera parte · Capítulos I a VIII",
+        "edition": "Capítulos I a XIV · Partes primera y segunda",
         "illustrator": "Con las láminas de Gustave Doré",
-        "part_title": "Primera parte",
+        # The four parts of the 1605 book: number, title and first chapter.
+        "parts": [("I", "Primera parte", 1), ("II", "Segunda parte", 9)],
         "part_subtitle": "del ingenioso hidalgo don Quijote de la Mancha",
         "prologue": "Prólogo",
         "contents": "Índice",
@@ -29,9 +30,9 @@ BOOK = {
         "title": "The Ingenious Gentleman Don Quixote of La Mancha",
         "short": "Don Quixote of La Mancha",
         "author": "Miguel de Cervantes Saavedra",
-        "edition": "Part One · Chapters I to VIII · Translated by John Ormsby",
+        "edition": "Chapters I to XIV · Parts One and Two · Translated by John Ormsby",
         "illustrator": "With the plates of Gustave Doré",
-        "part_title": "Part One",
+        "parts": [("I", "Part One", 1), ("II", "Part Two", 9)],
         "part_subtitle": "of the ingenious gentleman Don Quixote of La Mancha",
         "prologue": "The Author’s Preface",
         "contents": "Contents",
@@ -148,7 +149,14 @@ PLATES = {
             "en": "“Open, your worships, to Señor Baldwin and to Señor the Marquis of Mantua, who comes badly wounded.”",
         },
     },
-    "c05-tail": {"role": "tail"},
+    "c05-tail": {
+        "role": "column",
+        "anchor": {"es": "algo más noche", "en": "a little later"},
+        "caption": {
+            "es": "«El labrador aguardó a que fuese algo más noche, porque no viesen al molido hidalgo tan mal caballero.»",
+            "en": "“The peasant waited until it was a little later that the belaboured gentleman might not be seen riding in such a miserable trim.”",
+        },
+    },
     "c06-head": {"role": "head"},
     "c06-books": {
         "role": "side",
@@ -164,7 +172,14 @@ PLATES = {
             "en": "“So much did he say, so much did he persuade and promise, that the poor clown made up his mind to go with him.”",
         },
     },
-    "c07-tail": {"role": "tail"},
+    "c07-tail": {
+        "role": "column",
+        "anchor": {"es": "salió volando por el tejado", "en": "flying through the roof"},
+        "caption": {
+            "es": "«A cabo de poca pieza salió volando por el tejado, y dejó la casa llena de humo.»",
+            "en": "“After a little while he made off, flying through the roof, and left the house full of smoke.”",
+        },
+    },
     "c08-head": {"role": "head"},
     "c08-plate-windmills": {
         "role": "full",
@@ -182,7 +197,83 @@ PLATES = {
             "en": "“Sancho hastened to his assistance as fast as his ass could go.”",
         },
     },
-    "c08-tail": {"role": "tail"},
+    "c08-tail": {
+        "role": "column",
+        "anchor": {"es": "ayudándole a levantar", "en": "helping him to rise"},
+        "caption": {
+            "es": "«Ayudándole a levantar, tornó a subir sobre Rocinante, que medio despaldado estaba.»",
+            "en": "“Helping him to rise, he got him up again on Rocinante, whose shoulder was half out.”",
+        },
+    },
+    "c09-head": {"role": "head"},
+    "c09-ladies": {
+        "role": "side",
+        "anchor": {"es": "las señoras del coche", "en": "the ladies in the coach"},
+        "caption": {
+            "es": "«Las señoras del coche le pidieron con mucho encarecimiento les hiciese tan gran merced de perdonar la vida a aquel su escudero.»",
+            "en": "“The ladies in the coach implored him to grant them the great grace of sparing their squire’s life.”",
+        },
+    },
+    "c10-head": {"role": "head"},
+    "c10-night": {
+        "role": "column",
+        "anchor": {"es": "determinaron de pasarla allí", "en": "pass the night there"},
+        "caption": {
+            "es": "«Faltóles el sol junto a unas chozas de unos cabreros, y así, determinaron de pasarla allí.»",
+            "en": "“Daylight failed them close by the huts of some goatherds, so they determined to pass the night there.”",
+        },
+    },
+    "c11-head": {"role": "head"},
+    "c11-plate-golden-age": {
+        "role": "full",
+        "anchor": {"es": "Dichosa edad y siglos dichosos", "en": "Happy the age, happy the time"},
+        "caption": {
+            "es": "«Dichosa edad y siglos dichosos aquéllos a quien los antiguos pusieron nombre de dorados.»",
+            "en": "“Happy the age, happy the time, to which the ancients gave the name of golden.”",
+        },
+    },
+    "c11-ear": {
+        "role": "side",
+        "anchor": {"es": "hojas de romero", "en": "leaves of rosemary"},
+        "caption": {
+            "es": "«Tomando algunas hojas de romero, las mascó y las mezcló con un poco de sal, y, aplicándoselas a la oreja, se la vendó muy bien.»",
+            "en": "“Gathering some leaves of rosemary, he chewed them and mixed them with a little salt, and applying them to the ear he secured them firmly with a bandage.”",
+        },
+    },
+    "c12-head": {"role": "head"},
+    "c12-tail": {
+        "role": "column",
+        "anchor": {"es": "entre Rocinante y su jumento", "en": "between Rocinante and his ass"},
+        "caption": {
+            "es": "«Sancho Panza se acomodó entre Rocinante y su jumento, y durmió, no como enamorado desfavorecido, sino como hombre molido a coces.»",
+            "en": "“Sancho Panza settled himself between Rocinante and his ass, and slept, not like a lover who had been discarded, but like a man who had been soundly kicked.”",
+        },
+    },
+    "c13-head": {"role": "head"},
+    "c13-tail": {
+        "role": "column",
+        "anchor": {"es": "donde él mandó que le enterrasen", "en": "he was to be buried here"},
+        "caption": {
+            "es": "«El pie de aquella montaña es el lugar donde él mandó que le enterrasen.»",
+            "en": "“The foot of that mountain is the place where he ordered them to bury him.”",
+        },
+    },
+    "c14-funeral": {
+        "role": "page",
+        "anchor": {"es": "Cerraron la sepultura", "en": "They closed the grave"},
+        "caption": {
+            "es": "«Cerraron la sepultura con una gruesa peña, en tanto que se acababa una losa.»",
+            "en": "“They closed the grave with a heavy stone until a slab was ready.”",
+        },
+    },
+    "c14-tail": {
+        "role": "column",
+        "anchor": {"es": "Yace aquí de un amador", "en": "Beneath the stone before your eyes"},
+        "caption": {
+            "es": "«Murió a manos del rigor de una esquiva hermosa ingrata, con quien su imperio dilata la tiranía de su amor.»",
+            "en": "“In death a victim to disdain. Ungrateful, cruel, coy, and fair, was she that drove him to despair.”",
+        },
+    },
     "x-enchantment": {"role": "cover"},
 }
 
@@ -355,11 +446,119 @@ GLOSSES = {
              "The squire of the lady in the coach, who speaks a broken Castilian; his battle is left suspended at the chapter’s end, swords raised."),
         ],
     },
+    "c09": {
+        "es": [
+            ("Alcaná de Toledo", "El Alcaná de Toledo",
+             "Calle de mercaderes junto a la catedral, donde el «segundo autor» compra los cartapacios arábigos: la historia se presenta como una traducción hallada por azar."),
+            ("Cide Hamete Benengeli", "Cide Hamete Benengeli",
+             "El historiador arábigo al que Cervantes atribuye desde aquí la crónica; «Benengeli» suena a «berenjena», y los moros, dice la novela, son «muy amigos de berenjenas»."),
+            ("morisco aljamiado", "Morisco aljamiado",
+             "Morisco que sabía castellano: el traductor a quien se paga con dos arrobas de pasas y dos hanegas de trigo por verter la historia en poco más de mes y medio."),
+        ],
+        "en": [
+            ("Alcana of Toledo", "The Alcana of Toledo",
+             "A merchants’ street by the cathedral, where the “second author” buys the Arabic pamphlets: the story presents itself as a translation found by chance."),
+            ("Cid Hamete Benengeli", "Cid Hamete Benengeli",
+             "The Arab historian to whom Cervantes attributes the chronicle from here on; “Benengeli” echoes *berenjena*, aubergine, of which the Moors, says the novel, are very fond."),
+            ("Morisco", "The Morisco",
+             "A Moor who knew Castilian: the translator paid two arrobas of raisins and two bushels of wheat to turn the history into Spanish in little more than six weeks."),
+        ],
+    },
+    "c10": {
+        "es": [
+            ("Santa Hermandad", "La Santa Hermandad",
+             "Tribunal y policía rural de los Reyes Católicos, que perseguía los delitos cometidos en despoblado: Sancho teme que los persiga por la batalla del vizcaíno."),
+            ("bálsamo de Fierabrás", "El bálsamo de Fierabrás",
+             "En el cantar del gigante Fierabrás, el bálsamo con que se embalsamó a Cristo curaba toda herida; don Quijote lo hará con aceite, vino, sal y romero en el capítulo XVII."),
+            ("yelmo de Mambrino", "El yelmo de Mambrino",
+             "Yelmo encantado del rey moro Mambrino, que hacía invulnerable a quien lo llevaba, en los poemas de Boiardo y Ariosto; don Quijote lo hallará en una bacía de barbero."),
+        ],
+        "en": [
+            ("Holy Brotherhood", "The Holy Brotherhood",
+             "The rural constabulary and court of the Catholic Monarchs, which pursued crimes committed in open country: Sancho fears it will come after them for the battle with the Biscayan."),
+            ("balsam of Fierabras", "The balsam of Fierabras",
+             "In the chanson of the giant Fierabras, the balm with which Christ was embalmed healed every wound; Don Quixote will brew it from oil, wine, salt and rosemary in Chapter XVII."),
+            ("Mambrino’s helmet", "Mambrino’s helmet",
+             "The enchanted helmet of the Moorish king Mambrino, which made its wearer invulnerable in the poems of Boiardo and Ariosto; Don Quixote will find it in a barber’s basin."),
+        ],
+    },
+    "c11": {
+        "es": [
+            ("edad dorada", "La edad dorada",
+             "El discurso de la Edad de Oro sigue a Ovidio y a Virgilio: una edad sin «tuyo» ni «mío», sin arados ni leyes, que las bellotas de los cabreros traen a la memoria del caballero."),
+            ("rabel", "El rabel",
+             "Instrumento pastoril de tres cuerdas, tocado con arco: con él Antonio acompaña el romance que le compuso su tío el beneficiado, en versos octosílabos asonantados."),
+            ("hojas de romero", "El romero",
+             "Remedio de pastores para la oreja que el vizcaíno dejó medio cortada: don Quijote, que había prometido el bálsamo de Fierabrás, se deja curar con hojas mascadas y sal."),
+        ],
+        "en": [
+            ("golden age", "The golden age",
+             "The discourse on the Golden Age follows Ovid and Virgil: an age without “mine” and “thine”, without ploughs or laws, which the goatherds’ acorns bring back to the knight’s mind."),
+            ("rebeck", "The rebeck",
+             "A three-stringed pastoral fiddle played with a bow: on it Antonio accompanies the ballad his uncle the prebendary composed for him, in the octosyllables of the Spanish *romance*."),
+            ("leaves of rosemary", "Rosemary",
+             "A goatherds’ remedy for the ear the Biscayan left half cut off: Don Quixote, who had promised the balsam of Fierabras, lets himself be treated with chewed leaves and salt."),
+        ],
+    },
+    "c12": {
+        "es": [
+            ("Grisóstomo", "Grisóstomo",
+             "Estudiante de Salamanca vuelto pastor por amor de Marcela: abre la novela pastoril intercalada que los cabreros cuentan y que acaba, en el capítulo XIV, en su entierro."),
+            ("cris", "Cris y estil",
+             "Pedro dice «cris» por eclipse y «estil» por estéril, y don Quijote lo corrige; el cabrero sigue su cuento sin darse por enterado."),
+            ("Marcela", "Marcela",
+             "Huérfana rica criada por su tío el cura, que se hace pastora para vivir libre; su hermosura ha llenado el campo de enamorados vestidos de pastores."),
+        ],
+        "en": [
+            ("Chrysostom", "Chrysostom",
+             "A student of Salamanca turned shepherd for love of Marcela: he opens the pastoral tale the goatherds tell, which ends, in Chapter XIV, at his burial."),
+            ("cris", "Cris and estility",
+             "Pedro says “cris” for eclipse and “estility” for sterility, and Don Quixote corrects him; the goatherd goes on with his story unconcerned."),
+            ("Marcela", "Marcela",
+             "A rich orphan brought up by her uncle the priest, who turns shepherdess to live free; her beauty has filled the countryside with suitors dressed as shepherds."),
+        ],
+    },
+    "c13": {
+        "es": [
+            ("Vivaldo", "Vivaldo",
+             "Uno de los caminantes que van al entierro; discreto y burlón, sonsaca a don Quijote sobre su profesión y su dama para «ver hasta dónde llegaba su locura»."),
+            ("linaje", "El linaje de Dulcinea",
+             "Preguntado por la alcurnia de su señora, don Quijote recorre las casas nobles de Italia, Castilla y Portugal para concluir que la del Toboso, «aunque moderna», las supera."),
+            ("Lanzarote", "Lanzarote del Lago",
+             "El caballero de la Tabla Redonda, amante de la reina Ginebra; don Quijote lo cita, con la dueña Quintañona, como modelo del caballero que sirve a una dama."),
+        ],
+        "en": [
+            ("Vivaldo", "Vivaldo",
+             "One of the travellers on their way to the burial; shrewd and mocking, he draws Don Quixote out about his profession and his lady “to see how far his craze went”."),
+            ("lineage", "Dulcinea’s lineage",
+             "Asked about his lady’s ancestry, Don Quixote runs through the noble houses of Italy, Castile and Portugal to conclude that that of El Toboso, “though modern”, surpasses them."),
+            ("Lancelot", "Lancelot of the Lake",
+             "The knight of the Round Table, lover of Queen Guinevere; Don Quixote cites him, with the duenna Quintañona, as the model of a knight in a lady’s service."),
+        ],
+    },
+    "c14": {
+        "es": [
+            ("Canción desesperada, no te quejes", "Canción desesperada",
+             "La canción de Grisóstomo es una canción petrarquista en estancias de dieciséis versos, cerrada por este envío; Cervantes la había escrito antes de la novela."),
+            ("Tarquino", "Tarquino",
+             "Ambrosio compara a Marcela con Tulia, la hija que pasó con su carro sobre el cadáver de su padre, Servio Tulio, para que reinara su marido Tarquino."),
+            ("Yace aquí de un amador", "El epitafio",
+             "Redondillas para la losa de Grisóstomo: el epitafio cierra la novela pastoril y devuelve a don Quijote a su camino, en busca de Marcela para ofrecerle su ayuda."),
+        ],
+        "en": [
+            ("Lay of despair, grieve not", "The lay of despair",
+             "Chrysostom’s song is a Petrarchan *canzone* in sixteen-line stanzas, closed by this envoi; Cervantes had written it before the novel."),
+            ("Tarquin", "Tarquin",
+             "Ambrosio likens Marcela to Tullia, the daughter who drove her chariot over the corpse of her father, Servius Tullius, so that her husband Tarquin might reign."),
+            ("Beneath the stone before your eyes", "The epitaph",
+             "Quatrains for Chrysostom’s slab: the epitaph closes the pastoral tale and sends Don Quixote back to the road, in search of Marcela to offer her his help."),
+        ],
+    },
 }
 
 COVER_BLURB = {
-    "es": "Edición de muestra compuesta con Postext: las láminas de Gustave Doré (1863) acompañan el texto de la primera edición según Project Gutenberg, con glosas al margen escritas para esta edición.",
-    "en": "A sample edition set with Postext: Gustave Doré’s plates (1863) accompany John Ormsby’s translation (1885) as published by Project Gutenberg, with margin glosses written for this edition.",
+    "es": "Edición de muestra compuesta con Postext: las láminas de Gustave Doré (1863) acompañan el prólogo y los catorce capítulos de las dos primeras partes del libro de 1605, según el texto de Project Gutenberg, con glosas al margen escritas para esta edición.",
+    "en": "A sample edition set with Postext: Gustave Doré’s plates (1863) accompany the preface and the fourteen chapters of the first two parts of the 1605 book, in John Ormsby’s translation (1885) as published by Project Gutenberg, with margin glosses written for this edition.",
 }
 
 CREDITS = {

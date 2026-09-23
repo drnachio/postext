@@ -3,26 +3,77 @@ Don Quixote (#996, John Ormsby's translation) into clean paragraphs.
 
 Both files wrap lines at ~70 columns and separate paragraphs with blank
 lines; the English one also carries `pNNN.jpg (150K)` / `Full Size` lines
-left over from the illustrated HTML edition. Nothing here knows about the
-preset: it only returns lists of paragraphs per section.
+left over from the illustrated HTML edition. Verse (Antonio's ballad,
+Grisóstomo's song, the epitaph, the ballad lines don Quijote quotes) is kept
+line by line as `Verse` blocks — a block of short lines is a stanza, and
+consecutive stanzas form one poem, headed by the title line the text sets
+over it. Nothing here knows about the preset: it only returns lists of
+paragraphs per section.
 """
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Union
 
 IMG_LINE = re.compile(r"^(?:[a-z0-9_-]+\.jpg(?: \(\d+K\))?|Full Size)$")
+
+
+@dataclass
+class Verse:
+    """A poem: its stanzas (lists of lines) and the title line over it."""
+
+    stanzas: list[list[str]] = field(default_factory=list)
+    title: str | None = None
+
+    @property
+    def text(self) -> str:
+        return " ".join(line for stanza in self.stanzas for line in stanza)
+
+
+Paragraph = Union[str, Verse]
 
 
 @dataclass
 class Section:
     key: str
     heading: str
-    paragraphs: list[str]
+    paragraphs: list[Paragraph]
 
 
-def _paragraphs(lines: list[str]) -> list[str]:
-    out: list[str] = []
+# Prose wraps at ~70 columns; a block whose every line is this short is
+# verse (hendecasyllables run to ~50 characters).
+VERSE_MAX_LINE = 58
+# Title lines the texts set over a poem, and how the preset prints them.
+SONG_TITLES = {
+    "Antonio": "Antonio",
+    "Canción de Grisóstomo": "Canción de Grisóstomo",
+    "ANTONIO’S BALLAD": "Antonio’s ballad",
+    "THE LAY OF CHRYSOSTOM": "The lay of Chrysostom",
+}
+HEADING_LINE = re.compile(r"^(?:CHAPTER [IVX]+\.|Capítulo (?:primero|[IVX]+)\.)")
+
+
+# A prose line the Spanish text runs straight into a quoted couplet.
+PROSE_LEADS = ("— Para mí, señor castellano, cualquiera cosa basta, porque",)
+
+
+def _is_verse(block: list[str]) -> bool:
+    if len(block) < 2 or HEADING_LINE.match(block[0].strip()):
+        return False
+    return all(len(line.strip()) <= VERSE_MAX_LINE for line in block)
+
+
+def _verse_line(line: str) -> str:
+    line = line.strip()
+    # The Spanish romance opens with a bare dash (`-Yo sé, Olalla…`).
+    if line.startswith("-") and not line.startswith("- "):
+        line = line[1:].strip()
+    return line
+
+
+def _paragraphs(lines: list[str]) -> list[Paragraph]:
+    blocks: list[list[str]] = []
     buf: list[str] = []
     for raw in lines:
         line = raw.rstrip()
@@ -30,13 +81,40 @@ def _paragraphs(lines: list[str]) -> list[str]:
             continue
         if not line.strip():
             if buf:
-                out.append(" ".join(s.strip() for s in buf))
+                blocks.append(buf)
                 buf = []
             continue
         buf.append(line)
     if buf:
-        out.append(" ".join(s.strip() for s in buf))
-    return [re.sub(r"\s+", " ", p).strip() for p in out if p.strip()]
+        blocks.append(buf)
+
+    out: list[Paragraph] = []
+    title: str | None = None
+    for block in blocks:
+        if _is_verse(block):
+            if block[0].strip() in PROSE_LEADS:
+                out.append(block[0].strip())
+                block = block[1:]
+            stanza = [_verse_line(line) for line in block]
+            if out and isinstance(out[-1], Verse) and title is None:
+                out[-1].stanzas.append(stanza)
+            else:
+                out.append(Verse([stanza], title))
+            title = None
+            continue
+        text = re.sub(r"\s+", " ", " ".join(s.strip() for s in block)).strip()
+        if not text:
+            continue
+        if text in SONG_TITLES:
+            title = SONG_TITLES[text]
+            continue
+        if title is not None:
+            out.append(title)
+            title = None
+        out.append(text)
+    if title is not None:
+        out.append(title)
+    return out
 
 
 def _slice(lines: list[str], start: int, end: int) -> list[str]:
@@ -68,6 +146,7 @@ def spanish_sections(text: str, chapters: int = 8) -> list[Section]:
             body.pop()
         paras = _paragraphs(body)
         heading = paras[0]
+        assert isinstance(heading, str)
         sections.append(Section(f"c{n + 1:02d}", heading, paras[1:]))
     return sections
 
@@ -93,18 +172,20 @@ def english_sections(text: str, chapters: int = 8) -> list[Section]:
         body = _slice(lines, s, e)
         paras = _paragraphs(body)
         # "CHAPTER I." and the title lines form one paragraph.
-        heading = re.sub(r"^CHAPTER [IVX]+\.\s*", "", paras[0])
+        first = paras[0]
+        assert isinstance(first, str)
+        heading = re.sub(r"^CHAPTER [IVX]+\.\s*", "", first)
         sections.append(Section(f"c{n + 1:02d}", heading, paras[1:]))
     return sections
 
 
 def titlecase_en(heading: str) -> str:
     """Ormsby's headings are all caps; set them in sentence case with the
-    proper nouns the eight chapters and preface use restored."""
+    proper nouns the fourteen chapters and preface use restored."""
     s = heading.lower()
     s = s[0].upper() + s[1:]
     for name in ["Don Quixote", "La Mancha", "Sancho Panza", "Rocinante", "Dulcinea", "Toboso", "Amadis", "Cervantes",
                  "Puerto Lapice", "Biscayan", "Andres", "Haldudo", "Quintanar", "Marquis of Mantua", "Toledo", "Benedictine",
-                 "Puerto Lápice"]:
+                 "Puerto Lápice", "Manchegan", "Marcela", "Chrysostom", "Ambrosio", "Vivaldo"]:
         s = re.sub(re.escape(name.lower()), name, s)
     return s

@@ -346,6 +346,12 @@ The `layout` property controls how columns are arranged within the content area.
       <td>disabled</td>
       <td>Optional visual rule drawn between columns. See below.</td>
     </tr>
+    <tr>
+      <td><code>fitFiguresToPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Shrink a figure (bitmap or SVG) whose image, caption and note would stand taller than the content area until they fit it, and set an inline figure a little too tall for the room left in its column smaller (down to half its width, the caption keeping the column's measure) so it stays with its text. The HTML viewer turns it on, since its pages are only as tall as the screen; printed pages are sized for their figures.</td>
+    </tr>
   </tbody>
 </table>
 

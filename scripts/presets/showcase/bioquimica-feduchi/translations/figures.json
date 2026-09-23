@@ -1,0 +1,911 @@
+{
+ "fig-1-1": {
+  "0": {
+   "en": "A: Mass number: the sum of "
+  },
+  "1": {
+   "en": "neutrons and protons"
+  },
+  "2": {
+   "en": "Z: Atomic number = no. of protons"
+  },
+  "9": {
+   "en": "A: Mass number"
+  },
+  "10": {
+   "en": "Z: Atomic number"
+  },
+  "11": {
+   "en": "Mass number"
+  },
+  "12": {
+   "en": "Atomic number"
+  }
+ },
+ "fig-1-2": {
+  "13": {
+   "en": "Energy level "
+  },
+  "14": {
+   "follows": 13
+  },
+  "15": {
+   "en": "Energy level "
+  },
+  "16": {
+   "follows": 15
+  },
+  "17": {
+   "en": "Nitrogen,"
+  },
+  "28": {
+   "en": "Energy level "
+  },
+  "29": {
+   "follows": 28
+  },
+  "30": {
+   "en": "Energy level "
+  },
+  "31": {
+   "follows": 30
+  },
+  "32": {
+   "en": "Oxygen,"
+  }
+ },
+ "fig-1-3": {
+  "3": {
+   "en": "0.9 "
+  },
+  "5": {
+   "en": "Traces"
+  },
+  "6": {
+   "en": "% of the total number of atoms",
+   "anchor": "middle",
+   "was": "% del número total de átomos presentes"
+  },
+  "7": {
+   "en": ""
+  },
+  "8": {
+   "en": ""
+  },
+  "9": {
+   "en": ""
+  },
+  "10": {
+   "en": ""
+  },
+  "11": {
+   "en": "present in the human body",
+   "anchor": "middle",
+   "was": "en el cuerpo humano"
+  },
+  "12": {
+   "en": ""
+  },
+  "13": {
+   "en": ""
+  }
+ },
+ "fig-1-5": {
+  "0": {
+   "en": "Atoms"
+  },
+  "1": {
+   "en": "Atoms"
+  },
+  "2": {
+   "en": "Shared"
+  },
+  "3": {
+   "en": "electrons"
+  },
+  "4": {
+   "en": "Electron"
+  },
+  "5": {
+   "en": "transfer"
+  },
+  "6": {
+   "en": "Molecule"
+  },
+  "7": {
+   "en": "positive"
+  },
+  "8": {
+   "en": "ion"
+  },
+  "9": {
+   "en": "negative"
+  },
+  "10": {
+   "en": "ion"
+  },
+  "11": {
+   "en": "Covalent bond"
+  },
+  "12": {
+   "en": "Ionic bond"
+  }
+ },
+ "fig-1-6": {
+  "0": {
+   "en": "Carbon"
+  },
+  "1": {
+   "en": "promotion"
+  },
+  "2": {
+   "en": "hybridisation"
+  },
+  "3": {
+   "en": "hybridisation"
+  }
+ },
+ "fig-1-7": {
+  "0": {
+   "en": "Electrons form a"
+  },
+  "1": {
+   "en": "coordinate bond"
+  },
+  "2": {
+   "en": "with the proton"
+  },
+  "3": {
+   "en": "ammonium ion"
+  }
+ },
+ "fig-1-8": {
+  "0": {
+   "en": "Electronegativity difference"
+  },
+  "1": {
+   "en": "non-polar covalent bond"
+  },
+  "2": {
+   "en": "polar covalent bond"
+  },
+  "3": {
+   "en": "ionic bond"
+  }
+ },
+ "fig-1-9": {
+  "2": {
+   "en": "Hydrogen bond"
+  },
+  "3": {
+   "en": "carbonyl"
+  },
+  "4": {
+   "en": "carbonyl"
+  },
+  "5": {
+   "en": "amino"
+  },
+  "6": {
+   "en": "amino"
+  },
+  "7": {
+   "en": "hydroxyl"
+  },
+  "8": {
+   "en": "amino"
+  },
+  "9": {
+   "en": "H-bond"
+  },
+  "10": {
+   "en": "acceptor"
+  },
+  "11": {
+   "en": "H-bond"
+  },
+  "12": {
+   "en": "donor"
+  },
+  "13": {
+   "en": "Covalent bond"
+  }
+ },
+ "fig-1-10": {
+  "0": {
+   "en": "Na",
+   "anchor": "middle"
+  },
+  "1": {
+   "follows": 0
+  },
+  "2": {
+   "en": "hydrated ion",
+   "anchor": "middle"
+  },
+  "3": {
+   "en": "Cl",
+   "anchor": "middle"
+  },
+  "4": {
+   "follows": 3
+  },
+  "5": {
+   "en": "hydrated ion",
+   "anchor": "middle"
+  }
+ },
+ "fig-1-12": {
+  "0": {
+   "en": "104.5º"
+  }
+ },
+ "fig-1-13": {
+  "0": {
+   "en": "The proton moves"
+  },
+  "1": {
+   "en": "from one molecule to another"
+  },
+  "2": {
+   "en": "hydronium ion"
+  },
+  "3": {
+   "en": "hydroxyl"
+  }
+ },
+ "fig-1-14": {
+  "0": {
+   "en": "Carboxyl group"
+  },
+  "1": {
+   "en": "(acid)"
+  },
+  "2": {
+   "en": "Water"
+  },
+  "3": {
+   "en": "(base)"
+  },
+  "4": {
+   "en": "Carboxylate group"
+  },
+  "5": {
+   "en": "(conjugate base)"
+  },
+  "6": {
+   "en": "Hydronium"
+  },
+  "7": {
+   "en": "(conjugate acid)"
+  }
+ },
+ "fig-1-15": {
+  "0": {
+   "en": "Nucleophiles"
+  },
+  "1": {
+   "en": "Electrophiles"
+  },
+  "2": {
+   "en": "Uncharged"
+  },
+  "3": {
+   "en": "amino group"
+  },
+  "4": {
+   "en": "Carbon atom of a"
+  },
+  "5": {
+   "en": "carbonyl group"
+  },
+  "6": {
+   "en": "Proton"
+  },
+  "7": {
+   "en": "Hydroxide ion"
+  }
+ },
+ "fig-1-16": {
+  "0": {
+   "en": "Type of bond"
+  },
+  "2": {
+   "en": "-glycosidic"
+  },
+  "3": {
+   "en": "Peptide bond (amide)",
+   "anchor": "middle",
+   "was": "Enlace peptídico (amida)"
+  },
+  "4": {
+   "en": ""
+  },
+  "5": {
+   "en": ""
+  },
+  "6": {
+   "en": "Phosphodiester bond",
+   "anchor": "middle",
+   "was": "Enlace fosfodiéster"
+  },
+  "7": {
+   "en": ""
+  }
+ },
+ "fig-1-17": {
+  "0": {
+   "en": "Methyl"
+  },
+  "1": {
+   "en": "Hydroxyl"
+  },
+  "2": {
+   "en": "Carbonyl"
+  },
+  "3": {
+   "en": "Carboxyl"
+  },
+  "4": {
+   "en": "Carbon"
+  },
+  "5": {
+   "en": "dioxide"
+  },
+  "6": {
+   "stack": "REDUCTION",
+   "runs": 9
+  },
+  "15": {
+   "stack": "OXIDATION",
+   "runs": 9
+  }
+ },
+ "fig-1-18": {
+  "0": {
+   "en": "Protein"
+  }
+ },
+ "recuadro-1-1-tabla-1": {
+  "0": {
+   "en": "Atom"
+  },
+  "1": {
+   "en": "Number of "
+  },
+  "2": {
+   "en": "unpaired "
+  },
+  "3": {
+   "en": "electrons "
+  },
+  "4": {
+   "en": "(in red)"
+  },
+  "5": {
+   "en": "Number of "
+  },
+  "6": {
+   "en": "electrons in "
+  },
+  "7": {
+   "en": "the complete "
+  },
+  "8": {
+   "en": "outer shell"
+  },
+  "18": {
+   "en": "Dihydrogen"
+  },
+  "29": {
+   "en": "Water"
+  },
+  "43": {
+   "en": "Ammonia"
+  },
+  "59": {
+   "en": "Methane"
+  },
+  "71": {
+   "en": "Hydrogen "
+  },
+  "72": {
+   "en": "sulphide"
+  },
+  "94": {
+   "en": "Phosphoric "
+  },
+  "95": {
+   "en": "acid"
+  }
+ },
+ "recuadro-1-2-tabla-2": {
+  "0": {
+   "en": "HYDROGEN COMPOUNDS"
+  },
+  "1": {
+   "en": "Functional group"
+  },
+  "2": {
+   "en": "Structure"
+  },
+  "3": {
+   "en": "Formula"
+  },
+  "4": {
+   "en": "Chemical "
+  },
+  "5": {
+   "en": "nature "
+  },
+  "6": {
+   "en": "Aliphatic"
+  },
+  "16": {
+   "en": "Non-polar"
+  },
+  "17": {
+   "en": "Alkane"
+  },
+  "18": {
+   "en": "Methyl"
+  },
+  "19": {
+   "en": "Ethyl"
+  },
+  "35": {
+   "en": "Alkene"
+  },
+  "36": {
+   "en": "Ethene "
+  },
+  "37": {
+   "en": "(ethylene)"
+  },
+  "50": {
+   "en": "Non-polar"
+  },
+  "51": {
+   "en": "Aromatic"
+  },
+  "59": {
+   "en": "Non-polar"
+  },
+  "60": {
+   "en": "Phenyl"
+  }
+ },
+ "recuadro-1-2-tabla-3": {
+  "0": {
+   "en": "OXYGEN COMPOUNDS"
+  },
+  "1": {
+   "en": "Functional group"
+  },
+  "2": {
+   "en": "Structure"
+  },
+  "3": {
+   "en": "Formula"
+  },
+  "4": {
+   "en": "Chemical "
+  },
+  "5": {
+   "en": "nature "
+  },
+  "6": {
+   "en": "Hydroxyl (alcohol)"
+  },
+  "13": {
+   "en": "Polar"
+  },
+  "14": {
+   "en": "Carbonyl"
+  },
+  "15": {
+   "en": "Aldehyde "
+  },
+  "16": {
+   "en": "primary C"
+  },
+  "27": {
+   "en": "Polar"
+  },
+  "28": {
+   "en": "Ketone  "
+  },
+  "29": {
+   "en": "secondary C"
+  },
+  "30": {
+   "en": ""
+  },
+  "31": {
+   "en": ""
+  },
+  "42": {
+   "en": "Polar"
+  },
+  "43": {
+   "en": "Carboxyl"
+  },
+  "53": {
+   "en": "Polar "
+  },
+  "54": {
+   "en": "(acid)"
+  },
+  "55": {
+   "en": "Ester"
+  },
+  "66": {
+   "en": "Non-polar"
+  }
+ },
+ "recuadro-1-2-tabla-4": {
+  "0": {
+   "en": "NITROGEN COMPOUNDS"
+  },
+  "1": {
+   "en": "Functional group"
+  },
+  "2": {
+   "en": "Structure"
+  },
+  "3": {
+   "en": "Formula"
+  },
+  "4": {
+   "en": "Chemical "
+  },
+  "5": {
+   "en": "nature "
+  },
+  "6": {
+   "en": "Amino"
+  },
+  "7": {
+   "en": "Primary"
+  },
+  "16": {
+   "en": "Polar (base)"
+  },
+  "17": {
+   "en": "Secondary"
+  },
+  "18": {
+   "en": ""
+  },
+  "27": {
+   "en": "Polar (base)"
+  },
+  "28": {
+   "en": "Imino"
+  },
+  "39": {
+   "en": "Polar (base)"
+  },
+  "40": {
+   "en": "Amido"
+  },
+  "53": {
+   "en": "Polar"
+  }
+ },
+ "recuadro-1-2-tabla-5": {
+  "0": {
+   "en": "PHOSPHORUS COMPOUNDS"
+  },
+  "1": {
+   "en": "Functional "
+  },
+  "2": {
+   "en": "group"
+  },
+  "3": {
+   "en": "Structure"
+  },
+  "4": {
+   "en": "Formula"
+  },
+  "5": {
+   "en": "Chemical "
+  },
+  "6": {
+   "en": "nature "
+  },
+  "7": {
+   "en": "Phosphoryl"
+  },
+  "22": {
+   "en": "Polar (acid)"
+  }
+ },
+ "recuadro-1-2-tabla-6": {
+  "0": {
+   "en": "SULPHUR COMPOUNDS "
+  },
+  "1": {
+   "en": "Functional "
+  },
+  "2": {
+   "en": "group"
+  },
+  "3": {
+   "en": "Structure"
+  },
+  "4": {
+   "en": "Formula"
+  },
+  "5": {
+   "en": "Chemical "
+  },
+  "6": {
+   "en": "nature "
+  },
+  "7": {
+   "en": "Sulfhydryl "
+  },
+  "8": {
+   "en": "(thiol)"
+  },
+  "15": {
+   "en": "Polar"
+  },
+  "16": {
+   "en": "Sulfuryl "
+  },
+  "17": {
+   "en": "(sulfuric acid)"
+  },
+  "30": {
+   "en": "Polar (acid)"
+  }
+ },
+ "recuadro-1-3-tabla-1": {
+  "0": {
+   "en": "HYDROGEN BOND"
+  },
+  "1": {
+   "en": "HYDROPHOBIC INTERACTION"
+  },
+  "2": {
+   "en": "Hydroxyl"
+  },
+  "8": {
+   "en": "Aliphatic "
+  },
+  "9": {
+   "en": "Aromatic"
+  },
+  "23": {
+   "en": "Carbonyl"
+  },
+  "29": {
+   "en": "Carboxyl"
+  },
+  "30": {
+   "en": "(any "
+  },
+  "31": {
+   "en": "protonated "
+  },
+  "32": {
+   "en": "acid)"
+  },
+  "42": {
+   "en": "SALT BRIDGE"
+  },
+  "51": {
+   "en": "Amino"
+  },
+  "59": {
+   "en": "Amido"
+  }
+ },
+ "recuadro-1-6-fig": {
+  "0": {
+   "en": "pH 5.76"
+  },
+  "1": {
+   "en": "buffering region"
+  },
+  "2": {
+   "en": "pH 3.76"
+  },
+  "13": {
+   "en": "0.1"
+  },
+  "14": {
+   "en": "0.2"
+  },
+  "15": {
+   "en": "0.3"
+  },
+  "16": {
+   "en": "0.4"
+  },
+  "17": {
+   "en": "0.5"
+  },
+  "18": {
+   "en": "0.6"
+  },
+  "19": {
+   "en": "0.7"
+  },
+  "20": {
+   "en": "0.8"
+  },
+  "21": {
+   "en": "0.9"
+  },
+  "22": {
+   "en": "1.0"
+  },
+  "25": {
+   "en": "(equivalents)"
+  },
+  "49": {
+   "en": " = 4.76"
+  },
+  "50": {
+   "en": "Titration curve of "
+  },
+  "51": {
+   "en": "acetic acid"
+  }
+ },
+ "recuadro-1-8-tabla-1": {
+  "0": {
+   "en": "NAME"
+  },
+  "1": {
+   "en": "FUNCTIONAL GROUPS",
+   "anchor": "middle",
+   "was": "GRUPOS FUNCIONALES"
+  },
+  "2": {
+   "en": ""
+  },
+  "3": {
+   "en": "REACTION"
+  },
+  "4": {
+   "en": "Ether"
+  },
+  "5": {
+   "en": "Hydroxyl"
+  },
+  "6": {
+   "en": "Hydroxyl"
+  },
+  "20": {
+   "en": "Ester"
+  },
+  "22": {
+   "en": "Carboxyl"
+  },
+  "23": {
+   "en": "Hydroxyl"
+  },
+  "24": {
+   "en": "Sulfhydryl"
+  },
+  "52": {
+   "en": " thioester"
+  },
+  "54": {
+   "en": "Phosphoric ester "
+  },
+  "55": {
+   "en": "Phosphoryl"
+  },
+  "56": {
+   "en": "Hydroxyl"
+  },
+  "79": {
+   "en": "Sulfuric ester"
+  },
+  "80": {
+   "en": "Sulfuryl"
+  },
+  "81": {
+   "en": "Hydroxyl"
+  },
+  "103": {
+   "en": "Anhydrides"
+  },
+  "106": {
+   "en": "Carboxyl"
+  },
+  "107": {
+   "en": "Carboxyl"
+  },
+  "130": {
+   "en": "Mixed"
+  },
+  "131": {
+   "en": "Carboxyl"
+  },
+  "132": {
+   "en": "Phosphoryl"
+  },
+  "159": {
+   "en": "Phosphoanhydride"
+  },
+  "160": {
+   "en": "Phosphoryl"
+  },
+  "161": {
+   "en": "Phosphoryl"
+  },
+  "190": {
+   "en": "Amide"
+  },
+  "191": {
+   "en": "Carboxyl"
+  },
+  "192": {
+   "en": "Amine"
+  },
+  "212": {
+   "en": "Glycosidic"
+  },
+  "215": {
+   "en": " (anomeric)"
+  },
+  "216": {
+   "en": "Hydroxyl"
+  },
+  "233": {
+   "en": "(anomeric)"
+  },
+  "234": {
+   "en": "Amine"
+  },
+  "251": {
+   "en": "Disulfide"
+  },
+  "252": {
+   "en": "Sulfhydryl"
+  },
+  "253": {
+   "en": "Sulfhydryl"
+  },
+  "268": {
+   "en": "Every reaction is a condensation except the disulfide."
+  },
+  "269": {
+   "en": ""
+  },
+  "270": {
+   "en": ""
+  },
+  "271": {
+   "en": "The water molecule each condensation yields has been left out."
+  },
+  "272": {
+   "en": ""
+  }
+ },
+ "strip-resources": {
+  "0": {
+   "stack": "ACTIVITIES",
+   "runs": 11
+  },
+  "11": {
+   "stack": "FAQs",
+   "runs": 4
+  },
+  "15": {
+   "stack": "VIDEOS",
+   "runs": 6
+  },
+  "21": {
+   "stack": "SELF-ASSESSMENT",
+   "runs": 14
+  }
+ }
+}

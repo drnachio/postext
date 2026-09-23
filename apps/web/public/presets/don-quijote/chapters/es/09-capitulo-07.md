@@ -24,7 +24,7 @@ ver sus libros; y, como no hallaba el aposento donde le había dejado, andaba de
 
 — ¿Qué aposento, o qué nada, busca vuestra merced? Ya no hay aposento ni libros en esta casa, porque todo se lo llevó el mesmo diablo.
 
-— No era diablo —replicó la sobrina—, sino un encantador que vino sobre una nube una noche, después del día que vuestra merced de aquí se partió, y, apeándose de una sierpe en que venía caballero, entró en el aposento, y no sé lo que se hizo dentro, que a cabo de poca pieza salió volando por el tejado, y dejó la casa llena de humo; y, cuando acordamos a mirar lo que dejaba hecho, no vimos libro ni aposento alguno; sólo se nos acuerda muy bien a mí y al ama que, al tiempo del partirse aquel mal viejo, dijo en altas voces que, por enemistad secreta que tenía al dueño de aquellos libros y aposento, dejaba hecho el daño en aquella casa que después se vería. Dijo también que se llamaba el sabio Muñatón.
+— No era diablo —replicó la sobrina—, sino un encantador que vino sobre una nube una noche, después del día que vuestra merced de aquí se partió, y, apeándose de una sierpe en que venía caballero, entró en el aposento, y no sé lo que se hizo dentro, que a cabo de poca pieza salió volando por el tejado, y dejó la casa llena de humo; y, cuando acordamos a mirar lo que dejaba hecho, no vimos libro ni aposento alguno; sólo se nos acuerda muy bien a mí y al ama que, al tiempo del partirse aquel mal viejo, dijo en altas voces que, por enemistad secreta que tenía al dueño de aquellos libros y aposento, dejaba hecho el daño en aquella casa que después se vería. Dijo también que se llamaba el sabio Muñatón. (:ref{id="c07-tail" case="lower"})
 
 — Frestón diría —dijo don Quijote.
 
@@ -73,5 +73,3 @@ A lo cual le respondió don Quijote:
 — Encomiéndalo tú a Dios, Sancho —respondió don Quijote—, que Él dará lo que más le convenga, pero no apoques tu ánimo tanto, que te vengas a contentar con menos que con ser adelantado.
 
 — No lo haré, señor mío —respondió Sancho—; y más teniendo tan principal amo en vuestra merced, que me sabrá dar todo aquello que me esté bien y yo pueda llevar.
-
-::resource{id="c07-tail"}

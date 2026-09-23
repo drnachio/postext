@@ -6,11 +6,23 @@
 Romance en que el marqués halla a su sobrino Valdovinos moribundo en el bosque; don Quijote lo recita tendido en el suelo, sin poderse mover.
 :::
 
--¿Donde estás, señora mía, que no te duele mi mal? O no lo sabes, señora, o eres falsa y desleal.
+:::paragraphs{style="verso"}
+¿Donde estás, señora mía,
+
+que no te duele mi mal?
+
+O no lo sabes, señora,
+
+o eres falsa y desleal.
+:::
 
 Y, desta manera, fue prosiguiendo el romance hasta aquellos versos que dicen:
 
--¡Oh noble marqués de Mantua, mi tío y señor carnal!
+:::paragraphs{style="verso"}
+¡Oh noble marqués de Mantua,
+
+mi tío y señor carnal!
+:::
 
 Y quiso la suerte que, cuando llegó a este verso, acertó a pasar por allí un labrador de su mesmo lugar y vecino suyo, que venía de llevar una carga de trigo al molino; el cual, viendo aquel hombre allí tendido, se llegó a él y le preguntó que quién era y qué mal sentía que tan tristemente se quejaba. Don Quijote creyó, sin duda, que aquél era el marqués de Mantua, su tío; y así, no le respondió otra cosa si no fue proseguir en su romance, donde le daba cuenta de su desgracia y de los amores del hijo del Emperante con su esposa, todo de la mesma manera que el romance lo canta.
 
@@ -36,7 +48,7 @@ El labrador vecino que lo recoge: la primera de las muchas personas cuerdas que 
 
 — Yo sé quién soy —respondió don Quijote—; y sé que puedo ser no sólo los que he dicho, sino todos los Doce Pares de Francia, y aun todos los Nueve de la Fama, pues a todas las hazañas que ellos todos juntos y cada uno por sí hicieron, se aventajarán las mías.
 
-En estas pláticas y en otras semejantes, llegaron al lugar a la hora que anochecía, pero el labrador aguardó a que fuese algo más noche, porque no viesen al molido hidalgo tan mal caballero. Llegada, pues, la hora que le pareció, entró en el pueblo, y en la casa de don Quijote, la cual halló toda alborotada; y estaban en ella el cura y el barbero del lugar, que eran grandes amigos de don Quijote, que estaba diciéndoles su ama a voces:
+En estas pláticas y en otras semejantes, llegaron al lugar a la hora que anochecía, pero el labrador aguardó a que fuese algo más noche, porque no viesen al molido hidalgo tan mal caballero. Llegada, pues, la hora que le pareció, entró en el pueblo, y en la casa de don Quijote, la cual halló toda alborotada; y estaban en ella el cura y el barbero del lugar, que eran grandes amigos de don Quijote, que estaba diciéndoles su ama a voces: (:ref{id="c05-tail" case="lower"})
 
 — ¿Qué le parece a vuestra merced, señor licenciado Pero Pérez —que así se llamaba el cura—, de la desgracia de mi señor? Tres días ha que no parecen él, ni el rocín, ni la adarga, ni la lanza ni las armas. ¡Desventurada de mí!, que me doy a entender, y así es ello la verdad como nací para morir, que estos malditos libros de caballerías que él tiene y suele leer tan de ordinario le han vuelto el juicio; que ahora me acuerdo haberle oído decir muchas veces, hablando entre sí, que quería hacerse caballero andante e irse a buscar las aventuras por esos mundos. Encomendados sean a Satanás y a Barrabás tales libros, que así han echado a perder el más delicado entendimiento que había en toda la Mancha.
 
@@ -61,5 +73,3 @@ Lleváronle luego a la cama, y, catándole las feridas, no le hallaron ninguna; 
 — ¡Ta, ta! —dijo el cura—. ¿Jayanes hay en la danza? Para mi santiguada, que yo los queme mañana antes que llegue la noche.
 
 Hiciéronle a don Quijote mil preguntas, y a ninguna quiso responder otra cosa sino que le diesen de comer y le dejasen dormir, que era lo que más le importaba. Hízose así, y el cura se informó muy a la larga del labrador del modo que había hallado a don Quijote. Él se lo contó todo, con los disparates que al hallarle y al traerle había dicho; que fue poner más deseo en el licenciado de hacer lo que otro día hizo, que fue llamar a su amigo el barbero maese Nicolás, con el cual se vino a casa de don Quijote,
-
-::resource{id="c05-tail"}

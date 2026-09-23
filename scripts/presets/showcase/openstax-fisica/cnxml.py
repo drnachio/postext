@@ -67,7 +67,9 @@ def mathml_to_tex(el: ET.Element) -> str:
         return ""
     if tag == "mi":
         if text in GREEK:
-            return GREEK[text]
+            # Trailing space: a bare `\rho` glues to a following letter and
+            # makes an undefined command (`\rho` + `V` -> `\rhoV`).
+            return GREEK[text] + " "
         if text in FUNCTIONS:
             return "\\" + text + " "
         if len(text) > 1 and text.isalpha():

@@ -18,6 +18,9 @@
   "callouts",
   "tables"
  ],
+ "view": {
+  "canvasScope": "book"
+ },
  "chapters": {
   "es": [
    {

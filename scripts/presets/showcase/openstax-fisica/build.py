@@ -490,7 +490,10 @@ def write_manifest(chapter_specs, resources, wording, fonts, chapters, images) -
         "tags": ["textbook", "one-and-a-half", "math", "callouts", "tables"],
     }
     manifest = {
-        "version": 2, **meta, "chapters": chapter_specs, "config": shared_config(chapters, images),
+        # A textbook is read straight through: the sandbox opens it with the
+        # canvas (and the PDF scope that follows it) laying out the whole book.
+        "version": 2, **meta, "view": {"canvasScope": "book"},
+        "chapters": chapter_specs, "config": shared_config(chapters, images),
         "localized": {lang: {"config": localized_config(lang), "resources": wording[lang]} for lang in LANGS},
         "resources": resources, "fonts": fonts,
     }

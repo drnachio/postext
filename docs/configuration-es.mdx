@@ -346,6 +346,12 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td>desactivado</td>
       <td>Filete vertical opcional trazado entre columnas. Ver más abajo.</td>
     </tr>
+    <tr>
+      <td><code>fitFiguresToPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Reduce una figura (mapa de bits o SVG) cuya imagen, pie y nota quedarían más altos que el área de contenido hasta que quepan en ella, y compone más pequeña una figura en línea que no cabe por poco en lo que queda de su columna (hasta la mitad de su ancho; el pie conserva la medida de la columna) para que siga junto a su texto. El visor HTML la activa, porque sus páginas son tan altas como la pantalla; las páginas impresas se dimensionan para sus figuras.</td>
+    </tr>
   </tbody>
 </table>
 

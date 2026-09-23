@@ -357,7 +357,7 @@ La importancia del concepto de dimensión surge del hecho de que cualquier ecuac
 Si se viola alguna de estas reglas, una ecuación no es dimensionalmente coherente y no puede ser un enunciado correcto de la ley física. Este simple hecho sirve para comprobar si hay errores tipográficos o de álgebra, recordar las distintas leyes de la física e incluso sugerir la forma que podrían adoptar las nuevas leyes de la física. Este último uso de las dimensiones no se contempla en este texto, pero es algo que sin duda aprenderá más adelante en su carrera académica.
 
 :::callout{type="ejemplo" title="Usar las dimensiones para recordar una ecuación"}
-Supongamos que necesitamos la fórmula del área de un círculo para algún cálculo. Al igual que muchas personas que aprendieron geometría hace demasiado tiempo como para recordarlo con certeza, hay dos expresiones que nos vienen a la mente cuando pensamos en círculos: $\pi{r}^{2}$ y $2\pir.$ Una expresión es la circunferencia de un círculo de radio *r* y la otra es su área. Pero ¿cuál es cuál?
+Supongamos que necesitamos la fórmula del área de un círculo para algún cálculo. Al igual que muchas personas que aprendieron geometría hace demasiado tiempo como para recordarlo con certeza, hay dos expresiones que nos vienen a la mente cuando pensamos en círculos: $\pi{r}^{2}$ y $2\pi r.$ Una expresión es la circunferencia de un círculo de radio *r* y la otra es su área. Pero ¿cuál es cuál?
 
 **Estrategia.** Una estrategia natural es buscarla, pero puede llevar tiempo encontrar información de una fuente fiable. Además, aunque creamos que la fuente es fiable, no debemos confiar en todo lo que leemos. Es bueno tener una forma de comprobarlo dos veces con solo pensarlo. Además, es posible que nos encontremos en una situación en la que no podamos consultar estos aspectos (por ejemplo, durante un examen). Por lo tanto, la estrategia es encontrar las dimensiones de ambas expresiones por el hecho de que dichas dimensiones siguen las reglas de álgebra. Si una de las expresiones no tiene las mismas dimensiones que el área, entonces no puede ser la ecuación correcta para el área de un círculo.
 
@@ -367,15 +367,15 @@ $$
 [\pi{r}^{2}]=[\pi]\cdot {[r]}^{2}=1\cdot {\text{L}}^{2}={\text{L}}^{2},
 $$
 
-ya que la constante $\pi$ es un número puro y el radio $r$ es una longitud. Por lo tanto, $\pi{r}^{2}$ tiene la dimensión de área. Del mismo modo, la dimensión de la expresión $2\pir$ es
+ya que la constante $\pi$ es un número puro y el radio $r$ es una longitud. Por lo tanto, $\pi{r}^{2}$ tiene la dimensión de área. Del mismo modo, la dimensión de la expresión $2\pi r$ es
 
 $$
-[2\pir]=[2]\cdot [\pi]\cdot [r]=1\cdot 1\cdot \text{L}=\text{L,}
+[2\pi r]=[2]\cdot [\pi]\cdot [r]=1\cdot 1\cdot \text{L}=\text{L,}
 $$
 
-ya que las constantes $2$ y $\pi$ son adimensionales y el radio $r$ es una longitud. Vemos que $2\pir$ tiene la dimensión de la longitud, lo que significa que no puede ser un área.
+ya que las constantes $2$ y $\pi$ son adimensionales y el radio $r$ es una longitud. Vemos que $2\pi r$ tiene la dimensión de la longitud, lo que significa que no puede ser un área.
 
-Descartamos $2\pir$ porque no es dimensionalmente coherente con ser un área. Vemos que $\pi{r}^{2}$ es dimensionalmente coherente con ser un área, así que si tenemos que elegir entre estas dos expresiones, $\pi{r}^{2}$ es la que hay que elegir.
+Descartamos $2\pi r$ porque no es dimensionalmente coherente con ser un área. Vemos que $\pi{r}^{2}$ es dimensionalmente coherente con ser un área, así que si tenemos que elegir entre estas dos expresiones, $\pi{r}^{2}$ es la que hay que elegir.
 
 **Importancia.** Esto puede parecer un ejemplo tonto, pero las ideas son muy generales. Siempre que conozcamos las dimensiones de cada una de las magnitudes físicas que aparecen en una ecuación, podremos comprobar si la ecuación es dimensionalmente coherente. Por otro lado, al saber que las ecuaciones verdaderas son dimensionalmente coherentes, podemos hacer coincidir las expresiones de nuestra memoria imperfecta con las cantidades para las que podrían ser expresiones. Hacer esto no nos ayudará a recordar los factores adimensionales que aparecen en las ecuaciones (por ejemplo, si accidentalmente hubiera confundido las dos expresiones del ejemplo en $2\pi{r}^{2},$ entonces el análisis dimensional no ayuda), aunque sí nos permite recordar la forma básica correcta de las ecuaciones.
 :::
@@ -478,7 +478,7 @@ $$
 Por último, estimamos que la masa de los océanos del mundo es
 
 $$
-M=\rhoV=({10}^{3}{\,\text{kg/m}}^{3})(9\,\times \,{10}^{17}{\text{m}}^{3})=9\,\times \,{10}^{20}\text{kg}.
+M=\rho V=({10}^{3}{\,\text{kg/m}}^{3})(9\,\times \,{10}^{17}{\text{m}}^{3})=9\,\times \,{10}^{20}\text{kg}.
 $$
 
 Así, estimamos que el orden de magnitud de la masa de los océanos del planeta es de 10²¹ kg.
@@ -553,7 +553,7 @@ En nuestro ejemplo, los factores que contribuyen a la incertidumbre podrían ser
 Otro método de expresar la incertidumbre es como porcentaje del valor medido. Si una medición *A* se expresa con una incertidumbre *δA*, el **porcentaje de incertidumbre** se define como
 
 $$
-\text{Porcentaje de incertidumbre}=\frac{\deltaA}{A}\,\times \,100\%.
+\text{Porcentaje de incertidumbre}=\frac{\delta A}{A}\,\times \,100\%.
 $$
 
 :::callout{type="ejemplo" title="Calcular el porcentaje de incertidumbre: una bolsa de manzanas"}
@@ -566,21 +566,21 @@ Una tienda de comestibles vende bolsas de 5 lb de manzanas. Supongamos que compr
 
 A continuación, determinamos que el peso medio de la bolsa de 5 libras de manzanas es de 5,1 ± 0,3 lb al utilizar la mitad del rango. ¿Cuál es el porcentaje de incertidumbre del peso de la bolsa?
 
-**Estrategia.** En primer lugar, observe que el valor promedio del peso de la bolsa, *A*, es de 5,1 lb. La incertidumbre en este valor, $\deltaA,$ es 0,3 lb. Podemos utilizar la siguiente ecuación para determinar el porcentaje de incertidumbre del peso:
+**Estrategia.** En primer lugar, observe que el valor promedio del peso de la bolsa, *A*, es de 5,1 lb. La incertidumbre en este valor, $\delta A,$ es 0,3 lb. Podemos utilizar la siguiente ecuación para determinar el porcentaje de incertidumbre del peso:
 
 :::callout{type="nota" title="Nota"}
 $$
-\text{Porcentaje de incertidumbre}=\frac{\deltaA}{A}\,\times \,100\%.
+\text{Porcentaje de incertidumbre}=\frac{\delta A}{A}\,\times \,100\%.
 $$
 :::
 
 **Solución.** Sustituya los valores en la ecuación:
 
 $$
-\text{Porcentaje de incertidumbre}=\frac{\deltaA}{A}\,\times \,100\%=\frac{0{,}3\,\text{lb}}{5{,}1\,\text{lb}}\,\times \,100\%=5{,}9\%\approx 6\%.
+\text{Porcentaje de incertidumbre}=\frac{\delta A}{A}\,\times \,100\%=\frac{0{,}3\,\text{lb}}{5{,}1\,\text{lb}}\,\times \,100\%=5{,}9\%\approx 6\%.
 $$
 
-**Importancia.** Podemos concluir que el peso promedio de una bolsa de manzanas de esta tienda es de 5,1 libras ± 6 %. Observe que el porcentaje de incertidumbre es adimensional porque las unidades de peso en $\deltaA=0{,}2$ lb anularon las de *A* = 5,1 lb cuando tomamos la proporción.
+**Importancia.** Podemos concluir que el peso promedio de una bolsa de manzanas de esta tienda es de 5,1 libras ± 6 %. Observe que el porcentaje de incertidumbre es adimensional porque las unidades de peso en $\delta A=0{,}2$ lb anularon las de *A* = 5,1 lb cuando tomamos la proporción.
 :::
 
 :::callout{type="comprobacion" title="Compruebe lo aprendido"}
@@ -625,7 +625,7 @@ En este texto, se supone que la mayoría de los números tienen tres cifras sign
 
 ### Ecuaciones clave
 
-| Porcentaje de incertidumbre | $\text{Porcentaje de incertidumbre}=\frac{\deltaA}{A}\,\times \,100\%$ |
+| Porcentaje de incertidumbre | $\text{Porcentaje de incertidumbre}=\frac{\delta A}{A}\,\times \,100\%$ |
 | --- | --- |
 
 ### Preguntas conceptuales

@@ -18,15 +18,35 @@ At this moment it so happened that a swineherd who was going through the stubble
 
 The incomprehensible language and the unpromising looks of our cavalier only increased the ladies’ laughter, and that increased his irritation, and matters might have gone farther if at that moment the landlord had not come out, who, being a very fat man, was a very peaceful one. He, seeing this grotesque figure clad in armour that did not match any more than his saddle, bridle, lance, buckler, or corselet, was not at all indisposed to join the damsels in their manifestations of amusement; but, in truth, standing in awe of such a complicated armament, he thought it best to speak him fairly, so he said, “Señor Caballero, if your worship wants lodging, bating the bed (for there is not one in the inn) there is plenty of everything else here.” Don Quixote, observing the respectful bearing of the Alcaide of the fortress (for so innkeeper and inn seemed in his eyes), made answer, “Sir Castellan, for me anything will suffice, for
 
-‘My armour is my only wear, My only rest the fray.’”
+:::paragraphs{style="verso"}
+‘My armour is my only wear,
+
+My only rest the fray.’”
+:::
 
 The host fancied he called him Castellan because he took him for a “worthy of Castile,” though he was in fact an Andalusian, and one from the strand of San Lucar, as crafty a thief as Cacus and as full of tricks as a student or a page. “In that case,” said he,
 
-“‘Your bed is on the flinty rock, Your sleep to watch alway;’
+:::paragraphs{style="verso"}
+“‘Your bed is on the flinty rock,
+
+Your sleep to watch alway;’
+:::
 
 and if so, you may dismount and safely reckon upon any quantity of sleeplessness under this roof for a twelvemonth, not to say for a single night.” So saying, he advanced to hold the stirrup for Don Quixote, who got down with great difficulty and exertion (for he had not broken his fast all day), and then charged the host to take great care of his horse, as he was the best bit of flesh that ever ate bread in this world. The landlord eyed him over but did not find him as good as Don Quixote said, nor even half as good; and putting him up in the stable, he returned to see what might be wanted by his guest, whom the damsels, who had by this time made their peace with him, were now relieving of his armour. They had taken off his breastplate and backpiece, but they neither knew nor saw how to open his gorget or remove his make-shift helmet, for he had fastened it with green ribbons, which, as there was no untying the knots, required to be cut. This, however, he would not by any means consent to, so he remained all the evening with his helmet on, the drollest and oddest figure that can be imagined; and while they were removing his armour, taking the baggages who were about it for ladies of high degree belonging to the castle, he said to them with great sprightliness:
 
-“Oh, never, surely, was there knight So served by hand of dame, As served was he, Don Quixote hight, When from his town he came; With maidens waiting on himself, Princesses on his hack—
+:::paragraphs{style="verso"}
+“Oh, never, surely, was there knight
+
+So served by hand of dame,
+
+As served was he, Don Quixote hight,
+
+When from his town he came;
+
+With maidens waiting on himself,
+
+Princesses on his hack—
+:::
 
 :::callout{type="nota" title="Never was a knight…"}
 Don Quixote fits his own arrival to the opening of the old ballad of Lancelot, which in the original reads “when from Brittany he came”.
