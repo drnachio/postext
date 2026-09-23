@@ -12,7 +12,7 @@ import { routing } from "@/i18n/routing";
 import { MdxContent } from "@/components/docs/MdxContent";
 import { DocsToc } from "@/components/docs/DocsToc";
 import { DocsMobileNav } from "@/components/docs/DocsMobileNav";
-import { buildMetadata } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 
 export async function generateStaticParams() {
   const params: { locale: string; slug: string }[] = [];
@@ -47,6 +47,7 @@ export async function generateMetadata({
     ogDescription: doc.meta.description,
     availableLocales,
     type: "article",
+    modifiedTime: doc.meta.lastUpdated || undefined,
   });
 }
 
@@ -68,9 +69,53 @@ export default async function DocPage({
   );
 
   const t = await getTranslations("Docs");
+  const tIndex = await getTranslations("DocsIndex");
+
+  const url = localizedUrl(locale, `/docs/${slug}`);
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      headline: doc.meta.title,
+      description: doc.meta.description,
+      url,
+      mainEntityOfPage: url,
+      inLanguage: locale,
+      ...(doc.meta.lastUpdated ? { dateModified: doc.meta.lastUpdated } : {}),
+      ...(doc.meta.readingTime
+        ? { timeRequired: `PT${parseInt(doc.meta.readingTime, 10) || 1}M` }
+        : {}),
+      isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL },
+      author: { "@type": "Organization", name: "Postext contributors", url: SITE_URL },
+      publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+      encoding: {
+        "@type": "MediaObject",
+        encodingFormat: "text/markdown",
+        contentUrl: `${url}.md`,
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE_NAME, item: localizedUrl(locale) },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: tIndex("ogTitle"),
+          item: localizedUrl(locale, "/docs"),
+        },
+        { "@type": "ListItem", position: 3, name: doc.meta.title, item: url },
+      ],
+    },
+  ];
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <main
         id="main-content"
         className="min-w-0 flex-1 px-4 py-6 lg:px-8 2xl:px-12"

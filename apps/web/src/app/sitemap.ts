@@ -8,6 +8,7 @@ interface PageDef {
   changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
   priority: number;
   locales?: readonly string[];
+  lastModified?: string;
 }
 
 function buildEntry(
@@ -23,7 +24,7 @@ function buildEntry(
 
   return {
     url: localizedUrl(locale, page.path),
-    lastModified: new Date(),
+    lastModified: page.lastModified ? new Date(page.lastModified) : new Date(),
     changeFrequency: page.changeFrequency,
     priority: page.priority,
     alternates: { languages },
@@ -57,6 +58,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           changeFrequency: "monthly",
           priority: 0.8,
           locales: availableLocales,
+          lastModified: doc.locales[locale]?.lastUpdated || undefined,
         })
       );
     }
