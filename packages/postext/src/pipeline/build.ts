@@ -1658,7 +1658,38 @@ export function buildDocumentPass(
     tryPlacePendingFloatsOnCurrentPage();
     proposeTrailingCap(boundaryIndex);
     markForcedBreak();
+    hugClosingText();
     drainPendingFloats();
+  };
+
+  /** On the closing page of a chapter nothing follows the page-span floats
+   *  set at the foot of its last band: they move up to sit right under the
+   *  band's text (one float gap below its grid-rounded bottom, stacked in
+   *  their order) instead of leaving a gap between the text and a table at
+   *  the page foot. */
+  const hugClosingText = (): void => {
+    const page = doc.pages[cursor.pageIndex]!;
+    const floats = page.floats ?? [];
+    // A side column holds its own band under a page-span float: leave it.
+    if (floats.length === 0 || page.partInfo || sideColumns(page).length > 0) return;
+    const cols = bandColumns(page, currentBand(page, cursor)).filter((c) => c.kind !== 'span' && c.kind !== 'side' && c.bbox.height > 0.5);
+    if (cols.length === 0 || !cols.some((c) => c.blocks.length > 0)) return;
+    const textBottom = Math.max(...cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight)));
+    const spanWidth = page.contentArea.width - 0.5;
+    const below = floats.filter((b) => b.bbox.y >= textBottom - 0.5).sort((a, b) => a.bbox.y - b.bbox.y);
+    let nextY = page.contentArea.y + Math.ceil((textBottom - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid + floatGapPx;
+    for (const b of below) {
+      const rb = b.resourceBlock;
+      // Only resource floats across the page move; anything else below the
+      // text (a fixed or floated box) keeps its place and ends the run.
+      if (!rb || rb.rotation || b.bbox.width < spanWidth) break;
+      const dy = nextY - b.bbox.y;
+      if (dy < -0.5) {
+        b.bbox.y += dy;
+        offsetResourceBlockToAbsolute(rb, 0, dy);
+      }
+      nextY = b.bbox.y + b.bbox.height + floatGapPx;
+    }
   };
 
   /** Parity of the page break a closed `:::part` still owes (applied before

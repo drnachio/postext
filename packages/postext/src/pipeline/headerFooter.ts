@@ -1,3 +1,4 @@
+import { applyPartPalettesToFlow } from './partPalette';
 import { TITLE_BREAK_RE, applyTitleBreaks } from '../parse/inlineFormatting';
 import type { DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig } from '../types';
 import {
@@ -503,6 +504,8 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
     const section = sectionByPage[i];
     return section && Object.keys(section.palette).length > 0 ? { ...palette, ...section.palette } : palette;
   });
+  // The same overrides recolour the palette-linked colours of the flow.
+  applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette);
 
   for (const page of doc.pages) {
     // Per-page content area: mirrored margins swap inner/outer on even pages.

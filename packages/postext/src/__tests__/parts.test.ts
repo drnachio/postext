@@ -357,6 +357,32 @@ describe('part palette overrides', () => {
   });
 });
 
+describe('part palette in the flow', () => {
+  it('recolours palette-linked heading and bold colours on the part\'s pages, and leaves the others', () => {
+    const band = { hex: '#9bcdbf', model: 'hex' as const, paletteId: 'band' };
+    const cfg: PostextConfig = {
+      ...base,
+      colorPalette: [{ id: 'band', name: 'Band', value: { hex: '#9bcdbf', model: 'hex' } }],
+      bodyText: { boldColor: band },
+      headings: { levels: [{ level: 1, breakBefore: { enabled: true, parity: 'odd' } }, { level: 2, color: band }] },
+    };
+    const markdown = [
+      '# Zero', '', 'Opening words.', '', '## Before', '', 'Some **bold** words.', '',
+      ':::part{number="II" title="Two" palette="band=#f6c297"}', ':::', '',
+      '# One', '', 'Opening words.', '', '## After', '', 'More **bold** words.',
+    ].join('\n');
+    const doc = buildDocument({ markdown }, cfg);
+    const heading = (text: string) => doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks))
+      .find((b) => b.type === 'heading' && b.lines.some((l) => l.text.includes(text)))!;
+    expect(heading('Before').color.toLowerCase()).toBe('#9bcdbf');
+    expect(heading('After').color.toLowerCase()).toBe('#f6c297');
+    const para = (text: string) => doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks))
+      .find((b) => b.type === 'paragraph' && b.lines.some((l) => l.text.includes(text)))!;
+    expect(para('Some').boldColor?.toLowerCase()).toBe('#9bcdbf');
+    expect(para('More').boldColor?.toLowerCase()).toBe('#f6c297');
+  });
+});
+
 describe('parsePartNumber', () => {
   it('parses decimals and roman numerals (either case), else undefined', () => {
     expect(parsePartNumber('7')).toBe(7);

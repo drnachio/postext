@@ -317,3 +317,20 @@ describe('a head-of-page float cited on the closing page of a chapter', () => {
     expect(two).toBe(1);
   });
 });
+
+describe('a page-span float on the closing page of a chapter', () => {
+  it('sits right under the text, not at the page foot', () => {
+    const doc = build(`Intro :ref{id="t1"} text.\n\n${filler(2)}`, [
+      { ...smallTable('t1'), placement: { position: 'bottom', span: 'page' } },
+    ]);
+    const f = floatById(doc, 't1');
+    const page = doc.pages[f.page]!;
+    const textBottom = Math.max(...page.columns.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight)));
+    const pageFoot = page.contentArea.y + page.contentArea.height;
+    // The table starts within two grid lines of the text's foot…
+    expect(f.block.bbox.y - textBottom).toBeLessThan(2 * doc.baselineGrid + 1e-6);
+    expect(f.block.bbox.y).toBeGreaterThanOrEqual(textBottom - 1e-6);
+    // …leaving the rest of the page free under it.
+    expect(pageFoot - bottomOf(f.block)).toBeGreaterThan(4 * doc.baselineGrid);
+  });
+});

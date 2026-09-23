@@ -33,7 +33,14 @@ export function renderPageToCanvas(
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  if (scale !== 1) ctx.scale(scale, scale);
+  // The bitmap is a whole number of pixels; the page rarely is. Drawing at
+  // `scale` would leave the last column (and row) of pixels only partly
+  // covered — a light hairline at the edge of a dark or coloured page — so
+  // the page is stretched to the bitmap's exact size instead (the two
+  // factors differ from `scale` by well under a pixel's worth).
+  const sx = canvas.width / page.width;
+  const sy = canvas.height / page.height;
+  if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
 
   if (options?.pageNegative) {
     ctx.filter = 'invert(1)';
