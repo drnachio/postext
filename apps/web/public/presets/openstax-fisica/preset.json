@@ -4572,7 +4572,7 @@
    "file": "resources/es-2-cnx-uphysics-02-02-comp03.jpg",
    "width": 700,
    "height": 508,
-   "caption": "Cuando el vector se encuentra en el primer cuadrante o en el cuarto cuadrante, donde el componente ${A}_{x}$es positivo (:ref{id=\"es-2-cnx-uphysics-02-02-comp04\"}), el ángulo direccional ${\\theta}_{A}$ en la (aquí) es idéntico al ángulo $θ$.",
+   "caption": "Cuando el vector se encuentra en el primer cuadrante o en el cuarto cuadrante, donde el componente ${A}_{x}$es positivo (:ref{id=\"es-2-cnx-uphysics-02-02-comp04\"}), el ángulo direccional ${\\theta }_{A}$ en la (aquí) es idéntico al ángulo $θ$.",
    "altText": "El vector A tiene el componente horizontal x A sub x igual a la magnitud A sub x por el vector I y el componente vertical y A sub y igual a la magnitud A sub y por el vector j. El vector A y los componentes forman un triángulo rectángulo con la longitud de sus lados de magnitud A sub x y magnitud A sub y e hipotenusa de magnitud A igual a la raíz cuadrada de A sub x al cuadrado más A sub y al cuadrado. El ángulo entre el lado horizontal A sub x y la hipotenusa A es theta sub A.",
    "placement": {
     "position": "auto",
@@ -4588,7 +4588,7 @@
    "file": "resources/es-2-cnx-uphysics-02-02-comp04.jpg",
    "width": 774,
    "height": 637,
-   "caption": "Los componentes escalares de un vector pueden ser positivos o negativos. Los vectores del primer cuadrante (I) tienen ambos componentes escalares positivos y los vectores del tercer cuadrante tienen ambos componentes escalares negativos. Para los vectores de los cuadrantes II y III, el ángulo direccional de un vector es ${\\theta}_{A}=\\theta+180\\text{°}$.",
+   "caption": "Los componentes escalares de un vector pueden ser positivos o negativos. Los vectores del primer cuadrante (I) tienen ambos componentes escalares positivos y los vectores del tercer cuadrante tienen ambos componentes escalares negativos. Para los vectores de los cuadrantes II y III, el ángulo direccional de un vector es ${\\theta }_{A}=\\theta +180\\text{°}$.",
    "altText": "La Figura I muestra el vector A en el primer cuadrante (apuntando hacia arriba y hacia la derecha). Tiene componentes de la x y de la y positivos A sub x y A sub y, y el ángulo theta sub A medido en sentido contrario a las agujas del reloj desde el eje de la x positiva es menor que 90 grados. La figura II muestra el vector A en el primer segundo (apuntando hacia arriba y hacia la izquierda). Tiene componentes x negativo y y positivo A sub x y A sub y. El ángulo theta sub A medido en sentido contrario a las agujas del reloj desde el eje de la x positiva es mayor que 90 grados pero menor que 180 grados. El ángulo theta, medido en el sentido de las agujas del reloj desde el eje de la x negativa, es menor que 90 grados. La figura III muestra el vector A en el tercer cuadrante (apuntando hacia abajo y hacia la izquierda). Tiene componentes de la x y de la y negativos A sub x y A sub y, y el ángulo theta sub A medido en sentido contrario a las agujas del reloj desde el eje de la x positiva es mayor que 180 grados y menor que 270 grados. El ángulo theta, medido en sentido contrario a las agujas del reloj desde el eje de la x negativa, es menor que 90 grados. La Figura IV muestra el vector A en el cuarto cuadrante (apuntando hacia abajo y a la derecha). Tiene componentes x positivo y y negativo A sub x y A sub y, y el ángulo theta sub A medido en el sentido de las agujas del reloj desde el eje de la x positiva es menor que 90 grados.",
    "placement": {
     "position": "auto",
@@ -6337,6 +6337,38 @@
    "placement": {
     "position": "auto",
     "span": "column"
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-point",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-point.jpg",
+   "width": 733,
+   "height": 490,
+   "caption": "The graph of the train’s distance from the station versus time from the exercise above.",
+   "altText": "A graph titled Train Motion with plotted points is shown. The x-axis is labeled Time in minutes and has a scale from zero to seventy in increments of ten. The y-axis is labeled Distance from station in kilometers and has a scale from zero to one hundred sixty in increments of twenty. The following points are plotted: zero, zero; ten, twenty-two; twenty, thirty-eight; thirty, sixty; forty, eighty-two; fifty, ninety-eight; sixty, one-hundred eighteen; seventy, one-hundred forty.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-trendline",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-trendline.jpg",
+   "width": 733,
+   "height": 490,
+   "caption": "The completed graph with the trend line included.",
+   "altText": "A graph titled Train Motion with a trend line is shown. The x-axis is labeled Time in minutes and has a scale from zero to seventy in increments of ten. The y-axis is labeled Distance from station in kilometers and has a scale from zero to one hundred sixty in increments of twenty. The following points are plotted along the trend line: zero, zero; ten, twenty-two; twenty, thirty-eight; thirty, sixty; forty, eighty-two; fifty, ninety-eight; sixty, one-hundred eighteen; seventy, one-hundred forty.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
    }
   },
   {

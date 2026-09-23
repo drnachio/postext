@@ -54,13 +54,13 @@ $$
 {\vec{D}}_{AC}=0{,}75{\vec{D}}_{AB}.
 $$
 
-En una ecuación vectorial, ambos lados de la ecuación son vectores. La ecuación anterior es un ejemplo de vector multiplicado por un escalar positivo (número) $\alpha=0{,}75$. El resultado, ${\vec{D}}_{AC}$, de tal multiplicación es un nuevo vector con una dirección paralela a la dirección del vector original ${\vec{D}}_{AB}$.
+En una ecuación vectorial, ambos lados de la ecuación son vectores. La ecuación anterior es un ejemplo de vector multiplicado por un escalar positivo (número) $\alpha =0{,}75$. El resultado, ${\vec{D}}_{AC}$, de tal multiplicación es un nuevo vector con una dirección paralela a la dirección del vector original ${\vec{D}}_{AB}$.
 
 En general, cuando un vector $\vec{A}$ se multiplica por un escalar *positivo* $\alpha$, el resultado es un nuevo vector $\vec{B}$ que es *paralelo* a $\vec{A}$:
 
 :::callout{type="nota" title="Nota"}
 $$
-\vec{B}=\alpha\vec{A}.
+\vec{B}=\alpha \vec{A}.
 $$
 :::
 
@@ -68,11 +68,11 @@ La magnitud $|\vec{B}|$ de este nuevo vector se obtiene al multiplicar la magnit
 
 :::callout{type="nota" title="Nota"}
 $$
-B=|\alpha|A.
+B=|\alpha |A.
 $$
 :::
 
-En una ecuación escalar, ambos lados de la ecuación son números. La aquí es una ecuación escalar porque las magnitudes de los vectores son cantidades escalares (y números positivos). Si el escalar $\alpha$ es *negativo* en la ecuación vectorial de la aquí, entonces la magnitud $|\vec{B}|$ del nuevo vector sigue siendo dada por la aquí, pero la dirección del nuevo vector $\vec{B}$ es *antiparalela* a la dirección de $\vec{A}$. Estos principios se ilustran en la :ref{id="es-2-cnx-uphysics-02-01-vector03"}(a) con dos ejemplos en los que la longitud del vector $\vec{A}$ es de 1,5 unidades. Cuando $\alpha=2$, el nuevo vector $\vec{B}=2\vec{A}$ tiene longitud $B=2A=3{,}0\,\text{unidades}$ (el doble de largo que el vector original) y es paralelo al vector original. Cuando $\alpha=−2$, el nuevo vector $\vec{C}=−2\vec{A}$ tiene longitud $C=|-2|A=3{,}0\,\text{unidades}$ (dos veces más largo que el vector original) y es antiparalelo al vector original.
+En una ecuación escalar, ambos lados de la ecuación son números. La aquí es una ecuación escalar porque las magnitudes de los vectores son cantidades escalares (y números positivos). Si el escalar $\alpha$ es *negativo* en la ecuación vectorial de la aquí, entonces la magnitud $|\vec{B}|$ del nuevo vector sigue siendo dada por la aquí, pero la dirección del nuevo vector $\vec{B}$ es *antiparalela* a la dirección de $\vec{A}$. Estos principios se ilustran en la :ref{id="es-2-cnx-uphysics-02-01-vector03"}(a) con dos ejemplos en los que la longitud del vector $\vec{A}$ es de 1,5 unidades. Cuando $\alpha =2$, el nuevo vector $\vec{B}=2\vec{A}$ tiene longitud $B=2A=3{,}0\,\text{unidades}$ (el doble de largo que el vector original) y es paralelo al vector original. Cuando $\alpha =−2$, el nuevo vector $\vec{C}=−2\vec{A}$ tiene longitud $C=|-2|A=3{,}0\,\text{unidades}$ (dos veces más largo que el vector original) y es antiparalelo al vector original.
 
 Supongamos ahora que su compañero de pesca parte del punto *A* (el campamento), y camina en dirección al punto *B* (el agujero de pesca), pero se da cuenta de que ha perdido su caja de anzuelos cuando se ha parado a descansar en el punto *C* (situado a tres cuartas partes de la distancia entre *A* y *B*, al partir del punto *A*). Entonces, da la vuelta y vuelve sobre sus pasos en dirección al campamento y encuentra la caja tirada en el camino en un punto *D* a solo 1,2 km del punto *C* (vea la :ref{id="es-2-cnx-uphysics-02-01-fishtrip"}(b)). ¿Cuál es su vector de desplazamiento ${\vec{D}}_{AD}$ cuando encuentra la caja en el punto *D*? ¿Cuál es su vector de desplazamiento ${\vec{D}}_{DB}$ desde el punto *D* hasta el agujero? Ya hemos establecido que en el punto de reposo *C* su vector de desplazamiento es ${\vec{D}}_{AC}=0{,}75{\vec{D}}_{AB}$. Partiendo del punto *C*, camina hacia el suroeste (hacia el campamento), lo que significa que su nuevo vector de desplazamiento ${\vec{D}}_{CD}$ del punto *C* al punto *D* es antiparalelo a ${\vec{D}}_{AB}$. Su magnitud $|{\vec{D}}_{CD}|$ es ${D}_{CD}=1{,}2\,\text{km}=0{,}2{D}_{AB}$, por lo que su segundo vector de desplazamiento es ${\vec{D}}_{CD}=−0{,}2{\vec{D}}_{AB}$. Su desplazamiento total ${\vec{D}}_{AD}$ con respecto al campamento es la **suma vectorial** de los dos vectores de desplazamiento: vector ${\vec{D}}_{AC}$ (desde el campamento hasta el punto de descanso) y el vector ${\vec{D}}_{CD}$ (desde el punto de descanso hasta el punto donde encuentra su caja):
 
@@ -126,7 +126,7 @@ Además, la multiplicación por un escalar es **distributiva**:
 
 :::callout{type="nota" title="Nota"}
 $$
-{\alpha}_{1}\vec{A}+{\alpha}_{2}\vec{A}=({\alpha}_{1}+{\alpha}_{2})\vec{A}.
+{\alpha }_{1}\vec{A}+{\alpha }_{2}\vec{A}=({\alpha }_{1}+{\alpha }_{2})\vec{A}.
 $$
 :::
 
@@ -179,20 +179,20 @@ Suponga que planea un viaje de vacaciones en Florida. Saliendo de Tallahassee, l
 El dibujo del vector resultante de muchos vectores puede generalizarse con la siguiente **construcción geométrica de cola a cabeza**. Supongamos que queremos dibujar el vector resultante $\vec{R}$ de cuatro vectores $\vec{A}$, $\vec{B}$, $\vec{C}$ y $\vec{D}$ (:ref{id="es-2-cnx-uphysics-02-01-vector06"}(a)). Seleccionamos cualquiera de los vectores como primer vector y hacemos una traslación paralela de un segundo vector a una posición en la que el origen ("cola") del segundo vector coincide con el final ("cabeza") del primer vector. Luego, seleccionamos un tercer vector y realizamos una traslación paralela del tercer vector a una posición en la que el origen del tercer vector coincida con el final del segundo vector. Repetimos este procedimiento hasta que todos los vectores estén en una disposición de cabeza a cola como la que se muestra en la :ref{id="es-2-cnx-uphysics-02-01-vector06"}. Dibujamos el vector resultante $\vec{R}$ conectando el origen ("cola") del primer vector con el final ("cabeza") del último vector. El final del vector resultante está en el final del último vector. Como la suma de vectores es asociativa y conmutativa, obtenemos el mismo vector resultante, independientemente del vector que elijamos como primero, segundo, tercero o cuarto en esta construcción.
 
 :::callout{type="ejemplo" title="Construcción geométrica de la resultante"}
-Los tres vectores de desplazamiento $\vec{A}$, $\vec{B}$ y $\vec{C}$ en la :ref{id="es-2-cnx-uphysics-02-01-vector07"} se especifican por sus magnitudes *A* = 10,0, *B* = 7,0 y *C* = 8,0, respectivamente, y por sus respectivos ángulos direccionales con la dirección horizontal $\alpha=35\text{°}$, $\beta=−110\text{°}$ y $\gamma=30\text{°}$. Las unidades físicas de las magnitudes son los centímetros. Elija una escala conveniente y utilice una regla y un transportador para encontrar las siguientes sumas vectoriales: (a) $\vec{R}=\vec{A}+\vec{B}$, (b) $\vec{D}=\vec{A}-\vec{B}\text{, y}$ (c) $\vec{S}=\vec{A}-3\vec{B}+\vec{C}$.
+Los tres vectores de desplazamiento $\vec{A}$, $\vec{B}$ y $\vec{C}$ en la :ref{id="es-2-cnx-uphysics-02-01-vector07"} se especifican por sus magnitudes *A* = 10,0, *B* = 7,0 y *C* = 8,0, respectivamente, y por sus respectivos ángulos direccionales con la dirección horizontal $\alpha =35\text{°}$, $\beta =−110\text{°}$ y $\gamma =30\text{°}$. Las unidades físicas de las magnitudes son los centímetros. Elija una escala conveniente y utilice una regla y un transportador para encontrar las siguientes sumas vectoriales: (a) $\vec{R}=\vec{A}+\vec{B}$, (b) $\vec{D}=\vec{A}-\vec{B}\text{, y}$ (c) $\vec{S}=\vec{A}-3\vec{B}+\vec{C}$.
 
 **Estrategia.** En la construcción geométrica, encontrar un vector significa encontrar su magnitud y su ángulo direccional con la dirección horizontal. La estrategia consiste en dibujar a escala los vectores que aparecen en el lado derecho de la ecuación y construir el vector resultante. Luego, utilice una regla y un transportador para leer la magnitud de la resultante y el ángulo direccional. Para las partes (a) y (b) utilizamos la regla del paralelogramo. Para (c) utilizamos el método de cola a cabeza.
 
-**Solución.** Para las partes (a) y (b), unimos el origen del vector $\vec{B}$ al origen del vector $\vec{A}$, como se muestra en la :ref{id="es-2-cnx-uphysics-02-01-vector08"}, y construimos un paralelogramo. La diagonal más corta de este paralelogramo es la suma $\vec{A}+\vec{B}$. La mayor de las diagonales es la diferencia $\vec{A}-\vec{B}$. Utilizamos una regla para medir las longitudes de las diagonales y un transportador para medir los ángulos con la horizontal. Para la resultante $\vec{R}$, obtenemos *R* = 5,8 cm y ${\theta}_{R}\approx 0\text{°}$. Para la diferencia $\vec{D}$, obtenemos *D* = 16,2 cm y ${\theta}_{D}=49{,}3\text{°}$, que se muestran en la :ref{id="es-2-cnx-uphysics-02-01-vector08"}.
+**Solución.** Para las partes (a) y (b), unimos el origen del vector $\vec{B}$ al origen del vector $\vec{A}$, como se muestra en la :ref{id="es-2-cnx-uphysics-02-01-vector08"}, y construimos un paralelogramo. La diagonal más corta de este paralelogramo es la suma $\vec{A}+\vec{B}$. La mayor de las diagonales es la diferencia $\vec{A}-\vec{B}$. Utilizamos una regla para medir las longitudes de las diagonales y un transportador para medir los ángulos con la horizontal. Para la resultante $\vec{R}$, obtenemos *R* = 5,8 cm y ${\theta }_{R}\approx 0\text{°}$. Para la diferencia $\vec{D}$, obtenemos *D* = 16,2 cm y ${\theta }_{D}=49{,}3\text{°}$, que se muestran en la :ref{id="es-2-cnx-uphysics-02-01-vector08"}.
 
 Para (c), podemos empezar con el vector $−3\vec{B}$ y dibujar los vectores restantes de cola a cabeza como se muestra en la :ref{id="es-2-cnx-uphysics-02-01-vector09"}. En la suma de vectores, el orden en el que dibujamos los vectores no es importante, pero dibujar los vectores a escala sí es muy importante. A continuación, dibujamos el vector $\vec{S}$ desde el origen del primer vector hasta el final del último vector y colocamos la punta de la flecha al final de $\vec{S}$. Utilizamos una regla para medir la longitud de $\vec{S}$, y encontramos que su magnitud es 
-*S* = 36,9 cm. Usamos un transportador y encontramos que su ángulo direccional es ${\theta}_{S}=52{,}9\text{°}$. Esta solución se muestra en la :ref{id="es-2-cnx-uphysics-02-01-vector09"}.
+*S* = 36,9 cm. Usamos un transportador y encontramos que su ángulo direccional es ${\theta }_{S}=52{,}9\text{°}$. Esta solución se muestra en la :ref{id="es-2-cnx-uphysics-02-01-vector09"}.
 :::
 
 :::callout{type="comprobacion" title="Compruebe lo aprendido"}
 Utilizando los tres vectores de desplazamiento $\vec{A}$, $\vec{B}$ y $\vec{F}$ en la :ref{id="es-2-cnx-uphysics-02-01-vector07"}, elija una escala conveniente y utilice una regla y un transportador para encontrar el vector $\vec{G}$ dado por la ecuación vectorial $\vec{G}=\vec{A}+2\vec{B}-\vec{F}$.
 
-**Respuesta.** *G* = 28,2 cm, ${\theta}_{G}=291\text{°}$
+**Respuesta.** *G* = 28,2 cm, ${\theta }_{G}=291\text{°}$
 :::
 
 :::callout{type="nota" title="Enlace"}
@@ -358,7 +358,7 @@ Una mosca azul se posa en una hoja de papel cuadriculado en un punto situado a 1
 **Respuesta.** $\vec{D}=(−5{,}0\hat{i}-3{,}0\hat{j})\text{cm}$; la mosca se desplazó 5,0 cm hacia la izquierda y 3,0 cm hacia abajo desde su lugar de aterrizaje.
 :::
 
-Cuando conocemos las componentes escalares ${A}_{x}$ y ${A}_{y}$ de un vector $\vec{A}$, podemos encontrar su magnitud *A* y su ángulo direccional ${\theta}_{A}$. El **ángulo direccional**, o dirección para abreviar, es el ángulo que forma el vector con la dirección positiva en el eje de la *x*. El ángulo ${\theta}_{A}$ se mide en la *dirección contraria a las agujas del reloj* desde el eje de la *x* + hasta el vector (:ref{id="es-2-cnx-uphysics-02-02-comp03"}). Como las longitudes *A*, ${A}_{x}$ y ${A}_{y}$ forman un triángulo rectángulo, están relacionadas por el teorema de Pitágoras:
+Cuando conocemos las componentes escalares ${A}_{x}$ y ${A}_{y}$ de un vector $\vec{A}$, podemos encontrar su magnitud *A* y su ángulo direccional ${\theta }_{A}$. El **ángulo direccional**, o dirección para abreviar, es el ángulo que forma el vector con la dirección positiva en el eje de la *x*. El ángulo ${\theta }_{A}$ se mide en la *dirección contraria a las agujas del reloj* desde el eje de la *x* + hasta el vector (:ref{id="es-2-cnx-uphysics-02-02-comp03"}). Como las longitudes *A*, ${A}_{x}$ y ${A}_{y}$ forman un triángulo rectángulo, están relacionadas por el teorema de Pitágoras:
 
 :::callout{type="nota" title="Nota"}
 $$
@@ -366,20 +366,20 @@ $$
 $$
 :::
 
-Esta ecuación funciona incluso si los componentes escalares de un vector son negativos. El ángulo direccional ${\theta}_{A}$ de un vector se define a través de la función tangente del ángulo ${\theta}_{A}$ en el triángulo mostrado en la :ref{id="es-2-cnx-uphysics-02-02-comp03"}:
+Esta ecuación funciona incluso si los componentes escalares de un vector son negativos. El ángulo direccional ${\theta }_{A}$ de un vector se define a través de la función tangente del ángulo ${\theta }_{A}$ en el triángulo mostrado en la :ref{id="es-2-cnx-uphysics-02-02-comp03"}:
 
 :::callout{type="nota" title="Nota"}
 $$
-\text{tan}\,\theta=\frac{{A}_{y}}{{A}_{x}}
+\text{tan}\,\theta =\frac{{A}_{y}}{{A}_{x}}
 $$
 :::
 
-Cuando el vector se encuentra en el primer cuadrante o en el cuarto cuadrante, donde el componente ${A}_{x}$ es positivo (:ref{id="es-2-cnx-uphysics-02-02-comp04"}), el ángulo $\theta$ en la aquí es idéntico al ángulo direccional ${\theta}_{A}$. Para los vectores del cuarto cuadrante, el ángulo $\theta$ es negativo, lo que significa que para estos vectores, el ángulo direccional ${\theta}_{A}$ se mide en el *sentido de las agujas del reloj* desde el eje de la *x* positiva. Del mismo modo, para los vectores del segundo cuadrante, el ángulo $\theta$ es negativo. Cuando el vector se encuentra en el segundo o tercer cuadrante, donde el componente ${A}_{x}$ es negativo, el ángulo direccional es ${\theta}_{A}=\theta+180\text{°}$ (:ref{id="es-2-cnx-uphysics-02-02-comp04"}).
+Cuando el vector se encuentra en el primer cuadrante o en el cuarto cuadrante, donde el componente ${A}_{x}$ es positivo (:ref{id="es-2-cnx-uphysics-02-02-comp04"}), el ángulo $\theta$ en la aquí es idéntico al ángulo direccional ${\theta }_{A}$. Para los vectores del cuarto cuadrante, el ángulo $\theta$ es negativo, lo que significa que para estos vectores, el ángulo direccional ${\theta }_{A}$ se mide en el *sentido de las agujas del reloj* desde el eje de la *x* positiva. Del mismo modo, para los vectores del segundo cuadrante, el ángulo $\theta$ es negativo. Cuando el vector se encuentra en el segundo o tercer cuadrante, donde el componente ${A}_{x}$ es negativo, el ángulo direccional es ${\theta }_{A}=\theta +180\text{°}$ (:ref{id="es-2-cnx-uphysics-02-02-comp04"}).
 
 :::callout{type="ejemplo" title="Magnitud y dirección del vector de desplazamiento"}
 Usted mueve el puntero del ratón en la pantalla del monitor desde su posición inicial en el punto (6,0 cm, 1,6 cm) a un icono situado en el punto (2,0 cm, 4,5 cm). ¿Cuáles son la magnitud y la dirección del vector de desplazamiento del puntero?
 
-**Estrategia.** En el aquí, encontramos el vector de desplazamiento $\vec{D}$ del puntero del ratón (vea la aquí). Identificamos sus componentes escalares ${D}_{x}=−4{,}0\,\text{cm}$ y ${D}_{y}=+2{,}9\,\text{cm}$ y sustituimos en la aquí y la aquí para encontrar la magnitud *D* y la dirección ${\theta}_{D}$, respectivamente.
+**Estrategia.** En el aquí, encontramos el vector de desplazamiento $\vec{D}$ del puntero del ratón (vea la aquí). Identificamos sus componentes escalares ${D}_{x}=−4{,}0\,\text{cm}$ y ${D}_{y}=+2{,}9\,\text{cm}$ y sustituimos en la aquí y la aquí para encontrar la magnitud *D* y la dirección ${\theta }_{D}$, respectivamente.
 
 **Solución.** La magnitud del vector $\vec{D}$ es
 
@@ -390,13 +390,13 @@ $$
 El ángulo direccional es
 
 $$
-\text{tan}\,\theta=\frac{{D}_{y}}{{D}_{x}}=\frac{+2{,}9\,\text{cm}}{−4{,}0\,\text{cm}}=−0{,}725\,\Rightarrow \,\theta={\text{tan}}^{−1}(−0{,}725)=−35{,}9\text{°}.
+\text{tan}\,\theta =\frac{{D}_{y}}{{D}_{x}}=\frac{+2{,}9\,\text{cm}}{−4{,}0\,\text{cm}}=−0{,}725\,\Rightarrow \,\theta ={\text{tan}}^{−1}(−0{,}725)=−35{,}9\text{°}.
 $$
 
 Vector $\vec{D}$ se encuentra en el segundo cuadrante, por lo que su ángulo direccional es
 
 $$
-{\theta}_{D}=\theta+180\text{°}=−35{,}9\text{°}+180\text{°}=144{,}1\text{°}.
+{\theta }_{D}=\theta +180\text{°}=−35{,}9\text{°}+180\text{°}=144{,}1\text{°}.
 $$
 :::
 
@@ -408,25 +408,25 @@ Si el vector de desplazamiento de una mosca azul que camina sobre una hoja de pa
 
 En muchas aplicaciones, se conocen las magnitudes y direcciones de las cantidades vectoriales y necesitamos encontrar la resultante de muchos vectores. Por ejemplo, imagine que 400 autos circulan por el puente Golden Gate de San Francisco con un fuerte viento. Cada auto da al puente un empuje diferente en varias direcciones y nos gustaría saber cuán grande puede ser el empuje resultante. Ya hemos adquirido cierta experiencia con la construcción geométrica de sumas vectoriales. En tal sentido, sabemos que la tarea de hallar la resultante al dibujar los vectores y medir sus longitudes y ángulos puede ser intratable con bastante rapidez, lo que ocasiona grandes errores. Preocupaciones como estas no surgen cuando utilizamos métodos analíticos. El primer paso en un enfoque analítico es encontrar los componentes vectoriales cuando se conocen su dirección y la magnitud.
 
-Volvamos al triángulo rectángulo en la :ref{id="es-2-cnx-uphysics-02-02-comp03"}. El cociente del lado adyacente ${A}_{x}$ a la hipotenusa *A* es la función coseno (cos) del ángulo direccional ${\theta}_{A}$, ${A}_{x}\text{/}A=\text{cos}\,{\theta}_{A}$, y el cociente del lado opuesto ${A}_{y}$ a la hipotenusa *A* es la función seno (sen) de ${\theta}_{A}$, ${A}_{y}\text{/}A=\text{sen}\,{\theta}_{A}$. Cuando la magnitud *A* y la dirección ${\theta}_{A}$ son conocidas, podemos resolver estas relaciones para los componentes escalares:
+Volvamos al triángulo rectángulo en la :ref{id="es-2-cnx-uphysics-02-02-comp03"}. El cociente del lado adyacente ${A}_{x}$ a la hipotenusa *A* es la función coseno (cos) del ángulo direccional ${\theta }_{A}$, ${A}_{x}\text{/}A=\text{cos}\,{\theta }_{A}$, y el cociente del lado opuesto ${A}_{y}$ a la hipotenusa *A* es la función seno (sen) de ${\theta }_{A}$, ${A}_{y}\text{/}A=\text{sen}\,{\theta }_{A}$. Cuando la magnitud *A* y la dirección ${\theta }_{A}$ son conocidas, podemos resolver estas relaciones para los componentes escalares:
 
 :::callout{type="nota" title="Nota"}
 $$
-\{\begin{array}{l} {A}_{x}=A\,\text{cos}\,{\theta}_{A} \\ {A}_{y}=A\,\text{sen}\,{\theta}_{A} \end{array}.
+\{\begin{array}{l} {A}_{x}=A\,\text{cos}\,{\theta }_{A} \\ {A}_{y}=A\,\text{sen}\,{\theta }_{A} \end{array}.
 $$
 :::
 
-Al calcular los componentes del vector con la aquí, hay que tener cuidado con el ángulo. El ángulo direccional ${\theta}_{A}$ de un vector es el ángulo medido *en sentido contrario a las agujas del reloj* desde la dirección positiva del eje de la *x* hasta el vector. La medición en el sentido de las agujas del reloj da un ángulo negativo.
+Al calcular los componentes del vector con la aquí, hay que tener cuidado con el ángulo. El ángulo direccional ${\theta }_{A}$ de un vector es el ángulo medido *en sentido contrario a las agujas del reloj* desde la dirección positiva del eje de la *x* hasta el vector. La medición en el sentido de las agujas del reloj da un ángulo negativo.
 
 :::callout{type="ejemplo" title="Componentes de los vectores de desplazamiento"}
 Un grupo de rescate de un niño desaparecido sigue a un perro de búsqueda llamado Trooper. Trooper deambula y olfatea bastante por muchos senderos diferentes. Finalmente, Trooper encuentra al niño y la historia tiene un final feliz, pero su desplazamiento en diversos tramos luce realmente complejo. En uno de los tramos camina 200,0 m hacia el sureste y luego corre hacia el norte unos 300,0 m. En el tercer tramo, examina cuidadosamente los olores durante 50,0 m en la dirección $30\text{°}$ al oeste del norte. En el cuarto tramo, Trooper va directamente al sur durante 80,0 m, capta un nuevo olor y gira $23\text{°}$ al oeste del sur durante 150,0 m. Halle los componentes escalares de los vectores de desplazamiento de Trooper y sus vectores de desplazamiento en forma de componente vectorial para cada tramo.
 
 **Estrategia.** Adoptemos un sistema de coordenadas rectangular con el eje de la *x* positiva en la dirección del este geográfico, con la dirección de la *y* positiva apuntando al norte geográfico. Explícitamente, el vector unitario $\hat{i}$ del eje de la *x* apunta al este y el vector unitario $\hat{j}$ del eje de la *y* apunta al norte. Trooper recorre cinco tramos, por lo que hay cinco vectores de desplazamiento. Comenzamos por identificar sus magnitudes y ángulos direccionales, luego utilizamos la aquí para encontrar los componentes escalares de cada desplazamiento y la aquí para los vectores de desplazamiento.
 
-**Solución.** En el primer tramo, la magnitud del desplazamiento es ${L}_{1}=200{,}0\,\text{m}$ y la dirección es sureste. Para el ángulo direccional ${\theta}_{1}$ podemos tomar cualquiera de los dos $45\text{°}$ medido en el sentido de las agujas del reloj desde la dirección este o $45\text{°}+270\text{°}$ medido en sentido contrario a las agujas del reloj desde la dirección este. Con la primera opción, ${\theta}_{1}=−45\text{°}$. Con la segunda opción, ${\theta}_{1}=+315\text{°}$. Podemos utilizar cualquiera de estos dos ángulos. Los componentes son
+**Solución.** En el primer tramo, la magnitud del desplazamiento es ${L}_{1}=200{,}0\,\text{m}$ y la dirección es sureste. Para el ángulo direccional ${\theta }_{1}$ podemos tomar cualquiera de los dos $45\text{°}$ medido en el sentido de las agujas del reloj desde la dirección este o $45\text{°}+270\text{°}$ medido en sentido contrario a las agujas del reloj desde la dirección este. Con la primera opción, ${\theta }_{1}=−45\text{°}$. Con la segunda opción, ${\theta }_{1}=+315\text{°}$. Podemos utilizar cualquiera de estos dos ángulos. Los componentes son
 
 $$
-\begin{array}{l} {L}_{1x}={L}_{1}\,\text{cos}\,{\theta}_{1}=(200{,}0\,\text{m})\,\text{cos}\,315\text{°}=141{,}4\,\text{m,} \\ {L}_{1y}={L}_{1}\,\text{sen}\,{\theta}_{1}=(200{,}0\,\text{m})\,\text{sen}\,315\text{°}=-141{,}4\,\text{m}. \end{array}
+\begin{array}{l} {L}_{1x}={L}_{1}\,\text{cos}\,{\theta }_{1}=(200{,}0\,\text{m})\,\text{cos}\,315\text{°}=141{,}4\,\text{m,} \\ {L}_{1y}={L}_{1}\,\text{sen}\,{\theta }_{1}=(200{,}0\,\text{m})\,\text{sen}\,315\text{°}=-141{,}4\,\text{m}. \end{array}
 $$
 
 El vector de desplazamiento del primer tramo es
@@ -435,28 +435,28 @@ $$
 {\vec{L}}_{1}={L}_{1x}\hat{i}+{L}_{1y}\hat{j}=(141{,}4\hat{i}-141{,}4\hat{j})\,\text{m}.
 $$
 
-En el segundo tramo de las andanzas de Trooper, la magnitud del desplazamiento es ${L}_{2}=300{,}0\,\text{m}$ y la dirección es norte. El ángulo direccional es ${\theta}_{2}=+90\text{°}$. Obtenemos los siguientes resultados:
+En el segundo tramo de las andanzas de Trooper, la magnitud del desplazamiento es ${L}_{2}=300{,}0\,\text{m}$ y la dirección es norte. El ángulo direccional es ${\theta }_{2}=+90\text{°}$. Obtenemos los siguientes resultados:
 
 $$
-\begin{array}{lll} {L}_{2x} & = & {L}_{2}\,\text{cos}\,{\theta}_{2}=(300{,}0\,\text{m})\,\text{cos}\,90\text{°}=0{,}0\,, \\ {L}_{2y} & = & {L}_{2}\,\text{sen}\,{\theta}_{2}=(300{,}0\,\text{m})\,\text{sen}\,90\text{°}=300{,}0\,\text{m,} \\ {\vec{L}}_{2} & = & {L}_{2x}\hat{i}+{L}_{2y}\hat{j}=(300{,}0\,\text{m})\hat{j}. \end{array}
+\begin{array}{lll} {L}_{2x} & = & {L}_{2}\,\text{cos}\,{\theta }_{2}=(300{,}0\,\text{m})\,\text{cos}\,90\text{°}=0{,}0\,, \\ {L}_{2y} & = & {L}_{2}\,\text{sen}\,{\theta }_{2}=(300{,}0\,\text{m})\,\text{sen}\,90\text{°}=300{,}0\,\text{m,} \\ {\vec{L}}_{2} & = & {L}_{2x}\hat{i}+{L}_{2y}\hat{j}=(300{,}0\,\text{m})\hat{j}. \end{array}
 $$
 
-En el tercer tramo, la magnitud del desplazamiento es ${L}_{3}=50{,}0\,\text{m}$ y la dirección es $30\text{°}$ al oeste del norte. El ángulo direccional medido en sentido contrario a las agujas del reloj desde la dirección este es ${\theta}_{3}=30\text{°}+90\text{°}=+120\text{°}$. Esto da las siguientes respuestas:
+En el tercer tramo, la magnitud del desplazamiento es ${L}_{3}=50{,}0\,\text{m}$ y la dirección es $30\text{°}$ al oeste del norte. El ángulo direccional medido en sentido contrario a las agujas del reloj desde la dirección este es ${\theta }_{3}=30\text{°}+90\text{°}=+120\text{°}$. Esto da las siguientes respuestas:
 
 $$
-\begin{array}{lll} {L}_{3x} & = & {L}_{3}\,\text{cos}\,{\theta}_{3}=(50{,}0\,\text{m})\,\text{cos}\,120\text{°}=−25{,}0\,\text{m,} \\ {L}_{3y} & = & {L}_{3}\,\text{sen}\,{\theta}_{3}=(50{,}0\,\text{m})\,\text{sen}\,120\text{°}=+43{,}3\,\text{m,} \\ {\vec{L}}_{3} & = & {L}_{3x}\hat{i}+{L}_{3y}\hat{j}=(−25{,}0\hat{i}+43{,}3\hat{j})\text{m}. \end{array}
+\begin{array}{lll} {L}_{3x} & = & {L}_{3}\,\text{cos}\,{\theta }_{3}=(50{,}0\,\text{m})\,\text{cos}\,120\text{°}=−25{,}0\,\text{m,} \\ {L}_{3y} & = & {L}_{3}\,\text{sen}\,{\theta }_{3}=(50{,}0\,\text{m})\,\text{sen}\,120\text{°}=+43{,}3\,\text{m,} \\ {\vec{L}}_{3} & = & {L}_{3x}\hat{i}+{L}_{3y}\hat{j}=(−25{,}0\hat{i}+43{,}3\hat{j})\text{m}. \end{array}
 $$
 
-En el cuarto tramo de la excursión, la magnitud del desplazamiento es ${L}_{4}=80{,}0\,\text{m}$ y la dirección es sur. El ángulo de dirección puede tomarse como ${\theta}_{4}=−90\text{°}$ o ${\theta}_{4}=+270\text{°}$. Obtenemos
+En el cuarto tramo de la excursión, la magnitud del desplazamiento es ${L}_{4}=80{,}0\,\text{m}$ y la dirección es sur. El ángulo de dirección puede tomarse como ${\theta }_{4}=−90\text{°}$ o ${\theta }_{4}=+270\text{°}$. Obtenemos
 
 $$
-\begin{array}{lll} {L}_{4x} & = & {L}_{4}\,\text{cos}\,{\theta}_{4}=(80{,}0\,\text{m})\,\text{cos}\,(−90\text{°})=0\,, \\ {L}_{4y} & = & {L}_{4}\,\text{sen}\,{\theta}_{4}=(80{,}0\,\text{m})\,\text{sen}\,(−90\text{°})=−80{,}0\,\text{m,} \\ {\vec{L}}_{4} & = & {L}_{4x}\hat{i}+{L}_{4y}\hat{j}=(−80{,}0\,\text{m})\hat{j}. \end{array}
+\begin{array}{lll} {L}_{4x} & = & {L}_{4}\,\text{cos}\,{\theta }_{4}=(80{,}0\,\text{m})\,\text{cos}\,(−90\text{°})=0\,, \\ {L}_{4y} & = & {L}_{4}\,\text{sen}\,{\theta }_{4}=(80{,}0\,\text{m})\,\text{sen}\,(−90\text{°})=−80{,}0\,\text{m,} \\ {\vec{L}}_{4} & = & {L}_{4x}\hat{i}+{L}_{4y}\hat{j}=(−80{,}0\,\text{m})\hat{j}. \end{array}
 $$
 
-En el último tramo, la magnitud es ${L}_{5}=150{,}0\,\text{m}$ y el ángulo es ${\theta}_{5}=−23\text{°}+270\text{°}=+247\text{°}$ $(23\text{°}$ al oeste del sur), lo que da
+En el último tramo, la magnitud es ${L}_{5}=150{,}0\,\text{m}$ y el ángulo es ${\theta }_{5}=−23\text{°}+270\text{°}=+247\text{°}$ $(23\text{°}$ al oeste del sur), lo que da
 
 $$
-\begin{array}{lll} {L}_{5x} & = & {L}_{5}\,\text{cos}\,{\theta}_{5}=(150{,}0\,\text{m})\,\text{cos}\,247\text{°}=−58{,}6\,\text{m,} \\ {L}_{5y} & = & {L}_{5}\,\text{sen}\,{\theta}_{5}=(150{,}0\,\text{m})\,\text{sen}\,247\text{°}=-138{,}1\,\text{m,} \\ {\vec{L}}_{5} & = & {L}_{5x}\hat{i}+{L}_{5y}\hat{j}=(−58{,}6\hat{i}-138{,}1\hat{j})\text{m}. \end{array}
+\begin{array}{lll} {L}_{5x} & = & {L}_{5}\,\text{cos}\,{\theta }_{5}=(150{,}0\,\text{m})\,\text{cos}\,247\text{°}=−58{,}6\,\text{m,} \\ {L}_{5y} & = & {L}_{5}\,\text{sen}\,{\theta }_{5}=(150{,}0\,\text{m})\,\text{sen}\,247\text{°}=-138{,}1\,\text{m,} \\ {\vec{L}}_{5} & = & {L}_{5x}\hat{i}+{L}_{5y}\hat{j}=(−58{,}6\hat{i}-138{,}1\hat{j})\text{m}. \end{array}
 $$
 :::
 
@@ -470,7 +470,7 @@ Si Trooper corre 20 m hacia el oeste antes de descansar, ¿cuál es su vector de
 
 Para describir ubicaciones de puntos o vectores en un plano, necesitamos dos direcciones ortogonales. En el sistema de coordenadas cartesianas estas direcciones vienen dadas por vectores unitarios $\hat{i}$ y $\hat{j}$ a lo largo del eje de la *x* y del eje de la *y*, respectivamente. El sistema de coordenadas cartesianas es muy conveniente para describir los desplazamientos y las velocidades de los objetos y las fuerzas que actúan sobre ellos. Sin embargo, es engorroso cuando necesitamos describir la rotación de los objetos. Al describir la rotación, solemos trabajar en el **sistema de coordenadas polares**.
 
-En el sistema de coordenadas polares, la ubicación del punto *P* en un plano viene dada por dos **coordenadas polares** (:ref{id="es-2-cnx-uphysics-02-02-polar"}). La primera coordenada polar es la **coordenada radial** *r*, que es la distancia del punto *P* al origen. La segunda coordenada polar es un ángulo $\varphi$ que el vector radial hace con alguna dirección elegida, normalmente la dirección de la *x* positiva. En coordenadas polares, los ángulos se miden en radianes, o rads. El vector radial se fija en el origen y apunta lejos del origen hacia el punto *P.* Esta dirección radial se describe por un vector radial unitario $\hat{r}$. El segundo vector unitario $\hat{t}$ es un vector ortogonal a la dirección radial $\hat{r}$. La dirección positiva $+\hat{t}$ indica cómo el ángulo $\varphi$ cambia en dirección contraria a las agujas del reloj. De este modo, un punto *P* que tiene coordenadas (*x*, *y*) en el sistema rectangular puede describirse por equivalencia en el sistema de coordenadas polares mediante las dos coordenadas polares $(r,\varphi)$. La aquí es válida para cualquier vector, por lo que podemos utilizarla para expresar las coordenadas de la *x* y la *y* del vector $\vec{r}$. De este modo, obtenemos la conexión entre las coordenadas polares y las coordenadas rectangulares del punto *P*:
+En el sistema de coordenadas polares, la ubicación del punto *P* en un plano viene dada por dos **coordenadas polares** (:ref{id="es-2-cnx-uphysics-02-02-polar"}). La primera coordenada polar es la **coordenada radial** *r*, que es la distancia del punto *P* al origen. La segunda coordenada polar es un ángulo $\varphi$ que el vector radial hace con alguna dirección elegida, normalmente la dirección de la *x* positiva. En coordenadas polares, los ángulos se miden en radianes, o rads. El vector radial se fija en el origen y apunta lejos del origen hacia el punto *P.* Esta dirección radial se describe por un vector radial unitario $\hat{r}$. El segundo vector unitario $\hat{t}$ es un vector ortogonal a la dirección radial $\hat{r}$. La dirección positiva $+\hat{t}$ indica cómo el ángulo $\varphi$ cambia en dirección contraria a las agujas del reloj. De este modo, un punto *P* que tiene coordenadas (*x*, *y*) en el sistema rectangular puede describirse por equivalencia en el sistema de coordenadas polares mediante las dos coordenadas polares $(r,\varphi )$. La aquí es válida para cualquier vector, por lo que podemos utilizarla para expresar las coordenadas de la *x* y la *y* del vector $\vec{r}$. De este modo, obtenemos la conexión entre las coordenadas polares y las coordenadas rectangulares del punto *P*:
 
 :::callout{type="nota" title="Nota"}
 $$
@@ -481,18 +481,18 @@ $$
 :::callout{type="ejemplo" title="Coordenadas polares"}
 Un buscador de tesoros encuentra una moneda de plata en un lugar situado a 20,0 m de un pozo seco en la dirección $20\text{°}$ al norte del este y encuentra una moneda de oro en un lugar a 10,0 m del pozo en la dirección $20\text{°}$ al norte del oeste. ¿Cuáles son las coordenadas polares y rectangulares de estos hallazgos con respecto al pozo?
 
-**Estrategia.** El pozo marca el origen del sistema de coordenadas y el este es la dirección de la *x* +. Identificamos las distancias radiales de los lugares al origen, que son ${r}_{S}=20{,}0\,\text{m}$ (para la moneda de plata) y ${r}_{G}=10{,}0\,\text{m}$ (para la moneda de oro). Para encontrar las coordenadas angulares, convertimos $20\text{°}$ a radianes: $20\text{°}=\pi20\text{/}180=\pi\text{/}9$. Utilizamos la aquí para encontrar las coordenadas de la *x* y la *y* de las monedas.
+**Estrategia.** El pozo marca el origen del sistema de coordenadas y el este es la dirección de la *x* +. Identificamos las distancias radiales de los lugares al origen, que son ${r}_{S}=20{,}0\,\text{m}$ (para la moneda de plata) y ${r}_{G}=10{,}0\,\text{m}$ (para la moneda de oro). Para encontrar las coordenadas angulares, convertimos $20\text{°}$ a radianes: $20\text{°}=\pi 20\text{/}180=\pi \text{/}9$. Utilizamos la aquí para encontrar las coordenadas de la *x* y la *y* de las monedas.
 
-**Solución.** La coordenada angular de la moneda de plata es ${\varphi}_{S}=\pi\text{/}9$, mientras que la coordenada angular de la moneda de oro es ${\varphi}_{G}=\pi-\pi\text{/}9=8\pi\text{/}9$. Por lo tanto, las coordenadas polares de la moneda de plata son $({r}_{S},{\varphi}_{S})=(20{,}0\,\text{m},\pi\text{/}9)$ y las de la moneda de oro son $({r}_{G},{\varphi}_{G})=(10{,}0\,\text{m},8\pi\text{/}9)$. Sustituimos estas coordenadas en la aquí para obtener coordenadas rectangulares. Para la moneda de oro, las coordenadas son
+**Solución.** La coordenada angular de la moneda de plata es ${\varphi }_{S}=\pi \text{/}9$, mientras que la coordenada angular de la moneda de oro es ${\varphi }_{G}=\pi -\pi \text{/}9=8\pi \text{/}9$. Por lo tanto, las coordenadas polares de la moneda de plata son $({r}_{S},{\varphi }_{S})=(20{,}0\,\text{m},\pi \text{/}9)$ y las de la moneda de oro son $({r}_{G},{\varphi }_{G})=(10{,}0\,\text{m},8\pi \text{/}9)$. Sustituimos estas coordenadas en la aquí para obtener coordenadas rectangulares. Para la moneda de oro, las coordenadas son
 
 $$
-\{\begin{array}{l} {x}_{G}={r}_{G}\,\text{cos}\,{\varphi}_{G}=(10{,}0\,\text{m})\,\text{cos}\,8\pi\text{/}9=−9{,}4\,\text{m} \\ {y}_{G}={r}_{G}\,\text{sen}\,{\varphi}_{G}=(10{,}0\,\text{m})\,\text{sen}\,8\pi\text{/}9=3{,}4\,\text{m} \end{array}\,\Rightarrow \,({x}_{G},{y}_{G})=(−9{,}4\,\text{m},3{,}4\,\text{m}).
+\{\begin{array}{l} {x}_{G}={r}_{G}\,\text{cos}\,{\varphi }_{G}=(10{,}0\,\text{m})\,\text{cos}\,8\pi \text{/}9=−9{,}4\,\text{m} \\ {y}_{G}={r}_{G}\,\text{sen}\,{\varphi }_{G}=(10{,}0\,\text{m})\,\text{sen}\,8\pi \text{/}9=3{,}4\,\text{m} \end{array}\,\Rightarrow \,({x}_{G},{y}_{G})=(−9{,}4\,\text{m},3{,}4\,\text{m}).
 $$
 
 Para la moneda de plata, las coordenadas son
 
 $$
-\{\begin{array}{l} {x}_{S}={r}_{S}\,\text{cos}\,{\varphi}_{S}=(20{,}0\,\text{m})\,\text{cos}\,\pi\text{/}9=18{,}9\,\text{m} \\ {y}_{S}={r}_{S}\,\text{sen}\,{\varphi}_{S}=(20{,}0\,\text{m})\,\text{sen}\,\pi\text{/}9=6{,}8\,\text{m} \end{array}\,\Rightarrow \,({x}_{S},{y}_{S})=(18{,}9\,\text{m},6{,}8\,\text{m}).
+\{\begin{array}{l} {x}_{S}={r}_{S}\,\text{cos}\,{\varphi }_{S}=(20{,}0\,\text{m})\,\text{cos}\,\pi \text{/}9=18{,}9\,\text{m} \\ {y}_{S}={r}_{S}\,\text{sen}\,{\varphi }_{S}=(20{,}0\,\text{m})\,\text{sen}\,\pi \text{/}9=6{,}8\,\text{m} \end{array}\,\Rightarrow \,({x}_{S},{y}_{S})=(18{,}9\,\text{m},6{,}8\,\text{m}).
 $$
 :::
 
@@ -609,11 +609,11 @@ Los vectores pueden sumarse y multiplicarse por escalares. La suma de vectores e
 
 :::callout{type="nota" title="Nota"}
 $$
-\alpha(\vec{A}+\vec{B})=\alpha\vec{A}+\alpha\vec{B}.
+\alpha (\vec{A}+\vec{B})=\alpha \vec{A}+\alpha \vec{B}.
 $$
 :::
 
-En esta ecuación, $\alpha$ es un número cualquiera (un escalar). Por ejemplo, un vector antiparalelo al vector $\vec{A}={A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k}$ se puede expresar simplemente multiplicando $\vec{A}$ por el escalar $\alpha=−1$:
+En esta ecuación, $\alpha$ es un número cualquiera (un escalar). Por ejemplo, un vector antiparalelo al vector $\vec{A}={A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k}$ se puede expresar simplemente multiplicando $\vec{A}$ por el escalar $\alpha =−1$:
 
 :::callout{type="nota" title="Nota"}
 $$
@@ -624,7 +624,7 @@ $$
 :::callout{type="ejemplo" title="Dirección del movimiento"}
 En un sistema de coordenadas cartesianas donde $\hat{i}$ indica el este geográfico, $\hat{j}$ indica el norte geográfico, y $\hat{k}$ indica la altitud sobre el nivel del mar, un convoy militar avanza su posición a través de un territorio desconocido con velocidad $\vec{v}=(4{,}0\hat{i}+3{,}0\hat{j}+0{,}1\hat{k})\text{km}\text{/}\text{h}$. Si el convoy tuviera que retirarse, ¿en qué dirección geográfica se movería?
 
-**Solución.** El vector velocidad tiene el tercer componente ${\vec{v}}_{z}=(+0{,}1\text{km}\text{/}\text{h})\hat{k}$, que informa que el convoy sube a 100 m/h por un terreno montañoso. Al mismo tiempo, su velocidad es de 4,0 km/h hacia el este y 3,0 km/h hacia el norte, por lo que se desplaza sobre el terreno en dirección ${\text{tan}}^{−1}(3\,\text{/}4)\approx 37\text{°}$ al norte del este. Si el convoy tuviera que retirarse, su nuevo vector velocidad $\vec{u}$ tendría que ser antiparalelo a $\vec{v}$ y ser de la forma $\vec{u}=\text{−}\alpha\vec{v}$, donde $\alpha$ es un número positivo. Así, la velocidad de retirada sería $\vec{u}=\alpha(−4{,}0\hat{i}-3{,}0\hat{j}-0{,}1\hat{k})\text{km}\text{/}\text{h}$. El signo negativo del tercer componente indica que el convoy estaría descendiendo. El ángulo direccional de la velocidad de retirada es ${\text{tan}}^{−1}(−3\alpha\text{/}-4\alpha)\approx 37\text{°}$ al sur del oeste. Por lo tanto, el convoy se movería sobre el terreno en dirección $37\text{°}$ al sur del oeste mientras desciende en su camino de regreso.
+**Solución.** El vector velocidad tiene el tercer componente ${\vec{v}}_{z}=(+0{,}1\text{km}\text{/}\text{h})\hat{k}$, que informa que el convoy sube a 100 m/h por un terreno montañoso. Al mismo tiempo, su velocidad es de 4,0 km/h hacia el este y 3,0 km/h hacia el norte, por lo que se desplaza sobre el terreno en dirección ${\text{tan}}^{−1}(3\,\text{/}4)\approx 37\text{°}$ al norte del este. Si el convoy tuviera que retirarse, su nuevo vector velocidad $\vec{u}$ tendría que ser antiparalelo a $\vec{v}$ y ser de la forma $\vec{u}=\text{−}\alpha \vec{v}$, donde $\alpha$ es un número positivo. Así, la velocidad de retirada sería $\vec{u}=\alpha (−4{,}0\hat{i}-3{,}0\hat{j}-0{,}1\hat{k})\text{km}\text{/}\text{h}$. El signo negativo del tercer componente indica que el convoy estaría descendiendo. El ángulo direccional de la velocidad de retirada es ${\text{tan}}^{−1}(−3\alpha \text{/}-4\alpha )\approx 37\text{°}$ al sur del oeste. Por lo tanto, el convoy se movería sobre el terreno en dirección $37\text{°}$ al sur del oeste mientras desciende en su camino de regreso.
 :::
 
 La generalización del número cero al álgebra vectorial se denomina **vector nulo**, denotado por $\vec{0}$. Todos los componentes del vector nulo son cero, $\vec{0}=0\hat{i}+0\hat{j}+0\hat{k}$, por lo que el vector nulo no tiene longitud ni dirección.
@@ -680,14 +680,14 @@ $$
 Los métodos analíticos para hallar la resultante y, en general, para resolver ecuaciones vectoriales son muy importantes en física porque muchas cantidades físicas son vectores. Por ejemplo, utilizamos este método en cinemática para encontrar vectores de desplazamiento resultantes y vectores de velocidad resultantes, en mecánica para encontrar vectores de fuerza resultantes y las resultantes de muchas cantidades vectoriales derivadas, y en electricidad y magnetismo para encontrar campos vectoriales eléctricos o magnéticos resultantes.
 
 :::callout{type="ejemplo" title="Cálculo analítico de una resultante"}
-Tres vectores de desplazamiento $\vec{A}$, $\vec{B}$ y $\vec{C}$ en un plano (aquí) se especifican por sus magnitudes *A* = 10,0, *B* = 7,0 y *C* = 8,0, respectivamente, y por sus respectivos ángulos direccionales con la horizontal $\alpha=35\text{°},$ $\beta=−110\text{°}$ y $\gamma=30\text{°}$. Las unidades físicas de las magnitudes son los centímetros. Resuelva los vectores a sus componentes escalares y halle las siguientes sumas vectoriales: (a) $\vec{R}=\vec{A}+\vec{B}+\vec{C}$, (b) $\vec{D}=\vec{A}-\vec{B}$, y (c) $\vec{S}=\vec{A}-3\vec{B}+\vec{C}$.
+Tres vectores de desplazamiento $\vec{A}$, $\vec{B}$ y $\vec{C}$ en un plano (aquí) se especifican por sus magnitudes *A* = 10,0, *B* = 7,0 y *C* = 8,0, respectivamente, y por sus respectivos ángulos direccionales con la horizontal $\alpha =35\text{°},$ $\beta =−110\text{°}$ y $\gamma =30\text{°}$. Las unidades físicas de las magnitudes son los centímetros. Resuelva los vectores a sus componentes escalares y halle las siguientes sumas vectoriales: (a) $\vec{R}=\vec{A}+\vec{B}+\vec{C}$, (b) $\vec{D}=\vec{A}-\vec{B}$, y (c) $\vec{S}=\vec{A}-3\vec{B}+\vec{C}$.
 
 **Estrategia.** En primer lugar, utilizamos la aquí para encontrar los componentes escalares de cada vector y luego expresamos cada vector en su forma de componente vectorial dada por la aquí. Luego, utilizamos los métodos analíticos del álgebra vectorial para encontrar las resultantes.
 
 **Solución.** Resolvemos los vectores dados a sus componentes escalares:
 
 $$
-\begin{array}{l} \{\begin{array}{l} {A}_{x}=A\,\text{cos}\,\alpha=(10{,}0\,\text{cm})\,\text{cos}\,35\text{°}=8{,}19\,\text{cm} \\ {A}_{y}=A\,\text{sen}\,\alpha=(10{,}0\,\text{cm})\,\text{sen}\,35\text{°}=5{,}73\,\text{cm} \end{array} \\ \{\begin{array}{l} {B}_{x}=B\,\text{cos}\,\beta=(7{,}0\,\text{cm})\,\text{cos}\,(−110\text{°})=−2{,}39\,\text{cm} \\ {B}_{y}=B\,\text{sen}\,\beta=(7{,}0\,\text{cm})\,\text{sen}\,(−110\text{°})=−6{,}58\,\text{cm} \end{array} \\ \{\begin{array}{l} {C}_{x}=C\,\text{cos}\,\gamma=(8{,}0\,\text{cm})\,\text{cos}\,30\text{°}=6{,}93\,\text{cm} \\ {C}_{y}=C\,\text{sen}\,\gamma=(8{,}0\,\text{cm})\,\text{sen}\,30\text{°}=4{,}00\,\text{cm} \end{array} \end{array}.
+\begin{array}{l} \{\begin{array}{l} {A}_{x}=A\,\text{cos}\,\alpha =(10{,}0\,\text{cm})\,\text{cos}\,35\text{°}=8{,}19\,\text{cm} \\ {A}_{y}=A\,\text{sen}\,\alpha =(10{,}0\,\text{cm})\,\text{sen}\,35\text{°}=5{,}73\,\text{cm} \end{array} \\ \{\begin{array}{l} {B}_{x}=B\,\text{cos}\,\beta =(7{,}0\,\text{cm})\,\text{cos}\,(−110\text{°})=−2{,}39\,\text{cm} \\ {B}_{y}=B\,\text{sen}\,\beta =(7{,}0\,\text{cm})\,\text{sen}\,(−110\text{°})=−6{,}58\,\text{cm} \end{array} \\ \{\begin{array}{l} {C}_{x}=C\,\text{cos}\,\gamma =(8{,}0\,\text{cm})\,\text{cos}\,30\text{°}=6{,}93\,\text{cm} \\ {C}_{y}=C\,\text{sen}\,\gamma =(8{,}0\,\text{cm})\,\text{sen}\,30\text{°}=4{,}00\,\text{cm} \end{array} \end{array}.
 $$
 
 Para (a) podemos sustituir directamente en la aquí para encontrar los componentes escalares de la resultante:
@@ -730,20 +730,20 @@ El vector es $\vec{S}={S}_{x}\hat{i}+{S}_{y}\hat{j}=(22{,}3\hat{i}+29{,}5\hat{j}
 :::
 
 :::callout{type="comprobacion" title="Compruebe lo aprendido"}
-Tres vectores de desplazamiento $\vec{A}$, $\vec{B}$ y $\vec{F}$ (aquí) se especifican por sus magnitudes *A* = 10,00, *B* = 7,00 y *F* = 20,00, respectivamente, y por sus respectivos ángulos direccionales con la horizontal $\alpha=35\text{°}$, $\beta=−110\text{°}$ y $\varphi=110\text{°}$. Las unidades físicas de las magnitudes son los centímetros. Utilice el método analítico para encontrar el vector $\vec{G}=\vec{A}+2\vec{B}-\vec{F}$. Compruebe que *G* = 28,15 cm y que ${\theta}_{G}=-68{,}65\text{°}$.
+Tres vectores de desplazamiento $\vec{A}$, $\vec{B}$ y $\vec{F}$ (aquí) se especifican por sus magnitudes *A* = 10,00, *B* = 7,00 y *F* = 20,00, respectivamente, y por sus respectivos ángulos direccionales con la horizontal $\alpha =35\text{°}$, $\beta =−110\text{°}$ y $\varphi =110\text{°}$. Las unidades físicas de las magnitudes son los centímetros. Utilice el método analítico para encontrar el vector $\vec{G}=\vec{A}+2\vec{B}-\vec{F}$. Compruebe que *G* = 28,15 cm y que ${\theta }_{G}=-68{,}65\text{°}$.
 
 **Respuesta.** $\vec{G}=(10{,}25\hat{i}-26{,}22\hat{j})\text{cm}$
 :::
 
 :::callout{type="ejemplo" title="El juego de tira y afloja"}
-Cuatro perros llamados Astro, Balto, Clifford y Dug juegan al tira y afloja con un juguete (:ref{id="es-2-cnx-uphysics-02-03-dogs"}). Astro hala el juguete en dirección $\alpha=55\text{°}$ al sur del este, Balto hala en dirección $\beta=60\text{°}$ al este del norte, y Clifford hala en dirección $\gamma=55\text{°}$ al oeste del norte. Astro hala fuertemente con 160,0 unidades de fuerza (N), que abreviamos como *A* = 160,0 N. Balto hala aún más fuerte que Astro con una fuerza de magnitud *B* = 200,0 N, y Clifford hala con una fuerza de magnitud *C* = 140,0 N. Cuando Dug hala del juguete de forma que su fuerza equilibra la resultante de las otras tres fuerzas, el juguete no se mueve en ninguna dirección. ¿Con qué fuerza y en qué dirección debe halar Dug el juguete para que esto ocurra?
+Cuatro perros llamados Astro, Balto, Clifford y Dug juegan al tira y afloja con un juguete (:ref{id="es-2-cnx-uphysics-02-03-dogs"}). Astro hala el juguete en dirección $\alpha =55\text{°}$ al sur del este, Balto hala en dirección $\beta =60\text{°}$ al este del norte, y Clifford hala en dirección $\gamma =55\text{°}$ al oeste del norte. Astro hala fuertemente con 160,0 unidades de fuerza (N), que abreviamos como *A* = 160,0 N. Balto hala aún más fuerte que Astro con una fuerza de magnitud *B* = 200,0 N, y Clifford hala con una fuerza de magnitud *C* = 140,0 N. Cuando Dug hala del juguete de forma que su fuerza equilibra la resultante de las otras tres fuerzas, el juguete no se mueve en ninguna dirección. ¿Con qué fuerza y en qué dirección debe halar Dug el juguete para que esto ocurra?
 
 **Estrategia.** Suponemos que el este es la dirección del eje de la *x* positiva y el norte es la dirección del eje de la *y* positiva. Como en el aquí, tenemos que resolver las tres fuerzas dadas, $\vec{A}$ (el tirón de Astro), $\vec{B}$ (el tirón de Balto), y $\vec{C}$ (el tirón de Clifford), en sus componentes escalares y luego encontrar los componentes escalares del vector resultante $\vec{R}=\vec{A}+\vec{B}+\vec{C}$. Cuando la fuerza de tracción $\vec{D}$ de Dug equilibra esta resultante, la suma de $\vec{D}$ y $\vec{R}$ debe dar el vector nulo $\vec{D}+\vec{R}=\vec{0}$. Esto significa que $\vec{D}=\text{−}\vec{R}$, por lo que el tirón de Dug debe ser antiparalelo a $\vec{R}$.
 
-**Solución.** Los ángulos direccionales son ${\theta}_{A}=\text{−}\alpha=−55\text{°}$, ${\theta}_{B}=90\text{°}-\beta=30\text{°}$ y ${\theta}_{C}=90\text{°}+\gamma=145\text{°}$, y sustituyéndolos en la aquí se obtienen los componentes escalares de las tres fuerzas dadas:
+**Solución.** Los ángulos direccionales son ${\theta }_{A}=\text{−}\alpha =−55\text{°}$, ${\theta }_{B}=90\text{°}-\beta =30\text{°}$ y ${\theta }_{C}=90\text{°}+\gamma =145\text{°}$, y sustituyéndolos en la aquí se obtienen los componentes escalares de las tres fuerzas dadas:
 
 $$
-\begin{array}{l} \{\begin{array}{l} {A}_{x}=A\,\text{cos}\,{\theta}_{A}=(160{,}0\,\text{N})\,\text{cos}\,(−55\text{°})=+91{,}8\,\text{N} \\ {A}_{y}=A\,\text{sen}\,{\theta}_{A}=(160{,}0\,\text{N})\,\text{sen}\,(−55\text{°})=−131{,}1\,\text{N} \end{array} \\ \{\begin{array}{l} {B}_{x}=B\,\text{cos}\,{\theta}_{B}=(200{,}0\,\text{N})\,\text{cos}\,30\text{°}=+173{,}2\,\text{N} \\ {B}_{y}=B\,\text{sen}\,{\theta}_{B}=(200{,}0\,\text{N})\,\text{sen}\,30\text{°}=+100{,}0\,\text{N} \end{array} \\ \{\begin{array}{l} {C}_{x}=C\,\text{cos}\,{\theta}_{C}=(140{,}0\,\text{N})\,\text{cos}\,145\text{°}=-114{,}7\,\text{N} \\ {C}_{y}=C\,\text{sen}\,{\theta}_{C}=(140{,}0\,\text{N})\,\text{sen}\,145\text{°}=+80{,}3\,\text{N} \end{array} \end{array}.
+\begin{array}{l} \{\begin{array}{l} {A}_{x}=A\,\text{cos}\,{\theta }_{A}=(160{,}0\,\text{N})\,\text{cos}\,(−55\text{°})=+91{,}8\,\text{N} \\ {A}_{y}=A\,\text{sen}\,{\theta }_{A}=(160{,}0\,\text{N})\,\text{sen}\,(−55\text{°})=−131{,}1\,\text{N} \end{array} \\ \{\begin{array}{l} {B}_{x}=B\,\text{cos}\,{\theta }_{B}=(200{,}0\,\text{N})\,\text{cos}\,30\text{°}=+173{,}2\,\text{N} \\ {B}_{y}=B\,\text{sen}\,{\theta }_{B}=(200{,}0\,\text{N})\,\text{sen}\,30\text{°}=+100{,}0\,\text{N} \end{array} \\ \{\begin{array}{l} {C}_{x}=C\,\text{cos}\,{\theta }_{C}=(140{,}0\,\text{N})\,\text{cos}\,145\text{°}=-114{,}7\,\text{N} \\ {C}_{y}=C\,\text{sen}\,{\theta }_{C}=(140{,}0\,\text{N})\,\text{sen}\,145\text{°}=+80{,}3\,\text{N} \end{array} \end{array}.
 $$
 
 Ahora calculamos los componentes escalares del vector resultante $\vec{R}=\vec{A}+\vec{B}+\vec{C}$:
@@ -767,7 +767,7 @@ $$
 La dirección de la fuerza de tracción de Dug es
 
 $$
-\theta={\text{tan}}^{−1}(\frac{{D}_{y}}{{D}_{x}})={\text{tan}}^{−1}(\frac{−49{,}2\,\text{N}}{−150{,}3\,\text{N}})={\text{tan}}^{−1}(\frac{49{,}2}{150{,}3})=18{,}1\text{°}.
+\theta ={\text{tan}}^{−1}(\frac{{D}_{y}}{{D}_{x}})={\text{tan}}^{−1}(\frac{−49{,}2\,\text{N}}{−150{,}3\,\text{N}})={\text{tan}}^{−1}(\frac{49{,}2}{150{,}3})=18{,}1\text{°}.
 $$
 
 Dug hala en la dirección $18{,}1\text{°}$ al sur del oeste porque ambos componentes son negativos, lo que significa que el vector de tracción se encuentra en el tercer cuadrante (aquí).
@@ -798,12 +798,12 @@ $$
 :::callout{type="ejemplo" title="Desplazamiento de un esquiador"}
 Partiendo de un albergue de esquí, un esquiador de fondo recorre 5,0 km hacia el norte, luego 3,0 km hacia el oeste y finalmente 4,0 km hacia el suroeste antes de tomar un descanso. Halle su vector de desplazamiento total con respecto al albergue cuando está en el punto de descanso. ¿A qué distancia y en qué dirección debe esquiar desde el punto de descanso para volver directamente al albergue?
 
-**Estrategia.** Suponemos un sistema de coordenadas rectangular con el origen en el albergue de esquí y con el vector unitario $\hat{i}$ que apunta al este y el vector unitario $\hat{j}$ que apunta al norte. Hay tres desplazamientos: ${\vec{D}}_{1}$, ${\vec{D}}_{2}$ y ${\vec{D}}_{3}$. Identificamos sus magnitudes como ${D}_{1}=5{,}0\,\text{km}$, ${D}_{2}=3{,}0\,\text{km}$ y ${D}_{3}=4{,}0\,\text{km}$. Identificamos que sus direcciones son los ángulos ${\theta}_{1}=90\text{°}$, ${\theta}_{2}=180\text{°}$ y ${\theta}_{3}=180\text{°}+45\text{°}=225\text{°}$. Resolvemos cada vector de desplazamiento en sus componentes escalares y los sustituimos en la aquí para obtener los componentes escalares del desplazamiento resultante $\vec{D}$ desde el albergue hasta el punto de descanso. En el camino de regreso desde el punto de descanso hasta el albergue, el desplazamiento es $\vec{B}=\text{−}\vec{D}$. Por último, encontramos la magnitud y la dirección de $\vec{B}$.
+**Estrategia.** Suponemos un sistema de coordenadas rectangular con el origen en el albergue de esquí y con el vector unitario $\hat{i}$ que apunta al este y el vector unitario $\hat{j}$ que apunta al norte. Hay tres desplazamientos: ${\vec{D}}_{1}$, ${\vec{D}}_{2}$ y ${\vec{D}}_{3}$. Identificamos sus magnitudes como ${D}_{1}=5{,}0\,\text{km}$, ${D}_{2}=3{,}0\,\text{km}$ y ${D}_{3}=4{,}0\,\text{km}$. Identificamos que sus direcciones son los ángulos ${\theta }_{1}=90\text{°}$, ${\theta }_{2}=180\text{°}$ y ${\theta }_{3}=180\text{°}+45\text{°}=225\text{°}$. Resolvemos cada vector de desplazamiento en sus componentes escalares y los sustituimos en la aquí para obtener los componentes escalares del desplazamiento resultante $\vec{D}$ desde el albergue hasta el punto de descanso. En el camino de regreso desde el punto de descanso hasta el albergue, el desplazamiento es $\vec{B}=\text{−}\vec{D}$. Por último, encontramos la magnitud y la dirección de $\vec{B}$.
 
 **Solución.** Las componentes escalares de los vectores de desplazamiento son
 
 $$
-\begin{array}{l} \{\begin{array}{l} {D}_{1x}={D}_{1}\,\text{cos}\,{\theta}_{1}=(5{,}0\,\text{km})\,\text{cos}\,90\text{°}=0 \\ {D}_{1y}={D}_{1}\,\text{sen}\,{\theta}_{1}=(5{,}0\,\text{km})\,\text{sen}\,90\text{°}=5{,}0\,\text{km} \end{array} \\ \{\begin{array}{l} {D}_{2x}={D}_{2}\,\text{cos}\,{\theta}_{2}=(3{,}0\,\text{km})\,\text{cos}\,180\text{°}=−3{,}0\,\text{km} \\ {D}_{2y}={D}_{2}\,\text{sen}\,{\theta}_{2}=(3{,}0\,\text{km})\,\text{sen}\,180\text{°}=0 \end{array} \\ \{\begin{array}{l} {D}_{3x}={D}_{3}\,\text{cos}\,{\theta}_{3}=(4{,}0\,\text{km})\,\text{cos}\,225\text{°}=−2{,}8\,\text{km} \\ {D}_{3y}={D}_{3}\,\text{sen}\,{\theta}_{3}=(4{,}0\,\text{km})\,\text{sen}\,225\text{°}=−2{,}8\,\text{km} \end{array} \end{array}.
+\begin{array}{l} \{\begin{array}{l} {D}_{1x}={D}_{1}\,\text{cos}\,{\theta }_{1}=(5{,}0\,\text{km})\,\text{cos}\,90\text{°}=0 \\ {D}_{1y}={D}_{1}\,\text{sen}\,{\theta }_{1}=(5{,}0\,\text{km})\,\text{sen}\,90\text{°}=5{,}0\,\text{km} \end{array} \\ \{\begin{array}{l} {D}_{2x}={D}_{2}\,\text{cos}\,{\theta }_{2}=(3{,}0\,\text{km})\,\text{cos}\,180\text{°}=−3{,}0\,\text{km} \\ {D}_{2y}={D}_{2}\,\text{sen}\,{\theta }_{2}=(3{,}0\,\text{km})\,\text{sen}\,180\text{°}=0 \end{array} \\ \{\begin{array}{l} {D}_{3x}={D}_{3}\,\text{cos}\,{\theta }_{3}=(4{,}0\,\text{km})\,\text{cos}\,225\text{°}=−2{,}8\,\text{km} \\ {D}_{3y}={D}_{3}\,\text{sen}\,{\theta }_{3}=(4{,}0\,\text{km})\,\text{sen}\,225\text{°}=−2{,}8\,\text{km} \end{array} \end{array}.
 $$
 
 Los componentes escalares del vector de desplazamiento neto son
@@ -812,7 +812,7 @@ $$
 \{\begin{array}{l} {D}_{x}={D}_{1x}+{D}_{2x}+{D}_{3x}=(0-3{,}0-2{,}8)\text{km}=−5{,}8\,\text{km} \\ {D}_{y}={D}_{1y}+{D}_{2y}+{D}_{3y}=(5{,}0+0-2{,}8)\text{km}=+2{,}2\,\text{km} \end{array}.
 $$
 
-Por lo tanto, el vector de desplazamiento neto del esquiador es $\vec{D}={D}_{x}\hat{i}+{D}_{y}\hat{j}=(−5{,}8\hat{i}+2{,}2\hat{j})\text{km}$. En el camino de regreso al albergue, su desplazamiento es $\vec{B}=\text{−}\vec{D}=\text{−}(−5{,}8\hat{i}+2{,}2\hat{j})\text{km}=(5{,}8\hat{i}-2{,}2\hat{j})\text{km}$. Su magnitud es $B=\sqrt{{B}_{x}^{2}+{B}_{y}^{2}}=\sqrt{{(5{,}8)}^{2}+{(−2{,}2)}^{2}}\,\text{km}=6{,}2\,\text{km}$ y su ángulo direccional es $\theta={\text{tan}}^{−1}(−2{,}2\text{/}5{,}8)=-20{,}8\text{°}$. Por lo tanto, para volver al albergue, deberá recorrer 6,2 km en una dirección de $21\text{°}$ al sur del este.
+Por lo tanto, el vector de desplazamiento neto del esquiador es $\vec{D}={D}_{x}\hat{i}+{D}_{y}\hat{j}=(−5{,}8\hat{i}+2{,}2\hat{j})\text{km}$. En el camino de regreso al albergue, su desplazamiento es $\vec{B}=\text{−}\vec{D}=\text{−}(−5{,}8\hat{i}+2{,}2\hat{j})\text{km}=(5{,}8\hat{i}-2{,}2\hat{j})\text{km}$. Su magnitud es $B=\sqrt{{B}_{x}^{2}+{B}_{y}^{2}}=\sqrt{{(5{,}8)}^{2}+{(−2{,}2)}^{2}}\,\text{km}=6{,}2\,\text{km}$ y su ángulo direccional es $\theta ={\text{tan}}^{−1}(−2{,}2\text{/}5{,}8)=-20{,}8\text{°}$. Por lo tanto, para volver al albergue, deberá recorrer 6,2 km en una dirección de $21\text{°}$ al sur del este.
 
 **Importancia.** Observe que no se necesita ninguna figura para resolver este problema por el método analítico. Las figuras son necesarias cuando se utiliza un método gráfico; sin embargo, podemos comprobar si nuestra solución tiene sentido haciendo un esquema, lo cual es un paso final útil para resolver cualquier problema vectorial.
 :::
@@ -916,12 +916,12 @@ La multiplicación escalar de dos vectores da como resultado un producto escalar
 **Producto escalar (producto punto).** El **producto escalar** $\vec{A}\cdot \vec{B}$ de dos vectores $\vec{A}$ y $\vec{B}$ es un número definido por la ecuación
 
 $$
-\vec{A}\cdot \vec{B}=AB\,\text{cos}\,\varphi,
+\vec{A}\cdot \vec{B}=AB\,\text{cos}\,\varphi ,
 $$
 
 donde $\varphi$ es el ángulo entre los vectores (mostrado en la :ref{id="es-2-cnx-uphysics-02-04-prod-s"}). El producto escalar también se denomina **producto punto** por la notación de punto que lo indica.
 
-En la definición del producto punto, la dirección del ángulo $\varphi$ no importa, y $\varphi$ se puede medir desde cualquiera de los dos vectores hacia el otro porque $\text{cos}\,\varphi=\text{cos}\,(\text{−}\varphi)=\text{cos}\,(2\pi-\varphi)$. El producto punto es un número negativo cuando $90\text{°}<\varphi\le 180\text{°}$ y es un número positivo cuando $0\text{°}\le \varphi<90\text{°}$. Además, el producto punto de dos vectores paralelos es $\vec{A}\cdot \vec{B}=AB\,\text{cos}\,0\text{°}=AB$, y el producto punto de dos vectores antiparalelos es $\vec{A}\cdot \vec{B}=AB\,\text{cos}\,180\text{°}=\text{−}AB$. El producto escalar de dos *vectores ortogonales* es igual a cero: $\vec{A}\cdot \vec{B}=AB\,\text{cos}\,90\text{°}=0$. El producto escalar de un vector consigo mismo es el cuadrado de su magnitud:
+En la definición del producto punto, la dirección del ángulo $\varphi$ no importa, y $\varphi$ se puede medir desde cualquiera de los dos vectores hacia el otro porque $\text{cos}\,\varphi =\text{cos}\,(\text{−}\varphi )=\text{cos}\,(2\pi -\varphi )$. El producto punto es un número negativo cuando $90\text{°}<\varphi \le 180\text{°}$ y es un número positivo cuando $0\text{°}\le \varphi <90\text{°}$. Además, el producto punto de dos vectores paralelos es $\vec{A}\cdot \vec{B}=AB\,\text{cos}\,0\text{°}=AB$, y el producto punto de dos vectores antiparalelos es $\vec{A}\cdot \vec{B}=AB\,\text{cos}\,180\text{°}=\text{−}AB$. El producto escalar de dos *vectores ortogonales* es igual a cero: $\vec{A}\cdot \vec{B}=AB\,\text{cos}\,90\text{°}=0$. El producto escalar de un vector consigo mismo es el cuadrado de su magnitud:
 
 $$
 {\vec{A}}^{2}\equiv \vec{A}\cdot \vec{A}=AA\,\text{cos}\,0\text{°}={A}^{2}.
@@ -930,12 +930,12 @@ $$
 :::callout{type="ejemplo" title="El producto escalar"}
 Para los vectores mostrados en la aquí, halle el producto escalar $\vec{A}\cdot \vec{F}$.
 
-**Estrategia.** A partir de la aquí, la magnitud de los vectores $\vec{A}$ y $\vec{F}$ son *A* = 10,0 y *F* = 20,0. El ángulo $\theta$, entre ellos, es la diferencia: $\theta=\varphi-\alpha=110\text{°}-35\text{°}=75\text{°}$. Sustituyendo estos valores en la aquí obtenemos el producto escalar.
+**Estrategia.** A partir de la aquí, la magnitud de los vectores $\vec{A}$ y $\vec{F}$ son *A* = 10,0 y *F* = 20,0. El ángulo $\theta$, entre ellos, es la diferencia: $\theta =\varphi -\alpha =110\text{°}-35\text{°}=75\text{°}$. Sustituyendo estos valores en la aquí obtenemos el producto escalar.
 
 **Solución.** Un cálculo sencillo nos da
 
 $$
-\vec{A}\cdot \vec{F}=AF\,\text{cos}\,\theta=(10{,}0)(20{,}0)\,\text{cos}\,75\text{°}=51{,}76.
+\vec{A}\cdot \vec{F}=AF\,\text{cos}\,\theta =(10{,}0)(20{,}0)\,\text{cos}\,75\text{°}=51{,}76.
 $$
 :::
 
@@ -960,13 +960,13 @@ $$
 El producto escalar $\vec{A}\cdot \vec{B}$ también puede interpretarse como el producto de *B* con la proyección ${A}_{ǁ}$ del vector $\vec{A}$ en la dirección del vector $\vec{B}$ (:ref{id="es-2-cnx-uphysics-02-04-prod-s"}(b)) o el producto de *A* con la proyección ${B}_{ǁ}$ del vector $\vec{B}$ en la dirección del vector $\vec{A}$ (:ref{id="es-2-cnx-uphysics-02-04-prod-s"}(c)):
 
 $$
-\begin{array}{ll} \vec{A}\cdot \vec{B} & =AB\,\text{cos}\,\varphi \\ & =B(A\,\text{cos}\,\varphi)=B{A}_{ǁ} \\ & =A(B\,\text{cos}\,\varphi)=A{B}_{ǁ}. \end{array}
+\begin{array}{ll} \vec{A}\cdot \vec{B} & =AB\,\text{cos}\,\varphi \\ & =B(A\,\text{cos}\,\varphi )=B{A}_{ǁ} \\ & =A(B\,\text{cos}\,\varphi )=A{B}_{ǁ}. \end{array}
 $$
 
 Por ejemplo, en el sistema de coordenadas rectangulares en un plano, el componente escalar *x* de un vector es su producto punto con el vector unitario $\hat{i}$, y el componente escalar *y* de un vector es su producto punto con el vector unitario $\hat{j}$:
 
 $$
-\{\begin{array}{l} \vec{A}\cdot \hat{i}=|\vec{A}||\hat{i}|\,\text{cos}\,{\theta}_{A}=A\,\text{cos}\,{\theta}_{A}={A}_{x} \\ \vec{A}\cdot \hat{j}=|\vec{A}||\hat{j}|\,\text{cos}\,(90\text{°}-{\theta}_{A})=A\,\text{sen}\,{\theta}_{A}={A}_{y} \end{array}.
+\{\begin{array}{l} \vec{A}\cdot \hat{i}=|\vec{A}||\hat{i}|\,\text{cos}\,{\theta }_{A}=A\,\text{cos}\,{\theta }_{A}={A}_{x} \\ \vec{A}\cdot \hat{j}=|\vec{A}||\hat{j}|\,\text{cos}\,(90\text{°}-{\theta }_{A})=A\,\text{sen}\,{\theta }_{A}={A}_{y} \end{array}.
 $$
 
 La multiplicación escalar de vectores es conmutativa,
@@ -1015,7 +1015,7 @@ Podemos utilizar la aquí para el producto escalar en términos de componentes e
 
 :::callout{type="nota" title="Nota"}
 $$
-\text{cos}\,\varphi=\frac{\vec{A}\cdot \vec{B}}{AB}=\frac{{A}_{x}{B}_{x}+{A}_{y}{B}_{y}+{A}_{z}{B}_{z}}{AB}.
+\text{cos}\,\varphi =\frac{\vec{A}\cdot \vec{B}}{AB}=\frac{{A}_{x}{B}_{x}+{A}_{y}{B}_{y}+{A}_{z}{B}_{z}}{AB}.
 $$
 :::
 
@@ -1047,7 +1047,7 @@ $$
 Finalmente, sustituyendo todo en la aquí se obtiene el ángulo
 
 $$
-\text{cos}\,\varphi=\frac{{\vec{F}}_{1}\cdot {\vec{F}}_{2}}{{F}_{1}{F}_{2}}=\frac{−162{,}4\,{\text{N}}^{2}}{(22{,}8\,\text{N})(16{,}2\,\text{N})}=−0{,}439\Rightarrow \,\varphi={\text{cos}}^{−1}(−0{,}439)=116{,}0\text{°}.
+\text{cos}\,\varphi =\frac{{\vec{F}}_{1}\cdot {\vec{F}}_{2}}{{F}_{1}{F}_{2}}=\frac{−162{,}4\,{\text{N}}^{2}}{(22{,}8\,\text{N})(16{,}2\,\text{N})}=−0{,}439\Rightarrow \,\varphi ={\text{cos}}^{−1}(−0{,}439)=116{,}0\text{°}.
 $$
 
 **Importancia.** Observe que, cuando los vectores se dan en términos de los vectores unitarios de los ejes, podemos encontrar el ángulo entre ellos sin conocer los detalles de las direcciones geográficas que representan los vectores unitarios. En este caso, por ejemplo, la dirección de la *x* + puede ser hacia el este y la dirección de la +*y* puede ser hacia el norte. Sin embargo, el ángulo entre las fuerzas en el problema es el mismo si la dirección de la *x* + está al oeste y la dirección de la +*y* está al sur.
@@ -1086,12 +1086,12 @@ La multiplicación de dos vectores da como resultado un producto vectorial.
 **Producto vectorial (producto cruz).** El **producto vectorial** de dos vectores $\vec{A}$ y $\vec{B}$ se denota por $\vec{A}\,\times \,\vec{B}$ y suele denominarse **producto cruz**. El producto vectorial es un vector que tiene su dirección perpendicular a ambos vectores $\vec{A}$ y $\vec{B}$. En otras palabras, el vector $\vec{A}\,\times \,\vec{B}$ es perpendicular al plano que contiene los vectores $\vec{A}$ y $\vec{B}$, como se muestra en la :ref{id="es-2-cnx-uphysics-02-04-prod-v"}. La magnitud del producto vectorial se define como
 
 $$
-|\vec{A}\,\times \,\vec{B}|=\,AB\,\text{sen}\,\varphi,
+|\vec{A}\,\times \,\vec{B}|=\,AB\,\text{sen}\,\varphi ,
 $$
 
 donde el ángulo $\varphi$, entre los dos vectores, se mide desde el vector $\vec{A}$ (primer vector del producto) al vector $\vec{B}$ (segundo vector del producto), como se indica en la :ref{id="es-2-cnx-uphysics-02-04-prod-v"}, y está entre $0\text{°}$ y $180\text{°}$.
 
-Según la aquí, el producto vectorial es igual a cero para pares de vectores que son paralelos $(\varphi=0\text{°})$ o antiparalelos $(\varphi=180\text{°})$ porque $\text{sen}\,0\text{°}=\text{sen}\,180\text{°}=0$. (:ref{id="es-2-cnx-uphysics-02-04-prod-v" case="lower"})
+Según la aquí, el producto vectorial es igual a cero para pares de vectores que son paralelos $(\varphi =0\text{°})$ o antiparalelos $(\varphi =180\text{°})$ porque $\text{sen}\,0\text{°}=\text{sen}\,180\text{°}=0$. (:ref{id="es-2-cnx-uphysics-02-04-prod-v" case="lower"})
 
 En la línea perpendicular al plano que contiene los vectores $\vec{A}$ y $\vec{B}$ hay dos direcciones alternativas: hacia arriba o hacia abajo, como se muestra en la :ref{id="es-2-cnx-uphysics-02-04-prod-v"}, y la dirección del producto vectorial puede ser cualquiera de ellas. En la orientación estándar de la mano derecha, donde el ángulo entre los vectores se mide en sentido contrario a las agujas del reloj desde el primer vector, el vector $\vec{A}\,\times \,\vec{B}$ apunta *hacia arriba*, como se ve en la :ref{id="es-2-cnx-uphysics-02-04-prod-v"}(a). Si invertimos el orden de la multiplicación, de modo que ahora $\vec{B}$ es lo primero en el producto, entonces el vector $\vec{B}\,\times \,\vec{A}$ debe apuntar *hacia abajo*, como se ve en la :ref{id="es-2-cnx-uphysics-02-04-prod-v"}(b). Esto significa que los vectores $\vec{A}\,\times \,\vec{B}$ y $\vec{B}\,\times \,\vec{A}$ son *antiparalelos* entre sí y que la multiplicación de vectores *no* es conmutativa, sino *anticonmutativa*. La **anticonmutatividad** significa que el producto vectorial invierte el signo cuando se invierte el orden de la multiplicación:
 
@@ -1104,30 +1104,30 @@ $$
 La **regla de la mano derecha** es un mnemotécnico común que sirve para determinar la dirección del producto vectorial. Como se muestra en la :ref{id="es-2-cnx-uphysics-02-04-corkscrew"}, un sacacorchos se coloca en una dirección perpendicular al plano que contiene los vectores $\vec{A}$ y $\vec{B}$, y su mango se gira en la dirección del primer al segundo vector del producto. La dirección del producto cruz se da por la progresión del sacacorchos.
 
 :::callout{type="ejemplo" title="El torque de una fuerza"}
-La ventaja mecánica que proporciona una herramienta familiar llamada *llave inglesa* (:ref{id="es-2-cnx-uphysics-02-04-wrench"}) depende de la magnitud *F* de la fuerza aplicada, de su dirección con respecto al mango de la llave y de la distancia a la que se aplica esta fuerza. La distancia *R* desde la tuerca hasta el punto donde el vector de fuerza $\vec{F}$ se une está representado por el vector radial $\vec{R}$. La cantidad física vectorial que hace girar la tuerca se denomina *torque* (denotado por $\vec{\tau})$, y es el producto vectorial de la distancia entre el pivote a la fuerza con la fuerza: $\vec{\tau}=\vec{R}\,\times \,\vec{F}$.
+La ventaja mecánica que proporciona una herramienta familiar llamada *llave inglesa* (:ref{id="es-2-cnx-uphysics-02-04-wrench"}) depende de la magnitud *F* de la fuerza aplicada, de su dirección con respecto al mango de la llave y de la distancia a la que se aplica esta fuerza. La distancia *R* desde la tuerca hasta el punto donde el vector de fuerza $\vec{F}$ se une está representado por el vector radial $\vec{R}$. La cantidad física vectorial que hace girar la tuerca se denomina *torque* (denotado por $\vec{\tau })$, y es el producto vectorial de la distancia entre el pivote a la fuerza con la fuerza: $\vec{\tau }=\vec{R}\,\times \,\vec{F}$.
 
-Para aflojar una tuerca oxidada, se aplica una fuerza de 20,00 N al mango de la llave en ángulo $\varphi=40\text{°}$ y a una distancia de 0,25 m de la tuerca, como se muestra en la :ref{id="es-2-cnx-uphysics-02-04-wrench"}(a). Calcule la magnitud y la dirección del torque aplicado a la tuerca. ¿Cuál sería la magnitud y la dirección del torque si la fuerza se aplicara con un ángulo $\varphi=45\text{°}$, como se muestra en la :ref{id="es-2-cnx-uphysics-02-04-wrench"}(b)? ¿Para qué valor del ángulo $\varphi$ el torque tiene la mayor magnitud?
+Para aflojar una tuerca oxidada, se aplica una fuerza de 20,00 N al mango de la llave en ángulo $\varphi =40\text{°}$ y a una distancia de 0,25 m de la tuerca, como se muestra en la :ref{id="es-2-cnx-uphysics-02-04-wrench"}(a). Calcule la magnitud y la dirección del torque aplicado a la tuerca. ¿Cuál sería la magnitud y la dirección del torque si la fuerza se aplicara con un ángulo $\varphi =45\text{°}$, como se muestra en la :ref{id="es-2-cnx-uphysics-02-04-wrench"}(b)? ¿Para qué valor del ángulo $\varphi$ el torque tiene la mayor magnitud?
 
-**Estrategia.** Adoptamos el marco de referencia mostrado en la :ref{id="es-2-cnx-uphysics-02-04-wrench"}, donde los vectores $\vec{R}$ y $\vec{F}$ se encuentran en el plano *xy* y el origen está en la posición de la tuerca. La dirección radial a lo largo del vector $\vec{R}$ (apuntando lejos del origen) es la dirección de referencia para medir el ángulo $\varphi$ porque $\vec{R}$ es el primer vector del producto vectorial $\vec{\tau}=\vec{R}\,\times \,\vec{F}$. El vector $\vec{\tau}$ debe estar a lo largo del eje de la *z* porque este es el eje perpendicular al plano *xy*, donde ambos $\vec{R}$ y $\vec{F}$ están. Para calcular la magnitud de $\tau$, utilizamos la aquí. Para encontrar la dirección de $\vec{\tau}$, utilizamos la regla de la mano derecha (:ref{id="es-2-cnx-uphysics-02-04-corkscrew"}).
+**Estrategia.** Adoptamos el marco de referencia mostrado en la :ref{id="es-2-cnx-uphysics-02-04-wrench"}, donde los vectores $\vec{R}$ y $\vec{F}$ se encuentran en el plano *xy* y el origen está en la posición de la tuerca. La dirección radial a lo largo del vector $\vec{R}$ (apuntando lejos del origen) es la dirección de referencia para medir el ángulo $\varphi$ porque $\vec{R}$ es el primer vector del producto vectorial $\vec{\tau }=\vec{R}\,\times \,\vec{F}$. El vector $\vec{\tau }$ debe estar a lo largo del eje de la *z* porque este es el eje perpendicular al plano *xy*, donde ambos $\vec{R}$ y $\vec{F}$ están. Para calcular la magnitud de $\tau$, utilizamos la aquí. Para encontrar la dirección de $\vec{\tau }$, utilizamos la regla de la mano derecha (:ref{id="es-2-cnx-uphysics-02-04-corkscrew"}).
 
-**Solución.** Para la situación de (a), la regla del sacacorchos nos da la dirección de $\vec{R}\,\times \,\vec{F}$ en la dirección positiva del eje *z*. Físicamente, significa que el vector de torque $\vec{\tau}$ apunta fuera de la página, perpendicular al mango de la llave. Identificamos *F* = 20,00 N y *R* = 0,25 m, y calculamos la magnitud utilizando la aquí:
-
-$$
-\tau\,=|\vec{R}\,\times \,\vec{F}|=\,RF\,\text{sen}\,\varphi=(0{,}25\,\text{m})(20{,}00\,\text{N})\,\text{sen}\,40\text{°}=3{,}21\,\text{N}\cdot \text{m}.
-$$
-
-Para la situación en (b), la regla del sacacorchos da la dirección de $\vec{R}\,\times \,\vec{F}$ en la dirección negativa del eje *z*. Físicamente, significa que el vector $\vec{\tau}$ apunta a la página, perpendicular al mango de la llave. La magnitud de este torque es
+**Solución.** Para la situación de (a), la regla del sacacorchos nos da la dirección de $\vec{R}\,\times \,\vec{F}$ en la dirección positiva del eje *z*. Físicamente, significa que el vector de torque $\vec{\tau }$ apunta fuera de la página, perpendicular al mango de la llave. Identificamos *F* = 20,00 N y *R* = 0,25 m, y calculamos la magnitud utilizando la aquí:
 
 $$
-\tau\,=|\vec{R}\,\times \,\vec{F}|=\,RF\,\text{sen}\,\varphi=(0{,}25\,\text{m})(20{,}00\,\text{N})\,\text{sen}\,45\text{°}=3{,}53\,\text{N}\cdot \text{m}.
+\tau \,=|\vec{R}\,\times \,\vec{F}|=\,RF\,\text{sen}\,\varphi =(0{,}25\,\text{m})(20{,}00\,\text{N})\,\text{sen}\,40\text{°}=3{,}21\,\text{N}\cdot \text{m}.
 $$
 
-El torque tiene el mayor valor cuando el $\text{sen}\,\varphi=1$, lo que se produce cuando $\varphi=90\text{°}$. Físicamente, significa que la llave inglesa es más eficaz, es decir, nos proporciona la mejor ventaja mecánica, cuando aplicamos la fuerza perpendicular al mango de la llave. Para la situación de este ejemplo, este valor óptimo de torque es ${\tau}_{\text{óptimo}}=RF=(0{,}25\,\text{m})(20{,}00\,\text{N})=5{,}00\,\text{N}\cdot \text{m}$.
+Para la situación en (b), la regla del sacacorchos da la dirección de $\vec{R}\,\times \,\vec{F}$ en la dirección negativa del eje *z*. Físicamente, significa que el vector $\vec{\tau }$ apunta a la página, perpendicular al mango de la llave. La magnitud de este torque es
+
+$$
+\tau \,=|\vec{R}\,\times \,\vec{F}|=\,RF\,\text{sen}\,\varphi =(0{,}25\,\text{m})(20{,}00\,\text{N})\,\text{sen}\,45\text{°}=3{,}53\,\text{N}\cdot \text{m}.
+$$
+
+El torque tiene el mayor valor cuando el $\text{sen}\,\varphi =1$, lo que se produce cuando $\varphi =90\text{°}$. Físicamente, significa que la llave inglesa es más eficaz, es decir, nos proporciona la mejor ventaja mecánica, cuando aplicamos la fuerza perpendicular al mango de la llave. Para la situación de este ejemplo, este valor óptimo de torque es ${\tau }_{\text{óptimo}}=RF=(0{,}25\,\text{m})(20{,}00\,\text{N})=5{,}00\,\text{N}\cdot \text{m}$.
 
 **Importancia.** Cuando resolvemos problemas de mecánica, a menudo no necesitamos utilizar la regla del sacacorchos en absoluto, como veremos ahora en la siguiente solución equivalente. Observe que una vez que hemos identificado ese vector $\vec{R}\,\times \,\vec{F}$ que se encuentra a lo largo del eje *z*, podemos escribir este vector en términos del vector unitario $\hat{k}$ del eje *z*:
 
 $$
-\vec{R}\,\times \,\vec{F}=RF\,\text{sen}\,\varphi\hat{k}.
+\vec{R}\,\times \,\vec{F}=RF\,\text{sen}\,\varphi \hat{k}.
 $$
 
 En esta ecuación, el número que multiplica $\hat{k}$ es el componente escalar *z* del vector $\vec{R}\,\times \,\vec{F}$. En el cálculo de este componente, hay que tener en cuenta que el ángulo $\varphi$ se mide *en sentido contrario a las agujas del reloj* desde $\vec{R}$ (primer vector) al $\vec{F}$ (segundo vector). Siguiendo este principio para los ángulos, obtenemos $RF\,\text{sen}\,(+40\text{°})=+3{,}2\,\text{N}\cdot \text{m}$ para la situación en (a), y obtenemos $RF\,\text{sen}\,(−45\text{°})=−3{,}5\,\text{N}\cdot \text{m}$ para la situación en (b). En este último caso, el ángulo es negativo porque el gráfico en la :ref{id="es-2-cnx-uphysics-02-04-wrench"} indica que el ángulo se mide en el sentido de las agujas del reloj; pero, el mismo resultado se obtiene cuando este ángulo se mide en sentido contrario a las agujas del reloj porque $+(360\text{°}-45\text{°})=+315\text{°}$ y $\text{sen}\,(+315\text{°})=\text{sen}\,(−45\text{°})$. De este modo, obtenemos la solución sin referencia a la regla del sacacorchos. Para la situación en (a), la solución es $\vec{R}\,\times \,\vec{F}=+3{,}2\,\text{N}\cdot \text{m}\hat{k}$; para la situación en (b), la solución es $\vec{R}\,\times \,\vec{F}=−3{,}5\,\text{N}\cdot \text{m}\hat{k}$.
@@ -1188,24 +1188,24 @@ $$
 Al momento de encontrar el producto cruz, en la práctica, podemos utilizar tanto la aquí como la aquí, dependiendo de cuál de ellas nos parezca menos compleja computacionalmente. Ambas conducen al mismo resultado final. Una forma de asegurarse de que el resultado final es correcto es utilizar ambas.
 
 :::callout{type="ejemplo" title="Una partícula en un campo magnético"}
-Al moverse en un campo magnético, algunas partículas pueden experimentar una fuerza magnética. Sin entrar en detalles, el estudio detallado de los fenómenos magnéticos se aborda en capítulos posteriores, reconozcamos que el campo magnético $\vec{B}$ es un vector, la fuerza magnética $\vec{F}$ es un vector, y la velocidad $\vec{u}$ de la partícula es un vector. El vector de fuerza magnética es proporcional al producto vectorial del vector de velocidad por el vector de campo magnético, que expresamos como $\vec{F}=\zeta\vec{u}\,\times \,\vec{B}$. En esta ecuación, una constante $\zeta$ se encarga de la coherencia en unidades físicas, por lo que podemos omitir las unidades físicas en los vectores $\vec{u}$ y $\vec{B}$. En este ejemplo, vamos a suponer que la constante $\zeta$ es positiva.
+Al moverse en un campo magnético, algunas partículas pueden experimentar una fuerza magnética. Sin entrar en detalles, el estudio detallado de los fenómenos magnéticos se aborda en capítulos posteriores, reconozcamos que el campo magnético $\vec{B}$ es un vector, la fuerza magnética $\vec{F}$ es un vector, y la velocidad $\vec{u}$ de la partícula es un vector. El vector de fuerza magnética es proporcional al producto vectorial del vector de velocidad por el vector de campo magnético, que expresamos como $\vec{F}=\zeta \vec{u}\,\times \,\vec{B}$. En esta ecuación, una constante $\zeta$ se encarga de la coherencia en unidades físicas, por lo que podemos omitir las unidades físicas en los vectores $\vec{u}$ y $\vec{B}$. En este ejemplo, vamos a suponer que la constante $\zeta$ es positiva.
 
 Una partícula que se mueve en el espacio con un vector de velocidad $\vec{u}=−5{,}0\hat{i}-2{,}0\hat{j}+3{,}5\hat{k}$ entra en una región con un campo magnético y experimenta una fuerza magnética. Halle la fuerza magnética $\vec{F}$ sobre esta partícula en el punto de entrada a la región donde el vector de campo magnético es (a) $\vec{B}=7{,}2\hat{i}-\hat{j}-2{,}4\hat{k}$ y (b) $\vec{B}=4{,}5\hat{k}$. En cada caso, halle la magnitud *F* de la fuerza magnética y el ángulo $\theta$ que el vector de fuerza $\vec{F}$ hace con el vector de campo magnético dado $\vec{B}$.
 
-**Estrategia.** Primero, queremos encontrar el producto vectorial $\vec{u}\,\times \,\vec{B}$, porque entonces podemos determinar la fuerza magnética utilizando $\vec{F}=\zeta\vec{u}\,\times \,\vec{B}$. La magnitud *F* puede hallarse mediante el uso de componentes, $F=\sqrt{{F}_{x}^{2}+{F}_{y}^{2}+{F}_{z}^{2}}$, o calculando la magnitud $|\vec{u}\,\times \,\vec{B}|$ utilizando directamente la aquí. En este último enfoque, tendríamos que encontrar el ángulo entre los vectores $\vec{u}$ y $\vec{B}$. Cuando tenemos $\vec{F}$, el método general para encontrar el ángulo direccional $\theta$ implica el cálculo del producto escalar $\vec{F}\cdot \vec{B}$ y la sustitución en la aquí. Para calcular el producto vectorial podemos utilizar la aquí o calcular el producto directamente, lo que sea más sencillo.
+**Estrategia.** Primero, queremos encontrar el producto vectorial $\vec{u}\,\times \,\vec{B}$, porque entonces podemos determinar la fuerza magnética utilizando $\vec{F}=\zeta \vec{u}\,\times \,\vec{B}$. La magnitud *F* puede hallarse mediante el uso de componentes, $F=\sqrt{{F}_{x}^{2}+{F}_{y}^{2}+{F}_{z}^{2}}$, o calculando la magnitud $|\vec{u}\,\times \,\vec{B}|$ utilizando directamente la aquí. En este último enfoque, tendríamos que encontrar el ángulo entre los vectores $\vec{u}$ y $\vec{B}$. Cuando tenemos $\vec{F}$, el método general para encontrar el ángulo direccional $\theta$ implica el cálculo del producto escalar $\vec{F}\cdot \vec{B}$ y la sustitución en la aquí. Para calcular el producto vectorial podemos utilizar la aquí o calcular el producto directamente, lo que sea más sencillo.
 
 **Solución.** Los componentes del vector velocidad son ${u}_{x}=−5{,}0$, ${u}_{y}=−2{,}0$ y ${u}_{z}=3{,}5$.
 
-(a) Los componentes del vector de campo magnético son ${B}_{x}=7{,}2$, ${B}_{y}=−1{,}0$ y ${B}_{z}=−2{,}4$. Sustituyéndolos en la aquí se obtienen los componentes escalares del vector $\vec{F}=\zeta\vec{u}\,\times \,\vec{B}$:
+(a) Los componentes del vector de campo magnético son ${B}_{x}=7{,}2$, ${B}_{y}=−1{,}0$ y ${B}_{z}=−2{,}4$. Sustituyéndolos en la aquí se obtienen los componentes escalares del vector $\vec{F}=\zeta \vec{u}\,\times \,\vec{B}$:
 
 $$
-\{\begin{array}{l} {F}_{x}=\zeta({u}_{y}{B}_{z}-{u}_{z}{B}_{y})=\zeta[(−2{,}0)(−2{,}4)-(3{,}5)(−1{,}0)]=8{,}3\zeta \\ {F}_{y}=\zeta({u}_{z}{B}_{x}-{u}_{x}{B}_{z})=\zeta[(3{,}5)(7{,}2)-(−5{,}0)(−2{,}4)]=13{,}2\zeta \\ {F}_{z}=\zeta({u}_{x}{B}_{y}-{u}_{y}{B}_{x})=\zeta[(−5{,}0)(−1{,}0)-(−2{,}0)(7{,}2)]=19{,}4\zeta \end{array}.
+\{\begin{array}{l} {F}_{x}=\zeta ({u}_{y}{B}_{z}-{u}_{z}{B}_{y})=\zeta [(−2{,}0)(−2{,}4)-(3{,}5)(−1{,}0)]=8{,}3\zeta \\ {F}_{y}=\zeta ({u}_{z}{B}_{x}-{u}_{x}{B}_{z})=\zeta [(3{,}5)(7{,}2)-(−5{,}0)(−2{,}4)]=13{,}2\zeta \\ {F}_{z}=\zeta ({u}_{x}{B}_{y}-{u}_{y}{B}_{x})=\zeta [(−5{,}0)(−1{,}0)-(−2{,}0)(7{,}2)]=19{,}4\zeta \end{array}.
 $$
 
-Por lo tanto, la fuerza magnética es $\vec{F}=\zeta(8{,}3\hat{i}+13{,}2\hat{j}+19{,}4\hat{k})$ y su magnitud es
+Por lo tanto, la fuerza magnética es $\vec{F}=\zeta (8{,}3\hat{i}+13{,}2\hat{j}+19{,}4\hat{k})$ y su magnitud es
 
 $$
-F=\sqrt{{F}_{x}^{2}+{F}_{y}^{2}+{F}_{z}^{2}}=\zeta\sqrt{{(8{,}3)}^{2}+{(13{,}2)}^{2}+{(19{,}4)}^{2}}=24{,}9\zeta.
+F=\sqrt{{F}_{x}^{2}+{F}_{y}^{2}+{F}_{z}^{2}}=\zeta \sqrt{{(8{,}3)}^{2}+{(13{,}2)}^{2}+{(19{,}4)}^{2}}=24{,}9\zeta .
 $$
 
 Para calcular el ángulo $\theta$, tendríamos que encontrar la magnitud del vector de campo magnético,
@@ -1217,13 +1217,13 @@ $$
 y el producto escalar $\vec{F}\cdot \vec{B}$:
 
 $$
-\vec{F}\cdot \vec{B}={F}_{x}{B}_{x}+{F}_{y}{B}_{y}+{F}_{z}{B}_{z}=(8{,}3\zeta)(7{,}2)+(13{,}2\zeta)(−1{,}0)+(19{,}4\zeta)(−2{,}4)=0.
+\vec{F}\cdot \vec{B}={F}_{x}{B}_{x}+{F}_{y}{B}_{y}+{F}_{z}{B}_{z}=(8{,}3\zeta )(7{,}2)+(13{,}2\zeta )(−1{,}0)+(19{,}4\zeta )(−2{,}4)=0.
 $$
 
 Ahora, sustituyendo en la aquí obtenemos el ángulo $\theta$:
 
 $$
-\text{cos}\,\theta=\frac{\vec{F}\cdot \vec{B}}{FB}=\frac{0}{(18{,}2\zeta)(7{,}6)}=0\,\Rightarrow \,\theta=90\text{°}.
+\text{cos}\,\theta =\frac{\vec{F}\cdot \vec{B}}{FB}=\frac{0}{(18{,}2\zeta )(7{,}6)}=0\,\Rightarrow \,\theta =90\text{°}.
 $$
 
 Por lo tanto, el vector de fuerza magnética es perpendicular al vector de campo magnético. (Podríamos haber ahorrado algo de tiempo si hubiéramos calculado antes el producto escalar).
@@ -1231,24 +1231,24 @@ Por lo tanto, el vector de fuerza magnética es perpendicular al vector de campo
 (b) Dado que el vector $\vec{B}=4{,}5\hat{k}$ tiene un solo componente, podemos realizar la operación de álgebra rápidamente y encontrar el producto vectorial directamente:
 
 $$
-\begin{array}{ll} \vec{F} & =\zeta\vec{u}\,\times \,\vec{B}=\zeta(−5{,}0\hat{i}-2{,}0\hat{j}+3{,}5\hat{k})\,\times \,(4{,}5\hat{k}) \\ & =\zeta[(−5{,}0)(4{,}5)\hat{i}\,\times \,\hat{k}+(−2{,}0)(4{,}5)\hat{j}\,\times \,\hat{k}+(3{,}5)(4{,}5)\hat{k}\,\times \,\hat{k}] \\ & =\zeta[-22{,}5(\text{−}\hat{j})-9{,}0(+\hat{i})+0]=\zeta(−9{,}0\hat{i}+22{,}5\hat{j}). \end{array}
+\begin{array}{ll} \vec{F} & =\zeta \vec{u}\,\times \,\vec{B}=\zeta (−5{,}0\hat{i}-2{,}0\hat{j}+3{,}5\hat{k})\,\times \,(4{,}5\hat{k}) \\ & =\zeta [(−5{,}0)(4{,}5)\hat{i}\,\times \,\hat{k}+(−2{,}0)(4{,}5)\hat{j}\,\times \,\hat{k}+(3{,}5)(4{,}5)\hat{k}\,\times \,\hat{k}] \\ & =\zeta [-22{,}5(\text{−}\hat{j})-9{,}0(+\hat{i})+0]=\zeta (−9{,}0\hat{i}+22{,}5\hat{j}). \end{array}
 $$
 
 La magnitud de la fuerza magnética es
 
 $$
-F=\sqrt{{F}_{x}^{2}+{F}_{y}^{2}+{F}_{z}^{2}}=\zeta\sqrt{{(−9{,}0)}^{2}+{(22{,}5)}^{2}+{(0{,}0)}^{2}}=24{,}2\zeta.
+F=\sqrt{{F}_{x}^{2}+{F}_{y}^{2}+{F}_{z}^{2}}=\zeta \sqrt{{(−9{,}0)}^{2}+{(22{,}5)}^{2}+{(0{,}0)}^{2}}=24{,}2\zeta .
 $$
 
 Dado que el producto escalar es
 
 $$
-\vec{F}\cdot \vec{B}={F}_{x}{B}_{x}+{F}_{y}{B}_{y}+{F}_{z}{B}_{z}=(−9{,}0\zeta)(0)+(22{,}5\zeta)(0)+(0)(4{,}5)=0,
+\vec{F}\cdot \vec{B}={F}_{x}{B}_{x}+{F}_{y}{B}_{y}+{F}_{z}{B}_{z}=(−9{,}0\zeta )(0)+(22{,}5\zeta )(0)+(0)(4{,}5)=0,
 $$
 
 el vector de fuerza magnética $\vec{F}$ es perpendicular al vector de campo magnético $\vec{B}$.
 
-**Importancia.** Incluso sin calcular el producto escalar, podemos predecir que el vector de fuerza magnética debe ser siempre perpendicular al vector de campo magnético debido a la forma en que se construye este vector. En concreto, el vector de fuerza magnética es el producto vectorial $\vec{F}=\zeta\vec{u}\,\times \,\vec{B}$ y, por la definición del producto vectorial (vea la :ref{id="es-2-cnx-uphysics-02-04-prod-v"}), el vector $\vec{F}$ debe ser perpendicular a ambos vectores $\vec{u}$ y $\vec{B}$.
+**Importancia.** Incluso sin calcular el producto escalar, podemos predecir que el vector de fuerza magnética debe ser siempre perpendicular al vector de campo magnético debido a la forma en que se construye este vector. En concreto, el vector de fuerza magnética es el producto vectorial $\vec{F}=\zeta \vec{u}\,\times \,\vec{B}$ y, por la definición del producto vectorial (vea la :ref{id="es-2-cnx-uphysics-02-04-prod-v"}), el vector $\vec{F}$ debe ser perpendicular a ambos vectores $\vec{u}$ y $\vec{B}$.
 :::
 
 :::callout{type="comprobacion" title="Compruebe lo aprendido"}
@@ -1270,39 +1270,37 @@ Para concluir esta sección, queremos destacar que el "producto punto" y el "pro
 
 ### Ecuaciones clave
 
-| Multiplicación por un escalar (ecuación vectorial) | $\vec{B}=\alpha\vec{A}$ |
-| --- | --- |
-| Multiplicación por un escalar (ecuación escalar para las magnitudes) | $B=|\alpha|A$ |
-| Resultante de dos vectores | ${\vec{D}}_{AD}={\vec{D}}_{AC}+{\vec{D}}_{CD}$ |
-| Ley conmutativa | $\vec{A}+\vec{B}=\vec{B}+\vec{A}$ |
-| Ley asociativa | $(\vec{A}+\vec{B})+\vec{C}=\vec{A}+(\vec{B}+\vec{C})$ |
-| Ley distributiva | ${\alpha}_{1}\vec{A}+{\alpha}_{2}\vec{A}=({\alpha}_{1}+{\alpha}_{2})\vec{A}$ |
-| La forma en componentes de un vector en dos dimensiones | $\vec{A}={A}_{x}\hat{i}+{A}_{y}\hat{j}$ |
-| Componentes escalares de un vector en dos dimensiones | $\{\begin{array}{l} {A}_{x}={x}_{e}-{x}_{b} \\ {A}_{y}={y}_{e}-{y}_{b} \end{array}$ |
-| Magnitud de un vector en un plano | $A=\sqrt{{A}_{x}^{2}+{A}_{y}^{2}}$ |
-| El ángulo direccional de un vector en un plano | ${\theta}_{A}={\text{tan}}^{−1}(\frac{{A}_{y}}{{A}_{x}})$ |
-| Componentes escalares de un vector en un plano | $\{\begin{array}{l} {A}_{x}=A\,\text{cos}\,{\theta}_{A} \\ {A}_{y}=A\,\text{sen}\,{\theta}_{A} \end{array}$ |
-| Coordenadas polares en un plano | $\{\begin{array}{l} x=r\,\text{cos}\,\varphi \\ y=r\,\text{sen}\,\varphi \end{array}$ |
-| La forma en componentes de un vector en tres dimensiones | $\vec{A}={A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k}$ |
-| El componente escalar *z* de un vector en tres dimensiones | ${A}_{z}={z}_{e}-{z}_{b}$ |
-| Magnitud de un vector en tres dimensiones | $A=\sqrt{{A}_{x}^{2}+{A}_{y}^{2}+{A}_{z}^{2}}$ |
-| Propiedad distributiva | $\alpha(\vec{A}+\vec{B})=\alpha\vec{A}+\alpha\vec{B}$ |
-| Vector antiparalelo a $\vec{A}$ | $\text{−}\vec{A}=\text{−}{A}_{x}\hat{i}-{A}_{y}\hat{j}-{A}_{z}\hat{k}$ |
-| Vectores iguales | $\vec{A}=\vec{B}\,⇔\,\{\begin{array}{l} {A}_{x}={B}_{x} \\ {A}_{y}={B}_{y} \\ {A}_{z}={B}_{z} \end{array}$ |
-| Componentes de la resultante de *N* vectores | $\{\begin{array}{l} {F}_{Rx}={\sum }_{k=1}^{N}{F}_{kx}={F}_{1x}+{F}_{2x}+\text{…}+{F}_{Nx} \\ {F}_{Ry}={\sum }_{k=1}^{N}{F}_{ky}={F}_{1y}+{F}_{2y}+\text{…}+{F}_{Ny} \\ {F}_{Rz}={\sum }_{k=1}^{N}{F}_{kz}={F}_{1z}+{F}_{2z}+\text{…}+{F}_{Nz} \end{array}$ |
-| Vector unitario general | $\hat{V}=\frac{\vec{V}}{V}$ |
-| Definición del producto escalar | $\vec{A}\cdot \vec{B}=AB\,\text{cos}\,\varphi$ |
-| Propiedad conmutativa del producto escalar | $\vec{A}\cdot \vec{B}=\vec{B}\cdot \vec{A}$ |
-| Propiedad distributiva del producto escalar | $\vec{A}\cdot (\vec{B}+\vec{C})=\vec{A}\cdot \vec{B}+\vec{A}\cdot \vec{C}$ |
-| Producto escalar en términos de componentes escalares de vectores | $\vec{A}\cdot \vec{B}={A}_{x}{B}_{x}+{A}_{y}{B}_{y}+{A}_{z}{B}_{z}$ |
-| Coseno del ángulo entre dos vectores | $\text{cos}\,\varphi=\frac{\vec{A}\cdot \vec{B}}{AB}$ |
-| Productos punto de vectores unitarios | $\hat{i}\cdot \hat{j}=\hat{j}\cdot \hat{k}=\hat{k}\cdot \hat{i}=0$ |
-| Magnitud del producto vectorial (definición) | $|\vec{A}\,\times \,\vec{B}|=AB\,\text{sen}\,\varphi$ |
-| Anticonmutatividad del producto vectorial | $\vec{A}\,\times \,\vec{B}=\text{−}\vec{B}\,\times \,\vec{A}$ |
-| Propiedad distributiva del producto vectorial | $\vec{A}\,\times \,(\vec{B}+\vec{C})=\vec{A}\,\times \,\vec{B}+\vec{A}\,\times \,\vec{C}$ |
-| Productos cruz de vectores unitarios | $\{\begin{array}{l} \hat{i}\,\times \,\hat{j}=+\hat{k}, \\ \hat{j}\,\times \,\hat{k}=+\hat{i}, \\ \hat{k}\,\times \,\hat{i}=+\hat{j}. \end{array}$ |
-| El producto cruz en términos de componentes 
-escalares de vectores | $\vec{A}\,\times \,\vec{B}=({A}_{y}{B}_{z}-{A}_{z}{B}_{y})\hat{i}+({A}_{z}{B}_{x}-{A}_{x}{B}_{z})\hat{j}+({A}_{x}{B}_{y}-{A}_{y}{B}_{x})\hat{k}$ |
+- Multiplicación por un escalar (ecuación vectorial): $\vec{B}=\alpha \vec{A}$
+- Multiplicación por un escalar (ecuación escalar para las magnitudes): $B=|\alpha |A$
+- Resultante de dos vectores: ${\vec{D}}_{AD}={\vec{D}}_{AC}+{\vec{D}}_{CD}$
+- Ley conmutativa: $\vec{A}+\vec{B}=\vec{B}+\vec{A}$
+- Ley asociativa: $(\vec{A}+\vec{B})+\vec{C}=\vec{A}+(\vec{B}+\vec{C})$
+- Ley distributiva: ${\alpha }_{1}\vec{A}+{\alpha }_{2}\vec{A}=({\alpha }_{1}+{\alpha }_{2})\vec{A}$
+- La forma en componentes de un vector en dos dimensiones: $\vec{A}={A}_{x}\hat{i}+{A}_{y}\hat{j}$
+- Componentes escalares de un vector en dos dimensiones: $\{\begin{array}{l} {A}_{x}={x}_{e}-{x}_{b} \\ {A}_{y}={y}_{e}-{y}_{b} \end{array}$
+- Magnitud de un vector en un plano: $A=\sqrt{{A}_{x}^{2}+{A}_{y}^{2}}$
+- El ángulo direccional de un vector en un plano: ${\theta }_{A}={\text{tan}}^{−1}(\frac{{A}_{y}}{{A}_{x}})$
+- Componentes escalares de un vector en un plano: $\{\begin{array}{l} {A}_{x}=A\,\text{cos}\,{\theta }_{A} \\ {A}_{y}=A\,\text{sen}\,{\theta }_{A} \end{array}$
+- Coordenadas polares en un plano: $\{\begin{array}{l} x=r\,\text{cos}\,\varphi \\ y=r\,\text{sen}\,\varphi \end{array}$
+- La forma en componentes de un vector en tres dimensiones: $\vec{A}={A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k}$
+- El componente escalar *z* de un vector en tres dimensiones: ${A}_{z}={z}_{e}-{z}_{b}$
+- Magnitud de un vector en tres dimensiones: $A=\sqrt{{A}_{x}^{2}+{A}_{y}^{2}+{A}_{z}^{2}}$
+- Propiedad distributiva: $\alpha (\vec{A}+\vec{B})=\alpha \vec{A}+\alpha \vec{B}$
+- Vector antiparalelo a $\vec{A}$: $\text{−}\vec{A}=\text{−}{A}_{x}\hat{i}-{A}_{y}\hat{j}-{A}_{z}\hat{k}$
+- Vectores iguales: $\vec{A}=\vec{B}\,⇔\,\{\begin{array}{l} {A}_{x}={B}_{x} \\ {A}_{y}={B}_{y} \\ {A}_{z}={B}_{z} \end{array}$
+- Componentes de la resultante de *N* vectores: $\{\begin{array}{l} {F}_{Rx}={\sum }_{k=1}^{N}{F}_{kx}={F}_{1x}+{F}_{2x}+\text{…}+{F}_{Nx} \\ {F}_{Ry}={\sum }_{k=1}^{N}{F}_{ky}={F}_{1y}+{F}_{2y}+\text{…}+{F}_{Ny} \\ {F}_{Rz}={\sum }_{k=1}^{N}{F}_{kz}={F}_{1z}+{F}_{2z}+\text{…}+{F}_{Nz} \end{array}$
+- Vector unitario general: $\hat{V}=\frac{\vec{V}}{V}$
+- Definición del producto escalar: $\vec{A}\cdot \vec{B}=AB\,\text{cos}\,\varphi$
+- Propiedad conmutativa del producto escalar: $\vec{A}\cdot \vec{B}=\vec{B}\cdot \vec{A}$
+- Propiedad distributiva del producto escalar: $\vec{A}\cdot (\vec{B}+\vec{C})=\vec{A}\cdot \vec{B}+\vec{A}\cdot \vec{C}$
+- Producto escalar en términos de componentes escalares de vectores: $\vec{A}\cdot \vec{B}={A}_{x}{B}_{x}+{A}_{y}{B}_{y}+{A}_{z}{B}_{z}$
+- Coseno del ángulo entre dos vectores: $\text{cos}\,\varphi =\frac{\vec{A}\cdot \vec{B}}{AB}$
+- Productos punto de vectores unitarios: $\hat{i}\cdot \hat{j}=\hat{j}\cdot \hat{k}=\hat{k}\cdot \hat{i}=0$
+- Magnitud del producto vectorial (definición): $|\vec{A}\,\times \,\vec{B}|=AB\,\text{sen}\,\varphi$
+- Anticonmutatividad del producto vectorial: $\vec{A}\,\times \,\vec{B}=\text{−}\vec{B}\,\times \,\vec{A}$
+- Propiedad distributiva del producto vectorial: $\vec{A}\,\times \,(\vec{B}+\vec{C})=\vec{A}\,\times \,\vec{B}+\vec{A}\,\times \,\vec{C}$
+- Productos cruz de vectores unitarios: $\{\begin{array}{l} \hat{i}\,\times \,\hat{j}=+\hat{k}, \\ \hat{j}\,\times \,\hat{k}=+\hat{i}, \\ \hat{k}\,\times \,\hat{i}=+\hat{j}. \end{array}$
+- El producto cruz en términos de componentes escalares de vectores: $\vec{A}\,\times \,\vec{B}=({A}_{y}{B}_{z}-{A}_{z}{B}_{y})\hat{i}+({A}_{z}{B}_{x}-{A}_{x}{B}_{z})\hat{j}+({A}_{x}{B}_{y}-{A}_{y}{B}_{x})\hat{k}$
 
 ### Preguntas conceptuales
 

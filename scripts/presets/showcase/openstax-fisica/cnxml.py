@@ -28,12 +28,16 @@ def local(el: ET.Element) -> str:
 
 # --- MathML → LaTeX -------------------------------------------------------------
 
+# Postext unescapes `\$` inside inline math before MathJax sees it, so a
+# formula's dollar sign is written as a code point.
+DOLLAR = r"\unicode{36}"
+
 MO = {
     "×": r"\times", "·": r"\cdot", "−": "-", "–": "-", "±": r"\pm", "∓": r"\mp", "≈": r"\approx", "≤": r"\le", "≥": r"\ge",
     "≠": r"\ne", "→": r"\to", "←": r"\leftarrow", "⇒": r"\Rightarrow", "∞": r"\infty", "∝": r"\propto", "°": r"^\circ",
     "∑": r"\sum", "∫": r"\int", "∂": r"\partial", "∇": r"\nabla", "√": r"\sqrt", "≡": r"\equiv", "∼": r"\sim", "≃": r"\simeq",
     "∈": r"\in", "∘": r"\circ", "…": r"\ldots", "⋯": r"\cdots", "⋅": r"\cdot", "′": "'", "″": "''", "Δ": r"\Delta", "∆": r"\Delta",
-    "∣": "|", "‖": r"\|", "⟨": r"\langle", "⟩": r"\rangle", "%": r"\%", "&": r"\&", "#": r"\#", "$": r"\$", "_": r"\_", "{": r"\{", "}": r"\}",
+    "∣": "|", "‖": r"\|", "⟨": r"\langle", "⟩": r"\rangle", "%": r"\%", "&": r"\&", "#": r"\#", "$": DOLLAR, "_": r"\_", "{": r"\{", "}": r"\}",
     "⁢": "", "⁡": "", "⁣": "", "​": "", " ": r"\ ", " ": r"\ ",
 }
 GREEK = {
@@ -48,7 +52,7 @@ ACCENTS = {"→": r"\vec", "⃗": r"\vec", "¯": r"\bar", "‾": r"\bar", "^": r
 
 
 def _tex_text(s: str) -> str:
-    return s.replace("\\", r"\textbackslash ").replace("{", r"\{").replace("}", r"\}").replace("_", r"\_").replace("%", r"\%").replace("&", r"\&").replace("#", r"\#").replace("$", r"\$")
+    return s.replace("\\", r"\textbackslash ").replace("{", r"\{").replace("}", r"\}").replace("_", r"\_").replace("%", r"\%").replace("&", r"\&").replace("#", r"\#").replace("$", DOLLAR)
 
 
 def _children(el: ET.Element) -> list[ET.Element]:
@@ -85,7 +89,8 @@ def mathml_to_tex(el: ET.Element) -> str:
         raw = el.text or ""
         if raw.strip() == "":
             return r"\ " if raw else ""
-        return r"\text{" + _tex_text(raw) + "}"
+        # `\text{…}` cannot hold the dollar code point: split around it.
+        return DOLLAR.join(r"\text{" + _tex_text(p) + "}" if p else "" for p in raw.split("$"))
     if tag == "mspace":
         return r"\,"
     if tag == "msup" and len(kids) == 2:
@@ -150,7 +155,8 @@ SUB = str.maketrans("0123456789+-−=()", "₀₁₂₃₄₅₆₇₈₉₊₋�
 
 
 def md_escape(s: str) -> str:
-    return s.replace("\\", "\\\\").replace("*", "\\*").replace("_", "\\_").replace("[", "\\[").replace("#", "\\#")
+    # A bare `$` opens inline math: currency must be escaped.
+    return s.replace("\\", "\\\\").replace("*", "\\*").replace("_", "\\_").replace("[", "\\[").replace("#", "\\#").replace("$", "\\$")
 
 
 @dataclass
@@ -159,6 +165,9 @@ class Ctx:
     module_id: str
     refs: dict[str, str] = field(default_factory=dict)  # cnxml element id → resource id
     words: dict[str, str] = field(default_factory=dict)
+    splash: set[str] = field(default_factory=set)  # ids of the chapter-opener figures
+
+SPLASH_REF = "\x00splash\x00"
 
 
 def inline(el: ET.Element, ctx: Ctx, *, in_title: bool = False, strip: bool = True) -> str:
@@ -189,7 +198,13 @@ def inline(el: ET.Element, ctx: Ctx, *, in_title: bool = False, strip: bool = Tr
             inner = inline(k, ctx).strip()
             url = k.get("url")
             target = k.get("target-id")
-            if url and inner:
+            if "os-embed" in (k.get("class") or ""):
+                pass  # an exercise pulled from the OpenStax API: nothing to print
+            elif target and target in ctx.splash:
+                # The opener photo is set by the chapter design, never placed
+                # as a numbered figure: name it instead of citing it.
+                out.append(SPLASH_REF)
+            elif url and inner:
                 out.append(f"[{inner}]({url})")
             elif url:
                 out.append(url)
@@ -219,8 +234,50 @@ def inline(el: ET.Element, ctx: Ctx, *, in_title: bool = False, strip: bool = Tr
         if k.tail:
             out.append(md_escape(k.tail))
     text = "".join(out).replace("****", "")
+    if SPLASH_REF in text:
+        text = re.sub(r"\s*\(" + SPLASH_REF + r"\)", "", text).replace(SPLASH_REF, ctx.words.get("opener", ""))
     text = re.sub(r"[ \t]+", " ", text)
     return text.strip() if strip else text
+
+
+DISPLAY_RE = re.compile(r"\n*\$\$\n(.*?)\n\$\$\n*", re.S)
+INLINE_MATH_RE = re.compile(r"(?<!\\)\$")
+LIST_LINE_RE = re.compile(r"^(- |\d+\. )")
+
+
+def split_display(text: str) -> list[tuple[str, str]]:
+    """Split inline text holding display equations into ("text", …) and
+    ("math", tex) parts."""
+    parts: list[tuple[str, str]] = []
+    pos = 0
+    for m in DISPLAY_RE.finditer(text):
+        parts.append(("text", text[pos:m.start()]))
+        parts.append(("math", m.group(1).strip()))
+        pos = m.end()
+    parts.append(("text", text[pos:]))
+    # Source line breaks are spaces; a hard break (`  \n`) stays.
+    return [(k, v.strip() if k == "math" else re.sub(r"[ \t]+", " ", re.sub(r"(?<!  )\n", " ", v)).strip()) for k, v in parts if v.strip()]
+
+
+def block_parts(piece: str) -> list[tuple[str, str]]:
+    """Classify an already-rendered block for use inside a list item."""
+    if piece.startswith("$$\n") and piece.endswith("\n$$"):
+        return [("math", piece[3:-3].strip())]
+    if LIST_LINE_RE.match(piece):
+        return [("lines", piece)]
+    return split_display(piece)
+
+
+def snippet(text: str) -> str:
+    """Text for a caption or table cell. Snippets have no math and no `\\$`
+    escape, so a currency sign is written bare."""
+    return text.replace("\\$", "$")
+
+
+def one_line(text: str) -> str:
+    """List items are one line: hard breaks become spaces."""
+    return re.sub(r"\s+", " ", text.replace("  \n", " ")).strip()
+
 
 
 # --- blocks ------------------------------------------------------------------------
@@ -235,6 +292,7 @@ class Resource:
     alt: str = ""
     table: dict | None = None
     wide: bool = False
+    numbered: bool = True
 
 
 @dataclass
@@ -268,7 +326,9 @@ class Converter:
         # First pass: register figure/table ids so `<link target-id>` resolves.
         for el in content.iter():
             tag = local(el)
-            if tag == "figure" and el.get("id"):
+            if tag == "figure" and el.get("id") and "splash" in (el.get("class") or ""):
+                ctx.splash.add(el.get("id"))
+            elif tag == "figure" and el.get("id"):
                 ctx.refs[el.get("id")] = self._rid(el.get("id"))
             elif tag == "table" and el.get("id") and "unnumbered" not in (el.get("class") or ""):
                 ctx.refs[el.get("id")] = self._rid(el.get("id"))
@@ -315,7 +375,7 @@ class Converter:
             elif tag == "equation":
                 self.equation(el, out)
             elif tag == "list":
-                out.append(self.list_md(el))
+                out.extend(self.list_blocks(el))
             elif tag == "table":
                 self.table(el, out)
             elif tag == "exercise":
@@ -361,7 +421,9 @@ class Converter:
         pieces = [p for p in pieces if p]
         if title is not None and pieces:
             t = inline(title, self.ctx, in_title=True)
-            if t and run_in_title:
+            if t and run_in_title and LIST_LINE_RE.match(pieces[0]):
+                pieces.insert(0, f"**{t}.**")
+            elif t and run_in_title:
                 pieces[0] = f"**{t}.** " + pieces[0]
         out.extend(pieces)
 
@@ -381,15 +443,16 @@ class Converter:
             return  # the glossary at the end of the module carries the terms
         if title:
             out.append("#" * min(level, 6) + " " + title)
+        mark = len(out)
         n = 0
         for k in el:
             if local(k) == "exercise":
-                n += 1
-                self.exercise(k, out, numbered=True, number=n)
+                if self.exercise(k, out, numbered=True, number=n + 1):
+                    n += 1
             else:
                 self.blocks_one(k, out) if local(k) != "title" else None
-        if level == 3 and n == 0:
-            pass
+        if title and len(out) == mark:
+            out.pop()  # only API-embedded exercises: nothing left under the heading
 
     def figure(self, el: ET.Element, out: list[str]) -> None:
         media = el.find(q("media"))
@@ -402,7 +465,7 @@ class Converter:
             return
         src = (image.get("src") or "").split("/")[-1]
         cap = el.find(q("caption"))
-        caption = inline(cap, self.ctx) if cap is not None else ""
+        caption = snippet(inline(cap, self.ctx)) if cap is not None else ""
         alt = (media.get("alt") if media is not None else "") or ""
         rid = self.ctx.refs.get(el.get("id") or "") or self._rid(el.get("id") or src)
         res = Resource(rid, "bitmap", file=src, caption=caption, alt=alt)
@@ -450,18 +513,28 @@ class Converter:
             return
         ncols = max(len(r) for r in rows)
         title_el = el.find(q("title"))
-        caption = inline(title_el, self.ctx, in_title=True) if title_el is not None else ""
-        if "unnumbered" in cls:
-            # An unnumbered table is set inline as a plain markdown table.
-            lines = []
-            for i, r in enumerate(rows):
-                lines.append("| " + " | ".join(c["content"] for c in r) + " |")
-                if i == 0:
-                    lines.append("|" + " --- |" * ncols)
-            out.append("\n".join(lines))
-            return
+        caption = snippet(inline(title_el, self.ctx, in_title=True)) if title_el is not None else ""
         rid = self.ctx.refs.get(el.get("id") or "") or self._rid(el.get("id") or f"table-{len(self.mod.resources)}")
-        self.mod.resources.append(Resource(rid, "table", caption=caption, table={"model": {"rows": rows, "headerRowCount": header_rows, "columnWidths": [1] * ncols}}, wide=ncols > 3))
+        # Cells are resource snippets: body-text escapes (`\$`) do not apply there.
+        model = {"rows": [[{**c, "content": snippet(c["content"])} for c in r] for r in rows], "headerRowCount": header_rows, "columnWidths": [1] * ncols}
+        if "unnumbered" in cls:
+            if any(INLINE_MATH_RE.search(c["content"]) for r in rows for c in r):
+                # Formulas do not render in table cells (they print as
+                # LaTeX): a key-equations table becomes a list of
+                # "label: formula" lines, where MathJax sets them.
+                items = []
+                for r in rows[header_rows:]:
+                    cells = [one_line(c["content"]) for c in r if c["content"].strip()]
+                    if cells:
+                        items.append("- " + (f"{cells[0]}: " + " · ".join(cells[1:]) if len(cells) > 1 else cells[0]))
+                if items:
+                    out.append("\n".join(items))
+                return
+            # Anything else is an unnumbered table resource set in place.
+            self.mod.resources.append(Resource(rid, "table", caption=caption, table={"model": model}, wide=ncols > 3, numbered=False))
+            out.append(f'::resource{{id="{rid}"}}')
+            return
+        self.mod.resources.append(Resource(rid, "table", caption=caption, table={"model": model}, wide=ncols > 3))
         ref = f':ref{{id="{rid}" case="lower"}}'
         if out and not out[-1].startswith(("#", ":::", "- ", "$$", "> ", "|")) and f'id="{rid}"' not in out[-1]:
             out[-1] = out[-1] + f" ({ref})"
@@ -479,40 +552,120 @@ class Converter:
         if tex:
             out.append(f"$$\n{tex}\n$$")
 
-    def list_md(self, el: ET.Element, indent: int = 0) -> str:
+    # -- lists ----------------------------------------------------------------------
+    # A Postext list item is one line, and a `$$` fence or an ordered item
+    # right under a line of text is swallowed into it. Items with block
+    # content (equations, figures, several paragraphs) are therefore
+    # flattened: their text joins the item line; a display equation of a
+    # top-level item ends the list (blank line, `$$…$$`, blank line), any
+    # text after it follows as a paragraph, and the next item resumes the
+    # list with its own number. In a nested list the equation stays on the
+    # item line as inline math.
+
+    def item_parts(self, it: ET.Element) -> list[tuple[str, str]]:
+        """The content of a list item in order: ("text", s), ("math", tex)
+        and ("lines", pre-rendered nested list lines)."""
+        parts: list[tuple[str, str]] = []
+        run = ET.Element("run")
+        run.text = it.text
+
+        def flush() -> None:
+            nonlocal run
+            text = inline(run, self.ctx, strip=False)
+            parts.extend(split_display(text))
+            run = ET.Element("run")
+
+        for k in it:
+            tag = local(k)
+            if tag in ("para", "equation", "figure", "list", "note", "table"):
+                flush()
+                if tag == "list":
+                    parts.append(("lines", "\n".join(self.list_blocks(k, nested=True))))
+                elif tag == "figure":
+                    # The figure is a resource; its `:ref` joins the item text.
+                    last = next((i for i in range(len(parts) - 1, -1, -1) if parts[i][0] == "text"), None)
+                    buf = [parts[last][1]] if last is not None else []
+                    self.figure(k, buf)
+                    if last is not None:
+                        parts[last] = ("text", buf[0])
+                        buf = buf[1:]
+                    parts.extend(("text", b) for b in buf)
+                else:
+                    sub: list[str] = []
+                    self.blocks_one(k, sub)
+                    for piece in sub:
+                        parts.extend(block_parts(piece))
+                run.text = k.tail
+            elif tag == "title":
+                run.text = (run.text or "") + (k.tail or "")
+            else:
+                run.append(k)
+        flush()
+        return [(kind, v) for kind, v in parts if v.strip()]
+
+    def item_blocks(self, prefix: str, parts: list[tuple[str, str]], nested: bool, pending: list[str]) -> list[str]:
+        """Render one item. `pending` holds the current run of list lines;
+        the returned blocks (if any) close it and must be emitted after it."""
+        line = prefix
+        has_text = False
+        after: list[str] = []
+        sub_lines: list[str] = []
+        for kind, v in parts:
+            if kind == "text" and not after:
+                line += (" " if has_text else "") + one_line(v)
+                has_text = True
+            elif kind == "text":
+                after.append(v)
+            elif kind == "math" and (nested or not has_text) and not after:
+                line += (" " if has_text else "") + f"${v}$"
+                has_text = True
+            elif kind == "math":
+                after.append(f"$$\n{v}\n$$")
+            elif kind == "lines" and not after:
+                sub_lines += ["  " + ln for ln in v.split("\n")]
+            else:
+                after.append(v)
+        pending.append(line.rstrip())
+        pending.extend(sub_lines)
+        return after
+
+    def list_blocks(self, el: ET.Element, nested: bool = False) -> list[str]:
         ordered = el.get("list-type") == "enumerated"
         style = el.get("number-style") or "arabic"
-        items = []
+        blocks: list[str] = []
+        pending: list[str] = []
         for i, it in enumerate(el.findall(q("item"))):
-            sub_lists = [k for k in it if local(k) == "list"]
-            for k in sub_lists:
-                it.remove(k)
-            text = inline(it, self.ctx)
-            if ordered:
-                marker = f"{i + 1}." if style == "arabic" else f"{chr(ord('a') + i)}."
-                marker = marker if style != "lower-alpha" else f"({chr(ord('a') + i)})"
-                prefix = f"{i + 1}. " if style == "arabic" else "- " + marker + " "
+            if ordered and style == "arabic":
+                prefix = f"{i + 1}. "
+            elif ordered:
+                letter = chr(ord("a") + i)
+                prefix = f"- ({letter}) " if style == "lower-alpha" else f"- {letter.upper() if 'upper' in style else letter}. "
             else:
                 prefix = "- "
-            line = " " * indent + prefix + text
-            for k in sub_lists:
-                line += "\n" + self.list_md(k, indent + 2)
-            items.append(line)
-        return "\n".join(items)
+            after = self.item_blocks(prefix, self.item_parts(it), nested, pending)
+            if after:
+                blocks.append("\n".join(pending))
+                pending = []
+                blocks.extend(after)
+        if pending:
+            blocks.append("\n".join(pending))
+        return blocks
 
-    def exercise(self, el: ET.Element, out: list[str], numbered: bool, number: int | None = None, with_solution: bool = False) -> None:
+    def exercise(self, el: ET.Element, out: list[str], numbered: bool, number: int | None = None, with_solution: bool = False) -> bool:
         problem = el.find(q("problem"))
         solution = el.find(q("solution"))
         pieces: list[str] = []
         if problem is not None:
             self.blocks(problem, pieces, level=5)
         if not pieces:
-            return
+            return False
         if numbered:
-            first = pieces[0]
-            pieces[0] = f"{number}. {first}" if number is not None else f"1. {first}"
-            rest = ["   " + p for p in pieces[1:]]
-            out.append("\n\n".join([pieces[0]] + rest))
+            # The problem is an ordered item: its answer choices nest under it.
+            parts = [p for piece in pieces for p in block_parts(piece)]
+            pending: list[str] = []
+            after = self.item_blocks(f"{number or 1}. ", parts, False, pending)
+            out.append("\n".join(pending))
+            out.extend(after)
         else:
             out.extend(pieces)
         if with_solution and solution is not None:
@@ -521,6 +674,7 @@ class Converter:
             if sol:
                 sol[0] = f"**{self.words['answer']}** " + sol[0]
                 out.extend(sol)
+        return True
 
     def note(self, el: ET.Element, out: list[str]) -> None:
         cls = el.get("class") or ""
@@ -556,7 +710,9 @@ class Converter:
             for k in el:
                 if local(k) != "title":
                     self.blocks_one(k, paras)
-            if paras:
+            if paras and LIST_LINE_RE.match(paras[0]):
+                paras.insert(0, f"**{title}.**")  # a run-in title would turn the list into text
+            elif paras:
                 paras[0] = f"**{title}.** " + paras[0]
             out.extend(paras)
             return
