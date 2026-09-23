@@ -613,7 +613,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       scroll &&
       focused &&
       scrollEnabled &&
-      selectionMoved
+      selectionMoved &&
+      !state.selectionFromViewer
     ) {
       const padding = 16;
       const cr = activeCursorRect.getBoundingClientRect();
@@ -629,7 +630,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         scroll.scrollLeft += cr.right - cn.right + padding;
       }
     }
-  }, [state.selection, activeChapterId, state.config.debug, state.editorFocused, state.resourceSelection, docVersion]);
+  }, [state.selection, state.selectionFromViewer, activeChapterId, state.config.debug, state.editorFocused, state.resourceSelection, docVersion]);
 
   // Imperative API exposed to the viewport toolbar.
   // - regenerate: force a fresh relayout immediately.
