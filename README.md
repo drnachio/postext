@@ -107,32 +107,55 @@ pretext gives you the measurements. postext gives you the layout.
 
 ## Features
 
-Everything below ships today — see the [Roadmap](#roadmap) for what's still in progress.
+Everything below ships today in `postext` and `postext-pdf` 1.2.
 
 ### Column-based layouts
 
-- Single, double, and one-and-a-half column layouts (`layoutType: 'single' | 'double' | 'oneAndHalf'`) with configurable gutter width and an optional column rule (line width and color).
-- Headings can span a single column or the full page width, with parity-aware page breaks (`'odd'`, `'even'`, `'always-odd'`, …) for chapter openings.
+- Single, double, and column-and-a-half layouts (`layoutType: 'single' | 'double' | 'oneAndHalf'`) with configurable gutter width, an optional column rule, mirrored margins, a page-wide baseline grid, and crop marks with bleed for print production.
+- The column-and-a-half layout can turn its side column into a channel for figures, tables and callouts (`sideColumnRole: 'floats'`), placed at the outer edge of every page — the marginal column of a textbook — with side captions set level with their figure.
+- `:::columns` switches the column count mid-page, and `:::pagebreak` forces a break with parity control.
+- Headings span a column or the full page, with parity-aware page breaks (`'odd'`, `'even'`, `'always-odd'`, …) for chapter openings.
+
+### Column balancing
+
+- Columns on a page end level: the engine closes each column's gap with the least visible lever — grid lines above headings, space after lists, room under top floats, and finally loosened or tightened paragraphs within word-spacing and tracking limits.
+- Closing pages of a chapter balance too: the trailing band before a page-span box is levelled, short final columns are evened out, and a syllable is never stranded just to fill a column.
+- Balancing converges chapter by chapter, so a chapter laid out alone and inside the whole book produce the same pages.
 
 ### Optimal justification
 
 - Knuth-Plass optimal line breaking — whole paragraphs are broken globally, not greedily line by line.
-- TeX-pattern hyphenation in 8 locales (English, Spanish, French, German, Italian, Portuguese, Catalan, Dutch).
-- Orphan, widow, and runt control: no stranded first or last lines across column breaks, and a tunable penalty against very short final lines.
+- TeX-pattern hyphenation in 8 locales (English, Spanish, French, German, Italian, Portuguese, Catalan, Dutch); overlong words are divided by syllable, then by character.
+- Orphan, widow, and runt control, plus keep-together rules (a heading with its first lines, a colon with the list it introduces).
 
 ### Resources as first-class citizens
 
-- Bitmaps, SVGs, and tables are declared once alongside the content and incorporated by inline `:ref{id="…"}` references — the first reference floats the resource to a top or bottom band, spanning either the column or the full page.
-- An explicit `::resource{id="…"}` block embed is available as an inline placement override.
-- Typed first-reference numbering: `Figure` and `Table` built-ins plus custom resource types, with configurable reference styles and caption prefixes.
-- In PDF output every `:ref` becomes a clickable cross-reference link that jumps to the resource.
+- Bitmaps, SVGs, and tables are declared once alongside the content and incorporated by inline `:ref{id="…"}` references — the first reference floats the resource into the first free top or bottom band after it, spanning the column, the page, or the side channel.
+- Floats of one numbering sequence never overtake each other; figures can be fitted to the page, and an explicit `::resource{id="…"}` embeds a resource inline.
+- Typed first-reference numbering: `Figure` and `Table` built-ins (localized per document language) plus custom resource types, with configurable reference styles and caption prefixes.
+- Tables taller than the page split between rows across as many pages as needed, repeating their header rows and a *(cont.)* caption; rowspans and group-head rows are never cut.
+- Rotated tables (`placement.rotate`), cell fills, cell images (bitmap or SVG, aligned within the cell), in-cell lists, and inline colour swatches for legends.
+- `diagramStyle.singleInk` recolors SVG diagrams to luminance-mapped tints of a single ink, so diagrams survive single-spot-colour printing.
+
+### Callouts, pull quotes and marginal material
+
+- `:::callout` boxes with named `calloutStyles`: fill, frame, radius, title, icon marker column, and their own paragraph typography — sidebars, key concepts, activities, pull quotes.
+- Callouts can nest, float to the top or bottom of the page (`placement`), sit in the side channel, and split across columns and pages when they cannot be kept together, with a continuation that drops the title and icon.
+- Named `paragraphStyles` applied with `:::paragraphs{style="…"}` for bibliographies, glossaries, notes and hanging-indent entries; tables and figures carry their own notes and source lines.
+- Inline chips, `:chip[text]{style="…"}`: boxed words (word banks, keys, tags) that wrap as one unit, painted as real text in every backend.
+
+### Books, parts and front matter
+
+- Books laid out one chapter at a time with an engine `continuation`: page numbers, parity, heading and figure counters and open parts carry across chapters, or the whole book is built as one document.
+- `:::part` divider pages with their own design, and part palettes that recolour the design and flow of every chapter in the part.
+- Named `headingStyles` that govern a whole section — running heads, page geometry, body typography, palette — so front matter can live beside decimal-numbered chapters in one configuration.
+- `:::toc` prints a table of contents fed by the book's outline, with leaders, numbers and page labels.
 
 ### Styling configuration
 
-- `tableStyle` — table body and header typography fully independent of body text; `tableStyles` adds named variants a table picks with `table.styleId`, and `borderRadius` rounds the outer frame.
-- `captionStyle` — caption typeface, weight, and color.
-- `chipStyles` — named styles for inline chips, `:chip[text]{style="…"}`: boxed words (word banks, keys, tags) that wrap as one unit, with their own fill, outline, radius, padding and text style, painted as real text in every backend.
-- `diagramStyle.singleInk` — recolors SVG diagrams to luminance-mapped tints of a single ink, so diagrams survive single-spot-colour printing.
+- `tableStyle` / `tableStyles` — table typography independent of body text, named variants picked with `table.styleId`, and a rounded outer frame.
+- `captionStyle`, `chipStyles`, `calloutStyles`, `paragraphStyles`, `headingStyles` — every style is a named, reusable object.
+- Color palettes let a whole document re-ink from one place.
 
 ### Math
 
@@ -140,21 +163,27 @@ Everything below ships today — see the [Roadmap](#roadmap) for what's still in
 
 ### Headers & footers
 
-- Design slots composed of text, rule, and box elements with precise placement.
-- Placeholders resolve page numbers, chapter titles, and document metadata at layout time.
+- Design slots composed of text, rule, box, and image elements with precise placement, painted in array order and bounded to the trim box.
+- Placeholders resolve page numbers, chapter numbers and titles, part titles, and document metadata at layout time.
 - Page-parity control — different designs for odd and even pages.
 
 ### Multi-format output
 
 - **Canvas renderer.** Rasterize any page for previews and thumbnails (`renderPage`, `renderPageToCanvas`).
 - **HTML renderer.** Precise absolutely-positioned markup; `renderToHtmlIndexed` returns a per-block index so viewers can patch only the DOM nodes that changed between builds.
-- **PDF renderer.** Print-ready output with document outlines (bookmarks), clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf), and RGB, CMYK, or grayscale color spaces.
+- **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF.
+- **Web Worker.** `postext/worker` runs the pipeline off the main thread with last-wins cancellation.
 - **Format-agnostic core.** The engine computes geometry; renderers translate it.
+
+### Sandbox
+
+- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a visual configuration editor, a resources panel, live Canvas / HTML / PDF previews with source ↔ preview sync, a warnings panel, and permalinks to any page.
+- Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
+- Bilingual showcase bundles — a magazine, a literary edition, an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual — plus a built-in guide to Postext, itself set as a book.
 
 ### Configuration-driven
 
-- Every behavior above is driven by a single configuration object with sensible defaults — an empty config produces a well-typeset document, and each section (page, layout, body text, headings, lists, math, resource types, …) can be overridden independently.
-- Color palettes let a whole document re-ink from one place.
+- Every behavior above is driven by a single configuration object with sensible defaults — an empty config produces a well-typeset document, and each section (page, layout, body text, headings, lists, math, resource types, styles, parts, TOC, …) can be overridden independently.
 
 ### Agent skill: port existing publications
 
@@ -294,7 +323,9 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#inte
 
 ## Roadmap
 
-### Phase 1: Foundation
+Every milestone of the original roadmap is closed. Postext now typesets full books — textbooks, magazines, literary editions and catalogues — end to end, from enriched markdown to accessible, print-ready PDF.
+
+### Phase 1: Foundation ✅
 
 - [x] Core layout data structures (columns, blocks, inline resources, break points)
 - [x] Integration with `@chenglou/pretext` for text measurement
@@ -302,34 +333,45 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#inte
 - [x] Basic single-column layout with paragraph placement
 - [x] Configuration file schema (first draft)
 
-### Phase 2: Editorial Layout
+### Phase 2: Editorial Layout ✅
 
 - [x] Multi-column layout engine
-- [ ] Column balancing algorithm
-- [x] Resource placement within columns (images, figures, tables — floats with column or page span)
-- [ ] Text flow around obstacles (using pretext's `layoutNextLine`)
+- [x] Column balancing algorithm (level columns and closing pages, chapter-wise convergence)
+- [x] Resource placement within columns (images, figures, tables — floats with column, page or side-channel span)
+- [x] Text flow around obstacles (floats, callout boxes, side channel and side captions)
 - [x] Orphan and widow prevention
 - [x] Keep-together rules (headings + first paragraph, colons + lists)
 
-### Phase 3: Professional Typography
+### Phase 3: Professional Typography ✅
 
 - [x] Hyphenation dictionary integration (TeX patterns, 8 locales)
 - [x] Typed resource numbering and cross-references (figures, tables, custom types)
 - [x] LaTeX math rendering (inline and display, MathJax SVG)
 - [x] Custom font loading and embedding (woff2/woff/ttf/otf)
-- [ ] Footnote and endnote systems
-- [ ] Pull quotes and margin notes
+- [x] Notes (resource and table notes, note paragraph styles, marginal glosses in the side channel)
+- [x] Pull quotes and margin notes (callout styles, side-channel boxes)
 - [x] Fine-grained spacing rules (configurable spacing scale)
 - [x] Rag optimization
-- [ ] Configuration file format finalization
+- [x] Configuration file format finalization
 
-### Phase 4: Output Targets
+### Phase 4: Output Targets ✅
 
 - [x] Web renderer (HTML/CSS with precise positioning)
 - [x] PDF renderer (outlines, clickable cross-reference links, RGB/CMYK/grayscale)
 - [x] Interactive playground in `apps/web`
 - [x] Visual configuration editor (stretch goal)
 - [x] Asynchronous layout worker (off-main-thread `buildDocument` with last-wins cancellation)
+
+### Beyond the original plan ✅
+
+- [x] Books, chapters and parts with cross-chapter continuation
+- [x] Front matter, heading styles and a table of contents built from the outline
+- [x] Tables split across pages, rotated tables, cell images and fills
+- [x] Nested, floated and splittable callouts; inline chips
+- [x] Tagged, accessible PDF/UA-1 output and vector figures in PDF
+- [x] `.postext` book bundles and bilingual showcase presets
+
+What comes next is driven by the community — open an issue to propose it.
 
 ---
 
