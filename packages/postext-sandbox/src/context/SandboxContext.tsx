@@ -46,7 +46,7 @@ import { computeWarnings } from '../warnings/compute';
 import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
-import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
+import { withDefaultResourceTypes } from './defaultConfig';
 import { createPostextGuideConfig } from './guideConfig';
 import { createProjectActions } from './projectActions';
 import type { ProjectActions } from './projectActions';
