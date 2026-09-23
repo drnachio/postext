@@ -746,6 +746,10 @@ export interface VDTDocument {
    *  `continuation.part`): `{partTitle}` / `{partNumber}` and the part's
    *  palette overrides apply from page 0 until the document opens a part. */
   partStart?: PartState;
+  /** Parts set without a divider page (`parts.page: false`): each takes
+   *  effect on the page of the first block placed after its fence
+   *  (`afterContentIndex`, the fence's closing content index). */
+  partMarks?: { afterContentIndex: number; number: string; title: string; palette?: Record<string, string> }[];
 }
 
 // ---------------------------------------------------------------------------

@@ -1,3 +1,4 @@
+import type { PartPageInfo } from './placeholders';
 import { applyPartPalettesToFlow } from './partPalette';
 import { TITLE_BREAK_RE, applyTitleBreaks } from '../parse/inlineFormatting';
 import type { DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig } from '../types';
@@ -479,6 +480,24 @@ function synthesiseDefaultTocPartSlot(resolved: ResolvedConfig): ResolvedDesignS
  * After body placement finishes, attach header/footer slots to every page.
  * `resourceById` resolves the `kind: 'image'` elements of the designs.
  */
+/** The pages as `computePartValues` reads them, with the parts set without
+ *  a divider page (`doc.partMarks`) standing on the page of the first block
+ *  placed after their fence. */
+function pagesWithPartMarks(doc: VDTDocument): PartPageInfo[] {
+  if (!doc.partMarks || doc.partMarks.length === 0) return doc.pages;
+  const marked = new Map<number, NonNullable<PartPageInfo['partInfo']>>();
+  for (const mark of doc.partMarks) {
+    let page: number | undefined;
+    for (const b of doc.blocks) {
+      if (b.contentIndex !== undefined && b.contentIndex > mark.afterContentIndex && b.pageIndex !== undefined) {
+        page = page === undefined ? b.pageIndex : Math.min(page, b.pageIndex);
+      }
+    }
+    if (page !== undefined) marked.set(page, { number: mark.number, title: mark.title, ...(mark.palette ? { palette: mark.palette } : {}) });
+  }
+  return doc.pages.map((p, i) => (marked.has(i) && !p.partInfo ? { ...p, partInfo: marked.get(i) } : p));
+}
+
 export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: ReadonlyMap<string, Resource>): void {
   const resolved = doc.config;
   const dpi = resolved.page.dpi;
@@ -493,7 +512,7 @@ export function buildHeadersAndFooters(doc: VDTDocument, resourceById?: Readonly
   // Parity (odd/even elements) counts the pages before a continued document.
   const pageIndexOffset = doc.pageIndexOffset ?? 0;
   const chapterAttrsByPageIndex = computeChapterAttrs(doc.blocks, doc.pages.length, doc.pages);
-  const partValues = computePartValues(doc.pages, doc.partStart);
+  const partValues = computePartValues(pagesWithPartMarks(doc), doc.partStart);
   const { partTitleByPageIndex, partNumberByPageIndex } = partValues;
   const headingLevels = createHeadingLevelResolver(resolved);
   // Styled sections (`{style="…"}` headings): their running heads replace

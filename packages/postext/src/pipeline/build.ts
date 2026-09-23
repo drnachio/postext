@@ -1695,6 +1695,9 @@ export function buildDocumentPass(
   /** Parity of the page break a closed `:::part` still owes (applied before
    *  the next placed block). */
   let pendingPartBreak: HeadingBreakParity | null = null;
+  /** Content index of the closing fence of a part set without a page
+   *  (`parts.page: false`): blocks up to it are skipped. */
+  let skipPartUntil: number | null = null;
 
   /** `advanceToNextPageBoundary`, except that an empty part page is left
    *  behind too (its opener design is content). No floats are reserved on
@@ -2913,6 +2916,22 @@ export function buildDocumentPass(
     // the next chapter's own parity rule) starts clean. A part page counts
     // as content even with an empty body — its opener design fills it — so
     // consecutive parts never share a page.
+    // `parts.page: false`: a part opens no page and its body is not set —
+    // it only takes effect (running heads, palette) from the next content.
+    if (skipPartUntil !== null) {
+      if (blockIdx >= skipPartUntil) skipPartUntil = null;
+      continue;
+    }
+    if (!resolved.parts.page && rawBlock.type === 'containerStart' && rawBlock.containerName === 'part') {
+      const plan = partPlan.byStart.get(blockIdx);
+      if (plan) {
+        const end = [...partPlan.byEnd].find(([, p]) => p === plan)?.[0] ?? blockIdx;
+        const marks = (doc.partMarks ??= []);
+        if (!marks.some((m) => m.afterContentIndex === end)) marks.push({ afterContentIndex: end, number: plan.number, title: plan.title, ...(plan.palette && Object.keys(plan.palette).length > 0 ? { palette: plan.palette } : {}) });
+        skipPartUntil = end;
+        continue;
+      }
+    }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'part') {
       const plan = partPlan.byStart.get(blockIdx);
       if (plan) {

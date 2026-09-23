@@ -2834,9 +2834,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
       <td>inherits <code>bodyText</code></td>
-      <td>Typography of the paragraphs inside the box. Every field inherits the body text when unset.</td>
+      <td>Typography of the paragraphs inside the box. Every field inherits the body text when unset; <code>italicColor</code> sets the colour of italic runs (a pull quote in italics in the box's colour).</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -2953,6 +2953,12 @@ const config: PostextConfig = {
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether a <code>:::part</code> opens a divider page. With <code>false</code> no page is opened and the fence's body is not set: the part's number, title and palette take effect from the next content on, with no break of their own. Typical use: <code>htmlViewer.overrides.parts.page: false</code>, a screen edition without section dividers.</td>
+    </tr>
     <tr>
       <td><code>breakBefore.parity</code></td>
       <td><code>HeadingBreakParity</code></td>

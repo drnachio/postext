@@ -214,6 +214,35 @@ export function collectColumnGaps(
     }
   }
 
+  /** The trailing-callout candidate of a closing column whose last blocks
+   *  are one callout box: the room between the box's foot and the foot of
+   *  the lowest last line in the other text columns of its band. */
+  const closingBoxGap = (d: VDTDocument, page: VDTPage, col: VDTColumn): BalanceCandidate | null => {
+    const visible = col.blocks.filter((b) => !b.hidden);
+    const last = visible[visible.length - 1];
+    if (!last || last.containerId === undefined) return null;
+    const frameAt = visible.findIndex((b) => b.type === 'callout' && b.containerId === last.containerId);
+    const frame = frameAt >= 1 ? visible[frameAt]! : undefined;
+    if (!frame || frame.contentIndex === undefined || (frame.callout?.part ?? 0) > 0) return null;
+    if (!visible.slice(frameAt).every((b) => b.containerId === last.containerId)) return null;
+    let target = -Infinity;
+    for (const other of page.columns) {
+      if (other === col || !isTextColumn(other) || (other.band ?? 0) !== (col.band ?? 0)) continue;
+      const blocks = other.blocks.filter((b) => !b.hidden && b.lines.length > 0);
+      const tail = blocks[blocks.length - 1];
+      const line = tail?.lines[tail.lines.length - 1];
+      if (line) target = Math.max(target, line.bbox.y + line.bbox.height);
+    }
+    const foot = frame.bbox.y + frame.bbox.height;
+    const room = col.bbox.y + col.bbox.height - foot;
+    const gapPx = Math.min(target - foot, room);
+    // Only a small gap closes this way: a box pushed far down would open a
+    // hole between the text above it and itself (the trailing cap levels
+    // such a band instead).
+    if (!(gapPx > d.baselineGrid * 0.1) || gapPx > d.baselineGrid * 6 + EPS) return null;
+    return { contentIndex: frame.contentIndex, part: 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx };
+  };
+
   const gaps: ColumnGap[] = [];
   for (let p = 0; p <= lastContentPage; p++) {
     const page = doc.pages[p]!;
@@ -240,7 +269,14 @@ export function collectColumnGaps(
       // The closing column of a page that does not flow on ends where its
       // text ends — unless a trailing cap cut it level with the columns
       // beside it: then it fills up to the cut like any other.
-      if (c === lastNonEmpty && !pageFlowsOn && !col.trailingCap) continue;
+      // One exception: a closing column that ends with a callout box moves
+      // the box down (the trailing-callout lever alone) so its foot ends
+      // level with the last line of the columns beside it.
+      if (c === lastNonEmpty && !pageFlowsOn && !col.trailingCap) {
+        const closing = closingBoxGap(doc, page, col);
+        if (closing) gaps.push({ pageIndex: p, columnIndex: c, gapLines: 0, candidates: [closing] });
+        continue;
+      }
       // A `:::columnbreak` ended this column on purpose — leave its gap.
       if (col.forcedBreak) continue;
 

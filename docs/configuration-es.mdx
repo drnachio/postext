@@ -2834,9 +2834,9 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
       <td>hereda de <code>bodyText</code></td>
-      <td>Tipografía de los párrafos dentro de la caja. Cada campo hereda del texto de cuerpo cuando no se indica.</td>
+      <td>Tipografía de los párrafos dentro de la caja. Cada campo hereda del texto de cuerpo cuando no se indica; <code>italicColor</code> fija el color de las cursivas (una cita destacada en cursiva con el color de la caja).</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -2953,6 +2953,12 @@ const config: PostextConfig = {
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si un <code>:::part</code> abre una portadilla. Con <code>false</code> no se abre ninguna página ni se compone el cuerpo de la valla: el número, el título y la paleta de la parte rigen a partir del contenido siguiente, sin salto propio. Uso típico: <code>htmlViewer.overrides.parts.page: false</code>, una edición en pantalla sin portadillas.</td>
+    </tr>
     <tr>
       <td><code>breakBefore.parity</code></td>
       <td><code>HeadingBreakParity</code></td>

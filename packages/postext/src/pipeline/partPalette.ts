@@ -3,11 +3,12 @@
 // value: on the pages a part (or a styled section) rules, every colour of the
 // text flow equal to the base value of a palette entry the part overrides
 // takes the part's value — headings, bold and italic runs, references,
-// bullets and numbers, captions, table text and rules. Explicit colours that
+// bullets and numbers, captions, table text and rules, callout boxes (title,
+// background, stripe). Explicit colours that
 // merely coincide with an entry (an inline swatch) keep theirs.
 
 import type { ColorPaletteEntry } from '../types';
-import type { VDTBlock, VDTDocument, VDTLine } from '../vdt';
+import type { VDTBlock, VDTDesignBlock, VDTDocument, VDTLine } from '../vdt';
 
 type Remap = (hex: string | undefined) => string | undefined;
 
@@ -25,10 +26,23 @@ function recolorLines(lines: readonly VDTLine[] | undefined, remap: Remap): void
   }
 }
 
+function recolorDesign(blocks: readonly VDTDesignBlock[], remap: Remap): void {
+  for (const b of blocks) {
+    if (b.kind === 'text' || b.kind === 'rule') b.color = remap(b.color) ?? b.color;
+    else if (b.kind === 'box') {
+      if (b.box.backgroundColor) b.box.backgroundColor = remap(b.box.backgroundColor);
+      if (b.box.borderColor) b.box.borderColor = remap(b.box.borderColor);
+    }
+  }
+}
+
 function recolorBlock(block: VDTBlock, remap: Remap): void {
   const rec = block as unknown as Record<string, string | undefined>;
   for (const key of BLOCK_KEYS) if (rec[key]) rec[key] = remap(rec[key]);
   recolorLines(block.lines, remap);
+  // A callout frame's decoration (background, border, stripe, title) is a
+  // design overlay resolved from the style's palette-linked colours.
+  if (block.type === 'callout' && block.designOverlay) recolorDesign(block.designOverlay.blocks, remap);
   const rb = block.resourceBlock;
   if (!rb) return;
   const rrec = rb as unknown as Record<string, string | undefined>;

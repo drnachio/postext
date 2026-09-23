@@ -215,6 +215,7 @@ function resolveCalloutStyleConfig(
       lineHeight: partial.body?.lineHeight ?? bodyText.lineHeight,
       color: partial.body?.color ?? bodyText.color,
       ...(partial.body?.boldColor ?? bodyText.boldColor ? { boldColor: partial.body?.boldColor ?? bodyText.boldColor } : {}),
+      ...(partial.body?.italicColor ? { italicColor: partial.body.italicColor } : {}),
       textAlign: partial.body?.textAlign ?? (bodyText.textAlign === 'justify' ? 'justify' : 'left'),
       hyphenation: partial.body?.hyphenation ?? bodyText.hyphenation.enabled,
       paragraphSpacing: partial.body?.paragraphSpacing ?? bodyText.paragraphSpacing,
@@ -379,6 +380,7 @@ export function stripCalloutStylesDefaults(
       if (s.body.lineHeight !== undefined) b.lineHeight = s.body.lineHeight;
       if (s.body.color !== undefined) b.color = s.body.color;
       if (s.body.boldColor !== undefined) b.boldColor = s.body.boldColor;
+      if (s.body.italicColor !== undefined) b.italicColor = s.body.italicColor;
       if (s.body.textAlign !== undefined) b.textAlign = s.body.textAlign;
       if (s.body.hyphenation !== undefined) b.hyphenation = s.body.hyphenation;
       if (s.body.paragraphSpacing !== undefined) b.paragraphSpacing = s.body.paragraphSpacing;

@@ -383,6 +383,58 @@ describe('part palette in the flow', () => {
   });
 });
 
+describe('part palette on callout boxes', () => {
+  it('recolours the title and stripe of a box set on the part\'s pages', () => {
+    const band = { hex: '#9bcdbf', model: 'hex' as const, paletteId: 'band' };
+    const cfg: PostextConfig = {
+      ...base,
+      colorPalette: [{ id: 'band', name: 'Band', value: { hex: '#9bcdbf', model: 'hex' } }],
+      calloutStyles: [{
+        id: 'tip', title: 'Tip', span: 'column', placement: 'here',
+        stripe: { enabled: true, side: 'left', width: pt(3), color: band },
+        titleStyle: { color: band },
+      }],
+    };
+    const markdown = [
+      '# Zero', '', 'Opening words.', '',
+      ':::part{number="II" title="Two" palette="band=#f6c297"}', ':::', '',
+      '# One', '', 'Opening words.', '', ':::callout{type="tip"}', 'Inside.', ':::',
+    ].join('\n');
+    const doc = buildDocument({ markdown }, cfg);
+    const frame = doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks)).find((b) => b.type === 'callout')!;
+    const colors = frame.designOverlay!.blocks.map((b) => (b.kind === 'box' ? b.box.backgroundColor : b.kind === 'text' ? b.color : undefined));
+    expect(colors.map((c) => c?.toLowerCase())).toContain('#f6c297');
+    expect(colors.map((c) => c?.toLowerCase())).not.toContain('#9bcdbf');
+  });
+});
+
+describe('parts without a divider page (parts.page: false)', () => {
+  it('opens no page and sets no body, but the part still rules the pages after it', () => {
+    const band = { hex: '#9bcdbf', model: 'hex' as const, paletteId: 'band' };
+    const markdown = [
+      '# Zero', '', 'Opening words.', '',
+      ':::part{number="II" title="Two" palette="band=#f6c297"}', 'Part body line.', ':::', '',
+      '# One', '', 'Opening words.', '', '## After', '', 'More words.',
+    ].join('\n');
+    const cfg = (page: boolean): PostextConfig => ({
+      ...base,
+      colorPalette: [{ id: 'band', name: 'Band', value: { hex: '#9bcdbf', model: 'hex' } }],
+      headings: { levels: [{ level: 1, breakBefore: { enabled: true, parity: 'odd' } }, { level: 2, color: band }] },
+      parts: { ...base.parts, page },
+    });
+    const withPage = buildDocument({ markdown }, cfg(true));
+    const without = buildDocument({ markdown }, cfg(false));
+    expect(withPage.pages.some((p) => p.partInfo)).toBe(true);
+    expect(without.pages.some((p) => p.partInfo)).toBe(false);
+    expect(without.pages.length).toBeLessThan(withPage.pages.length);
+    const texts = without.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks)).flatMap((b) => b.lines.map((l) => l.text)).join(' ');
+    expect(texts).not.toContain('Part body line');
+    const after = without.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks))
+      .find((b) => b.type === 'heading' && b.lines.some((l) => l.text.includes('After')))!;
+    expect(after.color.toLowerCase()).toBe('#f6c297');
+  });
+});
+
 describe('parsePartNumber', () => {
   it('parses decimals and roman numerals (either case), else undefined', () => {
     expect(parsePartNumber('7')).toBe(7);
