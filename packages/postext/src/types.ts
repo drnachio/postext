@@ -1206,9 +1206,10 @@ export interface CalloutStyleConfig {
    *  of the cut (`keepTogether: false`, or a keep-together box taller than
    *  a full column). Default 2: a box never breaks
    *  leaving a lone line at the foot of a column or the head of the next.
-   *  It guards text only: a side holding a figure, table or display formula
-   *  is acceptable whatever its line count (a cut inside a paragraph still
-   *  counts the lines on each side). */
+   *  It guards text only: a side holding a figure, table, display formula
+   *  or nested box is acceptable whatever its line count (a cut inside a
+   *  paragraph still counts the lines on each side). A nested box splits
+   *  by its own style's `keepTogether` / `splitMinLines`. */
   splitMinLines?: number;
 }
 

@@ -22,9 +22,21 @@
  *
  * A style with `keepTogether: false` may be split by the placement code
  * between its children; every fragment is laid out here as a box of its own
- * (`continuation` drops the title and icon of the later ones). Limits:
- * nested `:::callout` fences inside a callout are flattened into the outer
- * box; `width: 'auto'` shrink-wraps the title only and ignores the children.
+ * (`continuation` drops the title and icon of the later ones).
+ *
+ * A `:::callout` fence inside a box is a box of its own: laid out
+ * recursively with its own style at the parent's inner width, it stacks
+ * as one child of the parent (its `marginTop` / `marginBottom` collapse
+ * with its neighbours like a paragraph's). Its `span` and `placement` are
+ * ignored — it always flows inside its parent. Its frame and children join
+ * the parent's flat child list (frame first) and keep the top-level box's
+ * `containerId`, so placement and balancing still see one unit;
+ * `calloutPath` records the nesting. A fragment of a split box that opens
+ * or ends inside a nested box (`openNested`, an unclosed nested fence)
+ * redraws the nested frame too, as a continuation when it opens inside it.
+ *
+ * Limit: `width: 'auto'` shrink-wraps the title only and ignores the
+ * children.
  */
 
 import type { ContentBlock, DirectiveAttrs } from '../parse';
@@ -233,13 +245,48 @@ export interface CalloutLayoutInput {
   /** The box lands on a verso of mirrored margins: an `'outer'` corner icon
    *  hangs on the left corner there. */
   mirrored?: boolean;
+  /** Nested boxes a continuation fragment opens inside, outermost first:
+   *  their opening markers are not among `children`, which start inside
+   *  the innermost one. Each is redrawn as a continuation box around the
+   *  children up to its closing marker (or the end of `children`). */
+  openNested?: readonly OpenNestedCallout[];
+  /** `calloutPath` of the box's frame and children: set when the box is
+   *  itself nested (see `VDTBlock.calloutPath`). */
+  nestPath?: readonly number[];
 }
+
+/** An enclosing nested fence a fragment opens inside (see `openNested`). */
+export interface OpenNestedCallout {
+  /** Content index of its opening marker. */
+  idx: number;
+  block: ContentBlock;
+}
+
+/** A nested box laid out inside its parent (see {@link CalloutUnit}). */
+export interface NestedCalloutLayout {
+  result: CalloutLayoutResult;
+  style: ResolvedCalloutStyleConfig;
+  /** Content index of the nested fence's opening marker. */
+  startIdx: number;
+  /** Content index of its closing marker; `undefined` when the laid-out
+   *  range ends inside the box. */
+  endIdx?: number;
+}
+
+/** A direct item of a laid-out box: a child block, or a nested box (whose
+ *  frame and blocks also sit in the flat `children`). */
+export type CalloutUnit =
+  | { kind: 'block'; block: VDTBlock }
+  | { kind: 'box'; box: NestedCalloutLayout };
 
 export interface CalloutLayoutResult {
   /** The frame block (`type: 'callout'`); decoration on `designOverlay`. */
   frame: VDTBlock;
-  /** Content blocks in reading order, block-relative to the frame origin. */
+  /** Content blocks in reading order, block-relative to the frame origin —
+   *  a nested box's frame followed by its own blocks, recursively. */
   children: VDTBlock[];
+  /** The box's direct items in reading order (the split code walks them). */
+  units: CalloutUnit[];
   /** Frame width actually used (`width`, or the shrink-wrapped width for
    *  `width: 'auto'`). */
   width: number;
@@ -297,6 +344,12 @@ function offsetBlock(blk: VDTBlock, ox: number, oy: number): void {
   if (blk.separatorX !== undefined) blk.separatorX += ox;
   if (blk.bulletY !== undefined) blk.bulletY += oy;
   if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, ox, oy);
+  // A nested box's frame carries its decoration on the overlay.
+  if (blk.designOverlay) {
+    blk.designOverlay.bbox.x += ox;
+    blk.designOverlay.bbox.y += oy;
+    for (const b of blk.designOverlay.blocks) offsetDesignBlock(b, ox, oy);
+  }
 }
 
 function offsetDesignBlock(b: VDTDesignBlock, ox: number, oy: number): void {
@@ -448,6 +501,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // the line boundaries that level the columns best, and takes the height
   // of the tallest column.
   const childBlocks: VDTBlock[] = [];
+  const units: CalloutUnit[] = [];
+  const nestPath = input.nestPath && input.nestPath.length > 0 ? input.nestPath : undefined;
   const columnGapPx = px(style.columnGap);
   /** Stacking state shared by the box and each columns group. */
   interface Stack {
@@ -460,7 +515,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const isLastRealOf = (k: number): boolean => children.slice(k + 1).every((c) => c.type === 'directive' || isMarkerBlock(c));
   /** Lay out one child at `width` from `x`, appending it to `into` and
    *  advancing the stack. */
-  const placeChild = (raw: ContentBlock, k: number, width: number, x: number, st: Stack, into: VDTBlock[]): VDTBlock | undefined => {
+  const placeChild = (raw: ContentBlock, k: number, width: number, x: number, st: Stack, into: VDTBlock[], unitsInto: CalloutUnit[]): VDTBlock | undefined => {
     const blockIdx = childStartIdx + k;
     const measuredBlock = measureContentBlock(raw, blockIdx, width, derivedCtx, {
       styleOverride: input.paragraphStyleFor?.(blockIdx),
@@ -487,6 +542,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     blk.dirty = false;
     blk.snappedToGrid = false;
     blk.headingLevel = headingLevel;
+    if (nestPath) blk.calloutPath = [...nestPath];
     if (numberPrefix) blk.numberPrefix = numberPrefix;
     blk.sourceMap = absoluteSourceMap;
     blk.plainPrefixLen = prefixLen;
@@ -566,11 +622,89 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     }
 
     into.push(blk);
+    unitsInto.push({ kind: 'block', block: blk });
     st.cursorY += height;
     st.prevMarginBottom = bs.marginBottomPx;
     st.prevWasListItem = vdtType === 'listItem';
     st.first = false;
     return blk;
+  };
+
+  /** Lay out the nested box whose fence opens with `open` (content index
+   *  `openIdx`) over `children[k0 … k1 - 1]` — `k1` is its closing marker's
+   *  position, or `children.length` when the range ends inside it — at
+   *  `width` from `x`, appending its frame and blocks to `into` (one unit)
+   *  and advancing the stack. `reopened` marks a box the fragment opens
+   *  inside: a continuation of it, holding the line cut `lineFrom` and the
+   *  boxes `openRest` it opens inside in turn. Returns the blocks, frame
+   *  first, or `undefined` when no style applies (then the caller flattens). */
+  const placeNested = (
+    open: ContentBlock,
+    openIdx: number,
+    k0: number,
+    k1: number,
+    width: number,
+    x: number,
+    st: Stack,
+    into: VDTBlock[],
+    unitsInto: CalloutUnit[],
+    reopened?: { openRest: readonly OpenNestedCallout[] },
+  ): VDTBlock[] | undefined => {
+    const nestedStyle = pickCalloutStyle(input.resolved.calloutStyles, open.containerAttrs?.type);
+    if (!nestedStyle || open.containerId === undefined) return undefined;
+    const closed = k1 < children.length;
+    const nested = layoutCallout({
+      style: nestedStyle,
+      attrs: open.containerAttrs ?? {},
+      children: children.slice(k0, k1),
+      childStartIdx: childStartIdx + k0,
+      width,
+      ctx,
+      resolved: input.resolved,
+      containerId,
+      frameId: input.nextChildId(),
+      nextChildId: input.nextChildId,
+      ...(input.paragraphStyleFor ? { paragraphStyleFor: input.paragraphStyleFor } : {}),
+      ...(input.bodyOffset !== undefined ? { bodyOffset: input.bodyOffset } : {}),
+      continuation: !!reopened,
+      ...(reopened && input.lineFrom !== undefined ? { lineFrom: input.lineFrom } : {}),
+      ...(!closed && input.lineTo !== undefined ? { lineTo: input.lineTo } : {}),
+      ...(reopened && reopened.openRest.length > 0 ? { openNested: reopened.openRest } : {}),
+      mirrored: input.mirrored,
+      nestPath: [...(nestPath ?? []), open.containerId],
+    });
+    // Spacing above: as a paragraph's (margin collapsing, none at the top
+    // of the box beyond the title gap).
+    const spacing = st.first ? st.prevMarginBottom : Math.max(st.prevMarginBottom, nested.marginTopPx);
+    st.cursorY += spacing;
+    const { frame } = nested;
+    frame.contentIndex = openIdx;
+    // The box always flows inside its parent.
+    if (frame.callout) { frame.callout.span = 'column'; frame.callout.placement = 'here'; }
+    const bodyOff = input.bodyOffset ?? ctx.bodyOffset;
+    const firstRaw = reopened ? children[k0] : open;
+    const lastRaw = closed ? children[k1] : children[k1 - 1];
+    if (firstRaw) frame.sourceStart = firstRaw.sourceStart + bodyOff;
+    if (lastRaw) frame.sourceEnd = lastRaw.sourceEnd + bodyOff;
+    offsetCalloutToAbsolute(nested, x, st.cursorY);
+    const blocks = [frame, ...nested.children];
+    into.push(...blocks);
+    unitsInto.push({
+      kind: 'box',
+      box: { result: nested, style: nestedStyle, startIdx: openIdx, ...(closed ? { endIdx: childStartIdx + k1 } : {}) },
+    });
+    st.cursorY += nested.totalHeight;
+    st.prevMarginBottom = nested.marginBottomPx;
+    st.prevWasListItem = false;
+    st.first = false;
+    return blocks;
+  };
+  /** Position of the marker closing the nested fence `id` opened before
+   *  position `from`, or `children.length` when the range ends inside it. */
+  const closeOf = (id: number | undefined, from: number): number => {
+    let e = from;
+    while (e < children.length && !(children[e]!.type === 'containerEnd' && children[e]!.containerId === id)) e++;
+    return e;
   };
 
   /** The tail of a text block cut at line `l`: a block of its own with the
@@ -586,7 +720,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     return tail;
   };
 
-  /** A `:::columns{count=N}` group: children `k0 … k1 - 1` in N columns. */
+  /** A `:::columns{count=N}` group: children `k0 … k1 - 1` in N columns.
+   *  A nested box among them is one item: never cut, moved whole. */
   const placeColumnsGroup = (k0: number, k1: number, count: number, st: Stack, breaks?: number[]): void => {
     const cols = Math.max(1, Math.min(6, count));
     const colW = Math.max(1, (innerWidth - columnGapPx * (cols - 1)) / cols);
@@ -594,20 +729,32 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const spacing = st.first ? st.prevMarginBottom : st.prevMarginBottom;
     const groupTop = st.cursorY + spacing;
     const gst: Stack = { cursorY: 0, prevMarginBottom: 0, prevWasListItem: false, first: true };
-    const stack: VDTBlock[] = [];
+    /** The group's items: a child block, or a nested box's blocks (frame first). */
+    const stack: { blocks: VDTBlock[]; unit: CalloutUnit }[] = [];
     for (let k = k0; k < k1; k++) {
       const raw = children[k]!;
+      const into: VDTBlock[] = [];
+      const unitsInto: CalloutUnit[] = [];
+      if (raw.type === 'containerStart' && raw.containerName === 'callout') {
+        const e = closeOf(raw.containerId, k + 1);
+        if (placeNested(raw, childStartIdx + k, k + 1, Math.min(e, k1), colW, innerX, gst, into, unitsInto)) {
+          stack.push({ blocks: into, unit: unitsInto[0]! });
+          k = e;
+          continue;
+        }
+      }
       if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
-      placeChild(raw, k, colW, innerX, gst, stack);
+      if (placeChild(raw, k, colW, innerX, gst, into, unitsInto)) stack.push({ blocks: into, unit: unitsInto[0]! });
     }
     if (stack.length === 0) return;
     const total = gst.cursorY;
-    // Cut candidates: block boundaries and the line boundaries of text blocks.
+    // Cut candidates: item boundaries and the line boundaries of text blocks.
     interface Cut { y: number; block: number; line: number }
     const candidates: Cut[] = [];
-    stack.forEach((blk, i) => {
+    stack.forEach((item, i) => {
+      const blk = item.blocks[0]!;
       if (i > 0) candidates.push({ y: blk.bbox.y, block: i, line: 0 });
-      const cuttable = blk.type !== 'resource' && blk.type !== 'mathDisplay' && blk.lines.length > 1 && !blk.mathRender;
+      const cuttable = item.unit.kind === 'block' && blk.type !== 'resource' && blk.type !== 'mathDisplay' && blk.lines.length > 1 && !blk.mathRender;
       if (cuttable) {
         for (let l = 1; l < blk.lines.length; l++) candidates.push({ y: blk.lines[l]!.bbox.y, block: i, line: l });
       }
@@ -620,7 +767,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       for (const b of breaks.slice(0, cols - 1)) {
         const i = b - 1;
         if (i <= 0 || i >= stack.length) continue;
-        const y = stack[i]!.bbox.y;
+        const y = stack[i]!.blocks[0]!.bbox.y;
         if (y <= prevY + 0.01) continue;
         cuts.push({ y, block: i, line: 0 });
         prevY = y;
@@ -638,19 +785,20 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         prevY = best.y;
       }
     }
-    // Split the stack at the cuts into columns of blocks; a cut inside a
+    // Split the stack at the cuts into columns of items; a cut inside a
     // text block leaves its head behind and opens the next column with the
     // tail (a block of its own, bullet-less).
-    const columns: VDTBlock[][] = [[]];
+    const columns: { blocks: VDTBlock[]; unit: CalloutUnit }[][] = [[]];
     const columnStarts: number[] = [0];
     let cutIdx = 0;
     for (let i = 0; i < stack.length; i++) {
-      let blk = stack[i]!;
+      let item = stack[i]!;
       while (cutIdx < cuts.length && cuts[cutIdx]!.block === i && cuts[cutIdx]!.line === 0) {
         columns.push([]); columnStarts.push(cuts[cutIdx]!.y); cutIdx++;
       }
       let consumed = 0;
       while (cutIdx < cuts.length && cuts[cutIdx]!.block === i && cuts[cutIdx]!.line > 0) {
+        const blk = item.blocks[0]!;
         const cut = cuts[cutIdx]!;
         const l = cut.line - consumed;
         cutIdx++;
@@ -659,22 +807,25 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         const tail = tailOf(blk, l);
         blk.lines = blk.lines.slice(0, l);
         blk.bbox = createBoundingBox(blk.bbox.x, blk.bbox.y, blk.bbox.width, l * lh);
-        columns[columns.length - 1]!.push(blk);
+        columns[columns.length - 1]!.push(item);
         offsetBlock(tail, 0, cut.y);
         columns.push([]); columnStarts.push(cut.y);
         consumed += l;
-        blk = tail;
+        item = { blocks: [tail], unit: { kind: 'block', block: tail } };
       }
-      columns[columns.length - 1]!.push(blk);
+      columns[columns.length - 1]!.push(item);
     }
     let groupHeight = 0;
-    columns.forEach((blocks, c) => {
+    columns.forEach((items, c) => {
       const shiftX = c * (colW + columnGapPx);
       const shiftY = groupTop - (columnStarts[c] ?? 0);
-      for (const blk of blocks) {
-        offsetBlock(blk, shiftX, shiftY);
-        childBlocks.push(blk);
-        groupHeight = Math.max(groupHeight, blk.bbox.y + blk.bbox.height - groupTop);
+      for (const item of items) {
+        for (const blk of item.blocks) {
+          offsetBlock(blk, shiftX, shiftY);
+          childBlocks.push(blk);
+          groupHeight = Math.max(groupHeight, blk.bbox.y + blk.bbox.height - groupTop);
+        }
+        units.push(item.unit);
       }
     });
     st.cursorY = groupTop + groupHeight;
@@ -685,8 +836,24 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
 
   const st: Stack = { cursorY, prevMarginBottom: hasTitle ? gapPx : 0, prevWasListItem: false, first: true };
   if (!isAuto) {
-    for (let k = 0; k < children.length; k++) {
+    let k0 = 0;
+    // A continuation opening inside a nested box redraws it (and the boxes
+    // it opens inside in turn) around the children up to its closing marker.
+    const [reopen, ...openRest] = input.openNested ?? [];
+    if (reopen) {
+      const e = closeOf(reopen.block.containerId, 0);
+      placeNested(reopen.block, reopen.idx, 0, e, innerWidth, innerX, st, childBlocks, units, { openRest });
+      k0 = e + 1;
+    }
+    for (let k = k0; k < children.length; k++) {
       const raw = children[k]!;
+      if (raw.type === 'containerStart' && raw.containerName === 'callout') {
+        const e = closeOf(raw.containerId, k + 1);
+        if (placeNested(raw, childStartIdx + k, k + 1, e, innerWidth, innerX, st, childBlocks, units)) {
+          k = e;
+          continue;
+        }
+      }
       if (raw.type === 'containerStart' && raw.containerName === 'columns') {
         let e = k + 1;
         while (e < children.length && !(children[e]!.type === 'containerEnd' && children[e]!.containerName === 'columns' && children[e]!.containerId === raw.containerId)) e++;
@@ -697,7 +864,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         continue;
       }
       if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
-      placeChild(raw, k, innerWidth, innerX, st, childBlocks);
+      placeChild(raw, k, innerWidth, innerX, st, childBlocks, units);
     }
   }
   cursorY = st.cursorY;
@@ -895,6 +1062,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   frame.dirty = false;
   frame.snappedToGrid = false;
   frame.containerId = containerId;
+  if (nestPath) frame.calloutPath = [...nestPath];
   frame.designOverlay = overlay;
   frame.callout = {
     styleId: style.id,
@@ -911,6 +1079,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   return {
     frame,
     children: childBlocks,
+    units,
     width,
     totalHeight: frameHeight,
     marginTopPx: px(style.marginTop),

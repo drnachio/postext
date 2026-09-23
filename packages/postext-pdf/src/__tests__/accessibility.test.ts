@@ -386,6 +386,32 @@ describe('accessible (tagged) PDF output', () => {
     expect(pageContent(plain, 0)).not.toContain('BDC');
   });
 
+  it('nests the Div of a nested callout inside its parent box', async () => {
+    const md = [
+      ':::callout{type="card"}', 'Statement.', '',
+      ':::callout{type="answer"}', 'First answer.', ':::', '',
+      ':::callout{type="answer"}', '- An item', '- Another', ':::', '',
+      'Closing words.', ':::',
+    ].join('\n');
+    const cfg: PostextConfig = {
+      ...config,
+      calloutStyles: [
+        { id: 'card', title: 'Exercise' },
+        { id: 'answer', title: 'Answer', background: { hex: '#ffffff', model: 'hex' as const }, border: { enabled: true } },
+      ],
+    };
+    const out = await PDFDocument.load(await renderToPdf(buildDocument({ markdown: md }, cfg), { fontProvider }));
+    const root = structRoot(out);
+    const outer = root.kids.filter((k) => k.type === 'Div');
+    expect(outer).toHaveLength(1);
+    // Title, statement, two nested boxes, closing paragraph — in order.
+    expect(outer[0]!.kids.map((k) => k.type)).toEqual(['P', 'P', 'Div', 'Div', 'P']);
+    const [first, second] = outer[0]!.kids.filter((k) => k.type === 'Div');
+    expect(first!.kids.map((k) => k.type)).toEqual(['P', 'P']);
+    expect(second!.kids.map((k) => k.type)).toEqual(['P', 'L']);
+    expect(unmarkedPainting(pageContent(out, 0))).toEqual([]);
+  });
+
   it('falls back to the first heading as the title', async () => {
     const doc = buildDocument({ markdown: '# Untitled chapter\n\nText.' }, config);
     const out = await PDFDocument.load(await renderToPdf(doc, { fontProvider }));

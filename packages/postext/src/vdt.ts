@@ -487,6 +487,11 @@ export interface VDTBlock {
    *  inside it. Column balancing and keep-with-next rollbacks treat such
    *  blocks as part of one unbreakable unit. */
   containerId?: number;
+  /** Inside a nested `:::callout` (a box laid out within another box): the
+   *  parser `containerId`s of the nested boxes enclosing the block,
+   *  outermost first — the top-level box stays `containerId`. A nested
+   *  frame's own id is the last entry of its path. Absent at top level. */
+  calloutPath?: number[];
 }
 
 /** Resolved geometry of a `:::callout` frame block (see `VDTBlock.callout`). */

@@ -84,6 +84,7 @@ import {
   planCallouts,
   resolveCalloutAttrs,
   type CalloutLayoutResult,
+  type CalloutUnit,
   type PlannedCallout,
 } from './calloutLayout';
 import { layoutResourceBlock, planTableSlice, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
@@ -1831,6 +1832,20 @@ export function buildDocumentPass(
       // A cut inside child `to.child` includes that child (its first
       // `to.line` lines); a cut at a child's head excludes it.
       const toChild = to.line > 0 ? to.child + 1 : to.child;
+      // Nested boxes still open at `from` (their closing markers leading
+      // the range close them): the fragment opens inside them.
+      const open: { idx: number; block: ContentBlock }[] = [];
+      for (let k = 0; k < from.child; k++) {
+        const c = children[k]!;
+        if (c.containerName !== 'callout') continue;
+        if (c.type === 'containerStart') open.push({ idx: startIdx + 1 + k, block: c });
+        else if (c.type === 'containerEnd') open.pop();
+      }
+      for (let k = from.child; k < children.length && open.length > 0; k++) {
+        const c = children[k]!;
+        if (c.type !== 'containerEnd' || c.containerId !== open[open.length - 1]!.block.containerId) break;
+        open.pop();
+      }
       return layoutCallout({
         style,
         attrs: plan.attrs,
@@ -1846,6 +1861,7 @@ export function buildDocumentPass(
         paragraphStyleFor: (idx) => paragraphContainers.byBlock[idx]?.style,
         ...(from.line > 0 ? { lineFrom: from.line } : {}),
         ...(to.line > 0 ? { lineTo: to.line } : {}),
+        ...(open.length > 0 ? { openNested: open } : {}),
         mirrored,
       });
     };
@@ -1873,12 +1889,16 @@ export function buildDocumentPass(
    *  is at most `roomPx` tall. Cuts fall between children or between the
    *  lines of a text child. `splitMinLines` guards text: a cut between
    *  children leaves on each side at least that many text lines or at least
-   *  one indivisible block (a figure, table or display formula); a cut
-   *  inside a text child counts every line on its side, a block as one
-   *  line, as before. The full layout's geometry ranks the candidates (box
-   *  bottom = content bottom at the cut + the box's tail below its last
-   *  child); the deepest candidate that fits is laid out for real and
-   *  taken when it truly fits. `null` when none does. */
+   *  one indivisible block (a figure, table, display formula or nested
+   *  box); a cut inside a text child counts every line on its side, a block
+   *  as one line, as before. A nested box that may split itself
+   *  (`keepTogether: false`, or taller than a full column) offers the cuts
+   *  inside it too, by its own `splitMinLines` over its own children; the
+   *  fragments on both sides redraw its frame. The full layout's geometry
+   *  ranks the candidates (box bottom = content bottom at the cut + the
+   *  tails of the boxes closed below it); the deepest candidate that fits
+   *  is laid out for real and taken when it truly fits. `null` when none
+   *  does. */
   const splitCalloutFragment = (
     L: CalloutLayouter,
     from: CalloutCut,
@@ -1890,51 +1910,78 @@ export function buildDocumentPass(
     mirrored = false,
   ): CalloutFragment | null => {
     const full = L.layoutRange(from, L.end, width, frameId, continuation, mirrored);
-    const lastChild = full.children[full.children.length - 1];
-    if (!lastChild) return null;
-    const tail = full.totalHeight - (lastChild.bbox.y + lastChild.bbox.height);
     /** Figures, tables and display formulas: never cut, not text lines. */
     const indivisible = (c: VDTBlock): boolean => c.type === 'resource' || c.type === 'mathDisplay';
-    const lineCount = (c: VDTBlock): number => Math.max(1, c.lines.length);
-    const totalLines = full.children.reduce((n, c) => n + lineCount(c), 0);
-    const totalBlocks = full.children.filter(indivisible).length;
-    /** Candidate cuts with the head's content bottom, line count (a block
-     *  as one line) and indivisible-block count. */
-    const candidates: { cut: CalloutCut; bottom: number; headLines: number; headBlocks: number }[] = [];
-    let linesBefore = 0;
-    let blocksBefore = 0;
-    for (let i = 0; i < full.children.length; i++) {
-      const c = full.children[i]!;
-      const k = (c.contentIndex ?? L.childBase) - L.childBase;
-      const cuttable = !indivisible(c) && c.lines.length > 1;
-      // The first laid-out child of a continuation opens after `from.line`
-      // lines: cuts inside it are counted from the child's own head.
-      const lineBase = k === from.child ? from.line : 0;
-      if (cuttable) {
-        for (let l = 1; l < c.lines.length; l++) {
-          const line = c.lines[l - 1]!;
-          candidates.push({ cut: { child: k, line: lineBase + l }, bottom: line.bbox.y + line.bbox.height, headLines: linesBefore + l, headBlocks: blocksBefore });
+    const unitBottom = (u: CalloutUnit): number => {
+      const b = u.kind === 'block' ? u.block.bbox : u.box.result.frame.bbox;
+      return b.y + b.height;
+    };
+    /** Room a box keeps under its last item (padding, border, icon growth). */
+    const tailOf = (r: CalloutLayoutResult): number => {
+      const last = r.units[r.units.length - 1];
+      return last ? r.frame.bbox.y + r.totalHeight - unitBottom(last) : 0;
+    };
+    if (full.units.length === 0) return null;
+    const tail = tailOf(full);
+    /** Candidate cuts with the head's content bottom. */
+    const candidates: { cut: CalloutCut; bottom: number }[] = [];
+    /** Collect the cuts among `units` (one box's items; `below` = the tails
+     *  of the nested boxes around them), each side of a cut holding enough
+     *  by the box's `min` lines: a block counts as one line, a nested box
+     *  as one indivisible block. */
+    const collect = (units: readonly CalloutUnit[], minLines: number, below: number): void => {
+      const min = Math.max(1, minLines);
+      const lineCount = (u: CalloutUnit): number => (u.kind === 'block' ? Math.max(1, u.block.lines.length) : 1);
+      const isBlock = (u: CalloutUnit): boolean => u.kind === 'box' || indivisible(u.block);
+      const totalLines = units.reduce((n, u) => n + lineCount(u), 0);
+      const totalBlocks = units.filter(isBlock).length;
+      /** A side of a cut holds enough: `lines` (blocks included) of which
+       *  `blocks` are indivisible. Between children, one block suffices or
+       *  the text lines alone meet the minimum; inside a text child, the
+       *  lines do. */
+      const holds = (lines: number, blocks: number, betweenChildren: boolean): boolean =>
+        betweenChildren ? blocks > 0 || lines - blocks >= min : lines >= min;
+      const bothHold = (lines: number, blocks: number, betweenChildren: boolean): boolean =>
+        holds(lines, blocks, betweenChildren) && holds(totalLines - lines, totalBlocks - blocks, betweenChildren);
+      let linesBefore = 0;
+      let blocksBefore = 0;
+      units.forEach((u, i) => {
+        let next: number | undefined;
+        if (u.kind === 'block') {
+          const c = u.block;
+          const k = (c.contentIndex ?? L.childBase) - L.childBase;
+          next = k + 1;
+          if (!indivisible(c) && c.lines.length > 1) {
+            // The first laid-out child of a continuation opens after
+            // `from.line` lines: cuts inside it are counted from the
+            // child's own head.
+            const lineBase = k === from.child ? from.line : 0;
+            for (let l = 1; l < c.lines.length; l++) {
+              const line = c.lines[l - 1]!;
+              if (bothHold(linesBefore + l, blocksBefore, false)) {
+                candidates.push({ cut: { child: k, line: lineBase + l }, bottom: line.bbox.y + line.bbox.height + below });
+              }
+            }
+          }
+        } else {
+          const { box } = u;
+          if (box.endIdx !== undefined) next = box.endIdx + 1 - L.childBase;
+          if (!box.style.keepTogether || tallerThanColumn(box.result)) {
+            collect(box.result.units, box.style.splitMinLines, below + tailOf(box.result));
+          }
         }
-      }
-      linesBefore += lineCount(c);
-      if (indivisible(c)) blocksBefore++;
-      if (i < full.children.length - 1) {
-        candidates.push({ cut: { child: k + 1, line: 0 }, bottom: c.bbox.y + c.bbox.height, headLines: linesBefore, headBlocks: blocksBefore });
-      }
-    }
-    const min = Math.max(1, minLines);
-    /** A side of a cut holds enough: `lines` (blocks included) of which
-     *  `blocks` are indivisible. Between children, one block suffices or
-     *  the text lines alone meet the minimum; inside a text child, the
-     *  lines do. */
-    const sideHolds = (lines: number, blocks: number, betweenChildren: boolean): boolean =>
-      betweenChildren ? blocks > 0 || lines - blocks >= min : lines >= min;
+        linesBefore += lineCount(u);
+        if (isBlock(u)) blocksBefore++;
+        if (i < units.length - 1 && next !== undefined && bothHold(linesBefore, blocksBefore, true)) {
+          candidates.push({ cut: { child: next, line: 0 }, bottom: unitBottom(u) + below });
+        }
+      });
+    };
+    collect(full.units, minLines, 0);
     const insideGroup = (cut: CalloutCut): boolean =>
       L.groups.some(([gs, ge]) => (cut.line === 0 ? gs < cut.child && cut.child <= ge : gs < cut.child && cut.child < ge));
     const viable = candidates
-      .filter((c) => sideHolds(c.headLines, c.headBlocks, c.cut.line === 0)
-        && sideHolds(totalLines - c.headLines, totalBlocks - c.headBlocks, c.cut.line === 0)
-        && !insideGroup(c.cut))
+      .filter((c) => !insideGroup(c.cut))
       .sort((a, b) => b.bottom - a.bottom);
     for (const c of viable) {
       if (c.bottom + tail > roomPx + 0.01) continue;
