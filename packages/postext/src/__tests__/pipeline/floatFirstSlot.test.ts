@@ -301,3 +301,19 @@ describe('a float at the head of a column under a page-span opener', () => {
     expect(f.block.bbox.y).toBeGreaterThanOrEqual(bottomOf(heading) - 1e-6);
   });
 });
+
+describe('a head-of-page float cited on the closing page of a chapter', () => {
+  it('takes the free foot of that page instead of a page of its own before the next chapter', () => {
+    const config: PostextConfig = {
+      ...PAGE,
+      headings: { balancing: { enabled: false }, levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }] },
+    };
+    const doc = build(`# One\n\n${filler(2)}\n\nSee :ref{id="t1"}.\n\n# Two\n\n${filler(2, 10)}`, [
+      { ...smallTable('t1'), placement: { position: 'top', span: 'page' } },
+    ], config);
+    const f = floatById(doc, 't1');
+    const two = doc.pages.findIndex((p) => p.columns.some((c) => c.blocks.some((b) => b.type === 'heading' && b.lines[0]?.text.includes('Two'))));
+    expect(f.page).toBe(0);
+    expect(two).toBe(1);
+  });
+});

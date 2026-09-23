@@ -1351,7 +1351,7 @@ export function buildDocumentPass(
    *  block is placed, so a float lands in the first gap after its reference.
    *  `nextBlockIdx` is that block: a keep-together box it opens holds the
    *  slots that would starve it (see `slotStarvesBox`). */
-  const tryPlacePendingFloatsOnCurrentPage = (preferTop = false, nextBlockIdx?: number): void => {
+  const tryPlacePendingFloatsOnCurrentPage = (preferTop = false, nextBlockIdx?: number, anyPosition = false): void => {
     if (pendingFloats.length === 0) return;
     const page = doc.pages[cursor.pageIndex]!;
     const box = nextBlockIdx !== undefined ? keepTogetherBoxAt(nextBlockIdx) : null;
@@ -1359,7 +1359,11 @@ export function buildDocumentPass(
       if (heldBack(i)) { i++; continue; }
       const f = pendingFloats[i]!;
       let r: PlaceResult = 'defer';
-      let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, f, capKindOf);
+      // `anyPosition`: a figure or table may take a slot its position would
+      // refuse (a head-of-page float offered the foot of the current page);
+      // floated callouts keep their placement.
+      const asked = anyPosition && !f.rotate && !f.callout && f.position !== 'auto' ? { ...f, position: 'auto' as const } : f;
+      let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, asked, capKindOf);
       // The rest of a table cut on this page only takes the slots after
       // its previous slice in reading order (never the foot of the column
       // before it; a page-span rest waits for the next page).
@@ -1414,6 +1418,11 @@ export function buildDocumentPass(
    *  float page so the boundary's own page break opens AFTER them. */
   const drainPendingFloats = (): void => {
     tryPlacePendingFloatsOnCurrentPage();
+    // A float that would otherwise take a page of its own before the
+    // boundary settles for a free slot of the current page — the foot of
+    // its closing columns — whatever position it asked for: a chapter's
+    // last page with room under its text beats a page holding one table.
+    tryPlacePendingFloatsOnCurrentPage(false, undefined, true);
     let guard = 0;
     while ((pendingFloats.length > 0 || pendingSideBoxes.length > 0) && guard++ < 1000) {
       const before = floatsPlaced;
