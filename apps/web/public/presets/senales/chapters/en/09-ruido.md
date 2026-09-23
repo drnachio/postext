@@ -56,8 +56,6 @@ It is already clear that the EU’s 2020 objective on reducing noise pollution, 
 
 Many EU Member States will need to do more to take the steps needed to address noise pollution, especially in implementing the EU’s Environmental Noise Directive.
 
-## Find out more
-
 :::callout{type="cifras" title="Noise pollution"}
 20 % of the EU population — one in five people — live in areas where noise levels are considered harmful to health.
 
@@ -75,6 +73,8 @@ Many EU Member States will need to do more to take the steps needed to address n
 
 *Sources: EEA report ‘Environmental noise in Europe — 2020’.*
 :::
+
+## Find out more
 
 - Noise: www.eea.europa.eu/themes/ human/noise
 - SOER 2020, Chapter 11 on environmental noise: www.eea.europa. eu/publications/soer-2020/chapter-11_ soer2020-environmental-noise/view

@@ -58,7 +58,7 @@ import {
   type VDTDesignSlot,
   type VDTDesignTextBlock,
 } from '../vdt';
-import { buildFontString, measureBlock, measureTextWidth } from '../measure';
+import { buildFontString, measureBlock, measureRichBlock, measureTextWidth } from '../measure';
 import { applyStyleAttrs, isMarkerBlock } from './buildHelpers';
 import { resetLinePositions } from './placement';
 import { resolveBodyStyle, resolveBlockquoteStyle, type BlockStyle } from './styles';
@@ -471,10 +471,15 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   let titleBlock: VDTDesignTextBlock | undefined;
   if (hasTitle) {
     const titleW = Math.max(1, innerWidth - titleIndentPx);
-    const measured = measureBlock(titleText, titleFont, titleW, titleLineHeight, {
-      textAlign: 'left',
-      ...(titleTrackingPx > 0 ? { letterSpacingPx: titleTrackingPx } : {}),
-    });
+    // Tracking only widens lines on the rich path: the plain breaker would
+    // fit an untracked line and the tracked title would overrun the box.
+    const measured = titleTrackingPx > 0
+      ? measureRichBlock(
+        [{ text: titleText, bold: false, italic: false }],
+        titleFont, titleFont, titleFont, titleFont, titleW, titleLineHeight,
+        { textAlign: 'left', letterSpacingPx: titleTrackingPx },
+      )
+      : measureBlock(titleText, titleFont, titleW, titleLineHeight, { textAlign: 'left' });
     const lines = measured.lines.length > 0
       ? measured.lines
       : [{ text: titleText, bbox: createBoundingBox(0, 0, titleW, titleLineHeight), baseline: titleLineHeight * 0.8, hyphenated: false }];

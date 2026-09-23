@@ -52,13 +52,13 @@ Local-, regional-, national- and EU-level actions and policies with binding targ
 
 The actions that are necessary to cut air pollution, both in Europe and globally, are largely the same actions that are necessary to address the climate crisis and stop the degradation of nature. We need to fundamentally change and decarbonise our systems of production and consumption, especially those related to mobility, energy and food.
 
-## Find out more
-
 :::callout{type="datos" title="Air quality problems in Europe’s cities"}
 Almost all Europeans who live in cities are exposed to air pollution that exceeds the levels set in the World Health Organization’s (WHO’s) guidelines for clean air. Air pollution is the greatest environmental
 :::
 
 ::resource{id="tabla-17"}
+
+## Find out more
 
 - Air pollution: www.eea.europa.eu/ themes/air
 - SOER 2020, Chapter 8 on air pollution: www.eea.europa.eu/publications/ soer-2020/chapter-08_soer2020-airpollution/view

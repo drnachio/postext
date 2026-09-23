@@ -37,7 +37,7 @@ Approximately 800 substances are known or suspected to be endocrine disruptors a
 
 Endocrine disruptors include bisphenol A (BPA), dioxins, polychlorinated biphenyls (PCBs) and certain types of phthalates. Phthalates, for example, are used to soften plastic for use in a wide range of consumer goods, such as vinyl flooring, adhesives, detergents, air fresheners, lubricating oils, food packaging, clothing, personal care products and toys.
 
-:::callout{type="datos" title="Effects of PFAS on human health"}
+:::callout{type="dato" title="Effects of PFAS on human health"}
 Per- and polyfluorinated alkyl substances (PFAS) are a group of extremely persistent chemicals that are used in many consumer products. PFAS are used in products because they can, for example, increase oil and water repellence or resist high temperatures. Currently, there are more than 4 700 different PFAS
 :::
 
@@ -53,7 +53,7 @@ Concerted efforts have reduced the presence of persistent organic pollutants, su
 
 Chemicals found to be dangerous have sometimes been replaced by other substances, with a similar structure, only later proven to be just as toxic. These cases are called ‘regrettable substitutions’, such as in the case of substituting bisphenol-A, a chemical formerly used in many plastic items and in thermal printing paper, with bisphenol-S and bisphenol-F.
 
-:::callout{type="datos" title="The unknown territory of chemical risks"}
+:::callout{type="dato" title="The unknown territory of chemical risks"}
 There are many chemicals on the market and only a small fraction of these have been extensively studied for their risks. Designing safe products with a smaller number of different chemicals is one way
 :::
 

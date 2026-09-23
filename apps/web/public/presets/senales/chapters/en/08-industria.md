@@ -56,11 +56,11 @@ According to a recent EEA analysis, using best available techniques and implemen
 
 However, the emission-related directives often act independently and there is clear scope for further integration of the environmental objectives into the EU’s industrial policy. Moving towards zero pollution will require even more robust legislation, implementation and monitoring to ensure that the industries of tomorrow are both clean and sustainable.
 
-## Find out more
-
-:::callout{type="datos" title="Plastic pollution"}
+:::callout{type="dato" title="Plastic pollution"}
 Plastics have brought many benefits to our daily lives but the problem is that these products never truly disappear. Therefore, we should perhaps think about plastics as a type of pollutant from the point of their production and prevent plastic products and waste from leaking into the environment.
 :::
+
+## Find out more
 
 - Industry: www.eea.europa.eu/themes/ industry
 - SOER 2020, Chapter 12 on industrial pollution: www.eea.europa.eu/ publications/soer-2020/chapter-12_ soer2020-industrial-pollution/view

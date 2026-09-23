@@ -66,11 +66,11 @@ As one of the key components of the European Green Deal, the farm to fork strate
 
 To help tackle the plastics problem, the EU has already proposed a plastics strategy that aims to ‘transform the way products are designed, produced, used, and recycled in the EU’. Meanwhile, consumer attitudes are changing and innovations mean that some items previously made from plastics can now be produced from cellulose sourced from recycled paper, textiles, plants or algae.
 
-## Find out more
-
-:::callout{type="datos" title="State of water in Europe"}
+:::callout{type="dato" title="State of water in Europe"}
 Waste water treatment and reductions in nutrient losses from agriculture have led to significant improvements in water quality in Europe. However, many of Europe’s freshwater bodies are still not doing well and the condition of Europe’s seas is generally poor, partly because of pollution.
 :::
+
+## Find out more
 
 - Water and marine environment: www.eea.europa.eu/themes/water
 - SOER 2020, Chapter 4 on freshwater: www.eea.europa.eu/publications/soer- 2020/chapter-04_soer2020-freshwater/ view
