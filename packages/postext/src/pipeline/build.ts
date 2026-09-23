@@ -1949,6 +1949,13 @@ export function buildDocumentPass(
   const fragmentRange = (L: CalloutLayouter, from: CalloutCut, to: CalloutCut) =>
     ({ firstChildIdx: L.childBase + from.child, lastChildIdx: L.childBase + (to.line > 0 ? to.child : to.child - 1) });
 
+  /** The (rest of the) box is taller than an empty, full-height column —
+   *  a whole page's content area for a page-span box: no column could
+   *  hold it, so even a keep-together box splits (with the rules of a
+   *  `keepTogether: false` one) rather than overflow. */
+  const tallerThanColumn = (result: CalloutLayoutResult): boolean =>
+    result.totalHeight > contentArea.height + 0.01;
+
   const markFragment = (result: CalloutLayoutResult, part: number, continued: boolean): void => {
     if (result.frame.callout) {
       result.frame.callout.part = part;
@@ -1994,7 +2001,8 @@ export function buildDocumentPass(
    * and the cut columns stay cut (the polish round fills a column ending a
    * line under the cap).
    *
-   * Splitting (`keepTogether: false`): a box that does not fit a level (or
+   * Splitting (`keepTogether: false`, or a keep-together box taller than
+   * the page's content area): a box that does not fit a level (or
    * capped, or nearly level — within one grid line) band breaks between
    * its children: the longest fragment that fits closes the page flush
    * with the band bottom, the rest opens the next page in a box without
@@ -2019,7 +2027,6 @@ export function buildDocumentPass(
     L: CalloutLayouter,
     firstFrameId: string,
   ): boolean => {
-    const splittable = !style.keepTogether;
     const balancingCfg = resolved.headings.balancing;
     const levelBefore = balancingCfg.enabled && balancingCfg.beforeSpan;
     const minLines = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
@@ -2116,6 +2123,9 @@ export function buildDocumentPass(
       const layoutAt = (width: number): CalloutLayoutResult =>
         L.layoutRange(from, L.end, width, frameId, continuation, mirroredOf(page));
       const result = layoutAt(page.contentArea.width);
+      // A keep-together box (or the rest of it) taller than a whole page
+      // splits like a `keepTogether: false` one instead of overflowing.
+      const splittable = !style.keepTogether || tallerThanColumn(result);
 
       interface SpanFit {
         cols: VDTColumn[];
@@ -2647,11 +2657,12 @@ export function buildDocumentPass(
    * baked into the post-box grid snap (or, with `snapToGrid: false`, left
    * exact as pending spacing). A box that does not fit moves to the
    * next column/page (like a resource), pulling a run of trailing headings
-   * along (keep-with-next); a box taller than an empty column is placed
-   * anyway and overflows (the sandbox warns). A splittable box
-   * (`keepTogether: false`) instead leaves the longest run of its children
-   * that fits in the column and continues — in a box of its own, without
-   * the title or icon — at the top of the next one, splitting again if needed.
+   * along (keep-with-next). A splittable box (`keepTogether: false`, or a
+   * keep-together one taller than a full column) instead leaves the
+   * longest run of its children that fits in the column and continues — in
+   * a box of its own, without the title or icon — at the top of the next
+   * one, splitting again if needed; only a box no cut can split is placed
+   * anyway in an empty column, overflowing (the sandbox warns).
    * Returns the content index to rewind the main loop to when headings
    * were rolled back, else `undefined`.
    *
@@ -2675,18 +2686,28 @@ export function buildDocumentPass(
     // Floated boxes leave it too: they take the first free band after
     // this point (the foot of the current page, or the head / foot of a
     // page the flow opens later) and the text after them fills the page.
-    // A side box always stacks beside the text it interrupts.
-    if ((placement === 'auto' || placement === 'top' || placement === 'bottom') && span !== 'side') {
-      enqueueCalloutFloat(startIdx, plan, style, L, placement, span);
-      return undefined;
+    // A side box always stacks beside the text it interrupts. A box taller
+    // than a full column, which a cut can split, does not float (no band
+    // holds it whole): it stays in the flow where it occurs, like a `here`
+    // box, and splits there. One no cut can split still floats whole.
+    const floating = (placement === 'auto' || placement === 'top' || placement === 'bottom') && span !== 'side';
+    if (floating) {
+      const page = doc.pages[cursor.pageIndex]!;
+      const width = span === 'page' ? page.contentArea.width : currentColumn(doc, cursor).bbox.width;
+      const inFlow = tallerThanColumn(L.layoutRange(CUT_START, L.end, width, 'float-probe', false))
+        && splitCalloutFragment(L, CUT_START, width, contentArea.height, 'float-probe', false, style.splitMinLines) !== null;
+      if (!inFlow) {
+        enqueueCalloutFloat(startIdx, plan, style, L, placement, span);
+        return undefined;
+      }
     }
     // Page-span boxes split a multi-column page into column bands (stage 1
-    // of span blocks). Floating placements keep the inline fallback.
+    // of span blocks).
     {
       const page = doc.pages[cursor.pageIndex]!;
       if (
         span === 'page'
-        && placement === 'here'
+        && (placement === 'here' || floating)
         && multiColumnBand(page)
         && placeCalloutSpan(startIdx, plan, style, L, firstFrameId)
       ) {
@@ -2699,7 +2720,6 @@ export function buildDocumentPass(
       }
     }
 
-    const splittable = !style.keepTogether;
     let from: CalloutCut = CUT_START;
     let part = 0;
     let frameId = firstFrameId;
@@ -2722,13 +2742,16 @@ export function buildDocumentPass(
       let fragment: CalloutFragment | null = null;
       if (result.totalHeight > roomPx + 0.01) {
         // The (rest of the) box does not fit the column: a splittable box
-        // leaves the head that fits here…
+        // leaves the head that fits here — a keep-together one too once
+        // no full column could hold it whole…
+        const splittable = !style.keepTogether || tallerThanColumn(result);
         if (splittable) fragment = splitCalloutFragment(L, from, curCol.bbox.width, roomPx, frameId, continuation, style.splitMinLines, mirroredOf(doc.pages[cursor.pageIndex]!));
         // …otherwise it moves whole to the next column — also out of an
         // EMPTY column that float bands or a band cap have cut short, when
         // a full column would hold it (bounded, so a run of short columns
         // cannot make it wander forever). Only a box taller than a full
-        // column is placed anyway, overflowing (a layout warning says so).
+        // column that no cut can split is placed anyway, overflowing (a
+        // layout warning says so).
         const shortColumn = shortColumnMoves < 4
           && curCol.bbox.height < contentArea.height - baselineGrid
           && result.totalHeight <= contentArea.height + 0.01;

@@ -117,7 +117,7 @@ describe('splittable box cut inside a paragraph', () => {
 });
 
 describe('keep-together box in a column cut short by floats', () => {
-  it('moves to the next page instead of overflowing, and a box taller than a column warns', () => {
+  it('moves to the next page instead of overflowing, and an unsplittable box taller than a column warns', () => {
     // Left column: a paragraph referencing a tall column figure and a
     // page-span figure, then a short paragraph (so the floats settle before
     // the box comes), then a keep-together note. The figure takes the head
@@ -142,8 +142,10 @@ describe('keep-together box in a column cut short by floats', () => {
     expect(f.bbox.y + f.bbox.height).toBeLessThanOrEqual(col.bbox.y + col.bbox.height + 0.01);
     expect(doc.warnings ?? []).toHaveLength(0);
 
-    // A box taller than any column is placed anyway and reported.
-    const tall = build(note(filler(40)), SMALL_PAGE());
+    // A box taller than any column that no cut can split (a `:::columns`
+    // group is never cut) is placed anyway and reported.
+    const group = [':::columns{count=2}', ...Array.from({ length: 12 }, () => filler(3)), ':::'].join('\n\n');
+    const tall = build(note(group), SMALL_PAGE());
     expect(frames(tall)).toHaveLength(1);
     expect(tall.warnings).toBeDefined();
     expect(tall.warnings![0]!.kind).toBe('calloutOverflow');

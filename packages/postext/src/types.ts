@@ -1190,9 +1190,12 @@ export interface CalloutStyleConfig {
    *  multi-column layout, floated, fixed and side boxes keep the grid:
    *  column bands and float zones are laid out on it. */
   snapToGrid?: boolean;
-  /** When `true` (default) the box never splits: a callout that does not
-   *  fit the remaining space moves whole to the next column or page. When
-   *  `false` it may break between child blocks or between the lines of a
+  /** When `true` (default) the box is kept whole: a callout that does not
+   *  fit the remaining space moves whole to the next column or page. Only
+   *  a box (or the rest of one) taller than an empty, full column — a whole
+   *  page for a `span: 'page'` box — splits, by the `false` rules below,
+   *  rather than overflow; a floated one that tall stays in the flow where
+   *  it occurs. When `false` any box may break between child blocks or between the lines of a
    *  paragraph or list item — leaving at least `splitMinLines` lines on
    *  each side of the cut — the part that fits closes the current column
    *  (or, for a `span: 'page'` box, the page) and the rest continues on the
@@ -1200,7 +1203,8 @@ export interface CalloutStyleConfig {
    *  and background stay). */
   keepTogether?: boolean;
   /** Fewest text lines a fragment of a split box may carry, on either side
-   *  of the cut (`keepTogether: false`). Default 2: a box never breaks
+   *  of the cut (`keepTogether: false`, or a keep-together box taller than
+   *  a full column). Default 2: a box never breaks
    *  leaving a lone line at the foot of a column or the head of the next.
    *  It guards text only: a side holding a figure, table or display formula
    *  is acceptable whatever its line count (a cut inside a paragraph still
