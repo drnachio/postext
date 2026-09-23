@@ -636,14 +636,14 @@ Nada obliga a elegir entre ellas. Un libro puede escribirse en el Sandbox con el
 
 El motor se distribuye como dos paquetes en npm: _postext_, para la maquetación y los renderizadores de canvas y HTML, y _postext-pdf_, para la salida en PDF. Los dos son módulos ES con licencia MIT y también se pueden importar directamente desde una CDN. La documentación incluye ejemplos vivos que convierten una página en imagen, en HTML y en PDF, listos para copiar y modificar.
 
+El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ también se ejecuta en el navegador, y además en Node, de modo que un PDF puede producirse en un servidor a partir de una maquetación calculada en otro sitio. Los dos paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF. La documentación recorre todo el camino, desde instalar los paquetes hasta un primer PDF.
+
 :::callout{type="note" title="Cuatro pasos"}
 1. Carga las fuentes que nombra la configuración, para que el navegador pueda medirlas
 2. Compila el documento con \`buildDocument(content, config)\`
 3. Dibuja sus páginas con \`renderPage\` o genéralas con \`renderToHtml\`
 4. Para imprenta, pasa el mismo documento a \`renderToPdf\` con un proveedor de fuentes
 :::
-
-El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ también se ejecuta en el navegador, y además en Node, de modo que un PDF puede producirse en un servidor a partir de una maquetación calculada en otro sitio. Los dos paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF. La documentación recorre todo el camino, desde instalar los paquetes hasta un primer PDF.
 
 El motor y su renderizador de PDF se publican juntos, con el mismo número de versión, para que los dos coincidan siempre en la forma de la maquetación que comparten.
 

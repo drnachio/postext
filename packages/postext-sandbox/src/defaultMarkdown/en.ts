@@ -636,14 +636,14 @@ Nothing forces a choice between them. A book can be written in the Sandbox with 
 
 The engine ships as two packages on npm: _postext_ for the layout and the canvas and HTML renderers, and _postext-pdf_ for PDF output. Both are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
 
+The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ runs in the browser too, and also in Node, so a PDF can be produced on a server from a layout computed elsewhere. Both packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF.
+
 :::callout{type="note" title="Four steps"}
 1. Load the fonts the configuration names, so the browser can measure them
 2. Build the document with \`buildDocument(content, config)\`
 3. Draw its pages with \`renderPage\`, or render them with \`renderToHtml\`
 4. For print, pass the same document to \`renderToPdf\` with a font provider
 :::
-
-The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ runs in the browser too, and also in Node, so a PDF can be produced on a server from a layout computed elsewhere. Both packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF.
 
 The engine and its PDF renderer are released together, with the same version number, so the two always agree on the shape of the layout they share.
 
