@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any -- scratch harness: loose fontkit types */
 // @ts-nocheck
 /* Scratch harness: lay out the real deep-sky bundle in node with fontkit
    metrics, so page geometry can be inspected without a browser. */
@@ -84,11 +85,11 @@ function report(doc: VDTDocument): void {
         ? (((cols[0]!.first - cols[1]!.first) / grid) % 1).toFixed(3) : 'n/a';
       const tail = cols[0]?.last != null && cols[1]?.last != null
         ? ((cols[0]!.last - cols[1]!.last) / grid).toFixed(2) : 'n/a';
-      // eslint-disable-next-line no-console
+       
       console.log(`page ${page.index} floats=${page.floats?.length ?? 0} phase=${phase} tailDiff=${tail}`,
         cols.map((c) => `${c.firstId ?? '-'}:${c.first}→${c.last}`).join(' | '));
     }
-    // eslint-disable-next-line no-console
+     
     console.log('pages', doc.pages.length, 'grid', grid.toFixed(2), 'converged', doc.converged);
 }
 
@@ -103,7 +104,7 @@ function runts(doc: VDTDocument, label: string): void {
         const width = last.bbox.width;
         const ratio = width / col.bbox.width;
         if (ratio < 0.18 && b.lines.length > 1) {
-          // eslint-disable-next-line no-console
+           
           console.log(`${label} p${page.index}c${col.index} ${b.id} last="${last.text}" ${(ratio * 100).toFixed(0)}% of column`);
         }
       }
@@ -113,11 +114,11 @@ function runts(doc: VDTDocument, label: string): void {
 
 function dump(doc: VDTDocument, pageIndex: number): void {
   const page = doc.pages[pageIndex]!;
-  // eslint-disable-next-line no-console
+   
   console.log(`== page ${pageIndex} contentArea y=${page.contentArea.y.toFixed(0)} h=${page.contentArea.height.toFixed(0)} floats=${(page.floats ?? []).map((f) => `${f.type}@${f.bbox.y.toFixed(0)}+${f.bbox.height.toFixed(0)}x${f.bbox.width.toFixed(0)}`).join(',')}`);
   for (const col of page.columns) {
     const last = [...col.blocks].reverse().find((b) => b.lines.length > 0);
-    // eslint-disable-next-line no-console
+     
     console.log(`   col${col.index} y=${col.bbox.y.toFixed(0)} h=${col.bbox.height.toFixed(0)} avail=${col.availableHeight.toFixed(0)} blocks=${col.blocks.map((b) => b.id + (b.containerId !== undefined ? '*' : '')).join('>')} lastBaseline=${last ? last.lines[last.lines.length - 1]!.baseline.toFixed(0) : '-'}`);
   }
 }
@@ -138,10 +139,10 @@ describe('scratch: deep-sky in node', () => {
         balancing: { stretchAfterFloats: false },
       },
     };
-    // eslint-disable-next-line no-console
+     
     console.log('--- lever off ---');
     report(layoutChapter('es', 6, noFloatLever));
-    // eslint-disable-next-line no-console
+     
     console.log('--- lever on ---');
     report(layoutChapter('es', 6));
   }, 120_000);
