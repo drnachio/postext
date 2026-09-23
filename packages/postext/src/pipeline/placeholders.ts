@@ -209,7 +209,8 @@ export interface PartPageInfo extends ChapterTitlePageInfo {
 /** Per page, the part in effect: the most recent part page on or before it
  *  (blank parity pages right before a part page already belong to it), or
  *  `start` — the part the preceding chapters left open — before any. Each
- *  part brings its own palette overrides (`{}` when the fence sets none). */
+ *  part brings its own palette overrides (`{}` when the fence sets none),
+ *  which also tint every blank leaf right before its divider. */
 export function computePartValues(
   pages: readonly PartPageInfo[],
   start?: { number: string; title: string; palette?: Record<string, string> },
@@ -231,6 +232,14 @@ export function computePartValues(
         if (prev.blankForForce || !prev.blankForParity) break;
         partTitleByPageIndex[q] = title;
         partNumberByPageIndex[q] = number;
+      }
+      // Colour reaches further back than titles: every blank leaf right
+      // before the divider — an `always-odd` leaf too, which belongs to the
+      // previous chapter's running heads — faces the part and wears its
+      // palette (a verso tinted in the part's colour opens it as a spread).
+      for (let q = p - 1; q >= 0; q--) {
+        const prev = pages[q]!;
+        if (!prev.blankForForce && !prev.blankForParity) break;
         partPaletteByPageIndex[q] = palette;
       }
     }

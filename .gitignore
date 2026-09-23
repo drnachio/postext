@@ -8,3 +8,6 @@ dist
 scripts/presets/showcase/*/source/
 scripts/presets/showcase/*/work/
 scripts/presets/showcase/**/__pycache__/
+
+# Python bytecode from the agent skill scripts
+plugins/**/__pycache__/

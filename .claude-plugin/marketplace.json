@@ -1,0 +1,18 @@
+{
+  "name": "postext",
+  "owner": {
+    "name": "Postext contributors",
+    "url": "https://github.com/drnachio/postext"
+  },
+  "description": "Agent skills for Postext, the programmable typesetter for the web.",
+  "plugins": [
+    {
+      "name": "postext",
+      "source": "./plugins/postext",
+      "description": "Port an existing publication (PDF, Word, PowerPoint, EPUB, HTML, InDesign/IDML, Markdown, scans) into a Postext book: configuration manifest, enriched Markdown chapters, resources and fonts that reproduce the source's layout rules.",
+      "category": "productivity",
+      "tags": ["postext", "typesetting", "publishing", "pdf", "docx", "pptx", "epub", "markdown", "book", "layout"],
+      "skills": ["./skills/postext-port"]
+    }
+  ]
+}

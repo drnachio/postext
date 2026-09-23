@@ -48,11 +48,11 @@ La prevención sigue siendo la forma más eficaz y barata de garantizar que los 
 
 Muchas iniciativas políticas actuales y futuras englobadas en el Pacto Verde Europeo —la economía circular, la Estrategia «de la Granja a la Mesa», la Estrategia sobre Biodiversidad, la estrategia en el ámbito de las sustancias químicas, la nueva estrategia del suelo y el plan de acción «contaminación cero»— ofrecen un marco europeo y ayudan a las autoridades nacionales y a los usuarios de la tierra a proteger las tierras y los suelos de la contaminación. Un apoyo adicional a las autoridades locales y un marco político de la UE más coherente en materia de suelo fortalecerían más estos esfuerzos. Después de todo, la contaminación es solo una de las muchas amenazas a las que se enfrentan los suelos y las tierras.
 
-## Para más información
-
-:::callout{type="datos" title="Contaminación y otras repercusiones de la agricultura"}
+:::callout{type="dato" title="Contaminación y otras repercusiones de la agricultura"}
 La agricultura tiene numerosas repercusiones en el medio ambiente, el clima y la salud humana. Las prácticas agrícolas no sostenibles contaminan el suelo, el aire y los alimentos y sobreexplotan
 :::
+
+## Para más información
 
 - Suelo: www.eea.europa.eu/themes/soil
 - SOER 2020, Capítulo 5 sobre la tierra y el suelo. www.eea.europa.eu/publications/soer-2020/ chapter-05_soer2020-land-and-soil/view

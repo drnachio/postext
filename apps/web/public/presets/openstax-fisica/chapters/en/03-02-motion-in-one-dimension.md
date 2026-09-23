@@ -7,7 +7,7 @@
 2.4 Velocity vs. Time Graphs
 :::
 
-Outside of an airplane, have you ever traveled faster than 150 mph? Can you imagine traveling in a train like the one shown in :ref{id="en-2-figure-02-00-train"} that goes close to 300 mph? Despite the high speed, the people riding in this train may not notice that they are moving at all unless they look out the window! This is because motion, even motion at 300 mph, is relative to the observer.
+Outside of an airplane, have you ever traveled faster than 150 mph? Can you imagine traveling in a train like the one shown in the chapter-opening photograph that goes close to 300 mph? Despite the high speed, the people riding in this train may not notice that they are moving at all unless they look out the window! This is because motion, even motion at 300 mph, is relative to the observer.
 
 In this chapter, you will learn why it is important to identify a reference frame in order to clearly describe motion. For now, the motion you describe will be one-dimensional. Within this context, you will learn the difference between distance and displacement as well as the difference between speed and velocity. Then you will look at some graphing and problem-solving techniques.
 
@@ -42,11 +42,10 @@ In this activity you will look at motion from two reference frames. Which refere
 4. Switch places with your partner, and repeat Steps 1–3.
 
 1. How do the different reference frames affect how you describe the motion of the ball?
-
-   - (a) The motion of the ball is independent of the reference frame and is same for different reference frames.
-- (b) The motion of the ball is independent of the reference frame and is different for different reference frames.
-- (c) The motion of the ball is dependent on the reference frame and is same for different reference frames.
-- (d) The motion of the ball is dependent on the reference frames and is different for different reference frames.
+  - (a) The motion of the ball is independent of the reference frame and is same for different reference frames.
+  - (b) The motion of the ball is independent of the reference frame and is different for different reference frames.
+  - (c) The motion of the ball is dependent on the reference frame and is same for different reference frames.
+  - (d) The motion of the ball is dependent on the reference frames and is different for different reference frames.
 :::
 
 :::callout{type="nota" title="History: Galileo's Ship"}
@@ -55,8 +54,6 @@ In this activity you will look at motion from two reference frames. Which refere
 The idea that a description of motion depends on the reference frame of the observer has been known for hundreds of years. The 17${}^{th}$-century astronomer **Galileo** Galilei (:ref{id="en-2-figure-02-01-galileo"}) was one of the first scientists to explore this idea. Galileo suggested the following thought experiment: Imagine a windowless ship moving at a constant speed and direction along a perfectly calm sea. Is there a way that a person inside the ship can determine whether the ship is moving? You can extend this thought experiment by also imagining a person standing on the shore. How can a person on the shore determine whether the ship is moving?
 
 Galileo came to an amazing conclusion. Only by looking at each other can a person in the ship or a person on shore describe the motion of one relative to the other. In addition, their descriptions of motion would be symmetric or opposite. A person inside the ship would describe the person on the land as moving past the ship. The person on shore would describe the ship and the person inside it as moving past. Galileo realized that observers moving at a constant speed and direction relative to each other describe motion in the same way. Galileo had discovered that a description of motion is only meaningful if you specify a reference frame.
-
-1. #ost/api/ex/k12phys-ch02-ex002
 :::
 
 #### Distance vs. Displacement
@@ -89,8 +86,6 @@ In this activity you will compare distance and displacement. Which term is more 
 6. Measure from your starting, initial position to your ending, final position.
 7. Measure the length of your path from the starting position to the second marked position. Multiply this measurement by the total number of times you walked across the floor. Then add this number to your measurement from step 6.
 8. Compare the two measurements from steps 6 and 7.
-
-1. #ost/api/ex/k12phys-ch02-ex003
 :::
 
 If you are describing only your drive to school and the route is a straight line, then the distance traveled and the displacement are the same—5 kilometers. When you are describing the entire round trip, distance and displacement are different. When you describe distance, you only include the **magnitude**, the size or amount, of the distance traveled. However, when you describe the displacement, you take into account both the magnitude of the change in position and the direction of movement.
@@ -103,8 +98,6 @@ A quantity, such as distance, that has magnitude (i.e., how big or how much) and
 This [video](https://openstax.org/l/28vectorscalar) introduces and differentiates between vectors and scalars. It also introduces quantities that we will be working with during the study of kinematics.
 
 [Intro to vectors & scalars | One-dimensional motion | Physics | Khan Academy](https://openstax.org/l/28vectorscalar)
-
-1. #ost/api/ex/k12phys-ch02-ex004
 :::
 
 #### Displacement Problems
@@ -138,19 +131,10 @@ A cyclist rides 3 km west and then turns around and rides 2 km east. (a) What is
 ### Check Your Understanding
 
 1. What does it mean when motion is described as relative?
-
-   - (a) It means that motion of any object is described relative to the motion of Earth.
-- (b) It means that motion of any object is described relative to the motion of any other object.
-- (c) It means that motion is independent of the frame of reference.
-- (d) It means that motion depends on the frame of reference selected.
-
-2. #ost/api/ex/k12phys-ch02-ex010
-
-3. #ost/api/ex/k12phys-ch02-ex011
-
-4. #ost/api/ex/k12phys-ch02-ex012
-
-5. #ost/api/ex/k12phys-ch02-ot005
+  - (a) It means that motion of any object is described relative to the motion of Earth.
+  - (b) It means that motion of any object is described relative to the motion of any other object.
+  - (c) It means that motion is independent of the frame of reference.
+  - (d) It means that motion depends on the frame of reference selected.
 
 ### Section Summary
 
@@ -160,19 +144,15 @@ A cyclist rides 3 km west and then turns around and rides 2 km east. (a) What is
 
 ### Key Equations
 
-| Displacement | $\text{Δ}d={d}_{f}-{d}_{0}$ |
-| --- | --- |
+- Displacement: $\text{Δ}d={d}_{f}-{d}_{0}$
 
 ### Problems
 
-1. #ost/api/ex/k12phys-ch02-ex015
-
-2. Billy drops a ball from a height of 1 m. The ball bounces back to a height of 0.8 m, then bounces again to a height of 0.5 m, and bounces once more to a height of 0.2 m. Up is the positive direction. What are the total displacement of the ball and the total distance traveled by the ball?
-
-   - (a) The displacement is equal to –4 m and the distance is equal to 4 m.
-- (b) The displacement is equal to –1 m and the distance is equal to 1 m
-- (c) The displacement is equal to 4 m and the distance is equal to 1 m.
-- (d) The displacement is equal to –1 m and the distance is equal to 4 m.
+1. Billy drops a ball from a height of 1 m. The ball bounces back to a height of 0.8 m, then bounces again to a height of 0.5 m, and bounces once more to a height of 0.2 m. Up is the positive direction. What are the total displacement of the ball and the total distance traveled by the ball?
+  - (a) The displacement is equal to –4 m and the distance is equal to 4 m.
+  - (b) The displacement is equal to –1 m and the distance is equal to 1 m
+  - (c) The displacement is equal to 4 m and the distance is equal to 1 m.
+  - (d) The displacement is equal to –1 m and the distance is equal to 4 m.
 
 ### Key Terms
 
@@ -269,8 +249,6 @@ Earlier, you have read that distance traveled can be different than the magnitud
 This [video](https://openstax.org/l/28avgvelocity) reviews vectors and scalars and describes how to calculate average velocity and average speed when you know displacement and change in time. The video also reviews how to convert km/h to m/s.
 
 [Average velocity for constant acceleration | One-dimensional motion | Physics | Khan Academy](https://openstax.org/l/28avgvelocity)
-
-1. #ost/api/ex/k12phys-ch02-ex028
 :::
 
 :::callout{type="ejemplo" title="Calculating Average Velocity"}
@@ -305,16 +283,11 @@ $$
 
 ### Check Your Understanding
 
-1. #ost/api/ex/k12phys-ch02-ex035
-
-2. If you divide the total distance traveled on a car trip (as determined by the odometer) by the time for the trip, are you calculating the average speed or the magnitude of the average velocity, and under what circumstances are these two quantities the same?
-
-   - (a) Average speed. Both are the same when the car is traveling at a constant speed and changing direction.
-- (b) Average speed. Both are the same when the speed is constant and the car does not change its direction.
-- (c) Magnitude of average velocity. Both are same when the car is traveling at a constant speed.
-- (d) Magnitude of average velocity. Both are same when the car does not change its direction.
-
-3. #ost/api/ex/k12phys-ch02-ot033
+1. If you divide the total distance traveled on a car trip (as determined by the odometer) by the time for the trip, are you calculating the average speed or the magnitude of the average velocity, and under what circumstances are these two quantities the same?
+  - (a) Average speed. Both are the same when the car is traveling at a constant speed and changing direction.
+  - (b) Average speed. Both are the same when the speed is constant and the car does not change its direction.
+  - (c) Magnitude of average velocity. Both are same when the car is traveling at a constant speed.
+  - (d) Magnitude of average velocity. Both are same when the car does not change its direction.
 
 ### Section Summary
 
@@ -324,13 +297,8 @@ $$
 
 ### Key Equations
 
-| Average speed | ${v}_{\text{avg}}=\frac{\text{distance}}{\text{time}}$ |
-| --- | --- |
-| Average velocity | ${v}_{\text{avg}}=\frac{\Delta d}{\Delta t}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}$ |
-
-### Problems
-
-1. #ost/api/ex/k12phys-ch02-ex038
+- Average speed: ${v}_{\text{avg}}=\frac{\text{distance}}{\text{time}}$
+- Average velocity: ${v}_{\text{avg}}=\frac{\Delta d}{\Delta t}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}$
 
 ### Key Terms
 
@@ -416,8 +384,6 @@ In this activity, you will release a ball down a ramp and graph the ball’s dis
 5. Repeat Step 4, stopping the times at the distances of 1.0 m, 1.5 m, 2.0 m, 2.5 m, and 3.0 m from the bottom of the ramp.
 6. Use your measurements of time and the displacement to make a position vs. time graph of the ball’s motion.
 7. Repeat Steps 4 through 6, with different people taking on the roles of experimenter, timer, and recorder. Do you get the same measurement values regardless of who releases the ball, measures the time, or records the result? Discuss possible causes of discrepancies, if any.
-
-1. #ost/api/ex/k12phys-ch02-ex049
 :::
 
 #### Solving Problems Using Position vs. Time Graphs
@@ -437,7 +403,10 @@ Since the slope is constant here, any two points on the graph can be used to fin
 
 1. Choose two points on the line. In this case, we choose the points labeled on the graph: (6.4 s, 2000 m) and (0.50 s, 525 m). (Note, however, that you could choose any two points.)
 2. Substitute the *d* and *t* values of the chosen points into the equation. Remember in calculating change (Δ) we always use final value minus initial value.
-$\begin{array}{lll} v & = & \frac{\text{Δ}d}{\text{Δ}t} \\ & = & \frac{2000\,\text{ m}-525\,\text{ m}}{6.4\,\text{ s}-0.50\,\text{ s}} \\ & = & 250\,\text{ m/s} \end{array},$
+
+$$
+\begin{array}{lll} v & = & \frac{\text{Δ}d}{\text{Δ}t} \\ & = & \frac{2000\,\text{ m}-525\,\text{ m}}{6.4\,\text{ s}-0.50\,\text{ s}} \\ & = & 250\,\text{ m/s} \end{array},
+$$
 :::
 
 But what if the graph of the position is more complicated than a straight line? What if the object speeds up or turns around and goes backward? Can we figure out anything about its velocity from a graph of that kind of motion? Let’s take another look at the jet-powered car. The graph in :ref{id="en-2-figure-02-03-jet"} shows its motion as it is getting up to speed after starting at rest. Time starts at zero for this motion (as if measured with a stopwatch), and the displacement and velocity are initially 200 m and 15 m/s, respectively. (:ref{id="en-2-figure-02-03-airforce" case="lower"})
@@ -452,19 +421,19 @@ Calculate the instantaneous velocity of the jet car at a time of 25 s by finding
 1. Find the tangent line to the curve at $t=25\,\text{ s}$ .
 2. Determine the endpoints of the tangent. These correspond to a position of 1,300 m at time 19 s and a position of 3120 m at time 32 s.
 3. Plug these endpoints into the equation to solve for the slope, *v*.
-$\begin{array}{lll} \text{slope} & \text{=} & {v}_{Q}=\frac{\text{Δ}{d}_{Q}}{\text{Δ}{t}_{Q}} \\ & \text{ =} & \frac{(3120-1300)\text{ m}}{(32-19)\text{ s}} \\ & \text{ =} & \frac{1820\,\text{ m}}{13\,\text{ s}} \\ & \text{ =} & 140\,\text{ m/s} \end{array}$
+
+$$
+\begin{array}{lll} \text{slope} & \text{=} & {v}_{Q}=\frac{\text{Δ}{d}_{Q}}{\text{Δ}{t}_{Q}} \\ & \text{ =} & \frac{(3120-1300)\text{ m}}{(32-19)\text{ s}} \\ & \text{ =} & \frac{1820\,\text{ m}}{13\,\text{ s}} \\ & \text{ =} & 140\,\text{ m/s} \end{array}
+$$
 :::
 
 ### Check Your Understanding
 
 1. Which of the following information about motion can be determined by looking at a position vs. time graph that is a straight line?
-
-   - (a) frame of reference
-- (b) average acceleration
-- (c) velocity
-- (d) direction of force applied
-
-2. #ost/api/ex/k12phys-ch02-ex055
+  - (a) frame of reference
+  - (b) average acceleration
+  - (c) velocity
+  - (d) direction of force applied
 
 ### Section Summary
 
@@ -475,19 +444,15 @@ $\begin{array}{lll} \text{slope} & \text{=} & {v}_{Q}=\frac{\text{Δ}{d}_{Q}}{\t
 
 ### Key Equations
 
-| Displacement | $d={d}_{0}+vt$ . |
-| --- | --- |
+- Displacement: $d={d}_{0}+vt$ .
 
 ### Problems
 
 1. Using the graph, what is the average velocity for the whole 10 seconds?
-
-   - (a) The total average velocity is 0 m/s.
-- (b) The total average velocity is 1.2 m/s.
-- (c) The total average velocity is 1.5 m/s.
-- (d) The total average velocity is 3.0 m/s.
-
-2. #ost/api/ex/k12phys-ch02-ex059
+  - (a) The total average velocity is 0 m/s.
+  - (b) The total average velocity is 1.2 m/s.
+  - (c) The total average velocity is 1.5 m/s.
+  - (d) The total average velocity is 3.0 m/s.
 
 ### Key Terms
 
@@ -512,8 +477,6 @@ Earlier, we examined **graph**s of **position** versus **time**. Now, we are goi
 
 :::callout{type="nota" title="Maze Game"}
 In [this simulation](https://openstax.org/l/28mazegame) you will use a vector diagram to manipulate a ball into a certain location without hitting a wall. You can manipulate the ball directly with position or by changing its velocity. Explore how these factors change the motion. If you would like, you can put it on the *a* setting, as well. This is acceleration, which measures the rate of change of velocity. We will explore acceleration in more detail later, but it might be interesting to take a look at it here.
-
-1. #ost/api/ex/k12phys-ch02-ex068
 :::
 
 What can we learn about motion by looking at velocity vs. time graphs? Let’s return to our drive to school, and look at a graph of position versus time as shown in :ref{id="en-2-figure-02-04-drive"}.
@@ -547,21 +510,22 @@ Most velocity vs. time graphs will be straight lines. When this is the case, our
 :::callout{type="ejemplo" title="Using Velocity Graph to Calculate Some Stuff: Jet Car"}
 Use this figure to (a) find the displacement of the jet car over the time shown (b) calculate the rate of change (acceleration) of the velocity. (c) give the instantaneous velocity at 5 s, and (d) calculate the average velocity over the interval shown.
 
-**Strategy.** - (a) The displacement is given by finding the area under the line in the velocity vs. time graph.
+**Strategy.**
+
+- (a) The displacement is given by finding the area under the line in the velocity vs. time graph.
 - (b) The acceleration is given by finding the slope of the velocity graph.
 - (c) The instantaneous velocity can just be read off of the graph.
 - (d) To find the average velocity, recall that ${v}_{\text{avg}}=\frac{\Delta d}{\Delta t}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}$
 
-- (a) 
+- (a)
   1. Analyze the shape of the area to be calculated. In this case, the area is made up of a rectangle between 0 and 20 m/s stretching to 30 s. The area of a rectangle is length $\times$ width. Therefore, the area of this piece is 600 m.
   2. Above that is a triangle whose base is 30 s and height is 140 m/s. The area of a triangle is 0.5 $\times$ length $\times$ width. The area of this piece, therefore, is 2,100 m.
   3. Add them together to get a net displacement of 2,700 m.
-- (b) 
-  1. Take two points on the velocity line. Say, *t* = 5 s and *t* = 25 s. At *t* = 5 s, the value of *v* = 40 m/s. 
- At *t* = 25 s, *v* = 140 m/s.
+- (b)
+  1. Take two points on the velocity line. Say, *t* = 5 s and *t* = 25 s. At *t* = 5 s, the value of *v* = 40 m/s. At *t* = 25 s, *v* = 140 m/s.
   2. Find the slope. $\begin{array}{lll} a & = & \frac{\Delta v}{\Delta t} \\ & = & \frac{100\,\text{ m/s}}{20\,\text{ s}} \\ & = & 5{\text{ m/s}}^{2} \end{array}$
 - (c) The instantaneous velocity at *t* = 5 s, as we found in part (b) is just 40 m/s.
-- (d) 
+- (d)
   1. Find the net displacement, which we found in part (a) was 2,700 m.
   2. Find the total time which for this case is 30 s.
   3. Divide 2,700 m/30 s = 90 m/s.
@@ -576,29 +540,25 @@ Most of the velocity vs. time graphs we will look at will be simple to interpret
 :::callout{type="ejemplo" title="Using Curvy Velocity Graph to Calculate Some Stuff: Jet Car, Take Two"}
 Use :ref{id="en-2-figure-02-04-accurate"} to (a) find the approximate displacement of the jet car over the time shown, (b) calculate the instantaneous acceleration at *t* = 30 s, (c) find the instantaneous velocity at 30 s, and (d) calculate the approximate average velocity over the interval shown.
 
-**Strategy.** - (a) Because this graph is an undefined curve, we have to estimate shapes over smaller intervals in order to find the areas.
+**Strategy.**
+
+- (a) Because this graph is an undefined curve, we have to estimate shapes over smaller intervals in order to find the areas.
 - (b) Like when we were working with a curved displacement graph, we will need to take a tangent line at the instant we are interested and use that to calculate the instantaneous acceleration.
 - (c) The instantaneous velocity can still be read off of the graph.
 - (d) We will find the average velocity the same way we did in the previous example.
 
-- (a) 
+- (a)
   1. This problem is more complicated than the last example. To get a good estimate, we should probably break the curve into four sections. 0 → 10 s, 10 → 20 s, 20 → 40 s, and 40 → 70 s.
   2. Calculate the bottom rectangle (common to all pieces). 165 m/s $\times$ 70 s = 11,550 m.
   3. Estimate a triangle at the top, and calculate the area for each section. Section 1 contributes a triangle of width 10 s and height (210 – 165) m/s = 45 m/s so the added areas for Section 1 = (1/2)(45 m/s)(10 s) = 225 m; section 2 contributes a rectangle and a triangle with area = 100 m + 450 m = 550 m; section 3 = 150 m + 1,300 m = 1,450 m; section 4 = 2,550 m.
   4. Add them together to get a net displacement of 16,325 m.
 - (b) Using the tangent line given, we find that the slope is 1 m/s².
 - (c) The instantaneous velocity at *t* = 30 s, is 240 m/s.
-- (d) 
+- (d)
   1. Find the net displacement, which we found in part (a), was 16,325 m.
   2. Find the total time, which for this case is 70 s.
   3. Divide $\frac{16{,}325\,\text{ m}}{70\,\text{ s}}\sim 233\,\text{ m/s}$
 :::
-
-### Check Your Understanding
-
-1. #ost/api/ex/k12phys-ch02-ex074
-
-2. #ost/api/ex/k12phys-ch02-ex075
 
 ### Section Summary
 
@@ -608,34 +568,28 @@ Use :ref{id="en-2-figure-02-04-accurate"} to (a) find the approximate displaceme
 
 ### Key Equations
 
-| Velocity | $v={v}_{0}+at$ |
-| --- | --- |
-| Acceleration | $a=\frac{\Delta v}{\Delta t}$ |
+- Velocity: $v={v}_{0}+at$
+- Acceleration: $a=\frac{\Delta v}{\Delta t}$
 
 ### Problems
 
 1. You are characterizing the motion of an object by measuring the location of the object at discrete moments in time. What is the minimum number of data points you would need to estimate the average acceleration of the object?
-
-   - (a) 1
-- (b) 2
-- (c) 3
-- (d) 4
+  - (a) 1
+  - (b) 2
+  - (c) 3
+  - (d) 4
 
 2. Which option best describes the average acceleration from 40 to 70 s?
+  - (a) It is negative and smaller in magnitude than the initial acceleration.
+  - (b) It is negative and larger in magnitude than the initial acceleration.
+  - (c) It is positive and smaller in magnitude than the initial acceleration.
+  - (d) It is positive and larger in magnitude than the initial acceleration.
 
-   - (a) It is negative and smaller in magnitude than the initial acceleration.
-- (b) It is negative and larger in magnitude than the initial acceleration.
-- (c) It is positive and smaller in magnitude than the initial acceleration.
-- (d) It is positive and larger in magnitude than the initial acceleration.
-
-3. The graph shows velocity vs. time.
-
-   Calculate the net displacement using seven different divisions. Calculate it again using two divisions: 0 → 40 s and 40 → 70 s . Compare. Using both, calculate the average velocity.
-
-   - (a) Displacement and average velocity using seven divisions are 14,312.5 m and 204.5 m/s while with two divisions are 15,500 m and 221.4 m/s respectively.
-- (b) Displacement and average velocity using seven divisions are 15,500 m and 221.4 m/s while with two divisions are 14,312.5 m and 204.5 m/s respectively.
-- (c) Displacement and average velocity using seven divisions are 15,500 m and 204.5 m/s while with two divisions are 14,312.5 m and 221.4 m/s respectively.
-- (d) Displacement and average velocity using seven divisions are 14,312.5 m and 221.4 m/s while with two divisions are 15,500 m and 204.5 m/s respectively.
+3. The graph shows velocity vs. time. Calculate the net displacement using seven different divisions. Calculate it again using two divisions: 0 → 40 s and 40 → 70 s . Compare. Using both, calculate the average velocity.
+  - (a) Displacement and average velocity using seven divisions are 14,312.5 m and 204.5 m/s while with two divisions are 15,500 m and 221.4 m/s respectively.
+  - (b) Displacement and average velocity using seven divisions are 15,500 m and 221.4 m/s while with two divisions are 14,312.5 m and 204.5 m/s respectively.
+  - (c) Displacement and average velocity using seven divisions are 15,500 m and 204.5 m/s while with two divisions are 14,312.5 m and 221.4 m/s respectively.
+  - (d) Displacement and average velocity using seven divisions are 14,312.5 m and 221.4 m/s while with two divisions are 15,500 m and 204.5 m/s respectively.
 
 ### Key Terms
 

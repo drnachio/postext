@@ -62,6 +62,6 @@ I hope so. The WHO guidelines provide robust recommendations based on the most u
 Francesca Racioppi · Head of the WHO European Centre for Environment and Health
 :::
 
-:::callout{type="datos" title="The future of monitoring pollution?"}
+:::callout{type="dato" title="The future of monitoring pollution?"}
 New technology and tools are opening up new possibilities for environmental monitoring and analysis. For example, citizen science, satellite observations, big data and artificial intelligence present opportunities for improving the timeliness, comparability, granularity and integration of data.
 :::

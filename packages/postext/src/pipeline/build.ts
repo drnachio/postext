@@ -1569,6 +1569,8 @@ export function buildDocumentPass(
   const spanPlacedInBand = new Set<number>();
   const bandCapsApplied = new Set<number>();
 
+  /** Columns of the band each cap was last applied to. */
+  const cappedBandColumns = new Map<number, readonly VDTColumn[]>();
   const enterBand = (contentIndex: number, part: number): void => {
     const page = doc.pages[cursor.pageIndex]!;
     const band = currentBand(page, cursor);
@@ -1579,7 +1581,16 @@ export function buildDocumentPass(
     if (!bandCaps) return;
     for (const [spanIndex, cap] of bandCaps) {
       if (cap.startContentIndex !== contentIndex || cap.startPart !== part) continue;
-      applyBandCap(bandColumns(page, band), cap.lines * baselineGrid, uncappedBottoms, cap.zone, cap.kind === 'trailing');
+      // A cap whose last band took nothing (its opening block is taller
+      // than the cut — a heading's leading over a one-line cap) would cut
+      // the next band just as short, and the flow would open empty pages
+      // forever. Leave the band whole: the cap stays undelivered and the
+      // driver grows or drops it.
+      const prev = cappedBandColumns.get(spanIndex);
+      if (prev && prev.every((c) => c.blocks.length === 0)) continue;
+      const cols = bandColumns(page, band);
+      applyBandCap(cols, cap.lines * baselineGrid, uncappedBottoms, cap.zone, cap.kind === 'trailing');
+      cappedBandColumns.set(spanIndex, cols);
       activeCap = { spanIndex, pageIndex: page.index, band };
       bandCapsApplied.add(spanIndex);
       break;
@@ -2853,6 +2864,16 @@ export function buildDocumentPass(
           && result.totalHeight <= contentArea.height + 0.01;
         if (!fragment && (curCol.blocks.length > 0 || shortColumn)) {
           if (curCol.blocks.length === 0) shortColumnMoves++;
+          // A box that leaves the last column of its band for the next page
+          // leaves that column short while the ones before it run full: the
+          // band is cut level, as a closing band is, so its columns end
+          // together and share the room the box left (keyed by the box —
+          // in the capped pass it reaches the cut band and moves on again).
+          if (part === 0 && curCol.blocks.length > 0) {
+            const page = doc.pages[cursor.pageIndex]!;
+            const cols = bandColumns(page, currentBand(page, cursor));
+            if (cols[cols.length - 1] === curCol) proposeTrailingCap(startIdx);
+          }
           // …otherwise it moves whole to the next column. Keep-with-next: a
           // run of headings at the column's tail travels with the box.
           // Skipped when the column holds nothing else (rolling back again

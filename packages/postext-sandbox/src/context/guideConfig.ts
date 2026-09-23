@@ -281,11 +281,12 @@ function runningHeads(lang: 'en' | 'es') {
   const y = M_TOP - 12;
   const common = { pages: 'body' as const, size: 7.5, color: 'muted' as const, upper: true, tracking: 1.4, overflow: 'ellipsis-end' as const };
   return slot(
-    // The blank verso that faces a part divider is set in the dark ink of
-    // the divider's foot band, so the divider opens as a spread. Parts break
-    // `always-odd` and chapters open on versos, so the only blank versos in
-    // the book are those.
-    box('partFacing', 'ink', { anchor: at('bleed', 'top-left'), parity: 'even', pages: 'blank' }),
+    // The blank verso that faces a part divider is set in the part's own
+    // colour (a blank parity page before a part page already takes its
+    // palette), so the divider opens as a spread. Parts break `always-odd`
+    // and chapters open on versos, so the only blank versos in the book
+    // are those.
+    box('partFacing', 'band', { anchor: at('bleed', 'top-left'), parity: 'even', pages: 'blank' }),
     text('folioEven', '{pageNumber}', { ...common, anchor: at('page', 'top-left'), offset: [M_OUTER, y], parity: 'even', weight: 700, color: 'band', size: 8.5, tracking: 0 }),
     text('bookEven', WORDING[lang].book, { ...common, anchor: at('page', 'top-left'), offset: [M_OUTER + 10, y], width: 110, parity: 'even' }),
     text('chapterOdd', '{chapterTitle}', { ...common, anchor: at('page', 'top-right'), offset: [-(M_OUTER + 10), y], width: 110, parity: 'odd', align: 'right' }),
@@ -470,8 +471,8 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
     paragraphStyles: paragraphStyles(),
     calloutStyles: calloutStyles(lang),
     parts: {
-      // A part opens on a recto facing a black verso: `always-odd` lays one
-      // blank leaf before it (the black verso) and pads a white recto first
+      // A part opens on a recto facing a verso in its colour: `always-odd` lays one
+      // blank leaf before it (the coloured verso) and pads a white recto first
       // when the chapter before ends on a verso. Its first chapter opens on
       // the back of the divider, a verso.
       breakBefore: { parity: 'always-odd' },
@@ -481,7 +482,8 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       bodyStyle: {
         fontFamily: TEXT, fontSize: pt(11), lineHeight: pt(16), color: col('white'), textAlign: 'left',
         numberColor: col('white'), bulletColor: col('white'),
-        orderedLists: { numberFormat: 'arabic', separator: '', gap: mm(3), indent: mm(9), fontFamily: SANS, numberFontSize: pt(9), itemSpacing: pt(2) },
+        // Numbers on the margin the label, number and title hang from.
+        orderedLists: { numberFormat: 'arabic', separator: '', gap: mm(3), indent: mm(0), fontFamily: SANS, numberFontSize: pt(9), itemSpacing: pt(2) },
       },
     },
     toc: toc(lang),

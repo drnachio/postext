@@ -195,6 +195,17 @@ def callout_styles() -> list[dict]:
             "marginTop": pt(6), "marginBottom": pt(10), "keepTogether": False,
         },
         {
+            # A text-only data panel is two or three lines: across the page it
+            # reads as a stray band, so it sits in the column like the text.
+            "id": "dato", "name": "Dato", "span": "column", "placement": "here",
+            "backgroundEnabled": True, "background": col("grey"), "border": {"enabled": False}, "borderRadius": mm(0),
+            "padding": {"top": mm(4), "right": mm(4), "bottom": mm(3.5), "left": mm(4)},
+            "icon": {"kind": "none"},
+            "titleStyle": {"fontFamily": DISPLAY, "fontSize": pt(8), "fontWeight": 700, "color": col("band"), "textTransform": "uppercase", "letterSpacing": pt(1.2), "gap": mm(2.5)},
+            "body": {"fontFamily": TEXT, "fontSize": pt(8.5), "lineHeight": pt(11.5), "color": col("ink"), "boldColor": col("band"), "textAlign": "left", "hyphenation": True, "paragraphSpacing": True, "firstLineIndent": mm(0)},
+            "marginTop": pt(6), "marginBottom": pt(10), "keepTogether": True,
+        },
+        {
             "id": "cifras", "name": "Cifras", "span": "page", "placement": "here",
             "backgroundEnabled": True, "background": col("ink"), "border": {"enabled": False}, "borderRadius": mm(0),
             "padding": {"top": mm(5), "right": mm(6), "bottom": mm(4), "left": mm(6)},
@@ -398,7 +409,7 @@ def panel_markdown(page: int, title: str, intro: str, lang: str) -> str:
     if panel is None:
         if not intro:
             return ""
-        return f':::callout{{type="datos" title="{attr_value(title)}"}}\n{intro}\n:::\n'
+        return f':::callout{{type="dato" title="{attr_value(title)}"}}\n{intro}\n:::\n'
     if panel["kind"] == "list":
         items = "\n".join("- " + it for it in panel["items"][lang])
         return f':::callout{{type="datos" title="{attr_value(title)}"}}\n{intro}\n\n{items}\n\n*{book["sources_label"]}: {panel["sources"][lang]}*\n:::\n'
@@ -408,6 +419,9 @@ def panel_markdown(page: int, title: str, intro: str, lang: str) -> str:
         stats = "\n\n".join(f"**{n}** {label}" for n, label in panel["stats"][lang])
         return f':::callout{{type="cifras" title="{attr_value(title)}"}}\n{panel["lead"][lang]}\n\n:::columns{{count=3}}\n{stats}\n:::\n\n*{book["sources_label"]}: {panel["sources"][lang]}*\n:::\n'
     return ""
+
+
+FURTHER_READING = re.compile(r"^(Find out more|Para más información)$")
 
 
 def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
@@ -421,7 +435,12 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
     quote_done = False
     infographics = sorted(article.infographics, key=lambda t: t[0])
     ig_idx = 0
+    drop_reading = (lang, spec["slug"]) in ed.DROP_FURTHER_READING
+    skipping = False
     for b in article.blocks:
+        if skipping and b.kind != "subhead":
+            continue
+        skipping = False
         while ig_idx < len(infographics) and infographics[ig_idx][0] < b.page:
             pg, title, intro = infographics[ig_idx]
             md = panel_markdown(pg, title, intro, lang)
@@ -442,6 +461,18 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
                 lines.append(f':::callout{{type="cita"}}\n{q}\n:::\n')
                 quote_done = True
         elif b.kind == "subhead":
+            if FURTHER_READING.match(b.text):
+                # the reading list closes the article: a panel from a later
+                # page goes before its heading, never between heading and list
+                while ig_idx < len(infographics):
+                    pg, title, intro = infographics[ig_idx]
+                    md = panel_markdown(pg, title, intro, lang)
+                    if md:
+                        lines.append(md)
+                    ig_idx += 1
+                if drop_reading:
+                    skipping = True
+                    continue
             lines.append(f"## {b.text}\n")
         elif b.kind == "question":
             lines.append(f':::paragraphs{{style="pregunta"}}\n{b.text}\n:::\n')

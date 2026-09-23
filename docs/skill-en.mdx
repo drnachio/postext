@@ -1,0 +1,214 @@
+{/* docs/skill-en.mdx */}
+
+export const metadata = {
+  title: 'Agent skill: port a publication to Postext',
+  sidebarTitle: 'Skill',
+  description: 'Install the postext-port skill in Claude Code, Codex or any agent and let it turn a PDF, Word, PowerPoint, EPUB, InDesign or HTML source into a Postext project that follows the original layout',
+  lang: 'en',
+  lastUpdated: '2026-09-23',
+  readingTime: '8 min',
+  order: 8,
+};
+
+# Agent skill
+
+**Turn an existing publication into a Postext project with a coding agent.**
+
+Many people come to Postext with a book that already exists: a textbook as a
+print PDF, a report in Word, a course in PowerPoint, a catalogue in InDesign,
+an EPUB. Porting it means two jobs:
+
+- **Content**: the enriched Markdown of every chapter, with its directives and
+  microformats.
+- **Design**: a configuration manifest that reproduces the original's layout
+  rules (page geometry, baseline grid, type, openers, running heads, boxes,
+  floats, tables, parts).
+
+An LLM can do much of this work, but only if it knows how Postext works.
+Postext Markdown is not CommonMark, and the configuration has traps that only
+show up when a page renders wrong. The **`postext-port`** skill packages that
+knowledge together with the tools we used to build every preset in the
+sandbox, so your agent can do the port properly.
+
+It follows the open [Agent Skills](https://agentskills.io) format, so it works
+with Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode and
+[many other agents](https://skills.sh).
+
+## What the skill contains
+
+- **A workflow**:
+  1. agree the brief;
+  2. take an inventory of the source;
+  3. measure the design into a spec sheet;
+  4. scaffold the project;
+  5. extract the content;
+  6. curate it into Postext Markdown;
+  7. prepare fonts and images;
+  8. verify page by page;
+  9. package it.
+- **References**:
+  - the document format and the configuration manifest, both checked
+    against the engine;
+  - the project (bundle) format;
+  - a playbook per source format;
+  - a design-analysis method;
+  - a catalogue of solved layout cases: parts with their own colours,
+    chapter openers, verse, margin glosses, footnotes, floated/split/nested
+    boxes, vector print masters, live-text figures, pictures in table
+    cells, landscape tables, bilingual editions, and more.
+- **Scripts** (Python and Node), described in the next section.
+
+## Scripts
+
+<table>
+  <thead>
+    <tr>
+      <th>Script</th>
+      <th>What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>inventory.py</code></td><td>First look at any source: geometry, fonts, styles in use, media, pages that need OCR</td></tr>
+    <tr><td><code>measure_layout.py</code></td><td>Margins, columns, gutter and leading (the baseline grid) of a PDF</td></tr>
+    <tr><td><code>pdf_extract.py</code></td><td>PDF → draft chapters by <em>type role</em> (font/size/colour): reading order, paragraphs, de-hyphenation, bold/italic, super/subscripts, lists, captions</td></tr>
+    <tr><td><code>pdf_figures.py</code></td><td>Cuts figures out of a PDF: photos at native resolution, SVG previews, vector PDF print masters</td></tr>
+    <tr><td><code>extract_tables.py</code></td><td>PDF tables → Postext <code>TableModel</code></td></tr>
+    <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → draft chapters, with Word styles mapped to callouts and paragraph styles</td></tr>
+    <tr><td><code>idml_extract.py</code></td><td>InDesign IDML → draft chapters by paragraph style, tables and anchored images</td></tr>
+    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts; convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
+    <tr><td><code>preset_kit.py</code></td><td>Scaffolds the project and its generator script, builds <code>preset.json</code>, packs the <code>.postext</code> file</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong</td></tr>
+    <tr><td><code>render.mjs</code></td><td>Lays the project out headlessly with the real engine, prints warnings and writes the PDF</td></tr>
+    <tr><td><code>compare_pages.py</code></td><td>Places source and Postext pages side by side</td></tr>
+  </tbody>
+</table>
+
+## Installing it
+
+### Any agent (skills.sh)
+
+The [`skills`](https://skills.sh) CLI detects your agents and installs the
+skill for them:
+
+```bash
+npx skills add drnachio/postext --skill postext-port
+```
+
+Pick agents explicitly with `-a`, and install globally (every project) with
+`-g`:
+
+```bash
+npx skills add drnachio/postext --skill postext-port -a codex -a claude-code -g
+```
+
+The same skill is published by the website, so this works too:
+
+```bash
+npx skills add https://postext.dev
+```
+
+### Claude Code plugin
+
+The Postext repository is also a Claude Code plugin marketplace. Inside Claude
+Code:
+
+```text
+/plugin marketplace add drnachio/postext
+/plugin install postext@postext
+```
+
+Or from a shell:
+
+```bash
+claude plugin marketplace add drnachio/postext
+```
+
+```bash
+claude plugin install postext@postext
+```
+
+### Let the agent install it
+
+You can ask your agent to do it, for example: *"Install the Postext porting
+skill (`npx skills add drnachio/postext --skill postext-port`) and use it to
+port this PDF."* Agents that read `https://postext.dev/llms.txt` find this
+page and the install command there.
+
+### Tools the scripts use
+
+```bash
+python3 -m pip install pymupdf pillow fonttools brotli
+```
+
+```bash
+brew install pandoc poppler
+```
+
+```bash
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf react @pdf-lib/fontkit
+```
+
+Pandoc is needed for Word, PowerPoint, EPUB and HTML sources, and poppler for
+page images. The Node packages power the headless renderer (Node 22.15 or
+newer). Optional tools: `ocrmypdf` for scans, ImageMagick, and veraPDF for
+PDF/UA checks.
+
+## Using it
+
+Put the source files in your working folder and ask for the port. For example:
+
+- *"Port chapters 1–3 of `manual.pdf` to Postext, reproducing its two-column
+  layout, chapter openers and boxes."*
+- *"Convert `course.docx` into a Postext book. The styles 'Nota' and 'Actividad'
+  are boxes."*
+- *"Turn `deck.pptx` into a Postext handout: slides become sections, speaker
+  notes become the text."*
+- *"We have the InDesign package (IDML + print PDF) of this textbook. Build the
+  Postext preset for chapter 1 in Spanish and English."*
+
+The agent follows the workflow:
+
+1. **Brief.** It asks what it cannot infer: a faithful reproduction or a
+   redesign, a sample chapter or the whole book, languages, print or screen,
+   and the rights on the text, images and fonts.
+2. **Inventory and measurement.** It reads the source and writes a spec sheet
+   of measured facts: trim, margins, columns, leading, type roles, palette,
+   openers, running heads, box families and placement habits.
+3. **Project.** It scaffolds `my-book/` with a `build_preset.py` generator
+   that holds the spec as constants and produces `preset.json`.
+4. **Content.** It extracts draft chapters with the right extractor, then
+   curates them into Postext Markdown: callouts, paragraph styles, parts,
+   heading attributes for openers, `:ref` citations, table and figure
+   resources.
+5. **Verification.** It lints the project, lays it out headlessly and
+   compares it with the source page by page until page breaks, figures and
+   boxes match.
+6. **Delivery.** It packs `my-book.postext`.
+
+Open the result in the [Sandbox](/en/sandbox): **Projects → Import .postext…**.
+The import takes the chapters and wording of the sandbox's language. To work
+on a folder of projects in a local copy of Postext, set
+`POSTEXT_PRIVATE_PRESETS_DIR` (see [Sandbox](/en/docs/sandbox)).
+
+## What to expect
+
+- **The extractors produce drafts; the agent curates them.** Expect a review
+  pass per chapter against the original pages. That review is where the
+  quality comes from.
+- **Config and Markdown only.** The skill never changes the engine to fit one
+  book. When Postext cannot express something, the agent picks the closest
+  expression and lists it as a known gap.
+- **Rights are your call.** The agent asks before reproducing images or fonts
+  whose licences are unclear. Licensed fonts are marked
+  `redistributable: false`, so exported projects leave them out.
+- **Fidelity where it matters.** The goal is the same grid, type, openers,
+  boxes, figure placement and page breaks on most pages (within one page per
+  chapter), not identical line breaks.
+
+## Where it lives
+
+The skill is in the repository at
+[`plugins/postext/skills/postext-port`](https://github.com/drnachio/postext/tree/main/plugins/postext/skills/postext-port).
+It covers every case met while building the presets in the sandbox, public and
+private. When a port hits a case it does not cover yet, please open an issue
+or a pull request that improves the skill, so the next port gets it for free.

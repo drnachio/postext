@@ -62,6 +62,6 @@ Espero que así sea. Las directrices de la OMS ofrecen sólidas recomendaciones 
 Francesca Racioppi · Directora del Centro Europeo de Medio Ambiente y Salud de la OMS
 :::
 
-:::callout{type="datos" title="¿El futuro de la vigilancia de la contaminación?"}
+:::callout{type="dato" title="¿El futuro de la vigilancia de la contaminación?"}
 Las nuevas tecnologías y herramientas están abriendo nuevas posibilidades de vigilancia y análisis del medio ambiente. Por ejemplo, la ciencia ciudadana, las observaciones vía satélite, los macrodatos y la inteligencia artificial representan una oportunidad para mejorar la actualidad, comparabilidad, precisión
 :::

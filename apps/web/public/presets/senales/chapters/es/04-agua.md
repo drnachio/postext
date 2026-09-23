@@ -66,11 +66,11 @@ La Estrategia de la Granja a la Mesa, uno de los principales elementos del Pacto
 
 Para ayudar a luchar contra el problema de los plásticos, la UE ya ha propuesto una estrategia para el plástico que tiene como objetivo «transformar la forma en que se diseñan, producen, usan y reciclan los productos en la UE». Mientras tanto, las actitudes de los consumidores están cambiando y las innovaciones permiten que algunos artículos que antes eran de plástico ahora pueden elaborarse a partir de fuentes de celulosa de papel reciclado, textiles, plantas o algas.
 
-## Para más información
-
-:::callout{type="datos" title="Estado del agua en Europa"}
+:::callout{type="dato" title="Estado del agua en Europa"}
 El tratamiento de las aguas residuales y las reducciones de la liberación de nutrientes de la agricultura han permitido mejorar considerablemente la calidad del agua en Europa. Sin embargo, muchas masas de agua dulce de Europa todavía se encuentran en mal estado y la situación de los mares de Europa es
 :::
+
+## Para más información
 
 - El agua y el medio marino: www.eea.europa.eu/themes/water
 - SOER 2020, Capítulo 4 sobre el agua dulce: www.eea.europa.eu/ publications/soer-2020/chapter-04_ soer2020-freshwater/view

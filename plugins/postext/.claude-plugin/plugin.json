@@ -1,0 +1,10 @@
+{
+  "name": "postext",
+  "version": "1.0.0",
+  "description": "Port an existing publication (PDF, Word, PowerPoint, EPUB, HTML, InDesign/IDML, Markdown, scans) into a Postext book: configuration manifest, enriched Markdown chapters, resources and fonts that reproduce the source's layout rules.",
+  "author": { "name": "Postext contributors", "url": "https://github.com/drnachio/postext" },
+  "homepage": "https://postext.dev/en/docs/skill",
+  "repository": "https://github.com/drnachio/postext",
+  "license": "MIT",
+  "keywords": ["postext", "typesetting", "publishing", "pdf", "docx", "pptx", "epub", "markdown", "book", "layout"]
+}

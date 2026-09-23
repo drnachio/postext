@@ -61,12 +61,9 @@ El orden de magnitud de un número está destinado a ser un cálculo aproximado 
 
 La inmensidad del universo y la amplitud en la que se aplica la física se ilustran con la amplia gama de ejemplos de longitudes, masas y tiempos conocidos (dados como órdenes de magnitud) en la :ref{id="es-1-cnx-uphysics-01-01-magnittb"}. Al examinar esta tabla se dará una idea de la variedad de temas posibles en física y valores numéricos. Una buena forma de comprender la amplitud de los rangos de valores en la :ref{id="es-1-cnx-uphysics-01-01-magnittb"} es intentar responder a algunas preguntas comparativas sencillas, como las siguientes:
 
-- ¿Cuántos átomos de hidrógeno se necesitan para atravesar el diámetro del Sol? 
-(Respuesta: 10⁹ m/10⁻¹⁰ m =10¹⁹ átomos de hidrógeno)
-- ¿Cuántos protones hay en una bacteria? 
-(Respuesta: 10⁻¹⁵ kg/10⁻²⁷ kg = 10¹² protones)
-- ¿Cuántas operaciones en coma flotante puede hacer una supercomputadora en 1 día? 
-(Respuesta: 10⁵ s/10⁻¹⁷ s = 10²² operaciones en coma flotante)
+- ¿Cuántos átomos de hidrógeno se necesitan para atravesar el diámetro del Sol? (Respuesta: 10⁹ m/10⁻¹⁰ m =10¹⁹ átomos de hidrógeno)
+- ¿Cuántos protones hay en una bacteria? (Respuesta: 10⁻¹⁵ kg/10⁻²⁷ kg = 10¹² protones)
+- ¿Cuántas operaciones en coma flotante puede hacer una supercomputadora en 1 día? (Respuesta: 10⁵ s/10⁻¹⁷ s = 10²² operaciones en coma flotante)
 
 Al estudiar la :ref{id="es-1-cnx-uphysics-01-01-magnittb"}, tómese un tiempo para plantear preguntas similares que le interesen y luego intente responderlas. De este modo, se puede dar vida a casi cualquier tabla de números.
 
@@ -282,9 +279,23 @@ La distancia de la universidad a casa es de 10 mi y normalmente tarda 20 minutos
 
 **Estrategia.** Primero, calculamos la rapidez media con las unidades dadas, luego podemos obtener la rapidez media en las unidades deseadas, al elegir los factores de conversión correctos y multiplicar por estos. Los factores de conversión correctos son los que anulan las unidades no deseadas y dejan en su lugar las unidades deseadas. En este caso, queremos convertir millas a metros, por lo que necesitamos saber que hay 1609 m en 1 mi. También queremos convertir minutos a segundos, por lo que utilizamos la conversión de 60 s en 1 min.
 
-1. Calcule la rapidez media. La rapidez media es la distancia recorrida, dividida entre el tiempo de viaje. (Por el momento, tome esta definición como un hecho. La rapidez media y otros conceptos de movimiento se tratan en capítulos posteriores). En forma de ecuación, $\text{Rapidez media}=\frac{\text{Distancia}}{\text{Tiempo}}.$
-2. Sustituya los valores dados para la distancia y el tiempo: $\text{Rapidez media}=\frac{10\,\text{mi}}{20\,\text{min}}=0{,}50\,\frac{\text{mi}}{\text{min}}.$
-3. Convierta las millas por minuto en metros por segundo al multiplicar por el factor de conversión que anula las millas y deja los metros, y también por el factor de conversión que anula los minutos y deja los segundos: $0{,}50\,\frac{\cancel{\text{milla}}}{\cancel{\text{min}}}\,\times \,\frac{1.609\,\text{m}}{1\,\cancel{\text{milla}}}\,\times \,\frac{1\,\cancel{\text{min}}}{60\,\text{s}}=\frac{(0{,}50)(1.609)}{60}\,\text{m/s}=13\,\text{m/s}.$
+1. Calcule la rapidez media. La rapidez media es la distancia recorrida, dividida entre el tiempo de viaje. (Por el momento, tome esta definición como un hecho. La rapidez media y otros conceptos de movimiento se tratan en capítulos posteriores). En forma de ecuación,
+
+$$
+\text{Rapidez media}=\frac{\text{Distancia}}{\text{Tiempo}}.
+$$
+
+2. Sustituya los valores dados para la distancia y el tiempo:
+
+$$
+\text{Rapidez media}=\frac{10\,\text{mi}}{20\,\text{min}}=0{,}50\,\frac{\text{mi}}{\text{min}}.
+$$
+
+3. Convierta las millas por minuto en metros por segundo al multiplicar por el factor de conversión que anula las millas y deja los metros, y también por el factor de conversión que anula los minutos y deja los segundos:
+
+$$
+0{,}50\,\frac{\cancel{\text{milla}}}{\cancel{\text{min}}}\,\times \,\frac{1.609\,\text{m}}{1\,\cancel{\text{milla}}}\,\times \,\frac{1\,\cancel{\text{min}}}{60\,\text{s}}=\frac{(0{,}50)(1.609)}{60}\,\text{m/s}=13\,\text{m/s}.
+$$
 
 **Importancia.** Compruebe la respuesta de las siguientes maneras:
 
@@ -347,7 +358,7 @@ Dado que 1 lb (libra) equivale a 4,45 newton (N), ¿los números emitidos por SM
 
 La **dimensión** de cualquier cantidad física expresa su dependencia de las cantidades base como un producto de símbolos (o potencias de símbolos) que representan las cantidades base. La :ref{id="es-1-fs-id1168328269910"} enumera las cantidades base y los símbolos utilizados para su dimensión. Por ejemplo, se dice que una medida de longitud tiene la dimensión L o L¹, una medida de masa tiene la dimensión M o M¹, y una medida de tiempo tiene la dimensión T o T¹. Al igual que las unidades, las dimensiones obedecen a las reglas de álgebra. Así pues, el área es el producto de dos longitudes y, por tanto, tiene la dimensión L², o sea, la longitud al cuadrado. Del mismo modo, el volumen es el producto de tres longitudes y tiene la dimensión L³, o longitud al cubo. La rapidez tiene una dimensión de longitud en el tiempo, L/T o LT⁻¹. La densidad volumétrica de la masa tiene la dimensión M/L³ o ML⁻³, o masa sobre longitud al cubo. En general, la dimensión de cualquier cantidad física puede escribirse como ${\text{L}}^{a}{\text{M}}^{b}{\text{T}}^{c}{\text{I}}^{d}{\text{Θ}}^{e}{\text{N}}^{f}{\text{J}}^{g}$ para algunas potencias $a,b,c,d,e,f,$ y *g*. Podemos escribir las dimensiones de una longitud en esta forma con $a=1$ y las seis potencias restantes, todas iguales a cero: ${\text{L}}^{1}={\text{L}}^{1}{\text{M}}^{0}{\text{T}}^{0}{\text{I}}^{0}{\text{Θ}}^{0}{\text{N}}^{0}{\text{J}}^{0}.$ Cualquier cantidad con una dimensión que pueda escribirse de forma que las siete potencias sean cero (es decir, su dimensión es ${\text{L}}^{0}{\text{M}}^{0}{\text{T}}^{0}{\text{I}}^{0}{\text{Θ}}^{0}{\text{N}}^{0}{\text{J}}^{0}$) se denomina **adimensional** (o a veces "de dimensión 1", porque cualquier cosa elevada a la potencia cero es uno). Los físicos suelen llamar a las cantidades adimensionales *números puros*.
 
-Los físicos suelen utilizar corchetes alrededor del símbolo de una cantidad física para representar las dimensiones de dicha magnitud. Por ejemplo, si $r$ es el radio de un cilindro y $h$ es su altura, entonces escribimos $[r]=\text{L}$ y $[h]=\text{L}$ para indicar que las dimensiones del radio y de la altura son las de la longitud, o L. Del mismo modo, si utilizamos el símbolo $A$ para el área de la superficie de un cilindro y $V$ para su volumen, entonces*\[A*] = L² y *\[V*] = L³. Si utilizamos el símbolo $m$ para la masa del cilindro y $\rho$ para la densidad del material del que está hecho el cilindro, entonces $[m]=\text{M}$ y $[\rho]={\text{ML}}^{−3}.$
+Los físicos suelen utilizar corchetes alrededor del símbolo de una cantidad física para representar las dimensiones de dicha magnitud. Por ejemplo, si $r$ es el radio de un cilindro y $h$ es su altura, entonces escribimos $[r]=\text{L}$ y $[h]=\text{L}$ para indicar que las dimensiones del radio y de la altura son las de la longitud, o L. Del mismo modo, si utilizamos el símbolo $A$ para el área de la superficie de un cilindro y $V$ para su volumen, entonces*\[A*] = L² y *\[V*] = L³. Si utilizamos el símbolo $m$ para la masa del cilindro y $\rho$ para la densidad del material del que está hecho el cilindro, entonces $[m]=\text{M}$ y $[\rho ]={\text{ML}}^{−3}.$
 
 La importancia del concepto de dimensión surge del hecho de que cualquier ecuación matemática que relacione cantidades físicas debe ser **dimensionalmente coherente**, lo que significa que la ecuación debe obedecer las siguientes reglas:
 
@@ -357,33 +368,33 @@ La importancia del concepto de dimensión surge del hecho de que cualquier ecuac
 Si se viola alguna de estas reglas, una ecuación no es dimensionalmente coherente y no puede ser un enunciado correcto de la ley física. Este simple hecho sirve para comprobar si hay errores tipográficos o de álgebra, recordar las distintas leyes de la física e incluso sugerir la forma que podrían adoptar las nuevas leyes de la física. Este último uso de las dimensiones no se contempla en este texto, pero es algo que sin duda aprenderá más adelante en su carrera académica.
 
 :::callout{type="ejemplo" title="Usar las dimensiones para recordar una ecuación"}
-Supongamos que necesitamos la fórmula del área de un círculo para algún cálculo. Al igual que muchas personas que aprendieron geometría hace demasiado tiempo como para recordarlo con certeza, hay dos expresiones que nos vienen a la mente cuando pensamos en círculos: $\pi{r}^{2}$ y $2\pi r.$ Una expresión es la circunferencia de un círculo de radio *r* y la otra es su área. Pero ¿cuál es cuál?
+Supongamos que necesitamos la fórmula del área de un círculo para algún cálculo. Al igual que muchas personas que aprendieron geometría hace demasiado tiempo como para recordarlo con certeza, hay dos expresiones que nos vienen a la mente cuando pensamos en círculos: $\pi {r}^{2}$ y $2\pi r.$ Una expresión es la circunferencia de un círculo de radio *r* y la otra es su área. Pero ¿cuál es cuál?
 
 **Estrategia.** Una estrategia natural es buscarla, pero puede llevar tiempo encontrar información de una fuente fiable. Además, aunque creamos que la fuente es fiable, no debemos confiar en todo lo que leemos. Es bueno tener una forma de comprobarlo dos veces con solo pensarlo. Además, es posible que nos encontremos en una situación en la que no podamos consultar estos aspectos (por ejemplo, durante un examen). Por lo tanto, la estrategia es encontrar las dimensiones de ambas expresiones por el hecho de que dichas dimensiones siguen las reglas de álgebra. Si una de las expresiones no tiene las mismas dimensiones que el área, entonces no puede ser la ecuación correcta para el área de un círculo.
 
-**Solución.** Sabemos que la dimensión del área es L². Ahora, la dimensión de la expresión $\pi{r}^{2}$ es
+**Solución.** Sabemos que la dimensión del área es L². Ahora, la dimensión de la expresión $\pi {r}^{2}$ es
 
 $$
-[\pi{r}^{2}]=[\pi]\cdot {[r]}^{2}=1\cdot {\text{L}}^{2}={\text{L}}^{2},
+[\pi {r}^{2}]=[\pi ]\cdot {[r]}^{2}=1\cdot {\text{L}}^{2}={\text{L}}^{2},
 $$
 
-ya que la constante $\pi$ es un número puro y el radio $r$ es una longitud. Por lo tanto, $\pi{r}^{2}$ tiene la dimensión de área. Del mismo modo, la dimensión de la expresión $2\pi r$ es
+ya que la constante $\pi$ es un número puro y el radio $r$ es una longitud. Por lo tanto, $\pi {r}^{2}$ tiene la dimensión de área. Del mismo modo, la dimensión de la expresión $2\pi r$ es
 
 $$
-[2\pi r]=[2]\cdot [\pi]\cdot [r]=1\cdot 1\cdot \text{L}=\text{L,}
+[2\pi r]=[2]\cdot [\pi ]\cdot [r]=1\cdot 1\cdot \text{L}=\text{L,}
 $$
 
 ya que las constantes $2$ y $\pi$ son adimensionales y el radio $r$ es una longitud. Vemos que $2\pi r$ tiene la dimensión de la longitud, lo que significa que no puede ser un área.
 
-Descartamos $2\pi r$ porque no es dimensionalmente coherente con ser un área. Vemos que $\pi{r}^{2}$ es dimensionalmente coherente con ser un área, así que si tenemos que elegir entre estas dos expresiones, $\pi{r}^{2}$ es la que hay que elegir.
+Descartamos $2\pi r$ porque no es dimensionalmente coherente con ser un área. Vemos que $\pi {r}^{2}$ es dimensionalmente coherente con ser un área, así que si tenemos que elegir entre estas dos expresiones, $\pi {r}^{2}$ es la que hay que elegir.
 
-**Importancia.** Esto puede parecer un ejemplo tonto, pero las ideas son muy generales. Siempre que conozcamos las dimensiones de cada una de las magnitudes físicas que aparecen en una ecuación, podremos comprobar si la ecuación es dimensionalmente coherente. Por otro lado, al saber que las ecuaciones verdaderas son dimensionalmente coherentes, podemos hacer coincidir las expresiones de nuestra memoria imperfecta con las cantidades para las que podrían ser expresiones. Hacer esto no nos ayudará a recordar los factores adimensionales que aparecen en las ecuaciones (por ejemplo, si accidentalmente hubiera confundido las dos expresiones del ejemplo en $2\pi{r}^{2},$ entonces el análisis dimensional no ayuda), aunque sí nos permite recordar la forma básica correcta de las ecuaciones.
+**Importancia.** Esto puede parecer un ejemplo tonto, pero las ideas son muy generales. Siempre que conozcamos las dimensiones de cada una de las magnitudes físicas que aparecen en una ecuación, podremos comprobar si la ecuación es dimensionalmente coherente. Por otro lado, al saber que las ecuaciones verdaderas son dimensionalmente coherentes, podemos hacer coincidir las expresiones de nuestra memoria imperfecta con las cantidades para las que podrían ser expresiones. Hacer esto no nos ayudará a recordar los factores adimensionales que aparecen en las ecuaciones (por ejemplo, si accidentalmente hubiera confundido las dos expresiones del ejemplo en $2\pi {r}^{2},$ entonces el análisis dimensional no ayuda), aunque sí nos permite recordar la forma básica correcta de las ecuaciones.
 :::
 
 :::callout{type="comprobacion" title="Compruebe lo aprendido"}
-Supongamos que queremos la fórmula del volumen de una esfera. Las dos expresiones que suelen mencionarse en los análisis elementales de las esferas son $4\pi{r}^{2}$ y $4\pi{r}^{3}\text{/}3.$ Una es el volumen de una esfera de radio *r* y la otra es su superficie. ¿Cuál es el volumen?
+Supongamos que queremos la fórmula del volumen de una esfera. Las dos expresiones que suelen mencionarse en los análisis elementales de las esferas son $4\pi {r}^{2}$ y $4\pi {r}^{3}\text{/}3.$ Una es el volumen de una esfera de radio *r* y la otra es su superficie. ¿Cuál es el volumen?
 
-**Respuesta.** $4\pi{r}^{3}\text{/}3$
+**Respuesta.** $4\pi {r}^{3}\text{/}3$
 :::
 
 :::callout{type="ejemplo" title="Comprobación de la coherencia dimensional de las ecuaciones"}
@@ -392,12 +403,32 @@ Considere las cantidades físicas $s,$ $v,$ $a,$ y $t$ con dimensiones $[s]=\tex
 **Estrategia.** Según la definición de coherencia dimensional, tenemos que comprobar que cada término de una ecuación dada tiene las mismas dimensiones que los demás términos de esa ecuación y que los argumentos de cualquier función matemática estándar son adimensionales.
 
 - (a) No hay funciones trigonométricas, logarítmicas ni exponenciales de las que preocuparse en esta ecuación, por lo que solo tenemos que fijarnos en las dimensiones de cada término que aparece en la ecuación. Hay tres términos, uno en la expresión de la izquierda y dos en la expresión de la derecha, así que los examinaremos uno por uno:
-$\begin{array}{l} [s]=\text{L} \\ [vt]=[v]\cdot [t]={\text{LT}}^{−1}\cdot \text{T}={\text{LT}}^{0}=\text{L} \\ [0{,}5a{t}^{2}]=[a]\cdot {[t]}^{2}={\text{LT}}^{−2}\cdot {\text{T}}^{2}={\text{LT}}^{0}=\text{L}\text{.} \end{array}$ Los tres términos tienen la misma dimensión, por lo que esta ecuación es dimensionalmente coherente.
+
+$$
+\begin{array}{l} [s]=\text{L} \\ [vt]=[v]\cdot [t]={\text{LT}}^{−1}\cdot \text{T}={\text{LT}}^{0}=\text{L} \\ [0{,}5a{t}^{2}]=[a]\cdot {[t]}^{2}={\text{LT}}^{−2}\cdot {\text{T}}^{2}={\text{LT}}^{0}=\text{L}\text{.} \end{array}
+$$
+
+Los tres términos tienen la misma dimensión, por lo que esta ecuación es dimensionalmente coherente.
+
 - (b) De nuevo, no hay funciones trigonométricas, exponenciales ni logarítmicas, por lo que solo tenemos que mirar las dimensiones de cada uno de los tres términos que aparecen en la ecuación:
-$\begin{array}{l} [s]=\text{L} \\ [v{t}^{2}]=[v]\cdot {[t]}^{2}={\text{LT}}^{−1}\cdot {\text{T}}^{2}=\text{LT} \\ [at]=[a]\cdot [t]={\text{LT}}^{−2}\cdot \text{T}={\text{LT}}^{−1}. \end{array}$ Ninguno de los tres términos tiene la misma dimensión que otro, así que esto es lo incompatible con la coherencia dimensional. El término técnico para una ecuación como esta es *sin sentido*.
+
+$$
+\begin{array}{l} [s]=\text{L} \\ [v{t}^{2}]=[v]\cdot {[t]}^{2}={\text{LT}}^{−1}\cdot {\text{T}}^{2}=\text{LT} \\ [at]=[a]\cdot [t]={\text{LT}}^{−2}\cdot \text{T}={\text{LT}}^{−1}. \end{array}
+$$
+
+Ninguno de los tres términos tiene la misma dimensión que otro, así que esto es lo incompatible con la coherencia dimensional. El término técnico para una ecuación como esta es *sin sentido*.
+
 - (c) Esta ecuación contiene una función trigonométrica, por lo que primero debemos comprobar que el argumento de la función seno es adimensional:
-$\begin{array}{l} [\frac{a{t}^{2}}{s}]=\frac{[a]\cdot {[t]}^{2}}{[s]}=\frac{{\text{LT}}^{−2}\cdot {\text{T}}^{2}}{\text{L}}=\frac{\text{L}}{\text{L}}=1. \end{array}$ El argumento es adimensional. Hasta ahora, todo va bien. Ahora tenemos que comprobar las dimensiones de cada uno de los dos términos (es decir, la expresión de la izquierda y la de la derecha) de la ecuación:
-$\begin{array}{l} [v]={\text{LT}}^{−1} \\ [\text{sen}(\frac{a{t}^{2}}{s})]=1. \end{array}$
+
+$$
+\begin{array}{l} [\frac{a{t}^{2}}{s}]=\frac{[a]\cdot {[t]}^{2}}{[s]}=\frac{{\text{LT}}^{−2}\cdot {\text{T}}^{2}}{\text{L}}=\frac{\text{L}}{\text{L}}=1. \end{array}
+$$
+
+El argumento es adimensional. Hasta ahora, todo va bien. Ahora tenemos que comprobar las dimensiones de cada uno de los dos términos (es decir, la expresión de la izquierda y la de la derecha) de la ecuación:
+
+$$
+\begin{array}{l} [v]={\text{LT}}^{−1} \\ [\text{sen}(\frac{a{t}^{2}}{s})]=1. \end{array}
+$$
 
 Los dos términos tienen dimensiones diferentes, es decir, la ecuación no es dimensionalmente coherente. Esta ecuación es otro ejemplo de "sin sentido".
 
@@ -454,19 +485,26 @@ Para progresar en la estimación, es necesario tener algunas ideas definidas sob
 - *Obtener grandes longitudes a partir de longitudes más pequeñas.* Al estimar las longitudes, recuerde que cualquier cosa puede ser una regla. Así, imagine que divide una cosa grande en cosas más pequeñas, estime la longitud de una de las cosas más pequeñas y multiplique para obtener la longitud de la cosa grande. Por ejemplo, para estimar la altura de un edificio, primero cuente cuántos pisos tiene. Luego, estime el tamaño de un solo piso; imagine cuántas personas tendrían que subirse a los hombros de otras para alcanzar el techo. Por último, estime la altura de una persona. El producto de estas tres estimaciones es su estimación de la altura del edificio. Resulta útil haber memorizado algunas escalas pertinentes de longitud para el tipo de problemas que estará resolviendo. Por ejemplo, conocer algunas de las escalas de longitud en la aquí sería práctico. A veces también ayuda hacer esto a la inversa, es decir, para estimar la longitud de una cosa pequeña, imagine un montón de ellas formando una cosa más grande. Por ejemplo, para estimar el grosor de una hoja de papel, calcule el grosor de una pila de papel y luego divídala entre el número de páginas de la pila. Estas mismas estrategias de dividir las cosas grandes en cosas más pequeñas o de sumar las cosas más pequeñas para dar una cosa más grande pueden utilizarse a veces para estimar otras cantidades físicas, como las masas y los tiempos.
 - *Obtener áreas y volúmenes a partir de longitudes.* Cuando se trate de un área o un volumen de un objeto complejo, introduzca un modelo sencillo del objeto, como una esfera o una caja. A continuación, estime primero las dimensiones lineales (como el radio de la esfera o la longitud, ancho y altura de la caja) y utilice sus estimaciones para obtener el volumen o el área a partir de fórmulas geométricas estándar. Si tiene una estimación del área o del volumen de un objeto, también puede hacer lo contrario, es decir, utilizar fórmulas geométricas estándar para obtener una estimación de sus dimensiones lineales.
 - *Obtener masas a partir de volúmenes y densidades.* Al estimar las masas de los objetos, serviría primero estimar su volumen y luego estimar su masa a partir de una estimación aproximada de su densidad media (recordemos que la densidad tiene la dimensión de la masa sobre longitud al cubo, por lo que la masa es densidad por volumen). Para ello, conviene recordar que la densidad del aire es de aproximadamente 1 kg/m³, la del agua es de 10³ kg/m³ y los sólidos más densos de la vida cotidiana alcanzan un máximo de 10⁴ kg/m³. Preguntarse si un objeto flota o se hunde en el aire o en el agua le da una estimación aproximada de su densidad. También se puede hacer a la inversa; si tiene una estimación de la masa de un objeto y su densidad, puede utilizar esto para obtener una estimación de su volumen.
-- *Si todo lo demás falla, limítelo.* En cuanto a las cantidades físicas para las que no tiene mucha intuición, a veces lo mejor que puede hacer es pensar algo así: debe ser más grande que esto y más pequeño que aquello. Por ejemplo, supongamos que hay que calcular la masa de un alce. Tal vez tenga mucha experiencia con los alces y conozca de memoria su masa media. Si es así, genial. Pero para la mayoría de la gente, lo mejor que pueden hacer es pensar algo así: debe ser mayor que una persona (del orden de 10² kg) y menor que un auto (del orden de 10³ kg). Si necesita un solo número para un cálculo posterior, puede tomar la media geométrica del límite superior y del inferior, es decir, los multiplica y luego saca la raíz cuadrada. Para el ejemplo de la masa del alce, esto sería ${({10}^{2}\,\times \,{10}^{3})}^{0{,}5}={10}^{2{,}5}={10}^{0{,}5}\,\times \,{10}^{2}\approx 3\,\times \,{10}^{2}\text{kg}.$ Cuanto más estrechos sean los límites, mejor. Además, no hay reglas inquebrantables cuando se trata de la estimación. Si cree que el valor de la cantidad puede estar más cerca del límite superior que del inferior, puede aumentar su estimación de la media geométrica en un orden o dos de magnitud.
+- *Si todo lo demás falla, limítelo.* En cuanto a las cantidades físicas para las que no tiene mucha intuición, a veces lo mejor que puede hacer es pensar algo así: debe ser más grande que esto y más pequeño que aquello. Por ejemplo, supongamos que hay que calcular la masa de un alce. Tal vez tenga mucha experiencia con los alces y conozca de memoria su masa media. Si es así, genial. Pero para la mayoría de la gente, lo mejor que pueden hacer es pensar algo así: debe ser mayor que una persona (del orden de 10² kg) y menor que un auto (del orden de 10³ kg). Si necesita un solo número para un cálculo posterior, puede tomar la media geométrica del límite superior y del inferior, es decir, los multiplica y luego saca la raíz cuadrada. Para el ejemplo de la masa del alce, esto sería
+
+$$
+{({10}^{2}\,\times \,{10}^{3})}^{0{,}5}={10}^{2{,}5}={10}^{0{,}5}\,\times \,{10}^{2}\approx 3\,\times \,{10}^{2}\text{kg}.
+$$
+
+Cuanto más estrechos sean los límites, mejor. Además, no hay reglas inquebrantables cuando se trata de la estimación. Si cree que el valor de la cantidad puede estar más cerca del límite superior que del inferior, puede aumentar su estimación de la media geométrica en un orden o dos de magnitud.
+
 - *Una cifra significativa está bien.* No es necesario ir más allá de una cifra significativa (significant figure, sig. fig.) cuando se hacen cálculos para obtener una estimación. En la mayoría de los casos, el orden de magnitud es suficiente. La meta es solo obtener una cifra aproximada, así que mantenga la aritmética lo más sencilla posible.
 - *Pregúntese: ¿tiene esto algún sentido?* Por último, compruebe si su respuesta es razonable. ¿Cómo se compara con los valores de otras cantidades con las mismas dimensiones que ya conoce o que puede buscar fácilmente? Si obtiene alguna respuesta descabellada (por ejemplo, si estima que la masa del océano Atlántico es mayor que la masa de la Tierra, o que algún lapso es mayor que la edad del universo), compruebe primero si sus unidades son correctas. A continuación, compruebe si hay errores aritméticos. Luego, replantee la lógica que ha utilizado para llegar a su respuesta. Si todo está bien, es posible que acabe por demostrar que alguna nueva idea ingeniosa es realmente falsa.
 
 :::callout{type="ejemplo" title="Masa de los océanos de la Tierra"}
 Estime la masa total de los océanos de la Tierra.
 
-**Estrategia.** Sabemos que la densidad del agua es de unos 10³ kg/m³, así que partimos del consejo de "obtener masas a partir de densidades y volúmenes". Por lo tanto, necesitamos estimar el volumen de los océanos del planeta. Siguiendo el consejo de "obtener áreas y volúmenes a partir de las longitudes", podemos estimar el volumen de los océanos como área de superficie por profundidad media, o *V* = *AD*. Conocemos el diámetro de la Tierra por la aquí y sabemos que la mayor parte de la superficie terrestre está cubierta de agua, por lo que podemos estimar que la superficie de los océanos es aproximadamente igual a la superficie del planeta. Siguiendo el consejo de "obtener áreas y volúmenes a partir de longitudes" de nuevo, podemos aproximar la Tierra como una esfera y utilizar la fórmula del área de superficie de una esfera de diámetro *d,* es decir, $A=\pi{d}^{2},$ para estimar el área de superficie de los océanos. Ahora solo tenemos que calcular la profundidad media de los océanos. Para ello, utilizamos el consejo: "Si todo lo demás falla, limítelo". Resulta que sabemos que los puntos más profundos del océano están en torno a los 10 km y que no es raro que el océano tenga más de 1 km de profundidad, así que tomamos la profundidad media alrededor de ${({10}^{3}\,\times \,{10}^{4})}^{0{,}5}\approx 3\,\times \,{10}^{3}\text{m.}$ Ahora solo hay que unirlo todo, atendiendo al consejo de que "una ‘cifra significativa’ está bien".
+**Estrategia.** Sabemos que la densidad del agua es de unos 10³ kg/m³, así que partimos del consejo de "obtener masas a partir de densidades y volúmenes". Por lo tanto, necesitamos estimar el volumen de los océanos del planeta. Siguiendo el consejo de "obtener áreas y volúmenes a partir de las longitudes", podemos estimar el volumen de los océanos como área de superficie por profundidad media, o *V* = *AD*. Conocemos el diámetro de la Tierra por la aquí y sabemos que la mayor parte de la superficie terrestre está cubierta de agua, por lo que podemos estimar que la superficie de los océanos es aproximadamente igual a la superficie del planeta. Siguiendo el consejo de "obtener áreas y volúmenes a partir de longitudes" de nuevo, podemos aproximar la Tierra como una esfera y utilizar la fórmula del área de superficie de una esfera de diámetro *d,* es decir, $A=\pi {d}^{2},$ para estimar el área de superficie de los océanos. Ahora solo tenemos que calcular la profundidad media de los océanos. Para ello, utilizamos el consejo: "Si todo lo demás falla, limítelo". Resulta que sabemos que los puntos más profundos del océano están en torno a los 10 km y que no es raro que el océano tenga más de 1 km de profundidad, así que tomamos la profundidad media alrededor de ${({10}^{3}\,\times \,{10}^{4})}^{0{,}5}\approx 3\,\times \,{10}^{3}\text{m.}$ Ahora solo hay que unirlo todo, atendiendo al consejo de que "una ‘cifra significativa’ está bien".
 
 **Solución.** Estimamos que la superficie de la Tierra (y por lo tanto la superficie de los océanos de la Tierra) es aproximadamente
 
 $$
-A=\pi{d}^{2}=\pi{({10}^{7}\text{m})}^{2}\approx 3\,\times \,{10}^{14}{\text{m}}^{2}.
+A=\pi {d}^{2}=\pi {({10}^{7}\text{m})}^{2}\approx 3\,\times \,{10}^{14}{\text{m}}^{2}.
 $$
 
 A continuación, con nuestra estimación de profundidad media de $D=3\,\times \,{10}^{3}\text{m,}$ que se obtuvo por limitación, estimamos que el volumen de los océanos de la Tierra es
@@ -607,8 +645,27 @@ En el recuento de cifras significativas se tienen en cuenta especialmente los ce
 
 Cuando se combinan mediciones con diferentes grados de precisión, *el número de dígitos significativos en la respuesta final no puede ser mayor que el número de dígitos significativos en el valor medido menos preciso*. Hay dos reglas diferentes, una para la multiplicación y la división y otra para la suma y la resta.
 
-1. *Para la multiplicación y la división, el resultado debería tener el mismo número de cifras significativas que la cantidad con el menor número de cifras significativas que entra en el cálculo*. Por ejemplo, el área de un círculo puede calcularse a partir de su radio mediante *A* = *πr*². Veamos cuántas cifras significativas tiene el área si el radio tiene solo dos, es decir, *r* = 1,2 m. Utilizando una calculadora con una salida de ocho dígitos, calcularíamos $A=\pi{r}^{2}=(3{,}1415927\text{…})\,\times \,{(1{,}2\,\text{m})}^{2}=4{,}5238934{\,\text{m}}^{2}.$ No obstante, dado que el radio tiene solamente dos cifras significativas, limita la cantidad calculada a dos cifras significativas, o sea $A=4{,}5{\,\text{m}}^{2},$ aunque *π* es apropiado hasta al menos ocho dígitos.
-2. *En las sumas y restas, la respuesta no puede contener más decimales que la medida menos precisa.* Supongamos que compramos 7,56 kg de papas en una tienda de comestibles, pesados con una báscula con precisión de 0,01 kg, y luego dejamos 6,052 kg de papas en su laboratorio, pesados con una báscula con precisión de 0,001 kg. Luego, vamos a casa y añadimos 13,7 kg de papas, pesados con una báscula de baño con precisión de 0,1 kg. ¿Cuántos kilogramos de papas tenemos ahora y cuántas cifras significativas corresponden a la respuesta? La masa se encuentra por simple suma y resta: $\begin{array}{l} \\ \\ \,7{,}56\,\text{kg} \\ -6{,}052\,\text{kg} \\ \\ \\ \,\frac{\,+13{,}7\,\text{kg}}{15{,}208\,\text{kg}}=15{,}2\,\text{kg}\text{.} \end{array}$ A continuación, identificamos la medida menos precisa: 13,7 kg. Esta medida se expresa con 0,1 decimales, por lo que nuestra respuesta final también debe expresarse con 0,1 decimales. Por lo tanto, la respuesta se redondea a la décima, lo que nos da 15,2 kg.
+1. *Para la multiplicación y la división, el resultado debería tener el mismo número de cifras significativas que la cantidad con el menor número de cifras significativas que entra en el cálculo*. Por ejemplo, el área de un círculo puede calcularse a partir de su radio mediante *A* = *πr*². Veamos cuántas cifras significativas tiene el área si el radio tiene solo dos, es decir, *r* = 1,2 m. Utilizando una calculadora con una salida de ocho dígitos, calcularíamos
+
+$$
+A=\pi {r}^{2}=(3{,}1415927\text{…})\,\times \,{(1{,}2\,\text{m})}^{2}=4{,}5238934{\,\text{m}}^{2}.
+$$
+
+No obstante, dado que el radio tiene solamente dos cifras significativas, limita la cantidad calculada a dos cifras significativas, o sea
+
+$$
+A=4{,}5{\,\text{m}}^{2},
+$$
+
+aunque *π* es apropiado hasta al menos ocho dígitos.
+
+2. *En las sumas y restas, la respuesta no puede contener más decimales que la medida menos precisa.* Supongamos que compramos 7,56 kg de papas en una tienda de comestibles, pesados con una báscula con precisión de 0,01 kg, y luego dejamos 6,052 kg de papas en su laboratorio, pesados con una báscula con precisión de 0,001 kg. Luego, vamos a casa y añadimos 13,7 kg de papas, pesados con una báscula de baño con precisión de 0,1 kg. ¿Cuántos kilogramos de papas tenemos ahora y cuántas cifras significativas corresponden a la respuesta? La masa se encuentra por simple suma y resta:
+
+$$
+\begin{array}{l} \\ \\ \,7{,}56\,\text{kg} \\ -6{,}052\,\text{kg} \\ \\ \\ \,\frac{\,+13{,}7\,\text{kg}}{15{,}208\,\text{kg}}=15{,}2\,\text{kg}\text{.} \end{array}
+$$
+
+A continuación, identificamos la medida menos precisa: 13,7 kg. Esta medida se expresa con 0,1 decimales, por lo que nuestra respuesta final también debe expresarse con 0,1 decimales. Por lo tanto, la respuesta se redondea a la décima, lo que nos da 15,2 kg.
 
 #### Cifras significativas en este texto
 
@@ -625,8 +682,7 @@ En este texto, se supone que la mayoría de los números tienen tres cifras sign
 
 ### Ecuaciones clave
 
-| Porcentaje de incertidumbre | $\text{Porcentaje de incertidumbre}=\frac{\delta A}{A}\,\times \,100\%$ |
-| --- | --- |
+- Porcentaje de incertidumbre: $\text{Porcentaje de incertidumbre}=\frac{\delta A}{A}\,\times \,100\%$
 
 ### Preguntas conceptuales
 

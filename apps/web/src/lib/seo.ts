@@ -42,6 +42,10 @@ export interface SeoInput {
   type?: "website" | "article";
   noindex?: boolean;
   keywords?: string[];
+  /** Advertise the page's Markdown rendition (`<url>.md`). Default true. */
+  markdown?: boolean;
+  /** ISO dates for article pages (`article:published_time` / `modified_time`). */
+  modifiedTime?: string;
 }
 
 export function buildMetadata(input: SeoInput): Metadata {
@@ -58,6 +62,8 @@ export function buildMetadata(input: SeoInput): Metadata {
     type = "website",
     noindex = false,
     keywords,
+    markdown = true,
+    modifiedTime,
   } = input;
 
   const locales = availableLocales ?? routing.locales;
@@ -90,9 +96,11 @@ export function buildMetadata(input: SeoInput): Metadata {
     alternates: {
       canonical: url,
       languages,
+      types: markdown ? { "text/markdown": `${url}.md` } : undefined,
     },
     openGraph: {
       type,
+      ...(type === "article" && modifiedTime ? { modifiedTime } : {}),
       url,
       siteName: SITE_NAME,
       title: ogTitle ?? title,

@@ -52,13 +52,13 @@ Las medidas y las políticas locales regionales, nacionales y de la UE con objet
 
 Las medidas necesarias para reducir la contaminación del aire, tanto en Europa como a escala mundial, son en gran parte las mismas medidas que se necesitan para afrontar la crisis del clima y detener la degradación de la naturaleza. Tenemos que cambiar radicalmente y descarbonizar nuestros sistemas de producción y consumo, especialmente los relacionados con la movilidad, la energía y los alimentos.
 
-## Para más información
-
 :::callout{type="datos" title="Los problemas de calidad del aire en las ciudades europeas"}
 Casi todos los europeos que viven en ciudades están expuestos a una contaminación del aire que supera los niveles establecidos en las directrices de la Organización Mundial de la Salud (OMS) para el aire limpio. La contaminación del aire es el mayor peligro para la salud del medio ambiente en Europa y en todo el mundo.
 :::
 
 ::resource{id="tabla-17"}
+
+## Para más información
 
 - Contaminación del aire: www.eea.europa. eu/themes/air
 - SOER 2020, Capítulo 8 sobre la contaminación del aire: www.eea.europa. eu/publications/soer-2020/chapter-08_ soer2020-air-pollution/view

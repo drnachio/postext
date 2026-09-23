@@ -1,0 +1,222 @@
+{/* docs/skill-es.mdx */}
+
+export const metadata = {
+  title: 'Skill para agentes: portar una publicación a Postext',
+  sidebarTitle: 'Skill',
+  description: 'Instala la skill postext-port en Claude Code, Codex o cualquier agente y deja que convierta un PDF, Word, PowerPoint, EPUB, InDesign o HTML en un proyecto de Postext que sigue la maquetación original',
+  lang: 'es',
+  lastUpdated: '2026-09-23',
+  readingTime: '8 min',
+  order: 8,
+};
+
+# Skill para agentes
+
+**Convierte una publicación existente en un proyecto de Postext con un agente de programación.**
+
+Mucha gente llega a Postext con un libro que ya existe: un manual en PDF de
+imprenta, un informe en Word, un curso en PowerPoint, un catálogo en InDesign,
+un EPUB. Portarlo supone dos trabajos:
+
+- **El contenido**: el Markdown enriquecido de cada capítulo, con sus
+  directivas y microformatos.
+- **El diseño**: un manifiesto de configuración que reproduzca las reglas de
+  maquetación del original (geometría de página, retícula de líneas base,
+  tipografía, aperturas, cornisas, recuadros, flotantes, tablas, partes).
+
+Un LLM puede hacer buena parte de este trabajo, pero solo si sabe cómo
+funciona Postext. El Markdown de Postext no es CommonMark, y la configuración
+tiene trampas que solo aparecen cuando una página se compone mal. La skill
+**`postext-port`** empaqueta ese conocimiento junto con las herramientas con
+las que construimos cada preset del sandbox, para que tu agente haga el porte
+bien.
+
+Sigue el formato abierto [Agent Skills](https://agentskills.io), así que
+funciona con Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode
+y [muchos otros agentes](https://skills.sh).
+
+## Qué contiene la skill
+
+- **Un flujo de trabajo**:
+  1. acordar el encargo;
+  2. inventariar la fuente;
+  3. medir el diseño en una ficha de especificaciones;
+  4. crear el esqueleto del proyecto;
+  5. extraer el contenido;
+  6. curarlo como Markdown de Postext;
+  7. preparar fuentes e imágenes;
+  8. verificar página a página;
+  9. empaquetar.
+- **Referencias**:
+  - el formato de documento y el manifiesto de configuración, ambos
+    comprobados contra el motor;
+  - el formato de proyecto (bundle);
+  - una guía por formato de origen;
+  - un método de análisis del diseño;
+  - un catálogo de casos de maquetación ya resueltos: partes con color
+    propio, aperturas de capítulo, verso, glosas al margen, notas al pie,
+    recuadros flotantes, partidos y anidados, originales vectoriales para
+    imprenta, figuras con texto vivo, imágenes en celdas, tablas apaisadas,
+    ediciones bilingües y más.
+- **Scripts** (Python y Node), descritos en la sección siguiente.
+
+## Scripts
+
+<table>
+  <thead>
+    <tr>
+      <th>Script</th>
+      <th>Qué hace</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>inventory.py</code></td><td>Primera mirada a cualquier fuente: geometría, fuentes, estilos en uso, imágenes, páginas que necesitan OCR</td></tr>
+    <tr><td><code>measure_layout.py</code></td><td>Márgenes, columnas, medianil e interlineado (la retícula de líneas base) de un PDF</td></tr>
+    <tr><td><code>pdf_extract.py</code></td><td>PDF → capítulos en borrador por <em>rol tipográfico</em> (fuente/cuerpo/color): orden de lectura, párrafos, deshifenado, negritas/cursivas, superíndices y subíndices, listas, pies</td></tr>
+    <tr><td><code>pdf_figures.py</code></td><td>Recorta figuras de un PDF: fotos a resolución nativa, previsualizaciones SVG, originales vectoriales en PDF para imprenta</td></tr>
+    <tr><td><code>extract_tables.py</code></td><td>Tablas de PDF → <code>TableModel</code> de Postext</td></tr>
+    <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → capítulos en borrador, con los estilos de Word asignados a recuadros y estilos de párrafo</td></tr>
+    <tr><td><code>idml_extract.py</code></td><td>IDML de InDesign → capítulos en borrador por estilo de párrafo, tablas e imágenes ancladas</td></tr>
+    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, subconjuntar, escalar y separar fuentes; pasar imágenes a sRGB, recortarlas y unirlas; convertir ilustraciones <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
+    <tr><td><code>preset_kit.py</code></td><td>Crea el proyecto y su script generador, construye <code>preset.json</code> y empaqueta el <code>.postext</code></td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Detecta todo lo que el parser y el cargador hacen mal en silencio</td></tr>
+    <tr><td><code>render.mjs</code></td><td>Compone el proyecto sin navegador con el motor real, muestra los avisos y escribe el PDF</td></tr>
+    <tr><td><code>compare_pages.py</code></td><td>Pone las páginas de la fuente y de Postext lado a lado</td></tr>
+  </tbody>
+</table>
+
+## Instalación
+
+### Cualquier agente (skills.sh)
+
+La CLI [`skills`](https://skills.sh) detecta tus agentes e instala la skill
+para ellos:
+
+```bash
+npx skills add drnachio/postext --skill postext-port
+```
+
+Elige agentes concretos con `-a` e instálala para todos tus proyectos con `-g`:
+
+```bash
+npx skills add drnachio/postext --skill postext-port -a codex -a claude-code -g
+```
+
+La web publica la misma skill, así que esto también funciona:
+
+```bash
+npx skills add https://postext.dev
+```
+
+### Plugin de Claude Code
+
+El repositorio de Postext es también un marketplace de plugins de Claude
+Code. Dentro de Claude Code:
+
+```text
+/plugin marketplace add drnachio/postext
+/plugin install postext@postext
+```
+
+O desde la terminal:
+
+```bash
+claude plugin marketplace add drnachio/postext
+```
+
+```bash
+claude plugin install postext@postext
+```
+
+### Que la instale el agente
+
+Puedes pedírselo a tu agente, por ejemplo: *«Instala la skill de Postext para
+portar publicaciones (`npx skills add drnachio/postext --skill postext-port`) y
+úsala para portar este PDF»*. Los agentes que leen
+`https://postext.dev/llms.txt` encuentran ahí esta página y el comando de
+instalación.
+
+### Herramientas que usan los scripts
+
+```bash
+python3 -m pip install pymupdf pillow fonttools brotli
+```
+
+```bash
+brew install pandoc poppler
+```
+
+```bash
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf react @pdf-lib/fontkit
+```
+
+Pandoc hace falta para fuentes en Word, PowerPoint, EPUB y HTML, y poppler
+para las imágenes de página. Los paquetes de Node mueven el renderizador sin
+navegador (Node 22.15 o posterior). Herramientas opcionales: `ocrmypdf` para
+escaneos, ImageMagick, y veraPDF para comprobar PDF/UA.
+
+## Cómo usarla
+
+Deja los ficheros de origen en tu carpeta de trabajo y pide el porte. Por
+ejemplo:
+
+- *«Porta los capítulos 1 a 3 de `manual.pdf` a Postext, reproduciendo su
+  maquetación a dos columnas, las aperturas de capítulo y los recuadros.»*
+- *«Convierte `curso.docx` en un libro de Postext. Los estilos "Nota" y
+  "Actividad" son recuadros.»*
+- *«Convierte `presentacion.pptx` en un dossier de Postext: las diapositivas
+  son secciones y las notas del orador, el texto.»*
+- *«Tenemos el paquete de InDesign (IDML + PDF de imprenta) de este manual.
+  Construye el preset de Postext del capítulo 1 en español e inglés.»*
+
+El agente sigue el flujo de trabajo:
+
+1. **Encargo.** Pregunta lo que no puede deducir: reproducción fiel o
+   rediseño, un capítulo de muestra o el libro entero, idiomas, impresión o
+   pantalla, y los derechos sobre textos, imágenes y fuentes.
+2. **Inventario y medición.** Lee la fuente y escribe una ficha de datos
+   medidos: formato, márgenes, columnas, interlineado, roles tipográficos,
+   paleta, aperturas, cornisas, familias de recuadros y costumbres de
+   colocación.
+3. **Proyecto.** Crea `mi-libro/` con un generador `build_preset.py` que
+   guarda la ficha como constantes y produce `preset.json`.
+4. **Contenido.** Extrae capítulos en borrador con el extractor adecuado y
+   los cura como Markdown de Postext: recuadros, estilos de párrafo, partes,
+   atributos de encabezado para las aperturas, citas `:ref`, recursos de
+   tablas y figuras.
+5. **Verificación.** Pasa el linter, compone el proyecto sin navegador y lo
+   compara con la fuente página a página hasta que coinciden los saltos de
+   página, las figuras y los recuadros.
+6. **Entrega.** Empaqueta `mi-libro.postext`.
+
+Abre el resultado en el [Sandbox](/es/sandbox): **Proyectos → Importar
+.postext…**. La importación toma los capítulos y textos del idioma del
+sandbox. Para trabajar con una carpeta de proyectos en una copia local de
+Postext, define `POSTEXT_PRIVATE_PRESETS_DIR` (consulta
+[Sandbox](/es/docs/sandbox)).
+
+## Qué esperar
+
+- **Los extractores producen borradores; el agente los cura.** Cuenta con una
+  revisión por capítulo frente a las páginas originales. Esa revisión es la
+  que da la calidad.
+- **Solo configuración y Markdown.** La skill nunca modifica el motor para
+  encajar un libro. Cuando Postext no puede expresar algo, el agente elige la
+  expresión más cercana y lo anota como diferencia conocida.
+- **Los derechos los decides tú.** El agente pregunta antes de reproducir
+  imágenes o fuentes con licencias dudosas. Las fuentes con licencia se
+  marcan `redistributable: false`, así que los proyectos exportados las
+  dejan fuera.
+- **Fidelidad donde importa.** El objetivo es la misma retícula, tipografía,
+  aperturas, recuadros, colocación de figuras y saltos de página en la
+  mayoría de las páginas (con un margen de una página por capítulo), no
+  cortes de línea idénticos.
+
+## Dónde está
+
+La skill está en el repositorio en
+[`plugins/postext/skills/postext-port`](https://github.com/drnachio/postext/tree/main/plugins/postext/skills/postext-port).
+Cubre todos los casos que surgieron al construir los presets del sandbox,
+públicos y privados. Si un porte se encuentra con un caso que aún no cubre,
+abre una incidencia o una pull request que mejore la skill, y el siguiente
+porte lo tendrá resuelto.

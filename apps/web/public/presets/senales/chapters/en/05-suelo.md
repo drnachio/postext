@@ -46,11 +46,11 @@ Prevention remains the most effective and cheapest way to ensure healthy soils �
 
 Many existing and upcoming policy initiatives under the European Green Deal — the circular economy, the farm to fork strategy, the biodiversity strategy, the chemicals strategy, the new soil strategy and the zero pollution action plan — provide a European framework and support national authorities and land users to protect land and soils from pollution. Additional support to local authorities and a more coherent EU policy framework on soil would further reinforce these efforts. After all, pollution is only one of the many threats that soils and land face.
 
-## Find out more
-
-:::callout{type="datos" title="Pollution and other impacts of agriculture on the environment"}
+:::callout{type="dato" title="Pollution and other impacts of agriculture on the environment"}
 Agriculture has multiple impacts on the environment, climate and human health. Unsustainable farming practices lead to pollution of soil, water, air and food and over-exploitation of natural resources.
 :::
+
+## Find out more
 
 - Soil: www.eea.europa.eu/themes/soil
 - SOER 2020, Chapter 5 on land and soil: www.eea.europa.eu/publications/soer- 2020/chapter-05_soer2020-land-andsoil/view

@@ -3541,6 +3541,105 @@
     "keepTogether": false
    },
    {
+    "id": "dato",
+    "name": "Dato",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#f2f1ed",
+     "model": "hex",
+     "paletteId": "grey"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 4,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 4,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 3.5,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 4,
+      "unit": "mm"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 8,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.2,
+      "unit": "pt"
+     },
+     "gap": {
+      "value": 2.5,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Open Sans",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 11.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   },
+   {
     "id": "cifras",
     "name": "Cifras",
     "span": "page",

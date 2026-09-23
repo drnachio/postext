@@ -8,7 +8,7 @@
 1.3 The Language of Physics: Physical Quantities and Units
 :::
 
-Take a look at the image above of the Andromeda Galaxy (:ref{id="en-1-figure-01-00-galaxy"}), which contains billions of stars. This galaxy is the nearest one to our own galaxy (the Milky Way) but is still a staggering 2.5 million light years from Earth. (A light year is a measurement of the distance light travels in a year.) Yet, the primary force that affects the movement of stars within Andromeda is the same force that we contend with here on Earth—namely, gravity.
+Take a look at the image above of the Andromeda Galaxy, which contains billions of stars. This galaxy is the nearest one to our own galaxy (the Milky Way) but is still a staggering 2.5 million light years from Earth. (A light year is a measurement of the distance light travels in a year.) Yet, the primary force that affects the movement of stars within Andromeda is the same force that we contend with here on Earth—namely, gravity.
 
 You may soon realize that physics plays a much larger role in your life than you thought. This section introduces you to the realm of physics, and discusses applications of physics in other disciplines of study. It also describes the methods by which science is done, and how scientists communicate their results to each other.
 
@@ -92,11 +92,10 @@ At 800 million kilometers from the sun, Rosetta receives sunlight that is only 4
 In this sense, the Rosetta project nicely shows the huge range of topics encompassed by physics: from modeling the movement of gigantic planets over huge distances within our solar systems, to learning how to generate electric power from low-intensity light. Physics is, by far, the broadest field of science.
 
 1. What characteristics of the solar system would have to be known or calculated in order to send a probe to a distant planet, such as Jupiter?
-
-   - (a) the effects due to the light from the distant stars
-- (b) the effects due to the air in the solar system
-- (c) the effects due to the gravity from the other planets
-- (d) the effects due to the cosmic microwave background radiation
+  - (a) the effects due to the light from the distant stars
+  - (b) the effects due to the air in the solar system
+  - (c) the effects due to the gravity from the other planets
+  - (d) the effects due to the cosmic microwave background radiation
 :::
 
 In summary, physics studies many of the most basic aspects of science. A knowledge of physics is, therefore, necessary to understand all other sciences. This is because physics explains the most basic ways in which our universe works. However, it is not necessary to formally study all applications of physics. A knowledge of the basic laws of physics will be most useful to you, so that you can use them to solve some everyday problems. In this way, the study of physics can improve your problem-solving skills.
@@ -104,51 +103,46 @@ In summary, physics studies many of the most basic aspects of science. A knowled
 ### Check Your Understanding
 
 1. Which of the following is *not* an essential feature of scientific explanations?
-
-   - (a) They must be subject to testing.
-- (b) They strictly pertain to the physical world.
-- (c) Their validity is judged based on objective observations.
-- (d) Once supported by observation, they can be viewed as a fact.
+  - (a) They must be subject to testing.
+  - (b) They strictly pertain to the physical world.
+  - (c) Their validity is judged based on objective observations.
+  - (d) Once supported by observation, they can be viewed as a fact.
 
 2. Which of the following does *not* represent a question that can be answered by science?
-
-   - (a) How much energy is released in a given nuclear chain reaction?
-- (b) Can a nuclear chain reaction be controlled?
-- (c) Should uncontrolled nuclear reactions be used for military applications?
-- (d) What is the half-life of a waste product of a nuclear reaction?
+  - (a) How much energy is released in a given nuclear chain reaction?
+  - (b) Can a nuclear chain reaction be controlled?
+  - (c) Should uncontrolled nuclear reactions be used for military applications?
+  - (d) What is the half-life of a waste product of a nuclear reaction?
 
 3. What are the three conditions under which classical physics provides an excellent description of our universe?
-
-   - (a) 
-  1. Matter is moving at speeds less than about 1 percent of the speed of light
-  2. Objects dealt with must be large enough to be seen with the naked eye.
-  3. Strong electromagnetic fields are involved.
-- (b) 
-  1. Matter is moving at speeds less than about 1 percent of the speed of light.
-  2. Objects dealt with must be large enough to be seen with the naked eye.
-  3. Only weak gravitational fields are involved.
-- (c) 
-  1. Matter is moving at great speeds, comparable to the speed of light.
-  2. Objects dealt with are large enough to be seen with the naked eye.
-  3. Strong gravitational fields are involved.
-- (d) 
-  1. Matter is moving at great speeds, comparable to the speed of light.
-  2. Objects are just large enough to be visible through the most powerful telescope.
-  3. Only weak gravitational fields are involved.
+  - (a)
+    1. Matter is moving at speeds less than about 1 percent of the speed of light
+    2. Objects dealt with must be large enough to be seen with the naked eye.
+    3. Strong electromagnetic fields are involved.
+  - (b)
+    1. Matter is moving at speeds less than about 1 percent of the speed of light.
+    2. Objects dealt with must be large enough to be seen with the naked eye.
+    3. Only weak gravitational fields are involved.
+  - (c)
+    1. Matter is moving at great speeds, comparable to the speed of light.
+    2. Objects dealt with are large enough to be seen with the naked eye.
+    3. Strong gravitational fields are involved.
+  - (d)
+    1. Matter is moving at great speeds, comparable to the speed of light.
+    2. Objects are just large enough to be visible through the most powerful telescope.
+    3. Only weak gravitational fields are involved.
 
 4. Why is the Greek word for nature appropriate in describing the field of physics?
-
-   - (a) Physics is a natural science that studies life and living organism on habitable planets like Earth.
-- (b) Physics is a natural science that studies the laws and principles of our universe.
-- (c) Physics is a physical science that studies the composition, structure, and changes of matter in our universe.
-- (d) Physics is a social science that studies the social behavior of living beings on habitable planets like Earth.
+  - (a) Physics is a natural science that studies life and living organism on habitable planets like Earth.
+  - (b) Physics is a natural science that studies the laws and principles of our universe.
+  - (c) Physics is a physical science that studies the composition, structure, and changes of matter in our universe.
+  - (d) Physics is a social science that studies the social behavior of living beings on habitable planets like Earth.
 
 5. Which aspect of the universe is studied by quantum mechanics?
-
-   - (a) objects at the galactic level
-- (b) objects at the classical level
-- (c) objects at the subatomic level
-- (d) objects at all levels, from subatomic to galactic
+  - (a) objects at the galactic level
+  - (b) objects at the classical level
+  - (c) objects at the subatomic level
+  - (d) objects at all levels, from subatomic to galactic
 
 ### Section Summary
 
@@ -219,8 +213,6 @@ In this activity, you will learn about scientific models by making a model of ho
   6. When you teacher tells you to, open your assigned window and/or door. Each person should note the direction that their paper points immediately after the window or door was opened. Record your results on your diagram.
   7. Did the airflow test data support or refute the hypothetical model of air flow shown in your diagram? Why or why not? Correct your model based on your experimental evidence.
   8. With your group, discuss how accurate your model is. What limitations did it have? Write down the limitations that your group agreed upon.
-
-1. #ost/api/ex/k12phys-ch01-ex026
 :::
 
 ### Scientific Laws and Theories
@@ -236,20 +228,6 @@ Scientific ideas and explanations that are true in many, but not all situations 
 A **theory** is an explanation for patterns in nature that is supported by much scientific evidence and verified multiple times by multiple researchers. While many people confuse theories with educated guesses or hypotheses, theories have withstood more rigorous testing and verification than hypotheses.
 
 As a closing idea about scientific processes, we want to point out that scientific laws and theories, even those that have been supported by experiments for centuries, can still be changed by new discoveries. This is especially true when new technologies emerge that allow us to observe things that were formerly unobservable. Imagine how viewing previously invisible objects with a microscope or viewing Earth for the first time from space may have instantly changed our scientific theories and laws! What discoveries still await us in the future? The constant retesting and perfecting of our scientific laws and theories allows our knowledge of nature to progress. For this reason, many scientists are reluctant to say that their studies *prove* anything. By saying *support* instead of *prove*, it keeps the door open for future discoveries, even if they won’t occur for centuries or even millennia.
-
-### Check Your Understanding
-
-1. #ost/api/ex/k12phys-ch01-ex027
-
-2. #ost/api/ex/k12phys-ch01-ex028
-
-3. #ost/api/ex/k12phys-ch01-ex029
-
-4. #ost/api/ex/k12phys-ch01-ex030
-
-5. #ost/api/ex/k12phys-ch01-ex031
-
-6. #ost/api/ex/k12phys-ch01-ex032
 
 ### Section Summary
 
@@ -379,11 +357,19 @@ Suppose that you drive the 10.0 km from your university to home in 20.0 min. Cal
 
 1. Calculate average speed. Average speed is distance traveled divided by time of travel. (Take this definition as a given for now—average speed and other motion concepts will be covered in a later module.) In equation form,
 
-$\text{average speed = }\frac{\text{distance}}{\text{time}}\text{.}$
+$$
+\text{average speed = }\frac{\text{distance}}{\text{time}}\text{.}
+$$
+
 2. Substitute the given values for distance and time.
-$\text{average speed = }\frac{10.0\,\text{ km}}{20.0\,\text{ min}}=0.500\,\ \frac{\text{km}}{\text{min}}$
+
+$$
+\text{average speed = }\frac{10.0\,\text{ km}}{20.0\,\text{ min}}=0.500\,\ \frac{\text{km}}{\text{min}}
+$$
+
 3. Convert km/min to km/h: multiply by the conversion factor that will cancel minutes and leave hours. That conversion factor is $60\,\text{min/1}\text{h}$ . Thus,
- $$
+
+$$
 \text{average speed = }0.500\,\ \frac{\text{km}}{\text{min}}\times \frac{60\,\text{ min}}{1\,\text{ h}}=30.0\,\ \frac{\text{km}}{\text{h}}.
 $$
 
@@ -391,7 +377,14 @@ There are several ways to convert the average speed into meters per second.
 
 1. Start with the answer to (a) and convert km/h to m/s. Two conversion factors are needed—one to convert hours to seconds, and another to convert kilometers to meters.
 2. Multiplying by these yields
-$\text{Average}\text{speed}=30.0\frac{\text{km}}{\text{h}}\times \frac{1\,\text{ h}}{\text{3,600 s}}\times \frac{1,000\,\text{ m}}{\text{1 km}}$$\text{Average}\text{speed}=8.33\frac{\text{m}}{\text{s}}$
+
+$$
+\text{Average}\text{speed}=30.0\frac{\text{km}}{\text{h}}\times \frac{1\,\text{ h}}{\text{3,600 s}}\times \frac{1,000\,\text{ m}}{\text{1 km}}
+$$
+
+$$
+\text{Average}\text{speed}=8.33\frac{\text{m}}{\text{s}}
+$$
 :::
 
 :::callout{type="ejemplo" title="Using Physics to Evaluate Promotional Materials"}
@@ -409,27 +402,27 @@ $$
  where 
 
 $$
-\rho=19.3\,\text{g/cc}
+\rho =19.3\,\text{g/cc}
 $$
 
 
  and *V* is the volume. Solving for the volume gives 
 
 $$
-V=\frac{m}{\rho}=\frac{15\times {10}^{-3}\,\text{g}}{19.3\,\text{g/cc}}≅7.8\times {10}^{-4}\,\text{cc.}
+V=\frac{m}{\rho }=\frac{15\times {10}^{-3}\,\text{g}}{19.3\,\text{g/cc}}≅7.8\times {10}^{-4}\,\text{cc.}
 $$
 
 If *t* is the thickness, the volume corresponding to half the gold is 
 
 $$
-\frac{1}{2}(7.8\times {10}^{-4})=\pi{r}^{2}t=\pi{(2.54)}^{2}t,
+\frac{1}{2}(7.8\times {10}^{-4})=\pi {r}^{2}t=\pi {(2.54)}^{2}t,
 $$
 
 
  where the 1″ radius has been converted to cm. Solving for the thickness gives 
 
 $$
-t=\frac{(3.9\times {10}^{-4})}{\pi{(2.54)}^{2}}≅1.9\times {10}^{-5}\,\text{cm}=0.00019 mm.
+t=\frac{(3.9\times {10}^{-4})}{\pi {(2.54)}^{2}}≅1.9\times {10}^{-5}\,\text{cm}=0.00019 mm.
 $$
 :::
 
@@ -461,7 +454,7 @@ In the printer paper example uncertainty could be caused by: the fact that the s
 One method of expressing uncertainty is as a percent of the measured value. If a measurement, *A*, is expressed with uncertainty, δ*A*, the percent uncertainty is
 
 $$
-\text{\% uncertainty = }\frac{\delta\text{A}}{\text{A}}\text{ × 100\%}\text{.}
+\text{\% uncertainty = }\frac{\delta \text{A}}{\text{A}}\text{ × 100\%}\text{.}
 $$
 
 :::callout{type="ejemplo" title="Calculating Percent Uncertainty: A Bag of Apples"}
@@ -477,7 +470,7 @@ You determine that the expected weight of a 5 lb bag has an uncertainty of ±0.4
 **Strategy.** First, observe that the expected value of the bag’s weight, $A$, is 5 lb. The uncertainty in this value, $\delta A$, is 0.4 lb. We can use the following equation to determine the percent uncertainty of the weight
 
 $$
-\text{\% uncertainty = }\frac{\delta\text{A}}{\text{A}}\text{ × 100\%}\text{.}
+\text{\% uncertainty = }\frac{\delta \text{A}}{\text{A}}\text{ × 100\%}\text{.}
 $$
 
 Plug the known values into the equation
@@ -507,19 +500,34 @@ Special consideration is given to zeros when counting significant figures. For e
 
 When combining measurements with different degrees of accuracy and precision, the number of significant digits in the final answer can be no greater than the number of significant digits in the least precise measured value. There are two different rules, one for multiplication and division and another rule for addition and subtraction, as discussed below.
 
-1. **For multiplication and division:** The answer should have the same number of significant figures as the starting value with the fewest significant figures. For example, the area of a circle can be calculated from its radius using $A=\pi{r}^{2}$ . Let us see how many significant figures the area will have if the radius has only two significant figures, for example, *r* = 2.0 m. Then, using a calculator that keeps eight significant figures, you would get
-$A=\text{ π}{r}^{2}=\ (3.1415927...)\ \times \ {(2.0\,\text{ m})}^{2}=\ 12.5663708{\text{ m}}^{2}.$
+1. **For multiplication and division:** The answer should have the same number of significant figures as the starting value with the fewest significant figures. For example, the area of a circle can be calculated from its radius using $A=\pi {r}^{2}$ . Let us see how many significant figures the area will have if the radius has only two significant figures, for example, *r* = 2.0 m. Then, using a calculator that keeps eight significant figures, you would get
+
+$$
+A=\text{ π}{r}^{2}=\ (3.1415927...)\ \times \ {(2.0\,\text{ m})}^{2}=\ 12.5663708{\text{ m}}^{2}.
+$$
+
 But because the radius has only two significant figures, the area calculated is meaningful only to two significant figures or
+
 $$
 A=\ 13{\text{ m}}^{2}
 $$
+
 even though the value of $\pi$ is meaningful to at least eight digits.
-2. *For addition and subtraction*: The answer should have the same number places (e.g. tens place, ones place, tenths place, etc.) as the least-precise starting value. Suppose that you buy 7.56 kg of potatoes in a grocery store as measured with a scale having a precision of 0.01 kg. Then you drop off 6.052 kg of potatoes at your laboratory as measured by a scale with a precision of 0.001 kg. Finally, you go home and add 13.7 kg of potatoes as measured by a bathroom scale with a precision of 0.1 kg. How many kilograms of potatoes do you now have, and how many significant figures are appropriate in the answer? The mass is found by simple addition and subtraction:$$
+
+2. *For addition and subtraction*: The answer should have the same number places (e.g. tens place, ones place, tenths place, etc.) as the least-precise starting value. Suppose that you buy 7.56 kg of potatoes in a grocery store as measured with a scale having a precision of 0.01 kg. Then you drop off 6.052 kg of potatoes at your laboratory as measured by a scale with a precision of 0.001 kg. Finally, you go home and add 13.7 kg of potatoes as measured by a bathroom scale with a precision of 0.1 kg. How many kilograms of potatoes do you now have, and how many significant figures are appropriate in the answer? The mass is found by simple addition and subtraction:
+
+$$
 \begin{array}{l} \underset{\_}{\begin{array}{ll} 7.56 & \text{kg} \\ −6.052 & \text{kg} \\ +13.7 & \text{kg} \end{array}} \\ \begin{array}{ll} 15.208 & \text{kg} \end{array} \end{array}
-$$The least precise measurement is 13.7 kg. This measurement is expressed to the 0.1 decimal place, so our final answer must also be expressed to the 0.1 decimal place. Thus, the answer should be rounded to the tenths place, giving 15.2 kg. The same is true for non-decimal numbers. For example,
+$$
+
+The least precise measurement is 13.7 kg. This measurement is expressed to the 0.1 decimal place, so our final answer must also be expressed to the 0.1 decimal place. Thus, the answer should be rounded to the tenths place, giving 15.2 kg. The same is true for non-decimal numbers. For example,
+
 $$
 6527.23+2=6529.23=6529\,\text{.}
-$$We cannot report the decimal places in the answer because *2* has no decimal places that would be significant. Therefore, we can only report to the ones place.
+$$
+
+We cannot report the decimal places in the answer because *2* has no decimal places that would be significant. Therefore, we can only report to the ones place.
+
 It is a good idea to keep extra significant figures while calculating, and to round off to the correct number of significant figures only in the final answers. The reason is that small errors from rounding while calculating can sometimes produce significant errors in the final answer. As an example, try calculating $5{,}098-(5.000)\times (1{,}010)$ to obtain a final answer to only two significant figures. Keeping all significant during the calculation gives 48. Rounding to two significant figures in the middle of the calculation changes it to $\text{5,100 – (5}\text{.000) × (1,000) = 100,}$ which is way off. You would similarly avoid rounding in the middle of the calculation in counting and in doing accounting, where many small numbers need to be added and subtracted accurately to give possibly much larger final numbers.
 
 #### Significant Figures in this Text
@@ -527,33 +535,50 @@ It is a good idea to keep extra significant figures while calculating, and to ro
 In this textbook, most numbers are assumed to have three significant figures. Furthermore, consistent numbers of significant figures are used in all worked examples. You will note that an answer given to three digits is based on input good to at least three digits. If the input has fewer significant figures, the answer will also have fewer significant figures. Care is also taken that the number of significant figures is reasonable for the situation posed. In some topics, such as optics, more than three significant figures will be used. Finally, if a number is exact, such as the *2* in the formula, $c=2\pi r$, it does not affect the number of significant figures in a calculation.
 
 :::callout{type="ejemplo" title="Approximating Vast Numbers: a Trillion Dollars"}
-The U.S. federal deficit in the 2008 fiscal year was a little greater than $10 trillion. Most of us do not have any concept of how much even one trillion actually is. Suppose that you were given a trillion dollars in $100 bills. If you made 100-bill stacks, like that shown in :ref{id="en-1-figure-01-03-money"}, and used them to evenly cover a football field (between the end zones), make an approximation of how high the money pile would become. (We will use feet/inches rather than meters here because football fields are measured in yards.) One of your friends says 3 in., while another says 10 ft. What do you think?
+The U.S. federal deficit in the 2008 fiscal year was a little greater than \$10 trillion. Most of us do not have any concept of how much even one trillion actually is. Suppose that you were given a trillion dollars in \$100 bills. If you made 100-bill stacks, like that shown in :ref{id="en-1-figure-01-03-money"}, and used them to evenly cover a football field (between the end zones), make an approximation of how high the money pile would become. (We will use feet/inches rather than meters here because football fields are measured in yards.) One of your friends says 3 in., while another says 10 ft. What do you think?
 
-**Strategy.** When you imagine the situation, you probably envision thousands of small stacks of 100 wrapped $100 bills, such as you might see in movies or at a bank. Since this is an easy-to-approximate quantity, let us start there. We can find the volume of a stack of 100 bills, find out how many stacks make up one trillion dollars, and then set this volume equal to the area of the football field multiplied by the unknown height.
+**Strategy.** When you imagine the situation, you probably envision thousands of small stacks of 100 wrapped \$100 bills, such as you might see in movies or at a bank. Since this is an easy-to-approximate quantity, let us start there. We can find the volume of a stack of 100 bills, find out how many stacks make up one trillion dollars, and then set this volume equal to the area of the football field multiplied by the unknown height.
 
 1. Calculate the volume of a stack of 100 bills. The dimensions of a single bill are approximately 3 in. by 6 in. A stack of 100 of these is about 0.5 in. thick. So the total volume of a stack of 100 bills is
-$\begin{array}{l} \text{volume of stack}=\text{length}\times \text{width}\times \text{height,} \\ \text{volume of stack}=\text{6 in}\text{.}\times \text{3 in}\text{.}\times \text{0}\text{.5 in}\text{.,} \\ \text{volume of stack}=\text{9 in}{\text{.}}^{\text{3}}. \end{array}$
-2. Calculate the number of stacks. Note that a trillion dollars is equal to $\text{\$}1\times {10}^{12}$, and a stack of one-hundred $\text{\$}100$ bills is equal to $\text{\$}10,000,$ or $\text{\$}1\times {10}^{4}$ . The number of stacks you will have is
 
-${\text{\$1 × 10}}^{\text{12}}{\text{ (a trillion dollars) / \$1 × 10}}^{\text{4}}{\text{ per stack = 1 × 10}}^{\text{8}}\text{ stacks}\text{.}$
+$$
+\begin{array}{l} \text{volume of stack}=\text{length}\times \text{width}\times \text{height,} \\ \text{volume of stack}=\text{6 in}\text{.}\times \text{3 in}\text{.}\times \text{0}\text{.5 in}\text{.,} \\ \text{volume of stack}=\text{9 in}{\text{.}}^{\text{3}}. \end{array}
+$$
+
+2. Calculate the number of stacks. Note that a trillion dollars is equal to $\unicode{36}1\times {10}^{12}$, and a stack of one-hundred $\unicode{36}100$ bills is equal to $\unicode{36}10,000,$ or $\unicode{36}1\times {10}^{4}$ . The number of stacks you will have is
+
+$$
+{\unicode{36}\text{1 × 10}}^{\text{12}}{\text{ (a trillion dollars) / }\unicode{36}\text{1 × 10}}^{\text{4}}{\text{ per stack = 1 × 10}}^{\text{8}}\text{ stacks}\text{.}
+$$
+
 3. Calculate the area of a football field in square inches. The area of a football field is $100\,\text{ yd}\times \text{ 50}\text{yd}$, which gives $5,000{\text{ yd}}^{\text{2}}$ . Because we are working in inches, we need to convert square yards to square inches
 
 $$
 \begin{array}{l} {\text{Area = 5,000 yd}}^{\text{2}}\text{ × }\frac{\text{3 ft}}{\text{1yd}}\text{ × }\frac{\text{3 ft}}{\text{1yd}}\text{ × }\frac{\text{12 in}\text{.}}{\text{1 foot}}\text{ × }\frac{\text{12 in}\text{.}}{\text{1 foot}}\text{ = 6,480,000 in}{\text{.}}^{\text{2}}\text{,} \\ \text{Area}\approx {\text{6 × 10}}^{\text{6}}\text{ in}{\text{.}}^{\text{2}}\text{.} \end{array}
-$$This conversion gives us ${\text{6 × 10}}^{\text{6}}\text{ in}{\text{.}}^{\text{2}}$
- for the area of the field. (Note that we are using only one significant figure in these calculations.)
-4. Calculate the total volume of the bills. The volume of all the $100-bill stacks is 
+$$
+
+This conversion gives us ${\text{6 × 10}}^{\text{6}}\text{ in}{\text{.}}^{\text{2}}$ for the area of the field. (Note that we are using only one significant figure in these calculations.)
+
+4. Calculate the total volume of the bills. The volume of all the \$100-bill stacks is
 
 $$
 \text{9 in}{\text{.}}^{\text{3}}{\text{ / stack × 10}}^{\text{8}}{\text{ stacks = 9 × 10}}^{\text{8}}\text{ in}{\text{.}}^{\text{3}}
 $$
+
 5. Calculate the height. To determine the height of the bills, use the following equation
+
 $$
 \begin{array}{lll} \text{volume of bills} & \text{=} & \text{area of field × height of money} \\ \text{Height of money} & \text{=} & \frac{\text{volume of bills}}{\text{area of field}} \\ \text{Height of money} & \text{=} & \frac{{\text{9 × 10}}^{\text{8}}\text{ in}{\text{.}}^{\text{3}}}{{\text{6 × 10}}^{\text{6}}\text{ in}{\text{.}}^{\text{2}}}\text{ = 1.5}{\text{ × 10}}^{\text{2}}\text{ in}\text{.} \end{array}
 $$
+
 Since the area is actually a little larger than 6 × 10², the height is a little less than 150, so round down to 100 inches rather than up to 200 inches.
- $\text{Height of money}={\text{1×10}}^{\text{2}}\,\text{ in.}=\text{100 in}\text{.}$
+
+$$
+\text{Height of money}={\text{1×10}}^{\text{2}}\,\text{ in.}=\text{100 in}\text{.}
+$$
+
 The height of the money will be about 100 in. high. Converting this value to feet gives
+
 $$
 100\,\text{ in}\text{.}\times \frac{\text{1ft}}{\text{12 in}\text{.}}=8.33\,\text{ ft}\approx \text{8 ft}\text{.}
 $$
@@ -569,13 +594,10 @@ One commonly-used graph in physics and other sciences is the **line graph**, pro
 
 1. Draw the two axes. The horizontal axis, or *x*-axis, shows the **independent variable**, which is the variable that is controlled or manipulated. The vertical axis, or *y*-axis, shows the **dependent variable**, the non-manipulated variable that changes with (or is dependent on) the value of the independent variable. In the data above, time is the independent variable and should be plotted on the *x*-axis. Distance from the station is the dependent variable and should be plotted on the *y*-axis.
 2. Label each axes on the graph with the name of each variable, followed by the symbol for its units in parentheses. Be sure to leave room so that you can number each axis. In this example, use *Time (min)* as the label for the *x*-axis.
-3. Next, you must determine the best scale to use for numbering each axis. Because the time values on the *x*-axis are taken every 10 minutes, we could easily number the *x*-axis from 0 to 70 minutes with a tick mark every 10 minutes. Likewise, the *y*-axis scale should start low enough and continue high enough to include all of the *distance from station* values. A scale from 0 km to 160 km should suffice, perhaps with a tick mark every 10 km.
-In general, you want to pick a scale for both axes that 1) shows all of your data, and 2) makes it easy to identify trends in your data. If you make your scale too large, it will be harder to see how your data change. Likewise, the smaller and more fine you make your scale, the more space you will need to make the graph. The number of significant figures in the axis values should be coarser than the number of significant figures in the measurements.
+3. Next, you must determine the best scale to use for numbering each axis. Because the time values on the *x*-axis are taken every 10 minutes, we could easily number the *x*-axis from 0 to 70 minutes with a tick mark every 10 minutes. Likewise, the *y*-axis scale should start low enough and continue high enough to include all of the *distance from station* values. A scale from 0 km to 160 km should suffice, perhaps with a tick mark every 10 km. In general, you want to pick a scale for both axes that 1) shows all of your data, and 2) makes it easy to identify trends in your data. If you make your scale too large, it will be harder to see how your data change. Likewise, the smaller and more fine you make your scale, the more space you will need to make the graph. The number of significant figures in the axis values should be coarser than the number of significant figures in the measurements.
 4. Now that your axes are ready, you can begin plotting your data. For the first data point, count along the *x*-axis until you find the 10 min tick mark. Then, count up from that point to the 10 km tick mark on the *y*-axis, and approximate where 22 km is along the *y*-axis. Place a dot at this location. Repeat for the other six data points (:ref{id="en-1-figure-01-03-point"}).
-The graph of the train’s distance from the station versus time from the exercise above.
 5. Add a title to the top of the graph to state what the graph is describing, such as the *y*-axis parameter vs. the *x*-axis parameter. In the graph shown here, the title is *train motion*. It could also be titled distance of the train from the station vs. time.
 6. Finally, with data points now on the graph, you should draw a trend line (:ref{id="en-1-figure-01-03-trendline"}). The trend line represents the dependence you think the graph represents, so that the person who looks at your graph can see how close it is to the real data. In the present case, since the data points look like they ought to fall on a straight line, you would draw a straight line as the trend line. Draw it to come closest to all the points. Real data may have some inaccuracies, and the plotted points may not all fall on the trend line. In some cases, none of the data points fall exactly on the trend line.
-The completed graph with the trend line included.
 
 #### Analyzing a Graph Using Its Equation
 
@@ -654,24 +676,13 @@ Area of the Shingle: 4400 ± 70.4 cm²
 In this simulation you will examine how changing the slope and *y*-intercept of an equation changes the appearance of a plotted line. Select slope-intercept form and drag the blue circles along the line to change the line’s characteristics. Then, play the line game and see if you can determine the slope or *y*-intercept of a given line.
 
 1. How would the following changes affect a line that is neither horizontal nor vertical and has a positive slope?
-
-   1. increase the slope but keeping the *y*-intercept constant
-2. increase the *y*-intercept but keeping the slope constant
-  - (a) Increasing the slope will cause the line to rotate clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move vertically up on the graph without changing the lines slope.
-  - (b) Increasing the slope will cause the line to rotate counter-clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move vertically up on the graph without changing the lines slope.
-  - (c) Increasing the slope will cause the line to rotate clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move horizontally right on the graph without changing the lines slope.
-  - (d) Increasing the slope will cause the line to rotate counter-clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move horizontally right on the graph without changing the lines slope.
+  1. increase the slope but keeping the *y*-intercept constant
+  2. increase the *y*-intercept but keeping the slope constant
+    - (a) Increasing the slope will cause the line to rotate clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move vertically up on the graph without changing the lines slope.
+    - (b) Increasing the slope will cause the line to rotate counter-clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move vertically up on the graph without changing the lines slope.
+    - (c) Increasing the slope will cause the line to rotate clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move horizontally right on the graph without changing the lines slope.
+    - (d) Increasing the slope will cause the line to rotate counter-clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move horizontally right on the graph without changing the lines slope.
 :::
-
-### Check Your Understanding
-
-1. #ost/api/ex/k12phys-ch01-ex055
-
-2. #ost/api/ex/k12phys-ch01-ex056
-
-3. #ost/api/ex/k12phys-ch01-ot052
-
-4. #ost/api/ex/k12phys-ch01-ot053
 
 ### Section Summary
 
@@ -686,26 +697,18 @@ In this simulation you will examine how changing the slope and *y*-intercept of 
 
 ### Key Equations
 
-| slope intercept form | $y=mx+b$ |
-| --- | --- |
-| quadratic formula | $y=a{x}^{2}+bx+c$ |
-| positive exponential formula | $y={a}^{x}$ |
-| negative exponential formula | $y={a}^{-x}$ |
+- slope intercept form: $y=mx+b$
+- quadratic formula: $y=a{x}^{2}+bx+c$
+- positive exponential formula: $y={a}^{x}$
+- negative exponential formula: $y={a}^{-x}$
 
 ### Problems
 
-1. A commemorative coin that sells for $40 is advertised to be plated with 15 mg of gold. Suppose gold is worth about $1,300 per ounce. Which of the following best represents the value of the gold in the coin?
-
-   - (a) $0.33
-- (b) $0.69
-- (c) $3.30
-- (d) $6.90
-
-2. #ost/api/ex/k12phys-ch01-ex061
-
-3. #ost/api/ex/k12phys-ch01-ex062
-
-4. #ost/api/ex/k12phys-ch01-ex063
+1. A commemorative coin that sells for \$40 is advertised to be plated with 15 mg of gold. Suppose gold is worth about \$1,300 per ounce. Which of the following best represents the value of the gold in the coin?
+  - (a) \$0.33
+  - (b) \$0.69
+  - (c) \$3.30
+  - (d) \$6.90
 
 ### Key Terms
 

@@ -54,8 +54,6 @@ Está claro que no podemos vivir sin sonidos y la reducción de la contaminació
 
 Somos conscientes que no se cumplirá el objetivo de la UE para 2020 de reducir la contaminación acústica, tal como se define en el 7º Programa de Acción de la UE en materia de Medio Ambiente consistente en reducir la contaminación acústica y avanzar hacia los niveles de exposición al ruido recomendados por la OMS. Muchos Estados miembros de la UE tendrán que hacer más para adoptar las medidas necesarias y hacer frente a la contaminación acústica, especialmente en la aplicación de la Directiva de la UE sobre el ruido ambiental.
 
-## Para más información
-
 :::callout{type="cifras" title="Contaminación acústica"}
 El 20 % de la población de la UE —una de cada cinco personas— vive en zonas en las que los niveles de ruido se consideran perjudiciales para la salud.
 
@@ -73,6 +71,3 @@ El 20 % de la población de la UE —una de cada cinco personas— vive en zonas
 
 *Fuentes: Informe de la AEMA «El ruido en Europa 2020».*
 :::
-
-- Ruido:: www.eea.europa.eu/themes/ human/noise
-- SOER 2020, Capítulo 11 sobre ruido ambiental: www.eea.europa.eu/ publications/soer-2020/chapter-11_ soer2020-environmental-noise/view

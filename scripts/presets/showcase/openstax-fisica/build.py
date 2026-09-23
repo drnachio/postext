@@ -212,13 +212,20 @@ def callout_styles() -> list[dict]:
     ]
 
 
+PLAIN_TABLE = "table-plain"
+USES_PLAIN_TABLES = False  # set by main() once the chapters are converted
+
+
 def resource_types(lang: str) -> list[dict]:
     fig, figs, fshort = ed.BOOK[lang]["figure"]
     tab, tabs, tshort = ed.BOOK[lang]["table"]
     return [
         {"id": "figure", "name": fig, "namePlural": figs, "shortLabel": fshort, "captionPrefix": fig, "numberingTemplate": "{h1}.{n}", "resetOn": "h1", "counterFormat": "decimal", "defaultPlacement": {"position": "auto", "span": "column", "width": 1}},
         {"id": "table", "name": tab, "namePlural": tabs, "shortLabel": tshort, "captionPrefix": tab, "numberingTemplate": "{h1}.{n}", "resetOn": "h1", "counterFormat": "decimal", "defaultPlacement": {"position": "auto", "span": "column"}, "captionStyle": {"position": "above"}},
-    ]
+    ] + ([
+        # Unnumbered tables (CNXML class "unnumbered") set in place with `::resource`.
+        {"id": PLAIN_TABLE, "name": tab, "namePlural": tabs, "shortLabel": tshort, "captionPrefix": "", "numberingTemplate": "", "resetOn": "never", "counterFormat": "decimal", "defaultPlacement": {"position": "here", "span": "column"}, "captionStyle": {"position": "above"}},
+    ] if USES_PLAIN_TABLES else [])
 
 
 def body_text(lang: str) -> dict:
@@ -347,6 +354,8 @@ def image_spec(lang: str, res: cnxml.Resource, images: dict[str, dict]) -> dict 
 
 
 def table_spec(res: cnxml.Resource) -> dict:
+    if not res.numbered:
+        return {"id": res.id, "typeId": PLAIN_TABLE, "kind": "table", "caption": res.caption, "table": res.table, "placement": {"position": "here", "span": "column"}}
     return {"id": res.id, "typeId": "table", "kind": "table", "caption": res.caption, "table": res.table, "placement": {"position": "auto", "span": "page" if res.wide else "column"}}
 
 
@@ -521,6 +530,8 @@ def main() -> None:
         # Resources are per edition (different books): the shared list holds
         # every resource; the wording map carries nothing extra.
         resources += res
+    global USES_PLAIN_TABLES
+    USES_PLAIN_TABLES = any(r["typeId"] == PLAIN_TABLE for r in resources)
     fonts = build_fonts()
     write_credits_md(chapters)
     meta = write_manifest(chapter_specs, resources, wording, fonts, chapters, images)
