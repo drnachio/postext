@@ -212,3 +212,50 @@ joined like the book view) and reports `PARSE` issues (unclosed math/fences),
 `WARN calloutOverflow`, unknown resource ids, and font families that are not
 bundled. Line breaks can differ very slightly from the browser (fontkit vs
 canvas metrics); the sandbox's PDF tab is the reference.
+
+## 7. Bundles from code
+
+The `postext` npm package reads and writes `.postext` files (exported from
+`postext` and from the `postext/bundle` subpath; docs:
+https://postext.dev/en/docs/configuration#bundles-postext-files).
+
+```js
+import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
+  bundleResourceBytes, bundleFontProvider, createBundle } from 'postext';
+import { renderToPdf, decompressWoff2 } from 'postext-pdf';
+
+// Open: chapters, config (customFonts wired to the bundle's files), resources.
+const bundle = await openBundle(bytes, { locale: 'es' }); // Uint8Array | ArrayBuffer | Blob
+await loadBundleFonts(bundle);        // browser: FontFace for every bundled face
+await registerBundleImages(bundle);   // canvas backend; bundleImageUrl(bundle) for renderToHtml
+const docs = buildBundle(bundle);     // one VDTDocument per chapter, chained like the Sandbox
+const pdf = await renderToPdf(docs, {
+  fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback }),
+  resourceBytes: bundleResourceBytes(bundle),
+});
+
+// Write: payloads are looked up by fileId in `files`.
+const { bytes: out, warnings } = await createBundle({
+  name: 'My Book', locale: 'es',
+  chapters: [{ markdown: '# Uno\n\n…' }],
+  config,                                   // customFonts variants name their fileId
+  resources,                                // svg.fileId / bitmap.fileId
+  files: { 'fig.svg': svgText, 'serif-regular': fontBytes },
+});
+```
+
+- A loaded payload's `fileId` is its path inside the bundle
+  (`bundle.files.get('resources/fig.svg')`).
+- `openBundle` uses the Sandbox's base config (default palette + localised
+  resource types) under the manifest's `config`, and applies `localized`
+  for the chosen locale, so code and Sandbox lay the book out alike.
+- `createBundle` strips config defaults, writes fonts as `fonts[]` (never
+  `config.customFonts`), and warns about missing payloads, `.woff` faces and
+  `redistributable: false` families (left out).
+- `buildBundle` lays each chapter out with the previous one's counters,
+  page parity and numbering, and gives `:::toc` chapters the book outline —
+  so every chapter starts on a new page, as in the Sandbox (the headless
+  `render.mjs` joins the chapters into one flow instead).
+- Under plain Node the dists need the extension-retrying resolve hook that
+  `render.mjs` registers.
+

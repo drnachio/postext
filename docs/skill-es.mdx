@@ -80,7 +80,7 @@ y [muchos otros agentes](https://skills.sh).
     <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, subconjuntar, escalar y separar fuentes; pasar imágenes a sRGB, recortarlas y unirlas; convertir ilustraciones <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Crea el proyecto y su script generador, construye <code>preset.json</code> y empaqueta el <code>.postext</code></td></tr>
     <tr><td><code>lint_project.py</code></td><td>Detecta todo lo que el parser y el cargador hacen mal en silencio</td></tr>
-    <tr><td><code>render.mjs</code></td><td>Compone el proyecto sin navegador con el motor real, muestra los avisos y escribe el PDF</td></tr>
+    <tr><td><code>render.mjs</code></td><td>Compone el proyecto (una carpeta o un archivo <code>.postext</code>) sin navegador con el motor real, muestra los avisos y escribe el PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>Pone las páginas de la fuente y de Postext lado a lado</td></tr>
   </tbody>
 </table>
@@ -194,6 +194,10 @@ Abre el resultado en el [Sandbox](/es/sandbox): **Proyectos → Importar
 sandbox. Para trabajar con una carpeta de proyectos en una copia local de
 Postext, define `POSTEXT_PRIVATE_PRESETS_DIR` (consulta
 [Sandbox](/es/docs/sandbox)).
+
+### Cargar el resultado desde código
+
+El archivo entregado no depende del Sandbox. El paquete `postext` lo abre con `openBundle`, compone el libro con `buildBundle` y lo renderiza en canvas, HTML o PDF (consulta [Paquetes](/es/docs/configuration#paquetes-archivos-postext)). Así, una adaptación puede alimentar directamente un programa. Cuando lo que produce ese programa necesita ajustes, vuelve a exportarlo a un `.postext` con `createBundle`, retócalo en el Sandbox y carga de nuevo el archivo corregido. El `render.mjs` del skill, que compone sin navegador, acepta tanto un `.postext` empaquetado como una carpeta de proyecto.
 
 ## Qué esperar
 

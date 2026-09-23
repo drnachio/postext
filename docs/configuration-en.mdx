@@ -4711,3 +4711,160 @@ For production print workflows, tune these configuration options before renderin
 ### Reference implementation
 
 The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) wires the pieces above into a live preview with regenerate, download, and print buttons, and is a good starting point for any in-browser PDF integration. It builds the VDT through the shared layout worker (see [Running layout in a Web Worker](#running-layout-in-a-web-worker)) so clicking *Regenerate* doesn't freeze the UI while the pipeline runs — the main thread only handles `renderToPdf` (which is already fast once the VDT exists).
+
+## Bundles (`.postext` files)
+
+A **`.postext` file** is a whole book in one file: a zip archive holding a `preset.json` manifest, one markdown file per chapter, the resource payloads (bitmaps, SVGs, PDF print masters) and the font files the configuration names. The [Sandbox](/en/docs/sandbox#export-and-import) exports and imports it and the [agent skill](/en/docs/skill) delivers it. The `postext` package can create and open it too, so a book can move between those tools and your own program without losing anything.
+
+```
+my-book.postext
+├── preset.json            manifest: name, locale, chapters, config, resources, fonts
+├── chapters/01-dusk.md
+├── chapters/02-night.md
+├── resources/lantern.svg
+└── fonts/ebgaramond-400-normal.woff2
+```
+
+The manifest is described field by field in the Sandbox's [Preset bundle format](/en/docs/sandbox#preset-bundle-format) appendix. A file may also carry `layouts.json`, the Sandbox's page counts, so the book opens already paginated there. `openBundle` ignores it.
+
+The API is exported from `postext` itself and from the `postext/bundle` subpath, which adds the low-level helpers. Import from `postext` when you also render. That way the bundle adapters and the renderers share one module instance, which matters on a CDN such as esm.sh, where every entry point is a separate build.
+
+### Opening a bundle
+
+`openBundle` takes the file's bytes (a `Uint8Array`, an `ArrayBuffer`, or a `Blob` / `File` from an `<input type="file">`) and returns everything the engine and its backends need:
+
+```ts
+import { openBundle } from 'postext';
+
+const bundle = await openBundle(await file.arrayBuffer(), { locale: 'es' });
+
+bundle.chapters;   // [{ title, file, markdown }, …] in book order
+bundle.config;     // PostextConfig, ready for buildDocument
+bundle.resources;  // Resource[]
+bundle.files;      // Map<path, Uint8Array>: every file of the bundle
+```
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>What it holds</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>manifest</code></td><td>The validated <code>preset.json</code>.</td></tr>
+    <tr><td><code>id</code>, <code>name</code>, <code>description</code></td><td>From the manifest.</td></tr>
+    <tr><td><code>locale</code>, <code>locales</code></td><td>The locale the content was read in, and every locale a bilingual bundle carries. <code>options.locale</code> picks one: first the exact tag, then the base language, then the bundle's own locale.</td></tr>
+    <tr><td><code>chapters</code></td><td><code>&#123; title, file, markdown &#125;</code> per chapter. A chapter without a title in the manifest takes the text of its first <code>#</code> heading.</td></tr>
+    <tr><td><code>config</code></td><td>The default colour palette and the resource types localised to the bundle's locale, then the manifest's <code>config</code>, then the locale's overrides. <code>customFonts</code> lists the bundle's font families. This is the same configuration the Sandbox opens the bundle with.</td></tr>
+    <tr><td><code>resources</code></td><td>The resources, with the captions of the chosen locale. A size missing from the manifest is read from the file.</td></tr>
+    <tr><td><code>fonts</code></td><td>One entry per face: <code>&#123; family, weight, style, format, file, bytes &#125;</code>.</td></tr>
+    <tr><td><code>files</code></td><td>Every file in the archive, keyed by its path.</td></tr>
+    <tr><td><code>thumbnail</code>, <code>canvasScope</code></td><td>The cover picture's path, and how the bundle asks to be viewed.</td></tr>
+    <tr><td><code>warnings</code></td><td>Non-fatal problems: an unsupported font file, a missing print master.</td></tr>
+  </tbody>
+</table>
+
+A payload's **`fileId` is its path inside the bundle**. `resource.svg.fileId`, `resource.bitmap.fileId` and every `customFonts` variant's `fileId` can be looked up directly in `bundle.files`. `openBundle` throws when the bytes are not a zip, when there is no valid `preset.json` (at the root or under one top-level folder), or when a file the manifest names is missing.
+
+### Laying out and rendering a bundle
+
+Four helpers connect an opened bundle to the engine and the backends:
+
+- **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`. Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
+- **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`. Both recolour SVG figures when `diagramStyle.singleInk` is on.
+- **`buildBundle(bundle)`** lays the chapters out in order and returns one `VDTDocument` per chapter. Each chapter continues the one before it: heading and resource counters, the open part, page parity and page numbering. A chapter that prints the contents (`:::toc`) receives the whole book's outline. It takes the same options as `buildDocument`, plus `config` to override the bundle's configuration and `cache` to share a measurement cache.
+- **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback`.
+
+```ts
+import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
+  bundleResourceBytes, bundleFontProvider } from 'postext';
+import { renderToPdf, decompressWoff2 } from 'postext-pdf';
+
+const bundle = await openBundle(bytes);
+await loadBundleFonts(bundle);
+await registerBundleImages(bundle);
+
+const docs = buildBundle(bundle);                        // one VDTDocument per chapter
+const firstPage = renderPage(docs[0].pages[0], docs[0]); // a <canvas>
+
+const pdf = await renderToPdf(docs, {                    // the whole book
+  fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
+  resourceBytes: bundleResourceBytes(bundle),
+});
+```
+
+To lay out a single chapter yourself, pass `bundle.chapters[i].markdown`, `bundle.resources` and `bundle.config` to `buildDocument`, as you would for any document.
+
+### Live example: open a bundle
+
+The pen loads a two-chapter sample book (`lantern.postext`, with its own typeface, an SVG figure and a table) from the repository. It registers the bundle's fonts and pictures, lays the book out with `buildBundle` and paints every page. *Make the PDF* renders the same documents with `postext-pdf`, embedding the bundle's fonts. Choose a `.postext` file of your own, exported from the Sandbox for example, to see it the same way.
+
+<CodePenExample name="open-bundle" title="Postext · open a .postext bundle" description="Open a .postext file with postext, lay the book out and render it to canvas and PDF." height={640} />
+
+### Creating a bundle
+
+`createBundle` writes a `.postext` file from a document: its chapters, configuration, resources and the payloads they reference.
+
+```ts
+import { createBundle } from 'postext';
+
+const { bytes, manifest, warnings } = await createBundle({
+  name: 'The Lantern',
+  locale: 'en',
+  chapters: [
+    { markdown: '# Dusk\n\nIt is drawn in :ref{id="lantern"}.' },
+    { title: 'Night', markdown: '# Night\n\n…' },
+  ],
+  config,
+  resources: [{
+    id: 'lantern', typeId: 'figure', kind: 'svg', caption: 'The lantern.',
+    svg: { fileId: 'lantern.svg', width: 240, height: 150 },
+    createdAt: 0, updatedAt: 0,
+  }],
+  files: { 'lantern.svg': svgMarkup, 'garamond-regular': fontBytes },
+});
+```
+
+<table>
+  <thead>
+    <tr><th>Input</th><th>Meaning</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>name</code>, <code>id</code>, <code>description</code>, <code>locale</code></td><td>The manifest's metadata. <code>id</code> defaults to a slug of <code>name</code>.</td></tr>
+    <tr><td><code>chapters</code> or <code>markdown</code></td><td>The book, one <code>&#123; title?, markdown &#125;</code> per chapter, or a single document.</td></tr>
+    <tr><td><code>config</code></td><td>The <code>PostextConfig</code>. Values equal to the defaults are left out of the manifest.</td></tr>
+    <tr><td><code>resources</code></td><td>The resources. A picture names its payload by <code>bitmap.fileId</code> / <code>svg.fileId</code> (and <code>svg.pdfFileId</code> for a print master).</td></tr>
+    <tr><td><code>files</code></td><td>The payloads by <code>fileId</code> (an object or a <code>Map</code>): the pictures the resources reference and the font files the <code>config.customFonts</code> variants reference. Values may be a <code>Uint8Array</code>, an <code>ArrayBuffer</code>, a <code>Blob</code> or a string (SVG markup).</td></tr>
+    <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>: a cover picture (PNG, JPEG, WebP, GIF or SVG).</td></tr>
+    <tr><td><code>canvasScope</code></td><td><code>'book'</code> asks viewers to lay the whole book out as one canvas.</td></tr>
+  </tbody>
+</table>
+
+It returns the archive's `bytes`, the `manifest` written as `preset.json`, every file as `files` (path → bytes) and a list of `warnings`. Files are named after their resource id (`resources/lantern.svg`) or font file name (`fonts/…`), and chapters after their order and title (`chapters/01-dusk.md`). Fonts are declared in the manifest's `fonts`, never inside `config.customFonts`. Some things are left out, each with a warning:
+- a resource or font face whose payload is not in `files`
+- a `.woff` face (the PDF backend cannot embed one)
+- a family marked `redistributable: false`
+
+In the browser, hand `bytes` to a download link: `URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }))`. In Node, write them with `fs.writeFile`. `createBundle` and `openBundle` do not need a DOM. The dists use extensionless module paths, so under plain Node, without a bundler, they need a resolve hook. The repository's `docs/examples/open-bundle/build-sample.mjs` shows one in a few lines.
+
+### Live example: create a bundle
+
+The pen builds a two-chapter book with an SVG figure and lists the files `createBundle` wrote along with the manifest. It offers the archive as a download, then opens it again with `openBundle` and paints its first page: the full round trip in a few lines. Import the downloaded file in the Sandbox to keep working on it there.
+
+<CodePenExample name="create-bundle" title="Postext · create a .postext bundle" description="Write a .postext file with postext's createBundle, download it and open it again." height={640} />
+
+### Working with bundles
+
+Because the Sandbox, the agent skill and the `postext` package all read and write the same file, a `.postext` file is a convenient way to hand a book from one tool to another:
+
+- **Start from a bundle.** Port an existing publication with the [agent skill](/en/docs/skill), or design a book in the [Sandbox](/en/sandbox) and export it (**Export** on its row in the Projects panel). Load the file from your program with `openBundle` to render it to canvas, HTML or PDF. Keep the file as the book's source: edit the chapters, the configuration or the resources in code and write it back with `createBundle`, or simply reload it whenever it changes.
+- **Debug and fine-tune in the Sandbox.** When something in your program's output needs work (a figure that lands on the wrong page, a heading style, the column balance), export what your program lays out with `createBundle`. Import that file in the Sandbox (*Projects → New → Import .postext…*), fix the markdown, configuration or resources with the live preview, the warnings panel and the PDF view, then export it again. Your program then loads the corrected file with `openBundle`. Or copy what changed back into your code: the manifest's `config` holds only the values that differ from the defaults, so it reads as a short diff.
+
+### Low-level API
+
+`postext/bundle` also exports the building blocks behind `openBundle` and `createBundle`, for hosts that store or serve bundles their own way (an unzipped directory over HTTP, records in a database):
+
+- **`openBundleZip(bytes)` / `zipBundle(files)`**: the archive layer. Opening tolerates a top-level folder and ignores `__MACOSX` entries and dotfiles. Paths that escape the bundle are refused.
+- **`readBundle(manifest, readFile, options)`** reads a manifest plus a `readFile(path)` callback into chapters, config, resources, pictures and fonts. `options` sets the locale, how file ids are named (`ids`), the base configuration and how intrinsic sizes are measured.
+- **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**: the writing side, split into a pure plan (file names and manifest) and resolving the bytes through `readBlob` / `readFont` callbacks.
+- **`isBundleManifest(value)`**, the locale pickers (`pickChapterSpecs`, `pickLocaleOverrides`, `resolveBundleLocale`), `svgSize` / `bitmapSize`, and the format types (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
+
+The Sandbox is built on these. It adds its own storage ids and the `layouts.json` page records.
