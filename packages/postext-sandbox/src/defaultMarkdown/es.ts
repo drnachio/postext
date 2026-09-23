@@ -51,6 +51,8 @@ El CSS moderno es una herramienta extraordinaria para construir interfaces. Flex
 
 El contraste de :ref{id="feature-comparison"} resume dónde divergen ambos enfoques en los documentos largos. (Basta con mencionarla: la tabla flota por sí sola al primer hueco libre tras este párrafo, y nunca hay que colocarla dos veces).
 
+La diferencia no es de grado, sino de naturaleza. Una interfaz se adapta a la ventana que la contiene y el lector la recorre a su ritmo; una página, en cambio, tiene un tamaño fijo, un principio y un final, y todo lo que contiene debe resolverse dentro de esos límites: qué cabe en esta columna y qué pasa a la siguiente, dónde va cada figura, cómo termina cada línea y cada párrafo. Esas decisiones son las que definen la calidad de un libro, y ninguna de ellas puede tomarse mirando un solo elemento aislado.
+
 CSS resuelve el primer caso de forma brillante. Para el segundo, la plataforma nunca ha ofrecido las primitivas que importan:
 
 1. **Columnas equilibradas que conocen su contenido**
@@ -71,7 +73,7 @@ CSS resuelve el primer caso de forma brillante. Para el segundo, la plataforma n
    - Nada de esto existe en un documento que se desplaza
 
 :::callout{type="quote"}
-La tipografía editorial es un problema de satisfacción de restricciones. Al navegador nunca se le dio el lenguaje para enunciarlas.
+_La tipografía editorial es un problema de satisfacción de restricciones. Al navegador nunca se le dio el lenguaje para enunciarlas._
 :::
 
 CSS describe con gran detalle la _apariencia_ de cualquier región de texto. Lo que le falta es _optimización global_: la capacidad de sopesar un párrafo, una columna y una página enteros antes de decidir nada.
@@ -275,6 +277,32 @@ $$
 
 El canvas, la vista HTML y el PDF dibujan los mismos trazados, de modo que las fórmulas coinciden en las tres salidas y siguen siendo vectores en la imprenta.
 
+Unos cuantos ejemplos más muestran el abanico de notación que maneja el motor, y lo que hace con cada caso para que la fórmula conviva con el texto. El primero es una serie infinita, la suma de los inversos de los cuadrados que Euler resolvió en 1734. En una fórmula destacada, los límites del sumatorio se colocan encima y debajo del símbolo, como en un libro de análisis, y la fracción del resultado toma su tamaño completo en lugar de la versión reducida que se usa dentro de una línea.
+
+$$
+\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}
+$$
+
+Las matrices son otra prueba habitual, porque exigen alinear filas y columnas y ajustar la altura de los paréntesis a la de su contenido. MathJax compone la matriz como una tabla de celdas centradas y estira los delimitadores hasta abarcarla; Postext recibe el resultado como trazados, mide su caja completa y reserva el espacio exacto antes de devolver el texto a la rejilla. El determinante de una matriz de dos por dos se lee así.
+
+$$
+\\det \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc
+$$
+
+La distribución normal reúne en una sola expresión casi todo lo que complica la composición matemática: una raíz con su barra, letras griegas para la media y la desviación típica, y una fracción entera dentro de un exponente, que debe reducirse dos veces sin perder legibilidad. Es la fórmula que aparece en cualquier manual de estadística, y aquí se compone con las mismas reglas que usaría TeX.
+
+$$
+f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\, e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}
+$$
+
+Las definiciones por casos cierran la serie. Una llave agrupa las ramas de la definición, cada una con su condición alineada a la derecha, y la altura de la llave crece con el número de casos. Es un recurso frecuente en los textos de matemáticas y de informática, y también un buen ejemplo de fórmula que no cabría dentro de una línea de texto.
+
+$$
+|x| = \\begin{cases} x & \\text{si } x \\ge 0 \\\\ -x & \\text{si } x < 0 \\end{cases}
+$$
+
+Las fórmulas en línea siguen otras reglas, porque tienen que convivir con las palabras que las rodean. Las raíces de $ax^2+bx+c=0$ son $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$, el producto de Euler se escribe $\\prod_p (1-p^{-s})^{-1} = \\zeta(s)$ y la transformada de Fourier $\\hat f(\\xi) = \\int f(x)\\,e^{-2\\pi i x \\xi}\\,dx$ también se queda en su línea. En los tres casos el motor mide la altura de la fórmula y, si supera la que permite el interlineado, la reduce solo lo necesario, de modo que las líneas de alrededor conservan su posición en la rejilla y el párrafo mantiene su textura. Ninguna fórmula rompe el ritmo de la página.
+
 # La página y sus columnas {lead="Las páginas son fijas, las columnas son finitas y cada línea debería asentarse en un ritmo compartido por todo el pliego. Este capítulo trata del marco: la geometría de la página, las estructuras de columnas, la rejilla de línea base y el arte de terminar las columnas a la par." summary="Geometría de página, columnas, rejilla de línea base y equilibrado"}
 
 Las columnas son la expresión más visible del diseño editorial, y el lugar donde antes se rompen las soluciones caseras. Postext trata la página y sus columnas como objetos de primera clase, con su propia geometría, su propio ritmo y sus propias reglas para terminar bien.
@@ -328,10 +356,6 @@ Cada arreglo se verifica maquetando la página de nuevo, hasta ocho veces, y gan
 Una página no siempre es un único juego de columnas de arriba abajo. Una figura, una tabla o un recuadro de página completa la corta en **bandas**: el texto que queda encima del recuadro llena sus columnas como una banda propia, el recuadro cruza la página y las columnas vuelven a empezar debajo. Cada banda se equilibra por su cuenta, de modo que el lector baja por la primera columna y sube a la cabeza de la segunda antes de cruzar el recuadro, como en un periódico. Cuando una banda acabaría desigual, un **tope de banda** acorta sus columnas al mismo número de líneas, y el texto que ya no cabe sigue fluyendo por debajo.
 
 Las columnas finales de un capítulo reciben el mismo trato. En lugar de dejar la última página con una columna llena y otra casi vacía, un tope final reparte entre ellas las líneas que quedan, y las palancas de equilibrado hacen el resto. Los saltos de columna explícitos se respetan: \`:::columnbreak\` termina una columna donde quiere el autor, y el equilibrado deja en paz el pie de esa columna.
-
-:::callout{type="quote"}
-Una columna que acaba dos líneas más corta es lo primero que nota un lector y lo último que un diseñador debería tener que arreglar a mano.
-:::
 
 :::callout{type="try"}
 En **Configuración**, abre **Títulos** y desactiva **Equilibrar columnas**. Mira el pie de las columnas de este capítulo; después vuelve a activarlo y observa qué palanca ha usado el motor en cada página.
@@ -394,6 +418,8 @@ Algunos recursos son más anchos de lo que la página es alta: una cronología, 
 Los diagramas SVG se dibujan como vectores en todas partes. El PDF convierte el subconjunto habitual de SVG —formas, trazados, grupos, trazados de recorte, rellenos y trazos sólidos, opacidad y texto— en operaciones de dibujo nativas, y rasteriza a 600 ppp lo que queda fuera; una figura también puede traer un máster PDF propio, que se incrusta tal cual. Para imprimir a una tinta, un interruptor recolorea todos los diagramas como tintas de un solo color, según su luminancia, en los tres renderizadores.
 
 El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Recursos abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española y en inglés en la inglesa.
+
+Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces. Abre el PDF, amplíalo varias veces su tamaño y mira los bordes: siguen tan nítidos como el texto que los rodea, porque se dibujan con los mismos operadores y no se pegan como imágenes. Prueba a seleccionar las etiquetas del gráfico, o a buscarlas: son texto.
 
 :::callout{type="try"}
 Haz clic en el pie de cualquier figura del canvas: el panel de Recursos se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
@@ -546,15 +572,15 @@ Tu trabajo se guarda en el navegador mientras escribes. Los **proyectos** son li
 
 Los presets siguen a su origen. Cuando un paquete de preset cambia en el servidor, el Sandbox lo nota en cuestión de segundos: un preset sin tocar se recarga solo, y uno que has editado muestra un aviso que ofrece recargarlo, de modo que el trabajo en curso nunca se sobrescribe. Los presets se pueden ocultar de la lista y volver a mostrar, y cada uno se puede abrir en cualquiera de sus idiomas cuando tiene dos, como esta guía.
 
-## Incrustar el Sandbox
-
-El Sandbox es a su vez un paquete, _postext-sandbox_, un componente de React que cualquier aplicación web puede incrustar. Quien lo aloja decide el Markdown y la configuración iniciales, el idioma de la interfaz y cada etiqueta, los orígenes de los presets que ofrece, y el selector de tema, el selector de idioma y el enlace de inicio que muestra. El Sandbox que estás usando es exactamente ese componente, incrustado en el sitio web de Postext.
-
 Un libro viaja como un único archivo **.postext**: sus capítulos, su configuración, sus recursos y sus fuentes, además de la paginación ya calculada, de modo que se abre paginado. Y la barra de direcciones contiene siempre un enlace permanente a lo que estás viendo: el libro, el idioma, el visor, el capítulo y la página.
 
 :::callout{type="try"}
 Ve hasta una página que te guste y copia la dirección del navegador: al abrir ese enlace verás el mismo libro, en el mismo visor, en la misma página.
 :::
+
+## Incrustar el Sandbox
+
+El Sandbox es a su vez un paquete, _postext-sandbox_, un componente de React que cualquier aplicación web puede incrustar. Quien lo aloja decide el Markdown y la configuración iniciales, el idioma de la interfaz y cada etiqueta, los orígenes de los presets que ofrece, y el selector de tema, el selector de idioma y el enlace de inicio que muestra. El Sandbox que estás usando es exactamente ese componente, incrustado en el sitio web de Postext.
 
 # Salida: canvas, HTML y PDF {lead="Un árbol, tres renderizadores. El canvas previsualiza, el HTML se lee en pantalla y el PDF va a imprenta, y los tres dibujan las mismas líneas en las mismas posiciones." summary="Los tres renderizadores, el PDF accesible y el uso de la biblioteca"}
 
@@ -594,13 +620,21 @@ El PDF de un libro no es una concatenación de archivos sueltos. El renderizador
 
 El Sandbox ofrece las dos cosas: la vista PDF puede alternar entre el capítulo actual, para pruebas rápidas, y el libro completo, para el archivo definitivo. Compilar el libro entero lleva más tiempo, así que se ejecuta en el worker de PDF e informa de su progreso página a página.
 
+## Las fuentes en el PDF
+
+Un PDF vale lo que valen las fuentes que lleva dentro. Postext incrusta cada tipo que ha usado la maquetación —un archivo estático por peso y estilo—, de modo que una palabra en negrita se compone con la negrita real y una cursiva con la cursiva real, nunca con una imitación inclinada o engrosada. Los tipos TrueType se reducen a los glifos que el libro usa de verdad, lo que mantiene los archivos ligeros incluso con cuatro familias; los tipos OpenType con contornos PostScript se incrustan enteros, porque algunos visores no saben leer sus subconjuntos. Cada fuente incrustada lleva un mapa de los glifos a los caracteres, ligaduras incluidas, de modo que al copiar una frase del PDF se obtiene la frase que se escribió, y al buscar en el documento se encuentran todas las palabras.
+
+Las familias llegan de donde el Sandbox las encontró. Las de Google Fonts se descargan tipo a tipo desde Fontsource y se descomprimen al vuelo; las que se suben en el panel de Fuentes se incrustan a partir de los archivos que les diste. Una familia disponible solo en WOFF no se admite en el PDF, porque ese formato no se puede incrustar con garantías; WOFF2, TrueType y OpenType funcionan.
+
+## Elegir una salida
+
+Las tres salidas comparten la maquetación, pero sirven a momentos distintos de la vida de un libro. El **canvas** es la vista de trabajo: rápida, fiel, la que el Sandbox mantiene abierta mientras escribes y diseñas. El **HTML** sirve para leer en pantalla y para publicar dentro de una aplicación web: las mismas páginas como marcado posicionado, o el texto reorganizado en los modos de lectura del visor, aislado de los estilos de la página que lo rodea. El **PDF** es el objeto terminado: el archivo que va a la imprenta, a un archivo o al dispositivo de un lector, etiquetado, con marcadores y con búsqueda.
+
+Nada obliga a elegir entre ellas. Un libro puede escribirse en el Sandbox con el canvas abierto, revisarse en el visor HTML por alguien que lee en el móvil y enviarse a imprenta como PDF esa misma tarde, desde la misma fuente y la misma configuración, sin que ninguna de las tres se aparte de las otras.
+
 ## Usar la biblioteca
 
 El motor se distribuye como dos paquetes en npm: _postext_, para la maquetación y los renderizadores de canvas y HTML, y _postext-pdf_, para la salida en PDF. Los dos son módulos ES con licencia MIT y también se pueden importar directamente desde una CDN. La documentación incluye ejemplos vivos que convierten una página en imagen, en HTML y en PDF, listos para copiar y modificar.
-
-El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ también se ejecuta en el navegador, y además en Node, de modo que un PDF puede producirse en un servidor a partir de una maquetación calculada en otro sitio. Los dos paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF. La documentación recorre todo el camino, desde instalar los paquetes hasta un primer PDF.
-
-El motor y su renderizador de PDF se publican juntos, con el mismo número de versión, para que los dos coincidan siempre en la forma de la maquetación que comparten.
 
 :::callout{type="note" title="Cuatro pasos"}
 1. Carga las fuentes que nombra la configuración, para que el navegador pueda medirlas
@@ -608,6 +642,10 @@ El motor y su renderizador de PDF se publican juntos, con el mismo número de ve
 3. Dibuja sus páginas con \`renderPage\` o genéralas con \`renderToHtml\`
 4. Para imprenta, pasa el mismo documento a \`renderToPdf\` con un proveedor de fuentes
 :::
+
+El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ también se ejecuta en el navegador, y además en Node, de modo que un PDF puede producirse en un servidor a partir de una maquetación calculada en otro sitio. Los dos paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF. La documentación recorre todo el camino, desde instalar los paquetes hasta un primer PDF.
+
+El motor y su renderizador de PDF se publican juntos, con el mismo número de versión, para que los dos coincidan siempre en la forma de la maquetación que comparten.
 
 # Hoja de ruta y comunidad {lead="Postext es joven y abierto. La tubería principal, el formato del documento y el sistema de configuración ya están hechos; lo que viene después se decide en público." summary="Dónde está el proyecto y cómo participar"}
 
@@ -654,7 +692,13 @@ Postext se publica con la **licencia MIT**: el motor, el renderizador de PDF y e
 
 ## Valores
 
-Tres valores guían el proyecto. _El diseño meditado antes que la prisa_: la tipografía acumula siglos de sabiduría, y el motor debería honrarla en lugar de reinventarla mal. _La claridad antes que el ingenio_: el código, la configuración y la documentación deben ser fáciles de leer, cambiar y explicar. _La colaboración antes que el territorio_: las decisiones se toman en público, y se reconoce a cada persona que contribuye.
+Tres valores guían el proyecto, y están para usarse, no para enmarcarse: cuando dos buenas ideas tiran en direcciones distintas, son la manera de decidir.
+
+_El diseño meditado antes que la prisa._ La tipografía acumula siglos de sabiduría, y el motor debería honrarla en lugar de reinventarla mal. Una funcionalidad llega cuando hace lo correcto en una página real, no cuando simplemente funciona en una demostración; una regla tomada de la imprenta se estudia en los libros que la usan antes de convertirse en una opción. Algunas funcionalidades tardan más así. Las que se publican no hay que retirarlas después.
+
+_La claridad antes que el ingenio._ El código, la configuración y la documentación deben ser fáciles de leer, cambiar y explicar. Una opción que necesita un párrafo de advertencias indica que el diseño aún no está terminado; una función que solo entiende quien la escribió no sobrevivirá a sus vacaciones. La configuración usa unidades reales y nombres llanos, el formato del documento sigue siendo legible en cualquier editor, y cada decisión del motor puede rastrearse hasta una regla que alguien puede señalar.
+
+_La colaboración antes que el territorio._ Las decisiones se toman en público, en issues y discussions que cualquiera puede leer y a las que cualquiera puede sumarse, y ninguna parte del código pertenece a una sola persona. Se reconoce cada contribución —código, documentación, traducciones, informes de errores, consejo tipográfico y los libros de ejemplo que muestran lo que el motor puede hacer—, porque un motor de maquetación para todos solo pueden construirlo muchas personas.
 
 Si algo de esto te resuena, el repositorio es el siguiente paso. Abre una issue, haz una pregunta en las discussions o cambia algo de este libro y mira qué hace el motor con ello.
 

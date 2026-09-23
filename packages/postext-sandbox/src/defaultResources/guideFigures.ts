@@ -2,7 +2,7 @@
 // lands, the balancing levers, the anatomy of a book and the Sandbox
 // interface. Same kit and unit system as the figures in `index.ts`.
 
-import { FS, P, PAGE_VW, bar, text } from './svgKit';
+import { FS, P, PAGE_VW, bar, edge, text } from './svgKit';
 
 const NIGHT = '#15171c';
 const GILT = '#d8a21a';
@@ -111,9 +111,8 @@ export function floatSlotsSvg(es: boolean): string {
   b += slot(d1, top, W - 28, 34, '3', 'later');
   b += lines(d1, top + 44, bottom, colW, 8, '#dde4ec') + lines(d2, top + 44, bottom, colW, 8, '#dde4ec');
   b += text(bx + W / 2, y + H + 18, next, { size: FS.small, color: P.muted, italic: true });
-  const arrow = `<path d="M${c1 + colW * 0.5 + 12},${refY - 2} C${c1 + colW + 30},${refY - 40} ${c2 - 30},${top + 60} ${c2 - 4},${top + 30}" fill="none" stroke="${P.blue}" stroke-width="1.6" marker-end="url(#ahB2)" />`;
+  const arrow = edge(`M${c1 + colW * 0.5 + 12},${refY - 2} C${c1 + colW + 30},${refY - 40} ${c2 - 30},${top + 60} ${c2 - 4},${top + 30}`, { color: P.blue, marker: 'ahBlue' });
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 214" role="img" aria-label="${ariaLabel}">
-  <defs><marker id="ahB2" markerWidth="9" markerHeight="8" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0.5,0.5 L7.5,3.5 L0.5,6.5 C1.6,5.3 1.6,1.7 0.5,0.5 Z" fill="${P.blue}" /></marker></defs>
   ${a}${b}${arrow}
   ${text(ax + W / 2, y + H + 18, taken, { size: FS.small, color: P.blueDark, weight: 600 })}
 </svg>`;
@@ -297,5 +296,91 @@ export function sandboxUiSvg(es: boolean): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 322" role="img" aria-label="${ariaLabel}">
   <rect x="16" y="14" width="${PAGE_VW - 32}" height="300" rx="12" fill="${P.panel}" stroke="${P.edgeSoft}" />
   ${icons}${badge}${editor}${viewport}${spread}${tooltip}
+</svg>`;
+}
+
+// ── Vector specimens ────────────────────────────────────────────────────────
+// Three figures drawn only with the SVG subset the PDF renders natively
+// (paths, basic shapes, groups, `use`, clip paths, solid fills and strokes,
+// opacity, text), so zooming into the PDF shows them staying crisp.
+
+const COLUMN = 300;
+
+/** A rosette of Bézier petals, hairline rings and microtext. */
+export function vectorRosetteSvg(es: boolean): string {
+  const ariaLabel = es ? 'roseta vectorial de pétalos, anillos y microtexto' : 'vector rosette of petals, rings and microtext';
+  const cx = COLUMN / 2;
+  const cy = 108;
+  const petals: string[] = [];
+  const n = 18;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const r = 78;
+    const w = 0.34;
+    const p = (ang: number, rad: number) => `${(cx + Math.cos(ang) * rad).toFixed(2)},${(cy + Math.sin(ang) * rad).toFixed(2)}`;
+    petals.push(`<path d="M${cx},${cy} C${p(a - w, r * 0.62)} ${p(a - w * 0.4, r)} ${p(a, r)} C${p(a + w * 0.4, r)} ${p(a + w, r * 0.62)} ${cx},${cy} Z" fill="${i % 2 ? P.blue : GILT}" opacity="${i % 2 ? 0.55 : 0.7}" stroke="${P.blueDark}" stroke-width="0.35" />`);
+  }
+  const rings = [22, 34, 46, 86, 90].map((r, i) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${i < 3 ? '#ffffff' : P.blueDark}" stroke-width="${i < 3 ? 0.6 : 0.3}" />`).join('');
+  const micro = es ? 'Postext · vector · zoom · ' : 'Postext · vector · zoom · ';
+  const microText = Array.from({ length: 5 }, (_, i) => text(cx, 200 + i * 3.2, micro.repeat(5).trim(), { size: 2.6, color: P.muted })).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN} 222" role="img" aria-label="${ariaLabel}">
+  ${petals.join('')}${rings}
+  <circle cx="${cx}" cy="${cy}" r="10" fill="${NIGHT}" />
+  ${microText}
+</svg>`;
+}
+
+/** A small area-and-line chart with axes, grid and labels. */
+export function vectorChartSvg(es: boolean): string {
+  const ariaLabel = es ? 'gráfico vectorial de área y línea con ejes y etiquetas' : 'vector area and line chart with axes and labels';
+  const months = es ? ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
+  const a = [12, 18, 15, 27, 31, 29, 42, 48];
+  const b = [8, 10, 14, 13, 19, 24, 22, 30];
+  const x0 = 34;
+  const x1 = 286;
+  const y0 = 150;
+  const y1 = 22;
+  const X = (i: number) => x0 + (i / (a.length - 1)) * (x1 - x0);
+  const Y = (v: number) => y0 - (v / 50) * (y0 - y1);
+  const grid = [0, 10, 20, 30, 40, 50].map((v) => `<line x1="${x0}" y1="${Y(v).toFixed(1)}" x2="${x1}" y2="${Y(v).toFixed(1)}" stroke="${P.hair}" stroke-width="0.6" />${text(x0 - 6, Y(v) + 3.2, String(v), { size: 8.5, color: P.muted, anchor: 'end' })}`).join('');
+  const line = (vals: number[]) => vals.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const area = `${line(a)} L${X(a.length - 1).toFixed(1)},${y0} L${x0},${y0} Z`;
+  const dots = a.map((v, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.6" fill="#ffffff" stroke="${P.blue}" stroke-width="1.4" />`).join('');
+  const labels = months.map((m, i) => text(X(i), y0 + 14, m, { size: 8.5, color: P.muted })).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN} 186" role="img" aria-label="${ariaLabel}">
+  ${grid}
+  <path d="${area}" fill="${P.blueTint}" />
+  <path d="${line(b)}" fill="none" stroke="${GILT}" stroke-width="1.6" stroke-dasharray="4 3" />
+  <path d="${line(a)}" fill="none" stroke="${P.blue}" stroke-width="2" stroke-linejoin="round" />
+  ${dots}
+  <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="${P.line}" stroke-width="1" />
+  ${labels}
+  <rect x="${x0 + 4}" y="176" width="12" height="3" fill="${P.blue}" />${text(x0 + 20, 180, es ? 'páginas por segundo' : 'pages per second', { size: 8.5, anchor: 'start' })}
+  <rect x="${x0 + 128}" y="176" width="12" height="3" fill="${GILT}" />${text(x0 + 144, 180, es ? 'capítulos' : 'chapters', { size: 8.5, anchor: 'start' })}
+</svg>`;
+}
+
+/** Clip paths, reused elements and overlapping translucent shapes. */
+export function vectorClipSvg(es: boolean): string {
+  const ariaLabel = es ? 'composición vectorial con recortes, elementos reutilizados y transparencias' : 'vector composition with clip paths, reused elements and transparency';
+  const stripes = Array.from({ length: 22 }, (_, i) => `<rect x="${-10 + i * 7}" y="0" width="3.5" height="150" fill="${P.blue}" />`).join('');
+  const stars = [[210, 40], [246, 64], [226, 100], [262, 118], [200, 132]]
+    .map(([x, y]) => `<use href="#star" xlink:href="#star" x="${x}" y="${y}" />`).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${COLUMN} 170" role="img" aria-label="${ariaLabel}">
+  <defs>
+    <clipPath id="vcDisc"><circle cx="72" cy="80" r="56" /></clipPath>
+    <path id="star" d="M0,-9 L2.6,-2.8 L9,-2.8 L3.8,1.2 L5.6,7.6 L0,3.8 L-5.6,7.6 L-3.8,1.2 L-9,-2.8 L-2.6,-2.8 Z" fill="${GILT}" />
+  </defs>
+  <g clip-path="url(#vcDisc)">${stripes}</g>
+  <circle cx="72" cy="80" r="56" fill="none" stroke="${P.blueDark}" stroke-width="1.2" />
+  <g opacity="0.6">
+    <circle cx="160" cy="68" r="30" fill="${VERMILION}" />
+    <circle cx="182" cy="96" r="30" fill="${P.blue}" />
+    <circle cx="146" cy="104" r="30" fill="${GILT}" />
+  </g>
+  ${stars}
+  ${text(72, 158, es ? 'recorte' : 'clip path', { size: 9, color: P.muted })}
+  ${text(163, 158, es ? 'opacidad' : 'opacity', { size: 9, color: P.muted })}
+  ${text(234, 158, 'use', { size: 9, color: P.muted })}
 </svg>`;
 }

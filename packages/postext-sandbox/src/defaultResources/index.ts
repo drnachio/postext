@@ -34,6 +34,9 @@ export const DEFAULT_RESOURCE_IDS = {
   balancing: 'column-balancing',
   floatSlots: 'float-slots',
   bookAnatomy: 'book-anatomy',
+  vectorRosette: 'vector-rosette',
+  vectorChart: 'vector-chart',
+  vectorClip: 'vector-clip',
   sandboxUi: 'sandbox-ui',
   // Tables
   featureTable: 'feature-comparison',
@@ -70,7 +73,7 @@ const isEs = (locale: string): boolean => locale.toLowerCase().startsWith('es');
 // ───────────────────────────────────────────────────────────────────────────
 
 import { COLUMN_VW, DEFS, FS, P, PAGE_VW, bar, edge, node, text } from './svgKit';
-import { balancingSvg, bookAnatomySvg, columnLayoutsSvg, floatSlotsSvg, sandboxUiSvg } from './guideFigures';
+import { balancingSvg, bookAnatomySvg, columnLayoutsSvg, floatSlotsSvg, sandboxUiSvg, vectorChartSvg, vectorClipSvg, vectorRosetteSvg } from './guideFigures';
 
 /** The Postext pipeline: Markdown and configuration → parse → measure →
  *  layout (the convergence loop) → the VDT, read by three renderers. A
@@ -95,7 +98,7 @@ function pipelineSvg(es: boolean): string {
   ${node(95, 70, 110, 32, parse, 'tint')}
   ${node(95, 122, 110, 32, measure, 'tint')}
   ${node(95, 174, 110, 32, layout, 'solid')}
-  <path d="M205,184 C236,184 236,200 205,200" fill="none" stroke="${P.amber}" stroke-width="1.6" marker-end="url(#ahAmber)" />
+  ${edge('M205,184 C236,184 236,200 205,200', { color: P.amber, marker: 'ahAmber' })}
   ${text(240, 196, loop, { size: FS.small, color: P.amberDark, anchor: 'start', italic: true })}
   ${edge('M80,46 C80,58 130,56 136,66')}
   ${edge('M220,46 C220,58 170,56 164,66')}
@@ -285,6 +288,9 @@ export const SVG_FIGURES: Record<string, { generate: (es: boolean) => string; wi
   'default-balancing': { generate: balancingSvg, width: PAGE_VW, height: 200 },
   'default-book-anatomy': { generate: bookAnatomySvg, width: PAGE_VW, height: 168 },
   'default-sandbox-ui': { generate: sandboxUiSvg, width: PAGE_VW, height: 322 },
+  'default-vector-rosette': { generate: vectorRosetteSvg, width: COLUMN_VW, height: 222 },
+  'default-vector-chart': { generate: vectorChartSvg, width: COLUMN_VW, height: 186 },
+  'default-vector-clip': { generate: vectorClipSvg, width: COLUMN_VW, height: 170 },
 };
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -655,6 +661,39 @@ const FIGURE_SPECS: FigureSpec[] = [
     ),
   },
 ];
+
+FIGURE_SPECS.push(
+  {
+    id: DEFAULT_RESOURCE_IDS.vectorRosette,
+    fileId: 'default-vector-rosette',
+    placement: { position: 'auto', span: 'column' },
+    caption: T(
+      'Bézier petals, hairline rings and a line of microtext: zoom into the PDF as far as you like and every edge stays sharp.',
+      'Pétalos de Bézier, anillos de trazo fino y una línea de microtexto: amplía el PDF cuanto quieras y todos los bordes siguen nítidos.',
+    ),
+    altText: T('A rosette of eighteen overlapping blue and gilt petals inside thin rings, above five lines of tiny text.', 'Una roseta de dieciocho pétalos azules y dorados superpuestos dentro de anillos finos, sobre cinco líneas de texto diminuto.'),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.vectorChart,
+    fileId: 'default-vector-chart',
+    placement: { position: 'auto', span: 'column' },
+    caption: T(
+      'A chart drawn as paths and text: in the PDF its labels are real text, selectable and searchable.',
+      'Un gráfico dibujado con trazados y texto: en el PDF sus etiquetas son texto real, que se puede seleccionar y buscar.',
+    ),
+    altText: T('An area chart with a solid blue line and a dashed gilt line over eight months, with axis labels and a legend.', 'Un gráfico de área con una línea azul continua y una dorada discontinua a lo largo de ocho meses, con etiquetas en los ejes y leyenda.'),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.vectorClip,
+    fileId: 'default-vector-clip',
+    placement: { position: 'auto', span: 'column' },
+    caption: T(
+      'A clipping path, three translucent circles and one star reused five times: all of it is converted to native PDF drawing operations.',
+      'Un trazado de recorte, tres círculos translúcidos y una estrella reutilizada cinco veces: todo se convierte en operaciones de dibujo nativas del PDF.',
+    ),
+    altText: T('Blue stripes clipped to a disc, three overlapping translucent circles in vermilion, blue and gilt, and five gilt stars.', 'Franjas azules recortadas en un disco, tres círculos translúcidos superpuestos en bermellón, azul y oro, y cinco estrellas doradas.'),
+  },
+);
 
 const TABLE_SPECS: TableSpec[] = [
   {

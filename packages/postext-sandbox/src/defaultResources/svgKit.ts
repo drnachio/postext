@@ -14,7 +14,7 @@ export const FS = { label: 11.5, small: 10, strong: 13 };
 
 /** Typeface stack for all diagram labels. Single quotes only — these strings
  *  land inside double-quoted SVG attributes. */
-export const FONT = "-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+export const FONT = "Geist, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 
 /** Shared diagram palette. */
 export const P = {
@@ -35,18 +35,24 @@ export const P = {
   amberTint: '#f7f1e3',
 };
 
-/** Arrowhead markers (slate for regular edges, blue for emphasis). */
-export const DEFS = `<defs>
-    <marker id="ah" markerWidth="9" markerHeight="8" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0.5,0.5 L7.5,3.5 L0.5,6.5 C1.6,5.3 1.6,1.7 0.5,0.5 Z" fill="${P.line}" />
-    </marker>
-    <marker id="ahBlue" markerWidth="9" markerHeight="8" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0.5,0.5 L7.5,3.5 L0.5,6.5 C1.6,5.3 1.6,1.7 0.5,0.5 Z" fill="${P.blue}" />
-    </marker>
-    <marker id="ahAmber" markerWidth="9" markerHeight="8" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0.5,0.5 L7.5,3.5 L0.5,6.5 C1.6,5.3 1.6,1.7 0.5,0.5 Z" fill="${P.amber}" />
-    </marker>
-  </defs>`;
+/** Kept for the figures that interpolate it: arrowheads are drawn as plain
+ *  paths by {@link edge} (SVG markers are outside the vector subset the PDF
+ *  draws natively, and would send the whole figure to the raster fallback). */
+export const DEFS = '';
+
+const ARROW_COLOURS = { ah: P.line, ahBlue: P.blue, ahAmber: P.amber } as const;
+
+/** An arrowhead at the end of path `d`, pointing along its last segment (the
+ *  last two coordinate pairs of the path: the end point and the point — or
+ *  control point — before it). */
+export function arrowHead(d: string, fill: string): string {
+  const nums = (d.match(/-?\d*\.?\d+(?:e-?\d+)?/gi) ?? []).map(Number);
+  if (nums.length < 4) return '';
+  const [x2, y2] = [nums[nums.length - 2]!, nums[nums.length - 1]!];
+  const [x1, y1] = [nums[nums.length - 4]!, nums[nums.length - 3]!];
+  const deg = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+  return `<path d="M0.5,0.5 L7.5,3.5 L0.5,6.5 C1.6,5.3 1.6,1.7 0.5,0.5 Z" fill="${fill}" transform="translate(${x2.toFixed(2)},${y2.toFixed(2)}) rotate(${deg.toFixed(2)}) translate(-7,-3.5)" />`;
+}
 
 export interface TextOpts {
   size?: number;
@@ -83,8 +89,8 @@ export function node(x: number, y: number, w: number, h: number, label: string, 
 export function edge(d: string, o: { color?: string; dash?: string; marker?: 'ah' | 'ahBlue' | 'ahAmber' | null } = {}): string {
   const { color = P.line, dash, marker = 'ah' } = o;
   const dashDecl = dash ? ` stroke-dasharray="${dash}"` : '';
-  const markerDecl = marker ? ` marker-end="url(#${marker})"` : '';
-  return `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round"${dashDecl}${markerDecl} />`;
+  const head = marker ? arrowHead(d, ARROW_COLOURS[marker]) : '';
+  return `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round"${dashDecl} />${head}`;
 }
 
 /** A placeholder text-line bar. */

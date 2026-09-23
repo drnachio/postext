@@ -51,6 +51,8 @@ Modern CSS is a remarkable tool for building user interfaces. Flexbox, Grid, con
 
 The contrast in :ref{id="feature-comparison"} summarises where the two approaches diverge for long documents. (Mentioning it is enough: the table floats into the first free slot after this paragraph by itself, and you never place it twice.)
 
+The difference is one of kind, not degree. An interface adapts to the window that holds it, and the reader moves through it at will; a page, by contrast, has a fixed size, a beginning and an end, and everything it holds must be resolved within those limits: what fits in this column and what moves to the next, where each figure goes, how each line and each paragraph ends. Those decisions are what make the quality of a book, and none of them can be taken by looking at a single element in isolation.
+
 CSS handles the first case brilliantly. For the second, the platform has never offered the primitives that matter:
 
 1. **Balanced columns that know about their content**
@@ -71,7 +73,7 @@ CSS handles the first case brilliantly. For the second, the platform has never o
    - None of these exist in a scrolling document
 
 :::callout{type="quote"}
-Editorial typography is a constraint satisfaction problem. The browser was never given the language to state the constraints.
+_Editorial typography is a constraint satisfaction problem. The browser was never given the language to state the constraints._
 :::
 
 CSS describes the _appearance_ of any single region of text in great detail. What it lacks is _global optimisation_: the ability to weigh a whole paragraph, a whole column and a whole page before committing to any of them.
@@ -275,6 +277,32 @@ $$
 
 The same paths are drawn by the canvas, the HTML view and the PDF, so formulas match in the three outputs and stay vectors in print.
 
+A few more examples show the range of notation the engine handles, and what it does with each so the formula can live alongside the text. The first is an infinite series, the sum of the inverse squares that Euler solved in 1734. In a display formula the limits of the sum are set above and below the symbol, as in an analysis textbook, and the fraction of the result takes its full size instead of the reduced form used inside a line.
+
+$$
+\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}
+$$
+
+Matrices are another common test, because they require rows and columns to line up and the brackets to grow to the height of their content. MathJax sets the matrix as a table of centred cells and stretches the delimiters to span it; Postext receives the result as paths, measures its whole box and reserves exactly that room before returning the text to the grid. The determinant of a two-by-two matrix reads as follows.
+
+$$
+\\det \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc
+$$
+
+The normal distribution gathers in one expression almost everything that makes mathematical typesetting hard: a root with its bar, Greek letters, and a whole fraction inside an exponent, which has to shrink twice without becoming unreadable. It is the formula found in any statistics textbook, and here it is set by the same rules TeX would use.
+
+$$
+f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\, e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}
+$$
+
+Definitions by cases close the series. A brace groups the branches of the definition, each with its condition aligned on the right, and the brace grows with the number of cases. It is a frequent device in mathematics and computer science texts, and a good example of a formula that would not fit inside a line of text.
+
+$$
+|x| = \\begin{cases} x & \\text{if } x \\ge 0 \\\\ -x & \\text{if } x < 0 \\end{cases}
+$$
+
+Inline formulas follow other rules, because they must live with the words around them. The roots of $ax^2+bx+c=0$ are $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$, Euler's product reads $\\prod_p (1-p^{-s})^{-1} = \\zeta(s)$, and the Fourier transform $\\hat f(\\xi) = \\int f(x)\\,e^{-2\\pi i x \\xi}\\,dx$ stays on its line too. In all three cases the engine measures the formula's height and, when it exceeds what the leading allows, scales it down only as far as needed, so the lines around it keep their place on the grid and the paragraph keeps its texture. No formula breaks the rhythm of the page.
+
 # The page and its columns {lead="Pages are fixed, columns are finite, and every line should sit on a rhythm shared across the spread. This chapter is about the frame: page geometry, column structures, the baseline grid and the art of ending columns level." summary="Page geometry, columns, the baseline grid and balancing"}
 
 Columns are the most visible expression of editorial design, and the place where homemade solutions break down first. Postext treats the page and its columns as first-class objects, with their own geometry, their own rhythm and their own rules for ending well.
@@ -328,10 +356,6 @@ Each fix is verified by laying the page out again, up to eight times, and the be
 A page is not always one set of columns from top to bottom. A page-wide figure, table or callout cuts it into **bands**: the text above the box fills its columns as a band of its own, the box crosses the page, and the columns start again below it. Each band is balanced on its own, so the reader goes down the first column and up to the head of the second before crossing the box, as in a newspaper. When a band would end uneven, a **band cap** shortens its columns to the same number of lines, and the text that no longer fits flows on below.
 
 The closing columns of a chapter get the same treatment. Rather than leaving the last page with one full column and one nearly empty, a trailing cap shares the remaining lines between them, and the balancing levers do the rest. Explicit column breaks are respected: \`:::columnbreak\` ends a column where the author wants it, and the balancer leaves that column's foot alone.
-
-:::callout{type="quote"}
-A column that ends two lines short is the first thing a reader notices and the last thing a designer should have to fix by hand.
-:::
 
 :::callout{type="try"}
 In **Configuration**, open **Headings** and switch **Balance Columns** off. Look at the foot of the columns of this chapter, then switch it back on and see which lever the engine used on each page.
@@ -394,6 +418,8 @@ Some resources are wider than the page is tall: a timeline, a wide table of resu
 SVG diagrams are drawn as vectors everywhere. The PDF converts the common subset of SVG — shapes, paths, groups, clip paths, solid fills and strokes, opacity and text — into native drawing operations, and rasterises anything beyond it at 600 dpi; a figure can also bring a PDF master of its own, embedded as it is. For single-colour printing, a switch recolours every diagram as tints of one ink, by luminance, in all three renderers.
 
 Text inside an SVG stays text. In the PDF it is set in real fonts and can be selected and searched, and in the Sandbox it can be edited in place: the Resources panel opens the diagram's source with only its text editable — the drawing itself stays locked unless you unlock it — so a label can be corrected or translated without opening a drawing program. The diagrams in this book are generated for each language, which is why their labels are Spanish in the Spanish edition and English in this one.
+
+Three figures set here to prove the point. The rosette of :ref{id="vector-rosette"} is made of Bézier curves, hairline strokes and a line of microtext two and a half points tall; the chart of :ref{id="vector-chart"} combines a filled area, a dashed line and text labels; and :ref{id="vector-clip"} uses a clipping path, a group drawn with transparency and one shape reused five times. Open the PDF, zoom in to several times their size and look at the edges: they stay as sharp as the text around them, because they are drawn with the same operators, not pasted in as pictures. Try selecting the chart's labels, or searching for them: they are text.
 
 :::callout{type="try"}
 Click the caption of any figure in the canvas: the Resources panel opens on that resource, with its caption field ready. Change its placement from _auto_ to _top_ and watch it move.
@@ -546,15 +572,15 @@ Your work is saved in the browser as you type. **Projects** are books stored loc
 
 Presets follow their source. When a preset bundle changes on the server, the Sandbox notices within seconds: an untouched preset is reloaded on its own, and one you have edited shows a banner offering to reload it, so work in progress is never overwritten. Presets can be hidden from the list and shown again, and each one can be opened in either of its languages when it has two, like this guide.
 
-## Embedding the Sandbox
-
-The Sandbox is itself a package, _postext-sandbox_, a React component that any web application can embed. Its host decides the initial Markdown and configuration, the interface language and every label, the sources of presets it offers, and the theme toggle, language switcher and home link it shows. The Sandbox you are using is exactly that component, embedded in the Postext website.
-
 A book travels as a single **.postext** file: its chapters, configuration, resources and fonts, plus the pagination already computed, so it opens paginated. And the address bar always holds a permalink to what you are looking at — the book, the language, the viewer, the chapter and the page.
 
 :::callout{type="try"}
 Scroll to a page you like and copy the address from the browser: opening that link shows the same book, in the same viewer, at the same page.
 :::
+
+## Embedding the Sandbox
+
+The Sandbox is itself a package, _postext-sandbox_, a React component that any web application can embed. Its host decides the initial Markdown and configuration, the interface language and every label, the sources of presets it offers, and the theme toggle, language switcher and home link it shows. The Sandbox you are using is exactly that component, embedded in the Postext website.
 
 # Output: canvas, HTML and PDF {lead="One tree, three renderers. The canvas previews, the HTML reads on screen, the PDF goes to press — and all three draw the same lines at the same positions." summary="The three renderers, accessible PDF and using the library"}
 
@@ -594,13 +620,21 @@ The PDF of a book is not a concatenation of separate files. The renderer receive
 
 The Sandbox offers both: the PDF view can be switched between the current chapter, for quick proofs, and the whole book, for the final file. Building the whole book takes longer, so it runs in the PDF worker and reports its progress page by page.
 
+## Fonts in the PDF
+
+A PDF is only as good as the fonts inside it. Postext embeds every face the layout used — one static file per weight and style, so a bold word is set in the real bold and an italic in the real italic, never a slanted or thickened imitation. TrueType faces are subset to the glyphs the book actually uses, which keeps files small even with four families; OpenType faces with PostScript outlines are embedded whole, because some viewers cannot read their subsets. Every embedded font carries a map from glyphs back to characters, including ligatures, so copying a sentence out of the PDF gives back the sentence that was written, and searching the document finds every word.
+
+The families come from wherever the Sandbox found them. Google Fonts are fetched face by face from Fontsource and decompressed on the fly; families uploaded in the Fonts panel are embedded from the files you gave. A family available only as WOFF is not accepted by the PDF, because the format cannot be embedded reliably; WOFF2, TrueType and OpenType files all work.
+
+## Choosing an output
+
+The three outputs share the layout but serve different moments of a book's life. The **canvas** is the working view: fast, faithful, and the one the Sandbox keeps open while you write and design. The **HTML** is for reading on screen and for publishing inside a web application: the same pages as positioned markup, or the text reflowed into the reading modes of the viewer, isolated from the styles of the page around it. The **PDF** is the finished artefact: the file that goes to the printer, to an archive or to a reader's device, tagged, bookmarked and searchable.
+
+Nothing forces a choice between them. A book can be written in the Sandbox with the canvas open, reviewed in the HTML viewer by someone reading on a phone, and sent to press as a PDF the same afternoon, from the same source and the same configuration, without any of the three drifting from the others.
+
 ## Using the library
 
 The engine ships as two packages on npm: _postext_ for the layout and the canvas and HTML renderers, and _postext-pdf_ for PDF output. Both are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
-
-The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ runs in the browser too, and also in Node, so a PDF can be produced on a server from a layout computed elsewhere. Both packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF.
-
-The engine and its PDF renderer are released together, with the same version number, so the two always agree on the shape of the layout they share.
 
 :::callout{type="note" title="Four steps"}
 1. Load the fonts the configuration names, so the browser can measure them
@@ -608,6 +642,10 @@ The engine and its PDF renderer are released together, with the same version num
 3. Draw its pages with \`renderPage\`, or render them with \`renderToHtml\`
 4. For print, pass the same document to \`renderToPdf\` with a font provider
 :::
+
+The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ runs in the browser too, and also in Node, so a PDF can be produced on a server from a layout computed elsewhere. Both packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF.
+
+The engine and its PDF renderer are released together, with the same version number, so the two always agree on the shape of the layout they share.
 
 # Roadmap and community {lead="Postext is young and open. The core pipeline, the document format and the configuration system have shipped; what comes next is decided in public." summary="Where the project stands and how to take part"}
 
@@ -654,7 +692,13 @@ Postext is released under the **MIT licence**: the engine, the PDF renderer and 
 
 ## Values
 
-Three values guide the project. _Thoughtful design over speed_: typography has centuries of accumulated wisdom, and the engine should honour it rather than reinvent it badly. _Clarity over cleverness_: code, configuration and documentation should be easy to read, change and explain. _Collaboration over territory_: decisions are made in public, and every contributor is recognised.
+Three values guide the project, and they are meant to be used, not framed: when two good ideas pull in different directions, they are how the choice gets made.
+
+_Thoughtful design over speed._ Typography has centuries of accumulated wisdom, and the engine should honour it rather than reinvent it badly. A feature lands when it does the right thing on a real page, not when it merely works in a demo; a rule borrowed from print is studied in the books that use it before it becomes an option. Some features take longer that way. The ones that ship do not need to be taken back.
+
+_Clarity over cleverness._ Code, configuration and documentation should be easy to read, change and explain. An option that needs a paragraph of caveats is a sign that the design is not finished yet; a function that only its author can follow will not survive its author's holidays. The configuration keeps real units and plain names, the document format stays readable in any editor, and the engine's decisions can always be traced back to a rule someone can point at.
+
+_Collaboration over territory._ Decisions are made in public, in issues and discussions anyone can read and join, and no part of the code belongs to a single person. Every contribution is recognised — code, documentation, translations, bug reports, typographic advice and the example books that show what the engine can do — because a layout engine for everyone can only be built by many people.
 
 If any of this resonates with you, the repository is the next step. Open an issue, ask a question in the discussions, or change something in this book and see what the engine does with it.
 

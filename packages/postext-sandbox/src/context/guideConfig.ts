@@ -365,16 +365,20 @@ function calloutStyles(lang: 'en' | 'es'): CalloutStyleConfig[] {
       marginTop: pt(4), marginBottom: pt(9), keepTogether: true,
     },
     {
-      // Pull quote: display italic in the part colour between two rules.
+      // Pull quote: display italic in the part colour, the text hung to the
+      // right of a large opening quotation mark, as in a magazine.
       id: 'quote', name: lang === 'es' ? 'Cita destacada' : 'Pull quote',
       span: 'column', placement: 'here',
       backgroundEnabled: false, border: { enabled: false }, borderRadius: mm(0),
-      padding: { top: mm(3.2), right: mm(0), bottom: mm(2.4), left: mm(0) },
-      stripe: { enabled: true, side: 'top', width: pt(2.5), color: col('band') },
-      icon: { kind: 'none' },
+      // The glyph is centred in its 22 mm square, about 5.8 mm in from the
+      // square's edge: the negative left padding sets the mark flush with
+      // the column's text, and the gap leaves it clear of the quote.
+      padding: { top: mm(1), right: mm(0), bottom: mm(2.4), left: mm(-5.8) },
+      icon: { kind: 'glyph', glyph: '“', fontFamily: DISPLAY, fontWeight: 800, size: mm(22), color: col('band'), align: 'top', position: 'inline' },
+      titleStyle: { gap: mm(-1.5) },
       body: {
         fontFamily: DISPLAY, fontSize: pt(14.5), lineHeight: pt(18.5), color: col('band'), boldColor: col('ink'),
-        textAlign: 'left', hyphenation: false, paragraphSpacing: false, firstLineIndent: mm(0),
+        italicColor: col('band'), textAlign: 'left', hyphenation: false, paragraphSpacing: false, firstLineIndent: mm(0),
       },
       marginTop: pt(6), marginBottom: pt(10), keepTogether: true,
     },
@@ -449,12 +453,16 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
           advancedDesign: chapterOpener(lang),
         },
         {
-          level: 2, fontFamily: HEAD, fontSize: pt(15.5), lineHeight: pt(19), fontWeight: 700, color: col('band'),
-          numberingTemplate: '{1}.{2}  ', marginTop: pt(20), marginBottom: pt(6),
+          level: 2, fontFamily: HEAD, fontSize: pt(13.5), lineHeight: pt(17), fontWeight: 700, color: col('band'),
+          numberingTemplate: '', marginTop: pt(18), marginBottom: pt(5),
         },
         {
-          level: 3, fontFamily: HEAD, fontSize: pt(11), lineHeight: pt(13.6), fontWeight: 700, color: col('band'),
-          numberingTemplate: '', marginTop: pt(13), marginBottom: pt(3),
+          level: 3, fontFamily: HEAD, fontSize: pt(10), lineHeight: pt(13.6), fontWeight: 700, color: col('band'),
+          numberingTemplate: '', marginTop: pt(12), marginBottom: pt(3),
+        },
+        {
+          level: 4, fontFamily: HEAD, fontSize: pt(9.4), lineHeight: pt(13.6), fontWeight: 600, color: col('band'),
+          numberingTemplate: '', marginTop: pt(10), marginBottom: pt(2),
         },
       ],
     },
@@ -477,6 +485,9 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       },
     },
     toc: toc(lang),
+    // On screen the book reads as one scroll: no section dividers (the parts
+    // still colour their chapters).
+    htmlViewer: { overrides: { parts: { page: false } } },
     header: runningHeads(lang),
     footer: openerFooter(),
     captionStyle: {
