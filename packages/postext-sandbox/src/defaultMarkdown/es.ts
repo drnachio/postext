@@ -1,608 +1,463 @@
 export const DEFAULT_MARKDOWN_ES = `---
-title: "Postext: Un tipógrafo programable para la web"
-subtitle: "Un motor de maquetación de código abierto con calidad editorial"
+title: "Postext"
+subtitle: "Un tipógrafo programable para la web"
 author: "Ignacio Ferro"
-publishDate: "2026-04-21"
+publishDate: "2026-09-23"
 ---
 
-# Introducción a Postext
+# Postext {style="cover" toc="false" kicker="Motor de maquetación de código abierto · La guía" publisher="postext.dev · Licencia MIT · Cada página de este libro la ha compuesto Postext en tu navegador"}
 
-Postext es un **motor de maquetación de código abierto** concebido para llevar la sofisticación de la tipografía profesional de imprenta al desarrollo web moderno. Durante siglos, el mundo del diseño editorial ha depurado técnicas para colocar texto, imágenes y anotaciones sobre la página con una precisión extraordinaria. Esas técnicas abarcan desde el equilibrio minucioso de columnas hasta la prevención rigurosa de huérfanas y viudas, desde la separación silábica inteligente hasta la colocación elegante de notas al pie. Hasta ahora, la web carecía de una herramienta capaz de reproducir esos estándares de manera programable y declarativa.
+:::pagebreak
 
-La misión central de Postext es cerrar esa brecha. El motor toma **contenido semántico** escrito en Markdown enriquecido y lo transforma en una maquetación completamente resuelta donde cada elemento ocupa una posición precisa, medida en unidades tipográficas reales. Esa maquetación puede a continuación renderizarse en varios formatos de salida, entre ellos páginas web interactivas, vistas previas sobre canvas y documentos PDF listos para imprimir, todos ellos generados a partir de la misma fuente única de verdad.
+:::paragraphs{style="colophon"}
+**Guía de Postext** es el libro de muestra que acompaña al Sandbox. Es a la vez un recorrido por el motor y una demostración de lo que hace: la cubierta, el índice que se numera solo, las portadillas de parte, las aperturas de capítulo, las cabeceras, cada figura y cada tabla que flota hasta su sitio… todo lo maqueta Postext, en tu navegador, a partir del Markdown que puedes abrir en el editor.
 
-Este documento por defecto, el que estás leyendo ahora mismo dentro del Sandbox, tiene un doble propósito. Por un lado, es una demostración en vivo de lo que el motor puede hacer con prosa extensa. Por otro, es un recorrido compacto por las ideas, decisiones y características que distinguen a Postext de cualquier otra tecnología de maquetación disponible en la web. Siéntete libre de modificarlo, acortarlo, sustituirlo por material propio o usarlo como andamiaje mientras exploras cómo los cambios en el panel de configuración se propagan al instante al canvas, a la vista HTML y a la salida en PDF.
+Compuesto en Fraunces, Lora y Geist, servidas por Google Fonts. Los diagramas son archivos SVG sencillos, que se dibujan como vectores en el canvas, en la vista HTML y en el PDF. Cambia lo que quieras —una palabra, un margen, un color de la paleta— y el libro vuelve a componerse.
 
-## El problema que Postext resuelve
+Postext es de código abierto, con licencia MIT. Texto © 2026 Ignacio Ferro y quienes contribuyen a Postext.
+:::
 
-Antes de entrar en los detalles internos, conviene entender la forma exacta del problema que aborda Postext. La distancia entre lo que los navegadores modernos saben renderizar y lo que el diseño editorial profesional espera es mucho mayor de lo que la mayoría de desarrolladores imagina, y las herramientas que tradicionalmente han cubierto ese hueco viven fuera del ecosistema web. Esta sección describe ambos lados del problema y las razones por las que un motor de un tipo nuevo acabó siendo necesario.
+# Índice {style="contents" toc="false"}
 
-### Las limitaciones de CSS para la maquetación editorial
+:::toc
 
-El CSS moderno es una herramienta notablemente potente para construir interfaces de usuario. Flexbox, Grid y las consultas de contenedor ofrecen a quien desarrolla un control muy fino sobre la disposición de los componentes en pantalla. Subgrid, el posicionamiento por anclajes y las animaciones impulsadas por el desplazamiento siguen ampliando lo que un navegador puede expresar de forma declarativa. Sin embargo, CSS se diseñó principalmente para _maquetar aplicaciones_, no para _maquetar publicaciones_. Hay una diferencia de fondo entre ambos casos:
+:::part{number="I" title="Fundamentos" palette="band=#2b4acb"}
+1. Por qué Postext
+2. Cómo funciona el motor
+:::
 
-- **Maquetar aplicaciones** consiste en organizar componentes interactivos como botones, formularios, barras de navegación y tarjetas dentro de un viewport por el que el usuario puede desplazarse con libertad
-- **Maquetar publicaciones** consiste en organizar texto fluido, imágenes, tablas, figuras y anotaciones a lo largo de una sucesión de páginas o columnas de dimensiones fijas, siguiendo reglas tipográficas estrictas heredadas de siglos de tradición impresa
+# Por qué Postext {lead="La tipografía impresa pasó cinco siglos aprendiendo a componer una página; los navegadores aprendieron a disponer una interfaz. Postext lleva lo primero a lo segundo: un motor que convierte Markdown en páginas compuestas con criterio editorial." summary="La distancia entre la web y la página, y qué la salva"}
 
-El contraste de la :ref{id="feature-comparison"} resume dónde divergen ambos enfoques en documentos extensos. (Fíjate en que basta con referenciarla: la tabla flota por sí sola al primer hueco libre tras este párrafo; nunca se coloca dos veces.)
+Postext es un **motor de maquetación de código abierto** que lleva a la web el oficio de la tipografía impresa profesional. Recibe **contenido semántico** escrito en Markdown enriquecido y un objeto de configuración, y calcula una maquetación completamente resuelta en la que cada línea, cada título, cada figura y cada tabla tiene una posición precisa, medida en unidades tipográficas reales. Después la dibujan tres renderizadores —una vista previa viva en canvas, HTML posicionado y un PDF listo para imprenta— que leen la misma geometría, de modo que lo que ves en pantalla es exactamente lo que va a imprenta.
 
-CSS atiende brillantemente el primer caso. Para el segundo se queda corto en aspectos críticos que, en el fondo, la plataforma nunca ha llegado a resolver:
+Este libro es su propia demostración. La cubierta, el índice que se numera solo, las portadillas en tres colores, la banda que abre cada capítulo, las cabeceras de estas páginas y cada figura que flota hasta su sitio las ha maquetado Postext, en tu navegador, hace un momento. Nada se ha colocado a mano: el Markdown solo dice qué es cada cosa, y la configuración decide cómo se ve.
 
-1. **No hay flujo multicolumna nativo con conciencia del reflujo**
-   - La propiedad CSS _columns_ existe, pero no sabe equilibrar alturas de columna de forma inteligente
-   - No sabe gestionar recursos que abarquen columnas ni floten a posiciones concretas dentro de una retícula de columnas
-   - No ofrece un mecanismo para mantener los encabezados junto con su párrafo siguiente
-   - No existe un concepto de conjunto óptimo de saltos a escala de página
-2. **No hay prevención de huérfanas y viudas entre columnas estandarizada entre los distintos navegadores y configurable por el usuario**
-   - Aunque CSS cuenta con las propiedades _orphans_ y _widows_, el soporte en los navegadores es irregular
-   - Esas propiedades no funcionan a través de los límites de columna como la tipografía profesional espera
-   - Una prevención de nivel editorial exige conocer toda la geometría de la página, no sólo un contenedor de texto
-   - Tampoco hay una propiedad CSS que modele el _rabo_, esa palabra corta que queda colgando al final de un párrafo
-3. **No hay estrategias integradas de colocación de recursos**
-   - La maquetación impresa coloca figuras con naturalidad en la cabeza de la siguiente columna disponible, las flota hacia el margen o las extiende a ancho completo de página
-   - Los floats de CSS resultan primitivos al lado de esas estrategias y no negocian con el flujo de texto
-   - No existe la noción de una figura que debe retrasarse una columna si fuera a dejar una huérfana por encima
-4. **No hay sistemas de notas al pie ni de notas al margen**
-   - Las notas al pie impresas aparecen al fondo de la columna donde se referencian y consumen espacio del texto superior
-   - Las notas al margen se alinean verticalmente con el párrafo que las referencia
-   - Las notas finales deben recopilarse por sección o por documento manteniendo una numeración coherente
-   - CSS no ofrece primitivas para ninguna de esas necesidades
-5. **No existe el concepto de retícula de línea base**
-   - Los libros y revistas profesionales alinean la primera línea base de cada columna con un ritmo vertical común
-   - CSS no tiene ninguna primitiva para fijar líneas a una retícula que atraviese columnas y páginas
+:::callout{type="try"}
+Abre el panel **Markdown** y elige este capítulo en el selector de capítulos de su cabecera. Cambia una palabra de este párrafo o borra una frase: la página vuelve a componerse, las columnas se reequilibran y los folios de los capítulos siguientes se actualizan.
+:::
 
-El patrón es constante. CSS sabe describir con enorme detalle la _apariencia_ de una región concreta de texto, pero carece de las primitivas de _optimización global_ que exige la calidad editorial. La tipografía editorial es, en última instancia, un problema de satisfacción de restricciones, y al navegador nunca se le ha dado el lenguaje necesario para expresar esas restricciones.
+## Maquetación de aplicaciones y maquetación editorial
 
-### Lo que las herramientas existentes no cubren
+El CSS moderno es una herramienta extraordinaria para construir interfaces. Flexbox, Grid, las consultas de contenedor y el posicionamiento por anclas dan un control fino sobre cómo se disponen los componentes en una ventana. Pero CSS se diseñó para la _maquetación de aplicaciones_, y la lectura extensa necesita _maquetación editorial_. Son problemas distintos:
 
-Existen, por supuesto, herramientas que abordan parte del problema. Los procesadores de texto como Microsoft Word o Google Docs gestionan la paginación básica. Las aplicaciones de autoedición como Adobe InDesign ofrecen un control editorial completo. LaTeX es la referencia dorada de la composición académica, y sus descendientes siguen dominando la publicación matemática. Sin embargo, ninguna de ellas fue diseñada para la web, y sus supuestos hacen muy difícil trasplantarlas a los flujos de desarrollo actuales:
+- **La maquetación de aplicaciones** dispone componentes interactivos —botones, formularios, tarjetas, navegación— dentro de una ventana que el lector recorre libremente
+- **La maquetación editorial** hace fluir texto, figuras, tablas y recuadros por una secuencia de páginas y columnas fijas, según reglas depuradas durante siglos de imprenta
 
-- No producen maquetaciones _responsivas_ que se adapten a distintos tamaños de pantalla
-- No se integran con frameworks frontend modernos como React, Vue o Svelte
-- No pueden incrustarse como un componente dentro de una aplicación web más amplia
-- Su salida es estática, no interactiva, y rara vez conserva la estructura semántica de la que dependen las herramientas de accesibilidad
-- Sus formatos de origen son propietarios, binarios o tan complejos que resultan difíciles de generar de manera programática
+El contraste de :ref{id="feature-comparison"} resume dónde divergen ambos enfoques en los documentos largos. (Basta con mencionarla: la tabla flota por sí sola al primer hueco libre tras este párrafo, y nunca hay que colocarla dos veces).
 
-Postext ocupa una posición singular en este panorama. Es una **biblioteca de JavaScript** que se ejecuta en el navegador, recibe Markdown como entrada, aplica reglas tipográficas profesionales y produce una maquetación que puede renderizarse como HTML, como canvas o como PDF. Está pensada para ser incrustada, configurada y ampliada por quienes desarrollan en la web sin abandonar su cadena de herramientas habitual. Trata la web como superficie de edición y como destino de renderizado de primera clase al mismo tiempo, no como una ocurrencia tardía. La tabla a ancho completo :ref{id="tools-comparison"} sitúa a Postext frente a las alternativas establecidas de un vistazo.
+CSS resuelve el primer caso de forma brillante. Para el segundo, la plataforma nunca ha ofrecido las primitivas que importan:
 
-## Cómo funciona Postext
+1. **Columnas equilibradas que conocen su contenido**
+   - La propiedad _columns_ de CSS hace fluir el texto, pero no puede igualar columnas ajustando el espacio sobre los títulos o la holgura de un párrafo
+   - No conoce figuras ni tablas que deban flotar a la cabeza de la siguiente columna libre
+   - No puede mantener un título con el párrafo que introduce a través de un salto de columna
+2. **Defectos de final de párrafo y de columna**
+   - Las _huérfanas_ y las _viudas_ existen en CSS, pero su soporte es desigual y no ven la geometría de la página entera
+   - No hay ninguna regla para la _línea corta_, la palabra que se queda sola en la última línea de un párrafo
+3. **Corte de líneas por párrafo completo**
+   - Los navegadores cortan las líneas de forma voraz, una a una, y solo pueden repartir el espacio sobrante dentro de cada línea
+   - Una justificación equilibrada necesita sopesar el párrafo entero a la vez
+4. **Un ritmo vertical compartido**
+   - Libros y revistas asientan cada línea en una rejilla de línea base común a todas las columnas de la página
+   - CSS no tiene ninguna primitiva que ajuste las líneas a una rejilla entre columnas y páginas
+5. **El aparato de un libro**
+   - Cabeceras que conocen el capítulo, folios en secuencias romanas o arábigas, saltos de capítulo que respetan la paridad, un índice con números de página reales
+   - Nada de esto existe en un documento que se desplaza
 
-Entender la arquitectura de Postext es la forma más rápida de entender qué puede y qué no puede hacer. El motor se organiza como una tubería en la que cada etapa refina una representación en memoria compartida del documento. Ninguna etapa se esconde tras formatos opacos, ninguna etapa exige E/S de disco y toda la tubería es pura: dadas las mismas entradas de contenido y configuración, siempre produce la misma maquetación.
+:::callout{type="quote"}
+La tipografía editorial es un problema de satisfacción de restricciones. Al navegador nunca se le dio el lenguaje para enunciarlas.
+:::
 
-### La tubería de procesamiento
+CSS describe con gran detalle la _apariencia_ de cualquier región de texto. Lo que le falta es _optimización global_: la capacidad de sopesar un párrafo, una columna y una página enteros antes de decidir nada.
 
-El motor de maquetación de Postext procesa el contenido a través de una tubería cuidadosamente orquestada. Cada etapa se construye sobre los resultados de la anterior, transformando de forma gradual el Markdown en bruto en una maquetación completa y medida con precisión. Comprender esta tubería es clave para asimilar la filosofía de diseño del proyecto y, además, clarifica qué partes del motor pueden sustituirse, extenderse o reutilizarse de forma aislada. El diagrama de la :ref{id="layout-pipeline"} resume el recorrido desde el texto fuente hasta la salida renderizada: una figura a columna sencilla que flota al primer hueco libre tras esta mención. El coste aproximado de cada etapa se recoge en la tabla a columna sencilla :ref{id="runtime-metrics"}.
+## Lo que no resuelven las herramientas existentes
 
-#### Capa de entrada
+Otras herramientas abordan partes del problema. Los procesadores de texto paginan. Adobe InDesign ofrece un control editorial completo. LaTeX sigue siendo la referencia de la composición académica y matemática. Pero ninguna se diseñó para la web, y sus supuestos las hacen difíciles de encajar en un flujo de desarrollo moderno:
 
-El proceso comienza en la **capa de entrada**, donde quien desarrolla aporta los ingredientes en crudo del documento. Por esta capa circulan dos cosas, y las dos están pensadas para leerse y editarse a mano:
+- No se pueden incrustar como un componente de una aplicación web
+- Su salida es estática y rara vez conserva la estructura semántica de la que dependen las herramientas de accesibilidad
+- Sus formatos de origen son propietarios, binarios o difíciles de generar por programa
+- Viven fuera de las herramientas de frontend que un equipo web ya usa
 
-1. **Contenido** en formato Markdown enriquecido
-   - El cuerpo principal del texto, escrito con la sintaxis estándar de Markdown
-   - Encabezados, párrafos, listas, énfasis y demás formato en línea
-   - Marcadores especiales que referencian recursos externos o notas
-   - Un frontmatter opcional en YAML con el título, el autor y la fecha de publicación
-2. **Configuración** que define las reglas de maquetación
-   - Dimensiones de página, márgenes y ajustes de DPI
-   - Número de columnas, ancho de medianil y preferencias de equilibrio
-   - Reglas tipográficas para la prevención de huérfanas, viudas, rabos y separación silábica
-   - Estrategias de colocación de recursos para imágenes, tablas y figuras
-   - Ajustes del sistema de referencias para notas al pie, notas finales y notas al margen
-   - Una paleta de colores con nombre que puede reutilizarse desde varios puntos de la configuración
+Postext adopta otra posición, resumida en :ref{id="tools-comparison"}. Es una **biblioteca de JavaScript** que se ejecuta en el navegador, lee Markdown, aplica las reglas de la tipografía profesional y devuelve una maquetación que se puede dibujar como canvas, HTML o PDF. Está pensada para que la incrusten, configuren y amplíen desarrolladores que quieren páginas de calidad editorial sin salir de sus herramientas, y para que la configuren diseñadores que nunca necesitan tocar el código.
 
-La separación entre contenido y configuración es deliberada e importante. El mismo documento Markdown puede generar maquetaciones radicalmente distintas sin más que cambiar la configuración. Una maquetación a una columna para pantallas móviles, otra a dos columnas para tabletas y otra a tres columnas para monitores amplios de escritorio pueden nacer del mismo texto fuente. Es el equivalente editorial del diseño responsivo y la razón por la que el motor se niega a cocer decisiones visuales dentro del contenido.
+## Lo que Postext no es
 
-#### Capa de medición
+Tener claro el alcance mantiene afilado el núcleo. Postext no sustituye a CSS en las interfaces: es un motor especializado en contenido extenso y estructurado. No es un editor WYSIWYG: tú escribes Markdown y describes el diseño, y el motor compone las páginas. No gestiona puntos de ruptura adaptables: elegir una configuración para cada tamaño de pantalla es decisión de la aplicación que lo aloja. No carga las fuentes por ti: el motor mide con las fuentes que el navegador ya tiene, así que una página debe cargar sus tipos antes de maquetar. Y, por ahora, el motor de maquetación solo funciona en el navegador, porque sus medidas vienen de las métricas de fuente del canvas de un navegador real; el renderizador de PDF, en cambio, también funciona en Node.
 
-Antes de poder decidir dónde colocar cada elemento, el motor necesita saber cuánto espacio ocupa cada uno. De eso se encarga la **capa de medición**, construida sobre una biblioteca hermana llamada _pretext_. La medición de texto es el núcleo de cualquier motor tipográfico, y acertar ahí, tanto en precisión como en velocidad, fue la intuición que hizo posible todo el proyecto.
+# Cómo funciona el motor {lead="Entran Markdown y un objeto de configuración; sale un árbol en el que cada línea tiene una posición en unidades reales. En medio, una tubería breve que mide el texto sin tocar el DOM e itera hasta que la página se asienta." summary="Analizar, medir, maquetar, converger"}
 
-El reto de medir no es trivial. Representar texto es complejo porque el ancho y el alto de un párrafo dependen de la fuente, del tamaño de la fuente, de la interlínea, del ancho disponible, de las reglas de separación silábica y de muchos otros factores. Tradicionalmente, la única manera de medir texto con precisión en un navegador consiste en renderizarlo en el DOM y leer las dimensiones calculadas. Ese enfoque es lento, ya que dispara reflujos de maquetación que pueden bloquear el hilo principal cientos de milisegundos por párrafo en documentos realistas.
+La forma más rápida de entender lo que Postext puede hacer es seguir un documento a través de él. El motor es una tubería, esbozada en :ref{id="layout-pipeline"}, en la que cada etapa refina una única representación del documento en memoria. Ninguna etapa se esconde tras un formato opaco y ninguna toca el disco. Además, la tubería es pura: con el mismo contenido y la misma configuración produce siempre la misma maquetación.
 
-Postext adopta un enfoque radicalmente distinto. La biblioteca _pretext_ realiza **medición de texto sin DOM** utilizando métricas de fuente del canvas y aritmética pura. Esta técnica resulta entre 300 y 600 veces más rápida que la medición basada en DOM, dependiendo del navegador y del documento, como deja ver el gráfico de la :ref{id="measurement-speed"}, y funciona combinando tres ingredientes:
+## Contenido y configuración
 
-1. Cargando métricas de fuente desde la API del canvas
-   - Anchos de glifos y métricas de avance
-   - Medidas de ascendentes y descendentes
-   - Ajustes de kerning por pares cuando están disponibles
-   - Métricas por peso para variantes negrita y cursiva
-2. Calculando los saltos de línea con el algoritmo de salto de línea óptimo de Knuth-Plass
-   - Evaluando todos los posibles puntos de corte de un párrafo
-   - Escogiendo el conjunto de saltos que minimiza una función de penalización global
-   - Teniendo en cuenta las oportunidades de división silábica con patrones de calidad TeX
-   - Respetando las reglas de adyacencia entre líneas apretadas, normales, sueltas y muy sueltas
-3. Calculando las dimensiones del bloque resultante
-   - Altura total incluyendo todas las líneas y el espaciado interlineal
-   - Ancho máximo de línea para fines de alineación
-   - Posiciones de línea base para la alineación con la retícula
-   - Ratios de justificación por línea para la capa de depuración
+A la tubería entran dos cosas, y las dos están pensadas para que las lean y editen personas:
 
-Este enfoque de medición es la innovación crítica que vuelve viable a Postext. Sin él, el motor tendría que provocar miles de reflujos del DOM al calcular la maquetación, haciendo imposible la edición interactiva. Con él puedes teclear en el Sandbox y ver cómo la maquetación se actualiza entre pulsaciones.
+1. **Contenido** en Markdown enriquecido
+   - Títulos, párrafos, listas, énfasis, citas en bloque y matemáticas
+   - Directivas para saltos de página, numeración de páginas, partes, recuadros y el índice
+   - Referencias a recursos —figuras, diagramas SVG y tablas— declarados por su identificador fuera del texto
+   - Metadatos YAML opcionales con el título, el subtítulo, el autor y la fecha
+2. **Configuración** que describe el diseño
+   - Tamaño de página, márgenes, sangrado y numeración de páginas
+   - Estructura de columnas, medianil y filetes de columna
+   - Texto, títulos, listas, pies, tablas y matemáticas
+   - Estilos de título, de párrafo y de recuadro, partes e índice
+   - Cabeceras, una paleta de colores con nombre y las opciones del PDF
 
-#### Motor de maquetación
+Separarlos es deliberado. El mismo Markdown puede convertirse en un libro de bolsillo, en una revista a dos columnas o en un libro de texto con columna lateral con solo cambiar la configuración. Por eso el motor se niega a meter decisiones visuales en el contenido.
 
-El **motor de maquetación** es el corazón de Postext. Toma los elementos ya medidos y los dispone en páginas y columnas siguiendo las reglas configuradas. Aquí es donde reside la inteligencia editorial, y es también el punto en el que la distancia entre un algoritmo ingenuo de primer ajuste y un motor tipográfico auténtico se vuelve visible.
+## Medir sin el DOM
 
-El motor de maquetación trabaja de forma iterativa. Realiza una primera pasada de colocación y, a continuación, refina el resultado mediante iteraciones sucesivas, ajustando posiciones para satisfacer restricciones que pueden entrar en conflicto. Por ejemplo:
+Antes de colocar nada, el motor tiene que saber cuánto sitio necesita cada elemento, y ahí empieza todo el proyecto. Medir texto en un navegador suele significar pintarlo en la página y leer su tamaño, un reflujo que puede bloquear el hilo principal cientos de milisegundos en un documento largo.
 
-- Un encabezado debe permanecer junto a su párrafo siguiente, lo que podría obligar a mover ambos a la columna siguiente
-- Mover contenido a la columna siguiente podría crear una viuda en la columna actual
-- Eliminar esa viuda podría requerir traer contenido de vuelta, rompiendo la restricción entre encabezado y párrafo
-- Una figura pensada para la cabeza de la siguiente columna podría retrasarse una columna más si al caer ahí dejara una huérfana arriba
+Postext mide con _pretext_, una biblioteca de medición de texto sin DOM que usa las métricas de fuente del canvas y pura aritmética. Su paso caro, preparar un texto para una fuente dada, se guarda en caché; componerlo a un ancho concreto es casi gratis. El método es entre 300 y 600 veces más rápido que medir mediante reflujos, como ilustra :ref{id="measurement-speed"}, y sobre él el módulo de medición del motor añade tramos enriquecidos de negrita, cursiva y matemáticas, separación silábica, justificación y corte óptimo de líneas. Cada resultado se guarda con una clave que incluye el texto, las fuentes, el ancho y todas las opciones que pueden cambiar una línea, de modo que escribir en un párrafo vuelve a medir ese párrafo y ningún otro.
 
-Estas dependencias circulares se resuelven mediante un **bucle de convergencia** que ejecuta hasta cinco iteraciones, ilustrado a todo el ancho, cruzando ambas columnas, en la :ref{id="convergence-loop"}. En la práctica, la mayoría de las maquetaciones convergen en dos o tres pasadas. El motor detecta cuándo no puede mejorar más y se detiene antes, de modo que el tope es una red de seguridad, no una ruta habitual. La estructura de datos que sobrevive a este bucle se conoce internamente como **VDT**, el árbol virtual del documento, y es la fuente única de verdad que consume cada uno de los renderizadores.
+## Siete pasadas y un bucle
 
-El motor de maquetación produce un VDT que describe la posición exacta y las dimensiones de cada elemento en cada página. Esta estructura es independiente del formato, es decir, contiene geometría pura sin información específica de renderizado, y es precisamente esa independencia la que permite que Canvas, HTML y PDF produzcan una salida coherente.
+La maquetación propiamente dicha se hace en siete pasadas:
 
-#### Capa de salida
+1. **Estructuración del contenido**: analiza el Markdown en una lista plana de bloques y resuelve los recursos por su identificador
+2. **Medición del texto**: compone cada párrafo en líneas al ancho que va a ocupar
+3. **Colocación en páginas y columnas**: llena páginas y columnas y reserva sitio para las cabeceras y los recuadros de página completa
+4. **Colocación de recursos**: hace flotar cada figura y tabla citada hasta el primer hueco libre tras su referencia
+5. **Refinamiento tipográfico**: aplica las reglas que mantienen los títulos con su texto y las listas con su introducción
+6. **Equilibrado de columnas**: iguala las columnas de cada página
+7. **Ritmo vertical**: devuelve el texto a la rejilla de línea base después de todo lo que la rompe
 
-La última etapa es la **capa de salida**, que toma esa geometría abstracta y la renderiza en un formato concreto. El motor incluye hoy tres renderizadores, y los tres consumen el mismo VDT sin modificarlo jamás:
+Estas pasadas dependen unas de otras en círculo. Mantener un título con su párrafo puede empujar a ambos a la columna siguiente; ese movimiento puede dejar una viuda; corregir la viuda devuelve una línea, lo que puede separar otra vez el título. Postext deshace el círculo con el **bucle de convergencia** de :ref{id="convergence-loop"}: las pasadas tres a siete se repiten, marcando solo lo que ha cambiado, hasta que nada se mueve. El bucle tiene un tope de cinco iteraciones y los documentos habituales se asientan en una o dos. Una puntuación de infracciones tipográficas acompaña a cada iteración, así que, si alguna vez se alcanza el tope, el motor se queda con la mejor maquetación que encontró, no con la última.
 
-- **Renderizador de canvas** produce una vista previa rasterizada sobre un elemento canvas de HTML5
-   - Las páginas se dibujan de forma perezosa mediante IntersectionObserver para rendir bien en documentos largos
-   - Incluye de serie zoom, ajuste al ancho, ajuste al alto y modo de doble página
-   - La salida es adecuada para una inspección visual rápida a cualquier nivel de zoom
-- **Renderizador web** produce elementos HTML con posicionamiento CSS preciso
-   - Cada elemento se sitúa de forma absoluta dentro de su contenedor de página
-   - El texto se compone con tamaños, interlíneas y posiciones de línea base exactos
-   - El resultado es un componente React que puede incrustarse en cualquier aplicación web
-   - El aislamiento de estilos se logra con Shadow DOM para que la página anfitriona no lo contamine
-- **Renderizador de PDF** genera documentos listos para imprimir
-   - Utiliza los mismos datos del VDT que los renderizadores web y de canvas
-   - Produce una salida vectorial apta para impresión profesional
-   - Conserva todos los detalles tipográficos, incluidas las posiciones exactas de los caracteres
-   - Incrusta fuentes estáticas por peso para que la negrita y la cursiva salgan al peso correcto
+:::callout{type="figures" title="El motor en cifras"}
+:::columns{count=3}
+**300–600×** más rápida la medición de texto que con reflujos del DOM: la idea que hizo posible el proyecto.
 
-Como los tres renderizadores leen del mismo VDT, la promesa de _lo que ves es lo que obtienes_ no es retórica: saltos de línea, fronteras de página y colocación de recursos coinciden píxel a píxel entre los tres.
+**7 pasadas** del Markdown a la página posicionada, repetidas en un bucle de **5 iteraciones** como mucho, casi siempre una o dos.
 
-## Características tipográficas
+**3 renderizadores** —canvas, HTML y PDF— que dibujan una sola geometría, línea a línea.
+:::
+:::
 
-Las siguientes características son en las que Postext invierte el grueso de su esfuerzo. Cada una de ellas tiene una larga historia en el mundo de la imprenta y cada una, hasta ahora, resultaba imposible o dolorosamente artesanal de conseguir dentro del navegador. Postext las trata como ciudadanas de primera, configurables por alguien que diseña sin necesidad de escribir una sola línea de código.
+El equilibrado converge tramo a tramo, entre aperturas de capítulo y saltos de página explícitos. El resultado es una garantía que importa en los libros: un capítulo maquetado por separado y el mismo capítulo dentro del libro completo salen idénticos, página a página.
 
-### Prevención de huérfanas y viudas
+## El árbol virtual del documento
 
-En la tipografía profesional, una **huérfana** es una única línea de un párrafo que aparece aislada al comienzo de una columna o página, separada del resto de su párrafo. Una **viuda** es una única línea que aparece sola al final de una columna o página. Ambas se consideran defectos tipográficos serios porque rompen el ritmo visual del texto y dificultan que quien lee mantenga su fluidez. La figura :ref{id="orphan-widow"} muestra ambos defectos uno al lado del otro a través de una frontera de columna.
+Lo que sobrevive al bucle es el **VDT**, el árbol virtual del documento: páginas que contienen columnas, columnas que contienen bloques, bloques que contienen líneas, cada uno con su caja en unidades reales, junto a una lista plana de todos los bloques para acceder rápido. El árbol es geometría pura —no sabe nada de canvas, HTML ni PDF— y eso es justo lo que permite a tres renderizadores dibujar salidas idénticas. Cada línea recuerda además el tramo de Markdown del que procede, y así un clic en la página lleva el cursor del editor a la palabra correcta.
 
-Postext ofrece una prevención configurable de huérfanas y viudas:
+## Fuera del hilo principal
 
-- El ajuste _mínimo de líneas huérfanas_ especifica cuántas líneas deben aparecer al comienzo de un párrafo antes de un salto de columna
-- El ajuste _mínimo de líneas viudas_ especifica cuántas líneas deben aparecer al final de un párrafo después de un salto de columna
-- El motor ajusta los saltos de columna, mueve contenido entre columnas e incluso modifica los saltos de línea dentro de los párrafos para cumplir estas restricciones
-- Cuando las restricciones entran en conflicto, el motor utiliza un sistema de prioridades basado en penalizaciones configurables para decidir qué regla prevalece
-- Las reglas de huérfanas y viudas también se aplican a los elementos de lista, con activadores independientes para cada tipo de lista
+Una maquetación puede tardar más que una pulsación de tecla, así que el motor puede ejecutarse en un Web Worker. El worker conserva su propia caché de medición entre compilaciones y se cancela de forma cooperativa: cuando se pide una compilación nueva, la anterior se detiene en su siguiente punto de control y gana la última petición. El Sandbox maqueta así todas sus vistas, y el renderizador de PDF tiene un worker propio, de modo que la interfaz sigue respondiendo mientras se compone un libro entero.
 
-Además de huérfanas y viudas, Postext reconoce un tercer defecto habitual llamado **rabo**: la última línea de un párrafo compuesta por apenas una o dos palabras cortas que quedan varadas lejos del resto del texto. Los rabos se miden en número mínimo de caracteres y se penalizan directamente dentro de la optimización de Knuth-Plass, de forma que el algoritmo prefiere de manera natural los conjuntos de saltos que los evitan.
+:::callout{type="note" title="En código"}
+\`buildDocument(content, config)\` devuelve el VDT. \`renderPage\` dibuja una página en un canvas, \`renderToHtml\` devuelve HTML posicionado y \`renderToPdf\`, del paquete _postext-pdf_, devuelve los bytes de un PDF, de un documento o de un libro entero pasado como una lista de capítulos. \`createLayoutWorker\`, de _postext/worker_, ejecuta la compilación fuera del hilo principal.
+:::
 
-### Separación silábica y optimización del margen
+:::part{number="II" title="El oficio" palette="band=#b7820f"}
+3. Componer la línea
+4. La página y sus columnas
+5. Figuras, tablas y flotantes
+6. Libros, partes y cabeceras
+:::
 
-La **separación silábica** consiste en dividir palabras por sus límites silábicos cuando caen al final de una línea. Una separación correcta mejora la uniformidad de las longitudes de línea y reduce la perturbación visual que causan los grandes espacios entre palabras en el texto justificado. Sin ella, un motor solo puede evitar una línea suelta moviendo palabras enteras, y mover palabras enteras suele desplazar el problema unas líneas más abajo.
+# Componer la línea {lead="Un párrafo se compone entero, no línea a línea. Postext sopesa todas las formas posibles de cortarlo, pone precio al espaciado, a los guiones y a las palabras sueltas, y elige el conjunto de cortes que menos cuesta." summary="Corte óptimo de líneas, separación silábica, espaciado y los defectos que evita"}
 
-Postext utiliza **patrones Liang de calidad TeX** servidos por la biblioteca _Hypher_. Son los mismos patrones que TeX emplea desde 1983, mantenidos por la comunidad TeX y refinados a lo largo de cuatro décadas de uso. Se generan a partir de grandes corpus léxicos y cubren muchos más casos límite de los que cualquier heurística artesanal podría abarcar. Los idiomas soportados actualmente incluyen inglés, español, francés, alemán, italiano, portugués, catalán y neerlandés, y añadir más consiste simplemente en importar el fichero de patrones correspondiente.
+La calidad de una página se decide primero en sus párrafos. Un navegador corta las líneas de forma voraz: llena una línea con todas las palabras que caben, pasa a la siguiente y solo puede repartir el espacio sobrante dentro de cada línea. Postext implementa el **algoritmo de Knuth-Plass**, el cortador de líneas óptimo que mueve TeX desde 1981. Evalúa todas las formas viables de cortar el párrafo entero y elige la que minimiza el coste total, de modo que el espaciado se mantiene parejo de la primera línea a la última.
 
-El sistema de separación silábica expone los siguientes controles:
+## Cajas, gomas y penalizaciones
 
-- Patrones de separación específicos por idioma que definen los puntos de corte válidos dentro de las palabras
-- Mínimos de caracteres antes y después del guion para evitar cortes incómodos
-- Máximo de líneas consecutivas con guion para evitar el efecto de escalera en el margen derecho
-- Valores de penalización por división silábica que influyen en el algoritmo de Knuth-Plass al elegir entre un corte con guion y una línea más holgada
+El algoritmo ve un párrafo como una secuencia de tres primitivas, dibujadas a todo lo ancho en :ref{id="knuth-plass-model"}:
 
-La **optimización del margen** se refiere al suavizado del borde derecho del texto alineado a la izquierda, conocido como _rag_ o _bandera_. Un margen sin optimizar puede parecer irregular, con líneas cortas seguidas de líneas largas sin ningún patrón. Postext optimiza ese margen mediante:
+- **Cajas**: palabras o trozos de palabra, de ancho fijo
+- **Gomas**: el espacio entre palabras, con un ancho natural y capacidad para estirarse o encogerse
+- **Penalizaciones**: posibles puntos de corte con un coste; una penalización _marcada_ señala un punto de guion y dibuja el guion si se usa
 
-1. Evaluación de la calidad visual del margen derecho a lo largo de varias líneas
-2. Ajuste del espaciado entre palabras dentro de límites aceptables
-3. Elección de puntos de corte que produzcan un margen que varíe de forma gradual en vez de brusca
-4. Uso de la separación silábica como herramienta para suavizar el margen, no sólo para encajar líneas
+Para cada línea candidata el motor calcula una razón de ajuste $r$, cuánto deben estirarse o encogerse las gomas para llenar la medida, y una medianía que crece con su cubo, $b = 100\\,|r|^3$. Las líneas se clasifican en cuatro clases de ajuste —apretada, normal, holgada y muy holgada— y a cada corte se le cargan sus deméritos:
 
-### Justificación Knuth-Plass
+$$
+d = (1 + b + p)^2
+$$
 
-Para el texto justificado, Postext implementa al completo el **algoritmo de salto de línea óptimo de Knuth-Plass**, el mismo que impulsa TeX desde 1981. A diferencia del enfoque voraz de primer ajuste que emplea CSS, Knuth-Plass evalúa todas las formas posibles de romper un párrafo entero y escoge la combinación que minimiza la _maldad_ total de todas sus líneas. El resultado es un texto justificado cuyo espaciado entre palabras es visiblemente más uniforme de lo que cualquier navegador puede producir de manera nativa.
+donde $p$ es la penalización del corte. Dos líneas seguidas con guion cuestan 3000 más, y un salto de más de una clase de ajuste entre líneas vecinas cuesta 100, así que el optimizador prefiere párrafos cuya textura cambia con suavidad. Si no existe ningún conjunto de cortes viable, el motor recurre al corte voraz en lugar de fallar.
 
-El algoritmo modela el texto como una secuencia de tres primitivas, dispuestas a todo el ancho en la :ref{id="knuth-plass-model"}:
+## Separación silábica
 
-- **Las cajas** son palabras o fragmentos de palabra con un ancho fijo que no puede estirarse, comprimirse ni romperse
-- **Las gomas** son espacios entre palabras con un ancho natural más capacidades de estiramiento y contracción que el motor ajusta para llenar la línea
-- **Las penalizaciones** son puntos de corte potenciales con un coste asociado, donde las _marcadas_ indican además oportunidades de separación silábica y añaden un guion visible si se usan
+La separación silábica usa los mismos **patrones de Liang** en los que TeX confía desde 1983, servidos por la biblioteca _Hypher_, en ocho idiomas: inglés, español, francés, alemán, italiano, portugués, catalán y neerlandés. El idioma del documento se fija una vez, en la cabecera de la configuración, y también etiqueta el PDF para los lectores de pantalla. Los patrones dejan al menos dos letras antes del guion y tres después, de modo que las palabras de menos de cinco letras nunca se dividen, y cada guion es una penalización marcada de 50 que el optimizador puede aceptar o rechazar.
 
-Para cada corte candidato, el algoritmo calcula un ratio de ajuste, un valor de maldad que crece cúbicamente con el valor absoluto de ese ratio y un total de deméritos que también contempla la separación silábica y las transiciones de clase de holgura entre líneas contiguas. Postext amplía el conjunto clásico de deméritos con tres penalizaciones editoriales —huérfana, viuda y rabo— para que el mismo optimizador que equilibra el espaciado también evite los defectos al final del párrafo.
+La separación solo actúa en el texto justificado, donde se gana el sueldo. Hay dos oportunidades de corte siempre disponibles, sea cual sea el ajuste: un guion entre dos letras es un corte legítimo, y una palabra más ancha que toda la medida se divide por la última sílaba que cabe o, si no hay más remedio, por el último carácter.
 
-### Composición matemática
+## Espaciado y líneas en bandera
 
-Postext trata las fórmulas LaTeX como ciudadanas de primera del formato de documento, no como un añadido posterior. Las expresiones en línea como $e^{i\\pi}+1=0$ fluyen con el texto que las rodea y se componen con MathJax como trazos vectoriales, de modo que se mantienen nítidas a cualquier nivel de zoom. Cuando la altura natural de una fórmula excedería la caja de línea del cuerpo, el motor la escala uniformemente hacia abajo para preservar la rejilla de línea base — el lector conserva el ritmo horizontal del texto por densa que sea la notación.
+Dos ajustes limitan cuánto puede estirarse o encogerse un espacio: \`maxWordSpacing\`, por defecto el doble del espacio natural, y \`minWordSpacing\`, 0,6 veces. Estirar más allá del máximo se paga por encima de cualquier otro defecto, así que el cortador prefiere poner un guion, mover una palabra o aceptar una línea corta antes que abrir un río. Hay líneas que no se pueden llenar —una URL larga, la cola irrompible de un elemento de lista— y, en lugar de abrirlas con huecos de tres veces el espacio natural, el motor las compone en bandera con el espaciado natural. La última línea de un párrafo va siempre en bandera, salvo cuando se desborda: entonces sus espacios se comprimen para que quepa, igual que hace TeX con las gomas.
 
-Las fórmulas en display viven en sus propias líneas, enmarcadas por los marcadores \`$$…$$\`. El motor las centra en la columna, aplica márgenes superior e inferior configurables y ajusta el borde inferior a la rejilla de línea base usando el mismo mecanismo de corrección que emplean los encabezados:
+## Huérfanas, viudas y líneas cortas
+
+Una **huérfana** es la primera línea de un párrafo que se queda sola al pie de una columna; una **viuda**, su última línea llevada sola a la cabeza de la siguiente. Las dos rompen el ritmo de la lectura, y :ref{id="orphan-widow"} las muestra a ambos lados de un salto de columna. Un tercer defecto, la **línea corta**, es una última línea con una sola palabra breve, varada bajo un párrafo lleno.
+
+Postext pone precio a las tres. Cuando un párrafo cruza una columna, el motor compara todos los cortes posibles y a cada uno le carga el espacio que deja sin usar, la huérfana y la viuda —1000 por defecto cada una, con al menos dos líneas a cada lado—. Las líneas cortas se pagan dentro del propio cortador, como medianía, siempre que la última línea mida menos de veinte caracteres de espacio. Cuando no se puede evitar una línea corta cortando de otra manera, el motor puede componer el párrafo una línea más corto, apretando los espacios dentro de su mínimo y, si hace falta, el espaciado entre letras como mucho diez milésimas de cuadratín. Los elementos de lista siguen las mismas reglas, con interruptores propios.
+
+:::callout{type="try"}
+En **Configuración**, busca _flojas_ y activa **Resaltar líneas flojas** de la sección de depuración. Después estrecha las columnas o sube \`maxWordSpacing\` y observa qué líneas tiene que abrir el motor y cómo las redistribuye el optimizador.
+:::
+
+## Matemáticas
+
+Las fórmulas son ciudadanas de pleno derecho. Las expresiones en línea, como $e^{i\\pi}+1=0$, fluyen con el texto, compuestas por MathJax como trazados vectoriales que se mantienen nítidos a cualquier ampliación. Cuando una fórmula es más alta de lo que permite la línea, se reduce de forma uniforme para que la rejilla de línea base sobreviva, y el lector conserva el ritmo del texto por densa que sea la notación. Las fórmulas destacadas ocupan líneas propias, centradas en la columna, con sus propios márgenes, y el texto que las sigue vuelve a la rejilla:
 
 $$
 \\int_0^{\\infty} e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}
 $$
 
-El siguiente párrafo cae por tanto exactamente sobre una línea de la rejilla, independientemente de lo alta que sea la fórmula — una propiedad que importa mucho en libros técnicos y artículos científicos donde las matemáticas y la prosa se alternan sin descanso. Los mismos trazos vectoriales alimentan la vista canvas, la exportación HTML y el backend PDF, de modo que las tres salidas coinciden píxel a píxel, y el PDF se mantiene plenamente vectorial para producción impresa.
+El canvas, la vista HTML y el PDF dibujan los mismos trazados, de modo que las fórmulas coinciden en las tres salidas y siguen siendo vectores en la imprenta.
 
-### Espaciado y ritmo
+# La página y sus columnas {lead="Las páginas son fijas, las columnas son finitas y cada línea debería asentarse en un ritmo compartido por todo el pliego. Este capítulo trata del marco: la geometría de la página, las estructuras de columnas, la rejilla de línea base y el arte de terminar las columnas a la par." summary="Geometría de página, columnas, rejilla de línea base y equilibrado"}
 
-El espaciado vertical en la tipografía editorial obedece a reglas estrictas que mantienen el ritmo visual de la página. Postext aplica esas reglas a través de su sistema de configuración:
-
-- **El espaciado de encabezados** controla la distancia por encima y por debajo de los encabezados de cada nivel
-   - Los encabezados mayores reciben más espacio por encima para separarlos visualmente de la sección anterior
-   - El espacio por debajo es menor que el de arriba, creando una conexión visual entre el encabezado y su contenido
-   - Los encabezados consecutivos sin texto entre ellos se señalan en el panel de avisos como un defecto semántico, porque casi siempre indican que falta una introducción
-- **El espaciado de párrafos** puede configurarse como sangría o como espacios verticales
-   - La tipografía tradicional de libros emplea sangría de primera línea sin espacio vertical entre párrafos
-   - La tipografía digital moderna suele utilizar espacios verticales sin sangría
-   - Postext admite ambos enfoques e incluso su mezcla dentro de un mismo documento
-- **El espaciado de listas** controla la distancia entre elementos y entre niveles anidados
-   - Los elementos de una lista pueden estar compactos o holgados
-   - Las listas anidadas admiten sangría adicional y estilos de viñeta distintos en cada nivel
-- **La alineación a la retícula de línea base** fija el texto a una cuadrícula vertical regular, como ilustra la :ref{id="baseline-grid"}
-   - Esto asegura que el texto en columnas adyacentes se alinee horizontalmente
-   - Aporta una sensación de orden y estabilidad a toda la página
-   - Los elementos que rompen la retícula, como los encabezados con tamaños mayores, pueden configurarse para realinearse con ella después
-
-## Maquetaciones basadas en columnas
-
-Las columnas son la expresión más visible del diseño editorial y también el punto donde las soluciones caseras de CSS suelen quebrarse primero. Postext proporciona un sistema de columnas que las trata como ciudadanas de primera clase de la página, con sus propias reglas de equilibrio, sus propias estrategias de colocación de recursos y su propia relación con la retícula de línea base.
-
-### Flujo de texto multicolumna
+Las columnas son la expresión más visible del diseño editorial, y el lugar donde antes se rompen las soluciones caseras. Postext trata la página y sus columnas como objetos de primera clase, con su propia geometría, su propio ritmo y sus propias reglas para terminar bien.
 
-Una de las características más distintivas de la maquetación editorial es el uso de varias columnas. Las columnas cumplen varios propósitos en la tipografía profesional:
+## Geometría de la página
 
-- Mantienen las longitudes de línea dentro del rango óptimo de comodidad de lectura, que se suele situar entre 45 y 75 caracteres por línea
-- Permiten que quepa más texto por página sin recurrir a un tamaño de fuente incómodo
-- Aportan variedad visual y estructura a la página
-- Brindan oportunidades para una colocación sofisticada de recursos y para combinar pasajes textuales estrechos con figuras anchas
+Una página empieza por su tamaño. Postext ofrece como predefinidos los formatos habituales de libro y revista, recogidos en :ref{id="preset-sizes"}, y cualquier tamaño a medida en centímetros, milímetros, pulgadas o puntos; esta guía se compone en el formato de 21 × 28 cm. Los márgenes pueden ser **simétricos**: el margen izquierdo pasa a ser el interior, junto al lomo, y cambia de lado en cada verso. Para la producción impresa, la página puede llevar sangrado y marcas de corte, y un ajuste de PPP controla la resolución de las medidas en píxeles.
 
-Postext admite configuraciones multicolumna flexibles, las más habituales de las cuales se previsualizan como miniaturas de página en la :ref{id="column-layouts"}:
+Los folios siguen secuencias: arábigos, romanos en minúscula o mayúscula, alfabéticos en minúscula o mayúscula, cada una con su propio número inicial, de modo que un libro puede numerar sus preliminares i, ii, iii y empezar el capítulo uno en 1. El PDF registra las mismas secuencias como etiquetas de página, y el visor muestra exactamente el número impreso al pie.
 
-1. **El número de columnas** puede establecerse en cualquier entero positivo, o elegirse entre varios presets
-   - Maquetaciones a una columna para viewports estrechos o lectura concentrada
-   - Maquetaciones a dos columnas para artículos y ensayos
-   - Maquetaciones de columna y media que combinan una columna principal con una columna lateral estrecha para anotaciones
-   - Tres o más columnas para boletines, revistas y materiales de referencia
-2. **El ancho del medianil** controla el espacio entre columnas
-   - Medianiles más anchos dan sensación de columnas más independientes
-   - Medianiles más estrechos permiten más texto por página, pero suelen requerir un separador visual
-3. **Las filetes de columna** son líneas verticales opcionales entre columnas
-   - Su grosor, estilo y color son configurables
-   - Ayudan a distinguir las columnas cuando los medianiles son estrechos
-4. **El cruce de columnas** permite que determinados elementos rompan la retícula
-   - Un encabezado puede abarcar dos de las tres columnas
-   - Una figura puede extenderse al ancho completo de la página
-   - Una cita destacada puede flotar cruzando el medianil entre dos columnas
+## Estructuras de columnas
 
-### Equilibrio de columnas
+Tres estructuras cubren la mayoría de las publicaciones, esbozadas como miniaturas en :ref{id="column-layouts"}:
 
-Cuando el texto fluye por varias columnas, éstas suelen terminar a alturas distintas. La última columna de una página puede contener apenas unas líneas mientras las demás están llenas. Eso transmite una sensación de documento inacabado y poco profesional, y es una de las quejas más frecuentes ante las maquetaciones multicolumna improvisadas.
+1. **Una columna**, para novelas, ensayos y lectura concentrada
+2. **Dos columnas**, para revistas, informes y libros como este
+3. **Columna y media**: una columna principal junto a otra lateral más estrecha
+   - La columna lateral puede llevar texto que continúa desde la principal
+   - O puede ser un **canal de flotantes** que solo recoge figuras, tablas, pies y recuadros, como en los libros de texto con una columna exterior de notas y diagramas
 
-El **equilibrio de columnas** es el proceso de repartir el texto de forma uniforme entre ellas para que terminen aproximadamente a la misma altura. Es un problema computacional sorprendentemente difícil porque:
+El medianil entre columnas es configurable, y en él puede dibujarse un filete opcional, con su propio grosor y color. Los elementos de página completa —una figura, una tabla, un recuadro— cortan las columnas: el texto que queda por encima se reparte a la par entre ellas, y las columnas continúan por debajo.
 
-- Mover texto entre columnas cambia los saltos de línea, lo que modifica la altura de cada columna
-- Las figuras y otros elementos no textuales tienen alturas fijas que no pueden partirse
-- Las notas al pie asociadas al texto de una columna deben aparecer al fondo de esa misma columna y consumen espacio
-- Las restricciones de huérfanas y viudas pueden impedir ciertas distribuciones
-- La retícula de línea base impone posiciones discretas de aterrizaje, no continuas
+## La rejilla de línea base
 
-Postext aborda el equilibrio de columnas mediante un refinamiento iterativo:
+Los libros profesionales alinean la primera línea base de cada columna a un ritmo vertical común, y todas las líneas siguientes caen en la misma rejilla, de modo que se miran a través del medianil. Postext ajusta el texto a una rejilla derivada del interlineado del cuerpo, como ilustra :ref{id="baseline-grid"}. Tras los elementos que la rompen —un título mayor que el cuerpo, una figura, una fórmula destacada— se deja el espacio necesario para devolver la línea siguiente a su sitio. La rejilla puede dibujarse superpuesta mientras trabajas, allí donde hay texto.
 
-1. Primero llena las columnas de forma secuencial para establecer una distribución base
-2. Después calcula la altura ideal de columna dividiendo la altura total del contenido entre el número de columnas
-3. Redistribuye el contenido para aproximarse a esa altura ideal respetando todas las restricciones
-4. Repite la redistribución hasta que las alturas convergen o se agota el número máximo de iteraciones
-5. Si no se alcanza la convergencia, conserva el mejor resultado intermedio en lugar de producir una maquetación degenerada
+## Terminar las columnas a la par
 
-### Estructuras de columnas mixtas
+Cuando una página termina en mitad del texto, sus columnas deberían acabar a la misma altura. Es el **equilibrado de columnas**, y es más difícil de lo que parece: las líneas van en pasos enteros de rejilla, las figuras no se pueden partir, los títulos deben seguir con su texto y los párrafos no pueden dejar huérfanas. Postext iguala una columna corta con tres palancas, usadas por orden de preferencia y dibujadas en :ref{id="column-balancing"}:
 
-No todo el contenido de una página necesita seguir la misma estructura de columnas. Un patrón habitual del diseño editorial consiste en abrir una sección con un párrafo introductorio a ancho completo y, acto seguido, pasar a una maquetación multicolumna para el cuerpo. Otro patrón coloca una imagen o tabla ancha a ancho completo de página, interrumpiendo el flujo multicolumna y reanudándolo debajo. Un tercero emplea una estructura de columna y media en la que la columna lateral estrecha alberga notas al margen, citas destacadas e ilustraciones secundarias.
+1. **Espacio sobre los títulos**, una línea de rejilla entera cada vez, repartida por importancia y nunca en la cabeza de una columna
+2. **Una línea tras el final de una lista**
+3. **Párrafos más sueltos**: un párrafo compuesto una línea más largo, la _looseness_ de TeX, aceptado solo si ninguna de sus líneas se estira más allá del límite de espaciado; si ayuda, un toque de espaciado entre letras, como mucho diez milésimas de cuadratín
 
-Postext admite estas estructuras mixtas mediante **sobrescrituras por sección**:
+Cada arreglo se verifica maquetando la página de nuevo, hasta ocho veces, y gana el mejor resultado. Algunas columnas se dejan en paz a propósito: la última antes de un salto de página forzado o de una apertura de capítulo, la última página del documento, una columna sin nada que estirar. Dos reglas afines igualan las columnas del final de un capítulo y las que quedan sobre un recuadro de página completa que se mueve o se parte.
 
-- Cada sección del documento puede especificar su propia configuración de columnas
-- Las transiciones entre tipos de sección se gestionan automáticamente
-- El motor administra el espacio vertical que consume cada sección y garantiza que el contenido fluya de una a la siguiente
-- Las sobrescrituras se aplican de forma declarativa, de manera que el mismo Markdown puede renderizarse distinto en cada dispositivo
+:::callout{type="quote"}
+Una columna que acaba dos líneas más corta es lo primero que nota un lector y lo último que un diseñador debería tener que arreglar a mano.
+:::
 
-## Colocación de recursos
+:::callout{type="try"}
+En **Configuración**, abre **Títulos** y desactiva **Equilibrar columnas**. Mira el pie de las columnas de este capítulo; después vuelve a activarlo y observa qué palanca ha usado el motor en cada página.
+:::
 
-Los recursos son todo lo que no es texto fluido: imágenes, tablas, figuras, citas destacadas, despieces y cualquier otro bloque que interrumpa o acompañe a la narración principal. La manera de colocar esos bloques tiene un efecto desproporcionado en la experiencia lectora, y Postext ofrece un vocabulario para expresar esa intención de colocación a nivel semántico en lugar de a nivel de píxel.
+# Figuras, tablas y flotantes {lead="Una referencia es una promesa, no una posición. Menciona una figura y Postext le busca casa: el primer hueco libre tras la mención, numerada por orden de lectura, con su pie, y nunca antes de las palabras que la llaman." summary="Dónde caen los recursos, cómo se numeran, tablas que se parten"}
 
-### Estrategias de colocación
+Todo lo que no es texto que fluye —imágenes, diagramas SVG, tablas— es un **recurso**. Los recursos se declaran fuera del texto, cada uno con su identificador, su tipo, su pie y sus preferencias de colocación, y el Markdown se limita a mencionarlos. En el Sandbox viven en el panel de Recursos.
 
-En el diseño editorial, los recursos como imágenes, tablas, figuras y citas destacadas no se insertan sin más en el lugar exacto donde se referencian. Se colocan, más bien, siguiendo estrategias que optimizan la calidad visual de la página y la legibilidad del texto circundante. La referencia en el texto es una _pista_ sobre dónde encaja el recurso, no una orden.
+## Basta con una mención
 
-Postext admite varias estrategias de colocación, resumidas en la tabla :ref{id="placement-options"} y esbozadas juntas sobre una misma página en la :ref{id="placement-strategies"}:
+Escribir \`:ref{id="…"}\` en una frase hace dos cosas: imprime la etiqueta del recurso y, la primera vez, lo _incorpora_, de modo que flota hasta el primer hueco libre tras la referencia. Los huecos se prueban en orden, como muestra :ref{id="float-slots"}: el pie de la columna que contiene la referencia, luego la cabeza y el pie de la siguiente columna libre, luego una banda en la página siguiente. El texto nunca se interrumpe.
 
-- **Cabeza de columna** coloca el recurso en la parte superior de la columna actual o de la siguiente disponible
-   - Es la estrategia más habitual en la publicación académica y profesional
-   - El recurso queda anclado en la cabeza de la columna y el texto fluye debajo
-   - Si el recurso no cabe en el espacio restante, se aplaza a la siguiente columna
-- **En línea** coloca el recurso en el punto exacto donde se referencia en el texto
-   - El flujo textual se interrumpe, se inserta el recurso y el texto se reanuda debajo
-   - Es la estrategia más simple, pero puede producir saltos de página incómodos si el recurso cae cerca del final de una columna
-- **Flotante a la izquierda y flotante a la derecha** colocan el recurso en el borde izquierdo o derecho de la columna
-   - El texto rodea el recurso fluyendo hacia el lado opuesto
-   - El recurso puede configurarse para extenderse al medianil o al margen
-   - Varios flotantes pueden coexistir en la misma columna si hay espacio suficiente
-- **Salto a ancho completo** interrumpe por completo la maquetación de columnas
-   - El recurso abarca el ancho completo de la página
-   - Todas las columnas por encima y por debajo se sincronizan con él
-   - Se usa habitualmente para imágenes grandes, tablas anchas o divisores de sección
-- **Margen** coloca el recurso en el margen de la página
-   - El recurso se alinea verticalmente con el párrafo que lo referencia
-   - Se emplea para pequeñas ilustraciones, iconos o anotaciones complementarias
+Unas pocas reglas mantienen honrados a los flotantes:
 
-### Relación de aspecto y dimensionado
+- Un flotante nunca cae antes de su referencia y nunca se encoge para caber
+- Los flotantes de una misma secuencia de numeración conservan su orden, así que la figura 12 nunca aparece antes que la 11; una tabla que espera sitio no retiene a las figuras
+- Los flotantes nunca escapan de su capítulo: las aperturas de capítulo, las portadillas de parte y el final del documento son barreras
+- Un flotante que dejaría menos de tres líneas de texto en una página nueva espera a la siguiente
+- Las bandas de cabeza y de pie se alinean con la rejilla de línea base, y el pie de un flotante inferior comparte la línea base de la última línea de texto
 
-Al colocar recursos, Postext respeta la relación de aspecto y ofrece varias opciones de dimensionado, recogidas en la :ref{id="sizing-options"}:
+## Colocación
 
-1. **Tamaño natural** utiliza las dimensiones intrínsecas del recurso
-2. **Ancho de columna** escala el recurso para llenar el ancho de una columna
-3. **Ancho de expansión** escala el recurso para cubrir un número indicado de columnas, medianiles incluidos
-4. **Ancho completo** escala el recurso para ocupar toda el área de texto
-5. **Dimensiones personalizadas** permiten indicar valores exactos de ancho y alto
+Cada recurso puede indicar dónde prefiere ir, y cada tipo de recurso tiene un valor por defecto; los campos se recogen en :ref{id="placement-options"}. Un recurso también puede insertarse en un punto exacto, cuando su posición es _here_. Y una tabla o una figura demasiado ancha para la página puede girar un cuarto de vuelta: entonces ocupa una página propia, pegada al lomo.
 
-El motor garantiza que los recursos nunca desborden sus contenedores y ajusta el flujo de texto circundante para acomodar las dimensiones finales. Si dos estrategias compiten por el mismo espacio —un flotante a la derecha y una figura en cabeza de columna, por ejemplo—, el motor aplica un orden de prioridad configurable y aplaza la perdedora al siguiente hueco disponible.
+## Números y etiquetas
 
-## Sistemas de referencias
+Los tipos de recurso definen sus propias secuencias de numeración. Figuras y tablas vienen de serie y se traducen al idioma del documento; un tipo puede añadir un prefijo, una etiqueta abreviada, una plantilla como \`{h1}.{n}\` para numerar por capítulo —la figura 5.2 es la segunda figura del capítulo 5—, una regla de reinicio y un formato de contador. Los números siguen la **primera referencia en el orden de lectura**: si insertas una mención anterior, se mueven todos los números posteriores. Una referencia puede imprimir solo el número, la etiqueta completa o la abreviada, cambiar su caja o imprimir un texto propio.
 
-Los sistemas de referencias son el hilo que conecta la narración principal de una autora o un autor con su aparato erudito, sus comentarios complementarios y su andamiaje bibliográfico. Manejarlos bien es lo que distingue a un documento que se siente como un libro acabado de otro que se siente como un artículo de blog impreso, y es otra área en la que el navegador ha ofrecido históricamente muy poca ayuda.
+## Tablas
 
-### Notas al pie
+Las tablas llevan su modelo consigo: filas de celdas con fusiones de columnas y filas, filas de cabecera, alineación y anchos de columna relativos. Las celdas admiten Markdown en línea, párrafos y listas sencillas, un relleno propio —los tres colores de parte de este libro son :swatch{color="#2b4acb"} azul, :swatch{color="#b7820f"} oro y :swatch{color="#c0452f"} bermellón— e incluso una imagen. El estilo de las tablas se define una vez para todo el documento: tipografía del cuerpo y de la cabecera, relleno de la cabecera y filetes en retícula, solo horizontales, solo exteriores o ninguno.
 
-Las notas al pie son una de las funciones más complejas de la tipografía editorial. Una nota al pie debe aparecer al fondo de la columna donde se referencia y el espacio que ocupa debe restarse del área de texto disponible en esa columna. Eso crea un bucle de retroalimentación que un algoritmo de una sola pasada no puede resolver:
+Una tabla más alta que la página se parte entre páginas. Sus filas de cabecera se repiten en cada tramo, el pie de cada continuación gana el sufijo _(cont.)_, un aviso de _Continúa_ cierra cada tramo salvo el último, y ningún corte atraviesa una fusión de filas. Una tabla girada se parte igual, página tras página.
 
-- Añadir una nota al pie a una columna reduce el espacio de texto disponible
-- Reducir el espacio de texto podría empujar la referencia de la nota a la columna siguiente
-- Si la referencia se mueve, la nota debe moverse con ella, cambiando el espacio de texto en ambas columnas
-- Cambiar el espacio de texto en la columna siguiente podría, a su vez, empujar otra nota de vuelta a la anterior
+## Pies y créditos
 
-Postext gestiona esta complejidad mediante su bucle de convergencia. El motor coloca las notas al pie de forma tentativa, comprueba si sus referencias siguen en la misma columna y ajusta posiciones iterativamente hasta que todo se estabiliza. La configuración de notas al pie incluye:
+Un pie es el prefijo del tipo, el número y el texto del pie, que admite Markdown en línea y referencias propias. Los pies van encima o debajo de su recurso, opcionalmente sobre una barra de color, con la tipografía y el tamaño del estilo de pie; la etiqueta puede ir en negrita o en color, como en este libro. Un recurso puede llevar además una nota: una línea más pequeña de crédito o de fuente bajo él.
 
-- **El estilo de marcador** determina cómo se numeran o simbolizan las notas al pie
-   - Los números en superíndice son la opción más común
-   - Los símbolos como asteriscos, obeliscos y dobles obeliscos resultan tradicionales en algunos contextos
-   - Pueden definirse secuencias de marcadores personalizadas para aplicaciones especializadas
-- **El separador** es la línea horizontal que se traza entre el área de texto y el área de notas
-   - Su ancho, estilo y espaciado son configurables
-- **El tamaño de fuente** del texto de nota suele ser menor que el del cuerpo
-   - Tamaño, interlínea y espaciado se configuran de forma independiente
+## Figuras vectoriales
 
-### Notas finales
+Los diagramas SVG se dibujan como vectores en todas partes. El PDF convierte el subconjunto habitual de SVG —formas, trazados, grupos, trazados de recorte, rellenos y trazos sólidos, opacidad y texto— en operaciones de dibujo nativas, y rasteriza a 600 ppp lo que queda fuera; una figura también puede traer un máster PDF propio, que se incrusta tal cual. Para imprimir a una tinta, un interruptor recolorea todos los diagramas como tintas de un solo color, según su luminancia, en los tres renderizadores.
 
-A diferencia de las notas al pie, las notas finales se recopilan y se muestran al final de una sección o al final del documento completo. Son más simples de implementar porque no compiten por espacio con el texto del cuerpo en la misma columna. Aun así, exigen una numeración y unas referencias cruzadas cuidadosas, y deben respetar la estructura de columnas de la sección que las aloja.
+:::callout{type="try"}
+Haz clic en el pie de cualquier figura del canvas: el panel de Recursos se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
+:::
 
-Postext admite la recopilación de notas finales tanto por sección como por documento:
+# Libros, partes y cabeceras {lead="Un libro es más que sus capítulos: una cubierta, un índice que se mantiene al día, portadillas de parte, aperturas que anuncian cada capítulo y cabeceras que saben dónde está el lector. Todo ello es configuración." summary="Capítulos, estilos de título, diseños, partes, índice y folios"}
 
-- **Notas finales por sección** aparecen al final de cada sección principal, lo que las hace más fáciles de encontrar
-- **Notas finales por documento** se recogen al final del todo, siguiendo la convención académica tradicional
-- La numeración puede reiniciarse en cada sección o continuar secuencialmente a lo largo de todo el documento
-- Las referencias cruzadas entre el cuerpo y el bloque de notas finales se mantienen coherentes a medida que el contenido se mueve durante la convergencia
+Esta guía es un libro de doce capítulos, y cada capítulo es un documento Markdown propio. Un proyecto del Sandbox es siempre un libro: la configuración, los recursos y las fuentes se comparten, y los capítulos se suceden, como muestra :ref{id="book-anatomy"}.
 
-### Notas al margen
+## Los capítulos hacen el libro
 
-Las notas al margen son anotaciones breves que aparecen en el margen de la página, alineadas verticalmente con el párrafo que las referencia. Se utilizan a menudo en libros de texto, manuales técnicos y ediciones anotadas para aportar contexto complementario sin interrumpir el flujo principal, y son un rasgo definitorio de la maquetación a columna y media que Postext admite de forma nativa.
+Cada capítulo se maqueta por separado, _continuando_ a los anteriores: hereda su número de páginas y su paridad, sus contadores de capítulos y de figuras, la parte abierta y las cabeceras. Por eso las figuras de este capítulo se numeran desde la 6.1, y por eso editar un capítulo nunca obliga al motor a componer de nuevo el libro entero. Las vistas previas pueden mostrar el capítulo actual o el libro completo, y el PDF se puede generar de cualquiera de los dos. Los capítulos se pueden añadir, renombrar, reordenar, dividir por sus títulos de primer nivel o fusionar con el anterior.
 
-Postext coloca las notas al margen atendiendo a las siguientes consideraciones:
+## Estilos de título
 
-- La nota se alinea verticalmente con el inicio del párrafo que la referencia
-- Si varias notas hacen referencia a párrafos cercanos, se apilan con el espaciado adecuado para evitar solapes
-- El ancho disponible del margen determina el ancho máximo del texto de la nota
-- Las notas al margen pueden aparecer en el margen izquierdo, en el derecho o alternar entre ambos en páginas enfrentadas
+Un título puede llevar atributos, escritos entre llaves al final de su línea. El más potente es el **estilo**: \`{style="cover"}\` aplica un estilo de título con nombre, que cambia la tipografía y el diseño del título y, para la sección que abre, puede cambiar las cabeceras, los márgenes de página, la disposición de columnas, la tipografía del cuerpo y la paleta. La cubierta de este libro es un estilo de título con márgenes propios, sin cabeceras y con un diseño a página completa; el índice es otro. Un estilo también puede dejar sin numerar sus títulos, para que un prólogo no desplace la numeración de los capítulos, y dejarlos fuera del índice.
 
-## El Sandbox interactivo
+## Diseños
 
-Todo lo descrito hasta aquí puede explorarse ahora mismo sin escribir una sola línea de código. El Sandbox que estás viendo no es una demostración montada sobre Postext; es el propio motor, envuelto en una interfaz de editor familiar diseñada para que experimentar resulte lo más fluido posible. Existe para dos públicos a la vez: quienes desarrollan y evalúan la biblioteca para su próximo proyecto, y quienes diseñan o componen tipográficamente y quieren ver qué hace cada opción de configuración sin necesidad de tocar un repositorio.
+Las cabeceras, los pies de página, las aperturas de capítulo y las portadillas se dibujan con **diseños**: pequeñas composiciones libres de textos, filetes, cajas e imágenes. Cada elemento se ancla a la página, al sangrado, a la caja de texto o a otro elemento, con desplazamientos y tamaños en unidades reales, e imprime **marcadores** como \`{pageNumber}\`, \`{chapterTitle}\`, \`{partTitle}\` o cualquier atributo del título, como el \`{attr.lead}\` que pone la entradilla en la banda de este capítulo. Los elementos se pueden limitar a las páginas pares o impares y a las páginas de un papel concreto —cuerpo, apertura, parte o blanca—, y así las cabeceras de este libro desaparecen en las aperturas de capítulo mientras aparece un folio al pie. Los elementos de texto pueden ajustarse, dividir palabras, recortarse con puntos suspensivos, dibujar una caja detrás y abrir con una capitular.
 
-### Disposición de la interfaz
+## Partes y paletas
 
-El Sandbox sigue un paradigma familiar tipo IDE con tres áreas principales, esbozadas en la :ref{id="sandbox-ui"}:
+\`:::part\` abre una portadilla de parte: una página propia, llevada a la paridad que pide la configuración, dibujada con el diseño de parte y seguida de un cuerpo, normalmente la lista de sus capítulos. Las partes se arrastran, de modo que las cabeceras y las aperturas de los capítulos siguientes pueden nombrar la parte a la que pertenecen, y aparecen tanto en el índice como en los marcadores del PDF.
 
-- Una **barra de actividad** en el extremo izquierdo para cambiar entre paneles y alojar acciones globales
-- Una **barra lateral redimensionable** que aloja el panel activo, ya sea el editor Markdown, el formulario de configuración o la lista de avisos
-- Un **viewport** a la derecha con tres pestañas para las salidas Canvas, HTML y PDF
+Una parte también puede cambiar el color del libro. Los colores de la configuración pueden enlazarse a entradas con nombre de la **paleta**, y el atributo \`palette\` de una parte sustituye entradas hasta la parte siguiente. Este libro define una entrada, el _color de parte_, y cada parte le da un valor: azul para los fundamentos, oro para el oficio, bermellón para la práctica. Las bandas de los capítulos, los números de los títulos, los folios y los pies lo siguen.
 
-La barra lateral puede plegarse por completo al pulsar sobre el icono del panel activo. La frontera entre la barra lateral y el viewport es arrastrable dentro de un rango razonable, de modo que puedes intercambiar espacio de editor por espacio de previsualización según avanzas.
+## Un índice que se mantiene al día
 
-### La barra de actividad
+\`:::toc\` imprime el índice: una entrada por cada título de los niveles indicados y una fila por cada parte, con números, títulos, puntos guía, folios y, si se quiere, una línea tomada de un atributo del título; en este libro, el resumen de cada capítulo. Los folios son reales: el motor maqueta el libro, lee dónde ha caído cada título y vuelve a componer el índice hasta que los números se asientan, lo que lleva como mucho tres pasadas más. En el PDF las entradas son enlaces.
 
-La barra de actividad reúne botones con icono para cada acción principal del Sandbox. De arriba abajo suelen encontrarse:
+## Saltos de página y numeración
 
-1. **Editor Markdown**, que abre o cierra el editor basado en CodeMirror
-2. **Configuración**, que abre o cierra el panel de configuración basado en formulario
-3. **Avisos**, que abre una lista de problemas semánticos y tipográficos detectados en el documento actual
-4. **Recursos**, que abre el panel de gestión de recursos
-5. **Exportar**, que descarga el Markdown y la configuración actuales como un único fichero JSON
-6. **Importar**, que carga un fichero JSON previamente exportado
-7. **Cambio de tema** entre modo oscuro y modo claro
-8. **Cambio de idioma** de la interfaz
+\`:::pagebreak\` empieza una página nueva y puede pedir que sea impar o par, añadiendo una página en blanco si hace falta. \`:::numbering\` cambia la secuencia de folios desde la página siguiente; así, unos preliminares numerados en romanos dan paso a los arábigos en el capítulo uno. Las aperturas de capítulo pueden pedir su propia paridad, y las páginas en blanco se reconocen como tales, de modo que las cabeceras las dejan limpias.
 
-Pulsar sobre el icono del panel activo pliega la barra lateral, algo útil cuando se quiere maximizar el área de previsualización durante un ajuste fino.
+:::part{number="III" title="La práctica" palette="band=#c0452f"}
+7. Escribir para Postext
+8. El Sandbox
+9. Salida: canvas, HTML y PDF
+10. Hoja de ruta y comunidad
+:::
 
-### El panel de configuración
+# Escribir para Postext {lead="Todo este libro se ha escrito en Markdown corriente con un puñado de extensiones. Se leen bien en cualquier editor de texto y dicen qué es el texto, nunca dónde va." summary="Markdown, directivas, recuadros y estilos de párrafo"}
 
-El panel de configuración es un editor en forma de formulario para todo el objeto de configuración de Postext. Los ajustes se agrupan en secciones desplegables, cada una con su propio botón de reinicio que restaura los valores por defecto de esa sección sin alterar el resto del trabajo. Las secciones incluyen actualmente:
+Los documentos de Postext son, ante todo, Markdown. Quien sabe Markdown puede escribir para Postext desde el primer día; las extensiones solo aparecen donde un libro necesita algo para lo que Markdown nunca tuvo palabras.
 
-- **Página**, para el color de fondo, el preset de tamaño, las dimensiones personalizadas, los márgenes, el DPI, las líneas de corte y la retícula de línea base
-- **Maquetación**, para el tipo de columnas, el ancho del medianil, el porcentaje de la columna lateral y las filetes
-- **Texto del cuerpo**, para la fuente, el tamaño, la interlínea, el color, la alineación, el peso, la separación silábica y las reglas avanzadas de párrafo como la prevención de huérfanas, viudas y rabos
-- **Encabezados**, para los valores por defecto generales más los ajustes por nivel de H1 a H6
-- **Listas ordenadas** y **Listas no ordenadas**, para la tipografía específica de cada tipo de lista, incluidos el formato de numeración, los caracteres de viñeta y la sangría francesa
-- **Visor HTML**, para los parámetros que gobiernan los modos de renderizado a una y a varias columnas de la salida HTML
-- **Depuración**, para las capas que visualizan la retícula de línea base, las líneas sueltas, la sincronización del cursor y otras señales internas
-- **Paleta de colores**, para colores con nombre reutilizables en toda la configuración
+## Markdown corriente
 
-Los controles son conscientes del contexto: el ancho del medianil sólo aparece cuando se elige una maquetación multicolumna, los ajustes de separación silábica sólo aparecen cuando la alineación del texto lo permite, y varias opciones avanzadas se ocultan tras expansores para que el panel siga resultando abarcable a primera vista.
+Títulos de una a seis almohadillas, párrafos, citas en bloque, listas con viñetas, numeradas y de tareas —anidadas con dos espacios por nivel, hasta cinco niveles— y matemáticas destacadas entre dobles signos de dólar. En línea, la negrita y la cursiva de siempre, más superíndices entre acentos circunflejos, como en 10^-8^, subíndices entre virgulillas, como en H~2~O, matemáticas en línea entre signos de dólar y barras invertidas para escribir caracteres literales.
 
-### Las tres pestañas de salida
+Parte de Markdown se deja fuera a propósito, porque un libro tiene otras formas de decirlo: las imágenes son recursos y no dibujos en línea, las tablas son recursos con un modelo y no tablas de barras, y el HTML en bruto no significa nada en una página impresa. Los enlaces conservan su texto; hacerlos pulsables y dar al código en línea un estilo propio está en la hoja de ruta.
 
-El viewport muestra la salida renderizada. Cambiar de pestaña no relanza la maquetación: el mismo VDT alimenta a todos los motores, así que el contenido se mantiene coherente entre modos.
+## Directivas y contenedores
 
-- **Canvas** muestra una vista rasterizada con zoom, ajuste al ancho, ajuste al alto y doble página, con renderizado perezoso para que los documentos largos sigan respondiendo con soltura
-- **HTML** renderiza el documento dentro de un Shadow DOM y ofrece un control de escala de fuente más un flujo a una o a varias columnas, útil para revisar cómo sentará el contenido en una aplicación web real
-- **PDF** genera un PDF real en el cliente mediante el paquete _postext-pdf_ y lo muestra en el visor nativo del navegador, con acciones de regeneración, descarga e impresión a un clic
+Todo lo demás se expresa con un pequeño vocabulario de directivas, recogido en :ref{id="document-format"}. Las directivas de una línea empiezan con tres dos puntos y actúan en el punto donde aparecen. Los contenedores envuelven bloques entre una línea de apertura con atributos y una línea de cierre con tres dos puntos; se pueden anidar, y uno sin cerrar se cierra al final del capítulo, con un aviso.
 
-Como las tres pestañas comparten una única fuente de verdad, cualquier cambio que hagas en el editor o en el panel de configuración se propaga a todas a la vez. El motor no guarda estado oculto que no puedas ver o exportar.
+## Recuadros
 
-### Persistencia y compartición
+\`:::callout\` compone una caja con un título opcional, en uno de los estilos que define la configuración. Este libro define cuatro: los recuadros _Pruébalo_ que te mandan al Sandbox, las notas técnicas, las citas destacadas en cursiva de rótulo y un panel oscuro de página completa con cifras clave. Un estilo decide el fondo, el borde, la franja y el radio de las esquinas de la caja, un icono o marca opcional, la tipografía de su título, su cuerpo y sus listas, y dónde va: en el flujo, en la cabeza o al pie de una columna, a lo ancho de la página, en la columna lateral de una maquetación de columna y media o fijo en una posición de la página.
 
-El Sandbox guarda tu trabajo de forma automática en el almacenamiento local del navegador. El contenido Markdown y la configuración se guardan tras alrededor de un segundo de inactividad, y al volver a abrir la página se restaura la sesión anterior. El estado del viewport, como el modo de vista del canvas o el modo de ajuste, se recuerda aparte, y el estado desplegado o plegado de cada sección de configuración se preserva entre visitas.
+Un recuadro largo puede partirse entre sus párrafos, o incluso entre sus líneas, dejando al menos dos a cada lado; la continuación omite el título. Dentro de un recuadro, \`:::columns\` compone su contenido en columnas equilibradas, como el panel de cifras del capítulo 2.
 
-Para trasladar tu trabajo entre dispositivos o compartir maquetaciones con otras personas, el Sandbox ofrece acciones explícitas de **exportar** e **importar**. El fichero exportado es un documento JSON versionado que contiene tanto el Markdown como la configuración. Puedes commitearlo a un repositorio, adjuntarlo a una incidencia o soltarlo en una conversación de chat, y cualquiera con el Sandbox abierto podrá cargarlo con un solo clic.
+:::callout{type="note" title="Por qué un vocabulario tan pequeño"}
+Cada extensión responde a una pregunta que un libro se hace y Markdown no sabe contestar: dónde acaba una página, cómo se numeran las páginas, qué es una parte, qué párrafos pertenecen a una caja. Todo lo que tiene que ver con su aspecto vive en la configuración, y así el mismo texto puede componerse como libro de bolsillo o como revista sin tocar una coma.
+:::
 
-## Configuración y personalización
+## Estilos de párrafo
 
-El sistema de configuración es el contrato entre el motor y todo lo que lo utiliza. Comprender su forma es la mejor vía para saber qué está dispuesto a negociar Postext y qué da por fijo, y el objeto que editas desde el panel del Sandbox es el mismo que pasarías a la biblioteca de manera programática en una integración independiente.
+\`:::paragraphs{style="…"}\` aplica un estilo de párrafo con nombre a los párrafos que envuelve: un epígrafe, una dedicatoria, una bibliografía, un colofón. Un estilo puede cambiar el tipo de letra, el cuerpo, el interlineado, el color, la alineación —también centrada y a la derecha—, la sangría y el espaciado. El colofón del dorso de la cubierta de este libro es uno.
 
-### El objeto de configuración
+## Metadatos
 
-Cada aspecto de la maquetación de Postext puede controlarse a través de un único objeto de configuración exhaustivo. Este objeto está profundamente estructurado, con secciones anidadas para cada área de interés:
+Los metadatos de un libro van en un bloque YAML al principio de su primer capítulo: título, subtítulo, autor y fecha de publicación, disponibles como marcadores en todos los diseños. La cubierta de este libro imprime de ahí su título y su subtítulo. Cualquier otra clave se guarda para la aplicación que aloja el motor; los metadatos de los capítulos posteriores se ignoran, con un aviso.
 
-- **Configuración de página**
-   - Ancho y alto en unidades reales como centímetros, milímetros, pulgadas o puntos
-   - Márgenes para cada lado de la página, configurables de forma independiente
-   - Ajuste de DPI que controla la resolución para los cálculos basados en píxeles
-   - Color de fondo para la superficie de la página
-   - Líneas de corte para producción de imprenta, incluidas sangría, longitud de marca, desplazamiento de marca, ancho de marca y color
-   - Ajustes de la retícula de línea base, incluidos altura de línea, color y ancho de trazo
-- **Configuración de columnas**
-   - Número de columnas por página o sección
-   - Ancho del medianil entre columnas
-   - Apariencia y visibilidad de las filetes
-   - Comportamiento y tolerancia del equilibrio
-- **Configuración tipográfica**
-   - Mínimos de líneas o caracteres para huérfanas, viudas y rabos
-   - Idioma de separación silábica, mínimo de caracteres y máximo de guiones consecutivos
-   - Modo de espaciado de párrafo, ya sea sangría, espacios verticales o ambos
-   - Espaciado por encima y por debajo de cada nivel de encabezado
-   - Reglas de agrupación que impiden saltos de página entre elementos relacionados
-   - Sangría de primera línea y sangría francesa para párrafos y elementos de lista
-- **Configuración de colocación de recursos**
-   - Estrategia de colocación por defecto para cada tipo de recurso
-   - Comportamiento de dimensionado y dimensiones máximas
-   - Espaciado alrededor de los recursos colocados
-- **Configuración de referencias**
-   - Estilo de marcador y apariencia del separador para notas al pie
-   - Modo de recolección y numeración de notas finales
-   - Posicionamiento y ancho de las notas al margen
-- **Configuración de depuración**
-   - Capas para la retícula de línea base, las líneas sueltas, el espacio negativo de página, la sincronización de cursor y la de selección
-   - Controles de umbral para la detección de líneas sueltas
-   - Activadores individuales para cada categoría de aviso
+# El Sandbox {lead="El Sandbox es el motor con un editor alrededor: la página que estás leyendo, el Markdown del que sale y cada ajuste que le ha dado forma, uno junto a otro y en vivo." summary="El editor, los paneles, proyectos, presets y compartir"}
 
-### Sobrescrituras por sección
+Todo lo que cuenta este libro puede probarse ahora mismo, sin escribir código. El Sandbox no es una demo construida sobre Postext: es el propio motor, en una interfaz pensada para dos públicos a la vez, quienes desarrollan y evalúan la biblioteca y quienes diseñan y quieren ver qué hace cada opción.
 
-Para documentos con maquetaciones variadas, Postext permite **sobrescrituras a nivel de sección** que cambian la configuración en partes concretas del documento:
+## Un recorrido por la interfaz
 
-1. Una página de título podría usar una sola columna con márgenes amplios
-2. El cuerpo principal podría usar dos columnas con márgenes estándar
-3. Un apéndice podría usar tres columnas estrechas con márgenes mínimos
-4. Una sección de imagen a toda página podría carecer por completo de columnas y márgenes
-5. Un índice dedicado podría aprovechar una maquetación a columna y media con sangría francesa
+La interfaz sigue la disposición de un editor conocido, esbozada en :ref{id="sandbox-ui"}. Una **barra de actividad** a la izquierda cambia entre seis paneles —Proyectos, Markdown, Recursos, Fuentes, Configuración y Avisos, este último con el número de asuntos pendientes—. Una **barra lateral** redimensionable aloja el panel activo; al hacer clic en el icono activo se pliega. El **visor**, a la derecha, muestra la misma maquetación en tres pestañas: Canvas, HTML y PDF.
 
-Cada sobrescritura indica qué valores de configuración cambian. Los no especificados se heredan de la configuración base. Este enfoque por capas mantiene la configuración manejable incluso en documentos complejos y facilita derivar variantes del mismo documento sin duplicar estado.
+## Editar un libro
 
-### Tamaños preestablecidos y paletas con nombre
+El editor de Markdown resalta los metadatos y las matemáticas, y su barra de herramientas inserta formato, listas, saltos de página y cambios de numeración. En su cabecera, un **selector de capítulos** recorre los capítulos del libro y muestra sus páginas; cada capítulo conserva su propio historial de deshacer y su cursor. Editor y páginas se siguen en los dos sentidos: hacer clic en una palabra de la página lleva el cursor a ella en el Markdown, y seleccionar texto lo resalta en la página.
 
-Postext incluye un conjunto de **tamaños de página preestablecidos** que corresponden a formatos habituales de libro y documento, reunidos en la :ref{id="preset-sizes"}:
+## Configuración
 
-- **11 x 17 cm** para libros de bolsillo pequeños y guías de mano
-- **12 x 19 cm** para novelas de bolsillo estándar
-- **17 x 24 cm** para manuales técnicos y libros de texto
-- **21 x 28 cm** para publicaciones de gran formato y revistas
-- **Personalizado** para cualquier formato fuera de norma
+El panel de Configuración edita la configuración completa —más de quinientos campos— agrupada en secciones plegables. Un buscador encuentra cualquier opción por su nombre, unas fichas de categoría acotan la lista al documento, el texto, las figuras y tablas, la salida o los ajustes avanzados, y un filtro de _solo modificados_ muestra lo que difiere de los valores por defecto. Cada campo y cada sección se pueden restablecer por separado, y la configuración se puede exportar e importar como archivo.
 
-Cada preset fija automáticamente el ancho y el alto, pero siempre puedes sobrescribir dimensiones individuales o pasar a valores totalmente personalizados en cualquier momento.
+## Recursos y fuentes
 
-La configuración admite además una **paleta de colores con nombre**. Cualquier color de la configuración puede vincularse a una entrada de la paleta mediante su nombre, de modo que un cambio único en la paleta se propaga a todos los puntos que referencian esa entrada. Así resulta sencillo establecer un pequeño sistema de diseño para una publicación y mantener en sintonía los colores de acento, los colores de filete y los colores de texto gestionados por paleta a medida que el documento evoluciona.
+El panel de Recursos lista los recursos del libro por tipo. Las imágenes y los archivos SVG se pueden arrastrar, las tablas se editan en un editor tipo hoja de cálculo con celdas fusionadas, rellenos, imágenes, anchos de columna y pegado desde una hoja de cálculo, y el texto de un diagrama SVG se puede editar en su sitio. Al hacer clic en un pie, una nota, una celda o el texto de un diagrama de la vista previa, se abre en el panel. El panel de Fuentes añade familias propias, peso a peso, en los formatos web y de escritorio habituales; una familia propia tiene prioridad sobre una fuente de Google con el mismo nombre.
 
-### Avisos y diagnósticos
+## Avisos
 
-Junto a la configuración, Postext mantiene un **panel de avisos** que informa de los problemas detectados al maquetar el documento actual. Algunos avisos son tipográficos, otros semánticos y todos apuntan a una línea o elemento concreto para que puedas saltar al origen del problema. Las categorías actuales de aviso incluyen:
+El panel de Avisos lista todo lo que el motor ha notado al componer el libro: fuentes que no han cargado, líneas holgadas, niveles de título que se saltan, contenedores sin cerrar y directivas desconocidas, estilos que no existen, marcadores que no imprimen nada, recursos que faltan y recuadros demasiado altos para su columna. Cada aviso indica su capítulo y su línea, y al hacer clic lleva hasta ellos.
 
-- **Fuente ausente** cuando una familia tipográfica configurada no puede cargarse a tiempo
-- **Línea suelta** cuando una línea justificada supera un umbral configurable de espaciado entre palabras
-- **Jerarquía de encabezados** cuando un nivel de encabezado se salta uno o más niveles intermedios, por ejemplo pasando de H2 a H4
-- **Encabezados consecutivos** cuando dos encabezados se suceden sin prosa intermedia, una estructura casi siempre no intencionada
-- **Lista después de encabezado** cuando aparece una lista justo debajo de un encabezado sin una frase de transición, otra inconsistencia frecuente en documentación
+## Proyectos, presets y compartir
 
-Cada aviso puede activarse, desactivarse o ajustarse de forma independiente, y cada uno puede resolverse sin salir del Sandbox.
+Tu trabajo se guarda en el navegador mientras escribes. Los **proyectos** son libros guardados localmente, cada uno con su nombre, su descripción y su imagen de cubierta; se pueden duplicar, exportar e importar. Los **presets** son libros de solo lectura desde los que empezar: esta guía y una galería de ediciones de muestra —una revista de astronomía, un _Quijote_ ilustrado, una revista de medio ambiente, un catálogo de exposición y dos manuales universitarios—, cada una con un diseño propio. Duplica uno como proyecto para hacerlo tuyo.
 
-## Visión y hoja de ruta del proyecto
+Un libro viaja como un único archivo **.postext**: sus capítulos, su configuración, sus recursos y sus fuentes, además de la paginación ya calculada, de modo que se abre paginado. Y la barra de direcciones contiene siempre un enlace permanente a lo que estás viendo: el libro, el idioma, el visor, el capítulo y la página.
 
-Postext no aspira a ser una plataforma documental universal. Aspira a ser un motor de maquetación editorial para la web realmente, realmente bueno, y su ecosistema circundante es deliberadamente estrecho para que el núcleo se mantenga afilado. Esta sección describe dónde está hoy el proyecto, hacia dónde se dirige a continuación y cómo puedes influir en ese rumbo.
+:::callout{type="try"}
+Ve hasta una página que te guste y copia la dirección del navegador: al abrir ese enlace verás el mismo libro, en el mismo visor, en la misma página.
+:::
 
-### Una base para el contenido editorial en la web
+# Salida: canvas, HTML y PDF {lead="Un árbol, tres renderizadores. El canvas previsualiza, el HTML se lee en pantalla y el PDF va a imprenta, y los tres dibujan las mismas líneas en las mismas posiciones." summary="Los tres renderizadores, el PDF accesible y el uso de la biblioteca"}
 
-Postext no pretende sustituir a CSS en la maquetación de aplicaciones. Es una herramienta especializada para una necesidad concreta y desatendida: la presentación de contenido extenso y estructurado con la calidad visual que quien lee espera de publicaciones producidas profesionalmente. El proyecto se propone acercar ese nivel de calidad a quienes desarrollan en la web sin exigirles experiencia en composición tipográfica tradicional y, a la vez, acercarlo a diseñadores y tipógrafas sin exigirles experiencia en JavaScript.
+Como todos los renderizadores leen el mismo VDT, la promesa de _lo que ves es lo que obtienes_ es literal: los cortes de línea, los límites de página y la posición de cada figura coinciden en las tres salidas.
 
-La visión a largo plazo incluye:
+## Canvas
 
-- **Maquetaciones editoriales responsivas** que se adapten con inteligencia a distintos tamaños de pantalla, no simplemente replegando el texto a una sola columna sino eligiendo el número de columnas, el tamaño de márgenes y las estrategias de colocación adecuadas para cada viewport
-- **Edición colaborativa** en la que quienes escriben redactan contenido en Markdown y quienes diseñan configuran las reglas de maquetación, cada parte trabajando en su área de experiencia
-- **Salida accesible** que preserve la estructura semántica y soporte lectores de pantalla, navegación por teclado y modos de alto contraste
-- **Paridad entre imprenta y digital**, donde el mismo contenido y configuración produzcan resultados visualmente coherentes tanto en web como en PDF
-- **Un estándar abierto** que editoriales, revistas, periódicos, plataformas de libros y equipos de desarrollo en todo el mundo puedan adoptar y ampliar, en vez de otro producto de maquetación propietario más
+El renderizador de canvas dibuja una página en un canvas HTML, a cualquier resolución. En el Sandbox es la vista previa viva, con ampliación, ajuste al ancho o al alto, páginas sueltas o pliegos, y páginas que se dibujan según entran en pantalla, de modo que los libros largos siguen respondiendo.
 
-### Fases de desarrollo
+## HTML
 
-El desarrollo de Postext se organiza en cuatro grandes fases, resumidas en la tabla a ancho completo :ref{id="development-phases"}. No son hitos rígidos; describen el orden aproximado en el que cada capacidad se estabiliza y queda lista para uso en producción.
+El renderizador HTML devuelve HTML con posicionamiento absoluto y CSS editorial: cada línea donde la puso la maquetación, con su fuente, su cuerpo y su línea base exactos. Una variante indexada indica qué partes de la página han cambiado, para que un visor solo parchee esas. En el Sandbox, la pestaña HTML aísla la salida en un Shadow DOM y añade un modo de lectura con una sola columna que se desplaza o con tantas columnas como quepan en la pantalla, con un control de tamaño de letra. Un conjunto de ajustes solo para pantalla puede adaptar el diseño a la lectura en pantalla sin tocar las páginas impresas.
 
-1. **Fundamentos**
-   - Estructuras de datos centrales y sistema de tipos
-   - Parser de Markdown con extensiones de recursos y notas
-   - Maquetación básica a una columna con medición
-   - Configuración por defecto y sistema de presets
-2. **Maquetación editorial**
-   - Flujo multicolumna con reflujo inteligente
-   - Equilibrio de columnas con satisfacción de restricciones
-   - Colocación de recursos con todas las estrategias soportadas
-   - Prevención de huérfanas, viudas y rabos entre columnas y páginas
-3. **Tipografía profesional**
-   - Separación silábica con patrones Liang específicos por idioma
-   - Optimización del margen para texto alineado a la izquierda
-   - Justificación Knuth-Plass con penalizaciones editoriales
-   - Sistemas de notas al pie, notas finales y notas al margen
-   - Reglas avanzadas de espaciado y alineación a la retícula de línea base
-   - Citas destacadas, capitulares y elementos decorativos
-4. **Salida e integración**
-   - Renderizador de canvas para vistas previas rápidas
-   - Renderizador web con aislamiento mediante Shadow DOM
-   - Renderizador de PDF para producción impresa
-   - Sandbox interactivo para experimentación y aprendizaje
-   - Sistema de plugins para renderizadores y extensiones personalizadas
-   - Documentación, tutoriales y proyectos de ejemplo
+## PDF
 
-## Contribuir al proyecto
+El paquete _postext-pdf_ convierte el VDT en un PDF real, de un documento o de un libro entero. Nunca vuelve a medir: las métricas del canvas son la referencia y el PDF solo las transporta, por eso las líneas se cortan exactamente en los mismos sitios. Incrusta fuentes reales, una estática por peso, así que la negrita es negrita, la cursiva es cursiva y el texto se puede seleccionar. Sobre las páginas añade marcadores a partir de los títulos y las partes, etiquetas de página que coinciden con los folios impresos, referencias pulsables, figuras SVG como vectores y una elección de espacio de color —RGB, CMYK o escala de grises— para la imprenta.
 
-Postext es un proyecto de código abierto impulsado por una comunidad y mantenido en GitHub. Acoge contribuciones de quienes desarrollan, diseñan, componen tipográficamente, traducen y de cualquiera a quien le importe el futuro del contenido de largo formato en la web. La coordinación del proyecto se hace a propósito a la luz pública: cada incidencia, cada pull request y cada conversación de diseño transcurren en canales abiertos, de modo que quien llega nuevo puede reconstruir cualquier decisión leyendo su historia.
+## Accesible por defecto
 
-### Formas de contribuir
+Todo PDF sale **etiquetado** por defecto, según la norma PDF/UA-1: un árbol de estructura con títulos, párrafos, listas, tablas y figuras en orden de lectura, texto alternativo para cada figura, el idioma del documento y los elementos decorativos marcados como artefactos para que los lectores de pantalla los salten. La accesibilidad no es una opción de exportación que haya que recordar: es la manera en que se fabrica el archivo.
 
-Hay muchas maneras de participar, y la mayoría no requieren escribir JavaScript:
+## Usar la biblioteca
 
-- **Reportar problemas** cuando encuentres errores o comportamientos inesperados, siempre que sea posible con una reproducción mínima
-- **Sugerir funcionalidades** que harían al motor más útil para tu propio trabajo
-- **Contribuir código** cogiendo una incidencia abierta y enviando un pull request, empezando por las etiquetadas como _good first issue_ si eres nuevo en la base de código
-- **Mejorar la documentación** escribiendo tutoriales, ejemplos o explicaciones, ya sea en el sitio principal de documentación o como entradas de blog enlazadas desde allí
-- **Traducir contenido** a idiomas nuevos para que el motor llegue a comunidades tipográficas más allá del inglés y el español que ya se cubren
-- **Compartir tus maquetaciones** para demostrar qué puede hacer Postext e inspirar a otras personas
-- **Aportar conocimiento tipográfico**, especialmente para idiomas y sistemas de escritura que aún no están bien representados
+El motor se distribuye como dos paquetes en npm: _postext_, para la maquetación y los renderizadores de canvas y HTML, y _postext-pdf_, para la salida en PDF. Los dos son módulos ES con licencia MIT y también se pueden importar directamente desde una CDN. La documentación incluye ejemplos vivos que convierten una página en imagen, en HTML y en PDF, listos para copiar y modificar.
 
-### Cómo trabajamos
+:::callout{type="note" title="Cuatro pasos"}
+1. Carga las fuentes que nombra la configuración, para que el navegador pueda medirlas
+2. Compila el documento con \`buildDocument(content, config)\`
+3. Dibuja sus páginas con \`renderPage\` o genéralas con \`renderToHtml\`
+4. Para imprenta, pasa el mismo documento a \`renderToPdf\` con un proveedor de fuentes
+:::
 
-Toda la coordinación ocurre en GitHub, repartida en tres canales principales:
+# Hoja de ruta y comunidad {lead="Postext es joven y abierto. La tubería principal, el formato del documento y el sistema de configuración ya están hechos; lo que viene después se decide en público." summary="Dónde está el proyecto y cómo participar"}
 
-1. **Incidencias** para reportes de bugs, peticiones de funcionalidades y tareas concretas que alguien pueda adoptar
-2. **Pull requests** para contribuciones de código, con revisión a la vista y discusiones preservadas junto al propio código
-3. **Debates** para ideas, conversaciones de diseño, preguntas y cualquier cosa que todavía no sea lo bastante concreta como para convertirse en incidencia
+Postext no aspira a ser una plataforma documental universal. Aspira a ser un motor de maquetación editorial muy bueno para la web, y mantiene un alcance estrecho para que el núcleo siga afilado. Su ambición a largo plazo es convertirse en el motor de maquetación de referencia para el contenido editorial en la web: algo que editoriales, revistas, plataformas de libros y equipos de desarrollo puedan adoptar y sobre lo que puedan construir.
 
-Esto es deliberado. Cuando todo vive en un único lugar, cualquiera puede encontrar el contexto detrás de cualquier decisión, quien llega nuevo puede leer la historia y nadie queda fuera de una conversación que haya ocurrido en un canal en el que no estaba.
+## Dónde está el proyecto
 
-### Principios
+El trabajo se organiza en cuatro fases, resumidas en :ref{id="development-phases"}. No son hitos estrictos: describen el orden en que las capacidades se vuelven lo bastante estables para producción.
 
-El proyecto se mantiene con un pequeño conjunto de principios que moldean cada decisión:
+Lo que falta importa tanto como lo que ya está hecho. Las **notas al pie, las notas finales y las notas al margen** son la mayor área abierta: el modelo de datos tiene un sitio para ellas, pero todavía no se maquetan. Los **enlaces** conservan su texto pero no su destino, el código en línea no tiene estilo propio, el texto aún no rodea obstáculos y la maquetación solo ocurre en el navegador. Son los siguientes problemas que merece la pena resolver, y aquellos en los que más cuenta la ayuda.
 
-- **Respetar el oficio.** La tipografía es una disciplina con siglos de sabiduría acumulada, y el motor debe honrarla en vez de reinventarla a peor.
-- **Mantener el núcleo afilado.** El motor debe hacer una sola cosa extremadamente bien y resistirse a convertirse en una plataforma documental de propósito general.
-- **Preferir estándares abiertos.** Markdown, PDF y los formatos de fuente abiertos deben seguir siendo ciudadanos de primera, y ningún flujo completo debería exigir formatos propietarios.
-- **Seguir siendo incrustable.** Postext debe ser una biblioteca que se caiga dentro de una aplicación existente, no un framework que se apropie del proyecto.
-- **Documentar todo.** Una función que sólo existe dentro de la implementación es una función que nadie puede usar.
+## Cómo participar
 
-Si algo de todo esto resuena contigo, el repositorio es el mejor paso siguiente. Abre una incidencia, lanza una pregunta en los debates o, simplemente, léete el código y cuéntanos qué podría estar más claro. El proyecto será tan amplio como la comunidad que lo construya.
+El proyecto vive en GitHub, y todas las conversaciones ocurren a la vista: **issues** para errores, peticiones y tareas concretas; **pull requests** para el código, revisado en público; **discussions** para ideas, cuestiones de diseño y todo lo que aún no es lo bastante concreto para ser una issue. Las issues con la etiqueta _good first issue_ son la puerta de entrada más sencilla.
+
+La mayoría de las contribuciones no exigen escribir código:
+
+- **Informar de problemas** con un ejemplo mínimo del documento y de la configuración
+- **Compartir tus maquetaciones** y convertirlas en presets desde los que otros puedan empezar
+- **Mejorar la documentación** con tutoriales, ejemplos y explicaciones
+- **Traducir** la interfaz y la documentación a nuevos idiomas
+- **Aportar conocimiento tipográfico**, sobre todo de escrituras y tradiciones aún poco atendidas
+- **Contribuir con código** al motor, a los renderizadores o al Sandbox
+
+## Valores
+
+Tres valores guían el proyecto. _El diseño meditado antes que la prisa_: la tipografía acumula siglos de sabiduría, y el motor debería honrarla en lugar de reinventarla mal. _La claridad antes que el ingenio_: el código, la configuración y la documentación deben ser fáciles de leer, cambiar y explicar. _La colaboración antes que el territorio_: las decisiones se toman en público, y se reconoce a cada persona que contribuye.
+
+Si algo de esto te resuena, el repositorio es el siguiente paso. Abre una issue, haz una pregunta en las discussions o cambia algo de este libro y mira qué hace el motor con ello.
+
+:::paragraphs{style="signature"}
+postext.dev · github.com/drnachio/postext
+:::
 `;

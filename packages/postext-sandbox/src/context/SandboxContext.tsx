@@ -36,7 +36,7 @@ import {
   removeChapter,
   renameChapter,
   replaceChapterMarkdown,
-  singleChapterBook,
+  sampleBook,
   splitChapterAt,
   splitChapterAtHeadings,
 } from '../book/chapterOps';
@@ -47,6 +47,7 @@ import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
+import { createPostextGuideConfig } from './guideConfig';
 import { createProjectActions } from './projectActions';
 import type { ProjectActions } from './projectActions';
 import {
@@ -976,7 +977,7 @@ export function SandboxProvider({
   if (initialHashRef.current === null) initialHashRef.current = readViewHash();
   const [state, dispatch] = useReducer(sandboxReducer, undefined, () => {
     const savedBook = loadBook(migration);
-    const loadedBook = savedBook ?? singleChapterBook(defaultMd, generateChapterId(), mergedLabels.presetPostextGuideName);
+    const loadedBook = savedBook ?? sampleBook(defaultMd, generateChapterId, mergedLabels.presetPostextGuideName);
     // A `#chapter=C` fragment (a reload, a shared link) names the chapter to
     // open; the viewers restore its page (see `useChapterHashSync`). The
     // `view=` part picks the viewer tab over the one last used.
@@ -998,7 +999,7 @@ export function SandboxProvider({
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config: withDefaultResourceTypes(
-        savedConfig ?? initialConfig ?? createDefaultConfig(locale ?? 'en'),
+        savedConfig ?? initialConfig ?? createPostextGuideConfig(locale ?? 'en'),
         locale ?? 'en',
       ),
       resources: [],

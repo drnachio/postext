@@ -1,608 +1,463 @@
 export const DEFAULT_MARKDOWN_EN = `---
-title: "Postext: A Programmable Typesetter for the Web"
-subtitle: "An open-source layout engine for editorial-grade typography"
+title: "Postext"
+subtitle: "A programmable typesetter for the web"
 author: "Ignacio Ferro"
-publishDate: "2026-04-21"
+publishDate: "2026-09-23"
 ---
 
-# Introduction to Postext
+# Postext {style="cover" toc="false" kicker="Open-source layout engine · The guide" publisher="postext.dev · MIT licence · Every page of this book was set by Postext in your browser"}
 
-Postext is an **open-source layout engine** designed to bring the sophistication of professional print typography to modern web development. For centuries, the world of editorial design has refined techniques for placing text, images, and annotations on a page with extraordinary precision. These techniques encompass everything from careful column balancing to meticulous orphan and widow prevention, from intelligent hyphenation to elegant footnote placement. Until now, the web has lacked a tool capable of reproducing these standards in a programmable, declarative way.
+:::pagebreak
 
-The core mission of Postext is to bridge that gap. It takes **semantic content** written in enriched Markdown and transforms it into a fully resolved layout where every element has a precise position, measured in real typographic units. That layout can then be rendered to multiple output formats, including interactive web pages, live canvas previews, and print-ready PDF documents, all originating from the same single source of truth.
+:::paragraphs{style="colophon"}
+**The Postext Guide** is the sample book that ships with the Sandbox. It is both a tour of the engine and a demonstration of it: the cover, the self-numbering contents, the part dividers, the chapter openers, the running heads, every figure and table float — all of it is laid out by Postext, in your browser, from the Markdown you can open in the editor.
 
-This default document, which you are reading inside the Sandbox right now, has a double purpose. On one hand it is a live demonstration of what the engine can do with long-form prose. On the other, it is a compact tour of the ideas, decisions, and features that make Postext distinct from every other layout technology available on the web. Feel free to modify it, shorten it, replace it with your own material, or use it as scaffolding while you explore how changes to the configuration panel propagate instantly through the canvas, the HTML view, and the PDF output.
+Set in Fraunces, Lora and Geist, served by Google Fonts. The diagrams are plain SVG files, drawn as vectors in the canvas, the HTML view and the PDF. Change anything — a word, a margin, a colour of the palette — and the book sets itself again.
 
-## The Problem Postext Solves
+Postext is open source under the MIT licence. Text © 2026 Ignacio Ferro and the Postext contributors.
+:::
 
-Before explaining the internals, it helps to understand the specific shape of the problem Postext addresses. The gap between what modern browsers can render and what professional editorial design expects is much wider than most developers realise, and the tools that have traditionally filled that gap live outside the web ecosystem entirely. This section describes both sides of that gap and the reasons a new kind of engine became necessary.
+# Contents {style="contents" toc="false"}
 
-### The Limitations of CSS for Editorial Layout
+:::toc
 
-Modern CSS is a remarkably powerful tool for building user interfaces. Flexbox, Grid, and container queries give developers fine-grained control over how components are arranged on screen. Subgrid, anchor positioning, and scroll-driven animations continue to push the boundaries of what a browser can express declaratively. However, CSS was designed primarily for _application layout_, not for _editorial layout_. There is a fundamental difference between the two:
+:::part{number="I" title="Foundations" palette="band=#2b4acb"}
+1. Why Postext
+2. How the engine works
+:::
 
-- **Application layout** arranges interactive components such as buttons, forms, navigation bars, and cards within a viewport that the user can scroll freely
-- **Editorial layout** arranges flowing text, images, tables, figures, and annotations across a series of fixed-dimension pages or columns, following strict typographic rules inherited from centuries of print tradition
+# Why Postext {lead="Print typography spent five centuries learning how to set a page; browsers learned how to lay out an interface. Postext brings the first to the second: a layout engine that turns Markdown into pages set to editorial standards." summary="The gap between the web and the page, and what fills it"}
 
-The contrast in :ref{id="feature-comparison"} summarises where the two approaches diverge for long-form documents. (Notice that referencing it is enough — the table floats into the first free slot after this paragraph on its own; you never place it twice.)
+Postext is an **open-source layout engine** that brings the craft of professional print typography to the web. It takes **semantic content** written in enriched Markdown and a configuration object, and computes a fully resolved layout in which every line, heading, figure and table has a precise position, measured in real typographic units. That layout is then drawn by three renderers — a live canvas preview, positioned HTML and a print-ready PDF — which all read the same geometry, so what you see on screen is exactly what goes to press.
 
-CSS handles the first case brilliantly. For the second case, it falls short in critical ways that have never really been addressed by the platform:
+This book is its own demonstration. Its cover, the contents page that numbers itself, the part dividers in three colours, the band that opens each chapter, the running heads at the top of these pages and every figure that floats into place were all laid out by Postext, in your browser, a moment ago. Nothing here was placed by hand: the Markdown only says what things are, and the configuration decides how they look.
 
-1. **No native multi-column text flow with reflow awareness**
-   - The CSS _columns_ property exists, but it cannot balance column heights intelligently
-   - It cannot handle resources that span columns or float to specific positions within a column grid
-   - It provides no mechanism for keeping headings together with their following paragraphs
-   - It has no concept of a globally optimal break set across a page
-2. **No orphan and widow prevention across columns standardized across browsers and configurable by the user**
-   - While CSS has _orphans_ and _widows_ properties, browser support is inconsistent
-   - These properties do not work across column boundaries in the way professional typesetters expect
-   - Editorial-grade prevention requires awareness of the entire page geometry, not just a single text container
-   - No CSS property models a _runt_, the single short word left stranded at the end of a paragraph
-3. **No integrated resource placement strategies**
-   - Print layouts routinely place figures at the top of the next available column, float them into the margin, or break them across the full width of the page
-   - CSS floats are primitive compared to these strategies and cannot negotiate with surrounding text flow
-   - There is no notion of a figure that should be deferred one column if it would orphan the text above it
-4. **No footnote or margin note systems**
-   - Footnotes in print appear at the bottom of the column where they are referenced, consuming space from the text area above
-   - Margin notes align vertically with the paragraph that references them
-   - Endnotes must be collected per section or per document with consistent numbering
-   - CSS offers no mechanism for any of these
-5. **No concept of a baseline grid**
-   - Professional books and magazines align the first baseline of every column to a shared vertical rhythm
-   - CSS has no primitive for snapping lines to a grid that spans columns and pages
+:::callout{type="try"}
+Open the **Markdown** panel and pick this chapter in the chapter switcher at its head. Change a word in this paragraph, or delete a sentence: the page sets itself again, the columns rebalance and the page numbers of the following chapters follow.
+:::
 
-The pattern is consistent. CSS can describe the _appearance_ of any single region of text in great detail, but it lacks the _global optimisation_ primitives that editorial quality requires. Editorial typography is, ultimately, a constraint satisfaction problem, and the browser has never been given the language needed to express those constraints.
+## Application layout and editorial layout
 
-### What Existing Tools Miss
+Modern CSS is a remarkable tool for building user interfaces. Flexbox, Grid, container queries and anchor positioning give developers fine control over how components are arranged in a viewport. But CSS was designed for _application layout_, and long-form reading needs _editorial layout_. The two are different problems:
 
-There are, of course, tools that address parts of this problem. Word processors like Microsoft Word and Google Docs handle basic pagination. Desktop publishing applications like Adobe InDesign provide complete editorial control. LaTeX is the gold standard for academic typesetting, and its descendants continue to dominate mathematical publishing. However, none of these tools were designed for the web, and their assumptions make it very hard to graft them onto modern development workflows:
+- **Application layout** arranges interactive components — buttons, forms, cards, navigation — inside a viewport the reader scrolls freely
+- **Editorial layout** flows text, figures, tables and callouts across a sequence of fixed pages and columns, following rules refined over centuries of print
 
-- They do not produce _responsive_ layouts that adapt to different screen sizes
-- They do not integrate with modern frontend frameworks like React, Vue, or Svelte
-- They cannot be embedded as a component within a larger web application
-- Their output is static, not interactive, and rarely preserves the semantic structure that accessibility tools depend on
-- Their source formats are either proprietary, binary, or so complex that they are difficult to generate programmatically
+The contrast in :ref{id="feature-comparison"} summarises where the two approaches diverge for long documents. (Mentioning it is enough: the table floats into the first free slot after this paragraph by itself, and you never place it twice.)
 
-Postext occupies a unique position in this landscape. It is a **JavaScript library** that runs in the browser, takes Markdown as input, applies professional typographic rules, and produces a layout that can be rendered as HTML, as canvas, or as PDF. It is designed to be embedded, configured, and extended by web developers who want publication-grade results without leaving their familiar toolchain. It uses the web as both an editing surface and a first-class rendering target, rather than treating it as an afterthought. The full-width table :ref{id="tools-comparison"} positions Postext against the established alternatives at a glance.
+CSS handles the first case brilliantly. For the second, the platform has never offered the primitives that matter:
 
-## How Postext Works
+1. **Balanced columns that know about their content**
+   - The CSS _columns_ property flows text, but it cannot level columns by adjusting the space above headings or the looseness of a paragraph
+   - It has no notion of a figure or table that must float to the head of the next free column
+   - It cannot keep a heading with the paragraph it introduces across a column break
+2. **Paragraph-end and column-end defects**
+   - _Orphans_ and _widows_ exist in CSS, but browser support is uneven and they do not see the geometry of the whole page
+   - There is no rule for a _runt_, the short word left alone on the last line of a paragraph
+3. **Whole-paragraph line breaking**
+   - Browsers break lines greedily, one at a time, and can only spread the leftover space inside each line
+   - Balanced justification needs the entire paragraph weighed at once
+4. **A shared vertical rhythm**
+   - Books and magazines set every line on a baseline grid shared by all the columns of a page
+   - CSS has no primitive that snaps lines to a grid across columns and pages
+5. **The apparatus of a book**
+   - Running heads that know the chapter, page numbers in roman or arabic sequences, parity-aware chapter breaks, a table of contents with real page numbers
+   - None of these exist in a scrolling document
 
-Understanding the architecture of Postext is the fastest way to understand what it can and cannot do. The engine is organised as a pipeline where each stage refines a shared in-memory representation of the document. No stage hides behind opaque formats, no stage requires disk I/O, and the entire pipeline is pure: given the same content and configuration, it always produces the same layout.
+:::callout{type="quote"}
+Editorial typography is a constraint satisfaction problem. The browser was never given the language to state the constraints.
+:::
 
-### The Processing Pipeline
+CSS describes the _appearance_ of any single region of text in great detail. What it lacks is _global optimisation_: the ability to weigh a whole paragraph, a whole column and a whole page before committing to any of them.
 
-The Postext layout engine processes content through a carefully orchestrated pipeline. Each stage builds upon the results of the previous one, gradually transforming raw Markdown into a complete, precisely measured layout. Understanding this pipeline is key to understanding the design philosophy of the project, and it also clarifies which parts of the engine you can replace, extend, or reuse in isolation. The diagram in :ref{id="layout-pipeline"} summarises the journey from source text to rendered output — a single-column figure that floats into the first free slot after this mention. The approximate per-stage cost is collected in the single-column table :ref{id="runtime-metrics"}.
+## What existing tools miss
 
-#### Input Layer
+Other tools address parts of the problem. Word processors paginate. Adobe InDesign offers complete editorial control. LaTeX remains the reference for academic and mathematical typesetting. But none of them were designed for the web, and their assumptions make them hard to fit into a modern development workflow:
 
-The process begins with the **input layer**, where the developer provides the raw ingredients of the document. Two things travel through this layer, and both are intended to be human-readable and hand-editable:
+- They cannot be embedded as a component of a web application
+- Their output is static, and rarely keeps the semantic structure accessibility tools rely on
+- Their source formats are proprietary, binary or hard to generate programmatically
+- They live outside the frontend toolchain a web team already uses
 
-1. **Content** in enriched Markdown format
-   - The main body of text, written using standard Markdown syntax
-   - Headings, paragraphs, lists, emphasis, and other inline formatting
-   - Special markers that reference external resources or notes
-   - Optional YAML frontmatter describing the document's title, author, and publication date
-2. **Configuration** that defines the layout rules
-   - Page dimensions, margins, and DPI settings
-   - Column count, gutter width, and balancing preferences
-   - Typography rules for orphan prevention, widow prevention, runt prevention, and hyphenation
-   - Resource placement strategies for images, tables, and figures
-   - Reference system settings for footnotes, endnotes, and margin notes
-   - A named colour palette that can be referenced from multiple places in the configuration
+Postext takes a different position, summarised in :ref{id="tools-comparison"}. It is a **JavaScript library** that runs in the browser, reads Markdown, applies the rules of professional typography and hands back a layout you can render as canvas, HTML or PDF. It is meant to be embedded, configured and extended by developers who want publication-grade pages without leaving their tools — and configured by designers who never need to touch the code.
 
-The separation of content and configuration is deliberate and important. The same Markdown document can produce radically different layouts simply by changing the configuration. A single-column layout for mobile screens, a two-column layout for tablets, and a three-column layout for wide desktop monitors can all originate from the same source text. This is the editorial equivalent of responsive design, and it is the reason the engine refuses to bake visual decisions into the content itself.
+## What Postext is not
 
-#### Measurement Layer
+Being clear about scope keeps the core sharp. Postext does not replace CSS for interfaces; it is a specialised engine for long-form, structured content. It is not a WYSIWYG editor: you write Markdown and describe the design, and the engine sets the pages. It does not manage responsive breakpoints — choosing a configuration per screen size is the host application's decision. It does not load fonts for you: the engine measures with the fonts the browser already has, so a page must load its faces before laying out. And the layout engine is browser-only for now, because its measurements come from the canvas font metrics of a real browser; the PDF renderer, on the other hand, also runs in Node.
 
-Before the engine can decide where to place each element, it must know how much space each element occupies. This is the role of the **measurement layer**, which is built on a sister library called _pretext_. The measurement problem sits at the heart of every typography engine, and getting it right — both accurate and fast — was the enabling insight behind the whole project.
+# How the engine works {lead="Markdown and a configuration object go in; a tree in which every line has a position in real units comes out. In between is a short pipeline that measures text without touching the DOM and iterates until the page settles." summary="Parsing, measuring, laying out, converging"}
 
-The measurement challenge is significant. Text rendering is complex because the width and height of a paragraph depend on the font, the font size, the line height, the available width, the hyphenation rules, and many other factors. Traditionally, the only way to measure text accurately in a browser is to render it into the DOM and read back the computed dimensions. This approach is slow, as it triggers layout reflows that can block the main thread for hundreds of milliseconds per paragraph on realistic documents.
+The fastest way to understand what Postext can do is to follow a document through it. The engine is a pipeline, sketched in :ref{id="layout-pipeline"}, in which each stage refines one shared in-memory representation of the document. No stage hides behind an opaque format and none touches the disk. The pipeline is also pure: given the same content and the same configuration, it always produces the same layout.
 
-Postext takes a fundamentally different approach. The _pretext_ library performs **DOM-free text measurement** using canvas font metrics and pure arithmetic. This technique is between 300 and 600 times faster than DOM-based measurement, depending on the browser and the document, as the chart in :ref{id="measurement-speed"} makes vivid, and it works by combining three ingredients:
+## Content and configuration
 
-1. Loading font metrics from the canvas API
-   - Glyph widths and advance metrics
-   - Ascender and descender measurements
-   - Kerning pair adjustments when available
-   - Per-weight metrics for bold and italic variants
-2. Computing line breaks using the Knuth-Plass algorithm
-   - Evaluating all possible break points in a paragraph
-   - Choosing the set of breaks that minimises a global penalty function
-   - Accounting for hyphenation opportunities with TeX-quality patterns
-   - Respecting adjacency rules between tight, normal, loose, and very loose lines
-3. Calculating the resulting block dimensions
-   - Total height including all lines and inter-line spacing
-   - Maximum line width for alignment purposes
-   - Baseline positions for grid alignment
-   - Per-line justification ratios for the debug overlay
+Two things enter the pipeline, and both are meant to be read and edited by people:
 
-This measurement approach is the critical innovation that makes Postext practical. Without it, the engine would need to perform thousands of DOM reflows during layout computation, making interactive editing impossible. With it, you can type into the Sandbox and watch the layout update between keystrokes.
+1. **Content** in enriched Markdown
+   - Headings, paragraphs, lists, emphasis, block quotes and mathematics
+   - Directives for page breaks, page numbering, parts, callouts and the table of contents
+   - References to resources — figures, SVG diagrams and tables — declared by id outside the text
+   - Optional YAML front matter with the title, subtitle, author and date
+2. **Configuration** that describes the design
+   - Page size, margins, bleed and page numbering
+   - Column structure, gutter and column rules
+   - Body text, headings, lists, captions, tables and mathematics
+   - Heading styles, paragraph styles, callout styles, parts and the contents page
+   - Running heads, a named colour palette and the PDF output options
 
-#### Layout Engine
+Keeping them apart is deliberate. The same Markdown can become a pocket paperback, a two-column magazine or a textbook with a side column simply by changing the configuration. That is the reason the engine refuses to bake visual decisions into the content.
 
-The **layout engine** is the heart of Postext. It takes the measured elements and arranges them on pages and columns according to the configured rules. This is where the editorial intelligence lives, and it is the place where the gap between a naive first-fit algorithm and a true typesetting engine becomes visible.
+## Measuring without the DOM
 
-The layout engine operates iteratively. It makes an initial placement pass and then refines the result through successive iterations, adjusting element positions to satisfy constraints that may conflict with each other. For example:
+Before the engine can place anything it must know how much room each element needs, and this is where the whole project begins. Measuring text in a browser normally means rendering it into the page and reading back its size, a reflow that can block the main thread for hundreds of milliseconds on a long document.
 
-- A heading must stay with its following paragraph, which might require moving both to the next column
-- Moving content to the next column might create a widow in the current column
-- Eliminating that widow might require pulling content back, which could break the heading-paragraph constraint
-- A figure that should appear at the top of the next column might get deferred one more column if it would otherwise push an orphan into the top of the current one
+Postext measures through _pretext_, a DOM-free text measurement library that uses canvas font metrics and pure arithmetic. Its expensive step, preparing a text for a given font, is cached; laying it out at a given width is nearly free. The approach is 300 to 600 times faster than measuring through reflow, as :ref{id="measurement-speed"} makes vivid, and on top of it the engine's own measurement module adds rich runs of bold, italic and mathematics, hyphenation, justification and optimal line breaking. Every result is cached under a key that includes the text, the fonts, the width and every option that can change a line, so typing into one paragraph re-measures that paragraph and nothing else.
 
-These circular dependencies are resolved through a **convergence loop** that runs up to five iterations, illustrated full width across both columns in :ref{id="convergence-loop"}. In practice, most layouts converge within two or three iterations. The engine detects when no further improvements can be made and stops early, so the cap is a safety net rather than a typical code path. The data structure that survives this loop is known internally as the **VDT**, the virtual document tree, and it is the single source of truth that every renderer consumes.
+## Seven passes and a loop
 
-The layout engine produces a VDT that describes the exact position and dimensions of every element on every page. This structure is format-agnostic, meaning it contains pure geometry without any rendering-specific information, and that format-agnosticism is precisely what allows Canvas, HTML, and PDF to produce matching output.
+The layout itself runs in seven passes:
 
-#### Output Layer
+1. **Content structuring** parses the Markdown into a flat list of blocks and resolves resources by id
+2. **Text measurement** sets every paragraph into lines at the width it will occupy
+3. **Page and column placement** fills pages and columns, reserving room for running heads and page-wide boxes
+4. **Resource placement** floats every referenced figure and table into the first free slot after its reference
+5. **Typographic refinement** applies the rules that keep headings with their text and lists with their introductions
+6. **Column balancing** levels the columns of each page
+7. **Vertical rhythm** snaps text back to the baseline grid after anything that breaks it
 
-The final stage is the **output layer**, which takes the abstract geometry and renders it to a specific format. The engine currently ships three renderers, and all three consume the same VDT without ever modifying it:
+These passes depend on each other in circles. Keeping a heading with its paragraph can push both into the next column; that move can strand a widow; fixing the widow pulls a line back, which may separate the heading again. Postext resolves the circle with the **convergence loop** of :ref{id="convergence-loop"}: passes three to seven repeat, marking only what changed, until nothing moves. The loop is capped at five iterations and typical documents settle in one or two. A score of typographic violations follows every iteration, so if the cap is ever reached the engine keeps the best layout it found, not the last one.
 
-- **Canvas renderer** produces a rasterised preview on an HTML5 canvas element
-   - Pages render lazily via IntersectionObserver for performance on long documents
-   - Zoom, fit-to-width, fit-to-height, and double-page spread modes are built in
-   - The output is suitable for a quick visual inspection at any zoom level
-- **Web renderer** produces HTML elements with precise CSS positioning
-   - Each element is absolutely positioned within its page container
-   - Text is rendered with exact font sizes, line heights, and baseline positions
-   - The result is a React component that can be embedded in any web application
-   - Style isolation is achieved through a Shadow DOM so the host page cannot leak in
-- **PDF renderer** produces print-ready documents
-   - Uses the same VDT data as the web and canvas renderers
-   - Generates vector-based output suitable for professional printing
-   - Preserves all typographic details including exact character positions
-   - Embeds per-weight static fonts so bold and italic actually render at the correct weight
+:::callout{type="figures" title="The engine in figures"}
+:::columns{count=3}
+**300–600×** faster text measurement than DOM reflow, the enabling idea behind the project.
 
-Because all three renderers read from the same VDT, the promise _what you see is what you get_ is not rhetorical: line breaks, page boundaries, and resource placement match pixel-for-pixel across the three backends.
+**7 passes** from Markdown to a positioned page, repeated in a loop of at most **5 iterations**, usually one or two.
 
-## Typography Features
+**3 renderers** — canvas, HTML and PDF — drawing one geometry, line for line.
+:::
+:::
 
-The following features are where Postext invests most of its effort. Each of them has a long history in the world of print, and each of them has, until now, been either impossible or painfully awkward to achieve inside a browser. Postext treats them as first-class citizens, configurable by a designer who does not need to write a single line of code.
+Balancing converges segment by segment, between chapter openers and explicit page breaks. The result is a guarantee that matters for books: a chapter laid out on its own and the same chapter inside the whole book come out identical, page for page.
 
-### Orphan and Widow Prevention
+## The virtual document tree
 
-In professional typography, an **orphan** is a single line of a paragraph that appears alone at the top of a column or page, separated from the rest of its paragraph. A **widow** is a single line that appears alone at the bottom of a column or page. Both are considered serious typographic flaws because they disrupt the visual rhythm of the text and make it harder for readers to maintain their flow. The figure :ref{id="orphan-widow"} shows both defects side by side across a column boundary.
+What survives the loop is the **VDT**, the virtual document tree: pages that hold columns, columns that hold blocks, blocks that hold lines, each with its box in real units, alongside a flat list of every block for quick access. The tree is pure geometry — it knows nothing about canvas, HTML or PDF — and that is exactly what lets three renderers draw matching output. Every line also remembers the stretch of Markdown it came from, which is how a click on the page puts the editor's cursor on the right word.
 
-Postext provides configurable orphan and widow prevention:
+## Off the main thread
 
-- The _orphan minimum lines_ setting specifies the minimum number of lines that must appear at the beginning of a paragraph before a column break
-- The _widow minimum lines_ setting specifies the minimum number of lines that must appear at the end of a paragraph after a column break
-- The engine will adjust column breaks, move content between columns, and even modify line breaks within paragraphs to satisfy these constraints
-- When constraints conflict, the engine uses a priority system driven by configurable penalties to determine which rule takes precedence
-- Orphan and widow rules apply to list items too, with independent toggles for each list type
+A layout can take longer than a keystroke, so the engine can run in a Web Worker. The worker keeps its own measurement cache between builds and cancels cooperatively: when a new build is requested, the previous one stops at its next checkpoint and the last request wins. The Sandbox lays out every view this way, and the PDF renderer has a worker of its own, so the interface stays responsive while a whole book is being set.
 
-In addition to orphans and widows, Postext recognises a third common defect called a **runt**: the last line of a paragraph containing just one or two short words, stranded far from the rest of the text. Runts are measured in terms of minimum character count, and they are penalised directly inside the Knuth-Plass optimisation so the line breaker will naturally prefer sets of breaks that avoid them.
+:::callout{type="note" title="In code"}
+\`buildDocument(content, config)\` returns the VDT. \`renderPage\` draws a page on a canvas, \`renderToHtml\` returns positioned HTML, and \`renderToPdf\` from the _postext-pdf_ package returns the bytes of a PDF — of one document or of a whole book passed as an array of chapters. \`createLayoutWorker\` from _postext/worker_ runs the build off the main thread.
+:::
 
-### Hyphenation and Rag Optimisation
+:::part{number="II" title="The craft" palette="band=#b7820f"}
+3. Setting the line
+4. The page and its columns
+5. Figures, tables and floats
+6. Books, parts and running heads
+:::
 
-**Hyphenation** is the practice of breaking words at syllable boundaries when they fall at the end of a line. Proper hyphenation improves the evenness of line lengths and reduces the visual disturbance caused by large gaps between words in justified text. Without it, an engine has no way to avoid a loose line except by moving whole words, and moving whole words tends to just push the problem down the paragraph.
+# Setting the line {lead="A paragraph is set as a whole, not one line at a time. Postext weighs every possible way of breaking it, prices spacing, hyphens and stray words, and chooses the set of breaks that costs least." summary="Optimal line breaking, hyphenation, spacing and the defects it avoids"}
 
-Postext supports hyphenation through **TeX-quality Liang patterns** served by the _Hypher_ library. These are the same patterns that TeX has used since 1983, maintained by the TeX community and refined over four decades of use. They are generated from large word corpora and cover far more edge cases than any hand-written heuristic could hope to match. The supported locales currently include English, Spanish, French, German, Italian, Portuguese, Catalan, and Dutch, and adding more is a matter of importing the corresponding pattern file.
+The quality of a page is decided first in its paragraphs. A browser breaks lines greedily: it fills a line with as many words as fit, moves on, and can only spread the leftover space inside each line. Postext implements the **Knuth-Plass algorithm**, the optimal line breaker that has powered TeX since 1981. It evaluates every feasible way of breaking the whole paragraph and picks the one that minimises the total cost, so spacing stays even from the first line to the last.
 
-The hyphenation system exposes the following controls:
+## Boxes, glue and penalties
 
-- Language-specific hyphenation patterns that define valid break points within words
-- Minimum character counts before and after the hyphen to prevent awkward breaks
-- Maximum consecutive hyphenated lines to avoid a distracting staircase effect on the right margin
-- Hyphenation penalty values that influence the Knuth-Plass algorithm when choosing between a hyphenated break and a looser line
+The algorithm sees a paragraph as a sequence of three primitives, drawn full width in :ref{id="knuth-plass-model"}:
 
-**Rag optimisation** refers to the smoothing of the right edge of left-aligned text, which is called the _rag_. An unoptimised rag can appear jagged, with short lines followed by long lines in an erratic pattern. Postext optimises the rag by:
+- **Boxes** are words or pieces of words, with a fixed width
+- **Glue** is the space between words, with a natural width and a capacity to stretch or shrink
+- **Penalties** are possible break points with a cost; a _flagged_ penalty marks a hyphenation point and draws a hyphen when it is used
 
-1. Evaluating the visual quality of the right margin across multiple lines
-2. Adjusting word spacing within acceptable limits
-3. Choosing break points that produce a gradually varying rag rather than an abrupt one
-4. Considering hyphenation as a tool for rag smoothing, not just line fitting
+For every candidate line the engine computes an adjustment ratio $r$, how far the glue must stretch or shrink to fill the measure, and a badness that grows with the cube of it, $b = 100\\,|r|^3$. Lines are sorted into four fitness classes — tight, normal, loose and very loose — and each break is charged its demerits:
 
-### Knuth-Plass Justification
+$$
+d = (1 + b + p)^2
+$$
 
-For justified text, Postext implements the full **Knuth-Plass optimal line breaking algorithm**, the same algorithm that has powered TeX since 1981. Unlike the greedy first-fit approach that CSS uses, Knuth-Plass evaluates every possible way to break an entire paragraph and selects the combination that minimises total _badness_ across all lines. The result is justified text whose inter-word spacing is visibly more even than anything the browser can produce natively.
+where $p$ is the penalty of the break. Two hyphenated lines in a row cost an extra 3000, and a jump of more than one fitness class between neighbouring lines costs 100, so the optimiser prefers paragraphs whose texture changes gently. Should no feasible set of breaks exist, the engine falls back to greedy breaking rather than failing.
 
-The algorithm models text as a sequence of three primitives, laid out full width in :ref{id="knuth-plass-model"}:
+## Hyphenation
 
-- **Boxes** are words or word fragments that have a fixed width and cannot be stretched, compressed, or broken
-- **Glues** are inter-word spaces that have a natural width plus stretch and shrink capacities, so the engine can adjust them to fill the line
-- **Penalties** are potential break points with an associated cost, where _flagged_ penalties also mark hyphenation opportunities and introduce a visible hyphen if used
+Hyphenation uses the same **Liang patterns** TeX has relied on since 1983, served by the _Hypher_ library, in eight languages: English, Spanish, French, German, Italian, Portuguese, Catalan and Dutch. The document's language is set once, at the top of the configuration, and also tags the PDF for screen readers. Patterns leave at least two letters before a hyphen and three after it, so words shorter than five letters are never divided, and each hyphen is a flagged penalty of 50 that the optimiser can accept or refuse.
 
-For each candidate break the algorithm computes an adjustment ratio, a badness value that grows cubically with the absolute ratio, and a total demerit that also takes into account hyphenation and fitness class transitions between adjacent lines. Postext extends the classic demerit set with three editorial penalties — orphan, widow, and runt — so the same optimiser that balances word spacing also avoids paragraph-end defects.
+Hyphenation only runs on justified text, where it earns its keep. Two break opportunities are always available, whatever the setting: a hard hyphen between two letters is a legitimate break, and a word wider than the whole measure is divided at the last syllable that fits, or at the last character if it has to be.
 
-### Mathematical Typesetting
+## Word spacing and ragged lines
 
-Postext treats LaTeX formulas as first-class citizens of the document format, not as an afterthought bolted on top. Inline expressions such as $e^{i\pi}+1=0$ flow with the surrounding text and are typeset by MathJax as vector paths, so they remain crisp at any zoom level. When a formula's natural height would exceed the body line box the engine scales it down uniformly so the baseline grid is preserved — the reader keeps the horizontal rhythm of the text no matter how dense the notation becomes.
+Two settings bound how far a space may stretch or shrink: \`maxWordSpacing\`, by default twice the natural space, and \`minWordSpacing\`, 0.6 of it. Stretching past the maximum is priced above any other defect, so the breaker will hyphenate, move a word or accept a runt before it opens a river. Some lines cannot be filled at all — a long URL, the unbreakable tail of a list item — and rather than opening them into gaps three times the natural space, the engine sets them ragged at natural spacing. The last line of a paragraph is always ragged, except when it is overfull: then its spaces compress to fit, exactly as TeX sets glue.
 
-Display formulas live on their own lines inside \`$$…$$\` markers. The engine centres them on the column, applies configurable top and bottom margins, and snaps the bottom edge to the baseline grid using the same correction mechanism that headings rely on:
+## Orphans, widows and runts
+
+An **orphan** is the first line of a paragraph left alone at the foot of a column; a **widow** is its last line carried alone to the head of the next. Both break the reader's rhythm, and :ref{id="orphan-widow"} shows the two on either side of a column break. A third defect, the **runt**, is a last line holding a single short word, stranded under a full paragraph.
+
+Postext prices all three. When a paragraph crosses a column, the engine compares every possible split and charges each one for the space it leaves unused, for an orphan and for a widow — 1000 by default, each, with at least two lines on either side. Runts are priced inside the line breaker itself, as badness, whenever the last line is shorter than twenty characters' worth of space. When a runt cannot be avoided by breaking differently, the engine can set the paragraph one line shorter instead, tightening word spaces within their minimum and, if needed, letter spacing by at most ten thousandths of an em. List items follow the same rules, with switches of their own.
+
+:::callout{type="try"}
+In **Configuration**, search for _loose_ and turn on the loose-line highlight of the debug section. Then narrow the columns or raise \`maxWordSpacing\` and watch which lines the engine has to open, and how the optimiser redistributes them.
+:::
+
+## Mathematics
+
+Formulas are first-class citizens. Inline expressions such as $e^{i\\pi}+1=0$ flow with the text, typeset by MathJax as vector paths that stay crisp at any zoom. When a formula is taller than the line allows, it is scaled down uniformly so the baseline grid survives, and the reader keeps the rhythm of the text however dense the notation. Display formulas sit on lines of their own, centred on the column, with their own margins, and the text that follows returns to the grid:
 
 $$
 \\int_0^{\\infty} e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}
 $$
 
-The next paragraph therefore lands exactly on a grid line, regardless of how tall the formula is — a feature that matters a great deal in technical books and scientific articles where math and prose alternate relentlessly. The same vector paths drive the canvas preview, the HTML export, and the PDF backend, so the three outputs are pixel-for-pixel consistent, and the PDF stays fully vectorial for print production.
+The same paths are drawn by the canvas, the HTML view and the PDF, so formulas match in the three outputs and stay vectors in print.
 
-### Spacing and Rhythm
+# The page and its columns {lead="Pages are fixed, columns are finite, and every line should sit on a rhythm shared across the spread. This chapter is about the frame: page geometry, column structures, the baseline grid and the art of ending columns level." summary="Page geometry, columns, the baseline grid and balancing"}
 
-Vertical spacing in editorial typography follows strict rules that maintain the visual rhythm of the page. Postext enforces these rules through its configuration system:
-
-- **Heading spacing** controls the distance above and below headings of each level
-   - Larger headings receive more space above them to visually separate them from the preceding section
-   - The space below a heading is smaller than the space above it, creating a visual connection between the heading and its content
-   - Consecutive headings without text between them are flagged by the warnings panel as a semantic defect, because they almost always indicate a missing introduction
-- **Paragraph spacing** can be configured as either indentation or vertical gaps
-   - Traditional book typography uses first-line indentation with no vertical gap between paragraphs
-   - Modern digital typography often uses vertical gaps with no indentation
-   - Postext supports both approaches and allows mixing them within a single document
-- **List spacing** controls the distance between list items and between nested levels
-   - Items within a list can be tightly or loosely spaced
-   - Nested lists can have additional indentation and different bullet styles at each level
-- **Baseline grid alignment** snaps text to a regular vertical grid, as :ref{id="baseline-grid"} illustrates
-   - This ensures that text in adjacent columns aligns horizontally
-   - It creates a sense of order and stability across the entire page
-   - Elements that break the grid, such as headings with larger font sizes, can be configured to realign to the grid afterwards
-
-## Column-Based Layouts
-
-Columns are the most visible expression of editorial design, and they are also the place where most homemade CSS solutions break down first. Postext provides a column system that treats columns as first-class citizens of the page, with their own balancing rules, their own resource placement strategies, and their own relationship to the baseline grid.
-
-### Multi-Column Text Flow
+Columns are the most visible expression of editorial design, and the place where homemade solutions break down first. Postext treats the page and its columns as first-class objects, with their own geometry, their own rhythm and their own rules for ending well.
 
-One of the most distinctive features of editorial layout is the use of multiple columns. Columns serve several purposes in professional typography:
+## Page geometry
 
-- They keep line lengths within the optimal range for reading comfort, which is generally considered to be between 45 and 75 characters per line
-- They allow more text to appear on a single page without requiring an uncomfortably small font size
-- They create visual variety and structure on the page
-- They provide opportunities for sophisticated resource placement and for mixing narrow textual passages with wide figures
+A page starts with its size. Postext offers the usual book and magazine formats as presets, listed in :ref{id="preset-sizes"}, and any custom size in centimetres, millimetres, inches or points; this guide is set on the 21 × 28 cm format. Margins can be **mirrored**, so the left margin becomes the inner one, by the spine, and swaps sides on every verso. For print production, the page can carry a bleed and crop marks, and a DPI setting controls the resolution of pixel-based measures.
 
-Postext supports flexible multi-column configurations, the most common of which are previewed as page thumbnails in :ref{id="column-layouts"}:
+Page numbers follow sequences: arabic, lower or upper roman, lower or upper alphabetic, each with its own starting number, so a book can number its front matter i, ii, iii and begin chapter one at 1. The PDF records the same sequences as page labels, so a viewer's page box reads exactly what is printed at the foot.
 
-1. **Column count** can be set to any positive integer, or chosen from several preset layouts
-   - Single-column layouts for narrow viewports or focused reading
-   - Two-column layouts for articles and essays
-   - Column-and-a-half layouts that mix a main column with a narrow side column for annotations
-   - Three or more columns for newsletters, magazines, and reference materials
-2. **Gutter width** controls the space between columns
-   - Wider gutters make columns feel more independent
-   - Narrower gutters allow more text per page but often require a visual separator
-3. **Column rules** are optional vertical lines drawn between columns
-   - Their weight, style, and colour are configurable
-   - They help readers distinguish between columns when gutters are narrow
-4. **Column spanning** allows certain elements to break the column grid
-   - A heading might span two of three columns
-   - A figure might span the full width of the page
-   - A pull quote might float across the gutter between two columns
+## Column structures
 
-### Column Balancing
+Three structures cover most publications, sketched as page thumbnails in :ref{id="column-layouts"}:
 
-When text flows through multiple columns, the columns often end at different heights. The last column on a page might contain only a few lines while the others are full. This looks unfinished and unprofessional, and it is one of the most common complaints in amateur multi-column layouts.
+1. **Single column** for novels, essays and focused reading
+2. **Two columns** for magazines, reports and books like this one
+3. **A column and a half**, a main column beside a narrower side column
+   - The side column can carry text that continues from the main column
+   - Or it can be a **float channel** that only holds figures, tables, captions and callouts, as in textbooks with an outer column of notes and diagrams
 
-**Column balancing** is the process of distributing text evenly across columns so that they end at approximately the same height. This is a surprisingly difficult computational problem because:
+The gutter between columns is configurable, and an optional column rule can be drawn in it, with its own weight and colour. Page-wide elements — a figure, a table, a callout — cut through the columns: the text above them is split level across the columns, and the columns resume below.
 
-- Moving text between columns changes line breaks, which changes the height of each column
-- Figures and other non-text elements have fixed heights that cannot be split
-- Footnotes associated with text in a column must appear at the bottom of that same column, consuming space
-- Orphan and widow constraints may prevent certain distributions
-- The baseline grid imposes discrete landing positions rather than continuous ones
+## The baseline grid
 
-Postext approaches column balancing through iterative refinement:
+Professional books align the first baseline of every column to a shared vertical rhythm, and every line after it lands on the same grid, so lines face each other across the gutter. Postext snaps text to a baseline grid derived from the body leading, as :ref{id="baseline-grid"} illustrates. Elements that break the grid — a heading larger than the body, a figure, a display formula — are followed by the space needed to return the next line to it. The grid can be drawn as an overlay while you work, wherever there is text.
 
-1. First, it fills columns sequentially to establish a baseline distribution
-2. Then, it calculates the ideal column height by dividing the total content height by the number of columns
-3. It redistributes content to approach this ideal height, respecting all constraints
-4. It repeats the redistribution until the column heights converge or the maximum iteration count is reached
-5. If convergence fails, it keeps the best intermediate result rather than producing a degenerate layout
+## Ending columns level
 
-### Mixed Column Structures
+When a page ends in the middle of the text, its columns should end at the same height. That is **column balancing**, and it is harder than it looks: lines come in whole grid steps, figures cannot be split, headings must stay with their text and paragraphs must not leave orphans behind. Postext levels a short column with three levers, used in order of preference and drawn in :ref{id="column-balancing"}:
 
-Not all content on a page needs to follow the same column structure. A common pattern in editorial design is to begin a section with a full-width introductory paragraph, then transition to a multi-column layout for the body text. Another pattern places a wide image or table across the full width of the page, interrupting the multi-column flow and resuming it below. A third pattern uses a column-and-a-half structure where the narrow side column hosts margin notes, pull quotes, and secondary illustrations.
+1. **Space above headings**, one whole grid line at a time, distributed by importance and never at the head of a column
+2. **A line after the end of a list**
+3. **Looser paragraphs**: a paragraph set one line longer, TeX's _looseness_, accepted only if none of its lines stretches beyond the word-spacing limit; if it helps, a touch of letter spacing, at most ten thousandths of an em
 
-Postext supports these mixed structures through **section overrides**:
+Each fix is verified by laying the page out again, up to eight times, and the best result wins. Some columns are left alone on purpose: the last column before a forced page break or a chapter opener, the last page of the document, a column with nothing to stretch. Two related rules level the closing columns of a chapter, and the columns above a page-wide box that moves or splits.
 
-- Each section of a document can specify its own column configuration
-- Transitions between section types are handled automatically
-- The engine manages the vertical space consumed by each section and ensures that content flows correctly from one to the next
-- Overrides are applied declaratively, so the same Markdown document can render differently across devices
+:::callout{type="quote"}
+A column that ends two lines short is the first thing a reader notices and the last thing a designer should have to fix by hand.
+:::
 
-## Resource Placement
+:::callout{type="try"}
+In **Configuration**, open **Headings** and switch **Balance Columns** off. Look at the foot of the columns of this chapter, then switch it back on and see which lever the engine used on each page.
+:::
 
-Resources are everything that is not flowing text: images, tables, figures, pull quotes, sidebars, and any other block that interrupts or accompanies the main narrative. The way these blocks are placed on a page has a disproportionate effect on the reader's experience, and Postext gives you a vocabulary for expressing that placement intention at a semantic level rather than a pixel level.
+# Figures, tables and floats {lead="A reference is a promise, not a position. Mention a figure and Postext finds it a home: the first free slot after the mention, numbered in reading order, captioned, never before the words that call for it." summary="Where resources land, how they are numbered, tables that split"}
 
-### Placement Strategies
+Everything that is not flowing text — images, SVG diagrams, tables — is a **resource**. Resources are declared outside the text, each with an id, a type, a caption and its placement preferences, and the Markdown simply mentions them. In the Sandbox they live in the Resources panel.
 
-In editorial design, resources such as images, tables, figures, and pull quotes are not simply inserted inline at the point where they are referenced. Instead, they are placed according to strategies that optimise the visual quality of the page and the readability of the surrounding text. A reference in the text is a _hint_ about where a resource belongs, not a command.
+## One mention is enough
 
-Postext supports several placement strategies, summarised in the table :ref{id="placement-options"} and sketched together on a single page in :ref{id="placement-strategies"}:
+Writing \`:ref{id="…"}\` in a sentence does two things: it prints the resource's label, and the first time, it _incorporates_ the resource, which then floats into the first free slot after the reference. The slots are tried in order, as :ref{id="float-slots"} shows: the foot of the column that holds the reference, then the head and the foot of the next free column, then a band on the next page. The text is never interrupted.
 
-- **Top of column** places the resource at the top of the current or next available column
-   - This is the most common strategy in academic and professional publishing
-   - The resource is anchored to the top of the column, and text flows below it
-   - If the resource is too tall for the remaining space, it is deferred to the next column
-- **Inline** places the resource at the exact point where it is referenced in the text
-   - The text flow is interrupted, the resource is inserted, and the text resumes below
-   - This is the simplest strategy but can lead to awkward page breaks if the resource falls near the bottom of a column
-- **Float left and float right** place the resource at the left or right edge of the column
-   - Text wraps around the resource, flowing to the opposite side
-   - The resource can be configured to extend into the gutter or margin
-   - Multiple floats can coexist in the same column if there is sufficient space
-- **Full-width break** interrupts the column layout entirely
-   - The resource spans the full width of the page
-   - All columns above and below the resource are synchronised
-   - This is commonly used for large images, wide tables, or section dividers
-- **Margin** places the resource in the page margin
-   - The resource is aligned vertically with the paragraph that references it
-   - This is used for small illustrations, icons, or supplementary annotations
+A handful of rules keep floats honest:
 
-### Aspect Ratio and Sizing
+- A float never lands before its reference and is never shrunk to fit
+- Floats of one numbering sequence keep their order, so figure 12 never appears before figure 11; a table waiting for room does not hold figures back
+- Floats never escape their chapter: chapter openers, part dividers and the end of the document are barriers
+- A float that would leave less than three lines of text on a fresh page waits for the next one
+- Head and foot bands are aligned to the baseline grid, and a foot float's caption shares the last text line's baseline
 
-When placing resources, Postext preserves aspect ratios and provides multiple sizing options, collected in :ref{id="sizing-options"}:
+## Placement
 
-1. **Natural size** uses the intrinsic dimensions of the resource
-2. **Column width** scales the resource to fill the width of a single column
-3. **Span width** scales the resource to span a specified number of columns including gutters
-4. **Full width** scales the resource to fill the entire text area
-5. **Custom dimensions** allow the developer to specify exact width and height values
+Each resource can state where it prefers to go, and each resource type has a default; the fields are gathered in :ref{id="placement-options"}. A resource can be embedded inline at a precise point too, when its position is _here_. And a table or figure too wide for the page can be turned a quarter turn: it then takes a page of its own, set flush to the spine.
 
-The engine ensures that resources never overflow their containers and adjusts surrounding text flow to accommodate the final dimensions. If two placement strategies compete for the same space — a float right and a top-of-column figure, for example — the engine applies a configurable priority order and defers the loser to the next available slot.
+## Numbers and labels
 
-## Reference Systems
+Resource types define their own numbering sequences. Figures and tables are built in and localised to the document's language; a type can add a prefix, a short label, a template such as \`{h1}.{n}\` for chapter-relative numbers — figure 5.2 is the second figure of chapter 5 — a reset rule and a counter format. Numbers follow the **first reference in reading order**: insert an earlier mention and every number after it moves. A reference can print the number alone, the full label or the short one, change its case, or print text of its own.
 
-Reference systems are the thread that connects an author's main narrative to its scholarly apparatus, supplementary commentary, and bibliographic scaffolding. Handling them well is what separates a document that feels like a finished book from one that feels like a printed blog post, and it is another area where the browser has historically provided almost no help.
+## Tables
 
-### Footnotes
+Tables carry their model inline: rows of cells with column and row spans, header rows, alignment and relative column widths. Cells accept inline Markdown, paragraphs and simple lists, a fill of their own — this book's three part colours are :swatch{color="#2b4acb"} blue, :swatch{color="#b7820f"} gilt and :swatch{color="#c0452f"} vermilion — and even an image. Tables are styled once, for the whole document: body and header typography, header fill, rules in a grid, horizontal only, outer only or none.
 
-Footnotes are one of the most complex features in editorial typography. A footnote must appear at the bottom of the column where it is referenced, and the space it occupies must be subtracted from the available text area in that column. This creates a feedback loop that a single-pass algorithm cannot resolve:
+A table taller than the page splits across pages. Its header rows repeat on every part, the caption of each continuation gains a _(cont.)_ suffix, a _Continued_ marker closes every part but the last, and no split ever cuts through a row span. A rotated table splits the same way, page after page.
 
-- Adding a footnote to a column reduces the available text space
-- Reducing the text space might push the footnote reference to the next column
-- If the reference moves, the footnote must move with it, changing the text space in both columns
-- Changing the text space in the next column might, in turn, push a different footnote back to the previous one
+## Captions and credits
 
-Postext handles this complexity through its convergence loop. The engine places footnotes tentatively, checks whether their references are still on the same column, and adjusts positions iteratively until everything settles. Footnote configuration includes:
+A caption is the type's prefix, the number and the caption text — which accepts inline Markdown and references of its own. Captions go above or below their resource, optionally on a coloured bar, in the typeface and size of the caption style; the label can be bold or coloured, as in this book. A resource can also carry a note: a smaller credit or source line set under it.
 
-- **Marker style** determines how footnotes are numbered or symbolised
-   - Superscript numbers are the most common choice
-   - Symbols such as asterisks, daggers, and double daggers are traditional in some contexts
-   - Custom marker sequences can be defined for specialised applications
-- **Separator** is the horizontal rule drawn between the text area and the footnote area
-   - Its width, style, and spacing are configurable
-- **Font size** for footnote text is typically smaller than the body text
-   - The size, line height, and spacing are independently configurable
+## Vector figures
 
-### Endnotes
+SVG diagrams are drawn as vectors everywhere. The PDF converts the common subset of SVG — shapes, paths, groups, clip paths, solid fills and strokes, opacity and text — into native drawing operations, and rasterises anything beyond it at 600 dpi; a figure can also bring a PDF master of its own, embedded as it is. For single-colour printing, a switch recolours every diagram as tints of one ink, by luminance, in all three renderers.
 
-Unlike footnotes, endnotes are collected and displayed at the end of a section or at the end of the entire document. They are simpler to implement because they do not compete for space with the body text in the same column. However, they still require careful numbering and cross-referencing, and they still need to respect the column structure of the section that hosts them.
+:::callout{type="try"}
+Click the caption of any figure in the canvas: the Resources panel opens on that resource, with its caption field ready. Change its placement from _auto_ to _top_ and watch it move.
+:::
 
-Postext supports both per-section and per-document endnote collection:
+# Books, parts and running heads {lead="A book is more than its chapters: a cover, a contents page that keeps itself up to date, part dividers, openers that announce each chapter and running heads that know where the reader is. All of it is configuration." summary="Chapters, heading styles, design slots, parts, contents and page numbers"}
 
-- **Per-section endnotes** appear at the end of each major section, making them easier for readers to find
-- **Per-document endnotes** are gathered at the very end, following the traditional academic convention
-- The numbering can restart at each section or continue sequentially through the entire document
-- Cross-references between the body text and the endnote block are kept consistent as content moves around during convergence
+This guide is a book of twelve chapters, and each chapter is a Markdown document of its own. A project in the Sandbox is always a book: the configuration, the resources and the fonts are shared, and the chapters follow each other, as :ref{id="book-anatomy"} shows.
 
-### Margin Notes
+## Chapters make a book
 
-Margin notes are brief annotations that appear in the page margin, aligned vertically with the paragraph that references them. They are commonly used in textbooks, technical manuals, and annotated editions to provide supplementary context without interrupting the main text flow, and they are a defining feature of the column-and-a-half layout that Postext supports natively.
+Every chapter is laid out on its own, _continued_ from the chapters before it: it inherits their page count and page parity, their chapter and figure counters, the open part and the running heads. That is why this chapter's figures are numbered from 6.1, and why editing one chapter never forces the engine to set the whole book again. The previews can show the current chapter or the whole book; the PDF can be built for either. Chapters can be added, renamed, reordered, split at their first-level headings or merged into the previous one.
 
-Postext places margin notes with the following considerations:
+## Heading styles
 
-- The note is vertically aligned with the start of the referencing paragraph
-- If multiple notes reference paragraphs that are close together, the notes are stacked with appropriate spacing to avoid overlap
-- The available margin width determines the maximum width of the note text
-- Margin notes can appear on the left margin, the right margin, or alternate between the two on facing pages
+A heading can carry attributes, written in braces at the end of its line. The most powerful is a **style**: \`{style="cover"}\` applies a named heading style, which changes the heading's typography and design and, for the section the heading opens, can change the running heads, the page margins, the column layout, the body typography and the palette. The cover of this book is a heading style with its own margins, no running heads and a full-page design; the contents page is another. A style can also leave its headings unnumbered, so a preface does not shift the chapter numbers, and keep them out of the contents.
 
-## The Interactive Sandbox
+## Design slots
 
-Everything described so far can be explored right now without writing a single line of code. The Sandbox you are currently looking at is not a demo built on top of Postext; it is the engine itself, wrapped in a familiar editor interface designed to make experimentation as frictionless as possible. It exists for two audiences at once: developers evaluating the library for their next project, and typographers or designers who want to see what each configuration option does without ever touching a repository.
+Running heads, footers, chapter openers and part pages are drawn by **design slots**: small free compositions of text, rules, boxes and images. Each element is anchored to the page, the bleed, the text area or another element, with offsets and sizes in real units, and prints **placeholders** such as \`{pageNumber}\`, \`{chapterTitle}\`, \`{partTitle}\` or any attribute of the heading, like the \`{attr.lead}\` that sets the introduction on this chapter's band. Elements can be limited to odd or even pages, and to pages of a given role — body, opener, part or blank — which is how the running heads of this book disappear on chapter openers while a folio appears at their foot. Text elements can wrap, hyphenate, truncate with an ellipsis, draw a box behind themselves and open with a drop cap.
 
-### Interface Layout
+## Parts and palettes
 
-The Sandbox follows a familiar IDE paradigm with three main areas, sketched in :ref{id="sandbox-ui"}:
+\`:::part\` opens a part divider: a page of its own, broken to the parity the configuration asks for, drawn by the part design and followed by a body — usually the list of its chapters. Parts carry forward, so the running heads and chapter openers of later chapters can name the part they belong to, and they appear both in the contents and in the PDF bookmarks.
 
-- An **activity bar** on the far left that switches between panels and hosts global actions
-- A **resizable sidebar** that hosts the active panel, whether that is the markdown editor, the configuration form, or the warnings list
-- A **viewport** on the right with three tabs for Canvas, HTML, and PDF output
+A part can also recolour the book. Colours in the configuration can be linked to named entries of the **palette**, and a part's \`palette\` attribute replaces entries until the next part. This book defines one entry, the _part colour_, and each part sets it: blue for the foundations, gilt for the craft, vermilion for practice. The chapter bands, the heading numbers, the running folios and the captions all follow.
 
-The sidebar can be collapsed entirely by clicking the icon of the currently active panel. The boundary between the sidebar and the viewport is draggable within a sensible range, so you can trade editor space for preview space as you work.
+## A contents page that keeps up
 
-### The Activity Bar
+\`:::toc\` prints the table of contents: an entry for each heading of the listed levels and a row for each part, with numbers, titles, dotted leaders, page numbers and, optionally, a line from a heading attribute — in this book, each chapter's summary. The page numbers are real: the engine lays the book out, reads where each heading landed and sets the contents again until the numbers settle, which takes at most three extra passes. Entries are links in the PDF.
 
-The activity bar contains icon buttons for every major action in the Sandbox. From top to bottom you will typically find:
+## Page breaks and numbering
 
-1. **Markdown editor** toggle, which opens or closes the CodeMirror-based editor
-2. **Configuration** toggle, which opens or closes the form-based configuration panel
-3. **Warnings** toggle, which opens a list of semantic and typographic issues detected in the current document
-4. **Resources** toggle, which opens the resource management panel
-5. **Export** action, which downloads the current markdown and configuration as a single JSON file
-6. **Import** action, which loads a previously exported JSON file back into the Sandbox
-7. **Theme toggle** for switching between dark and light modes
-8. **Language switcher** for changing the interface language
+\`:::pagebreak\` starts a new page, and can ask for an odd or even one, adding a blank page when needed. \`:::numbering\` switches the page-number sequence from the next page on, which is how front matter numbered in roman numerals hands over to arabic page numbers at chapter one. Chapter openers can ask for a parity of their own, and blank pages are recognised as such, so the running heads leave them blank.
 
-Clicking the active panel's icon collapses the sidebar, which is useful when you want to maximise the preview area during fine-tuning.
+:::part{number="III" title="In practice" palette="band=#c0452f"}
+7. Writing for Postext
+8. The Sandbox
+9. Output: canvas, HTML and PDF
+10. Roadmap and community
+:::
 
-### The Configuration Panel
+# Writing for Postext {lead="Everything in this book was written in plain Markdown with a handful of extensions. They stay readable in any text editor and say what the text is, never where it goes." summary="Markdown, directives, callouts and paragraph styles"}
 
-The configuration panel is a form-based editor for the full Postext configuration object. Settings are grouped into collapsible sections, each with its own reset button that restores the defaults for just that section without disturbing the rest of your work. The sections currently include:
+Postext documents are Markdown first. A writer who knows Markdown can write for Postext on day one; the extensions only appear where a book needs something Markdown never had words for.
 
-- **Page** for background colour, size preset, custom dimensions, margins, DPI, cut lines, and baseline grid
-- **Layout** for column type, gutter width, side column percentage, and column rules
-- **Body Text** for font family, size, line height, colour, alignment, weight, hyphenation, and advanced paragraph rules such as orphan, widow, and runt avoidance
-- **Headings** for general heading defaults plus per-level overrides from H1 through H6
-- **Ordered Lists** and **Unordered Lists** for list-specific typography including numbering format, bullet characters, and hanging indentation
-- **HTML Viewer** for the parameters that drive the single-column and multi-column HTML rendering modes
-- **Debug** for overlays that visualise the baseline grid, loose lines, cursor sync, and other internal signals
-- **Colour Palette** for named colours that can be reused across the configuration
+## Plain Markdown
 
-Controls are context-aware: gutter width only appears when a multi-column layout is selected, hyphenation settings only appear when text alignment permits them, and several advanced options are hidden behind expanders so the panel stays approachable at first glance.
+Headings from one to six hashes, paragraphs, block quotes, bulleted, numbered and task lists — nested two spaces per level, up to five levels — and display mathematics between double dollar signs. Inline, the usual bold and italic, plus superscript between carets, as in 10^-8^, subscript between tildes, as in H~2~O, inline mathematics between dollar signs and backslash escapes for literal characters.
 
-### The Three Output Tabs
+Some Markdown is deliberately left out, because a book has other ways to say it: images are resources rather than inline pictures, tables are resources with a model rather than pipe tables, and raw HTML has no meaning on a printed page. Links keep their text; making them clickable and giving inline code a style of its own are on the roadmap.
 
-The viewport displays the rendered output. Switching tabs does not re-run the layout: the same VDT feeds every backend, so the content you see is consistent across modes.
+## Directives and containers
 
-- **Canvas** renders a rasterised preview with zoom, fit-to-width, fit-to-height, and double-page spread modes, with lazy rendering so long documents remain responsive
-- **HTML** renders the document inside a Shadow DOM and offers a font-scale control plus a single-column or multi-column flow, useful for reviewing how the content will feel inside a live web application
-- **PDF** generates a real PDF on the client using the _postext-pdf_ package and displays it in the browser's native PDF viewer, with one-click regenerate, download, and print actions
+Everything else is expressed with a small vocabulary of directives, listed in :ref{id="document-format"}. Single-line directives start with three colons and act at the point where they appear. Containers wrap blocks between an opening line with attributes and a closing line of three colons; they nest, and an unclosed one is closed at the end of the chapter, with a warning.
 
-Because all three tabs share a single source of truth, any change you make in the editor or the configuration panel propagates everywhere at once. The engine has no hidden state that you cannot see or export.
+## Callouts
 
-### Persistence and Sharing
+\`:::callout\` sets a box with an optional title, in one of the styles the configuration defines. This book defines four: the _Try it_ boxes that send you to the Sandbox, the technical notes, the pull quotes set in display italics, and a dark page-wide panel of key figures. A style decides the box's background, border, stripe and corner radius, an optional icon or marker, the typography of its title, body and lists, and where it goes: in the flow, at the head or foot of a column, across the page, into the side column of a column-and-a-half layout, or fixed to a position on the page.
 
-The Sandbox automatically saves your work to the browser's local storage. Markdown content and configuration are saved after about a second of inactivity, and the previous session is restored on the next page load. Viewport state, such as the current canvas view mode and fit mode, is remembered separately, and the expanded or collapsed state of each configuration section is preserved between visits.
+A long callout can split between its paragraphs, or even between its lines, keeping at least two on each side; the continuation leaves out the title. Inside a callout, \`:::columns\` sets its content in balanced columns, like the panel of figures in chapter 2.
 
-For transferring your work between devices or sharing layouts with collaborators, the Sandbox offers explicit **export** and **import** actions. The exported file is a versioned JSON document containing both the markdown content and the configuration. You can commit it to a repository, attach it to an issue, or drop it into a chat conversation, and anyone with the Sandbox open can load it back in a single click.
+:::callout{type="note" title="Why a vocabulary this small"}
+Each extension answers one question a book asks and Markdown cannot: where a page ends, how pages are numbered, what a part is, which paragraphs belong to a box. Everything about how they look lives in the configuration, so the same text can be set as a paperback or a magazine without a single edit.
+:::
 
-## Configuration and Customisation
+## Paragraph styles
 
-The configuration system is the contract between the engine and everything that uses it. Understanding its shape is the best way to understand what Postext is prepared to negotiate and what it assumes is fixed, and the same object you can edit through the Sandbox panel is the one you would pass to the library programmatically in a standalone integration.
+\`:::paragraphs{style="…"}\` applies a named paragraph style to the paragraphs it wraps: an epigraph, a dedication, a bibliography, a colophon. A style can change the typeface, size, leading, colour, alignment — including centred and right-aligned — indentation and spacing. The colophon on the back of this book's cover is one.
 
-### The Configuration Object
+## Front matter
 
-Every aspect of the Postext layout can be controlled through a single, comprehensive configuration object. This object is deeply structured, with nested sections for each area of concern:
+A book's metadata lives in YAML front matter at the head of its first chapter: title, subtitle, author and publication date, available to every design slot as placeholders. This book's cover prints its title and subtitle from there. Any other key is kept for the host application; front matter in later chapters is ignored, with a warning.
 
-- **Page configuration**
-   - Width and height in real units, such as centimetres, millimetres, inches, or points
-   - Margins for each side of the page, independently configurable
-   - DPI setting that controls the resolution for pixel-based calculations
-   - Background colour for the page surface
-   - Cut lines for print production, including bleed, mark length, mark offset, mark width, and colour
-   - Baseline grid settings including line height, colour, and line width
-- **Column configuration**
-   - Number of columns per page or section
-   - Gutter width between columns
-   - Column rule appearance and visibility
-   - Balancing behaviour and tolerance
-- **Typography configuration**
-   - Orphan, widow, and runt minimum line or character counts
-   - Hyphenation language, minimum characters, and maximum consecutive hyphens
-   - Paragraph spacing mode, whether indentation, vertical gaps, or both
-   - Heading spacing above and below each level
-   - Keep-together rules that prevent page breaks between related elements
-   - First-line indent and hanging indent for paragraphs and list items
-- **Resource placement configuration**
-   - Default placement strategy for each resource type
-   - Sizing behaviour and maximum dimensions
-   - Spacing around placed resources
-- **Reference configuration**
-   - Footnote marker style and separator appearance
-   - Endnote collection mode and numbering
-   - Margin note positioning and width
-- **Debug configuration**
-   - Overlays for baseline grid, loose lines, page negative space, cursor sync, and selection sync
-   - Threshold controls for loose-line detection
-   - Individual toggles for each category of warning
+# The Sandbox {lead="The Sandbox is the engine with an editor around it: the page you are reading, the Markdown it came from and every setting that shaped it, side by side and live." summary="The editor, the panels, projects, presets and sharing"}
 
-### Section Overrides
+Everything described in this book can be tried right now, without writing code. The Sandbox is not a demo built on top of Postext; it is the engine itself, in an interface meant for two audiences at once — developers evaluating the library, and designers who want to see what every option does.
 
-For documents with varied layouts, Postext allows **section-level overrides** that change the configuration for specific parts of the document:
+## A tour of the interface
 
-1. A title page might use a single column with large margins
-2. The main body might use two columns with standard margins
-3. An appendix might use three narrow columns with minimal margins
-4. A full-page image section might have no columns and no margins
-5. A dedicated table of contents might use a column-and-a-half layout with hanging indentation
+The interface follows a familiar editor layout, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between six panels — Projects, Markdown, Resources, Fonts, Configuration and Warnings, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in three tabs: Canvas, HTML and PDF.
 
-Each section override specifies which configuration values to change. Unspecified values inherit from the base configuration. This layered approach keeps configuration manageable even for complex documents and makes it straightforward to derive variants of the same document without duplicating state.
+## Editing a book
 
-### Preset Sizes and Named Palettes
+The Markdown editor highlights front matter and mathematics, and its toolbar inserts formatting, lists, page breaks and numbering changes. At its head, a **chapter switcher** moves between the chapters of the book, showing their page ranges; each chapter keeps its own undo history and cursor. Editor and pages stay in step both ways: clicking a word on the page puts the cursor on it in the Markdown, and selecting text highlights it on the page.
 
-Postext includes a set of **preset page sizes** that correspond to common book and document formats, gathered in :ref{id="preset-sizes"}:
+## Configuration
 
-- **11 x 17 cm** for small paperback books and pocket guides
-- **12 x 19 cm** for standard fiction paperbacks
-- **17 x 24 cm** for textbooks and technical manuals
-- **21 x 28 cm** for large-format publications and magazines
-- **Custom** dimensions for any non-standard format
+The Configuration panel edits the whole configuration — more than five hundred fields — grouped in collapsible sections. A search box finds any option by name, category chips narrow the list to the document, the text, figures and tables, the output or advanced settings, and a _modified only_ filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file.
 
-Each preset automatically sets the width and height, but the developer can override individual dimensions or switch to fully custom values at any time.
+## Resources and fonts
 
-The configuration also supports a **named colour palette**. Any colour in the configuration can be linked to a palette entry by name, so a single change to the palette propagates everywhere that entry is referenced. This makes it easy to establish a small design system for a publication and ensures that accent colours, rule colours, and palette-driven text colours stay in sync as the document evolves.
+The Resources panel lists the book's resources by type. Images and SVG files can be dragged in, tables are edited in a spreadsheet-like editor with merged cells, fills, images, column widths and pasting from a spreadsheet, and the text of an SVG diagram can be edited in place. Clicking a caption, a note, a cell or the text of a diagram in the preview opens it in the panel. The Fonts panel adds families of your own, weight by weight, in the usual web and desktop formats; a custom family takes precedence over a Google Font of the same name.
 
-### Warnings and Diagnostics
+## Warnings
 
-Alongside the configuration, Postext maintains a **warnings panel** that reports problems the engine detected while laying out the current document. Some warnings are typographic, some are semantic, and all of them point at a specific line or element so you can jump straight to the cause. The current warning categories include:
+The Warnings panel lists everything the engine noticed while setting the book: fonts that failed to load, loose lines, skipped heading levels, unclosed containers and unknown directives, unknown styles, placeholders that print nothing, missing resources and callouts too tall for their column. Every warning names its chapter and line, and clicking it jumps there.
 
-- **Missing font** when a configured font family cannot be loaded in time
-- **Loose line** when a justified line exceeds a configurable word-spacing threshold
-- **Heading hierarchy** when a heading level skips one or more intermediate levels, for example jumping from H2 to H4
-- **Consecutive headings** when two headings sit next to each other with no intervening prose, an almost always unintended structure
-- **List after heading** when a list appears directly under a heading without a transitional sentence, another common documentation smell
+## Projects, presets and sharing
 
-Each warning can be enabled, disabled, or tuned independently, and each one can be acted on without leaving the Sandbox.
+Your work is saved in the browser as you type. **Projects** are books stored locally, each with its name, description and cover image; they can be duplicated, exported and imported. **Presets** are read-only books to start from: this guide and a gallery of showcase editions — an astronomy magazine, an illustrated _Don Quixote_, an environmental magazine, an exhibition catalogue and two university textbooks — each set with a design of its own. Duplicate one as a project to make it yours.
 
-## Project Vision and Roadmap
+A book travels as a single **.postext** file: its chapters, configuration, resources and fonts, plus the pagination already computed, so it opens paginated. And the address bar always holds a permalink to what you are looking at — the book, the language, the viewer, the chapter and the page.
 
-Postext is not trying to be a universal document platform. It is trying to be a really, really good editorial layout engine for the web, and the surrounding ecosystem is deliberately narrow so the core can stay sharp. This section describes where the project is today, where it is heading next, and how you can influence that direction.
+:::callout{type="try"}
+Scroll to a page you like and copy the address from the browser: opening that link shows the same book, in the same viewer, at the same page.
+:::
 
-### A Foundation for Editorial Web Content
+# Output: canvas, HTML and PDF {lead="One tree, three renderers. The canvas previews, the HTML reads on screen, the PDF goes to press — and all three draw the same lines at the same positions." summary="The three renderers, accessible PDF and using the library"}
 
-Postext is not intended to replace CSS for application layout. It is a specialised tool for a specific and underserved need, namely the presentation of long-form, structured content with the visual quality that readers expect from professionally produced publications. The project aims to make this level of quality accessible to web developers without requiring expertise in traditional typesetting, and to make it accessible to designers and typographers without requiring expertise in JavaScript.
+Because every renderer reads the same VDT, the promise _what you see is what you get_ is literal: line breaks, page boundaries and the position of every figure match across the three outputs.
 
-The long-term vision includes:
+## Canvas
 
-- **Responsive editorial layouts** that adapt intelligently to different screen sizes, not by simply reflowing text into a single column, but by choosing appropriate column counts, margin sizes, and resource placement strategies for each viewport
-- **Collaborative editing** where authors write content in Markdown and designers configure layout rules, each working in their area of expertise
-- **Accessible output** that preserves semantic structure and supports screen readers, keyboard navigation, and high-contrast modes
-- **Print and digital parity** where the same content and configuration produce visually consistent results in both web and PDF formats
-- **An open standard** that publishers, magazines, newspapers, book platforms, and development teams worldwide can adopt and build upon, rather than yet another proprietary layout product
+The canvas renderer draws a page on an HTML canvas, at any resolution. In the Sandbox it is the live preview, with zoom, fit to width or height, single pages or spreads, and pages drawn lazily as they scroll into view, so long books stay responsive.
 
-### Development Phases
+## HTML
 
-The development of Postext is organised into four major phases, summarised in the full-width table :ref{id="development-phases"}. These phases are not strict milestones; they describe the rough order in which capabilities become stable and ready for production use.
+The HTML renderer returns absolutely positioned HTML with editorial CSS: every line where the layout put it, in its exact font, size and baseline. An indexed variant tells the host which parts of the page changed, so a viewer can patch only those. In the Sandbox, the HTML tab isolates the output in a Shadow DOM and adds a reading mode with a single scrolling column or as many columns as fit the screen, with a font-scale control. A screen-only set of overrides can adjust the design for reading on screen without touching the print pages.
 
-1. **Foundation**
-   - Core data structures and type system
-   - Markdown parser with resource and note extensions
-   - Basic single-column layout with measurement
-   - Default configuration and preset system
-2. **Editorial Layout**
-   - Multi-column text flow with intelligent reflow
-   - Column balancing with constraint satisfaction
-   - Resource placement with all supported strategies
-   - Orphan, widow, and runt prevention across columns and pages
-3. **Professional Typography**
-   - Hyphenation with language-specific Liang patterns
-   - Rag optimisation for left-aligned text
-   - Knuth-Plass justification with editorial penalties
-   - Footnote, endnote, and margin note systems
-   - Advanced spacing rules and baseline grid alignment
-   - Pull quotes, drop caps, and decorative elements
-4. **Output and Integration**
-   - Canvas renderer for fast previews
-   - Web renderer with Shadow DOM isolation
-   - PDF renderer for print production
-   - Interactive Sandbox for experimentation and learning
-   - Plugin system for custom renderers and extensions
-   - Documentation, tutorials, and example projects
+## PDF
 
-## Contributing to the Project
+The _postext-pdf_ package turns the VDT into a real PDF, for one document or for a whole book. It never measures again: the canvas metrics are the source of truth and the PDF only transports them, which is why the lines break in exactly the same places. It embeds real fonts, one static face per weight, so bold is bold and italic is italic, and the text stays selectable. On top of the pages it adds bookmarks from the headings and parts, page labels that match the printed numbers, clickable references, SVG figures as vectors and a choice of colour space — RGB, CMYK or greyscale — for print.
 
-Postext is a community-driven open-source project maintained on GitHub. It welcomes contributions from developers, designers, typographers, translators, and anyone who cares about the future of long-form content on the web. The project is deliberately coordinated in the open: every issue, every pull request, and every design conversation happens on public channels, so newcomers can catch up on any decision by reading its history.
+## Accessible by default
 
-### Ways to Contribute
+Every PDF is **tagged** by default, following the PDF/UA-1 standard: a structure tree of headings, paragraphs, lists, tables and figures in reading order, alternative text for every figure, the document language, and decorative elements marked as artefacts so screen readers skip them. Accessibility is not an export option to remember; it is the way the file is made.
 
-There are many ways to get involved, and most of them do not require writing JavaScript:
+## Using the library
 
-- **Report issues** when you encounter bugs or unexpected behaviour, with a minimal reproduction whenever possible
-- **Suggest features** that would make the engine more useful for your own work
-- **Contribute code** by picking up an open issue and submitting a pull request, starting from issues labelled _good first issue_ if you are new to the codebase
-- **Improve documentation** by writing tutorials, examples, or explanations, either in the main documentation site or as blog posts linked from it
-- **Translate content** into new languages so the engine can reach typographic communities outside the current English and Spanish coverage
-- **Share your layouts** to demonstrate what Postext can do and inspire others
-- **Contribute typographic expertise**, especially for languages and writing systems that are not yet well represented
+The engine ships as two packages on npm: _postext_ for the layout and the canvas and HTML renderers, and _postext-pdf_ for PDF output. Both are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
 
-### How We Work
+:::callout{type="note" title="Four steps"}
+1. Load the fonts the configuration names, so the browser can measure them
+2. Build the document with \`buildDocument(content, config)\`
+3. Draw its pages with \`renderPage\`, or render them with \`renderToHtml\`
+4. For print, pass the same document to \`renderToPdf\` with a font provider
+:::
 
-All coordination happens on GitHub, across three main channels:
+# Roadmap and community {lead="Postext is young and open. The core pipeline, the document format and the configuration system have shipped; what comes next is decided in public." summary="Where the project stands and how to take part"}
 
-1. **Issues** for bug reports, feature requests, and specific tasks that someone might pick up
-2. **Pull requests** for code contributions, with review happening in the open and discussions preserved alongside the code
-3. **Discussions** for ideas, design conversations, questions, and anything that is not yet concrete enough to become an issue
+Postext is not trying to be a universal document platform. It aims to be a very good editorial layout engine for the web, and it keeps its scope narrow so the core can stay sharp. Its long-term ambition is to become the standard layout engine for editorial content on the web: something publishers, magazines, book platforms and development teams can adopt and build on.
 
-This is deliberate. When everything lives in one place, anyone can find the context behind any decision, new contributors can read the history, and no one is left out of a conversation that happened in a channel they were not in.
+## Where the project stands
 
-### Principles
+The work is organised in four phases, summarised in :ref{id="development-phases"}. They are not strict milestones; they describe the order in which capabilities become stable enough for production.
 
-The project is maintained with a small set of principles that shape every decision:
+What is still missing is as important as what has shipped. **Footnotes, endnotes and margin notes** are the largest open area: the data model has a place for them, but they are not laid out yet. **Links** keep their text but not their destination, inline code has no style of its own, text does not yet flow around obstacles, and layout happens in the browser only. These are the next problems worth solving, and the ones where help counts most.
 
-- **Respect the craft.** Typography is a discipline with centuries of accumulated wisdom, and the engine should honour it rather than reinvent it badly.
-- **Keep the core sharp.** The engine should do one thing extremely well, and resist the temptation to grow into a general-purpose document platform.
-- **Prefer open standards.** Markdown, PDF, and open font formats should stay first-class, and proprietary formats should never be required for any end-to-end workflow.
-- **Stay embeddable.** Postext should be a library that you can drop into an existing application, not a framework that takes over your project.
-- **Document everything.** A feature that only exists inside the implementation is a feature that nobody can use.
+## Getting involved
 
-If any of this resonates with you, the repository is the best next step. Open an issue, ask a question in discussions, or simply read through the code and tell us what could be clearer. The project is only as broad as the community that builds it.
+The project lives on GitHub, and every conversation happens in the open: **issues** for bugs, requests and concrete tasks; **pull requests** for code, reviewed in public; **discussions** for ideas, design questions and anything not yet concrete enough to be an issue. Issues labelled _good first issue_ are the easiest way in.
+
+Most contributions do not require writing code:
+
+- **Report issues** with a minimal example of the document and the configuration
+- **Share your layouts**, and turn them into presets others can start from
+- **Improve the documentation** with tutorials, examples and explanations
+- **Translate** the interface and the documentation into new languages
+- **Bring typographic expertise**, especially for scripts and traditions not yet well served
+- **Contribute code** to the engine, the renderers or the Sandbox
+
+## Values
+
+Three values guide the project. _Thoughtful design over speed_: typography has centuries of accumulated wisdom, and the engine should honour it rather than reinvent it badly. _Clarity over cleverness_: code, configuration and documentation should be easy to read, change and explain. _Collaboration over territory_: decisions are made in public, and every contributor is recognised.
+
+If any of this resonates with you, the repository is the next step. Open an issue, ask a question in the discussions, or change something in this book and see what the engine does with it.
+
+:::paragraphs{style="signature"}
+postext.dev · github.com/drnachio/postext
+:::
 `;
