@@ -4,7 +4,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { HtmlPreview, type HtmlPreviewHandle } from './HtmlPreview';
 import { HtmlToolbar } from './HtmlToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
-import { usePageHashSync, EMPTY_VIEWER_LAYOUT, type ViewerLayout } from './usePageHashSync';
+import { usePageHashSync, EMPTY_VIEWER_LAYOUT, type BookPageMap, type ViewerLayout } from './usePageHashSync';
 import {
   loadHtmlFontScale,
   saveHtmlFontScale,
@@ -81,8 +81,8 @@ export function HtmlViewport() {
   const handleJumpToPage = useCallback((pageIndex: number) => {
     previewRef.current?.jumpToPage(pageIndex);
   }, []);
-  const handlePageCountChange = useCallback((count: number, firstPage: number, pageNumbers: readonly number[]) => {
-    setLayout((l) => ({ pageCount: count, firstPage, pageNumbers, version: l.version + 1 }));
+  const handlePageCountChange = useCallback((count: number, firstPage: number, pageNumbers: readonly number[], book?: BookPageMap) => {
+    setLayout((l) => ({ pageCount: count, firstPage, pageNumbers, version: l.version + 1, ...(book ? { book } : {}) }));
   }, []);
   const handleCurrentPageChange = usePageHashSync(layout, handleJumpToPage);
 

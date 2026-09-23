@@ -17,9 +17,10 @@ export interface Chapter {
   updatedAt: number;
 }
 
-/** What the PDF viewer renders: every chapter concatenated (one continuous
- *  PDF) or just the active chapter, continued after the ones before it. The
- *  canvas and HTML previews always show the active chapter. */
+/** What a viewer lays out: every chapter, as one continuous document
+ *  (`'book'`), or just the active chapter, continued after the ones before
+ *  it (`'chapter'`). The PDF tab and the canvas each keep their own scope;
+ *  the HTML preview always shows the active chapter. */
 export type LayoutScope = 'book' | 'chapter';
 
 /** The book-shaped content slice shared by state, records and bundles. */
@@ -28,6 +29,10 @@ export interface BookContent {
   chapters: Chapter[];
   /** One of `chapters[].id`. */
   activeChapterId: string;
+  /** What the canvas lays out for this book (see {@link LayoutScope}).
+   *  Absent means `'chapter'`. Kept with the book: a short novel reads as
+   *  one document, a textbook one chapter at a time. */
+  canvasScope?: LayoutScope;
 }
 
 /** Where one chapter's text sits inside the composed document. */

@@ -1,0 +1,3813 @@
+{
+ "version": 2,
+ "id": "pintura-espanola",
+ "name": "Pintura española · Spanish Painting",
+ "description": "Catálogo de exposición a una columna: ficha y comentario frente a la lámina a página · A single-column exhibition catalogue, entry and commentary facing the full-page plate",
+ "locale": "es",
+ "locales": [
+  "es",
+  "en"
+ ],
+ "thumbnail": "thumbnail.jpg",
+ "license": "CC0 · CC BY-SA 4.0",
+ "credits": "The Met · National Gallery of Art · Cleveland Museum of Art · Museo Sorolla · Wikipedia",
+ "tags": [
+  "catalogue",
+  "single-column",
+  "plates",
+  "parts"
+ ],
+ "view": {
+  "canvasScope": "book"
+ },
+ "chapters": {
+  "es": [
+   {
+    "title": "Pintura española",
+    "file": "chapters/es/00-portada.md"
+   },
+   {
+    "title": "Sobre este catálogo",
+    "file": "chapters/es/01-introduccion.md"
+   },
+   {
+    "title": "Índice",
+    "file": "chapters/es/02-indice.md"
+   },
+   {
+    "title": "Vista de Toledo",
+    "file": "chapters/es/03-01-vista-de-toledo.md"
+   },
+   {
+    "title": "El cardenal Fernando Niño de Guevara",
+    "file": "chapters/es/04-02-el-cardenal-fernando-nino-de-guevara.md"
+   },
+   {
+    "title": "Laocoonte",
+    "file": "chapters/es/05-03-laocoonte.md"
+   },
+   {
+    "title": "Las lágrimas de san Pedro",
+    "file": "chapters/es/06-04-las-lagrimas-de-san-pedro.md"
+   },
+   {
+    "title": "Juan de Pareja",
+    "file": "chapters/es/07-05-juan-de-pareja.md"
+   },
+   {
+    "title": "La costurera",
+    "file": "chapters/es/08-06-la-costurera.md"
+   },
+   {
+    "title": "Santa Lucía",
+    "file": "chapters/es/09-07-santa-lucia.md"
+   },
+   {
+    "title": "Cristo y la Virgen en la casa de Nazaret",
+    "file": "chapters/es/10-08-cristo-y-la-virgen-en-la-casa-de-nazaret.md"
+   },
+   {
+    "title": "Mujeres en la ventana",
+    "file": "chapters/es/11-09-mujeres-en-la-ventana.md"
+   },
+   {
+    "title": "La Virgen con el Niño",
+    "file": "chapters/es/12-10-la-virgen-con-el-nino.md"
+   },
+   {
+    "title": "Don Manuel Osorio Manrique de Zúñiga",
+    "file": "chapters/es/13-11-don-manuel-osorio-manrique-de-zuniga.md"
+   },
+   {
+    "title": "La marquesa de Pontejos",
+    "file": "chapters/es/14-12-la-marquesa-de-pontejos.md"
+   },
+   {
+    "title": "La señora Sabasa García",
+    "file": "chapters/es/15-13-la-senora-sabasa-garcia.md"
+   },
+   {
+    "title": "Paseo a orillas del mar",
+    "file": "chapters/es/16-14-paseo-a-orillas-del-mar.md"
+   },
+   {
+    "title": "Créditos y fuentes",
+    "file": "chapters/es/17-creditos.md"
+   }
+  ],
+  "en": [
+   {
+    "title": "Spanish Painting",
+    "file": "chapters/en/00-portada.md"
+   },
+   {
+    "title": "About this catalogue",
+    "file": "chapters/en/01-introduction.md"
+   },
+   {
+    "title": "Contents",
+    "file": "chapters/en/02-contents.md"
+   },
+   {
+    "title": "View of Toledo",
+    "file": "chapters/en/03-01-view-of-toledo.md"
+   },
+   {
+    "title": "Cardinal Fernando Niño de Guevara",
+    "file": "chapters/en/04-02-cardinal-fernando-nino-de-guevara.md"
+   },
+   {
+    "title": "Laocoön",
+    "file": "chapters/en/05-03-laocoon.md"
+   },
+   {
+    "title": "The Tears of Saint Peter",
+    "file": "chapters/en/06-04-the-tears-of-saint-peter.md"
+   },
+   {
+    "title": "Juan de Pareja",
+    "file": "chapters/en/07-05-juan-de-pareja.md"
+   },
+   {
+    "title": "The Needlewoman",
+    "file": "chapters/en/08-06-the-needlewoman.md"
+   },
+   {
+    "title": "Saint Lucy",
+    "file": "chapters/en/09-07-saint-lucy.md"
+   },
+   {
+    "title": "Christ and the Virgin in the House at Nazareth",
+    "file": "chapters/en/10-08-christ-and-the-virgin-in-the-house-at-nazareth.md"
+   },
+   {
+    "title": "Two Women at a Window",
+    "file": "chapters/en/11-09-two-women-at-a-window.md"
+   },
+   {
+    "title": "Virgin and Child",
+    "file": "chapters/en/12-10-virgin-and-child.md"
+   },
+   {
+    "title": "Manuel Osorio Manrique de Zuñiga",
+    "file": "chapters/en/13-11-manuel-osorio-manrique-de-zuniga.md"
+   },
+   {
+    "title": "The Marquesa de Pontejos",
+    "file": "chapters/en/14-12-the-marquesa-de-pontejos.md"
+   },
+   {
+    "title": "Señora Sabasa García",
+    "file": "chapters/en/15-13-senora-sabasa-garcia.md"
+   },
+   {
+    "title": "Strolling along the Seashore",
+    "file": "chapters/en/16-14-strolling-along-the-seashore.md"
+   },
+   {
+    "title": "Credits and sources",
+    "file": "chapters/en/17-credits.md"
+   }
+  ]
+ },
+ "config": {
+  "locale": "es",
+  "page": {
+   "sizePreset": "custom",
+   "width": {
+    "value": 210.0,
+    "unit": "mm"
+   },
+   "height": {
+    "value": 270.0,
+    "unit": "mm"
+   },
+   "margins": {
+    "top": {
+     "value": 24.0,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 24.0,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 22.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 44.0,
+     "unit": "mm"
+    },
+    "mirror": true
+   },
+   "baselineGrid": {
+    "enabled": false
+   },
+   "pageNumbering": {
+    "format": "decimal",
+    "startAt": 1
+   }
+  },
+  "layout": {
+   "layoutType": "single"
+  },
+  "bodyText": {
+   "fontFamily": "EB Garamond",
+   "fontSize": {
+    "value": 11,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 15.5,
+    "unit": "pt"
+   },
+   "textAlign": "justify",
+   "firstLineIndent": {
+    "value": 5,
+    "unit": "mm"
+   },
+   "indentAfterHeading": false,
+   "paragraphSpacing": false,
+   "color": {
+    "hex": "#1c1a19",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "boldColor": {
+    "hex": "#1c1a19",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "italicColor": {
+    "hex": "#1c1a19",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "referenceColor": {
+    "hex": "#3d4a63",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "referenceBold": false,
+   "referenceItalic": true,
+   "hyphenation": {
+    "enabled": true,
+    "locale": "es"
+   },
+   "avoidWidows": true,
+   "avoidOrphans": true,
+   "optimalLineBreaking": true
+  },
+  "headings": {
+   "fontFamily": "Bodoni Moda",
+   "color": {
+    "hex": "#1c1a19",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "keepWithNext": true,
+   "levels": [
+    {
+     "level": 1,
+     "fontSize": {
+      "value": 24,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 28,
+      "unit": "pt"
+     },
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "even"
+     },
+     "advancedDesign": {
+      "enabled": true,
+      "minHeight": {
+       "value": 74,
+       "unit": "mm"
+      },
+      "slot": {
+       "elements": [
+        {
+         "kind": "text",
+         "id": "catNumber",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 4,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 144.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{attr.catlabel} {attr.cat}",
+         "fontFamily": "IBM Plex Sans Condensed",
+         "fontSize": {
+          "value": 8.5,
+          "unit": "pt"
+         },
+         "fontWeight": 600,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#3d4a63",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "textTransform": "uppercase",
+         "letterSpacing": {
+          "value": 2.2,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "artist",
+         "placement": {
+          "anchor": {
+           "to": "#catNumber",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 2.5,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 144.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{partTitle}",
+         "fontFamily": "IBM Plex Sans Condensed",
+         "fontSize": {
+          "value": 9.5,
+          "unit": "pt"
+         },
+         "fontWeight": 500,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#6d675f",
+          "model": "hex",
+          "paletteId": "muted"
+         },
+         "textTransform": "uppercase",
+         "letterSpacing": {
+          "value": 1.6,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "workTitle",
+         "placement": {
+          "anchor": {
+           "to": "#artist",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 4,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 144.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "Bodoni Moda",
+         "fontSize": {
+          "value": 32,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": true,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.08,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#1c1a19",
+          "model": "hex",
+          "paletteId": "ink"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "tombstone",
+         "placement": {
+          "anchor": {
+           "to": "#workTitle",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 5,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 144.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{attr.tombstone}",
+         "fontFamily": "IBM Plex Sans Condensed",
+         "fontSize": {
+          "value": 8.5,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.35,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#6d675f",
+          "model": "hex",
+          "paletteId": "muted"
+         }
+        },
+        {
+         "kind": "rule",
+         "id": "workRule",
+         "direction": "horizontal",
+         "placement": {
+          "anchor": {
+           "to": "#tombstone",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 5,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 144.0,
+            "unit": "mm"
+           }
+          }
+         },
+         "color": {
+          "hex": "#c8c2b6",
+          "model": "hex",
+          "paletteId": "rule"
+         },
+         "thickness": {
+          "value": 0.5,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "lead",
+         "placement": {
+          "anchor": {
+           "to": "#workRule",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 6,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 144.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{attr.lead}",
+         "fontFamily": "EB Garamond",
+         "fontSize": {
+          "value": 11.5,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.45,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#1c1a19",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "hyphenate": true,
+         "dropCap": {
+          "lines": 3,
+          "fontFamily": "Bodoni Moda",
+          "fontWeight": 400,
+          "color": {
+           "hex": "#3d4a63",
+           "model": "hex",
+           "paletteId": "band"
+          },
+          "gap": {
+           "value": 1.6,
+           "unit": "mm"
+          }
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "level": 2,
+     "fontSize": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 18,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": true,
+     "color": {
+      "hex": "#3d4a63",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "marginTop": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 4,
+      "unit": "pt"
+     }
+    }
+   ]
+  },
+  "headingStyles": [
+   {
+    "id": "portada",
+    "name": "Portada",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 270.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "coverBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#1c1a19",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "coverImage",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 216.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 171.6,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "greco-laocoonte"
+       },
+       {
+        "kind": "text",
+        "id": "coverSeries",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 22.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 180.6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 164.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.series}",
+        "fontFamily": "IBM Plex Sans Condensed",
+        "fontSize": {
+         "value": 8.5,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#c8c2b6",
+         "model": "hex",
+         "paletteId": "rule"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.4,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverTitle",
+        "placement": {
+         "anchor": {
+          "to": "#coverSeries",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 3,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 164.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{title}",
+        "fontFamily": "Bodoni Moda",
+        "fontSize": {
+         "value": 54,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.0,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverSubtitle",
+        "placement": {
+         "anchor": {
+          "to": "#coverTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 154.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{subtitle}",
+        "fontFamily": "EB Garamond",
+        "fontSize": {
+         "value": 13,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.3,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#c8c2b6",
+         "model": "hex",
+         "paletteId": "rule"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverPublisher",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "bottom-left"
+         },
+         "offset": {
+          "x": {
+           "value": 22.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": -14,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 164.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.publisher}",
+        "fontFamily": "IBM Plex Sans Condensed",
+        "fontSize": {
+         "value": 7.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#6d675f",
+         "model": "hex",
+         "paletteId": "muted"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 1.8,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "margins": {
+     "top": {
+      "value": 190.0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 24.0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 81.0,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 44.0,
+      "unit": "mm"
+     }
+    }
+   },
+   {
+    "id": "preliminar",
+    "name": "Preliminar",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 64,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Bodoni Moda",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.1,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1a19",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#c8c2b6",
+         "model": "hex",
+         "paletteId": "rule"
+        },
+        "thickness": {
+         "value": 0.5,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "lead",
+        "placement": {
+         "anchor": {
+          "to": "#frontRule",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.lead}",
+        "fontFamily": "EB Garamond",
+        "fontSize": {
+         "value": 11.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.45,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1a19",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "hyphenate": true,
+        "dropCap": {
+         "lines": 3,
+         "fontFamily": "Bodoni Moda",
+         "fontWeight": 400,
+         "color": {
+          "hex": "#3d4a63",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "gap": {
+          "value": 1.6,
+          "unit": "mm"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "indice",
+    "name": "Índice",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "any"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 36,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Bodoni Moda",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.1,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1a19",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#c8c2b6",
+         "model": "hex",
+         "paletteId": "rule"
+        },
+        "thickness": {
+         "value": 0.5,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "paragraphStyles": [
+   {
+    "id": "colofon",
+    "name": "Colofón",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6d675f",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "fuente",
+    "name": "Fuente",
+    "fontFamily": "IBM Plex Sans Condensed",
+    "fontSize": {
+     "value": 7.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 4,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6d675f",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "creditos",
+    "name": "Créditos",
+    "fontSize": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "lista",
+    "name": "Lista de obras",
+    "fontFamily": "IBM Plex Sans Condensed",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 4,
+     "unit": "pt"
+    }
+   }
+  ],
+  "parts": {
+   "breakBefore": {
+    "parity": "odd"
+   },
+   "breakAfter": {
+    "enabled": true,
+    "parity": "any"
+   },
+   "margins": {
+    "top": {
+     "value": 128,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 28,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 22.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 62,
+     "unit": "mm"
+    }
+   },
+   "design": {
+    "elements": [
+     {
+      "kind": "box",
+      "id": "partBg",
+      "placement": {
+       "anchor": {
+        "to": "bleed",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": "fill",
+        "height": "fill"
+       }
+      },
+      "style": {
+       "backgroundColor": {
+        "hex": "#3d4a63",
+        "model": "hex",
+        "paletteId": "band"
+       },
+       "borderRadius": {
+        "value": 0,
+        "unit": "mm"
+       }
+      }
+     },
+     {
+      "kind": "text",
+      "id": "partLabel",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 22.0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 64,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 144.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "Sección {number}",
+      "fontFamily": "IBM Plex Sans Condensed",
+      "fontSize": {
+       "value": 9,
+       "unit": "pt"
+      },
+      "fontWeight": 600,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.2,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "textTransform": "uppercase",
+      "letterSpacing": {
+       "value": 2.6,
+       "unit": "pt"
+      }
+     },
+     {
+      "kind": "rule",
+      "id": "partRule",
+      "direction": "horizontal",
+      "placement": {
+       "anchor": {
+        "to": "#partLabel",
+        "edge": "below"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 4,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 22,
+         "unit": "mm"
+        }
+       }
+      },
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "thickness": {
+       "value": 0.8,
+       "unit": "pt"
+      }
+     },
+     {
+      "kind": "text",
+      "id": "partTitle",
+      "placement": {
+       "anchor": {
+        "to": "#partRule",
+        "edge": "below"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 6,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 154.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "{titleText}",
+      "fontFamily": "Bodoni Moda",
+      "fontSize": {
+       "value": 52,
+       "unit": "pt"
+      },
+      "fontWeight": 400,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.02,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      }
+     }
+    ]
+   },
+   "bodyStyle": {
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 15.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex",
+     "paletteId": "white"
+    },
+    "textAlign": "left",
+    "numberColor": {
+     "hex": "#ffffff",
+     "model": "hex",
+     "paletteId": "white"
+    },
+    "orderedLists": {
+     "numberFormat": "arabic",
+     "separator": "",
+     "gap": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "indent": {
+      "value": 9,
+      "unit": "mm"
+     },
+     "fontFamily": "IBM Plex Sans Condensed",
+     "numberFontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "itemSpacing": {
+      "value": 2,
+      "unit": "pt"
+     }
+    }
+   }
+  },
+  "toc": {
+   "levels": [
+    {
+     "level": 1,
+     "fontFamily": "EB Garamond",
+     "fontSize": {
+      "value": 11.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 15,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": true,
+     "color": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "numberWidth": {
+      "value": 10,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "numberFontFamily": "IBM Plex Sans Condensed",
+     "numberFontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "numberColor": {
+      "hex": "#3d4a63",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "marginTop": {
+      "value": 2,
+      "unit": "pt"
+     }
+    }
+   ],
+   "unnumbered": {
+    "fontFamily": "EB Garamond",
+    "italic": false,
+    "color": {
+     "hex": "#1c1a19",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   },
+   "pageNumber": {
+    "fontFamily": "IBM Plex Sans Condensed",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "fontWeight": 500,
+    "color": {
+     "hex": "#1c1a19",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "width": {
+     "value": 10,
+     "unit": "mm"
+    }
+   },
+   "leader": {
+    "enabled": true,
+    "char": ".",
+    "gap": {
+     "value": 1.2,
+     "unit": "mm"
+    }
+   },
+   "parts": {
+    "enabled": true,
+    "height": {
+     "value": 18,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 3,
+     "unit": "pt"
+    },
+    "design": {
+     "elements": [
+      {
+       "kind": "box",
+       "id": "tocPartBand",
+       "placement": {
+        "anchor": {
+         "to": "container",
+         "edge": "left"
+        },
+        "offset": {
+         "x": {
+          "value": 0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 5,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 5,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "backgroundColor": {
+         "hex": "#3d4a63",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       }
+      },
+      {
+       "kind": "text",
+       "id": "tocPart",
+       "placement": {
+        "anchor": {
+         "to": "#tocPartBand",
+         "edge": "right-of"
+        },
+        "offset": {
+         "x": {
+          "value": 3,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 140,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{titleText}",
+       "fontFamily": "IBM Plex Sans Condensed",
+       "fontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "fontWeight": 600,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "wrap",
+       "color": {
+        "hex": "#3d4a63",
+        "model": "hex",
+        "paletteId": "band"
+       },
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 2,
+        "unit": "pt"
+       }
+      }
+     ]
+    }
+   }
+  },
+  "header": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "artistEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 44.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 13.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 120,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{partTitle}",
+     "fontFamily": "IBM Plex Sans Condensed",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 500,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#6d675f",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.6,
+      "unit": "pt"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "titleOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -44.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 13.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 120,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{chapterTitle}",
+     "fontFamily": "EB Garamond",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": true,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#6d675f",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "odd",
+     "pages": "body"
+    }
+   ]
+  },
+  "footer": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioBody",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -14.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "IBM Plex Sans Condensed",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 500,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "folioOpener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -14.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "IBM Plex Sans Condensed",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 500,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "pages": "opener"
+    }
+   ]
+  },
+  "captionStyle": {
+   "fontFamily": "IBM Plex Sans Condensed",
+   "fontSize": {
+    "value": 8,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#1c1a19",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "align": "left",
+   "gap": {
+    "value": 2.2,
+    "unit": "mm"
+   },
+   "labelBold": true,
+   "labelColor": {
+    "hex": "#3d4a63",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "descriptionItalic": false,
+   "note": {
+    "fontSize": {
+     "value": 6.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6d675f",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "italic": false,
+    "gap": {
+     "value": 0.6,
+     "unit": "mm"
+    }
+   }
+  },
+  "unorderedLists": {
+   "bulletChar": "•",
+   "color": {
+    "hex": "#3d4a63",
+    "model": "hex",
+    "paletteId": "band"
+   }
+  },
+  "orderedLists": {
+   "color": {
+    "hex": "#3d4a63",
+    "model": "hex",
+    "paletteId": "band"
+   }
+  },
+  "colorPalette": [
+   {
+    "id": "ink",
+    "name": "Tinta",
+    "value": {
+     "hex": "#1c1a19",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "paper",
+    "name": "Papel",
+    "value": {
+     "hex": "#fbf9f4",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "white",
+    "name": "Blanco",
+    "value": {
+     "hex": "#ffffff",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "band",
+    "name": "Color de sección",
+    "value": {
+     "hex": "#3d4a63",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "rule",
+    "name": "Filetes",
+    "value": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "muted",
+    "name": "Gris de fichas",
+    "value": {
+     "hex": "#6d675f",
+     "model": "hex"
+    }
+   }
+  ],
+  "resourceTypes": [
+   {
+    "id": "plate",
+    "name": "Cat.",
+    "namePlural": "Cat.",
+    "shortLabel": "cat.",
+    "captionPrefix": "Cat.",
+    "numberingTemplate": "{n}",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "top",
+     "span": "page",
+     "width": 1
+    }
+   }
+  ],
+  "pdfGeneration": {
+   "outlines": true
+  }
+ },
+ "localized": {
+  "es": {
+   "config": {
+    "locale": "es",
+    "bodyText": {
+     "fontFamily": "EB Garamond",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 15.5,
+      "unit": "pt"
+     },
+     "textAlign": "justify",
+     "firstLineIndent": {
+      "value": 5,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": false,
+     "color": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#3d4a63",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "referenceBold": false,
+     "referenceItalic": true,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "es"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "headings": {
+     "fontFamily": "Bodoni Moda",
+     "color": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "keepWithNext": true,
+     "levels": [
+      {
+       "level": 1,
+       "fontSize": {
+        "value": 24,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 28,
+        "unit": "pt"
+       },
+       "span": "page",
+       "breakBefore": {
+        "enabled": true,
+        "parity": "even"
+       },
+       "advancedDesign": {
+        "enabled": true,
+        "minHeight": {
+         "value": 74,
+         "unit": "mm"
+        },
+        "slot": {
+         "elements": [
+          {
+           "kind": "text",
+           "id": "catNumber",
+           "placement": {
+            "anchor": {
+             "to": "container",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.catlabel} {attr.cat}",
+           "fontFamily": "IBM Plex Sans Condensed",
+           "fontSize": {
+            "value": 8.5,
+            "unit": "pt"
+           },
+           "fontWeight": 600,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#3d4a63",
+            "model": "hex",
+            "paletteId": "band"
+           },
+           "textTransform": "uppercase",
+           "letterSpacing": {
+            "value": 2.2,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "artist",
+           "placement": {
+            "anchor": {
+             "to": "#catNumber",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 2.5,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{partTitle}",
+           "fontFamily": "IBM Plex Sans Condensed",
+           "fontSize": {
+            "value": 9.5,
+            "unit": "pt"
+           },
+           "fontWeight": 500,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#6d675f",
+            "model": "hex",
+            "paletteId": "muted"
+           },
+           "textTransform": "uppercase",
+           "letterSpacing": {
+            "value": 1.6,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "workTitle",
+           "placement": {
+            "anchor": {
+             "to": "#artist",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{titleText}",
+           "fontFamily": "Bodoni Moda",
+           "fontSize": {
+            "value": 32,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": true,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.08,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#1c1a19",
+            "model": "hex",
+            "paletteId": "ink"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "tombstone",
+           "placement": {
+            "anchor": {
+             "to": "#workTitle",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 5,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.tombstone}",
+           "fontFamily": "IBM Plex Sans Condensed",
+           "fontSize": {
+            "value": 8.5,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.35,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#6d675f",
+            "model": "hex",
+            "paletteId": "muted"
+           }
+          },
+          {
+           "kind": "rule",
+           "id": "workRule",
+           "direction": "horizontal",
+           "placement": {
+            "anchor": {
+             "to": "#tombstone",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 5,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             }
+            }
+           },
+           "color": {
+            "hex": "#c8c2b6",
+            "model": "hex",
+            "paletteId": "rule"
+           },
+           "thickness": {
+            "value": 0.5,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "lead",
+           "placement": {
+            "anchor": {
+             "to": "#workRule",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 6,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.lead}",
+           "fontFamily": "EB Garamond",
+           "fontSize": {
+            "value": 11.5,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.45,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#1c1a19",
+            "model": "hex",
+            "paletteId": "ink"
+           },
+           "hyphenate": true,
+           "dropCap": {
+            "lines": 3,
+            "fontFamily": "Bodoni Moda",
+            "fontWeight": 400,
+            "color": {
+             "hex": "#3d4a63",
+             "model": "hex",
+             "paletteId": "band"
+            },
+            "gap": {
+             "value": 1.6,
+             "unit": "mm"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      {
+       "level": 2,
+       "fontSize": {
+        "value": 14,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 18,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": true,
+       "color": {
+        "hex": "#3d4a63",
+        "model": "hex",
+        "paletteId": "band"
+       },
+       "marginTop": {
+        "value": 14,
+        "unit": "pt"
+       },
+       "marginBottom": {
+        "value": 4,
+        "unit": "pt"
+       }
+      }
+     ]
+    },
+    "parts": {
+     "breakBefore": {
+      "parity": "odd"
+     },
+     "breakAfter": {
+      "enabled": true,
+      "parity": "any"
+     },
+     "margins": {
+      "top": {
+       "value": 128,
+       "unit": "mm"
+      },
+      "bottom": {
+       "value": 28,
+       "unit": "mm"
+      },
+      "left": {
+       "value": 22.0,
+       "unit": "mm"
+      },
+      "right": {
+       "value": 62,
+       "unit": "mm"
+      }
+     },
+     "design": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "partBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#3d4a63",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 22.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 64,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Sección {number}",
+        "fontFamily": "IBM Plex Sans Condensed",
+        "fontSize": {
+         "value": 9,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.6,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "partRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#partLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 22,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        },
+        "thickness": {
+         "value": 0.8,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partTitle",
+        "placement": {
+         "anchor": {
+          "to": "#partRule",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 154.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Bodoni Moda",
+        "fontSize": {
+         "value": 52,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.02,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       }
+      ]
+     },
+     "bodyStyle": {
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 11,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 15.5,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "textAlign": "left",
+      "numberColor": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "orderedLists": {
+       "numberFormat": "arabic",
+       "separator": "",
+       "gap": {
+        "value": 3,
+        "unit": "mm"
+       },
+       "indent": {
+        "value": 9,
+        "unit": "mm"
+       },
+       "fontFamily": "IBM Plex Sans Condensed",
+       "numberFontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "itemSpacing": {
+        "value": 2,
+        "unit": "pt"
+       }
+      }
+     }
+    },
+    "resourceTypes": [
+     {
+      "id": "plate",
+      "name": "Cat.",
+      "namePlural": "Cat.",
+      "shortLabel": "cat.",
+      "captionPrefix": "Cat.",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "top",
+       "span": "page",
+       "width": 1
+      }
+     }
+    ]
+   },
+   "resources": [
+    {
+     "id": "greco-toledo",
+     "caption": "El Greco, *Vista de Toledo*, ca. 1599–1600. The Metropolitan Museum of Art, Nueva York.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "El Greco: Vista de Toledo"
+    },
+    {
+     "id": "greco-cardenal",
+     "caption": "El Greco, *El cardenal Fernando Niño de Guevara*, ca. 1600. The Metropolitan Museum of Art, Nueva York.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "El Greco: El cardenal Fernando Niño de Guevara"
+    },
+    {
+     "id": "greco-laocoonte",
+     "caption": "El Greco, *Laocoonte*, c. 1610–1614. National Gallery of Art, Washington.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "El Greco: Laocoonte"
+    },
+    {
+     "id": "ribera-pedro",
+     "caption": "José de Ribera, *Las lágrimas de san Pedro*, ca. 1612–1613. The Metropolitan Museum of Art, Nueva York.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "José de Ribera: Las lágrimas de san Pedro"
+    },
+    {
+     "id": "velazquez-pareja",
+     "caption": "Diego Velázquez, *Juan de Pareja*, 1650. The Metropolitan Museum of Art, Nueva York.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Diego Velázquez: Juan de Pareja"
+    },
+    {
+     "id": "velazquez-costurera",
+     "caption": "Diego Velázquez, *La costurera*, c. 1640–1650. National Gallery of Art, Washington.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Diego Velázquez: La costurera"
+    },
+    {
+     "id": "zurbaran-lucia",
+     "caption": "Francisco de Zurbarán, *Santa Lucía*, c. 1625–1630. National Gallery of Art, Washington.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Francisco de Zurbarán: Santa Lucía"
+    },
+    {
+     "id": "zurbaran-nazaret",
+     "caption": "Francisco de Zurbarán, *Cristo y la Virgen en la casa de Nazaret*, c. 1640. Cleveland Museum of Art.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Francisco de Zurbarán: Cristo y la Virgen en la casa de Nazaret"
+    },
+    {
+     "id": "murillo-ventana",
+     "caption": "Bartolomé Esteban Murillo, *Mujeres en la ventana*, c. 1655–1660. National Gallery of Art, Washington.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Bartolomé Esteban Murillo: Mujeres en la ventana"
+    },
+    {
+     "id": "murillo-virgen",
+     "caption": "Bartolomé Esteban Murillo, *La Virgen con el Niño*, 1670s. The Metropolitan Museum of Art, Nueva York.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Bartolomé Esteban Murillo: La Virgen con el Niño"
+    },
+    {
+     "id": "goya-manuel",
+     "caption": "Francisco de Goya, *Don Manuel Osorio Manrique de Zúñiga*, 1787–1788. The Metropolitan Museum of Art, Nueva York.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Francisco de Goya: Don Manuel Osorio Manrique de Zúñiga"
+    },
+    {
+     "id": "goya-pontejos",
+     "caption": "Francisco de Goya, *La marquesa de Pontejos*, c. 1786. National Gallery of Art, Washington.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Francisco de Goya: La marquesa de Pontejos"
+    },
+    {
+     "id": "goya-sabasa",
+     "caption": "Francisco de Goya, *La señora Sabasa García*, c. 1806–1811. National Gallery of Art, Washington.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Francisco de Goya: La señora Sabasa García"
+    },
+    {
+     "id": "sorolla-paseo",
+     "caption": "Joaquín Sorolla, *Paseo a orillas del mar*, 1909. Museo Sorolla, Madrid.",
+     "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+     "altText": "Joaquín Sorolla: Paseo a orillas del mar"
+    }
+   ]
+  },
+  "en": {
+   "config": {
+    "locale": "en-us",
+    "bodyText": {
+     "fontFamily": "EB Garamond",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 15.5,
+      "unit": "pt"
+     },
+     "textAlign": "justify",
+     "firstLineIndent": {
+      "value": 5,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": false,
+     "color": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#3d4a63",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "referenceBold": false,
+     "referenceItalic": true,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "en-us"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "headings": {
+     "fontFamily": "Bodoni Moda",
+     "color": {
+      "hex": "#1c1a19",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "keepWithNext": true,
+     "levels": [
+      {
+       "level": 1,
+       "fontSize": {
+        "value": 24,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 28,
+        "unit": "pt"
+       },
+       "span": "page",
+       "breakBefore": {
+        "enabled": true,
+        "parity": "even"
+       },
+       "advancedDesign": {
+        "enabled": true,
+        "minHeight": {
+         "value": 74,
+         "unit": "mm"
+        },
+        "slot": {
+         "elements": [
+          {
+           "kind": "text",
+           "id": "catNumber",
+           "placement": {
+            "anchor": {
+             "to": "container",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.catlabel} {attr.cat}",
+           "fontFamily": "IBM Plex Sans Condensed",
+           "fontSize": {
+            "value": 8.5,
+            "unit": "pt"
+           },
+           "fontWeight": 600,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#3d4a63",
+            "model": "hex",
+            "paletteId": "band"
+           },
+           "textTransform": "uppercase",
+           "letterSpacing": {
+            "value": 2.2,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "artist",
+           "placement": {
+            "anchor": {
+             "to": "#catNumber",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 2.5,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{partTitle}",
+           "fontFamily": "IBM Plex Sans Condensed",
+           "fontSize": {
+            "value": 9.5,
+            "unit": "pt"
+           },
+           "fontWeight": 500,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#6d675f",
+            "model": "hex",
+            "paletteId": "muted"
+           },
+           "textTransform": "uppercase",
+           "letterSpacing": {
+            "value": 1.6,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "workTitle",
+           "placement": {
+            "anchor": {
+             "to": "#artist",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{titleText}",
+           "fontFamily": "Bodoni Moda",
+           "fontSize": {
+            "value": 32,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": true,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.08,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#1c1a19",
+            "model": "hex",
+            "paletteId": "ink"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "tombstone",
+           "placement": {
+            "anchor": {
+             "to": "#workTitle",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 5,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.tombstone}",
+           "fontFamily": "IBM Plex Sans Condensed",
+           "fontSize": {
+            "value": 8.5,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.35,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#6d675f",
+            "model": "hex",
+            "paletteId": "muted"
+           }
+          },
+          {
+           "kind": "rule",
+           "id": "workRule",
+           "direction": "horizontal",
+           "placement": {
+            "anchor": {
+             "to": "#tombstone",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 5,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             }
+            }
+           },
+           "color": {
+            "hex": "#c8c2b6",
+            "model": "hex",
+            "paletteId": "rule"
+           },
+           "thickness": {
+            "value": 0.5,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "lead",
+           "placement": {
+            "anchor": {
+             "to": "#workRule",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 6,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 144.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.lead}",
+           "fontFamily": "EB Garamond",
+           "fontSize": {
+            "value": 11.5,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.45,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#1c1a19",
+            "model": "hex",
+            "paletteId": "ink"
+           },
+           "hyphenate": true,
+           "dropCap": {
+            "lines": 3,
+            "fontFamily": "Bodoni Moda",
+            "fontWeight": 400,
+            "color": {
+             "hex": "#3d4a63",
+             "model": "hex",
+             "paletteId": "band"
+            },
+            "gap": {
+             "value": 1.6,
+             "unit": "mm"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      {
+       "level": 2,
+       "fontSize": {
+        "value": 14,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 18,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": true,
+       "color": {
+        "hex": "#3d4a63",
+        "model": "hex",
+        "paletteId": "band"
+       },
+       "marginTop": {
+        "value": 14,
+        "unit": "pt"
+       },
+       "marginBottom": {
+        "value": 4,
+        "unit": "pt"
+       }
+      }
+     ]
+    },
+    "parts": {
+     "breakBefore": {
+      "parity": "odd"
+     },
+     "breakAfter": {
+      "enabled": true,
+      "parity": "any"
+     },
+     "margins": {
+      "top": {
+       "value": 128,
+       "unit": "mm"
+      },
+      "bottom": {
+       "value": 28,
+       "unit": "mm"
+      },
+      "left": {
+       "value": 22.0,
+       "unit": "mm"
+      },
+      "right": {
+       "value": 62,
+       "unit": "mm"
+      }
+     },
+     "design": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "partBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#3d4a63",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 22.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 64,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Section {number}",
+        "fontFamily": "IBM Plex Sans Condensed",
+        "fontSize": {
+         "value": 9,
+         "unit": "pt"
+        },
+        "fontWeight": 600,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.6,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "partRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#partLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 22,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        },
+        "thickness": {
+         "value": 0.8,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partTitle",
+        "placement": {
+         "anchor": {
+          "to": "#partRule",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 154.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Bodoni Moda",
+        "fontSize": {
+         "value": 52,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.02,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       }
+      ]
+     },
+     "bodyStyle": {
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 11,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 15.5,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "textAlign": "left",
+      "numberColor": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "orderedLists": {
+       "numberFormat": "arabic",
+       "separator": "",
+       "gap": {
+        "value": 3,
+        "unit": "mm"
+       },
+       "indent": {
+        "value": 9,
+        "unit": "mm"
+       },
+       "fontFamily": "IBM Plex Sans Condensed",
+       "numberFontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "itemSpacing": {
+        "value": 2,
+        "unit": "pt"
+       }
+      }
+     }
+    },
+    "resourceTypes": [
+     {
+      "id": "plate",
+      "name": "Cat.",
+      "namePlural": "Cat.",
+      "shortLabel": "cat.",
+      "captionPrefix": "Cat.",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "top",
+       "span": "page",
+       "width": 1
+      }
+     }
+    ]
+   },
+   "resources": [
+    {
+     "id": "greco-toledo",
+     "caption": "El Greco, *View of Toledo*, ca. 1599–1600. The Metropolitan Museum of Art, New York.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "El Greco: View of Toledo"
+    },
+    {
+     "id": "greco-cardenal",
+     "caption": "El Greco, *Cardinal Fernando Niño de Guevara*, ca. 1600. The Metropolitan Museum of Art, New York.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "El Greco: Cardinal Fernando Niño de Guevara"
+    },
+    {
+     "id": "greco-laocoonte",
+     "caption": "El Greco, *Laocoön*, c. 1610–1614. National Gallery of Art, Washington.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "El Greco: Laocoön"
+    },
+    {
+     "id": "ribera-pedro",
+     "caption": "Jusepe de Ribera, *The Tears of Saint Peter*, ca. 1612–1613. The Metropolitan Museum of Art, New York.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Jusepe de Ribera: The Tears of Saint Peter"
+    },
+    {
+     "id": "velazquez-pareja",
+     "caption": "Diego Velázquez, *Juan de Pareja*, 1650. The Metropolitan Museum of Art, New York.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Diego Velázquez: Juan de Pareja"
+    },
+    {
+     "id": "velazquez-costurera",
+     "caption": "Diego Velázquez, *The Needlewoman*, c. 1640–1650. National Gallery of Art, Washington.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Diego Velázquez: The Needlewoman"
+    },
+    {
+     "id": "zurbaran-lucia",
+     "caption": "Francisco de Zurbarán, *Saint Lucy*, c. 1625–1630. National Gallery of Art, Washington.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Francisco de Zurbarán: Saint Lucy"
+    },
+    {
+     "id": "zurbaran-nazaret",
+     "caption": "Francisco de Zurbarán, *Christ and the Virgin in the House at Nazareth*, c. 1640. Cleveland Museum of Art.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Francisco de Zurbarán: Christ and the Virgin in the House at Nazareth"
+    },
+    {
+     "id": "murillo-ventana",
+     "caption": "Bartolomé Esteban Murillo, *Two Women at a Window*, c. 1655–1660. National Gallery of Art, Washington.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Bartolomé Esteban Murillo: Two Women at a Window"
+    },
+    {
+     "id": "murillo-virgen",
+     "caption": "Bartolomé Esteban Murillo, *Virgin and Child*, 1670s. The Metropolitan Museum of Art, New York.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Bartolomé Esteban Murillo: Virgin and Child"
+    },
+    {
+     "id": "goya-manuel",
+     "caption": "Francisco Goya, *Manuel Osorio Manrique de Zuñiga*, 1787–1788. The Metropolitan Museum of Art, New York.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Francisco Goya: Manuel Osorio Manrique de Zuñiga"
+    },
+    {
+     "id": "goya-pontejos",
+     "caption": "Francisco Goya, *The Marquesa de Pontejos*, c. 1786. National Gallery of Art, Washington.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Francisco Goya: The Marquesa de Pontejos"
+    },
+    {
+     "id": "goya-sabasa",
+     "caption": "Francisco Goya, *Señora Sabasa García*, c. 1806–1811. National Gallery of Art, Washington.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Francisco Goya: Señora Sabasa García"
+    },
+    {
+     "id": "sorolla-paseo",
+     "caption": "Joaquín Sorolla, *Strolling along the Seashore*, 1909. Museo Sorolla, Madrid.",
+     "note": "Public-domain image (CC0) released by the museum under its open-access programme.",
+     "altText": "Joaquín Sorolla: Strolling along the Seashore"
+    }
+   ]
+  }
+ },
+ "resources": [
+  {
+   "id": "greco-toledo",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/greco-toledo.jpg",
+   "width": 1955,
+   "height": 2200,
+   "caption": "El Greco, *Vista de Toledo*, ca. 1599–1600. The Metropolitan Museum of Art, Nueva York.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "El Greco: Vista de Toledo",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "greco-cardenal",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/greco-cardenal.jpg",
+   "width": 1650,
+   "height": 2200,
+   "caption": "El Greco, *El cardenal Fernando Niño de Guevara*, ca. 1600. The Metropolitan Museum of Art, Nueva York.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "El Greco: El cardenal Fernando Niño de Guevara",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "greco-laocoonte",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/greco-laocoonte.jpg",
+   "width": 2200,
+   "height": 1748,
+   "caption": "El Greco, *Laocoonte*, c. 1610–1614. National Gallery of Art, Washington.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "El Greco: Laocoonte",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "ribera-pedro",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/ribera-pedro.jpg",
+   "width": 1545,
+   "height": 2200,
+   "caption": "José de Ribera, *Las lágrimas de san Pedro*, ca. 1612–1613. The Metropolitan Museum of Art, Nueva York.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "José de Ribera: Las lágrimas de san Pedro",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.995,
+    "align": "center"
+   }
+  },
+  {
+   "id": "velazquez-pareja",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/velazquez-pareja.jpg",
+   "width": 1900,
+   "height": 2200,
+   "caption": "Diego Velázquez, *Juan de Pareja*, 1650. The Metropolitan Museum of Art, Nueva York.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Diego Velázquez: Juan de Pareja",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "velazquez-costurera",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/velazquez-costurera.jpg",
+   "width": 1809,
+   "height": 2200,
+   "caption": "Diego Velázquez, *La costurera*, c. 1640–1650. National Gallery of Art, Washington.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Diego Velázquez: La costurera",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "zurbaran-lucia",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/zurbaran-lucia.jpg",
+   "width": 1629,
+   "height": 2200,
+   "caption": "Francisco de Zurbarán, *Santa Lucía*, c. 1625–1630. National Gallery of Art, Washington.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Francisco de Zurbarán: Santa Lucía",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "zurbaran-nazaret",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/zurbaran-nazaret.jpg",
+   "width": 2200,
+   "height": 1633,
+   "caption": "Francisco de Zurbarán, *Cristo y la Virgen en la casa de Nazaret*, c. 1640. Cleveland Museum of Art.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Francisco de Zurbarán: Cristo y la Virgen en la casa de Nazaret",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "murillo-ventana",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/murillo-ventana.jpg",
+   "width": 1834,
+   "height": 2200,
+   "caption": "Bartolomé Esteban Murillo, *Mujeres en la ventana*, c. 1655–1660. National Gallery of Art, Washington.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Bartolomé Esteban Murillo: Mujeres en la ventana",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "murillo-virgen",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/murillo-virgen.jpg",
+   "width": 1554,
+   "height": 2200,
+   "caption": "Bartolomé Esteban Murillo, *La Virgen con el Niño*, 1670s. The Metropolitan Museum of Art, Nueva York.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Bartolomé Esteban Murillo: La Virgen con el Niño",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "goya-manuel",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/goya-manuel.jpg",
+   "width": 1622,
+   "height": 2200,
+   "caption": "Francisco de Goya, *Don Manuel Osorio Manrique de Zúñiga*, 1787–1788. The Metropolitan Museum of Art, Nueva York.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Francisco de Goya: Don Manuel Osorio Manrique de Zúñiga",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "goya-pontejos",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/goya-pontejos.jpg",
+   "width": 1322,
+   "height": 2200,
+   "caption": "Francisco de Goya, *La marquesa de Pontejos*, c. 1786. National Gallery of Art, Washington.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Francisco de Goya: La marquesa de Pontejos",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.851,
+    "align": "center"
+   }
+  },
+  {
+   "id": "goya-sabasa",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/goya-sabasa.jpg",
+   "width": 1784,
+   "height": 2200,
+   "caption": "Francisco de Goya, *La señora Sabasa García*, c. 1806–1811. National Gallery of Art, Washington.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Francisco de Goya: La señora Sabasa García",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  },
+  {
+   "id": "sorolla-paseo",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sorolla-paseo.jpg",
+   "width": 2172,
+   "height": 2200,
+   "caption": "Joaquín Sorolla, *Paseo a orillas del mar*, 1909. Museo Sorolla, Madrid.",
+   "note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
+   "altText": "Joaquín Sorolla: Paseo a orillas del mar",
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   }
+  }
+ ],
+ "fonts": [
+  {
+   "name": "Bodoni Moda",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/BodoniModa-Regular.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/BodoniModa-Bold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/BodoniModa-Italic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "EB Garamond",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/EBGaramond-Regular.ttf"
+    },
+    {
+     "weight": 500,
+     "style": "normal",
+     "file": "fonts/EBGaramond-Medium.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/EBGaramond-Bold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/EBGaramond-Italic.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "italic",
+     "file": "fonts/EBGaramond-BoldItalic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "IBM Plex Sans Condensed",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/IBMPlexSansCondensed-Regular.ttf"
+    },
+    {
+     "weight": 500,
+     "style": "normal",
+     "file": "fonts/IBMPlexSansCondensed-Medium.ttf"
+    },
+    {
+     "weight": 600,
+     "style": "normal",
+     "file": "fonts/IBMPlexSansCondensed-SemiBold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/IBMPlexSansCondensed-Italic.ttf"
+    }
+   ]
+  }
+ ]
+}

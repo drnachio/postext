@@ -16,6 +16,7 @@ import {
 import { SOFT_HYPHEN } from './types';
 import type { MeasuredBlock, MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
+import { isRuntLastLine } from './runts';
 
 function extractSegments(
   prepared: PreparedTextWithSegments,
@@ -156,7 +157,11 @@ export function measureBlock(
         items, breaks, prepared, lineHeightPx,
         lineWidthFn, lineIndentFn, normalSpaceWidth, textAlign,
       );
-      return { lines: kpLines, totalHeight: kpLines.length * lineHeightPx };
+      return {
+        lines: kpLines,
+        totalHeight: kpLines.length * lineHeightPx,
+        ...(isRuntLastLine(kpLines, runtMinWidth) ? { lastLineRunt: true } : {}),
+      };
     }
     // Fallback to greedy if K-P produced no breaks
   }

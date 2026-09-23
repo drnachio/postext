@@ -1,0 +1,6698 @@
+{
+ "version": 2,
+ "id": "openstax-fisica",
+ "name": "Física universitaria · Physics (OpenStax)",
+ "description": "Libro de texto a columna y media con ejemplos resueltos, comprobaciones, tablas y fórmulas · A column-and-a-half textbook with worked examples, checks, tables and formulas",
+ "locale": "es",
+ "locales": [
+  "es",
+  "en"
+ ],
+ "thumbnail": "thumbnail.jpg",
+ "license": "CC BY 4.0",
+ "credits": "OpenStax, Rice University",
+ "tags": [
+  "textbook",
+  "one-and-a-half",
+  "math",
+  "callouts",
+  "tables"
+ ],
+ "view": {
+  "canvasScope": "book"
+ },
+ "chapters": {
+  "es": [
+   {
+    "title": "Física universitaria",
+    "file": "chapters/es/00-portada.md"
+   },
+   {
+    "title": "Índice",
+    "file": "chapters/es/01-indice.md"
+   },
+   {
+    "title": "Unidades y medidas",
+    "file": "chapters/es/02-01-unidades-y-medidas.md"
+   },
+   {
+    "title": "Vectores",
+    "file": "chapters/es/03-02-vectores.md"
+   },
+   {
+    "title": "Créditos y licencia",
+    "file": "chapters/es/04-creditos.md"
+   }
+  ],
+  "en": [
+   {
+    "title": "Physics",
+    "file": "chapters/en/00-portada.md"
+   },
+   {
+    "title": "Contents",
+    "file": "chapters/en/01-contents.md"
+   },
+   {
+    "title": "What is Physics?",
+    "file": "chapters/en/02-01-what-is-physics.md"
+   },
+   {
+    "title": "Motion in One Dimension",
+    "file": "chapters/en/03-02-motion-in-one-dimension.md"
+   },
+   {
+    "title": "Credits and licence",
+    "file": "chapters/en/04-credits.md"
+   }
+  ]
+ },
+ "config": {
+  "locale": "es",
+  "page": {
+   "sizePreset": "custom",
+   "width": {
+    "value": 210.0,
+    "unit": "mm"
+   },
+   "height": {
+    "value": 275.0,
+    "unit": "mm"
+   },
+   "margins": {
+    "top": {
+     "value": 24.0,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 22.0,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 20.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 16.0,
+     "unit": "mm"
+    },
+    "mirror": true
+   },
+   "baselineGrid": {
+    "enabled": false
+   },
+   "pageNumbering": {
+    "format": "decimal",
+    "startAt": 1
+   }
+  },
+  "layout": {
+   "layoutType": "oneAndHalf",
+   "gutterWidth": {
+    "value": 7.0,
+    "unit": "mm"
+   },
+   "sideColumnPercent": 30.0,
+   "sideColumnRole": "floats",
+   "sideColumnSide": "outer"
+  },
+  "bodyText": {
+   "fontFamily": "Source Serif 4",
+   "fontSize": {
+    "value": 10.2,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 14.2,
+    "unit": "pt"
+   },
+   "textAlign": "justify",
+   "firstLineIndent": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "indentAfterHeading": false,
+   "paragraphSpacing": true,
+   "color": {
+    "hex": "#1f2328",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "boldColor": {
+    "hex": "#1f2328",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "italicColor": {
+    "hex": "#1f2328",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "referenceColor": {
+    "hex": "#005a8c",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "referenceBold": false,
+   "referenceItalic": false,
+   "hyphenation": {
+    "enabled": true,
+    "locale": "es"
+   },
+   "avoidWidows": true,
+   "avoidOrphans": true,
+   "optimalLineBreaking": true
+  },
+  "headings": {
+   "fontFamily": "Source Sans 3",
+   "color": {
+    "hex": "#1f2328",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "keepWithNext": true,
+   "levels": [
+    {
+     "level": 1,
+     "fontSize": {
+      "value": 30,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 34,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "odd"
+     },
+     "numberingTemplate": "{1}",
+     "advancedDesign": {
+      "enabled": true,
+      "minHeight": {
+       "value": 32,
+       "unit": "mm"
+      },
+      "slot": {
+       "elements": [
+        {
+         "kind": "box",
+         "id": "frontStripe",
+         "placement": {
+          "anchor": {
+           "to": "bleed",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 0,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": "fill",
+           "height": {
+            "value": 3,
+            "unit": "mm"
+           }
+          }
+         },
+         "style": {
+          "backgroundColor": {
+           "hex": "#005a8c",
+           "model": "hex",
+           "paletteId": "band"
+          },
+          "borderRadius": {
+           "value": 0,
+           "unit": "mm"
+          }
+         }
+        },
+        {
+         "kind": "text",
+         "id": "frontTitle",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 4,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 174.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "Source Sans 3",
+         "fontSize": {
+          "value": 26,
+          "unit": "pt"
+         },
+         "fontWeight": 700,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.08,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#1f2328",
+          "model": "hex",
+          "paletteId": "ink"
+         }
+        },
+        {
+         "kind": "rule",
+         "id": "frontRule",
+         "direction": "horizontal",
+         "placement": {
+          "anchor": {
+           "to": "#frontTitle",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 5,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 30,
+            "unit": "mm"
+           }
+          }
+         },
+         "color": {
+          "hex": "#005a8c",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "thickness": {
+          "value": 1.5,
+          "unit": "pt"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "level": 2,
+     "fontSize": {
+      "value": 17,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 21,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "numberingTemplate": "{1}.{2}",
+     "marginTop": {
+      "value": 22,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 6,
+      "unit": "pt"
+     },
+     "breakBefore": {
+      "enabled": true,
+      "parity": "any"
+     },
+     "span": "page"
+    },
+    {
+     "level": 3,
+     "fontSize": {
+      "value": 12.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 16,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "numberingTemplate": "",
+     "marginTop": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 3,
+      "unit": "pt"
+     }
+    },
+    {
+     "level": 4,
+     "fontSize": {
+      "value": 10.8,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "fontWeight": 600,
+     "italic": true,
+     "numberingTemplate": "",
+     "marginTop": {
+      "value": 10,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 2,
+      "unit": "pt"
+     }
+    }
+   ]
+  },
+  "headingStyles": [
+   {
+    "id": "portada",
+    "name": "Portada",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 275.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "coverBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#005a8c",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "coverPhoto",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 280.9,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 160.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "es-1-cnx-uphysics-01-00-whirlpool"
+       },
+       {
+        "kind": "text",
+        "id": "coverSeries",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 20.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 170.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.series}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 9,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.4,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverTitle",
+        "placement": {
+         "anchor": {
+          "to": "#coverSeries",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 3,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{title}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 46,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.0,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverSubtitle",
+        "placement": {
+         "anchor": {
+          "to": "#coverTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 164.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{subtitle}",
+        "fontFamily": "Source Serif 4",
+        "fontSize": {
+         "value": 13,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.3,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#e8f1f7",
+         "model": "hex",
+         "paletteId": "tint"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverPublisher",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "bottom-left"
+         },
+         "offset": {
+          "x": {
+           "value": 20.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": -14,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.publisher}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 7.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#e8f1f7",
+         "model": "hex",
+         "paletteId": "tint"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 1.4,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "layout": {
+     "layoutType": "single"
+    },
+    "margins": {
+     "top": {
+      "value": 195.0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 22.0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 109.0,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 16.0,
+      "unit": "mm"
+     }
+    }
+   },
+   {
+    "id": "indice",
+    "name": "Índice",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 32,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "frontStripe",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#005a8c",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 26,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.08,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f2328",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 30,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#005a8c",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "thickness": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "layout": {
+     "layoutType": "single"
+    }
+   },
+   {
+    "id": "preliminar",
+    "name": "Página de texto",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "any"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 32,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "frontStripe",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#005a8c",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 26,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.08,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f2328",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 30,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#005a8c",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "thickness": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "layout": {
+     "layoutType": "single"
+    }
+   },
+   {
+    "id": "cap-es-1",
+    "name": "Capítulo (es) 1",
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 154.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "splash",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 216.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 123.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "es-1-cnx-uphysics-01-00-whirlpool"
+       },
+       {
+        "kind": "box",
+        "id": "chapterRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 120.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#005a8c",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 20.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 129.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Capítulo {number}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#005a8c",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.4,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterTitle",
+        "placement": {
+         "anchor": {
+          "to": "#chapterLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.08,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f2328",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "splashCaption",
+        "placement": {
+         "anchor": {
+          "to": "#chapterTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.splash}",
+        "fontFamily": "Source Serif 4",
+        "fontSize": {
+         "value": 8.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.35,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#5f6b74",
+         "model": "hex",
+         "paletteId": "muted"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "cap-es-2",
+    "name": "Capítulo (es) 2",
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 139.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "splash",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 216.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 108.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "es-2-cnx-uphysics-02-00-opening"
+       },
+       {
+        "kind": "box",
+        "id": "chapterRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 105.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#005a8c",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 20.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 114.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Capítulo {number}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#005a8c",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.4,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterTitle",
+        "placement": {
+         "anchor": {
+          "to": "#chapterLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.08,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f2328",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "splashCaption",
+        "placement": {
+         "anchor": {
+          "to": "#chapterTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.splash}",
+        "fontFamily": "Source Serif 4",
+        "fontSize": {
+         "value": 8.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.35,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#5f6b74",
+         "model": "hex",
+         "paletteId": "muted"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "cap-en-1",
+    "name": "Capítulo (en) 1",
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 103.4,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "splash",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 216.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 72.4,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "en-1-figure-01-00-galaxy"
+       },
+       {
+        "kind": "box",
+        "id": "chapterRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 69.4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#005a8c",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 20.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 78.4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Chapter {number}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#005a8c",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.4,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterTitle",
+        "placement": {
+         "anchor": {
+          "to": "#chapterLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.08,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f2328",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "splashCaption",
+        "placement": {
+         "anchor": {
+          "to": "#chapterTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.splash}",
+        "fontFamily": "Source Serif 4",
+        "fontSize": {
+         "value": 8.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.35,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#5f6b74",
+         "model": "hex",
+         "paletteId": "muted"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "cap-en-2",
+    "name": "Capítulo (en) 2",
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 147.3,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "splash",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 216.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 116.3,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "en-2-figure-02-00-train"
+       },
+       {
+        "kind": "box",
+        "id": "chapterRule",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 113.3,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#005a8c",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 20.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 122.3,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Chapter {number}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 10,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#005a8c",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.4,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterTitle",
+        "placement": {
+         "anchor": {
+          "to": "#chapterLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Source Sans 3",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.08,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f2328",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "splashCaption",
+        "placement": {
+         "anchor": {
+          "to": "#chapterTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.splash}",
+        "fontFamily": "Source Serif 4",
+        "fontSize": {
+         "value": 8.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.35,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#5f6b74",
+         "model": "hex",
+         "paletteId": "muted"
+        },
+        "hyphenate": true
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "paragraphStyles": [
+   {
+    "id": "colofon",
+    "name": "Colofón",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#5f6b74",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "creditos",
+    "name": "Créditos",
+    "fontSize": {
+     "value": 10.2,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14.2,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "termino",
+    "name": "Término",
+    "fontSize": {
+     "value": 9.6,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 3,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "fuente",
+    "name": "Fuente",
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 7.8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 4,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#5f6b74",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   }
+  ],
+  "calloutStyles": [
+   {
+    "id": "objetivos",
+    "name": "Objetivos",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#e8f1f7",
+     "model": "hex",
+     "paletteId": "tint"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 3.5,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 4.5,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 4.5,
+      "unit": "mm"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.6,
+      "unit": "pt"
+     },
+     "gap": {
+      "value": 2,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Source Serif 4",
+     "fontSize": {
+      "value": 9.2,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 12.6,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 4,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   },
+   {
+    "id": "esquema",
+    "name": "Esquema",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": false,
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 2.5,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 4,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "left",
+     "width": {
+      "value": 3,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.6,
+      "unit": "pt"
+     },
+     "gap": {
+      "value": 2,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 9.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 13,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 4,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   },
+   {
+    "id": "ejemplo",
+    "name": "Ejemplo",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": false,
+    "border": {
+     "enabled": true,
+     "color": {
+      "hex": "#c9ced3",
+      "model": "hex",
+      "paletteId": "rule"
+     },
+     "width": {
+      "value": 0.6,
+      "unit": "pt"
+     }
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 3.5,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 4.5,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 4.5,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "left",
+     "width": {
+      "value": 3,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#d9822b",
+      "model": "hex",
+      "paletteId": "accent"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#d9822b",
+      "model": "hex",
+      "paletteId": "accent"
+     },
+     "gap": {
+      "value": 2,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Source Serif 4",
+     "fontSize": {
+      "value": 9.6,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 13.4,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "keepTogether": false,
+    "splitMinLines": 3
+   },
+   {
+    "id": "comprobacion",
+    "name": "Comprobación",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#f3f4f6",
+     "model": "hex",
+     "paletteId": "grey"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 4.5,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 2.5,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 4.5,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "left",
+     "width": {
+      "value": 3,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "gap": {
+      "value": 1.8,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Source Serif 4",
+     "fontSize": {
+      "value": 9.2,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 12.6,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 5,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "keepTogether": false,
+    "splitMinLines": 2
+   },
+   {
+    "id": "nota",
+    "name": "Nota",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#e8f1f7",
+     "model": "hex",
+     "paletteId": "tint"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 4.5,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 2.5,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 4.5,
+      "unit": "mm"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.4,
+      "unit": "pt"
+     },
+     "gap": {
+      "value": 1.8,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 12.4,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": true,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 5,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "keepTogether": false,
+    "splitMinLines": 2
+   }
+  ],
+  "toc": {
+   "levels": [
+    {
+     "level": 1,
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 12,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 17,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "numberWidth": {
+      "value": 10,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "numberFontFamily": "Source Sans 3",
+     "numberColor": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "marginTop": {
+      "value": 8,
+      "unit": "pt"
+     }
+    },
+    {
+     "level": 2,
+     "fontFamily": "Source Serif 4",
+     "fontSize": {
+      "value": 10.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 15,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "indent": {
+      "value": 10,
+      "unit": "mm"
+     },
+     "numberWidth": {
+      "value": 12,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "numberFontFamily": "Source Sans 3",
+     "numberColor": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "marginTop": {
+      "value": 1,
+      "unit": "pt"
+     }
+    }
+   ],
+   "unnumbered": {
+    "fontFamily": "Source Sans 3",
+    "italic": false,
+    "color": {
+     "hex": "#1f2328",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   },
+   "pageNumber": {
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "fontWeight": 700,
+    "color": {
+     "hex": "#1f2328",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "width": {
+     "value": 10,
+     "unit": "mm"
+    }
+   },
+   "leader": {
+    "enabled": true,
+    "char": ".",
+    "gap": {
+     "value": 1.2,
+     "unit": "mm"
+    }
+   }
+  },
+  "parts": {
+   "design": {
+    "elements": [
+     {
+      "kind": "text",
+      "id": "partTitle",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 20.0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 60,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 174.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "{titleText}",
+      "fontFamily": "Source Sans 3",
+      "fontSize": {
+       "value": 30,
+       "unit": "pt"
+      },
+      "fontWeight": 700,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.2,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#1f2328",
+       "model": "hex",
+       "paletteId": "ink"
+      }
+     }
+    ]
+   }
+  },
+  "header": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 16.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 14.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "chapterEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 25.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 14.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{chapterTitle}",
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 8,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#5f6b74",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "bookOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -25.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 14.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "Física universitaria · Volumen 1",
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 8,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#5f6b74",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "odd",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "folioOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -16.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 14.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "body"
+    }
+   ]
+  },
+  "footer": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioOpener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -13.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Source Sans 3",
+     "fontSize": {
+      "value": 9,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "pages": "opener"
+    }
+   ]
+  },
+  "math": {
+   "enabled": true,
+   "fontSizeScale": 1.0,
+   "marginTop": {
+    "value": 6,
+    "unit": "pt"
+   },
+   "marginBottom": {
+    "value": 6,
+    "unit": "pt"
+   }
+  },
+  "captionStyle": {
+   "fontFamily": "Source Sans 3",
+   "fontSize": {
+    "value": 8.3,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#1f2328",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "align": "left",
+   "gap": {
+    "value": 1.8,
+    "unit": "mm"
+   },
+   "labelBold": true,
+   "labelColor": {
+    "hex": "#005a8c",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "descriptionItalic": false,
+   "note": {
+    "fontSize": {
+     "value": 6.8,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#5f6b74",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "italic": false,
+    "gap": {
+     "value": 0.6,
+     "unit": "mm"
+    }
+   }
+  },
+  "tableStyle": {
+   "bodyFontFamily": "Source Sans 3",
+   "bodyFontSize": {
+    "value": 8.8,
+    "unit": "pt"
+   },
+   "bodyLineHeight": {
+    "value": 11.8,
+    "unit": "pt"
+   },
+   "bodyColor": {
+    "hex": "#1f2328",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "headerFontFamily": "Source Sans 3",
+   "headerFontSize": {
+    "value": 8.8,
+    "unit": "pt"
+   },
+   "headerBold": true,
+   "headerBackgroundEnabled": true,
+   "headerBackground": {
+    "hex": "#005a8c",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "headerColor": {
+    "hex": "#ffffff",
+    "model": "hex",
+    "paletteId": "white"
+   },
+   "borderColor": {
+    "hex": "#c9ced3",
+    "model": "hex",
+    "paletteId": "rule"
+   },
+   "borderWidth": {
+    "value": 0.5,
+    "unit": "pt"
+   },
+   "cellPadding": {
+    "value": 1.6,
+    "unit": "mm"
+   },
+   "rules": "horizontal"
+  },
+  "unorderedLists": {
+   "bulletChar": "•",
+   "color": {
+    "hex": "#005a8c",
+    "model": "hex",
+    "paletteId": "band"
+   }
+  },
+  "orderedLists": {
+   "color": {
+    "hex": "#005a8c",
+    "model": "hex",
+    "paletteId": "band"
+   }
+  },
+  "colorPalette": [
+   {
+    "id": "ink",
+    "name": "Tinta",
+    "value": {
+     "hex": "#1f2328",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "paper",
+    "name": "Papel",
+    "value": {
+     "hex": "#ffffff",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "white",
+    "name": "Blanco",
+    "value": {
+     "hex": "#ffffff",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "band",
+    "name": "Azul del libro",
+    "value": {
+     "hex": "#005a8c",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "accent",
+    "name": "Naranja de ejemplos",
+    "value": {
+     "hex": "#d9822b",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "tint",
+    "name": "Fondo de recuadros",
+    "value": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "grey",
+    "name": "Fondo de comprobaciones",
+    "value": {
+     "hex": "#f3f4f6",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "rule",
+    "name": "Filetes",
+    "value": {
+     "hex": "#c9ced3",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "muted",
+    "name": "Gris de notas",
+    "value": {
+     "hex": "#5f6b74",
+     "model": "hex"
+    }
+   }
+  ],
+  "resourceTypes": [
+   {
+    "id": "figure",
+    "name": "Figura",
+    "namePlural": "Figuras",
+    "shortLabel": "fig.",
+    "captionPrefix": "Figura",
+    "numberingTemplate": "{h1}.{n}",
+    "resetOn": "h1",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "auto",
+     "span": "column",
+     "width": 1
+    }
+   },
+   {
+    "id": "table",
+    "name": "Tabla",
+    "namePlural": "Tablas",
+    "shortLabel": "tabla",
+    "captionPrefix": "Tabla",
+    "numberingTemplate": "{h1}.{n}",
+    "resetOn": "h1",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "auto",
+     "span": "column"
+    },
+    "captionStyle": {
+     "position": "above"
+    }
+   }
+  ],
+  "pdfGeneration": {
+   "outlines": true
+  }
+ },
+ "localized": {
+  "es": {
+   "config": {
+    "locale": "es",
+    "bodyText": {
+     "fontFamily": "Source Serif 4",
+     "fontSize": {
+      "value": 10.2,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 14.2,
+      "unit": "pt"
+     },
+     "textAlign": "justify",
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": true,
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "referenceBold": false,
+     "referenceItalic": false,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "es"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "folioEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 14.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Source Sans 3",
+       "fontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f2328",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "chapterEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 14.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "Source Sans 3",
+       "fontSize": {
+        "value": 8,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#5f6b74",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "bookOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 14.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "Física universitaria · Volumen 1",
+       "fontFamily": "Source Sans 3",
+       "fontSize": {
+        "value": 8,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#5f6b74",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folioOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -16.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 14.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Source Sans 3",
+       "fontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f2328",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      }
+     ]
+    },
+    "resourceTypes": [
+     {
+      "id": "figure",
+      "name": "Figura",
+      "namePlural": "Figuras",
+      "shortLabel": "fig.",
+      "captionPrefix": "Figura",
+      "numberingTemplate": "{h1}.{n}",
+      "resetOn": "h1",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "column",
+       "width": 1
+      }
+     },
+     {
+      "id": "table",
+      "name": "Tabla",
+      "namePlural": "Tablas",
+      "shortLabel": "tabla",
+      "captionPrefix": "Tabla",
+      "numberingTemplate": "{h1}.{n}",
+      "resetOn": "h1",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "column"
+      },
+      "captionStyle": {
+       "position": "above"
+      }
+     }
+    ]
+   },
+   "resources": []
+  },
+  "en": {
+   "config": {
+    "locale": "en-us",
+    "bodyText": {
+     "fontFamily": "Source Serif 4",
+     "fontSize": {
+      "value": 10.2,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 14.2,
+      "unit": "pt"
+     },
+     "textAlign": "justify",
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": true,
+     "color": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#1f2328",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#005a8c",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "referenceBold": false,
+     "referenceItalic": false,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "en-us"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "folioEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 14.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Source Sans 3",
+       "fontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f2328",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "chapterEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 14.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "Source Sans 3",
+       "fontSize": {
+        "value": 8,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#5f6b74",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "bookOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 14.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "Physics · Chapters 1 and 2: What is Physics?",
+       "fontFamily": "Source Sans 3",
+       "fontSize": {
+        "value": 8,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#5f6b74",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folioOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -16.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 14.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Source Sans 3",
+       "fontSize": {
+        "value": 9,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f2328",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      }
+     ]
+    },
+    "resourceTypes": [
+     {
+      "id": "figure",
+      "name": "Figure",
+      "namePlural": "Figures",
+      "shortLabel": "fig.",
+      "captionPrefix": "Figure",
+      "numberingTemplate": "{h1}.{n}",
+      "resetOn": "h1",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "column",
+       "width": 1
+      }
+     },
+     {
+      "id": "table",
+      "name": "Table",
+      "namePlural": "Tables",
+      "shortLabel": "table",
+      "captionPrefix": "Table",
+      "numberingTemplate": "{h1}.{n}",
+      "resetOn": "h1",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "column"
+      },
+      "captionStyle": {
+       "position": "above"
+      }
+     }
+    ]
+   },
+   "resources": []
+  }
+ },
+ "resources": [
+  {
+   "id": "es-1-cnx-uphysics-01-00-whirlpool",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-00-whirlpool.jpg",
+   "width": 790,
+   "height": 450,
+   "caption": "Esta imagen podría estar mostrando cualquier cantidad de cosas. Puede ser un remolino en un tanque de agua o quizás un *collage* de pintura y cuentas brillantes hecho para la clase de arte. Sin conocer el tamaño del objeto en unidades que todos reconocemos, como los metros o las pulgadas, es difícil saber qué estamos viendo. De hecho, esta imagen muestra la galaxia Remolino (y su galaxia compañera), que tiene aproximadamente 60.000 años luz de diámetro (unos $6\\,\\times \\,{10}^{17}\\text{km}$ de un lado a otro) (créditos: modificación del trabajo de S. Beckwith (Instituto de Ciencias del Telescopio Espacial \\[Space Telescope Science Institute, STScI]), Equipo Hubble Heritage (STScI/Asociación de Universidades para la Investigación en Astronomía \\[Association of Universities for Research in Astronomy, AURA]), Agencia Espacial Europea \\[European Space Agency, ESA] y Administración Nacional de Aeronáutica y el Espacio \\[National Aeronautics and Space Administration, NASA]).",
+   "altText": "Fotografía de la Galaxia Remolino",
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-00-opening",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-00-opening.jpg",
+   "width": 900,
+   "height": 450,
+   "caption": "El poste indicador da información sobre las distancias y direcciones a las ciudades o a otros lugares en relación con la ubicación del poste. La distancia es una cantidad escalar. Para llegar a la ciudad no basta con conocer la distancia, sino que también hay que saber la dirección desde el poste indicador hasta la ciudad. La dirección, junto con la distancia, es una cantidad vectorial comúnmente llamada vector de desplazamiento. Por lo tanto, el poste indicador da información sobre los vectores de desplazamiento desde el poste hasta las ciudades (créditos: modificación de la obra de \"studio tdes\"/Flickr, thedailyenglishshow.com).",
+   "altText": "Fotografía de un poste indicador con las distancias a numerosos lugares en diferentes direcciones.",
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-01-smartphone",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-01-smartphone.jpg",
+   "width": 327,
+   "height": 516,
+   "caption": "El iPhone de Apple es un teléfono inteligente común con función GPS. La física describe el modo en que la electricidad fluye por los circuitos de este aparato. Los ingenieros utilizan sus conocimientos de física para construir un iPhone con características que los consumidores disfrutarán. Una característica específica de un iPhone es la función GPS. El GPS utiliza ecuaciones físicas para determinar el tiempo de conducción entre dos lugares en un mapa (créditos: Jane Whitney).",
+   "altText": "Fotografía de un iPhone de Apple mostrando direcciones en un mapa.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-01-orders",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-01-orders.jpg",
+   "width": 975,
+   "height": 319,
+   "caption": "(a) Con un microscopio de efecto túnel, los científicos pueden ver cada uno de los átomos (diámetros de unos 10⁻¹⁰ m) que componen esta lámina de oro. (b) Diminutos fitoplancton nadan entre los cristales de hielo en el océano Antártico. Su longitud oscila entre unos cuantos micrómetros (1 *μ*m es 10⁻⁶ m) y hasta 2 mm (1 mm es 10⁻³ m). (c) Estas dos galaxias en colisión, conocidas como NGC 4676A (derecha) y NGC 4676B (izquierda), reciben el apodo de \"Los Ratones\" por la cola de gas que emana de cada una. Se encuentran a 300 millones de años luz de la Tierra, en la constelación Coma Berenices. Con el tiempo, estas dos galaxias se fusionarán en una sola (créditos: a. modificación del trabajo de \"Erwinrossen\"/Wikimedia Commons; b. modificación del trabajo del Prof. Gordon T. Taylor, Universidad de Stony Brook, Colecciones de NOAA Corps; c. modificación del trabajo de la NASA, H. Ford (Universidad Johns Hopkins, \\[Johns Hopkins University, JHU]), G. Illingworth (Universidad de California, Santa Cruz \\[UCSC]/LO), M. Clampin (STScI), G. Hartig (STScI), el equipo científico de la Sociedad Estadounidense de Química \\[American Chemical Society, ACS] y la ESA).",
+   "altText": "La Figura a muestra una imagen de alta resolución de una lámina de oro captada por un microscopio electrónico de barrido. La Figura b muestra una imagen ampliada del fitoplancton y los cristales de hielo. La Figura c muestra una fotografía de dos galaxias.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-01-magnittb",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-01-magnittb.jpg",
+   "width": 1301,
+   "height": 1270,
+   "caption": "Esta tabla muestra los órdenes de magnitud de la longitud, la masa y el tiempo.",
+   "altText": "Esta tabla de órdenes de magnitud de longitud, masa y tiempo tiene tres columnas y trece filas. La primera fila es una fila de encabezado e identifica cada columna, \"longitud en metros (m)\", \"masas en kilogramos (kg)\" y \"tiempo en segundos (s)\". En la columna \"longitud en metros\" se encuentran las siguientes entradas: 10 a la menos 15 metros es el diámetro del protón, 10 a la menos 14 metros es el diámetro del núcleo grande, 10 a la menos 10 metros es el diámetro del átomo de hidrógeno, 10 a la menos 7 metros es el diámetro del virus típico, 10 a la menos 2 metros es el ancho de la uña del dedo meñique, 10 a la 0 metros es la altura de un niño de 4 años, y se incluye un dibujo de un niño midiéndose con una vara de medir, 10 a la 2 metros es la longitud del campo de fútbol, 10 a la 7 metros es el diámetro de la Tierra, 10 a la 13 metros es el diámetro del sistema solar, 10 a la 16 metros es la distancia que recorre la luz en un año (un año luz), 10 a la 21 metros es el diámetro de la Vía Láctea, 10 a la 26 metros es la distancia al borde del universo observable. En la columna \"masas en kilogramos\" se encuentran las siguientes entradas: 10 a la -30 kilogramos es igual a la masa del electrón, 10 a la -27 kilogramos es igual a la masa del protón, 10 a la -15 kilogramos es igual a la masa de la bacteria, 10 a la -5 kilogramos es igual a la masa del mosquito, 10 a la -2 kilogramos es igual a la masa del colibrí, 10 a la 0 kilogramos es igual a la masa del litro de agua, y se muestra un dibujo de una balanza con un litro en un lado y una masa de 1 kilogramo en el otro, 10 a la 2 kilogramos es igual a la masa de la persona, 10 a la 19 kilogramos es igual a la masa de la atmósfera, 10 a la 22 kilogramos es igual a la masa de la luna, 10 a la 25 kilogramos es igual a la masa de la Tierra, 10 a la 30 kilogramos es igual a la masa del Sol, 10 a la 53 kilogramos es igual al límite superior de la masa del universo conocido. En la columna \"tiempo en segundos\" están las siguientes entradas: 10 a la -22 segundos equivale a la vida media de un núcleo muy inestable, 10 a la -17 segundos equivale al tiempo de una operación en coma flotante en una supercomputadora, 10 a la -15 segundos equivale al tiempo de oscilación de la luz visible, 10 a la -13 segundos equivale al tiempo de vibración de un átomo en un sólido, 10 a la -3 segundos equivale a la duración de un impulso nervioso, 10 a la 0 equivale al tiempo de un latido del corazón, y se muestra un dibujo del corazón con un trazado de tres pulsos. El pico del primer pulso se marca como P. El siguiente pulso es de mayor amplitud y menor duración. El inicio del segundo pulso está marcado como Q, su pico está marcado como R y su final está marcado como S. El pico del tercer pulso está marcado como T. Las entradas de la columna continúan de la siguiente manera: 10 a la 5 segundos equivale a un día, 10 a la 7 segundos equivale a un año, 10 a la 9 segundos equivale a la vida humana, 10 a la 11 segundos equivale a la historia humana de la que se tiene registro, 10 a la 17 segundos equivale a la edad de la Tierra, 10 a la 18 segundos equivale a la edad del universo.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-01-fermicurie",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-01-fermicurie.jpg",
+   "width": 731,
+   "height": 465,
+   "caption": "(a) Enrico **Fermi** (1901 – 1954) nació en Italia. Al aceptar el Premio Nobel en Estocolmo en 1938 por sus trabajos sobre la radioactividad artificial producida por neutrones, se llevó a su familia a los Estados Unidos en lugar de volver a su país con el gobierno de entonces. Adquirió la ciudadanía estadounidense y fue uno de los principales participantes en el Proyecto Manhattan. (b) Marie **Curie** (1867 – 1934) sacrificó bienes monetarios para financiar sus primeras investigaciones y afectó su salud al exponerse a la radiación. Es la única persona que ha ganado los premios Nobel de Física y Química. Una de sus hijas también ganó un Premio Nobel (créditos: a. modificación del trabajo del Departamento de Energía de los Estados Unidos).",
+   "altText": "Fotos de Enrico Fermi y Marie Curie",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-01-orbit",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-01-orbit.jpg",
+   "width": 505,
+   "height": 466,
+   "caption": "¿Qué es un modelo? El modelo de Bohr de un átomo de un solo electrón muestra al electrón que orbita alrededor del núcleo en una de varias órbitas circulares posibles. Como todos los modelos, capta algunos aspectos del sistema físico, pero no todos.",
+   "altText": "Ilustración del modelo de Bohr de un átomo de un solo electrón. Se muestran tres posibles órbitas de electrones como círculos concéntricos centrados en el núcleo. Las órbitas están marcadas, de la más interna a la más externa, n=1, n=2 y n=3. Se muestra un electrón que se mueve de la órbita n=3 a la órbita n=2, y emite un fotón con energía delta E igual a h f.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-02-nounits",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-02-nounits.jpg",
+   "width": 527,
+   "height": 470,
+   "caption": "Las distancias que se dan en unidades desconocidas son extremadamente inútiles, lo cual es exasperante.",
+   "altText": "Dibujo de una persona que mira un mapa que tiene la escala de distancia marcada como 1 cable, y se pregunta cuán grande es un cable.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-fs-id1168326798535",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "Cantidades base del ISQ y sus unidades del SI",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Cantidad base del ISQ",
+        "isHeader": true
+       },
+       {
+        "content": "Unidad base del SI",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "Longitud"
+       },
+       {
+        "content": "metro (m)"
+       }
+      ],
+      [
+       {
+        "content": "Masa"
+       },
+       {
+        "content": "kilogramo (kg)"
+       }
+      ],
+      [
+       {
+        "content": "Tiempo"
+       },
+       {
+        "content": "segundo (s)"
+       }
+      ],
+      [
+       {
+        "content": "Corriente eléctrica"
+       },
+       {
+        "content": "amperios (A)"
+       }
+      ],
+      [
+       {
+        "content": "Temperatura termodinámica"
+       },
+       {
+        "content": "kelvin (K)"
+       }
+      ],
+      [
+       {
+        "content": "Cantidad de sustancia"
+       },
+       {
+        "content": "mol (mol)"
+       }
+      ],
+      [
+       {
+        "content": "Intensidad luminosa"
+       },
+       {
+        "content": "candela (cd)"
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1,
+      1
+     ]
+    }
+   },
+   "placement": {
+    "position": "auto",
+    "span": "column"
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-02-atomclock",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-02-atomclock.jpg",
+   "width": 366,
+   "height": 366,
+   "caption": "Un reloj atómico como este utiliza las vibraciones de los átomos de cesio para mantener el tiempo con una precisión superior a un microsegundo por año. La unidad de tiempo fundamental, el segundo, se basa en estos relojes. Esta imagen se ve desde lo alto de una fuente atómica de casi 30 pies de altura (créditos: Steve Jurvetson).",
+   "altText": "Vista superior de una fuente atómica.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-02-meter",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-02-meter.jpg",
+   "width": 1234,
+   "height": 242,
+   "caption": "El metro se define como la distancia que recorre la luz en 1/299.792.458 de segundo en el vacío. La distancia recorrida es la rapidez multiplicada por el tiempo.",
+   "altText": "Dibujo de un metro plegable y de una linterna que emite un haz de luz. Una flecha indica que el haz abarca la longitud del metro plegable. El dibujo está marcado como \"la luz recorre una distancia de 1 metro en 1 sobre 299.792.458 de segundo\".",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-02-mass",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-02-mass.jpg",
+   "width": 394,
+   "height": 517,
+   "caption": "Redefinición de la unidad de masa del SI. La balanza Kibble del Instituto Nacional de Estándares y Tecnología de los EE. UU. es una máquina que equilibra el peso de una masa de prueba con la corriente eléctrica resultante necesaria para una fuerza que la equilibre.",
+   "altText": "Fotografía de la balanza de vatios del Instituto Nacional de Estándares y Tecnología de los EE. UU.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-fs-id1168326843228",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "Prefijos métricos para potencias de 10 y sus símbolos",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Prefijo",
+        "isHeader": true
+       },
+       {
+        "content": "Símbolo",
+        "isHeader": true
+       },
+       {
+        "content": "Significado",
+        "isHeader": true
+       },
+       {
+        "content": "Prefijo",
+        "isHeader": true
+       },
+       {
+        "content": "Símbolo",
+        "isHeader": true
+       },
+       {
+        "content": "Significado",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "yotta-"
+       },
+       {
+        "content": "Y"
+       },
+       {
+        "content": "10²⁴"
+       },
+       {
+        "content": "yocto-"
+       },
+       {
+        "content": "y"
+       },
+       {
+        "content": "10⁻²⁴"
+       }
+      ],
+      [
+       {
+        "content": "zetta-"
+       },
+       {
+        "content": "Z"
+       },
+       {
+        "content": "10²¹"
+       },
+       {
+        "content": "zepto-"
+       },
+       {
+        "content": "z"
+       },
+       {
+        "content": "10⁻²¹"
+       }
+      ],
+      [
+       {
+        "content": "exa-"
+       },
+       {
+        "content": "E"
+       },
+       {
+        "content": "10¹⁸"
+       },
+       {
+        "content": "atto-"
+       },
+       {
+        "content": "a"
+       },
+       {
+        "content": "10⁻¹⁸"
+       }
+      ],
+      [
+       {
+        "content": "peta-"
+       },
+       {
+        "content": "P"
+       },
+       {
+        "content": "10¹⁵"
+       },
+       {
+        "content": "femto-"
+       },
+       {
+        "content": "f"
+       },
+       {
+        "content": "10⁻¹⁵"
+       }
+      ],
+      [
+       {
+        "content": "tera-"
+       },
+       {
+        "content": "T"
+       },
+       {
+        "content": "10¹²"
+       },
+       {
+        "content": "pico-"
+       },
+       {
+        "content": "p"
+       },
+       {
+        "content": "10⁻¹²"
+       }
+      ],
+      [
+       {
+        "content": "giga-"
+       },
+       {
+        "content": "G"
+       },
+       {
+        "content": "10⁹"
+       },
+       {
+        "content": "nano-"
+       },
+       {
+        "content": "n"
+       },
+       {
+        "content": "10⁻⁹"
+       }
+      ],
+      [
+       {
+        "content": "mega-"
+       },
+       {
+        "content": "M"
+       },
+       {
+        "content": "10⁶"
+       },
+       {
+        "content": "micro-"
+       },
+       {
+        "content": "$\\mu$"
+       },
+       {
+        "content": "10⁻⁶"
+       }
+      ],
+      [
+       {
+        "content": "kilo-"
+       },
+       {
+        "content": "k"
+       },
+       {
+        "content": "10³"
+       },
+       {
+        "content": "mili-"
+       },
+       {
+        "content": "m"
+       },
+       {
+        "content": "10⁻³"
+       }
+      ],
+      [
+       {
+        "content": "hecto-"
+       },
+       {
+        "content": "h"
+       },
+       {
+        "content": "10²"
+       },
+       {
+        "content": "centi-"
+       },
+       {
+        "content": "c"
+       },
+       {
+        "content": "10⁻²"
+       }
+      ],
+      [
+       {
+        "content": "deca-"
+       },
+       {
+        "content": "da"
+       },
+       {
+        "content": "10¹"
+       },
+       {
+        "content": "deci-"
+       },
+       {
+        "content": "d"
+       },
+       {
+        "content": "10⁻¹"
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ]
+    }
+   },
+   "placement": {
+    "position": "auto",
+    "span": "page"
+   }
+  },
+  {
+   "id": "es-1-fs-id1168328269910",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "Cantidades base y sus dimensiones",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "**Cantidad base**",
+        "isHeader": true
+       },
+       {
+        "content": "**Símbolo de la dimensión**",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "Longitud"
+       },
+       {
+        "content": "L"
+       }
+      ],
+      [
+       {
+        "content": "Masa"
+       },
+       {
+        "content": "M"
+       }
+      ],
+      [
+       {
+        "content": "Tiempo"
+       },
+       {
+        "content": "T"
+       }
+      ],
+      [
+       {
+        "content": "Corriente"
+       },
+       {
+        "content": "I"
+       }
+      ],
+      [
+       {
+        "content": "Temperatura termodinámica"
+       },
+       {
+        "content": "Θ"
+       }
+      ],
+      [
+       {
+        "content": "Cantidad de sustancia"
+       },
+       {
+        "content": "N"
+       }
+      ],
+      [
+       {
+        "content": "Intensidad luminosa"
+       },
+       {
+        "content": "J"
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1,
+      1
+     ]
+    }
+   },
+   "placement": {
+    "position": "auto",
+    "span": "column"
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-06-balance",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-06-balance.jpg",
+   "width": 975,
+   "height": 355,
+   "caption": "(a) Se utiliza una balanza mecánica de doble plato para comparar diferentes masas. Normalmente se coloca un objeto de masa desconocida en un plato y objetos de masa conocida en el otro plato. Cuando la barra que une los dos platos es horizontal, entonces las masas en ambos platos son iguales. Las \"masas conocidas\" suelen ser cilindros metálicos de masa estándar, como 1 g, 10 g y 100 g. (b) Muchas básculas mecánicas, como las de doble plato, han sido sustituidas por balanzas digitales, que miden la masa de un objeto con mayor precisión. La báscula mecánica puede leer solamente la masa de un objeto hasta la décima de gramo más cercana. Sin embargo, muchas básculas digitales pueden medir la masa de un objeto hasta la milésima de gramo más cercana (créditos: a. modificación del trabajo de Serge Melki; b. modificación del trabajo de Karel Jakubec).",
+   "altText": "La Figura a muestra una vieja balanza oxidada de doble plato, con una masa estándar en un plato. La Figura b muestra una moderna balanza analítica digital.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-06-target",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-06-target.jpg",
+   "width": 898,
+   "height": 427,
+   "caption": "Un GPS intenta localizar un restaurante en el centro de la diana. Los puntos negros representan cada uno de los intentos por localizar el restaurante. (a) Los puntos están bastante separados entre sí, lo que indica una baja precisión, pero están bastante cerca de la ubicación real del restaurante, lo que indica una alta exactitud. (b) Los puntos están concentrados bastante cerca entre sí, lo que indica una alta precisión, pero están bastante lejos de la ubicación real del restaurante, lo que indica una baja exactitud (créditos a y b: modificación de obras de \"DarkEvil\"/Wikimedia Commons).",
+   "altText": "Dos patrones de objetivos, cada uno de los cuales consiste en tres anillos concéntricos blancos sobre un fondo rojo. La Figura a, marcada como \"alta exactitud, baja precisión\", muestra cuatro puntos negros, repartidos a lo largo de la circunferencia del círculo más interno. La Figura b, marcada como \"baja exactitud, alta precisión\", muestra cuatro puntos negros agrupados muy cerca entre los círculos centrales y exteriores.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-1-cnx-uphysics-01-07-ti83",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-1-cnx-uphysics-01-07-ti83.jpg",
+   "width": 731,
+   "height": 488,
+   "caption": "Las habilidades de resolución de problemas son esenciales para su éxito en física (créditos: \"scui3asteveo\"/Flickr).",
+   "altText": "Una fotografía de la mano de un estudiante, quien trabaja en un problema con un libro de texto abierto, una calculadora y una goma de borrar.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-dog",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-dog.jpg",
+   "width": 546,
+   "height": 326,
+   "caption": "Dibujamos un vector desde el punto inicial u origen (\"cola\" de un vector) hasta el punto extremo o terminal (\"cabeza\" de un vector), marcado por una punta de flecha. La magnitud es la longitud de un vector y es siempre una cantidad escalar positiva (créditos de la foto: modificación del trabajo de Cate Sevilla).",
+   "altText": "Una foto de un perro. Debajo de la foto hay una flecha horizontal que empieza debajo de la cola del perro y termina debajo de la nariz del mismo. La flecha está marcada como Vector D, y su longitud está marcada como magnitud D. El inicio (cola) de la flecha está marcado como \"desde la cola de un origen vectorial\" y su extremo (cabeza) está marcado como \"hasta la cabeza de un extremo vectorial\".",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-hole",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-hole.jpg",
+   "width": 602,
+   "height": 590,
+   "caption": "El vector de desplazamiento desde el punto *A* (la posición inicial en el campamento) hasta el punto *B* (la posición final en el agujero de pesca) se indica con una flecha con origen en el punto *A* y final en el punto *B*. El desplazamiento es el mismo para cualquiera de los caminos reales (curvas discontinuas) que se pueden tomar entre los puntos *A* y *B*.",
+   "altText": "Ilustración de un lago, a cierta distancia al noreste de una carpa. El norte está arriba en la página, el este a la derecha. La carpa está marcada como ubicación A, y el lago, como ubicación B. Una flecha recta comienza en A y termina en B. Tres caminos serpenteantes, mostrados en líneas discontinuas, también comienzan en A y terminan en B.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector01",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector01.jpg",
+   "width": 521,
+   "height": 292,
+   "caption": "Un desplazamiento $\\vec{D}$ de magnitud 6 km se dibuja a escala como un vector de longitud 12 cm cuando la longitud de 2 cm representa 1 unidad de desplazamiento (que en este caso es 1 km).",
+   "altText": "Se muestra una regla, con la distancia medida en centímetros. Un vector se muestra como una flecha paralela a la regla, que se extiende desde su extremo en 0 c m hasta 12 c m, y está marcado como vector D.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector02",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector02.jpg",
+   "width": 738,
+   "height": 708,
+   "caption": "Diversas relaciones entre dos vectores $\\vec{A}$ y $\\vec{B}$. (a) $\\vec{A}\\ne \\vec{B}$ porque $A\\ne B$. (b) $\\vec{A}\\ne \\vec{B}$ porque no son paralelos y $A\\ne B$. (c) $\\vec{A}\\ne \\text{−}\\vec{A}$ porque tienen direcciones diferentes (aunque $|\\vec{A}|=|-\\vec{A}|=A)$. (d) $\\vec{A}=\\vec{B}$ porque son paralelos *y* tienen magnitud idéntica *A* = *B.* (e) $\\vec{A}\\ne \\vec{B}$ porque tienen direcciones diferentes (no son paralelos); aquí, sus direcciones difieren en $90\\text{°}$, lo que significa que son ortogonales.",
+   "altText": "Figura a: Dos ejemplos de vector A paralelo al vector B. En uno, A y B están en la misma línea, uno tras otro, pero A es más largo que B. En el otro, A y B son paralelos con sus colas alineadas, pero A es más corto que B. Figura b: Ejemplo de vector A antiparalelo al vector B. El vector A apunta a la izquierda y es más largo que el vector B, que apunta a la derecha. El ángulo entre ellos es de 180 grados. Figura c: Ejemplo de vector A antiparalelo al menos vector A: A apunta a la derecha y -A a la izquierda. Ambos tienen la misma longitud. Figura d: Dos ejemplos de vector A igual a vector B: En uno, A y B están en la misma línea, uno tras otro, y ambos tienen la misma longitud. En el otro, A y B son paralelos entre sí con sus colas alineadas, y ambos tienen la misma longitud. Figura e: Dos ejemplos de vector A ortogonal al vector B: En uno, A apunta hacia abajo y B hacia la derecha; se encuentran en un ángulo recto, y ambos tienen la misma longitud. En el otro, A apunta hacia abajo y hacia la derecha y B apunta hacia abajo y hacia la izquierda; se encuentran con A en un ángulo recto. Ambos tienen la misma longitud.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-fishtrip",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-fishtrip.jpg",
+   "width": 1296,
+   "height": 508,
+   "caption": "Vectores de desplazamiento para una excursión de pesca. (a) Parada para descansar en el punto *C* mientras se camina desde el campamento (punto *A*) hasta el estanque (punto *B*). (b) Regreso para recoger la caja de anzuelos que se cayó (punto *D*). (c) Finaliza en el estanque de pesca.",
+   "altText": "Tres ilustraciones de la misma carpa y del lago al noreste de la carpa. El norte está arriba, en la página. La ubicación de la carpa es el punto A, y la ubicación del lago es el punto B. La ubicación entre A y B, aproximadamente a 2/3 del camino de A a B, está marcada como punto C. En la Figura a, el vector de A a B se muestra como una flecha azul, que comienza en A y termina en B, y está marcada como vector D sub A B. El vector de A a C se muestra como una flecha roja, que comienza en A y termina en C y está marcada como vector D sub A C. Tres caminos serpenteantes se muestran como líneas discontinuas, que comienzan en A y terminan en B. La Figura b añade lo siguiente a la ilustración de la Figura a: El punto D se añade a mitad de camino entre los puntos A y B. El vector de A a D se muestra como una flecha púrpura, que empieza en A y termina en D y está marcada como vector D sub A D. El vector de D a B se muestra como una flecha naranja, que empieza en D y termina en B y está marcada como vector D sub D B. La Figura c añade una flecha verde del punto C al punto D y está marcada como vector D sub C D. El vector D sub C D apunta en la dirección opuesta a la de los otros vectores, hacia la carpa en lugar de hacia el lago.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector03",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector03.jpg",
+   "width": 796,
+   "height": 506,
+   "caption": "Álgebra de vectores en una dimensión. (a) Multiplicación por un escalar. (b) Suma de dos vectores $(\\vec{R}$ se llama la *resultante* de los vectores $\\vec{A}$ y $\\vec{B})$. (c) Sustracción de dos vectores $(\\vec{D}$ es la diferencia de vectores $\\vec{A}$ y $\\vec{B})$.",
+   "altText": "La Figura a muestra el vector A que apunta a la derecha. Tiene una magnitud A=1,5. El vector B=2 tiempo vector A apunta a la derecha y tiene magnitud B = 2 A = 3,0. El vector C = -2 veces el vector A y tiene una magnitud B = 2,0. La Figura b muestra que el vector A apunta a la derecha y tiene una magnitud A=1,5. El vector B se muestra debajo del vector A, con sus colas alineadas. El vector B apunta a la derecha y tiene una magnitud de 2,0. En otra vista, se muestra el vector A con el vector B que comienza en la cabeza de A y se extiende hacia la derecha. Debajo de ellos hay un vector, marcado como vector R = vector A más vector B, que apunta a la derecha cuya cola está alineada con la cola del vector A y cuya cabeza está alineada con la cabeza del vector B. La magnitud del vector R es igual a la magnitud A más la magnitud B = 3,5. La Figura c muestra que el vector A apunta a la derecha y tiene una magnitud A=1,5. El vector B se muestra debajo del vector A, con sus colas alineadas. El vector menos B apunta a la derecha y tiene una magnitud de 3,2. En otra vista, el vector A se muestra con el vector menos B que apunta a la izquierda y con su cabeza alineada con la cabeza del vector A. Debajo de ellos hay un vector, marcado como vector D = vector A menos vector B, más corto que B y que apunta a la izquierda cuya cabeza está alineada con la cabeza del vector B. La magnitud del vector D es igual a la magnitud de la cantidad A menos B = 1,7.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-ladybug",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-ladybug.jpg",
+   "width": 874,
+   "height": 670,
+   "caption": "Cinco desplazamientos de la mariquita. Observe que en este dibujo esquemático, las magnitudes de los desplazamientos no están dibujadas a escala (créditos de \"mariquita\": modificación de la obra de \"Persian Poet Gal\"/Wikimedia Commons).",
+   "altText": "Cinco ilustraciones de una mariquita sobre una regla apoyada en una pared. La dirección del vector +u es hacia el suelo paralela a la regla, y la dirección del vector -u es hacia arriba a lo largo de la regla. En la primera ilustración, la mariquita se encuentra cerca del centro de la regla y el vector D sub 1 apunta hacia abajo en la misma. En la segunda ilustración, la mariquita se encuentra más abajo, donde está la cabeza del vector D sub 1 en la primera ilustración, y el vector D sub 2 apunta hacia arriba de la regla. En la tercera ilustración, la mariquita se encuentra más arriba, donde está la cabeza del vector D sub 2 en la segunda ilustración, y el vector D sub 3 apunta hacia abajo de la regla. En la cuarta ilustración, la mariquita se encuentra más abajo, donde está la cabeza del vector D sub 3 en la tercera ilustración, y el vector D sub 4 apunta hacia abajo de la regla. En la quinta ilustración, la mariquita se encuentra más abajo, donde está la cabeza del vector D sub 4 en la cuarta ilustración, y el vector D sub 5 apunta hacia arriba de la regla.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-navigation",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-navigation.jpg",
+   "width": 731,
+   "height": 503,
+   "caption": "En la navegación, las leyes de la geometría se utilizan para dibujar los desplazamientos resultantes en los mapas náuticos.",
+   "altText": "Fotografía de alguien midiendo la distancia en un mapa con calibradores y una regla.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector04",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector04.jpg",
+   "width": 1247,
+   "height": 268,
+   "caption": "La regla del paralelogramo para la suma de dos vectores. Realice la traslación paralela de cada vector a un punto en el que coincidan sus orígenes (marcados por el punto) y construya un paralelogramo con dos lados sobre los vectores y los otros dos lados (indicados con líneas discontinuas) paralelos a los vectores. (a) Dibuje el vector resultante $\\vec{R}$ a lo largo de la diagonal del paralelogramo, desde el punto común hasta la esquina opuesta. La longitud *R* del vector resultante *no* es igual a la suma de las magnitudes de los dos vectores. (b) Dibuje la diferencia de vectores $\\vec{D}=\\vec{A}-\\vec{B}$ a lo largo de la diagonal que conecta los extremos de los vectores. Sitúe el origen del vector $\\vec{D}$ al final del vector $\\vec{B}$ y el final (cabeza de flecha) del vector $\\vec{D}$ al final del vector $\\vec{A}$. La longitud *D* de la diferencia de vectores *no* es igual a la diferencia de magnitudes de los dos vectores.",
+   "altText": "Se ilustra el método del paralelogramo para sumar vectores. En la figura a, se muestran los vectores A y B. El vector A apunta a la derecha y hacia abajo y el vector B apunta a la derecha y hacia arriba. Los vectores A y B se muestran entonces como flechas continuas con sus colas juntas, y sus direcciones como antes. Se muestra una línea discontinua paralela al vector A pero desplazada de manera que comienza en la cabeza de B. También se muestra una segunda línea discontinua, paralela a B y que comienza en la cabeza de A. Los vectores A y B y las dos líneas discontinuas forman un paralelogramo. Se muestra un tercer vector, marcado como vector R = vector A más vector B. La cola del vector R está en las colas de los vectores A y B, y la cabeza del vector R está donde las líneas discontinuas se encuentran entre sí, en diagonal a través del paralelogramo. Observamos que la magnitud de R no es igual a la magnitud de A más la magnitud de B. En la Figura b, se muestran los vectores A y menos B. El vector menos B es el vector B de la parte a, que se giró a 180 grados. El vector A apunta a la derecha y hacia abajo y el vector menos B apunta a la izquierda y hacia abajo. Los vectores A y B se muestran entonces como flechas continuas con sus colas juntas, y sus direcciones como antes. Se muestra una línea discontinua paralela al vector A pero desplazada de manera que comienza en la cabeza de B. También se muestra una segunda línea discontinua, paralela a B y que comienza en la cabeza de A. Los vectores A y B y las dos líneas discontinuas forman un paralelogramo. Se muestra un tercer vector, marcado como vector D. La cola del vector D está en la cabeza del vector B, y la cabeza del vector D está en la cabeza del vector A, en diagonal a través del paralelogramo. Observamos que el vector D es igual al vector A menos el vector B, pero la magnitud de D no es igual a la magnitud de A menos la de B.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector05",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector05.jpg",
+   "width": 975,
+   "height": 695,
+   "caption": "Cuando utilizamos la regla del paralelogramo cuatro veces, obtenemos el vector resultante $\\vec{R}=\\vec{A}+\\vec{B}+\\vec{C}+\\vec{D}+\\vec{E}$, que es el vector verde que conecta Tallahassee con Gainesville.",
+   "altText": "Mapa de Florida con los siguientes vectores mostrados en rojo: Vector A de Tallahassee a Jacksonville, casi al oeste. Vector B de Jacksonville a Daytona Beach, al sureste. Vector C de Daytona Beach a Orlando, al suroeste. Vector D de Orlando a Tampa, al suroeste (pero menos vertical que el vector C). Vector E de Tampa a Gainesville, ligeramente al este del norte. El vector R de Tallahassee a Gainsville se muestra como una flecha verde.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector06",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector06.jpg",
+   "width": 666,
+   "height": 249,
+   "caption": "Método de cola a cabeza para dibujar el vector resultante $\\vec{R}=\\vec{A}+\\vec{B}+\\vec{C}+\\vec{D}$. (a) Cuatro vectores de diferentes magnitudes y direcciones. (b) Los vectores de (a) se trasladan a nuevas posiciones en las que el origen (\"cola\") de un vector está en el extremo (\"cabeza\") de otro vector. El vector resultante se dibuja desde el origen (\"cola\") del primer vector hasta el final (\"cabeza\") del último vector en esta disposición.",
+   "altText": "En la Figura a, se muestran individualmente cuatro vectores, marcados como A, B, C y D. En la Figura b, los vectores se muestran ordenados de cabeza a cola: La cola del vector A está en la cabeza de D. La cola del vector C está en la cabeza de A. Y la cola del vector B está en la cabeza de C. Cada vector apunta en la misma dirección que en la figura a. Un quinto vector, R, comienza en la cola del vector D y termina en la cabeza del vector B.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector07",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector07.jpg",
+   "width": 1193,
+   "height": 442,
+   "caption": "Vectores utilizados en el aquí y en el apartado Compruebe lo aprendido, que aparece a continuación.",
+   "altText": "El vector A tiene una magnitud de 10,0 y está en un ángulo alfa = 35 grados en sentido contrario a las agujas del reloj desde la horizontal. Apunta hacia arriba y hacia la derecha. El vector B tiene una magnitud de 7,0 y está en un ángulo beta = -110 grados en el sentido de las agujas del reloj respecto a la horizontal. Apunta hacia abajo y hacia la izquierda. El vector C tiene una magnitud de 8,0 y está en un ángulo gamma = 30 grados en sentido contrario a las agujas del reloj desde la horizontal. Apunta hacia arriba y hacia la derecha. El vector F tiene una magnitud de 20,0 y está en un ángulo phi = 110 grados en sentido contrario a las agujas del reloj desde la horizontal. Apunta hacia arriba y hacia la izquierda.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector08",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector08.jpg",
+   "width": 1009,
+   "height": 460,
+   "caption": "Utilizamos la regla del paralelogramo para resolver (a) (encontrar la resultante, en rojo) y (b) (encontrar la diferencia, en azul).",
+   "altText": "Tres diagramas de los vectores A y B. Los vectores A y B se muestran colocados cola con cola. El vector A apunta hacia arriba y hacia la derecha y tiene una magnitud de 10,0. El vector B apunta hacia abajo y hacia la izquierda y tiene una magnitud de 7,0. El ángulo entre los vectores A y B es de 145 grados. En el segundo diagrama, los vectores A y B se muestran de nuevo junto con las líneas discontinuas que completan el paralelogramo. El vector R que iguala la suma de los vectores A y B se muestra como el vector que va desde las colas de A y B hasta el vértice opuesto del paralelogramo. La magnitud de R es de 5,8. En el tercer diagrama, los vectores A y B se muestran de nuevo junto con las líneas discontinuas que completan el paralelogramo. El vector D, igual a la diferencia de los vectores A y B, se muestra como el vector que va de la cabeza de B a la cabeza de A. La magnitud de D es 16,2, y el ángulo entre D y la horizontal es de 49,3 grados. El vector R en el segundo diagrama es mucho más corto que el vector D en el tercer diagrama.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-01-vector09",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-01-vector09.jpg",
+   "width": 494,
+   "height": 634,
+   "caption": "Utilizando el método de cola a cabeza para resolver (c) (encontrar el vector $\\vec{S}$, en verde).",
+   "altText": "Los tres vectores se muestran en azul y se colocan cabeza con cola: El vector menos 3 B apunta hacia arriba y hacia la derecha y tiene una magnitud 3 B = 21,0. El vector A comienza en la cabeza de B, apunta hacia arriba y hacia la derecha, y tiene una magnitud de A=10,0. El ángulo entre el vector A y el vector menos 3 B es de 145 grados. El vector C comienza en la cabeza de A y tiene una magnitud C=8,0. El vector S es de color verde y va desde la cola de menos 3 B hasta la cabeza de C. El vector S es igual al vector A menos el vector 3 B más el vector C, tiene una magnitud de S=36,9 y forma un ángulo de 52,9 grados en sentido contrario a las agujas del reloj con la horizontal.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-02-comp01",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-02-comp01.jpg",
+   "width": 695,
+   "height": 527,
+   "caption": "Vector $\\vec{A}$ en un plano en el sistema de coordenadas cartesianas es la suma vectorial de sus componentes vectoriales *x* y *y*. El componente vectorial *x* ${\\vec{A}}_{x}$ es la proyección ortogonal del vector $\\vec{A}$ en el eje de la *x*. El componente vectorial *y* ${\\vec{A}}_{y}$ es la proyección ortogonal del vector $\\vec{A}$ en el eje de la *y*. Las cifras ${A}_{x}$ y ${A}_{y}$ que multiplican los vectores unitarios son los componentes escalares del vector.",
+   "altText": "El vector A se muestra en el sistema de coordenadas de la x y de la y se extiende desde el punto b en la cola de A hasta el punto e y su cabeza. El vector A apunta hacia arriba y hacia la derecha. Los vectores unitarios I y j son pequeños vectores que apuntan en las direcciones de la x y la y, respectivamente, y se encuentran en ángulo recto entre sí. El componente x del vector A es un vector que apunta horizontalmente desde el punto b hasta un punto directamente debajo del punto e en la punta del vector A. En el eje de la x, vemos que el vector A sub x se extiende desde x sub b hasta x sub e y es igual a la magnitud A sub x por el vector I. La magnitud A sub x es igual a x sub e menos x sub b. El componente y del vector A es un vector que apunta verticalmente desde el punto b hasta un punto directamente a la izquierda del punto e en la punta del vector A. En el eje de la y, vemos que el vector A sub y se extiende desde y sub b hasta y sub e y es igual a la magnitud A sub y por el vector j. La magnitud A sub y es igual a y sub e menos y sub b.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-02-comp02",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-02-comp02.jpg",
+   "width": 763,
+   "height": 556,
+   "caption": "El gráfico del vector de desplazamiento. El vector apunta desde el punto de origen en *b* hasta el punto final en *e*.",
+   "altText": "El vector D se extiende desde las coordenadas 6,0, 1,6 hasta las coordenadas 2,0, 4,5. El vector D es igual al vector D sub x más el vector D sub y. D sub x es igual a menos 4,0 por el vector I, y se extiende desde x=6,0 hasta x =2,0. La magnitud D sub x es igual a 2,0-6,0 = -4,0. D sub y es igual a más 2,9 por el vector j, y se extiende desde y=1,6 hasta y=4,5. La magnitud D sub y es igual a 4,5 - 1,6.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-02-comp03",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-02-comp03.jpg",
+   "width": 700,
+   "height": 508,
+   "caption": "Cuando el vector se encuentra en el primer cuadrante o en el cuarto cuadrante, donde el componente ${A}_{x}$es positivo (:ref{id=\"es-2-cnx-uphysics-02-02-comp04\"}), el ángulo direccional ${\\theta}_{A}$ en la (aquí) es idéntico al ángulo $θ$.",
+   "altText": "El vector A tiene el componente horizontal x A sub x igual a la magnitud A sub x por el vector I y el componente vertical y A sub y igual a la magnitud A sub y por el vector j. El vector A y los componentes forman un triángulo rectángulo con la longitud de sus lados de magnitud A sub x y magnitud A sub y e hipotenusa de magnitud A igual a la raíz cuadrada de A sub x al cuadrado más A sub y al cuadrado. El ángulo entre el lado horizontal A sub x y la hipotenusa A es theta sub A.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-02-comp04",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-02-comp04.jpg",
+   "width": 774,
+   "height": 637,
+   "caption": "Los componentes escalares de un vector pueden ser positivos o negativos. Los vectores del primer cuadrante (I) tienen ambos componentes escalares positivos y los vectores del tercer cuadrante tienen ambos componentes escalares negativos. Para los vectores de los cuadrantes II y III, el ángulo direccional de un vector es ${\\theta}_{A}=\\theta+180\\text{°}$.",
+   "altText": "La Figura I muestra el vector A en el primer cuadrante (apuntando hacia arriba y hacia la derecha). Tiene componentes de la x y de la y positivos A sub x y A sub y, y el ángulo theta sub A medido en sentido contrario a las agujas del reloj desde el eje de la x positiva es menor que 90 grados. La figura II muestra el vector A en el primer segundo (apuntando hacia arriba y hacia la izquierda). Tiene componentes x negativo y y positivo A sub x y A sub y. El ángulo theta sub A medido en sentido contrario a las agujas del reloj desde el eje de la x positiva es mayor que 90 grados pero menor que 180 grados. El ángulo theta, medido en el sentido de las agujas del reloj desde el eje de la x negativa, es menor que 90 grados. La figura III muestra el vector A en el tercer cuadrante (apuntando hacia abajo y hacia la izquierda). Tiene componentes de la x y de la y negativos A sub x y A sub y, y el ángulo theta sub A medido en sentido contrario a las agujas del reloj desde el eje de la x positiva es mayor que 180 grados y menor que 270 grados. El ángulo theta, medido en sentido contrario a las agujas del reloj desde el eje de la x negativa, es menor que 90 grados. La Figura IV muestra el vector A en el cuarto cuadrante (apuntando hacia abajo y a la derecha). Tiene componentes x positivo y y negativo A sub x y A sub y, y el ángulo theta sub A medido en el sentido de las agujas del reloj desde el eje de la x positiva es menor que 90 grados.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-02-polar",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-02-polar.jpg",
+   "width": 676,
+   "height": 559,
+   "caption": "Utilizando coordenadas polares, el vector unitario $\\hat{r}$ define la dirección positiva a lo largo del radio *r* (dirección radial) y, ortogonal a él, el vector unitario $\\hat{t}$ define la dirección positiva de la rotación por el ángulo $\\varphi$.",
+   "altText": "El vector r apunta desde el origen del sistema de coordenadas x y al punto P. El ángulo entre el vector r y la dirección x positiva es phi. X es igual a r coseno de phi y y es igual a r seno de phi. Prolongando una línea en la dirección del vector r más allá del punto P, se dibuja un vector unitario r en la misma dirección que r. Un vector unitario t que es perpendicular al vector unitario r, apuntando 90 grados en sentido contrario a las agujas del reloj al vector r.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-02-ijknew",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-02-ijknew.jpg",
+   "width": 646,
+   "height": 669,
+   "caption": "Tres vectores unitarios definen un sistema cartesiano en el espacio tridimensional. El orden en que aparecen estos vectores unitarios define la orientación del sistema de coordenadas. El orden mostrado aquí define la orientación de la mano derecha.",
+   "altText": "El sistema de coordenadas x y z, con los vectores unitarios I, j y k respectivamente. El vector I apunta hacia nosotros, el vector j apunta hacia la derecha y el vector k apunta hacia arriba de la página. Los vectores unitarios forman las caras de un cubo.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-02-vector3d",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-02-vector3d.jpg",
+   "width": 653,
+   "height": 602,
+   "caption": "Un vector en un espacio tridimensional es la suma vectorial de sus tres componentes vectoriales.",
+   "altText": "El vector A en el sistema de coordenadas x y z se extiende desde el origen. El vector A es igual a la suma de los vectores A sub x, A sub y y A sub z. El vector A sub x es el componente x a lo largo del eje de la x y tiene la longitud A sub x por el vector I. El vector A sub y es el componente y a lo largo del eje de la y y tiene una longitud A sub y por el vector j. El vector A sub z es el componente z a lo largo del eje de la z y tiene una longitud A sub x por el vector k. Los componentes forman los lados de una caja rectangular con lados de longitud A sub x, A sub y y A sub z.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-02-heron",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-02-heron.jpg",
+   "width": 465,
+   "height": 248,
+   "caption": "El dron IAI Heron en vuelo (créditos: sargento de Estado Mayor \\[Staff Sargeant, SSgt] Reynaldo Ramon, Fuerzas Aéreas de los EE. UU. \\[U.S. Air Force, USAF]).",
+   "altText": "Una foto de un avión tipo dron.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-03-illustr",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-03-illustr.jpg",
+   "width": 1197,
+   "height": 427,
+   "caption": "Ilustración gráfica de las soluciones obtenidas analíticamente en el aquí.",
+   "altText": "El vector R tiene una magnitud de 13,11. El ángulo entre R y la dirección de la x positiva es theta sub R igual a 13,9 grados. Los componentes de R son R sub x en el eje de la x y R sub y en el eje de la y. El vector D tiene una magnitud de 16,23. El ángulo entre D y la dirección de la x positiva es theta sub D igual a 49,3 grados. Los componentes de D son D sub x en el eje de la x y D sub y en el eje de la y. El vector S tiene una magnitud de 36,95. El ángulo entre S y la dirección de la x positiva es theta sub S igual a 52,9 grados. Los componentes de S son S sub x en el eje de la x y S sub y en el eje de la y.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-03-dogs",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-03-dogs.jpg",
+   "width": 578,
+   "height": 539,
+   "caption": "Cuatro perros juegan al tira y afloja con un juguete.",
+   "altText": "Ilustración de 4 perros halando de un juguete. El juguete está en el origen de un sistema de coordenadas, con la x positiva alineada con el este y la y positiva con el norte. Ang hala en un ángulo alfa de 55 grados en el sentido de las agujas del reloj, desde la dirección de la x positiva (este). Bing hala en un ángulo beta de 60 grados en el sentido de las agujas del reloj, desde la dirección y positiva (norte). Chang hala en un ángulo gamma de 55 grados en sentido contrario de las agujas del reloj, desde la dirección y positiva (norte). Dong hala en una dirección no especificada en el tercer cuadrante.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-03-jogger",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-03-jogger.jpg",
+   "width": 622,
+   "height": 494,
+   "caption": "Un corredor sube un tramo de escaleras.",
+   "altText": "Se muestra un sistema de coordenadas con la x positiva hacia la derecha y la y positiva hacia arriba. Un corredor se encuentra en el punto A, al pie de los escalones que suben hacia la izquierda. La parte superior de los escalones está marcada como punto T. En la parte superior de los escalones hay una sección plana que se extiende desde el punto T hasta el bebedero en el punto B. La distancia entre T y B es de 50 metros.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-04-prod-s",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-04-prod-s.jpg",
+   "width": 1288,
+   "height": 395,
+   "caption": "El producto escalar de dos vectores. (a) El ángulo entre los dos vectores. (b) La proyección ortogonal ${A}_{⊥}$ del vector $\\vec{A}$ en la dirección del vector $\\vec{B}$. (c) La proyección ortogonal ${B}_{⊥}$ del vector $\\vec{B}$ en la dirección del vector $\\vec{A}$.",
+   "altText": "Figura a: los vectores A y B se muestran cola a cola. A es más largo que B. El ángulo entre ellos es phi. Figura b: El vector B se prolonga mediante una línea discontinua y se traza otra línea discontinua desde la cabeza de A hasta la prolongación de B, perpendicular a B. A sub perpendicular es igual a la magnitud de A por el coseno de phi y es la distancia desde el vértice donde se encuentran las colas de A y B hasta el lugar donde la perpendicular de A a B se encuentra con la prolongación de B. Figura c: Se traza una línea discontinua desde la cabeza de B hasta A, perpendicular a A. La distancia desde las colas de A y B hasta donde la línea discontinua se encuentra con B es B sub perpendicular y es igual a la magnitud B por el coseno de phi.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-04-dogs",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-04-dogs.jpg",
+   "width": 418,
+   "height": 353,
+   "caption": "Tres perros juegan con un palo.",
+   "altText": "Tres perros halan de un palo.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-04-prod-v",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-04-prod-v.jpg",
+   "width": 737,
+   "height": 506,
+   "caption": "El producto vectorial de dos vectores se dibuja en un espacio tridimensional. (a) El producto vectorial $\\vec{A}\\,\\times \\,\\vec{B}$ es un vector perpendicular al plano que contiene los vectores $\\vec{A}$ y $\\vec{B}$. Los pequeños cuadrados dibujados en perspectiva marcan los ángulos rectos entre $\\vec{A}$ y $\\vec{C}$, y entre $\\vec{B}$ y $\\vec{C}$ de modo que si $\\vec{A}$ y $\\vec{B}$ están acostados en el suelo, el vector $\\vec{C}$ apunta verticalmente hacia arriba. (b) El producto vectorial $\\vec{B}\\,\\times \\,\\vec{A}$ es un vector antiparalelo al vector $\\vec{A}\\,\\times \\,\\vec{B}$.",
+   "altText": "El vector A apunta hacia fuera y hacia la izquierda, y el vector B apunta hacia fuera y hacia la derecha. El ángulo entre ellos es phi. En la figura a se muestra el vector C que es el producto cruz de A por B. El vector C apunta hacia arriba y es perpendicular a A y B. En la figura b se muestra el vector menos C que es el producto cruz de B cruz A. El vector menos C apunta hacia abajo y es perpendicular a A y B.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-04-corkscrew",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-04-corkscrew.jpg",
+   "width": 732,
+   "height": 501,
+   "caption": "La regla de la mano derecha sirve para determinar la dirección del producto cruz $\\vec{A}\\,\\times \\,\\vec{B}$. Coloque un sacacorchos en la dirección perpendicular al plano que contiene los vectores $\\vec{A}$ y $\\vec{B}$, y gírelo en la dirección del primer al segundo vector del producto. La dirección del producto cruz se da por la progresión del sacacorchos. (a) El movimiento hacia arriba significa que el vector del producto cruz apunta hacia arriba. (b) El movimiento hacia abajo significa que el vector del producto cruz apunta hacia abajo.",
+   "altText": "El vector A apunta hacia fuera y hacia la izquierda, y el vector B apunta hacia fuera y hacia la derecha. En la figura a se nos muestra el producto cruz de A por B que apunta hacia arriba, perpendicular tanto a A como a B. Un tornillo girando a un ángulo phi de A a B se movería hacia arriba. En la figura b se nos muestra el producto cruz de B por A que apunta hacia abajo, perpendicular tanto a A como a B. Un tornillo girando a un ángulo phi de B a A se movería hacia abajo.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-04-wrench",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-04-wrench.jpg",
+   "width": 1206,
+   "height": 643,
+   "caption": "Una llave proporciona agarre y ventaja mecánica al aplicar el torque para girar una tuerca. (a) Gire en sentido contrario a las agujas del reloj para aflojar la tuerca. (b) Gire en sentido de las agujas del reloj para apretar la tuerca.",
+   "altText": "Figura a: una llave inglesa agarra una tuerca. Se aplica una fuerza F a la llave a una distancia R del centro de la tuerca. El vector R es el vector desde el centro de la tuerca hasta el lugar donde se aplica la fuerza. La dirección de la fuerza es un ángulo phi, medido en sentido contrario a las agujas del reloj, desde la dirección del vector R. Figura b: una llave inglesa agarra una tuerca. Se aplica una fuerza F a la llave a una distancia R del centro de la tuerca. El vector R es el vector desde el centro de la tuerca hasta el lugar donde se aplica la fuerza. La dirección de la fuerza es un ángulo phi, medido en el sentido de las agujas del reloj, desde la dirección del vector R.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "es-2-cnx-uphysics-02-04-uniprod",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/es-2-cnx-uphysics-02-04-uniprod.jpg",
+   "width": 795,
+   "height": 755,
+   "caption": "(a) El diagrama del orden cíclico de los vectores unitarios de los ejes. (b) Los únicos productos cruz donde los vectores unitarios aparecen en el orden cíclico. Estos productos tienen el signo positivo. (c, d) Dos ejemplos de productos cruz donde los vectores unitarios no aparecen en el orden cíclico. Estos productos tienen el signo negativo.",
+   "altText": "Figura a: Se muestran los vectores unitarios, vector I, vector j y vector k del sistema de coordenadas x y z. Las flechas indican la secuencia del vector I al vector j y al vector k; y de vuelta al vector I. Figura b: Se muestran los vectores unitarios, vector I, vector j y vector k del sistema de coordenadas x y z. El vector I es igual al vector j por el vector k. El vector j es igual al vector k por el vector i. El vector k es igual al vector i por el vector j. Figura c: Los vectores unitarios, vector I y vector j se muestran junto con el vector menos k apuntando hacia abajo. El vector menos k es igual al vector j por el vector i. Figura d: Los vectores unitarios, vector I y vector k se muestran junto con el vector menos j que apunta hacia la izquierda. El vector menos j es igual al vector i por el vector k.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-1-figure-01-00-galaxy",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-00-galaxy.jpg",
+   "width": 975,
+   "height": 327,
+   "caption": "Galaxies, such as the Andromeda galaxy pictured here, are immense in size. The small blue spots in this photo are also galaxies. The same physical laws apply to objects as large as galaxies or objects as small as atoms. The laws of physics are, therefore, surprisingly few in number. (NASA, JPL-Caltech, P. Barmby, Harvard-Smithsonian Center for Astrophysics).",
+   "altText": "The elliptical-shaped Andromeda galaxy is shown.",
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-00-train",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-00-train.jpg",
+   "width": 975,
+   "height": 525,
+   "caption": "Shanghai Maglev. At this rate, a train traveling from Boston to Washington, DC, a distance of 439 miles, could make the trip in under an hour and a half. Presently, the fastest train on this route takes over six hours to cover this distance. (Alex Needham, Public Domain)",
+   "altText": "A photograph shows a maglev train traveling past an airport.",
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-phone",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-phone.jpg",
+   "width": 300,
+   "height": 611,
+   "caption": "Physics describes the way that electric charge flows through the circuits of this device. Engineers use their knowledge of physics to construct a smartphone with features that consumers will enjoy, such as a GPS function. GPS uses physics equations to determine the driving time between two locations on a map. (@gletham GIS, Social, Mobile Tech Images)",
+   "altText": "A common smart phone with a GPS function is shown.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-stonehenge",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-stonehenge.jpg",
+   "width": 450,
+   "height": 338,
+   "caption": "Stonehenge is a monument located in England that was built between 3000 and 1000 B.C. It functions as an ancient astronomical observatory, with certain rocks in the monument aligning with the position of the sun during the summer and winter solstices. Other rocks align with the rising and setting of the moon during certain days of the year. (Citypeek, Wikimedia Commons)",
+   "altText": "A photograph of Stonehenge shows large rocks sitting upright and other laying across the upright rocks. Stonehenge functions as an ancient astronomical observatory, with certain rocks in the monument aligning with the position of the Sun during the summer and winter solstices. Other rocks align with the rising and setting of the Moon during certain days of the year.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-earth",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-earth.jpg",
+   "width": 727,
+   "height": 452,
+   "caption": "Einstein’s theory of relativity describes space and time as an interweaved mesh. Large objects, such as a planet, distort space, causing objects to fall in toward the planet due to the action of gravity. Large objects also distort time, causing time to proceed at a slower rate near the surface of Earth compared with the area outside of the distorted region of space-time.",
+   "altText": "An image of Earth in outer space sitting in a mesh net is shown. The mesh is pushed downward by the mass of Earth and arrows indicate that Earth is spinning. The image illustrates Einstein’s theory of relativity describes space and time as an interweaved mesh.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-gold",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-gold.jpg",
+   "width": 300,
+   "height": 288,
+   "caption": "Using a scanning tunneling microscope (STM), scientists can see the individual atoms that compose this sheet of gold. (Erwinrossen)",
+   "altText": "An image of gold taken by a scanning tunneling microscope shows individual gold atoms.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-collider",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-collider.jpg",
+   "width": 300,
+   "height": 225,
+   "caption": "Particle colliders such as the Large Hadron Collider in Switzerland or Fermilab in the United States (pictured here), have long tunnels that allows subatomic particles to be accelerated to near light speed. (Andrius.v )",
+   "altText": "A photograph shows a large collider, called the Fermilab, with a long tube that allows subatomic particles to be accelerated.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-microwave",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-microwave.jpg",
+   "width": 300,
+   "height": 200,
+   "caption": "Why can't you put metal in the microwave? Microwaves are high-energy radiation that increases the movement of electrons in metal. These moving electrons can create an electrical current, causing sparking that can lead to a fire. (= MoneyBlogNewz)",
+   "altText": "A small, counter-top microwave oven is shown. Microwave ovens use electromagnetic waves to heat food.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-eye",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-eye.jpg",
+   "width": 300,
+   "height": 363,
+   "caption": "Magnetic resonance imaging (MRI) uses electromagnetic waves to yield an image of the brain, which doctors can use to find diseased regions. (Rashmi Chawla, Daniel Smith, and Paul E. Marik)",
+   "altText": "An MRI image of a brain is shown. This type of photography uses electromagnetic radiation to produce images.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-cell",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-cell.jpg",
+   "width": 300,
+   "height": 200,
+   "caption": "Physics, chemistry, and biology help describe the properties of cell walls in plant cells, such as the onion cells seen here. (Umberto Salvagnin)",
+   "altText": "A group of onion cells is shown. Each cell has a visible cell wall and nucleus.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-rosetta",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-rosetta.jpg",
+   "width": 488,
+   "height": 274,
+   "caption": "The Rosetta spacecraft, with its large and revolutionary solar panels, carried the Philae lander to a comet. The lander then detached and landed on the comet’s surface. (European Space Agency)",
+   "altText": "An image of the Rosetta spacecraft is shown. It has large solar panels and is hovering over a comet.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-01-solar",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-01-solar.jpg",
+   "width": 731,
+   "height": 264,
+   "caption": "a) Voyager 2, launched in 1977, used the gravity of Saturn to slingshot over to Uranus and Neptune. NASA b) A rendering of Voyager 1, the first space probe to ever leave our solar system and enter interstellar space. NASA",
+   "altText": "Two diagrams are shown. The diagram on the left illustrates the path of the Voyager 2 spacecraft starting at Earth on August 20th, 1977. The following labels describe the path: Jupiter on July 9th, 1979, Saturn on August 25th, 1981, Uranus on January 24th, 1986, and Neptune on August 25th, 1989. The diagram on the right illustrates the Voyager 1 space probe.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-02-electron",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-02-electron.jpg",
+   "width": 300,
+   "height": 329,
+   "caption": "The electron cloud model of the atom predicts the geometry and shape of areas where different electrons may be found in an atom. However, it cannot indicate exactly where an electron will be at any one time.",
+   "altText": "A drawing of an electron cloud model shows an atom with a nucleus and predicted geometry and shape of areas where electrons surround the nucleus.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-map",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-map.jpg",
+   "width": 300,
+   "height": 260,
+   "caption": "Distances given in unknown units are maddeningly useless.",
+   "altText": "A person is standing in front of a map that has cable as units. The person is confused and is wondering how big a cable is.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-table-01-03-siunits",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "SI Base Units",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Quantity",
+        "isHeader": true
+       },
+       {
+        "content": "Name",
+        "isHeader": true
+       },
+       {
+        "content": "Symbol",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "Length"
+       },
+       {
+        "content": "Meter"
+       },
+       {
+        "content": "m"
+       }
+      ],
+      [
+       {
+        "content": "Mass"
+       },
+       {
+        "content": "Kilogram"
+       },
+       {
+        "content": "kg"
+       }
+      ],
+      [
+       {
+        "content": "Time"
+       },
+       {
+        "content": "Second"
+       },
+       {
+        "content": "s"
+       }
+      ],
+      [
+       {
+        "content": "Electric current"
+       },
+       {
+        "content": "Ampere"
+       },
+       {
+        "content": "A"
+       }
+      ],
+      [
+       {
+        "content": "Temperature"
+       },
+       {
+        "content": "Kelvin"
+       },
+       {
+        "content": "K"
+       }
+      ],
+      [
+       {
+        "content": "Amount of substance"
+       },
+       {
+        "content": "Mole"
+       },
+       {
+        "content": "mol"
+       }
+      ],
+      [
+       {
+        "content": "Luminous intensity"
+       },
+       {
+        "content": "Candela"
+       },
+       {
+        "content": "cd"
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1,
+      1,
+      1
+     ]
+    }
+   },
+   "placement": {
+    "position": "auto",
+    "span": "column"
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-flashlight",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-flashlight.jpg",
+   "width": 731,
+   "height": 172,
+   "caption": "The meter is defined to be the distance light travels in 1/299,792,458 of a second through a vacuum. Distance traveled is speed multiplied by time.",
+   "altText": "A shining flashlight is placed over top a meter stick to illustrate that the meter is defined as the distance light travels in 1/299,792,458 of a second through a vacuum.",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-clock",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-clock.jpg",
+   "width": 488,
+   "height": 488,
+   "caption": "An atomic clock such as this one uses the vibrations of cesium atoms to keep time to a precision of one microsecond per year. The fundamental unit of time, the second, is based on such clocks. This image is looking down from the top of an atomic clock. (Steve Jurvetson/Flickr)",
+   "altText": "A photograph shows an atomic clock. The image is taken looking downward from the top of an atomic clock.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-table-01-03-metrics",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "Metric Prefixes for Powers of 10 and Their Symbols",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Prefix",
+        "isHeader": true
+       },
+       {
+        "content": "Symbol",
+        "isHeader": true
+       },
+       {
+        "content": "Value (See Appendix A for a discussion of powers of 10.)",
+        "isHeader": true
+       },
+       {
+        "content": "Example Name",
+        "isHeader": true
+       },
+       {
+        "content": "Example Symbol",
+        "isHeader": true
+       },
+       {
+        "content": "Example Value",
+        "isHeader": true
+       },
+       {
+        "content": "Example Description",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "exa"
+       },
+       {
+        "content": "E"
+       },
+       {
+        "content": "10¹⁸"
+       },
+       {
+        "content": "Exameter"
+       },
+       {
+        "content": "Em"
+       },
+       {
+        "content": "10¹⁸ m"
+       },
+       {
+        "content": "Distance light travels in a century"
+       }
+      ],
+      [
+       {
+        "content": "peta"
+       },
+       {
+        "content": "P"
+       },
+       {
+        "content": "10¹⁵"
+       },
+       {
+        "content": "Petasecond"
+       },
+       {
+        "content": "Ps"
+       },
+       {
+        "content": "10¹⁵ s"
+       },
+       {
+        "content": "30 million years"
+       }
+      ],
+      [
+       {
+        "content": "tera"
+       },
+       {
+        "content": "T"
+       },
+       {
+        "content": "10¹²"
+       },
+       {
+        "content": "Terawatt"
+       },
+       {
+        "content": "TW"
+       },
+       {
+        "content": "10¹² W"
+       },
+       {
+        "content": "Powerful laser output"
+       }
+      ],
+      [
+       {
+        "content": "giga"
+       },
+       {
+        "content": "G"
+       },
+       {
+        "content": "10⁹"
+       },
+       {
+        "content": "Gigahertz"
+       },
+       {
+        "content": "GHz"
+       },
+       {
+        "content": "10⁹ Hz"
+       },
+       {
+        "content": "A microwave frequency"
+       }
+      ],
+      [
+       {
+        "content": "mega"
+       },
+       {
+        "content": "M"
+       },
+       {
+        "content": "10⁶"
+       },
+       {
+        "content": "Megacurie"
+       },
+       {
+        "content": "MCi"
+       },
+       {
+        "content": "10⁶ Ci"
+       },
+       {
+        "content": "High radioactivity"
+       }
+      ],
+      [
+       {
+        "content": "kilo"
+       },
+       {
+        "content": "k"
+       },
+       {
+        "content": "10³"
+       },
+       {
+        "content": "Kilometer"
+       },
+       {
+        "content": "km"
+       },
+       {
+        "content": "10³ m"
+       },
+       {
+        "content": "About 6/10 mile"
+       }
+      ],
+      [
+       {
+        "content": "hecto"
+       },
+       {
+        "content": "h"
+       },
+       {
+        "content": "10²"
+       },
+       {
+        "content": "Hectoliter"
+       },
+       {
+        "content": "hL"
+       },
+       {
+        "content": "10² L"
+       },
+       {
+        "content": "26 gallons"
+       }
+      ],
+      [
+       {
+        "content": "deka"
+       },
+       {
+        "content": "da"
+       },
+       {
+        "content": "10¹"
+       },
+       {
+        "content": "Dekagram"
+       },
+       {
+        "content": "dag"
+       },
+       {
+        "content": "10¹ g"
+       },
+       {
+        "content": "Teaspoon of butter"
+       }
+      ],
+      [
+       {
+        "content": ""
+       },
+       {
+        "content": ""
+       },
+       {
+        "content": "10⁰ (=1)"
+       },
+       {
+        "content": ""
+       },
+       {
+        "content": ""
+       },
+       {
+        "content": ""
+       },
+       {
+        "content": ""
+       }
+      ],
+      [
+       {
+        "content": "deci"
+       },
+       {
+        "content": "d"
+       },
+       {
+        "content": "10${}^{–1}$"
+       },
+       {
+        "content": "Deciliter"
+       },
+       {
+        "content": "dL"
+       },
+       {
+        "content": "10${}^{–1}$ L"
+       },
+       {
+        "content": "Less than half a soda"
+       }
+      ],
+      [
+       {
+        "content": "centi"
+       },
+       {
+        "content": "c"
+       },
+       {
+        "content": "10${}^{–2}$"
+       },
+       {
+        "content": "Centimeter"
+       },
+       {
+        "content": "cm"
+       },
+       {
+        "content": "10${}^{–2}$ m"
+       },
+       {
+        "content": "Fingertip thickness"
+       }
+      ],
+      [
+       {
+        "content": "milli"
+       },
+       {
+        "content": "m"
+       },
+       {
+        "content": "10${}^{–3}$"
+       },
+       {
+        "content": "Millimeter"
+       },
+       {
+        "content": "mm"
+       },
+       {
+        "content": "10${}^{–3}$ m"
+       },
+       {
+        "content": "Flea at its shoulder"
+       }
+      ],
+      [
+       {
+        "content": "micro"
+       },
+       {
+        "content": "µ"
+       },
+       {
+        "content": "10${}^{–6}$"
+       },
+       {
+        "content": "Micrometer"
+       },
+       {
+        "content": "µm"
+       },
+       {
+        "content": "10${}^{–6}$ m"
+       },
+       {
+        "content": "Detail in microscope"
+       }
+      ],
+      [
+       {
+        "content": "nano"
+       },
+       {
+        "content": "n"
+       },
+       {
+        "content": "10${}^{–9}$"
+       },
+       {
+        "content": "Nanogram"
+       },
+       {
+        "content": "ng"
+       },
+       {
+        "content": "10${}^{–9}$ g"
+       },
+       {
+        "content": "Small speck of dust"
+       }
+      ],
+      [
+       {
+        "content": "pico"
+       },
+       {
+        "content": "p"
+       },
+       {
+        "content": "10${}^{–12}$"
+       },
+       {
+        "content": "Picofarad"
+       },
+       {
+        "content": "pF"
+       },
+       {
+        "content": "10${}^{–12}$ F"
+       },
+       {
+        "content": "Small capacitor in radio"
+       }
+      ],
+      [
+       {
+        "content": "femto"
+       },
+       {
+        "content": "f"
+       },
+       {
+        "content": "10${}^{–15}$"
+       },
+       {
+        "content": "Femtometer"
+       },
+       {
+        "content": "fm"
+       },
+       {
+        "content": "10${}^{–15}$ m"
+       },
+       {
+        "content": "Size of a proton"
+       }
+      ],
+      [
+       {
+        "content": "atto"
+       },
+       {
+        "content": "a"
+       },
+       {
+        "content": "10${}^{–18}$"
+       },
+       {
+        "content": "Attosecond"
+       },
+       {
+        "content": "as"
+       },
+       {
+        "content": "10${}^{–18}$ s"
+       },
+       {
+        "content": "Time light takes to cross an atom"
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ]
+    }
+   },
+   "placement": {
+    "position": "auto",
+    "span": "page"
+   }
+  },
+  {
+   "id": "en-1-table-01-03-units",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "Approximate Values of Length, Mass, and Time",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Length (m)",
+        "isHeader": true
+       },
+       {
+        "content": "Phenomenon Measured",
+        "isHeader": true
+       },
+       {
+        "content": "Mass (Kg)",
+        "isHeader": true
+       },
+       {
+        "content": "Phenomenon Measured${}^{[1]}$",
+        "isHeader": true
+       },
+       {
+        "content": "Time (s)",
+        "isHeader": true
+       },
+       {
+        "content": "Phenomenon Measured${}^{[1]}$",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "10${}^{–18}$"
+       },
+       {
+        "content": "Present experimental limit to smallest observable detail"
+       },
+       {
+        "content": "10${}^{–30}$"
+       },
+       {
+        "content": "Mass of an electron (9.11 $\\times$ 10${}^{–31}$ kg)"
+       },
+       {
+        "content": "10${}^{–23}$"
+       },
+       {
+        "content": "Time for light to cross a proton"
+       }
+      ],
+      [
+       {
+        "content": "10${}^{–15}$"
+       },
+       {
+        "content": "Diameter of a proton"
+       },
+       {
+        "content": "10${}^{–27}$"
+       },
+       {
+        "content": "Mass of a hydrogen atom (1.67 $\\times$ 10${}^{–27}$ kg)"
+       },
+       {
+        "content": "10${}^{–22}$"
+       },
+       {
+        "content": "Mean life of an extremely unstable nucleus"
+       }
+      ],
+      [
+       {
+        "content": "10${}^{–14}$"
+       },
+       {
+        "content": "Diameter of a uranium nucleus"
+       },
+       {
+        "content": "10${}^{–15}$"
+       },
+       {
+        "content": "Mass of a bacterium"
+       },
+       {
+        "content": "10${}^{–15}$"
+       },
+       {
+        "content": "Time for one oscillation of a visible light"
+       }
+      ],
+      [
+       {
+        "content": "10${}^{–10}$"
+       },
+       {
+        "content": "Diameter of a hydrogen atom"
+       },
+       {
+        "content": "10${}^{–5}$"
+       },
+       {
+        "content": "Mass of a mosquito"
+       },
+       {
+        "content": "10${}^{–13}$"
+       },
+       {
+        "content": "Time for one vibration of an atom in a solid"
+       }
+      ],
+      [
+       {
+        "content": "10${}^{–8}$"
+       },
+       {
+        "content": "Thickness of membranes in cell of living organism"
+       },
+       {
+        "content": "10${}^{–2}$"
+       },
+       {
+        "content": "Mass of a hummingbird"
+       },
+       {
+        "content": "10${}^{–8}$"
+       },
+       {
+        "content": "Time for one oscillation of an FM radio wave"
+       }
+      ],
+      [
+       {
+        "content": "10${}^{–6}$"
+       },
+       {
+        "content": "Wavelength of visible light"
+       },
+       {
+        "content": "1"
+       },
+       {
+        "content": "Mass of a liter of water (about a quart)"
+       },
+       {
+        "content": "10${}^{–3}$"
+       },
+       {
+        "content": "Duration of a nerve impulse"
+       }
+      ],
+      [
+       {
+        "content": "10${}^{–3}$"
+       },
+       {
+        "content": "Size of a grain of sand"
+       },
+       {
+        "content": "10²"
+       },
+       {
+        "content": "Mass of a person"
+       },
+       {
+        "content": "1"
+       },
+       {
+        "content": "Time for one heartbeat"
+       }
+      ],
+      [
+       {
+        "content": "1"
+       },
+       {
+        "content": "Height of a 4-year-old child"
+       },
+       {
+        "content": "10³"
+       },
+       {
+        "content": "Mass of a car"
+       },
+       {
+        "content": "10⁵"
+       },
+       {
+        "content": "One day (8.64 $\\times$ 10⁴ s)"
+       }
+      ],
+      [
+       {
+        "content": "10²"
+       },
+       {
+        "content": "Length of a football field"
+       },
+       {
+        "content": "10⁸"
+       },
+       {
+        "content": "Mass of a large ship"
+       },
+       {
+        "content": "10⁷"
+       },
+       {
+        "content": "One year (3.16 $\\times$ 10⁷ s)"
+       }
+      ],
+      [
+       {
+        "content": "10⁴"
+       },
+       {
+        "content": "Greatest ocean depth"
+       },
+       {
+        "content": "10¹²"
+       },
+       {
+        "content": "Mass of a large iceberg"
+       },
+       {
+        "content": "10⁹"
+       },
+       {
+        "content": "About half the life expectancy of a human"
+       }
+      ],
+      [
+       {
+        "content": "10⁷"
+       },
+       {
+        "content": "Diameter of Earth"
+       },
+       {
+        "content": "10¹⁵"
+       },
+       {
+        "content": "Mass of the nucleus of a comet"
+       },
+       {
+        "content": "10¹¹"
+       },
+       {
+        "content": "Recorded history"
+       }
+      ],
+      [
+       {
+        "content": "10¹¹"
+       },
+       {
+        "content": "Distance from Earth to the sun"
+       },
+       {
+        "content": "10²³"
+       },
+       {
+        "content": "Mass of the moon (7.35 $\\times$ 10²² kg)"
+       },
+       {
+        "content": "10¹⁷"
+       },
+       {
+        "content": "Age of Earth"
+       }
+      ],
+      [
+       {
+        "content": "10¹⁶"
+       },
+       {
+        "content": "Distance traveled by light in 1 year (a light year)"
+       },
+       {
+        "content": "10²⁵"
+       },
+       {
+        "content": "Mass of Earth (5.97 $\\times$ 10²⁴ kg)"
+       },
+       {
+        "content": "10¹⁸"
+       },
+       {
+        "content": "Age of the universe"
+       }
+      ],
+      [
+       {
+        "content": "10²¹"
+       },
+       {
+        "content": "Diameter of the Milky Way Galaxy"
+       },
+       {
+        "content": "10³⁰"
+       },
+       {
+        "content": "Mass of the Sun (1.99 $\\times$ 10³⁰ kg)"
+       },
+       {
+        "content": ""
+       },
+       {
+        "content": ""
+       }
+      ],
+      [
+       {
+        "content": "10²²"
+       },
+       {
+        "content": "Distance from Earth to the nearest large galaxy (Andromeda)"
+       },
+       {
+        "content": "10⁴²"
+       },
+       {
+        "content": "Mass of the Milky Way galaxy (current upper limit)"
+       },
+       {
+        "content": ""
+       },
+       {
+        "content": ""
+       }
+      ],
+      [
+       {
+        "content": "10²⁶"
+       },
+       {
+        "content": "Distance from Earth to the edges of the known universe"
+       },
+       {
+        "content": "10⁵³"
+       },
+       {
+        "content": "Mass of the known universe (current upper limit)"
+       },
+       {
+        "content": ""
+       },
+       {
+        "content": ""
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ]
+    }
+   },
+   "placement": {
+    "position": "auto",
+    "span": "page"
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-plankton",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-plankton.jpg",
+   "width": 488,
+   "height": 320,
+   "caption": "Tiny phytoplankton float among crystals of ice in the Antarctic Sea. They range from a few micrometers to as much as 2 millimeters in length. (Prof. Gordon T. Taylor, Stony Brook University; NOAA Corps Collections)",
+   "altText": "A photograph shows tiny plankton floating in water. They range in shape and size, from a few micrometers to as much as 2 millimeters in length.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-stars",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-stars.jpg",
+   "width": 300,
+   "height": 300,
+   "caption": "Galaxies collide 2.4 billion light years away from Earth. The tremendous range of observable phenomena in nature challenges the imagination. (NASA/CXC/UVic./A. Mahdavi et al. Optical/lensing: CFHT/UVic./H. Hoekstra et al.)",
+   "altText": "An image of colliding galaxies is shown, with bright stars and colors ranging from blue to purple to pink surrounding the galaxies.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-world",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-world.jpg",
+   "width": 300,
+   "height": 169,
+   "caption": "The distance from Earth to the moon may seem immense, but it is just a tiny fraction of the distance from Earth to our closest neighboring star. (NASA)",
+   "altText": "A photograph taken from the moon shows Earth in the distance.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-pan",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-pan.jpg",
+   "width": 488,
+   "height": 274,
+   "caption": "A double-pan mechanical balance is used to compare different masses. Usually an object with unknown mass is placed in one pan and objects of known mass are placed in the other pan. When the bar that connects the two pans is horizontal, then the masses in both pans are equal. The known masses are typically metal cylinders of standard mass such as 1 gram, 10 grams, and 100 grams. (Serge Melki)",
+   "altText": "A double-pan mechanical balance is shown. A metal mass is sitting in the left pan.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-balance",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-balance.jpg",
+   "width": 487,
+   "height": 299,
+   "caption": "Whereas a mechanical balance may only read the mass of an object to the nearest tenth of a gram, some digital scales can measure the mass of an object up to the nearest thousandth of a gram. As in other measuring devices, the precision of a scale is limited to the last measured figures. This is the hundredths place in the scale pictured here. (Splarka, Wikimedia Commons)",
+   "altText": "A plastic pen cap is sitting on a digital scale and has a measured mass of 0.98 grams.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-target-accuracy",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-target-accuracy.jpg",
+   "width": 300,
+   "height": 300,
+   "caption": "A GPS system attempts to locate a restaurant at the center of the bull’s-eye. The black dots represent each attempt to pinpoint the location of the restaurant. The dots are spread out quite far apart from one another, indicating low precision, but they are each rather close to the actual location of the restaurant, indicating high accuracy. (Dark Evil)",
+   "altText": "A red target is shown with four dots that are spread out around the outer center ring, or bull's eye. The dots represent attempts by a GPS system to locate a restaurant at the center of the bull’s-eye. The dots are spread out quite far apart from one another, indicating low precision, but they are each rather close to the actual location of the restaurant, indicating high accuracy.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-target-precision",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-target-precision.jpg",
+   "width": 300,
+   "height": 300,
+   "caption": "In this figure, the dots are concentrated close to one another, indicating high precision, but they are rather far away from the actual location of the restaurant, indicating low accuracy. (Dark Evil)",
+   "altText": "A red target is shown with four dots that represent attempts by a GPS system to locate a restaurant at the center of the bull’s-eye. The dots are concentrated close to one another, indicating high precision, but they are rather far away from the actual location of the restaurant, indicating low accuracy.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-target-both",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-target-both.jpg",
+   "width": 300,
+   "height": 300,
+   "caption": "In this figure, the dots are concentrated close to one another, indicating high precision, and they are very close to the actual location of the restaurant, indicating high accuracy. (Dark Evil)",
+   "altText": "A red target is shown with four dots that represent attempts by a GPS system to locate a restaurant at the center of the bull’s-eye. The dots are concentrated close to one another, indicating high precision, and they are very close to the actual location of the restaurant, indicating high accuracy.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-rulers",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-rulers.jpg",
+   "width": 732,
+   "height": 442,
+   "caption": "Three metric rulers are shown. The first ruler is in decimeters and can measure point three decimeters. The second ruler is in centimeters long and can measure three point six centimeters. The last ruler is in millimeters and can measure thirty-six point five millimeters.",
+   "altText": "The stick can be measured with increasing accuracy as we use smaller and smaller scales of measurement.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-1-table-10-03-sigfigs",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Number",
+        "isHeader": true
+       },
+       {
+        "content": "Significant Figures",
+        "isHeader": true
+       },
+       {
+        "content": "Rationale",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "1.657"
+       },
+       {
+        "content": "4"
+       },
+       {
+        "content": "There are no zeros and all non-zero numbers are always significant."
+       }
+      ],
+      [
+       {
+        "content": "0.4578"
+       },
+       {
+        "content": "4"
+       },
+       {
+        "content": "The first zero is only a placeholder for the decimal point."
+       }
+      ],
+      [
+       {
+        "content": "0.000458"
+       },
+       {
+        "content": "3"
+       },
+       {
+        "content": "The first four zeros are placeholders needed to report the data to the ten-thoudsandths place."
+       }
+      ],
+      [
+       {
+        "content": "2000.56"
+       },
+       {
+        "content": "6"
+       },
+       {
+        "content": "The three zeros are significant here because they occur between other significant figures."
+       }
+      ],
+      [
+       {
+        "content": "45,600"
+       },
+       {
+        "content": "3"
+       },
+       {
+        "content": "With no underlines or scientific notation, we assume that the last two zeros are placeholders and are not significant."
+       }
+      ],
+      [
+       {
+        "content": "15895*00*0"
+       },
+       {
+        "content": "7"
+       },
+       {
+        "content": "The two underlined zeros are significant, while the last zero is not, as it is not underlined."
+       }
+      ],
+      [
+       {
+        "content": "5.457 $\\times$ 10¹³"
+       },
+       {
+        "content": "4"
+       },
+       {
+        "content": "In scientific notation, all numbers reported in front of the multiplication sign are significant"
+       }
+      ],
+      [
+       {
+        "content": "6.520 $\\times$ 10${}^{–23}$"
+       },
+       {
+        "content": "4"
+       },
+       {
+        "content": "In scientific notation, all numbers reported in front of the multiplication sign are significant, including zeros."
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1,
+      1,
+      1
+     ]
+    }
+   },
+   "placement": {
+    "position": "auto",
+    "span": "column"
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-money",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-money.jpg",
+   "width": 732,
+   "height": 469,
+   "caption": "A bank stack contains one hundred $100 bills, and is worth $10,000. How many bank stacks make up a trillion dollars? (Andrew Magill)",
+   "altText": "A stack of United States paper money is shown with one hundred hundred-dollar bills.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-1-table-01-03-train",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Time (min)",
+        "isHeader": true
+       },
+       {
+        "content": "Distance from Station (km)",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "0"
+       },
+       {
+        "content": "0"
+       }
+      ],
+      [
+       {
+        "content": "10"
+       },
+       {
+        "content": "24"
+       }
+      ],
+      [
+       {
+        "content": "20"
+       },
+       {
+        "content": "36"
+       }
+      ],
+      [
+       {
+        "content": "30"
+       },
+       {
+        "content": "60"
+       }
+      ],
+      [
+       {
+        "content": "40"
+       },
+       {
+        "content": "84"
+       }
+      ],
+      [
+       {
+        "content": "50"
+       },
+       {
+        "content": "97"
+       }
+      ],
+      [
+       {
+        "content": "60"
+       },
+       {
+        "content": "116"
+       }
+      ],
+      [
+       {
+        "content": "70"
+       },
+       {
+        "content": "140"
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      1,
+      1
+     ]
+    }
+   },
+   "placement": {
+    "position": "auto",
+    "span": "column"
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-line",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-line.jpg",
+   "width": 975,
+   "height": 859,
+   "caption": "Examples of (a) linear, (b) quadratic, (c) inverse, and (d) exponential relationship graphs.",
+   "altText": "Four line graphs are shown. All graphs have x-axis and y-axis scales from zero to ten in increments of two. Graph a is a linear relationship between x and y, where y equals m times x plus b, with a positive and a negative slope shown. Graph b is a quadratic relationship where y equals a times x squared plus b x plus c. The line curves upward. Graph c is a an inverse relationship where y equals a over x. The line curves downward. And graph d is an exponential relationship where y equals a to the power of x and the line curves upward, and where y equals a to the negative power of x and the line curves downward.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-1-figure-01-03-richter",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-1-figure-01-03-richter.jpg",
+   "width": 894,
+   "height": 492,
+   "caption": "(a) The Richter scale uses a log base 10 scale on its *y-axis* (microns of amplified maximum ground motion). (b) The relationship between the frequency and wavelength of electromagnetic radiation can be plotted as a straight line if a log-log plot is used.",
+   "altText": "Two line graphs are shown. Graph a shows a graphical representation the Richter scale and uses a log base 10 scale on its y-axis in microns of amplified maximum ground motion. The x-axis has a scale from negative one through nine and indicates categories of earthquakes. Negative one to two is categorized as “Not felt.” Two to four is “Minor”, four to five is “Small”, five to six is “Moderate”, six to seven is “Strong”, seven to eight is “Major”, and above eight is “Great.” Graph b shows the relationship between the frequency and wavelength of electromagnetic radiation, plotted as a straight line using a log-log plot. The x-axis is labeled Wavelength in centimeters and has a scale from ten to the power of negative six through ten to the power of negative eight. The y-axis is labeled Frequency with units in s to the power of negative one. Using these units, the y-axis scale is from ten to the power of sixteen through ten to the power of nineteen. The plotted line shows an inverse relationship between frequency and wavelength.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-2-figure-02-01-airplane",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-01-airplane.jpg",
+   "width": 488,
+   "height": 326,
+   "caption": "Are clouds a useful reference frame for airplane passengers? Why or why not? (Paul Brennan, Public Domain)",
+   "altText": "A photograph of an airplane flying in an upward direction is shown. The sky is partly cloudy.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-01-galileo",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-01-galileo.jpg",
+   "width": 300,
+   "height": 380,
+   "caption": "Galileo Galilei (1564–1642) studied motion and developed the concept of a reference frame. (Domenico Tintoretto)",
+   "altText": "A painting of Galileo Galilei is shown.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-01-house",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-01-house.jpg",
+   "width": 731,
+   "height": 369,
+   "caption": "Your total change in position is measured from your house to your school.",
+   "altText": "A drawing is shown of a house on the left facing a school on the right. A vector between points from the house to the school is labeled d o on the left and d f on the right. A car is shown driving from the house to the school.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-2-figure-02-01-comic",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-01-comic.jpg",
+   "width": 731,
+   "height": 349,
+   "caption": "A short line separates the starting and ending points of this motion, but the distance along the path of motion is considerably longer.",
+   "altText": "A diagram is shown of a house on the left labeled home and another house on the right labeled Friend's house. The driveways of the houses are facing each other and a curvy road connects the driveways. A car is on the curvy road about half-way between the two houses.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-2-figure-02-01-arrow",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-01-arrow.jpg",
+   "width": 731,
+   "height": 369,
+   "caption": "The total distance that your car travels is 10 km, but the total displacement is 0.",
+   "altText": "A drawing is shown of a house on the left facing a school on the right. The distance between the two is labeled five miles. A double-arrow vector between the house and the school is labeled do on the left and df on the right. The equation change in d total equals zero is shown below the vector.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-2-figure-02-02-diagram",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-02-diagram.jpg",
+   "width": 731,
+   "height": 349,
+   "caption": "During a 30-minute round trip to the store, the total distance traveled is 6 km. The average speed is 12 km/h. The displacement for the round trip is zero, because there was no net change in position.",
+   "altText": "A drawing is shown of a house on the left and a store on the right. The distance between the two is labeled three kilometers. A double-arrow vector between the house and the store is labeled with the equation change in d total equals zero.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-2-figure-02-02-plane",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-02-plane.jpg",
+   "width": 731,
+   "height": 446,
+   "caption": "The diagram shows a more detailed record of an airplane passenger heading toward the back of the plane, showing smaller segments of his trip.",
+   "altText": "A drawing of an airplane facing to the right is shown, and is set in quadrant one of a coordinate plane. The x-axis is labeled df and then do. The distance between df and do is labeled with a left-pointing vector, change in d total. Four other vectors are shown below the airplane. Vector change in d a points to the left and is short. Vector change in d b points to the left and is also short. Vector change in d c points to the right and is short. Vector change in d d points to the left and is longer.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-2-figure-02-03-graph",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-03-graph.jpg",
+   "width": 487,
+   "height": 298,
+   "caption": "The diagram shows a straight-line graph. The equation for the straight line is *y* equals *mx* + *b*.",
+   "altText": "A line graph is shown. The plotted line has a positive slope. The point of intersection with the y-axis is labeled intercept, b. The distance between the graphed line and the x-axis at the intercept is also labeled b. The line is labeled with the equation y equals m x plus b. The equation slope equals rise over run equals change in x over change in y equals m is also shown.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-03-position",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-03-position.jpg",
+   "width": 487,
+   "height": 344,
+   "caption": "A graph of position versus time for the drive to school is shown. What would the graph look like if we added the return trip?",
+   "altText": "A line graph of position versus time is shown. The scale on the x-axis is from zero to twelve in increments of one, and is labeled time in minutes. The scale on the y-axis is from zero to twelve in increments of one and is labeled position in kilometers. A line of the equation y equals point five x is graphed and ends at ten minutes.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-03-time",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-03-time.jpg",
+   "width": 487,
+   "height": 394,
+   "caption": "The diagram shows a graph of position versus time for a jet-powered car on the Bonneville Salt Flats.",
+   "altText": "A line graph is shown. The x-axis is labeled time in seconds and has a scale from zero to eight in increments of one. The y-axis is labeled position, d, in meters and has a scale from zero to two thousand four hundred in increments of four hundred. A line is plotted that intersects the following data points: zero, four hundred (labeled d 0 equals four hundred), point five, five hundred twenty-five; and six point four, two thousand (labeled y equals d o plus bar over v times t). The line is labeled Slope equals bar over v equals change in d over change in t. The distance between points point five, five hundred twenty-five and six point four, two thousand is labeled change in t. The distance between points six point four, five hundred twenty-five and six point four, two thousand is labeled change in d.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-03-jet",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-03-jet.jpg",
+   "width": 487,
+   "height": 377,
+   "caption": "The diagram shows a graph of the position of a jet-powered car during the time span when it is speeding up. The slope of a distance versus time graph is velocity. This is shown at two points. Instantaneous velocity at any point is the slope of the tangent at that point.",
+   "altText": "A line graph titled Jet Car Displacement is shown. The x-axis is labeled time, t, in seconds and has a scale from zero to forty on increments of ten. The y-axis is labeled displacement, x, in meters and has a scale from zero to three thousand five hundred in increments of five hundred. The following approximate data points are plotted, resulting in a line that curves upward: eight, two hundred fifty; ten, five hundred; fifteen, one thousand; twenty, one thousand five hundred; twenty-five, two thousand; thirty, three thousand. A right triangle is drawn at points eight, two hundred fifty; twelve, two hundred fifty, and twelve seven hundred fifty. The legs are labeled change in tp and change in dp. Point ten, five hundred is labeled P. Another right triangle is drawn at points twenty, one thousand five hundred; thirty, one thousand five hundred, and thirty, three thousand. The legs are labeled change in tq and change in dq. Point twenty-five, two thousand is labeled Q.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-03-airforce",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-03-airforce.jpg",
+   "width": 488,
+   "height": 366,
+   "caption": "A U.S. Air Force jet car speeds down a track. (Matt Trostle, Flickr)",
+   "altText": "A photograph of a United States Air Force jet car is shown speeding down a track. Smoke is billowing from the back end.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-04-drive",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-04-drive.jpg",
+   "width": 731,
+   "height": 346,
+   "caption": "A graph of position versus time for the drive to and from school is shown.",
+   "altText": "A line graph titled Position versus Time is shown. The x-axis is labeled time in minutes and has a scale from zero to twenty in increments of one. The y-axis is labeled position, d, in kilometers and has a scale from zero to twelve in increments of one. The line intersects the following data points to form a line that slopes upward and then downward: zero, zero; two, one; four, two; ten, five; twelve, four; fourteen, three; twenty, zero.",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 0.9,
+    "align": "center"
+   }
+  },
+  {
+   "id": "en-2-figure-02-04-velocity",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-04-velocity.jpg",
+   "width": 487,
+   "height": 377,
+   "caption": "Graph of velocity versus time for the drive to and from school.",
+   "altText": "A graph that shows time in minutes on the x-axis and velocity in kilometers per minute on the y axis. A horizontal line is show at a velocity of 0.5 that runs from 0 to 10 minutes. Another horizontal line is shown at a velocity of –0.5 that runs from 10 to 20 minutes.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-04-car",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-04-car.jpg",
+   "width": 487,
+   "height": 377,
+   "caption": "A graph is shown of the position of a jet-powered car during the time span when it is speeding up. The slope of a d vs. t graph is velocity. This is shown at two points. Instantaneous velocity at any point is the slope of the tangent at that point.",
+   "altText": "A line graph titled Jet Car Displacement is shown. The x-axis is labeled time, t, in seconds and has a scale from zero to forty on increments of ten. The y-axis is labeled displacement, x, in meters and has a scale from zero to three thousand five hundred in increments of five hundred. The following approximate data points are plotted, resulting in a line that curves upward: eight, two hundred fifty; ten, five hundred; fifteen, one thousand; twenty, one thousand five hundred; twenty-five, two thousand; thirty, three thousand. A right triangle is drawn at points eight, two hundred fifty; twelve, two hundred fifty, and twelve seven hundred fifty. The legs are labeled change in tp and change in dp. Point ten, five hundred is labeled P. Another right triangle is drawn at points twenty, one thousand five hundred; thirty, one thousand five hundred, and thirty, three thousand. The legs are labeled change in tq and change in dq. Point twenty-five, two thousand is labeled Q.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-04-power",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-04-power.jpg",
+   "width": 487,
+   "height": 427,
+   "caption": "The graph shows the velocity of a jet-powered car during the time span when it is speeding up.",
+   "altText": "A line graph titled Jet Car Velocity is shown. The x-axis is labeled time, t, in seconds and has a scale from zero to forty on increments of ten. The y-axis is labeled velocity, v, in meters per second and has a scale from zero to one hundred eighty in increments of twenty. A straight line with a positive slope is plotted that intersects the following approximate points: zero, eighteen; ten, sixty (labeled P); fifteen, ninety; twenty, one hundred twenty; twenty five, one hundred fifty (labeled Q); thirty, one hundred sixty. Slope equals a is shown above the graphed lined.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  },
+  {
+   "id": "en-2-figure-02-04-accurate",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/en-2-figure-02-04-accurate.jpg",
+   "width": 487,
+   "height": 426,
+   "caption": "The graph shows a more accurate graph of the velocity of a jet-powered car during the time span when it is speeding up.",
+   "altText": "A line graph titled Jet Car Velocity is shown. The x-axis is labeled time, t, in seconds and has a scale from zero to eighty on increments of ten. The y-axis is labeled velocity, v, in meters per second and has a scale from one hundred sixty to two hundred sixty in increments of ten. The following approximate data points are plotted and connected to form a line that curves upward, and then becomes flat: zero, one hundred sixty five; ten, two hundred ten; twenty, two hundred thirty; thirty, two hundred forty; forty, two hundred forty-five; fifty, two hundred forty-five; sixty, two hundred forty-five; seventy, two hundred forty-five. A right triangle is drawn, with a hypotenuse that intersects points twenty, two hundred thirty and thirty, two hundred forty. The bottom leg of the triangle has ends at points zero, two hundred ten and fifty, two hundred ten and is labeled change in t. The upright leg has ends at points fifty, two hundred ten and fifty, two hundred sixty and is labeled change in v.",
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   }
+  }
+ ],
+ "fonts": [
+  {
+   "name": "Source Serif 4",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/SourceSerif4-Regular.ttf"
+    },
+    {
+     "weight": 600,
+     "style": "normal",
+     "file": "fonts/SourceSerif4-SemiBold.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/SourceSerif4-Bold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/SourceSerif4-Italic.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "italic",
+     "file": "fonts/SourceSerif4-BoldItalic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "Source Sans 3",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/SourceSans3-Regular.ttf"
+    },
+    {
+     "weight": 600,
+     "style": "normal",
+     "file": "fonts/SourceSans3-SemiBold.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/SourceSans3-Bold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/SourceSans3-Italic.ttf"
+    },
+    {
+     "weight": 600,
+     "style": "italic",
+     "file": "fonts/SourceSans3-SemiBoldItalic.ttf"
+    }
+   ]
+  }
+ ]
+}

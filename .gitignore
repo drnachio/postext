@@ -3,3 +3,8 @@ dist
 .next
 .turbo
 *.tsbuildinfo
+
+# Showcase preset sources (downloaded by each fetch.py) and scratch output
+scripts/presets/showcase/*/source/
+scripts/presets/showcase/*/work/
+scripts/presets/showcase/**/__pycache__/

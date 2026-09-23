@@ -6,6 +6,7 @@ import {
   isPresetManifest,
   mimeForFile,
   pickChapterSpecs,
+  pickLocaleOverrides,
   pickMarkdownFile,
   presetFileId,
   presetFontFileId,
@@ -44,6 +45,19 @@ describe('v2 manifests', () => {
     expect(pickChapterSpecs(localized, 'es-ES')[0]!.file).toBe('es.md');
     expect(pickChapterSpecs(localized, 'fr')[0]!.file).toBe('es.md');
   });
+  it('resolves per-locale overrides with the chapters\' locale', () => {
+    const localized = {
+      en: { config: { resourceTypes: [] }, resources: [{ id: 'fig', caption: 'Plate' }] },
+      es: { resources: [{ id: 'fig', caption: 'Lámina' }] },
+    };
+    const m = manifestV2({ chapters: { en: [{ title: 'E', file: 'en.md' }], es: [{ title: 'S', file: 'es.md' }] }, locale: 'es', localized });
+    expect(isPresetManifest(m)).toBe(true);
+    expect(pickLocaleOverrides(m, 'es-MX')).toBe(localized.es);
+    expect(pickLocaleOverrides(m, 'en')).toBe(localized.en);
+    expect(pickLocaleOverrides(m, 'fr')).toBe(localized.es);
+    expect(pickLocaleOverrides(manifestV2(), 'en')).toBeNull();
+    expect(isPresetManifest(manifestV2({ localized: { en: { resources: [{ caption: 'x' }] } } } as never))).toBe(false);
+  });
   it('names chapter files with a padded ordinal and a unique slug', () => {
     const taken = new Set<string>();
     expect(chapterFileName(0, 'Intro duction', taken, 12)).toBe('chapters/01-intro-duction.md');
@@ -56,6 +70,14 @@ describe('isPresetIndex', () => {
   it('accepts a well-formed index', () => {
     expect(isPresetIndex({ version: 1, presets: [{ id: 'a', dir: 'a', name: 'A' }] })).toBe(true);
     expect(isPresetIndex({ version: 1, presets: [] })).toBe(true);
+  });
+  it('accepts showcase metadata and rejects mistyped fields', () => {
+    const meta = { locales: ['es', 'en'], thumbnail: 'thumbnail.jpg', license: 'CC BY 4.0', credits: 'ESO', tags: ['magazine'] };
+    expect(isPresetIndex({ version: 1, presets: [{ id: 'a', dir: 'a', name: 'A', ...meta }] })).toBe(true);
+    expect(isPresetManifest(manifestV2(meta))).toBe(true);
+    expect(isPresetIndex({ version: 1, presets: [{ id: 'a', dir: 'a', name: 'A', locales: 'es' }] })).toBe(false);
+    expect(isPresetIndex({ version: 1, presets: [{ id: 'a', dir: 'a', name: 'A', tags: [1] }] })).toBe(false);
+    expect(isPresetManifest({ ...manifestV2(), license: 4 })).toBe(false);
   });
 
   it('rejects malformed input', () => {

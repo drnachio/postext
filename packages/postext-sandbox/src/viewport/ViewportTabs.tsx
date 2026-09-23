@@ -8,14 +8,17 @@ import { SegmentedControl, cn } from '../ui';
 
 const TABS: ViewportTab[] = ['canvas', 'html', 'pdf'];
 
-/** The bar above the preview: the PDF scope selector at the left (only
- *  while the PDF tab is up and the book has more than one chapter) and the
+/** The bar above the preview: the scope selector of the tab shown at the
+ *  left (each tab lays out the active chapter or the whole book — the
+ *  canvas and the HTML preview share one choice, kept with the book; the
+ *  PDF has its own; only while the book has more than one chapter) and the
  *  Canvas / HTML / PDF tabs at the right. */
 export function ViewportTabs() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const activeViewport = useSandboxSelector((s) => s.activeViewport);
   const pdfScope = useSandboxSelector((s) => s.pdfScope);
+  const canvasScope = useSandboxSelector((s) => s.canvasScope);
   const multiChapter = useSandboxSelector((s) => s.chapters.length > 1);
   const containerRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
@@ -51,11 +54,11 @@ export function ViewportTabs() {
       style={{ borderBottom: '1px solid var(--rule)', backgroundColor: 'var(--background)' }}
     >
       <div className="flex min-w-0 items-center px-2">
-        {activeViewport === 'pdf' && multiChapter && (
+        {multiChapter && (
           <SegmentedControl<LayoutScope>
-            value={pdfScope}
-            onValueChange={(next) => dispatch({ type: 'SET_PDF_SCOPE', payload: next })}
-            ariaLabel={labels.pdfScope}
+            value={activeViewport === 'pdf' ? pdfScope : canvasScope}
+            onValueChange={(next) => dispatch({ type: activeViewport === 'pdf' ? 'SET_PDF_SCOPE' : 'SET_CANVAS_SCOPE', payload: next })}
+            ariaLabel={activeViewport === 'pdf' ? labels.pdfScope : labels.canvasScope}
             options={[
               { value: 'chapter', label: labels.pdfScopeChapter },
               { value: 'book', label: labels.pdfScopeBook },

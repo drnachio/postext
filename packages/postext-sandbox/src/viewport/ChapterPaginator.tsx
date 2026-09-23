@@ -36,6 +36,7 @@ export function ChapterPaginator() {
   const chapters = useSandboxSelector((s) => s.chapters);
   const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
   const activeViewport = useSandboxSelector((s) => s.activeViewport);
+  const canvasScope = useSandboxSelector((s) => s.canvasScope);
   const config = useSandboxSelector((s) => s.config);
   const resources = useSandboxSelector((s) => s.resources);
   const locale = useSandboxSelector((s) => s.locale);
@@ -59,10 +60,12 @@ export function ChapterPaginator() {
 
   // The active chapter is left to the canvas when that is the tab shown:
   // it lays the chapter out at print geometry and records the layout on
-  // every rebuild. The HTML tab lays out for the screen and the PDF tab
-  // only on request, so under those the active chapter is handled here.
+  // every rebuild — and every chapter, when it shows the whole book. The
+  // HTML tab lays out for the screen and the PDF tab only on request, so
+  // under those the active chapter is handled here.
   const pending = plan.pendingChapterId ? plan.byId[plan.pendingChapterId] : undefined;
-  const leftToPreview = activeViewport === 'canvas' && pending?.chapterId === activeChapterId;
+  const wholeBookOnCanvas = activeViewport === 'canvas' && canvasScope === 'book';
+  const leftToPreview = wholeBookOnCanvas || (activeViewport === 'canvas' && pending?.chapterId === activeChapterId);
   const pendingId = storeReady && settled && pending && pending.paginated && !leftToPreview ? pending.chapterId : null;
   const pendingKey = pendingId ? `${pendingId}|${plan.byId[pendingId]!.continuationKey}|${plan.byId[pendingId]!.outlineKey}` : null;
   const chapterMarkdown = pendingId ? chapters.find((c) => c.id === pendingId)?.markdown : undefined;
@@ -127,7 +130,8 @@ export function ChapterPaginator() {
   // the first click on a neighbour is answered from the cache.
   const warmedRef = useRef(new Set<string>());
   useEffect(() => {
-    if (!storeReady || !settled || plan.pendingChapterId !== null) return;
+    // A whole-book canvas holds every chapter's document already.
+    if (!storeReady || !settled || plan.pendingChapterId !== null || wholeBookOnCanvas) return;
     const at = chapters.findIndex((c) => c.id === activeChapterId);
     if (at < 0) return;
     const timer = setTimeout(() => {
@@ -161,7 +165,7 @@ export function ChapterPaginator() {
       }
     }, PREFETCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [storeReady, settled, plan, chapters, activeChapterId, config, resources, locale, layoutWorker]);
+  }, [storeReady, settled, plan, chapters, activeChapterId, config, resources, locale, layoutWorker, wholeBookOnCanvas]);
 
   return null;
 }

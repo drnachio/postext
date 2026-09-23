@@ -82,7 +82,9 @@ export interface HeadingSectionPlan {
 
 /** Resolve the styled section of every content block: a styled heading
  *  opens one that runs until the next heading of the same or a higher
- *  level (which opens its own section, or none). */
+ *  level (which opens its own section, or none) or the next part divider —
+ *  a part sits above every heading level, so front matter styled as a
+ *  section never runs on into the parts that follow it. */
 export function planHeadingSections(
   contentBlocks: readonly ContentBlock[],
   resolved: ResolvedConfig,
@@ -96,6 +98,8 @@ export function planHeadingSections(
       const style = headingStyleOf(b, resolved);
       if (style) open = { style, level: b.level };
       else if (open && b.level <= open.level) open = undefined;
+    } else if (b.type === 'containerStart' && b.containerName === 'part') {
+      open = undefined;
     }
     byBlock[i] = open?.style;
     if (open) any = true;
@@ -105,7 +109,7 @@ export function planHeadingSections(
 
 /** Per page, the styled section in effect: the most recent styled heading
  *  whose section has not been closed by a heading of the same or a higher
- *  level. Blank parity pages before a section's heading belong to it, like
+ *  level or by a part divider. Blank parity pages before a section's heading belong to it, like
  *  chapter titles do (`computeChapterTitles`). */
 export function computeSectionStyles(
   blocks: readonly VDTBlock[],
@@ -122,6 +126,8 @@ export function computeSectionStyles(
     if (b.pageIndex < 0) continue;
     while (lastPageIndex < b.pageIndex) {
       lastPageIndex++;
+      // A part divider closes the open section (see planHeadingSections).
+      if (current && pages?.[lastPageIndex]?.partInfo) current = undefined;
       byPage.set(lastPageIndex, current?.style);
     }
     if (b.type === 'heading' && b.headingLevel !== undefined) {

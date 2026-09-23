@@ -136,7 +136,7 @@ Top-level layout configuration. All fields are optional — defaults are applied
 | Field | Type | Description |
 |---|---|---|
 | `page?` | `PageConfig` | Page dimensions, margins, DPI, baseline grid, cut lines |
-| `layout?` | `LayoutConfig` | Column arrangement (`layoutType`, `gutterWidth`, `sideColumnPercent`, `sideColumnRole`, `sideColumnSide`, `columnRule`) |
+| `layout?` | `LayoutConfig` | Column arrangement (`layoutType`, `gutterWidth`, `sideColumnPercent`, `sideColumnRole`, `sideColumnSide`, `columnRule`, `fitFiguresToPage`) |
 | `bodyText?` | `BodyTextConfig` | Body text typography (font, size, line height, hyphenation, indentation) |
 | `headings?` | `HeadingsConfig` | Heading typography with per-level overrides (H1–H6) |
 | `debug?` | `DebugConfig` | Editor-only sync indicators (`cursorSync`, `selectionSync`) |

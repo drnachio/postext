@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "bioquimica-feduchi",
+      "dir": "bioquimica-feduchi",
+      "name": "Bioquímica Feduchi Capítulo 1",
+      "description": "Manual de bioquímica a columna y media: columna principal junto al lomo y columna exterior con figuras, conceptos clave y actividades · A column-and-a-half biochemistry textbook, the main column at the spine and an outer column of figures, key concepts and activities",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "© Editorial Médica Panamericana, reproduced with permission",
+      "credits": "Feduchi, Romero, Yáñez, Blasco, García-Hoz · Editorial Médica Panamericana",
+      "tags": [
+        "textbook",
+        "one-and-a-half",
+        "callouts",
+        "tables",
+        "figures",
+        "parts"
+      ]
+    },
+    {
+      "id": "deep-sky",
+      "dir": "deep-sky",
+      "name": "Cielo profundo · Deep Sky",
+      "description": "Revista de astronomía a dos columnas con aperturas a sangre, recuadros y citas · A two-column astronomy magazine with full-bleed openers, boxes and pull quotes",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0",
+      "credits": "ESO · NSF NOIRLab",
+      "tags": [
+        "magazine",
+        "two-column",
+        "parts",
+        "tables"
+      ]
+    },
+    {
+      "id": "don-quijote",
+      "dir": "don-quijote",
+      "name": "Don Quijote · Gustave Doré",
+      "description": "Edición literaria a columna y media con glosas al margen y láminas de Doré · A column-and-a-half literary edition with margin glosses and Doré's plates",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "Public domain · CC BY 4.0",
+      "credits": "Cervantes · Ormsby · Doré · Project Gutenberg · Wikimedia Commons",
+      "tags": [
+        "book",
+        "one-and-a-half",
+        "margin-notes",
+        "front-matter"
+      ]
+    },
+    {
+      "id": "openstax-fisica",
+      "dir": "openstax-fisica",
+      "name": "Física universitaria · Physics (OpenStax)",
+      "description": "Libro de texto a columna y media con ejemplos resueltos, comprobaciones, tablas y fórmulas · A column-and-a-half textbook with worked examples, checks, tables and formulas",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC BY 4.0",
+      "credits": "OpenStax, Rice University",
+      "tags": [
+        "textbook",
+        "one-and-a-half",
+        "math",
+        "callouts",
+        "tables"
+      ]
+    },
+    {
+      "id": "pintura-espanola",
+      "dir": "pintura-espanola",
+      "name": "Pintura española · Spanish Painting",
+      "description": "Catálogo de exposición a una columna: ficha y comentario frente a la lámina a página · A single-column exhibition catalogue, entry and commentary facing the full-page plate",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "CC0 · CC BY-SA 4.0",
+      "credits": "The Met · National Gallery of Art · Cleveland Museum of Art · Museo Sorolla · Wikipedia",
+      "tags": [
+        "catalogue",
+        "single-column",
+        "plates",
+        "parts"
+      ]
+    },
+    {
+      "id": "senales",
+      "dir": "senales",
+      "name": "Señales 2020 · Signals 2020",
+      "description": "Revista de la Agencia Europea de Medio Ambiente a dos columnas con aperturas fotográficas, recuadros, citas y paneles de datos · A two-column EEA magazine with photo openers, boxes, pull quotes and data panels",
+      "locale": "es",
+      "locales": [
+        "es",
+        "en"
+      ],
+      "thumbnail": "thumbnail.jpg",
+      "license": "© EEA 2020, reproduction authorised · CC0 photos",
+      "credits": "Agencia Europea de Medio Ambiente · Unsplash",
+      "tags": [
+        "magazine",
+        "two-column",
+        "callouts",
+        "tables"
+      ]
+    }
+  ]
+}

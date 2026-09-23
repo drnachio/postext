@@ -1,11 +1,12 @@
 import type { Dispatch, MutableRefObject } from 'react';
-import type { VDTDocument } from 'postext';
+import type { Resource, VDTDocument } from 'postext';
 import type { PendingEditorFocus, ResourceFocusTarget, SandboxAction } from '../../context/SandboxContext';
 import type { ComposedBook } from '../../book/types';
 import { fromBookOffset, segmentForChapter } from '../../book/compose';
 import type { PanelId } from '../../types';
 import { getSvgTextIndex } from '../../controls/svgTextIndex';
 import {
+  designImageFileIdAtPixel,
   findResourceLocation,
   pixelToSourceOffset,
   pageTargetAtPixel,
@@ -116,8 +117,18 @@ export function attachSlotClickHandler(
    *  to (chapter, offset) through it. */
   sourceRef: MutableRefObject<ComposedBook | null>,
   navigateRef?: MutableRefObject<PageNavigator | null>,
+  /** The resource set the document was built from: a click on an image a
+   *  design slot draws (a cover picture, a logo) opens that resource in the
+   *  Resources panel, where its file can be replaced. */
+  resourcesRef?: MutableRefObject<Resource[] | null>,
+  /** The book a given page's offsets belong to, when the document is the
+   *  whole book stitched from per-chapter layouts (each page's offsets are
+   *  its chapter's). Null: every page maps through `sourceRef`. */
+  pageSourceRef?: MutableRefObject<((pageIndex: number) => ComposedBook | null) | null>,
 ): void {
   slot.style.cursor = 'text';
+  const sourceOfPage = (): ComposedBook | null =>
+    pageSourceRef?.current ? pageSourceRef.current(pageIndex) : sourceRef.current;
 
   // Read the current slot size instead of the creation-time displayWidth/Height:
   // applyDisplaySize mutates the canvas/overlay CSS dims on resize, so a cached
@@ -155,6 +166,18 @@ export function attachSlotClickHandler(
     return pageTargetAtPixel(doc, pageIndex, pt.x, pt.y);
   };
 
+  // The resource behind an image drawn by a design slot under the pointer.
+  const resolveDesignImage = (ev: MouseEvent): string | null => {
+    const doc = docRef.current;
+    const resources = resourcesRef?.current;
+    if (!doc || !resources) return null;
+    const pt = resolvePagePoint(ev);
+    if (!pt) return null;
+    const fileId = designImageFileIdAtPixel(doc, pageIndex, pt.x, pt.y);
+    if (fileId === null) return null;
+    return resources.find((r) => r.bitmap?.fileId === fileId || r.svg?.fileId === fileId)?.id ?? null;
+  };
+
   // Editable resource text (table cells, captions, notes, SVG text nodes) is
   // tried before the body-text mapping: an inline `::resource` block would
   // otherwise resolve to its directive line.
@@ -171,7 +194,16 @@ export function attachSlotClickHandler(
     if (activePanelRef.current !== 'markdown') {
       dispatch({ type: 'SET_PANEL', payload: 'markdown' });
     }
-    dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: toChapterFocus(sourceRef.current, anchor, head, selectWord) });
+    dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: toChapterFocus(sourceOfPage(), anchor, head, selectWord) });
+  };
+
+  // Open the Resources panel on a resource (no editor selection).
+  const openResource = (resourceId: string): void => {
+    const dispatch = dispatchRef.current;
+    if (activePanelRef.current !== 'resources') {
+      dispatch({ type: 'SET_PANEL', payload: 'resources' });
+    }
+    dispatch({ type: 'SET_ACTIVE_RESOURCE', payload: resourceId });
   };
 
   // Open the Resources panel on the hit resource and hand its editor the
@@ -216,8 +248,8 @@ export function attachSlotClickHandler(
 
   slot.addEventListener('pointermove', (ev) => {
     if (dragPointerId === null) {
-      // Hover feedback: refs and contents rows read as links.
-      slot.style.cursor = resolveRefId(ev) !== null || resolvePageTarget(ev) !== null ? 'pointer' : 'text';
+      // Hover feedback: refs, contents rows and design images read as links.
+      slot.style.cursor = resolveRefId(ev) !== null || resolvePageTarget(ev) !== null || resolveDesignImage(ev) !== null ? 'pointer' : 'text';
       return;
     }
     if (ev.pointerId !== dragPointerId) return;
@@ -288,6 +320,14 @@ export function attachSlotClickHandler(
     if (target !== null && docRef.current) {
       ev.preventDefault();
       navigateRef!.current!(target, docRef.current);
+      return;
+    }
+    // A cover picture or logo drawn by a design slot: open its resource so
+    // the image can be replaced.
+    const designImageId = resolveDesignImage(ev);
+    if (designImageId !== null) {
+      ev.preventDefault();
+      openResource(designImageId);
       return;
     }
     const resourceHit = resolveResourceHit(ev);

@@ -13,6 +13,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     chapters: [ch('a', '# A'), ch('b', '# B')],
     activeChapterId: 'a',
     pdfScope: 'chapter',
+    canvasScope: 'chapter',
     chapterLayouts: {},
     hiddenPresetIds: [],
     config: {},
@@ -31,6 +32,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     pendingResourceFocus: null,
     resourceSelection: null,
     docVersion: 0,
+  bookVersion: 0,
     activePresetId: 'remote-a',
     presetStatus: 'idle',
     presetConfig: { pageSize: 'A4' } as SandboxState['presetConfig'],
@@ -197,10 +199,32 @@ describe('book actions', () => {
     expect(s.markdown).toBe('zz');
     expect(s.selection).toEqual({ from: 0, to: 0, head: 0 });
   });
+  it('SET_CANVAS_SCOPE switches what the canvas lays out and travels with the book', () => {
+    const s = sandboxReducer(baseState(), { type: 'SET_CANVAS_SCOPE', payload: 'book' });
+    expect(s.canvasScope).toBe('book');
+    expect(sandboxReducer(s, { type: 'SET_CANVAS_SCOPE', payload: 'book' })).toBe(s);
+    // A chapter switch keeps it; a book that names none opens chapter by chapter.
+    expect(sandboxReducer(s, { type: 'SET_ACTIVE_CHAPTER', payload: 'b' }).canvasScope).toBe('book');
+    expect(sandboxReducer(s, { type: 'SET_BOOK', payload: { chapters: s.chapters, activeChapterId: 'a' } }).canvasScope).toBe('chapter');
+    expect(sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: s.chapters, activeChapterId: 'a', canvasScope: 'book' } }).canvasScope).toBe('book');
+  });
   it('SET_PDF_SCOPE switches what the PDF tab renders', () => {
     const s = sandboxReducer(baseState(), { type: 'SET_PDF_SCOPE', payload: 'book' });
     expect(s.pdfScope).toBe('book');
     expect(sandboxReducer(s, { type: 'SET_PDF_SCOPE', payload: 'book' })).toBe(s);
+  });
+  it('the PDF scope follows the canvas scope until it is picked by hand', () => {
+    // A book laid out whole on the canvas is exported whole.
+    const whole = sandboxReducer(baseState(), { type: 'SET_CANVAS_SCOPE', payload: 'book' });
+    expect(whole.pdfScope).toBe('book');
+    const opened = sandboxReducer(baseState(), { type: 'SET_BOOK', payload: { chapters: whole.chapters, activeChapterId: 'a', canvasScope: 'book' } });
+    expect(opened.pdfScope).toBe('book');
+    // Picking a PDF scope holds while the book is edited…
+    const picked = sandboxReducer(opened, { type: 'SET_PDF_SCOPE', payload: 'chapter' });
+    expect(sandboxReducer(picked, { type: 'SET_ACTIVE_CHAPTER', payload: 'b' }).pdfScope).toBe('chapter');
+    // …and gives way when the canvas scope moves again.
+    expect(sandboxReducer(picked, { type: 'SET_CANVAS_SCOPE', payload: 'chapter' }).pdfScope).toBe('chapter');
+    expect(sandboxReducer(whole, { type: 'SET_CANVAS_SCOPE', payload: 'chapter' }).pdfScope).toBe('chapter');
   });
   it('SET_CHAPTER_LAYOUT records a chapter layout and forgets it with the chapter', () => {
     const layout = { chapterId: 'b', markdown: '# B', configKey: 'c', resourcesKey: 'r', engine: 'e', continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, firstContentPageNumber: { delta: 1 }, firstContentPageFormat: 'decimal' as const, lastPageNumber: { delta: 2 }, lastPageFormat: 'decimal' as const, outlinePages: [], outlineKey: '' };

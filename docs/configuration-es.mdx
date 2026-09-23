@@ -346,6 +346,12 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td>desactivado</td>
       <td>Filete vertical opcional trazado entre columnas. Ver más abajo.</td>
     </tr>
+    <tr>
+      <td><code>fitFiguresToPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Reduce una figura (mapa de bits o SVG) cuya imagen, pie y nota quedarían más altos que el área de contenido hasta que quepan en ella, y compone más pequeña una figura en línea que no cabe por poco en lo que queda de su columna (hasta la mitad de su ancho; el pie conserva la medida de la columna) para que siga junto a su texto. El visor HTML la activa, porque sus páginas son tan altas como la pantalla; las páginas impresas se dimensionan para sus figuras.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1122,6 +1128,18 @@ Más allá de la separación silábica y los límites de espaciado, la configura
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Cuando es <code>true</code>, los elementos de lista también reciben la penalización de <em>runt</em>. Solo efectivo si <code>avoidRunts</code> es <code>true</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tightenRunts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Cuando la penalización no ha podido evitar una línea huérfana de cierre, compone el párrafo con una línea menos: los espacios se aprietan (nunca por debajo de <code>minWordSpacing</code>) y, si con eso no basta, entra además algo de tracking negativo. Requiere <code>optimalLineBreaking</code> y <code>avoidRunts</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxRuntTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>Tracking máximo que puede tomar ese ajuste, en milésimas de eme (la unidad de InDesign: 10 = 0,01 em por carácter), aplicado como apriete. Con <code>0</code> el ajuste se limita al espaciado entre palabras.</td>
     </tr>
     <tr>
       <td><code>slackWeight</code></td>
@@ -3199,6 +3217,12 @@ const config: PostextConfig = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Si los separadores de parte reciben una fila.</td>
+    </tr>
+    <tr>
+      <td><code>parts.breakBefore</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Abre una página nueva antes de cada fila de parte salvo la primera, de modo que los capítulos de cada parte se listan en una página propia.</td>
     </tr>
     <tr>
       <td><code>parts.design</code></td>

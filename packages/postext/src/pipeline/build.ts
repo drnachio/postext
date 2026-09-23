@@ -130,6 +130,9 @@ import { raggedLooseLines } from './raggedLines';
 /** Tolerance for "does this block fit" checks against a column's free
  *  height, absorbing floating-point drift between grid multiples. */
 const FIT_EPS = 0.01;
+/** Smallest share of its width an inline figure is set at to stay in the
+ *  room left in its column (`layout.fitFiguresToPage`). */
+const MIN_INLINE_FIGURE_SCALE = 0.5;
 
 export interface BuildDocumentOptions {
   /**
@@ -238,8 +241,10 @@ export interface PassResult extends BandPassReport {
  * tracking up to `maxTracking` — and keeps the first measurement that gains
  * exactly the requested lines within the word-spacing limit (a rung that
  * gains the line on its own, without needing the looseness target, counts
- * too). Falls back to the plain measurement when no rung works, recording
- * the outcome either way.
+ * too). A solution whose extra line is a runt is refused: filling a
+ * column's foot is no reason to leave a syllable alone at the end of a
+ * paragraph. Falls back to the plain measurement when no rung works,
+ * recording the outcome either way.
  */
 function measureLooseParagraph(
   rawBlock: Parameters<typeof measureContentBlock>[0],
@@ -260,7 +265,7 @@ function measureLooseParagraph(
       looseness: extraLines,
       trackingEm: tracking > 0 ? tracking / 1000 : undefined,
     });
-    if (loose && loose.measured.lines.length === target) {
+    if (loose && loose.measured.lines.length === target && !loose.measured.lastLineRunt) {
       looseOutcome.set(blockIdx, tracking);
       return loose;
     }
@@ -351,8 +356,9 @@ export function buildDocumentPass(
   doc.pages.push(firstPage);
 
   // Extract frontmatter, then parse the remaining markdown body
-  const { metadata: frontmatterMeta, content: markdownBody, contentOffset: bodyOffset } = extractFrontmatter(content.markdown);
+  const { metadata: frontmatterMeta, content: markdownBody, contentOffset: bodyOffset, fieldSources } = extractFrontmatter(content.markdown);
   doc.metadata = { ...(content.metadata ?? {}), ...frontmatterMeta };
+  if (fieldSources) doc.metadataSources = fieldSources;
   const parsedBlocks = parseMarkdownMemo(markdownBody);
   const headingStart = continuation?.headings;
   // `:::toc` expands into the entries of the book's outline — the one the
@@ -3021,9 +3027,37 @@ export function buildDocumentPass(
       && knownOutcome === undefined
       && (looseGained.get(budget.group) ?? 0) >= budget.need;
     const tryLoose = looseLines !== undefined && !budgetMet && knownOutcome !== null;
-    const measuredBlock = tryLoose
+    let measuredBlock = tryLoose
       ? measureLooseParagraph(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome)
       : measureContentBlock(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, { styleOverride });
+    // Screen pages (`layout.fitFiguresToPage`): an inline figure a little
+    // too tall for the room left in its column — under an opener band, say
+    // — is set smaller to stay with its text rather than leave the rest of
+    // the page empty. Never below MIN_INLINE_FIGURE_SCALE of its size.
+    if (measuredBlock?.kind.vdtType === 'resource' && resolved.layout.fitFiguresToPage) {
+      const rb = measuredBlock.resourceBlock;
+      const room = col.availableHeight - (col.blocks.length === 0 ? 0 : Math.max(pendingSpacing, floatGapPx));
+      if (rb && !rb.table && !rb.rotation && rb.bodyRect.height > 0 && measuredBlock.measured.totalHeight > room && room > 0) {
+        let width = rb.bodyRect.width;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const current = measuredBlock.resourceBlock!;
+          const rest = measuredBlock.measured.totalHeight - current.bodyRect.height;
+          const scale = (room - rest) / current.bodyRect.height;
+          if (!(scale > 0)) break;
+          width = current.bodyRect.width * Math.min(scale, 0.99);
+          if (width < rb.bodyRect.width * MIN_INLINE_FIGURE_SCALE) break;
+          const smaller = measureContentBlock(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, { styleOverride, figureMaxBodyWidth: width });
+          if (!smaller) break;
+          measuredBlock = smaller;
+          if (smaller.measured.totalHeight <= room) break;
+        }
+        // Still too tall at the smallest acceptable size: back to full size
+        // and on to the next column, as without the option.
+        if (measuredBlock!.measured.totalHeight > room) {
+          measuredBlock = measureContentBlock(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, { styleOverride });
+        }
+      }
+    }
     if (tryLoose && budget !== undefined && knownOutcome === undefined && typeof looseOutcome.get(blockIdx) === 'number') {
       looseGained.set(budget.group, (looseGained.get(budget.group) ?? 0) + 1);
     }
@@ -3206,10 +3240,13 @@ export function buildDocumentPass(
             addBalanceExtra(curCol, extraPx);
           }
         }
-      } else if (partIndex === 0 && reservedOf(curCol).top > 0) {
+      } else if (reservedOf(curCol).top > 0) {
         // Column balancing: extra grid lines between the float band at the
         // head of this column and its first block (the after-float lever).
-        const extraPx = balanceExtraPx?.get(blockIdx);
+        // A paragraph resuming from the column before is levered on its own
+        // fragment, so the room lands under the figure and not back at the
+        // paragraph's start.
+        const extraPx = balanceExtraPx?.get(balanceKey(blockIdx, partIndex));
         if (extraPx) {
           spacingBefore += extraPx;
           addBalanceExtra(curCol, extraPx);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { VDTDocument } from 'postext';
-import { pixelToSourceOffset, sourceToPlainIndex, xForPlainInLine } from './geometry';
+import { designImageFileIdAtPixel, pixelToSourceOffset, sourceToPlainIndex, xForPlainInLine } from './geometry';
 
 type VDTBlock = VDTDocument['blocks'][number];
 type VDTSegment = NonNullable<VDTBlock['lines'][number]['segments']>[number];
@@ -68,5 +68,33 @@ describe('inline :ref segments count as one plain char', () => {
 
   it('still maps text before the ref exactly', () => {
     expect(pixelToSourceOffset(doc, 0, 26, 10)).toBe(SOURCE.indexOf('la'));
+  });
+});
+
+describe('designImageFileIdAtPixel', () => {
+  const image = (fileId: string, x: number, y: number, w: number, h: number) =>
+    ({ kind: 'image', fileId, bbox: { x, y, width: w, height: h } });
+  const pageDoc = {
+    pages: [{
+      openerBand: { bbox: { x: 0, y: 0, width: 400, height: 200 }, blocks: [image('cover', 0, 0, 400, 150), { kind: 'box', bbox: { x: 0, y: 0, width: 400, height: 200 }, box: {} }] },
+      header: { bbox: { x: 0, y: 0, width: 400, height: 30 }, blocks: [image('logo', 10, 10, 20, 20)] },
+    }, {}],
+    blocks: [
+      { type: 'heading', pageIndex: 0, bbox: { x: 0, y: 300, width: 400, height: 50 }, lines: [], designOverlay: { bbox: { x: 0, y: 300, width: 400, height: 50 }, blocks: [image('plate', 0, 300, 100, 50)] } },
+      { type: 'heading', pageIndex: 1, bbox: { x: 0, y: 0, width: 400, height: 50 }, lines: [], designOverlay: { bbox: { x: 0, y: 0, width: 400, height: 50 }, blocks: [image('other-page', 0, 0, 400, 50)] } },
+    ],
+  } as unknown as VDTDocument;
+
+  it('finds the image of an opener band, a header and an in-column design', () => {
+    expect(designImageFileIdAtPixel(pageDoc, 0, 200, 100)).toBe('cover');
+    expect(designImageFileIdAtPixel(pageDoc, 0, 320, 320)).toBeNull();
+    expect(designImageFileIdAtPixel(pageDoc, 0, 50, 320)).toBe('plate');
+  });
+
+  it('lets a later slot paint over an earlier one and ignores other pages', () => {
+    expect(designImageFileIdAtPixel(pageDoc, 0, 15, 15)).toBe('logo');
+    expect(designImageFileIdAtPixel(pageDoc, 0, 200, 180)).toBeNull();
+    expect(designImageFileIdAtPixel(pageDoc, 1, 200, 25)).toBe('other-page');
+    expect(designImageFileIdAtPixel(pageDoc, 2, 200, 25)).toBeNull();
   });
 });

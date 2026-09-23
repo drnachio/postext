@@ -217,3 +217,57 @@ extract_tables.py <pdf> [--pages 12] [--header-rows 1] [--strategy lines_strict|
 Runs PyMuPDF `page.find_tables()` and prints one `TableModel` per detected
 table. Merged cells are not detected (every cell is 1x1); add `colSpan`/`rowSpan`
 by hand if needed.
+
+## Showcase bundles (public presets)
+
+The public presets served by the web app from `apps/web/public/presets/` are
+generated, never edited by hand. Each lives in `scripts/presets/showcase/<id>/`:
+
+- `fetch.py` downloads the sources into a git-ignored `source/` folder (public
+  domain / CC BY / CC BY-SA material only, plus OFL fonts from google/fonts) and
+  records where every file came from;
+- `editorial.py` holds the wording written for the preset (captions, fact
+  files, part titles, credits) in Spanish and English;
+- `build.py` processes the images, instances the variable fonts, writes the
+  chapters per locale, the manifest with its `localized` overrides, `CREDITS.md`,
+  `thumbnail.jpg` (a rendered cover kept next to the script) and
+  `fingerprint.json`, and registers the bundle in `index.json`.
+
+`_common.py` carries the shared helpers (units, design elements, font
+instancing, fingerprint, registration). Current bundles: `don-quijote`
+(book, column-and-a-half with margin glosses), `deep-sky` (two-column
+magazine), `pintura-espanola` (an exhibition catalogue of CC0 museum
+plates: each work opens on a verso with its entry and commentary while the
+plate floats onto the facing recto) and `senales`
+(EEA Signals 2020 in Spanish and English, read from the PDFs by type role in
+`extract.py`, with CC0 Unsplash photographs from Wikimedia Commons in place
+of the original pictures and the infographics transcribed as data panels in
+`editorial.py`) and `openstax-fisica` (the first two chapters of OpenStax's
+*Física universitaria, volumen 1* and *Physics*, CC BY 4.0, converted from
+the CNXML modules by `cnxml.py` — MathML formulas become LaTeX — into a
+column-and-a-half textbook with side-column figures, worked examples and
+checks) and `bioquimica-feduchi` (chapter 1 of *Bioquímica. Conceptos
+esenciales*, Feduchi et al., Editorial Médica Panamericana, reproduced with
+the publisher's permission, in Spanish and in an English edition translated
+for the bundle — captions, table cells, callout titles, running heads and the
+labels inside the figures).
+
+`bioquimica-feduchi` is the one bundle whose sources are not public: its
+`fetch.py` downloads nothing and only reports where it expects the private EMP
+bundle `emp/21x28-4c-colymedia` (`POSTEXT_PRIVATE_PRESETS_DIR`) and the book
+PDF (`POSTEXT_BIOQUIMICA_PDF`). Its `figures.py` re-cuts the artwork out of
+the book PDF with the labels kept as **live text**, so the English edition can
+translate them: each figure carries the faces it uses as `@font-face` subsets
+in its own `<defs>` (a picture is drawn through an `<img>`, which cannot see
+the page's fonts), while the PDF backend skips the `<style>` and sets the same
+runs from the document's embedded faces. Words a figure draws for itself —
+flattened into a placed picture, or converted to curves — are listed with
+their boxes in `translations/artwork.json` and replaced outright; run
+`build.py --outlines <figure-id>` to find them. The licensed typefaces travel
+subset, as WOFF2, and marked `redistributable: false`, so a `.postext` export
+leaves them out.
+
+```sh
+python3 scripts/presets/showcase/deep-sky/fetch.py
+python3 scripts/presets/showcase/deep-sky/build.py
+```

@@ -1,0 +1,156 @@
+{
+ "chapterTitle": "The foundations of biochemistry",
+ "config": {
+  "colorPalette": {
+   "band": "Section colour (band and tab)",
+   "part-tint": "Section-divider background",
+   "part-grey": "Grey box on the divider",
+   "title-blue": "Title blue (chapter and section)",
+   "main-color": "Blue of subheads and tables",
+   "rule-blue": "Blue of rules and dots",
+   "heading-4": "Light blue of level-4 subheads",
+   "accent": "Orange of cross-references, captions and boxes",
+   "key-red": "Key-concepts red",
+   "activity-pink": "Interactive-activity pink",
+   "question-green": "Reflection-question green",
+   "box-grey": "Grey border of the side boxes",
+   "heading-grey": "Grey of the chapter list",
+   "objectives-pink": "Pink of the objectives box",
+   "recuadro-bg": "Box background",
+   "recuadro-table": "Background of the tables inside a box",
+   "table-header": "Table header",
+   "text": "Text black"
+  },
+  "resourceTypes": {
+   "figure": { "name": "Figure", "namePlural": "Figures", "captionPrefix": "Figure" },
+   "table": { "name": "Table", "namePlural": "Tables", "captionPrefix": "Table" },
+   "subtable": { "name": "Box table", "namePlural": "Box tables" },
+   "artwork": { "name": "Artwork", "namePlural": "Artwork" }
+  },
+  "paragraphStyles": {
+   "equation": "Equation",
+   "compact": "Compact"
+  },
+  "calloutStyles": {
+   "key-concepts": { "name": "Key concepts", "title": "KEY CONCEPTS" },
+   "video": { "name": "Video", "title": "VIDEO" },
+   "activity": { "name": "Interactive activity", "title": "INTERACTIVE ACTIVITY" },
+   "question": { "name": "Reflection question", "title": "REFLECTION QUESTION" },
+   "objectives": { "name": "Learning objectives", "title": "LEARNING OBJECTIVES" },
+   "contents": { "name": "Contents", "title": "CONTENTS" },
+   "recuadro": { "name": "Box" },
+   "summary": { "name": "Key-concept summary", "title": "KEY-CONCEPT SUMMARY" },
+   "resources": { "name": "Online resources" }
+  },
+  "headingStyles": {
+   "cap-1": "Chapter 1", "cap-2": "Chapter 2", "cap-3": "Chapter 3",
+   "cap-4": "Chapter 4", "cap-5": "Chapter 5", "cap-6": "Chapter 6",
+   "cap-7": "Chapter 7", "cap-8": "Chapter 8", "cap-9": "Chapter 9",
+   "cap-10": "Chapter 10", "cap-11": "Chapter 11", "cap-12": "Chapter 12",
+   "cap-13": "Chapter 13", "cap-14": "Chapter 14", "cap-15": "Chapter 15",
+   "cap-16": "Chapter 16", "cap-17": "Chapter 17", "cap-18": "Chapter 18"
+  },
+  "runningHead": {
+   "SECCIÓN {partNumber}": "SECTION {partNumber}",
+   "CAPÍTULO {chapterNumber}": "CHAPTER {chapterNumber}"
+  }
+ },
+ "resources": {
+  "fig-1-1": {
+   "caption": "**How two chemical elements of the periodic table are written.**",
+   "altText": "How two chemical elements of the periodic table are written."
+  },
+  "fig-1-2": {
+   "caption": "**Electron configuration of the nitrogen and oxygen atoms.** The shape of the orbitals is shown together with the box notation and the energy levels the electrons occupy.",
+   "altText": "Electron configuration of the nitrogen and oxygen atoms. The shape of the orbitals is shown together with the box notation and the energy levels the electrons occupy."
+  },
+  "fig-1-3": {
+   "caption": "**The periodic table,** with the chemical elements found mainly in living things marked.",
+   "altText": "The periodic table, with the chemical elements found mainly in living things marked."
+  },
+  "fig-1-4": {
+   "caption": "**What orders the elements of a period and of a group within the periodic table.** Along a period, from left to right, the number of electrons in the outer shell rises until an energy level is complete. Down a group, one energy level is added, but every element of a group has the same number of electrons in its outer shell.",
+   "altText": "What orders the elements of a period and of a group within the periodic table. Along a period, from left to right, the number of electrons in the outer shell rises until an energy level is complete. Down a group, one energy level is added, but every element of a group has the same number of electrons in its outer shell."
+  },
+  "fig-1-5": {
+   "caption": "**A covalent bond,** in which the electrons of the two bonded atoms are shared, and an ionic bond, in which an electron passes from one atom to the other and ions are formed.",
+   "altText": "A covalent bond, in which the electrons of the two bonded atoms are shared, and an ionic bond, in which an electron passes from one atom to the other and ions are formed."
+  },
+  "fig-1-6": {
+   "caption": "**Hybridisation of the carbon atom. (a)** The tetrahedral structure of a carbon atom; **(b)** the shape and angles of the hybrid orbitals; and **(c)** the electron configuration.",
+   "altText": "Hybridisation of the carbon atom. (a) The tetrahedral structure of a carbon atom; (b) the shape and angles of the hybrid orbitals; and (c) the electron configuration."
+  },
+  "fig-1-7": {
+   "caption": "**The coordinate (dative) covalent bond that forms the ammonium ion.** The ammonia molecule is neutral, since it has as many electrons as protons. When a dative bond forms with a proton, the ammonium ion results, and its charge is positive.",
+   "altText": "The coordinate (dative) covalent bond that forms the ammonium ion. The ammonia molecule is neutral, since it has as many electrons as protons. When a dative bond forms with a proton, the ammonium ion results, and its charge is positive."
+  },
+  "fig-1-8": {
+   "caption": "**How electronegativity sets the polarity of covalent and ionic bonds.** At one end of the scale are the atoms whose similar electronegativities make a non-polar bond; at the other, the ionic bond between very different electronegativities.",
+   "altText": "How electronegativity sets the polarity of covalent and ionic bonds. At one end of the scale are the atoms whose similar electronegativities make a non-polar bond; at the other, the ionic bond between very different electronegativities."
+  },
+  "fig-1-9": {
+   "caption": "**The hydrogen bond. (a)** Between two water molecules and **(b)** between functional groups. The accepting and the donating atom are marked.",
+   "altText": "The hydrogen bond. (a) Between two water molecules and (b) between functional groups. The accepting and the donating atom are marked."
+  },
+  "fig-1-10": {
+   "caption": "**Ionic bonds in water: the salt bridge.** The ionic crystals of sodium chloride dissolve in water thanks to the solvation shell of water molecules around each ion.",
+   "altText": "Ionic bonds in water: the salt bridge. The ionic crystals of sodium chloride dissolve in water thanks to the solvation shell of water molecules around each ion."
+  },
+  "fig-1-11": {
+   "caption": "**Hydrophobic interactions.** Oil droplets come together through hydrophobic interactions, which keeps their contact surface with water to a minimum.",
+   "altText": "Hydrophobic interactions. Oil droplets come together through hydrophobic interactions, which keeps their contact surface with water to a minimum."
+  },
+  "fig-1-12": {
+   "caption": "**The water molecule. (a)** The dipole of a water molecule; and **(b)** the hydrogen bonds that form between several of them.",
+   "altText": "The water molecule. (a) The dipole of a water molecule; and (b) the hydrogen bonds that form between several of them."
+  },
+  "fig-1-13": {
+   "caption": "**Dissociation of the water molecule into its two ionic species: the hydronium ion and the hydroxyl ion.**",
+   "altText": "Dissociation of the water molecule into its two ionic species: the hydronium ion and the hydroxyl ion."
+  },
+  "fig-1-14": {
+   "caption": "**Ionisation of a carboxyl group.** At physiological pH the carboxyl behaves as a weak acid and donates a proton to water, which acts as the base. The carboxylate group is the conjugate base, and the water molecule that takes the proton becomes a hydronium ion, an acidic species.",
+   "altText": "Ionisation of a carboxyl group. At physiological pH the carboxyl behaves as a weak acid and donates a proton to water, which acts as the base. The carboxylate group is the conjugate base, and the water molecule that takes the proton becomes a hydronium ion, an acidic species."
+  },
+  "fig-1-15": {
+   "caption": "**Nucleophilic and electrophilic centres of the reactive sites.** Nucleophilic groups (electron-rich, such as nitrogen or oxygen) attack electrophilic groups carrying a positive charge or a lower electron density, such as a proton or a carbon.",
+   "altText": "Nucleophilic and electrophilic centres of the reactive sites. Nucleophilic groups (electron-rich, such as nitrogen or oxygen) attack electrophilic groups carrying a positive charge or a lower electron density, such as a proton or a carbon."
+  },
+  "fig-1-16": {
+   "caption": "**How biopolymers, or macromolecules, are built from their monomer units by condensation bonds.**",
+   "altText": "How biopolymers, or macromolecules, are built from their monomer units by condensation bonds."
+  },
+  "fig-1-17": {
+   "caption": "**Oxidation and reduction of the functional groups that matter in biochemistry.** As the carbon is oxidised, the number of hydrogens bound to it falls. The number of hydrogens (electrons) bound to the carbon is given in blue.",
+   "altText": "Oxidation and reduction of the functional groups that matter in biochemistry. As the carbon is oxidised, the number of hydrogens bound to it falls. The number of hydrogens (electrons) bound to the carbon is given in blue."
+  },
+  "fig-1-18": {
+   "caption": "**Levels of cellular organisation.** Here the first level is made of the monomers (amino acids and nucleotides), which form proteins and nucleic acids through condensation bonds; these interact to form the ribosome, the third level of organisation.",
+   "altText": "Levels of cellular organisation. Here the first level is made of the monomers (amino acids and nucleotides), which form proteins and nucleic acids through condensation bonds; these interact to form the ribosome, the third level of organisation."
+  },
+  "tabla-1-1": {
+   "caption": "Properties of the atomic particles",
+   "cells": {
+    "**Partícula**": "**Particle**",
+    "**Carga (culombios)**": "**Charge (coulombs)**",
+    "**Masa (gramos)**": "**Mass (grams)**",
+    "Electrón": "Electron",
+    "Protón": "Proton",
+    "Neutrón": "Neutron",
+    "1,6 · 10^-19^ negativa": "1.6 · 10^-19^ negative",
+    "1,6 · 10^-19^ positiva": "1.6 · 10^-19^ positive",
+    "9,1 · 10^-28^": "9.1 · 10^-28^",
+    "1,67 · 10^-24^": "1.67 · 10^-24^"
+   }
+  },
+  "tabla-1-2": {
+   "caption": "The pH scale"
+  },
+  "recuadro-1-2-tabla-1": {
+   "cells": {
+    "**Número de enlaces que puede formar**": "**Number of bonds it can form**",
+    "**Número de e**^–^\n**capa externa**": "**Number of e**^–^\n**in the outer shell**"
+   }
+  }
+ }
+}

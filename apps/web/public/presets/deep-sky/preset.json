@@ -1,0 +1,5595 @@
+{
+ "version": 2,
+ "id": "deep-sky",
+ "name": "Cielo profundo · Deep Sky",
+ "description": "Revista de astronomía a dos columnas con aperturas a sangre, recuadros y citas · A two-column astronomy magazine with full-bleed openers, boxes and pull quotes",
+ "locale": "es",
+ "locales": [
+  "es",
+  "en"
+ ],
+ "thumbnail": "thumbnail.jpg",
+ "license": "CC BY 4.0",
+ "credits": "ESO · NSF NOIRLab",
+ "tags": [
+  "magazine",
+  "two-column",
+  "parts",
+  "tables"
+ ],
+ "view": {
+  "canvasScope": "book"
+ },
+ "chapters": {
+  "es": [
+   {
+    "title": "Cielo profundo",
+    "file": "chapters/es/00-portada.md"
+   },
+   {
+    "title": "Editorial",
+    "file": "chapters/es/01-editorial.md"
+   },
+   {
+    "title": "Sumario",
+    "file": "chapters/es/02-sumario.md"
+   },
+   {
+    "title": "Sistema solar",
+    "file": "chapters/es/03-solar.md"
+   },
+   {
+    "title": "Estrellas",
+    "file": "chapters/es/04-stars.md"
+   },
+   {
+    "title": "Galaxias",
+    "file": "chapters/es/05-galaxies.md"
+   },
+   {
+    "title": "Cosmos",
+    "file": "chapters/es/06-cosmos.md"
+   },
+   {
+    "title": "Créditos",
+    "file": "chapters/es/07-creditos.md"
+   }
+  ],
+  "en": [
+   {
+    "title": "Deep Sky",
+    "file": "chapters/en/00-portada.md"
+   },
+   {
+    "title": "Editorial",
+    "file": "chapters/en/01-editorial.md"
+   },
+   {
+    "title": "Contents",
+    "file": "chapters/en/02-contents.md"
+   },
+   {
+    "title": "Solar System",
+    "file": "chapters/en/03-solar.md"
+   },
+   {
+    "title": "Stars",
+    "file": "chapters/en/04-stars.md"
+   },
+   {
+    "title": "Galaxies",
+    "file": "chapters/en/05-galaxies.md"
+   },
+   {
+    "title": "Cosmos",
+    "file": "chapters/en/06-cosmos.md"
+   },
+   {
+    "title": "Credits",
+    "file": "chapters/en/07-credits.md"
+   }
+  ]
+ },
+ "config": {
+  "locale": "es",
+  "page": {
+   "sizePreset": "custom",
+   "width": {
+    "value": 225.0,
+    "unit": "mm"
+   },
+   "height": {
+    "value": 297.0,
+    "unit": "mm"
+   },
+   "margins": {
+    "top": {
+     "value": 24.0,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 20.0,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 16.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 14.0,
+     "unit": "mm"
+    },
+    "mirror": true
+   },
+   "baselineGrid": {
+    "enabled": false
+   },
+   "pageNumbering": {
+    "format": "decimal",
+    "startAt": 1
+   }
+  },
+  "layout": {
+   "layoutType": "double",
+   "gutterWidth": {
+    "value": 6.0,
+    "unit": "mm"
+   }
+  },
+  "bodyText": {
+   "fontFamily": "Newsreader",
+   "fontSize": {
+    "value": 12.35,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 16.9,
+    "unit": "pt"
+   },
+   "textAlign": "justify",
+   "firstLineIndent": {
+    "value": 4,
+    "unit": "mm"
+   },
+   "indentAfterHeading": false,
+   "paragraphSpacing": false,
+   "color": {
+    "hex": "#14181d",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "boldColor": {
+    "hex": "#14181d",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "italicColor": {
+    "hex": "#14181d",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "referenceColor": {
+    "hex": "#2a7f97",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "referenceBold": false,
+   "referenceItalic": true,
+   "hyphenation": {
+    "enabled": true,
+    "locale": "es"
+   },
+   "avoidWidows": true,
+   "avoidOrphans": true,
+   "optimalLineBreaking": true
+  },
+  "headings": {
+   "fontFamily": "Archivo",
+   "color": {
+    "hex": "#14181d",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "keepWithNext": true,
+   "levels": [
+    {
+     "level": 1,
+     "fontSize": {
+      "value": 28.6,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 33.8,
+      "unit": "pt"
+     },
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "any"
+     }
+    },
+    {
+     "level": 2,
+     "fontSize": {
+      "value": 28.6,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 33.8,
+      "unit": "pt"
+     },
+     "numberingTemplate": "{2}",
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "even"
+     },
+     "advancedDesign": {
+      "enabled": true,
+      "minHeight": {
+       "value": 95.0,
+       "unit": "mm"
+      },
+      "slot": {
+       "elements": [
+        {
+         "kind": "box",
+         "id": "openerBg",
+         "placement": {
+          "anchor": {
+           "to": "bleed",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 0,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": "fill",
+           "height": {
+            "value": 122.0,
+            "unit": "mm"
+           }
+          }
+         },
+         "style": {
+          "backgroundColor": {
+           "hex": "#14181d",
+           "model": "hex",
+           "paletteId": "ink"
+          },
+          "borderRadius": {
+           "value": 0,
+           "unit": "mm"
+          }
+         }
+        },
+        {
+         "kind": "box",
+         "id": "openerStripe",
+         "placement": {
+          "anchor": {
+           "to": "bleed",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 0,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": "fill",
+           "height": {
+            "value": 3,
+            "unit": "mm"
+           }
+          }
+         },
+         "style": {
+          "backgroundColor": {
+           "hex": "#2a7f97",
+           "model": "hex",
+           "paletteId": "band"
+          },
+          "borderRadius": {
+           "value": 0,
+           "unit": "mm"
+          }
+         }
+        },
+        {
+         "kind": "text",
+         "id": "kicker",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": -3,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 195.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{partTitle}",
+         "fontFamily": "Chivo",
+         "fontSize": {
+          "value": 11.7,
+          "unit": "pt"
+         },
+         "fontWeight": 700,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#2a7f97",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "textTransform": "uppercase",
+         "letterSpacing": {
+          "value": 2.6,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "headline",
+         "placement": {
+          "anchor": {
+           "to": "#kicker",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 3,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 195.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "Archivo",
+         "fontSize": {
+          "value": 35.1,
+          "unit": "pt"
+         },
+         "fontWeight": 700,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.06,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#ffffff",
+          "model": "hex",
+          "paletteId": "white"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "standfirst",
+         "placement": {
+          "anchor": {
+           "to": "#headline",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 4,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 165.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{attr.lead}",
+         "fontFamily": "Newsreader",
+         "fontSize": {
+          "value": 14.95,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": true,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.3,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#ffffff",
+          "model": "hex",
+          "paletteId": "white"
+         },
+         "hyphenate": true
+        },
+        {
+         "kind": "text",
+         "id": "dateline",
+         "placement": {
+          "anchor": {
+           "to": "#standfirst",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 4,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 195.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{attr.source} · {attr.date}",
+         "fontFamily": "Chivo",
+         "fontSize": {
+          "value": 9.75,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#2a7f97",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "textTransform": "uppercase",
+         "letterSpacing": {
+          "value": 1.82,
+          "unit": "pt"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "level": 3,
+     "fontSize": {
+      "value": 15.6,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 19.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "marginTop": {
+      "value": 15.6,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 5.2,
+      "unit": "pt"
+     }
+    }
+   ]
+  },
+  "headingStyles": [
+   {
+    "id": "portada",
+    "name": "Portada",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 297.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "coverBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#14181d",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "coverImage",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 231.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 146.5,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "noirlab2612a"
+       },
+       {
+        "kind": "text",
+        "id": "coverIssue",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 154.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.issue}",
+        "fontFamily": "Chivo",
+        "fontSize": {
+         "value": 11.05,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.6,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverTitle",
+        "placement": {
+         "anchor": {
+          "to": "#coverIssue",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{title}",
+        "fontFamily": "Archivo",
+        "fontSize": {
+         "value": 83.2,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 0.98,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverSubtitle",
+        "placement": {
+         "anchor": {
+          "to": "#coverTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 175.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{subtitle}",
+        "fontFamily": "Newsreader",
+        "fontSize": {
+         "value": 19.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.25,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverPublisher",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "bottom-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": -16,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.publisher}",
+        "fontFamily": "Chivo",
+        "fontSize": {
+         "value": 10.4,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#666b73",
+         "model": "hex",
+         "paletteId": "muted"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 1.82,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "layout": {
+     "layoutType": "single"
+    },
+    "margins": {
+     "top": {
+      "value": 217.0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 20.0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 126.0,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 14.0,
+      "unit": "mm"
+     }
+    }
+   },
+   {
+    "id": "preliminar",
+    "name": "Preliminar",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 25,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "frontStripe",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#2a7f97",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Archivo",
+        "fontSize": {
+         "value": 35.1,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#14181d",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 30,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "thickness": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "sumario",
+    "name": "Sumario",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "any"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 25,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "frontStripe",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": {
+           "value": 3,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#2a7f97",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Archivo",
+        "fontSize": {
+         "value": 35.1,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.06,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#14181d",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 30,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "thickness": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "layout": {
+     "layoutType": "single"
+    }
+   }
+  ],
+  "paragraphStyles": [
+   {
+    "id": "colofon",
+    "name": "Colofón",
+    "fontSize": {
+     "value": 11.05,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14.95,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 7.8,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#666b73",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "fuente",
+    "name": "Fuente",
+    "fontFamily": "Chivo",
+    "fontSize": {
+     "value": 9.1,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 12.35,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 5.2,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 15.6,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#666b73",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "editorial",
+    "name": "Editorial",
+    "fontSize": {
+     "value": 13.65,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18.85,
+     "unit": "pt"
+    },
+    "textAlign": "justify",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 3.25,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "creditos",
+    "name": "Créditos",
+    "fontSize": {
+     "value": 9.75,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13.0,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 4.55,
+     "unit": "pt"
+    }
+   }
+  ],
+  "calloutStyles": [
+   {
+    "id": "ficha",
+    "name": "De un vistazo",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#f0efeb",
+     "model": "hex",
+     "paletteId": "grey"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 3.5,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 2.5,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 3.5,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "top",
+     "width": {
+      "value": 2.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Chivo",
+     "fontSize": {
+      "value": 9.75,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 2.08,
+      "unit": "pt"
+     },
+     "gap": {
+      "value": 1.8,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Newsreader",
+     "fontSize": {
+      "value": 11.05,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 14.95,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": false,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 5.2,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 13.0,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   },
+   {
+    "id": "cita",
+    "name": "Cita destacada",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": false,
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "top",
+     "width": {
+      "value": 2.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "body": {
+     "fontFamily": "Archivo",
+     "fontSize": {
+      "value": 16.9,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 20.8,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "boldColor": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textAlign": "left",
+     "hyphenation": false,
+     "paragraphSpacing": false,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 7.8,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 13.0,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   },
+   {
+    "id": "datos",
+    "name": "Datos",
+    "span": "page",
+    "placement": "here",
+    "backgroundEnabled": true,
+    "background": {
+     "hex": "#14181d",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 2.5,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 6,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 2.5,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 6,
+      "unit": "mm"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "columnGap": {
+     "value": 8,
+     "unit": "mm"
+    },
+    "titleStyle": {
+     "fontFamily": "Chivo",
+     "fontSize": {
+      "value": 9.75,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 2.08,
+      "unit": "pt"
+     },
+     "gap": {
+      "value": 3,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Archivo",
+     "fontSize": {
+      "value": 13.0,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 18.2,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#ffffff",
+      "model": "hex",
+      "paletteId": "white"
+     },
+     "boldColor": {
+      "hex": "#ffffff",
+      "model": "hex",
+      "paletteId": "white"
+     },
+     "textAlign": "left",
+     "hyphenation": false,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 1.3,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 2.6,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   }
+  ],
+  "parts": {
+   "breakBefore": {
+    "parity": "always-odd"
+   },
+   "breakAfter": {
+    "enabled": true,
+    "parity": "any"
+   },
+   "margins": {
+    "top": {
+     "value": 200,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 24,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 16.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 60,
+     "unit": "mm"
+    }
+   },
+   "design": {
+    "elements": [
+     {
+      "kind": "box",
+      "id": "partBg",
+      "placement": {
+       "anchor": {
+        "to": "bleed",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": "fill",
+        "height": "fill"
+       }
+      },
+      "style": {
+       "backgroundColor": {
+        "hex": "#2a7f97",
+        "model": "hex",
+        "paletteId": "band"
+       },
+       "borderRadius": {
+        "value": 0,
+        "unit": "mm"
+       }
+      }
+     },
+     {
+      "kind": "text",
+      "id": "partLabel",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 16.0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 56,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 195.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "Sección {numberRoman}",
+      "fontFamily": "Chivo",
+      "fontSize": {
+       "value": 13.0,
+       "unit": "pt"
+      },
+      "fontWeight": 700,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.2,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "textTransform": "uppercase",
+      "letterSpacing": {
+       "value": 3.25,
+       "unit": "pt"
+      }
+     },
+     {
+      "kind": "text",
+      "id": "partNumber",
+      "placement": {
+       "anchor": {
+        "to": "#partLabel",
+        "edge": "below"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 2,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 195.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "{numberDecimal}",
+      "fontFamily": "Archivo",
+      "fontSize": {
+       "value": 156.0,
+       "unit": "pt"
+      },
+      "fontWeight": 700,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.0,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      }
+     },
+     {
+      "kind": "text",
+      "id": "partTitle",
+      "placement": {
+       "anchor": {
+        "to": "#partNumber",
+        "edge": "below"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 4,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 195.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "{titleText}",
+      "fontFamily": "Archivo",
+      "fontSize": {
+       "value": 52.0,
+       "unit": "pt"
+      },
+      "fontWeight": 700,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.02,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      }
+     }
+    ]
+   },
+   "bodyStyle": {
+    "fontFamily": "Newsreader",
+    "fontSize": {
+     "value": 14.3,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 20.8,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex",
+     "paletteId": "white"
+    },
+    "textAlign": "left",
+    "numberColor": {
+     "hex": "#ffffff",
+     "model": "hex",
+     "paletteId": "white"
+    },
+    "orderedLists": {
+     "numberFormat": "arabic",
+     "separator": "",
+     "gap": {
+      "value": 3,
+      "unit": "mm"
+     },
+     "indent": {
+      "value": 9,
+      "unit": "mm"
+     },
+     "fontFamily": "Chivo",
+     "numberFontSize": {
+      "value": 11.7,
+      "unit": "pt"
+     },
+     "itemSpacing": {
+      "value": 2.6,
+      "unit": "pt"
+     }
+    }
+   }
+  },
+  "toc": {
+   "levels": [
+    {
+     "level": 1,
+     "fontFamily": "Archivo",
+     "fontSize": {
+      "value": 14.3,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 17.55,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "numberWidth": {
+      "value": 10,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "numberFontFamily": "Chivo",
+     "numberFontSize": {
+      "value": 11.7,
+      "unit": "pt"
+     },
+     "numberColor": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "marginTop": {
+      "value": 3.9,
+      "unit": "pt"
+     }
+    },
+    {
+     "level": 2,
+     "fontFamily": "Archivo",
+     "fontSize": {
+      "value": 14.3,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 17.55,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "numberWidth": {
+      "value": 10,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 2,
+      "unit": "mm"
+     },
+     "numberFontFamily": "Chivo",
+     "numberFontSize": {
+      "value": 11.7,
+      "unit": "pt"
+     },
+     "numberColor": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "marginTop": {
+      "value": 3.9,
+      "unit": "pt"
+     }
+    }
+   ],
+   "unnumbered": {
+    "fontFamily": "Newsreader",
+    "fontWeight": 400,
+    "italic": true,
+    "color": {
+     "hex": "#14181d",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   },
+   "pageNumber": {
+    "fontFamily": "Chivo",
+    "fontSize": {
+     "value": 11.7,
+     "unit": "pt"
+    },
+    "fontWeight": 700,
+    "color": {
+     "hex": "#14181d",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "width": {
+     "value": 9,
+     "unit": "mm"
+    }
+   },
+   "leader": {
+    "enabled": false
+   },
+   "subtitle": {
+    "enabled": true,
+    "attr": "standfirst",
+    "fontFamily": "Newsreader",
+    "fontSize": {
+     "value": 9.75,
+     "unit": "pt"
+    },
+    "italic": true,
+    "color": {
+     "hex": "#666b73",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "indent": {
+     "value": 10,
+     "unit": "mm"
+    }
+   },
+   "parts": {
+    "enabled": true,
+    "height": {
+     "value": 19.5,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 10.4,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 2.6,
+     "unit": "pt"
+    },
+    "design": {
+     "elements": [
+      {
+       "kind": "box",
+       "id": "tocPartBand",
+       "placement": {
+        "anchor": {
+         "to": "container",
+         "edge": "left"
+        },
+        "offset": {
+         "x": {
+          "value": 0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 6,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 6,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "backgroundColor": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       }
+      },
+      {
+       "kind": "text",
+       "id": "tocPart",
+       "placement": {
+        "anchor": {
+         "to": "#tocPartBand",
+         "edge": "right-of"
+        },
+        "offset": {
+         "x": {
+          "value": 3,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 150,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{titleText}",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 11.7,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "wrap",
+       "color": {
+        "hex": "#2a7f97",
+        "model": "hex",
+        "paletteId": "band"
+       },
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 2.6,
+        "unit": "pt"
+       }
+      }
+     ]
+    }
+   }
+  },
+  "header": {
+   "elements": [
+    {
+     "kind": "box",
+     "id": "headBandEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 14.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 3,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 3,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "backgroundColor": {
+       "hex": "#2a7f97",
+       "model": "hex",
+       "paletteId": "band"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "folioEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 19.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 13.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Chivo",
+     "fontSize": {
+      "value": 11.05,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "titleEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -16.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 13.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 120,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "Cielo profundo",
+     "fontFamily": "Chivo",
+     "fontSize": {
+      "value": 9.75,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#666b73",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "even",
+     "pages": "body",
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.56,
+      "unit": "pt"
+     }
+    },
+    {
+     "kind": "text",
+     "id": "chapterOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 16.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 13.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 140,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{partNumber} · {partTitle}",
+     "fontFamily": "Chivo",
+     "fontSize": {
+      "value": 9.75,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#666b73",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "odd",
+     "pages": "body",
+     "textTransform": "uppercase",
+     "letterSpacing": {
+      "value": 1.56,
+      "unit": "pt"
+     }
+    },
+    {
+     "kind": "box",
+     "id": "headBandOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -14.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 3,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 3,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "backgroundColor": {
+       "hex": "#2a7f97",
+       "model": "hex",
+       "paletteId": "band"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "odd",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "folioOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -19.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 13.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Chivo",
+     "fontSize": {
+      "value": 11.05,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "body"
+    }
+   ]
+  },
+  "footer": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioOpener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Chivo",
+     "fontSize": {
+      "value": 11.05,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "pages": "opener"
+    }
+   ]
+  },
+  "captionStyle": {
+   "fontFamily": "Chivo",
+   "fontSize": {
+    "value": 9.75,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#14181d",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "align": "left",
+   "gap": {
+    "value": 1.6,
+    "unit": "mm"
+   },
+   "labelBold": true,
+   "labelColor": {
+    "hex": "#2a7f97",
+    "model": "hex",
+    "paletteId": "band"
+   },
+   "descriptionItalic": false,
+   "note": {
+    "fontSize": {
+     "value": 8.19,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#666b73",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "italic": false,
+    "gap": {
+     "value": 0.6,
+     "unit": "mm"
+    }
+   }
+  },
+  "tableStyle": {
+   "bodyFontFamily": "Chivo",
+   "bodyFontSize": {
+    "value": 11.05,
+    "unit": "pt"
+   },
+   "bodyLineHeight": {
+    "value": 14.3,
+    "unit": "pt"
+   },
+   "bodyColor": {
+    "hex": "#14181d",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "headerFontFamily": "Chivo",
+   "headerFontSize": {
+    "value": 10.4,
+    "unit": "pt"
+   },
+   "headerBold": true,
+   "headerBackgroundEnabled": true,
+   "headerBackground": {
+    "hex": "#14181d",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "borderColor": {
+    "hex": "#c9c6bf",
+    "model": "hex",
+    "paletteId": "rule"
+   },
+   "borderWidth": {
+    "value": 0.5,
+    "unit": "pt"
+   },
+   "cellPadding": {
+    "value": 1.0,
+    "unit": "mm"
+   },
+   "rules": "horizontal"
+  },
+  "unorderedLists": {
+   "bulletChar": "•",
+   "color": {
+    "hex": "#2a7f97",
+    "model": "hex",
+    "paletteId": "band"
+   }
+  },
+  "orderedLists": {
+   "color": {
+    "hex": "#2a7f97",
+    "model": "hex",
+    "paletteId": "band"
+   }
+  },
+  "colorPalette": [
+   {
+    "id": "ink",
+    "name": "Tinta y fondos oscuros",
+    "value": {
+     "hex": "#14181d",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "paper",
+    "name": "Papel",
+    "value": {
+     "hex": "#ffffff",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "white",
+    "name": "Blanco",
+    "value": {
+     "hex": "#ffffff",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "band",
+    "name": "Color de sección",
+    "value": {
+     "hex": "#2a7f97",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "grey",
+    "name": "Gris de recuadros",
+    "value": {
+     "hex": "#f0efeb",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "rule",
+    "name": "Filetes",
+    "value": {
+     "hex": "#c9c6bf",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "muted",
+    "name": "Gris de notas",
+    "value": {
+     "hex": "#666b73",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "solar",
+    "name": "Sistema solar",
+    "value": {
+     "hex": "#c9702a",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "stars",
+    "name": "Estrellas",
+    "value": {
+     "hex": "#b8413d",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "galaxies",
+    "name": "Galaxias",
+    "value": {
+     "hex": "#2a7f97",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "cosmos",
+    "name": "Cosmos",
+    "value": {
+     "hex": "#5b4a9c",
+     "model": "hex"
+    }
+   }
+  ],
+  "resourceTypes": [
+   {
+    "id": "figure",
+    "name": "Imagen",
+    "namePlural": "Imágenes",
+    "shortLabel": "imagen",
+    "captionPrefix": "Imagen",
+    "numberingTemplate": "{n}",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "auto",
+     "span": "column",
+     "width": 1
+    }
+   },
+   {
+    "id": "table",
+    "name": "Tabla",
+    "namePlural": "Tablas",
+    "shortLabel": "tabla",
+    "captionPrefix": "Tabla",
+    "numberingTemplate": "{n}",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "auto",
+     "span": "page"
+    },
+    "captionStyle": {
+     "position": "above"
+    }
+   }
+  ],
+  "pdfGeneration": {
+   "outlines": true
+  }
+ },
+ "localized": {
+  "es": {
+   "config": {
+    "locale": "es",
+    "bodyText": {
+     "fontFamily": "Newsreader",
+     "fontSize": {
+      "value": 12.35,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 16.9,
+      "unit": "pt"
+     },
+     "textAlign": "justify",
+     "firstLineIndent": {
+      "value": 4,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": false,
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "referenceBold": false,
+     "referenceItalic": true,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "es"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "headings": {
+     "fontFamily": "Archivo",
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "keepWithNext": true,
+     "levels": [
+      {
+       "level": 1,
+       "fontSize": {
+        "value": 28.6,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 33.8,
+        "unit": "pt"
+       },
+       "span": "page",
+       "breakBefore": {
+        "enabled": true,
+        "parity": "any"
+       }
+      },
+      {
+       "level": 2,
+       "fontSize": {
+        "value": 28.6,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 33.8,
+        "unit": "pt"
+       },
+       "numberingTemplate": "{2}",
+       "span": "page",
+       "breakBefore": {
+        "enabled": true,
+        "parity": "even"
+       },
+       "advancedDesign": {
+        "enabled": true,
+        "minHeight": {
+         "value": 95.0,
+         "unit": "mm"
+        },
+        "slot": {
+         "elements": [
+          {
+           "kind": "box",
+           "id": "openerBg",
+           "placement": {
+            "anchor": {
+             "to": "bleed",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 0,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": "fill",
+             "height": {
+              "value": 122.0,
+              "unit": "mm"
+             }
+            }
+           },
+           "style": {
+            "backgroundColor": {
+             "hex": "#14181d",
+             "model": "hex",
+             "paletteId": "ink"
+            },
+            "borderRadius": {
+             "value": 0,
+             "unit": "mm"
+            }
+           }
+          },
+          {
+           "kind": "box",
+           "id": "openerStripe",
+           "placement": {
+            "anchor": {
+             "to": "bleed",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 0,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": "fill",
+             "height": {
+              "value": 3,
+              "unit": "mm"
+             }
+            }
+           },
+           "style": {
+            "backgroundColor": {
+             "hex": "#2a7f97",
+             "model": "hex",
+             "paletteId": "band"
+            },
+            "borderRadius": {
+             "value": 0,
+             "unit": "mm"
+            }
+           }
+          },
+          {
+           "kind": "text",
+           "id": "kicker",
+           "placement": {
+            "anchor": {
+             "to": "container",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": -3,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 195.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{partTitle}",
+           "fontFamily": "Chivo",
+           "fontSize": {
+            "value": 11.7,
+            "unit": "pt"
+           },
+           "fontWeight": 700,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#2a7f97",
+            "model": "hex",
+            "paletteId": "band"
+           },
+           "textTransform": "uppercase",
+           "letterSpacing": {
+            "value": 2.6,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "headline",
+           "placement": {
+            "anchor": {
+             "to": "#kicker",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 3,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 195.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{titleText}",
+           "fontFamily": "Archivo",
+           "fontSize": {
+            "value": 35.1,
+            "unit": "pt"
+           },
+           "fontWeight": 700,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.06,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#ffffff",
+            "model": "hex",
+            "paletteId": "white"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "standfirst",
+           "placement": {
+            "anchor": {
+             "to": "#headline",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 165.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.lead}",
+           "fontFamily": "Newsreader",
+           "fontSize": {
+            "value": 14.95,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": true,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.3,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#ffffff",
+            "model": "hex",
+            "paletteId": "white"
+           },
+           "hyphenate": true
+          },
+          {
+           "kind": "text",
+           "id": "dateline",
+           "placement": {
+            "anchor": {
+             "to": "#standfirst",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 195.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.source} · {attr.date}",
+           "fontFamily": "Chivo",
+           "fontSize": {
+            "value": 9.75,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#2a7f97",
+            "model": "hex",
+            "paletteId": "band"
+           },
+           "textTransform": "uppercase",
+           "letterSpacing": {
+            "value": 1.82,
+            "unit": "pt"
+           }
+          }
+         ]
+        }
+       }
+      },
+      {
+       "level": 3,
+       "fontSize": {
+        "value": 15.6,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 19.5,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "marginTop": {
+        "value": 15.6,
+        "unit": "pt"
+       },
+       "marginBottom": {
+        "value": 5.2,
+        "unit": "pt"
+       }
+      }
+     ]
+    },
+    "parts": {
+     "breakBefore": {
+      "parity": "always-odd"
+     },
+     "breakAfter": {
+      "enabled": true,
+      "parity": "any"
+     },
+     "margins": {
+      "top": {
+       "value": 200,
+       "unit": "mm"
+      },
+      "bottom": {
+       "value": 24,
+       "unit": "mm"
+      },
+      "left": {
+       "value": 16.0,
+       "unit": "mm"
+      },
+      "right": {
+       "value": 60,
+       "unit": "mm"
+      }
+     },
+     "design": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "partBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#2a7f97",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 56,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Sección {numberRoman}",
+        "fontFamily": "Chivo",
+        "fontSize": {
+         "value": 13.0,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 3.25,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partNumber",
+        "placement": {
+         "anchor": {
+          "to": "#partLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{numberDecimal}",
+        "fontFamily": "Archivo",
+        "fontSize": {
+         "value": 156.0,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.0,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partTitle",
+        "placement": {
+         "anchor": {
+          "to": "#partNumber",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Archivo",
+        "fontSize": {
+         "value": 52.0,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.02,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       }
+      ]
+     },
+     "bodyStyle": {
+      "fontFamily": "Newsreader",
+      "fontSize": {
+       "value": 14.3,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 20.8,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "textAlign": "left",
+      "numberColor": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "orderedLists": {
+       "numberFormat": "arabic",
+       "separator": "",
+       "gap": {
+        "value": 3,
+        "unit": "mm"
+       },
+       "indent": {
+        "value": 9,
+        "unit": "mm"
+       },
+       "fontFamily": "Chivo",
+       "numberFontSize": {
+        "value": 11.7,
+        "unit": "pt"
+       },
+       "itemSpacing": {
+        "value": 2.6,
+        "unit": "pt"
+       }
+      }
+     }
+    },
+    "resourceTypes": [
+     {
+      "id": "figure",
+      "name": "Imagen",
+      "namePlural": "Imágenes",
+      "shortLabel": "imagen",
+      "captionPrefix": "Imagen",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "column",
+       "width": 1
+      }
+     },
+     {
+      "id": "table",
+      "name": "Tabla",
+      "namePlural": "Tablas",
+      "shortLabel": "tabla",
+      "captionPrefix": "Tabla",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "page"
+      },
+      "captionStyle": {
+       "position": "above"
+      }
+     }
+    ],
+    "header": {
+     "elements": [
+      {
+       "kind": "box",
+       "id": "headBandEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 14.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 3,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "backgroundColor": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folioEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 19.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 11.05,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#14181d",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "titleEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -16.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 120,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "Cielo profundo",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 9.75,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#666b73",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "even",
+       "pages": "body",
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 1.56,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "chapterOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 140,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{partNumber} · {partTitle}",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 9.75,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#666b73",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "odd",
+       "pages": "body",
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 1.56,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "box",
+       "id": "headBandOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -14.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 3,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "backgroundColor": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folioOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -19.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 11.05,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#14181d",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      }
+     ]
+    }
+   },
+   "resources": [
+    {
+     "id": "eso2314a",
+     "caption": "Mancha oscura de Neptuno observada con el instrumento MUSE, instalado en el Very Large Telescope de ESO",
+     "note": "Crédito: ESO/P. Irwin et al.",
+     "altText": "Mancha oscura de Neptuno observada con el instrumento MUSE, instalado en el Very Large Telescope de ESO"
+    },
+    {
+     "id": "eso2314b",
+     "caption": "Vista natural de Neptuno tomada por el instrumento MUSE, instalado en el VLT",
+     "note": "Crédito: ESO/P. Irwin et al.",
+     "altText": "Vista natural de Neptuno tomada por el instrumento MUSE, instalado en el VLT"
+    },
+    {
+     "id": "noirlab2532b",
+     "caption": "Cometa 3I/ATLAS el 26 de noviembre de 2025",
+     "note": "Crédito: International Gemini Observatory/NOIRLab/NSF/AURA/B. Bolin. Image Processing: J. Miller & M. Rodriguez (International Gemini Observatory/NSF NOIRLab), T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), M. Zamani (NSF NOIRLab)",
+     "altText": "Cometa 3I/ATLAS el 26 de noviembre de 2025"
+    },
+    {
+     "id": "noirlab2532a",
+     "caption": "Cometa 3I/ATLAS el 26 de noviembre de 2025",
+     "note": "Crédito: International Gemini Observatory/NOIRLab/NSF/AURA/B. Bolin. Image Processing: J. Miller & M. Rodriguez (International Gemini Observatory/NSF NOIRLab), T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), M. Zamani (NSF NOIRLab)",
+     "altText": "Cometa 3I/ATLAS el 26 de noviembre de 2025"
+    },
+    {
+     "id": "eso2511a",
+     "caption": "Imagen del VLT de una supernova con doble explosión",
+     "note": "Crédito: ESO/P. Das et al. Background stars (Hubble): K. Noll et al.",
+     "altText": "Imagen del VLT de una supernova con doble explosión"
+    },
+    {
+     "id": "eso2511b",
+     "caption": "Distribución del calcio alrededor del remanente de supernova SNR 0509-67.5",
+     "note": "Crédito: ESO/P. Das et al.",
+     "altText": "Distribución del calcio alrededor del remanente de supernova SNR 0509-67.5"
+    },
+    {
+     "id": "noirlab2515a",
+     "caption": "La Cámara de Energía Oscura registra la Nube Molecular de Circinus Oeste",
+     "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+     "altText": "La Cámara de Energía Oscura registra la Nube Molecular de Circinus Oeste"
+    },
+    {
+     "id": "noirlab2515b",
+     "caption": "Gemas Cósmicas en Circinus Oeste",
+     "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+     "altText": "Gemas Cósmicas en Circinus Oeste"
+    },
+    {
+     "id": "noirlab2515c",
+     "caption": "Panorámica de Circinus Oeste",
+     "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+     "altText": "Panorámica de Circinus Oeste"
+    },
+    {
+     "id": "eso2510a",
+     "caption": "Vista de MUSE de la Galaxia del Escultor",
+     "note": "Crédito: ESO/E. Congiu et al.",
+     "altText": "Vista de MUSE de la Galaxia del Escultor"
+    },
+    {
+     "id": "eso2510b",
+     "caption": "Vista de MUSE del gas ionizado que hay en la Galaxia del Escultor",
+     "note": "Crédito: ESO/E. Congiu et al.",
+     "altText": "Vista de MUSE del gas ionizado que hay en la Galaxia del Escultor"
+    },
+    {
+     "id": "noirlab2612a",
+     "caption": "La Galaxia del Sombrero, revelada como nunca antes",
+     "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab)",
+     "altText": "La Galaxia del Sombrero, revelada como nunca antes"
+    },
+    {
+     "id": "noirlab2612b",
+     "caption": "Primer plano de las partes centrales de la Galaxia del Sombrero",
+     "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab)",
+     "altText": "Primer plano de las partes centrales de la Galaxia del Sombrero"
+    },
+    {
+     "id": "eso2406a",
+     "caption": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
+     "note": "Crédito: EHT Collaboration",
+     "altText": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada"
+    },
+    {
+     "id": "eso2406b",
+     "caption": "M87* y Sgr A*, uno junto al otro, vistos con luz polarizada",
+     "note": "Crédito: EHT Collaboration",
+     "altText": "M87* y Sgr A*, uno junto al otro, vistos con luz polarizada"
+    },
+    {
+     "id": "noirlab2618a",
+     "caption": "El Observatorio Rubin en Chile abre una nueva ventana al famoso campo COSMOS",
+     "note": "Crédito: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+     "altText": "El Observatorio Rubin en Chile abre una nueva ventana al famoso campo COSMOS"
+    },
+    {
+     "id": "noirlab2618b",
+     "caption": "Rubin observa en profundidad un famoso campo cósmico (áreas seleccionadas)",
+     "note": "Crédito: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+     "altText": "Rubin observa en profundidad un famoso campo cósmico (áreas seleccionadas)"
+    },
+    {
+     "id": "noirlab2618c",
+     "caption": "Áreas cubiertas en COSMOS",
+     "note": "Crédito: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+     "altText": "Áreas cubiertas en COSMOS"
+    },
+    {
+     "id": "features-table",
+     "caption": "Las ocho observaciones de este número. :swatch{color=\"solar\"} Sistema solar · :swatch{color=\"stars\"} Estrellas · :swatch{color=\"galaxies\"} Galaxias · :swatch{color=\"cosmos\"} Cosmos.",
+     "table": {
+      "model": {
+       "rows": [
+        [
+         {
+          "content": "Reportaje",
+          "isHeader": true
+         },
+         {
+          "content": "Observatorio",
+          "isHeader": true
+         },
+         {
+          "content": "Objeto",
+          "isHeader": true
+         },
+         {
+          "content": "Distancia",
+          "isHeader": true
+         }
+        ],
+        [
+         {
+          "content": "**Neptuno**",
+          "background": {
+           "hex": "#c9702a",
+           "model": "hex",
+           "paletteId": "solar"
+          }
+         },
+         {
+          "content": "VLT · MUSE"
+         },
+         {
+          "content": "Neptuno"
+         },
+         {
+          "content": "4500 millones de km"
+         }
+        ],
+        [
+         {
+          "content": "**Cometa 3I/ATLAS**",
+          "background": {
+           "hex": "#c9702a",
+           "model": "hex",
+           "paletteId": "solar"
+          }
+         },
+         {
+          "content": "Gemini Norte · GMOS"
+         },
+         {
+          "content": "3I/ATLAS"
+         },
+         {
+          "content": "Interestelar"
+         }
+        ],
+        [
+         {
+          "content": "**Doble detonación**",
+          "background": {
+           "hex": "#b8413d",
+           "model": "hex",
+           "paletteId": "stars"
+          }
+         },
+         {
+          "content": "VLT · MUSE"
+         },
+         {
+          "content": "SNR 0509-67.5"
+         },
+         {
+          "content": "160 000 años luz"
+         }
+        ],
+        [
+         {
+          "content": "**Circinus Oeste**",
+          "background": {
+           "hex": "#b8413d",
+           "model": "hex",
+           "paletteId": "stars"
+          }
+         },
+         {
+          "content": "Blanco · DECam"
+         },
+         {
+          "content": "Nube molecular"
+         },
+         {
+          "content": "2500 años luz"
+         }
+        ],
+        [
+         {
+          "content": "**Galaxia del Escultor**",
+          "background": {
+           "hex": "#2a7f97",
+           "model": "hex",
+           "paletteId": "galaxies"
+          }
+         },
+         {
+          "content": "VLT · MUSE"
+         },
+         {
+          "content": "NGC 253"
+         },
+         {
+          "content": "11 millones de años luz"
+         }
+        ],
+        [
+         {
+          "content": "**Galaxia del Sombrero**",
+          "background": {
+           "hex": "#2a7f97",
+           "model": "hex",
+           "paletteId": "galaxies"
+          }
+         },
+         {
+          "content": "Blanco · DECam"
+         },
+         {
+          "content": "Messier 104"
+         },
+         {
+          "content": "30 millones de años luz"
+         }
+        ],
+        [
+         {
+          "content": "**Sagitario A***",
+          "background": {
+           "hex": "#5b4a9c",
+           "model": "hex",
+           "paletteId": "cosmos"
+          }
+         },
+         {
+          "content": "EHT"
+         },
+         {
+          "content": "Agujero negro"
+         },
+         {
+          "content": "27 000 años luz"
+         }
+        ],
+        [
+         {
+          "content": "**Campo COSMOS**",
+          "background": {
+           "hex": "#5b4a9c",
+           "model": "hex",
+           "paletteId": "cosmos"
+          }
+         },
+         {
+          "content": "Rubin · LSSTCam"
+         },
+         {
+          "content": "Campo profundo"
+         },
+         {
+          "content": "Miles de millones de años luz"
+         }
+        ]
+       ],
+       "headerRowCount": 1,
+       "columnWidths": [
+        2.2,
+        2,
+        2,
+        2
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "en": {
+   "config": {
+    "locale": "en-us",
+    "bodyText": {
+     "fontFamily": "Newsreader",
+     "fontSize": {
+      "value": 12.35,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 16.9,
+      "unit": "pt"
+     },
+     "textAlign": "justify",
+     "firstLineIndent": {
+      "value": 4,
+      "unit": "mm"
+     },
+     "indentAfterHeading": false,
+     "paragraphSpacing": false,
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "italicColor": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "referenceColor": {
+      "hex": "#2a7f97",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "referenceBold": false,
+     "referenceItalic": true,
+     "hyphenation": {
+      "enabled": true,
+      "locale": "en-us"
+     },
+     "avoidWidows": true,
+     "avoidOrphans": true,
+     "optimalLineBreaking": true
+    },
+    "headings": {
+     "fontFamily": "Archivo",
+     "color": {
+      "hex": "#14181d",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "keepWithNext": true,
+     "levels": [
+      {
+       "level": 1,
+       "fontSize": {
+        "value": 28.6,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 33.8,
+        "unit": "pt"
+       },
+       "span": "page",
+       "breakBefore": {
+        "enabled": true,
+        "parity": "any"
+       }
+      },
+      {
+       "level": 2,
+       "fontSize": {
+        "value": 28.6,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 33.8,
+        "unit": "pt"
+       },
+       "numberingTemplate": "{2}",
+       "span": "page",
+       "breakBefore": {
+        "enabled": true,
+        "parity": "even"
+       },
+       "advancedDesign": {
+        "enabled": true,
+        "minHeight": {
+         "value": 95.0,
+         "unit": "mm"
+        },
+        "slot": {
+         "elements": [
+          {
+           "kind": "box",
+           "id": "openerBg",
+           "placement": {
+            "anchor": {
+             "to": "bleed",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 0,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": "fill",
+             "height": {
+              "value": 122.0,
+              "unit": "mm"
+             }
+            }
+           },
+           "style": {
+            "backgroundColor": {
+             "hex": "#14181d",
+             "model": "hex",
+             "paletteId": "ink"
+            },
+            "borderRadius": {
+             "value": 0,
+             "unit": "mm"
+            }
+           }
+          },
+          {
+           "kind": "box",
+           "id": "openerStripe",
+           "placement": {
+            "anchor": {
+             "to": "bleed",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 0,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": "fill",
+             "height": {
+              "value": 3,
+              "unit": "mm"
+             }
+            }
+           },
+           "style": {
+            "backgroundColor": {
+             "hex": "#2a7f97",
+             "model": "hex",
+             "paletteId": "band"
+            },
+            "borderRadius": {
+             "value": 0,
+             "unit": "mm"
+            }
+           }
+          },
+          {
+           "kind": "text",
+           "id": "kicker",
+           "placement": {
+            "anchor": {
+             "to": "container",
+             "edge": "top-left"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": -3,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 195.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{partTitle}",
+           "fontFamily": "Chivo",
+           "fontSize": {
+            "value": 11.7,
+            "unit": "pt"
+           },
+           "fontWeight": 700,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#2a7f97",
+            "model": "hex",
+            "paletteId": "band"
+           },
+           "textTransform": "uppercase",
+           "letterSpacing": {
+            "value": 2.6,
+            "unit": "pt"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "headline",
+           "placement": {
+            "anchor": {
+             "to": "#kicker",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 3,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 195.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{titleText}",
+           "fontFamily": "Archivo",
+           "fontSize": {
+            "value": 35.1,
+            "unit": "pt"
+           },
+           "fontWeight": 700,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.06,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#ffffff",
+            "model": "hex",
+            "paletteId": "white"
+           }
+          },
+          {
+           "kind": "text",
+           "id": "standfirst",
+           "placement": {
+            "anchor": {
+             "to": "#headline",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 165.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.lead}",
+           "fontFamily": "Newsreader",
+           "fontSize": {
+            "value": 14.95,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": true,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.3,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#ffffff",
+            "model": "hex",
+            "paletteId": "white"
+           },
+           "hyphenate": true
+          },
+          {
+           "kind": "text",
+           "id": "dateline",
+           "placement": {
+            "anchor": {
+             "to": "#standfirst",
+             "edge": "below"
+            },
+            "offset": {
+             "x": {
+              "value": 0,
+              "unit": "mm"
+             },
+             "y": {
+              "value": 4,
+              "unit": "mm"
+             }
+            },
+            "size": {
+             "width": {
+              "value": 195.0,
+              "unit": "mm"
+             },
+             "height": "auto"
+            }
+           },
+           "content": "{attr.source} · {attr.date}",
+           "fontFamily": "Chivo",
+           "fontSize": {
+            "value": 9.75,
+            "unit": "pt"
+           },
+           "fontWeight": 400,
+           "italic": false,
+           "align": "left",
+           "verticalAlign": "middle",
+           "lineHeight": 1.2,
+           "overflow": "wrap",
+           "color": {
+            "hex": "#2a7f97",
+            "model": "hex",
+            "paletteId": "band"
+           },
+           "textTransform": "uppercase",
+           "letterSpacing": {
+            "value": 1.82,
+            "unit": "pt"
+           }
+          }
+         ]
+        }
+       }
+      },
+      {
+       "level": 3,
+       "fontSize": {
+        "value": 15.6,
+        "unit": "pt"
+       },
+       "lineHeight": {
+        "value": 19.5,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "marginTop": {
+        "value": 15.6,
+        "unit": "pt"
+       },
+       "marginBottom": {
+        "value": 5.2,
+        "unit": "pt"
+       }
+      }
+     ]
+    },
+    "parts": {
+     "breakBefore": {
+      "parity": "always-odd"
+     },
+     "breakAfter": {
+      "enabled": true,
+      "parity": "any"
+     },
+     "margins": {
+      "top": {
+       "value": 200,
+       "unit": "mm"
+      },
+      "bottom": {
+       "value": 24,
+       "unit": "mm"
+      },
+      "left": {
+       "value": 16.0,
+       "unit": "mm"
+      },
+      "right": {
+       "value": 60,
+       "unit": "mm"
+      }
+     },
+     "design": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "partBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#2a7f97",
+          "model": "hex",
+          "paletteId": "band"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partLabel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 56,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Section {numberRoman}",
+        "fontFamily": "Chivo",
+        "fontSize": {
+         "value": 13.0,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 3.25,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partNumber",
+        "placement": {
+         "anchor": {
+          "to": "#partLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{numberDecimal}",
+        "fontFamily": "Archivo",
+        "fontSize": {
+         "value": 156.0,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.0,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "partTitle",
+        "placement": {
+         "anchor": {
+          "to": "#partNumber",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 195.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Archivo",
+        "fontSize": {
+         "value": 52.0,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.02,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       }
+      ]
+     },
+     "bodyStyle": {
+      "fontFamily": "Newsreader",
+      "fontSize": {
+       "value": 14.3,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 20.8,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "textAlign": "left",
+      "numberColor": {
+       "hex": "#ffffff",
+       "model": "hex",
+       "paletteId": "white"
+      },
+      "orderedLists": {
+       "numberFormat": "arabic",
+       "separator": "",
+       "gap": {
+        "value": 3,
+        "unit": "mm"
+       },
+       "indent": {
+        "value": 9,
+        "unit": "mm"
+       },
+       "fontFamily": "Chivo",
+       "numberFontSize": {
+        "value": 11.7,
+        "unit": "pt"
+       },
+       "itemSpacing": {
+        "value": 2.6,
+        "unit": "pt"
+       }
+      }
+     }
+    },
+    "resourceTypes": [
+     {
+      "id": "figure",
+      "name": "Image",
+      "namePlural": "Images",
+      "shortLabel": "image",
+      "captionPrefix": "Image",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "column",
+       "width": 1
+      }
+     },
+     {
+      "id": "table",
+      "name": "Table",
+      "namePlural": "Tables",
+      "shortLabel": "table",
+      "captionPrefix": "Table",
+      "numberingTemplate": "{n}",
+      "resetOn": "never",
+      "counterFormat": "decimal",
+      "defaultPlacement": {
+       "position": "auto",
+       "span": "page"
+      },
+      "captionStyle": {
+       "position": "above"
+      }
+     }
+    ],
+    "header": {
+     "elements": [
+      {
+       "kind": "box",
+       "id": "headBandEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 14.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 3,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "backgroundColor": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folioEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 19.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 11.05,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#14181d",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "titleEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -16.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 120,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "Deep Sky",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 9.75,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#666b73",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "even",
+       "pages": "body",
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 1.56,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "chapterOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 140,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{partNumber} · {partTitle}",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 9.75,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#666b73",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "odd",
+       "pages": "body",
+       "textTransform": "uppercase",
+       "letterSpacing": {
+        "value": 1.56,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "box",
+       "id": "headBandOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -14.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 12.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 3,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 3,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "backgroundColor": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "band"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folioOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -19.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": "auto",
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Chivo",
+       "fontSize": {
+        "value": 11.05,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#14181d",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      }
+     ]
+    }
+   },
+   "resources": [
+    {
+     "id": "eso2314a",
+     "caption": "Dark spot on Neptune observed with MUSE at ESO’s Very Large Telescope",
+     "note": "Credit: ESO/P. Irwin et al.",
+     "altText": "Dark spot on Neptune observed with MUSE at ESO’s Very Large Telescope"
+    },
+    {
+     "id": "eso2314b",
+     "caption": "Natural view of Neptune taken by MUSE at the VLT",
+     "note": "Credit: ESO/P. Irwin et al.",
+     "altText": "Natural view of Neptune taken by MUSE at the VLT"
+    },
+    {
+     "id": "noirlab2532b",
+     "caption": "Comet 3I/ATLAS on 26 November 2025",
+     "note": "Credit: International Gemini Observatory/NOIRLab/NSF/AURA/B. Bolin. Image Processing: J. Miller & M. Rodriguez (International Gemini Observatory/NSF NOIRLab), T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), M. Zamani (NSF NOIRLab)",
+     "altText": "Comet 3I/ATLAS on 26 November 2025"
+    },
+    {
+     "id": "noirlab2532a",
+     "caption": "Comet 3I/ATLAS on 26 November 2025",
+     "note": "Credit: International Gemini Observatory/NOIRLab/NSF/AURA/B. Bolin. Image Processing: J. Miller & M. Rodriguez (International Gemini Observatory/NSF NOIRLab), T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), M. Zamani (NSF NOIRLab)",
+     "altText": "Comet 3I/ATLAS on 26 November 2025"
+    },
+    {
+     "id": "eso2511a",
+     "caption": "VLT image of a double-detonation supernova",
+     "note": "Credit: ESO/P. Das et al. Background stars (Hubble): K. Noll et al.",
+     "altText": "VLT image of a double-detonation supernova"
+    },
+    {
+     "id": "eso2511b",
+     "caption": "Distribution of calcium around the supernova remnant SNR 0509-67.5",
+     "note": "Credit: ESO/P. Das et al.",
+     "altText": "Distribution of calcium around the supernova remnant SNR 0509-67.5"
+    },
+    {
+     "id": "noirlab2515a",
+     "caption": "Dark Energy Camera Captures Circinus West Molecular Cloud",
+     "note": "Credit: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+     "altText": "Dark Energy Camera Captures Circinus West Molecular Cloud"
+    },
+    {
+     "id": "noirlab2515b",
+     "caption": "Cosmic Gems in Circinus West",
+     "note": "Credit: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+     "altText": "Cosmic Gems in Circinus West"
+    },
+    {
+     "id": "noirlab2515c",
+     "caption": "Herbig-Haro Objects 76 and 77",
+     "note": "Credit: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+     "altText": "Herbig-Haro Objects 76 and 77"
+    },
+    {
+     "id": "eso2510a",
+     "caption": "MUSE view of the Sculptor Galaxy",
+     "note": "Credit: ESO/E. Congiu et al.",
+     "altText": "MUSE view of the Sculptor Galaxy"
+    },
+    {
+     "id": "eso2510b",
+     "caption": "MUSE view of ionised gas in the Sculptor Galaxy",
+     "note": "Credit: ESO/E. Congiu et al.",
+     "altText": "MUSE view of ionised gas in the Sculptor Galaxy"
+    },
+    {
+     "id": "noirlab2612a",
+     "caption": "Sombrero Galaxy: The Universe’s Dusty Brimmed Hat Revealed Like Never Before",
+     "note": "Credit: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab)",
+     "altText": "Sombrero Galaxy: The Universe’s Dusty Brimmed Hat Revealed Like Never Before"
+    },
+    {
+     "id": "noirlab2612b",
+     "caption": "Close-up of the central parts of the Sombrero Galaxy",
+     "note": "Credit: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab)",
+     "altText": "Close-up of the central parts of the Sombrero Galaxy"
+    },
+    {
+     "id": "eso2406a",
+     "caption": "A view of the Milky Way supermassive black hole Sagittarius A* in polarised light",
+     "note": "Credit: EHT Collaboration",
+     "altText": "A view of the Milky Way supermassive black hole Sagittarius A* in polarised light"
+    },
+    {
+     "id": "eso2406b",
+     "caption": "M87* and Sgr A* side-by-side in polarised light",
+     "note": "Credit: EHT Collaboration",
+     "altText": "M87* and Sgr A* side-by-side in polarised light"
+    },
+    {
+     "id": "noirlab2618a",
+     "caption": "NSF–DOE Rubin Observatory Opens Deep Window on Famous Cosmic Field",
+     "note": "Credit: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+     "altText": "NSF–DOE Rubin Observatory Opens Deep Window on Famous Cosmic Field"
+    },
+    {
+     "id": "noirlab2618b",
+     "caption": "Rubin Looks Deep Into a Famous Cosmic Field (selected excerpts)",
+     "note": "Credit: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+     "altText": "Rubin Looks Deep Into a Famous Cosmic Field (selected excerpts)"
+    },
+    {
+     "id": "noirlab2618c",
+     "caption": "Footprints on COSMOS",
+     "note": "Credit: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+     "altText": "Footprints on COSMOS"
+    },
+    {
+     "id": "features-table",
+     "caption": "The eight observations in this issue. :swatch{color=\"solar\"} Solar System · :swatch{color=\"stars\"} Stars · :swatch{color=\"galaxies\"} Galaxies · :swatch{color=\"cosmos\"} Cosmos.",
+     "table": {
+      "model": {
+       "rows": [
+        [
+         {
+          "content": "Feature",
+          "isHeader": true
+         },
+         {
+          "content": "Observatory",
+          "isHeader": true
+         },
+         {
+          "content": "Object",
+          "isHeader": true
+         },
+         {
+          "content": "Distance",
+          "isHeader": true
+         }
+        ],
+        [
+         {
+          "content": "**Neptune**",
+          "background": {
+           "hex": "#c9702a",
+           "model": "hex",
+           "paletteId": "solar"
+          }
+         },
+         {
+          "content": "VLT · MUSE"
+         },
+         {
+          "content": "Neptune"
+         },
+         {
+          "content": "4.5 billion km"
+         }
+        ],
+        [
+         {
+          "content": "**Comet 3I/ATLAS**",
+          "background": {
+           "hex": "#c9702a",
+           "model": "hex",
+           "paletteId": "solar"
+          }
+         },
+         {
+          "content": "Gemini North · GMOS"
+         },
+         {
+          "content": "3I/ATLAS"
+         },
+         {
+          "content": "Interstellar"
+         }
+        ],
+        [
+         {
+          "content": "**Double detonation**",
+          "background": {
+           "hex": "#b8413d",
+           "model": "hex",
+           "paletteId": "stars"
+          }
+         },
+         {
+          "content": "VLT · MUSE"
+         },
+         {
+          "content": "SNR 0509-67.5"
+         },
+         {
+          "content": "160,000 light-years"
+         }
+        ],
+        [
+         {
+          "content": "**Circinus West**",
+          "background": {
+           "hex": "#b8413d",
+           "model": "hex",
+           "paletteId": "stars"
+          }
+         },
+         {
+          "content": "Blanco · DECam"
+         },
+         {
+          "content": "Molecular cloud"
+         },
+         {
+          "content": "2,500 light-years"
+         }
+        ],
+        [
+         {
+          "content": "**Sculptor Galaxy**",
+          "background": {
+           "hex": "#2a7f97",
+           "model": "hex",
+           "paletteId": "galaxies"
+          }
+         },
+         {
+          "content": "VLT · MUSE"
+         },
+         {
+          "content": "NGC 253"
+         },
+         {
+          "content": "11 million light-years"
+         }
+        ],
+        [
+         {
+          "content": "**Sombrero Galaxy**",
+          "background": {
+           "hex": "#2a7f97",
+           "model": "hex",
+           "paletteId": "galaxies"
+          }
+         },
+         {
+          "content": "Blanco · DECam"
+         },
+         {
+          "content": "Messier 104"
+         },
+         {
+          "content": "30 million light-years"
+         }
+        ],
+        [
+         {
+          "content": "**Sagittarius A***",
+          "background": {
+           "hex": "#5b4a9c",
+           "model": "hex",
+           "paletteId": "cosmos"
+          }
+         },
+         {
+          "content": "EHT"
+         },
+         {
+          "content": "Black hole"
+         },
+         {
+          "content": "27,000 light-years"
+         }
+        ],
+        [
+         {
+          "content": "**COSMOS field**",
+          "background": {
+           "hex": "#5b4a9c",
+           "model": "hex",
+           "paletteId": "cosmos"
+          }
+         },
+         {
+          "content": "Rubin · LSSTCam"
+         },
+         {
+          "content": "Deep field"
+         },
+         {
+          "content": "Billions of light-years"
+         }
+        ]
+       ],
+       "headerRowCount": 1,
+       "columnWidths": [
+        2.2,
+        2,
+        2,
+        2
+       ]
+      }
+     }
+    }
+   ]
+  }
+ },
+ "resources": [
+  {
+   "id": "eso2314a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2314a.jpg",
+   "width": 3200,
+   "height": 1800,
+   "caption": "Mancha oscura de Neptuno observada con el instrumento MUSE, instalado en el Very Large Telescope de ESO",
+   "note": "Crédito: ESO/P. Irwin et al.",
+   "altText": "Mancha oscura de Neptuno observada con el instrumento MUSE, instalado en el Very Large Telescope de ESO",
+   "placement": {
+    "position": "here",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "eso2314b",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2314b.jpg",
+   "width": 1320,
+   "height": 1320,
+   "caption": "Vista natural de Neptuno tomada por el instrumento MUSE, instalado en el VLT",
+   "note": "Crédito: ESO/P. Irwin et al.",
+   "altText": "Vista natural de Neptuno tomada por el instrumento MUSE, instalado en el VLT",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2532b",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2532b.jpg",
+   "width": 1994,
+   "height": 1668,
+   "caption": "Cometa 3I/ATLAS el 26 de noviembre de 2025",
+   "note": "Crédito: International Gemini Observatory/NOIRLab/NSF/AURA/B. Bolin. Image Processing: J. Miller & M. Rodriguez (International Gemini Observatory/NSF NOIRLab), T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), M. Zamani (NSF NOIRLab)",
+   "altText": "Cometa 3I/ATLAS el 26 de noviembre de 2025",
+   "placement": {
+    "position": "here",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2532a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2532a.jpg",
+   "width": 916,
+   "height": 847,
+   "caption": "Cometa 3I/ATLAS el 26 de noviembre de 2025",
+   "note": "Crédito: International Gemini Observatory/NOIRLab/NSF/AURA/B. Bolin. Image Processing: J. Miller & M. Rodriguez (International Gemini Observatory/NSF NOIRLab), T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), M. Zamani (NSF NOIRLab)",
+   "altText": "Cometa 3I/ATLAS el 26 de noviembre de 2025",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "eso2511a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2511a.jpg",
+   "width": 3000,
+   "height": 2000,
+   "caption": "Imagen del VLT de una supernova con doble explosión",
+   "note": "Crédito: ESO/P. Das et al. Background stars (Hubble): K. Noll et al.",
+   "altText": "Imagen del VLT de una supernova con doble explosión",
+   "placement": {
+    "position": "here",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "eso2511b",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2511b.jpg",
+   "width": 1625,
+   "height": 1635,
+   "caption": "Distribución del calcio alrededor del remanente de supernova SNR 0509-67.5",
+   "note": "Crédito: ESO/P. Das et al.",
+   "altText": "Distribución del calcio alrededor del remanente de supernova SNR 0509-67.5",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2515a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2515a.jpg",
+   "width": 3200,
+   "height": 2602,
+   "caption": "La Cámara de Energía Oscura registra la Nube Molecular de Circinus Oeste",
+   "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+   "altText": "La Cámara de Energía Oscura registra la Nube Molecular de Circinus Oeste",
+   "placement": {
+    "position": "here",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2515b",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2515b.jpg",
+   "width": 3200,
+   "height": 1442,
+   "caption": "Gemas Cósmicas en Circinus Oeste",
+   "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+   "altText": "Gemas Cósmicas en Circinus Oeste",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2515c",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2515c.jpg",
+   "width": 1080,
+   "height": 1080,
+   "caption": "Panorámica de Circinus Oeste",
+   "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
+   "altText": "Panorámica de Circinus Oeste",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "eso2510a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2510a.jpg",
+   "width": 3200,
+   "height": 906,
+   "caption": "Vista de MUSE de la Galaxia del Escultor",
+   "note": "Crédito: ESO/E. Congiu et al.",
+   "altText": "Vista de MUSE de la Galaxia del Escultor",
+   "placement": {
+    "position": "here",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "eso2510b",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2510b.jpg",
+   "width": 3200,
+   "height": 904,
+   "caption": "Vista de MUSE del gas ionizado que hay en la Galaxia del Escultor",
+   "note": "Crédito: ESO/E. Congiu et al.",
+   "altText": "Vista de MUSE del gas ionizado que hay en la Galaxia del Escultor",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2612a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2612a.jpg",
+   "width": 3200,
+   "height": 2029,
+   "caption": "La Galaxia del Sombrero, revelada como nunca antes",
+   "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab)",
+   "altText": "La Galaxia del Sombrero, revelada como nunca antes",
+   "placement": {
+    "position": "here",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2612b",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2612b.jpg",
+   "width": 1503,
+   "height": 1800,
+   "caption": "Primer plano de las partes centrales de la Galaxia del Sombrero",
+   "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab)",
+   "altText": "Primer plano de las partes centrales de la Galaxia del Sombrero",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "eso2406a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2406a.jpg",
+   "width": 3200,
+   "height": 3200,
+   "caption": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
+   "note": "Crédito: EHT Collaboration",
+   "altText": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
+   "placement": {
+    "position": "here",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "eso2406b",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2406b.jpg",
+   "width": 3200,
+   "height": 1800,
+   "caption": "M87* y Sgr A*, uno junto al otro, vistos con luz polarizada",
+   "note": "Crédito: EHT Collaboration",
+   "altText": "M87* y Sgr A*, uno junto al otro, vistos con luz polarizada",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2618a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2618a.jpg",
+   "width": 3200,
+   "height": 1746,
+   "caption": "El Observatorio Rubin en Chile abre una nueva ventana al famoso campo COSMOS",
+   "note": "Crédito: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+   "altText": "El Observatorio Rubin en Chile abre una nueva ventana al famoso campo COSMOS",
+   "placement": {
+    "position": "here",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2618b",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2618b.jpg",
+   "width": 3200,
+   "height": 2270,
+   "caption": "Rubin observa en profundidad un famoso campo cósmico (áreas seleccionadas)",
+   "note": "Crédito: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+   "altText": "Rubin observa en profundidad un famoso campo cósmico (áreas seleccionadas)",
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1
+   }
+  },
+  {
+   "id": "noirlab2618c",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/noirlab2618c.jpg",
+   "width": 1800,
+   "height": 1800,
+   "caption": "Áreas cubiertas en COSMOS",
+   "note": "Crédito: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
+   "altText": "Áreas cubiertas en COSMOS",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   }
+  },
+  {
+   "id": "features-table",
+   "typeId": "table",
+   "kind": "table",
+   "caption": "Las ocho observaciones de este número. :swatch{color=\"solar\"} Sistema solar · :swatch{color=\"stars\"} Estrellas · :swatch{color=\"galaxies\"} Galaxias · :swatch{color=\"cosmos\"} Cosmos.",
+   "table": {
+    "model": {
+     "rows": [
+      [
+       {
+        "content": "Reportaje",
+        "isHeader": true
+       },
+       {
+        "content": "Observatorio",
+        "isHeader": true
+       },
+       {
+        "content": "Objeto",
+        "isHeader": true
+       },
+       {
+        "content": "Distancia",
+        "isHeader": true
+       }
+      ],
+      [
+       {
+        "content": "**Neptuno**",
+        "background": {
+         "hex": "#c9702a",
+         "model": "hex",
+         "paletteId": "solar"
+        }
+       },
+       {
+        "content": "VLT · MUSE"
+       },
+       {
+        "content": "Neptuno"
+       },
+       {
+        "content": "4500 millones de km"
+       }
+      ],
+      [
+       {
+        "content": "**Cometa 3I/ATLAS**",
+        "background": {
+         "hex": "#c9702a",
+         "model": "hex",
+         "paletteId": "solar"
+        }
+       },
+       {
+        "content": "Gemini Norte · GMOS"
+       },
+       {
+        "content": "3I/ATLAS"
+       },
+       {
+        "content": "Interestelar"
+       }
+      ],
+      [
+       {
+        "content": "**Doble detonación**",
+        "background": {
+         "hex": "#b8413d",
+         "model": "hex",
+         "paletteId": "stars"
+        }
+       },
+       {
+        "content": "VLT · MUSE"
+       },
+       {
+        "content": "SNR 0509-67.5"
+       },
+       {
+        "content": "160 000 años luz"
+       }
+      ],
+      [
+       {
+        "content": "**Circinus Oeste**",
+        "background": {
+         "hex": "#b8413d",
+         "model": "hex",
+         "paletteId": "stars"
+        }
+       },
+       {
+        "content": "Blanco · DECam"
+       },
+       {
+        "content": "Nube molecular"
+       },
+       {
+        "content": "2500 años luz"
+       }
+      ],
+      [
+       {
+        "content": "**Galaxia del Escultor**",
+        "background": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "galaxies"
+        }
+       },
+       {
+        "content": "VLT · MUSE"
+       },
+       {
+        "content": "NGC 253"
+       },
+       {
+        "content": "11 millones de años luz"
+       }
+      ],
+      [
+       {
+        "content": "**Galaxia del Sombrero**",
+        "background": {
+         "hex": "#2a7f97",
+         "model": "hex",
+         "paletteId": "galaxies"
+        }
+       },
+       {
+        "content": "Blanco · DECam"
+       },
+       {
+        "content": "Messier 104"
+       },
+       {
+        "content": "30 millones de años luz"
+       }
+      ],
+      [
+       {
+        "content": "**Sagitario A***",
+        "background": {
+         "hex": "#5b4a9c",
+         "model": "hex",
+         "paletteId": "cosmos"
+        }
+       },
+       {
+        "content": "EHT"
+       },
+       {
+        "content": "Agujero negro"
+       },
+       {
+        "content": "27 000 años luz"
+       }
+      ],
+      [
+       {
+        "content": "**Campo COSMOS**",
+        "background": {
+         "hex": "#5b4a9c",
+         "model": "hex",
+         "paletteId": "cosmos"
+        }
+       },
+       {
+        "content": "Rubin · LSSTCam"
+       },
+       {
+        "content": "Campo profundo"
+       },
+       {
+        "content": "Miles de millones de años luz"
+       }
+      ]
+     ],
+     "headerRowCount": 1,
+     "columnWidths": [
+      2.2,
+      2,
+      2,
+      2
+     ]
+    }
+   }
+  }
+ ],
+ "fonts": [
+  {
+   "name": "Archivo",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/Archivo-Regular.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/Archivo-Bold.ttf"
+    },
+    {
+     "weight": 900,
+     "style": "normal",
+     "file": "fonts/Archivo-Black.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/Archivo-Italic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "Newsreader",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/Newsreader-Regular.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/Newsreader-Italic.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/Newsreader-Bold.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "italic",
+     "file": "fonts/Newsreader-BoldItalic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "Chivo",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/Chivo-Regular.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/Chivo-Bold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/Chivo-Italic.ttf"
+    }
+   ]
+  }
+ ]
+}

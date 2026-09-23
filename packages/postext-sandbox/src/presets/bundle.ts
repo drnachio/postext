@@ -12,8 +12,8 @@ import { createDefaultConfig } from '../context/defaultConfig';
 import { svgIntrinsicSize } from '../panels/resources/svgIntrinsic';
 import { slugify, uniqueSlug } from '../panels/resources/slugify';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
-import type { Chapter, ChapterLayout } from '../book/types';
-import { chapterFileName, extensionForResource, fontsToCustomFonts, isBitmapFile, isPdfFile, isPresetManifest, isSvgFile, mimeForFile, pickChapterSpecs, presetChapterId, presetFileId, presetFontFileId, resourceFromSpec } from './manifest';
+import type { Chapter, ChapterLayout, LayoutScope } from '../book/types';
+import { chapterFileName, extensionForImageMime, extensionForResource, fontsToCustomFonts, isBitmapFile, isPdfFile, isPresetManifest, isSvgFile, mimeForFile, pickChapterSpecs, pickLocaleOverrides, presetChapterId, presetFileId, presetFontFileId, resolveBundleLocale, resourceFromSpec } from './manifest';
 import type {
   LoadedPreset,
   LoadedPresetBlob,
@@ -89,6 +89,7 @@ export async function parseBundle(
 
   const decoder = new TextDecoder();
   const chapters: Chapter[] = [];
+  const resolvedLocale = resolveBundleLocale(manifest, locale);
   const specs = pickChapterSpecs(manifest, locale);
   for (let i = 0; i < specs.length; i++) {
     const spec = specs[i]!;
@@ -96,9 +97,27 @@ export async function parseBundle(
     chapters.push(newChapter(idOf(spec.file), spec.title || deriveChapterTitle(text, untitled(i + 1)), text));
   }
 
+  // A bilingual bundle's per-locale wording: resource captions, notes and
+  // alt texts merged by id, config keys replaced wholesale.
+  const overrides = pickLocaleOverrides(manifest, locale);
+  const wordingById = new Map((overrides?.resources ?? []).map((r) => [r.id, r]));
+  const localizedSpecs: PresetResourceSpec[] = (manifest.resources ?? []).map((spec) => {
+    const wording = wordingById.get(spec.id);
+    if (!wording) return spec;
+    const merged: PresetResourceSpec = { ...spec, ...wording, id: spec.id };
+    // Artwork swapped for this locale: the shared spec's intrinsic size
+    // describes the other file, so it is read from the bytes instead.
+    if (wording.file && wording.file !== spec.file) {
+      if (wording.width === undefined) delete merged.width;
+      if (wording.height === undefined) delete merged.height;
+      if (wording.pdfFile === undefined) delete merged.pdfFile;
+    }
+    return merged;
+  });
+
   const blobs: LoadedPresetBlob[] = [];
   const resources: Resource[] = await Promise.all(
-    (manifest.resources ?? []).map(async (spec) => {
+    localizedSpecs.map(async (spec) => {
       const file = spec.file;
       if (!file) return resourceFromSpec(presetId, spec);
       const mime = mimeForFile(file);
@@ -140,7 +159,7 @@ export async function parseBundle(
     })),
   );
 
-  const baseConfig = { ...createDefaultConfig(locale), ...(manifest.config ?? {}) };
+  const baseConfig = { ...createDefaultConfig(locale), ...(manifest.config ?? {}), ...(overrides?.config ?? {}) };
   const customFonts = [...(manifest.config?.customFonts ?? []), ...fontSet.families];
   const config = customFonts.length > 0 ? { ...baseConfig, customFonts } : baseConfig;
 
@@ -170,14 +189,22 @@ export async function parseBundle(
     summary: {
       ...summary,
       description: manifest.description ?? summary.description,
-      locale: manifest.locale ?? summary.locale,
+      // The locale of *this* load: a project cloned from the English side
+      // of a bilingual bundle is an English project.
+      locale: resolvedLocale,
+      ...(manifest.locales ? { locales: manifest.locales } : {}),
+      ...(manifest.license ? { license: manifest.license } : {}),
+      ...(manifest.credits ? { credits: manifest.credits } : {}),
+      ...(manifest.tags ? { tags: manifest.tags } : {}),
     },
+    locale: resolvedLocale,
     chapters,
     config,
     resources,
     blobs,
     fonts,
     ...(layouts ? { layouts } : {}),
+    ...(manifest.view?.canvasScope ? { canvasScope: manifest.view.canvasScope } : {}),
   };
 }
 
@@ -198,6 +225,12 @@ export interface BundleContent {
   /** Current layout records by chapter id, carried as `layouts.json` so
    *  the bundle opens paginated. */
   layouts?: Record<string, ChapterLayout>;
+  /** The book's canvas scope, written as the manifest's `view` when it is
+   *  not the default. */
+  canvasScope?: LayoutScope;
+  /** The cover picture, carried as the manifest's `thumbnail` so a project
+   *  keeps it across an export/import round trip. */
+  thumbnail?: { fileId: string; mime: string };
 }
 
 /** `layouts.json`: the pagination of the bundle's chapters, keyed by
@@ -290,6 +323,13 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
 
   const fonts: PresetFontFamilySpec[] = [];
   for (const family of content.config.customFonts ?? []) {
+    // A family the document may set but not pass on: its files stay behind
+    // and the export names no `fonts[]` entry for it, so the bundle opens
+    // with the reader's own fallback for that family.
+    if (family.redistributable === false) {
+      warnings.push(`${family.name}: font files left out of the export (the family is not redistributable)`);
+      continue;
+    }
     const variants: PresetFontFamilySpec['variants'] = [];
     for (const v of family.variants) {
       if (!EXPORTABLE_FONT_FORMATS.includes(v.format)) {
@@ -304,6 +344,13 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
       variants.push({ weight: v.weight, style: v.style, file: path });
     }
     if (variants.length > 0) fonts.push({ name: family.name, variants });
+  }
+
+  // The cover picture travels under the name a showcase bundle uses for it.
+  const thumbExt = content.thumbnail ? extensionForImageMime(content.thumbnail.mime) : null;
+  const thumbnailPath = content.thumbnail && thumbExt ? `thumbnail.${thumbExt}` : undefined;
+  if (content.thumbnail && thumbnailPath) {
+    files.push({ path: thumbnailPath, fileId: content.thumbnail.fileId, kind: 'blob', owner: 'thumbnail' });
   }
 
   const configWithoutFonts: Partial<PostextConfig> = { ...stripConfigDefaults(content.config) };
@@ -347,6 +394,8 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     name: meta.name,
     ...(meta.description ? { description: meta.description } : {}),
     ...(meta.locale ? { locale: meta.locale } : {}),
+    ...(thumbnailPath ? { thumbnail: thumbnailPath } : {}),
+    ...(content.canvasScope === 'book' ? { view: { canvasScope: 'book' as const } } : {}),
     chapters: chapterSpecs,
     config: configWithoutFonts as PostextConfig,
     ...(resources.length > 0 ? { resources } : {}),
@@ -396,6 +445,10 @@ export async function buildBundleFiles(
   );
 
   let manifest = plan.manifest;
+  if (manifest.thumbnail && missingPaths.has(manifest.thumbnail)) {
+    manifest = { ...manifest };
+    delete manifest.thumbnail;
+  }
   if (missingPaths.size > 0) {
     const resources = manifest.resources
       ?.filter((r) => !r.file || !missingPaths.has(r.file))

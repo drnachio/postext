@@ -1,3 +1,4 @@
+import { padTrueTypeGlyphs } from './trueTypePadding';
 import type { PDFDocument, PDFFont } from 'pdf-lib';
 import { fontKey, parseFontString } from './fontString';
 
@@ -155,7 +156,11 @@ export class FontCache {
           // OpenType (.otf, signature `OTTO`) embeds whole — larger PDF, but
           // every viewer reads it. TrueType fonts subset normally.
           const subset = !isCffOpenType(bytes);
-          const font = await this.pdfDoc.embedFont(bytes, { subset });
+          // fontkit's TrueType subsetter mis-writes the offsets of fonts whose
+          // glyph records are not 4-byte aligned (instanced variable fonts,
+          // typically): pad them first so every glyph survives the subset.
+          const embeddable = subset ? padTrueTypeGlyphs(bytes) : bytes;
+          const font = await this.pdfDoc.embedFont(embeddable, { subset });
           if (!subset) {
             coverAllGlyphWidths(font);
             coverAllGlyphUnicode(font);

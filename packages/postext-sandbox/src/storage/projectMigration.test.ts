@@ -24,6 +24,27 @@ describe('migrateProjectRecord', () => {
     expect(rec.activeChapterId).toBe('a');
     // The layout scope of earlier versions is dropped.
     expect((rec as unknown as { layoutScope?: string }).layoutScope).toBeUndefined();
+    expect(rec.canvasScope).toBeUndefined();
+  });
+  it('keeps a valid canvas scope and drops an unknown one', () => {
+    const base = {
+      version: 2, id: 'p', name: 'P', config: {}, resources: [], createdAt: 1, updatedAt: 1,
+      chapters: [{ id: 'a', title: 'A', markdown: '', createdAt: 1, updatedAt: 1 }],
+      activeChapterId: 'a',
+    };
+    expect(migrateProjectRecord({ ...base, canvasScope: 'book' }, deps)!.canvasScope).toBe('book');
+    expect(migrateProjectRecord({ ...base, canvasScope: 'spread' }, deps)!.canvasScope).toBeUndefined();
+  });
+  it('keeps a well-formed cover picture and drops a malformed one', () => {
+    const base = {
+      version: 2, id: 'p', name: 'P', config: {}, resources: [], createdAt: 1, updatedAt: 1,
+      chapters: [{ id: 'a', title: 'A', markdown: '', createdAt: 1, updatedAt: 1 }],
+      activeChapterId: 'a',
+    };
+    const cover = { fileId: 'blob-cover', mime: 'image/jpeg' };
+    expect(migrateProjectRecord({ ...base, thumbnail: cover }, deps)!.thumbnail).toEqual(cover);
+    expect(migrateProjectRecord({ ...base, thumbnail: { fileId: '' } }, deps)!.thumbnail).toBeUndefined();
+    expect(migrateProjectRecord({ ...base, thumbnail: 'thumbnail.jpg' }, deps)!.thumbnail).toBeUndefined();
   });
   it('rejects garbage', () => {
     expect(migrateProjectRecord(null, deps)).toBeNull();

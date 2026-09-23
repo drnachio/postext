@@ -15,10 +15,12 @@ export interface RowDrag {
 const SCROLL_EDGE = 28;
 const SCROLL_MAX_STEP = 14;
 
+/** The nearest ancestor that can actually scroll — a capped list that is
+ *  not full yet is skipped, so the drag still scrolls the panel around it. */
 function scrollParentOf(el: HTMLElement | null): HTMLElement | null {
   for (let n = el?.parentElement ?? null; n; n = n.parentElement) {
     const overflow = getComputedStyle(n).overflowY;
-    if (overflow === 'auto' || overflow === 'scroll') return n;
+    if ((overflow === 'auto' || overflow === 'scroll') && n.scrollHeight > n.clientHeight) return n;
   }
   return null;
 }

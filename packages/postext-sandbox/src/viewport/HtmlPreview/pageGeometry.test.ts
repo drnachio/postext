@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { pickPageGeometry } from './pageGeometry';
+import type { VDTDocument } from 'postext';
+import { fitPagesToContent, pickPageGeometry, singleScrollPageWidthPx } from './pageGeometry';
 
 const base = { columnGapPx: 50, gutterPx: 20, targetColumnPx: 400, sideFraction: 0.3 };
 
@@ -52,5 +53,92 @@ describe('pickPageGeometry', () => {
   it('never returns a page narrower than 80px', () => {
     const g = pickPageGeometry({ ...base, layoutType: 'single', innerViewportW: 30 });
     expect(g).toEqual({ pageWidthPx: 80, visibleColumns: 1 });
+  });
+});
+
+describe('singleScrollPageWidthPx', () => {
+  it('gives a flat document the measure itself', () => {
+    expect(singleScrollPageWidthPx({ ...base, layoutType: 'single', innerViewportW: 1300 })).toBe(400);
+  });
+
+  it('widens a one-and-a-half book so its main column reads at the measure', () => {
+    // (400 + 20) / 0.7 = 600: main column 400, side column beside it.
+    expect(singleScrollPageWidthPx({ ...base, layoutType: 'oneAndHalf', innerViewportW: 1300 })).toBe(600);
+  });
+
+  it('never exceeds the viewer, nor drops under 80px', () => {
+    expect(singleScrollPageWidthPx({ ...base, layoutType: 'oneAndHalf', innerViewportW: 500 })).toBe(500);
+    expect(singleScrollPageWidthPx({ ...base, layoutType: 'single', innerViewportW: 30 })).toBe(80);
+  });
+});
+
+const box = (y: number, height: number) => ({ x: 0, y, width: 100, height });
+
+describe('fitPagesToContent', () => {
+  it('shrinks every page to what it holds, floats and bands included', () => {
+    const doc = {
+      pages: [
+        {
+          height: 200_000,
+          columns: [{ blocks: [{ bbox: box(0, 40) }, { bbox: box(40, 60) }] }],
+          openerBand: { blocks: [{ bbox: box(0, 30) }] },
+        },
+        {
+          height: 200_000,
+          columns: [{ blocks: [{ bbox: box(0, 20), hidden: true }] }],
+          floats: [{ bbox: box(10, 300) }],
+        },
+      ],
+    } as unknown as VDTDocument;
+    fitPagesToContent(doc, 24);
+    expect(doc.pages[0]!.height).toBe(124);
+    // The hidden block (a heading its band draws) never holds a page open.
+    expect(doc.pages[1]!.height).toBe(334);
+  });
+
+  it('brings a float parked past the end of the text back under it', () => {
+    const doc = {
+      pages: [{
+        height: 200_000,
+        columns: [{ blocks: [{ bbox: box(0, 400), lines: [] }] }],
+        floats: [
+          { bbox: box(199_000, 300), lines: [], resourceBlock: { captionLines: [{ bbox: box(199_280, 20), baseline: 199_295 }], noteLines: [], continuesLines: [] } },
+          { bbox: box(199_400, 100), lines: [{ bbox: box(199_400, 20), baseline: 199_415 }] },
+        ],
+      }],
+    } as unknown as VDTDocument;
+    fitPagesToContent(doc, 24);
+    const [figure, note] = doc.pages[0]!.floats!;
+    // The pair keeps its arrangement: the first lands a gap under the text.
+    expect(figure!.bbox.y).toBe(424);
+    expect(note!.bbox.y).toBe(824);
+    expect(figure!.resourceBlock!.captionLines[0]!.bbox.y).toBe(704);
+    expect(figure!.resourceBlock!.captionLines[0]!.baseline).toBe(719);
+    expect(note!.lines[0]!.baseline).toBe(839);
+    expect(doc.pages[0]!.height).toBe(948);
+  });
+
+  it('leaves a float that sits within the text where it is', () => {
+    const doc = {
+      pages: [{
+        height: 200_000,
+        columns: [{ blocks: [{ bbox: box(0, 400), lines: [] }] }],
+        floats: [{ bbox: box(100, 80), lines: [] }],
+      }],
+    } as unknown as VDTDocument;
+    fitPagesToContent(doc, 24);
+    expect(doc.pages[0]!.floats![0]!.bbox.y).toBe(100);
+    expect(doc.pages[0]!.height).toBe(424);
+  });
+
+  it('counts a block\u2019s design overlay, which may hang past its box', () => {
+    const doc = {
+      pages: [{
+        height: 200_000,
+        columns: [{ blocks: [{ bbox: box(0, 40), designOverlay: { blocks: [{ bbox: box(20, 90) }] } }] }],
+      }],
+    } as unknown as VDTDocument;
+    fitPagesToContent(doc, 0);
+    expect(doc.pages[0]!.height).toBe(110);
   });
 });

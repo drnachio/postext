@@ -5,6 +5,7 @@ import {
   collectColumnGaps,
   proposeBalanceLines,
   firstDivergentColumn,
+  balanceKey,
   type BalanceState,
   type BalanceProposalOptions,
 } from '../pipeline/columnBalancing';
@@ -377,6 +378,30 @@ describe('list-end and loose-paragraph levers', () => {
     ]);
     bottom.pages[0]!.floats = [fakeBlock({ type: 'resource', bbox: { x: 0, y: 700, width: 480, height: 200 } })];
     expect(proposeBalanceLines(bottom, NO_FORCED, emptyState(), baseOptions()).lines.get(61)).toBeUndefined();
+  });
+
+  it('levers the paragraph resuming under a float band on its own fragment', () => {
+    // EMP / Deep Sky: the column under the figure opens with the tail of a
+    // paragraph that started in the column before. The room belongs under
+    // the figure, and the adjustment is keyed to *this* fragment so the
+    // paragraph's head, laid out earlier, keeps its own spacing.
+    const doc = fakeDoc([
+      [
+        { blocks: [afterListPara(80), para()], availableHeight: 24 },
+        { blocks: [para()], availableHeight: 0 },
+      ],
+      [{ blocks: [para()], availableHeight: 0 }],
+    ]);
+    const col = doc.pages[0]!.columns[0]!;
+    col.bbox = { ...col.bbox, y: 300, height: 600 };
+    col.blocks[0]!.id = 'p-80-cont-1';
+    doc.pages[0]!.floats = [fakeBlock({ type: 'resource', bbox: { x: 0, y: 0, width: 480, height: 280 } })];
+
+    const gaps = collectColumnGaps(doc, NO_FORCED);
+    expect(gaps[0]!.candidates.find((c) => c.contentIndex === 80)?.kind).toBe('afterFloat');
+    const proposal = proposeBalanceLines(doc, NO_FORCED, emptyState(), baseOptions());
+    expect(proposal.lines.get(balanceKey(80, 1))).toBe(1);
+    expect(proposal.lines.get(80)).toBeUndefined();
   });
 
   it('treats a heading that opens a column under a float band as a heading lever', () => {

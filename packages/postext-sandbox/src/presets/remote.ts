@@ -9,6 +9,7 @@ import type {
   LoadedPreset,
   PresetIndexEntry,
   PresetProvider,
+  PresetShowcaseMeta,
   PresetSource,
   PresetSummary,
 } from './types';
@@ -54,7 +55,14 @@ export async function fetchPresetIndexEntries(baseUrl: string): Promise<PresetIn
   }
 }
 
-export function summaryFromEntry(entry: PresetIndexEntry, source: PresetSource): PresetSummary {
+export function summaryFromEntry(entry: PresetIndexEntry, source: PresetSource, baseUrl?: string): PresetSummary {
+  const meta: PresetShowcaseMeta = {
+    ...(entry.locales ? { locales: entry.locales } : {}),
+    ...(entry.thumbnail ? { thumbnail: entry.thumbnail } : {}),
+    ...(entry.license ? { license: entry.license } : {}),
+    ...(entry.credits ? { credits: entry.credits } : {}),
+    ...(entry.tags ? { tags: entry.tags } : {}),
+  };
   return {
     id: entry.id,
     name: entry.name,
@@ -63,13 +71,17 @@ export function summaryFromEntry(entry: PresetIndexEntry, source: PresetSource):
     default: entry.default,
     source,
     available: true,
+    ...meta,
+    ...(entry.thumbnail && baseUrl !== undefined
+      ? { thumbnailUrl: presetUrl(baseUrl, entry.dir, entry.thumbnail) }
+      : {}),
   };
 }
 
 /** Summaries of every preset a source lists; empty on any failure. */
 export async function fetchPresetIndex(baseUrl: string, source: PresetSource): Promise<PresetSummary[]> {
   const entries = await fetchPresetIndexEntries(baseUrl);
-  return entries.map((e) => summaryFromEntry(e, source));
+  return entries.map((e) => summaryFromEntry(e, source, baseUrl));
 }
 
 export function createRemotePreset(
@@ -77,7 +89,7 @@ export function createRemotePreset(
   entry: PresetIndexEntry,
   source: PresetSource,
 ): PresetProvider {
-  const summary = summaryFromEntry(entry, source);
+  const summary = summaryFromEntry(entry, source, baseUrl);
   const fileUrl = (file: string) => presetUrl(baseUrl, entry.dir, file);
 
   return {

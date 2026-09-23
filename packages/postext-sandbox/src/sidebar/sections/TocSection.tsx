@@ -593,6 +593,14 @@ export const TocSection = memo(function TocSection() {
         />
         {resolved.parts.enabled && (
           <NestedGroup>
+            <ToggleSwitch
+              label={labels.tocPartsBreakBefore}
+              checked={resolved.parts.breakBefore}
+              onChange={(v) => updateParts({ breakBefore: v })}
+              tooltip={labels.tocPartsBreakBeforeTooltip}
+              isDefault={raw?.parts?.breakBefore === undefined}
+              onReset={() => resetPartsField('breakBefore')}
+            />
             <DimensionInput
               label={labels.tocPartsHeight}
               value={resolved.parts.height}

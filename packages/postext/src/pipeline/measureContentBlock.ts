@@ -69,6 +69,9 @@ export interface MeasureContentBlockOptions {
   trackingEm?: number;
   /** Paragraph style forced by an enclosing `:::paragraphs` container. */
   styleOverride?: BlockStyle;
+  /** Resource blocks: the widest a figure's image may be set, its caption
+   *  keeping the column's width (`layout.fitFiguresToPage`). */
+  figureMaxBodyWidth?: number;
 }
 
 /**
@@ -125,6 +128,7 @@ export function measureContentBlock(
       resource: kind.resource,
       resourceType: kind.resourceType,
       resourceNumber: kind.resourceNumber,
+      ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
     });
     if (!resourceBlock) return null;
     if (frac < 1) {
@@ -206,15 +210,44 @@ export function measureContentBlock(
     runtPenalty: runtActive ? resolved.bodyText.runtPenalty : 0,
     runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     looseness: opts?.looseness,
-    letterSpacingPx: letterSpacingPx > 0 ? letterSpacingPx : undefined,
+    letterSpacingPx: letterSpacingPx !== 0 ? letterSpacingPx : undefined,
   };
   // URLs / DOIs get their bare break opportunities on the rich path only.
   const hasUrl = /(?:^|\s)(?:(?:https?|ftp):\/\/|www\.|10\.\d{4,}\/)\S/i.test(contentBlock.text);
-  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx > 0 || hasUrl);
+  const useRich = hasRichFonts && (hasRichSpans || letterSpacingPx !== 0 || hasUrl);
 
-  const { measured, mathDisplayRender } = runMeasurement({
+  const first = runMeasurement({
     vdtType, rawBlock, contentBlock, style, measureMaxWidth, measureOptions, mathEnabled, useRich, cache,
   });
+  const { mathDisplayRender } = first;
+  let measured = first.measured;
+  let trackingPx = letterSpacingPx;
+
+  // A runt the penalty could not break up (the alternatives all cost more):
+  // set the paragraph one line shorter, the way a compositor does. Tighter
+  // word spacing first — every feasible break already keeps the spaces at or
+  // above `minWordSpacing` — and then a little tracking, the smallest rung
+  // that carries the line.
+  if (measured.lastLineRunt && runtActive && resolved.bodyText.tightenRunts && opts?.looseness === undefined) {
+    const target = measured.lines.length - 1;
+    for (const rung of runtTrackingLadder(resolved.bodyText.maxRuntTracking, hasRichFonts)) {
+      const spacing = letterSpacingPx - (rung / 1000) * style.fontSizePx;
+      const attempt = runMeasurement({
+        vdtType, rawBlock, contentBlock, style, measureMaxWidth, mathEnabled, cache,
+        measureOptions: {
+          ...measureOptions,
+          looseness: -1,
+          letterSpacingPx: spacing !== 0 ? spacing : undefined,
+        },
+        useRich: hasRichFonts && (hasRichSpans || spacing !== 0 || hasUrl),
+      });
+      if (attempt.measured.lines.length === target && !attempt.measured.lastLineRunt) {
+        measured = attempt.measured;
+        trackingPx = spacing;
+        break;
+      }
+    }
+  }
 
   if (measured.lines.length === 0) return null;
 
@@ -230,6 +263,18 @@ export function measureContentBlock(
 
   return {
     kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender,
-    ...(letterSpacingPx > 0 ? { letterSpacingPx } : {}),
+    ...(trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}),
   };
+}
+
+/** Tracking rungs a runt fix may climb, in thousandths of an em: none
+ *  first — word spacing alone may carry the line — then 5‰ steps to the
+ *  cap, the cap always included. Tracking is measured on the rich path, so
+ *  a block without rich fonts only gets the first rung. */
+function runtTrackingLadder(maxTracking: number, hasRichFonts: boolean): number[] {
+  const rungs = [0];
+  if (!hasRichFonts || maxTracking <= 0) return rungs;
+  for (let t = 5; t < maxTracking; t += 5) rungs.push(t);
+  rungs.push(maxTracking);
+  return rungs;
 }

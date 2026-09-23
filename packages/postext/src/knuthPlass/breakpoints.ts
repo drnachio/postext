@@ -71,7 +71,7 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
   // Merge nodes by fitness class alone once the line width is uniform: the
   // line count only matters for `lineWidth(line)` (and for a looseness
   // target, which needs every count kept apart).
-  const uniformFrom = (options.looseness ?? 0) > 0 ? undefined : options.lineWidthUniformFrom;
+  const uniformFrom = (options.looseness ?? 0) !== 0 ? undefined : options.lineWidthUniformFrom;
 
   // Prefix sums over box/glue widths and glue stretch/shrink.
   // sumWidthAt has length items.length + 1: sumWidthAt[k] covers items 0..k-1,
@@ -284,22 +284,25 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
   }
 
   // Looseness (TeX \looseness): among the surviving final nodes, prefer the
-  // lowest-demerit sequence with exactly (natural + looseness) lines — used
-  // by column balancing to run a paragraph one line long. The DP never
+  // lowest-demerit sequence with exactly (natural + looseness) lines — one
+  // line long, to fill a short column, or one line short, to pull up a runt
+  // last line or take a line out of a column that runs over. The DP never
   // merges nodes with different line counts, so when such a sequence is
-  // feasible a final node for it exists here. Gated on chain quality so the
-  // loose solution never stretches any line beyond the user's limit; when no
-  // acceptable node matches, the natural solution stands.
+  // feasible a final node for it exists here. A long sequence is gated on
+  // chain quality so it never stretches a line beyond the user's limit; a
+  // short one needs no gate — an infeasible break (spaces shrunk past
+  // `minShrinkRatio`) never becomes a node. When nothing matches, the
+  // natural solution stands.
   const looseness = options.looseness ?? 0;
-  if (looseness > 0 && best) {
+  if (looseness !== 0 && best) {
     const targetLine = best.line + looseness;
-    let loose: ActiveNode | null = null;
+    let alternative: ActiveNode | null = null;
     for (const a of activeNodes) {
       if (a.position !== lastBreakPosition || a.line !== targetLine) continue;
-      if (!chainWithinStretchLimit(a)) continue;
-      if (loose === null || a.totalDemerits < loose.totalDemerits) loose = a;
+      if (looseness > 0 && !chainWithinStretchLimit(a)) continue;
+      if (alternative === null || a.totalDemerits < alternative.totalDemerits) alternative = a;
     }
-    if (loose) best = loose;
+    if (alternative) best = alternative;
   }
   // Fallback: if no node reached the final position, take any node with the
   // highest position (nearest to the end).
