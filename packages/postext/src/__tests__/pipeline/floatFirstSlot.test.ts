@@ -278,3 +278,59 @@ describe('band caps under a top float', () => {
     expect(band0.some((c) => c.blocks.length > 0)).toBe(true);
   });
 });
+
+describe('a float at the head of a column under a page-span opener', () => {
+  it('lands below the opener band, not over it', () => {
+    const config: PostextConfig = {
+      ...PAGE,
+      headings: {
+        balancing: { enabled: false },
+        levels: [{
+          level: 1, span: 'page', breakBefore: { enabled: false },
+          advancedDesign: { enabled: true, minHeight: pt(120), slot: { elements: [] } },
+        }],
+      },
+    };
+    const doc = build(`# Opener\n\nIntro :ref{id="t1"} text.\n\n${filler(3)}`, [
+      { ...smallTable('t1'), placement: { position: 'top', span: 'column' } },
+    ], config);
+    const heading = doc.pages[0]!.columns.flatMap((c) => c.blocks).find((b) => b.type === 'heading')!;
+    const f = floatById(doc, 't1');
+    expect(f.page).toBe(0);
+    expect(f.block.columnIndex).toBe(1);
+    expect(f.block.bbox.y).toBeGreaterThanOrEqual(bottomOf(heading) - 1e-6);
+  });
+});
+
+describe('a head-of-page float cited on the closing page of a chapter', () => {
+  it('takes the free foot of that page instead of a page of its own before the next chapter', () => {
+    const config: PostextConfig = {
+      ...PAGE,
+      headings: { balancing: { enabled: false }, levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }] },
+    };
+    const doc = build(`# One\n\n${filler(2)}\n\nSee :ref{id="t1"}.\n\n# Two\n\n${filler(2, 10)}`, [
+      { ...smallTable('t1'), placement: { position: 'top', span: 'page' } },
+    ], config);
+    const f = floatById(doc, 't1');
+    const two = doc.pages.findIndex((p) => p.columns.some((c) => c.blocks.some((b) => b.type === 'heading' && b.lines[0]?.text.includes('Two'))));
+    expect(f.page).toBe(0);
+    expect(two).toBe(1);
+  });
+});
+
+describe('a page-span float on the closing page of a chapter', () => {
+  it('sits right under the text, not at the page foot', () => {
+    const doc = build(`Intro :ref{id="t1"} text.\n\n${filler(2)}`, [
+      { ...smallTable('t1'), placement: { position: 'bottom', span: 'page' } },
+    ]);
+    const f = floatById(doc, 't1');
+    const page = doc.pages[f.page]!;
+    const textBottom = Math.max(...page.columns.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight)));
+    const pageFoot = page.contentArea.y + page.contentArea.height;
+    // The table starts within two grid lines of the text's foot…
+    expect(f.block.bbox.y - textBottom).toBeLessThan(2 * doc.baselineGrid + 1e-6);
+    expect(f.block.bbox.y).toBeGreaterThanOrEqual(textBottom - 1e-6);
+    // …leaving the rest of the page free under it.
+    expect(pageFoot - bottomOf(f.block)).toBeGreaterThan(4 * doc.baselineGrid);
+  });
+});

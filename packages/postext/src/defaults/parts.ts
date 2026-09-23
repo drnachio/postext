@@ -14,6 +14,7 @@ import { resolveDesignSlot, stripDesignSlotDefaults } from './headerFooter';
  *  section (`margins` from the page, `bodyStyle.*` from the body text and
  *  the list configs) are resolved at resolve time. */
 export const DEFAULT_PARTS_CONFIG = {
+  page: true,
   breakBefore: { parity: 'odd' as HeadingBreakParity },
   breakAfter: { enabled: true, parity: 'any' as HeadingBreakParity },
   design: { elements: [] } as ResolvedDesignSlot,
@@ -30,6 +31,7 @@ export function resolvePartsConfig(
   const d = DEFAULT_PARTS_CONFIG;
   const pm = page.margins;
   return {
+    page: partial?.page ?? d.page,
     breakBefore: { parity: partial?.breakBefore?.parity ?? d.breakBefore.parity },
     breakAfter: {
       enabled: partial?.breakAfter?.enabled ?? d.breakAfter.enabled,
@@ -87,6 +89,7 @@ export function stripPartsDefaults(parts: PartsConfig | undefined): PartsConfig 
   if (!parts) return undefined;
   const d = DEFAULT_PARTS_CONFIG;
   const r: PartsConfig = {};
+  if (parts.page !== undefined && parts.page !== d.page) r.page = parts.page;
   if (parts.breakBefore?.parity !== undefined && parts.breakBefore.parity !== d.breakBefore.parity) {
     r.breakBefore = { parity: parts.breakBefore.parity };
   }

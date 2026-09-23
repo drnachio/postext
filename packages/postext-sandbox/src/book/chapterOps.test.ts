@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   addChapter, cloneBook, deriveChapterTitle, h1Count, isPristineBook, mergeWithPrevious, moveChapter,
-  newChapter, removeChapter, renameChapter, replaceChapterMarkdown, singleChapterBook, splitChapterAt,
+  newChapter, removeChapter, renameChapter, replaceChapterMarkdown, sampleBook, singleChapterBook, splitChapterAt,
   splitChapterAtHeadings, wordCount,
 } from './chapterOps';
 import type { BookContent } from './types';
@@ -95,5 +95,59 @@ describe('chapter list operations', () => {
   it('detects a pristine sample book', () => {
     expect(isPristineBook(singleChapterBook('S', 'a', 'A'), ['S'])).toBe(true);
     expect(isPristineBook(book(), ['S'])).toBe(false);
+  });
+});
+
+describe('sampleBook', () => {
+  const sample = [
+    '---',
+    'title: "Guide"',
+    '---',
+    '',
+    '# Guide {style="cover"}',
+    '',
+    'Colophon.',
+    '',
+    '# Contents',
+    '',
+    ':::toc',
+    '',
+    ':::numbering{format="decimal" startAt=1}',
+    '',
+    ':::part{number="I" title="Basics"}',
+    '1. Intro',
+    ':::',
+    '',
+    '# Intro',
+    '',
+    'Text.',
+    '',
+    ':::callout{type="tip"}',
+    'Box.',
+    ':::',
+    '',
+    '# Next',
+    '',
+    'More.',
+  ].join('\n');
+
+  it('cuts one chapter per level-1 heading, a part going with the chapter it opens', () => {
+    let n = 0;
+    const book = sampleBook(sample, () => `c${n++}`, 'Fallback');
+    expect(book.chapters.map((c) => c.title)).toEqual(['Guide', 'Contents', 'Intro', 'Next']);
+    expect(book.chapters[0]!.markdown.startsWith('---\ntitle')).toBe(true);
+    expect(book.chapters[1]!.markdown).toBe('# Contents\n\n:::toc');
+    expect(book.chapters[2]!.markdown.startsWith(':::numbering{format="decimal" startAt=1}\n\n:::part')).toBe(true);
+    expect(book.chapters[2]!.markdown.endsWith(':::callout{type="tip"}\nBox.\n:::')).toBe(true);
+    expect(book.activeChapterId).toBe('c0');
+  });
+
+  it('recognises the untouched sample as a book or as one chapter', () => {
+    let n = 0;
+    const book = sampleBook(sample, () => `c${n++}`, 'Fallback');
+    expect(isPristineBook(book, [sample])).toBe(true);
+    expect(isPristineBook(singleChapterBook(sample, 'x', 'Guide'), [sample])).toBe(true);
+    const edited = { ...book, chapters: book.chapters.map((c, i) => (i === 3 ? { ...c, markdown: c.markdown + '!' } : c)) };
+    expect(isPristineBook(edited, [sample])).toBe(false);
   });
 });
