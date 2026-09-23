@@ -310,6 +310,25 @@ describe('page-span blocks mid-page (span blocks, stage 2 — band caps)', () =>
     expect(balanced.pages).toHaveLength(1);
   });
 
+  it('a cap shorter than its opening block cuts one band, not every page after it (#135)', () => {
+    // A heading's leading is taller than a one-line cut: the capped band
+    // takes nothing and the heading moves on. Cutting the band it opens next
+    // just as short would move it on again — a fresh page every round, until
+    // the renderer ran out of memory.
+    const md = ['## Para más información', '', filler(4), '', SPAN_CALLOUT, '', filler(6)].join('\n');
+    const cap: BandCap = { kind: 'span', startContentIndex: 0, startPart: 0, lines: 1, retries: 0 };
+    const pass = buildDocumentPass({ markdown: md }, TWO_COL, createMeasurementCache(), undefined, {
+      bandCaps: new Map([[2, cap]]),
+    });
+    expect(pass.bandCapsApplied.has(2)).toBe(true);
+    expect(pass.spanPlacedInBand.has(2)).toBe(false);
+    expect(pass.doc.pages.length).toBeLessThanOrEqual(3);
+    const heading = pass.doc.blocks.find((b) => b.type === 'heading')!;
+    expect(columnOf(pass.doc, heading).bandCapped).toBeFalsy();
+    // The driver then grows or drops the cap; the build ends either way.
+    expect(build(md).pages.length).toBeLessThanOrEqual(2);
+  });
+
   it('documents without span blocks are unaffected (same geometry, one pass)', () => {
     const parts: string[] = ['# Documento', '', filler(6), ''];
     for (let i = 1; i <= 4; i++) {
