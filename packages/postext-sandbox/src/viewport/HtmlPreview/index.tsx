@@ -16,7 +16,7 @@ import type {
   HtmlRenderIndex,
 } from 'postext';
 import { useSandbox, useSandboxDocSourceRef, useLayoutSource, type EditorSelection } from '../../context/SandboxContext';
-import { toBookSelection } from '../../book/compose';
+import { composeBookMemo, toBookSelection } from '../../book/compose';
 import { leadingBlankPageCount } from '../../book/pagination';
 import type { ComposedBook } from '../../book/types';
 import { useShadowDom } from '../../hooks/useShadowDom';
@@ -27,6 +27,8 @@ import { createOverlaySvg } from '../CanvasPreview/dom';
 import { drawOverlay, drawBaselines } from '../CanvasPreview/overlay';
 import { attachSlotClickHandler } from '../CanvasPreview/interaction';
 import { usePageNavigator } from '../usePageNavigator';
+import type { BookPageMap } from '../usePageHashSync';
+import { composedBookPageMap } from '../../book/stitch';
 import {
   type ColumnMode,
   htmlViewerDpi,
@@ -36,8 +38,8 @@ import {
   buildColumnWidthSample,
   composePageBackground,
 } from './constants';
-import { buildHtmlConfigOverride, measureColumnWidthPx } from './configOverride';
-import { pickPageGeometry } from './pageGeometry';
+import { buildHtmlConfigOverride, measureColumnWidthPx, partTitlesOf } from './configOverride';
+import { fitPagesToContent, pickPageGeometry, singleScrollPageWidthPx } from './pageGeometry';
 import { cssEscape, measureBodyBaselineOffset } from './baseline';
 
 interface HtmlPreviewProps {
@@ -49,9 +51,11 @@ interface HtmlPreviewProps {
   // per viewport, so reporting a single "current column" is ambiguous.
   onScrollBoundsChange?: (info: { canPrev: boolean; canNext: boolean }) => void;
   /** Page count of the last laid-out document. */
-  /** After every layout: the page count and the first page with content
-   *  (the ones before it are parity padding). */
-  onPageCountChange?: (count: number, firstContentPage: number, pageNumbers: readonly number[]) => void;
+  /** After every layout: the page count, the first page with content
+   *  (the ones before it are parity padding), the book page number of
+   *  every page and — for the whole book laid out as one document — the
+   *  chapter of every page. */
+  onPageCountChange?: (count: number, firstContentPage: number, pageNumbers: readonly number[], book?: BookPageMap) => void;
   /** The page the reader is on: the first page snapped into view in multi
    *  mode, the page nearest the viewport centre in single mode. */
   onCurrentPageChange?: (pageIndex: number) => void;
@@ -71,7 +75,16 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const layoutSource = useLayoutSource();
   const { chapterId: activeChapterId } = layoutSource;
   const { hostRef, shadowRef } = useShadowDom();
+  // A book meant to be read whole (`view.canvasScope: 'book'`, as the canvas
+  // reads it) is laid out whole here too: every chapter as one document,
+  // continued from nothing. Otherwise the viewer shows the active chapter,
+  // continued after the ones before it.
+  const wholeBook = useMemo(
+    () => (state.canvasScope === 'book' ? composeBookMemo(state.chapters) : null),
+    [state.canvasScope, state.chapters],
+  );
   const deferredSource = useDeferredValue(layoutSource);
+  const deferredWholeBook = useDeferredValue(wholeBook);
   const deferredConfig = useDeferredValue(state.config);
   // The book the current `docRef` was built from.
   const builtSourceRef = useRef<ComposedBook | null>(null);
@@ -105,7 +118,10 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   dispatchRef.current = dispatch;
   const activePanelRef = useRef(state.activePanel);
   activePanelRef.current = state.activePanel;
-  const navigateRef = usePageNavigator();
+  // Under the whole book, the chapter of every page of the document (a
+  // contents row then names the page's chapter, not the active one).
+  const chapterOfPageRef = useRef<((pageIndex: number) => number) | null>(null);
+  const navigateRef = usePageNavigator(chapterOfPageRef);
   const docRef = useRef<VDTDocument | null>(null);
   const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
   // Previous indexed render — drives block-level DOM patching so that an
@@ -122,12 +138,14 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const fontScaleRef = useRef(fontScale);
   const columnModeRef = useRef<ColumnMode>(columnMode);
   const sourceRef = useRef(deferredSource);
+  const wholeBookRef = useRef(deferredWholeBook);
   const configRef = useRef(deferredConfig);
   const localeRef = useRef(state.locale);
   const resourcesRef = useRef(state.resources);
   fontScaleRef.current = fontScale;
   columnModeRef.current = columnMode;
   sourceRef.current = deferredSource;
+  wholeBookRef.current = deferredWholeBook;
   configRef.current = deferredConfig;
   localeRef.current = state.locale;
   resourcesRef.current = state.resources;
@@ -161,16 +179,21 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   // Memoize a trigger key so effects run only when real inputs change.
   // Resources are part of the key too: an edit in the Resources panel (a
   // cell, a caption, an SVG payload) must relayout the HTML tab as well.
+  // Under the whole book the chapter source is not an input: a chapter
+  // switch changes no document (the viewer jumps within it), and a relayout
+  // would put the reader back where the switch found them.
+  const chapterSource = deferredWholeBook ? null : deferredSource;
   const renderKey = useMemo(
     () => ({
-      source: deferredSource,
+      source: chapterSource,
+      wholeBook: deferredWholeBook,
       config: deferredConfig,
       resources: deferredResources,
       fontScale,
       columnMode,
       locale: state.locale,
     }),
-    [deferredSource, deferredConfig, deferredResources, fontScale, columnMode, state.locale],
+    [chapterSource, deferredWholeBook, deferredConfig, deferredResources, fontScale, columnMode, state.locale],
   );
 
   // Stable scheduler: subscribers (font listener, ResizeObserver, the
@@ -234,7 +257,11 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     const currentFontScale = fontScaleRef.current;
     const currentColumnMode = columnModeRef.current;
     const currentLayout = sourceRef.current;
-    const currentSource = currentLayout.book;
+    // Whole-book reading: every chapter in one document, laid out from the
+    // first page. Chapter scope keeps the active chapter and what it
+    // inherits from the chapters before it.
+    const currentWholeBook = wholeBookRef.current;
+    const currentSource = currentWholeBook ?? currentLayout.book;
     // Screen-only overrides (`htmlViewer.overrides`) merged in up front, so
     // font loading, column measurement and layout all see the same config.
     const currentConfig = applyHtmlViewerOverrides(configRef.current);
@@ -280,7 +307,13 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     // column; multi mode honours the document's own column structure, so a
     // viewer page may span two text columns (or one-and-a-half) plus gutter.
     const layoutResolved = resolveLayoutConfig(currentConfig.layout);
-    const docLayoutType = currentColumnMode === 'single' ? 'single' : layoutResolved.layoutType;
+    // Vertical scroll flattens a one- or two-column document to a single
+    // measure, but a one-and-a-half book keeps its structure: the half
+    // column is where its glosses and figures live, and it reads beside the
+    // text here as it does on the leaf (at the right, per the override).
+    const docLayoutType = currentColumnMode === 'single'
+      ? (layoutResolved.layoutType === 'oneAndHalf' ? 'oneAndHalf' : 'single')
+      : layoutResolved.layoutType;
     const gutterPx = dimensionToPx(layoutResolved.gutterWidth, viewerDpi);
     const sideFraction = layoutResolved.sideColumnPercent / 100;
 
@@ -290,7 +323,13 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     // fit, rather than two stretched or four squeezed (see pickPageGeometry).
     const pageWidthPx =
       currentColumnMode === 'single'
-        ? Math.max(Math.floor(Math.min(targetColumnPx, innerViewportW)), 80)
+        ? singleScrollPageWidthPx({
+            innerViewportW,
+            targetColumnPx,
+            gutterPx,
+            layoutType: docLayoutType,
+            sideFraction,
+          })
         : pickPageGeometry({
             innerViewportW,
             columnGapPx,
@@ -309,11 +348,19 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       viewportHeightPx: viewportHeight,
       locale: currentLocale,
       optimalLineBreaking: htmlViewer.optimalLineBreaking,
+      partTitles: partTitlesOf(currentSource.markdown),
     });
 
     try {
       const doc = await layoutWorker.build(
-        { markdown: currentSource.markdown, metadata: currentSource.metadata, resources: resourcesRef.current, continuation: currentLayout.continuation, outline: currentLayout.plan.outline },
+        {
+          markdown: currentSource.markdown,
+          metadata: currentSource.metadata,
+          resources: resourcesRef.current,
+          ...(currentWholeBook
+            ? {}
+            : { continuation: currentLayout.continuation, outline: currentLayout.plan.outline }),
+        },
         configOverride,
       );
       if (seq !== renderSeqRef.current) return;
@@ -328,6 +375,10 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       if (seq !== renderSeqRef.current) return;
 
       const mode = currentColumnMode === 'single' ? 'single' : 'multi';
+      // Vertical scroll: pages hug their content, so a part divider or a
+      // chapter opener that broke to a new page is followed by the next
+      // one instead of a screenful of blank (see fitPagesToContent).
+      if (mode === 'single') fitPagesToContent(doc, PADDING_PX);
       const indexed = renderToHtmlIndexed(doc, {
         mode,
         columnGap: columnGapPx,
@@ -384,6 +435,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
           activePanelRef,
           builtSourceRef,
           navigateRef,
+          resourcesRef,
         );
       };
 
@@ -492,7 +544,9 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         drawBaselines(overlay, doc, pageIndex, bOffset);
       }
 
-      onPageCountChangeRef.current?.(doc.pages.length, leadingBlankPageCount(doc), doc.pages.map((p) => p.pageNumberValue));
+      const bookMap = currentWholeBook ? composedBookPageMap(doc, currentWholeBook) : null;
+      chapterOfPageRef.current = bookMap ? (pageIndex) => bookMap.pageChapters[pageIndex] ?? -1 : null;
+      onPageCountChangeRef.current?.(doc.pages.length, leadingBlankPageCount(doc), doc.pages.map((p) => p.pageNumberValue), bookMap ?? undefined);
       setDocVersion((v) => v + 1);
     } catch (err) {
       if ((err as { name?: string } | null)?.name === 'AbortError') return;

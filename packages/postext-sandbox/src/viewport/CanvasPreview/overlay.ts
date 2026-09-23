@@ -207,6 +207,20 @@ export function drawBaselines(
   }
 }
 
+/** Take every selection, caret and highlight mark off a page overlay. */
+export function clearOverlay(svg: SVGSVGElement): void {
+  const selectionGroup = svg.querySelector<SVGGElement>('g[data-role="selection"]');
+  const cursorGroup = svg.querySelector<SVGGElement>('g[data-role="cursor"]');
+  const looseLineGroup = svg.querySelector<SVGGElement>('g[data-role="looseLines"]');
+  const cursorRect = cursorGroup?.firstElementChild as SVGRectElement | null;
+  if (selectionGroup) while (selectionGroup.firstChild) selectionGroup.removeChild(selectionGroup.firstChild);
+  if (looseLineGroup) while (looseLineGroup.firstChild) looseLineGroup.removeChild(looseLineGroup.firstChild);
+  if (cursorRect) {
+    cursorRect.style.display = 'none';
+    cursorRect.style.visibility = 'hidden';
+  }
+}
+
 export function drawOverlay(
   svg: SVGSVGElement,
   doc: VDTDocument,
@@ -223,10 +237,7 @@ export function drawOverlay(
   const cursorRect = cursorGroup?.firstElementChild as SVGRectElement | null;
   if (!selectionGroup || !cursorGroup || !cursorRect) return null;
 
-  while (selectionGroup.firstChild) selectionGroup.removeChild(selectionGroup.firstChild);
-  if (looseLineGroup) while (looseLineGroup.firstChild) looseLineGroup.removeChild(looseLineGroup.firstChild);
-  cursorRect.style.display = 'none';
-  cursorRect.style.visibility = 'hidden';
+  clearOverlay(svg);
 
   // A resource editor's selection paints regardless of Markdown editor focus.
   if (resourceSelection) drawResourceSelection(selectionGroup, doc, pageIndex, resourceSelection, debug);

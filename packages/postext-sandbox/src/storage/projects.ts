@@ -19,6 +19,16 @@ export interface ProjectContent extends BookContent {
   resources: Resource[];
 }
 
+/** A project's cover picture: the image shown beside its name in the
+ *  projects panel, kept as a blob of its own (never a resource of the
+ *  book). Cloning a showcase preset adopts the bundle's `thumbnail`; an
+ *  export writes it back under that name. */
+export interface ProjectThumbnail {
+  fileId: string;
+  /** Media type of the stored bytes (`image/jpeg`, `image/svg+xml`…). */
+  mime: string;
+}
+
 export interface ProjectRecord extends ProjectContent {
   /** Record shape; legacy records (single `markdown`) are migrated on read. */
   version: typeof PROJECT_RECORD_VERSION;
@@ -33,18 +43,20 @@ export interface ProjectRecord extends ProjectContent {
   bundleId?: string;
   /** Preset the project descends from, when any; Reset restores it. */
   sourcePresetId?: string;
+  /** Cover picture, when the project has one (see {@link ProjectThumbnail}). */
+  thumbnail?: ProjectThumbnail;
   createdAt: number;
   updatedAt: number;
 }
 
 export type ProjectSummary = Pick<
   ProjectRecord,
-  'id' | 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'createdAt' | 'updatedAt'
+  'id' | 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'thumbnail' | 'createdAt' | 'updatedAt'
 > & { chapterCount: number };
 
 export function toSummary(r: ProjectRecord): ProjectSummary {
-  const { id, name, description, locale, bundleId, sourcePresetId, createdAt, updatedAt } = r;
-  return { id, name, description, locale, bundleId, sourcePresetId, createdAt, updatedAt, chapterCount: r.chapters.length };
+  const { id, name, description, locale, bundleId, sourcePresetId, thumbnail, createdAt, updatedAt } = r;
+  return { id, name, description, locale, bundleId, sourcePresetId, thumbnail, createdAt, updatedAt, chapterCount: r.chapters.length };
 }
 
 export function generateProjectId(): string {
@@ -113,7 +125,7 @@ export interface ReferencedFileIds {
 
 /** File ids a content slice points at: bitmap/SVG blobs and custom-font
  *  variants. Pure. */
-export function referencedFileIds(content: { resources: Resource[]; config: PostextConfig }): ReferencedFileIds {
+export function referencedFileIds(content: { resources: Resource[]; config: PostextConfig; thumbnail?: ProjectThumbnail }): ReferencedFileIds {
   const blobIds = new Set<string>();
   const fontIds = new Set<string>();
   for (const r of content.resources) {
@@ -122,6 +134,8 @@ export function referencedFileIds(content: { resources: Resource[]; config: Post
     // An SVG's vector print master is a blob of its own.
     if (r.svg?.pdfFileId) blobIds.add(r.svg.pdfFileId);
   }
+  // The cover picture is a blob of the project, referenced by no resource.
+  if (content.thumbnail) blobIds.add(content.thumbnail.fileId);
   for (const family of content.config.customFonts ?? []) {
     for (const v of family.variants) fontIds.add(v.fileId);
   }

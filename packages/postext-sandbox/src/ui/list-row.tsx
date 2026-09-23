@@ -18,7 +18,8 @@ export interface ListRowProps extends Omit<ComponentProps<'div'>, 'title'> {
   subtitle?: ReactNode;
   /** Small tags rendered after the title. */
   tags?: ReactNode;
-  /** Icon buttons shown at the right (always visible; keep to 2–4). */
+  /** Icon buttons shown at the right (always visible; keep to 2–4, sized
+   *  18 so four of them still leave the title room). */
   actions?: ReactNode;
   /** Accessible label of the select button when `title` is not plain text. */
   ariaLabel?: string;
@@ -27,14 +28,24 @@ export interface ListRowProps extends Omit<ComponentProps<'div'>, 'title'> {
 }
 
 /** The one list row: same padding, hover, selected ring and focus treatment
- *  for projects, chapters, resources, fonts and warnings. */
+ *  for projects, chapters, resources, fonts and warnings.
+ *
+ *  An interactive row's select button is stretched under the whole row
+ *  (the content sits over it and lets pointer events through), so a tag can
+ *  be a button of its own — a locale toggle — without nesting buttons. */
 export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow(
   { selected, disabled, onSelect, onDoubleClick, handle, leading, title, subtitle, tags, actions, ariaLabel, alignTop, className, ...rest },
   ref,
 ) {
   const interactive = !!onSelect;
   const main = (
-    <div className={cn('flex min-w-0 flex-1 gap-2', alignTop ? 'items-start' : 'items-center')}>
+    <div
+      className={cn(
+        'relative z-10 flex min-w-0 flex-1 gap-2',
+        alignTop ? 'items-start' : 'items-center',
+        interactive && 'pointer-events-none',
+      )}
+    >
       {leading && <span className="inline-flex shrink-0" aria-hidden="true">{leading}</span>}
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
@@ -52,7 +63,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
       ref={ref}
       data-selected={selected || undefined}
       className={cn(
-        'group flex items-center gap-1 rounded border px-2 py-1.5 transition-colors',
+        'group relative flex items-center gap-1 rounded border px-2 py-1.5 transition-colors',
         selected ? 'border-(--gilt) bg-(--surface)' : 'border-transparent',
         interactive && !disabled && !selected && 'hover:bg-(--surface)',
         disabled && 'opacity-50',
@@ -60,42 +71,73 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
       )}
       {...rest}
     >
-      {handle && <div className="flex shrink-0 items-center self-stretch">{handle}</div>}
-      {interactive ? (
+      {interactive && (
         <button
           type="button"
           onClick={onSelect}
           onDoubleClick={onDoubleClick}
           disabled={disabled}
-          aria-label={ariaLabel}
+          aria-label={ariaLabel ?? (typeof title === 'string' ? title : undefined)}
           aria-current={selected || undefined}
           className={cn(
-            'flex min-w-0 flex-1 cursor-pointer rounded border-0 bg-transparent p-0 text-left',
-            'focus-visible:outline-1 focus-visible:outline-offset-2 outline-(--gilt-hover)',
+            'absolute inset-0 z-0 cursor-pointer rounded border-0 bg-transparent p-0',
+            'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
             'disabled:cursor-default',
           )}
-        >
-          {main}
-        </button>
-      ) : (
-        main
+        />
       )}
-      {actions && <div className="flex shrink-0 items-center gap-0.5">{actions}</div>}
+      {handle && <div className="relative z-10 flex shrink-0 items-center self-stretch">{handle}</div>}
+      {main}
+      {actions && <div className="relative z-10 flex shrink-0 items-center">{actions}</div>}
     </div>
   );
 });
 
-/** Tiny uppercase tag used inside rows (locale, Active, Default…). */
-export function RowTag({ children, accent }: { children: ReactNode; accent?: boolean }) {
+const ROW_TAG_CLASS = 'shrink-0 rounded border px-1 text-[9px] font-semibold uppercase leading-[14px] tracking-wide';
+
+/** Tiny uppercase tag used inside rows (locale, Active, Default…). With
+ *  `onClick` it is a small toggle button (a bilingual preset's locales);
+ *  `label` names it for assistive tech and the tooltip. */
+export function RowTag({
+  children,
+  accent,
+  onClick,
+  label,
+  pressed,
+}: {
+  children: ReactNode;
+  accent?: boolean;
+  onClick?: () => void;
+  label?: string;
+  pressed?: boolean;
+}) {
+  const style = {
+    borderColor: accent ? 'var(--gilt)' : 'var(--rule)',
+    color: accent ? 'var(--gilt)' : 'var(--slate)',
+  };
+  if (!onClick) {
+    return (
+      <span className={ROW_TAG_CLASS} style={style} title={label} aria-label={label}>
+        {children}
+      </span>
+    );
+  }
   return (
-    <span
-      className="shrink-0 rounded border px-1 text-[9px] font-semibold uppercase leading-[14px] tracking-wide"
-      style={{
-        borderColor: accent ? 'var(--gilt)' : 'var(--rule)',
-        color: accent ? 'var(--gilt)' : 'var(--slate)',
-      }}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={pressed}
+      title={label}
+      className={cn(
+        ROW_TAG_CLASS,
+        'pointer-events-auto m-0 cursor-pointer bg-transparent font-[inherit]',
+        'hover:border-(--gilt-hover) hover:text-(--foreground)',
+        'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+      )}
+      style={style}
     >
       {children}
-    </span>
+    </button>
   );
 }

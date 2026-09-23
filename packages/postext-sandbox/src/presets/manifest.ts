@@ -14,6 +14,7 @@ import type {
   PresetManifest,
   PresetManifestV1,
   PresetResourceSpec,
+  PresetViewSpec,
 } from './types';
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -86,6 +87,11 @@ function isLocaleOverrides(v: unknown): v is PresetLocaleOverrides {
   return true;
 }
 
+function isViewField(v: unknown): v is PresetViewSpec {
+  if (!isRecord(v)) return false;
+  return v.canvasScope === undefined || v.canvasScope === 'book' || v.canvasScope === 'chapter';
+}
+
 function isLocalizedField(v: unknown): v is Record<string, PresetLocaleOverrides> {
   return isRecord(v) && Object.values(v).every(isLocaleOverrides);
 }
@@ -98,6 +104,7 @@ export function isPresetManifest(data: unknown): data is PresetManifest {
   if (data.version === 1 && !isMarkdownField(data.markdown)) return false;
   if (data.version === 2 && !isChaptersField(data.chapters)) return false;
   if (!hasValidShowcaseMeta(data)) return false;
+  if (data.view !== undefined && !isViewField(data.view)) return false;
   if (data.localized !== undefined && !isLocalizedField(data.localized)) return false;
   if (data.config !== undefined && !isRecord(data.config)) return false;
   if (data.resources !== undefined) {
@@ -186,6 +193,17 @@ export function pickLocaleOverrides(manifest: PresetManifest, locale: string): P
   const found = keys.find((k) => k.toLowerCase() === wanted)
     ?? keys.find((k) => k.toLowerCase().split(/[-_]/)[0] === base);
   return found ? localized[found]! : null;
+}
+
+/** The locale a bundle actually serves for `locale`: the key of its
+ *  chapter map (see `pickLocaleKey`) when the content is a locale map, else
+ *  the manifest's own locale, else `locale` itself. */
+export function resolveBundleLocale(manifest: PresetManifest, locale: string): string {
+  const map = manifest.version === 2
+    ? (Array.isArray(manifest.chapters) ? null : manifest.chapters)
+    : (typeof manifest.markdown === 'string' ? null : manifest.markdown);
+  if (map) return pickLocaleKey(Object.keys(map), locale, manifest.locale);
+  return manifest.locale ?? locale;
 }
 
 /** The chapter files to read for `locale`: a v1 manifest yields a single
@@ -282,8 +300,9 @@ export function fontsToCustomFonts(
       variants.push({ weight: v.weight, style, fileId, format, fileName });
       files.push({ fileId, fileName, format, file: v.file });
     }
-    if (variants.length > 0) families.push({ name: family.name, variants });
-    else warnings.push(`${family.name}: no usable variants`);
+    if (variants.length > 0) {
+      families.push({ name: family.name, variants, ...(family.redistributable === false ? { redistributable: false } : {}) });
+    } else warnings.push(`${family.name}: no usable variants`);
   }
   return { families, files, warnings };
 }
@@ -332,6 +351,20 @@ const EXT_BY_BITMAP_FORMAT: Record<string, string> = {
   jpeg: 'jpg',
   webp: 'webp',
   gif: 'gif',
+};
+
+/** File extension to write an image of this media type under, or null when
+ *  the sandbox does not take it as an image (a bundle's cover picture). */
+export function extensionForImageMime(mime: string): string | null {
+  return EXT_BY_IMAGE_MIME[mime.toLowerCase()] ?? null;
+}
+
+const EXT_BY_IMAGE_MIME: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/svg+xml': 'svg',
 };
 
 /** File extension to write a resource's bytes under, or null for resources

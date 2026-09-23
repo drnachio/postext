@@ -4,7 +4,7 @@
 // described by JSON manifests served from a base URL (see remote.ts).
 
 import type { CustomFontFormat, PostextConfig, Resource } from 'postext';
-import type { ChapterLayout, Chapter } from '../book/types';
+import type { ChapterLayout, Chapter, LayoutScope } from '../book/types';
 
 export type PresetSource = 'builtin' | 'public' | 'private';
 
@@ -90,6 +90,10 @@ export interface PresetFontVariantSpec {
 export interface PresetFontFamilySpec {
   name: string;
   variants: PresetFontVariantSpec[];
+  /** False when the bundle may set its pages with this family but must not
+   *  pass the files on: exporting a project built from the bundle leaves the
+   *  family's files (and its `fonts[]` entry) out. Defaults to true. */
+  redistributable?: boolean;
 }
 
 /** One chapter file inside a v2 bundle (`chapters/01-intro.md`). */
@@ -101,10 +105,22 @@ export interface PresetChapterSpec {
 /** What a bilingual bundle changes per locale on top of its shared `config`
  *  and `resources`: top-level config keys replaced wholesale for that locale
  *  (`resourceTypes` with translated caption prefixes, say) and the wording of
- *  resources — caption, note, alt text, a table's cells — merged by id. */
+ *  resources — caption, note, alt text, a table's cells — merged by id. A
+ *  resource whose artwork itself carries words (a diagram with labels set in
+ *  it) may also name its own `file` for the locale; the size is then read
+ *  from that file unless the override states it. */
 export interface PresetLocaleOverrides {
   config?: Partial<PostextConfig>;
-  resources?: (Pick<PresetResourceSpec, 'id'> & Partial<Pick<PresetResourceSpec, 'caption' | 'note' | 'altText' | 'table'>>)[];
+  resources?: (Pick<PresetResourceSpec, 'id'> & Partial<Pick<PresetResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'width' | 'height'>>)[];
+}
+
+/** How the sandbox opens the bundle: view settings that are not part of
+ *  the engine configuration. */
+export interface PresetViewSpec {
+  /** What the canvas lays out: the whole book as one continuous document,
+   *  or (the default) the active chapter continued after the ones before
+   *  it. */
+  canvasScope?: LayoutScope;
 }
 
 interface PresetManifestBase extends PresetShowcaseMeta {
@@ -113,6 +129,7 @@ interface PresetManifestBase extends PresetShowcaseMeta {
   description?: string;
   locale?: string;
   default?: boolean;
+  view?: PresetViewSpec;
   config?: PostextConfig;
   resources?: PresetResourceSpec[];
   fonts?: PresetFontFamilySpec[];
@@ -155,6 +172,10 @@ export interface LoadedPresetFont {
  *  storage. `config.customFonts` already lists the families in `fonts`. */
 export interface LoadedPreset {
   summary: PresetSummary;
+  /** The locale the content was resolved for: the chapter-map key a
+   *  bilingual bundle served (`es` when `es-ES` was asked of an `es`/`en`
+   *  bundle), else the bundle's own locale, else the one requested. */
+  locale: string;
   /** Chapters in book order, with fresh ids. */
   chapters: Chapter[];
   config: PostextConfig;
@@ -164,6 +185,8 @@ export interface LoadedPreset {
   /** The bundle's layout records (`layouts.json`), by chapter id, when they
    *  were built by this engine from this configuration and these resources. */
   layouts?: Record<string, ChapterLayout>;
+  /** The canvas scope the manifest's `view` asks for, when it names one. */
+  canvasScope?: LayoutScope;
 }
 
 export interface PresetProvider {
@@ -182,6 +205,10 @@ export interface PresetProvider {
  *  that changed underneath (see hash.ts / watch.ts). */
 export interface AppliedPresetSnapshot {
   presetId: string;
+  /** The locale the preset's content was loaded in (`LoadedPreset.locale`);
+   *  reloads keep it, so a bundle opened in its second language stays
+   *  there. Absent in snapshots written before locale switching. */
+  locale?: string;
   fingerprint: string | null;
   /** Hash of the chapter list (titles + text, in order). */
   markdownHash: string;

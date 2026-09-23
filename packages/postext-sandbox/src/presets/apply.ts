@@ -36,6 +36,7 @@ export function snapshotForApply(
       : current.config;
   return {
     presetId: loaded.summary.id,
+    locale: loaded.locale,
     fingerprint,
     markdownHash: hashChapters(wantsMarkdown ? loaded.chapters : current.chapters),
     configHash: hashConfig(config),
@@ -89,7 +90,7 @@ export async function applyPreset(
   }
   if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: loaded.resources });
   if (wantsMarkdown) {
-    dispatch({ type: 'SET_BOOK', payload: { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id } });
+    dispatch({ type: 'SET_BOOK', payload: { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}) } });
     if (loaded.layouts && parts === 'all') dispatch({ type: 'SET_CHAPTER_LAYOUTS', payload: loaded.layouts });
   }
   const snapshot = snapshotForApply(loaded, options);

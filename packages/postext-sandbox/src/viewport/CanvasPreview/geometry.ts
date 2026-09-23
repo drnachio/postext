@@ -126,6 +126,42 @@ export function resourceBlocksOnPage(doc: VDTDocument, pageIndex: number): VDTBl
  * blocks plus resource captions / table cells (including float bands).
  * Returns the referenced resource id, or null when the click isn't on a ref.
  */
+type VDTPageOf = VDTDocument['pages'][number];
+type DesignSlotOf = NonNullable<VDTPageOf['openerBand']>;
+
+/**
+ * The image a design slot draws under a page pixel — an opener band's cover
+ * picture, a header logo, an advanced heading design's plate — as the blob
+ * id the block was resolved to, or null when none is there. Slots paint in
+ * order (in-column overlays, then the opener band, header and footer) and
+ * later blocks over earlier ones, so the last hit wins.
+ */
+export function designImageFileIdAtPixel(
+  doc: VDTDocument,
+  pageIndex: number,
+  xPage: number,
+  yPage: number,
+): string | null {
+  const page = doc.pages[pageIndex];
+  if (!page) return null;
+  const slots: DesignSlotOf[] = [];
+  for (const b of doc.blocks) {
+    if (b.pageIndex === pageIndex && b.designOverlay) slots.push(b.designOverlay);
+  }
+  if (page.openerBand) slots.push(page.openerBand);
+  if (page.header) slots.push(page.header);
+  if (page.footer) slots.push(page.footer);
+  let hit: string | null = null;
+  for (const slot of slots) {
+    for (const block of slot.blocks) {
+      if (block.kind !== 'image') continue;
+      const r = block.bbox;
+      if (xPage >= r.x && xPage <= r.x + r.width && yPage >= r.y && yPage <= r.y + r.height) hit = block.fileId;
+    }
+  }
+  return hit;
+}
+
 export function refResourceIdAtPixel(
   doc: VDTDocument,
   pageIndex: number,

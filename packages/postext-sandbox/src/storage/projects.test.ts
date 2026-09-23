@@ -29,6 +29,10 @@ describe('referencedFileIds', () => {
     expect([...refs.blobIds]).toEqual(['blob-1', 'blob-2', 'blob-3']);
     expect([...refs.fontIds]).toEqual(['font-a']);
   });
+  it('keeps the cover picture alive', () => {
+    const refs = referencedFileIds({ resources, config, thumbnail: { fileId: 'blob-cover', mime: 'image/jpeg' } });
+    expect([...refs.blobIds]).toContain('blob-cover');
+  });
 });
 
 describe('remapContentFileIds', () => {
@@ -65,10 +69,13 @@ describe('toSummary', () => {
   it('drops the content slices', () => {
     const record: ProjectRecord = {
       version: 2, id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's',
+      thumbnail: { fileId: 'blob-cover', mime: 'image/jpeg' },
       createdAt: 1, updatedAt: 2, ...book, config, resources,
     };
     expect(toSummary(record)).toEqual({
-      id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's', createdAt: 1, updatedAt: 2, chapterCount: 1,
+      id: 'p', name: 'P', description: 'd', locale: 'es', bundleId: 'b', sourcePresetId: 's',
+      thumbnail: { fileId: 'blob-cover', mime: 'image/jpeg' },
+      createdAt: 1, updatedAt: 2, chapterCount: 1,
     });
   });
 });

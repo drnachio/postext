@@ -5,6 +5,7 @@
 import type { PostextConfig, Resource } from 'postext';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
 import type { BookContent, Chapter } from '../book/types';
+import type { ProjectThumbnail } from './projects';
 
 export const PROJECT_RECORD_VERSION = 2 as const;
 
@@ -18,13 +19,18 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
+function isThumbnail(v: unknown): v is ProjectThumbnail {
+  return isRecord(v) && typeof v.fileId === 'string' && v.fileId.length > 0 && typeof v.mime === 'string';
+}
+
 function isChapter(v: unknown): v is Chapter {
   return isRecord(v) && typeof v.id === 'string' && v.id.length > 0 && typeof v.title === 'string' && typeof v.markdown === 'string';
 }
 
-/** Normalise a book slice: at least one chapter and a valid active id. A
- *  `layoutScope` written by earlier versions is dropped. Returns null when
- *  there is no usable content. */
+/** Normalise a book slice: at least one chapter, a valid active id and
+ *  the canvas scope when the record names one. A `layoutScope` written by
+ *  earlier versions is dropped. Returns null when there is no usable
+ *  content. */
 export function normalizeBookContent(raw: unknown, deps: MigrationDeps): BookContent | null {
   if (!isRecord(raw)) return null;
   const now = Date.now();
@@ -46,7 +52,8 @@ export function normalizeBookContent(raw: unknown, deps: MigrationDeps): BookCon
   const activeChapterId = typeof raw.activeChapterId === 'string' && chapters.some((c) => c.id === raw.activeChapterId)
     ? raw.activeChapterId
     : chapters[0]!.id;
-  return { chapters, activeChapterId };
+  const canvasScope = raw.canvasScope === 'book' || raw.canvasScope === 'chapter' ? raw.canvasScope : undefined;
+  return { chapters, activeChapterId, ...(canvasScope ? { canvasScope } : {}) };
 }
 
 export interface MigratedProjectRecord extends BookContent {
@@ -57,6 +64,7 @@ export interface MigratedProjectRecord extends BookContent {
   locale?: string;
   bundleId?: string;
   sourcePresetId?: string;
+  thumbnail?: ProjectThumbnail;
   createdAt: number;
   updatedAt: number;
   config: PostextConfig;
@@ -79,6 +87,7 @@ export function migrateProjectRecord(raw: unknown, deps: MigrationDeps): Migrate
     ...(typeof raw.locale === 'string' ? { locale: raw.locale } : {}),
     ...(typeof raw.bundleId === 'string' ? { bundleId: raw.bundleId } : {}),
     ...(typeof raw.sourcePresetId === 'string' ? { sourcePresetId: raw.sourcePresetId } : {}),
+    ...(isThumbnail(raw.thumbnail) ? { thumbnail: raw.thumbnail } : {}),
     createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === 'number' ? raw.updatedAt : now,
     config: isRecord(raw.config) ? (raw.config as PostextConfig) : {},

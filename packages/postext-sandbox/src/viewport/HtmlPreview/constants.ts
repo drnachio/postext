@@ -61,7 +61,9 @@ export const SHADOW_CSS = `
   }
   .pt-scroll[data-mode='multi'] .pt-page { scroll-snap-align: start; }
   .pt-doc { min-height: 100%; }
-  .pt-page { cursor: text; }
+  /* A page is a scroll unit: what a design draws past its edge (a cover
+     plate sized for the bleed) would otherwise overprint the next one. */
+  .pt-page { cursor: text; overflow: clip; }
   @keyframes cursor-blink {
     0%, 49% { opacity: 1; }
     50%, 100% { opacity: 0; }

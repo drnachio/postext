@@ -14,6 +14,15 @@ export interface ViewerLayout {
   /** Book page number printed on each page, by page index. */
   pageNumbers: readonly number[];
   version: number;
+  /** Set when the document is the whole book: the chapter (position in
+   *  the book) of every page, and the first content page of every chapter
+   *  (-1 while it has none). */
+  book?: BookPageMap;
+}
+
+export interface BookPageMap {
+  pageChapters: readonly number[];
+  chapterFirstPages: readonly number[];
 }
 
 /** Empty layout record, before the viewer's first document. */
@@ -51,6 +60,14 @@ export function pageNumberAt(layout: ViewerLayout, pageIndex: number): number {
  * after which the last page is settled for and the fragment follows the
  * reader again.
  *
+ * A layout of the whole book (`layout.book`) holds every chapter's pages:
+ * the fragment's page carries over whichever chapter it names, the
+ * fragment names the chapter of the page the reader is on, and a chapter
+ * switch changes no document — the viewer jumps to the chapter's first
+ * content page, unless the reader is on one of its pages already (a click
+ * on the page switched the editor) or the fragment already names a page
+ * of it (a link to a page of the contents).
+ *
  * Returns the `onCurrentPageChange` callback to hand to the viewer.
  */
 const RESTORE_WAIT_MS = 4000;
@@ -60,6 +77,7 @@ export function usePageHashSync(
   jumpToPage: (pageIndex: number) => void,
 ): (pageIndex: number) => void {
   const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
+  const bookVersion = useSandboxSelector((s) => s.bookVersion);
   const chapterIndex = useSandboxSelector((s) => s.chapters.findIndex((c) => c.id === activeChapterId));
   const chapterIndexRef = useRef(chapterIndex);
   chapterIndexRef.current = chapterIndex;
@@ -68,28 +86,37 @@ export function usePageHashSync(
   const layoutRef = useRef(layout);
   layoutRef.current = layout;
 
+  // The page last reported by the viewer (the one nearest its centre).
+  const lastPageRef = useRef(0);
+
   // Re-arm during render, before any effect of this commit can report a
-  // page for the outgoing document.
+  // page for the outgoing document. A whole-book document does not change
+  // with the chapter: the switch is handled below instead — unless the
+  // whole book was replaced (a preset loaded, a project opened), which is
+  // a new document whichever the scope.
   const pendingRef = useRef(true);
   // When the wait for a missing target page started (null: not waiting).
   const waitingSinceRef = useRef<number | null>(null);
-  const armedForRef = useRef(activeChapterId);
-  if (armedForRef.current !== activeChapterId) {
-    armedForRef.current = activeChapterId;
-    pendingRef.current = true;
-    waitingSinceRef.current = null;
+  const armedForRef = useRef({ bookVersion, activeChapterId });
+  if (armedForRef.current.activeChapterId !== activeChapterId || armedForRef.current.bookVersion !== bookVersion) {
+    const replaced = armedForRef.current.bookVersion !== bookVersion;
+    armedForRef.current = { bookVersion, activeChapterId };
+    if (!layoutRef.current.book || replaced) {
+      pendingRef.current = true;
+      waitingSinceRef.current = null;
+    }
   }
 
   useEffect(() => {
     if (!pendingRef.current || layout.pageCount <= 0) return;
     const hash = readViewHash();
     const chapter = chapterIndexRef.current;
-    const carried = hash.chapter === null || hash.chapter === chapter;
+    const carried = !!layout.book || hash.chapter === null || hash.chapter === chapter;
     const wanted = carried && hash.page !== null ? hash.page : null;
     const wantedIndex = wanted === null ? -1 : pageIndexOf(layout, wanted);
     let target: number;
     if (wanted === null || (wantedIndex < 0 && wanted < pageNumberAt(layout, 0))) {
-      target = layout.firstPage;
+      target = layout.book ? chapterFirstPage(layout, hash.chapter ?? chapter) : layout.firstPage;
     } else if (wantedIndex >= 0) {
       target = wantedIndex;
     } else {
@@ -110,7 +137,7 @@ export function usePageHashSync(
     }
     waitingSinceRef.current = null;
     jumpRef.current(target);
-    writeViewHash({ chapter, page: pageNumberAt(layout, target) });
+    writeViewHash({ chapter: chapterOfPage(layout, target, chapter), page: pageNumberAt(layout, target) });
     // Let the jump's own scroll report settle before the reader's position
     // becomes authoritative for the fragment. A timer, not an animation
     // frame: a background tab never runs frames, but must still restore.
@@ -120,14 +147,41 @@ export function usePageHashSync(
     return () => window.clearTimeout(id);
   }, [layout]);
 
+  // A chapter switch under a whole-book document: to the chapter's first
+  // content page, unless the reader is on one of its pages already or the
+  // fragment names a page of it (a contents row was clicked).
+  useEffect(() => {
+    const current = layoutRef.current;
+    const book = current.book;
+    if (!book || current.pageCount <= 0 || pendingRef.current) return;
+    const chapter = chapterIndexRef.current;
+    const hash = readViewHash();
+    if (hash.chapter === chapter && hash.page !== null) {
+      const index = pageIndexOf(current, hash.page);
+      if (index >= 0) {
+        jumpRef.current(index);
+        return;
+      }
+    }
+    const here = lastPageRef.current;
+    if (book.pageChapters[here] === chapter) {
+      writeViewHash({ chapter, page: pageNumberAt(current, here) });
+      return;
+    }
+    const first = chapterFirstPage(current, chapter);
+    jumpRef.current(first);
+    writeViewHash({ chapter, page: pageNumberAt(current, first) });
+  }, [activeChapterId]);
+
   // A fragment edited by hand (or a back/forward step) moves the viewer too
-  // when it names the active chapter; a different chapter is switched to by
-  // the chapter sync, and the pending restore then picks the page up.
-  // `history.replaceState` writes never fire this event.
+  // when it names the active chapter (or any chapter, under a whole-book
+  // document); a different chapter is switched to by the chapter sync, and
+  // the pending restore then picks the page up. `history.replaceState`
+  // writes never fire this event.
   useEffect(() => {
     const onHashChange = () => {
       const hash = readViewHash();
-      if (hash.chapter !== null && hash.chapter !== chapterIndexRef.current) return;
+      if (hash.chapter !== null && hash.chapter !== chapterIndexRef.current && !layoutRef.current.book) return;
       if (hash.page === null) return;
       const index = pageIndexOf(layoutRef.current, hash.page);
       if (index >= 0) jumpRef.current(index);
@@ -137,8 +191,23 @@ export function usePageHashSync(
   }, []);
 
   return useCallback((pageIndex: number) => {
+    lastPageRef.current = pageIndex;
     if (!pendingRef.current) {
-      writeViewHash({ chapter: chapterIndexRef.current, page: pageNumberAt(layoutRef.current, pageIndex) });
+      const current = layoutRef.current;
+      writeViewHash({ chapter: chapterOfPage(current, pageIndex, chapterIndexRef.current), page: pageNumberAt(current, pageIndex) });
     }
   }, []);
+}
+
+/** The chapter a page of a whole-book layout belongs to; `fallback` for
+ *  a chapter-only layout. */
+function chapterOfPage(layout: ViewerLayout, pageIndex: number, fallback: number): number {
+  return layout.book?.pageChapters[pageIndex] ?? fallback;
+}
+
+/** Where a chapter opens in a whole-book layout (its first content page),
+ *  or the layout's first page when it has none. */
+function chapterFirstPage(layout: ViewerLayout, chapter: number): number {
+  const first = layout.book?.chapterFirstPages[chapter] ?? -1;
+  return first >= 0 ? first : layout.firstPage;
 }

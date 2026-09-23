@@ -133,6 +133,7 @@ function isAppliedPresetSnapshot(data: unknown): data is AppliedPresetSnapshot {
   if (typeof data !== 'object' || data === null) return false;
   const d = data as Record<string, unknown>;
   return typeof d.presetId === 'string'
+    && (d.locale === undefined || typeof d.locale === 'string')
     && (d.fingerprint === null || typeof d.fingerprint === 'string')
     && typeof d.markdownHash === 'string'
     && typeof d.configHash === 'string'

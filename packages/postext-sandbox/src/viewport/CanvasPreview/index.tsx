@@ -1,17 +1,20 @@
 'use client';
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useDeferredValue, useMemo } from 'react';
-import { useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource, type EditorSelection } from '../../context/SandboxContext';
-import { toBookSelection } from '../../book/compose';
+import { useBookPlan, useSandboxChapterDocsRef, useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource, type EditorSelection } from '../../context/SandboxContext';
+import { composeBookMemo, toBookSelection } from '../../book/compose';
 import { chapterLayoutFromDoc, leadingBlankPageCount } from '../../book/pagination';
-import type { ComposedBook } from '../../book/types';
+import { stitchDocuments, type StitchedBook, type StitchedChapter } from '../../book/stitch';
+import type { ChapterLayout, ComposedBook } from '../../book/types';
 import { renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
-import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
-import { drawOverlay } from './overlay';
+import type { LayoutContinuation, NumeralStyle, VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
+import { clearOverlay, drawOverlay } from './overlay';
+import { findResourceLocation } from './geometry';
+import type { BookPageMap } from '../usePageHashSync';
 import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
-import { layoutCacheKey } from '../../book/layoutKeys';
+import { layoutCacheKey, stableStringify } from '../../book/layoutKeys';
 import { perfSpan, type PerfSpan } from '../../perf/marks';
 import {
   LOCALE_TO_HYPHENATION,
@@ -45,8 +48,9 @@ interface CanvasPreviewProps {
   fitMode: FitMode;
   onGeneratingChange?: (generating: boolean) => void;
   /** After every layout: the page count and the first page with content
-   *  (the ones before it are parity padding). */
-  onPageCountChange?: (count: number, firstContentPage: number, pageNumbers: readonly number[], firstPageRecto: boolean) => void;
+   *  (the ones before it are parity padding) — and, for the whole book,
+   *  which chapter every page belongs to. */
+  onPageCountChange?: (count: number, firstContentPage: number, pageNumbers: readonly number[], firstPageRecto: boolean, book?: BookPageMap) => void;
   onCurrentPageChange?: (index: number) => void;
 }
 
@@ -55,10 +59,26 @@ export interface CanvasPreviewHandle {
   jumpToPage: (pageIndex: number) => void;
 }
 
+/** One chapter's document as last built for the whole-book canvas, with
+ *  the key of everything it was built from (a hit spares the worker). */
+interface HeldChapterDoc {
+  key: string;
+  doc: VDTDocument;
+  source: ComposedBook;
+}
+
 /**
  * Canvas preview that renders the document using the postext layout engine.
  * Builds a VDT at the configured DPI (default 300), then lazily renders
  * only the pages visible in the scroll viewport via IntersectionObserver.
+ *
+ * The document is the active chapter (continued after the chapters before
+ * it) or, under `canvasScope: 'book'`, the whole book: every chapter laid
+ * out on its own, in order, each after the pages the ones before it came
+ * to, and the documents stitched into one (`book/stitch.ts`). A chapter
+ * whose inputs did not change is kept from the last build, so an edit
+ * re-lays out its chapter and the ones after it only when their first
+ * page moved.
  */
 export const CanvasPreview = forwardRef<CanvasPreviewHandle, CanvasPreviewProps>(
 function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCountChange, onCurrentPageChange }, ref) {
@@ -81,8 +101,35 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   dispatchRef.current = dispatch;
   const activePanelRef = useRef(activePanel);
   activePanelRef.current = activePanel;
-  const navigateRef = usePageNavigator();
+  const resourcesRef = useRef(resources);
+  resourcesRef.current = resources;
+  // Whole-book mode: the chapter of every page of the stitched document,
+  // and the book a page's offsets belong to (its chapter's).
+  const chapterOfPageRef = useRef<((pageIndex: number) => number) | null>(null);
+  const pageSourceRef = useRef<((pageIndex: number) => ComposedBook | null) | null>(null);
+  const navigateRef = usePageNavigator(chapterOfPageRef);
   const docRef = useRef<VDTDocument | null>(null);
+  const stitchedRef = useRef<StitchedBook | null>(null);
+  const heldDocsRef = useRef<Map<string, HeldChapterDoc>>(new Map());
+  const lastStitchedDocsRef = useRef<VDTDocument[]>([]);
+  // Pages whose overlay was last drawn with a selection (whole-book mode
+  // redraws the active chapter's pages only; the others are cleared once).
+  const drawnOverlaysRef = useRef<Set<number>>(new Set());
+  const chapterDocsRef = useSandboxChapterDocsRef();
+  const canvasScope = useSandboxSelector((s) => s.canvasScope);
+  const chapters = useSandboxSelector((s) => s.chapters);
+  const plan = useBookPlan();
+  const planRef = useRef(plan);
+  planRef.current = plan;
+  // What a whole-book build depends on besides text, config and resources,
+  // as a string: the plan is re-derived (new objects) on every layout
+  // record, and only its content should start a build.
+  const planKey = useMemo(
+    () => plan.chapters.map((p) => `${p.chapterId}|${p.paginated ? 1 : 0}|${p.continuationKey}|${p.outlineKey}|${p.continuation?.pageIndexOffset ?? ''}|${p.continuation?.pageNumbering?.startAt ?? ''}`).join('\n'),
+    [plan],
+  );
+  const bookSource = useMemo(() => (canvasScope === 'book' ? { chapters, planKey } : null), [canvasScope, chapters, planKey]);
+  const deferredBookSource = useDeferredValue(bookSource);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
   const overlayMapRef = useRef<Map<number, SVGSVGElement>>(new Map());
@@ -159,6 +206,16 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // toggle). Resize does NOT bump this.
   const [layoutKey, setLayoutKey] = useState(0);
   const [docVersion, setDocVersion] = useState(0);
+  // Incremented when the pixels of the current document change without
+  // its layout changing — resource images decoded after the pages were
+  // painted with placeholders. The LAYOUT effect then repaints the pages
+  // in view and marks the rest stale, exactly as for a new docVersion.
+  const [paintKey, setPaintKey] = useState(0);
+  const lastPaintedPaintKeyRef = useRef(0);
+  // The rebuildKey whose build last reached the pages: a whole-book build
+  // that keeps every chapter document (nothing it depends on changed) still
+  // owes a repaint when a rebuild-invalidating event triggered it.
+  const paintedRebuildKeyRef = useRef(0);
 
   // Stable (only touches refs and DOM), so effects can depend on it without
   // re-running every render.
@@ -341,8 +398,124 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     appliedRebuildKeyRef.current = rebuildKey;
 
     onGeneratingChangeRef.current?.(true);
-    const source = deferredSource.book;
     paintSpanRef.current?.end({ superseded: true });
+
+    if (deferredBookSource) {
+      // The whole book: every chapter after the pages the ones before it
+      // came to, kept from the last build when nothing it depends on
+      // changed, then stitched into one document.
+      const snapshotChapters = deferredBookSource.chapters;
+      const currentPlan = planRef.current;
+      const composition = composeBookMemo(snapshotChapters);
+      paintSpanRef.current = perfSpan('canvas.book→paint', { chapters: snapshotChapters.length, md: composition.markdown.length });
+      (async () => {
+        const held = heldDocsRef.current;
+        const next = new Map<string, HeldChapterDoc>();
+        const built: StitchedChapter[] = [];
+        const records: ChapterLayout[] = [];
+        let offset = 0;
+        let nextNumbering: { format: NumeralStyle; startAt: number } | null = null;
+        for (const chapter of snapshotChapters) {
+          const chapterPlan = currentPlan.byId[chapter.id];
+          // The plan lags behind a chapter just added: the next one starts
+          // this build over.
+          if (!chapterPlan) return;
+          const source = composeBookMemo(snapshotChapters, chapter.id);
+          const continuation: LayoutContinuation | undefined = chapterPlan.index === 0
+            ? undefined
+            : { ...chapterPlan.continuation, pageIndexOffset: offset, ...(nextNumbering ? { pageNumbering: nextNumbering } : {}) };
+          const keyInput = { markdown: source.markdown, metadata: source.metadata, config: deferredConfig, resources: deferredResources, continuation, outlineKey: chapterPlan.outlineKey };
+          // What the chapter was built from, whatever the records say: the
+          // counters and pages it actually continues.
+          const key = layoutCacheKey({ ...keyInput, continuationKey: `stitched:${stableStringify(continuation ?? null)}` });
+          const hit = held.get(chapter.id);
+          let doc: VDTDocument;
+          if (hit && hit.key === key) {
+            doc = hit.doc;
+          } else {
+            doc = await layoutWorker.build(
+              { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation, outline: chapterPlan.outline },
+              deferredConfig,
+              // Under the key the paginator and the PDF tab use, when the
+              // plan's page chain agrees with the actual one, so the
+              // worker's cache is shared.
+              { cacheKey: layoutCacheKey({ ...keyInput, continuationKey: chapterPlan.paginated ? chapterPlan.continuationKey : `stitched:${stableStringify(continuation ?? null)}` }) },
+            );
+            if (cancelled) return;
+          }
+          next.set(chapter.id, { key, doc, source });
+          built.push({ chapterId: chapter.id, doc });
+          // Its layout record — when the plan already starts it where the
+          // chapters before it actually end (the records before it are
+          // current); the others are recorded as the plan catches up.
+          if (chapterPlan.paginated && (chapterPlan.continuation?.pageIndexOffset ?? 0) === offset) {
+            const layout = chapterLayoutFromDoc(doc, chapterPlan, { markdown: chapter.markdown, config: rawDeferredConfig, resources: deferredResources });
+            if (layout) records.push(layout);
+          }
+          offset += doc.pages.length;
+          const last = doc.pages[doc.pages.length - 1];
+          if (last) nextNumbering = { format: last.pageNumberFormat, startAt: last.pageNumberValue + 1 };
+        }
+        if (cancelled) return;
+        heldDocsRef.current = next;
+        chapterDocsRef.current = new Map([...next].map(([id, h]) => [id, { doc: h.doc, source: h.source }]));
+        pageSourceRef.current = (pageIndex) => {
+          const id = stitchedRef.current?.pageChapterIds[pageIndex];
+          return id ? next.get(id)?.source ?? null : null;
+        };
+        const previous = lastStitchedDocsRef.current;
+        const same = previous.length === built.length && previous.every((d, i) => d === built[i]!.doc);
+        if (!same) {
+          const stitched = stitchDocuments(built);
+          if (!stitched) return;
+          lastStitchedDocsRef.current = built.map((b) => b.doc);
+          stitchedRef.current = stitched;
+          chapterOfPageRef.current = (pageIndex) => stitched.pageChapters[pageIndex] ?? -1;
+          lastBuiltChapterRef.current = null;
+          docRef.current = stitched.doc;
+          builtSourceRef.current = composition;
+          sharedDocRef.current = stitched.doc;
+          sharedDocSourceRef.current = composition;
+        }
+        for (const layout of records) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
+        if (same) {
+          // Every chapter kept: the pages are laid out as before, but a
+          // build a rebuildKey bump asked for (fonts landed after the first
+          // measurement) must still reach the bitmaps.
+          if (paintedRebuildKeyRef.current !== rebuildKey) {
+            paintedRebuildKeyRef.current = rebuildKey;
+            setPaintKey((k) => k + 1);
+            return;
+          }
+          paintSpanRef.current?.end({ unchanged: true });
+          paintSpanRef.current = null;
+          return;
+        }
+        const doc = docRef.current!;
+        paintedRebuildKeyRef.current = rebuildKey;
+        dispatch({ type: 'BUMP_DOC_VERSION' });
+        setDocVersion((v) => v + 1);
+        onPageCountChangeRef.current?.(
+          doc.pages.length,
+          leadingBlankPageCount(doc),
+          doc.pages.map((p) => p.pageNumberValue),
+          true,
+          { pageChapters: stitchedRef.current!.pageChapters, chapterFirstPages: stitchedRef.current!.chapterFirstPages },
+        );
+      })()
+        .catch((err: unknown) => {
+          if ((err as { name?: string } | null)?.name === 'AbortError') return;
+          console.error('[CanvasPreview] Layout error:', err);
+        })
+        .finally(() => {
+          if (!cancelled) onGeneratingChangeRef.current?.(false);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const source = deferredSource.book;
     const switching = lastBuiltChapterRef.current !== deferredSource.chapterId;
     const prevInputs = perfInputsRef.current;
     const changed = [
@@ -379,6 +552,11 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       .then((doc) => {
         if (cancelled) return;
         lastBuiltChapterRef.current = deferredSource.chapterId;
+        stitchedRef.current = null;
+        lastStitchedDocsRef.current = [];
+        chapterOfPageRef.current = null;
+        pageSourceRef.current = null;
+        chapterDocsRef.current = new Map();
         docRef.current = doc;
         builtSourceRef.current = source;
         sharedDocRef.current = doc;
@@ -407,7 +585,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     return () => {
       cancelled = true;
     };
-  }, [deferredSource, deferredResources, deferredConfig, rawDeferredConfig, rebuildKey, dispatch, sharedDocRef, sharedDocSourceRef, layoutWorker]);
+  }, [deferredSource, deferredBookSource, deferredResources, deferredConfig, rawDeferredConfig, rebuildKey, dispatch, sharedDocRef, sharedDocSourceRef, layoutWorker, chapterDocsRef]);
 
   // Single-ink diagram colour: when diagramStyle.singleInk is on, SVG resources
   // decode through a recolouring pass keyed on the resolved ink hex.
@@ -418,14 +596,18 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   }, [deferredConfig]);
 
   // Decode resource image payloads (bitmaps/SVGs) from IndexedDB and register
-  // them with the canvas backend, then force a repaint — mirrors the
-  // font-load → rebuildKey pattern above. The worker lays out from the resource
-  // metadata (intrinsic dims); the actual pixels are drawn on the main thread.
+  // them with the canvas backend, then repaint. The worker lays out from the
+  // resource metadata (intrinsic dims), so the layout is not at stake — only
+  // the pixels: pages painted before a decode landed show placeholders, and
+  // a rebuild would not reach them (a whole-book build keeps every chapter
+  // document unchanged and skips the paint). A decode still in flight when
+  // the resources change keeps registering: the images it lands are painted
+  // by the repaint of the call that supersedes it, or of the next build.
   useEffect(() => {
     let cancelled = false;
     ensureResourceImages(deferredResources, diagramInkHex)
       .then((changed) => {
-        if (!cancelled && changed) setRebuildKey((k) => k + 1);
+        if (!cancelled && changed) setPaintKey((k) => k + 1);
       })
       .catch(() => { /* leave placeholders */ });
     return () => {
@@ -490,9 +672,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
 
     if (structureSame) {
       applyDisplaySize(displayWidth, displayHeight);
-      // Only repaint bitmaps when the doc itself changed. CSS scaling
-      // handles pure size changes (window/sidebar resize) at zero bitmap cost.
-      if (lastPaintedDocVersionRef.current !== docVersion) {
+      // Only repaint bitmaps when the doc itself changed, or when its pixels
+      // did (images decoded after the paint). CSS scaling handles pure size
+      // changes (window/sidebar resize) at zero bitmap cost.
+      if (lastPaintedDocVersionRef.current !== docVersion || lastPaintedPaintKeyRef.current !== paintKey) {
         // The pages in view repaint now; the others keep their old pixels
         // and repaint on their next entry (see the observer below).
         let painted = 0;
@@ -510,6 +693,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
           }
         }
         lastPaintedDocVersionRef.current = docVersion;
+        lastPaintedPaintKeyRef.current = paintKey;
         paintSpanRef.current?.end({ pages: doc.pages.length, painted, rebuilt: false, bitmapScale: Math.round(bitmapScaleRef.current * 100) / 100 });
         paintSpanRef.current = null;
       }
@@ -544,7 +728,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       activePanelRef,
       builtSourceRef,
       navigateRef,
+      resourcesRef,
+      pageSourceRef,
     );
+    drawnOverlaysRef.current = new Set();
 
     // Pre-render the pages that were in view in the previous document so
     // the swap from old DOM to new DOM shows already-painted pixels. Pages
@@ -559,6 +746,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     }
     renderedPagesRef.current = renderedSet;
     lastPaintedDocVersionRef.current = docVersion;
+    lastPaintedPaintKeyRef.current = paintKey;
     paintSpanRef.current?.end({ pages: doc.pages.length, painted: renderedSet.size, rebuilt: true, bitmapScale: Math.round(bitmapScaleRef.current * 100) / 100 });
     paintSpanRef.current = null;
 
@@ -621,7 +809,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     observerRef.current = observer;
     for (const slot of allSlots) observer.observe(slot);
     lastGeomRef.current = geom;
-  }, [navigateRef, docVersion, layoutKey, zoom, viewMode, fitMode, deferredConfig, applyDisplaySize]);
+  }, [navigateRef, docVersion, paintKey, layoutKey, zoom, viewMode, fitMode, deferredConfig, applyDisplaySize]);
 
   // Draw cursor/selection overlays whenever selection or debug config changes.
   // The viewport follows the caret only when the SELECTION moves (the reader
@@ -633,18 +821,42 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     const doc = docRef.current;
     if (!doc) return;
     const debug = resolveDebugConfig(config.debug);
-    // The editor selection is chapter-local; the document is the composed book.
-    const source = builtSourceRef.current;
-    const mapped = source ? toBookSelection(source, activeChapterId, editorSelection) : editorSelection;
+    // The editor selection is chapter-local; the document is the composed
+    // book — or, stitched from every chapter, a document whose offsets are
+    // chapter offsets: the selection then maps through the chapter's own
+    // book and shows on the chapter's pages alone.
+    const stitched = stitchedRef.current;
+    const chapterDoc = stitched ? chapterDocsRef.current.get(activeChapterId) : undefined;
+    const source = stitched ? chapterDoc?.source ?? null : builtSourceRef.current;
+    const mapped = source ? toBookSelection(source, activeChapterId, editorSelection) : stitched ? null : editorSelection;
     const selection: EditorSelection = mapped ?? NO_SELECTION;
     const focused = editorFocused && mapped !== null;
-    const caretBlockIdx = findCaretBlockIdx(doc, selection.head);
+    let chapterPages: { from: number; to: number } | undefined;
+    if (stitched) {
+      let from = -1;
+      let to = -1;
+      stitched.pageChapterIds.forEach((id, i) => {
+        if (id !== activeChapterId) return;
+        if (from < 0) from = i;
+        to = i + 1;
+      });
+      chapterPages = from >= 0 ? { from, to } : { from: 0, to: 0 };
+    }
+    const caretBlockIdx = findCaretBlockIdx(doc, selection.head, chapterPages);
+    // A resource editor's selection paints on the page holding the resource.
+    const resourcePage = stitched && resourceSelection ? findResourceLocation(doc, resourceSelection.resourceId)?.pageIndex ?? -1 : -1;
 
     let activeCursorRect: SVGRectElement | null = null;
+    const drawn = drawnOverlaysRef.current;
     for (const [pageIndex, overlay] of overlayMapRef.current) {
       const page = doc.pages[pageIndex];
       if (!page) continue;
+      if (chapterPages && (pageIndex < chapterPages.from || pageIndex >= chapterPages.to) && pageIndex !== resourcePage) {
+        if (drawn.delete(pageIndex)) clearOverlay(overlay);
+        continue;
+      }
       const rect = drawOverlay(overlay, doc, pageIndex, selection, debug, focused, caretBlockIdx, resourceSelection);
+      drawn.add(pageIndex);
       if (rect) activeCursorRect = rect;
     }
 
@@ -677,7 +889,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
         container.scrollLeft += cr.right - cn.right + padding;
       }
     }
-  }, [editorSelection, activeChapterId, config.debug, editorFocused, resourceSelection, docVersion]);
+  }, [editorSelection, activeChapterId, config.debug, editorFocused, resourceSelection, docVersion, chapterDocsRef]);
 
   // Imperative API: regenerate by bumping rebuildKey; jumpToPage by scrolling
   // the slot element with the matching data-page-index into view.

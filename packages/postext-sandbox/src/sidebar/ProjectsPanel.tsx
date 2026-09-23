@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, FilePlus, Files, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, FilePlus, Files, ImagePlus, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import {
   useSandboxLabels,
@@ -10,6 +10,7 @@ import {
 } from '../context/SandboxContext';
 import { Button, Collapsible, ConfirmPopover, EmptyState, IconButton, ListRow, Menu, MenuItem, MenuSeparator, PanelBody, PanelHeader, RowTag } from '../ui';
 import { isPresetHideable, partitionPresets } from '../presets/hidden';
+import { useBlobObjectUrl } from '../panels/resources/ResourcePreview';
 import type { PresetSummary } from '../presets';
 import { ChapterList } from './chapters/ChapterList';
 
@@ -58,7 +59,7 @@ function GroupTitle({ children, actions }: { children: ReactNode; actions?: Reac
 
 export function ProjectsPanel() {
   const labels = useSandboxLabels();
-  const { presets, activePresetId, status, error, untouched, stale, updatedAt, hiddenIds, load, reload, hide, unhide } = useSandboxPresets();
+  const { presets, activePresetId, status, error, untouched, stale, updatedAt, hiddenIds, activeLocale, load, reload, hide, unhide } = useSandboxPresets();
   const projectsValue = useSandboxProjects();
   const {
     projects,
@@ -74,6 +75,7 @@ export function ProjectsPanel() {
     remove,
     importBundle,
     exportProject,
+    setThumbnail,
   } = projectsValue;
   const importRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -103,22 +105,30 @@ export function ProjectsPanel() {
     }
   };
 
-  const presetRow = (preset: PresetSummary, hidden: boolean) => (
-    <PresetRow
-      key={preset.id}
-      preset={preset}
-      isActive={inPresetMode && preset.id === activePresetId}
-      disabled={busy || !preset.available}
-      confirmLoad={leavingLosesWork}
-      untouched={untouched}
-      onLoad={() => { void load(preset.id); }}
-      onReload={reloadAll}
-      onDuplicate={() => { void duplicate({ kind: 'preset', id: preset.id }); }}
-      onExport={() => { void exportProject({ kind: 'preset', id: preset.id }); }}
-      onHide={!hidden && isPresetHideable(preset.id) ? () => hide(preset.id) : undefined}
-      onUnhide={hidden ? () => unhide(preset.id) : undefined}
-    />
-  );
+  const presetRow = (preset: PresetSummary, hidden: boolean) => {
+    const isActive = inPresetMode && preset.id === activePresetId;
+    // The active preset is cloned / exported in the language it is shown
+    // in; any other one in the viewer's.
+    const locale = isActive && activeLocale ? activeLocale : undefined;
+    return (
+      <PresetRow
+        key={preset.id}
+        preset={preset}
+        isActive={isActive}
+        activeLocale={isActive ? activeLocale : null}
+        disabled={busy || !preset.available}
+        confirmLoad={leavingLosesWork}
+        untouched={untouched}
+        onLoad={() => { void load(preset.id); }}
+        onLoadLocale={(l) => { void load(preset.id, l); }}
+        onReload={reloadAll}
+        onDuplicate={() => { void duplicate({ kind: 'preset', id: preset.id, locale }); }}
+        onExport={() => { void exportProject({ kind: 'preset', id: preset.id, locale }); }}
+        onHide={!hidden && isPresetHideable(preset.id) ? () => hide(preset.id) : undefined}
+        onUnhide={hidden ? () => unhide(preset.id) : undefined}
+      />
+    );
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -138,7 +148,6 @@ export function ProjectsPanel() {
               <MenuSeparator />
               <MenuItem icon={<Upload size={13} />} onClick={() => importRef.current?.click()}>{labels.projectImportShort}</MenuItem>
             </Menu>
-            <IconButton label={labels.projectExportActive} icon={<Download size={14} />} disabled={busy} onClick={() => { void exportProject(); }} />
             <input
               ref={importRef}
               type="file"
@@ -225,6 +234,7 @@ export function ProjectsPanel() {
                 onRename={(name, description) => { void rename(project.id, name, description); }}
                 onDuplicate={() => { void duplicate({ kind: 'project', id: project.id }); }}
                 onExport={() => { void exportProject({ kind: 'project', id: project.id }); }}
+                onSetThumbnail={(file) => { void setThumbnail(project.id, file); }}
                 onDelete={() => { void remove(project.id); }}
               />
             ))}
@@ -265,6 +275,8 @@ interface ProjectRowProps {
   onRename: (name: string, description: string) => void;
   onDuplicate: () => void;
   onExport: () => void;
+  /** Set the cover picture from a file, or drop it with null. */
+  onSetThumbnail: (file: File | null) => void;
   onDelete: () => void;
 }
 
@@ -277,6 +289,7 @@ function ProjectRow({
   onRename,
   onDuplicate,
   onExport,
+  onSetThumbnail,
   onDelete,
 }: ProjectRowProps) {
   const labels = useSandboxLabels();
@@ -285,6 +298,8 @@ function ProjectRow({
   const [descriptionDraft, setDescriptionDraft] = useState(project.description ?? '');
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const coverUrl = useBlobObjectUrl(project.thumbnail?.fileId);
   // Set once the edit is committed or cancelled, so the blur of the field
   // being unmounted does not commit a second time.
   const settledRef = useRef(false);
@@ -358,6 +373,72 @@ function ProjectRow({
     </>
   );
 
+  // The cover picture, as in a showcase preset's row: the check mark of the
+  // open project sits over it.
+  const coverImage = coverUrl ? <img src={coverUrl} alt="" className="h-full w-full object-cover" loading="lazy" /> : null;
+  const leading = coverImage ? (
+    <span
+      className="relative flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded-sm border"
+      style={{ borderColor: 'var(--rule)', background: 'var(--surface)' }}
+    >
+      {coverImage}
+      {isActive && (
+        <span className="absolute inset-0 flex items-center justify-center" style={{ color: 'var(--gilt)', background: 'color-mix(in srgb, var(--background) 60%, transparent)' }}>
+          <Check size={13} aria-hidden="true" />
+        </span>
+      )}
+    </span>
+  ) : (
+    <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--gilt)' }}>
+      {isActive && <Check size={13} aria-hidden="true" />}
+    </span>
+  );
+  // While the row is being edited the cover becomes the control that sets
+  // it, in the handle slot — the leading cell is hidden from assistive
+  // technology, and buttons do not belong there. A click must not blur the
+  // fields: the row would commit and unmount these controls before it lands.
+  const keepFocus = (e: React.MouseEvent) => { e.preventDefault(); };
+  const coverEditor = (
+    <span className="flex items-center gap-0.5">
+      <button
+        type="button"
+        aria-label={labels.projectThumbnailChange}
+        title={labels.projectThumbnailChange}
+        onMouseDown={keepFocus}
+        onClick={() => coverInputRef.current?.click()}
+        className="flex h-12 w-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm border bg-transparent p-0 text-(--slate) hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)"
+        style={{ borderColor: 'var(--rule)' }}
+      >
+        {coverImage ?? <ImagePlus size={14} aria-hidden="true" />}
+      </button>
+      {project.thumbnail && (
+        <IconButton
+          size={18}
+          label={labels.projectThumbnailRemove}
+          icon={<X size={11} />}
+          onMouseDown={keepFocus}
+          onClick={() => onSetThumbnail(null)}
+        />
+      )}
+    </span>
+  );
+  // Always mounted: the file dialog takes the focus out of the row, and a
+  // picker that unmounted with the edit would never report its file.
+  const coverInput = (
+    <input
+      ref={coverInputRef}
+      type="file"
+      accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+      className="hidden"
+      aria-hidden="true"
+      onChange={(e) => {
+        const file = e.target.files?.[0] ?? null;
+        e.target.value = '';
+        if (file) onSetThumbnail(file);
+      }}
+    />
+  );
+
   const row = (open?: () => void) => (
     <ListRow
       selected={isActive}
@@ -366,23 +447,20 @@ function ProjectRow({
       onSelect={editing || isActive ? undefined : open}
       onDoubleClick={isActive && !editing ? startRename : undefined}
       ariaLabel={isActive ? `${project.name} (${labels.presetActive})` : `${labels.projectActivate}: ${project.name}`}
-      leading={
-        <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--gilt)' }}>
-          {isActive && <Check size={13} aria-hidden="true" />}
-        </span>
-      }
+      handle={editing ? coverEditor : undefined}
+      leading={editing ? undefined : leading}
       title={title}
       subtitle={subtitle}
       tags={tags}
       alignTop={editing || !!project.description}
       actions={
         <>
-          <IconButton label={labels.projectRename} icon={<Pencil size={13} />} disabled={disabled || editing} onClick={startRename} />
-          <IconButton label={labels.projectDuplicate} icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate} />
-          <IconButton label={labels.projectExport} icon={<Download size={13} />} disabled={disabled} onClick={onExport} />
+          <IconButton size={18} label={labels.projectRename} icon={<Pencil size={13} />} disabled={disabled || editing} onClick={startRename} />
+          <IconButton size={18} label={labels.projectDuplicate} icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate} />
+          <IconButton size={18} label={labels.projectExport} icon={<Download size={13} />} disabled={disabled} onClick={onExport} />
           <ConfirmPopover message={labels.projectDeleteConfirm.replace('__name__', project.name)} onConfirm={onDelete}>
             {({ open: openConfirm }) => (
-              <IconButton label={labels.projectDelete} icon={<Trash2 size={13} />} disabled={disabled} onClick={openConfirm} />
+              <IconButton size={18} label={labels.projectDelete} icon={<Trash2 size={13} />} disabled={disabled} onClick={openConfirm} />
             )}
           </ConfirmPopover>
         </>
@@ -393,6 +471,7 @@ function ProjectRow({
   if (isActive) {
     return (
       <li className="mb-1">
+        {coverInput}
         <ActiveCard row={row()}>
           <ChapterList title={labels.chapters} />
         </ActiveCard>
@@ -401,6 +480,7 @@ function ProjectRow({
   }
   return (
     <li className="mb-0.5">
+      {coverInput}
       {disabled ? row() : (
         <MaybeConfirm confirm={confirmSwitch} message={labels.projectSwitchConfirm.replace('__name__', project.name)} onConfirm={onActivate}>
           {(open) => row(open)}
@@ -410,14 +490,24 @@ function ProjectRow({
   );
 }
 
+/** Same language, ignoring region and case (`es-ES` is `es`). */
+function sameLanguage(a: string, b: string): boolean {
+  const base = (l: string) => l.toLowerCase().split(/[-_]/)[0]!;
+  return base(a) === base(b);
+}
+
 interface PresetRowProps {
   preset: PresetSummary;
   isActive: boolean;
+  /** The content locale the active preset is loaded in; null otherwise. */
+  activeLocale: string | null;
   disabled: boolean;
   /** Ask before loading: the active preset has unsaved edits. */
   confirmLoad: boolean;
   untouched: boolean;
   onLoad: () => void;
+  /** Load (or reload) the preset in one of its locales. */
+  onLoadLocale: (locale: string) => void;
   onReload: () => void;
   onDuplicate: () => void;
   onExport: () => void;
@@ -428,10 +518,12 @@ interface PresetRowProps {
 function PresetRow({
   preset,
   isActive,
+  activeLocale,
   disabled,
   confirmLoad,
   untouched,
   onLoad,
+  onLoadLocale,
   onReload,
   onDuplicate,
   onExport,
@@ -442,13 +534,37 @@ function PresetRow({
   const confirmMessage = labels.presetLoadConfirm.replace('__name__', preset.name);
 
   // A bilingual bundle lists every locale it carries; the primary one
-  // otherwise.
+  // otherwise. With more than one, each tag loads the preset in that
+  // language — the active one is marked, the others reload (asking first
+  // when there are edits to lose).
   const locales = preset.locales && preset.locales.length > 0
     ? preset.locales
     : preset.locale ? [preset.locale] : [];
+  const localeTag = (l: string) => {
+    if (locales.length < 2) return <RowTag key={l}>{l}</RowTag>;
+    const code = l.toUpperCase();
+    const current = isActive && activeLocale !== null && sameLanguage(activeLocale, l);
+    if (current || disabled) {
+      return (
+        <RowTag key={l} accent={current} label={(current ? labels.presetLocaleActive : labels.presetLocaleLoad).replace('__locale__', code)}>
+          {l}
+        </RowTag>
+      );
+    }
+    const confirm = isActive ? !untouched : confirmLoad;
+    return (
+      <MaybeConfirm key={l} confirm={confirm} message={isActive ? labels.presetReloadConfirm : confirmMessage} onConfirm={() => onLoadLocale(l)}>
+        {(open) => (
+          <RowTag onClick={open} pressed={false} label={labels.presetLocaleLoad.replace('__locale__', code)}>
+            {l}
+          </RowTag>
+        )}
+      </MaybeConfirm>
+    );
+  };
   const tags = (
     <>
-      {locales.map((l) => <RowTag key={l}>{l}</RowTag>)}
+      {locales.map(localeTag)}
       {preset.license && <RowTag>{preset.license}</RowTag>}
       {preset.source === 'private' && <RowTag>{labels.presetPrivate}</RowTag>}
       {preset.default && <RowTag>{labels.presetDefault}</RowTag>}
@@ -502,14 +618,14 @@ function PresetRow({
           {isActive && preset.available && (
             <MaybeConfirm confirm={!untouched} message={labels.presetReloadConfirm} onConfirm={onReload}>
               {(openReload) => (
-                <IconButton label={labels.presetReloadActive} icon={<RotateCcw size={13} />} disabled={disabled} onClick={openReload} />
+                <IconButton size={18} label={labels.presetReloadActive} icon={<RotateCcw size={13} />} disabled={disabled} onClick={openReload} />
               )}
             </MaybeConfirm>
           )}
-          <IconButton label={labels.presetDuplicate} icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate} />
-          <IconButton label={labels.presetExport} icon={<Download size={13} />} disabled={disabled} onClick={onExport} />
-          {onHide && <IconButton label={labels.presetHide} icon={<EyeOff size={13} />} onClick={onHide} />}
-          {onUnhide && <IconButton label={labels.presetUnhide} icon={<Eye size={13} />} onClick={onUnhide} />}
+          <IconButton size={18} label={labels.presetDuplicate} icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate} />
+          <IconButton size={18} label={labels.presetExport} icon={<Download size={13} />} disabled={disabled} onClick={onExport} />
+          {onHide && <IconButton size={18} label={labels.presetHide} icon={<EyeOff size={13} />} onClick={onHide} />}
+          {onUnhide && <IconButton size={18} label={labels.presetUnhide} icon={<Eye size={13} />} onClick={onUnhide} />}
         </>
       }
     />
