@@ -710,6 +710,14 @@ function CalloutStyleCard({
         isDefault={unset('marginBottom')}
         onReset={() => onResetField('marginBottom')}
       />
+      <ToggleSwitch
+        label={labels.calloutStyleSnapToGrid}
+        checked={resolved.snapToGrid}
+        onChange={(v) => onChange({ snapToGrid: v })}
+        tooltip={labels.calloutStyleSnapToGridTooltip}
+        isDefault={unset('snapToGrid')}
+        onReset={() => onResetField('snapToGrid')}
+      />
       <DimensionInput
         label={labels.calloutStyleColumnGap}
         value={resolved.columnGap}

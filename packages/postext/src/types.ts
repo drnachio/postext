@@ -1178,8 +1178,18 @@ export interface CalloutStyleConfig {
   /** Space above the box. Default `0.75em`. */
   marginTop?: Dimension;
   /** Minimum space below the box; the flow snaps back to the baseline grid
-   *  after it. Default `0.75em`. */
+   *  after it (exact space with `snapToGrid: false`). Default `0.75em`. */
   marginBottom?: Dimension;
+  /** When `true` (default) the flow after an in-flow box snaps back to the
+   *  baseline grid, so the space under it is `marginBottom` rounded up to
+   *  whole grid lines. When `false` the box keeps its exact `marginBottom`
+   *  (collapsing with the next block's top margin, so two such boxes sit
+   *  exactly `max(marginBottom, marginTop)` apart) and the text after it
+   *  may sit off the grid until the next snap point (a snapped heading, a
+   *  list tail) — like `headings.snapToGrid: false`. Page-span boxes in a
+   *  multi-column layout, floated, fixed and side boxes keep the grid:
+   *  column bands and float zones are laid out on it. */
+  snapToGrid?: boolean;
   /** When `true` (default) the box never splits: a callout that does not
    *  fit the remaining space moves whole to the next column or page. When
    *  `false` it may break between child blocks or between the lines of a
@@ -1286,6 +1296,7 @@ export interface ResolvedCalloutStyleConfig {
   };
   marginTop: Dimension;
   marginBottom: Dimension;
+  snapToGrid: boolean;
   keepTogether: boolean;
   splitMinLines: number;
 }

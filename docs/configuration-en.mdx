@@ -2862,7 +2862,13 @@ The glass stays hot for an hour after the flame is out.
       <td><code>marginTop</code> / <code>marginBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code> / <code>0.75em</code></td>
-      <td>Space above the box (collapses with the previous block's margin) and minimum space below it.</td>
+      <td>Space above the box (collapses with the previous block's margin) and minimum space below it (the exact space with <code>snapToGrid: false</code>).</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When <code>true</code> the flow after the box snaps back to the baseline grid, so the space under it is <code>marginBottom</code> rounded up to whole grid lines. When <code>false</code> the box keeps its exact <code>marginBottom</code>, which collapses with the next block's top margin — two consecutive boxes of such a style sit exactly <code>max(marginBottom, marginTop)</code> apart — and the text after it may sit off the grid until the next snap point (a heading, the end of a list), as after a heading with <code>headings.snapToGrid: false</code>. Meant for documents made of stacked boxes (worksheets, forms). It applies to boxes in the flow; page-span boxes in a multi-column layout, floated, fixed and side boxes keep the grid, since column bands and float zones are laid out on it. The column-balancing levers are unchanged: a box closing a column is still pushed down to the column's last grid slot.</td>
     </tr>
     <tr>
       <td><code>keepTogether</code></td>
@@ -2881,7 +2887,7 @@ The glass stays hot for an hour after the flame is out.
 
 ### The `:::callout` container
 
-A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. The fence accepts four attributes — `type` (the style id), `title` (overrides the style's title), `span` and `placement` (override the style's values) — and the content in between is laid out inside the box: an optional title, then the paragraphs, lists, blockquotes, formulas or resource embeds, each typeset with the style's `body` / `lists` typography (headings keep their usual styles). Margins between children collapse as in the running text; the interior leaves the baseline grid, and the flow snaps back onto it after the box with at least `marginBottom` below (the grid wins; the margin is a minimum — the same convention resources follow). A heading immediately before a callout keeps with it.
+A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. The fence accepts four attributes — `type` (the style id), `title` (overrides the style's title), `span` and `placement` (override the style's values) — and the content in between is laid out inside the box: an optional title, then the paragraphs, lists, blockquotes, formulas or resource embeds, each typeset with the style's `body` / `lists` typography (headings keep their usual styles). Margins between children collapse as in the running text; the interior leaves the baseline grid, and the flow snaps back onto it after the box with at least `marginBottom` below (the grid wins; the margin is a minimum — the same convention resources follow). A style with `snapToGrid: false` keeps the exact `marginBottom` instead, and the text after the box stays off the grid until the next heading or list end. A heading immediately before a callout keeps with it.
 
 Limits in this version:
 

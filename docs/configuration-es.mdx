@@ -2862,7 +2862,13 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>marginTop</code> / <code>marginBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code> / <code>0.75em</code></td>
-      <td>Espacio sobre la caja (se funde con el margen del bloque anterior) y espacio mínimo bajo ella.</td>
+      <td>Espacio sobre la caja (se funde con el margen del bloque anterior) y espacio mínimo bajo ella (el espacio exacto con <code>snapToGrid: false</code>).</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Con <code>true</code> el flujo vuelve a la rejilla base tras la caja, de modo que el espacio bajo ella es <code>marginBottom</code> redondeado hacia arriba a líneas enteras de la rejilla. Con <code>false</code> la caja conserva su <code>marginBottom</code> exacto, que se funde con el margen superior del bloque siguiente — dos cajas consecutivas de ese estilo quedan exactamente a <code>max(marginBottom, marginTop)</code> — y el texto que la sigue puede quedar fuera de la rejilla hasta el siguiente punto de ajuste (un encabezado, el final de una lista), como tras un encabezado con <code>headings.snapToGrid: false</code>. Pensado para documentos hechos de cajas apiladas (fichas, formularios). Se aplica a las cajas del flujo; las cajas a ancho de página en una maquetación de varias columnas, las flotantes, las fijas y las laterales conservan la rejilla, porque las bandas de columnas y las zonas de flotantes se disponen sobre ella. Las palancas de equilibrado de columnas no cambian: una caja que cierra una columna sigue bajando hasta la última línea de la rejilla de esa columna.</td>
     </tr>
     <tr>
       <td><code>keepTogether</code></td>
@@ -2881,7 +2887,7 @@ El cristal sigue caliente una hora después de apagar la llama.
 
 ### El contenedor `:::callout`
 
-Una línea `:::callout{type="<id>"}` abre la caja y una línea `:::` a solas la cierra. La valla admite cuatro atributos — `type` (el id del estilo), `title` (sobrescribe el título del estilo), `span` y `placement` (sobrescriben los valores del estilo) — y el contenido intermedio se compone dentro de la caja: un título opcional y después los párrafos, listas, citas, fórmulas o recursos incrustados, cada uno con la tipografía `body` / `lists` del estilo (los encabezados conservan sus estilos habituales). Los márgenes entre hijos se funden como en el texto corrido; el interior abandona la rejilla base y el flujo vuelve a ella tras la caja garantizando al menos `marginBottom` por debajo (la rejilla manda; el margen es un mínimo — la misma convención que siguen los recursos). Un encabezado inmediatamente anterior a un aviso se mantiene unido a él.
+Una línea `:::callout{type="<id>"}` abre la caja y una línea `:::` a solas la cierra. La valla admite cuatro atributos — `type` (el id del estilo), `title` (sobrescribe el título del estilo), `span` y `placement` (sobrescriben los valores del estilo) — y el contenido intermedio se compone dentro de la caja: un título opcional y después los párrafos, listas, citas, fórmulas o recursos incrustados, cada uno con la tipografía `body` / `lists` del estilo (los encabezados conservan sus estilos habituales). Los márgenes entre hijos se funden como en el texto corrido; el interior abandona la rejilla base y el flujo vuelve a ella tras la caja garantizando al menos `marginBottom` por debajo (la rejilla manda; el margen es un mínimo — la misma convención que siguen los recursos). Un estilo con `snapToGrid: false` conserva en cambio el `marginBottom` exacto, y el texto tras la caja queda fuera de la rejilla hasta el siguiente encabezado o final de lista. Un encabezado inmediatamente anterior a un aviso se mantiene unido a él.
 
 Límites de esta versión:
 

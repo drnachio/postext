@@ -1143,6 +1143,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     calloutStyleListsBulletWeight: t("calloutStyleListsBulletWeight"),
     calloutStyleMarginTopTooltip: t("calloutStyleMarginTopTooltip"),
     calloutStyleMarginBottomTooltip: t("calloutStyleMarginBottomTooltip"),
+    calloutStyleSnapToGrid: t("calloutStyleSnapToGrid"),
+    calloutStyleSnapToGridTooltip: t("calloutStyleSnapToGridTooltip"),
     calloutStyleColumnGap: t("calloutStyleColumnGap"),
     calloutStyleColumnGapTooltip: t("calloutStyleColumnGapTooltip"),
     diagramStyleSection: t("diagramStyleSection"),

@@ -585,6 +585,8 @@
     "calloutStyleListsBulletWeight": "Peso de la viñeta",
     "calloutStyleMarginTopTooltip": "Espacio sobre la caja",
     "calloutStyleMarginBottomTooltip": "Espacio mínimo bajo la caja; el texto vuelve a la rejilla de línea base tras ella",
+    "calloutStyleSnapToGrid": "Ajustar a la rejilla",
+    "calloutStyleSnapToGridTooltip": "Activado: el texto tras la caja vuelve a la rejilla de línea base y el espacio inferior se redondea a líneas enteras. Desactivado: la caja conserva su margen inferior exacto (las cajas apiladas quedan a la distancia exacta) y el texto que la sigue puede quedar fuera de la rejilla hasta el siguiente encabezado o final de lista",
     "calloutStyleColumnGap": "Espacio entre columnas",
     "calloutStyleColumnGapTooltip": "Espacio entre las columnas de un grupo :::columns dentro de la caja",
     "diagramStyleSection": "Diagramas",

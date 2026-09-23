@@ -1390,6 +1390,8 @@
     "calloutStyleListsBulletWeight": "Bullet weight",
     "calloutStyleMarginTopTooltip": "Space above the box",
     "calloutStyleMarginBottomTooltip": "Minimum space below the box; the text snaps back to the baseline grid after it",
+    "calloutStyleSnapToGrid": "Snap to grid",
+    "calloutStyleSnapToGridTooltip": "On: the text after the box snaps back to the baseline grid, rounding the space below up to whole grid lines. Off: the box keeps its exact bottom margin (stacked boxes sit exactly apart) and the text after it may sit off the grid until the next heading or list end",
     "calloutStyleColumnGap": "Column gap",
     "calloutStyleColumnGapTooltip": "Gap between the columns of a :::columns group inside the box",
     "diagramStyleSection": "Diagrams",

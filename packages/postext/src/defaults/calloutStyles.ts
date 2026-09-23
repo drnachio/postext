@@ -91,6 +91,7 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
   },
   marginTop: EM(0.75),
   marginBottom: EM(0.75),
+  snapToGrid: true,
   keepTogether: true,
   splitMinLines: 2,
 };
@@ -231,6 +232,7 @@ function resolveCalloutStyleConfig(
     },
     marginTop: partial.marginTop ?? d.marginTop,
     marginBottom: partial.marginBottom ?? d.marginBottom,
+    snapToGrid: partial.snapToGrid ?? d.snapToGrid,
     keepTogether: partial.keepTogether ?? d.keepTogether,
     splitMinLines: Number.isInteger(partial.splitMinLines) && partial.splitMinLines! >= 1
       ? partial.splitMinLines!
@@ -402,6 +404,7 @@ export function stripCalloutStylesDefaults(
     if (s.columnGap !== undefined && !dimensionsEqual(s.columnGap, d.columnGap)) r.columnGap = s.columnGap;
     if (s.marginTop !== undefined && !dimensionsEqual(s.marginTop, d.marginTop)) r.marginTop = s.marginTop;
     if (s.marginBottom !== undefined && !dimensionsEqual(s.marginBottom, d.marginBottom)) r.marginBottom = s.marginBottom;
+    if (s.snapToGrid !== undefined && s.snapToGrid !== d.snapToGrid) r.snapToGrid = s.snapToGrid;
     if (s.keepTogether !== undefined && s.keepTogether !== d.keepTogether) r.keepTogether = s.keepTogether;
     if (s.splitMinLines !== undefined && s.splitMinLines !== d.splitMinLines) r.splitMinLines = s.splitMinLines;
     return r;

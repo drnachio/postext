@@ -1274,6 +1274,8 @@ export interface SandboxLabels {
   calloutStyleListsBulletWeight: string;
   calloutStyleMarginTopTooltip: string;
   calloutStyleMarginBottomTooltip: string;
+  calloutStyleSnapToGrid: string;
+  calloutStyleSnapToGridTooltip: string;
   calloutStyleColumnGap: string;
   calloutStyleColumnGapTooltip: string;
   // --- Diagram styling section ---

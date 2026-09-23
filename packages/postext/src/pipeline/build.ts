@@ -2644,7 +2644,8 @@ export function buildDocumentPass(
    * Place a `:::callout` inline at the current column width as one atomic
    * unit: the frame block followed by its children in the same column. The
    * box's `marginTop` collapses with the pending spacing; `marginBottom` is
-   * baked into the post-box grid snap. A box that does not fit moves to the
+   * baked into the post-box grid snap (or, with `snapToGrid: false`, left
+   * exact as pending spacing). A box that does not fit moves to the
    * next column/page (like a resource), pulling a run of trailing headings
    * along (keep-with-next); a box taller than an empty column is placed
    * anyway and overflows (the sandbox warns). A splittable box
@@ -2792,13 +2793,17 @@ export function buildDocumentPass(
       commitCallout(placed, startIdx, plan, curCol, part > 0 || fragment ? fragmentRange(L, from, to) : undefined);
       // Snap the flow after the box to the baseline grid, baking in at least
       // `marginBottom` (grid wins, margin is a minimum — the resource rule).
-      {
+      // An off-grid style (`snapToGrid: false`) keeps its exact margin
+      // instead, as pending spacing that collapses with the next block's
+      // top margin: the flow stays off the grid until the next snap point
+      // (a snapped heading, a list tail), like after an unsnapped heading.
+      if (style.snapToGrid) {
         const usedHeight = curCol.bbox.height - curCol.availableHeight;
         const naturalBottom = usedHeight + placed.marginBottomPx;
         const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
         curCol.availableHeight = Math.max(0, curCol.bbox.height - snappedBottom);
       }
-      pendingSpacing = 0;
+      pendingSpacing = style.snapToGrid ? 0 : placed.marginBottomPx;
       if (!fragment) return undefined;
       // The rest continues at the top of the next column.
       from = to;

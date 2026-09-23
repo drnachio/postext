@@ -39,6 +39,7 @@ describe('callout style defaults', () => {
     expect(r!.stripe.enabled).toBe(false);
     expect(r!.icon.kind).toBe('none');
     expect(r!.keepTogether).toBe(true);
+    expect(r!.snapToGrid).toBe(true);
     expect(resolveAllConfig().calloutStyles.map((s) => s.id)).toEqual(['note']);
   });
 
@@ -159,6 +160,10 @@ describe('callout style defaults', () => {
     // A splittable box is persisted; the default (kept together) is not.
     expect(stripCalloutStylesDefaults([{ id: 'kp', keepTogether: false }])).toEqual([{ id: 'kp', keepTogether: false }]);
     expect(stripCalloutStylesDefaults([{ id: 'kp', keepTogether: true }])).toEqual([{ id: 'kp' }]);
+    // An off-grid box is persisted; the default (snapped) is not.
+    expect(stripCalloutStylesDefaults([{ id: 'form', snapToGrid: false }])).toEqual([{ id: 'form', snapToGrid: false }]);
+    expect(stripCalloutStylesDefaults([{ id: 'form', snapToGrid: true }])).toEqual([{ id: 'form' }]);
+    expect(resolve([{ id: 'form', snapToGrid: false }])[0]!.snapToGrid).toBe(false);
   });
 
   it('keeps the body bold colour when stripping', () => {
