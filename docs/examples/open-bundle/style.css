@@ -1,0 +1,17 @@
+body {
+  margin: 16px;
+  font-family: system-ui, sans-serif;
+  background: #e8e8e8;
+}
+#pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+#pages canvas {
+  display: block;
+  width: 240px;
+  height: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}

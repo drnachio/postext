@@ -152,7 +152,7 @@ describe('openBundle', () => {
     const manifest = {
       version: 2, id: 'bi', name: 'Bi', locale: 'en',
       chapters: { en: [{ title: 'One', file: 'en.md' }], es: [{ title: 'Uno', file: 'es.md' }] },
-      resources: [{ id: 't', typeId: 'table', kind: 'table', caption: 'Table', table: { rows: [[{ content: 'x' }]] } }],
+      resources: [{ id: 't', typeId: 'table', kind: 'table', caption: 'Table', table: { model: { rows: [[{ content: 'x' }]] } } }],
       localized: { es: { resources: [{ id: 't', caption: 'Tabla' }] } },
     };
     const zip = zipSync({ 'preset.json': enc.encode(JSON.stringify(manifest)), 'en.md': enc.encode('# One'), 'es.md': enc.encode('# Uno') });
