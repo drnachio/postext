@@ -3529,14 +3529,21 @@ export function buildDocumentPass(
         // Page-spanning heading: reserve the same vertical band in every
         // other column on this page so body text under the opener band
         // starts below it in ALL columns, not just the one it was placed in.
+        // A column still untouched moves its head below the band (as a top
+        // float does), so a float offered that column's head lands under
+        // the opener instead of over it; the text starts where it did.
         if (vdtType === 'heading' && headingLevel !== undefined) {
           const lvl = headingLevels.forBlock(rawBlock);
           if (lvl?.span === 'page') {
             const page = doc.pages[cursor.pageIndex]!;
             for (const otherCol of page.columns) {
-              if (otherCol !== curCol) {
-                otherCol.availableHeight = Math.max(0, otherCol.availableHeight - h);
+              if (otherCol === curCol) continue;
+              if (otherCol.blocks.length === 0 && otherCol.availableHeight >= otherCol.bbox.height - 0.01) {
+                const shift = Math.min(h, otherCol.bbox.height);
+                otherCol.bbox.y += shift;
+                otherCol.bbox.height -= shift;
               }
+              otherCol.availableHeight = Math.max(0, otherCol.availableHeight - h);
             }
           }
         }

@@ -278,3 +278,26 @@ describe('band caps under a top float', () => {
     expect(band0.some((c) => c.blocks.length > 0)).toBe(true);
   });
 });
+
+describe('a float at the head of a column under a page-span opener', () => {
+  it('lands below the opener band, not over it', () => {
+    const config: PostextConfig = {
+      ...PAGE,
+      headings: {
+        balancing: { enabled: false },
+        levels: [{
+          level: 1, span: 'page', breakBefore: { enabled: false },
+          advancedDesign: { enabled: true, minHeight: pt(120), slot: { elements: [] } },
+        }],
+      },
+    };
+    const doc = build(`# Opener\n\nIntro :ref{id="t1"} text.\n\n${filler(3)}`, [
+      { ...smallTable('t1'), placement: { position: 'top', span: 'column' } },
+    ], config);
+    const heading = doc.pages[0]!.columns.flatMap((c) => c.blocks).find((b) => b.type === 'heading')!;
+    const f = floatById(doc, 't1');
+    expect(f.page).toBe(0);
+    expect(f.block.columnIndex).toBe(1);
+    expect(f.block.bbox.y).toBeGreaterThanOrEqual(bottomOf(heading) - 1e-6);
+  });
+});
