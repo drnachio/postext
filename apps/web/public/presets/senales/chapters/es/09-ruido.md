@@ -74,5 +74,5 @@ El 20 % de la población de la UE —una de cada cinco personas— vive en zonas
 
 ## Para más información
 
-- Ruido:: www.eea.europa.eu/themes/ human/noise
+- Ruido: www.eea.europa.eu/themes/ human/noise
 - SOER 2020, Capítulo 11 sobre ruido ambiental: www.eea.europa.eu/ publications/soer-2020/chapter-11_ soer2020-environmental-noise/view

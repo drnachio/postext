@@ -82,6 +82,8 @@ def _join(lines: list[str]) -> str:
         else:
             text = text + " " + ln
     text = re.sub(r"\s+([,.;:!?])", r"\1", text)
+    # the Spanish PDF sets "Ruido::" — and `::` would open a directive
+    text = re.sub(r"(?<=\w)::(?=\s)", ":", text)
     text = re.sub(r":(?=(?:www\.|https?://))", ": ", text)
     return text.strip()
 
