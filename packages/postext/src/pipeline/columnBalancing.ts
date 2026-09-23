@@ -86,7 +86,7 @@ export function gapLinesIn(gaps: readonly ColumnGap[], range: PageRange): number
   return n;
 }
 
-export type BalanceCandidateKind = 'heading' | 'listEnd' | 'afterFloat' | 'trailingCallout' | 'looseParagraph';
+export type BalanceCandidateKind = 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'trailingCallout' | 'looseParagraph';
 
 interface BalanceCandidate {
   /** Stable content-block index keying the adjustment across passes. */
@@ -295,6 +295,26 @@ export function collectColumnGaps(
         }
         break;
       }
+      // A column of a closing band cut level by a trailing cap stretches up
+      // to the tallest column beside it, not to the cut itself: when that
+      // column could not fill its last line (a split kept clear of a widow)
+      // the band ends one line short of the cap, and this one must end with
+      // it rather than a line lower.
+      // The same holds for any band cut level (a band cap before a
+      // page-span box) and for the columns of a page that does not flow on:
+      // they end with the tallest column of their band.
+      if (col.trailingCap || col.bandCapped || !pageFlowsOn) {
+        const usedBottom = (k: VDTColumn): number => k.bbox.y + (k.bbox.height - k.availableHeight);
+        const level = Math.max(...page.columns
+          .filter((k) => k !== col && isTextColumn(k) && (k.band ?? 0) === (col.band ?? 0) && k.blocks.length > 0)
+          .map(usedBottom), -Infinity);
+        if (Number.isFinite(level)) {
+          const mine = usedBottom(col);
+          // No column of such a band ends past the tallest other one: a
+          // closing page ends level, it does not grow one column away.
+          free = Math.min(free, Math.max(0, level - mine));
+        }
+      }
       let gapLines = Math.floor((free + EPS) / doc.baselineGrid);
 
       const candidates: BalanceCandidate[] = [];
@@ -392,6 +412,28 @@ export function collectColumnGaps(
           candidates.push({
             contentIndex: b.contentIndex,
             kind: 'listEnd',
+            level: 0,
+            order: i,
+            lineCount: b.lines.length,
+          });
+        } else if (
+          i >= 1
+          && (
+            (col.blocks[i - 1]!.type === 'mathDisplay' && col.blocks[i - 1]!.containerId === undefined)
+            // …or the last block of a callout box (its children carry the
+            // box's container id; the block after it is back in the flow).
+            || col.blocks[i - 1]!.containerId !== undefined
+          )
+          && b.type !== 'heading'
+          && b.type !== 'mathDisplay'
+          && !b.id.includes('-cont-')
+        ) {
+          // The space under a display formula or a box: a whole grid line
+          // more there reads as the element's own margin, not as a hole in
+          // the text.
+          candidates.push({
+            contentIndex: b.contentIndex,
+            kind: 'afterDisplay',
             level: 0,
             order: i,
             lineCount: b.lines.length,
@@ -590,6 +632,13 @@ export function proposeBalanceLines(
         .filter((c) => c.kind === 'listEnd')
         .sort((a, b) => a.order - b.order);
       remaining = distribute(listEnds, remaining, options.maxLinesAfterList);
+    }
+
+    if (remaining > 0) {
+      const afterDisplay = gap.candidates
+        .filter((c) => c.kind === 'afterDisplay')
+        .sort((a, b) => a.order - b.order);
+      remaining = distribute(afterDisplay, remaining, 1);
     }
 
     if (remaining > 0 && options.stretchAfterFloats) {

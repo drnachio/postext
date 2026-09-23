@@ -312,9 +312,11 @@ describe('proposeBalanceLines distribution', () => {
       [{ blocks: [para(), heading(40, 2), para()], availableHeight: 3 * 24 }],
     ]);
     // Page 1 is the last content page: its column is never balanced. With
-    // page 0 forced, only its NON-last column (col 0) remains balanceable.
+    // page 0 forced, only its NON-last column (col 0) remains balanceable —
+    // and only up to the last column's level: both end two lines short, so
+    // nothing moves (a closing page ends level, not one column lower).
     const proposal = proposeBalanceLines(doc, new Set([0]), emptyState(), baseOptions());
-    expect(proposal.lines.get(10)).toBe(2);
+    expect(proposal.lines.get(10)).toBeUndefined();
     expect(proposal.lines.get(20)).toBeUndefined();
     expect(proposal.lines.get(40)).toBeUndefined();
   });
@@ -675,5 +677,43 @@ describe('collectColumnGaps: room below a list tail', () => {
     };
     const gaps = collectColumnGaps(docWith([col0, col1]), NO_FORCED);
     expect(gaps.map((g) => [g.columnIndex, g.gapLines])).toEqual([[0, 2]]);
+  });
+});
+
+describe('after-display lever and the level of a closing band', () => {
+  const para = (contentIndex: number) => fakeBlock({ type: 'paragraph', contentIndex });
+  const math = (contentIndex: number) => fakeBlock({ type: 'mathDisplay', contentIndex });
+  const boxChild = (contentIndex: number) => fakeBlock({ type: 'paragraph', contentIndex, containerId: 7 });
+
+  it('offers the block after a display formula or a callout box one extra grid line', () => {
+    const doc = fakeDoc([
+      [
+        { blocks: [para(1), math(2), para(3), boxChild(4), para(5)], availableHeight: 2 * 24 },
+        { blocks: [para(6)], availableHeight: 0 },
+      ],
+      [{ blocks: [para(10)], availableHeight: 0 }],
+    ]);
+    const gaps = collectColumnGaps(doc, new Set());
+    const kinds = gaps.find((g) => g.pageIndex === 0 && g.columnIndex === 0)!.candidates.map((c) => `${c.kind}:${c.contentIndex}`);
+    expect(kinds).toContain('afterDisplay:3');
+    expect(kinds).toContain('afterDisplay:5');
+    const proposal = proposeBalanceLines(doc, new Set(), emptyState(), baseOptions());
+    expect(proposal.lines.get(3)).toBe(1);
+    expect(proposal.lines.get(5)).toBe(1);
+  });
+
+  it('never stretches a column of a closing page past the tallest column beside it', () => {
+    // Page 0 does not flow on (forced break): column 0 ends one line above
+    // column 1, which is the page's last column. Column 0 may take that one
+    // line, not the two it has to its foot.
+    const doc = fakeDoc([
+      [
+        { blocks: [para(1), fakeBlock({ type: 'heading', headingLevel: 2, contentIndex: 2 }), para(3)], availableHeight: 3 * 24 },
+        { blocks: [para(4)], availableHeight: 2 * 24 },
+      ],
+      [{ blocks: [para(10)], availableHeight: 0 }],
+    ]);
+    const gaps = collectColumnGaps(doc, new Set([0]));
+    expect(gaps.find((g) => g.pageIndex === 0 && g.columnIndex === 0)!.gapLines).toBe(1);
   });
 });

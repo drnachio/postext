@@ -536,6 +536,9 @@ export interface VDTColumn {
   /** True when a `:::columnbreak` directive ended this column: its bottom
    *  gap is intentional, so column balancing leaves it alone. */
   forcedBreak?: boolean;
+  /** True while a band cap (trailing or before a page-span box) cuts this
+   *  column level with the others of its band. */
+  bandCapped?: boolean;
   /** True when a trailing band cap cut this column so a closing band ends
    *  level: its bottom is the level cut, and column balancing fills the
    *  column up to it even though the page does not flow on. */

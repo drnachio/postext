@@ -409,9 +409,10 @@ describe('page-span callouts (span blocks, stage 1)', () => {
     const flowing = collectColumnGaps(doc, new Set());
     expect(flowing.map((g) => [g.pageIndex, g.columnIndex, g.gapLines])).toEqual([[0, 0, 2], [0, 1, 3]]);
     // Forced break after page 0: column 1 is the page's real last column
-    // even though a span column (and an empty band) trail it.
+    // even though a span column (and an empty band) trail it — so it is not
+    // balanced, and column 0, already the taller, has no room to grow past it.
     const forced = collectColumnGaps(doc, new Set([0]));
-    expect(forced.map((g) => [g.pageIndex, g.columnIndex, g.gapLines])).toEqual([[0, 0, 2]]);
+    expect(forced.map((g) => [g.pageIndex, g.columnIndex, g.gapLines])).toEqual([]);
   });
 
   it('column rule is drawn per band', () => {

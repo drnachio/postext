@@ -3318,7 +3318,10 @@ export function buildDocumentPass(
       }
 
       const effectiveAvailable = curCol.availableHeight - spacingBefore;
-      const linesPerAvailable = Math.floor(effectiveAvailable / style.lineHeightPx);
+      // A hair of tolerance: room of exactly N lines (grid arithmetic in
+      // floats — a column cut by a band cap, a balancing extra line) must
+      // hold N lines, not N - 1.
+      const linesPerAvailable = Math.floor((effectiveAvailable + 0.01) / style.lineHeightPx);
       // Math display blocks carry their natural pixel height on the single
       // VDTLine; text blocks use the uniform body lineHeightPx per line.
       const totalRemainHeight = vdtType === 'mathDisplay'
@@ -4250,6 +4253,12 @@ function* buildDocumentBalanced(
     if (trailing.result !== best) {
       best = trailing.result;
       for (const [i, cap] of trailing.caps) bandCaps.set(i, cap);
+      // The capped layout is a new problem: the polish round gets its own
+      // pass budget and fresh segments — the first round may have spent
+      // every attempt, or blacklisted the very lever (a heading, a formula)
+      // that now fills the line the cut left short.
+      balancingPasses = 0;
+      segments = [];
       resetSegments();
       yield* balance();
     }
