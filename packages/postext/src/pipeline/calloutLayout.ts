@@ -146,6 +146,7 @@ export function deriveCalloutResolvedConfig(
       lineHeight: body.lineHeight,
       color: body.color,
       boldColor: body.boldColor ?? body.color,
+      ...(body.italicColor ? { italicColor: body.italicColor } : {}),
       textAlign: body.textAlign,
       hyphenation: { ...resolved.bodyText.hyphenation, enabled: body.hyphenation },
       paragraphSpacing: body.paragraphSpacing,

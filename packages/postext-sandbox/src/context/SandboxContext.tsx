@@ -36,7 +36,7 @@ import {
   removeChapter,
   renameChapter,
   replaceChapterMarkdown,
-  singleChapterBook,
+  sampleBook,
   splitChapterAt,
   splitChapterAtHeadings,
 } from '../book/chapterOps';
@@ -47,6 +47,7 @@ import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
+import { createPostextGuideConfig } from './guideConfig';
 import { createProjectActions } from './projectActions';
 import type { ProjectActions } from './projectActions';
 import {
@@ -994,7 +995,7 @@ export function SandboxProvider({
   if (initialHashRef.current === null) initialHashRef.current = readViewHash();
   const [state, dispatch] = useReducer(sandboxReducer, undefined, () => {
     const savedBook = loadBook(migration);
-    const loadedBook = savedBook ?? singleChapterBook(defaultMd, generateChapterId(), mergedLabels.presetPostextGuideName);
+    const loadedBook = savedBook ?? sampleBook(defaultMd, generateChapterId, mergedLabels.presetPostextGuideName);
     // A `#chapter=C` fragment (a reload, a shared link) names the chapter to
     // open; the viewers restore its page (see `useChapterHashSync`). The
     // `view=` part picks the viewer tab over the one last used.
@@ -1016,7 +1017,7 @@ export function SandboxProvider({
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config: withDefaultResourceTypes(
-        savedConfig ?? initialConfig ?? createDefaultConfig(locale ?? 'en'),
+        savedConfig ?? initialConfig ?? createPostextGuideConfig(locale ?? 'en'),
         locale ?? 'en',
       ),
       resources: [],
@@ -1271,6 +1272,14 @@ export function SandboxProvider({
         if (s.activePresetId !== provider.summary.id || s.presetStatus === 'loading') return;
         const snapshot = s.presetApplied?.presetId === provider.summary.id ? s.presetApplied : null;
 
+        // A copy of the built-in guide applied before it had a fingerprint
+        // is taken as out of date (it predates the version on screen).
+        if (snapshot && snapshot.fingerprint === null && live !== null && provider.summary.source === 'builtin') {
+          const legacy = { ...snapshot, fingerprint: 'builtin-legacy' };
+          dispatch({ type: 'SET_PRESET_APPLIED', payload: legacy });
+          savePresetApplied(legacy);
+          return;
+        }
         if (snapshot && snapshot.fingerprint === null && live !== null) {
           // The apply could not read a fingerprint (source briefly down):
           // adopt the live one as the baseline rather than re-applying.

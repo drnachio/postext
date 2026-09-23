@@ -541,6 +541,9 @@ export interface VDTColumn {
   /** True when a `:::columnbreak` directive ended this column: its bottom
    *  gap is intentional, so column balancing leaves it alone. */
   forcedBreak?: boolean;
+  /** True while a band cap (trailing or before a page-span box) cuts this
+   *  column level with the others of its band. */
+  bandCapped?: boolean;
   /** True when a trailing band cap cut this column so a closing band ends
    *  level: its bottom is the level cut, and column balancing fills the
    *  column up to it even though the page does not flow on. */
@@ -751,6 +754,10 @@ export interface VDTDocument {
    *  `continuation.part`): `{partTitle}` / `{partNumber}` and the part's
    *  palette overrides apply from page 0 until the document opens a part. */
   partStart?: PartState;
+  /** Parts set without a divider page (`parts.page: false`): each takes
+   *  effect on the page of the first block placed after its fence
+   *  (`afterContentIndex`, the fence's closing content index). */
+  partMarks?: { afterContentIndex: number; number: string; title: string; palette?: Record<string, string> }[];
 }
 
 // ---------------------------------------------------------------------------

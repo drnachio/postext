@@ -218,9 +218,75 @@ export function cloneBook(book: BookContent, ids: () => string, now = Date.now()
   return { chapters, activeChapterId: idMap.get(book.activeChapterId) ?? chapters[0]!.id };
 }
 
-/** A book that is still exactly one of the untouched sample documents. */
+/** Where a chapter that opens at the level-1 heading at `h1` really starts:
+ *  the `:::part` block and single-line directives (`:::numbering`,
+ *  `:::pagebreak`) right above the heading belong to it, so a part divider
+ *  opens its first chapter instead of closing the previous one. */
+function chapterStart(markdown: string, h1: number, floor: number): number {
+  let start = h1;
+  let cursor = h1;
+  for (;;) {
+    // The line above `cursor`, skipping blank lines.
+    let end = cursor;
+    while (end > floor && /\s/.test(markdown[end - 1]!)) end--;
+    if (end <= floor) return start;
+    const lineStart = markdown.lastIndexOf('\n', end - 1) + 1;
+    const line = markdown.slice(lineStart, end).trim();
+    if (/^:::(numbering|pagebreak)\b/.test(line)) { start = cursor = Math.max(lineStart, floor); continue; }
+    if (line !== ':::') return start;
+    // A closing fence: its opener must be a `:::part`.
+    const opener = markdown.lastIndexOf('\n:::', lineStart - 2);
+    const openerStart = opener === -1 ? -1 : opener + 1;
+    if (openerStart < floor || !markdown.startsWith(':::part', openerStart)) return start;
+    start = cursor = openerStart;
+  }
+}
+
+/** A sample document as a book: one chapter per level-1 heading (the front
+ *  matter stays with the first; a `:::part` right above a heading goes with
+ *  it), each titled after its heading. The built-in guide ships as one
+ *  markdown string so hosts can pass their own copy through
+ *  `initialMarkdown`. */
+export function sampleBook(markdown: string, ids: () => string, fallbackTitle: string, now = Date.now()): BookContent {
+  const { h1Offsets } = scanHeadings(markdown);
+  const fmEnd = frontmatterRange(markdown)?.end ?? 0;
+  const cuts: number[] = [];
+  let floor = fmEnd;
+  for (const h1 of h1Offsets) {
+    const cut = chapterStart(markdown, h1, floor);
+    // Nothing but the front matter above: the heading opens the first chapter.
+    if (markdown.slice(fmEnd, cut).trim() !== '') cuts.push(cut);
+    floor = h1 + 1;
+  }
+  const pieces: string[] = [];
+  let prev = 0;
+  for (const cut of cuts) {
+    pieces.push(markdown.slice(prev, cut));
+    prev = cut;
+  }
+  pieces.push(markdown.slice(prev));
+  const chapters = pieces.map((text, i) => {
+    const body = i === 0 ? text.replace(/\s+$/, '') : text.replace(/^\s+/, '').replace(/\s+$/, '');
+    return newChapter(ids(), deriveChapterTitle(body, fallbackTitle), body, now);
+  });
+  return { chapters, activeChapterId: chapters[0]!.id };
+}
+
+/** The chapter texts `sampleBook` cuts `markdown` into. */
+export function sampleChapterTexts(markdown: string): string[] {
+  let n = 0;
+  return sampleBook(markdown, () => `c${n++}`, '', 0).chapters.map((c) => c.markdown);
+}
+
+/** A book that is still exactly one of the untouched sample documents —
+ *  either as the chapters `sampleBook` cuts it into or, as saved before the
+ *  samples became books, as a single chapter. */
 export function isPristineBook(book: BookContent, samples: readonly string[]): boolean {
-  return book.chapters.length === 1 && samples.includes(book.chapters[0]!.markdown);
+  if (book.chapters.length === 1 && samples.includes(book.chapters[0]!.markdown)) return true;
+  return samples.some((sample) => {
+    const texts = sampleChapterTexts(sample);
+    return texts.length === book.chapters.length && texts.every((t, i) => t === book.chapters[i]!.markdown);
+  });
 }
 
 export function activeChapter(book: BookContent): Chapter {

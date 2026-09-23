@@ -1352,7 +1352,7 @@ export function buildDocumentPass(
    *  block is placed, so a float lands in the first gap after its reference.
    *  `nextBlockIdx` is that block: a keep-together box it opens holds the
    *  slots that would starve it (see `slotStarvesBox`). */
-  const tryPlacePendingFloatsOnCurrentPage = (preferTop = false, nextBlockIdx?: number): void => {
+  const tryPlacePendingFloatsOnCurrentPage = (preferTop = false, nextBlockIdx?: number, anyPosition = false): void => {
     if (pendingFloats.length === 0) return;
     const page = doc.pages[cursor.pageIndex]!;
     const box = nextBlockIdx !== undefined ? keepTogetherBoxAt(nextBlockIdx) : null;
@@ -1360,7 +1360,11 @@ export function buildDocumentPass(
       if (heldBack(i)) { i++; continue; }
       const f = pendingFloats[i]!;
       let r: PlaceResult = 'defer';
-      let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, f, capKindOf);
+      // `anyPosition`: a figure or table may take a slot its position would
+      // refuse (a head-of-page float offered the foot of the current page);
+      // floated callouts keep their placement.
+      const asked = anyPosition && !f.rotate && !f.callout && f.position !== 'auto' ? { ...f, position: 'auto' as const } : f;
+      let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, asked, capKindOf);
       // The rest of a table cut on this page only takes the slots after
       // its previous slice in reading order (never the foot of the column
       // before it; a page-span rest waits for the next page).
@@ -1415,6 +1419,11 @@ export function buildDocumentPass(
    *  float page so the boundary's own page break opens AFTER them. */
   const drainPendingFloats = (): void => {
     tryPlacePendingFloatsOnCurrentPage();
+    // A float that would otherwise take a page of its own before the
+    // boundary settles for a free slot of the current page — the foot of
+    // its closing columns — whatever position it asked for: a chapter's
+    // last page with room under its text beats a page holding one table.
+    tryPlacePendingFloatsOnCurrentPage(false, undefined, true);
     let guard = 0;
     while ((pendingFloats.length > 0 || pendingSideBoxes.length > 0) && guard++ < 1000) {
       const before = floatsPlaced;
@@ -1650,12 +1659,46 @@ export function buildDocumentPass(
     tryPlacePendingFloatsOnCurrentPage();
     proposeTrailingCap(boundaryIndex);
     markForcedBreak();
+    hugClosingText();
     drainPendingFloats();
+  };
+
+  /** On the closing page of a chapter nothing follows the page-span floats
+   *  set at the foot of its last band: they move up to sit right under the
+   *  band's text (one float gap below its grid-rounded bottom, stacked in
+   *  their order) instead of leaving a gap between the text and a table at
+   *  the page foot. */
+  const hugClosingText = (): void => {
+    const page = doc.pages[cursor.pageIndex]!;
+    const floats = page.floats ?? [];
+    // A side column holds its own band under a page-span float: leave it.
+    if (floats.length === 0 || page.partInfo || sideColumns(page).length > 0) return;
+    const cols = bandColumns(page, currentBand(page, cursor)).filter((c) => c.kind !== 'span' && c.kind !== 'side' && c.bbox.height > 0.5);
+    if (cols.length === 0 || !cols.some((c) => c.blocks.length > 0)) return;
+    const textBottom = Math.max(...cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight)));
+    const spanWidth = page.contentArea.width - 0.5;
+    const below = floats.filter((b) => b.bbox.y >= textBottom - 0.5).sort((a, b) => a.bbox.y - b.bbox.y);
+    let nextY = page.contentArea.y + Math.ceil((textBottom - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid + floatGapPx;
+    for (const b of below) {
+      const rb = b.resourceBlock;
+      // Only resource floats across the page move; anything else below the
+      // text (a fixed or floated box) keeps its place and ends the run.
+      if (!rb || rb.rotation || b.bbox.width < spanWidth) break;
+      const dy = nextY - b.bbox.y;
+      if (dy < -0.5) {
+        b.bbox.y += dy;
+        offsetResourceBlockToAbsolute(rb, 0, dy);
+      }
+      nextY = b.bbox.y + b.bbox.height + floatGapPx;
+    }
   };
 
   /** Parity of the page break a closed `:::part` still owes (applied before
    *  the next placed block). */
   let pendingPartBreak: HeadingBreakParity | null = null;
+  /** Content index of the closing fence of a part set without a page
+   *  (`parts.page: false`): blocks up to it are skipped. */
+  let skipPartUntil: number | null = null;
 
   /** `advanceToNextPageBoundary`, except that an empty part page is left
    *  behind too (its opener design is content). No floats are reserved on
@@ -2965,6 +3008,22 @@ export function buildDocumentPass(
     // the next chapter's own parity rule) starts clean. A part page counts
     // as content even with an empty body — its opener design fills it — so
     // consecutive parts never share a page.
+    // `parts.page: false`: a part opens no page and its body is not set —
+    // it only takes effect (running heads, palette) from the next content.
+    if (skipPartUntil !== null) {
+      if (blockIdx >= skipPartUntil) skipPartUntil = null;
+      continue;
+    }
+    if (!resolved.parts.page && rawBlock.type === 'containerStart' && rawBlock.containerName === 'part') {
+      const plan = partPlan.byStart.get(blockIdx);
+      if (plan) {
+        const end = [...partPlan.byEnd].find(([, p]) => p === plan)?.[0] ?? blockIdx;
+        const marks = (doc.partMarks ??= []);
+        if (!marks.some((m) => m.afterContentIndex === end)) marks.push({ afterContentIndex: end, number: plan.number, title: plan.title, ...(plan.palette && Object.keys(plan.palette).length > 0 ? { palette: plan.palette } : {}) });
+        skipPartUntil = end;
+        continue;
+      }
+    }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'part') {
       const plan = partPlan.byStart.get(blockIdx);
       if (plan) {
@@ -3351,7 +3410,10 @@ export function buildDocumentPass(
       }
 
       const effectiveAvailable = curCol.availableHeight - spacingBefore;
-      const linesPerAvailable = Math.floor(effectiveAvailable / style.lineHeightPx);
+      // A hair of tolerance: room of exactly N lines (grid arithmetic in
+      // floats — a column cut by a band cap, a balancing extra line) must
+      // hold N lines, not N - 1.
+      const linesPerAvailable = Math.floor((effectiveAvailable + 0.01) / style.lineHeightPx);
       // Math display blocks carry their natural pixel height on the single
       // VDTLine; text blocks use the uniform body lineHeightPx per line.
       const totalRemainHeight = vdtType === 'mathDisplay'
@@ -3623,14 +3685,21 @@ export function buildDocumentPass(
         // Page-spanning heading: reserve the same vertical band in every
         // other column on this page so body text under the opener band
         // starts below it in ALL columns, not just the one it was placed in.
+        // A column still untouched moves its head below the band (as a top
+        // float does), so a float offered that column's head lands under
+        // the opener instead of over it; the text starts where it did.
         if (vdtType === 'heading' && headingLevel !== undefined) {
           const lvl = headingLevels.forBlock(rawBlock);
           if (lvl?.span === 'page') {
             const page = doc.pages[cursor.pageIndex]!;
             for (const otherCol of page.columns) {
-              if (otherCol !== curCol) {
-                otherCol.availableHeight = Math.max(0, otherCol.availableHeight - h);
+              if (otherCol === curCol) continue;
+              if (otherCol.blocks.length === 0 && otherCol.availableHeight >= otherCol.bbox.height - 0.01) {
+                const shift = Math.min(h, otherCol.bbox.height);
+                otherCol.bbox.y += shift;
+                otherCol.bbox.height -= shift;
               }
+              otherCol.availableHeight = Math.max(0, otherCol.availableHeight - h);
             }
           }
         }
@@ -4287,6 +4356,12 @@ function* buildDocumentBalanced(
     if (trailing.result !== best) {
       best = trailing.result;
       for (const [i, cap] of trailing.caps) bandCaps.set(i, cap);
+      // The capped layout is a new problem: the polish round gets its own
+      // pass budget and fresh segments — the first round may have spent
+      // every attempt, or blacklisted the very lever (a heading, a formula)
+      // that now fills the line the cut left short.
+      balancingPasses = 0;
+      segments = [];
       resetSegments();
       yield* balance();
     }

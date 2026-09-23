@@ -15,11 +15,14 @@
 import type { Resource, ResourcePlacement, TableCell, TableModel } from 'postext';
 import { invalidateResourceImage } from '../controls/resourceImages';
 import { putBlobAt } from '../storage/blobStore';
+import { COVER_VH, COVER_VW, coverArtSvg } from './cover';
 
 /** Stable ids referenced by the default markdown (en.ts / es.ts). Keys are
  *  internal; the string *values* are the ids the markdown's `:ref{id=…}`
  *  directives resolve against, so they must stay in sync with the markdown. */
 export const DEFAULT_RESOURCE_IDS = {
+  // Cover artwork (a design image of the cover heading style, never referenced)
+  cover: 'guide-cover',
   // Figures (SVG)
   layoutPipeline: 'layout-pipeline',
   convergenceLoop: 'convergence-loop',
@@ -28,14 +31,18 @@ export const DEFAULT_RESOURCE_IDS = {
   knuthPlass: 'knuth-plass-model',
   baselineGrid: 'baseline-grid',
   columnLayouts: 'column-layouts',
-  placementStrategies: 'placement-strategies',
+  balancing: 'column-balancing',
+  floatSlots: 'float-slots',
+  bookAnatomy: 'book-anatomy',
+  vectorRosette: 'vector-rosette',
+  vectorChart: 'vector-chart',
+  vectorClip: 'vector-clip',
   sandboxUi: 'sandbox-ui',
   // Tables
   featureTable: 'feature-comparison',
-  metricsTable: 'runtime-metrics',
   toolsTable: 'tools-comparison',
   placementTable: 'placement-options',
-  sizingTable: 'sizing-options',
+  documentFormatTable: 'document-format',
   presetTable: 'preset-sizes',
   phasesTable: 'development-phases',
 } as const;
@@ -65,122 +72,47 @@ const isEs = (locale: string): boolean => locale.toLowerCase().startsWith('es');
 // every figure, regardless of where the float lands.
 // ───────────────────────────────────────────────────────────────────────────
 
-/** Canvas width (in SVG user units) for figures placed at column span. */
-const COLUMN_VW = 300;
-/** Canvas width for figures placed at page span: COLUMN_VW × the default
- *  page/column width ratio, so both spans share one physical unit scale. */
-const PAGE_VW = 634;
+import { COLUMN_VW, DEFS, FS, P, PAGE_VW, bar, edge, node, text } from './svgKit';
+import { balancingSvg, bookAnatomySvg, columnLayoutsSvg, floatSlotsSvg, sandboxUiSvg, vectorChartSvg, vectorClipSvg, vectorRosetteSvg } from './guideFigures';
 
-/** Shared type scale, in canvas units (≈0.63 pt per unit at the default page
- *  geometry, against an 8 pt body): primary labels, secondary annotations,
- *  and the single emphasised metric. */
-const FS = { label: 11.5, small: 10, strong: 13 };
-
-/** Typeface stack for all diagram labels. Single quotes only — these strings
- *  land inside double-quoted SVG attributes. */
-const FONT = "-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
-
-/** Shared diagram palette. */
-const P = {
-  text: '#44586d',     // primary labels
-  muted: '#7b8da0',    // annotations, secondary labels
-  line: '#8296a9',     // connectors and arrowheads
-  hair: '#dde4eb',     // hairline strokes
-  edgeSoft: '#c5d1dd', // card / chip outlines
-  barSoft: '#cdd7e1',  // placeholder text-line bars
-  panel: '#f2f5f8',    // neutral panel fill
-  paper: '#ffffff',
-  blue: '#295aa3',
-  blueDark: '#1c3f73',
-  blueMid: '#7d9cc7',
-  blueTint: '#e7eef7',
-  amber: '#c97a10',
-  amberDark: '#8a5408',
-  amberTint: '#fbf0de',
-};
-
-/** Arrowhead markers (slate for regular edges, blue for emphasis). */
-const DEFS = `<defs>
-    <marker id="ah" markerWidth="9" markerHeight="8" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0.5,0.5 L7.5,3.5 L0.5,6.5 C1.6,5.3 1.6,1.7 0.5,0.5 Z" fill="${P.line}" />
-    </marker>
-    <marker id="ahBlue" markerWidth="9" markerHeight="8" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0.5,0.5 L7.5,3.5 L0.5,6.5 C1.6,5.3 1.6,1.7 0.5,0.5 Z" fill="${P.blue}" />
-    </marker>
-    <marker id="ahAmber" markerWidth="9" markerHeight="8" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0.5,0.5 L7.5,3.5 L0.5,6.5 C1.6,5.3 1.6,1.7 0.5,0.5 Z" fill="${P.amber}" />
-    </marker>
-  </defs>`;
-
-interface TextOpts {
-  size?: number;
-  color?: string;
-  weight?: number;
-  anchor?: 'start' | 'middle' | 'end';
-  italic?: boolean;
-}
-
-function text(x: number, y: number, content: string, o: TextOpts = {}): string {
-  const { size = FS.label, color = P.text, weight = 400, anchor = 'middle', italic = false } = o;
-  const weightDecl = weight !== 400 ? ` font-weight="${weight}"` : '';
-  const italicDecl = italic ? ' font-style="italic"' : '';
-  return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="${FONT}" font-size="${size}"${weightDecl}${italicDecl} fill="${color}">${content}</text>`;
-}
-
-type NodeTone = 'neutral' | 'tint' | 'solid' | 'accent';
-
-const NODE_TONES: Record<NodeTone, { fill: string; stroke: string; label: string }> = {
-  neutral: { fill: P.panel, stroke: '#b9c7d5', label: P.text },
-  tint: { fill: P.blueTint, stroke: P.blue, label: P.blueDark },
-  solid: { fill: P.blue, stroke: P.blueDark, label: '#ffffff' },
-  accent: { fill: P.amberTint, stroke: P.amber, label: P.amberDark },
-};
-
-/** A rounded node with a centred single-line label. */
-function node(x: number, y: number, w: number, h: number, label: string, tone: NodeTone, size = FS.label): string {
-  const t = NODE_TONES[tone];
-  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${t.fill}" stroke="${t.stroke}" stroke-width="1.4" />
-  ${text(x + w / 2, y + h / 2 + size * 0.36, label, { size, color: t.label, weight: 600 })}`;
-}
-
-/** A connector path with an arrowhead. */
-function edge(d: string, o: { color?: string; dash?: string; marker?: 'ah' | 'ahBlue' | 'ahAmber' | null } = {}): string {
-  const { color = P.line, dash, marker = 'ah' } = o;
-  const dashDecl = dash ? ` stroke-dasharray="${dash}"` : '';
-  const markerDecl = marker ? ` marker-end="url(#${marker})"` : '';
-  return `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round"${dashDecl}${markerDecl} />`;
-}
-
-/** A placeholder text-line bar. */
-function bar(x: number, y: number, w: number, color = P.barSoft, h = 5): string {
-  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h / 2}" fill="${color}" />`;
-}
-
-/** The Postext pipeline: Markdown → parse → layout → three renderers. A
+/** The Postext pipeline: Markdown and configuration → parse → measure →
+ *  layout (the convergence loop) → the VDT, read by three renderers. A
  *  column-span figure, so the stages stack vertically and fan out to the
- *  three output chips at the foot. The stage fills deepen top to bottom
- *  (source → engine). */
+ *  output chips at the foot. The stage fills deepen top to bottom (source →
+ *  engine). */
 function pipelineSvg(es: boolean): string {
   const parse = es ? 'Análisis' : 'Parse';
+  const measure = es ? 'Medición' : 'Measure';
   const layout = es ? 'Maquetación' : 'Layout';
+  const config = es ? 'Configuración' : 'Configuration';
+  const loop = es ? '≤ 5 pasadas' : '≤ 5 passes';
   const ariaLabel = es ? 'tubería de Postext' : 'Postext pipeline';
   const chip = (x: number, label: string, dot: string): string =>
-    `<rect x="${x}" y="186" width="82" height="26" rx="13" fill="${P.paper}" stroke="${P.edgeSoft}" stroke-width="1.2" />
-  <circle cx="${x + 13}" cy="199" r="3.5" fill="${dot}" />
-  ${text(x + 22, 203, label, { size: FS.label, weight: 600, anchor: 'start' })}`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN_VW} 225" role="img" aria-label="${ariaLabel}">
+    `<rect x="${x}" y="262" width="82" height="26" rx="13" fill="${P.paper}" stroke="${P.edgeSoft}" stroke-width="1.2" />
+  <circle cx="${x + 13}" cy="275" r="3.5" fill="${dot}" />
+  ${text(x + 22, 279, label, { size: FS.label, weight: 600, anchor: 'start' })}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN_VW} 300" role="img" aria-label="${ariaLabel}">
   ${DEFS}
-  ${node(95, 14, 110, 32, 'Markdown', 'neutral')}
+  ${node(22, 14, 116, 32, 'Markdown', 'neutral')}
+  ${node(162, 14, 116, 32, config, 'neutral')}
   ${node(95, 70, 110, 32, parse, 'tint')}
-  ${node(95, 126, 110, 32, layout, 'solid')}
+  ${node(95, 122, 110, 32, measure, 'tint')}
+  ${node(95, 174, 110, 32, layout, 'solid')}
+  ${edge('M205,184 C236,184 236,200 205,200', { color: P.amber, marker: 'ahAmber' })}
+  ${text(240, 196, loop, { size: FS.small, color: P.amberDark, anchor: 'start', italic: true })}
+  ${edge('M80,46 C80,58 130,56 136,66')}
+  ${edge('M220,46 C220,58 170,56 164,66')}
+  ${edge('M150,102 L150,118')}
+  ${edge('M150,154 L150,170')}
+  <rect x="124" y="218" width="52" height="18" rx="9" fill="${P.blueTint}" stroke="${P.blueMid}" />
+  ${text(150, 230.5, 'VDT', { size: FS.small, color: P.blueDark, weight: 700 })}
+  ${edge('M150,206 L150,214', { marker: null })}
+  ${edge('M150,236 C150,248 53,244 53,258')}
+  ${edge('M150,236 L150,258')}
+  ${edge('M150,236 C150,248 247,244 247,258')}
   ${chip(12, 'Canvas', P.blue)}
-  ${chip(109, 'PDF', P.amber)}
-  ${chip(206, 'HTML', P.muted)}
-  ${edge('M150,46 L150,66')}
-  ${edge('M150,102 L150,122')}
-  ${edge('M150,158 C150,172 53,168 53,182')}
-  ${edge('M150,158 L150,182')}
-  ${edge('M150,158 C150,172 247,168 247,182')}
+  ${chip(109, 'HTML', P.muted)}
+  ${chip(206, 'PDF', P.amber)}
 </svg>`;
 }
 
@@ -270,38 +202,47 @@ function orphanWidowSvg(es: boolean): string {
 </svg>`;
 }
 
-/** The Knuth-Plass primitives: boxes (words), glue (stretchable spaces) and a
- *  flagged penalty (a hyphenation point), with a legend. */
+/** The Knuth-Plass primitives on a real line: word boxes, glue springs
+ *  between them and a flagged penalty where the word would hyphenate, the
+ *  measure the line is justified to above, and a legend. */
 function knuthPlassSvg(es: boolean): string {
   const box = es ? 'Caja' : 'Box';
   const glue = es ? 'Goma' : 'Glue';
   const penalty = es ? 'Penalización' : 'Penalty';
+  const measure = es ? 'medida de la línea · r = 0,42 · medianía 7' : 'line measure · r = 0.42 · badness 7';
+  const words = es ? ['Cada', 'párrafo', 'se', 'equili', 'bra'] : ['Every', 'paragraph', 'is', 'balan', 'ced'];
   const ariaLabel = es
     ? 'primitivas de Knuth-Plass: cajas, gomas y penalizaciones'
     : 'Knuth-Plass primitives: boxes, glue and penalties';
-  // A line of word boxes joined by stretchable glue springs, ending at a
-  // flagged penalty: the hyphen tick and the dashed box that would follow it.
   const spring = (x: number, y: number): string =>
     `<path d="M${x},${y} q3,-8 6,0 t6,0 t6,0 t6,0" fill="none" stroke="${P.blueMid}" stroke-width="2" stroke-linecap="round" />`;
-  const wordBox = (x: number, w: number): string =>
-    `<rect x="${x}" y="30" width="${w}" height="32" rx="4" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.3" />`;
+  const wordBox = (x: number, w: number, label: string, dashed = false): string =>
+    `<rect x="${x}" y="46" width="${w}" height="34" rx="4" fill="${dashed ? '#f3f6fc' : P.blueTint}" stroke="${dashed ? P.blueMid : P.blue}" stroke-width="1.3"${dashed ? ' stroke-dasharray="4 3"' : ''} />
+  ${text(x + w / 2, 68, label, { size: FS.strong, color: dashed ? P.blueMid : P.blueDark, weight: 600, italic: dashed })}`;
   const hyphen = (x: number, y: number, w: number): string =>
     `<path d="M${x},${y} l${w},0" stroke="${P.amber}" stroke-width="2.5" stroke-linecap="round" />`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 130" role="img" aria-label="${ariaLabel}">
-  ${wordBox(32, 84)}
-  ${spring(126, 46)}
-  ${wordBox(160, 116)}
-  ${spring(288, 46)}
-  ${wordBox(322, 146)}
-  ${hyphen(480, 46, 12)}
-  <rect x="506" y="30" width="82" height="32" rx="4" fill="#f3f7fb" stroke="${P.blueMid}" stroke-width="1.3" stroke-dasharray="4 3" />
-  <line x1="32" y1="86" x2="600" y2="86" stroke="${P.hair}" stroke-width="1" />
-  <rect x="32" y="100" width="18" height="13" rx="3" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.2" />
-  ${text(58, 110.5, box, { size: FS.label, anchor: 'start' })}
-  ${spring(150, 106.5)}
-  ${text(186, 110.5, glue, { size: FS.label, anchor: 'start' })}
-  ${hyphen(286, 106.5, 14)}
-  ${text(308, 110.5, penalty, { size: FS.label, anchor: 'start' })}
+  const xs = [32, 160, 326, 420, 536];
+  const ws = [92, 130, 58, 80, 64];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 150" role="img" aria-label="${ariaLabel}">
+  <path d="M32,28 L32,20 L516,20 L516,28" fill="none" stroke="${P.line}" stroke-width="1.2" />
+  ${text(274, 14, measure, { size: FS.small, color: P.muted, italic: true })}
+  ${wordBox(xs[0]!, ws[0]!, words[0]!)}
+  ${spring(xs[0]! + ws[0]! + 6, 63)}
+  ${wordBox(xs[1]!, ws[1]!, words[1]!)}
+  ${spring(xs[1]! + ws[1]! + 6, 63)}
+  ${wordBox(xs[2]!, ws[2]!, words[2]!)}
+  ${spring(xs[2]! + ws[2]! + 5, 63)}
+  ${wordBox(xs[3]!, ws[3]!, words[3]!)}
+  ${hyphen(506, 63, 10)}
+  <path d="M511,56 L511,34 L524,38 L511,42" fill="${P.amber}" stroke="${P.amber}" stroke-width="1" stroke-linejoin="round" />
+  ${wordBox(xs[4]!, ws[4]!, words[4]!, true)}
+  <line x1="32" y1="104" x2="600" y2="104" stroke="${P.hair}" stroke-width="1" />
+  <rect x="32" y="118" width="18" height="13" rx="3" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.2" />
+  ${text(58, 128.5, box, { size: FS.label, anchor: 'start' })}
+  ${spring(150, 124.5)}
+  ${text(186, 128.5, glue, { size: FS.label, anchor: 'start' })}
+  ${hyphen(286, 124.5, 14)}
+  ${text(308, 128.5, penalty, { size: FS.label, anchor: 'start' })}
 </svg>`;
 }
 
@@ -330,111 +271,26 @@ function baselineGridSvg(es: boolean): string {
 </svg>`;
 }
 
-/** Four page thumbnails showing the supported column structures. */
-function columnLayoutsSvg(es: boolean): string {
-  const ariaLabel = es ? 'estructuras de columnas soportadas' : 'supported column structures';
-  const one = es ? 'Una' : 'Single';
-  const two = es ? 'Dos' : 'Two';
-  const three = es ? 'Tres' : 'Three';
-  const half = es ? 'Columna y media' : 'One-and-a-half';
-  // Each thumbnail is a page card; columns render as faux text-line bars so
-  // the structures read as flowing text rather than solid slabs.
-  const page = (x: number, inner: string): string =>
-    `<rect x="${x}" y="14" width="108" height="106" rx="5" fill="${P.paper}" stroke="${P.edgeSoft}" />${inner}`;
-  const col = (x: number, w: number): string => {
-    const lines: string[] = [];
-    for (let i = 0; i < 9; i++) {
-      const lw = i % 4 === 3 ? w * 0.72 : w;
-      lines.push(`<rect x="${x}" y="${24 + i * 10}" width="${lw.toFixed(1)}" height="4.5" rx="2.25" fill="#bcd0e8" />`);
-    }
-    return lines.join('');
-  };
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 150" role="img" aria-label="${ariaLabel}">
-  ${page(41, col(53, 84))}
-  ${page(189, col(201, 37) + col(248, 37))}
-  ${page(337, col(349, 22) + col(380, 22) + col(411, 22))}
-  ${page(485, col(497, 52) + col(557, 24))}
-  ${text(95, 138, one, { size: FS.label })}
-  ${text(243, 138, two, { size: FS.label })}
-  ${text(391, 138, three, { size: FS.label })}
-  ${text(539, 138, half, { size: FS.label })}
-</svg>`;
-}
-
-/** A page showing three placement strategies at once: a top-of-column block, a
- *  full-width band, and a margin note. */
-function placementStrategiesSvg(es: boolean): string {
-  const top = es ? 'Cabeza de columna' : 'Top of column';
-  const full = es ? 'Ancho completo' : 'Full width';
-  const margin = es ? 'Margen' : 'Margin';
-  const ariaLabel = es ? 'estrategias de colocación de recursos' : 'resource placement strategies';
-  // Text lines in two columns, kept clear of the regions used by resources.
-  const leftWidths = [174, 165, 174, 157];
-  const rightWidths = [174, 163, 174, 152, 174, 168, 174, 160, 171, 174];
-  const left = leftWidths.map((w, i) => bar(58, 92 + i * 12, w)).join('\n  ');
-  const right = rightWidths.map((w, i) => bar(248, 28 + i * 12, w)).join('\n  ');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 200" role="img" aria-label="${ariaLabel}">
-  <rect x="36" y="14" width="408" height="172" rx="7" fill="${P.paper}" stroke="${P.edgeSoft}" />
-  <rect x="58" y="26" width="174" height="50" rx="5" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1.3" />
-  ${text(145, 54.5, top, { size: FS.label, color: P.blueDark, weight: 600 })}
-  ${left}
-  ${right}
-  <rect x="58" y="148" width="364" height="26" rx="5" fill="${P.blue}" stroke="${P.blueDark}" stroke-width="1" />
-  ${text(240, 164.5, full, { size: FS.label, color: '#ffffff', weight: 600 })}
-  <line x1="444" y1="49" x2="463" y2="49" stroke="${P.muted}" stroke-width="1.2" stroke-dasharray="3 3" />
-  <rect x="463" y="26" width="141" height="46" rx="5" fill="${P.amberTint}" stroke="${P.amber}" stroke-width="1.3" />
-  ${text(533, 52.5, margin, { size: FS.label, color: P.amberDark, weight: 600 })}
-</svg>`;
-}
-
-/** The Sandbox interface: activity bar, sidebar editor, and a three-tab
- *  viewport. */
-function sandboxUiSvg(es: boolean): string {
-  const ariaLabel = es ? 'disposición de la interfaz del Sandbox' : 'Sandbox interface layout';
-  // Activity bar icons (first one active), editor card with markdown-ish
-  // lines, and a viewport card with a tab bar and a miniature rendered page.
-  const icons = [46, 88, 130]
-    .map((y, i) => `<rect x="35" y="${y}" width="28" height="28" rx="7" fill="${i === 0 ? P.blue : '#c9d4df'}" />`)
-    .join('\n  ');
-  const editorWidths = [102, 155, 144, 155, 123, 155, 148, 88, 155, 137];
-  const editorLines = editorWidths
-    .map((w, i) => bar(106, 84 + i * 19, w, i === 0 ? '#9fb0c2' : P.barSoft, 8))
-    .join('\n  ');
-  const pageLines = [123, 139, 155, 218, 234, 250]
-    .map((y) => bar(394, y, 102, '#dbe3ea', 6))
-    .join('\n  ');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 335" role="img" aria-label="${ariaLabel}">
-  <rect x="18" y="21" width="599" height="292" rx="14" fill="${P.panel}" stroke="${P.edgeSoft}" />
-  ${icons}
-  <rect x="85" y="39" width="190" height="257" rx="11" fill="${P.paper}" stroke="${P.hair}" />
-  ${text(106, 65, 'Editor', { size: FS.small, color: P.muted, weight: 600, anchor: 'start' })}
-  ${editorLines}
-  <rect x="289" y="39" width="310" height="257" rx="11" fill="${P.paper}" stroke="${P.hair}" />
-  ${text(345, 70, 'Canvas', { size: FS.label, color: P.blueDark, weight: 600 })}
-  <rect x="317" y="79" width="56" height="4" rx="2" fill="${P.blue}" />
-  ${text(444, 70, 'HTML', { size: FS.label, color: P.muted })}
-  ${text(539, 70, 'PDF', { size: FS.label, color: P.muted })}
-  <line x1="290" y1="88" x2="598" y2="88" stroke="${P.hair}" stroke-width="1" />
-  <rect x="380" y="106" width="130" height="169" rx="5" fill="${P.paper}" stroke="${P.edgeSoft}" />
-  ${pageLines}
-  <rect x="394" y="169" width="102" height="39" rx="3" fill="${P.blueTint}" />
-</svg>`;
-}
-
 /** All SVG figures, keyed by the deterministic blob fileId used to persist them.
  *  fileIds are prefixed `default-` to avoid clashing with user uploads.
  *  Widths follow the shared unit system: COLUMN_VW for column-span figures,
  *  PAGE_VW for page-span ones (see FIGURE_SPECS placements). */
 export const SVG_FIGURES: Record<string, { generate: (es: boolean) => string; width: number; height: number }> = {
-  'default-layout-pipeline': { generate: pipelineSvg, width: COLUMN_VW, height: 225 },
+  'default-guide-cover': { generate: coverArtSvg, width: COVER_VW, height: COVER_VH },
+  'default-layout-pipeline': { generate: pipelineSvg, width: COLUMN_VW, height: 300 },
   'default-convergence-loop': { generate: convergenceLoopSvg, width: PAGE_VW, height: 170 },
   'default-measurement-speed': { generate: measurementSpeedSvg, width: COLUMN_VW, height: 190 },
   'default-orphan-widow': { generate: orphanWidowSvg, width: COLUMN_VW, height: 180 },
-  'default-knuth-plass': { generate: knuthPlassSvg, width: PAGE_VW, height: 130 },
+  'default-knuth-plass': { generate: knuthPlassSvg, width: PAGE_VW, height: 150 },
   'default-baseline-grid': { generate: baselineGridSvg, width: COLUMN_VW, height: 170 },
-  'default-column-layouts': { generate: columnLayoutsSvg, width: PAGE_VW, height: 150 },
-  'default-placement-strategies': { generate: placementStrategiesSvg, width: PAGE_VW, height: 200 },
-  'default-sandbox-ui': { generate: sandboxUiSvg, width: PAGE_VW, height: 335 },
+  'default-column-layouts': { generate: columnLayoutsSvg, width: PAGE_VW, height: 196 },
+  'default-float-slots': { generate: floatSlotsSvg, width: PAGE_VW, height: 214 },
+  'default-balancing': { generate: balancingSvg, width: PAGE_VW, height: 200 },
+  'default-book-anatomy': { generate: bookAnatomySvg, width: PAGE_VW, height: 168 },
+  'default-sandbox-ui': { generate: sandboxUiSvg, width: PAGE_VW, height: 322 },
+  'default-vector-rosette': { generate: vectorRosetteSvg, width: PAGE_VW, height: 222 },
+  'default-vector-chart': { generate: vectorChartSvg, width: PAGE_VW, height: 186 },
+  'default-vector-clip': { generate: vectorClipSvg, width: PAGE_VW, height: 170 },
 };
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -459,41 +315,27 @@ function featureTableModel(es: boolean): TableModel {
   const yes = es ? '**Sí**' : '**Yes**';
   return es
     ? table(
-        ['Capacidad', 'CSS plano', 'Postext'],
+        ['Capacidad', 'CSS', 'Postext'],
         [
-          ['Flujo multicolumna equilibrado', 'Parcial', yes],
-          ['Control de huérfanas y viudas', 'Inconsistente', yes],
-          ['PDF desde la misma fuente', 'No', yes],
-          ['Matemáticas en línea (`$x^2$`)', 'No', yes],
+          ['Columnas equilibradas según su contenido', 'Parcial', yes],
+          ['Huérfanas, viudas y líneas cortas', 'Desigual', yes],
+          ['Corte de párrafo óptimo (Knuth-Plass)', 'No', yes],
+          ['Figuras que flotan tras su referencia', 'No', yes],
+          ['Rejilla de línea base entre columnas', 'No', yes],
+          ['Cabeceras, folios e índice paginado', 'No', yes],
+          ['PDF etiquetado desde la misma fuente', 'No', yes],
         ],
       )
     : table(
-        ['Capability', 'Plain CSS', 'Postext'],
+        ['Capability', 'CSS', 'Postext'],
         [
-          ['Balanced multi-column flow', 'Partial', yes],
-          ['Orphan & widow control', 'Inconsistent', yes],
-          ['PDF from same source', 'No', yes],
-          ['Inline math (`$x^2$`)', 'No', yes],
-        ],
-      );
-}
-
-function metricsTableModel(es: boolean): TableModel {
-  return es
-    ? table(
-        ['Etapa', 'Coste'],
-        [
-          ['Análisis', '`O(n)`'],
-          ['Maquetación', '`O(n·k)`'],
-          ['Renderizado', '`O(n)`'],
-        ],
-      )
-    : table(
-        ['Stage', 'Cost'],
-        [
-          ['Parse', '`O(n)`'],
-          ['Layout', '`O(n·k)`'],
-          ['Render', '`O(n)`'],
+          ['Columns balanced by their content', 'Partial', yes],
+          ['Orphans, widows and runts', 'Uneven', yes],
+          ['Optimal paragraph breaking (Knuth-Plass)', 'No', yes],
+          ['Figures that float after their reference', 'No', yes],
+          ['Baseline grid across columns', 'No', yes],
+          ['Running heads, folios and a paginated contents', 'No', yes],
+          ['Tagged PDF from the same source', 'No', yes],
         ],
       );
 }
@@ -502,23 +344,26 @@ function toolsTableModel(es: boolean): TableModel {
   const full = es ? '**Completo**' : '**Full**';
   const yes = es ? '**Sí**' : '**Yes**';
   const basic = es ? 'Básico' : 'Basic';
+  const partial = es ? 'Parcial' : 'Partial';
   return es
     ? table(
-        ['Herramienta', 'Control editorial', 'En la web', 'Incrustable'],
+        ['Herramienta', 'Control editorial', 'En la web', 'Incrustable', 'Fuente abierta'],
         [
-          ['Microsoft Word', basic, 'No', 'No'],
-          ['Adobe InDesign', full, 'No', 'No'],
-          ['LaTeX', full, 'No', 'No'],
-          ['Postext', full, yes, yes],
+          ['Procesadores de texto', basic, partial, 'No', 'No'],
+          ['Adobe InDesign', full, 'No', 'No', 'No'],
+          ['LaTeX', full, 'No', 'No', yes],
+          ['CSS paginado', partial, yes, partial, yes],
+          ['Postext', full, yes, yes, yes],
         ],
       )
     : table(
-        ['Tool', 'Editorial control', 'Runs on the web', 'Embeddable'],
+        ['Tool', 'Editorial control', 'On the web', 'Embeddable', 'Open source'],
         [
-          ['Microsoft Word', basic, 'No', 'No'],
-          ['Adobe InDesign', full, 'No', 'No'],
-          ['LaTeX', full, 'No', 'No'],
-          ['Postext', full, yes, yes],
+          ['Word processors', basic, partial, 'No', 'No'],
+          ['Adobe InDesign', full, 'No', 'No', 'No'],
+          ['LaTeX', full, 'No', 'No', yes],
+          ['Paged CSS', partial, yes, partial, yes],
+          ['Postext', full, yes, yes, yes],
         ],
       );
 }
@@ -526,54 +371,70 @@ function toolsTableModel(es: boolean): TableModel {
 function placementTableModel(es: boolean): TableModel {
   return es
     ? table(
-        ['Estrategia', 'Dónde aterriza', 'Uso habitual'],
+        ['Campo', 'Valores', 'Efecto'],
         [
-          ['Cabeza de columna', 'Arriba de la columna actual o siguiente', 'Figuras académicas'],
-          ['En línea', 'En el punto de referencia', 'Diagramas pequeños'],
-          ['Flotante', 'Borde de columna, el texto rodea', 'Imágenes marginales'],
-          ['Ancho completo', 'Cruza toda la página', 'Tablas anchas, imágenes grandes'],
-          ['Margen', 'En el margen de la página', 'Anotaciones, iconos'],
+          ['position', 'auto · top · bottom · here', 'Primer hueco libre, cabeza o pie de columna, o en el punto exacto'],
+          ['span', 'column · page · side', 'Una columna, toda la página o la columna lateral'],
+          ['width', '0–1', 'Fracción del ancho disponible'],
+          ['align', 'left · center · right', 'Posición dentro de ese ancho'],
+          ['rotate', 'ccw · cw', 'Un cuarto de vuelta, en página propia'],
+          ['captionSide', 'sí · no', 'Pie en la columna lateral'],
         ],
       )
     : table(
-        ['Strategy', 'Where it lands', 'Typical use'],
+        ['Field', 'Values', 'Effect'],
         [
-          ['Top of column', 'Top of current or next column', 'Academic figures'],
-          ['Inline', 'At the reference point', 'Small diagrams'],
-          ['Float', 'Column edge, text wraps', 'Marginal images'],
-          ['Full width', 'Spans the whole page', 'Wide tables, large images'],
-          ['Margin', 'In the page margin', 'Annotations, icons'],
+          ['position', 'auto · top · bottom · here', 'First free slot, head or foot of a column, or the exact point'],
+          ['span', 'column · page · side', 'One column, the whole page or the side column'],
+          ['width', '0–1', 'Fraction of the width available'],
+          ['align', 'left · center · right', 'Position within that width'],
+          ['rotate', 'ccw · cw', 'A quarter turn, on a page of its own'],
+          ['captionSide', 'yes · no', 'Caption in the side column'],
         ],
       );
 }
 
-function sizingTableModel(es: boolean): TableModel {
+function documentFormatTableModel(es: boolean): TableModel {
   return es
     ? table(
-        ['Modo', 'Comportamiento'],
+        ['Sintaxis', 'Qué hace'],
         [
-          ['Tamaño natural', 'Dimensiones intrínsecas del recurso'],
-          ['Ancho de columna', 'Llena una sola columna'],
-          ['Ancho de expansión', 'Cubre N columnas con medianiles'],
-          ['Ancho completo', 'Llena toda el área de texto'],
-          ['Personalizado', 'Ancho y alto exactos'],
+          [':::pagebreak', 'Nueva página; parity="odd" u "even" fuerza recto o verso'],
+          [':::columnbreak', 'Termina la columna actual'],
+          [':::numbering', 'Cambia la secuencia de folios: formato y número inicial'],
+          [':::toc', 'Imprime el índice, con folios reales'],
+          [':::part', 'Abre una portadilla de parte, con título, número y paleta'],
+          [':::callout', 'Recuadro de un estilo: nota, cita, cifras…'],
+          [':::columns', 'Columnas equilibradas dentro de un recuadro'],
+          [':::paragraphs', 'Aplica un estilo de párrafo a lo que envuelve'],
+          [':ref', 'Cita un recurso, lo numera y lo hace flotar'],
+          ['::resource', 'Inserta un recurso en el punto exacto'],
+          [':swatch', 'Muestra de color en línea'],
+          ['# Título {style="…"}', 'Estilo de título y atributos para los diseños'],
         ],
       )
     : table(
-        ['Mode', 'Behaviour'],
+        ['Syntax', 'What it does'],
         [
-          ['Natural size', "The resource's intrinsic dimensions"],
-          ['Column width', 'Fills a single column'],
-          ['Span width', 'Covers N columns including gutters'],
-          ['Full width', 'Fills the whole text area'],
-          ['Custom', 'Exact width and height'],
+          [':::pagebreak', 'A new page; parity="odd" or "even" asks for a recto or verso'],
+          [':::columnbreak', 'Ends the current column'],
+          [':::numbering', 'Switches the page-number sequence: format and start'],
+          [':::toc', 'Prints the table of contents, with real page numbers'],
+          [':::part', 'Opens a part divider, with a title, number and palette'],
+          [':::callout', 'A box in one of the callout styles: note, quote, figures…'],
+          [':::columns', 'Balanced columns inside a callout'],
+          [':::paragraphs', 'Applies a paragraph style to what it wraps'],
+          [':ref', 'Mentions a resource, numbers it and floats it'],
+          ['::resource', 'Embeds a resource at the exact point'],
+          [':swatch', 'An inline colour swatch'],
+          ['# Title {style="…"}', 'A heading style, and attributes for the designs'],
         ],
       );
 }
 
 function presetTableModel(es: boolean): TableModel {
   const custom = es ? 'Personalizado' : 'Custom';
-  const any = es ? 'Cualquier formato fuera de norma' : 'Any non-standard format';
+  const any = es ? 'Cualquier formato, en cm, mm, pulgadas o puntos' : 'Any format, in cm, mm, inches or points';
   return es
     ? table(
         ['Tamaño', 'Uso habitual'],
@@ -581,7 +442,7 @@ function presetTableModel(es: boolean): TableModel {
           ['11 × 17 cm', 'Guías de bolsillo'],
           ['12 × 19 cm', 'Novelas de bolsillo'],
           ['17 × 24 cm', 'Libros de texto y manuales'],
-          ['21 × 28 cm', 'Revistas y gran formato'],
+          ['21 × 28 cm', 'Revistas, gran formato y esta guía'],
           [custom, any],
         ],
       )
@@ -591,30 +452,32 @@ function presetTableModel(es: boolean): TableModel {
           ['11 × 17 cm', 'Pocket guides'],
           ['12 × 19 cm', 'Fiction paperbacks'],
           ['17 × 24 cm', 'Textbooks and manuals'],
-          ['21 × 28 cm', 'Magazines and large format'],
+          ['21 × 28 cm', 'Magazines, large formats and this guide'],
           [custom, any],
         ],
       );
 }
 
 function phasesTableModel(es: boolean): TableModel {
+  const done = es ? '**Hecho**' : '**Shipped**';
+  const open = es ? 'Abierto' : 'Open';
   return es
     ? table(
-        ['Fase', 'Capacidades clave'],
+        ['Fase', 'Hecho', 'Pendiente'],
         [
-          ['1 · Fundamentos', 'Modelo de datos, parser, medición'],
-          ['2 · Maquetación editorial', 'Columnas, equilibrio, recursos'],
-          ['3 · Tipografía profesional', 'Separación silábica, Knuth-Plass, notas'],
-          ['4 · Salida e integración', 'Canvas, HTML, PDF, Sandbox'],
+          ['1 · Fundamentos', 'Modelo de datos, parser, medición sin DOM, formato del documento', open + ': cerrar el formato de configuración'],
+          ['2 · Maquetación editorial', 'Columnas, equilibrado, flotantes, tablas que se parten o giran, libros y partes', open + ': texto que rodea obstáculos'],
+          ['3 · Tipografía profesional', 'Knuth-Plass, separación silábica en 8 idiomas, huérfanas, viudas y líneas cortas, matemáticas', open + ': notas al pie, notas finales y al margen'],
+          ['4 · Salida', 'Canvas, HTML, PDF etiquetado, worker, Sandbox con presets', done],
         ],
       )
     : table(
-        ['Phase', 'Key capabilities'],
+        ['Phase', 'Shipped', 'Still open'],
         [
-          ['1 · Foundation', 'Data model, parser, measurement'],
-          ['2 · Editorial Layout', 'Columns, balancing, resources'],
-          ['3 · Professional Typography', 'Hyphenation, Knuth-Plass, notes'],
-          ['4 · Output & Integration', 'Canvas, HTML, PDF, Sandbox'],
+          ['1 · Foundation', 'Data model, parser, DOM-free measurement, document format', open + ': finalise the configuration format'],
+          ['2 · Editorial layout', 'Columns, balancing, floats, tables that split or rotate, books and parts', open + ': text flowing around obstacles'],
+          ['3 · Professional typography', 'Knuth-Plass, hyphenation in 8 languages, orphans, widows and runts, mathematics', open + ': footnotes, endnotes and margin notes'],
+          ['4 · Output', 'Canvas, HTML, tagged PDF, worker, Sandbox with presets', done],
         ],
       );
 }
@@ -641,183 +504,248 @@ interface TableSpec {
   caption: (es: boolean) => string;
 }
 
+const T = (en: string, es: string) => (isEsLocale: boolean) => (isEsLocale ? es : en);
+
 const FIGURE_SPECS: FigureSpec[] = [
+  {
+    id: DEFAULT_RESOURCE_IDS.cover,
+    fileId: 'default-guide-cover',
+    placement: { position: 'auto', span: 'page' },
+    caption: T('Cover art of the guide.', 'Arte de cubierta de la guía.'),
+    altText: T(
+      'An open spread drawn the way the engine sees it: justified lines of word boxes, a chapter band, a floated figure and one line opened into boxes, glue and a penalty.',
+      'Un pliego abierto dibujado como lo ve el motor: líneas justificadas de cajas de palabra, una banda de capítulo, una figura flotante y una línea abierta en cajas, gomas y una penalización.',
+    ),
+  },
   {
     id: DEFAULT_RESOURCE_IDS.layoutPipeline,
     fileId: 'default-layout-pipeline',
     placement: { position: 'auto', span: 'column' },
-    caption: (es) =>
-      es
-        ? 'La tubería de Postext: el Markdown se analiza, se maqueta y luego se renderiza a canvas, PDF y HTML.'
-        : 'The Postext pipeline: Markdown is parsed, laid out, then rendered to canvas, PDF, and HTML.',
-    altText: (es) =>
-      es
-        ? 'Diagrama de flujo desde Markdown, pasando por análisis y maquetación, hasta las salidas en canvas, PDF y HTML.'
-        : 'Flow diagram from Markdown through parse and layout to canvas, PDF, and HTML outputs.',
-  },
-  {
-    id: DEFAULT_RESOURCE_IDS.convergenceLoop,
-    fileId: 'default-convergence-loop',
-    placement: { position: 'bottom', span: 'page' },
-    caption: (es) =>
-      es
-        ? 'El bucle de convergencia: el motor coloca, comprueba y ajusta hasta que las restricciones se cumplen, con un tope de cinco iteraciones.'
-        : 'The convergence loop: the engine places, checks, and adjusts until the constraints are satisfied, capped at five iterations.',
-    altText: (es) =>
-      es
-        ? 'Diagrama de un ciclo entre colocar, comprobar y ajustar que sale hacia un estado convergido.'
-        : 'Diagram of a cycle between place, check, and adjust that exits to a converged state.',
+    caption: T(
+      'The pipeline: Markdown and a configuration are parsed, measured and laid out, in a loop of at most five passes, into the VDT that all three renderers draw.',
+      'La tubería: el Markdown y la configuración se analizan, se miden y se maquetan, en un bucle de cinco pasadas como mucho, hasta el VDT que dibujan los tres renderizadores.',
+    ),
+    altText: T(
+      'Markdown and Configuration flow into Parse, Measure and Layout, which loops on itself, then into the VDT and out to Canvas, HTML and PDF.',
+      'Markdown y Configuración entran en Análisis, Medición y Maquetación, que vuelve sobre sí misma; después el VDT y las salidas Canvas, HTML y PDF.',
+    ),
   },
   {
     id: DEFAULT_RESOURCE_IDS.measurementSpeed,
     fileId: 'default-measurement-speed',
     placement: { position: 'auto', span: 'column' },
-    caption: (es) =>
-      es
-        ? 'La medición sin DOM de pretext es entre 300 y 600 veces más rápida que leer dimensiones del DOM.'
-        : "pretext's DOM-free measurement is 300 to 600 times faster than reading dimensions back from the DOM.",
-    altText: (es) =>
-      es
-        ? 'Gráfico de barras con una barra alta para la medición con DOM y una diminuta para la medición sin DOM.'
-        : 'Bar chart with a tall bar for DOM-based measurement and a tiny one for DOM-free measurement.',
+    caption: T(
+      'Measuring with canvas metrics and arithmetic instead of DOM reflow is 300 to 600 times faster.',
+      'Medir con métricas de canvas y aritmética, en lugar de reflujos del DOM, es entre 300 y 600 veces más rápido.',
+    ),
+    altText: T(
+      'A tall bar for DOM-based measurement beside a tiny bar for DOM-free measurement, annotated 300–600× faster.',
+      'Una barra alta para la medición con DOM junto a una barra diminuta para la medición sin DOM, con la anotación 300–600× más rápido.',
+    ),
   },
   {
-    id: DEFAULT_RESOURCE_IDS.orphanWidow,
-    fileId: 'default-orphan-widow',
-    placement: { position: 'top', span: 'column' },
-    caption: (es) =>
-      es
-        ? 'Una viuda queda sola al pie de una columna; una huérfana queda sola en la cabeza de la siguiente.'
-        : 'A widow is stranded at the foot of a column; an orphan is stranded at the head of the next.',
-    altText: (es) =>
-      es
-        ? 'Dos columnas de líneas de texto que resaltan una línea viuda abajo y una huérfana arriba.'
-        : 'Two columns of text lines highlighting a widow line at the bottom and an orphan line at the top.',
+    id: DEFAULT_RESOURCE_IDS.convergenceLoop,
+    fileId: 'default-convergence-loop',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'The convergence loop: place, check, adjust what conflicts and place again, until nothing moves — five iterations at most, usually one or two.',
+      'El bucle de convergencia: colocar, comprobar, ajustar lo que choca y volver a colocar hasta que nada se mueva; cinco iteraciones como mucho, casi siempre una o dos.',
+    ),
+    altText: T(
+      'A flow from Place to Check to Converged, with a conflict branch through Adjust looping back to Place, capped at five iterations.',
+      'Un flujo de Colocar a Comprobar y a Convergido, con una rama de conflicto por Ajustar que vuelve a Colocar, limitada a cinco iteraciones.',
+    ),
   },
   {
     id: DEFAULT_RESOURCE_IDS.knuthPlass,
     fileId: 'default-knuth-plass',
-    placement: { position: 'top', span: 'page' },
-    caption: (es) =>
-      es
-        ? 'Knuth-Plass modela cada línea como cajas, gomas y penalizaciones; las penalizaciones marcadas son oportunidades de guion.'
-        : 'Knuth-Plass models each line as boxes, glue, and penalties; flagged penalties are hyphenation opportunities.',
-    altText: (es) =>
-      es
-        ? 'Una línea descompuesta en cajas de palabra, gomas elásticas y una penalización de guion, con leyenda.'
-        : 'A line broken into word boxes, stretchable glue, and a hyphen penalty, with a legend.',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'Knuth-Plass sees a line as boxes, glue and penalties; the flagged penalty is a hyphenation point, and the ratio r measures how far the glue stretches.',
+      'Knuth-Plass ve una línea como cajas, gomas y penalizaciones; la penalización marcada es un punto de guion y la razón r mide cuánto se estiran las gomas.',
+    ),
+    altText: T(
+      'The words Every paragraph is balan- ced as boxes joined by springs, a hyphen penalty with a flag, and a legend.',
+      'Las palabras Cada párrafo se equili- bra como cajas unidas por muelles, una penalización de guion con bandera y una leyenda.',
+    ),
   },
   {
-    id: DEFAULT_RESOURCE_IDS.baselineGrid,
-    fileId: 'default-baseline-grid',
-    placement: { position: 'bottom', span: 'column' },
-    caption: (es) =>
-      es
-        ? 'La rejilla de línea base fija cada línea a un ritmo vertical común para que las columnas se alineen.'
-        : 'The baseline grid snaps every line to a shared vertical rhythm so columns align horizontally.',
-    altText: (es) =>
-      es
-        ? 'Dos columnas de líneas que descansan sobre una rejilla horizontal compartida, con una guía discontinua.'
-        : 'Two columns of lines resting on a shared horizontal grid, with a dashed alignment guide.',
+    id: DEFAULT_RESOURCE_IDS.orphanWidow,
+    fileId: 'default-orphan-widow',
+    placement: { position: 'auto', span: 'column' },
+    caption: T(
+      'A widow at the foot of one column and an orphan at the head of the next: the two defects the split optimiser prices.',
+      'Una viuda al pie de una columna y una huérfana en la cabeza de la siguiente: los dos defectos que pondera el optimizador de cortes.',
+    ),
+    altText: T(
+      'Two columns: the left ends with a lone short line, the right begins with a lone line.',
+      'Dos columnas: la izquierda termina con una línea corta sola y la derecha empieza con una línea sola.',
+    ),
   },
   {
     id: DEFAULT_RESOURCE_IDS.columnLayouts,
     fileId: 'default-column-layouts',
-    placement: { position: 'top', span: 'page' },
-    caption: (es) =>
-      es
-        ? 'Cuatro estructuras de columnas: una sola columna, dos, tres y columna y media para anotaciones laterales.'
-        : 'Four column structures: single column, two, three, and one-and-a-half for side annotations.',
-    altText: (es) =>
-      es
-        ? 'Cuatro miniaturas de página que muestran disposiciones de una, dos, tres columnas y columna y media.'
-        : 'Four page thumbnails showing single, two, three, and one-and-a-half column layouts.',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'The column structures: one column, two, and a column and a half whose side column carries text or only floats.',
+      'Las estructuras de columnas: una, dos y columna y media, cuya columna lateral lleva texto o solo flotantes.',
+    ),
+    altText: T(
+      'Four page thumbnails: single column, two columns, a main column with a narrow text column, and a main column with figures and boxes in the side column.',
+      'Cuatro miniaturas de página: una columna, dos columnas, una columna principal con otra estrecha de texto y una columna principal con figuras y recuadros en la lateral.',
+    ),
   },
   {
-    id: DEFAULT_RESOURCE_IDS.placementStrategies,
-    fileId: 'default-placement-strategies',
-    placement: { position: 'bottom', span: 'page' },
-    caption: (es) =>
-      es
-        ? 'Tres estrategias a la vez: un recurso en cabeza de columna, una banda a ancho completo y una nota al margen.'
-        : 'Three strategies at once: a top-of-column resource, a full-width band, and a margin note.',
-    altText: (es) =>
-      es
-        ? 'Una página con un bloque en cabeza de columna, una banda a ancho completo y un bloque en el margen.'
-        : 'A page with a top-of-column block, a full-width band, and a block in the margin.',
+    id: DEFAULT_RESOURCE_IDS.baselineGrid,
+    fileId: 'default-baseline-grid',
+    placement: { position: 'auto', span: 'column' },
+    caption: T(
+      'The baseline grid sets every line on a shared rhythm, so lines face each other across the gutter.',
+      'La rejilla de línea base asienta cada línea en un ritmo común, de modo que las líneas se miran a través del medianil.',
+    ),
+    altText: T(
+      'Two columns of lines resting on a shared horizontal grid, with a dashed alignment guide.',
+      'Dos columnas de líneas apoyadas en una rejilla horizontal común, con una guía discontinua.',
+    ),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.balancing,
+    fileId: 'default-balancing',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'Balancing a short column: a grid line above a heading, a line after a list and a paragraph set one line looser bring it level with its neighbour.',
+      'Equilibrar una columna corta: una línea de rejilla sobre un título, una línea tras una lista y un párrafo compuesto una línea más suelto la igualan con su vecina.',
+    ),
+    altText: T(
+      'Two page sketches: before, the second column ends three lines short; after, the three levers are highlighted and both columns end level.',
+      'Dos esbozos de página: antes, la segunda columna acaba tres líneas más corta; después, las tres palancas aparecen resaltadas y ambas columnas acaban a la par.',
+    ),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.floatSlots,
+    fileId: 'default-float-slots',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'Where a float lands: the slots after its reference are tried in order — the foot of the same column, the head of the next, a band on the next page — and the first with room wins.',
+      'Dónde cae un flotante: los huecos tras su referencia se prueban en orden —el pie de la misma columna, la cabeza de la siguiente, una banda en la página siguiente— y gana el primero con sitio.',
+    ),
+    altText: T(
+      'A page with a reference near the foot of column 1; slot 1 below it has no room, slot 2 at the head of column 2 is filled; slot 3 on the next page is not needed.',
+      'Una página con una referencia cerca del pie de la columna 1; el hueco 1 no tiene sitio, el hueco 2 en la cabeza de la columna 2 está ocupado y el hueco 3, en la página siguiente, no hace falta.',
+    ),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.bookAnatomy,
+    fileId: 'default-book-anatomy',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'The anatomy of this book: a cover set by a heading style, a self-numbering contents, a part divider, a chapter opener and body pages with running heads.',
+      'La anatomía de este libro: una cubierta compuesta con un estilo de título, un índice que se numera solo, una portadilla de parte, una apertura de capítulo y páginas de cuerpo con cabeceras.',
+    ),
+    altText: T(
+      'Six page thumbnails: a dark cover, a contents page with leaders, a gilt part page, a chapter opener with a band, and two body pages.',
+      'Seis miniaturas: una cubierta oscura, un índice con puntos guía, una portadilla dorada, una apertura con banda y dos páginas de cuerpo.',
+    ),
   },
   {
     id: DEFAULT_RESOURCE_IDS.sandboxUi,
     fileId: 'default-sandbox-ui',
-    placement: { position: 'top', span: 'page' },
-    caption: (es) =>
-      es
-        ? 'La disposición del Sandbox: barra de actividad, barra lateral con el editor y el viewport de tres pestañas.'
-        : 'The Sandbox layout: activity bar, sidebar editor, and the three-tab viewport.',
-    altText: (es) =>
-      es
-        ? 'Maqueta de la interfaz con barra de actividad, panel de editor y un viewport con pestañas Canvas, HTML y PDF.'
-        : 'Interface mock-up with an activity bar, editor panel, and a viewport with Canvas, HTML, and PDF tabs.',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'The Sandbox: the activity bar with its six panels, the Markdown editor with the chapter switcher, and the viewport with its Canvas, HTML and PDF tabs.',
+      'El Sandbox: la barra de actividad con sus seis paneles, el editor de Markdown con el selector de capítulos y el visor con sus pestañas Canvas, HTML y PDF.',
+    ),
+    altText: T(
+      'Interface sketch: a column of six icons, an editor panel with a chapter title, and a viewport showing a two-page spread.',
+      'Esbozo de la interfaz: una columna de seis iconos, un panel de editor con el título del capítulo y un visor con un pliego de dos páginas.',
+    ),
   },
 ];
+
+FIGURE_SPECS.push(
+  {
+    id: DEFAULT_RESOURCE_IDS.vectorRosette,
+    fileId: 'default-vector-rosette',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'Bézier petals, hairline rings and a line of microtext: zoom into the PDF as far as you like and every edge stays sharp.',
+      'Pétalos de Bézier, anillos de trazo fino y una línea de microtexto: amplía el PDF cuanto quieras y todos los bordes siguen nítidos.',
+    ),
+    altText: T('A rosette of eighteen overlapping blue and gilt petals inside thin rings, above five lines of tiny text.', 'Una roseta de dieciocho pétalos azules y dorados superpuestos dentro de anillos finos, sobre cinco líneas de texto diminuto.'),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.vectorChart,
+    fileId: 'default-vector-chart',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'A chart drawn as paths and text: in the PDF its labels are real text, selectable and searchable.',
+      'Un gráfico dibujado con trazados y texto: en el PDF sus etiquetas son texto real, que se puede seleccionar y buscar.',
+    ),
+    altText: T('An area chart with a solid blue line and a dashed gilt line over eight months, with axis labels and a legend.', 'Un gráfico de área con una línea azul continua y una dorada discontinua a lo largo de ocho meses, con etiquetas en los ejes y leyenda.'),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.vectorClip,
+    fileId: 'default-vector-clip',
+    placement: { position: 'auto', span: 'page' },
+    caption: T(
+      'A clipping path, three translucent circles and one star reused five times: all of it is converted to native PDF drawing operations.',
+      'Un trazado de recorte, tres círculos translúcidos y una estrella reutilizada cinco veces: todo se convierte en operaciones de dibujo nativas del PDF.',
+    ),
+    altText: T('Blue stripes clipped to a disc, three overlapping translucent circles in vermilion, blue and gilt, and five gilt stars.', 'Franjas azules recortadas en un disco, tres círculos translúcidos superpuestos en bermellón, azul y oro, y cinco estrellas doradas.'),
+  },
+);
 
 const TABLE_SPECS: TableSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.featureTable,
     model: featureTableModel,
-    placement: { position: 'top', span: 'page' },
-    caption: (es) =>
-      es
-        ? 'Capacidades de maquetación editorial de CSS plano frente a Postext.'
-        : 'Editorial layout capabilities of plain CSS versus Postext.',
+    placement: { position: 'auto', span: 'page' },
+    caption: T('What editorial layout needs, in plain CSS and in Postext.', 'Lo que necesita la maquetación editorial, en CSS y en Postext.'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.toolsTable,
     model: toolsTableModel,
-    placement: { position: 'top', span: 'page' },
-    caption: (es) =>
-      es
-        ? 'Cómo se sitúa Postext frente a las herramientas editoriales establecidas.'
-        : 'How Postext compares with established editorial tools.',
-  },
-  {
-    id: DEFAULT_RESOURCE_IDS.metricsTable,
-    model: metricsTableModel,
-    placement: { position: 'bottom', span: 'column' },
-    caption: (es) =>
-      es ? 'Coste asintótico aproximado por etapa de la tubería.' : 'Approximate asymptotic cost per pipeline stage.',
+    placement: { position: 'auto', span: 'page' },
+    caption: T('How Postext compares with established editorial tools.', 'Cómo se sitúa Postext frente a las herramientas editoriales establecidas.'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.placementTable,
     model: placementTableModel,
-    placement: { position: 'top', span: 'column' },
-    caption: (es) =>
-      es
-        ? 'Las estrategias de colocación de recursos y para qué sirve cada una.'
-        : 'The resource placement strategies and what each is for.',
+    placement: { position: 'auto', span: 'page' },
+    caption: T('The placement fields of a resource.', 'Los campos de colocación de un recurso.'),
   },
   {
-    id: DEFAULT_RESOURCE_IDS.sizingTable,
-    model: sizingTableModel,
-    placement: { position: 'bottom', span: 'column' },
-    caption: (es) =>
-      es ? 'Los modos de dimensionado disponibles para un recurso.' : 'The sizing modes available for a resource.',
+    id: DEFAULT_RESOURCE_IDS.documentFormatTable,
+    model: documentFormatTableModel,
+    placement: { position: 'auto', span: 'page' },
+    caption: T('The extensions of the document format.', 'Las extensiones del formato del documento.'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.presetTable,
     model: presetTableModel,
-    placement: { position: 'top', span: 'column' },
-    caption: (es) =>
-      es ? 'Tamaños de página preestablecidos y su uso habitual.' : 'Preset page sizes and their typical use.',
+    placement: { position: 'auto', span: 'column' },
+    caption: T('Preset page sizes and their typical use.', 'Tamaños de página predefinidos y su uso habitual.'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.phasesTable,
     model: phasesTableModel,
-    placement: { position: 'top', span: 'page' },
-    caption: (es) =>
-      es ? 'Las cuatro fases de desarrollo y sus capacidades clave.' : 'The four development phases and their key capabilities.',
+    placement: { position: 'auto', span: 'page' },
+    caption: T('The four phases of the project: what has shipped and what is still open.', 'Las cuatro fases del proyecto: lo que ya está hecho y lo que sigue abierto.'),
   },
 ];
+
+/** A pure description of every example resource in both languages — the
+ *  SVG markup, captions, alt texts, placements and table models — for the
+ *  built-in preset's fingerprint (no blob is written). */
+export function defaultResourcesSignature(): string {
+  const parts: unknown[] = [];
+  for (const es of [false, true]) {
+    for (const [fileId, fig] of Object.entries(SVG_FIGURES)) parts.push(fileId, fig.generate(es));
+    for (const f of FIGURE_SPECS) parts.push(f.id, f.fileId, f.placement, f.caption(es), f.altText(es));
+    for (const t of TABLE_SPECS) parts.push(t.id, t.placement, t.caption(es), t.model(es));
+  }
+  return JSON.stringify(parts);
+}
 
 /** Build (and persist the blobs for) the default example resources for the
  *  given document `locale` (defaults to English). Captions, table content, and

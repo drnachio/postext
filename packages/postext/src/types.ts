@@ -1108,6 +1108,9 @@ export interface CalloutBodyStyleConfig {
   /** Colour of bold runs in the box (a key term set off in the box's own
    *  colour). Defaults to `bodyText.boldColor`, i.e. the body colour. */
   boldColor?: ColorValue;
+  /** Colour of italic runs in the box (a pull quote set in italics in the
+   *  box's colour). Defaults to `bodyText.italicColor`. */
+  italicColor?: ColorValue;
   textAlign?: 'left' | 'justify';
   hyphenation?: boolean;
   paragraphSpacing?: boolean;
@@ -1285,6 +1288,7 @@ export interface ResolvedCalloutStyleConfig {
     lineHeight: Dimension;
     color: ColorValue;
     boldColor?: ColorValue;
+    italicColor?: ColorValue;
     textAlign: 'left' | 'justify';
     hyphenation: boolean;
     paragraphSpacing: boolean;
@@ -2143,6 +2147,13 @@ export interface PartsBodyStyleConfig {
 }
 
 export interface PartsConfig {
+  /** Whether a `:::part` opens a divider page (default `true`). When
+   *  `false` no page is opened and the fence's body is not set: the part's
+   *  number, title and palette take effect from the next content on
+   *  (running heads, palette-linked colours), with no break of their own.
+   *  Typical use: `htmlViewer.overrides.parts.page: false`, a screen
+   *  edition without section dividers. */
+  page?: boolean;
   breakBefore?: PartsBreakBeforeConfig;
   breakAfter?: PartsBreakAfterConfig;
   /** Body area of the part page. Defaults to the page margins (`mirror`
@@ -2184,6 +2195,7 @@ export interface ResolvedPartsBodyStyleConfig {
 }
 
 export interface ResolvedPartsConfig {
+  page: boolean;
   breakBefore: ResolvedPartsBreakBeforeConfig;
   breakAfter: ResolvedPartsBreakAfterConfig;
   margins: Required<PageMargins>;
