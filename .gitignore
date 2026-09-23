@@ -11,3 +11,8 @@ scripts/presets/showcase/**/__pycache__/
 
 # Python bytecode from the agent skill scripts
 plugins/**/__pycache__/
+
+# Third-party agent skills installed locally (sources in skills-lock.json:
+# npx skills add <source> --skill <name>)
+.agents/skills/
+.claude/skills/
