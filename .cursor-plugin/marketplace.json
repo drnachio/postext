@@ -1,0 +1,12 @@
+{
+  "name": "postext",
+  "owner": { "name": "Postext contributors" },
+  "metadata": { "description": "Agent skills for Postext, the programmable typesetter for the web." },
+  "plugins": [
+    {
+      "name": "postext",
+      "source": "plugins/postext",
+      "description": "Port an existing publication (PDF, Word, PowerPoint, EPUB, HTML, InDesign/IDML, Markdown, scans) into a Postext book that reproduces the original layout."
+    }
+  ]
+}

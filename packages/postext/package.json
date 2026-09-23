@@ -18,6 +18,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./bundle": {
+      "types": "./dist/bundle/index.d.ts",
+      "default": "./dist/bundle/index.js"
+    },
     "./worker": {
       "types": "./dist/worker/client.d.ts",
       "default": "./dist/worker/client.js"
@@ -52,6 +56,7 @@
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.9",
+    "fflate": "^0.8.3",
     "gray-matter": "^4.0.3",
     "hyphenation.ca": "^0.2.1",
     "hyphenation.de": "^0.2.1",

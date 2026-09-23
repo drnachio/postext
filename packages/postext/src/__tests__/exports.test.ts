@@ -229,6 +229,21 @@ describe("package exports", () => {
       "placeholderRender",
       "clearMathCache",
       "applySingleInkToSvg",
+      "openBundle",
+      "createBundle",
+      "buildBundle",
+      "loadBundleFonts",
+      "registerBundleImages",
+      "bundleImageUrl",
+      "bundleResourceBytes",
+      "bundleFontProvider",
+      "readBundle",
+      "planBundle",
+      "resolveBundleFiles",
+      "openBundleZip",
+      "zipBundle",
+      "isBundleManifest",
+      "POSTEXT_EXTENSION",
     ]);
   });
 });

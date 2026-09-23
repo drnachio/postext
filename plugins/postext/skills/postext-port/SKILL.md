@@ -217,8 +217,33 @@ python3 scripts/preset_kit.py pack my-book        # my-book.postext
 
 Import it at https://postext.dev/en/sandbox (Projects → Import .postext), or
 serve a presets folder to a local sandbox (`preset_kit.py index <root>` +
-`POSTEXT_PRIVATE_PRESETS_DIR`). Report what matches, the known gaps, and
-anything that needs a human decision (rights, design choices).
+`POSTEXT_PRIVATE_PRESETS_DIR`). The same file loads in the user's own
+program through the `postext` npm package (`openBundle` → `buildBundle` →
+canvas, HTML or `postext-pdf`); see
+[project-format.md §7](references/project-format.md#7-bundles-from-code).
+Report what matches, the known gaps, and anything that needs a human
+decision (rights, design choices).
+
+## Bundles from code
+
+The `.postext` file is the hand-off point between this skill, the Sandbox
+and code. The `postext` package reads and writes it (`openBundle`,
+`createBundle`, `buildBundle` and backend adapters; details in
+[project-format.md §7](references/project-format.md#7-bundles-from-code)).
+Use it when:
+
+- **the user renders from their own program**: deliver the `.postext` and
+  show the loading snippet instead of asking them to rebuild the config;
+- **the source is produced by code** (a JS/TS pipeline, a CMS export):
+  write the bundle with `createBundle` from that code instead of
+  `preset_kit.py`, so the program stays the source of truth;
+- **debugging a program's output**: have the program write its book with
+  `createBundle`, import it in the Sandbox, fix config/Markdown/resources
+  there with the live preview, export, and load the corrected file back
+  (`openBundle`) — or copy the manifest's `config` (defaults already
+  stripped) back into the code.
+
+`render.mjs` accepts a packed `.postext` as well as a project folder.
 
 ## Rules of thumb
 

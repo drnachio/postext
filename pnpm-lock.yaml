@@ -290,6 +290,9 @@ importers:
       '@chenglou/pretext':
         specifier: ^0.0.9
         version: 0.0.9
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3

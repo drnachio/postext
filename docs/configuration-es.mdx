@@ -4713,3 +4713,160 @@ Para flujos de trabajo de impresión en producción, ajusta estas opciones de co
 ### Implementación de referencia
 
 El componente `PdfViewport` del sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) conecta las piezas anteriores en una previsualización en vivo con botones de regenerar, descargar e imprimir, y es un buen punto de partida para cualquier integración PDF en el navegador. Construye el VDT a través del worker de layout compartido (consulta [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker)) para que pulsar *Regenerar* no congele la UI mientras se ejecuta el pipeline — el hilo principal solo se encarga de `renderToPdf` (que ya es rápido una vez existe el VDT).
+
+## Paquetes (archivos `.postext`)
+
+Un **archivo `.postext`** es un libro entero en un solo archivo: un zip con un manifiesto `preset.json`, un archivo markdown por capítulo, los datos de los recursos (mapas de bits, SVG, másters PDF de impresión) y los archivos de las fuentes que nombra la configuración. El [Sandbox](/es/docs/sandbox#exportar-e-importar) lo exporta e importa y el [skill para agentes](/es/docs/skill) lo entrega. El paquete `postext` también sabe crearlo y abrirlo, así que un libro puede pasar de esas herramientas a tu propio programa, y al revés, sin perder nada.
+
+```
+mi-libro.postext
+├── preset.json            manifiesto: nombre, idioma, capítulos, configuración, recursos, fuentes
+├── chapters/01-anochecer.md
+├── chapters/02-noche.md
+├── resources/farol.svg
+└── fonts/ebgaramond-400-normal.woff2
+```
+
+El manifiesto se describe campo a campo en el apéndice [Formato de paquete de preset](/es/docs/sandbox#formato-de-paquete-de-preset) del Sandbox. Un archivo puede llevar además `layouts.json`, el recuento de páginas del Sandbox, para que el libro se abra ya paginado allí. `openBundle` lo ignora.
+
+La API se exporta desde `postext` y desde el subpath `postext/bundle`, que añade las utilidades de bajo nivel. Importa desde `postext` cuando además vayas a renderizar. Así los adaptadores de paquetes y los renderizadores comparten una sola instancia del módulo, lo que importa en un CDN como esm.sh, donde cada punto de entrada es un build distinto.
+
+### Abrir un paquete
+
+`openBundle` recibe los bytes del archivo (un `Uint8Array`, un `ArrayBuffer`, o un `Blob` / `File` de un `<input type="file">`) y devuelve todo lo que necesitan el motor y sus backends:
+
+```ts
+import { openBundle } from 'postext';
+
+const bundle = await openBundle(await file.arrayBuffer(), { locale: 'es' });
+
+bundle.chapters;   // [{ title, file, markdown }, …] en el orden del libro
+bundle.config;     // PostextConfig, lista para buildDocument
+bundle.resources;  // Resource[]
+bundle.files;      // Map<ruta, Uint8Array>: todos los archivos del paquete
+```
+
+<table>
+  <thead>
+    <tr><th>Campo</th><th>Qué contiene</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>manifest</code></td><td>El <code>preset.json</code> ya validado.</td></tr>
+    <tr><td><code>id</code>, <code>name</code>, <code>description</code></td><td>Tomados del manifiesto.</td></tr>
+    <tr><td><code>locale</code>, <code>locales</code></td><td>El idioma en que se leyó el contenido, y todos los idiomas que trae un paquete bilingüe. <code>options.locale</code> elige uno: primero la etiqueta exacta, luego el idioma base, luego el idioma propio del paquete.</td></tr>
+    <tr><td><code>chapters</code></td><td><code>&#123; title, file, markdown &#125;</code> por capítulo. Un capítulo sin título en el manifiesto toma el texto de su primer encabezado <code>#</code>.</td></tr>
+    <tr><td><code>config</code></td><td>La paleta de colores por defecto y los tipos de recurso traducidos al idioma del paquete, después la <code>config</code> del manifiesto y después los ajustes propios del idioma. <code>customFonts</code> lista las familias tipográficas del paquete. Es la misma configuración con la que el Sandbox abre el paquete.</td></tr>
+    <tr><td><code>resources</code></td><td>Los recursos, con los pies del idioma elegido. Un tamaño que falte en el manifiesto se lee del archivo.</td></tr>
+    <tr><td><code>fonts</code></td><td>Una entrada por variante: <code>&#123; family, weight, style, format, file, bytes &#125;</code>.</td></tr>
+    <tr><td><code>files</code></td><td>Todos los archivos del zip, por su ruta.</td></tr>
+    <tr><td><code>thumbnail</code>, <code>canvasScope</code></td><td>La ruta de la portada, y cómo pide el paquete que se muestre.</td></tr>
+    <tr><td><code>warnings</code></td><td>Problemas que no impiden abrirlo: un archivo de fuente no admitido, un máster de impresión que falta.</td></tr>
+  </tbody>
+</table>
+
+El **`fileId` de cada archivo es su ruta dentro del paquete**. `resource.svg.fileId`, `resource.bitmap.fileId` y el `fileId` de cada variante de `customFonts` se buscan directamente en `bundle.files`. `openBundle` lanza un error si los bytes no son un zip, si no hay un `preset.json` válido (en la raíz o bajo una única carpeta) o si falta un archivo que el manifiesto nombra.
+
+### Componer y renderizar un paquete
+
+Cuatro utilidades conectan un paquete abierto con el motor y los backends:
+
+- **`loadBundleFonts(bundle)`** registra las fuentes del paquete en `document.fonts`. Espérala antes de componer, porque la composición mide el texto con las fuentes que tiene el navegador. Las familias que el paquete nombra pero no incluye (Google Fonts) tienes que cargarlas tú, como en cualquier otro documento.
+- **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo.
+- **`buildBundle(bundle)`** compone los capítulos en orden y devuelve un `VDTDocument` por capítulo. Cada capítulo continúa al anterior: contadores de encabezados y de recursos, la parte abierta, la paridad de página y la numeración. Un capítulo que imprime el índice (`:::toc`) recibe el esquema del libro entero. Admite las mismas opciones que `buildDocument`, más `config` para sustituir la configuración del paquete y `cache` para compartir una caché de medidas.
+- **`bundleResourceBytes(bundle)`** y **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** son las opciones `resourceBytes` y `fontProvider` de `renderToPdf` de `postext-pdf`. El proveedor de fuentes elige del paquete el peso más cercano del estilo pedido. Para una variante `.woff2` necesita `decompressWoff2`, y para una familia que el paquete no incluye llama a `fallback`.
+
+```ts
+import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
+  bundleResourceBytes, bundleFontProvider } from 'postext';
+import { renderToPdf, decompressWoff2 } from 'postext-pdf';
+
+const bundle = await openBundle(bytes);
+await loadBundleFonts(bundle);
+await registerBundleImages(bundle);
+
+const docs = buildBundle(bundle);                        // un VDTDocument por capítulo
+const primeraPagina = renderPage(docs[0].pages[0], docs[0]); // un <canvas>
+
+const pdf = await renderToPdf(docs, {                    // el libro entero
+  fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
+  resourceBytes: bundleResourceBytes(bundle),
+});
+```
+
+Para componer un solo capítulo por tu cuenta, pasa `bundle.chapters[i].markdown`, `bundle.resources` y `bundle.config` a `buildDocument`, como con cualquier documento.
+
+### Ejemplo en vivo: abrir un paquete
+
+El pen carga un libro de ejemplo de dos capítulos (`lantern.postext`, con su propia tipografía, una figura SVG y una tabla) desde el repositorio. Registra las fuentes e imágenes del paquete, compone el libro con `buildBundle` y pinta todas las páginas. *Make the PDF* renderiza los mismos documentos con `postext-pdf`, incrustando las fuentes del paquete. Elige un `.postext` tuyo, por ejemplo uno exportado del Sandbox, para verlo igual.
+
+<CodePenExample name="open-bundle" title="Postext · abrir un paquete .postext" description="Abrir un archivo .postext con postext, componer el libro y renderizarlo en canvas y PDF." height={640} />
+
+### Crear un paquete
+
+`createBundle` escribe un archivo `.postext` a partir de un documento: sus capítulos, su configuración, sus recursos y los datos a los que estos hacen referencia.
+
+```ts
+import { createBundle } from 'postext';
+
+const { bytes, manifest, warnings } = await createBundle({
+  name: 'El farol',
+  locale: 'es',
+  chapters: [
+    { markdown: '# Anochecer\n\nSe dibuja en :ref{id="farol"}.' },
+    { title: 'Noche', markdown: '# Noche\n\n…' },
+  ],
+  config,
+  resources: [{
+    id: 'farol', typeId: 'figure', kind: 'svg', caption: 'El farol.',
+    svg: { fileId: 'farol.svg', width: 240, height: 150 },
+    createdAt: 0, updatedAt: 0,
+  }],
+  files: { 'farol.svg': svgMarkup, 'garamond-regular': fontBytes },
+});
+```
+
+<table>
+  <thead>
+    <tr><th>Entrada</th><th>Significado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>name</code>, <code>id</code>, <code>description</code>, <code>locale</code></td><td>Los metadatos del manifiesto. Por defecto <code>id</code> es un slug de <code>name</code>.</td></tr>
+    <tr><td><code>chapters</code> o <code>markdown</code></td><td>El libro, un <code>&#123; title?, markdown &#125;</code> por capítulo, o un documento único.</td></tr>
+    <tr><td><code>config</code></td><td>La <code>PostextConfig</code>. Los valores iguales a los de por defecto no se escriben en el manifiesto.</td></tr>
+    <tr><td><code>resources</code></td><td>Los recursos. Una imagen nombra sus datos con <code>bitmap.fileId</code> / <code>svg.fileId</code> (y <code>svg.pdfFileId</code> para un máster de impresión).</td></tr>
+    <tr><td><code>files</code></td><td>Los datos por <code>fileId</code> (un objeto o un <code>Map</code>): las imágenes que citan los recursos y los archivos de fuente que citan las variantes de <code>config.customFonts</code>. Cada valor puede ser un <code>Uint8Array</code>, un <code>ArrayBuffer</code>, un <code>Blob</code> o un texto (el código de un SVG).</td></tr>
+    <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>: una portada (PNG, JPEG, WebP, GIF o SVG).</td></tr>
+    <tr><td><code>canvasScope</code></td><td><code>'book'</code> pide a los visores que compongan el libro entero como un solo lienzo.</td></tr>
+  </tbody>
+</table>
+
+Devuelve los `bytes` del archivo, el `manifest` escrito como `preset.json`, todos los archivos en `files` (ruta → bytes) y una lista de `warnings`. Los archivos se nombran por el id de su recurso (`resources/farol.svg`) o por el nombre del archivo de fuente (`fonts/…`), y los capítulos por su orden y título (`chapters/01-anochecer.md`). Las fuentes se declaran en el campo `fonts` del manifiesto, nunca dentro de `config.customFonts`. Algunas cosas se dejan fuera, cada una con un aviso:
+- un recurso o una variante tipográfica cuyos datos no están en `files`
+- una variante `.woff` (el backend PDF no puede incrustarla)
+- una familia marcada `redistributable: false`
+
+En el navegador, entrega `bytes` a un enlace de descarga: `URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }))`. En Node, escríbelos con `fs.writeFile`. `createBundle` y `openBundle` no necesitan DOM. Los dists usan rutas de módulo sin extensión, así que con Node a secas, sin bundler, necesitan un hook de resolución. El archivo `docs/examples/open-bundle/build-sample.mjs` del repositorio muestra uno en pocas líneas.
+
+### Ejemplo en vivo: crear un paquete
+
+El pen compone un libro de dos capítulos con una figura SVG y lista los archivos que escribió `createBundle` junto con el manifiesto. Ofrece el archivo para descargar, lo vuelve a abrir con `openBundle` y pinta su primera página: el viaje de ida y vuelta completo en pocas líneas. Importa el archivo descargado en el Sandbox para seguir trabajando en él allí.
+
+<CodePenExample name="create-bundle" title="Postext · crear un paquete .postext" description="Escribir un archivo .postext con createBundle de postext, descargarlo y volver a abrirlo." height={640} />
+
+### Trabajar con paquetes
+
+Como el Sandbox, el skill para agentes y el paquete `postext` leen y escriben el mismo archivo, un `.postext` es una forma cómoda de pasar un libro de una herramienta a otra:
+
+- **Partir de un paquete.** Porta una publicación existente con el [skill para agentes](/es/docs/skill), o diseña un libro en el [Sandbox](/es/sandbox) y expórtalo (**Exportar** en su fila del panel de Proyectos). Carga el archivo desde tu programa con `openBundle` para renderizarlo en canvas, HTML o PDF. Conserva el archivo como fuente del libro: edita en código los capítulos, la configuración o los recursos y vuelve a escribirlo con `createBundle`, o simplemente vuelve a cargarlo cada vez que cambie.
+- **Depurar y ajustar en el Sandbox.** Cuando algo de lo que produce tu programa necesita retoques (una figura que cae en la página equivocada, un estilo de encabezado, el equilibrio de columnas), exporta lo que compone tu programa con `createBundle`. Importa ese archivo en el Sandbox (*Proyectos → Nuevo → Importar .postext…*), corrige el markdown, la configuración o los recursos con la vista previa en vivo, el panel de avisos y la vista PDF, y vuelve a exportarlo. Después tu programa carga el archivo corregido con `openBundle`. O copia lo que cambió de vuelta a tu código: la `config` del manifiesto solo guarda los valores distintos de los de por defecto, así que se lee como una diferencia corta.
+
+### API de bajo nivel
+
+`postext/bundle` exporta también las piezas sobre las que se construyen `openBundle` y `createBundle`, para aplicaciones que guardan o sirven paquetes a su manera (un directorio descomprimido por HTTP, registros en una base de datos):
+
+- **`openBundleZip(bytes)` / `zipBundle(files)`**: la capa del zip. Al abrir tolera una carpeta raíz e ignora las entradas `__MACOSX` y los archivos ocultos. Se rechazan las rutas que se salen del paquete.
+- **`readBundle(manifest, readFile, options)`** lee un manifiesto más una función `readFile(ruta)` y devuelve capítulos, configuración, recursos, imágenes y fuentes. `options` fija el idioma, cómo se nombran los identificadores de archivo (`ids`), la configuración base y cómo se miden los tamaños intrínsecos.
+- **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**: el lado de escritura, separado en un plan puro (nombres de archivo y manifiesto) y la resolución de los bytes mediante las funciones `readBlob` / `readFont`.
+- **`isBundleManifest(value)`**, las funciones que eligen idioma (`pickChapterSpecs`, `pickLocaleOverrides`, `resolveBundleLocale`), `svgSize` / `bitmapSize` y los tipos del formato (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
+
+El Sandbox está construido sobre estas piezas. Añade sus propios identificadores de almacenamiento y los registros de páginas de `layouts.json`.

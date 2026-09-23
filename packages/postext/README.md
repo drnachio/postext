@@ -243,6 +243,24 @@ await preloadConfigFonts(config);
 
 The `<PostextSandbox>` component handles this automatically, blocking rendering until all config fonts are ready.
 
+## Bundles (`.postext` files)
+
+A `.postext` file is a whole book (manifest, chapters, resources and fonts) in one zip: the format the [Sandbox](https://postext.dev/en/sandbox) exports and imports. Open one and render it, or write one from your own document:
+
+```ts
+import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage, createBundle } from 'postext';
+
+const bundle = await openBundle(await file.arrayBuffer());
+await loadBundleFonts(bundle);
+await registerBundleImages(bundle);
+const docs = buildBundle(bundle);                 // one VDTDocument per chapter
+const canvas = renderPage(docs[0].pages[0], docs[0]);
+
+const { bytes } = await createBundle({ name: 'My Book', chapters: [{ markdown: '# One\n\n…' }], config });
+```
+
+See [Bundles](https://postext.dev/en/docs/configuration#bundles-postext-files) for the full API, the PDF adapters and live examples.
+
 ## Full Documentation
 
 Visit [postext.dev](https://postext.dev/) for the full documentation, project vision, architecture, and roadmap. For contributing guidelines, see the [GitHub repository](https://github.com/drnachio/postext).

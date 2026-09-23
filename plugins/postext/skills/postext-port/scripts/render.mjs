@@ -2,7 +2,7 @@
 // Lay out a Postext project headlessly: real font metrics (fontkit, from the
 // bundle's own fonts), engine warnings, parse issues, optional PDF + page PNGs.
 //
-//   node render.mjs <project> [--lang es] [--chapters all|0,2] [--out book.pdf]
+//   node render.mjs <project | book.postext> [--lang es] [--chapters all|0,2] [--out book.pdf]
 //        [--png out-dir --dpi 60 --pages 1-8] [--tools DIR | --repo /path/to/postext]
 //
 // One-time setup (Node >= 22.15; any folder, default ~/.cache/postext-tools):
@@ -13,11 +13,11 @@
 //
 // The browser measures with canvas and loads Google Fonts for families you did
 // not bundle; here only bundled faces exist, so bundle every family you use.
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, statSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire, registerHooks } from 'node:module';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 
 // The published dists use extensionless relative imports (bundler resolution):
@@ -43,10 +43,10 @@ registerHooks({
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i + 1] : d; };
 if (!args[0] || args[0].startsWith('--')) {
-  console.error('usage: node render.mjs <project> [--lang es] [--out book.pdf] [--png dir] [--tools DIR | --repo DIR]');
+  console.error('usage: node render.mjs <project-dir or book.postext> [--lang es] [--out book.pdf] [--png dir] [--tools DIR | --repo DIR]');
   process.exit(2);
 }
-const BUNDLE = resolve(args[0]);
+let BUNDLE = resolve(args[0]);
 const OUT = opt('out', null);
 const PNG = opt('png', null);
 
@@ -74,6 +74,22 @@ if (REPO) {
   fontkit = (await import(pathToFileURL(req.resolve('@pdf-lib/fontkit')).href)).default;
 }
 
+// A packed `.postext` file: unzip it with the engine's own bundle reader
+// (`openBundleZip`, in postext releases that ship the bundle API) into a
+// scratch folder and render that.
+if (statSync(BUNDLE).isFile()) {
+  if (typeof postext.openBundleZip !== 'function') {
+    console.error('Reading a .postext file needs a postext release with the bundle API (openBundleZip): update it, or pass the unzipped project folder.');
+    process.exit(2);
+  }
+  const { files } = postext.openBundleZip(new Uint8Array(readFileSync(BUNDLE)));
+  const dir = mkdtempSync(join(tmpdir(), 'postext-render-'));
+  for (const [path, data] of files) {
+    mkdirSync(dirname(join(dir, path)), { recursive: true });
+    writeFileSync(join(dir, path), data);
+  }
+  BUNDLE = dir;
+}
 const manifest = JSON.parse(readFileSync(join(BUNDLE, 'preset.json'), 'utf8'));
 const problems = [];
 const need = (cond, msg) => { if (!cond) problems.push(msg); };
