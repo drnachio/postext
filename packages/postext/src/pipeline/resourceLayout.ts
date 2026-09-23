@@ -61,6 +61,7 @@ import { dimensionToPx } from '../units';
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
 import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
+import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
 import { pickTableStyle } from '../defaults/tableStyle';
 import { resolveColorValue } from '../defaults/shared';
@@ -147,6 +148,11 @@ export function resolveSwatchSpans(spans: InlineSpan[], palette: ColorPaletteEnt
     const entry = palette?.find((e) => e.id === raw);
     return entry ? { ...span, swatch: { color: entry.value.hex } } : span;
   });
+}
+
+/** Inline chips of a table cell, sized against the cell's font. */
+function resolveCellChips(spans: InlineSpan[], chips: ChipContext | undefined, set: CellFontSet): InlineSpan[] {
+  return chips ? resolveChipSpans(spans, chips, fontSizePxOf(set.fontString)) : spans;
 }
 
 /** Build a label for an inline `:ref` to a resource, honouring its `style` and
@@ -265,6 +271,8 @@ interface TableLayoutStyle {
   listGapPx: number;
   /** Document palette, for palette-linked cell fills and swatch colours. */
   palette?: ColorPaletteEntry[];
+  /** Chip styles, for inline `:chip[…]` in cells. */
+  chips?: ChipContext;
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -647,13 +655,13 @@ function layoutTable(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const spans = resolveSwatchSpans(resolveRefSpans(
+      const spans = resolveCellChips(resolveSwatchSpans(resolveRefSpans(
         parseRefAwareSpans(cell.content),
         resourceNumbering,
         resourceTypes,
         resources,
         refStyle,
-      ), style.palette);
+      ), style.palette), style.chips, set);
       const m = measureCellContent(
         spans,
         set,
@@ -916,6 +924,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       rules: ts.rules,
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
+      chips: chipContextOf(resolved),
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -971,13 +980,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const prefixText = captionPrefix.length > 0
       ? `${captionPrefix}${NBSP}${number}.${number ? ' ' : ''}`
       : '';
-    const resolvedSpans = resolveSwatchSpans(resolveRefSpans(
+    const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
       parseRefAwareSpans(captionText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    ), palette);
+    ), palette), chipContextOf(resolved), captionFontPx);
     // Description spans pick up the configured slant on top of their own markup.
     const descSpans: InlineSpan[] = cs.descriptionItalic
       ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
@@ -1023,13 +1032,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // The note closes the table: a slice that continues holds it back for
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
-    const noteSpans = resolveSwatchSpans(resolveRefSpans(
+    const noteSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
       parseRefAwareSpans(noteText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    ), palette);
+    ), palette), chipContextOf(resolved), noteFontPx);
     const slanted: InlineSpan[] = cs.note.italic
       ? noteSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : noteSpans;

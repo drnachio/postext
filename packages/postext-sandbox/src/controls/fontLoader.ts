@@ -177,6 +177,11 @@ export function getConfigFontFamilies(config: PostextConfig): string[] {
       if (family) families.add(family);
     }
   }
+  // Chip styles: a chip may set its text in a family of its own; unset, it
+  // inherits the text around it.
+  for (const style of config.chipStyles ?? []) {
+    if (style.fontFamily) families.add(style.fontFamily);
+  }
   // Part list overrides (partial configs applied inside `:::part`).
   const partLists = [config.parts?.bodyStyle?.unorderedLists, config.parts?.bodyStyle?.orderedLists];
   for (const lists of partLists) {

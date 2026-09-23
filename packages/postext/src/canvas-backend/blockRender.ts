@@ -4,6 +4,7 @@ import { getMathRaster } from '../math/rasterCache';
 import { renderHeaderFooterSlot } from './headerFooter';
 import { renderResourceBlock } from './renderResourceBlock';
 import { paintSwatch } from './swatch';
+import { paintChip } from './chip';
 
 function pickSegmentFont(
   bold: boolean,
@@ -137,6 +138,15 @@ function renderSegments(
       x += seg.width;
       continue;
     }
+    if (seg.chip) {
+      paintChip(ctx, seg.chip, x, baseline, (run) =>
+        pickSegmentColor(!!run.bold, !!run.italic, style.color, style.boldColor, style.italicColor));
+      x += seg.width;
+      // The chip set its own font and fill; force a re-set on the next text.
+      currentFont = '';
+      currentFill = '';
+      continue;
+    }
     const font = seg.fontString
       ?? pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
     if (font !== currentFont) {
@@ -158,7 +168,7 @@ function renderSegments(
 
 /** Whether a segment paints differently from the block's plain text. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
-  return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.refResourceId !== undefined
+  return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined;
 }
 

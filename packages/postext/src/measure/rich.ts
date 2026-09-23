@@ -1,4 +1,4 @@
-import type { VDTLine, VDTLineSegment } from '../vdt';
+import type { VDTChip, VDTChipRun, VDTLine, VDTLineSegment } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import type { MathRender } from '../math/types';
 import type { InlineSpan } from '../parse';
@@ -13,6 +13,8 @@ import type { MeasuredBlock, MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { computeJustifiedSpaceRatio } from './plain';
+import { quoteFamily } from './font';
+import { trimChipLineEdges } from './chipEdges';
 
 export interface RichBreakPoint {
   charIndex: number;
@@ -52,6 +54,12 @@ export interface RichToken {
   /** When present, this token is an inline colour swatch (`:swatch{…}`): an
    *  atomic square of `width` px, filled with `color` (hex) when resolved. */
   swatch?: { color?: string };
+  /** When present, this token is an inline chip (`:chip[…]`): an atomic box
+   *  of `width` px (margins included) with its own text runs. */
+  chip?: VDTChip;
+  /** The chip style's gap (px), read when the word spaces around the chip
+   *  are sized (see {@link applyChipGaps}). */
+  chipGap?: number;
 }
 
 /** Side of an inline colour swatch: three quarters of the font size (the
@@ -108,6 +116,124 @@ function tokenFont(
  *  head) carries on. */
 function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift'> {
   return t.script ? { script: t.script, scriptFont: t.scriptFont, baselineShift: t.baselineShift } : {};
+}
+
+/** The text band of a chip box around the baseline, as fractions of the
+ *  chip's font size: from the ascenders down past the descenders; the
+ *  vertical padding and border grow it. */
+export const CHIP_ASCENT_RATIO = 0.8;
+export const CHIP_DESCENT_RATIO = 0.25;
+
+/** `font` set in `family` (when given) at `sizePx`: the style and weight
+ *  words of the CSS shorthand are kept. */
+function withFace(font: string, family: string | undefined, sizePx: number): string {
+  const m = /^(.*?)(\d*\.?\d+)px\s+(.+)$/.exec(font);
+  if (!m) return font;
+  return `${m[1]}${sizePx}px ${family ? quoteFamily(family) : m[3]}`;
+}
+
+/**
+ * One atomic token for an inline chip: its words measured run by run (the
+ * span font — plus the chip style's bold / italic — at the chip's family
+ * and size), boxed by the horizontal padding and border. The box height is
+ * the chip's text band plus the vertical padding and border; it never
+ * enters the line height. A chip span without a resolved box sets as bare
+ * text.
+ */
+function chipToken(
+  span: InlineSpan,
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+  letterSpacingPx: number,
+): RichToken {
+  const chip = span.chip!;
+  const box = chip.box;
+  const sizeMatch = FONT_SIZE_RE.exec(normalFont);
+  const sizePx = box?.fontSizePx ?? (sizeMatch ? parseFloat(sizeMatch[1]!) : 16);
+  const runs: VDTChipRun[] = [];
+  for (const s of chip.spans) {
+    if (s.text.length === 0) continue;
+    const bold = s.bold || span.bold || !!box?.bold;
+    const italic = s.italic || span.italic || !!box?.italic;
+    let font = withFace(pickSpanFont(bold, italic, normalFont, boldFont, italicFont, boldItalicFont), box?.fontFamily, sizePx);
+    let baselineShift: number | undefined;
+    if (s.script) {
+      const m = scriptMetrics(font, s.script);
+      font = m.font;
+      baselineShift = m.baselineShift;
+    }
+    runs.push({
+      text: s.text,
+      fontString: font,
+      width: measureTextWidth(s.text, font) + letterSpacingPx * s.text.length,
+      ...(bold ? { bold: true } : {}),
+      ...(italic ? { italic: true } : {}),
+      ...(baselineShift !== undefined ? { baselineShift } : {}),
+    });
+  }
+  const textWidth = runs.reduce((sum, r) => sum + r.width, 0);
+  const paddingX = box?.paddingXPx ?? 0;
+  const paddingY = box?.paddingYPx ?? 0;
+  const borderWidth = box?.borderWidthPx ?? 0;
+  const boxWidth = textWidth + (paddingX + borderWidth) * 2;
+  const ascent = sizePx * CHIP_ASCENT_RATIO + paddingY + borderWidth;
+  const descent = sizePx * CHIP_DESCENT_RATIO + paddingY + borderWidth;
+  return {
+    text: span.text,
+    bold: span.bold,
+    italic: span.italic,
+    captionLabel: span.captionLabel,
+    kind: 'text',
+    width: boxWidth,
+    chip: {
+      styleId: box?.styleId ?? '',
+      runs,
+      marginLeft: 0,
+      marginRight: 0,
+      boxWidth,
+      ascent,
+      descent,
+      paddingX,
+      borderWidth,
+      borderRadius: Math.min(box?.borderRadiusPx ?? 0, (ascent + descent) / 2, boxWidth / 2),
+      ...(box?.background ? { background: box.background } : {}),
+      ...(box?.borderColor ? { borderColor: box.borderColor } : {}),
+      ...(box?.color ? { color: box.color } : {}),
+    },
+    chipGap: box?.gapPx ?? 0,
+  };
+}
+
+/** A chip keeps at least its style's `gap` to a neighbour across a word
+ *  space: a narrower space is topped up by a margin inside the chip's own
+ *  advance (so justification, which stretches spaces only, never eats it).
+ *  Between two chips the shortfall is shared, so the pair ends up exactly
+ *  `gap` apart. Glued neighbours (punctuation) get nothing. */
+function applyChipGaps(tokens: RichToken[]): void {
+  for (let i = 0; i < tokens.length; i++) {
+    const space = tokens[i]!;
+    if (space.kind !== 'space') continue;
+    const left = tokens[i - 1]?.chip ? tokens[i - 1]! : undefined;
+    const right = tokens[i + 1]?.chip ? tokens[i + 1]! : undefined;
+    if (!left && !right) continue;
+    const gap = Math.max(left?.chipGap ?? 0, right?.chipGap ?? 0);
+    const shortfall = gap - space.width;
+    if (shortfall <= 0) continue;
+    const share = left && right ? shortfall / 2 : shortfall;
+    if (left) tokens[i - 1] = withChipMargins(left, 0, share);
+    if (right) tokens[i + 1] = withChipMargins(right, share, 0);
+  }
+}
+
+function withChipMargins(token: RichToken, addLeft: number, addRight: number): RichToken {
+  const chip = token.chip!;
+  return {
+    ...token,
+    width: token.width + addLeft + addRight,
+    chip: { ...chip, marginLeft: chip.marginLeft + addLeft, marginRight: chip.marginRight + addRight },
+  };
 }
 
 /**
@@ -240,6 +366,11 @@ function tokenizeSpans(
       });
       continue;
     }
+    // Chips are atomic boxes: never broken or hyphenated inside.
+    if (span.chip) {
+      tokens.push(chipToken(span, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx));
+      continue;
+    }
     // Swatch spans are atomic too: one square box the size of a capital.
     if (span.swatch) {
       const swatchFont = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
@@ -325,6 +456,7 @@ function tokenizeSpans(
     }
   }
 
+  if (tokens.some((t) => t.chip)) applyChipGaps(tokens);
   return tokens;
 }
 
@@ -486,7 +618,7 @@ export function measureRichBlock(
 
       // A word wider than the whole line: divide it rather than let it run
       // past the measure (syllable first, then character).
-      if (lineTokens.length === 0 && token.kind === 'text' && !token.mathRender && !token.swatch && token.refResourceId === undefined && token.width > lineMaxWidth) {
+      if (lineTokens.length === 0 && token.kind === 'text' && !token.mathRender && !token.swatch && !token.chip && token.refResourceId === undefined && token.width > lineMaxWidth) {
         const font = tokenFont(token, normalFont, boldFont, italicFont, boldItalicFont);
         const split = emergencySplit(token, font, letterSpacingPx, lineMaxWidth);
         if (split) {
@@ -524,21 +656,22 @@ export function measureRichBlock(
     const isLastLine = peekIdx >= tokens.length;
 
     // Build segments for justified rendering
-    const segments: VDTLineSegment[] = lineTokens.map((t) => ({
-      kind: t.mathRender ? ('math' as const) : t.swatch ? ('swatch' as const) : t.kind,
+    const segments: VDTLineSegment[] = trimChipLineEdges(lineTokens.map((t) => ({
+      kind: t.mathRender ? ('math' as const) : t.swatch ? ('swatch' as const) : t.chip ? ('chip' as const) : t.kind,
       text: cleanSoftHyphens(t.text),
       width: t.width,
       bold: t.bold || undefined,
       italic: t.italic || undefined,
       ...(t.mathRender ? { mathRender: t.mathRender } : {}),
       ...(t.swatch ? { swatch: t.swatch } : {}),
+      ...(t.chip ? { chip: t.chip } : {}),
       ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId } : {}),
       ...(t.captionLabel ? { captionLabel: true } : {}),
       ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
-    }));
+    })));
 
     const lineText = lineTokens.map((t) => cleanSoftHyphens(t.text)).join('');
-    const contentWidth = lineTokens.reduce((sum, t) => sum + t.width, 0);
+    const contentWidth = segments.reduce((sum, t) => sum + t.width, 0);
 
     const justifiedSpaceRatio = computeJustifiedSpaceRatio(
       segments,

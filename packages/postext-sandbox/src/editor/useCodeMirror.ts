@@ -9,6 +9,7 @@ import { bracketMatching } from '@codemirror/language';
 import { getEditorTheme } from './postextTheme';
 import { frontmatterHighlight, frontmatterParser, frontmatterTheme } from './frontmatterHighlight';
 import { mathHighlight, mathTheme } from './mathHighlight';
+import { chipHighlight, chipTheme } from './chipSyntax';
 import { refCompletion, type RefCompletionContext } from './refCompletion';
 
 interface UseCodeMirrorOptions {
@@ -64,6 +65,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       frontmatterHighlight,
       mathTheme,
       mathHighlight,
+      chipTheme,
+      chipHighlight,
       refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       themeCompartment.current.of(getEditorTheme(isDark)),

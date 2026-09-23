@@ -16,6 +16,7 @@
 import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
 import { tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
+import { paintChip } from './chip';
 
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
@@ -229,6 +230,11 @@ function paintLine(
       }
       if (seg.kind === 'swatch') {
         paintSwatch(ctx, x, line.baseline, seg.width, seg.swatch?.color, color);
+        x += seg.width;
+        continue;
+      }
+      if (seg.chip) {
+        paintChip(ctx, seg.chip, x, line.baseline, () => color);
         x += seg.width;
         continue;
       }

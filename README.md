@@ -131,6 +131,7 @@ Everything below ships today — see the [Roadmap](#roadmap) for what's still in
 
 - `tableStyle` — table body and header typography fully independent of body text; `tableStyles` adds named variants a table picks with `table.styleId`, and `borderRadius` rounds the outer frame.
 - `captionStyle` — caption typeface, weight, and color.
+- `chipStyles` — named styles for inline chips, `:chip[text]{style="…"}`: boxed words (word banks, keys, tags) that wrap as one unit, with their own fill, outline, radius, padding and text style, painted as real text in every backend.
 - `diagramStyle.singleInk` — recolors SVG diagrams to luminance-mapped tints of a single ink, so diagrams survive single-spot-colour printing.
 
 ### Math

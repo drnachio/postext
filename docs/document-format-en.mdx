@@ -402,12 +402,34 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Inline image markdown is <strong>removed</strong> from the text. Images must be declared on <code>PostextContent.resources</code> so the layout engine can place them according to <code>resourcePlacement</code> rules.</td>
     </tr>
     <tr>
+      <td>Chip</td>
+      <td><code>:chip[text]</code></td>
+      <td>A boxed run of text that wraps as one unit — a word bank, a key, a tag. Styled by <code>chipStyles</code>; see <a href="#inline-chips">Inline chips</a>.</td>
+    </tr>
+    <tr>
       <td>Inline math</td>
       <td><code>$…$</code></td>
       <td>A LaTeX formula that flows with the surrounding text, e.g. <code>$e^{'{i\\pi}'}+1=0$</code>. Typeset by MathJax and rendered as vector paths on every backend. Use <code>\\$</code> for a literal dollar sign. Scaling, the display (<code>$$ … $$</code>) form, and error handling are covered under <a href="#mathematical-formulas">Mathematical formulas</a>.</td>
     </tr>
   </tbody>
 </table>
+
+### Inline chips
+
+`:chip[text]` sets `text` in a box — a rounded, tinted "chip" — that flows with the line: the words of a word bank or a classify exercise, keyboard keys, tags. `:chip[text]{style="key"}` picks a named style from `chipStyles` (see the configuration reference); without `style`, or with an id no style declares, the chip takes the first style (a built-in `chip` style when the configuration has none; the sandbox warns about an unknown id).
+
+```markdown
+Classify: :chip[battery] :chip[cable] :chip[switch] :chip[bulb]
+
+Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
+```
+
+- **One unit.** A chip is never broken or hyphenated inside; the line breaks between chips, at the word spaces around them. A chip wider than the whole line overflows it rather than splitting.
+- **Width.** Its advance is the text plus the horizontal padding and the outline on both sides. Justification stretches the word spaces only, never the inside of a chip. The style's `gap` is the least room kept between the box and a neighbouring word or chip across a space — a narrower space is topped up (not at a line edge, and not against glued punctuation such as `:chip[a],`).
+- **Height.** The box is a band around the baseline, 0.8 em above and 0.25 em below at the chip's size, grown by the vertical padding and the outline. The vertical padding paints outside the line box and never changes the line height, so the baseline grid holds; a box taller than the line pitch touches the chips of the next line, and the sandbox flags it ("Chips touch the next line") so the padding, outline or size can be reduced.
+- **Text.** The chip text takes its own inline marks (`:chip[**bold** word]`, `:chip[x^2^]`) and the emphasis around it (`**:chip[a]**`); the style may set its family, size, colour, bold and italic. Write `\]` for a literal bracket inside. References, swatches and math inside a chip stay literal.
+- **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes. Headings keep `:chip[…]` as literal text.
+- **Output.** Canvas, HTML and PDF paint the box and set the words as real text: selectable in the HTML, extractable and in reading order in the PDF (in a tagged PDF the box is a layout artifact and the words belong to the paragraph).
 
 
 ## Mathematical formulas

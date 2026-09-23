@@ -18,6 +18,7 @@ export type SettingsSectionId =
   | 'headingStyles'
   | 'toc'
   | 'paragraphStyles'
+  | 'chipStyles'
   | 'unordered-lists'
   | 'ordered-lists'
   | 'math'
@@ -66,6 +67,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'headingStyles', category: 'text', labelKey: 'headingStylesSection', configKeys: ['headingStyles'] },
   { id: 'toc', category: 'text', labelKey: 'tocSection', configKeys: ['toc'] },
   { id: 'paragraphStyles', category: 'text', labelKey: 'paragraphStylesSection', configKeys: ['paragraphStyles'] },
+  { id: 'chipStyles', category: 'text', labelKey: 'chipStylesSection', configKeys: ['chipStyles'] },
   { id: 'unordered-lists', category: 'text', labelKey: 'unorderedLists', configKeys: ['unorderedLists'] },
   { id: 'ordered-lists', category: 'text', labelKey: 'orderedLists', configKeys: ['orderedLists'] },
   { id: 'math', category: 'text', labelKey: 'mathSection', configKeys: ['math'] },

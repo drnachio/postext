@@ -8,6 +8,7 @@ import { stripCaptionStyleDefaults } from './captionStyle';
 import { stripDiagramStyleDefaults } from './diagramStyle';
 import { stripParagraphStylesDefaults } from './paragraphStyles';
 import { stripCalloutStylesDefaults } from './calloutStyles';
+import { stripChipStylesDefaults } from './chipStyles';
 import { stripUnorderedListsDefaults } from './unorderedLists';
 import { stripOrderedListsDefaults } from './orderedLists';
 import { stripMathDefaults } from './math';
@@ -29,6 +30,7 @@ export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle
 export { DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults } from './diagramStyle';
 export { DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults } from './paragraphStyles';
 export { DEFAULT_CALLOUT_STYLES, DEFAULT_CALLOUT_STYLE_STATIC, resolveCalloutStylesConfig, stripCalloutStylesDefaults } from './calloutStyles';
+export { DEFAULT_CHIP_STYLES, DEFAULT_CHIP_STYLE_STATIC, resolveChipStylesConfig, stripChipStylesDefaults, pickChipStyle } from './chipStyles';
 export { DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults } from './unorderedLists';
 export { DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults } from './orderedLists';
 export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './math';
@@ -103,6 +105,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.calloutStyles = strippedCalloutStyles;
   } else {
     delete result.calloutStyles;
+  }
+  const strippedChipStyles = stripChipStylesDefaults(config.chipStyles);
+  if (strippedChipStyles) {
+    result.chipStyles = strippedChipStyles;
+  } else {
+    delete result.chipStyles;
   }
   const strippedLists = stripUnorderedListsDefaults(config.unorderedLists);
   if (strippedLists) {

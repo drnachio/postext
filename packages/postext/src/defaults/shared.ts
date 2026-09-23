@@ -169,6 +169,12 @@ export function applyPaletteToResolvedConfig(
       body: { ...s.body, color: resolveRequired(s.body.color, palette) },
       lists: { ...s.lists, color: resolveRequired(s.lists.color, palette) },
     })),
+    chipStyles: resolved.chipStyles.map((s) => ({
+      ...s,
+      background: resolveRequired(s.background, palette),
+      borderColor: resolveRequired(s.borderColor, palette),
+      ...(s.color ? { color: resolveRequired(s.color, palette) } : {}),
+    })),
     parts: {
       ...resolved.parts,
       bodyStyle: {
@@ -320,6 +326,15 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
 
   if (config.paragraphStyles) {
     next.paragraphStyles = config.paragraphStyles.map((s) => ({ ...s, color: resolveColor(s.color, palette) }));
+  }
+
+  if (config.chipStyles) {
+    next.chipStyles = config.chipStyles.map((s) => ({
+      ...s,
+      background: resolveColor(s.background, palette),
+      borderColor: resolveColor(s.borderColor, palette),
+      color: resolveColor(s.color, palette),
+    }));
   }
 
   if (config.calloutStyles) {

@@ -26,6 +26,8 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
       return hasKeys(config.bodyText) || config.locale !== undefined;
     case 'calloutStyles':
       return config.calloutStyles !== undefined;
+    case 'chipStyles':
+      return config.chipStyles !== undefined;
     case 'resource-types':
       return config.resourceTypes !== undefined;
     case 'debug':

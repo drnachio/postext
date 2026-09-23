@@ -29,11 +29,12 @@ import {
   appendBezierCurve,
   closePath,
   stroke,
+  fill,
   setStrokingColor,
   setLineWidth,
 } from 'pdf-lib';
 import { hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
-import type { PdfColorSpace, RoundedOutline } from 'postext';
+import type { PdfColorSpace, RoundedOutline, VDTChip } from 'postext';
 import type { PageTagger } from './tagging';
 
 export interface PageCtx {
@@ -371,6 +372,40 @@ function roundedOutlineOps(ctx: PageCtx, o: RoundedOutline): PDFOperator[] {
 export function pushClipOutline(ctx: PageCtx, o: RoundedOutline): void {
   ctx.tags?.close();
   ctx.page.pushOperators(pushGraphicsState(), ...roundedOutlineOps(ctx, o), clip(), endPath());
+}
+
+/** Fill a rounded outline (px). */
+export function fillOutlinePx(ctx: PageCtx, o: RoundedOutline, color: Color): void {
+  ctx.page.pushOperators(
+    pushGraphicsState(),
+    setFillingColor(color),
+    ...roundedOutlineOps(ctx, o),
+    fill(),
+    popGraphicsState(),
+  );
+}
+
+/** The box of an inline chip (`:chip[…]`) whose segment starts at `xPx` on
+ *  a line of baseline `baselinePx`: the fill, then the outline stroked
+ *  inside the box edge (the text runs are painted by the caller). */
+export function drawChipBoxPx(ctx: PageCtx, chip: VDTChip, xPx: number, baselinePx: number): void {
+  const x = xPx + chip.marginLeft;
+  const y = baselinePx - chip.ascent;
+  const h = chip.ascent + chip.descent;
+  const r = chip.borderRadius;
+  if (chip.background) {
+    fillOutlinePx(ctx, { x, y, width: chip.boxWidth, height: h, radii: [r, r, r, r] }, colorFromHex(chip.background, ctx.colorSpace));
+  }
+  if (chip.borderColor && chip.borderWidth > 0) {
+    const half = chip.borderWidth / 2;
+    const ri = Math.max(0, r - half);
+    strokeOutlinePx(
+      ctx,
+      { x: x + half, y: y + half, width: chip.boxWidth - chip.borderWidth, height: h - chip.borderWidth, radii: [ri, ri, ri, ri] },
+      colorFromHex(chip.borderColor, ctx.colorSpace),
+      chip.borderWidth,
+    );
+  }
 }
 
 /** Stroke a rounded outline (px) `thicknessPx` wide, centred on it. */

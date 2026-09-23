@@ -4,6 +4,8 @@ import type {
   VDTBlock,
   VDTLine,
   VDTLineSegment,
+  VDTChip,
+  VDTChipRun,
   VDTDesignSlot,
   VDTDesignBlock,
   VDTDesignTextBlock,
@@ -203,6 +205,12 @@ function renderSegments(line: VDTLine, block: VDTBlock): string {
       x += seg.width;
       continue;
     }
+    if (seg.chip) {
+      parts.push(renderChip(seg.chip, x, line.baseline - line.bbox.y, quoteFontString(block.fontString), block.color, (run) =>
+        pickSegmentColor({ kind: 'text', text: run.text, width: run.width, bold: run.bold, italic: run.italic }, block)));
+      x += seg.width;
+      continue;
+    }
     const font = quoteFontString(pickSegmentFont(seg, block));
     const color = pickSegmentColor(seg, block);
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
@@ -224,6 +232,44 @@ function renderSwatch(x: number, baselineOffset: number, side: number, fill: str
     `width:${side.toFixed(3)}px;height:${side.toFixed(3)}px;box-sizing:border-box;` +
     `border:${stroke.toFixed(2)}px solid ${ink};${fill ? `background:${fill};` : ''}"></span>`
   );
+}
+
+/** Inline chip (`:chip[…]`): the box — fill, outline, radius — as one
+ *  decorative span (`x` is the segment's left edge; the box starts after its
+ *  gap margin), then the text runs as ordinary text spans on the line's
+ *  baseline (`baselineOffset` from the line top), so the words stay real,
+ *  selectable text. `lineFont` / `lineColor` are the line box's own. */
+function renderChip(
+  chip: VDTChip,
+  x: number,
+  baselineOffset: number,
+  lineFont: string,
+  lineColor: string,
+  inkFor: (run: VDTChipRun) => string,
+): string {
+  const bx = x + chip.marginLeft;
+  const parts: string[] = [];
+  if (chip.background || (chip.borderColor && chip.borderWidth > 0)) {
+    parts.push(
+      `<span aria-hidden="true" style="position:absolute;left:${bx.toFixed(3)}px;top:${(baselineOffset - chip.ascent).toFixed(3)}px;` +
+      `width:${chip.boxWidth.toFixed(3)}px;height:${(chip.ascent + chip.descent).toFixed(3)}px;box-sizing:border-box;` +
+      (chip.background ? `background:${chip.background};` : '') +
+      (chip.borderColor && chip.borderWidth > 0 ? `border:${chip.borderWidth.toFixed(3)}px solid ${chip.borderColor};` : '') +
+      (chip.borderRadius > 0 ? `border-radius:${chip.borderRadius.toFixed(3)}px;` : '') +
+      `"></span>`,
+    );
+  }
+  let tx = bx + chip.borderWidth + chip.paddingX;
+  for (const run of chip.runs) {
+    const font = quoteFontString(run.fontString);
+    const color = chip.color ?? inkFor(run);
+    const fontDecl = font !== lineFont ? `font:${font};` : '';
+    const colorDecl = color !== lineColor ? `color:${color};` : '';
+    const top = run.baselineShift ? `${run.baselineShift.toFixed(3)}px` : '0';
+    parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color));
+    tx += run.width;
+  }
+  return parts.join('');
 }
 
 function renderBullet(block: VDTBlock): string {
@@ -326,6 +372,11 @@ function renderResourceLine(
       }
       if (seg.kind === 'swatch') {
         parts.push(renderSwatch(x, line.baseline - line.bbox.y, seg.width, seg.swatch?.color, color));
+        x += seg.width;
+        continue;
+      }
+      if (seg.chip) {
+        parts.push(renderChip(seg.chip, x, line.baseline - line.bbox.y, baseFont, color, () => color));
         x += seg.width;
         continue;
       }

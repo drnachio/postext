@@ -37,6 +37,8 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unclosedContainer':
     case 'unknownParagraphStyle':
     case 'unknownCalloutType':
+    case 'unknownChipStyle':
+    case 'chipOverlap':
     case 'numberingInvalidFormat':
     case 'numberingInvalidStartAt':
     case 'pagebreakInvalidParity':
@@ -100,6 +102,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownParagraphStyleTitle;
     case 'unknownCalloutType':
       return labels.warningsUnknownCalloutTypeTitle;
+    case 'unknownChipStyle':
+      return labels.warningsUnknownChipStyleTitle;
+    case 'chipOverlap':
+      return labels.warningsChipOverlapTitle;
     case 'numberingInvalidFormat':
       return labels.warningsNumberingInvalidFormatTitle;
     case 'numberingInvalidStartAt':
@@ -188,6 +194,12 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `:::paragraphs{style="${payload.style}"} — ${labels.warningsUnknownParagraphStyleDetail}`;
     case 'unknownCalloutType':
       return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;
+    case 'unknownChipStyle':
+      return `:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
+    case 'chipOverlap':
+      return labels.warningsChipOverlapDetail
+        .replace('__style__', payload.style)
+        .replace('__pt__', payload.overlapPt.toFixed(1));
     case 'numberingInvalidFormat':
       return `format="${payload.value}" — ${labels.warningsNumberingInvalidFormatDetail}`;
     case 'numberingInvalidStartAt':

@@ -2724,6 +2724,151 @@ const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
 ```
 
 
+## Estilos de chip
+
+La propiedad `chipStyles` declara los estilos con nombre del `:chip[texto]{style="…"}` en línea: las cajas redondeadas y tintadas de un banco de palabras, una tecla, una etiqueta (la sintaxis y sus reglas de corte de línea están en la referencia del formato de documento). Viene un estilo por defecto, `chip` (relleno azul pálido con un filete del color principal, esquinas algo redondeadas y el texto como las palabras que lo rodean), así que `:chip[…]` funciona sin configurar nada; declarar `chipStyles` sustituye esa lista. Un chip sin `style`, o con un id que ningún estilo declara, toma el primer estilo.
+
+```ts
+const config: PostextConfig = {
+  chipStyles: [
+    { id: 'chip', name: 'Banco de palabras' },
+    {
+      id: 'key',
+      name: 'Tecla',
+      background: { hex: '#fff4d6', model: 'hex' },
+      borderColor: { hex: '#8a6d1f', model: 'hex' },
+      borderRadius: { value: 2, unit: 'pt' },
+      bold: true,
+    },
+  ],
+};
+```
+
+```md
+Clasifica: :chip[pila] :chip[cable] :chip[interruptor]
+
+Pulsa :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatorio</td>
+      <td>Identificador que se usa en <code>:chip[…]&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nombre legible, solo para interfaces de edición.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pinta el relleno de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#e8eef7</code></td>
+      <td>Relleno de la caja (vinculable a la paleta).</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color principal de la paleta</td>
+      <td>Color del contorno.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Grosor del contorno; <code>0</code> no dibuja ninguno. Se traza por dentro del borde de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Radio de las esquinas, limitado a la mitad de la altura de la caja (un valor grande da una píldora).</td>
+    </tr>
+    <tr>
+      <td><code>paddingX</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Espacio entre el contorno y el texto, a izquierda y derecha. Forma parte del avance del chip.</td>
+    </tr>
+    <tr>
+      <td><code>paddingY</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.1em</code></td>
+      <td>Espacio por encima y por debajo de la banda del texto. Se pinta fuera de la caja de línea: nunca cambia el interlineado.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>texto que lo rodea</td>
+      <td>Familia del texto del chip. Los pesos siguen al texto que lo rodea.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>texto que lo rodea</td>
+      <td>Cuerpo del texto del chip; <code>em</code> es relativo al texto que lo rodea.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>texto que lo rodea</td>
+      <td>Color del texto del chip. Sin fijar, las negritas y cursivas conservan sus colores de énfasis.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone el texto del chip en negrita, además de sus propias marcas.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone el texto del chip en cursiva, además de sus propias marcas.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25em</code></td>
+      <td>Espacio mínimo entre la caja y la palabra o el chip vecino a través de un espacio; un espacio más estrecho se completa dentro del avance del chip, así que la justificación nunca lo come. No se añade nada en el borde de la línea ni junto a la puntuación pegada.</td>
+    </tr>
+  </tbody>
+</table>
+
+Las longitudes en em de la caja (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) son relativas al cuerpo del propio chip. La caja es una banda de 0,8 em por encima y 0,25 em por debajo de la línea base, que crece con `paddingY` y el contorno; se pinta fuera de la caja de línea y nunca cambia el interlineado, así que la retícula se mantiene. Cuando la caja resulta más alta que el interlineado, los chips de líneas seguidas se tocan: el sandbox muestra el aviso «Los chips tocan la línea siguiente» con el exceso, para reducir `paddingY`, el contorno o `fontSize`.
+
+En el VDT un chip es un segmento de línea de `kind: 'chip'` cuyo campo `chip` lleva los tramos de texto (cada uno con su cadena de fuente y su ancho), la geometría de la caja (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, los márgenes del `gap`) y sus colores; el `text` del segmento es un marcador de un carácter, de modo que los desplazamientos de texto plano y los mapas de fuente cuentan un chip como un carácter.
+
+```ts
+const resolved = resolveChipStylesConfig(config.chipStyles);
+// => el estilo `chip` integrado si no se declara; todos los campos rellenos
+
+const minimal  = stripChipStylesDefaults(config.chipStyles);
+// => undefined para el valor integrado; se eliminan los valores por defecto
+
+const style = pickChipStyle(resolved, 'key');
+// => el estilo `key`, o el primero
+```
+
+
 ## Estilos de aviso
 
 La propiedad `calloutStyles` declara los estilos de caja con nombre que el documento aplica mediante un contenedor `:::callout{type="…"}` — notas, consejos, advertencias, objetivos de aprendizaje, cualquier contenido separado del texto corrido en una caja tintada o con borde. Por defecto se incluye un estilo neutro, `note` (fondo gris claro, sin borde, sin franja, sin icono, sin título), de modo que `:::callout` funciona sin configuración alguna; declarar `calloutStyles` sustituye esa lista por defecto.

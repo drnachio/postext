@@ -402,12 +402,34 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td>El markdown de imagen en línea se <strong>elimina</strong> del texto. Las imágenes deben declararse en <code>PostextContent.resources</code> para que el motor las coloque según las reglas de <code>resourcePlacement</code>.</td>
     </tr>
     <tr>
+      <td>Chip</td>
+      <td><code>:chip[texto]</code></td>
+      <td>Un fragmento de texto en una caja que pasa de línea como una unidad: un banco de palabras, una tecla, una etiqueta. Lo estilan los <code>chipStyles</code>; ver <a href="#chips-en-línea">Chips en línea</a>.</td>
+    </tr>
+    <tr>
       <td>Matemáticas en línea</td>
       <td><code>$…$</code></td>
       <td>Una fórmula LaTeX que fluye con el texto que la rodea, p. ej. <code>$e^{'{i\\pi}'}+1=0$</code>. Se compone con MathJax y se renderiza como trazos vectoriales en todos los backends. Usa <code>\\$</code> para un signo de dólar literal. El escalado, la forma display (<code>$$ … $$</code>) y el manejo de errores se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
     </tr>
   </tbody>
 </table>
+
+### Chips en línea
+
+`:chip[texto]` compone `texto` en una caja —un «chip» redondeado y tintado— que fluye con la línea: las palabras de un banco de palabras o de un ejercicio de clasificar, teclas, etiquetas. `:chip[texto]{style="tecla"}` elige un estilo con nombre de `chipStyles` (ver la referencia de configuración); sin `style`, o con un id que ningún estilo declara, el chip toma el primer estilo (un estilo `chip` integrado cuando la configuración no tiene ninguno; el sandbox avisa de un id desconocido).
+
+```markdown
+Clasifica: :chip[pila] :chip[cable] :chip[interruptor] :chip[bombilla]
+
+Pulsa :chip[Ctrl]{style="tecla"} + :chip[C]{style="tecla"} para copiar.
+```
+
+- **Una unidad.** Un chip nunca se parte ni se divide con guion por dentro; la línea se corta entre chips, en los espacios que los rodean. Un chip más ancho que toda la línea la desborda en lugar de partirse.
+- **Ancho.** Su avance es el texto más el relleno horizontal y el contorno a ambos lados. La justificación solo estira los espacios entre palabras, nunca el interior de un chip. El `gap` del estilo es el espacio mínimo entre la caja y la palabra o el chip vecino a través de un espacio: un espacio más estrecho se completa (no en el borde de la línea, ni junto a la puntuación pegada, como en `:chip[a],`).
+- **Alto.** La caja es una banda alrededor de la línea base, 0,8 em por encima y 0,25 em por debajo al cuerpo del chip, que crece con el relleno vertical y el contorno. El relleno vertical se pinta fuera de la caja de línea y nunca cambia el interlineado, así que la retícula se mantiene; una caja más alta que el interlineado toca los chips de la línea siguiente, y el sandbox lo señala («Los chips tocan la línea siguiente») para reducir el relleno, el contorno o el cuerpo.
+- **Texto.** El texto del chip admite sus propias marcas (`:chip[**negrita** palabra]`, `:chip[x^2^]`) y el énfasis que lo rodea (`**:chip[a]**`); el estilo puede fijar su familia, cuerpo, color, negrita y cursiva. Escribe `\]` para un corchete literal dentro. Las referencias, las muestras de color y las fórmulas dentro de un chip quedan como texto literal.
+- **Dónde.** Párrafos, elementos de lista, citas, recuadros, celdas de tabla, leyendas y notas. En los encabezados `:chip[…]` queda como texto literal.
+- **Salida.** Canvas, HTML y PDF pintan la caja y componen las palabras como texto real: seleccionable en el HTML, extraíble y en orden de lectura en el PDF (en un PDF etiquetado la caja es un artefacto de maquetación y las palabras pertenecen al párrafo).
 
 
 ## Fórmulas matemáticas

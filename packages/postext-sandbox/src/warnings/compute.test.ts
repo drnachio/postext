@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PostextConfig } from 'postext';
+import type { PostextConfig, VDTDocument } from 'postext';
 import { computeWarnings } from './compute';
 import type { WarningPayload } from './types';
 
@@ -73,6 +73,34 @@ describe('fenced-container warnings', () => {
     expect(found[0]!.payload.type).toBe('danger');
     const known = { calloutStyles: [{ id: 'danger' }] } as PostextConfig;
     expect(kinds(md, known)).not.toContain('unknownCalloutType');
+  });
+});
+
+describe('chip warnings', () => {
+  it('flags a chip style no style declares, the built-in `chip` style included', () => {
+    const md = 'Bank :chip[a] :chip[b]{style="chip"} :chip[c]{style="nope"}.';
+    const found = find(md, 'unknownChipStyle');
+    expect(found).toHaveLength(1);
+    expect(found[0]!.payload.style).toBe('nope');
+    expect(md.slice(found[0]!.sourceStart, found[0]!.sourceEnd)).toBe(':chip[c]{style="nope"}');
+    expect(kinds(md, { chipStyles: [{ id: 'nope' }] })).toContain('unknownChipStyle');
+    expect(kinds(':chip[c]{style="nope"}', { chipStyles: [{ id: 'nope' }] })).not.toContain('unknownChipStyle');
+  });
+
+  it('flags chips taller than the line pitch once per style', () => {
+    const chip = (styleId: string, ascent: number, descent: number) => ({
+      kind: 'chip', text: '', width: 10,
+      chip: { styleId, runs: [], marginLeft: 0, marginRight: 0, boxWidth: 10, ascent, descent, paddingX: 0, borderWidth: 0, borderRadius: 0 },
+    });
+    const line = (segments: unknown[]) => ({ text: '', bbox: { x: 0, y: 0, width: 100, height: 20 }, baseline: 16, hyphenated: false, segments, sourceStart: 0, sourceEnd: 5 });
+    const doc = {
+      pages: [],
+      warnings: [],
+      config: { page: { dpi: 72 } },
+      blocks: [{ sourceStart: 0, sourceEnd: 5, lines: [line([chip('tall', 16, 6), chip('tall', 16, 6), chip('fits', 14, 5)])] }],
+    } as unknown as VDTDocument;
+    const found = computeWarnings({ markdown: 'x', config: {}, doc }).filter((w) => w.payload.kind === 'chipOverlap');
+    expect(found.map((w) => w.payload)).toEqual([{ kind: 'chipOverlap', style: 'tall', overlapPt: 2 }]);
   });
 });
 

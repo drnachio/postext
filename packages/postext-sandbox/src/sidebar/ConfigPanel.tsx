@@ -35,6 +35,7 @@ import { TableStylesSection } from './sections/TableStylesSection';
 import { CaptionStyleSection } from './sections/CaptionStyleSection';
 import { ParagraphStylesSection } from './sections/ParagraphStylesSection';
 import { CalloutStylesSection } from './sections/CalloutStylesSection';
+import { ChipStylesSection } from './sections/ChipStylesSection';
 import { DiagramStyleSection } from './sections/DiagramStyleSection';
 import { ResourceTypesSection } from './sections/ResourceTypesSection';
 import { HtmlViewerSection } from './sections/HtmlViewerSection';
@@ -64,6 +65,7 @@ const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'tableStyles': TableStylesSection,
   'diagramStyle': DiagramStyleSection,
   'calloutStyles': CalloutStylesSection,
+  'chipStyles': ChipStylesSection,
   'htmlViewer': HtmlViewerSection,
   'pdfGeneration': PdfGenerationSection,
   'debug': DebugSection,

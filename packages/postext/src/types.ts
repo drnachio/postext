@@ -1333,6 +1333,80 @@ export interface ResolvedCalloutStyleConfig {
   splitMinLines: number;
 }
 
+/**
+ * A named chip style, selected by the inline `:chip[text]{style="<id>"}`
+ * (a chip without `style`, or with an id no style declares, takes the first
+ * style). A chip is a boxed run of text — a word of a word bank, a key, a
+ * tag — that flows with the line as one unbreakable unit.
+ *
+ * Its advance is the text plus the horizontal padding and border on both
+ * sides. The box is a band around the baseline (0.8 em above, 0.25 em
+ * below at the chip's font size) grown by the vertical padding and border;
+ * the vertical padding paints outside the line box and never changes the
+ * line height, so the baseline grid holds. A box taller than the line pitch
+ * would touch the chips of the next line (the sandbox warns).
+ *
+ * Em dimensions of the box (`paddingX`, `paddingY`, `borderRadius`,
+ * `borderWidth`, `gap`) are relative to the chip's font size; an em
+ * `fontSize` is relative to the surrounding text.
+ */
+export interface ChipStyleConfig {
+  id: string;
+  /** Human-readable name (editor UI only). Defaults to {@link id}. */
+  name?: string;
+  /** Paint the box fill. Default `true`. */
+  backgroundEnabled?: boolean;
+  /** Box fill. Default a pale blue (`#e8eef7`). */
+  background?: ColorValue;
+  /** Box outline colour. Default the main palette colour. */
+  borderColor?: ColorValue;
+  /** Box outline width; `0` draws none. Default `0.5pt`. */
+  borderWidth?: Dimension;
+  /** Corner radius, clamped to half the box height. Default `0.3em`. */
+  borderRadius?: Dimension;
+  /** Room between the outline and the text, left and right. Default `0.3em`. */
+  paddingX?: Dimension;
+  /** Room above and below the text band. Paints outside the line box.
+   *  Default `0.1em`. */
+  paddingY?: Dimension;
+  /** Chip text family. Default the surrounding text's. */
+  fontFamily?: string;
+  /** Chip text size (em = the surrounding text). Default the surrounding
+   *  text's. */
+  fontSize?: Dimension;
+  /** Chip text colour. Default the surrounding text's (bold runs keep the
+   *  bold colour). */
+  color?: ColorValue;
+  /** Set the chip text bold / italic (on top of its own markup). Default
+   *  `false`. */
+  bold?: boolean;
+  italic?: boolean;
+  /** Minimum room kept between the box and a neighbouring word or chip
+   *  across a word space: a narrower space is widened to it (the extra is
+   *  not stretched by justification). Nothing is added at a line edge or
+   *  against glued punctuation. Default `0.25em`. */
+  gap?: Dimension;
+}
+
+export interface ResolvedChipStyleConfig {
+  id: string;
+  name: string;
+  backgroundEnabled: boolean;
+  background: ColorValue;
+  borderColor: ColorValue;
+  borderWidth: Dimension;
+  borderRadius: Dimension;
+  paddingX: Dimension;
+  paddingY: Dimension;
+  /** Unset: the surrounding text's. */
+  fontFamily?: string;
+  fontSize?: Dimension;
+  color?: ColorValue;
+  bold: boolean;
+  italic: boolean;
+  gap: Dimension;
+}
+
 /** Parity constraint for a forced page break.
  *
  *  - `'any'` — no constraint; the break just opens a new page.
@@ -2455,6 +2529,9 @@ export interface PostextConfig {
   /** Named callout styles for `:::callout{type="…"}` containers. Defaults
    *  to a single neutral `note` style when unset. */
   calloutStyles?: CalloutStyleConfig[];
+  /** Named chip styles for the inline `:chip[text]{style="…"}`. Defaults
+   *  to a single `chip` style when unset. */
+  chipStyles?: ChipStyleConfig[];
   /** Part dividers (`:::part` containers): page breaks, body area,
    *  opener design and body typography. */
   parts?: PartsConfig;

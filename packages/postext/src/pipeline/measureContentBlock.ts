@@ -23,6 +23,7 @@ import {
 import { resolveBlockKind, type BlockKind, type BlockKindContext } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './resourceLayout';
+import { chipContextOf, resolveChipSpans } from './chips';
 import type { ResourceNumberingMap } from './resourceNumbering';
 import { measureTocBlock } from './toc';
 
@@ -160,7 +161,12 @@ export function measureContentBlock(
     contentBlock = { ...contentBlock, spans: resolveSwatchSpans(contentBlock.spans, resolved.colorPalette) };
   }
 
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.script);
+  // Inline chips: the style resolves to a box sized against this text.
+  if (contentBlock.spans.some((s) => s.chip)) {
+    contentBlock = { ...contentBlock, spans: resolveChipSpans(contentBlock.spans, chipContextOf(resolved), style.fontSizePx) };
+  }
+
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script);
 
   // List items reserve horizontal space for indent + bullet + gap.
   const {

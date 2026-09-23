@@ -2724,6 +2724,151 @@ const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
 ```
 
 
+## Chip styles
+
+The `chipStyles` property declares the named styles of the inline `:chip[text]{style="…"}` — the rounded, tinted boxes of a word bank, a keyboard key, a tag (the syntax and its line-breaking rules are in the document format reference). One style, `chip`, ships by default (a pale blue fill with a hairline in the main colour, slightly rounded, the text as the words around it), so `:chip[…]` works without any configuration; declaring `chipStyles` replaces that default list. A chip without `style`, or with an id no style declares, takes the first style.
+
+```ts
+const config: PostextConfig = {
+  chipStyles: [
+    { id: 'chip', name: 'Word bank' },
+    {
+      id: 'key',
+      name: 'Keyboard key',
+      background: { hex: '#fff4d6', model: 'hex' },
+      borderColor: { hex: '#8a6d1f', model: 'hex' },
+      borderRadius: { value: 2, unit: 'pt' },
+      bold: true,
+    },
+  ],
+};
+```
+
+```md
+Classify: :chip[battery] :chip[cable] :chip[switch]
+
+Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Identifier referenced from <code>:chip[…]&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name, for editor UIs only.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Paint the box fill.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#e8eef7</code></td>
+      <td>Box fill (palette-linkable).</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>main palette colour</td>
+      <td>Outline colour.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Outline width; <code>0</code> draws none. The outline is stroked inside the box edge.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Corner radius, clamped to half the box height (a large value gives a pill).</td>
+    </tr>
+    <tr>
+      <td><code>paddingX</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Room between the outline and the text, left and right. Part of the chip's advance.</td>
+    </tr>
+    <tr>
+      <td><code>paddingY</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.1em</code></td>
+      <td>Room above and below the text band. Paints outside the line box: it never changes the line height.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>surrounding text</td>
+      <td>Family of the chip text. Weights follow the text around it.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>surrounding text</td>
+      <td>Size of the chip text; <code>em</code> is relative to the surrounding text.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>surrounding text</td>
+      <td>Colour of the chip text. Unset, bold and italic runs keep the emphasis colours.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the chip text bold, on top of its own markup.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the chip text italic, on top of its own markup.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25em</code></td>
+      <td>Least room kept between the box and a neighbouring word or chip across a word space; a narrower space is topped up inside the chip's advance, so justification never eats it. Nothing is added at a line edge or against glued punctuation.</td>
+    </tr>
+  </tbody>
+</table>
+
+Em lengths of the box (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) are relative to the chip's own font size. The box is a band 0.8 em above and 0.25 em below the baseline, grown by `paddingY` and the outline; it paints outside the line box and never changes the leading, so the baseline grid holds. When the box ends up taller than the line pitch the chips of consecutive lines touch — the sandbox lists a "Chips touch the next line" warning with the excess, so `paddingY`, the outline or `fontSize` can be reduced.
+
+In the VDT a chip is a line segment of `kind: 'chip'` whose `chip` field carries the text runs (each with its font string and width), the box geometry (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, the gap margins) and its colours; the segment's `text` is a one-character placeholder, so plain-text offsets and source maps count a chip as one character.
+
+```ts
+const resolved = resolveChipStylesConfig(config.chipStyles);
+// => the built-in `chip` style when unset; every field filled
+
+const minimal  = stripChipStylesDefaults(config.chipStyles);
+// => undefined for the built-in default; static defaults dropped
+
+const style = pickChipStyle(resolved, 'key');
+// => the `key` style, else the first one
+```
+
+
 ## Callout styles
 
 The `calloutStyles` property declares the named box styles a document applies with a `:::callout{type="…"}` container — notes, tips, warnings, learning objectives, any content set apart from the running text in a tinted or bordered box. One neutral style, `note`, ships by default (light grey background, no border, no stripe, no icon, no title), so `:::callout` works without any configuration; declaring `calloutStyles` replaces that default list.

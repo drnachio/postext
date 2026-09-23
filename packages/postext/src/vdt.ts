@@ -16,6 +16,7 @@ import type {
   ResolvedDiagramStyleConfig,
   ResolvedParagraphStyleConfig,
   ResolvedCalloutStyleConfig,
+  ResolvedChipStyleConfig,
   CalloutSpan,
   CalloutPlacement,
   ResolvedUnorderedListsConfig,
@@ -59,6 +60,8 @@ export interface ResolvedConfig {
   diagramStyle: ResolvedDiagramStyleConfig;
   paragraphStyles: ResolvedParagraphStyleConfig[];
   calloutStyles: ResolvedCalloutStyleConfig[];
+  /** Named chip styles (`:chip[…]{style="…"}`). */
+  chipStyles: ResolvedChipStyleConfig[];
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;
@@ -92,8 +95,49 @@ export type VDTBlockType =
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
+/** One run of a chip's text: its own font (bold / italic / script, at the
+ *  chip size) and advance. */
+export interface VDTChipRun {
+  text: string;
+  fontString: string;
+  width: number;
+  bold?: boolean;
+  italic?: boolean;
+  /** Script offset off the baseline (px, positive down). */
+  baselineShift?: number;
+}
+
+/** A laid-out inline chip (`:chip[…]`): a box drawn from
+ *  `x + marginLeft` (the segment's left edge `x`), `boxWidth` wide, from
+ *  `ascent` above the baseline to `descent` below it, with the text runs
+ *  set on the line's baseline after the border and `paddingX`. The
+ *  segment's width is `marginLeft + boxWidth + marginRight`. */
+export interface VDTChip {
+  /** The chip style's id. */
+  styleId: string;
+  runs: VDTChipRun[];
+  /** Room kept before / after the box (the style's `gap` beyond an
+   *  adjacent word space); zero at a line edge. */
+  marginLeft: number;
+  marginRight: number;
+  boxWidth: number;
+  /** Box extent above / below the baseline, padding and border included. */
+  ascent: number;
+  descent: number;
+  paddingX: number;
+  borderWidth: number;
+  /** Corner radius, already clamped to half the box. */
+  borderRadius: number;
+  /** Fill / outline (hex); absent when not painted. */
+  background?: string;
+  borderColor?: string;
+  /** Text colour (hex); absent to paint the runs in the surrounding text
+   *  colour (bold / italic colours included). */
+  color?: string;
+}
+
 export interface VDTLineSegment {
-  kind: 'text' | 'space' | 'math' | 'swatch';
+  kind: 'text' | 'space' | 'math' | 'swatch' | 'chip';
   text: string;
   width: number;
   bold?: boolean;
@@ -105,6 +149,10 @@ export interface VDTLineSegment {
    *  colour did not resolve — the square is then an empty outline), sitting
    *  on the baseline and outlined in the text colour. */
   swatch?: { color?: string };
+  /** Present when `kind === 'chip'`: an inline chip (`:chip[…]`), painted
+   *  as a box with its own text runs. The segment's `text` is the one-char
+   *  plain-text placeholder; the words live in `chip.runs`. */
+  chip?: VDTChip;
   /** Present when this segment renders an inline `:ref{…}` to a resource.
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */

@@ -52,6 +52,7 @@ import {
   strokeOutlinePx,
 } from './primitives';
 import { LinkRegistry } from './links';
+import { paintChip } from './chip';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 import {
@@ -489,6 +490,12 @@ function paintLine(
       if (seg.kind === 'swatch') {
         tagContent(ctx, elem);
         drawSwatchPx(ctx, x, line.baseline, seg.width, seg.swatch?.color, color);
+        x += seg.width;
+        continue;
+      }
+      if (seg.chip) {
+        const chipColor = seg.chip.color ? colorFromHex(seg.chip.color, ctx.colorSpace) : color;
+        paintChip(ctx, seg.chip, x, line.baseline, fontCache, baseFont, baseSize, elem, () => chipColor);
         x += seg.width;
         continue;
       }
