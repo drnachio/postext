@@ -716,4 +716,26 @@ describe('after-display lever and the level of a closing band', () => {
     const gaps = collectColumnGaps(doc, new Set([0]));
     expect(gaps.find((g) => g.pageIndex === 0 && g.columnIndex === 0)!.gapLines).toBe(1);
   });
+
+  it('sees the line a capped column held back from a widow', () => {
+    // A closing band cut level at 900: column 0's last paragraph splits at
+    // the cut and keeps a line back (no widow in column 1), which closes
+    // the column (availableHeight 0) though its text ends one line above
+    // column 1's. That line is the formula's to take.
+    const tail = (contentIndex: number, bottom: number) =>
+      fakeBlock({ type: 'paragraph', contentIndex, bbox: { x: 0, y: bottom - 96, width: 100, height: 96 } });
+    const doc = fakeDoc([
+      [
+        { blocks: [para(1), math(2), tail(3, 876)], availableHeight: 0 },
+        { blocks: [para(4), tail(5, 900)], availableHeight: 0 },
+      ],
+      [{ blocks: [para(10)], availableHeight: 0 }],
+    ]);
+    for (const col of doc.pages[0]!.columns) { col.trailingCap = true; col.bandCapped = true; }
+    const gaps = collectColumnGaps(doc, new Set([0]));
+    const gap = gaps.find((g) => g.pageIndex === 0 && g.columnIndex === 0)!;
+    expect(gap.gapLines).toBe(1);
+    expect(gap.candidates.map((c) => `${c.kind}:${c.contentIndex}`)).toContain('afterDisplay:3');
+    expect(gaps.find((g) => g.pageIndex === 0 && g.columnIndex === 1)).toBeUndefined();
+  });
 });

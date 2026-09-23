@@ -2864,6 +2864,16 @@ export function buildDocumentPass(
           && result.totalHeight <= contentArea.height + 0.01;
         if (!fragment && (curCol.blocks.length > 0 || shortColumn)) {
           if (curCol.blocks.length === 0) shortColumnMoves++;
+          // A box that leaves the last column of its band for the next page
+          // leaves that column short while the ones before it run full: the
+          // band is cut level, as a closing band is, so its columns end
+          // together and share the room the box left (keyed by the box —
+          // in the capped pass it reaches the cut band and moves on again).
+          if (part === 0 && curCol.blocks.length > 0) {
+            const page = doc.pages[cursor.pageIndex]!;
+            const cols = bandColumns(page, currentBand(page, cursor));
+            if (cols[cols.length - 1] === curCol) proposeTrailingCap(startIdx);
+          }
           // …otherwise it moves whole to the next column. Keep-with-next: a
           // run of headings at the column's tail travels with the box.
           // Skipped when the column holds nothing else (rolling back again

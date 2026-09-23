@@ -305,11 +305,22 @@ export function collectColumnGaps(
       // they end with the tallest column of their band.
       if (col.trailingCap || col.bandCapped || !pageFlowsOn) {
         const usedBottom = (k: VDTColumn): number => k.bbox.y + (k.bbox.height - k.availableHeight);
+        // A paragraph split at the cut that holds a line back (no widow
+        // over the column break) closes the column: its available height
+        // reads 0 though its text ends a line higher. The foot of the last
+        // block is where such a column really ends.
+        const textBottom = (k: VDTColumn): number => {
+          const blocks = k.blocks.filter((b) => !b.hidden);
+          const tail = blocks[blocks.length - 1];
+          if (k.availableHeight > EPS || !tail || tail.type !== 'paragraph' || tail.containerId !== undefined) return usedBottom(k);
+          return Math.min(usedBottom(k), tail.bbox.y + tail.bbox.height);
+        };
         const level = Math.max(...page.columns
           .filter((k) => k !== col && isTextColumn(k) && (k.band ?? 0) === (col.band ?? 0) && k.blocks.length > 0)
-          .map(usedBottom), -Infinity);
+          .map(textBottom), -Infinity);
         if (Number.isFinite(level)) {
-          const mine = usedBottom(col);
+          const mine = textBottom(col);
+          free = Math.max(free, col.bbox.y + col.bbox.height - mine);
           // No column of such a band ends past the tallest other one: a
           // closing page ends level, it does not grow one column away.
           free = Math.min(free, Math.max(0, level - mine));

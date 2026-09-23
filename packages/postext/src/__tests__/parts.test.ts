@@ -282,6 +282,21 @@ describe('computePartValues', () => {
     expect(partTitleByPageIndex).toEqual(['One', 'Two', 'Two', 'Three']);
     expect(partPaletteByPageIndex).toEqual([{ band: '#a6cfc1' }, { band: '#f6c297' }, { band: '#f6c297' }, {}]);
   });
+
+  it('tints every blank leaf right before a divider, forced ones too, in the part palette', () => {
+    const pages = [
+      {},
+      { blankForForce: true },
+      { blankForParity: true },
+      { partInfo: { number: 'II', title: 'Two', palette: { band: '#2b4acb' } } },
+    ];
+    const start = { number: 'I', title: 'One', palette: { band: '#b7820f' } };
+    const { partTitleByPageIndex, partPaletteByPageIndex } = computePartValues(pages, start);
+    // The forced leaf keeps the previous part's title (its running heads)…
+    expect(partTitleByPageIndex).toEqual(['One', 'One', 'Two', 'Two']);
+    // …but faces the divider, so it takes the new part's colour.
+    expect(partPaletteByPageIndex).toEqual([{ band: '#b7820f' }, { band: '#2b4acb' }, { band: '#2b4acb' }, { band: '#2b4acb' }]);
+  });
 });
 
 describe('parsePartPalette', () => {
