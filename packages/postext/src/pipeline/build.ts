@@ -3419,13 +3419,15 @@ export function buildDocumentPass(
         // run of consecutive headings ends in a pushed heading, any preceding
         // headings already placed in this column are rolled back and re-placed
         // with it in the next column — otherwise the earlier headings would be
-        // left behind as their own orphans.
+        // left behind as their own orphans. A run that already opens a
+        // full-height (or capped) column stays: it would open the next column
+        // the same way and be pushed on again, round after round.
         if (
           vdtType === 'heading'
           && resolved.headings.keepWithNext
           && !nextIsHeading
           && nextBlock !== null
-          && (curCol.blocks.length > 0 || shortColumn)
+          && (curCol.blocks.length > trailingHeadingRun(curCol) || shortColumn)
         ) {
           const wouldUsedHeight =
             (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
@@ -3627,10 +3629,19 @@ export function buildDocumentPass(
         // they don't remain stranded at the column's bottom. Mirrors the
         // rollback inside the "fits" path. A block leaving a column that
         // holds nothing but headings stays put instead (rolling back would
-        // loop): the headings then open the next column with it.
+        // loop): the headings then open the next column with it. The same
+        // holds for a heading leaving a full-height (or capped) column that
+        // holds nothing but headings: the run would open the next column
+        // just as it opens this one and fail the same way — a `breakBefore`
+        // heading in it would even open a fresh page every round, forever.
+        // Only a short column (under a float, a page-span box) lets the run
+        // move on to a taller one.
+        const headingRun = trailingHeadingRun(curCol);
+        const runFillsColumn = headingRun > 0 && headingRun === curCol.blocks.length;
         const strands = partIndex === 0 && vdtType !== 'heading'
-          && trailingHeadingRun(curCol) > 0 && trailingHeadingRun(curCol) < curCol.blocks.length;
-        if (resolved.headings.keepWithNext && (vdtType === 'heading' || strands)) {
+          && headingRun > 0 && !runFillsColumn;
+        const pullsRun = vdtType === 'heading' && (!runFillsColumn || shortColumn);
+        if (resolved.headings.keepWithNext && (pullsRun || strands)) {
           const rolledBack = rollbackTrailingBlocks(curCol, doc.blocks, isFreeHeading);
           if (rolledBack.length > 0) {
             blockIdx = (rolledBack[0]!.contentIndex ?? blockIdx - rolledBack.length) - 1;
