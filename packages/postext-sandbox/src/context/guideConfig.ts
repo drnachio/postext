@@ -278,6 +278,10 @@ function runningHeads(lang: 'en' | 'es') {
   const y = M_TOP - 12;
   const common = { pages: 'body' as const, size: 7.5, color: 'muted' as const, upper: true, tracking: 1.4, overflow: 'ellipsis-end' as const };
   return slot(
+    // The blank verso that faces a part divider is set solid black, so the
+    // divider opens as a spread. Parts break `always-odd` and chapters open
+    // on versos, so the only blank versos in the book are those.
+    box('partFacing', 'night', { anchor: at('bleed', 'top-left'), parity: 'even', pages: 'blank' }),
     text('folioEven', '{pageNumber}', { ...common, anchor: at('page', 'top-left'), offset: [M_OUTER, y], parity: 'even', weight: 700, color: 'band', size: 8.5, tracking: 0 }),
     text('bookEven', WORDING[lang].book, { ...common, anchor: at('page', 'top-left'), offset: [M_OUTER + 10, y], width: 110, parity: 'even' }),
     text('chapterOdd', '{chapterTitle}', { ...common, anchor: at('page', 'top-right'), offset: [-(M_OUTER + 10), y], width: 110, parity: 'odd', align: 'right' }),
@@ -435,8 +439,9 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       fontFamily: DISPLAY, color: col('ink'), keepWithNext: true,
       levels: [
         {
+          // Chapters open on a verso, across from their first recto.
           level: 1, fontSize: pt(28), lineHeight: pt(32), fontWeight: 700, span: 'page',
-          breakBefore: { enabled: true, parity: 'any' }, numberingTemplate: '{1}',
+          breakBefore: { enabled: true, parity: 'even' }, numberingTemplate: '{1}',
           advancedDesign: chapterOpener(lang),
         },
         {
@@ -453,8 +458,12 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
     paragraphStyles: paragraphStyles(),
     calloutStyles: calloutStyles(lang),
     parts: {
-      breakBefore: { parity: 'odd' },
-      breakAfter: { enabled: true, parity: 'any' },
+      // A part opens on a recto facing a black verso: `always-odd` lays one
+      // blank leaf before it (the black verso) and pads a white recto first
+      // when the chapter before ends on a verso. Its first chapter opens on
+      // the back of the divider, a verso.
+      breakBefore: { parity: 'always-odd' },
+      breakAfter: { enabled: true, parity: 'even' },
       margins: { top: mm(172), bottom: mm(70), left: mm(M_INNER), right: mm(M_OUTER + 40) },
       design: partDesign(lang),
       bodyStyle: {
