@@ -19,6 +19,19 @@ interface LeafGeometry {
   margins: { top: number; right: number; bottom: number; left: number };
 }
 
+/** A design element as the override reads it: the placement fields it
+ *  touches, typed loosely (every element kind shares them); the rest is
+ *  carried through untouched. */
+interface LooseElement {
+  kind?: string;
+  placement?: {
+    anchor?: { to?: string; edge?: string };
+    offset?: { x?: Dimension; y?: Dimension };
+    size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto' };
+  };
+  [key: string]: unknown;
+}
+
 /** Whether any element of `value` anchors to the leaf itself. Such a slot
  *  is laid out against the page or bleed box on paper — a cover panel
  *  filling the trim, a band bleeding off the edge — so the viewer gives it
@@ -36,7 +49,7 @@ function anchorsToLeaf(value: unknown): boolean {
  *  the frame it fills; a plate keeps its measure, so on a page wider than
  *  the leaf it stops short of the fills beside it. */
 function hasPlate(slot: DesignSlot, leafWidth: number, dpi: number): boolean {
-  return (slot.elements as unknown as Array<Record<string, any>>).some((el) => {
+  return (slot.elements as unknown as LooseElement[]).some((el) => {
     if (el.kind !== 'image') return false;
     const w = el.placement?.size?.width;
     if (w === 'fill') return true;
@@ -67,7 +80,7 @@ const px = (value: number): Dimension => ({ value, unit: 'px' });
  *  measure on paper, which the viewer's page may be narrower than. */
 function slotExtentPx(slot: DesignSlot, dpi: number): number {
   let extent = 0;
-  for (const el of slot.elements as unknown as Array<Record<string, any>>) {
+  for (const el of slot.elements as unknown as LooseElement[]) {
     const size = el.placement?.size?.width;
     if (!size || typeof size !== 'object') continue;
     const x = el.placement?.offset?.x ? dimensionToPx(el.placement.offset.x, dpi) : 0;
@@ -103,7 +116,7 @@ function rebaseToBand(
   const { margins: m } = leaf;
   const containerW = leaf.width - m.left - m.right;
   let usesBandBox = false;
-  const elements = (slot.elements as unknown as Array<Record<string, any>>).map((el) => {
+  const elements = (slot.elements as unknown as LooseElement[]).map((el) => {
     const placement = el.placement;
     if (!placement?.anchor) return el;
     const to = placement.anchor.to;
