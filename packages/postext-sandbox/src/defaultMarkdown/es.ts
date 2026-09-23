@@ -12,7 +12,7 @@ publishDate: "2026-09-23"
 :::paragraphs{style="colophon"}
 **Guía de Postext** es el libro de muestra que acompaña al Sandbox. Es a la vez un recorrido por el motor y una demostración de lo que hace: la cubierta, el índice que se numera solo, las portadillas de parte, las aperturas de capítulo, las cabeceras, cada figura y cada tabla que flota hasta su sitio… todo lo maqueta Postext, en tu navegador, a partir del Markdown que puedes abrir en el editor.
 
-Compuesto en Fraunces, Lora y Geist, servidas por Google Fonts. Los diagramas son archivos SVG sencillos, que se dibujan como vectores en el canvas, en la vista HTML y en el PDF. Cambia lo que quieras —una palabra, un margen, un color de la paleta— y el libro vuelve a componerse.
+Compuesto en Fraunces, Lora, Bricolage Grotesque y Geist, servidas por Google Fonts. Los diagramas son archivos SVG sencillos, que se dibujan como vectores en el canvas, en la vista HTML y en el PDF. Cambia lo que quieras —una palabra, un margen, un color de la paleta— y el libro vuelve a componerse.
 
 Postext es de código abierto, con licencia MIT. Texto © 2026 Ignacio Ferro y quienes contribuyen a Postext.
 :::
@@ -169,12 +169,18 @@ Ayuda ver qué ocurre cuando escribes una sola letra en un párrafo de este libr
 Como cada capítulo se maqueta por separado, continuando a los anteriores, el resto del libro no se toca a menos que cambie el número de páginas del capítulo. Cuando cambia, los capítulos siguientes se paginan de nuevo en segundo plano, y el índice recoge sus nuevos folios.
 
 :::callout{type="figures" title="El motor en cifras"}
-:::columns{count=3}
-**300–600×** más rápida la medición de texto que con reflujos del DOM: la idea que hizo posible el proyecto.
+:::columns{count=3 breaks="3,5"}
+**300–600×** más rápida la medición del texto que con reflujos del DOM. Pretext mide con las métricas de fuente del canvas y pura aritmética, y eso es lo que permite volver a componer un capítulo entero entre dos pulsaciones de tecla.
 
-**7 pasadas** del Markdown a la página posicionada, repetidas en un bucle de **5 iteraciones** como mucho, casi siempre una o dos.
+**7 pasadas** convierten el Markdown en páginas posicionadas: estructuración, medición, colocación en páginas y columnas, colocación de recursos, refinamiento tipográfico, equilibrado de columnas y ritmo vertical.
 
-**3 renderizadores** —canvas, HTML y PDF— que dibujan una sola geometría, línea a línea.
+**5 iteraciones** como mucho en el bucle de convergencia, casi siempre una o dos. Si alguna vez se alcanza el tope, el motor se queda con la mejor maquetación que encontró por el camino, no con la última.
+
+**8 idiomas** con separación silábica mediante los patrones de Liang que TeX usa desde 1983: inglés, español, francés, alemán, italiano, portugués, catalán y neerlandés.
+
+**3 renderizadores** —canvas, HTML y PDF— dibujan una misma geometría, línea a línea, de modo que la página que revisas en pantalla es la página que va a imprenta.
+
+**0 reflujos** de la página mientras se maqueta. Todo se calcula en memoria, en un worker cuando el anfitrión lo pide, y la misma entrada produce siempre las mismas páginas.
 :::
 :::
 

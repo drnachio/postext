@@ -504,7 +504,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.cover,
     fileId: 'default-guide-cover',
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T('Cover art of the guide.', 'Arte de cubierta de la guía.'),
     altText: T(
       'An open spread drawn the way the engine sees it: justified lines of word boxes, a chapter band, a floated figure and one line opened into boxes, glue and a penalty.',
@@ -540,7 +540,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.convergenceLoop,
     fileId: 'default-convergence-loop',
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'The convergence loop: place, check, adjust what conflicts and place again, until nothing moves — five iterations at most, usually one or two.',
       'El bucle de convergencia: colocar, comprobar, ajustar lo que choca y volver a colocar hasta que nada se mueva; cinco iteraciones como mucho, casi siempre una o dos.',
@@ -553,7 +553,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.knuthPlass,
     fileId: 'default-knuth-plass',
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'Knuth-Plass sees a line as boxes, glue and penalties; the flagged penalty is a hyphenation point, and the ratio r measures how far the glue stretches.',
       'Knuth-Plass ve una línea como cajas, gomas y penalizaciones; la penalización marcada es un punto de guion y la razón r mide cuánto se estiran las gomas.',
@@ -579,7 +579,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.columnLayouts,
     fileId: 'default-column-layouts',
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'The column structures: one column, two, and a column and a half whose side column carries text or only floats.',
       'Las estructuras de columnas: una, dos y columna y media, cuya columna lateral lleva texto o solo flotantes.',
@@ -592,7 +592,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.baselineGrid,
     fileId: 'default-baseline-grid',
-    placement: { position: 'bottom', span: 'column' },
+    placement: { position: 'auto', span: 'column' },
     caption: T(
       'The baseline grid sets every line on a shared rhythm, so lines face each other across the gutter.',
       'La rejilla de línea base asienta cada línea en un ritmo común, de modo que las líneas se miran a través del medianil.',
@@ -605,7 +605,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.balancing,
     fileId: 'default-balancing',
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'Balancing a short column: a grid line above a heading, a line after a list and a paragraph set one line looser bring it level with its neighbour.',
       'Equilibrar una columna corta: una línea de rejilla sobre un título, una línea tras una lista y un párrafo compuesto una línea más suelto la igualan con su vecina.',
@@ -618,7 +618,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.floatSlots,
     fileId: 'default-float-slots',
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'Where a float lands: the slots after its reference are tried in order — the foot of the same column, the head of the next, a band on the next page — and the first with room wins.',
       'Dónde cae un flotante: los huecos tras su referencia se prueban en orden —el pie de la misma columna, la cabeza de la siguiente, una banda en la página siguiente— y gana el primero con sitio.',
@@ -631,7 +631,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.bookAnatomy,
     fileId: 'default-book-anatomy',
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'The anatomy of this book: a cover set by a heading style, a self-numbering contents, a part divider, a chapter opener and body pages with running heads.',
       'La anatomía de este libro: una cubierta compuesta con un estilo de título, un índice que se numera solo, una portadilla de parte, una apertura de capítulo y páginas de cuerpo con cabeceras.',
@@ -644,7 +644,7 @@ const FIGURE_SPECS: FigureSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.sandboxUi,
     fileId: 'default-sandbox-ui',
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'The Sandbox: the activity bar with its six panels, the Markdown editor with the chapter switcher, and the viewport with its Canvas, HTML and PDF tabs.',
       'El Sandbox: la barra de actividad con sus seis paneles, el editor de Markdown con el selector de capítulos y el visor con sus pestañas Canvas, HTML y PDF.',
@@ -660,25 +660,25 @@ const TABLE_SPECS: TableSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.featureTable,
     model: featureTableModel,
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T('What editorial layout needs, in plain CSS and in Postext.', 'Lo que necesita la maquetación editorial, en CSS y en Postext.'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.toolsTable,
     model: toolsTableModel,
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T('How Postext compares with established editorial tools.', 'Cómo se sitúa Postext frente a las herramientas editoriales establecidas.'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.placementTable,
     model: placementTableModel,
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T('The placement fields of a resource.', 'Los campos de colocación de un recurso.'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.documentFormatTable,
     model: documentFormatTableModel,
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T('The extensions of the document format.', 'Las extensiones del formato del documento.'),
   },
   {
@@ -690,7 +690,7 @@ const TABLE_SPECS: TableSpec[] = [
   {
     id: DEFAULT_RESOURCE_IDS.phasesTable,
     model: phasesTableModel,
-    placement: { position: 'top', span: 'page' },
+    placement: { position: 'auto', span: 'page' },
     caption: T('The four phases of the project: what has shipped and what is still open.', 'Las cuatro fases del proyecto: lo que ya está hecho y lo que sigue abierto.'),
   },
 ];

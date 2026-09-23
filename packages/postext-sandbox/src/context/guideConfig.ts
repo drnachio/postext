@@ -21,7 +21,8 @@ import { defaultResourceTypes } from 'postext';
 
 // The design of the built-in Postext guide: a 21 × 28 cm two-column book in
 // the colours and typefaces of the Postext brand (Fraunces for display, Lora
-// for the text, Geist for labels, gilt and blue on dark ink). A cover, a
+// for the text, Geist for labels, Bricolage Grotesque for section headings,
+// gilt and blue on dark ink). A cover, a
 // self-numbering contents page, three part dividers — each recolouring the
 // palette-linked `band` colour with `:::part{palette=…}` — chapter openers
 // on a full-bleed band, running heads, and the callout styles the guide
@@ -48,6 +49,8 @@ const COVER_ART_H = 168;
 const DISPLAY = 'Fraunces';
 const TEXT = 'Lora';
 const SANS = 'Geist';
+/** Section headings (levels 2 and 3), in the part colour. */
+const HEAD = 'Bricolage Grotesque';
 
 const COLOURS = {
   ink: '#15171c',
@@ -278,10 +281,11 @@ function runningHeads(lang: 'en' | 'es') {
   const y = M_TOP - 12;
   const common = { pages: 'body' as const, size: 7.5, color: 'muted' as const, upper: true, tracking: 1.4, overflow: 'ellipsis-end' as const };
   return slot(
-    // The blank verso that faces a part divider is set solid black, so the
-    // divider opens as a spread. Parts break `always-odd` and chapters open
-    // on versos, so the only blank versos in the book are those.
-    box('partFacing', 'night', { anchor: at('bleed', 'top-left'), parity: 'even', pages: 'blank' }),
+    // The blank verso that faces a part divider is set in the dark ink of
+    // the divider's foot band, so the divider opens as a spread. Parts break
+    // `always-odd` and chapters open on versos, so the only blank versos in
+    // the book are those.
+    box('partFacing', 'ink', { anchor: at('bleed', 'top-left'), parity: 'even', pages: 'blank' }),
     text('folioEven', '{pageNumber}', { ...common, anchor: at('page', 'top-left'), offset: [M_OUTER, y], parity: 'even', weight: 700, color: 'band', size: 8.5, tracking: 0 }),
     text('bookEven', WORDING[lang].book, { ...common, anchor: at('page', 'top-left'), offset: [M_OUTER + 10, y], width: 110, parity: 'even' }),
     text('chapterOdd', '{chapterTitle}', { ...common, anchor: at('page', 'top-right'), offset: [-(M_OUTER + 10), y], width: 110, parity: 'odd', align: 'right' }),
@@ -445,12 +449,12 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
           advancedDesign: chapterOpener(lang),
         },
         {
-          level: 2, fontSize: pt(15.5), lineHeight: pt(19), fontWeight: 650, color: col('band'),
+          level: 2, fontFamily: HEAD, fontSize: pt(15.5), lineHeight: pt(19), fontWeight: 700, color: col('band'),
           numberingTemplate: '{1}.{2}  ', marginTop: pt(20), marginBottom: pt(6),
         },
         {
-          level: 3, fontFamily: SANS, fontSize: pt(9.4), lineHeight: pt(13.6), fontWeight: 700,
-          textTransform: 'uppercase', numberingTemplate: '', marginTop: pt(13), marginBottom: pt(3),
+          level: 3, fontFamily: HEAD, fontSize: pt(11), lineHeight: pt(13.6), fontWeight: 700, color: col('band'),
+          numberingTemplate: '', marginTop: pt(13), marginBottom: pt(3),
         },
       ],
     },

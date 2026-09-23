@@ -12,7 +12,7 @@ publishDate: "2026-09-23"
 :::paragraphs{style="colophon"}
 **The Postext Guide** is the sample book that ships with the Sandbox. It is both a tour of the engine and a demonstration of it: the cover, the self-numbering contents, the part dividers, the chapter openers, the running heads, every figure and table float — all of it is laid out by Postext, in your browser, from the Markdown you can open in the editor.
 
-Set in Fraunces, Lora and Geist, served by Google Fonts. The diagrams are plain SVG files, drawn as vectors in the canvas, the HTML view and the PDF. Change anything — a word, a margin, a colour of the palette — and the book sets itself again.
+Set in Fraunces, Lora, Bricolage Grotesque and Geist, served by Google Fonts. The diagrams are plain SVG files, drawn as vectors in the canvas, the HTML view and the PDF. Change anything — a word, a margin, a colour of the palette — and the book sets itself again.
 
 Postext is open source under the MIT licence. Text © 2026 Ignacio Ferro and the Postext contributors.
 :::
@@ -169,12 +169,18 @@ It helps to see what happens when you type a single letter into a paragraph of t
 Because each chapter is laid out on its own, continued from the ones before it, the rest of the book is not touched unless the chapter's page count changes. When it does, the following chapters are paginated again in the background, and the contents page picks up their new page numbers.
 
 :::callout{type="figures" title="The engine in figures"}
-:::columns{count=3}
-**300–600×** faster text measurement than DOM reflow, the enabling idea behind the project.
+:::columns{count=3 breaks="3,5"}
+**300–600×** faster text measurement than reflowing the DOM. Pretext measures with canvas font metrics and plain arithmetic, which is what lets a whole chapter be set again between two keystrokes.
 
-**7 passes** from Markdown to a positioned page, repeated in a loop of at most **5 iterations**, usually one or two.
+**7 passes** turn Markdown into positioned pages: structuring, measurement, page and column placement, resource placement, typographic refinement, column balancing and vertical rhythm.
 
-**3 renderers** — canvas, HTML and PDF — drawing one geometry, line for line.
+**5 iterations** at most in the convergence loop, and usually one or two. Should the cap ever be reached, the engine keeps the best layout it found along the way, not the last one.
+
+**8 languages** hyphenated with the Liang patterns TeX has used since 1983: English, Spanish, French, German, Italian, Portuguese, Catalan and Dutch.
+
+**3 renderers** — canvas, HTML and PDF — draw one and the same geometry, line for line, so the page you proof on screen is the page that goes to press.
+
+**0 reflows** of the page while laying out. Everything is computed in memory, in a worker when the host asks for it, and the same input always yields the same pages.
 :::
 :::
 
