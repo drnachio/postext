@@ -4,8 +4,6 @@
 
 `postext-pdf` turns the document that `postext` lays out into a real PDF, in the browser or in Node. It does not re-measure anything: it consumes the same `VDTDocument` the canvas and HTML renderers use and translates its coordinates into PDF points, so the three outputs agree on every line break, column height and resource placement. The PDF embeds the actual font files, carries outline bookmarks and is tagged for accessibility (PDF/UA oriented).
 
-> **Active development** — postext and postext-pdf change frequently. The packages are published so everyone can follow their evolution, but we do not recommend using them in production yet.
-
 **Website:** [postext.dev](https://postext.dev/) · **Docs:** [PDF output](https://postext.dev/en/docs/configuration#generating-pdfs)
 
 ## Install
