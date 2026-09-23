@@ -4,8 +4,6 @@
 
 postext is a layout engine that takes semantic content — enriched markdown with referenced resources — and applies professional editorial layout rules to produce publication-grade output. Built on top of [`@chenglou/pretext`](https://github.com/chenglou/pretext) for DOM-free, pixel-perfect text measurement.
 
-> **Active development** — postext is under very active development and undergoing frequent changes. The team is working intensively on it. We will announce when a first stable version is available. In the meantime, the project is published so everyone can follow its evolution, but we do not recommend using it in production yet as configuration changes are frequent.
-
 **Website:** [postext.dev](https://postext.dev/)
 
 ## Install

@@ -65,10 +65,9 @@ import {
   setLineWidth,
   setStrokingColor,
   setTextMatrix,
-  showText,
   stroke,
 } from 'pdf-lib';
-import { type PageCtx, colorFromHex } from './primitives';
+import { type PageCtx, colorFromHex, showTextShaped } from './primitives';
 
 // ---------------------------------------------------------------- IR types
 
@@ -1531,7 +1530,7 @@ export function drawVectorDrawing(
           beginText(),
           setFontAndSize(fontName(ctx, font), round(run.size)),
           setTextMatrix(round(a), round(b), round(c), round(d), round(e), round(f)),
-          showText(font.encodeText(run.text)),
+          showTextShaped(font, run.text),
           endText(),
           popGraphicsState(),
         );

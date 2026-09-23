@@ -64,9 +64,10 @@ export function pageNumberAt(layout: ViewerLayout, pageIndex: number): number {
  * the fragment's page carries over whichever chapter it names, the
  * fragment names the chapter of the page the reader is on, and a chapter
  * switch changes no document — the viewer jumps to the chapter's first
- * content page, unless the reader is on one of its pages already (a click
- * on the page switched the editor) or the fragment already names a page
- * of it (a link to a page of the contents).
+ * content page, unless the switch came from a click or a selection on one
+ * of its pages (the viewer stays put), the reader is on one of its pages
+ * already, or the fragment already names a page of it (a link to a page
+ * of the contents).
  *
  * Returns the `onCurrentPageChange` callback to hand to the viewer.
  */
@@ -81,6 +82,12 @@ export function usePageHashSync(
   const chapterIndex = useSandboxSelector((s) => s.chapters.findIndex((c) => c.id === activeChapterId));
   const chapterIndexRef = useRef(chapterIndex);
   chapterIndexRef.current = chapterIndex;
+  // The active chapter was switched to by a click or a selection on one of
+  // its pages in the viewer (the focus request lands in the same commit as
+  // the switch, and the editor consumes it only afterwards).
+  const switchedFromViewer = useSandboxSelector((s) => s.pendingEditorFocus?.fromViewer === true && s.pendingEditorFocus.chapterId === s.activeChapterId);
+  const switchedFromViewerRef = useRef(switchedFromViewer);
+  switchedFromViewerRef.current = switchedFromViewer;
   const jumpRef = useRef(jumpToPage);
   jumpRef.current = jumpToPage;
   const layoutRef = useRef(layout);
@@ -149,11 +156,15 @@ export function usePageHashSync(
 
   // A chapter switch under a whole-book document: to the chapter's first
   // content page, unless the reader is on one of its pages already or the
-  // fragment names a page of it (a contents row was clicked).
+  // fragment names a page of it (a contents row was clicked). A switch the
+  // reader made by clicking or selecting on one of the chapter's pages
+  // moves nothing: the page is on screen, and a jump would pull it from
+  // under the pointer mid-selection.
   useEffect(() => {
     const current = layoutRef.current;
     const book = current.book;
     if (!book || current.pageCount <= 0 || pendingRef.current) return;
+    if (switchedFromViewerRef.current) return;
     const chapter = chapterIndexRef.current;
     const hash = readViewHash();
     if (hash.chapter === chapter && hash.page !== null) {

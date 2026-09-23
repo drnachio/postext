@@ -93,6 +93,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const editorSelection = useSandboxSelector((s) => s.selection);
   const editorFocused = useSandboxSelector((s) => s.editorFocused);
+  // Read by the follow below (it changes with the selection it describes).
+  const selectionFromViewerRef = useRef(false);
+  selectionFromViewerRef.current = useSandboxSelector((s) => s.selectionFromViewer);
   const resourceSelection = useSandboxSelector((s) => s.resourceSelection);
   const containerRef = useRef<HTMLDivElement>(null);
   // Refs used by click handlers so changing panel/dispatch identity doesn't
@@ -815,7 +818,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // The viewport follows the caret only when the SELECTION moves (the reader
   // placed it in the editor); a relayout, a focus change or a redraw with the
   // same selection must not pull the page back to it, or the reader could
-  // never scroll away from a selected block.
+  // never scroll away from a selected block. A selection placed from the
+  // preview itself is not followed either: the reader is looking at it, and
+  // the editor's reports on the way there (a chapter switch remounts it)
+  // would pull the page from under the pointer.
   const lastFollowedRef = useRef<string | null>(null);
   useEffect(() => {
     const doc = docRef.current;
@@ -873,7 +879,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       container &&
       focused &&
       scrollEnabled &&
-      selectionMoved
+      selectionMoved &&
+      !selectionFromViewerRef.current
     ) {
       const padding = 16;
       const cr = activeCursorRect.getBoundingClientRect();

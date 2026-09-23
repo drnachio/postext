@@ -12,8 +12,12 @@ import {
   type PDFPage,
   type PDFFont,
   type Color,
+  PDFArray,
   PDFHexString,
   PDFName,
+  PDFNumber,
+  PDFOperator,
+  PDFOperatorNames,
   beginText,
   endText,
   setFillingColor,
@@ -177,26 +181,91 @@ export function drawLinePx(
 
 // Text is drawn a word at a time (the layout engine positions every
 // word), and pdf-lib's `drawText` shapes each call afresh through fontkit —
-// the same words, over and over. The encoded glyph string of a (font, text)
+// the same words, over and over. The show-text operator of a (font, text)
 // pair never changes, so it is shaped once and reused; the font's resource
 // key on a page likewise.
-const encodedByFont = new WeakMap<PDFFont, Map<string, PDFHexString>>();
+const showByFont = new WeakMap<PDFFont, Map<string, PDFOperator>>();
 const ENCODE_CACHE_SLOTS = 50_000;
 
-function encodeCached(font: PDFFont, text: string): PDFHexString {
-  let cache = encodedByFont.get(font);
+/** The fontkit side of a pdf-lib custom font — what kerning needs. */
+interface ShapingFace {
+  unitsPerEm: number;
+  layout(text: string, features?: unknown): {
+    glyphs: Array<{ advanceWidth: number }>;
+    positions: Array<{ xAdvance: number; xOffset: number }>;
+  };
+}
+
+/** Round a TJ adjustment to 1/100 of a text-space unit. */
+function tjNumber(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * The show-text operator for `text`, carrying the shaper's glyph positions.
+ *
+ * pdf-lib's `encodeText` shapes through fontkit but keeps only the glyph
+ * ids, so a viewer advances each glyph by its raw width (the `W` array) and
+ * the GPOS kerning the canvas measured with is lost: in a tightly kerned
+ * face (Geist: `referencia` is 0.21 em narrower kerned) each word paints
+ * wider than the layout engine placed it and eats the following space.
+ * Emit a `TJ` array instead whose numbers restore every glyph's
+ * `xAdvance` / `xOffset`; a run without adjustments stays a plain `Tj`.
+ */
+export function showTextShaped(font: PDFFont, text: string): PDFOperator {
+  let cache = showByFont.get(font);
   if (!cache) {
     cache = new Map();
-    encodedByFont.set(font, cache);
+    showByFont.set(font, cache);
   }
   const hit = cache.get(text);
   if (hit) return hit;
-  // `encodeText` also registers the glyphs with the font's subset; a first
-  // call per text keeps that side effect.
+  // `encodeText` also registers the glyphs with the font's subset (the ids
+  // it returns are subset ids), so it runs even when positions are added.
   const encoded = font.encodeText(text);
+  const op = shapedOperator(font, text, encoded) ?? showText(encoded);
   if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
-  cache.set(text, encoded);
-  return encoded;
+  cache.set(text, op);
+  return op;
+}
+
+function shapedOperator(font: PDFFont, text: string, encoded: PDFHexString): PDFOperator | undefined {
+  const embedder = (font as unknown as { embedder?: { font?: ShapingFace; fontFeatures?: unknown } }).embedder;
+  const face = embedder?.font;
+  if (!face || typeof face.layout !== 'function' || !face.unitsPerEm) return undefined;
+  const run = face.layout(text, embedder!.fontFeatures);
+  const hex = encoded.asString();
+  const count = run.glyphs.length;
+  if (count === 0 || hex.length !== count * 4 || run.positions.length !== count) return undefined;
+  // TJ numbers are thousandths of text space, subtracted from the pen: a
+  // glyph drawn at `pen + xOffset` then advancing by `xAdvance` (not its
+  // W width `advanceWidth`) is `-xOffset, glyph, -(xAdvance - w - xOffset)`.
+  const toText = 1000 / face.unitsPerEm;
+  const parts: Array<string | number> = [];
+  let pendingHex = '';
+  let pendingAdjust = 0;
+  const flushHex = () => {
+    if (pendingHex) parts.push(pendingHex);
+    pendingHex = '';
+  };
+  for (let i = 0; i < count; i++) {
+    const pos = run.positions[i]!;
+    const lead = tjNumber(pendingAdjust - pos.xOffset * toText);
+    if (lead !== 0) {
+      flushHex();
+      parts.push(lead);
+    }
+    pendingHex += hex.slice(i * 4, i * 4 + 4);
+    pendingAdjust = -(pos.xAdvance - run.glyphs[i]!.advanceWidth - pos.xOffset) * toText;
+  }
+  flushHex();
+  if (parts.length === 1) return undefined;
+  const context = font.doc.context;
+  const array = PDFArray.withContext(context);
+  for (const part of parts) {
+    array.push(typeof part === 'number' ? PDFNumber.of(part) : PDFHexString.of(part));
+  }
+  return PDFOperator.of(PDFOperatorNames.ShowTextAdjusted, [array]);
 }
 
 const fontKeysByPage = new WeakMap<PDFPage, Map<PDFFont, PDFName>>();
@@ -233,7 +302,7 @@ export function drawTextPx(
     setFillingColor(color),
     setFontAndSize(fontKeyOn(ctx.page, font), sizePx * scale),
     setTextMatrix(1, 0, 0, 1, xPx * scale, pageHeightPt - baselinePx * scale),
-    showText(encodeCached(font, text)),
+    showTextShaped(font, text),
     endText(),
     popGraphicsState(),
   );
