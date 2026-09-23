@@ -405,7 +405,7 @@ Las propiedades `header` y `footer` controlan los bloques de encabezado y pie de
 
 Los bloques utilizan el modelo unificado de **ranura de diseño**: cada elemento define un `placement` con un `anchor` (al contenedor o a otro elemento por `#id`), un `offset` opcional y un `size` opcional. Los campos planos heredados `align`, `marginFromBody`, `marginFromEdge` y `width: 'full'` siguen aceptándose como entrada y se migran automáticamente al nuevo formato; debajo se documenta la equivalencia.
 
-Cada bloque contiene una lista de elementos de **texto**, **línea** (`rule`) y **caja** (`box`). El orden del array es el orden de pintado (el primer elemento se pinta primero, el último se pinta encima).
+Cada bloque contiene una lista de elementos de **texto**, **línea** (`rule`) y **caja** (`box`). El orden del array es el orden de pintado (el primer elemento se pinta primero, el último se pinta encima). Esto se cumple sean cuales sean los anclajes: un elemento puede anclarse a otro que aparece después en la lista (`anchor.to: '#ttl'`), de modo que una caja de fondo puede ir primero y colocarse respecto al texto que se pinta encima de ella.
 
 **Valores por defecto incluidos.** Cuando `header` o `footer` son `undefined`, postext aplica un valor por defecto sensato en lugar de un bloque vacío:
 

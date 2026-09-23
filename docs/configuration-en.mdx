@@ -405,7 +405,7 @@ The `header` and `footer` properties control per-page header and footer slots. H
 
 Slots use the unified **design slot** model: every element has a `placement` with an `anchor` (to the container or to another element by `#id`), an optional `offset`, and an optional `size`. The legacy flat fields `align`, `marginFromBody`, `marginFromEdge`, and `width: 'full'` are still accepted on input and are migrated to the new shape automatically; the equivalent new-shape description is documented below.
 
-Each slot holds a list of **text**, **rule**, and **box** elements. Array order is paint order (first element paints first, last element paints on top).
+Each slot holds a list of **text**, **rule**, and **box** elements. Array order is paint order (first element paints first, last element paints on top). This holds whatever the anchors say: an element may anchor to one listed after it (`anchor.to: '#ttl'`), so a background box can come first and still be positioned against the text it sits behind.
 
 **Built-in defaults.** When `header` or `footer` is `undefined`, postext applies a sensible built-in default rather than an empty slot:
 
