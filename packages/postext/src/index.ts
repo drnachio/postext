@@ -8,6 +8,7 @@ export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage } from './
 export { dimensionToPx } from './units';
 export { computePageTextExtent } from './vdt';
 export { columnRuleSegments } from './columnRule';
+export { columnClipRect, designOverlayOverhang } from './columnClip';
 export type { ColumnRuleSegment } from './columnRule';
 export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache, createMeasurementCache, cachedMeasureBlock, cachedMeasureRichBlock } from './measure';
 export type { MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure';

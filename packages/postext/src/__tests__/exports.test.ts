@@ -69,6 +69,8 @@ describe("package exports", () => {
       "dimensionToPx",
       "computePageTextExtent",
       "columnRuleSegments",
+      "columnClipRect",
+      "designOverlayOverhang",
       "buildFontString",
       "measureBlock",
       "measureRichBlock",

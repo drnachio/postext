@@ -5,7 +5,7 @@ import {
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { computePageTextExtent, dimensionToPx } from 'postext';
+import { columnClipRect, computePageTextExtent, dimensionToPx } from 'postext';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import {
   type PageCtx,
@@ -201,15 +201,12 @@ function renderPage(
     );
   }
 
-  const clipOverhang = dimensionToPx({ value: 2, unit: 'pt' }, doc.config.page.dpi);
+  // Clip to column bounds, widened for glyph ink and for design overlays
+  // that hang past the column on purpose — the same rectangle the canvas
+  // backend clips to (see `columnClipRect`).
   for (const col of vdtPage.columns) {
-    pushClipRect(
-      ctx,
-      col.bbox.x - clipOverhang,
-      col.bbox.y,
-      col.bbox.width + clipOverhang * 2,
-      col.bbox.height,
-    );
+    const clip = columnClipRect(col, doc.config.page.dpi);
+    pushClipRect(ctx, clip.x, clip.y, clip.width, clip.height);
     for (const block of col.blocks) {
       if (block.tocPart && block.designOverlay) continue;
       renderBlock(ctx, block, col.bbox.width, col.bbox.x, fontCache, resourceCtx);

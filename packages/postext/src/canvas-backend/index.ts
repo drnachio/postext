@@ -1,6 +1,7 @@
-import type { VDTBlock, VDTDocument, VDTPage } from '../vdt';
+import type { VDTDocument, VDTPage } from '../vdt';
 import { computePageTextExtent } from '../vdt';
 import { dimensionToPx } from '../units';
+import { columnClipRect } from '../columnClip';
 import { renderBaselineGrid, renderColumnRule, renderCutLines, computeContentArea } from './decorations';
 import { renderBlock } from './blockRender';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -84,24 +85,13 @@ export function renderPageToCanvas(
   // sit under the body text rather than over it.
   if (page.openerBand) renderHeaderFooterSlot(ctx, page.openerBand);
 
-  // Clip to column bounds, widened horizontally by a small buffer so that
-  // glyph ink extending past its advance width (e.g. the tail of an "s" at the
-  // column edge) is not chopped. Between-column gutters absorb the buffer.
-  // A block's design overlay may hang past the column on purpose — a
-  // callout's corner badge sits half outside its box, which for a
-  // page-wide box is half outside the column — so the clip also grows to
-  // take in every overlay block of the column.
-  const clipOverhang = dimensionToPx({ value: 2, unit: 'pt' }, doc.config.page.dpi);
+  // Clip to column bounds, widened for glyph ink and for design overlays
+  // that hang past the column on purpose (see `columnClipRect`).
   for (const col of page.columns) {
-    const [left, right] = designOverlayOverhang(col.blocks, col.bbox.x, col.bbox.x + col.bbox.width);
+    const clip = columnClipRect(col, doc.config.page.dpi);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(
-      col.bbox.x - clipOverhang - left,
-      col.bbox.y,
-      col.bbox.width + clipOverhang * 2 + left + right,
-      col.bbox.height,
-    );
+    ctx.rect(clip.x, clip.y, clip.width, clip.height);
     ctx.clip();
     for (const block of col.blocks) {
       if (block.tocPart && block.designOverlay) continue;
@@ -132,21 +122,6 @@ export function renderPageToCanvas(
   }
 
   renderCutLines(ctx, page, doc);
-}
-
-/** How far the design overlays of `blocks` reach past `x0` on the left and
- *  `x1` on the right, in px (0 when they stay inside). */
-function designOverlayOverhang(blocks: VDTBlock[], x0: number, x1: number): [number, number] {
-  let left = 0;
-  let right = 0;
-  for (const block of blocks) {
-    if (!block.designOverlay || block.hidden) continue;
-    for (const b of block.designOverlay.blocks) {
-      left = Math.max(left, x0 - b.bbox.x);
-      right = Math.max(right, b.bbox.x + b.bbox.width - x1);
-    }
-  }
-  return [left, right];
 }
 
 export function renderPage(page: VDTPage, doc: VDTDocument): HTMLCanvasElement {
