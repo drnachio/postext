@@ -54,6 +54,10 @@ ARTICLES = [
     {"slug": "salud", "kicker": {"es": "Entrevista", "en": "Interview"}, "photos": ["health-1", "health-2"], "colour": "#3c8a55"},
 ]
 
+# Articles whose closing reading list is left out, by (lang, slug): the
+# Spanish noise list only points at English pages.
+DROP_FURTHER_READING = {("es", "ruido")}
+
 # Data panels transcribed from the infographic pages that the extractor
 # cannot read as text (keyed by the PDF page of the English edition; the
 # Spanish edition has the same pagination).

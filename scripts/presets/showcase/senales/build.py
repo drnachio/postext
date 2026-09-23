@@ -435,7 +435,12 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
     quote_done = False
     infographics = sorted(article.infographics, key=lambda t: t[0])
     ig_idx = 0
+    drop_reading = (lang, spec["slug"]) in ed.DROP_FURTHER_READING
+    skipping = False
     for b in article.blocks:
+        if skipping and b.kind != "subhead":
+            continue
+        skipping = False
         while ig_idx < len(infographics) and infographics[ig_idx][0] < b.page:
             pg, title, intro = infographics[ig_idx]
             md = panel_markdown(pg, title, intro, lang)
@@ -465,6 +470,9 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
                     if md:
                         lines.append(md)
                     ig_idx += 1
+                if drop_reading:
+                    skipping = True
+                    continue
             lines.append(f"## {b.text}\n")
         elif b.kind == "question":
             lines.append(f':::paragraphs{{style="pregunta"}}\n{b.text}\n:::\n')
