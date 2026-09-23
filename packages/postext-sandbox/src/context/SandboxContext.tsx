@@ -1272,6 +1272,14 @@ export function SandboxProvider({
         if (s.activePresetId !== provider.summary.id || s.presetStatus === 'loading') return;
         const snapshot = s.presetApplied?.presetId === provider.summary.id ? s.presetApplied : null;
 
+        // A copy of the built-in guide applied before it had a fingerprint
+        // is taken as out of date (it predates the version on screen).
+        if (snapshot && snapshot.fingerprint === null && live !== null && provider.summary.source === 'builtin') {
+          const legacy = { ...snapshot, fingerprint: 'builtin-legacy' };
+          dispatch({ type: 'SET_PRESET_APPLIED', payload: legacy });
+          savePresetApplied(legacy);
+          return;
+        }
         if (snapshot && snapshot.fingerprint === null && live !== null) {
           // The apply could not read a fingerprint (source briefly down):
           // adopt the live one as the baseline rather than re-applying.

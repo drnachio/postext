@@ -734,6 +734,19 @@ const TABLE_SPECS: TableSpec[] = [
   },
 ];
 
+/** A pure description of every example resource in both languages — the
+ *  SVG markup, captions, alt texts, placements and table models — for the
+ *  built-in preset's fingerprint (no blob is written). */
+export function defaultResourcesSignature(): string {
+  const parts: unknown[] = [];
+  for (const es of [false, true]) {
+    for (const [fileId, fig] of Object.entries(SVG_FIGURES)) parts.push(fileId, fig.generate(es));
+    for (const f of FIGURE_SPECS) parts.push(f.id, f.fileId, f.placement, f.caption(es), f.altText(es));
+    for (const t of TABLE_SPECS) parts.push(t.id, t.placement, t.caption(es), t.model(es));
+  }
+  return JSON.stringify(parts);
+}
+
 /** Build (and persist the blobs for) the default example resources for the
  *  given document `locale` (defaults to English). Captions, table content, and
  *  diagram labels follow the locale so they match the seeded markdown — a

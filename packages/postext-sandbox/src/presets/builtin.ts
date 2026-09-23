@@ -1,6 +1,6 @@
 import type { PostextConfig } from 'postext';
 import { createPostextGuideConfig } from '../context/guideConfig';
-import { buildDefaultResources } from '../defaultResources';
+import { buildDefaultResources, defaultResourcesSignature } from '../defaultResources';
 import { coverThumbnailSvg } from '../defaultResources/cover';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from '../defaultMarkdown';
 import type { PresetProvider } from './types';
@@ -35,8 +35,25 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
     license: 'MIT',
     thumbnailUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(coverThumbnailSvg())}`,
   };
+  // The guide ships with the code: its fingerprint is a hash of everything
+  // it loads (both languages), so the live-preset watcher reloads an
+  // untouched copy — or offers a reload over an edited one — whenever a new
+  // version of the guide is deployed.
+  let fingerprintValue: string | null = null;
+  const fingerprint = async (): Promise<string | null> => {
+    if (fingerprintValue === null) {
+      const source = JSON.stringify([
+        opts.markdownOverride ?? null, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES,
+        opts.configOverride ?? null, createPostextGuideConfig('en'), createPostextGuideConfig('es'),
+        defaultResourcesSignature(),
+      ]);
+      fingerprintValue = `builtin-${hashString(source)}`;
+    }
+    return fingerprintValue;
+  };
   return {
     summary,
+    fingerprint,
     async load(locale: string) {
       const isSpanish = locale.toLowerCase().startsWith('es');
       // A host override that is just one of the built-in samples (the web app
@@ -51,4 +68,14 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
       return { summary, locale: isSpanish ? 'es' : 'en', chapters, config, resources, blobs: [], fonts: [], canvasScope: 'book' };
     },
   };
+}
+
+/** FNV-1a over UTF-16 code units, as 8 hex digits: a cheap content hash. */
+function hashString(text: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16).padStart(8, '0');
 }
