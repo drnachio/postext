@@ -69,6 +69,9 @@ export interface MeasureContentBlockOptions {
   trackingEm?: number;
   /** Paragraph style forced by an enclosing `:::paragraphs` container. */
   styleOverride?: BlockStyle;
+  /** Resource blocks: the widest a figure's image may be set, its caption
+   *  keeping the column's width (`layout.fitFiguresToPage`). */
+  figureMaxBodyWidth?: number;
 }
 
 /**
@@ -125,6 +128,7 @@ export function measureContentBlock(
       resource: kind.resource,
       resourceType: kind.resourceType,
       resourceNumber: kind.resourceNumber,
+      ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
     });
     if (!resourceBlock) return null;
     if (frac < 1) {

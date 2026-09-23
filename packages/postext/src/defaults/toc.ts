@@ -22,7 +22,7 @@ export const DEFAULT_TOC_CONFIG = {
   leader: { enabled: true, char: '.', gap: HALF_EM },
   pageNumber: { width: NUMBER_WIDTH },
   subtitle: { enabled: false, attr: 'author' },
-  parts: { enabled: true },
+  parts: { enabled: true, breakBefore: false },
 };
 
 function resolveEntryStyle(
@@ -102,6 +102,7 @@ export function resolveTocConfig(
     },
     parts: {
       enabled: parts?.enabled ?? d.parts.enabled,
+      breakBefore: parts?.breakBefore ?? d.parts.breakBefore,
       design: parts?.design ? resolveDesignSlot(parts.design, 'header') : { elements: [] },
       height: parts?.height ?? PART_HEIGHT,
       marginTop: parts?.marginTop ?? ZERO,
@@ -154,6 +155,7 @@ export function stripTocDefaults(toc: TocConfig | undefined): TocConfig | undefi
   if (toc.parts) {
     const p: NonNullable<TocConfig['parts']> = {};
     if (toc.parts.enabled !== undefined && toc.parts.enabled !== d.parts.enabled) p.enabled = toc.parts.enabled;
+    if (toc.parts.breakBefore !== undefined && toc.parts.breakBefore !== d.parts.breakBefore) p.breakBefore = toc.parts.breakBefore;
     if (toc.parts.design) {
       const slot = stripDesignSlotDefaults(toc.parts.design, 'header');
       if (slot && slot.elements && slot.elements.length > 0) p.design = slot;

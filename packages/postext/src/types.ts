@@ -498,6 +498,11 @@ export interface LayoutConfig {
   /** `oneAndHalf` only. Default `'right'`. */
   sideColumnSide?: SideColumnSide;
   columnRule?: ColumnRuleConfig;
+  /** Shrink a figure (bitmap or SVG) whose image, caption and note would
+   *  stand taller than the content area until the stack fits it. Off by
+   *  default — print pages are sized for their figures; the HTML viewer,
+   *  whose pages are as tall as the screen, turns it on. */
+  fitFiguresToPage?: boolean;
 }
 
 export interface ResolvedLayoutConfig {
@@ -507,6 +512,7 @@ export interface ResolvedLayoutConfig {
   sideColumnRole: SideColumnRole;
   sideColumnSide: SideColumnSide;
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
+  fitFiguresToPage: boolean;
 }
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
