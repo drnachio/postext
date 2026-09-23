@@ -4,12 +4,13 @@
  * reconstruction of VDT lines from the optimal breakpoint sequence.
  */
 
-import type { VDTLine, VDTLineSegment } from '../vdt';
+import type { VDTChip, VDTLine, VDTLineSegment } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import type { TextAlign } from '../types';
 import type { KPItem, RichTokenMeta } from './types';
 import { HYPHEN_PENALTY, KP_INFINITY, MAX_STRETCH } from './constants';
 import { cleanSoftHyphens } from './utils';
+import { trimChipLineEdges } from '../measure/chipEdges';
 
 interface RichBreakPoint {
   charIndex: number;
@@ -33,6 +34,8 @@ interface RichToken {
   refResourceId?: string;
   /** An inline colour swatch (atomic square; see `measure/rich.ts`). */
   swatch?: { color?: string };
+  /** An inline chip (atomic box; see `measure/rich.ts`). */
+  chip?: VDTChip;
   /** Bare break points (URL joints): no hyphen is appended at the break. */
   bareBreaks?: boolean;
 }
@@ -174,13 +177,14 @@ export function reconstructRichLines(
           : token.text;
         const cleanText = cleanSoftHyphens(subText);
         lineSegments.push({
-          kind: token.mathRender ? 'math' : token.swatch ? 'swatch' : 'text',
+          kind: token.mathRender ? 'math' : token.swatch ? 'swatch' : token.chip ? 'chip' : 'text',
           text: cleanText,
           width: it.width,
           bold: meta.bold || undefined,
           italic: meta.italic || undefined,
           ...(token.mathRender ? { mathRender: token.mathRender } : {}),
           ...(token.swatch ? { swatch: token.swatch } : {}),
+          ...(token.chip ? { chip: token.chip } : {}),
           ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
         });
@@ -221,14 +225,15 @@ export function reconstructRichLines(
     }
 
     const lineText = textParts.join('');
-    const contentWidth = lineSegments.reduce((s, seg) => s + seg.width, 0);
+    const segments = trimChipLineEdges(lineSegments);
+    const contentWidth = segments.reduce((s, seg) => s + seg.width, 0);
 
     // Compute justifiedSpaceRatio
     let justifiedSpaceRatio: number | undefined;
     if (textAlign === 'justify' && !isLastLine && normalSpaceWidth > 0) {
       let wordWidth = 0;
       let spaceCount = 0;
-      for (const seg of lineSegments) {
+      for (const seg of segments) {
         if (seg.kind === 'space') spaceCount++;
         else wordWidth += seg.width;
       }
@@ -243,7 +248,7 @@ export function reconstructRichLines(
       bbox: createBoundingBox(lineIndent, li * lineHeightPx, contentWidth, lineHeightPx),
       baseline: li * lineHeightPx + lineHeightPx * 0.8,
       hyphenated,
-      segments: lineSegments,
+      segments,
       isLastLine,
       ...(justifiedSpaceRatio !== undefined ? { justifiedSpaceRatio } : {}),
     });

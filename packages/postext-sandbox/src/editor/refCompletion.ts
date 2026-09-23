@@ -11,6 +11,7 @@ import { syntaxTree } from '@codemirror/language';
 import { EditorView, keymap } from '@codemirror/view';
 import { Prec, StateEffect, StateField, type EditorState, type Extension } from '@codemirror/state';
 import type { Resource, ResourceKind, ResourceType } from 'postext';
+import { chipCompletionSource, type ChipStyleOption } from './chipSyntax';
 
 /** What the `@` picker needs from the sandbox: the current resources and the
  *  resource types that name them (figure/table/…) in the document locale.
@@ -19,6 +20,8 @@ import type { Resource, ResourceKind, ResourceType } from 'postext';
 export interface RefCompletionContext {
   resources: readonly Resource[];
   types: readonly ResourceType[];
+  /** The chip styles offered inside `:chip[…]{style="…"}`. */
+  chipStyles?: readonly ChipStyleOption[];
 }
 
 /** `@` followed by an optional query, ending at the caret. Ids are slugs
@@ -261,19 +264,24 @@ export function refCompletion(getContext: () => RefCompletionContext): Extension
     dismissedRefs,
     Prec.highest(dismissOnEscape),
     autocompletion({
-      override: [refSource(getContext)],
+      // One completion config per editor: the chip directive and style ids
+      // share it with the `@` picker.
+      override: [refSource(getContext), chipCompletionSource(() => getContext().chipStyles ?? [])],
       activateOnTyping: true,
       icons: false,
       tooltipClass: () => 'cm-refPicker',
       addToOptions: [
         {
           position: 20,
-          render: (completion) => kindIcon((completion as RefOption).resource.kind),
+          render: (completion) => {
+            const { resource } = completion as Partial<RefOption>;
+            return resource ? kindIcon(resource.kind) : null;
+          },
         },
         {
           position: 90,
           render: (completion) => {
-            const { caption } = completion as RefOption;
+            const { caption } = completion as Partial<RefOption>;
             if (!caption) return null;
             const span = document.createElement('span');
             span.className = 'cm-refOption-caption';

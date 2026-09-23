@@ -19,6 +19,8 @@ export type WarningKind =
   | 'unclosedContainer'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
+  | 'unknownChipStyle'
+  | 'chipOverlap'
   | 'numberingInvalidFormat'
   | 'numberingInvalidStartAt'
   | 'pagebreakInvalidParity'
@@ -89,6 +91,12 @@ export type WarningPayload =
   /** A `:::callout{type="…"}` container names a type that is not in
    *  `config.calloutStyles`. */
   | { kind: 'unknownCalloutType'; type: string }
+  /** A `:chip[…]{style="…"}` names a style that is not in
+   *  `config.chipStyles`; the chip takes the first style. */
+  | { kind: 'unknownChipStyle'; style: string }
+  /** Chips of this style are taller than the line pitch (by `overlapPt`),
+   *  so chips on consecutive lines touch. */
+  | { kind: 'chipOverlap'; style: string; overlapPt: number }
   | { kind: 'numberingInvalidFormat'; value: string }
   | { kind: 'numberingInvalidStartAt'; value: string }
   | { kind: 'pagebreakInvalidParity'; value: string }

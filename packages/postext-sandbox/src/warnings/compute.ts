@@ -20,6 +20,7 @@ import {
   collectPlaceholderNames,
   isAllowedPlaceholder,
   isMetadataPlaceholder,
+  DEFAULT_CHIP_STYLES,
 } from 'postext';
 import {
   getConfigFontSpecs,
@@ -297,6 +298,67 @@ function collectContainerWarnings(
           sourceStart: b.sourceStart,
           sourceEnd: b.sourceEnd,
           line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Inline chip warnings:
+ *   - unknownChipStyle: `:chip[…]{style="x"}` where `x` names no chip style
+ *     (the built-in `chip` style while the config has none); the engine
+ *     falls back to the first style.
+ *   - chipOverlap: a chip box taller than the line pitch, so the boxes of
+ *     chips on consecutive lines touch (the vertical padding paints outside
+ *     the line box by design). One warning per style, at its first chip.
+ */
+function collectChipWarnings(
+  markdown: string,
+  blocks: ContentBlock[],
+  config: PostextConfig,
+  doc: VDTDocument | null,
+): Warning[] {
+  const out: Warning[] = [];
+  let idx = 0;
+  const styleIds = new Set((config.chipStyles ?? DEFAULT_CHIP_STYLES).map((s) => s.id));
+  for (const b of blocks) {
+    let plain = 0;
+    for (const span of b.spans) {
+      const style = span.chip?.style;
+      if (style !== undefined && !styleIds.has(style)) {
+        const start = b.sourceMap[plain] ?? b.sourceStart;
+        const end = markdown.indexOf('}', start);
+        out.push({
+          id: `chip-style-${idx++}-${start}`,
+          payload: { kind: 'unknownChipStyle', style },
+          sourceStart: start,
+          sourceEnd: end >= 0 && end < b.sourceEnd ? end + 1 : b.sourceEnd,
+          line: lineNumberForOffset(markdown, start),
+        });
+      }
+      plain += span.text.length;
+    }
+  }
+  if (!doc) return out;
+  const ptPerPx = 72 / doc.config.page.dpi;
+  const flagged = new Set<string>();
+  for (const block of doc.blocks) {
+    for (const line of block.lines) {
+      for (const seg of line.segments ?? []) {
+        const chip = seg.chip;
+        if (!chip || flagged.has(chip.styleId)) continue;
+        const excess = chip.ascent + chip.descent - line.bbox.height;
+        if (excess <= 0.01) continue;
+        flagged.add(chip.styleId);
+        const src = line.sourceStart ?? block.sourceStart;
+        out.push({
+          id: `chip-overlap-${chip.styleId}`,
+          payload: { kind: 'chipOverlap', style: chip.styleId, overlapPt: excess * ptPerPx },
+          sourceStart: src,
+          sourceEnd: line.sourceEnd ?? block.sourceEnd,
+          line: src !== undefined ? lineNumberForOffset(markdown, src) : undefined,
         });
       }
     }
@@ -803,6 +865,7 @@ function computeDocumentWarnings(params: {
   warnings.push(...collectHeaderFooterWarnings(config, doc));
   warnings.push(...collectDirectiveWarnings(markdown, blocks));
   warnings.push(...collectContainerWarnings(markdown, blocks, issues, config));
+  warnings.push(...collectChipWarnings(markdown, blocks, config, doc));
   warnings.push(...collectHeadingBreakParityWarnings(config));
   warnings.push(...collectParityCascadeWarnings(doc));
   warnings.push(...collectAlphaOverflowWarnings(doc));

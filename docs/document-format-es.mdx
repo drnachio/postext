@@ -215,9 +215,9 @@ Los atributos que admite cada contenedor, y cómo se estiliza, se documentan en 
 :::
 ```
 
-Un aviso se compone como una caja — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo. Por defecto se mantiene unido y pasa entero a la columna o página siguiente cuando no cabe; un estilo con `keepTogether: false` le permite partirse entre sus bloques, o entre líneas, dejando al menos `splitMinLines` líneas a cada lado del corte. Las cajas a ancho completo (`span="page"`) cortan la página en bandas de columnas; las cajas `span="side"` salen del flujo a la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), apiladas junto al texto que interrumpen, y se componen como cajas de columna donde no existe tal columna; las cajas `placement="fixed"` salen del flujo y se fijan a coordenadas de página (por ejemplo, un distintivo de autoevaluación en la esquina inferior izquierda de la última página del capítulo), y las columnas que cubren ceden esa zona; las cajas flotantes (`placement="top"` / `"bottom"`) salen del flujo donde aparecen y ocupan la primera banda libre tras esa posición — el pie de la página, o la cabecera o el pie de la siguiente — mientras el texto que las sigue rellena la página que dejaron. Un estilo con `floatBarrier: true` (normalmente la caja de «puntos clave» que cierra el capítulo) convierte la caja en una **barrera de flotantes**: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja — de modo que ningún flotante escapa más allá del final de su capítulo. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
+Un aviso se compone como una caja — un título opcional y después su contenido, con la tipografía de cuerpo y de listas propia del estilo. Por defecto se mantiene unido y pasa entero a la columna o página siguiente cuando no cabe (una caja más alta que una columna entera se parte igualmente, en lugar de desbordar); un estilo con `keepTogether: false` le permite partirse entre sus bloques, o entre líneas, dejando al menos `splitMinLines` líneas de texto — o una figura, tabla, fórmula en bloque o caja anidada — a cada lado del corte. Las cajas a ancho completo (`span="page"`) cortan la página en bandas de columnas; las cajas `span="side"` salen del flujo a la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), apiladas junto al texto que interrumpen, y se componen como cajas de columna donde no existe tal columna; las cajas `placement="fixed"` salen del flujo y se fijan a coordenadas de página (por ejemplo, un distintivo de autoevaluación en la esquina inferior izquierda de la última página del capítulo), y las columnas que cubren ceden esa zona; las cajas flotantes (`placement="top"` / `"bottom"`) salen del flujo donde aparecen y ocupan la primera banda libre tras esa posición — el pie de la página, o la cabecera o el pie de la siguiente — mientras el texto que las sigue rellena la página que dejaron. Un estilo con `floatBarrier: true` (normalmente la caja de «puntos clave» que cierra el capítulo) convierte la caja en una **barrera de flotantes**: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja — de modo que ningún flotante escapa más allá del final de su capítulo. Una valla `:::nombre` desconocida no es un contenedor — la línea se trata como texto, exactamente igual que una directiva desconocida.
 
-Una valla `:::part` admite `number` (tal como quieras imprimirlo — `"I"`, `"IV"`, `"3"`; además se interpreta para que el diseño pueda reformatearlo) y `title`; los dos son opcionales. Un tercer atributo, `palette="band=#hex"` (varios pares `id=#hex` separados por comas), recolorea todos los colores de diseño vinculados a esos ids de paleta — cabeceras, banda de apertura, diseños de parte — para la parte y los capítulos que la siguen, hasta la siguiente parte; ver [Configuración › Partes](/es/docs/configuration#partes). El contenedor abre siempre una página propia: un salto de página con la paridad configurada antes, una columna única de cuerpo en los `parts.margins`, el diseño de apertura sobre la página entera y otro salto de página tras la valla de cierre. El cuerpo — normalmente la lista de los capítulos que agrupa la parte, o nada en absoluto — se compone con `parts.bodyStyle`:
+Una valla `:::part` admite `number` (tal como quieras imprimirlo — `"I"`, `"IV"`, `"3"`; además se interpreta para que el diseño pueda reformatearlo) y `title`; los dos son opcionales. Un tercer atributo, `palette="band=#hex"` (varios pares `id=#hex` separados por comas), recolorea todos los colores de diseño vinculados a esos ids de paleta — cabeceras, banda de apertura, diseños de parte — y los colores del flujo de texto que comparten su valor base (títulos, negrita, referencias, viñetas, pies) para la parte y los capítulos que la siguen, hasta la siguiente parte; ver [Configuración › Partes](/es/docs/configuration#partes). El contenedor abre siempre una página propia: un salto de página con la paridad configurada antes, una columna única de cuerpo en los `parts.margins`, el diseño de apertura sobre la página entera y otro salto de página tras la valla de cierre. El cuerpo — normalmente la lista de los capítulos que agrupa la parte, o nada en absoluto — se compone con `parts.bodyStyle`:
 
 ```
 :::part{number="I" title="Fundamentos"}
@@ -247,6 +247,24 @@ Dentro de un `:::callout`, un grupo `:::columns{count=2}` … `:::` compone los 
 ```
 
 Una valla `:::callout` admite también `label="…"`: el texto que un estilo con pestaña `label` imprime en la esquina superior de la caja (`:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`).
+
+Un `:::callout` dentro de otro es una caja propia —una ficha de ejercicio con recuadros de respuesta, por ejemplo—. Toma su propio estilo (fondo, borde, radio, relleno, título, icono) al ancho interior completo de la caja exterior y se apila entre sus demás bloques; su `span` y su `placement` se ignoran, porque una caja anidada siempre fluye dentro de su madre. Cada valla de cierre cierra la caja abierta más interna:
+
+```md
+:::callout{type="ficha"}
+El enunciado del ejercicio.
+
+:::callout{type="respuesta"}
+Un recuadro blanco de respuesta con su propio borde y relleno.
+:::
+
+:::callout{type="respuesta"}
+Un segundo recuadro de respuesta.
+:::
+:::
+```
+
+Cuando la caja exterior se parte entre columnas o páginas (`keepTogether: false`, o más alta que una columna), una caja anidada pasa entera al fragmento siguiente salvo que su propio estilo permita partirla también; cada fragmento vuelve a dibujar los marcos que contiene, y una caja anidada que continúa pierde su título y su icono.
 
 ### `:::pagebreak`
 
@@ -384,12 +402,34 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td>El markdown de imagen en línea se <strong>elimina</strong> del texto. Las imágenes deben declararse en <code>PostextContent.resources</code> para que el motor las coloque según las reglas de <code>resourcePlacement</code>.</td>
     </tr>
     <tr>
+      <td>Chip</td>
+      <td><code>:chip[texto]</code></td>
+      <td>Un fragmento de texto en una caja que pasa de línea como una unidad: un banco de palabras, una tecla, una etiqueta. Lo estilan los <code>chipStyles</code>; ver <a href="#chips-en-línea">Chips en línea</a>.</td>
+    </tr>
+    <tr>
       <td>Matemáticas en línea</td>
       <td><code>$…$</code></td>
       <td>Una fórmula LaTeX que fluye con el texto que la rodea, p. ej. <code>$e^{'{i\\pi}'}+1=0$</code>. Se compone con MathJax y se renderiza como trazos vectoriales en todos los backends. Usa <code>\\$</code> para un signo de dólar literal. El escalado, la forma display (<code>$$ … $$</code>) y el manejo de errores se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
     </tr>
   </tbody>
 </table>
+
+### Chips en línea
+
+`:chip[texto]` compone `texto` en una caja —un «chip» redondeado y tintado— que fluye con la línea: las palabras de un banco de palabras o de un ejercicio de clasificar, teclas, etiquetas. `:chip[texto]{style="tecla"}` elige un estilo con nombre de `chipStyles` (ver la referencia de configuración); sin `style`, o con un id que ningún estilo declara, el chip toma el primer estilo (un estilo `chip` integrado cuando la configuración no tiene ninguno; el sandbox avisa de un id desconocido).
+
+```markdown
+Clasifica: :chip[pila] :chip[cable] :chip[interruptor] :chip[bombilla]
+
+Pulsa :chip[Ctrl]{style="tecla"} + :chip[C]{style="tecla"} para copiar.
+```
+
+- **Una unidad.** Un chip nunca se parte ni se divide con guion por dentro; la línea se corta entre chips, en los espacios que los rodean. Un chip más ancho que toda la línea la desborda en lugar de partirse.
+- **Ancho.** Su avance es el texto más el relleno horizontal y el contorno a ambos lados. La justificación solo estira los espacios entre palabras, nunca el interior de un chip. El `gap` del estilo es el espacio mínimo entre la caja y la palabra o el chip vecino a través de un espacio: un espacio más estrecho se completa (no en el borde de la línea, ni junto a la puntuación pegada, como en `:chip[a],`).
+- **Alto.** La caja es una banda alrededor de la línea base, 0,8 em por encima y 0,25 em por debajo al cuerpo del chip, que crece con el relleno vertical y el contorno. El relleno vertical se pinta fuera de la caja de línea y nunca cambia el interlineado, así que la retícula se mantiene; una caja más alta que el interlineado toca los chips de la línea siguiente, y el sandbox lo señala («Los chips tocan la línea siguiente») para reducir el relleno, el contorno o el cuerpo.
+- **Texto.** El texto del chip admite sus propias marcas (`:chip[**negrita** palabra]`, `:chip[x^2^]`) y el énfasis que lo rodea (`**:chip[a]**`); el estilo puede fijar su familia, cuerpo, color, negrita y cursiva. Escribe `\]` para un corchete literal dentro. Las referencias, las muestras de color y las fórmulas dentro de un chip quedan como texto literal.
+- **Dónde.** Párrafos, elementos de lista, citas, recuadros, celdas de tabla, leyendas y notas. En los encabezados `:chip[…]` queda como texto literal.
+- **Salida.** Canvas, HTML y PDF pintan la caja y componen las palabras como texto real: seleccionable en el HTML, extraíble y en orden de lectura en el PDF (en un PDF etiquetado la caja es un artefacto de maquetación y las palabras pertenecen al párrafo).
 
 
 ## Fórmulas matemáticas
@@ -445,7 +485,9 @@ Para un recurso que flota, la directiva `::resource` es innecesaria —el `:ref`
 
 El `id` debe coincidir con un recurso definido en el panel de Recursos. El motor renderiza el recurso (imagen, SVG o tabla) con su pie dibujado debajo a modo de pie de figura/tabla. El texto del pie se compone a partir del `captionPrefix` del tipo de recurso, el número calculado y el pie propio del recurso — p. ej. **Figura 1.7. El plano original del faro.** Su tipografía se controla desde [Configuración › Estilo de pies](/es/docs/configuration#estilo-de-pies): la etiqueta y la descripción comparten tipografía y tamaño, mientras que la etiqueta conserva sus propios ajustes de negrita/cursiva/color; la separación sobre el pie es por defecto `0.75em` y la alineación, a la izquierda. El pie puede situarse en cambio encima del recurso (`captionStyle.position: 'above'`, de forma global o por tipo de recurso), opcionalmente sobre una barra de color. Un recurso puede llevar además una `note` — una línea breve de fuente o créditos, con el mismo formato en línea y las mismas marcas `:ref` que el pie — compuesta en un tamaño menor bajo el recurso (bajo el pie cuando este va debajo, bajo el cuerpo cuando va encima) y estilizada mediante `captionStyle.note`.
 
-Los recursos de tabla dibujan su propia rejilla, con estilo definido en [Configuración › Estilo de tablas](/es/docs/configuration#estilo-de-tablas): las celdas de cuerpo y de cabecera tienen tipografía totalmente independiente, el fondo de la cabecera es por defecto `#f0f0f0`, los bordes `0.75pt` y el `cellPadding` `0.375em` — cualquier campo sin definir hereda del texto del cuerpo. Los anchos de columna forman parte de la propia tabla: `TableModel.columnWidths` guarda un peso relativo por columna (`[2, 1, 1]` da a la primera columna la mitad del ancho); si no se indica, las columnas se reparten el ancho a partes iguales.
+Los recursos de tabla dibujan su propia rejilla, con estilo definido en [Configuración › Estilo de tablas](/es/docs/configuration#estilo-de-tablas): las celdas de cuerpo y de cabecera tienen tipografía totalmente independiente, el fondo de la cabecera es por defecto `#f0f0f0`, los bordes `0.75pt` y el `cellPadding` `0.375em` — cualquier campo sin definir hereda del texto del cuerpo. Los anchos de columna forman parte de la propia tabla: `TableModel.columnWidths` guarda un peso relativo por columna (`[2, 1, 1]` da a la primera columna la mitad del ancho); si no se indica, las columnas se reparten el ancho a partes iguales. Una tabla también puede componerse con una variante con nombre: `table.styleId` elige uno de los `tableStyles` del documento (véase [Configuración › Estilos de tabla con nombre](/es/docs/configuration#estilos-de-tabla-con-nombre)), cuyos campos sin definir heredan de `tableStyle`; un id desconocido o ausente conserva `tableStyle`.
+
+Una celda coloca su contenido con `TableCell.align` (`left`, `center`, `right`; los elementos de lista siguen alineados a la izquierda) y `TableCell.verticalAlign` (`top`, por defecto, `middle` o `bottom`). La alineación vertical mueve todo el contenido de la celda —la imagen y el texto que va debajo, como una sola unidad— dentro de una celda más alta que él: una fila estirada por una vecina más larga, o las filas que abarca un `rowSpan`. Se aplica en todas las salidas (canvas, HTML, PDF), en las tablas giradas y en cada tramo de una tabla partida entre páginas. Ambas se fijan por celda desde los botones de alineación de la barra del editor de tablas del sandbox.
 
 Una celda de tabla también puede contener una imagen. `TableCell.image` nombra un recurso de imagen o SVG por su id (`{ "resourceId": "fig-brazo", "width": 0.7 }`): la imagen se dibuja dentro de la celda — nunca se numera, flota ni lleva pie — ajustada al ancho interior de la celda (o a la fracción que indique `width`, por defecto `1`) conservando su proporción, alineada como el texto de la celda, y el texto de la celda, si lo hay, va debajo. La fila crece para alojarla. En el editor de tablas del sandbox, el botón de imagen de la barra elige el recurso para la celda activa y un campo de ancho fija la fracción. Un id que no corresponda a ningún recurso de imagen deja la celda solo con texto.
 
@@ -554,7 +596,7 @@ Cada recurso tiene una **colocación** que decide dónde aterriza su flotante, r
 
 Un flotante ocupa el **primer hueco libre tras su primera referencia**, en orden de lectura: el final de la columna donde está la referencia, después el principio y el final de la siguiente columna vacía de la misma página, y después las bandas de la siguiente página que abra el flujo (un flotante a ancho de página ocupa el pie de la página cuando todas las columnas aún tienen sitio para él; si no, una banda de la página siguiente). Nunca se reduce, y nunca aterriza antes de su referencia. Los flotantes de una misma secuencia de numeración aparecen en orden de referencia: una figura que no cabe en ninguna parte de una página retiene a las figuras que vienen detrás (una tabla en espera no retiene a una figura, ni al revés), así que la figura 12 nunca aparece antes que la figura 11. Una tabla que tendría que esperar se corta en su lugar: si recibe la cabecera de una columna vacía, toma las filas que caben y continúa en el siguiente hueco — la columna de al lado o la página siguiente — con sus filas de cabecera repetidas (véase `tableStyle.overflow`).
 
-Los flotantes nunca escapan de su capítulo: en una apertura de capítulo (un nivel de encabezado con `breakBefore` o `span: 'page'`), en un `:::part`, en un estilo de aviso con `floatBarrier: true` (la caja de «puntos clave» que cierra el capítulo) y al final del documento, todo flotante pendiente se coloca primero — en los huecos libres de la página, o en páginas abiertas por delante del límite. Un `:::pagebreak` simplemente envía los flotantes pendientes a la página que le sigue.
+Los flotantes nunca escapan de su capítulo: en una apertura de capítulo (un nivel de encabezado con `breakBefore` o `span: 'page'`), en un `:::part`, en un estilo de aviso con `floatBarrier: true` (la caja de «puntos clave» que cierra el capítulo) y al final del documento, todo flotante pendiente se coloca primero — en los huecos libres de la página, o en páginas abiertas por delante del límite. Una figura o tabla que pidió la cabeza de una página puede ocupar entonces el pie de la página de cierre del capítulo, bajo sus columnas equilibradas, en lugar de una página propia. Un `:::pagebreak` simplemente envía los flotantes pendientes a la página que le sigue.
 
 Las bandas de flotantes se corrigen contra la rejilla base para que el texto circundante mantenga el ritmo vertical de toda la página. Una banda **superior** amplía su margen inferior hasta la siguiente línea de la rejilla, de modo que el texto bajo el flotante queda alineado con las columnas vecinas y con la página enfrentada. Un flotante **inferior** se ancla de forma que la última línea de su leyenda comparta línea base con la última línea de texto de las demás columnas (el contenido sin leyenda alinea su borde inferior con la última celda de la rejilla) — así, las páginas llenas terminan a la misma altura entre columnas y entre páginas enfrentadas.
 

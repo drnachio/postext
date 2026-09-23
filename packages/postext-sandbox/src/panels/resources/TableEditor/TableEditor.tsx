@@ -5,6 +5,7 @@ import type {
   ColorValue,
   TableCell,
   TableCellAlign,
+  TableCellVerticalAlign,
   TableCellPos,
   TableModel,
 } from 'postext';
@@ -324,6 +325,9 @@ export function TableEditor({
   const handleSetAlign = (align: TableCellAlign) => {
     commit(setAlignment(model, active, align, activeCell?.verticalAlign));
   };
+  const handleSetVerticalAlign = (verticalAlign: TableCellVerticalAlign) => {
+    commit(setAlignment(model, active, activeCell?.align, verticalAlign));
+  };
 
   // Image in the active cell: pick a resource (keeping the width fraction
   // already set), clear it, or change the fraction of the cell width it takes.
@@ -452,6 +456,7 @@ export function TableEditor({
           headerRowActive={false}
           headerColumnActive={false}
           activeAlign={undefined}
+          activeVerticalAlign={undefined}
           onAddRow={() =>
             commit({ headerRowCount: 1, rows: [[{ content: '', isHeader: true }], [{ content: '' }]] })
           }
@@ -463,6 +468,7 @@ export function TableEditor({
           onToggleHeaderRow={() => {}}
           onToggleHeaderColumn={() => {}}
           onSetAlign={() => {}}
+          onSetVerticalAlign={() => {}}
           onPasteTsv={handlePasteTsv}
           imageOptions={imageOptions}
           activeImageId={undefined}
@@ -489,6 +495,7 @@ export function TableEditor({
         headerRowActive={headerRowActive}
         headerColumnActive={headerColumnActive}
         activeAlign={activeCell?.align}
+        activeVerticalAlign={activeCell?.verticalAlign}
         onAddRow={handleAddRow}
         onRemoveRow={handleRemoveRow}
         onAddColumn={handleAddColumn}
@@ -498,6 +505,7 @@ export function TableEditor({
         onToggleHeaderRow={handleToggleHeaderRow}
         onToggleHeaderColumn={handleToggleHeaderColumn}
         onSetAlign={handleSetAlign}
+        onSetVerticalAlign={handleSetVerticalAlign}
         onPasteTsv={handlePasteTsv}
         imageOptions={imageOptions}
         activeImageId={activeImage?.resourceId}

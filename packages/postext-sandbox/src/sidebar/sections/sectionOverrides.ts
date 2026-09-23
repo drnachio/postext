@@ -20,10 +20,14 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
       return (config.paragraphStyles ?? []).length > 0;
     case 'headingStyles':
       return (config.headingStyles ?? []).length > 0;
+    case 'tableStyles':
+      return (config.tableStyles ?? []).length > 0;
     case 'bodyText':
       return hasKeys(config.bodyText) || config.locale !== undefined;
     case 'calloutStyles':
       return config.calloutStyles !== undefined;
+    case 'chipStyles':
+      return config.chipStyles !== undefined;
     case 'resource-types':
       return config.resourceTypes !== undefined;
     case 'debug':

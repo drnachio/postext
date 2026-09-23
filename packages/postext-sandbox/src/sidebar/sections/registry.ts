@@ -18,12 +18,14 @@ export type SettingsSectionId =
   | 'headingStyles'
   | 'toc'
   | 'paragraphStyles'
+  | 'chipStyles'
   | 'unordered-lists'
   | 'ordered-lists'
   | 'math'
   | 'resource-types'
   | 'captionStyle'
   | 'tableStyle'
+  | 'tableStyles'
   | 'diagramStyle'
   | 'calloutStyles'
   | 'htmlViewer'
@@ -65,6 +67,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'headingStyles', category: 'text', labelKey: 'headingStylesSection', configKeys: ['headingStyles'] },
   { id: 'toc', category: 'text', labelKey: 'tocSection', configKeys: ['toc'] },
   { id: 'paragraphStyles', category: 'text', labelKey: 'paragraphStylesSection', configKeys: ['paragraphStyles'] },
+  { id: 'chipStyles', category: 'text', labelKey: 'chipStylesSection', configKeys: ['chipStyles'] },
   { id: 'unordered-lists', category: 'text', labelKey: 'unorderedLists', configKeys: ['unorderedLists'] },
   { id: 'ordered-lists', category: 'text', labelKey: 'orderedLists', configKeys: ['orderedLists'] },
   { id: 'math', category: 'text', labelKey: 'mathSection', configKeys: ['math'] },
@@ -72,6 +75,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'resource-types', category: 'figures', labelKey: 'resourceTypesSection', configKeys: ['resourceTypes'] },
   { id: 'captionStyle', category: 'figures', labelKey: 'captionStyleSection', configKeys: ['captionStyle'] },
   { id: 'tableStyle', category: 'figures', labelKey: 'tableStyleSection', configKeys: ['tableStyle'] },
+  { id: 'tableStyles', category: 'figures', labelKey: 'tableStylesSection', configKeys: ['tableStyles'] },
   { id: 'diagramStyle', category: 'figures', labelKey: 'diagramStyleSection', configKeys: ['diagramStyle'] },
   { id: 'calloutStyles', category: 'figures', labelKey: 'calloutStylesSection', configKeys: ['calloutStyles'] },
   // Output

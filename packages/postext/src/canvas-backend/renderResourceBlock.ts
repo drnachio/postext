@@ -13,8 +13,10 @@
  * surface, so clickability is PDF-only for v1.
  */
 
-import type { VDTBlock, VDTLine, ResolvedResourceBlock } from '../vdt';
+import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
+import { tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
+import { paintChip } from './chip';
 
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
@@ -231,6 +233,11 @@ function paintLine(
         x += seg.width;
         continue;
       }
+      if (seg.chip) {
+        paintChip(ctx, seg.chip, x, line.baseline, () => color);
+        x += seg.width;
+        continue;
+      }
       ctx.font = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
       ctx.fillStyle = seg.refResourceId !== undefined
         ? linkColor
@@ -269,6 +276,23 @@ function drawPlaceholder(
   ctx.restore();
 }
 
+/** Trace a rounded outline (per-corner radii) as the current path. */
+function roundedOutlinePath(ctx: CanvasRenderingContext2D, o: RoundedOutline): void {
+  const { x, y, width: w, height: h } = o;
+  const [tl, tr, br, bl] = o.radii;
+  ctx.beginPath();
+  ctx.moveTo(x + tl, y);
+  ctx.lineTo(x + w - tr, y);
+  if (tr > 0) ctx.arcTo(x + w, y, x + w, y + tr, tr);
+  ctx.lineTo(x + w, y + h - br);
+  if (br > 0) ctx.arcTo(x + w, y + h, x + w - br, y + h, br);
+  ctx.lineTo(x + bl, y + h);
+  if (bl > 0) ctx.arcTo(x, y + h, x, y + h - bl, bl);
+  ctx.lineTo(x, y + tl);
+  if (tl > 0) ctx.arcTo(x, y, x + tl, y, tl);
+  ctx.closePath();
+}
+
 function renderTable(
   ctx: CanvasRenderingContext2D,
   rb: ResolvedResourceBlock,
@@ -277,8 +301,17 @@ function renderTable(
 ): void {
   const t = rb.table;
   if (!t) return;
+  // A rounded frame clips the fills to the frame line and the inner rules
+  // to its outer contour, then is stroked round on top.
+  const rounded = t.frameRadii !== undefined;
+  const clipTo = (outset: number) => {
+    ctx.save();
+    roundedOutlinePath(ctx, tableFrameOutline(t, bx, by, rb.bodyRect.width, outset));
+    ctx.clip();
+  };
   // Cell backgrounds first (the cell's own fill, else the header tint / body
   // fill), then borders, then text.
+  if (rounded) clipTo(0);
   for (const cell of t.cells) {
     const fill = cell.background ?? (cell.isHeader ? t.headerBackground : t.bodyBackground);
     if (fill) {
@@ -286,11 +319,13 @@ function renderTable(
       ctx.fillRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
     }
   }
+  if (rounded) ctx.restore();
   if (t.borderWidthPx > 0) {
     ctx.save();
     ctx.strokeStyle = t.borderColor;
     ctx.lineWidth = t.borderWidthPx;
     const rules = t.rules ?? 'grid';
+    if (rounded && rules !== 'outer') clipTo(t.borderWidthPx / 2);
     if (rules === 'grid') {
       for (const cell of t.cells) {
         ctx.strokeRect(cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height);
@@ -304,9 +339,14 @@ function renderTable(
         ctx.moveTo(x, y + height); ctx.lineTo(x + width, y + height);
       }
       ctx.stroke();
-    } else if (rules === 'outer') {
+    } else if (rules === 'outer' && !rounded) {
       const tableHeight = t.rowEdges[t.rowEdges.length - 1] ?? rb.bodyRect.height;
       ctx.strokeRect(bx, by, rb.bodyRect.width, tableHeight);
+    }
+    if (rounded && rules !== 'outer') ctx.restore();
+    if (rounded && (rules === 'grid' || rules === 'outer')) {
+      roundedOutlinePath(ctx, tableFrameOutline(t, bx, by, rb.bodyRect.width));
+      ctx.stroke();
     }
     ctx.restore();
   }

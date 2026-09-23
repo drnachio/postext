@@ -14,6 +14,11 @@ export const REF_PLACEHOLDER = '⁣';
  *  placeholders, and a code point of its own so the three never collide. */
 export const SWATCH_PLACEHOLDER = '⁤';
 
+/** Atomic plain-text placeholder for an inline chip (`:chip[…]`), one
+ *  code unit per chip. A private-use code point: the chip's words are never
+ *  painted from it (they live in the span's `chip.spans`). */
+export const CHIP_PLACEHOLDER = '\uE1A0';
+
 /** Forced line break inside a title: `\\` in a heading (or a part `title`)
  *  becomes this LINE SEPARATOR in the plain text. Opener designs render it
  *  as a real line break; the in-column heading, running heads, outlines and
@@ -158,6 +163,70 @@ export function extractInlineSwatches(
   }
   out += text.slice(last);
   return { cleaned: out, swatches };
+}
+
+/** Metadata of an inline `:chip[text]{style="…"}`: the text as written
+ *  between the brackets, the style id and the source extent. */
+export interface ChipMeta {
+  text: string;
+  style?: string;
+  /** Absolute source offset of the leading `:` of `:chip[…]`. */
+  sourceStart: number;
+  /** Absolute source offset just past the directive (`]` or its `{…}`). */
+  sourceEnd: number;
+}
+
+/** `:chip[text]` with an optional `{attrs}` right after the bracket. The
+ *  text is one line, may not be empty and takes `\]` for a literal
+ *  bracket. */
+const INLINE_CHIP_RE = /:chip\[((?:\\.|[^\]\\\n])+)\](?:\{([^}\n]*)\})?/g;
+
+/**
+ * Extract inline `:chip[…]` chips from a line's text, replacing each by
+ * `CHIP_PLACEHOLDER` and returning the chip metadata in order. Runs first,
+ * before {@link extractInlineRefs}, so the chip text (which may hold marks
+ * of its own) is shielded from the later passes.
+ */
+export function extractInlineChips(
+  text: string,
+  fallbackStart: number,
+): { cleaned: string; chips: ChipMeta[] } {
+  const chips: ChipMeta[] = [];
+  let out = '';
+  let last = 0;
+  INLINE_CHIP_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = INLINE_CHIP_RE.exec(text)) !== null) {
+    const inner = m[1]!.replace(/\\([\[\]])/g, '$1').replace(/\s+/g, ' ').trim();
+    if (inner.length === 0) continue;
+    const style = m[2] !== undefined ? parseDirectiveAttrs(m[2]).style?.trim() : undefined;
+    out += text.slice(last, m.index);
+    chips.push({
+      text: inner,
+      ...(style ? { style } : {}),
+      sourceStart: fallbackStart + m.index,
+      sourceEnd: fallbackStart + m.index + m[0].length,
+    });
+    out += CHIP_PLACEHOLDER;
+    last = m.index + m[0].length;
+  }
+  out += text.slice(last);
+  return { cleaned: out, chips };
+}
+
+/** Attach a `chip` to each `CHIP_PLACEHOLDER` occurrence in order; the chip
+ *  span is its own entry carrying the ambient bold / italic, and its words
+ *  are parsed for their own inline marks. */
+export function injectChipSpans(spans: InlineSpan[], chips: ChipMeta[]): InlineSpan[] {
+  return injectPlaceholderSpans(spans, chips, CHIP_PLACEHOLDER, (meta, bold, italic) => ({
+    text: CHIP_PLACEHOLDER,
+    bold,
+    italic,
+    chip: {
+      ...(meta.style ? { style: meta.style } : {}),
+      spans: parseInlineFormatting(meta.text),
+    },
+  }));
 }
 
 /** Attach a `swatch` to each `SWATCH_PLACEHOLDER` occurrence in order; the

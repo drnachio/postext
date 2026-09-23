@@ -61,7 +61,9 @@ import { dimensionToPx } from '../units';
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
 import { parseInlineSnippetSpans as parseRefAwareSpans } from '../parse/inlineSnippet';
+import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
+import { pickTableStyle } from '../defaults/tableStyle';
 import { resolveColorValue } from '../defaults/shared';
 import { resolveBodyStyle } from './styles';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -146,6 +148,11 @@ export function resolveSwatchSpans(spans: InlineSpan[], palette: ColorPaletteEnt
     const entry = palette?.find((e) => e.id === raw);
     return entry ? { ...span, swatch: { color: entry.value.hex } } : span;
   });
+}
+
+/** Inline chips of a table cell, sized against the cell's font. */
+function resolveCellChips(spans: InlineSpan[], chips: ChipContext | undefined, set: CellFontSet): InlineSpan[] {
+  return chips ? resolveChipSpans(spans, chips, fontSizePxOf(set.fontString)) : spans;
 }
 
 /** Build a label for an inline `:ref` to a resource, honouring its `style` and
@@ -264,6 +271,8 @@ interface TableLayoutStyle {
   listGapPx: number;
   /** Document palette, for palette-linked cell fills and swatch colours. */
   palette?: ColorPaletteEntry[];
+  /** Chip styles, for inline `:chip[…]` in cells. */
+  chips?: ChipContext;
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -560,6 +569,9 @@ export function planTableSlice(metrics: TableRowMetrics, startRow: number, bodyB
   return cut > floor || best <= floor ? cut : best;
 }
 
+/** Share of a cell's spare height that goes above its content. */
+const VERTICAL_ALIGN_FACTOR: Readonly<Record<TableCellVerticalAlign, number>> = { top: 0, middle: 0.5, bottom: 1 };
+
 /** Lay out an HTML-table resource: weighted column split (see
  *  {@link computeColumnEdges}), per-cell rich-text measurement, row height =
  *  max measured cell height. Rowspans reserve their primary cell's full
@@ -609,6 +621,9 @@ function layoutTable(
     verticalAlign: TableCellVerticalAlign;
     lines: VDTLine[];
     contentHeight: number;
+    /** Height of the image + text stack, without padding — what
+     *  `verticalAlign` moves inside a taller cell. */
+    stackHeight: number;
     image: FittedCellImage | null;
     /** The cell's own fill (hex), when it has one. */
     background: string | undefined;
@@ -640,13 +655,13 @@ function layoutTable(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const spans = resolveSwatchSpans(resolveRefSpans(
+      const spans = resolveCellChips(resolveSwatchSpans(resolveRefSpans(
         parseRefAwareSpans(cell.content),
         resourceNumbering,
         resourceTypes,
         resources,
         refStyle,
-      ), style.palette);
+      ), style.palette), style.chips, set);
       const m = measureCellContent(
         spans,
         set,
@@ -676,6 +691,7 @@ function layoutTable(
         verticalAlign: cell.verticalAlign ?? 'top',
         lines,
         contentHeight,
+        stackHeight,
         image,
         background,
       });
@@ -735,9 +751,13 @@ function layoutTable(
     const y0 = rowEdges[m.sliceRow] ?? 0;
     const y1 = rowEdges[Math.min(m.sliceRow + m.rowSpan, rowCount)] ?? tableHeight;
     const rect = createBoundingBox(x0, y0, x1 - x0, y1 - y0);
-    // Place lines inside the cell with padding; horizontal alignment is applied
-    // by the renderer via the cell rect + align flag.
-    const placed = shiftLines(m.lines, x0 + cellPaddingPx, y0 + cellPaddingPx);
+    // The image + text stack moves as one unit inside a cell taller than it
+    // (a tall neighbour in the row, or rows a rowspan covers): top, centred
+    // or at the bottom of the padded box.
+    const slack = Math.max(0, y1 - y0 - cellPaddingPx * 2 - m.stackHeight);
+    const top = y0 + cellPaddingPx + slack * VERTICAL_ALIGN_FACTOR[m.verticalAlign];
+    // Lines already carry their horizontal alignment (measureCellContent).
+    const placed = shiftLines(m.lines, x0 + cellPaddingPx, top);
     const image: VDTResourceTableCellImage | undefined = m.image
       ? {
           resourceId: m.image.resourceId,
@@ -745,7 +765,7 @@ function layoutTable(
           fileId: m.image.fileId,
           ...(m.image.format !== undefined ? { format: m.image.format } : {}),
           ...(m.image.altText !== undefined ? { altText: m.image.altText } : {}),
-          rect: createBoundingBox(x0 + cellPaddingPx + m.image.x, y0 + cellPaddingPx, m.image.width, m.image.height),
+          rect: createBoundingBox(x0 + cellPaddingPx + m.image.x, top, m.image.width, m.image.height),
         }
       : undefined;
     return {
@@ -830,6 +850,8 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       }
     : undefined;
 
+  // The style a table is set in: its named style, else the document's.
+  const tableStyle = pickTableStyle(resolved, resource.table?.styleId);
   const bodyStyle = resolveBodyStyle(resolved);
   const dpi = resolved.page.dpi;
   // Normal / bold weights reused for table + caption font sets.
@@ -866,7 +888,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     bodyWidth = Math.min(columnWidth, input.maxBodyWidth ?? columnWidth);
     bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * 0.75;
   } else if (resource.kind === 'table' && resource.table) {
-    const ts = resolved.tableStyle;
+    const ts = tableStyle;
     const bodyFontPx = dimensionToPx(ts.bodyFontSize, dpi);
     const headerFontPx = dimensionToPx(ts.headerFontSize, dpi);
     // Header weight/slant: the header's base run is bold (and/or italic) by
@@ -902,6 +924,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       rules: ts.rules,
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
+      chips: chipContextOf(resolved),
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -913,7 +936,15 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       refStyle,
       slice ? tableSliceRows(resource.table.model, slice) : undefined,
     );
-    table = layout;
+    // Rounded outer frame: a part of a split table rounds only the ends
+    // the table really has — the top on the first part, the bottom on the
+    // last.
+    const radiusPx = Math.min(dimensionToPx(ts.borderRadius, dpi, bodyFontPx), columnWidth / 2, height / 2);
+    const top = slice?.continued ? 0 : radiusPx;
+    const bottom = slice?.continues ? 0 : radiusPx;
+    table = radiusPx > 0 && (top > 0 || bottom > 0)
+      ? { ...layout, frameRadii: [top, top, bottom, bottom] }
+      : layout;
     tableRows = metrics;
     bodyWidth = columnWidth;
     bodyHeight = height;
@@ -949,20 +980,20 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const prefixText = captionPrefix.length > 0
       ? `${captionPrefix}${NBSP}${number}.${number ? ' ' : ''}`
       : '';
-    const resolvedSpans = resolveSwatchSpans(resolveRefSpans(
+    const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
       parseRefAwareSpans(captionText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    ), palette);
+    ), palette), chipContextOf(resolved), captionFontPx);
     // Description spans pick up the configured slant on top of their own markup.
     const descSpans: InlineSpan[] = cs.descriptionItalic
       ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : resolvedSpans;
     // A continued table slice: "Table 6-4. Title (cont.)" — the suffix is
     // set in italics after the description, glued to it by a plain space.
-    const suffix = slice?.continued ? resolved.tableStyle.continuedSuffix.trim() : '';
+    const suffix = slice?.continued ? tableStyle.continuedSuffix.trim() : '';
     const suffixSpans: InlineSpan[] = suffix.length > 0
       ? [{ text: `${descSpans.length > 0 ? ' ' : ''}${suffix}`, bold: false, italic: true }]
       : [];
@@ -1001,13 +1032,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // The note closes the table: a slice that continues holds it back for
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
-    const noteSpans = resolveSwatchSpans(resolveRefSpans(
+    const noteSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
       parseRefAwareSpans(noteText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    ), palette);
+    ), palette), chipContextOf(resolved), noteFontPx);
     const slanted: InlineSpan[] = cs.note.italic
       ? noteSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : noteSpans;
@@ -1031,7 +1062,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // "Continued" under a slice that goes on: the note's typeface and size,
   // italic, flush right — where the note would sit.
   let measuredContinues: VDTLine[] = [];
-  const ts = resolved.tableStyle;
+  const ts = tableStyle;
   const markerText = slice?.continues && ts.continuesMarkerEnabled ? ts.continuesMarker.trim() : '';
   if (markerText.length > 0) {
     const measured = measureRichBlock(

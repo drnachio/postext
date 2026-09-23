@@ -1,6 +1,6 @@
 import type { InlineSpan } from './types';
 import { MATH_PLACEHOLDER } from './inlineMath';
-import { BREAK_PLACEHOLDER, REF_PLACEHOLDER, SWATCH_PLACEHOLDER } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, REF_PLACEHOLDER, SWATCH_PLACEHOLDER } from './inlineFormatting';
 
 /**
  * Build a per-character map from plain text to absolute source offsets.
@@ -76,6 +76,26 @@ export function computeSourceMap(
       let j = r;
       while (j < blockSrcEnd && markdown[j] !== '}') j++;
       if (j < blockSrcEnd) j++; // consume the closing `}`
+      r = j;
+      continue;
+    }
+    // Chip placeholder: the plain char represents `:chip[…]{…}`. Map to the
+    // leading `:` and skip past the closing `]` (a `\]` stays inside) and
+    // the attribute braces right after it, when present.
+    if (ch === CHIP_PLACEHOLDER) {
+      while (r < blockSrcEnd && !markdown.startsWith(':chip[', r)) r++;
+      if (r >= blockSrcEnd) {
+        map[p] = blockSrcEnd;
+        continue;
+      }
+      map[p] = r;
+      let j = r + 6;
+      while (j < blockSrcEnd && markdown[j] !== ']') j += markdown[j] === '\\' ? 2 : 1;
+      if (j < blockSrcEnd) j++; // consume the closing `]`
+      if (markdown[j] === '{') {
+        const close = markdown.indexOf('}', j);
+        if (close >= 0 && close < blockSrcEnd && !markdown.slice(j, close).includes('\n')) j = close + 1;
+      }
       r = j;
       continue;
     }

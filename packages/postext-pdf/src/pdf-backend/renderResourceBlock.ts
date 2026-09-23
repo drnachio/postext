@@ -33,7 +33,7 @@ import type {
   ResolvedResourceBlock,
   VDTResourceTableCell,
 } from 'postext';
-import { applySingleInkToSvg, resolveColorValue } from 'postext';
+import { applySingleInkToSvg, resolveColorValue, tableFrameOutline } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import {
@@ -47,8 +47,12 @@ import {
   mapRectThrough,
   pushTransform,
   popTransform,
+  pushClipOutline,
+  popClip,
+  strokeOutlinePx,
 } from './primitives';
 import { LinkRegistry } from './links';
+import { paintChip } from './chip';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 import {
@@ -489,6 +493,12 @@ function paintLine(
         x += seg.width;
         continue;
       }
+      if (seg.chip) {
+        const chipColor = seg.chip.color ? colorFromHex(seg.chip.color, ctx.colorSpace) : color;
+        paintChip(ctx, seg.chip, x, line.baseline, fontCache, baseFont, baseSize, elem, () => chipColor);
+        x += seg.width;
+        continue;
+      }
       const fontStr = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, fonts);
       const font = fontCache.get(fontStr) ?? baseFont;
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
@@ -615,11 +625,25 @@ function renderTable(
     boldItalic: t.headerBoldItalicFontString,
   };
 
+  // A rounded frame clips the fills to the frame line and the inner rules
+  // to its outer contour, then is stroked round on top.
+  const rounded = t.frameRadii !== undefined;
+  const outline = (outset: number) => tableFrameOutline(t, bx, by, rb.bodyRect.width, outset);
+  const clipTo = (outset: number) => {
+    pushClipOutline(ctx, outline(outset));
+    tagArtifact(ctx, { type: 'Layout' });
+  };
+  const unclip = () => {
+    popClip(ctx);
+    tagArtifact(ctx, { type: 'Layout' });
+  };
   // Cell backgrounds (the cell's own fill, else the header tint / body fill).
+  if (rounded) clipTo(0);
   for (const cell of t.cells) {
     const fill = cell.background ? colorFromHex(cell.background, ctx.colorSpace) : cell.isHeader ? headerBg : bodyBg;
     if (fill) fillRectPx(ctx, cell.rect.x, cell.rect.y, cell.rect.width, cell.rect.height, fill);
   }
+  if (rounded) unclip();
   // Borders: the full cell grid, horizontal rules only, or the outer frame.
   // `drawLinePx` strokes exactly `borderWidthPx` (scaled to pt), so fractional
   // hairlines such as 0.5pt survive.
@@ -627,13 +651,16 @@ function renderTable(
     const rules = t.rules ?? 'grid';
     const bw = t.borderWidthPx;
     if (rules === 'outer') {
-      const tableHeight = t.rowEdges[t.rowEdges.length - 1] ?? rb.bodyRect.height;
-      const x = bx, y = by, width = rb.bodyRect.width, height = tableHeight;
-      drawLinePx(ctx, x, y, x + width, y, borderColor, bw);
-      drawLinePx(ctx, x, y + height, x + width, y + height, borderColor, bw);
-      drawLinePx(ctx, x, y, x, y + height, borderColor, bw);
-      drawLinePx(ctx, x + width, y, x + width, y + height, borderColor, bw);
+      if (!rounded) {
+        const tableHeight = t.rowEdges[t.rowEdges.length - 1] ?? rb.bodyRect.height;
+        const x = bx, y = by, width = rb.bodyRect.width, height = tableHeight;
+        drawLinePx(ctx, x, y, x + width, y, borderColor, bw);
+        drawLinePx(ctx, x, y + height, x + width, y + height, borderColor, bw);
+        drawLinePx(ctx, x, y, x, y + height, borderColor, bw);
+        drawLinePx(ctx, x + width, y, x + width, y + height, borderColor, bw);
+      }
     } else {
+      if (rounded) clipTo(bw / 2);
       for (const cell of t.cells) {
         const { x, y, width, height } = cell.rect;
         drawLinePx(ctx, x, y, x + width, y, borderColor, bw);
@@ -643,7 +670,9 @@ function renderTable(
           drawLinePx(ctx, x + width, y, x + width, y + height, borderColor, bw);
         }
       }
+      if (rounded) unclip();
     }
+    if (rounded && (rules === 'grid' || rules === 'outer')) strokeOutlinePx(ctx, outline(0), borderColor, bw);
   }
   // Cell images (bitmap / SVG resources embedded in cells), then text.
   for (const cell of t.cells) {

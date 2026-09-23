@@ -15,10 +15,11 @@ export type {
   ParseIssue,
   ContentBlock,
   TocBlockInfo,
+  ChipBox,
 } from './types';
 export { MATH_PLACEHOLDER } from './inlineMath';
-export { REF_PLACEHOLDER, SWATCH_PLACEHOLDER, extractInlineSwatches, injectSwatchSpans } from './inlineFormatting';
-export type { SwatchMeta } from './inlineFormatting';
+export { REF_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, extractInlineSwatches, injectSwatchSpans, extractInlineChips, injectChipSpans } from './inlineFormatting';
+export type { SwatchMeta, ChipMeta } from './inlineFormatting';
 export {
   parseMarkdownMemo,
   parseMarkdownWithIssuesMemo,

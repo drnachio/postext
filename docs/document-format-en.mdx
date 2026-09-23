@@ -215,9 +215,9 @@ The attributes accepted by each container, and how it is styled, are documented 
 :::
 ```
 
-A callout is laid out as a box — an optional title, then its content typeset with the style's own body and list typography. It keeps together by default, moving whole to the next column or page when it does not fit; a style with `keepTogether: false` lets it split between its blocks, or between lines, leaving at least `splitMinLines` lines on each side of the cut. Full-width boxes (`span="page"`) cut the page into column bands; `span="side"` boxes leave the flow into the float-only side column of a one-and-a-half layout (`layout.sideColumnRole: 'floats'`), stacked beside the text they interrupt, and lay out as column boxes where there is no such column; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) leave the flow where they occur and take the first free band after that position — the foot of the page, or the head or foot of the next — while the text after them fills the page they left. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
+A callout is laid out as a box — an optional title, then its content typeset with the style's own body and list typography. It keeps together by default, moving whole to the next column or page when it does not fit (a box taller than a whole column splits all the same, rather than overflow); a style with `keepTogether: false` lets it split between its blocks, or between lines, leaving at least `splitMinLines` text lines — or a figure, table, display formula or nested box — on each side of the cut. Full-width boxes (`span="page"`) cut the page into column bands; `span="side"` boxes leave the flow into the float-only side column of a one-and-a-half layout (`layout.sideColumnRole: 'floats'`), stacked beside the text they interrupt, and lay out as column boxes where there is no such column; `placement="fixed"` boxes leave the flow and are pinned to page coordinates (a self-assessment badge in the bottom-left corner of a chapter's last page, say), the columns they cover giving up that zone; floating boxes (`placement="top"` / `"bottom"`) leave the flow where they occur and take the first free band after that position — the foot of the page, or the head or foot of the next — while the text after them fills the page they left. A style with `floatBarrier: true` (a chapter's closing "key points" box, typically) makes the box a **float barrier**: every figure or table referenced before it is placed before it — in the page's free slots, or on pages opened ahead of the box — so no float escapes past the end of its chapter. An unknown `:::name` fence is not a container — the line is treated as text, exactly like an unknown directive.
 
-A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. A third attribute, `palette="band=#hex"` (several `id=#hex` pairs, comma-separated), recolours every design colour linked to those palette ids — running heads, opener band, part designs — for the part and the chapters that follow it, until the next part; see [Configuration › Parts](/en/docs/configuration#parts). The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
+A `:::part` fence takes `number` (as you want it printed — `"I"`, `"IV"`, `"3"`; it is also parsed so the design can re-format it) and `title`; both are optional. A third attribute, `palette="band=#hex"` (several `id=#hex` pairs, comma-separated), recolours every design colour linked to those palette ids — running heads, opener band, part designs — and the text-flow colours that share their base value (headings, bold, references, bullets, captions) for the part and the chapters that follow it, until the next part; see [Configuration › Parts](/en/docs/configuration#parts). The container always opens a page of its own: a page break of the configured parity before it, a single body column at the `parts.margins`, the opener design over the whole page, and another page break after the closing fence. The body — usually the list of the chapters the part groups, or nothing at all — is typeset with `parts.bodyStyle`:
 
 ```
 :::part{number="I" title="Foundations"}
@@ -247,6 +247,24 @@ Inside a `:::callout`, a `:::columns{count=2}` … `:::` group sets the blocks b
 ```
 
 A `:::callout` fence also accepts `label="…"`: the text a style with a `label` tab prints on the box's top corner (`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`).
+
+A `:::callout` inside another one is a box of its own — a worksheet card holding answer boxes, say. It takes its own style (background, border, radius, padding, title, icon) at the full inner width of the outer box and stacks among its other blocks; its `span` and `placement` are ignored, since a nested box always flows inside its parent. Each fence closes the innermost box still open:
+
+```md
+:::callout{type="card"}
+The statement of the exercise.
+
+:::callout{type="answer"}
+A white answer box with its own border and padding.
+:::
+
+:::callout{type="answer"}
+A second answer box.
+:::
+:::
+```
+
+When the outer box splits across columns or pages (`keepTogether: false`, or taller than a column), a nested box moves whole to the next fragment unless its own style lets it split too; every fragment redraws the frames it holds, and a continued nested box drops its title and icon.
 
 ### `:::pagebreak`
 
@@ -384,12 +402,34 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Inline image markdown is <strong>removed</strong> from the text. Images must be declared on <code>PostextContent.resources</code> so the layout engine can place them according to <code>resourcePlacement</code> rules.</td>
     </tr>
     <tr>
+      <td>Chip</td>
+      <td><code>:chip[text]</code></td>
+      <td>A boxed run of text that wraps as one unit — a word bank, a key, a tag. Styled by <code>chipStyles</code>; see <a href="#inline-chips">Inline chips</a>.</td>
+    </tr>
+    <tr>
       <td>Inline math</td>
       <td><code>$…$</code></td>
       <td>A LaTeX formula that flows with the surrounding text, e.g. <code>$e^{'{i\\pi}'}+1=0$</code>. Typeset by MathJax and rendered as vector paths on every backend. Use <code>\\$</code> for a literal dollar sign. Scaling, the display (<code>$$ … $$</code>) form, and error handling are covered under <a href="#mathematical-formulas">Mathematical formulas</a>.</td>
     </tr>
   </tbody>
 </table>
+
+### Inline chips
+
+`:chip[text]` sets `text` in a box — a rounded, tinted "chip" — that flows with the line: the words of a word bank or a classify exercise, keyboard keys, tags. `:chip[text]{style="key"}` picks a named style from `chipStyles` (see the configuration reference); without `style`, or with an id no style declares, the chip takes the first style (a built-in `chip` style when the configuration has none; the sandbox warns about an unknown id).
+
+```markdown
+Classify: :chip[battery] :chip[cable] :chip[switch] :chip[bulb]
+
+Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
+```
+
+- **One unit.** A chip is never broken or hyphenated inside; the line breaks between chips, at the word spaces around them. A chip wider than the whole line overflows it rather than splitting.
+- **Width.** Its advance is the text plus the horizontal padding and the outline on both sides. Justification stretches the word spaces only, never the inside of a chip. The style's `gap` is the least room kept between the box and a neighbouring word or chip across a space — a narrower space is topped up (not at a line edge, and not against glued punctuation such as `:chip[a],`).
+- **Height.** The box is a band around the baseline, 0.8 em above and 0.25 em below at the chip's size, grown by the vertical padding and the outline. The vertical padding paints outside the line box and never changes the line height, so the baseline grid holds; a box taller than the line pitch touches the chips of the next line, and the sandbox flags it ("Chips touch the next line") so the padding, outline or size can be reduced.
+- **Text.** The chip text takes its own inline marks (`:chip[**bold** word]`, `:chip[x^2^]`) and the emphasis around it (`**:chip[a]**`); the style may set its family, size, colour, bold and italic. Write `\]` for a literal bracket inside. References, swatches and math inside a chip stay literal.
+- **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes. Headings keep `:chip[…]` as literal text.
+- **Output.** Canvas, HTML and PDF paint the box and set the words as real text: selectable in the HTML, extractable and in reading order in the PDF (in a tagged PDF the box is a layout artifact and the words belong to the paragraph).
 
 
 ## Mathematical formulas
@@ -445,7 +485,9 @@ For a floated resource the `::resource` directive is unnecessary — the `:ref` 
 
 The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
 
-Table resources draw their own grid, styled through [Configuration › Table style](/en/docs/configuration#table-style): body and header cells have fully independent typography, the header background defaults to `#f0f0f0`, borders to `0.75pt`, and `cellPadding` to `0.375em` — any field left unset inherits from the body text. Column widths are part of the table itself: `TableModel.columnWidths` holds one relative weight per column (`[2, 1, 1]` gives the first column half the width); when unset, columns split the width equally.
+Table resources draw their own grid, styled through [Configuration › Table style](/en/docs/configuration#table-style): body and header cells have fully independent typography, the header background defaults to `#f0f0f0`, borders to `0.75pt`, and `cellPadding` to `0.375em` — any field left unset inherits from the body text. Column widths are part of the table itself: `TableModel.columnWidths` holds one relative weight per column (`[2, 1, 1]` gives the first column half the width); when unset, columns split the width equally. A table can also be set in a named variant: `table.styleId` picks one of the document's `tableStyles` (see [Configuration › Named table styles](/en/docs/configuration#named-table-styles)), whose unset fields inherit `tableStyle`; an unknown or missing id keeps `tableStyle`.
+
+A cell places its content with `TableCell.align` (`left`, `center`, `right`; list items stay flush left) and `TableCell.verticalAlign` (`top`, the default, `middle` or `bottom`). The vertical alignment moves the cell's whole content — the image and the text under it, as one unit — inside a cell taller than it: a row stretched by a longer neighbour, or the rows a `rowSpan` covers. It applies in every output (canvas, HTML, PDF), in rotated tables and in each slice of a table split across pages. Both are set per cell from the alignment buttons of the sandbox's table editor toolbar.
 
 A table cell can also hold an image. `TableCell.image` names a bitmap or SVG resource by id (`{ "resourceId": "fig-arm", "width": 0.7 }`): the image is drawn inside the cell — never numbered, floated or captioned — fitted to the cell's inner width (or the fraction of it given by `width`, default `1`) with its aspect ratio kept, aligned like the cell's text, and any cell text runs under it. The row grows to hold it. In the sandbox's table editor the image button of the toolbar picks the resource for the active cell and a width field sets the fraction. An id that matches no image resource leaves the cell text-only.
 
@@ -554,7 +596,7 @@ Each resource has a **placement** that decides where its float lands, resolved p
 
 A float goes into the **first free slot after its first reference**, in reading order: the bottom of the column the reference sits in, then the top and the bottom of the next empty column of the same page, then the bands of the next page the flow opens (a page-span float takes the bottom of the page when every column still has room for it, else a band of the next page). It is never shrunk, and it never lands before its reference. Floats of one numbering sequence appear in reference order: a figure that fits nowhere on a page holds up the figures behind it (a waiting table does not hold up a figure, nor the other way round), so figure 12 never appears before figure 11. A table that would otherwise wait is cut instead: offered the head of an empty column, it takes the rows that fit and continues in the next slot — the column beside it or the next page — with its header rows repeated (see `tableStyle.overflow`).
 
-Floats never escape their chapter: at a chapter opener (a heading level with `breakBefore` or `span: 'page'`), a `:::part`, a callout style with `floatBarrier: true` (the closing "key points" box of a chapter) and at the end of the document, every float still pending is placed first — in the page's free slots, or on pages opened ahead of the boundary. A `:::pagebreak` simply sends pending floats to the page that follows it.
+Floats never escape their chapter: at a chapter opener (a heading level with `breakBefore` or `span: 'page'`), a `:::part`, a callout style with `floatBarrier: true` (the closing "key points" box of a chapter) and at the end of the document, every float still pending is placed first — in the page's free slots, or on pages opened ahead of the boundary. A figure or table that asked for the head of a page may then take the foot of the chapter's closing page, under its balanced columns, rather than a page of its own. A `:::pagebreak` simply sends pending floats to the page that follows it.
 
 Float bands are corrected against the baseline grid so the surrounding text keeps the page-wide vertical rhythm. A **top** band grows its bottom margin to the next grid line, so the text below the float stays aligned with the neighbouring columns and the facing page. A **bottom** float is anchored so its caption's last line shares a baseline with the last text line of the other columns (captionless content aligns its bottom edge to the last grid slot) — full pages therefore end at the same height across columns and across facing pages.
 

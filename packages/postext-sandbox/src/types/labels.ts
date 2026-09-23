@@ -171,6 +171,10 @@ export interface SandboxLabels {
   warningsUnknownParagraphStyleDetail: string;
   warningsUnknownCalloutTypeTitle: string;
   warningsUnknownCalloutTypeDetail: string;
+  warningsUnknownChipStyleTitle: string;
+  warningsUnknownChipStyleDetail: string;
+  warningsChipOverlapTitle: string;
+  warningsChipOverlapDetail: string;
   warningsDesignCyclicAnchorTitle: string;
   warningsDesignCyclicAnchorDetail: string;
   warningsDesignDanglingAnchorTitle: string;
@@ -591,6 +595,7 @@ export interface SandboxLabels {
   redo: string;
   pagebreakDirective: string;
   pagebreakDirectiveTooltip: string;
+  chipInline: string;
   numberingDirective: string;
   numberingDirectiveTooltip: string;
 
@@ -987,6 +992,10 @@ export interface SandboxLabels {
   resourceImageLabel: string;
   resourceSvgLabel: string;
   resourceTableLabel: string;
+  resourceTableStyleLabel: string;
+  resourceTableStyleHint: string;
+  resourceTableStyleDefault: string;
+  resourceTableStyleMissing: string;
   resourcePreviewEmptyTable: string;
   resourcePreviewNoContent: string;
   uploadSvgInvalid: string;
@@ -1038,6 +1047,9 @@ export interface SandboxLabels {
   tableEditorAlignLeft: string;
   tableEditorAlignCenter: string;
   tableEditorAlignRight: string;
+  tableEditorAlignTop: string;
+  tableEditorAlignMiddle: string;
+  tableEditorAlignBottom: string;
   tableEditorPasteAsTable: string;
   tableEditorCellAria: string;
   tableEditorColumnWidths: string;
@@ -1086,6 +1098,20 @@ export interface SandboxLabels {
   tableContinuedSuffixTooltip: string;
   tableContinuesMarkerEnabled: string;
   tableContinuesMarker: string;
+  tableBorderRadius: string;
+  tableBorderRadiusTooltip: string;
+  tableStylesSection: string;
+  tableStylesResetConfirm: string;
+  tableStylesEmpty: string;
+  tableStyleAdd: string;
+  tableStyleNewName: string;
+  tableStyleDelete: string;
+  tableStyleDeleteConfirm: string;
+  tableStyleIdAria: string;
+  tableStyleIdHintDuplicate: string;
+  tableStyleUsageHint: string;
+  tableStyleNameLabel: string;
+  tableStyleNameAria: string;
   // --- Caption styling section ---
   captionStyleSection: string;
   captionGap: string;
@@ -1122,6 +1148,34 @@ export interface SandboxLabels {
   calloutStylesSection: string;
   calloutStylesResetConfirm: string;
   calloutStylesEmpty: string;
+  chipStylesSection: string;
+  chipStylesResetConfirm: string;
+  chipStylesEmpty: string;
+  chipStyleAdd: string;
+  chipStyleNewName: string;
+  chipStyleDelete: string;
+  chipStyleDeleteConfirm: string;
+  chipStyleIdAria: string;
+  chipStyleIdHintDuplicate: string;
+  chipStyleUsageHint: string;
+  chipStyleNameLabel: string;
+  chipStyleNameAria: string;
+  chipStyleTextGroup: string;
+  chipStyleBoxGroup: string;
+  chipStyleFontSizeTooltip: string;
+  chipStyleColorTooltip: string;
+  chipStyleBackground: string;
+  chipStyleBackgroundColor: string;
+  chipStyleBorderWidth: string;
+  chipStyleBorderWidthTooltip: string;
+  chipStyleBorderColor: string;
+  chipStyleBorderRadius: string;
+  chipStyleBorderRadiusTooltip: string;
+  chipStylePaddingX: string;
+  chipStylePaddingY: string;
+  chipStylePaddingYTooltip: string;
+  chipStyleGap: string;
+  chipStyleGapTooltip: string;
   calloutStyleAdd: string;
   calloutStyleNewName: string;
   calloutStyleDuplicate: string;
@@ -1271,6 +1325,8 @@ export interface SandboxLabels {
   calloutStyleListsBulletWeight: string;
   calloutStyleMarginTopTooltip: string;
   calloutStyleMarginBottomTooltip: string;
+  calloutStyleSnapToGrid: string;
+  calloutStyleSnapToGridTooltip: string;
   calloutStyleColumnGap: string;
   calloutStyleColumnGapTooltip: string;
   // --- Diagram styling section ---

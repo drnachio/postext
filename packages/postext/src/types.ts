@@ -227,6 +227,10 @@ export interface Resource {
   /** Present when `kind === 'table'`. */
   table?: {
     model: TableModel;
+    /** Id of a named table style (`PostextConfig.tableStyles`) the table is
+     *  set in. Unset, or an id no style declares, falls back to the
+     *  document's `tableStyle`. */
+    styleId?: string;
   };
   /** Optional per-resource placement override. When unset, the resource's
    *  type default (then `top` / `column`) applies. A `position` of `'top'` or
@@ -721,6 +725,12 @@ export interface TableStyleConfig {
   cellPadding?: Dimension;
   /** Which rules to stroke when {@link borders} is on. Default `'grid'`. */
   rules?: TableRules;
+  /** Corner radius of the table's outer frame. Default `0` (square). The
+   *  cell fills are clipped to the rounded frame, whatever the rules (with
+   *  `'none'` the fills alone show the rounded shape); the inner rules stay
+   *  straight. A table split across pages rounds the top corners of its
+   *  first part and the bottom corners of its last. */
+  borderRadius?: Dimension;
   /** What happens to a table taller than the space a page offers: continue
    *  it on the following pages (`'split'`, the default), keep only the rows
    *  that fit (`'clip'`), or leave it out (`'hide'`). See {@link TableOverflow}. */
@@ -734,6 +744,22 @@ export interface TableStyleConfig {
   /** Text of that marker, set right-aligned under the slice in the note
    *  style. Defaults to `"Continued"` (`"Continúa"` for Spanish documents). */
   continuesMarker?: string;
+}
+
+/** A named table style (`PostextConfig.tableStyles`), picked per table by
+ *  `Resource.table.styleId`. Every field left unset inherits the document's
+ *  {@link TableStyleConfig} (`tableStyle`), and through it the body text —
+ *  so a style only states what sets its tables apart. */
+export interface NamedTableStyleConfig extends TableStyleConfig {
+  /** Identifier a table resource references with `table.styleId`. */
+  id: string;
+  /** Human-readable name (editor UI only). Defaults to {@link id}. */
+  name?: string;
+}
+
+export interface ResolvedNamedTableStyleConfig extends ResolvedTableStyleConfig {
+  id: string;
+  name: string;
 }
 
 /** Rule pattern of a table: the full cell grid, horizontal rules only (top
@@ -764,6 +790,7 @@ export interface ResolvedTableStyleConfig {
   borderWidth: Dimension;
   cellPadding: Dimension;
   rules: TableRules;
+  borderRadius: Dimension;
   overflow: TableOverflow;
   continuedSuffix: string;
   continuesMarkerEnabled: boolean;
@@ -1108,6 +1135,9 @@ export interface CalloutBodyStyleConfig {
   /** Colour of bold runs in the box (a key term set off in the box's own
    *  colour). Defaults to `bodyText.boldColor`, i.e. the body colour. */
   boldColor?: ColorValue;
+  /** Colour of italic runs in the box (a pull quote set in italics in the
+   *  box's colour). Defaults to `bodyText.italicColor`. */
+  italicColor?: ColorValue;
   textAlign?: 'left' | 'justify';
   hyphenation?: boolean;
   paragraphSpacing?: boolean;
@@ -1178,11 +1208,24 @@ export interface CalloutStyleConfig {
   /** Space above the box. Default `0.75em`. */
   marginTop?: Dimension;
   /** Minimum space below the box; the flow snaps back to the baseline grid
-   *  after it. Default `0.75em`. */
+   *  after it (exact space with `snapToGrid: false`). Default `0.75em`. */
   marginBottom?: Dimension;
-  /** When `true` (default) the box never splits: a callout that does not
-   *  fit the remaining space moves whole to the next column or page. When
-   *  `false` it may break between child blocks or between the lines of a
+  /** When `true` (default) the flow after an in-flow box snaps back to the
+   *  baseline grid, so the space under it is `marginBottom` rounded up to
+   *  whole grid lines. When `false` the box keeps its exact `marginBottom`
+   *  (collapsing with the next block's top margin, so two such boxes sit
+   *  exactly `max(marginBottom, marginTop)` apart) and the text after it
+   *  may sit off the grid until the next snap point (a snapped heading, a
+   *  list tail) — like `headings.snapToGrid: false`. Page-span boxes in a
+   *  multi-column layout, floated, fixed and side boxes keep the grid:
+   *  column bands and float zones are laid out on it. */
+  snapToGrid?: boolean;
+  /** When `true` (default) the box is kept whole: a callout that does not
+   *  fit the remaining space moves whole to the next column or page. Only
+   *  a box (or the rest of one) taller than an empty, full column — a whole
+   *  page for a `span: 'page'` box — splits, by the `false` rules below,
+   *  rather than overflow; a floated one that tall stays in the flow where
+   *  it occurs. When `false` any box may break between child blocks or between the lines of a
    *  paragraph or list item — leaving at least `splitMinLines` lines on
    *  each side of the cut — the part that fits closes the current column
    *  (or, for a `span: 'page'` box, the page) and the rest continues on the
@@ -1190,8 +1233,13 @@ export interface CalloutStyleConfig {
    *  and background stay). */
   keepTogether?: boolean;
   /** Fewest text lines a fragment of a split box may carry, on either side
-   *  of the cut (`keepTogether: false`). Default 2: a box never breaks
-   *  leaving a lone line at the foot of a column or the head of the next. */
+   *  of the cut (`keepTogether: false`, or a keep-together box taller than
+   *  a full column). Default 2: a box never breaks
+   *  leaving a lone line at the foot of a column or the head of the next.
+   *  It guards text only: a side holding a figure, table, display formula
+   *  or nested box is acceptable whatever its line count (a cut inside a
+   *  paragraph still counts the lines on each side). A nested box splits
+   *  by its own style's `keepTogether` / `splitMinLines`. */
   splitMinLines?: number;
 }
 
@@ -1267,6 +1315,7 @@ export interface ResolvedCalloutStyleConfig {
     lineHeight: Dimension;
     color: ColorValue;
     boldColor?: ColorValue;
+    italicColor?: ColorValue;
     textAlign: 'left' | 'justify';
     hyphenation: boolean;
     paragraphSpacing: boolean;
@@ -1283,8 +1332,83 @@ export interface ResolvedCalloutStyleConfig {
   };
   marginTop: Dimension;
   marginBottom: Dimension;
+  snapToGrid: boolean;
   keepTogether: boolean;
   splitMinLines: number;
+}
+
+/**
+ * A named chip style, selected by the inline `:chip[text]{style="<id>"}`
+ * (a chip without `style`, or with an id no style declares, takes the first
+ * style). A chip is a boxed run of text — a word of a word bank, a key, a
+ * tag — that flows with the line as one unbreakable unit.
+ *
+ * Its advance is the text plus the horizontal padding and border on both
+ * sides. The box is a band around the baseline (0.8 em above, 0.25 em
+ * below at the chip's font size) grown by the vertical padding and border;
+ * the vertical padding paints outside the line box and never changes the
+ * line height, so the baseline grid holds. A box taller than the line pitch
+ * would touch the chips of the next line (the sandbox warns).
+ *
+ * Em dimensions of the box (`paddingX`, `paddingY`, `borderRadius`,
+ * `borderWidth`, `gap`) are relative to the chip's font size; an em
+ * `fontSize` is relative to the surrounding text.
+ */
+export interface ChipStyleConfig {
+  id: string;
+  /** Human-readable name (editor UI only). Defaults to {@link id}. */
+  name?: string;
+  /** Paint the box fill. Default `true`. */
+  backgroundEnabled?: boolean;
+  /** Box fill. Default a pale blue (`#e8eef7`). */
+  background?: ColorValue;
+  /** Box outline colour. Default the main palette colour. */
+  borderColor?: ColorValue;
+  /** Box outline width; `0` draws none. Default `0.5pt`. */
+  borderWidth?: Dimension;
+  /** Corner radius, clamped to half the box height. Default `0.3em`. */
+  borderRadius?: Dimension;
+  /** Room between the outline and the text, left and right. Default `0.3em`. */
+  paddingX?: Dimension;
+  /** Room above and below the text band. Paints outside the line box.
+   *  Default `0.1em`. */
+  paddingY?: Dimension;
+  /** Chip text family. Default the surrounding text's. */
+  fontFamily?: string;
+  /** Chip text size (em = the surrounding text). Default the surrounding
+   *  text's. */
+  fontSize?: Dimension;
+  /** Chip text colour. Default the surrounding text's (bold runs keep the
+   *  bold colour). */
+  color?: ColorValue;
+  /** Set the chip text bold / italic (on top of its own markup). Default
+   *  `false`. */
+  bold?: boolean;
+  italic?: boolean;
+  /** Minimum room kept between the box and a neighbouring word or chip
+   *  across a word space: a narrower space is widened to it (the extra is
+   *  not stretched by justification). Nothing is added at a line edge or
+   *  against glued punctuation. Default `0.25em`. */
+  gap?: Dimension;
+}
+
+export interface ResolvedChipStyleConfig {
+  id: string;
+  name: string;
+  backgroundEnabled: boolean;
+  background: ColorValue;
+  borderColor: ColorValue;
+  borderWidth: Dimension;
+  borderRadius: Dimension;
+  paddingX: Dimension;
+  paddingY: Dimension;
+  /** Unset: the surrounding text's. */
+  fontFamily?: string;
+  fontSize?: Dimension;
+  color?: ColorValue;
+  bold: boolean;
+  italic: boolean;
+  gap: Dimension;
 }
 
 /** Parity constraint for a forced page break.
@@ -2124,6 +2248,13 @@ export interface PartsBodyStyleConfig {
 }
 
 export interface PartsConfig {
+  /** Whether a `:::part` opens a divider page (default `true`). When
+   *  `false` no page is opened and the fence's body is not set: the part's
+   *  number, title and palette take effect from the next content on
+   *  (running heads, palette-linked colours), with no break of their own.
+   *  Typical use: `htmlViewer.overrides.parts.page: false`, a screen
+   *  edition without section dividers. */
+  page?: boolean;
   breakBefore?: PartsBreakBeforeConfig;
   breakAfter?: PartsBreakAfterConfig;
   /** Body area of the part page. Defaults to the page margins (`mirror`
@@ -2165,6 +2296,7 @@ export interface ResolvedPartsBodyStyleConfig {
 }
 
 export interface ResolvedPartsConfig {
+  page: boolean;
   breakBefore: ResolvedPartsBreakBeforeConfig;
   breakAfter: ResolvedPartsBreakAfterConfig;
   margins: Required<PageMargins>;
@@ -2396,6 +2528,10 @@ export interface PostextConfig {
   headings?: HeadingsConfig;
   /** Styling for embedded table resources. */
   tableStyle?: TableStyleConfig;
+  /** Named table styles a table resource selects with `table.styleId`;
+   *  unset fields inherit {@link tableStyle}. Tables without a (known)
+   *  style id keep `tableStyle`. */
+  tableStyles?: NamedTableStyleConfig[];
   /** Styling for resource captions (numbered label + description). */
   captionStyle?: CaptionStyleConfig;
   /** Styling for embedded SVG diagrams (single-ink reproduction). */
@@ -2405,6 +2541,9 @@ export interface PostextConfig {
   /** Named callout styles for `:::callout{type="…"}` containers. Defaults
    *  to a single neutral `note` style when unset. */
   calloutStyles?: CalloutStyleConfig[];
+  /** Named chip styles for the inline `:chip[text]{style="…"}`. Defaults
+   *  to a single `chip` style when unset. */
+  chipStyles?: ChipStyleConfig[];
   /** Part dividers (`:::part` containers): page breaks, body area,
    *  opener design and body typography. */
   parts?: PartsConfig;

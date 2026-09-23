@@ -3,11 +3,12 @@ import { stripPageDefaults } from './page';
 import { stripLayoutDefaults } from './layout';
 import { stripBodyTextDefaults } from './bodyText';
 import { stripHeadingsDefaults } from './headings';
-import { stripTableStyleDefaults } from './tableStyle';
+import { stripTableStyleDefaults, stripTableStylesDefaults } from './tableStyle';
 import { stripCaptionStyleDefaults } from './captionStyle';
 import { stripDiagramStyleDefaults } from './diagramStyle';
 import { stripParagraphStylesDefaults } from './paragraphStyles';
 import { stripCalloutStylesDefaults } from './calloutStyles';
+import { stripChipStylesDefaults } from './chipStyles';
 import { stripUnorderedListsDefaults } from './unorderedLists';
 import { stripOrderedListsDefaults } from './orderedLists';
 import { stripMathDefaults } from './math';
@@ -24,11 +25,12 @@ export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE
 export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, resolveLayoutConfig, stripLayoutDefaults } from './layout';
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, hyphenationEqual, resolveBodyTextConfig, stripBodyTextDefaults } from './bodyText';
 export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
-export { resolveTableStyleConfig, stripTableStyleDefaults, defaultTableContinuationStrings } from './tableStyle';
+export { resolveTableStyleConfig, stripTableStyleDefaults, resolveTableStylesConfig, stripTableStylesDefaults, pickTableStyle, defaultTableContinuationStrings } from './tableStyle';
 export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle } from './captionStyle';
 export { DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults } from './diagramStyle';
 export { DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults } from './paragraphStyles';
 export { DEFAULT_CALLOUT_STYLES, DEFAULT_CALLOUT_STYLE_STATIC, resolveCalloutStylesConfig, stripCalloutStylesDefaults } from './calloutStyles';
+export { DEFAULT_CHIP_STYLES, DEFAULT_CHIP_STYLE_STATIC, resolveChipStylesConfig, stripChipStylesDefaults, pickChipStyle } from './chipStyles';
 export { DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults } from './unorderedLists';
 export { DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults } from './orderedLists';
 export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './math';
@@ -74,6 +76,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.tableStyle;
   }
+  const strippedTableStyles = stripTableStylesDefaults(config.tableStyles);
+  if (strippedTableStyles) {
+    result.tableStyles = strippedTableStyles;
+  } else {
+    delete result.tableStyles;
+  }
   const strippedCaptionStyle = stripCaptionStyleDefaults(config.captionStyle);
   if (strippedCaptionStyle) {
     result.captionStyle = strippedCaptionStyle;
@@ -97,6 +105,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.calloutStyles = strippedCalloutStyles;
   } else {
     delete result.calloutStyles;
+  }
+  const strippedChipStyles = stripChipStylesDefaults(config.chipStyles);
+  if (strippedChipStyles) {
+    result.chipStyles = strippedChipStyles;
+  } else {
+    delete result.chipStyles;
   }
   const strippedLists = stripUnorderedListsDefaults(config.unorderedLists);
   if (strippedLists) {

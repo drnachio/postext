@@ -732,7 +732,8 @@ export function layoutDesignSlot(
     .filter((el) => pageMatchesParity(pageIndex, el.parity) && pageMatchesRole(el.pages, context.pageRole))
     .map((el) => (overrides && Object.keys(overrides).length > 0 ? applyPaletteOverrides(el, overrides) : el));
 
-  // Topologically sort (dependencies first).
+  // Topologically sort (dependencies first) to resolve geometry; paint
+  // order is still the array order (first = back), restored below.
   const ordered = topoSort(candidates, issues);
 
   // Precompute: resolved text contents (placeholder-expanded).
@@ -745,7 +746,9 @@ export function layoutDesignSlot(
   }
 
   const resolvedGeo = new Map<string, ResolvedPrimitive>();
-  const primitives: ResolvedPrimitive[] = [];
+  // Primitives per element, keyed by the element itself (a text element may
+  // emit several: drop cap, rich runs…), emitted in `candidates` order.
+  const primsByElement = new Map<ResolvedDesignElement, ResolvedPrimitive[]>();
 
   for (const el of ordered) {
     const target = anchorTargetId(el.placement);
@@ -783,7 +786,7 @@ export function layoutDesignSlot(
         pinY: anchor.pinY,
       }, fillRef, context.dpi, useElementEdge);
       resolvedGeo.set(el.id, prims[0]!);
-      primitives.push(...prims);
+      primsByElement.set(el, prims);
     } else if (el.kind === 'rule') {
       const prim = layoutRuleElement(el, {
         anchorX,
@@ -792,7 +795,7 @@ export function layoutDesignSlot(
         pinY: anchor.pinY,
       }, fillRef, context.dpi);
       resolvedGeo.set(el.id, prim);
-      primitives.push(prim);
+      primsByElement.set(el, [prim]);
     } else if (el.kind === 'image') {
       const prim = layoutImageElement(el, {
         anchorX,
@@ -802,7 +805,7 @@ export function layoutDesignSlot(
       }, fillRef, context.dpi, context.resourceById);
       if (prim) {
         resolvedGeo.set(el.id, prim);
-        primitives.push(prim);
+        primsByElement.set(el, [prim]);
       }
     } else {
       const prim = layoutBoxElement(el, {
@@ -812,9 +815,11 @@ export function layoutDesignSlot(
         pinY: anchor.pinY,
       }, fillRef, context.dpi);
       resolvedGeo.set(el.id, prim);
-      primitives.push(prim);
+      primsByElement.set(el, [prim]);
     }
   }
+
+  const primitives = candidates.flatMap((el) => primsByElement.get(el) ?? []);
 
   return {
     container: context.container,

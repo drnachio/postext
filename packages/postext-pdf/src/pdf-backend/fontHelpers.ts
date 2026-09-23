@@ -1,4 +1,4 @@
-import type { VDTDocument, VDTBlock } from 'postext';
+import type { VDTDocument, VDTBlock, VDTLine } from 'postext';
 
 /** Collect every fontString referenced anywhere in the VDT. */
 export function collectFontStrings(doc: VDTDocument): string[] {
@@ -15,6 +15,7 @@ export function collectFontStrings(doc: VDTDocument): string[] {
         if (b.kind === 'text') out.add(b.fontString);
       }
     }
+    addChipFonts(block.lines, out);
     if (block.fontString) out.add(block.fontString);
     if (block.boldFontString) out.add(block.boldFontString);
     if (block.italicFontString) out.add(block.italicFontString);
@@ -32,6 +33,10 @@ export function collectFontStrings(doc: VDTDocument): string[] {
       out.add(rb.noteBoldFontString);
       out.add(rb.noteItalicFontString);
       out.add(rb.noteBoldItalicFontString);
+      addChipFonts(rb.captionLines, out);
+      addChipFonts(rb.noteLines, out);
+      addChipFonts(rb.continuesLines, out);
+      for (const cell of rb.table?.cells ?? []) addChipFonts(cell.lines, out);
       if (rb.table) {
         out.add(rb.table.fontString);
         out.add(rb.table.boldFontString);
@@ -53,6 +58,15 @@ export function collectFontStrings(doc: VDTDocument): string[] {
     }
   }
   return [...out];
+}
+
+/** The fonts of the inline chips on `lines` (a chip may set its own family). */
+function addChipFonts(lines: readonly VDTLine[] | undefined, out: Set<string>): void {
+  for (const line of lines ?? []) {
+    for (const seg of line.segments ?? []) {
+      for (const run of seg.chip?.runs ?? []) out.add(run.fontString);
+    }
+  }
 }
 
 export function pickSegmentFont(

@@ -1,11 +1,12 @@
 import type { InlineSpan } from './types';
-import { extractInlineRefs, extractInlineSwatches, injectRefSpans, injectSwatchSpans, parseInlineFormatting } from './inlineFormatting';
+import { extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting } from './inlineFormatting';
 import { computeSourceMap } from './sourceMapping';
 
 /**
  * Inline snippets — the self-contained rich-text runs held by a resource
  * (table cells, captions, notes). They share the body text's inline
- * microformat (`**bold**`, `*italic*`, `` `code` ``, `:ref{…}`, `:swatch{…}`) but live
+ * microformat (`**bold**`, `*italic*`, `` `code` ``, `:ref{…}`, `:swatch{…}`,
+ * `:chip[…]`) but live
  * outside the markdown document, so their "source" is the snippet string
  * itself and offsets are relative to it.
  *
@@ -20,9 +21,10 @@ import { computeSourceMap } from './sourceMapping';
  *  microformat so references resolve to their computed labels. Each ref
  *  becomes a one-char placeholder span (see `REF_PLACEHOLDER`). */
 export function parseInlineSnippetSpans(content: string): InlineSpan[] {
-  const { cleaned, refs } = extractInlineRefs(content, 0);
+  const chips = extractInlineChips(content, 0);
+  const { cleaned, refs } = extractInlineRefs(chips.cleaned, 0);
   const sw = extractInlineSwatches(cleaned, 0);
-  return injectRefSpans(injectSwatchSpans(parseInlineFormatting(sw.cleaned), sw.swatches), refs);
+  return injectChipSpans(injectRefSpans(injectSwatchSpans(parseInlineFormatting(sw.cleaned), sw.swatches), refs), chips.chips);
 }
 
 /** A parsed snippet with its plain text and per-character source map. */

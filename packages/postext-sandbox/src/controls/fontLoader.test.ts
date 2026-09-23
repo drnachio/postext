@@ -60,6 +60,20 @@ describe('getConfigFontFamilies', () => {
     }
     expect(new Set(families).size).toBe(families.length);
   });
+
+  it('collects the table style fonts, named styles included', () => {
+    const families = getConfigFontFamilies({
+      tableStyle: { headerFontFamily: 'Header Sans' },
+      tableStyles: [{ id: 'option', bodyFontFamily: 'Cell Serif' }, { id: 'plain' }],
+    });
+    expect(families).toContain('Header Sans');
+    expect(families).toContain('Cell Serif');
+  });
+
+  it('collects the chip style fonts', () => {
+    const families = getConfigFontFamilies({ chipStyles: [{ id: 'key', fontFamily: 'Key Mono' }, { id: 'tag' }] });
+    expect(families).toContain('Key Mono');
+  });
 });
 
 describe('collectFontUsage / missingUsedVariants', () => {

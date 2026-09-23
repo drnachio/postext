@@ -8,7 +8,7 @@
 import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineRefs, extractInlineSwatches, injectRefSpans, injectSwatchSpans, parseInlineFormatting, stripInlineFormatting, titleBreakIndices } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, stripInlineFormatting, titleBreakIndices } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
 export { parseDirectiveAttrs } from './attrs';
@@ -403,14 +403,15 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
 
           const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
-          const refExtract = extractInlineRefs(itemText, itemSrcStart);
+          const chipExtract = extractInlineChips(itemText, itemSrcStart);
+          const refExtract = extractInlineRefs(chipExtract.cleaned, itemSrcStart);
           const swExtract = extractInlineSwatches(refExtract.cleaned, itemSrcStart);
           const mathExtract = extractInlineMath(swExtract.cleaned, null, itemSrcStart, srcEnd);
           issues.push(...mathExtract.issues);
-          const rawSpans = injectRefSpans(injectSwatchSpans(
+          const rawSpans = injectChipSpans(injectRefSpans(injectSwatchSpans(
             injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
             refExtract.refs,
-          );
+          ), chipExtract.chips);
           const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
           fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
           const block: ContentBlock = {
@@ -459,14 +460,15 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
       }
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
-      const refExtract = extractInlineRefs(quoteLines.join(' '), srcStart);
+      const chipExtract = extractInlineChips(quoteLines.join(' '), srcStart);
+      const refExtract = extractInlineRefs(chipExtract.cleaned, srcStart);
       const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
       const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectRefSpans(injectSwatchSpans(
+      const rawSpans = injectChipSpans(injectRefSpans(injectSwatchSpans(
         injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
         refExtract.refs,
-      );
+      ), chipExtract.chips);
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({
@@ -499,14 +501,15 @@ export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBloc
     if (paraLines.length > 0) {
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
-      const refExtract = extractInlineRefs(paraLines.join(' '), srcStart);
+      const chipExtract = extractInlineChips(paraLines.join(' '), srcStart);
+      const refExtract = extractInlineRefs(chipExtract.cleaned, srcStart);
       const swExtract = extractInlineSwatches(refExtract.cleaned, srcStart);
       const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
       issues.push(...mathExtract.issues);
-      const rawSpans = injectRefSpans(injectSwatchSpans(
+      const rawSpans = injectChipSpans(injectRefSpans(injectSwatchSpans(
         injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches),
         refExtract.refs,
-      );
+      ), chipExtract.chips);
       const mapping = buildBlockMapping(markdown, srcStart, srcEnd, rawSpans);
       fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
       blocks.push({

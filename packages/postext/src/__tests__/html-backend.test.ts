@@ -81,3 +81,27 @@ describe('renderToHtmlIndexed paint order', () => {
     expect(page.decorationHtml).not.toContain('pt-block');
   });
 });
+
+describe('renderToHtmlIndexed nested callouts', () => {
+  it('paints a nested box inside its parent, under the nested text', () => {
+    const markdown = [
+      ':::callout{type="card"}', 'Statement.', '',
+      ':::callout{type="answer"}', 'Inner answer.', ':::', ':::',
+    ].join('\n');
+    const doc = buildDocument({ markdown }, {
+      page: { width: pt(360), height: pt(240), margins: { top: pt(18), bottom: pt(18), left: pt(18), right: pt(18) } },
+      calloutStyles: [
+        { id: 'card', background: { hex: '#dde8f3', model: 'hex' } },
+        { id: 'answer', background: { hex: '#fffffe', model: 'hex' }, borderRadius: pt(4) },
+      ],
+    });
+    const html = renderToHtmlIndexed(doc, { mode: 'single' }).pages[0]!.innerHtml;
+    const outerAt = html.indexOf('background:#dde8f3');
+    const innerAt = html.indexOf('background:#fffffe');
+    expect(outerAt).toBeGreaterThanOrEqual(0);
+    expect(innerAt).toBeGreaterThan(outerAt);
+    expect(html.slice(innerAt, innerAt + 120)).toContain('border-radius:');
+    const innerText = doc.blocks.find((b) => b.calloutPath && b.type !== 'callout')!;
+    expect(html.indexOf(`data-block="${innerText.id}"`)).toBeGreaterThan(innerAt);
+  });
+});

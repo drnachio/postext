@@ -66,6 +66,17 @@ export interface InlineSpan {
   swatch?: {
     color: string;
   };
+  /** Present when this span is an inline chip (`:chip[text]{style="…"}`):
+   *  a boxed run of text set as one unbreakable unit. The `text` is a single
+   *  placeholder char; the chip's words, with their own inline marks, are in
+   *  `spans`. `box` is the resolved style, filled in by the pipeline before
+   *  measurement (a chip without it is measured as bare text). */
+  chip?: {
+    /** Style id as written; unset selects the first chip style. */
+    style?: string;
+    spans: InlineSpan[];
+    box?: ChipBox;
+  };
   /** Present when this span is an inline reference to a `Resource`. The
    *  `text` carries placeholder/fallback content; the pipeline resolves the
    *  reference to its computed number/label. */
@@ -82,6 +93,27 @@ export interface InlineSpan {
      *  `Figure`) of the computed label. Ignored when `text` is set. */
     case?: RefCase;
   };
+}
+
+/** A chip style resolved for one chip in its context: lengths in px (em
+ *  read against the chip's font size), colours as hex. */
+export interface ChipBox {
+  styleId: string;
+  /** Unset: the surrounding text's family. */
+  fontFamily?: string;
+  fontSizePx: number;
+  bold: boolean;
+  italic: boolean;
+  /** Unset: the surrounding text colour. */
+  color?: string;
+  background?: string;
+  /** Unset when the outline is not drawn (zero width). */
+  borderColor?: string;
+  borderWidthPx: number;
+  borderRadiusPx: number;
+  paddingXPx: number;
+  paddingYPx: number;
+  gapPx: number;
 }
 
 /** Convenience discriminants for inline span iteration. */

@@ -102,6 +102,7 @@ export function applyBandCap(
     const height = Math.max(c.bbox.height - c.availableHeight, colCut - c.bbox.y);
     if (c.bbox.height <= height + 0.01) continue;
     if (trailing) c.trailingCap = true;
+    c.bandCapped = true;
     if (!uncappedBottoms.has(c)) uncappedBottoms.set(c, c.bbox.y + c.bbox.height);
     const trimmed = c.bbox.height - height;
     c.bbox.height = height;
@@ -118,6 +119,7 @@ export function uncapBand(
   for (const c of cols) {
     const bottom = uncappedBottoms.get(c);
     if (bottom === undefined) continue;
+    c.bandCapped = false;
     const height = bottom - c.bbox.y;
     c.availableHeight += height - c.bbox.height;
     c.bbox.height = height;

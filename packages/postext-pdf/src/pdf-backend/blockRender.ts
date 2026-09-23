@@ -4,6 +4,7 @@ import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
 import { type PageCtx, drawLinePx, drawSwatchPx, drawTextPx, colorFromHex } from './primitives';
+import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
 import {
@@ -107,6 +108,14 @@ function renderSegments(
       x += seg.width;
       continue;
     }
+    if (seg.chip) {
+      paintChip(ctx, seg.chip, x, baseline, fontCache, blockFont, blockSize, elem, (run) => {
+        const hex = seg.chip!.color ?? pickSegmentColor(!!run.bold, !!run.italic, block);
+        return hex === block.color ? blockColor : colorFromHex(hex, ctx.colorSpace);
+      });
+      x += seg.width;
+      continue;
+    }
     const fontStr = seg.fontString ?? pickSegmentFont(!!seg.bold, !!seg.italic, block);
     const font = fontCache.get(fontStr) ?? blockFont;
     const size = parseFontString(fontStr)?.sizePx ?? blockSize;
@@ -201,7 +210,7 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one drawTextPx
   // paints the line.
-  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.refResourceId !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined)) {
+  if (segments && segments.some((s) => s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined)) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem);
     return;
   }

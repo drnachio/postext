@@ -10,11 +10,13 @@ import type {
   ResolvedBodyTextConfig,
   ResolvedHeadingsConfig,
   ResolvedTableStyleConfig,
+  ResolvedNamedTableStyleConfig,
   TableRules,
   ResolvedCaptionStyleConfig,
   ResolvedDiagramStyleConfig,
   ResolvedParagraphStyleConfig,
   ResolvedCalloutStyleConfig,
+  ResolvedChipStyleConfig,
   CalloutSpan,
   CalloutPlacement,
   ResolvedUnorderedListsConfig,
@@ -51,10 +53,15 @@ export interface ResolvedConfig {
   bodyText: ResolvedBodyTextConfig;
   headings: ResolvedHeadingsConfig;
   tableStyle: ResolvedTableStyleConfig;
+  /** Named table styles (`tableStyles`), each already laid over
+   *  `tableStyle`; a table picks one with `table.styleId`. */
+  tableStyles: ResolvedNamedTableStyleConfig[];
   captionStyle: ResolvedCaptionStyleConfig;
   diagramStyle: ResolvedDiagramStyleConfig;
   paragraphStyles: ResolvedParagraphStyleConfig[];
   calloutStyles: ResolvedCalloutStyleConfig[];
+  /** Named chip styles (`:chip[…]{style="…"}`). */
+  chipStyles: ResolvedChipStyleConfig[];
   unorderedLists: ResolvedUnorderedListsConfig;
   orderedLists: ResolvedOrderedListsConfig;
   math: ResolvedMathConfig;
@@ -88,8 +95,49 @@ export type VDTBlockType =
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
+/** One run of a chip's text: its own font (bold / italic / script, at the
+ *  chip size) and advance. */
+export interface VDTChipRun {
+  text: string;
+  fontString: string;
+  width: number;
+  bold?: boolean;
+  italic?: boolean;
+  /** Script offset off the baseline (px, positive down). */
+  baselineShift?: number;
+}
+
+/** A laid-out inline chip (`:chip[…]`): a box drawn from
+ *  `x + marginLeft` (the segment's left edge `x`), `boxWidth` wide, from
+ *  `ascent` above the baseline to `descent` below it, with the text runs
+ *  set on the line's baseline after the border and `paddingX`. The
+ *  segment's width is `marginLeft + boxWidth + marginRight`. */
+export interface VDTChip {
+  /** The chip style's id. */
+  styleId: string;
+  runs: VDTChipRun[];
+  /** Room kept before / after the box (the style's `gap` beyond an
+   *  adjacent word space); zero at a line edge. */
+  marginLeft: number;
+  marginRight: number;
+  boxWidth: number;
+  /** Box extent above / below the baseline, padding and border included. */
+  ascent: number;
+  descent: number;
+  paddingX: number;
+  borderWidth: number;
+  /** Corner radius, already clamped to half the box. */
+  borderRadius: number;
+  /** Fill / outline (hex); absent when not painted. */
+  background?: string;
+  borderColor?: string;
+  /** Text colour (hex); absent to paint the runs in the surrounding text
+   *  colour (bold / italic colours included). */
+  color?: string;
+}
+
 export interface VDTLineSegment {
-  kind: 'text' | 'space' | 'math' | 'swatch';
+  kind: 'text' | 'space' | 'math' | 'swatch' | 'chip';
   text: string;
   width: number;
   bold?: boolean;
@@ -101,6 +149,10 @@ export interface VDTLineSegment {
    *  colour did not resolve — the square is then an empty outline), sitting
    *  on the baseline and outlined in the text colour. */
   swatch?: { color?: string };
+  /** Present when `kind === 'chip'`: an inline chip (`:chip[…]`), painted
+   *  as a box with its own text runs. The segment's `text` is the one-char
+   *  plain-text placeholder; the words live in `chip.runs`. */
+  chip?: VDTChip;
   /** Present when this segment renders an inline `:ref{…}` to a resource.
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */
@@ -225,6 +277,46 @@ export interface VDTResourceTableLayout {
   rowEdges: number[];
   /** Which rules to stroke with `borderWidthPx` (`'grid'` when absent). */
   rules?: TableRules;
+  /** Radii (px) of the outer frame's corners — top-left, top-right,
+   *  bottom-right, bottom-left — from `tableStyle.borderRadius`, clamped to
+   *  half the table's width and height. The frame is stroked round and the
+   *  cell fills are clipped to it. A part of a split table keeps square the
+   *  corners where it continues. Absent for a square frame. */
+  frameRadii?: [number, number, number, number];
+}
+
+/** A rounded outline: a rect and its corner radii (top-left, top-right,
+ *  bottom-right, bottom-left). */
+export interface RoundedOutline {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  radii: [number, number, number, number];
+}
+
+/** The outer frame of a laid-out table whose body starts at `(x, y)` and is
+ *  `width` px wide, grown by `outset` px on every side — its radii grow
+ *  alike, a square corner stays square. With `outset = 0` it is the line
+ *  the frame is stroked along and the fills are clipped to; with half the
+ *  border width it is the frame's outer contour. */
+export function tableFrameOutline(
+  table: Pick<VDTResourceTableLayout, 'rowEdges' | 'frameRadii'>,
+  x: number,
+  y: number,
+  width: number,
+  outset = 0,
+): RoundedOutline {
+  const height = table.rowEdges[table.rowEdges.length - 1] ?? 0;
+  const grow = (r: number) => (r > 0 ? r + outset : 0);
+  const [tl, tr, br, bl] = table.frameRadii ?? [0, 0, 0, 0];
+  return {
+    x: x - outset,
+    y: y - outset,
+    width: width + outset * 2,
+    height: height + outset * 2,
+    radii: [grow(tl), grow(tr), grow(br), grow(bl)],
+  };
 }
 
 /** Background bar painted behind a resource caption (issue #49 §7). */
@@ -487,6 +579,11 @@ export interface VDTBlock {
    *  inside it. Column balancing and keep-with-next rollbacks treat such
    *  blocks as part of one unbreakable unit. */
   containerId?: number;
+  /** Inside a nested `:::callout` (a box laid out within another box): the
+   *  parser `containerId`s of the nested boxes enclosing the block,
+   *  outermost first — the top-level box stays `containerId`. A nested
+   *  frame's own id is the last entry of its path. Absent at top level. */
+  calloutPath?: number[];
 }
 
 /** Resolved geometry of a `:::callout` frame block (see `VDTBlock.callout`). */
@@ -536,6 +633,9 @@ export interface VDTColumn {
   /** True when a `:::columnbreak` directive ended this column: its bottom
    *  gap is intentional, so column balancing leaves it alone. */
   forcedBreak?: boolean;
+  /** True while a band cap (trailing or before a page-span box) cuts this
+   *  column level with the others of its band. */
+  bandCapped?: boolean;
   /** True when a trailing band cap cut this column so a closing band ends
    *  level: its bottom is the level cut, and column balancing fills the
    *  column up to it even though the page does not flow on. */
@@ -746,6 +846,10 @@ export interface VDTDocument {
    *  `continuation.part`): `{partTitle}` / `{partNumber}` and the part's
    *  palette overrides apply from page 0 until the document opens a part. */
   partStart?: PartState;
+  /** Parts set without a divider page (`parts.page: false`): each takes
+   *  effect on the page of the first block placed after its fence
+   *  (`afterContentIndex`, the fence's closing content index). */
+  partMarks?: { afterContentIndex: number; number: string; title: string; palette?: Record<string, string> }[];
 }
 
 // ---------------------------------------------------------------------------

@@ -638,19 +638,18 @@ function CalloutStyleCard({
         isDefault={unset('keepTogether')}
         onReset={() => onResetField('keepTogether')}
       />
-      {!resolved.keepTogether && (
-        <NumberInput
-          label={labels.calloutStyleSplitMinLines}
-          value={resolved.splitMinLines}
-          onChange={(v) => onChange({ splitMinLines: Math.max(1, Math.round(v)) })}
-          min={1}
-          max={20}
-          step={1}
-          tooltip={labels.calloutStyleSplitMinLinesTooltip}
-          isDefault={unset('splitMinLines')}
-          onReset={() => onResetField('splitMinLines')}
-        />
-      )}
+      {/* Also for keep-together boxes: one taller than a full column splits. */}
+      <NumberInput
+        label={labels.calloutStyleSplitMinLines}
+        value={resolved.splitMinLines}
+        onChange={(v) => onChange({ splitMinLines: Math.max(1, Math.round(v)) })}
+        min={1}
+        max={20}
+        step={1}
+        tooltip={labels.calloutStyleSplitMinLinesTooltip}
+        isDefault={unset('splitMinLines')}
+        onReset={() => onResetField('splitMinLines')}
+      />
       <SelectInput
         label={labels.calloutStyleWidth}
         value={resolved.width}
@@ -709,6 +708,14 @@ function CalloutStyleCard({
         tooltip={labels.calloutStyleMarginBottomTooltip}
         isDefault={unset('marginBottom')}
         onReset={() => onResetField('marginBottom')}
+      />
+      <ToggleSwitch
+        label={labels.calloutStyleSnapToGrid}
+        checked={resolved.snapToGrid}
+        onChange={(v) => onChange({ snapToGrid: v })}
+        tooltip={labels.calloutStyleSnapToGridTooltip}
+        isDefault={unset('snapToGrid')}
+        onReset={() => onResetField('snapToGrid')}
       />
       <DimensionInput
         label={labels.calloutStyleColumnGap}

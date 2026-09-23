@@ -43,7 +43,7 @@ This reference is long. These are the main blocks:
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
 - [Math](#math) — LaTeX rendering, scale, colour, margins.
 - [Resource types](#resource-types) — typed numbering for figures, tables, and custom kinds.
-- [Table style](#table-style) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
+- [Table style](#table-style) (with [named table styles](#named-table-styles)) and [Caption style](#caption-style) — typography and decoration for table resources and their captions.
 - [Diagram style](#diagram-style) — single-ink recolouring of embedded SVG diagrams for spot-colour printing.
 - [Paragraph styles](#paragraph-styles) — named styles for `:::paragraphs` containers: bibliographies, glossaries, notes.
 - [Callout styles](#callout-styles) — boxed notes, tips and objectives for `:::callout` containers.
@@ -403,9 +403,11 @@ Draws a thin vertical line in the gutter to visually separate columns.
 
 The `header` and `footer` properties control per-page header and footer slots. Headers and footers render **inside the existing page margins** — they do not reserve additional space and do not shrink the content area.
 
+**Container frame.** An element anchored to `'container'` is placed in the margin band between the body and the trim edge, spanning the content-area width. The header container runs from the **trim top** down to the top of the body; the footer container from the bottom of the body down to the **trim bottom**. So `top-*` header anchors and `bottom-*` footer anchors measure from the trim edge, while `bottom-*` header anchors and `top-*` footer anchors measure from the body edge. The container never includes the bleed or the crop-marks band, so a header or footer lands at the same position on the trimmed page whether `page.cutLines` is on or off. Anchor to `'page'` (the trim box) or `'bleed'` to reach beyond the content-area width or into the bleed.
+
 Slots use the unified **design slot** model: every element has a `placement` with an `anchor` (to the container or to another element by `#id`), an optional `offset`, and an optional `size`. The legacy flat fields `align`, `marginFromBody`, `marginFromEdge`, and `width: 'full'` are still accepted on input and are migrated to the new shape automatically; the equivalent new-shape description is documented below.
 
-Each slot holds a list of **text**, **rule**, and **box** elements. Array order is paint order (first element paints first, last element paints on top).
+Each slot holds a list of **text**, **rule**, and **box** elements. Array order is paint order (first element paints first, last element paints on top). This holds whatever the anchors say: an element may anchor to one listed after it (`anchor.to: '#ttl'`), so a background box can come first and still be positioned against the text it sits behind.
 
 **Built-in defaults.** When `header` or `footer` is `undefined`, postext applies a sensible built-in default rather than an empty slot:
 
@@ -2132,7 +2134,7 @@ This mirrors heading numbering: just as a heading level carries a `numberingTemp
 
 ## Table style
 
-The `tableStyle` property controls the typography and decoration of table resources. Body and header cells are styled independently. Font family, size, and colours inherit the resolved body text when unset, so a document with no `tableStyle` renders tables with body-text typography.
+The `tableStyle` property controls the typography and decoration of table resources — every table's, unless it picks a [named table style](#named-table-styles). Body and header cells are styled independently. Font family, size, and colours inherit the resolved body text when unset, so a document with no `tableStyle` renders tables with body-text typography.
 
 ```ts
 const config: PostextConfig = {
@@ -2258,6 +2260,12 @@ const config: PostextConfig = {
       <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, or none.</td>
     </tr>
     <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Corner radius of the table's outer frame. The frame is stroked round (with <code>grid</code> or <code>outer</code> rules), the cell fills and the header background are clipped to it — also with <code>rules: 'none'</code> or borders off — and horizontal rules are trimmed to its outer contour; the inner rules stay straight. A table split across pages rounds the top corners of its first part and the bottom corners of its last. Clamped to half the table's width and height.</td>
+    </tr>
+    <tr>
       <td><code>overflow</code></td>
       <td><code>'split' | 'clip' | 'hide'</code></td>
       <td><code>'split'</code></td>
@@ -2285,6 +2293,39 @@ const config: PostextConfig = {
 </table>
 
 Border widths are kept fractional: a `0.5pt` rule is stroked as a hairline in the PDF and on screen rather than being rounded up to a full pixel (the floor is 0.25px).
+
+### Named table styles
+
+A document rarely sets every table alike: a checklist in a navy grid with a rounded frame, an option row boxed by its outer frame only, a data table in plain horizontal rules. `tableStyles` declares named variants, and a table resource picks one with `table.styleId`. Every field a style leaves unset is read from `tableStyle` first and from the body text after that, so a style states only what sets its tables apart. A table without a `styleId`, or with an id no style declares, keeps `tableStyle` — a document without `tableStyles` renders exactly as before.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    borderColor: { hex: '#163a76', model: 'hex' },
+    borderWidth: { value: 1.3, unit: 'pt' },
+    borderRadius: { value: 10, unit: 'pt' },
+  },
+  tableStyles: [
+    {
+      id: 'option',
+      name: 'Option row',
+      rules: 'outer',
+      borderColor: { hex: '#7a9cc6', model: 'hex' },
+      borderWidth: { value: 1, unit: 'pt' },
+      borderRadius: { value: 8, unit: 'pt' },
+      headerBackgroundEnabled: false,
+    },
+  ],
+};
+
+// In the resources: this table is set in the "option" style.
+const resource: Resource = {
+  id: 'choices', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
+  table: { model: { rows: [/* … */] }, styleId: 'option' },
+};
+```
+
+Each entry takes every `tableStyle` field plus `id` (what `table.styleId` references) and an optional `name` for the editor (defaults to the id). Everything a style can set applies per table — typography, fills, borders, rules, corner radius, padding and the overflow behaviour with its continuation strings. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` returns the resolved list, `pickTableStyle(resolved, styleId)` the style a table is set in, and `stripTableStylesDefaults` drops the unset fields (it keeps a field equal to its built-in default, which still overrides a different `tableStyle` value).
 
 ### Tables taller than the page
 
@@ -2683,6 +2724,151 @@ const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
 ```
 
 
+## Chip styles
+
+The `chipStyles` property declares the named styles of the inline `:chip[text]{style="…"}` — the rounded, tinted boxes of a word bank, a keyboard key, a tag (the syntax and its line-breaking rules are in the document format reference). One style, `chip`, ships by default (a pale blue fill with a hairline in the main colour, slightly rounded, the text as the words around it), so `:chip[…]` works without any configuration; declaring `chipStyles` replaces that default list. A chip without `style`, or with an id no style declares, takes the first style.
+
+```ts
+const config: PostextConfig = {
+  chipStyles: [
+    { id: 'chip', name: 'Word bank' },
+    {
+      id: 'key',
+      name: 'Keyboard key',
+      background: { hex: '#fff4d6', model: 'hex' },
+      borderColor: { hex: '#8a6d1f', model: 'hex' },
+      borderRadius: { value: 2, unit: 'pt' },
+      bold: true,
+    },
+  ],
+};
+```
+
+```md
+Classify: :chip[battery] :chip[cable] :chip[switch]
+
+Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Identifier referenced from <code>:chip[…]&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name, for editor UIs only.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Paint the box fill.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#e8eef7</code></td>
+      <td>Box fill (palette-linkable).</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>main palette colour</td>
+      <td>Outline colour.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Outline width; <code>0</code> draws none. The outline is stroked inside the box edge.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Corner radius, clamped to half the box height (a large value gives a pill).</td>
+    </tr>
+    <tr>
+      <td><code>paddingX</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Room between the outline and the text, left and right. Part of the chip's advance.</td>
+    </tr>
+    <tr>
+      <td><code>paddingY</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.1em</code></td>
+      <td>Room above and below the text band. Paints outside the line box: it never changes the line height.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>surrounding text</td>
+      <td>Family of the chip text. Weights follow the text around it.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>surrounding text</td>
+      <td>Size of the chip text; <code>em</code> is relative to the surrounding text.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>surrounding text</td>
+      <td>Colour of the chip text. Unset, bold and italic runs keep the emphasis colours.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the chip text bold, on top of its own markup.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the chip text italic, on top of its own markup.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25em</code></td>
+      <td>Least room kept between the box and a neighbouring word or chip across a word space; a narrower space is topped up inside the chip's advance, so justification never eats it. Nothing is added at a line edge or against glued punctuation.</td>
+    </tr>
+  </tbody>
+</table>
+
+Em lengths of the box (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) are relative to the chip's own font size. The box is a band 0.8 em above and 0.25 em below the baseline, grown by `paddingY` and the outline; it paints outside the line box and never changes the leading, so the baseline grid holds. When the box ends up taller than the line pitch the chips of consecutive lines touch — the sandbox lists a "Chips touch the next line" warning with the excess, so `paddingY`, the outline or `fontSize` can be reduced.
+
+In the VDT a chip is a line segment of `kind: 'chip'` whose `chip` field carries the text runs (each with its font string and width), the box geometry (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, the gap margins) and its colours; the segment's `text` is a one-character placeholder, so plain-text offsets and source maps count a chip as one character.
+
+```ts
+const resolved = resolveChipStylesConfig(config.chipStyles);
+// => the built-in `chip` style when unset; every field filled
+
+const minimal  = stripChipStylesDefaults(config.chipStyles);
+// => undefined for the built-in default; static defaults dropped
+
+const style = pickChipStyle(resolved, 'key');
+// => the `key` style, else the first one
+```
+
+
 ## Callout styles
 
 The `calloutStyles` property declares the named box styles a document applies with a `:::callout{type="…"}` container — notes, tips, warnings, learning objectives, any content set apart from the running text in a tinted or bordered box. One neutral style, `note`, ships by default (light grey background, no border, no stripe, no icon, no title), so `:::callout` works without any configuration; declaring `calloutStyles` replaces that default list.
@@ -2834,9 +3020,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
       <td>inherits <code>bodyText</code></td>
-      <td>Typography of the paragraphs inside the box. Every field inherits the body text when unset.</td>
+      <td>Typography of the paragraphs inside the box. Every field inherits the body text when unset; <code>italicColor</code> sets the colour of italic runs (a pull quote in italics in the box's colour).</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -2860,40 +3046,46 @@ The glass stays hot for an hour after the flame is out.
       <td><code>marginTop</code> / <code>marginBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code> / <code>0.75em</code></td>
-      <td>Space above the box (collapses with the previous block's margin) and minimum space below it.</td>
+      <td>Space above the box (collapses with the previous block's margin) and minimum space below it (the exact space with <code>snapToGrid: false</code>).</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When <code>true</code> the flow after the box snaps back to the baseline grid, so the space under it is <code>marginBottom</code> rounded up to whole grid lines. When <code>false</code> the box keeps its exact <code>marginBottom</code>, which collapses with the next block's top margin — two consecutive boxes of such a style sit exactly <code>max(marginBottom, marginTop)</code> apart — and the text after it may sit off the grid until the next snap point (a heading, the end of a list), as after a heading with <code>headings.snapToGrid: false</code>. Meant for documents made of stacked boxes (worksheets, forms). It applies to boxes in the flow; page-span boxes in a multi-column layout, floated, fixed and side boxes keep the grid, since column bands and float zones are laid out on it. The column-balancing levers are unchanged: a box closing a column is still pushed down to the column's last grid slot.</td>
     </tr>
     <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>When <code>true</code> the box never splits: a callout that does not fit the remaining space moves whole to the next column or page. When <code>false</code> it may break between its child blocks or between the lines of a paragraph or list item: the deepest cut that fits closes the current column (or, for a <code>span: 'page'</code> box, the page, flush with the bottom of the columns) and the rest continues at the top of the next one in a box of its own — same frame and stripe, no title or icon — splitting again if it is still too tall. A cut inside a list item leaves its bullet with the head. Every fragment's frame shares the fence's <code>contentIndex</code> / <code>containerId</code> and records <code>callout.part</code> / <code>callout.continued</code>. Use it on a long closing "key points" box together with <code>headings.balancing.beforeSpan</code>, or on a note style whose boxes must never push a figure off the page.</td>
+      <td>When <code>true</code> the box is kept whole: a callout that does not fit the remaining space moves whole to the next column or page. Only a box taller than an empty, full column — a whole page for a <code>span: 'page'</code> box — cannot be kept whole: it splits by the <code>false</code> rules below instead of overflowing, starting where it occurs, and a continuation that fits a column then moves on whole; a floated box (<code>placement: 'top' | 'bottom' | 'auto'</code>) that tall does not float but stays in the flow where it occurs. When <code>false</code> any box may break between its child blocks or between the lines of a paragraph or list item: the deepest cut that fits closes the current column (or, for a <code>span: 'page'</code> box, the page, flush with the bottom of the columns) and the rest continues at the top of the next one in a box of its own — same frame and stripe, no title or icon — splitting again if it is still too tall. A cut inside a list item leaves its bullet with the head. Every fragment's frame shares the fence's <code>contentIndex</code> / <code>containerId</code> and records <code>callout.part</code> / <code>callout.continued</code>. Use it on a long closing "key points" box together with <code>headings.balancing.beforeSpan</code>, or on a note style whose boxes must never push a figure off the page. A nested box (a <code>:::callout</code> inside another) is one child of its parent: a cut may fall before or after it, and inside it only when its own style allows splitting (<code>keepTogether: false</code>, or taller than a full column), by its own <code>splitMinLines</code>.</td>
     </tr>
     <tr>
       <td><code>splitMinLines</code></td>
       <td><code>number</code></td>
       <td><code>2</code></td>
-      <td>Fewest text lines a fragment of a split box (<code>keepTogether: false</code>) keeps on either side of the cut — a figure or a display formula counts as one line. With the default no box breaks leaving a lone line at the foot of a column or at the head of the next; when no cut satisfies the minimum the box moves whole.</td>
+      <td>Fewest text lines a fragment of a split box (<code>keepTogether: false</code>, or a keep-together box taller than a full column) keeps on either side of the cut. It guards text only: a side holding at least one figure, table, display formula or nested box is acceptable whatever its line count, so a box of pictures may leave a single one on a page. A cut inside a paragraph or list item still counts the lines on each side (a figure or formula there as one line). With the default no box breaks leaving a lone text line at the foot of a column or at the head of the next; when no cut satisfies the minimum the box moves whole.</td>
     </tr>
   </tbody>
 </table>
 
 ### The `:::callout` container
 
-A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. The fence accepts four attributes — `type` (the style id), `title` (overrides the style's title), `span` and `placement` (override the style's values) — and the content in between is laid out inside the box: an optional title, then the paragraphs, lists, blockquotes, formulas or resource embeds, each typeset with the style's `body` / `lists` typography (headings keep their usual styles). Margins between children collapse as in the running text; the interior leaves the baseline grid, and the flow snaps back onto it after the box with at least `marginBottom` below (the grid wins; the margin is a minimum — the same convention resources follow). A heading immediately before a callout keeps with it.
+A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. The fence accepts four attributes — `type` (the style id), `title` (overrides the style's title), `span` and `placement` (override the style's values) — and the content in between is laid out inside the box: an optional title, then the paragraphs, lists, blockquotes, formulas or resource embeds, each typeset with the style's `body` / `lists` typography (headings keep their usual styles). Margins between children collapse as in the running text; the interior leaves the baseline grid, and the flow snaps back onto it after the box with at least `marginBottom` below (the grid wins; the margin is a minimum — the same convention resources follow). A style with `snapToGrid: false` keeps the exact `marginBottom` instead, and the text after the box stays off the grid until the next heading or list end. A heading immediately before a callout keeps with it.
 
 Limits in this version:
 
-- A callout is unbreakable unless its style sets `keepTogether: false`. When it does not fit the remaining column space it moves whole to the next column or page — also out of an empty column that float bands or a band cap have cut short, as long as a full column would hold it. Only a box taller than a full column is placed anyway and overflows; the layout then records a `calloutOverflow` warning (`VDTDocument.warnings`), which the sandbox lists. A splittable box leaves the part that fits behind — whole children, or the lines of a paragraph down to `splitMinLines` on each side — and continues in a box without title or icon on the next column or page.
+- A callout is kept whole unless its style sets `keepTogether: false`. When it does not fit the remaining column space it moves whole to the next column or page — also out of an empty column that float bands or a band cap have cut short, as long as a full column would hold it. A box taller than a full column splits instead, like a splittable one; only one that no cut can split (a figure, table or `:::columns` group taller than the column, or a `splitMinLines` no cut satisfies) is placed anyway and overflows; the layout then records a `calloutOverflow` warning (`VDTDocument.warnings`), which the sandbox lists. A splittable box leaves the part that fits behind — whole children, or the lines of a paragraph down to `splitMinLines` on each side (a figure, table or display formula alone is enough for a side) — and continues in a box without title or icon on the next column or page.
 - Floats yield to an unbreakable box. When the block right after a figure's reference is a `keepTogether` callout, a slot that would leave the box no column of the current band to land in (the referencing column or an empty one after it, which held it before the float) is not taken: the figure moves on to its next slot, usually the next page, and the box stays in flow — as a compositor would set it, rather than pushing the box off the page and leaving the column with the figure alone.
 - `span: 'page'` in a multi-column layout makes the box a **span block**: it is laid out at the full content width and splits the page into column bands — the text columns above it are closed at the cut line, the box takes its own full-width column, and a fresh band of text columns opens below it, so the flow continues under the box in every column. Where the columns are *level* — at the top of a page, right below a `span: 'page'` opener heading, right below another span block, or right below a top float band — the box simply cuts there. Arriving mid-page, with the columns uneven, it is set the way a compositor would: the text above it is cut level across all columns (the engine re-runs placement with the band's columns shortened to the same number of grid lines, so the text overflows from column to column naturally and every orphan, widow and keep-with-next rule still applies), the box spans the page, and the columns resume below it. The cut takes a couple of extra placement passes; when the cut line would leave no room for the box plus the widow minimum of body lines below it, or no arrangement fits after a few attempts, the box moves to the top of the next page. With `headings.balancing.beforeSpan` (the default) the band it leaves is cut level behind it — like a chapter's closing band — and, when the style allows splitting (`keepTogether: false`), the part of the box that fits under the levelled columns closes the page and the rest opens the next one; with `beforeSpan: false` the page it leaves is simply balanced as usual, without forcing a page break. A heading right before a span block does not travel with it. In single-column layouts `span: 'page'` is simply inline.
 - `placement: 'fixed'` takes the box out of the flow: it is laid out (`width: 'auto'` shrink-wraps the title; `'fill'` takes the width of the text column under the anchor point) and pinned to the page where it occurs in the flow at the position `fixed.anchor` / `fixed.offset` describe — the bottom-left corner of the content area by default. The text columns it covers give up that zone (cut from the bottom, or from the top when the column is still empty), exactly like a float band; when the zone already holds text, a float or a span block, the box moves to the next page. A fixed box that closes the chapter (the next block is a chapter opener, a `:::part`, a float-barrier box or the end of the document) first levels the columns above it (`headings.balancing.trailing`), so a short closing page ends level with the badge beneath. Frame and children live in `page.floats` and render outside the column clip in every backend.
 - `placement: 'top' | 'bottom'` **floats** the box like a resource: it leaves the flow where it occurs and takes the first free band after that point — the foot of the current page (`'bottom'`), or the head / foot of the next page the flow opens — at the column width (`span: 'column'`) or the full content width (`span: 'page'`); the text after it fills the page it left. Its frame and children go to `page.floats`, as a fixed box does. A floated box heading a fresh page is set before the figures waiting for that page, and a figure cited on an earlier page that then fits under it takes the rest of that page even when fewer than three text lines would remain (a gallery page: box plus figure, no text between them). A `span: 'side'` box never floats: it stacks beside the text whatever its placement.
 - `width: 'auto'` shrink-wraps the title only; children are ignored.
-- A `:::callout` nested inside another callout is flattened into the outer box.
+- A `:::callout` nested inside another callout is a box of its own: it is laid out with its own style (background, border, radius, padding, stripe, title, icon, marker, label, typography) at the full inner width of its parent and stacks as one child of it, its `marginTop` / `marginBottom` collapsing with its neighbours. Its `span` and `placement` (fence or style) are ignored — a nested box always flows inside its parent — and so are `floatBarrier` and `snapToGrid`. Boxes nest to any depth and may sit inside a `:::columns` group (each one whole, in one column). When the parent splits, the cut falls before or after a nested box, or inside it when the nested style allows splitting; every fragment redraws the frames it cuts through, and a nested box continued from the previous fragment drops its title and icon, like a top-level continuation.
 - A `:::columns{count=N}` … `:::` group among the children lays those children out in `N` columns of equal width, `columnGap` apart, inside the box: the run is cut at the block or line boundaries that level the columns best (a paragraph or list item cut mid-way continues at the head of the next column without its bullet), every column starts at the group's top and the group is as tall as its tallest column; the children after it return to the full width. A split box (`keepTogether: false`) never cuts inside a group. Use it for a two-column summary of key points, or the tables of a wide box set side by side.
 - The fence's fifth attribute, `label`, prints on the style's label tab (see `label` above) — `:::callout{type="box" label="BOX 1-1" title="The octet rule"}`; without a `label` style the attribute is ignored.
 
-In the VDT the box is a `type: 'callout'` frame block whose decoration (background, stripe, icon, title) lives on `designOverlay`, followed by its child blocks in the same column; the frame and every child carry the fence's `containerId`. Icon images resolve like resource images: the canvas image registry, the HTML `resourceImageUrl` option and the PDF `resourceBytes` provider.
+In the VDT the box is a `type: 'callout'` frame block whose decoration (background, stripe, icon, title) lives on `designOverlay`, followed by its child blocks in the same column; the frame and every child carry the fence's `containerId`. A nested box is a `type: 'callout'` frame of its own among the children, followed by its blocks; they keep the top-level fence's `containerId` (placement and balancing still see one unit) and add `calloutPath`, the container ids of the nested fences around them, outermost first (a nested frame's own id is the last entry). The tagged PDF gives each nested box a `Div` inside its parent's. Icon images resolve like resource images: the canvas image registry, the HTML `resourceImageUrl` option and the PDF `resourceBytes` provider.
 
 ```ts
 const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyText, resolvedHeadings, resolvedUnorderedLists);
@@ -2953,6 +3145,12 @@ const config: PostextConfig = {
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether a <code>:::part</code> opens a divider page. With <code>false</code> no page is opened and the fence's body is not set: the part's number, title and palette take effect from the next content on, with no break of their own. Typical use: <code>htmlViewer.overrides.parts.page: false</code>, a screen edition without section dividers.</td>
+    </tr>
     <tr>
       <td><code>breakBefore.parity</code></td>
       <td><code>HeadingBreakParity</code></td>
@@ -3030,7 +3228,7 @@ The design slot resolves the heading placeholder set with the part's own values:
 
 A `:::part{number="…" title="…"}` line opens the part and a bare `:::` closes it; both attributes are optional (they default to `''`). The blocks in between — typically the chapter list — flow in the part page's single column with `bodyStyle`, starting at `margins.top`; a body longer than the page continues on ordinary pages. The page is classified `role: 'part'` (`VDTPage.partInfo` carries the number and title), so header and footer elements can target or skip it with `pages: 'part'` / `pages: 'body'`; the PDF backend adds the part to the outline above its chapters. An empty body (`:::part{…}` directly followed by `:::`) is the common case and still produces the page — consecutive parts never share one. A `:::part` nested in another part is flattened into the outer one.
 
-A third attribute, `palette="<id>=<hex>[, <id>=<hex>…]"`, gives the part its own colours: on the part page and on every page that follows it — until the next part — each design colour (header, footer, opener band, part and verso designs) linked to one of those palette ids takes the part's value instead of the document palette's. That is how a book's sections recolour the corner tab, the running-head dot and the chapter-opener band without a second design: `:::part{number="II" title="…" palette="band=#f6c297"}`. Pairs are separated by commas, semicolons or spaces, `=` or `:` joins id and colour, the `#` is optional. A part stays in effect after its fence closes: `{partTitle}`, `{partNumber}` and the palette follow the flow into the chapters after it and — through `continuation.part`, which `continuationAfter()` reports — into chapters laid out on their own, so the second chapter of a section shows the section in its running heads exactly as the first does.
+A third attribute, `palette="<id>=<hex>[, <id>=<hex>…]"`, gives the part its own colours: on the part page and on every page that follows it — until the next part — each design colour (header, footer, opener band, part and verso designs) linked to one of those palette ids takes the part's value instead of the document palette's. That is how a book's sections recolour the corner tab, the running-head dot and the chapter-opener band without a second design: `:::part{number="II" title="…" palette="band=#f6c297"}`. The text flow follows too: on the same pages, every flow colour equal to the base value of an overridden palette entry — headings, bold, italic and reference colours, bullets and list numbers, caption labels, table text and rules — takes the part's value, so `headings.levels[1].color` linked to `band` sets each section's headings in its own colour. Inline swatches keep the colour written in them. Pairs are separated by commas, semicolons or spaces, `=` or `:` joins id and colour, the `#` is optional. A part stays in effect after its fence closes: `{partTitle}`, `{partNumber}` and the palette follow the flow into the chapters after it and — through `continuation.part`, which `continuationAfter()` reports — into chapters laid out on their own, so the second chapter of a section shows the section in its running heads exactly as the first does.
 
 ```ts
 const resolved = resolvePartsConfig(config.parts, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);

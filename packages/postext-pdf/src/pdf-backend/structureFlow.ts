@@ -7,7 +7,8 @@
  *   - lists: consecutive `listItem` blocks become `L` › `LI` › (`Lbl`, `LBody`),
  *     nested by `listDepth`; any other block closes the open lists;
  *   - callouts: a `callout` frame opens a `Div` that receives the blocks
- *     sharing its `containerId` (split fragments reuse the same `Div`);
+ *     sharing its `containerId` (split fragments reuse the same `Div`); a
+ *     nested box (`calloutPath`) is a `Div` inside its parent's;
  *   - headings: `H1`…`H6`, clamped so the level never skips (PDF/UA-1 §7.4);
  *   - fragments: a paragraph or list item split across columns / pages
  *     keeps one element (continuations carry the head's id plus a
@@ -43,39 +44,41 @@ export class StructureFlow {
   private readonly resources = new Map<string, StructElem>();
   private readonly captions = new Map<StructElem, StructElem>();
   private lists: OpenList[] = [];
-  private callout: { containerId: number; div: StructElem } | null = null;
+  private callout: StructElem | null = null;
   private lastHeadingLevel = 0;
 
   constructor(readonly tree: StructTree) {}
+
+  /** The `Div` of a box — top-level `containerId`, then the nested boxes of
+   *  `path` inside it — created on first use. */
+  private calloutDiv(cid: number, path: readonly number[]): StructElem {
+    let div = this.calloutDivs.get(cid);
+    if (!div) {
+      div = this.tree.root.child('Div');
+      this.calloutDivs.set(cid, div);
+    }
+    for (const id of path) {
+      let inner = this.calloutDivs.get(id);
+      if (!inner) {
+        inner = div.child('Div');
+        this.calloutDivs.set(id, inner);
+      }
+      div = inner;
+    }
+    return div;
+  }
 
   /** Enter the block's grouping context; returns the parent its element
    *  belongs to (the enclosing callout `Div`, else the document). */
   private enter(block: VDTBlock): StructElem {
     const cid = block.containerId;
-    if (this.callout && this.callout.containerId !== cid) {
-      this.callout = null;
-      this.lists = [];
-    }
-    if (block.type === 'callout' && cid !== undefined) {
-      this.lists = [];
-      let div = this.calloutDivs.get(cid);
-      if (!div) {
-        div = this.tree.root.child('Div');
-        this.calloutDivs.set(cid, div);
-      }
-      this.callout = { containerId: cid, div };
-      return div;
-    }
-    if (cid !== undefined && !this.callout) {
-      let div = this.calloutDivs.get(cid);
-      if (!div) {
-        div = this.tree.root.child('Div');
-        this.calloutDivs.set(cid, div);
-      }
-      this.callout = { containerId: cid, div };
-    }
+    const div = cid !== undefined ? this.calloutDiv(cid, block.calloutPath ?? []) : null;
+    // Entering or leaving a box (or moving between nested ones) closes the
+    // open lists; so does a box frame.
+    if (div !== this.callout || block.type === 'callout') this.lists = [];
+    this.callout = div;
     if (block.type !== 'listItem') this.lists = [];
-    return this.callout?.div ?? this.tree.root;
+    return div ?? this.tree.root;
   }
 
   private headingType(level: number): StructType {
@@ -149,9 +152,10 @@ export class StructureFlow {
     return body;
   }
 
-  /** Title paragraph of a callout frame (its design overlay text). */
+  /** Title paragraph of a callout frame (its design overlay text), keyed
+   *  by the box's own id (the last of a nested frame's path). */
   private calloutTitle(block: VDTBlock, div: StructElem): StructElem {
-    const cid = block.containerId ?? -1;
+    const cid = block.calloutPath?.[block.calloutPath.length - 1] ?? block.containerId ?? -1;
     let title = this.calloutTitles.get(cid);
     if (!title) {
       title = div.child('P');

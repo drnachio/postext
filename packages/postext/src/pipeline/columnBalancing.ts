@@ -86,7 +86,7 @@ export function gapLinesIn(gaps: readonly ColumnGap[], range: PageRange): number
   return n;
 }
 
-export type BalanceCandidateKind = 'heading' | 'listEnd' | 'afterFloat' | 'trailingCallout' | 'looseParagraph';
+export type BalanceCandidateKind = 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'trailingCallout' | 'looseParagraph';
 
 interface BalanceCandidate {
   /** Stable content-block index keying the adjustment across passes. */
@@ -214,6 +214,35 @@ export function collectColumnGaps(
     }
   }
 
+  /** The trailing-callout candidate of a closing column whose last blocks
+   *  are one callout box: the room between the box's foot and the foot of
+   *  the lowest last line in the other text columns of its band. */
+  const closingBoxGap = (d: VDTDocument, page: VDTPage, col: VDTColumn): BalanceCandidate | null => {
+    const visible = col.blocks.filter((b) => !b.hidden);
+    const last = visible[visible.length - 1];
+    if (!last || last.containerId === undefined) return null;
+    const frameAt = visible.findIndex((b) => b.type === 'callout' && b.containerId === last.containerId);
+    const frame = frameAt >= 1 ? visible[frameAt]! : undefined;
+    if (!frame || frame.contentIndex === undefined || (frame.callout?.part ?? 0) > 0) return null;
+    if (!visible.slice(frameAt).every((b) => b.containerId === last.containerId)) return null;
+    let target = -Infinity;
+    for (const other of page.columns) {
+      if (other === col || !isTextColumn(other) || (other.band ?? 0) !== (col.band ?? 0)) continue;
+      const blocks = other.blocks.filter((b) => !b.hidden && b.lines.length > 0);
+      const tail = blocks[blocks.length - 1];
+      const line = tail?.lines[tail.lines.length - 1];
+      if (line) target = Math.max(target, line.bbox.y + line.bbox.height);
+    }
+    const foot = frame.bbox.y + frame.bbox.height;
+    const room = col.bbox.y + col.bbox.height - foot;
+    const gapPx = Math.min(target - foot, room);
+    // Only a small gap closes this way: a box pushed far down would open a
+    // hole between the text above it and itself (the trailing cap levels
+    // such a band instead).
+    if (!(gapPx > d.baselineGrid * 0.1) || gapPx > d.baselineGrid * 6 + EPS) return null;
+    return { contentIndex: frame.contentIndex, part: 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx };
+  };
+
   const gaps: ColumnGap[] = [];
   for (let p = 0; p <= lastContentPage; p++) {
     const page = doc.pages[p]!;
@@ -240,7 +269,14 @@ export function collectColumnGaps(
       // The closing column of a page that does not flow on ends where its
       // text ends — unless a trailing cap cut it level with the columns
       // beside it: then it fills up to the cut like any other.
-      if (c === lastNonEmpty && !pageFlowsOn && !col.trailingCap) continue;
+      // One exception: a closing column that ends with a callout box moves
+      // the box down (the trailing-callout lever alone) so its foot ends
+      // level with the last line of the columns beside it.
+      if (c === lastNonEmpty && !pageFlowsOn && !col.trailingCap) {
+        const closing = closingBoxGap(doc, page, col);
+        if (closing) gaps.push({ pageIndex: p, columnIndex: c, gapLines: 0, candidates: [closing] });
+        continue;
+      }
       // A `:::columnbreak` ended this column on purpose — leave its gap.
       if (col.forcedBreak) continue;
 
@@ -258,6 +294,26 @@ export function collectColumnGaps(
           free = Math.max(free, col.bbox.y + col.bbox.height - (lastLine.bbox.y + lastLine.bbox.height));
         }
         break;
+      }
+      // A column of a closing band cut level by a trailing cap stretches up
+      // to the tallest column beside it, not to the cut itself: when that
+      // column could not fill its last line (a split kept clear of a widow)
+      // the band ends one line short of the cap, and this one must end with
+      // it rather than a line lower.
+      // The same holds for any band cut level (a band cap before a
+      // page-span box) and for the columns of a page that does not flow on:
+      // they end with the tallest column of their band.
+      if (col.trailingCap || col.bandCapped || !pageFlowsOn) {
+        const usedBottom = (k: VDTColumn): number => k.bbox.y + (k.bbox.height - k.availableHeight);
+        const level = Math.max(...page.columns
+          .filter((k) => k !== col && isTextColumn(k) && (k.band ?? 0) === (col.band ?? 0) && k.blocks.length > 0)
+          .map(usedBottom), -Infinity);
+        if (Number.isFinite(level)) {
+          const mine = usedBottom(col);
+          // No column of such a band ends past the tallest other one: a
+          // closing page ends level, it does not grow one column away.
+          free = Math.min(free, Math.max(0, level - mine));
+        }
       }
       let gapLines = Math.floor((free + EPS) / doc.baselineGrid);
 
@@ -356,6 +412,28 @@ export function collectColumnGaps(
           candidates.push({
             contentIndex: b.contentIndex,
             kind: 'listEnd',
+            level: 0,
+            order: i,
+            lineCount: b.lines.length,
+          });
+        } else if (
+          i >= 1
+          && (
+            (col.blocks[i - 1]!.type === 'mathDisplay' && col.blocks[i - 1]!.containerId === undefined)
+            // …or the last block of a callout box (its children carry the
+            // box's container id; the block after it is back in the flow).
+            || col.blocks[i - 1]!.containerId !== undefined
+          )
+          && b.type !== 'heading'
+          && b.type !== 'mathDisplay'
+          && !b.id.includes('-cont-')
+        ) {
+          // The space under a display formula or a box: a whole grid line
+          // more there reads as the element's own margin, not as a hole in
+          // the text.
+          candidates.push({
+            contentIndex: b.contentIndex,
+            kind: 'afterDisplay',
             level: 0,
             order: i,
             lineCount: b.lines.length,
@@ -554,6 +632,13 @@ export function proposeBalanceLines(
         .filter((c) => c.kind === 'listEnd')
         .sort((a, b) => a.order - b.order);
       remaining = distribute(listEnds, remaining, options.maxLinesAfterList);
+    }
+
+    if (remaining > 0) {
+      const afterDisplay = gap.candidates
+        .filter((c) => c.kind === 'afterDisplay')
+        .sort((a, b) => a.order - b.order);
+      remaining = distribute(afterDisplay, remaining, 1);
     }
 
     if (remaining > 0 && options.stretchAfterFloats) {

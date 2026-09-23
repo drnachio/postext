@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { defaultResourceTypes } from 'postext';
+import { DEFAULT_CHIP_STYLES, defaultResourceTypes } from 'postext';
 import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
 import { useSandbox, useSandboxEditorStateRef } from '../context/SandboxContext';
@@ -18,14 +18,18 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
   // undo history and caret.
   const editorStateRef = useSandboxEditorStateRef(state.activeChapterId);
 
-  // The `@` picker reads resources through a ref so the CodeMirror extension
+  // The `@` picker (and the chip style completion) reads resources through a ref so the CodeMirror extension
   // (created once on mount) always sees the latest list without reconfiguring.
   const types = useMemo(
     () => state.config.resourceTypes ?? defaultResourceTypes(state.locale),
     [state.config.resourceTypes, state.locale],
   );
   const refContextRef = useRef<RefCompletionContext>({ resources: [], types: [] });
-  refContextRef.current = { resources: state.resources, types };
+  refContextRef.current = {
+    resources: state.resources,
+    types,
+    chipStyles: state.config.chipStyles ?? DEFAULT_CHIP_STYLES,
+  };
 
   const { containerRef, viewRef } = useCodeMirror({
     initialValue: state.markdown,

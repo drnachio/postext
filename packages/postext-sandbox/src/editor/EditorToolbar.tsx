@@ -15,6 +15,7 @@ import {
   Redo2,
   SeparatorHorizontal,
   Hash,
+  Tag,
 } from 'lucide-react';
 import type { EditorView } from '@codemirror/view';
 import { undo, redo } from '@codemirror/commands';
@@ -143,6 +144,11 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
       icon: <Code size={16} aria-hidden="true" />,
       label: labels.code,
       action: () => { const v = getView(); if (v) wrapSelection(v, '`', '`'); },
+    },
+    {
+      icon: <Tag size={16} aria-hidden="true" />,
+      label: labels.chipInline,
+      action: () => { const v = getView(); if (v) wrapSelection(v, ':chip[', ']'); },
     },
     {
       icon: <Quote size={16} aria-hidden="true" />,

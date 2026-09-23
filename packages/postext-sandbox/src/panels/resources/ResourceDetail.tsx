@@ -133,6 +133,16 @@ export function ResourceDetail({
     onChange(touch({ placement: next }));
   };
   const placementWidthPercent = Math.round((currentPlacement.width ?? 1) * 100);
+
+  // Named table style (`config.tableStyles`); unset = the document's table style.
+  const tableStyles = useSandboxSelector((s) => s.config.tableStyles) ?? [];
+  const tableStyleId = resource.table?.styleId;
+  const setTableStyleId = (styleId: string | undefined) => {
+    const table: NonNullable<Resource['table']> = { ...(resource.table ?? { model: { rows: [] } }) };
+    if (styleId) table.styleId = styleId;
+    else delete table.styleId;
+    onChange(touch({ table }));
+  };
   const placementAlign = currentPlacement.align ?? 'left';
 
   // The id is edited locally and committed (renamed) on blur / Enter so the
@@ -476,11 +486,32 @@ export function ResourceDetail({
           />
         )}
         {resource.kind === 'table' && (
+          <Field label={labels.resourceTableStyleLabel} hint={labels.resourceTableStyleHint}>
+            <select
+              value={tableStyleId ?? ''}
+              onChange={(e) => setTableStyleId(e.target.value || undefined)}
+              aria-label={labels.resourceTableStyleLabel}
+              className={inputClass}
+              style={inputStyle}
+            >
+              <option value="">{labels.resourceTableStyleDefault}</option>
+              {tableStyles.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name || s.id}
+                </option>
+              ))}
+              {tableStyleId && !tableStyles.some((s) => s.id === tableStyleId) && (
+                <option value={tableStyleId}>{labels.resourceTableStyleMissing.replace('__id__', tableStyleId)}</option>
+              )}
+            </select>
+          </Field>
+        )}
+        {resource.kind === 'table' && (
           <Field label={labels.resourceTableLabel}>
             <TableEditor
               model={resource.table?.model ?? { rows: [] }}
               onModelChange={(model: TableModel) =>
-                onChange(touch({ table: { model } }))
+                onChange(touch({ table: { ...resource.table, model } }))
               }
               focusRequest={cellRequest}
               onFocusConsumed={consumeFocus}
