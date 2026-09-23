@@ -92,11 +92,28 @@ La misma comprobación se ejecuta al cargar, de modo que editar un paquete y abr
 
 El preset activo determina además qué restauran los botones **Restablecer** de los otros paneles:
 
-| Panel | Restablecer restaura |
-|-------|----------------------|
-| Editor de markdown | El markdown del preset y su conjunto de recursos (la parte de documento) |
-| Configuración | La configuración del preset, fuentes personalizadas incluidas |
-| Proyectos (Recargar) | Todo: documento, recursos, configuración y fuentes |
+<table>
+  <thead>
+    <tr>
+      <th>Panel</th>
+      <th>Restablecer restaura</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Editor de markdown</td>
+      <td>El markdown del preset y su conjunto de recursos (la parte de documento)</td>
+    </tr>
+    <tr>
+      <td>Configuración</td>
+      <td>La configuración del preset, fuentes personalizadas incluidas</td>
+    </tr>
+    <tr>
+      <td>Proyectos (Recargar)</td>
+      <td>Todo: documento, recursos, configuración y fuentes</td>
+    </tr>
+  </tbody>
+</table>
 
 Un preset que estuvo activo en una sesión anterior pero que ya no lista ninguna fuente (normalmente un preset privado en una compilación que no lo sirve) sigue apareciendo, atenuado como *No disponible en esta compilación*, para que el sandbox conserve el contenido cargado en lugar de cambiarlo silenciosamente por el integrado. El id del preset activo se conserva bajo la clave `postext-sandbox-preset` (consulta [Persistencia](#persistencia)); el formato del paquete se describe en el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset).
 
@@ -295,20 +312,77 @@ function App() {
 
 ### Props
 
-| Prop | Tipo | Descripción |
-|------|------|-------------|
-| `initialMarkdown` | `string` | Contenido markdown inicial |
-| `initialConfig` | `PostextConfig` | Configuración de maquetación inicial |
-| `className` | `string` | Clase CSS para el contenedor raíz |
-| `labels` | `Partial<SandboxLabels>` | Sustituciones de las etiquetas de la interfaz, combinadas sobre los valores por defecto en inglés — pasa etiquetas traducidas junto con `locale` al embeber en otro idioma |
-| `locale` | `string` | Idioma de la interfaz (`'en'` por defecto). Selecciona los tipos de recurso y los recursos de ejemplo localizados, y proporciona la configuración regional de separación silábica que usan las vistas previas cuando no hay ninguna configurada |
-| `presetSources` | `{ url: string; private?: boolean }[]` | Fuentes de presets remotas, consultadas en orden tras el preset integrado. Cada `url` es una URL base que sirve un `index.json` (consulta [Formato de paquete de preset](#formato-de-paquete-de-preset)); `private: true` etiqueta los presets de la fuente como privados y hace que su marca `default` pueda cargarse automáticamente. Las fuentes que no responden simplemente no aportan nada |
-| `onConfigChange` | `(config) => void` | Callback cuando cambia la configuración |
-| `onMarkdownChange` | `(markdown) => void` | Callback cuando cambia el markdown |
-| `themeToggle` | `ReactNode` | Componente personalizado para el conmutador de tema, alojado en la parte inferior de la barra de actividad |
-| `languageSwitcher` | `ReactNode` | Componente personalizado para el selector de idioma, alojado en la parte inferior de la barra de actividad |
-| `homeUrl` | `string` | Si se establece, renderiza un enlace con el logo de inicio en la parte superior de la barra de actividad apuntando a esta URL |
-| `homeLink` | `ReactNode` | Nodo personalizado para el hueco de inicio, que sustituye al enlace con logo por defecto (tiene prioridad sobre `homeUrl`) |
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Tipo</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>initialMarkdown</code></td>
+      <td><code>string</code></td>
+      <td>Contenido markdown inicial</td>
+    </tr>
+    <tr>
+      <td><code>initialConfig</code></td>
+      <td><code>PostextConfig</code></td>
+      <td>Configuración de maquetación inicial</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>Clase CSS para el contenedor raíz</td>
+    </tr>
+    <tr>
+      <td><code>labels</code></td>
+      <td><code>Partial&lt;SandboxLabels&gt;</code></td>
+      <td>Sustituciones de las etiquetas de la interfaz, combinadas sobre los valores por defecto en inglés — pasa etiquetas traducidas junto con <code>locale</code> al embeber en otro idioma</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>Idioma de la interfaz (<code>'en'</code> por defecto). Selecciona los tipos de recurso y los recursos de ejemplo localizados, y proporciona la configuración regional de separación silábica que usan las vistas previas cuando no hay ninguna configurada</td>
+    </tr>
+    <tr>
+      <td><code>presetSources</code></td>
+      <td><code>&#123; url: string; private?: boolean &#125;[]</code></td>
+      <td>Fuentes de presets remotas, consultadas en orden tras el preset integrado. Cada <code>url</code> es una URL base que sirve un <code>index.json</code> (consulta <a href="#formato-de-paquete-de-preset">Formato de paquete de preset</a>); <code>private: true</code> etiqueta los presets de la fuente como privados y hace que su marca <code>default</code> pueda cargarse automáticamente. Las fuentes que no responden simplemente no aportan nada</td>
+    </tr>
+    <tr>
+      <td><code>onConfigChange</code></td>
+      <td><code>(config) =&gt; void</code></td>
+      <td>Callback cuando cambia la configuración</td>
+    </tr>
+    <tr>
+      <td><code>onMarkdownChange</code></td>
+      <td><code>(markdown) =&gt; void</code></td>
+      <td>Callback cuando cambia el markdown</td>
+    </tr>
+    <tr>
+      <td><code>themeToggle</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Componente personalizado para el conmutador de tema, alojado en la parte inferior de la barra de actividad</td>
+    </tr>
+    <tr>
+      <td><code>languageSwitcher</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Componente personalizado para el selector de idioma, alojado en la parte inferior de la barra de actividad</td>
+    </tr>
+    <tr>
+      <td><code>homeUrl</code></td>
+      <td><code>string</code></td>
+      <td>Si se establece, renderiza un enlace con el logo de inicio en la parte superior de la barra de actividad apuntando a esta URL</td>
+    </tr>
+    <tr>
+      <td><code>homeLink</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Nodo personalizado para el hueco de inicio, que sustituye al enlace con logo por defecto (tiene prioridad sobre <code>homeUrl</code>)</td>
+    </tr>
+  </tbody>
+</table>
 
 ### Requisitos de CSS
 

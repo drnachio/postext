@@ -92,11 +92,28 @@ The same check runs on load, so editing a bundle and then opening the sandbox pi
 
 The active preset also defines what the other panels' **Reset** buttons restore:
 
-| Panel | Reset restores |
-|-------|----------------|
-| Markdown editor | The preset's markdown and its resource set (the document part) |
-| Configuration | The preset's configuration, custom fonts included |
-| Projects (Reload) | Everything: document, resources, configuration and fonts |
+<table>
+  <thead>
+    <tr>
+      <th>Panel</th>
+      <th>Reset restores</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Markdown editor</td>
+      <td>The preset's markdown and its resource set (the document part)</td>
+    </tr>
+    <tr>
+      <td>Configuration</td>
+      <td>The preset's configuration, custom fonts included</td>
+    </tr>
+    <tr>
+      <td>Projects (Reload)</td>
+      <td>Everything: document, resources, configuration and fonts</td>
+    </tr>
+  </tbody>
+</table>
 
 A preset that was active in an earlier session but is no longer listed by any source (typically a private preset in a build that does not serve it) still appears, greyed out as *Not available in this build*, so the sandbox keeps the loaded content instead of silently swapping it for the built-in one. The active preset id is persisted under the `postext-sandbox-preset` key (see [Persistence](#persistence)); the bundle format is described in the [Preset bundle format](#preset-bundle-format) appendix.
 
@@ -295,20 +312,77 @@ function App() {
 
 ### Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `initialMarkdown` | `string` | Starting markdown content |
-| `initialConfig` | `PostextConfig` | Starting layout configuration |
-| `className` | `string` | CSS class for the root container |
-| `labels` | `Partial<SandboxLabels>` | UI label replacements, merged over the built-in English defaults — pass translated labels together with `locale` when embedding in another language |
-| `locale` | `string` | UI locale (defaults to `'en'`). Selects the localized default resource types and example resources, and provides the hyphenation locale the previews use when none is configured |
-| `presetSources` | `{ url: string; private?: boolean }[]` | Remote preset sources, tried in order after the built-in preset. Each `url` is a base URL serving an `index.json` (see [Preset bundle format](#preset-bundle-format)); `private: true` tags the source's presets as private and makes their `default` flag eligible for auto-loading. Sources that fail to respond simply contribute nothing |
-| `onConfigChange` | `(config) => void` | Callback when config changes |
-| `onMarkdownChange` | `(markdown) => void` | Callback when markdown changes |
-| `themeToggle` | `ReactNode` | Custom theme toggle component, slotted at the bottom of the activity bar |
-| `languageSwitcher` | `ReactNode` | Custom language switcher component, slotted at the bottom of the activity bar |
-| `homeUrl` | `string` | When set, renders a home logo link at the top of the activity bar pointing to this URL |
-| `homeLink` | `ReactNode` | Custom node for the home slot, replacing the default logo link (takes precedence over `homeUrl`) |
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>initialMarkdown</code></td>
+      <td><code>string</code></td>
+      <td>Starting markdown content</td>
+    </tr>
+    <tr>
+      <td><code>initialConfig</code></td>
+      <td><code>PostextConfig</code></td>
+      <td>Starting layout configuration</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>CSS class for the root container</td>
+    </tr>
+    <tr>
+      <td><code>labels</code></td>
+      <td><code>Partial&lt;SandboxLabels&gt;</code></td>
+      <td>UI label replacements, merged over the built-in English defaults — pass translated labels together with <code>locale</code> when embedding in another language</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>UI locale (defaults to <code>'en'</code>). Selects the localized default resource types and example resources, and provides the hyphenation locale the previews use when none is configured</td>
+    </tr>
+    <tr>
+      <td><code>presetSources</code></td>
+      <td><code>&#123; url: string; private?: boolean &#125;[]</code></td>
+      <td>Remote preset sources, tried in order after the built-in preset. Each <code>url</code> is a base URL serving an <code>index.json</code> (see <a href="#preset-bundle-format">Preset bundle format</a>); <code>private: true</code> tags the source's presets as private and makes their <code>default</code> flag eligible for auto-loading. Sources that fail to respond simply contribute nothing</td>
+    </tr>
+    <tr>
+      <td><code>onConfigChange</code></td>
+      <td><code>(config) =&gt; void</code></td>
+      <td>Callback when config changes</td>
+    </tr>
+    <tr>
+      <td><code>onMarkdownChange</code></td>
+      <td><code>(markdown) =&gt; void</code></td>
+      <td>Callback when markdown changes</td>
+    </tr>
+    <tr>
+      <td><code>themeToggle</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Custom theme toggle component, slotted at the bottom of the activity bar</td>
+    </tr>
+    <tr>
+      <td><code>languageSwitcher</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Custom language switcher component, slotted at the bottom of the activity bar</td>
+    </tr>
+    <tr>
+      <td><code>homeUrl</code></td>
+      <td><code>string</code></td>
+      <td>When set, renders a home logo link at the top of the activity bar pointing to this URL</td>
+    </tr>
+    <tr>
+      <td><code>homeLink</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Custom node for the home slot, replacing the default logo link (takes precedence over <code>homeUrl</code>)</td>
+    </tr>
+  </tbody>
+</table>
 
 ### CSS requirements
 
