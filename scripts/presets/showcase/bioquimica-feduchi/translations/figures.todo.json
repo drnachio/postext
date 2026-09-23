@@ -1,0 +1,3198 @@
+{
+ "fig-1-1": {
+  "0": {
+   "es": "A: Número másico: es la suma de ",
+   "en": "A: Mass number: the sum of "
+  },
+  "1": {
+   "es": "neutrones y protones",
+   "en": "neutrons and protons"
+  },
+  "2": {
+   "es": "Z: Número atómico = Nº de protones",
+   "en": "Z: Atomic number = no. of protons"
+  },
+  "3": {
+   "es": "23"
+  },
+  "4": {
+   "es": "11"
+  },
+  "5": {
+   "es": "Na"
+  },
+  "6": {
+   "es": "1"
+  },
+  "7": {
+   "es": "1"
+  },
+  "8": {
+   "es": "H"
+  },
+  "9": {
+   "es": "A: Número másico",
+   "en": "A: Mass number"
+  },
+  "10": {
+   "es": "Z: Número atómico",
+   "en": "Z: Atomic number"
+  },
+  "11": {
+   "es": "Número másico",
+   "en": "Mass number"
+  },
+  "12": {
+   "es": "Número atómico",
+   "en": "Atomic number"
+  }
+ },
+ "fig-1-2": {
+  "0": {
+   "es": "1"
+  },
+  "1": {
+   "es": "s"
+  },
+  "2": {
+   "es": "2"
+  },
+  "3": {
+   "es": "s"
+  },
+  "4": {
+   "es": "2"
+  },
+  "5": {
+   "es": "p"
+  },
+  "6": {
+   "es": "x"
+  },
+  "7": {
+   "es": "2"
+  },
+  "8": {
+   "es": "p"
+  },
+  "9": {
+   "es": "y"
+  },
+  "10": {
+   "es": "2"
+  },
+  "11": {
+   "es": "p"
+  },
+  "12": {
+   "es": "z"
+  },
+  "13": {
+   "es": "Nivel de energía ",
+   "en": "Energy level "
+  },
+  "14": {
+   "es": "2"
+  },
+  "15": {
+   "es": "Nivel de energía ",
+   "en": "Energy level "
+  },
+  "16": {
+   "es": "1"
+  },
+  "17": {
+   "es": "Nitrógeno,",
+   "en": "Nitrogen,"
+  },
+  "18": {
+   "es": "N"
+  },
+  "19": {
+   "es": "1"
+  },
+  "20": {
+   "es": "s"
+  },
+  "21": {
+   "es": "2"
+  },
+  "22": {
+   "es": "2"
+  },
+  "23": {
+   "es": "s"
+  },
+  "24": {
+   "es": "2"
+  },
+  "25": {
+   "es": "2",
+   "en": "Energy level "
+  },
+  "26": {
+   "es": "p"
+  },
+  "27": {
+   "es": "3",
+   "en": "Energy level "
+  },
+  "28": {
+   "es": "Nivel de energía "
+  },
+  "29": {
+   "es": "2",
+   "en": "Oxygen,"
+  },
+  "30": {
+   "es": "Nivel de energía "
+  },
+  "31": {
+   "es": "1"
+  },
+  "32": {
+   "es": "Oxígeno,"
+  },
+  "33": {
+   "es": "O"
+  },
+  "34": {
+   "es": "1"
+  },
+  "35": {
+   "es": "s"
+  },
+  "36": {
+   "es": "2"
+  },
+  "37": {
+   "es": "2"
+  },
+  "38": {
+   "es": "s"
+  },
+  "39": {
+   "es": "2"
+  },
+  "40": {
+   "es": "2"
+  },
+  "41": {
+   "es": "p"
+  },
+  "42": {
+   "es": "4"
+  }
+ },
+ "fig-1-3": {
+  "0": {
+   "es": "Mg"
+  },
+  "1": {
+   "es": "Ca"
+  },
+  "2": {
+   "es": "99 %         "
+  },
+  "3": {
+   "es": "0,9 ",
+   "en": "0.9 "
+  },
+  "4": {
+   "es": "%            "
+  },
+  "5": {
+   "es": "Trazas",
+   "en": "Traces"
+  },
+  "6": {
+   "es": "% del ",
+   "en": "% of the total number of atoms",
+   "anchor": "middle",
+   "was": "% del número total de átomos presentes"
+  },
+  "7": {
+   "es": "número ",
+   "en": ""
+  },
+  "8": {
+   "es": "total ",
+   "en": ""
+  },
+  "9": {
+   "es": "de átomos ",
+   "en": ""
+  },
+  "10": {
+   "es": "presentes",
+   "en": ""
+  },
+  "11": {
+   "es": "en el ",
+   "en": "present in the human body",
+   "anchor": "middle",
+   "was": "en el cuerpo humano"
+  },
+  "12": {
+   "es": "cuerpo ",
+   "en": ""
+  },
+  "13": {
+   "es": "humano",
+   "en": ""
+  }
+ },
+ "fig-1-5": {
+  "0": {
+   "es": "Átomos",
+   "en": "Atoms"
+  },
+  "1": {
+   "es": "Átomos",
+   "en": "Atoms"
+  },
+  "2": {
+   "es": "Electrones",
+   "en": "Shared"
+  },
+  "3": {
+   "es": "compartidos",
+   "en": "electrons"
+  },
+  "4": {
+   "es": "Transferencia",
+   "en": "Electron"
+  },
+  "5": {
+   "es": "de electrones",
+   "en": "transfer"
+  },
+  "6": {
+   "es": "Molécula",
+   "en": "Molecule"
+  },
+  "7": {
+   "es": "ion",
+   "en": "positive"
+  },
+  "8": {
+   "es": "positivo",
+   "en": "ion"
+  },
+  "9": {
+   "es": "ion",
+   "en": "negative"
+  },
+  "10": {
+   "es": "negativo",
+   "en": "ion"
+  },
+  "11": {
+   "es": "Enlace covalente",
+   "en": "Covalent bond"
+  },
+  "12": {
+   "es": "Enlace iónico",
+   "en": "Ionic bond"
+  }
+ },
+ "fig-1-6": {
+  "0": {
+   "es": "Carbono",
+   "en": "Carbon"
+  },
+  "1": {
+   "es": "promoción",
+   "en": "promotion"
+  },
+  "2": {
+   "es": "hibridación",
+   "en": "hybridisation"
+  },
+  "3": {
+   "es": "hibridación",
+   "en": "hybridisation"
+  }
+ },
+ "fig-1-7": {
+  "0": {
+   "es": "Electrones forman",
+   "en": "Electrons form a"
+  },
+  "1": {
+   "es": "enlace coordinado",
+   "en": "coordinate bond"
+  },
+  "2": {
+   "es": "con el protón",
+   "en": "with the proton"
+  },
+  "3": {
+   "es": "ion amonio",
+   "en": "ammonium ion"
+  }
+ },
+ "fig-1-8": {
+  "0": {
+   "es": "Diferencia de electronegatividad",
+   "en": "Electronegativity difference"
+  },
+  "1": {
+   "es": "enlace covalente apolar",
+   "en": "non-polar covalent bond"
+  },
+  "2": {
+   "es": "enlace covalente polar",
+   "en": "polar covalent bond"
+  },
+  "3": {
+   "es": "enlace iónico",
+   "en": "ionic bond"
+  }
+ },
+ "fig-1-9": {
+  "0": {
+   "es": "(a)"
+  },
+  "1": {
+   "es": "(b)"
+  },
+  "2": {
+   "es": "Puente de hidrógeno",
+   "en": "Hydrogen bond"
+  },
+  "3": {
+   "es": "carbonilo",
+   "en": "carbonyl"
+  },
+  "4": {
+   "es": "carbonilo",
+   "en": "carbonyl"
+  },
+  "5": {
+   "es": "amino",
+   "en": "amino"
+  },
+  "6": {
+   "es": "amino",
+   "en": "amino"
+  },
+  "7": {
+   "es": "hidroxilo",
+   "en": "hydroxyl"
+  },
+  "8": {
+   "es": "amino",
+   "en": "amino"
+  },
+  "9": {
+   "es": "Aceptor de",
+   "en": "H-bond"
+  },
+  "10": {
+   "es": "puente de H",
+   "en": "acceptor"
+  },
+  "11": {
+   "es": "Donador de",
+   "en": "H-bond"
+  },
+  "12": {
+   "es": "puente de H",
+   "en": "donor"
+  },
+  "13": {
+   "es": "Enlace covalente",
+   "en": "Covalent bond"
+  }
+ },
+ "fig-1-10": {
+  "0": {
+   "es": "ion Na",
+   "en": "Na",
+   "anchor": "middle"
+  },
+  "1": {
+   "es": "+",
+   "follows": 0
+  },
+  "2": {
+   "es": "hidratado",
+   "en": "hydrated ion",
+   "anchor": "middle"
+  },
+  "3": {
+   "es": "ion Cl",
+   "en": "Cl",
+   "anchor": "middle"
+  },
+  "4": {
+   "es": "-",
+   "follows": 3
+  },
+  "5": {
+   "es": "hidratado",
+   "en": "hydrated ion",
+   "anchor": "middle"
+  }
+ },
+ "fig-1-12": {
+  "0": {
+   "es": "104,5º",
+   "en": "104.5º"
+  },
+  "1": {
+   "es": "(a)"
+  },
+  "2": {
+   "es": "(b)"
+  }
+ },
+ "fig-1-13": {
+  "0": {
+   "es": "El protón se desplaza",
+   "en": "The proton moves"
+  },
+  "1": {
+   "es": "de una molécula a otra",
+   "en": "from one molecule to another"
+  },
+  "2": {
+   "es": "ion hidronio",
+   "en": "hydronium ion"
+  },
+  "3": {
+   "es": "hidroxilo",
+   "en": "hydroxyl"
+  }
+ },
+ "fig-1-14": {
+  "0": {
+   "es": "Grupo carboxilo",
+   "en": "Carboxyl group"
+  },
+  "1": {
+   "es": "(ácido)",
+   "en": "(acid)"
+  },
+  "2": {
+   "es": "Agua",
+   "en": "Water"
+  },
+  "3": {
+   "es": "(base)",
+   "en": "(base)"
+  },
+  "4": {
+   "es": "Grupo carboxilato",
+   "en": "Carboxylate group"
+  },
+  "5": {
+   "es": "(base conjugada)",
+   "en": "(conjugate base)"
+  },
+  "6": {
+   "es": "Hidronio",
+   "en": "Hydronium"
+  },
+  "7": {
+   "es": "(ácido conjugado)",
+   "en": "(conjugate acid)"
+  }
+ },
+ "fig-1-15": {
+  "0": {
+   "es": "Nucleófilos",
+   "en": "Nucleophiles"
+  },
+  "1": {
+   "es": "Electrófilos",
+   "en": "Electrophiles"
+  },
+  "2": {
+   "es": "Grupo amino",
+   "en": "Uncharged"
+  },
+  "3": {
+   "es": "no cargado",
+   "en": "amino group"
+  },
+  "4": {
+   "es": "Átomo de carbono",
+   "en": "Carbon atom of a"
+  },
+  "5": {
+   "es": "de un grupo carbonilo",
+   "en": "carbonyl group"
+  },
+  "6": {
+   "es": "Protón",
+   "en": "Proton"
+  },
+  "7": {
+   "es": "Ion hidróxido",
+   "en": "Hydroxide ion"
+  }
+ },
+ "fig-1-16": {
+  "0": {
+   "es": "Tipo de enlace",
+   "en": "Type of bond"
+  },
+  "1": {
+   "es": "O"
+  },
+  "2": {
+   "es": "-glucosídico",
+   "en": "-glycosidic"
+  },
+  "3": {
+   "es": "Enlace ",
+   "en": "Peptide "
+  },
+  "4": {
+   "es": "peptídico ",
+   "en": "bond "
+  },
+  "5": {
+   "es": "(amida)",
+   "en": "(amide)"
+  },
+  "6": {
+   "es": "Enlace ",
+   "en": "Phosphodiester "
+  },
+  "7": {
+   "es": "fosfodiéster",
+   "en": "bond"
+  }
+ },
+ "fig-1-17": {
+  "0": {
+   "es": "Metilo",
+   "en": "Methyl"
+  },
+  "1": {
+   "es": "Hidroxilo",
+   "en": "Hydroxyl"
+  },
+  "2": {
+   "es": "Carbonilo",
+   "en": "Carbonyl"
+  },
+  "3": {
+   "es": "Carboxilo",
+   "en": "Carboxyl"
+  },
+  "4": {
+   "es": "Dióxido de",
+   "en": "Carbon"
+  },
+  "5": {
+   "es": "carbono",
+   "en": "dioxide"
+  },
+  "6": {
+   "es": "R",
+   "stack": "REDUCTION",
+   "runs": 9
+  },
+  "7": {
+   "es": "E"
+  },
+  "8": {
+   "es": "D"
+  },
+  "9": {
+   "es": "U"
+  },
+  "10": {
+   "es": "C"
+  },
+  "11": {
+   "es": "C"
+  },
+  "12": {
+   "es": "I"
+  },
+  "13": {
+   "es": "Ó"
+  },
+  "14": {
+   "es": "N"
+  },
+  "15": {
+   "es": "O",
+   "stack": "OXIDATION",
+   "runs": 9
+  },
+  "16": {
+   "es": "X"
+  },
+  "17": {
+   "es": "I"
+  },
+  "18": {
+   "es": "D"
+  },
+  "19": {
+   "es": "A"
+  },
+  "20": {
+   "es": "C"
+  },
+  "21": {
+   "es": "I"
+  },
+  "22": {
+   "es": "Ó"
+  },
+  "23": {
+   "es": "N"
+  }
+ },
+ "fig-1-18": {
+  "0": {
+   "es": "Proteína",
+   "en": "Protein"
+  }
+ },
+ "recuadro-1-1-tabla-1": {
+  "0": {
+   "es": "Átomo",
+   "en": "Atom"
+  },
+  "1": {
+   "es": "Número de ",
+   "en": "Number of "
+  },
+  "2": {
+   "es": "electrones ",
+   "en": "unpaired "
+  },
+  "3": {
+   "es": "no apareados ",
+   "en": "electrons "
+  },
+  "4": {
+   "es": "(en rojo)",
+   "en": "(in red)"
+  },
+  "5": {
+   "es": "Número de ",
+   "en": "Number of "
+  },
+  "6": {
+   "es": "electrones en ",
+   "en": "electrons in "
+  },
+  "7": {
+   "es": "la capa externa ",
+   "en": "the complete "
+  },
+  "8": {
+   "es": "completa",
+   "en": "outer shell"
+  },
+  "9": {
+   "es": "H"
+  },
+  "10": {
+   "es": "1"
+  },
+  "11": {
+   "es": "2"
+  },
+  "12": {
+   "es": "H"
+  },
+  "13": {
+   "es": "H"
+  },
+  "14": {
+   "es": "H"
+  },
+  "15": {
+   "es": "H"
+  },
+  "16": {
+   "es": "H "
+  },
+  "17": {
+   "es": "H"
+  },
+  "18": {
+   "es": "Dihidrógeno",
+   "en": "Dihydrogen"
+  },
+  "19": {
+   "es": "O"
+  },
+  "20": {
+   "es": "2"
+  },
+  "21": {
+   "es": "8"
+  },
+  "22": {
+   "es": "2 H"
+  },
+  "23": {
+   "es": "O"
+  },
+  "24": {
+   "es": "H"
+  },
+  "25": {
+   "es": "H"
+  },
+  "26": {
+   "es": "O "
+  },
+  "27": {
+   "es": "H"
+  },
+  "28": {
+   "es": "H"
+  },
+  "29": {
+   "es": "Agua",
+   "en": "Water"
+  },
+  "30": {
+   "es": "N"
+  },
+  "31": {
+   "es": "3"
+  },
+  "32": {
+   "es": "8"
+  },
+  "33": {
+   "es": "N"
+  },
+  "34": {
+   "es": "3 H"
+  },
+  "35": {
+   "es": "N"
+  },
+  "36": {
+   "es": "H"
+  },
+  "37": {
+   "es": "H"
+  },
+  "38": {
+   "es": "H"
+  },
+  "39": {
+   "es": "H "
+  },
+  "40": {
+   "es": "N"
+  },
+  "41": {
+   "es": "H"
+  },
+  "42": {
+   "es": "H"
+  },
+  "43": {
+   "es": "Amoníaco",
+   "en": "Ammonia"
+  },
+  "44": {
+   "es": "C"
+  },
+  "45": {
+   "es": "4"
+  },
+  "46": {
+   "es": "8"
+  },
+  "47": {
+   "es": "C"
+  },
+  "48": {
+   "es": "4 H"
+  },
+  "49": {
+   "es": "C"
+  },
+  "50": {
+   "es": "H"
+  },
+  "51": {
+   "es": "H"
+  },
+  "52": {
+   "es": "H"
+  },
+  "53": {
+   "es": "H"
+  },
+  "54": {
+   "es": "H "
+  },
+  "55": {
+   "es": "H "
+  },
+  "56": {
+   "es": "C"
+  },
+  "57": {
+   "es": "H"
+  },
+  "58": {
+   "es": "H"
+  },
+  "59": {
+   "es": "Metano",
+   "en": "Methane"
+  },
+  "60": {
+   "es": "S"
+  },
+  "61": {
+   "es": "2"
+  },
+  "62": {
+   "es": "8"
+  },
+  "63": {
+   "es": "S"
+  },
+  "64": {
+   "es": "2 H"
+  },
+  "65": {
+   "es": "S"
+  },
+  "66": {
+   "es": "H"
+  },
+  "67": {
+   "es": "H"
+  },
+  "68": {
+   "es": "S"
+  },
+  "69": {
+   "es": "H"
+  },
+  "70": {
+   "es": "H"
+  },
+  "71": {
+   "es": "Sulfuro de ",
+   "en": "Hydrogen "
+  },
+  "72": {
+   "es": "hidrógeno",
+   "en": "sulphide"
+  },
+  "73": {
+   "es": "P"
+  },
+  "74": {
+   "es": "3"
+  },
+  "75": {
+   "es": "8"
+  },
+  "76": {
+   "es": "3 H"
+  },
+  "77": {
+   "es": "P"
+  },
+  "78": {
+   "es": "O"
+  },
+  "79": {
+   "es": "4"
+  },
+  "80": {
+   "es": "P"
+  },
+  "81": {
+   "es": "O"
+  },
+  "82": {
+   "es": "O"
+  },
+  "83": {
+   "es": "O"
+  },
+  "84": {
+   "es": "H"
+  },
+  "85": {
+   "es": "H"
+  },
+  "86": {
+   "es": "O"
+  },
+  "87": {
+   "es": "H"
+  },
+  "88": {
+   "es": "O "
+  },
+  "89": {
+   "es": "P"
+  },
+  "90": {
+   "es": "O"
+  },
+  "91": {
+   "es": "H"
+  },
+  "92": {
+   "es": "OH "
+  },
+  "93": {
+   "es": "OH",
+   "en": "Phosphoric "
+  },
+  "94": {
+   "es": "Ácido ",
+   "en": "acid"
+  },
+  "95": {
+   "es": "fosfórico"
+  },
+  "96": {
+   "es": "O"
+  }
+ },
+ "recuadro-1-2-tabla-2": {
+  "0": {
+   "es": "COMPUESTOS CON HIDRÓGENO",
+   "en": "HYDROGEN COMPOUNDS"
+  },
+  "1": {
+   "es": "Grupo funcional",
+   "en": "Functional group"
+  },
+  "2": {
+   "es": "Estructura",
+   "en": "Structure"
+  },
+  "3": {
+   "es": "Fórmula",
+   "en": "Formula"
+  },
+  "4": {
+   "es": "Naturaleza ",
+   "en": "Chemical "
+  },
+  "5": {
+   "es": "química ",
+   "en": "nature "
+  },
+  "6": {
+   "es": "Alifático",
+   "en": "Aliphatic"
+  },
+  "7": {
+   "es": "R "
+  },
+  "8": {
+   "es": "C"
+  },
+  "9": {
+   "es": "H"
+  },
+  "10": {
+   "es": "H "
+  },
+  "11": {
+   "es": "H"
+  },
+  "12": {
+   "es": "R "
+  },
+  "13": {
+   "es": "C"
+  },
+  "14": {
+   "es": "H"
+  },
+  "15": {
+   "es": "3",
+   "en": "Non-polar"
+  },
+  "16": {
+   "es": "No polar",
+   "en": "Alkane"
+  },
+  "17": {
+   "es": "Alcano",
+   "en": "Methyl"
+  },
+  "18": {
+   "es": "Metilo",
+   "en": "Ethyl"
+  },
+  "19": {
+   "es": "Etilo"
+  },
+  "20": {
+   "es": "R "
+  },
+  "21": {
+   "es": "C"
+  },
+  "22": {
+   "es": "C"
+  },
+  "23": {
+   "es": "H"
+  },
+  "24": {
+   "es": "H "
+  },
+  "25": {
+   "es": "H"
+  },
+  "26": {
+   "es": "H "
+  },
+  "27": {
+   "es": "H"
+  },
+  "28": {
+   "es": "R "
+  },
+  "29": {
+   "es": "C"
+  },
+  "30": {
+   "es": "H"
+  },
+  "31": {
+   "es": "2"
+  },
+  "32": {
+   "es": "C",
+   "en": "Alkene"
+  },
+  "33": {
+   "es": "H",
+   "en": "Ethene "
+  },
+  "34": {
+   "es": "3",
+   "en": "(ethylene)"
+  },
+  "35": {
+   "es": "Alqueno"
+  },
+  "36": {
+   "es": "Eteno "
+  },
+  "37": {
+   "es": "(etileno)"
+  },
+  "38": {
+   "es": "R "
+  },
+  "39": {
+   "es": "C"
+  },
+  "40": {
+   "es": "C"
+  },
+  "41": {
+   "es": "H"
+  },
+  "42": {
+   "es": "H "
+  },
+  "43": {
+   "es": "H "
+  },
+  "44": {
+   "es": "R "
+  },
+  "45": {
+   "es": "C",
+   "en": "Non-polar"
+  },
+  "46": {
+   "es": "H",
+   "en": "Aromatic"
+  },
+  "47": {
+   "es": "C"
+  },
+  "48": {
+   "es": "H"
+  },
+  "49": {
+   "es": "2"
+  },
+  "50": {
+   "es": "No polar"
+  },
+  "51": {
+   "es": "Aromático"
+  },
+  "52": {
+   "es": "H"
+  },
+  "53": {
+   "es": "H"
+  },
+  "54": {
+   "es": "H",
+   "en": "Non-polar"
+  },
+  "55": {
+   "es": "H",
+   "en": "Phenyl"
+  },
+  "56": {
+   "es": "R"
+  },
+  "57": {
+   "es": "H"
+  },
+  "58": {
+   "es": "R"
+  },
+  "59": {
+   "es": "No polar"
+  },
+  "60": {
+   "es": "Fenilo"
+  }
+ },
+ "recuadro-1-2-tabla-3": {
+  "0": {
+   "es": "COMPUESTOS CON OXÍGENO",
+   "en": "OXYGEN COMPOUNDS"
+  },
+  "1": {
+   "es": "Grupo funcional",
+   "en": "Functional group"
+  },
+  "2": {
+   "es": "Estructura",
+   "en": "Structure"
+  },
+  "3": {
+   "es": "Fórmula",
+   "en": "Formula"
+  },
+  "4": {
+   "es": "Naturaleza ",
+   "en": "Chemical "
+  },
+  "5": {
+   "es": "química ",
+   "en": "nature "
+  },
+  "6": {
+   "es": "Hidroxilo (alcohol)",
+   "en": "Hydroxyl (alcohol)"
+  },
+  "7": {
+   "es": "R "
+  },
+  "8": {
+   "es": "O"
+  },
+  "9": {
+   "es": "H"
+  },
+  "10": {
+   "es": "R "
+  },
+  "11": {
+   "es": "O"
+  },
+  "12": {
+   "es": "H",
+   "en": "Polar"
+  },
+  "13": {
+   "es": "Polar",
+   "en": "Carbonyl"
+  },
+  "14": {
+   "es": "Carbonilo",
+   "en": "Aldehyde "
+  },
+  "15": {
+   "es": "Aldehído ",
+   "en": "primary C"
+  },
+  "16": {
+   "es": "C primario"
+  },
+  "17": {
+   "es": "R "
+  },
+  "18": {
+   "es": "C"
+  },
+  "19": {
+   "es": "O "
+  },
+  "20": {
+   "es": "H"
+  },
+  "21": {
+   "es": "R "
+  },
+  "22": {
+   "es": "C"
+  },
+  "23": {
+   "es": "(",
+   "en": "Polar"
+  },
+  "24": {
+   "es": "O",
+   "en": "Ketone  "
+  },
+  "25": {
+   "es": ")",
+   "en": "secondary "
+  },
+  "26": {
+   "es": "H",
+   "en": "C"
+  },
+  "27": {
+   "es": "Polar",
+   "en": ""
+  },
+  "28": {
+   "es": "Cetona  "
+  },
+  "29": {
+   "es": "C "
+  },
+  "30": {
+   "es": "secunda"
+  },
+  "31": {
+   "es": "rio"
+  },
+  "32": {
+   "es": "R "
+  },
+  "33": {
+   "es": "C"
+  },
+  "34": {
+   "es": "R"
+  },
+  "35": {
+   "es": "O "
+  },
+  "36": {
+   "es": "R ",
+   "en": "Polar"
+  },
+  "37": {
+   "es": "C",
+   "en": "Carboxyl"
+  },
+  "38": {
+   "es": "("
+  },
+  "39": {
+   "es": "O"
+  },
+  "40": {
+   "es": ")"
+  },
+  "41": {
+   "es": "R"
+  },
+  "42": {
+   "es": "Polar"
+  },
+  "43": {
+   "es": "Carboxilo"
+  },
+  "44": {
+   "es": "R ",
+   "en": "Polar "
+  },
+  "45": {
+   "es": "C",
+   "en": "(acid)"
+  },
+  "46": {
+   "es": "O ",
+   "en": "Ester"
+  },
+  "47": {
+   "es": "OH"
+  },
+  "48": {
+   "es": "R "
+  },
+  "49": {
+   "es": "C"
+  },
+  "50": {
+   "es": "O"
+  },
+  "51": {
+   "es": "O"
+  },
+  "52": {
+   "es": "H"
+  },
+  "53": {
+   "es": "Polar "
+  },
+  "54": {
+   "es": "(ácido)"
+  },
+  "55": {
+   "es": "Éster",
+   "en": "Non-polar"
+  },
+  "56": {
+   "es": "R "
+  },
+  "57": {
+   "es": "C"
+  },
+  "58": {
+   "es": "O"
+  },
+  "59": {
+   "es": "R"
+  },
+  "60": {
+   "es": "O "
+  },
+  "61": {
+   "es": "R "
+  },
+  "62": {
+   "es": "C"
+  },
+  "63": {
+   "es": "O"
+  },
+  "64": {
+   "es": "O"
+  },
+  "65": {
+   "es": "R"
+  },
+  "66": {
+   "es": "No polar"
+  }
+ },
+ "recuadro-1-2-tabla-4": {
+  "0": {
+   "es": "COMPUESTOS CON NITRÓGENO",
+   "en": "NITROGEN COMPOUNDS"
+  },
+  "1": {
+   "es": "Grupo funcional",
+   "en": "Functional group"
+  },
+  "2": {
+   "es": "Estructura",
+   "en": "Structure"
+  },
+  "3": {
+   "es": "Fórmula",
+   "en": "Formula"
+  },
+  "4": {
+   "es": "Naturaleza ",
+   "en": "Chemical "
+  },
+  "5": {
+   "es": "química ",
+   "en": "nature "
+  },
+  "6": {
+   "es": "Amino",
+   "en": "Amino"
+  },
+  "7": {
+   "es": "Primaria",
+   "en": "Primary"
+  },
+  "8": {
+   "es": "R "
+  },
+  "9": {
+   "es": "N"
+  },
+  "10": {
+   "es": "H "
+  },
+  "11": {
+   "es": "H"
+  },
+  "12": {
+   "es": "R "
+  },
+  "13": {
+   "es": "N"
+  },
+  "14": {
+   "es": "H"
+  },
+  "15": {
+   "es": "2",
+   "en": "Polar (base)"
+  },
+  "16": {
+   "es": "Polar (base)",
+   "en": "Secondary"
+  },
+  "17": {
+   "es": "Secundari",
+   "en": ""
+  },
+  "18": {
+   "es": "a"
+  },
+  "19": {
+   "es": "R "
+  },
+  "20": {
+   "es": "N"
+  },
+  "21": {
+   "es": "R"
+  },
+  "22": {
+   "es": "H"
+  },
+  "23": {
+   "es": "R "
+  },
+  "24": {
+   "es": "N"
+  },
+  "25": {
+   "es": "H",
+   "en": "Polar (base)"
+  },
+  "26": {
+   "es": "R",
+   "en": "Imino"
+  },
+  "27": {
+   "es": "Polar (base)"
+  },
+  "28": {
+   "es": "Imino"
+  },
+  "29": {
+   "es": "R "
+  },
+  "30": {
+   "es": "C"
+  },
+  "31": {
+   "es": "N "
+  },
+  "32": {
+   "es": "H"
+  },
+  "33": {
+   "es": "H"
+  },
+  "34": {
+   "es": "R "
+  },
+  "35": {
+   "es": "C",
+   "en": "Polar (base)"
+  },
+  "36": {
+   "es": "H",
+   "en": "Amido"
+  },
+  "37": {
+   "es": "N"
+  },
+  "38": {
+   "es": "H"
+  },
+  "39": {
+   "es": "Polar (base)"
+  },
+  "40": {
+   "es": "Amido"
+  },
+  "41": {
+   "es": "R "
+  },
+  "42": {
+   "es": "C"
+  },
+  "43": {
+   "es": "N"
+  },
+  "44": {
+   "es": "H "
+  },
+  "45": {
+   "es": "H"
+  },
+  "46": {
+   "es": "O "
+  },
+  "47": {
+   "es": "R ",
+   "en": "Polar"
+  },
+  "48": {
+   "es": "C"
+  },
+  "49": {
+   "es": "O"
+  },
+  "50": {
+   "es": "N"
+  },
+  "51": {
+   "es": "H"
+  },
+  "52": {
+   "es": "2"
+  },
+  "53": {
+   "es": "Polar"
+  }
+ },
+ "recuadro-1-2-tabla-5": {
+  "0": {
+   "es": "COMPUESTOS CON FÓSFORO",
+   "en": "PHOSPHORUS COMPOUNDS"
+  },
+  "1": {
+   "es": "Grupo ",
+   "en": "Functional "
+  },
+  "2": {
+   "es": "funcional",
+   "en": "group"
+  },
+  "3": {
+   "es": "Estructura",
+   "en": "Structure"
+  },
+  "4": {
+   "es": "Fórmula",
+   "en": "Formula"
+  },
+  "5": {
+   "es": "Naturaleza ",
+   "en": "Chemical "
+  },
+  "6": {
+   "es": "química ",
+   "en": "nature "
+  },
+  "7": {
+   "es": "Fosforilo",
+   "en": "Phosphoryl"
+  },
+  "8": {
+   "es": "R "
+  },
+  "9": {
+   "es": "O"
+  },
+  "10": {
+   "es": "P"
+  },
+  "11": {
+   "es": "O"
+  },
+  "12": {
+   "es": "H"
+  },
+  "13": {
+   "es": "O"
+  },
+  "14": {
+   "es": "OH"
+  },
+  "15": {
+   "es": "R "
+  },
+  "16": {
+   "es": "O"
+  },
+  "17": {
+   "es": "P"
+  },
+  "18": {
+   "es": "O"
+  },
+  "19": {
+   "es": "3"
+  },
+  "20": {
+   "es": "H",
+   "en": "Polar (acid)"
+  },
+  "21": {
+   "es": "2"
+  },
+  "22": {
+   "es": "Polar (ácido)"
+  }
+ },
+ "recuadro-1-2-tabla-6": {
+  "0": {
+   "es": "COMPUESTOS CON AZUFRE ",
+   "en": "SULPHUR COMPOUNDS "
+  },
+  "1": {
+   "es": "Grupo ",
+   "en": "Functional "
+  },
+  "2": {
+   "es": "funcional",
+   "en": "group"
+  },
+  "3": {
+   "es": "Estructura",
+   "en": "Structure"
+  },
+  "4": {
+   "es": "Fórmula",
+   "en": "Formula"
+  },
+  "5": {
+   "es": "Naturaleza ",
+   "en": "Chemical "
+  },
+  "6": {
+   "es": "química ",
+   "en": "nature "
+  },
+  "7": {
+   "es": "Sulfhidrilo ",
+   "en": "Sulfhydryl "
+  },
+  "8": {
+   "es": "(tiol)",
+   "en": "(thiol)"
+  },
+  "9": {
+   "es": "R "
+  },
+  "10": {
+   "es": "S"
+  },
+  "11": {
+   "es": "H"
+  },
+  "12": {
+   "es": "R "
+  },
+  "13": {
+   "es": "S"
+  },
+  "14": {
+   "es": "H",
+   "en": "Polar"
+  },
+  "15": {
+   "es": "Polar",
+   "en": "Sulfuryl "
+  },
+  "16": {
+   "es": "Sulfurilo ",
+   "en": "(sulfuric acid)"
+  },
+  "17": {
+   "es": "(ác. sulfúrico)"
+  },
+  "18": {
+   "es": "R "
+  },
+  "19": {
+   "es": "O"
+  },
+  "20": {
+   "es": "S"
+  },
+  "21": {
+   "es": "O"
+  },
+  "22": {
+   "es": "O"
+  },
+  "23": {
+   "es": "OH"
+  },
+  "24": {
+   "es": "R "
+  },
+  "25": {
+   "es": "O"
+  },
+  "26": {
+   "es": "S"
+  },
+  "27": {
+   "es": "O"
+  },
+  "28": {
+   "es": "3",
+   "en": "Polar (acid)"
+  },
+  "29": {
+   "es": "H"
+  },
+  "30": {
+   "es": "Polar (ácido)"
+  }
+ },
+ "recuadro-1-3-tabla-1": {
+  "0": {
+   "es": "PUENTE DE HIDRÓGENO",
+   "en": "HYDROGEN BOND"
+  },
+  "1": {
+   "es": "INTERACCIÓN HIDROFÓBICA",
+   "en": "HYDROPHOBIC INTERACTION"
+  },
+  "2": {
+   "es": "Hidroxilo",
+   "en": "Hydroxyl"
+  },
+  "3": {
+   "es": "O"
+  },
+  "4": {
+   "es": "H"
+  },
+  "5": {
+   "es": "O "
+  },
+  "6": {
+   "es": "H "
+  },
+  "7": {
+   "es": "H",
+   "en": "Aliphatic "
+  },
+  "8": {
+   "es": "Alifáticos ",
+   "en": "Aromatic"
+  },
+  "9": {
+   "es": "Aromáticos"
+  },
+  "10": {
+   "es": "O"
+  },
+  "11": {
+   "es": "H"
+  },
+  "12": {
+   "es": "H"
+  },
+  "13": {
+   "es": "O "
+  },
+  "14": {
+   "es": "H"
+  },
+  "15": {
+   "es": "H"
+  },
+  "16": {
+   "es": "O"
+  },
+  "17": {
+   "es": "H"
+  },
+  "18": {
+   "es": "H"
+  },
+  "19": {
+   "es": "H "
+  },
+  "20": {
+   "es": "C"
+  },
+  "21": {
+   "es": "C"
+  },
+  "22": {
+   "es": "H",
+   "en": "Carbonyl"
+  },
+  "23": {
+   "es": "Carbonilo"
+  },
+  "24": {
+   "es": "C"
+  },
+  "25": {
+   "es": "O"
+  },
+  "26": {
+   "es": "H"
+  },
+  "27": {
+   "es": "O"
+  },
+  "28": {
+   "es": "H",
+   "en": "Carboxyl"
+  },
+  "29": {
+   "es": "Carboxilo",
+   "en": "(any "
+  },
+  "30": {
+   "es": "(cualquier ",
+   "en": "protonated "
+  },
+  "31": {
+   "es": "ácido ",
+   "en": "acid)"
+  },
+  "32": {
+   "es": "protonado)"
+  },
+  "33": {
+   "es": "C"
+  },
+  "34": {
+   "es": "O"
+  },
+  "35": {
+   "es": "H "
+  },
+  "36": {
+   "es": "O"
+  },
+  "37": {
+   "es": "H"
+  },
+  "38": {
+   "es": "OH "
+  },
+  "39": {
+   "es": "O"
+  },
+  "40": {
+   "es": "H"
+  },
+  "41": {
+   "es": "H",
+   "en": "SALT BRIDGE"
+  },
+  "42": {
+   "es": "PUENTE SALINO"
+  },
+  "43": {
+   "es": "C"
+  },
+  "44": {
+   "es": "O "
+  },
+  "45": {
+   "es": "O"
+  },
+  "46": {
+   "es": "H"
+  },
+  "47": {
+   "es": "H"
+  },
+  "48": {
+   "es": "N"
+  },
+  "49": {
+   "es": "R"
+  },
+  "50": {
+   "es": "H ",
+   "en": "Amino"
+  },
+  "51": {
+   "es": "Amino"
+  },
+  "52": {
+   "es": "H"
+  },
+  "53": {
+   "es": "O"
+  },
+  "54": {
+   "es": "H "
+  },
+  "55": {
+   "es": "H"
+  },
+  "56": {
+   "es": "R "
+  },
+  "57": {
+   "es": "N"
+  },
+  "58": {
+   "es": "H",
+   "en": "Amido"
+  },
+  "59": {
+   "es": "Amido"
+  },
+  "60": {
+   "es": "O"
+  },
+  "61": {
+   "es": "H"
+  },
+  "62": {
+   "es": "O"
+  },
+  "63": {
+   "es": "H"
+  },
+  "64": {
+   "es": "C "
+  },
+  "65": {
+   "es": "N"
+  },
+  "66": {
+   "es": "H"
+  },
+  "67": {
+   "es": "H"
+  },
+  "68": {
+   "es": "O "
+  },
+  "69": {
+   "es": "H"
+  },
+  "70": {
+   "es": "H"
+  }
+ },
+ "recuadro-1-6-fig": {
+  "0": {
+   "es": "pH 5,76",
+   "en": "pH 5.76"
+  },
+  "1": {
+   "es": "región tamponante",
+   "en": "buffering region"
+  },
+  "2": {
+   "es": "pH 3,76",
+   "en": "pH 3.76"
+  },
+  "3": {
+   "es": "9"
+  },
+  "4": {
+   "es": "8"
+  },
+  "5": {
+   "es": "7"
+  },
+  "6": {
+   "es": "6"
+  },
+  "7": {
+   "es": "5"
+  },
+  "8": {
+   "es": "4"
+  },
+  "9": {
+   "es": "3"
+  },
+  "10": {
+   "es": "2"
+  },
+  "11": {
+   "es": "1"
+  },
+  "12": {
+   "es": "0"
+  },
+  "13": {
+   "es": "0,1",
+   "en": "0.1"
+  },
+  "14": {
+   "es": "0,2",
+   "en": "0.2"
+  },
+  "15": {
+   "es": "0,3",
+   "en": "0.3"
+  },
+  "16": {
+   "es": "0,4",
+   "en": "0.4"
+  },
+  "17": {
+   "es": "0,5",
+   "en": "0.5"
+  },
+  "18": {
+   "es": "0,6",
+   "en": "0.6"
+  },
+  "19": {
+   "es": "0,7",
+   "en": "0.7"
+  },
+  "20": {
+   "es": "0,8",
+   "en": "0.8"
+  },
+  "21": {
+   "es": "0,9",
+   "en": "0.9"
+  },
+  "22": {
+   "es": "1,0",
+   "en": "1.0"
+  },
+  "23": {
+   "es": "0"
+  },
+  "24": {
+   "es": "OH"
+  },
+  "25": {
+   "es": "(equivalentes)",
+   "en": "(equivalents)"
+  },
+  "26": {
+   "es": "[CH"
+  },
+  "27": {
+   "es": "3"
+  },
+  "28": {
+   "es": "C"
+  },
+  "29": {
+   "es": "O"
+  },
+  "30": {
+   "es": "O"
+  },
+  "31": {
+   "es": "H"
+  },
+  "32": {
+   "es": "]"
+  },
+  "33": {
+   "es": "["
+  },
+  "34": {
+   "es": "C"
+  },
+  "35": {
+   "es": "H"
+  },
+  "36": {
+   "es": "3"
+  },
+  "37": {
+   "es": "COO"
+  },
+  "38": {
+   "es": "]"
+  },
+  "39": {
+   "es": "CH"
+  },
+  "40": {
+   "es": "3"
+  },
+  "41": {
+   "es": "COO"
+  },
+  "42": {
+   "es": "CH"
+  },
+  "43": {
+   "es": "3",
+   "en": " = 4.76"
+  },
+  "44": {
+   "es": "COOH",
+   "en": "Titration curve of "
+  },
+  "45": {
+   "es": "pH ",
+   "en": "acetic acid"
+  },
+  "46": {
+   "es": " p"
+  },
+  "47": {
+   "es": "K"
+  },
+  "48": {
+   "es": "a"
+  },
+  "49": {
+   "es": " = 4,76"
+  },
+  "50": {
+   "es": "Curva de titulación "
+  },
+  "51": {
+   "es": "del ácido acético"
+  }
+ },
+ "recuadro-1-7-fig": {
+  "0": {
+   "es": "CO"
+  },
+  "1": {
+   "es": "2"
+  },
+  "2": {
+   "es": "H"
+  },
+  "3": {
+   "es": "2"
+  },
+  "4": {
+   "es": "O"
+  },
+  "5": {
+   "es": "H"
+  },
+  "6": {
+   "es": "2"
+  },
+  "7": {
+   "es": "CO"
+  },
+  "8": {
+   "es": "3"
+  },
+  "9": {
+   "es": "H"
+  },
+  "10": {
+   "es": "C"
+  },
+  "11": {
+   "es": "O"
+  },
+  "12": {
+   "es": "3"
+  },
+  "13": {
+   "es": "H"
+  },
+  "14": {
+   "es": "{"
+  },
+  "15": {
+   "es": "{"
+  }
+ },
+ "recuadro-1-8-tabla-1": {
+  "0": {
+   "es": "NOMBRE",
+   "en": "NAME"
+  },
+  "1": {
+   "es": "GRUPOS ",
+   "en": "FUNCTIONAL "
+  },
+  "2": {
+   "es": "FUNCIONALES",
+   "en": "GROUPS"
+  },
+  "3": {
+   "es": "REACCIÓN",
+   "en": "REACTION"
+  },
+  "4": {
+   "es": "Éter",
+   "en": "Ether"
+  },
+  "5": {
+   "es": "Hidroxilo",
+   "en": "Hydroxyl"
+  },
+  "6": {
+   "es": "Hidroxilo",
+   "en": "Hydroxyl"
+  },
+  "7": {
+   "es": "R"
+  },
+  "8": {
+   "es": "1"
+  },
+  "9": {
+   "es": "O"
+  },
+  "10": {
+   "es": "H"
+  },
+  "11": {
+   "es": "O"
+  },
+  "12": {
+   "es": "H"
+  },
+  "13": {
+   "es": "R"
+  },
+  "14": {
+   "es": "2"
+  },
+  "15": {
+   "es": "R"
+  },
+  "16": {
+   "es": "1"
+  },
+  "17": {
+   "es": "O"
+  },
+  "18": {
+   "es": "R",
+   "en": "Ester"
+  },
+  "19": {
+   "es": "2"
+  },
+  "20": {
+   "es": "Éster",
+   "en": "Carboxyl"
+  },
+  "21": {
+   "es": "C",
+   "en": "Hydroxyl"
+  },
+  "22": {
+   "es": "Carboxilo",
+   "en": "Sulfhydryl"
+  },
+  "23": {
+   "es": "Hidroxilo"
+  },
+  "24": {
+   "es": "Sulfhidrilo"
+  },
+  "25": {
+   "es": "R"
+  },
+  "26": {
+   "es": "1"
+  },
+  "27": {
+   "es": "C"
+  },
+  "28": {
+   "es": "O"
+  },
+  "29": {
+   "es": "OH "
+  },
+  "30": {
+   "es": "O"
+  },
+  "31": {
+   "es": "H"
+  },
+  "32": {
+   "es": "R"
+  },
+  "33": {
+   "es": "2"
+  },
+  "34": {
+   "es": "S"
+  },
+  "35": {
+   "es": "H"
+  },
+  "36": {
+   "es": "R"
+  },
+  "37": {
+   "es": "2"
+  },
+  "38": {
+   "es": "R"
+  },
+  "39": {
+   "es": "1"
+  },
+  "40": {
+   "es": "C"
+  },
+  "41": {
+   "es": "O"
+  },
+  "42": {
+   "es": "R"
+  },
+  "43": {
+   "es": "2"
+  },
+  "44": {
+   "es": "O "
+  },
+  "45": {
+   "es": "R"
+  },
+  "46": {
+   "es": "1"
+  },
+  "47": {
+   "es": "C"
+  },
+  "48": {
+   "es": "S",
+   "en": " thioester"
+  },
+  "49": {
+   "es": "R"
+  },
+  "50": {
+   "es": "2",
+   "en": "Phosphoric ester "
+  },
+  "51": {
+   "es": "O ",
+   "en": "Phosphoryl"
+  },
+  "52": {
+   "es": " tioéster",
+   "en": "Hydroxyl"
+  },
+  "53": {
+   "es": "P"
+  },
+  "54": {
+   "es": "Éster fosfórico "
+  },
+  "55": {
+   "es": "Fosforilo"
+  },
+  "56": {
+   "es": "Hidroxilo"
+  },
+  "57": {
+   "es": "R"
+  },
+  "58": {
+   "es": "1"
+  },
+  "59": {
+   "es": "O"
+  },
+  "60": {
+   "es": "P"
+  },
+  "61": {
+   "es": "O"
+  },
+  "62": {
+   "es": "H"
+  },
+  "63": {
+   "es": "O"
+  },
+  "64": {
+   "es": "H"
+  },
+  "65": {
+   "es": "R"
+  },
+  "66": {
+   "es": "2"
+  },
+  "67": {
+   "es": "O"
+  },
+  "68": {
+   "es": "OH"
+  },
+  "69": {
+   "es": "R"
+  },
+  "70": {
+   "es": "1"
+  },
+  "71": {
+   "es": "O"
+  },
+  "72": {
+   "es": "P"
+  },
+  "73": {
+   "es": "O",
+   "en": "Sulfuric ester"
+  },
+  "74": {
+   "es": "R",
+   "en": "Sulfuryl"
+  },
+  "75": {
+   "es": "2",
+   "en": "Hydroxyl"
+  },
+  "76": {
+   "es": "O"
+  },
+  "77": {
+   "es": "OH"
+  },
+  "78": {
+   "es": "S "
+  },
+  "79": {
+   "es": "Éster sulfúrico"
+  },
+  "80": {
+   "es": "Sulfurilo"
+  },
+  "81": {
+   "es": "Hidroxilo"
+  },
+  "82": {
+   "es": "R"
+  },
+  "83": {
+   "es": "1"
+  },
+  "84": {
+   "es": "O"
+  },
+  "85": {
+   "es": "S"
+  },
+  "86": {
+   "es": "O"
+  },
+  "87": {
+   "es": "H"
+  },
+  "88": {
+   "es": "O"
+  },
+  "89": {
+   "es": "H"
+  },
+  "90": {
+   "es": "R"
+  },
+  "91": {
+   "es": "2"
+  },
+  "92": {
+   "es": "O "
+  },
+  "93": {
+   "es": "O"
+  },
+  "94": {
+   "es": "R"
+  },
+  "95": {
+   "es": "1",
+   "en": "Anhydrides"
+  },
+  "96": {
+   "es": "O"
+  },
+  "97": {
+   "es": "S"
+  },
+  "98": {
+   "es": "O",
+   "en": "Carboxyl"
+  },
+  "99": {
+   "es": "R",
+   "en": "Carboxyl"
+  },
+  "100": {
+   "es": "2"
+  },
+  "101": {
+   "es": "O "
+  },
+  "102": {
+   "es": "O"
+  },
+  "103": {
+   "es": "Anhídridos"
+  },
+  "104": {
+   "es": "C "
+  },
+  "105": {
+   "es": "C"
+  },
+  "106": {
+   "es": "Carboxilo"
+  },
+  "107": {
+   "es": "Carboxilo"
+  },
+  "108": {
+   "es": "R"
+  },
+  "109": {
+   "es": "1"
+  },
+  "110": {
+   "es": "C"
+  },
+  "111": {
+   "es": "O"
+  },
+  "112": {
+   "es": "H"
+  },
+  "113": {
+   "es": "O "
+  },
+  "114": {
+   "es": "OH "
+  },
+  "115": {
+   "es": "C"
+  },
+  "116": {
+   "es": "R"
+  },
+  "117": {
+   "es": "2"
+  },
+  "118": {
+   "es": "O "
+  },
+  "119": {
+   "es": "R"
+  },
+  "120": {
+   "es": "1"
+  },
+  "121": {
+   "es": "C",
+   "en": "Mixed"
+  },
+  "122": {
+   "es": "O",
+   "en": "Carboxyl"
+  },
+  "123": {
+   "es": "C",
+   "en": "Phosphoryl"
+  },
+  "124": {
+   "es": "R"
+  },
+  "125": {
+   "es": "2"
+  },
+  "126": {
+   "es": "O "
+  },
+  "127": {
+   "es": "O "
+  },
+  "128": {
+   "es": "C "
+  },
+  "129": {
+   "es": "P"
+  },
+  "130": {
+   "es": "Mixto"
+  },
+  "131": {
+   "es": "Carboxilo"
+  },
+  "132": {
+   "es": "Fosforilo"
+  },
+  "133": {
+   "es": "R"
+  },
+  "134": {
+   "es": "1"
+  },
+  "135": {
+   "es": "C"
+  },
+  "136": {
+   "es": "O"
+  },
+  "137": {
+   "es": "H"
+  },
+  "138": {
+   "es": "O "
+  },
+  "139": {
+   "es": "OH "
+  },
+  "140": {
+   "es": "P"
+  },
+  "141": {
+   "es": "O"
+  },
+  "142": {
+   "es": "R"
+  },
+  "143": {
+   "es": "2"
+  },
+  "144": {
+   "es": "O"
+  },
+  "145": {
+   "es": "OH"
+  },
+  "146": {
+   "es": "R"
+  },
+  "147": {
+   "es": "1"
+  },
+  "148": {
+   "es": "C"
+  },
+  "149": {
+   "es": "O",
+   "en": "Phosphoanhydride"
+  },
+  "150": {
+   "es": "P",
+   "en": "Phosphoryl"
+  },
+  "151": {
+   "es": "O",
+   "en": "Phosphoryl"
+  },
+  "152": {
+   "es": "R"
+  },
+  "153": {
+   "es": "2"
+  },
+  "154": {
+   "es": "O "
+  },
+  "155": {
+   "es": "O"
+  },
+  "156": {
+   "es": "OH"
+  },
+  "157": {
+   "es": "P "
+  },
+  "158": {
+   "es": "P"
+  },
+  "159": {
+   "es": "Fosfoanhídrido"
+  },
+  "160": {
+   "es": "Fosforilo"
+  },
+  "161": {
+   "es": "Fosforilo"
+  },
+  "162": {
+   "es": "R"
+  },
+  "163": {
+   "es": "1"
+  },
+  "164": {
+   "es": "O"
+  },
+  "165": {
+   "es": "P"
+  },
+  "166": {
+   "es": "O"
+  },
+  "167": {
+   "es": "H"
+  },
+  "168": {
+   "es": "O"
+  },
+  "169": {
+   "es": "OH"
+  },
+  "170": {
+   "es": "OH "
+  },
+  "171": {
+   "es": "P"
+  },
+  "172": {
+   "es": "O"
+  },
+  "173": {
+   "es": "R"
+  },
+  "174": {
+   "es": "2"
+  },
+  "175": {
+   "es": "O"
+  },
+  "176": {
+   "es": "OH"
+  },
+  "177": {
+   "es": "R"
+  },
+  "178": {
+   "es": "1"
+  },
+  "179": {
+   "es": "O",
+   "en": "Amide"
+  },
+  "180": {
+   "es": "P",
+   "en": "Carboxyl"
+  },
+  "181": {
+   "es": "O",
+   "en": "Amine"
+  },
+  "182": {
+   "es": "P"
+  },
+  "183": {
+   "es": "O"
+  },
+  "184": {
+   "es": "R"
+  },
+  "185": {
+   "es": "2"
+  },
+  "186": {
+   "es": "O"
+  },
+  "187": {
+   "es": "OH"
+  },
+  "188": {
+   "es": "O"
+  },
+  "189": {
+   "es": "OH"
+  },
+  "190": {
+   "es": "Amida"
+  },
+  "191": {
+   "es": "Carboxilo"
+  },
+  "192": {
+   "es": "Amina"
+  },
+  "193": {
+   "es": "R"
+  },
+  "194": {
+   "es": "1"
+  },
+  "195": {
+   "es": "C"
+  },
+  "196": {
+   "es": "O"
+  },
+  "197": {
+   "es": "H"
+  },
+  "198": {
+   "es": "N"
+  },
+  "199": {
+   "es": "H",
+   "en": "Glycosidic"
+  },
+  "200": {
+   "es": "2"
+  },
+  "201": {
+   "es": "R"
+  },
+  "202": {
+   "es": "2",
+   "en": " (anomeric)"
+  },
+  "203": {
+   "es": "O ",
+   "en": "Hydroxyl"
+  },
+  "204": {
+   "es": "R"
+  },
+  "205": {
+   "es": "1"
+  },
+  "206": {
+   "es": "C"
+  },
+  "207": {
+   "es": "N"
+  },
+  "208": {
+   "es": "R"
+  },
+  "209": {
+   "es": "2"
+  },
+  "210": {
+   "es": "O "
+  },
+  "211": {
+   "es": "H"
+  },
+  "212": {
+   "es": "Glucosídico"
+  },
+  "213": {
+   "es": "O"
+  },
+  "214": {
+   "es": "C"
+  },
+  "215": {
+   "es": " anomérico"
+  },
+  "216": {
+   "es": "Hidroxilo"
+  },
+  "217": {
+   "es": "O "
+  },
+  "218": {
+   "es": "OH "
+  },
+  "219": {
+   "es": "C",
+   "en": "(anomeric)"
+  },
+  "220": {
+   "es": "O",
+   "en": "Amine"
+  },
+  "221": {
+   "es": "H"
+  },
+  "222": {
+   "es": "R"
+  },
+  "223": {
+   "es": "2"
+  },
+  "224": {
+   "es": "H"
+  },
+  "225": {
+   "es": "O"
+  },
+  "226": {
+   "es": "O"
+  },
+  "227": {
+   "es": "R"
+  },
+  "228": {
+   "es": "2"
+  },
+  "229": {
+   "es": "C "
+  },
+  "230": {
+   "es": "H"
+  },
+  "231": {
+   "es": "N"
+  },
+  "232": {
+   "es": "C "
+  },
+  "233": {
+   "es": "anomérico"
+  },
+  "234": {
+   "es": "Amina"
+  },
+  "235": {
+   "es": "O "
+  },
+  "236": {
+   "es": "OH ",
+   "en": "Disulfide"
+  },
+  "237": {
+   "es": "C",
+   "en": "Sulfhydryl"
+  },
+  "238": {
+   "es": "N",
+   "en": "Sulfhydryl"
+  },
+  "239": {
+   "es": "H"
+  },
+  "240": {
+   "es": "2"
+  },
+  "241": {
+   "es": "R"
+  },
+  "242": {
+   "es": "2"
+  },
+  "243": {
+   "es": "H"
+  },
+  "244": {
+   "es": "O"
+  },
+  "245": {
+   "es": "H "
+  },
+  "246": {
+   "es": "N "
+  },
+  "247": {
+   "es": "R"
+  },
+  "248": {
+   "es": "2"
+  },
+  "249": {
+   "es": "C "
+  },
+  "250": {
+   "es": "H"
+  },
+  "251": {
+   "es": "Disulfuro",
+   "en": "Every reaction is a condensation except the disulfide."
+  },
+  "252": {
+   "es": "Sulfhidrilo",
+   "en": ""
+  },
+  "253": {
+   "es": "Sulfhidrilo",
+   "en": ""
+  },
+  "254": {
+   "es": "R",
+   "en": "The water molecule each condensation yields has been left out."
+  },
+  "255": {
+   "es": "1",
+   "en": ""
+  },
+  "256": {
+   "es": "S"
+  },
+  "257": {
+   "es": "H"
+  },
+  "258": {
+   "es": "H"
+  },
+  "259": {
+   "es": "S"
+  },
+  "260": {
+   "es": "R"
+  },
+  "261": {
+   "es": "2"
+  },
+  "262": {
+   "es": "R"
+  },
+  "263": {
+   "es": "1"
+  },
+  "264": {
+   "es": "S"
+  },
+  "265": {
+   "es": "S"
+  },
+  "266": {
+   "es": "R"
+  },
+  "267": {
+   "es": "2"
+  },
+  "268": {
+   "es": "Todas "
+  },
+  "269": {
+   "es": "las reacciones son de condensación a excepción "
+  },
+  "270": {
+   "es": "del disulfuro."
+  },
+  "271": {
+   "es": "Se ha omitido la molécula de agua resultado de cada reacción "
+  },
+  "272": {
+   "es": "de condensación."
+  }
+ },
+ "strip-resources": {
+  "0": {
+   "es": "A",
+   "stack": "ACTIVITIES",
+   "runs": 4
+  },
+  "1": {
+   "es": "C"
+  },
+  "2": {
+   "es": "T"
+  },
+  "3": {
+   "es": "I"
+  },
+  "4": {
+   "es": "V",
+   "stack": "FAQs",
+   "runs": 2
+  },
+  "5": {
+   "es": "I"
+  },
+  "6": {
+   "es": "D",
+   "stack": "VIDEOS",
+   "runs": 2
+  },
+  "7": {
+   "es": "A"
+  },
+  "8": {
+   "es": "D",
+   "stack": "SELF-ASSESSMENT",
+   "runs": 5
+  },
+  "9": {
+   "es": "E"
+  },
+  "10": {
+   "es": "S"
+  },
+  "11": {
+   "es": "F"
+  },
+  "12": {
+   "es": "A"
+  },
+  "13": {
+   "es": "Q"
+  },
+  "14": {
+   "es": "s"
+  },
+  "15": {
+   "es": "V"
+  },
+  "16": {
+   "es": "Í"
+  },
+  "17": {
+   "es": "D"
+  },
+  "18": {
+   "es": "E"
+  },
+  "19": {
+   "es": "O"
+  },
+  "20": {
+   "es": "S"
+  },
+  "21": {
+   "es": "A"
+  },
+  "22": {
+   "es": "U"
+  },
+  "23": {
+   "es": "T"
+  },
+  "24": {
+   "es": "O"
+  },
+  "25": {
+   "es": "E"
+  },
+  "26": {
+   "es": "V"
+  },
+  "27": {
+   "es": "A"
+  },
+  "28": {
+   "es": "L"
+  },
+  "29": {
+   "es": "U"
+  },
+  "30": {
+   "es": "A"
+  },
+  "31": {
+   "es": "C"
+  },
+  "32": {
+   "es": "I"
+  },
+  "33": {
+   "es": "Ó"
+  },
+  "34": {
+   "es": "N"
+  }
+ }
+}

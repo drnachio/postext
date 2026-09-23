@@ -38,7 +38,13 @@ El lenguaje, no entendido de las señoras, y el mal talle de nuestro caballero a
 
 Viendo don Quijote la humildad del alcaide de la fortaleza, que tal le pareció a él el ventero y la venta, respondió:
 
--Para mí, señor castellano, cualquiera cosa basta, porque mis arreos son las armas, mi descanso el pelear, etc.
+:::paragraphs{style="verso"}
+Para mí, señor castellano, cualquiera cosa basta, porque
+
+mis arreos son las armas,
+
+mi descanso el pelear, etc.
+:::
 
 Pensó el huésped que el haberle llamado castellano había sido por haberle parecido de los sanos de Castilla, aunque él era andaluz, y de los de la playa de Sanlúcar, no menos ladrón que Caco, ni menos maleante que estudiantado paje; y así, le respondió:
 
@@ -48,7 +54,19 @@ Y, diciendo esto, fue a tener el estribo a don Quijote, el cual se apeó con muc
 
 Dijo luego al huésped que le tuviese mucho cuidado de su caballo, porque era la mejor pieza que comía pan en el mundo. Miróle el ventero, y no le pareció tan bueno como don Quijote decía, ni aun la mitad; y, acomodándole en la caballeriza, volvió a ver lo que su huésped mandaba, al cual estaban desarmando las doncellas, que ya se habían reconciliado con él; las cuales, aunque le habían quitado el peto y el espaldar, jamás supieron ni pudieron desencajarle la gola, ni quitalle la contrahecha celada, que traía atada con unas cintas verdes, y era menester cortarlas, por no poderse quitar los ñudos; mas él no lo quiso consentir en ninguna manera, y así, se quedó toda aquella noche con la celada puesta, que era la más graciosa y estraña figura que se pudiera pensar; y, al desarmarle, como él se imaginaba que aquellas traídas y llevadas que le desarmaban eran algunas principales señoras y damas de aquel castillo, les dijo con mucho donaire:
 
--Nunca fuera caballero de damas tan bien servido como fuera don Quijote cuando de su aldea vino: doncellas curaban dél; princesas, del su rocino,
+:::paragraphs{style="verso"}
+Nunca fuera caballero
+
+de damas tan bien servido
+
+como fuera don Quijote
+
+cuando de su aldea vino:
+
+doncellas curaban dél;
+
+princesas, del su rocino,
+:::
 
 :::callout{type="nota" title="Nunca fuera caballero…"}
 Don Quijote acomoda a su llegada el comienzo del romance viejo de Lanzarote, que en el original dice «cuando de Bretaña vino».

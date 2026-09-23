@@ -378,6 +378,7 @@ export function stripCalloutStylesDefaults(
       if (s.body.fontSize !== undefined) b.fontSize = s.body.fontSize;
       if (s.body.lineHeight !== undefined) b.lineHeight = s.body.lineHeight;
       if (s.body.color !== undefined) b.color = s.body.color;
+      if (s.body.boldColor !== undefined) b.boldColor = s.body.boldColor;
       if (s.body.textAlign !== undefined) b.textAlign = s.body.textAlign;
       if (s.body.hyphenation !== undefined) b.hyphenation = s.body.hyphenation;
       if (s.body.paragraphSpacing !== undefined) b.paragraphSpacing = s.body.paragraphSpacing;

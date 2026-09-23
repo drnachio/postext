@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource } from 'postext';
 import { createDefaultConfig } from '../context/defaultConfig';
 import { buildBundleFiles, parseBundle, planBundle } from './bundle';
+import { fontsToCustomFonts } from './manifest';
 import { newChapter } from '../book/chapterOps';
 import type { Chapter, ChapterLayout } from '../book/types';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../book/layoutKeys';
@@ -53,6 +54,26 @@ describe('parseBundle', () => {
     expect(en.resources[0]!.caption).toBe('shared');
     expect(en.config.resourceTypes?.[0]!.captionPrefix).toBe('Plate');
   });
+  it('lets a locale bring its own artwork, and reads that file\'s own size', async () => {
+    const m = manifest({
+      markdown: { en: 'en.md', es: 'es.md' },
+      resources: [{ id: 'fig', typeId: 'figure', kind: 'svg', file: 'resources/fig.svg', width: 40, height: 20 }],
+      localized: { en: { resources: [{ id: 'fig', file: 'resources/en/fig.svg' }] } },
+    });
+    const files = {
+      'en.md': 'EN', 'es.md': 'ES',
+      'resources/fig.svg': SVG,
+      'resources/en/fig.svg': '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="30"></svg>',
+    };
+    const en = await parseBundle(m, readerFrom(files), { locale: 'en', summary });
+    expect(en.blobs.map((b) => b.fileId)).toEqual(['preset:brochure:resources-en-fig-svg']);
+    // The shared spec's size describes the other file, so it is dropped.
+    expect(en.resources[0]!.svg).toEqual({ fileId: 'preset:brochure:resources-en-fig-svg' });
+    const es = await parseBundle(m, readerFrom(files), { locale: 'es', summary });
+    expect(es.blobs.map((b) => b.fileId)).toEqual(['preset:brochure:resources-fig-svg']);
+    expect(es.resources[0]!.svg).toEqual({ fileId: 'preset:brochure:resources-fig-svg', width: 40, height: 20 });
+  });
+
   it('reads markdown, inline tables, files and fonts with preset ids by default', async () => {
     const loaded = await parseBundle(
       manifest({
@@ -152,6 +173,62 @@ describe('planBundle', () => {
     expect(plan.manifest.fonts).toEqual([{ name: 'Body', variants: [{ weight: 400, style: 'normal', file: 'fonts/body-regular.ttf' }] }]);
     expect(plan.warnings).toHaveLength(1);
     expect(plan.warnings[0]).toMatch(/woff/);
+  });
+});
+
+describe('planBundle (a family that may not be passed on)', () => {
+  it('leaves a non-redistributable family behind, files and entry alike', () => {
+    const content = sampleContent();
+    content.config.customFonts = content.config.customFonts!.map((f) => ({ ...f, redistributable: false }));
+    const plan = planBundle({ id: 'p', name: 'P' }, content);
+    expect(plan.files.some((f) => f.kind === 'font')).toBe(false);
+    expect(plan.manifest.fonts).toBeUndefined();
+    expect(plan.warnings.some((w) => /not redistributable/.test(w))).toBe(true);
+  });
+
+  it('carries the flag back out of a manifest that sets it', () => {
+    const { families } = fontsToCustomFonts('p', [
+      { name: 'Body', variants: [{ weight: 400, style: 'normal', file: 'fonts/body.ttf' }], redistributable: false },
+      { name: 'Free', variants: [{ weight: 400, style: 'normal', file: 'fonts/free.ttf' }] },
+    ]);
+    expect(families[0]!.redistributable).toBe(false);
+    expect(families[1]).not.toHaveProperty('redistributable');
+  });
+});
+
+describe('planBundle (cover picture)', () => {
+  it('writes the cover under the bundle thumbnail name and declares it', () => {
+    const content = { ...sampleContent(), thumbnail: { fileId: 'b-cover', mime: 'image/jpeg' } };
+    const plan = planBundle({ id: 'p', name: 'P' }, content);
+    expect(plan.files.find((f) => f.fileId === 'b-cover')?.path).toBe('thumbnail.jpg');
+    expect(plan.manifest.thumbnail).toBe('thumbnail.jpg');
+  });
+
+  it('declares no cover for a media type that is not an image', () => {
+    const content = { ...sampleContent(), thumbnail: { fileId: 'b-cover', mime: 'application/pdf' } };
+    const plan = planBundle({ id: 'p', name: 'P' }, content);
+    expect(plan.manifest.thumbnail).toBeUndefined();
+    expect(plan.files.some((f) => f.fileId === 'b-cover')).toBe(false);
+  });
+
+  it('drops the cover from the manifest when its bytes are gone', async () => {
+    const content = { ...sampleContent(), thumbnail: { fileId: 'b-cover', mime: 'image/png' } };
+    const built = await buildBundleFiles({ id: 'p', name: 'P' }, content, {
+      readBlob: (id) => Promise.resolve(id === 'b-cover' ? null : enc.encode(SVG).buffer),
+      readFont: () => Promise.resolve(new Uint8Array([1, 2]).buffer),
+    });
+    expect(built.manifest.thumbnail).toBeUndefined();
+    expect(built.files['thumbnail.png']).toBeUndefined();
+  });
+
+  it('carries the cover bytes into the built bundle', async () => {
+    const content = { ...sampleContent(), thumbnail: { fileId: 'b-cover', mime: 'image/png' } };
+    const built = await buildBundleFiles({ id: 'p', name: 'P' }, content, {
+      readBlob: (id) => Promise.resolve(id === 'b-cover' ? new Uint8Array([137, 80]).buffer : enc.encode(SVG).buffer),
+      readFont: () => Promise.resolve(new Uint8Array([1, 2]).buffer),
+    });
+    expect(built.manifest.thumbnail).toBe('thumbnail.png');
+    expect(Array.from(built.files['thumbnail.png']!)).toEqual([137, 80]);
   });
 });
 
@@ -345,5 +422,33 @@ describe('layouts.json round trip', () => {
     const opened = openBundleZip(zipBundle(files));
     const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
     expect(loaded.layouts).toBeUndefined();
+  });
+});
+
+describe('parseBundle locale', () => {
+  const bilingual = manifest({ locale: 'es', locales: ['es', 'en'], markdown: { es: 'es.md', en: 'en.md' } });
+  const files = { 'es.md': 'Hola', 'en.md': 'Hello' };
+
+  it('reports the locale it served, region and case folded', async () => {
+    const es = await parseBundle(bilingual, readerFrom(files), { locale: 'es-ES', summary });
+    expect(es.locale).toBe('es');
+    expect(es.summary.locale).toBe('es');
+    const en = await parseBundle(bilingual, readerFrom(files), { locale: 'EN', summary });
+    expect(en.locale).toBe('en');
+    expect(en.summary.locale).toBe('en');
+    expect(en.chapters[0]!.markdown).toBe('Hello');
+  });
+
+  it('falls back to the bundle locale for a language it does not carry', async () => {
+    const loaded = await parseBundle(bilingual, readerFrom(files), { locale: 'fr', summary });
+    expect(loaded.locale).toBe('es');
+    expect(loaded.chapters[0]!.markdown).toBe('Hola');
+  });
+
+  it('keeps a single-language bundle on its own locale, else the requested one', async () => {
+    const own = await parseBundle(manifest({ locale: 'en' }), readerFrom({ 'doc.md': 'x' }), { locale: 'es', summary });
+    expect(own.locale).toBe('en');
+    const none = await parseBundle(manifest(), readerFrom({ 'doc.md': 'x' }), { locale: 'es', summary });
+    expect(none.locale).toBe('es');
   });
 });

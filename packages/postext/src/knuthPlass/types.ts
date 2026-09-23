@@ -56,11 +56,13 @@ export interface KPOptions {
    *  penalty. Typically `runtMinCharacters * normalSpaceWidth`. */
   runtMinWidth?: number;
   /** TeX-style \looseness: prefer a final break sequence with exactly
-   *  (natural + looseness) lines, but only when every line of that sequence
-   *  stays within the configured stretch limit (adjustment ratio < 1.0, i.e.
-   *  word spacing below `maxStretchRatio`). Falls back silently to the
-   *  natural solution otherwise. Only positive values are supported.
-   *  Default 0 (off). */
+   *  (natural + looseness) lines. A positive value runs the paragraph long
+   *  and is taken only when every line of that sequence stays within the
+   *  configured stretch limit (adjustment ratio < 1.0, i.e. word spacing
+   *  below `maxStretchRatio`); a negative one runs it short, and every
+   *  feasible sequence already keeps its spaces at or above
+   *  `minShrinkRatio`, so no further gate applies. Falls back silently to
+   *  the natural solution when no such sequence exists. Default 0 (off). */
   looseness?: number;
   /** The line index from which `lineWidth` no longer varies (1 when only
    *  the first line is indented, 0 when no line is). Lets the DP merge
@@ -68,7 +70,7 @@ export interface KPOptions {
    *  two nodes at the same break with the same fitness class face the same
    *  future, so the cheaper one dominates — without it the set of active
    *  nodes grows with the paragraph and the search goes quadratic. Ignored
-   *  while `looseness` asks for an exact line count. */
+   *  while `looseness` asks for an exact line count, long or short. */
   lineWidthUniformFrom?: number;
 }
 

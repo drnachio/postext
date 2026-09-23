@@ -213,12 +213,42 @@ describe(':::toc', () => {
     expect(sameOutline(undefined, undefined)).toBe(true);
   });
 
+  it('opens a fresh contents page before every part row but the first when asked', () => {
+    const two = book + `
+
+:::part{number="II" title="Practice"}
+:::
+
+# Closing
+
+${filler(1)}`;
+    const blocks = parseMarkdown(two);
+    const withBreaks = resolveAllConfig({ ...base, toc: { ...base.toc, parts: { enabled: true, breakBefore: true } } });
+    const outline = computeOutline(blocks, withBreaks);
+    const kinds = (resolved: ReturnType<typeof resolveAllConfig>) =>
+      expandTocDirectives(blocks, outline, resolved)
+        .filter((b) => b.toc || (b.type === 'directive' && b.directiveName === 'pagebreak'))
+        .map((b) => (b.toc ? `${b.toc.kind}:${b.toc.number || b.text}` : 'pagebreak'));
+    expect(kinds(withBreaks)).toEqual(['entry:Preface', 'part:I', 'entry:1', 'entry:2', 'pagebreak', 'part:II', 'entry:3']);
+    // The default keeps the rows together.
+    expect(kinds(resolveAllConfig(base))).toEqual(['entry:Preface', 'part:I', 'entry:1', 'entry:2', 'part:II', 'entry:3']);
+    // The contents of the laid-out document then span two pages, the
+    // second part's rows opening the second.
+    const doc = buildDocument({ markdown: two, outline }, withBreaks);
+    const partPages = doc.blocks.filter((b) => b.tocPart).map((b) => b.pageIndex);
+    expect(partPages).toEqual([0, 1]);
+    expect(doc.blocks.filter((b) => b.tocEntry).map((b) => b.pageIndex)).toEqual([0, 0, 0, 1]);
+  });
+
   it('resolves and strips the toc config', () => {
     const resolved = resolveTocConfig(undefined, resolveAllConfig().bodyText);
     expect(resolved.levels.map((l) => l.level)).toEqual([1]);
     expect(resolved.leader).toEqual({ enabled: true, char: '.', gap: { value: 0.5, unit: 'em' } });
     expect(resolved.subtitle.enabled).toBe(false);
     expect(resolved.parts.enabled).toBe(true);
+    expect(resolved.parts.breakBefore).toBe(false);
+    expect(stripTocDefaults({ parts: { breakBefore: false } })).toBeUndefined();
+    expect(stripTocDefaults({ parts: { breakBefore: true } })).toEqual({ parts: { breakBefore: true } });
     expect(stripTocDefaults(undefined)).toBeUndefined();
     expect(stripTocDefaults({ levels: [{ level: 1 }], leader: { enabled: true, char: '.' }, parts: { enabled: true } })).toBeUndefined();
     expect(stripTocDefaults({ levels: [{ level: 1, fontWeight: 700 }], subtitle: { enabled: true } }))

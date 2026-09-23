@@ -236,11 +236,9 @@ generated, never edited by hand. Each lives in `scripts/presets/showcase/<id>/`:
 `_common.py` carries the shared helpers (units, design elements, font
 instancing, fingerprint, registration). Current bundles: `don-quijote`
 (book, column-and-a-half with margin glosses), `deep-sky` (two-column
-magazine), `espana-en-mapas` (the history chapter of the IGN's Atlas
-Nacional de España, CC BY 4.0, re-set in two columns with page-wide maps
-cropped per language by `extract.py`), `pintura-espanola` (an exhibition
-catalogue of CC0 museum plates: each work opens on a verso with its entry
-and commentary while the plate floats onto the facing recto) and `senales`
+magazine), `pintura-espanola` (an exhibition catalogue of CC0 museum
+plates: each work opens on a verso with its entry and commentary while the
+plate floats onto the facing recto) and `senales`
 (EEA Signals 2020 in Spanish and English, read from the PDFs by type role in
 `extract.py`, with CC0 Unsplash photographs from Wikimedia Commons in place
 of the original pictures and the infographics transcribed as data panels in
@@ -248,7 +246,26 @@ of the original pictures and the infographics transcribed as data panels in
 *Física universitaria, volumen 1* and *Physics*, CC BY 4.0, converted from
 the CNXML modules by `cnxml.py` — MathML formulas become LaTeX — into a
 column-and-a-half textbook with side-column figures, worked examples and
-checks).
+checks) and `bioquimica-feduchi` (chapter 1 of *Bioquímica. Conceptos
+esenciales*, Feduchi et al., Editorial Médica Panamericana, reproduced with
+the publisher's permission, in Spanish and in an English edition translated
+for the bundle — captions, table cells, callout titles, running heads and the
+labels inside the figures).
+
+`bioquimica-feduchi` is the one bundle whose sources are not public: its
+`fetch.py` downloads nothing and only reports where it expects the private EMP
+bundle `emp/21x28-4c-colymedia` (`POSTEXT_PRIVATE_PRESETS_DIR`) and the book
+PDF (`POSTEXT_BIOQUIMICA_PDF`). Its `figures.py` re-cuts the artwork out of
+the book PDF with the labels kept as **live text**, so the English edition can
+translate them: each figure carries the faces it uses as `@font-face` subsets
+in its own `<defs>` (a picture is drawn through an `<img>`, which cannot see
+the page's fonts), while the PDF backend skips the `<style>` and sets the same
+runs from the document's embedded faces. Words a figure draws for itself —
+flattened into a placed picture, or converted to curves — are listed with
+their boxes in `translations/artwork.json` and replaced outright; run
+`build.py --outlines <figure-id>` to find them. The licensed typefaces travel
+subset, as WOFF2, and marked `redistributable: false`, so a `.postext` export
+leaves them out.
 
 ```sh
 python3 scripts/presets/showcase/deep-sky/fetch.py

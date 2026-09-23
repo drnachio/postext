@@ -161,6 +161,14 @@ describe('callout style defaults', () => {
     expect(stripCalloutStylesDefaults([{ id: 'kp', keepTogether: true }])).toEqual([{ id: 'kp' }]);
   });
 
+  it('keeps the body bold colour when stripping', () => {
+    // White type on a dark box: the bold runs must stay white after a save,
+    // not fall back to the document's bold colour.
+    const white = { hex: '#ffffff', model: 'hex' as const };
+    const stripped = stripCalloutStylesDefaults([{ id: 'datos', body: { color: white, boldColor: white } }]);
+    expect(stripped?.[0]?.body).toEqual({ color: white, boldColor: white });
+  });
+
   it('marker resolves, strips and round-trips like the icon', () => {
     const [d] = resolve([{ id: 'x' }]);
     expect(d!.marker).toEqual({

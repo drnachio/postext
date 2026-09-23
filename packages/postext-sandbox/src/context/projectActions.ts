@@ -17,7 +17,8 @@ import {
   POSTEXT_EXTENSION,
   POSTEXT_MIME,
 } from '../presets';
-import type { LoadedPreset, PresetApplyParts, PresetProvider } from '../presets';
+import type { LoadedPreset, PresetApplyParts, PresetProvider, PresetSummary } from '../presets';
+import { extensionForImageMime, mimeForFile } from '../presets/manifest';
 import { getBlob, putBlobAt } from '../storage/blobStore';
 import { getFontFile, putFontFile } from '../storage/fontStorage';
 import {
@@ -43,6 +44,7 @@ import {
   updateProject,
   type ProjectContent,
   type ProjectRecord,
+  type ProjectThumbnail,
 } from '../storage/projects';
 import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
 import type { SandboxAction, SandboxState } from './SandboxContext';
@@ -55,7 +57,7 @@ export interface ProjectActionDeps {
   getProviders: () => PresetProvider[];
   getBuiltin: () => PresetProvider;
   /** Apply a preset into the working state (preset mode). */
-  runPreset: (provider: PresetProvider, parts: PresetApplyParts) => Promise<void>;
+  runPreset: (provider: PresetProvider, parts: PresetApplyParts) => Promise<boolean>;
   /** Invalidate any in-flight preset load so it never lands on a project. */
   cancelPresetLoads: () => void;
   /** Write the pending working-state save now (localStorage + active project). */
@@ -70,7 +72,13 @@ export interface ProjectActionDeps {
   labels: () => SandboxState['labels'];
 }
 
-export type DuplicateSource = { kind: 'preset' | 'project'; id: string };
+export type DuplicateSource = {
+  kind: 'preset' | 'project';
+  id: string;
+  /** Presets only: the content locale to clone / export (a bilingual
+   *  bundle's second language); the viewer locale otherwise. */
+  locale?: string;
+};
 
 export interface ProjectActions {
   activate: (id: string) => Promise<void>;
@@ -82,8 +90,54 @@ export interface ProjectActions {
   remove: (id: string) => Promise<void>;
   importBundle: (file: File) => Promise<string>;
   exportProject: (target?: DuplicateSource) => Promise<void>;
+  /** Replace a project's cover picture with `file`, or drop it with null. */
+  setThumbnail: (id: string, file: File | null) => Promise<void>;
   /** Reset the active project (or parts of it) to the preset it came from. */
   resetToSource: (parts: PresetApplyParts) => Promise<void>;
+}
+
+/** Write `bytes` as the project's cover picture and give back the record
+ *  field. A fresh file id every time, so a replacement never has to wait for
+ *  a cached preview and the sweep drops the bytes the project left behind.
+ *  Null for a media type the sandbox does not take as an image. */
+async function storeThumbnail(projectId: string, bytes: ArrayBuffer, mime: string): Promise<ProjectThumbnail | null> {
+  const ext = extensionForImageMime(mime);
+  if (!ext) return null;
+  const fileId = projectFileId(projectId, `thumbnail-${Date.now().toString(36)}.${ext}`);
+  await putBlobAt(fileId, bytes, mime);
+  return { fileId, mime };
+}
+
+/** Copy another project's cover picture into `projectId` (each project owns
+ *  its files). Undefined when there is none, or its bytes are gone. */
+async function copyThumbnail(from: ProjectThumbnail | undefined, projectId: string): Promise<ProjectThumbnail | undefined> {
+  if (!from) return undefined;
+  const rec = await getBlob(from.fileId).catch(() => null);
+  if (!rec) return undefined;
+  return (await storeThumbnail(projectId, rec.bytes, rec.contentType)) ?? undefined;
+}
+
+/** A showcase preset's cover picture, fetched from its source and copied
+ *  into the project cloned from it. A failure only costs the picture. */
+async function presetThumbnailBytes(summary: PresetSummary): Promise<{ bytes: ArrayBuffer; mime: string } | null> {
+  const url = summary.thumbnailUrl;
+  if (!url || typeof fetch === 'undefined') return null;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const bytes = await res.arrayBuffer();
+    const byName = mimeForFile(summary.thumbnail ?? url);
+    const mime = extensionForImageMime(byName) ? byName : (res.headers.get('content-type') ?? '').split(';')[0]!.trim();
+    return { bytes, mime };
+  } catch {
+    return null;
+  }
+}
+
+async function adoptPresetThumbnail(summary: PresetSummary, projectId: string): Promise<ProjectThumbnail | undefined> {
+  const fetched = await presetThumbnailBytes(summary);
+  if (!fetched) return undefined;
+  return (await storeThumbnail(projectId, fetched.bytes, fetched.mime)) ?? undefined;
 }
 
 /** Take a preset's in-memory content and give the project its own copies of
@@ -91,7 +145,7 @@ export interface ProjectActions {
  *  carried them, else from IndexedDB (the built-in preset seeds its blobs
  *  directly). */
 function bookFromLoaded(loaded: LoadedPreset): BookContent {
-  return { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id };
+  return { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}) };
 }
 
 async function adoptLoadedPreset(loaded: LoadedPreset, projectId: string): Promise<ProjectContent> {
@@ -147,7 +201,7 @@ async function storedCurrentLayouts(
 
 function newRecord(
   content: ProjectContent,
-  meta: Pick<ProjectRecord, 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId'>,
+  meta: Pick<ProjectRecord, 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'thumbnail'>,
   id = generateProjectId(),
 ): ProjectRecord {
   const now = Date.now();
@@ -155,8 +209,12 @@ function newRecord(
 }
 
 function bookOfState(s: SandboxState): BookContent {
-  return { chapters: s.chapters, activeChapterId: s.activeChapterId };
+  return { chapters: s.chapters, activeChapterId: s.activeChapterId, ...(s.canvasScope === 'book' ? { canvasScope: s.canvasScope } : {}) };
 }
+
+/** File id a preset's cover picture is handed to the bundle builder under
+ *  while an export is being assembled (never stored). */
+const PRESET_THUMBNAIL_ID = 'preset-thumbnail';
 
 export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
   const { dispatch } = deps;
@@ -194,7 +252,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       dispatch({ type: 'UPDATE_CONFIG', payload: { customFonts: config.customFonts } });
     }
     if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: record.resources });
-    const book: BookContent = { chapters: record.chapters, activeChapterId: record.activeChapterId };
+    const book: BookContent = { chapters: record.chapters, activeChapterId: record.activeChapterId, ...(record.canvasScope ? { canvasScope: record.canvasScope } : {}) };
     if (wantsMarkdown) dispatch({ type: 'SET_BOOK', payload: book });
     clearMeasurementCache();
     saveProjectId(record.id);
@@ -260,12 +318,18 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       );
       const active = cur.activeProjectId ? cur.projects.find((p) => p.id === cur.activeProjectId) : undefined;
       const preset = cur.presetSummaries.find((p) => p.id === cur.activePresetId);
+      // The cover picture follows the book: the active project's own, or the
+      // showcase preset's when the working book is still a preset.
+      const thumbnail = active
+        ? await copyThumbnail(active.thumbnail, id)
+        : preset ? await adoptPresetThumbnail(preset, id) : undefined;
       return persistNew(newRecord(content, {
         name: name ?? (active ? copyName(active.name) : preset?.name ?? deps.labels().projectUntitled),
         description: active?.description ?? preset?.description,
         locale: active?.locale ?? preset?.locale ?? cur.locale,
         bundleId: active?.bundleId ?? (cur.activeProjectId ? undefined : cur.activePresetId),
         sourcePresetId: active ? active.sourcePresetId : cur.activePresetId,
+        thumbnail,
       }, id));
     });
 
@@ -284,11 +348,12 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
           locale: record.locale,
           bundleId: record.bundleId,
           sourcePresetId: record.sourcePresetId,
+          thumbnail: await copyThumbnail(record.thumbnail, id),
         }, id));
       }
       const provider = deps.getProviders().find((p) => p.summary.id === source.id);
       if (!provider) throw new Error('Preset not found');
-      const loaded = await provider.load(s.locale);
+      const loaded = await provider.load(source.locale ?? s.locale);
       const content = await adoptLoadedPreset(loaded, id);
       return persistNew(newRecord(content, {
         name: loaded.summary.name,
@@ -296,6 +361,8 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         locale: loaded.summary.locale,
         bundleId: loaded.summary.id,
         sourcePresetId: loaded.summary.id,
+        // A showcase bundle's cover picture becomes the project's own.
+        thumbnail: await adoptPresetThumbnail(provider.summary, id),
       }, id));
     });
 
@@ -346,6 +413,14 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         ...loaded.fonts.map((f) => putFontFile(f)),
       ]);
       const manifestName = (opened.manifest as { name?: unknown }).name;
+      // The bundle's cover picture (`thumbnail` in the manifest), when it
+      // carries one.
+      const manifestThumbnail = (opened.manifest as { thumbnail?: unknown }).thumbnail;
+      let thumbnail: ProjectThumbnail | undefined;
+      if (typeof manifestThumbnail === 'string' && manifestThumbnail) {
+        const bytes = await opened.readFile(manifestThumbnail).catch(() => null);
+        if (bytes) thumbnail = (await storeThumbnail(id, bytes, mimeForFile(manifestThumbnail))) ?? undefined;
+      }
       const projectId = await persistNew(newRecord(
         { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources },
         {
@@ -353,6 +428,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
           description: loaded.summary.description,
           locale: loaded.summary.locale,
           bundleId: summaryId,
+          thumbnail,
         },
         id,
       ));
@@ -373,9 +449,13 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       if (target?.kind === 'preset') {
         const provider = deps.getProviders().find((p) => p.summary.id === target.id);
         if (!provider) throw new Error('Preset not found');
-        const loaded = await provider.load(s.locale);
+        const loaded = await provider.load(target.locale ?? s.locale);
         const blobs = new Map(loaded.blobs.map((b) => [b.fileId, b.bytes]));
         const fonts = new Map(loaded.fonts.map((f) => [f.fileId, f.buffer]));
+        // The showcase cover picture: fetched from the source, handed to the
+        // bundle under an id of its own (it is no resource of the book).
+        const cover = await presetThumbnailBytes(loaded.summary);
+        if (cover) blobs.set(PRESET_THUMBNAIL_ID, cover.bytes);
         const fromIdb = { readBlob, readFont };
         readBlob = async (fileId) => blobs.get(fileId) ?? fromIdb.readBlob(fileId);
         readFont = async (fileId) => fonts.get(fileId) ?? fromIdb.readFont(fileId);
@@ -384,7 +464,13 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         // (still in memory when it is, and unedited).
         const inMemory = !s.activeProjectId && s.activePresetId === target.id ? deps.currentLayouts() : {};
         const layouts = await storedCurrentLayouts(loaded.chapters, loaded.config, loaded.resources, inMemory);
-        content = { ...bookFromLoaded(loaded), config: loaded.config, resources: loaded.resources, layouts };
+        content = {
+          ...bookFromLoaded(loaded),
+          config: loaded.config,
+          resources: loaded.resources,
+          layouts,
+          ...(cover ? { thumbnail: { fileId: PRESET_THUMBNAIL_ID, mime: cover.mime } } : {}),
+        };
       } else if (target?.kind === 'project' && target.id !== s.activeProjectId) {
         const record = await getProject(target.id);
         if (!record) throw new Error('Project not found');
@@ -406,7 +492,13 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
           description: active?.description ?? preset?.description,
           locale: active?.locale ?? preset?.locale ?? cur.locale,
         };
-        content = { ...bookOfState(cur), config: cur.config, resources: cur.resources, layouts: deps.currentLayouts() };
+        content = {
+          ...bookOfState(cur),
+          config: cur.config,
+          resources: cur.resources,
+          layouts: deps.currentLayouts(),
+          ...(active?.thumbnail ? { thumbnail: active.thumbnail } : {}),
+        };
       }
 
       const built = await buildBundleFiles(meta, content, { readBlob, readFont });
@@ -415,6 +507,22 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       if (built.warnings.length > 0) {
         dispatch({ type: 'SET_PROJECT_NOTICE', payload: deps.labels().projectExportWarnings.replace('__list__', built.warnings.join('; ')) });
       }
+    });
+
+  const setThumbnail: ProjectActions['setThumbnail'] = (id, file) =>
+    run(async () => {
+      let thumbnail: ProjectThumbnail | undefined;
+      if (file) {
+        const mime = extensionForImageMime(file.type) ? file.type : mimeForFile(file.name);
+        const stored = await storeThumbnail(id, await file.arrayBuffer(), mime);
+        if (!stored) {
+          dispatch({ type: 'SET_PROJECT_NOTICE', payload: deps.labels().projectThumbnailInvalid });
+          return;
+        }
+        thumbnail = stored;
+      }
+      const updated = await updateProject(id, { thumbnail });
+      if (updated) dispatch({ type: 'UPSERT_PROJECT_SUMMARY', payload: toSummary(updated) });
     });
 
   const resetToSource: ProjectActions['resetToSource'] = (parts) =>
@@ -427,7 +535,8 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       const provider = deps.getProviders().find((p) => p.summary.id === sourceId);
       if (!provider) throw new Error('Preset not found');
       deps.cancelPresetLoads();
-      const loaded = await provider.load(s.locale);
+      // The project keeps the language it was cloned in.
+      const loaded = await provider.load(active?.locale ?? s.locale);
       const content = await adoptLoadedPreset(loaded, projectId);
       const record = await getProject(projectId);
       if (!record) throw new Error('Project not found');
@@ -442,5 +551,5 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       applyRecord({ ...merged, config }, parts);
     });
 
-  return { activate, create, duplicate, rename, remove, importBundle, exportProject, resetToSource };
+  return { activate, create, duplicate, rename, remove, importBundle, exportProject, setThumbnail, resetToSource };
 }

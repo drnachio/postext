@@ -100,6 +100,25 @@ describe('heading styles', () => {
     expect(plan.any).toBe(true);
   });
 
+  it('a part divider closes the section open before it', () => {
+    // Front matter styled as a section, then a part whose chapters are
+    // H2s: without the part closing it, the front matter's single column
+    // would run on through every chapter of the part.
+    const md = `# Contents {style="front"}\n\n${filler(2)}\n\n:::part{number="I" title="First"}\n1. One\n:::\n\n## One\n\n${filler(2)}`;
+    const resolved = resolveAllConfig(base);
+    const blocks = parseMarkdown(md);
+    const plan = planHeadingSections(blocks, resolved);
+    const partIdx = blocks.findIndex((b) => b.type === 'containerStart' && b.containerName === 'part');
+    const oneIdx = blocks.findIndex((b) => b.type === 'heading' && b.text === 'One');
+    expect(plan.byBlock[partIdx - 1]?.id).toBe('front');
+    expect(plan.byBlock[partIdx]).toBeUndefined();
+    expect(plan.byBlock[oneIdx]).toBeUndefined();
+    // Laid out, the chapter's pages take the document's two columns again.
+    const out = buildDocument({ markdown: md }, base);
+    const onePage = out.pages[out.blocks.find((b) => b.type === 'heading' && b.lines[0]?.text.includes('One'))!.pageIndex]!;
+    expect(onePage.columns.filter((c) => c.kind !== 'span')).toHaveLength(2);
+  });
+
   it('an unnumbered heading advances no counter: the first numbered chapter is 1', () => {
     const built = buildDocument({ markdown: doc }, base);
     const headers = built.pages.map(headerText);

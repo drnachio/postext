@@ -14,6 +14,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   sideColumnRole: 'text',
   sideColumnSide: 'right',
   columnRule: { ...DEFAULT_COLUMN_RULE },
+  fitFiguresToPage: false,
 };
 
 export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfig {
@@ -32,6 +33,7 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
           lineWidth: partial.columnRule.lineWidth ?? DEFAULT_COLUMN_RULE.lineWidth,
         }
       : { ...DEFAULT_COLUMN_RULE },
+    fitFiguresToPage: partial.fitFiguresToPage ?? DEFAULT_LAYOUT_CONFIG.fitFiguresToPage,
   };
 }
 
@@ -59,6 +61,10 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
   if (layout.sideColumnSide !== undefined && layout.sideColumnSide !== DEFAULT_LAYOUT_CONFIG.sideColumnSide) {
     result.sideColumnSide = layout.sideColumnSide;
+    hasOverride = true;
+  }
+  if (layout.fitFiguresToPage !== undefined && layout.fitFiguresToPage !== DEFAULT_LAYOUT_CONFIG.fitFiguresToPage) {
+    result.fitFiguresToPage = layout.fitFiguresToPage;
     hasOverride = true;
   }
   if (layout.columnRule) {

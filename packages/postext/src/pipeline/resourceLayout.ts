@@ -99,6 +99,9 @@ export interface ResourceLayoutInput {
    *  or with its bottom when `alignBottom`. The block's height is then the
    *  body's alone; `asideHeight` reports the caption band's. */
   captionAside?: { dx: number; width: number; alignBottom: boolean; offsetY?: number };
+  /** Widest a figure's image (bitmap or SVG) may be set; the caption and
+   *  note keep `columnWidth`. Defaults to `columnWidth`. */
+  maxBodyWidth?: number;
 }
 
 /** The rows a table slice carries. `startRow > 0` makes it a continuation:
@@ -850,7 +853,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   if (resource.kind === 'bitmap' && resource.bitmap) {
     fileId = resource.bitmap.fileId;
     format = resource.bitmap.format;
-    const fit = fitWidth(resource.bitmap.width, resource.bitmap.height, columnWidth);
+    const fit = fitWidth(resource.bitmap.width, resource.bitmap.height, Math.min(columnWidth, input.maxBodyWidth ?? columnWidth));
     bodyWidth = fit.width;
     bodyHeight = fit.height;
   } else if (resource.kind === 'svg' && resource.svg) {
@@ -860,8 +863,8 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     // only when no intrinsic size was captured.
     const iw = resource.svg.width ?? 0;
     const ih = resource.svg.height ?? 0;
-    bodyWidth = columnWidth;
-    bodyHeight = iw > 0 && ih > 0 ? columnWidth * (ih / iw) : columnWidth * 0.75;
+    bodyWidth = Math.min(columnWidth, input.maxBodyWidth ?? columnWidth);
+    bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * 0.75;
   } else if (resource.kind === 'table' && resource.table) {
     const ts = resolved.tableStyle;
     const bodyFontPx = dimensionToPx(ts.bodyFontSize, dpi);
@@ -1059,6 +1062,23 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const room = footprintWidth - captionHeight - noteHeight - continuesHeight;
     if (bodyHeight > room && bodyHeight > 0) {
       const k = Math.max(0.01, room) / bodyHeight;
+      bodyWidth *= k;
+      bodyHeight *= k;
+    }
+  }
+  // Likewise a figure that would stand taller than the content area, when
+  // the document asks for it (`layout.fitFiguresToPage`): the image shrinks
+  // so image, caption and note fit one page with a line of air to spare.
+  if (
+    !rotate && !input.captionAside && resolved.layout.fitFiguresToPage
+    && (resource.kind === 'bitmap' || resource.kind === 'svg')
+  ) {
+    const m = resolved.page.margins;
+    const areaHeight = dimensionToPx(resolved.page.height, dpi)
+      - dimensionToPx(m.top, dpi) - dimensionToPx(m.bottom, dpi);
+    const room = areaHeight - captionHeight - noteHeight - continuesHeight - bodyStyle.lineHeightPx;
+    if (bodyHeight > room && bodyHeight > 0 && room > 0) {
+      const k = room / bodyHeight;
       bodyWidth *= k;
       bodyHeight *= k;
     }

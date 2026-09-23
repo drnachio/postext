@@ -431,7 +431,11 @@ export function placeAtomicBlock(
     // with its column's last grid slot, and that "exact" room differs from
     // the free height by floating-point noise.
     if (groupHeight <= available + FIT_EPS) break;
-    if (col.blocks.length === 0 && col.availableHeight >= 0.5) break;
+    // With `layout.fitFiguresToPage` (screen pages, figures shrunk to fit
+    // one) an empty column cut short — under an opener band, a float — is
+    // no place to overflow from when a whole column would hold the group.
+    const fitsFreshColumn = resolved.layout.fitFiguresToPage && groupHeight <= contentArea.height + FIT_EPS;
+    if (col.blocks.length === 0 && col.availableHeight >= 0.5 && !fitsFreshColumn) break;
     if (guard++ >= 8) break;
     advanceToNextColumn(doc, cursor, resolved, contentArea, pageWidthPx, pageHeightPx);
     col = currentColumn(doc, cursor);

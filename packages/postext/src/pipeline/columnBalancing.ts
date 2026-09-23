@@ -40,7 +40,7 @@
  *    fix), keeping the smallest value that works, never above `maxTracking`.
  */
 
-import type { VDTColumn, VDTDocument, VDTPage } from '../vdt';
+import type { VDTBlock, VDTColumn, VDTDocument, VDTPage } from '../vdt';
 
 /** Tolerance against FP drift when converting free space to grid lines. */
 const EPS = 0.01;
@@ -102,15 +102,17 @@ interface BalanceCandidate {
   /** `trailingCallout` only: room (px) between the box's foot and the last
    *  grid slot of the column — the exact space to add above the box. */
   gapPx?: number;
-  /** `trailingCallout` only: the fragment of a split box the candidate is
-   *  (0 = the box or its head) — each fragment closes its own column and
-   *  is levered on its own (see {@link balanceKey}). */
+  /** The fragment of a split block the candidate is (0 = the block or its
+   *  head): the fragments of one split box — or of a paragraph continuing
+   *  under a float band — share a content index and are levered on their
+   *  own (see {@link balanceKey}). */
   part?: number;
 }
 
 /** Key of a balancing adjustment: the content index of the block, or, for a
- *  continuation fragment of a split callout, a composite that keeps the
- *  fragments of one fence apart (they share the fence's content index). */
+ *  continuation fragment (of a split callout, or of a paragraph resuming
+ *  under a float band), a composite that keeps the fragments of one block
+ *  apart — they share its content index. */
 export function balanceKey(contentIndex: number, part: number): number {
   return part > 0 ? -(contentIndex * 1024 + part) : contentIndex;
 }
@@ -135,6 +137,15 @@ export interface ColumnGap {
 
 function pageHasBodyContent(page: VDTPage): boolean {
   return page.columns.some((c) => c.blocks.length > 0);
+}
+
+/** Which fragment of a split block this one is: a callout frame carries its
+ *  own index, a paragraph continuing into a new column carries it in its id
+ *  (`…-cont-2`). 0 for a block that starts here. */
+function fragmentOf(b: VDTBlock): number {
+  if (b.callout?.part !== undefined) return b.callout.part;
+  const m = /-cont-(\d+)$/.exec(b.id);
+  return m ? Number(m[1]) : 0;
 }
 
 /** Whether a float band sits right above the column (the column's top was
@@ -306,8 +317,11 @@ export function collectColumnGaps(
 
         // A heading opening a column under a float band is a heading lever
         // (its cap and priority), not an after-float point: the room goes
-        // above a title, where the reader expects it.
-        const underFloat = i === 0 && !b.id.includes('-cont-') && columnUnderTopFloat(page, col);
+        // above a title, where the reader expects it. A paragraph resuming
+        // from the column before is a lever like any other — the room goes
+        // under the figure, where nobody reads a gap, and its lines land
+        // back on the grid of the column beside it.
+        const underFloat = i === 0 && columnUnderTopFloat(page, col);
         if (
           b.type === 'heading'
           && b.headingLevel !== undefined
@@ -324,6 +338,7 @@ export function collectColumnGaps(
         } else if (underFloat) {
           candidates.push({
             contentIndex: b.contentIndex,
+            part: fragmentOf(b),
             kind: 'afterFloat',
             level: 0,
             order: i,
@@ -501,10 +516,11 @@ export function proposeBalanceLines(
       progress = false;
       for (const cand of cands) {
         if (remaining <= 0) break;
-        if (options.failedLines?.has(cand.contentIndex)) continue;
-        const cur = lines.get(cand.contentIndex) ?? 0;
+        const key = balanceKey(cand.contentIndex, cand.part ?? 0);
+        if (options.failedLines?.has(key)) continue;
+        const cur = lines.get(key) ?? 0;
         if (cur >= cap) continue;
-        lines.set(cand.contentIndex, cur + 1);
+        lines.set(key, cur + 1);
         remaining--;
         changed = true;
         progress = true;

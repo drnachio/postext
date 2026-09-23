@@ -35,6 +35,8 @@ export interface MeasurementInput {
   resource?: Resource;
   resourceType?: ResourceType;
   resourceNumber?: string;
+  /** Widest the figure's image may be set (`ResourceLayoutInput.maxBodyWidth`). */
+  maxBodyWidth?: number;
 }
 
 export interface MeasurementResult {
@@ -64,6 +66,7 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
       resourceNumbering: input.resourceNumbering ?? {},
       resourceTypes: input.resourceTypes ?? [],
       resources: input.resources ?? [],
+      ...(input.maxBodyWidth !== undefined ? { maxBodyWidth: input.maxBodyWidth } : {}),
     });
     const measured: MeasuredBlock = {
       lines: [{

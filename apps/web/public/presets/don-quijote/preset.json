@@ -17,6 +17,9 @@
   "margin-notes",
   "front-matter"
  ],
+ "view": {
+  "canvasScope": "book"
+ },
  "chapters": {
   "es": [
    {
@@ -64,8 +67,32 @@
     "file": "chapters/es/10-capitulo-08.md"
    },
    {
+    "title": "Donde se concluye y da fin a la estupenda batalla que el gallardo vizcaíno y el valiente manchego tuvieron",
+    "file": "chapters/es/11-capitulo-09.md"
+   },
+   {
+    "title": "De lo que más le avino a don Quijote con el vizcaíno, y del peligro en que se vio con una turba de yangüeses",
+    "file": "chapters/es/12-capitulo-10.md"
+   },
+   {
+    "title": "De lo que le sucedió a don Quijote con unos cabreros",
+    "file": "chapters/es/13-capitulo-11.md"
+   },
+   {
+    "title": "De lo que contó un cabrero a los que estaban con don Quijote",
+    "file": "chapters/es/14-capitulo-12.md"
+   },
+   {
+    "title": "Donde se da fin al cuento de la pastora Marcela, con otros sucesos",
+    "file": "chapters/es/15-capitulo-13.md"
+   },
+   {
+    "title": "Donde se ponen los versos desesperados del difunto pastor, con otros no esperados sucesos",
+    "file": "chapters/es/16-capitulo-14.md"
+   },
+   {
     "title": "Créditos",
-    "file": "chapters/es/11-creditos.md"
+    "file": "chapters/es/17-creditos.md"
    }
   ],
   "en": [
@@ -114,8 +141,32 @@
     "file": "chapters/en/10-chapter-08.md"
    },
    {
+    "title": "In which is concluded and finished the terrific battle between the gallant Biscayan and the valiant Manchegan",
+    "file": "chapters/en/11-chapter-09.md"
+   },
+   {
+    "title": "Of the pleasant discourse that passed between Don Quixote and his squire Sancho Panza",
+    "file": "chapters/en/12-chapter-10.md"
+   },
+   {
+    "title": "What befell Don Quixote with certain goatherds",
+    "file": "chapters/en/13-chapter-11.md"
+   },
+   {
+    "title": "Of what a goatherd related to those with Don Quixote",
+    "file": "chapters/en/14-chapter-12.md"
+   },
+   {
+    "title": "In which is ended the story of the shepherdess Marcela, with other incidents",
+    "file": "chapters/en/15-chapter-13.md"
+   },
+   {
+    "title": "Wherein are inserted the despairing verses of the dead shepherd, together with other incidents not looked for",
+    "file": "chapters/en/16-chapter-14.md"
+   },
+   {
     "title": "Credits",
-    "file": "chapters/en/11-credits.md"
+    "file": "chapters/en/17-credits.md"
    }
   ]
  },
@@ -268,7 +319,7 @@
           },
           "size": {
            "width": {
-            "value": 85.84,
+            "value": 122.0,
             "unit": "mm"
            },
            "height": "auto"
@@ -316,7 +367,7 @@
           },
           "size": {
            "width": {
-            "value": 85.84,
+            "value": 122.0,
             "unit": "mm"
            },
            "height": "auto"
@@ -351,7 +402,7 @@
           },
           "offset": {
            "x": {
-            "value": 33.92,
+            "value": 52.0,
             "unit": "mm"
            },
            "y": {
@@ -386,7 +437,7 @@
           },
           "offset": {
            "x": {
-            "value": -33.92,
+            "value": -52.0,
             "unit": "mm"
            },
            "y": {
@@ -462,6 +513,149 @@
    ]
   },
   "headingStyles": [
+   {
+    "id": "poema",
+    "name": "Capítulo en verso",
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 34,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "chapterLabel",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Capítulo {number}",
+        "fontFamily": "Alegreya SC",
+        "fontSize": {
+         "value": 11,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#7f2a26",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "letterSpacing": {
+         "value": 1.2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "chapterTitle",
+        "placement": {
+         "anchor": {
+          "to": "#chapterLabel",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 3,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Playfair Display",
+        "fontSize": {
+         "value": 15,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.25,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "chapterRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#chapterTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 52.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 18,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#7f2a26",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "thickness": {
+         "value": 0.6,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    }
+   },
    {
     "id": "portada",
     "name": "Portada",
@@ -1066,6 +1260,71 @@
      "value": 5,
      "unit": "pt"
     }
+   },
+   {
+    "id": "verso",
+    "name": "Verso",
+    "fontSize": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "hangingIndent": {
+     "value": 4,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cancion",
+    "name": "Título de canción",
+    "fontFamily": "Alegreya SC",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#7f2a26",
+     "model": "hex",
+     "paletteId": "accent"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 2,
+     "unit": "pt"
+    }
    }
   ],
   "calloutStyles": [
@@ -1480,6 +1739,7 @@
    },
    "parts": {
     "enabled": true,
+    "breakBefore": true,
     "height": {
      "value": 16,
      "unit": "pt"
@@ -1974,7 +2234,7 @@
             },
             "size": {
              "width": {
-              "value": 85.84,
+              "value": 122.0,
               "unit": "mm"
              },
              "height": "auto"
@@ -2022,7 +2282,7 @@
             },
             "size": {
              "width": {
-              "value": 85.84,
+              "value": 122.0,
               "unit": "mm"
              },
              "height": "auto"
@@ -2057,7 +2317,7 @@
             },
             "offset": {
              "x": {
-              "value": 33.92,
+              "value": 52.0,
               "unit": "mm"
              },
              "y": {
@@ -2092,7 +2352,7 @@
             },
             "offset": {
              "x": {
-              "value": -33.92,
+              "value": -52.0,
               "unit": "mm"
              },
              "y": {
@@ -2167,6 +2427,707 @@
       }
      ]
     },
+    "headingStyles": [
+     {
+      "id": "poema",
+      "name": "Capítulo en verso",
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 34,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "text",
+          "id": "chapterLabel",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 2,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "Capítulo {number}",
+          "fontFamily": "Alegreya SC",
+          "fontSize": {
+           "value": 11,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "letterSpacing": {
+           "value": 1.2,
+           "unit": "pt"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "chapterTitle",
+          "placement": {
+           "anchor": {
+            "to": "#chapterLabel",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 3,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{titleText}",
+          "fontFamily": "Playfair Display",
+          "fontSize": {
+           "value": 15,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": true,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.25,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "rule",
+          "id": "chapterRule",
+          "direction": "horizontal",
+          "placement": {
+           "anchor": {
+            "to": "#chapterTitle",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 52.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 18,
+             "unit": "mm"
+            }
+           }
+          },
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "thickness": {
+           "value": 0.6,
+           "unit": "pt"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "id": "portada",
+      "name": "Portada",
+      "numbered": false,
+      "toc": false,
+      "span": "page",
+      "breakBefore": {
+       "enabled": true,
+       "parity": "odd"
+      },
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 235.0,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "box",
+          "id": "coverBg",
+          "placement": {
+           "anchor": {
+            "to": "bleed",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 0,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": "fill",
+            "height": "fill"
+           }
+          },
+          "style": {
+           "backgroundColor": {
+            "hex": "#f5f0e6",
+            "model": "hex",
+            "paletteId": "cream"
+           },
+           "borderRadius": {
+            "value": 0,
+            "unit": "mm"
+           }
+          }
+         },
+         {
+          "kind": "image",
+          "id": "coverPlate",
+          "placement": {
+           "anchor": {
+            "to": "page",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 18.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 16.0,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": {
+             "value": 150.2,
+             "unit": "mm"
+            }
+           }
+          },
+          "resourceId": "x-enchantment"
+         },
+         {
+          "kind": "text",
+          "id": "coverTitle",
+          "placement": {
+           "anchor": {
+            "to": "page",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 18.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 173.2,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{title}",
+          "fontFamily": "Playfair Display",
+          "fontSize": {
+           "value": 21,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.12,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "coverAuthor",
+          "placement": {
+           "anchor": {
+            "to": "#coverTitle",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{author}",
+          "fontFamily": "Alegreya SC",
+          "fontSize": {
+           "value": 12,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "coverEdition",
+          "placement": {
+           "anchor": {
+            "to": "#coverAuthor",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{attr.edition}",
+          "fontFamily": "Alegreya",
+          "fontSize": {
+           "value": 8.5,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": true,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#6b625a",
+           "model": "hex",
+           "paletteId": "muted"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "coverIllustrator",
+          "placement": {
+           "anchor": {
+            "to": "#coverEdition",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 1,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{attr.illustrator}",
+          "fontFamily": "Alegreya",
+          "fontSize": {
+           "value": 8.5,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": true,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#6b625a",
+           "model": "hex",
+           "paletteId": "muted"
+          }
+         }
+        ]
+       }
+      },
+      "header": {
+       "elements": []
+      },
+      "footer": {
+       "elements": []
+      },
+      "layout": {
+       "layoutType": "single"
+      },
+      "margins": {
+       "top": {
+        "value": 165.0,
+        "unit": "mm"
+       },
+       "bottom": {
+        "value": 20.0,
+        "unit": "mm"
+       },
+       "left": {
+        "value": 68.0,
+        "unit": "mm"
+       },
+       "right": {
+        "value": 15.0,
+        "unit": "mm"
+       }
+      }
+     },
+     {
+      "id": "preliminar",
+      "name": "Preliminar",
+      "numbered": false,
+      "span": "page",
+      "breakBefore": {
+       "enabled": true,
+       "parity": "odd"
+      },
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 52,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "text",
+          "id": "frontTitle",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 6,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{titleText}",
+          "fontFamily": "Playfair Display",
+          "fontSize": {
+           "value": 20,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": true,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "rule",
+          "id": "frontRule",
+          "direction": "horizontal",
+          "placement": {
+           "anchor": {
+            "to": "#frontTitle",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 52.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 18,
+             "unit": "mm"
+            }
+           }
+          },
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "thickness": {
+           "value": 0.6,
+           "unit": "pt"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "lead",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 30,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 85.84,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{attr.lead}",
+          "fontFamily": "Alegreya",
+          "fontSize": {
+           "value": 10.5,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "left",
+          "verticalAlign": "middle",
+          "lineHeight": 1.333,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          },
+          "hyphenate": true,
+          "dropCap": {
+           "lines": 3,
+           "fontFamily": "Playfair Display",
+           "fontWeight": 400,
+           "color": {
+            "hex": "#7f2a26",
+            "model": "hex",
+            "paletteId": "accent"
+           },
+           "gap": {
+            "value": 1.5,
+            "unit": "mm"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "id": "indice",
+      "name": "Índice",
+      "numbered": false,
+      "toc": false,
+      "span": "page",
+      "breakBefore": {
+       "enabled": true,
+       "parity": "odd"
+      },
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 32,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "text",
+          "id": "frontTitle",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 6,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{titleText}",
+          "fontFamily": "Playfair Display",
+          "fontSize": {
+           "value": 20,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "rule",
+          "id": "frontRule",
+          "direction": "horizontal",
+          "placement": {
+           "anchor": {
+            "to": "#frontTitle",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 52.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 18,
+             "unit": "mm"
+            }
+           }
+          },
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "thickness": {
+           "value": 0.6,
+           "unit": "pt"
+          }
+         }
+        ]
+       }
+      },
+      "layout": {
+       "layoutType": "single"
+      }
+     }
+    ],
     "parts": {
      "breakBefore": {
       "parity": "odd"
@@ -2508,6 +3469,12 @@
      "altText": "«Abran vuestras mercedes al señor Valdovinos y al señor marqués de Mantua, que viene malferido.»"
     },
     {
+     "id": "c05-tail",
+     "caption": "«El labrador aguardó a que fuese algo más noche, porque no viesen al molido hidalgo tan mal caballero.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«El labrador aguardó a que fuese algo más noche, porque no viesen al molido hidalgo tan mal caballero.»"
+    },
+    {
      "id": "c06-books",
      "caption": "«El ama los quemó aquella noche en el corral.»",
      "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
@@ -2520,6 +3487,12 @@
      "altText": "«Tanto le dijo, tanto le persuadió y prometió, que el pobre villano se determinó de salirse con él.»"
     },
     {
+     "id": "c07-tail",
+     "caption": "«A cabo de poca pieza salió volando por el tejado, y dejó la casa llena de humo.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«A cabo de poca pieza salió volando por el tejado, y dejó la casa llena de humo.»"
+    },
+    {
      "id": "c08-plate-windmills",
      "caption": "«Dio el viento un poco de aire en las grandes aspas, y arremetió a todo el galope de Rocinante.»",
      "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
@@ -2530,6 +3503,60 @@
      "caption": "«Acudió Sancho Panza a socorrerle, a todo el correr de su asno.»",
      "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
      "altText": "«Acudió Sancho Panza a socorrerle, a todo el correr de su asno.»"
+    },
+    {
+     "id": "c08-tail",
+     "caption": "«Ayudándole a levantar, tornó a subir sobre Rocinante, que medio despaldado estaba.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Ayudándole a levantar, tornó a subir sobre Rocinante, que medio despaldado estaba.»"
+    },
+    {
+     "id": "c09-ladies",
+     "caption": "«Las señoras del coche le pidieron con mucho encarecimiento les hiciese tan gran merced de perdonar la vida a aquel su escudero.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Las señoras del coche le pidieron con mucho encarecimiento les hiciese tan gran merced de perdonar la vida a aquel su escudero.»"
+    },
+    {
+     "id": "c10-night",
+     "caption": "«Faltóles el sol junto a unas chozas de unos cabreros, y así, determinaron de pasarla allí.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Faltóles el sol junto a unas chozas de unos cabreros, y así, determinaron de pasarla allí.»"
+    },
+    {
+     "id": "c11-plate-golden-age",
+     "caption": "«Dichosa edad y siglos dichosos aquéllos a quien los antiguos pusieron nombre de dorados.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Dichosa edad y siglos dichosos aquéllos a quien los antiguos pusieron nombre de dorados.»"
+    },
+    {
+     "id": "c11-ear",
+     "caption": "«Tomando algunas hojas de romero, las mascó y las mezcló con un poco de sal, y, aplicándoselas a la oreja, se la vendó muy bien.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Tomando algunas hojas de romero, las mascó y las mezcló con un poco de sal, y, aplicándoselas a la oreja, se la vendó muy bien.»"
+    },
+    {
+     "id": "c12-tail",
+     "caption": "«Sancho Panza se acomodó entre Rocinante y su jumento, y durmió, no como enamorado desfavorecido, sino como hombre molido a coces.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Sancho Panza se acomodó entre Rocinante y su jumento, y durmió, no como enamorado desfavorecido, sino como hombre molido a coces.»"
+    },
+    {
+     "id": "c13-tail",
+     "caption": "«El pie de aquella montaña es el lugar donde él mandó que le enterrasen.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«El pie de aquella montaña es el lugar donde él mandó que le enterrasen.»"
+    },
+    {
+     "id": "c14-funeral",
+     "caption": "«Cerraron la sepultura con una gruesa peña, en tanto que se acababa una losa.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Cerraron la sepultura con una gruesa peña, en tanto que se acababa una losa.»"
+    },
+    {
+     "id": "c14-tail",
+     "caption": "«Murió a manos del rigor de una esquiva hermosa ingrata, con quien su imperio dilata la tiranía de su amor.»",
+     "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+     "altText": "«Murió a manos del rigor de una esquiva hermosa ingrata, con quien su imperio dilata la tiranía de su amor.»"
     }
    ]
   },
@@ -2636,7 +3663,7 @@
             },
             "size": {
              "width": {
-              "value": 85.84,
+              "value": 122.0,
               "unit": "mm"
              },
              "height": "auto"
@@ -2684,7 +3711,7 @@
             },
             "size": {
              "width": {
-              "value": 85.84,
+              "value": 122.0,
               "unit": "mm"
              },
              "height": "auto"
@@ -2719,7 +3746,7 @@
             },
             "offset": {
              "x": {
-              "value": 33.92,
+              "value": 52.0,
               "unit": "mm"
              },
              "y": {
@@ -2754,7 +3781,7 @@
             },
             "offset": {
              "x": {
-              "value": -33.92,
+              "value": -52.0,
               "unit": "mm"
              },
              "y": {
@@ -2829,6 +3856,707 @@
       }
      ]
     },
+    "headingStyles": [
+     {
+      "id": "poema",
+      "name": "Chapter opening in verse",
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 34,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "text",
+          "id": "chapterLabel",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 2,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "Chapter {number}",
+          "fontFamily": "Alegreya SC",
+          "fontSize": {
+           "value": 11,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "letterSpacing": {
+           "value": 1.2,
+           "unit": "pt"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "chapterTitle",
+          "placement": {
+           "anchor": {
+            "to": "#chapterLabel",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 3,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{titleText}",
+          "fontFamily": "Playfair Display",
+          "fontSize": {
+           "value": 15,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": true,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.25,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "rule",
+          "id": "chapterRule",
+          "direction": "horizontal",
+          "placement": {
+           "anchor": {
+            "to": "#chapterTitle",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 52.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 18,
+             "unit": "mm"
+            }
+           }
+          },
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "thickness": {
+           "value": 0.6,
+           "unit": "pt"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "id": "portada",
+      "name": "Portada",
+      "numbered": false,
+      "toc": false,
+      "span": "page",
+      "breakBefore": {
+       "enabled": true,
+       "parity": "odd"
+      },
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 235.0,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "box",
+          "id": "coverBg",
+          "placement": {
+           "anchor": {
+            "to": "bleed",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 0,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": "fill",
+            "height": "fill"
+           }
+          },
+          "style": {
+           "backgroundColor": {
+            "hex": "#f5f0e6",
+            "model": "hex",
+            "paletteId": "cream"
+           },
+           "borderRadius": {
+            "value": 0,
+            "unit": "mm"
+           }
+          }
+         },
+         {
+          "kind": "image",
+          "id": "coverPlate",
+          "placement": {
+           "anchor": {
+            "to": "page",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 18.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 16.0,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": {
+             "value": 150.2,
+             "unit": "mm"
+            }
+           }
+          },
+          "resourceId": "x-enchantment"
+         },
+         {
+          "kind": "text",
+          "id": "coverTitle",
+          "placement": {
+           "anchor": {
+            "to": "page",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 18.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 173.2,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{title}",
+          "fontFamily": "Playfair Display",
+          "fontSize": {
+           "value": 21,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.12,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "coverAuthor",
+          "placement": {
+           "anchor": {
+            "to": "#coverTitle",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{author}",
+          "fontFamily": "Alegreya SC",
+          "fontSize": {
+           "value": 12,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "coverEdition",
+          "placement": {
+           "anchor": {
+            "to": "#coverAuthor",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{attr.edition}",
+          "fontFamily": "Alegreya",
+          "fontSize": {
+           "value": 8.5,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": true,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#6b625a",
+           "model": "hex",
+           "paletteId": "muted"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "coverIllustrator",
+          "placement": {
+           "anchor": {
+            "to": "#coverEdition",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 1,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{attr.illustrator}",
+          "fontFamily": "Alegreya",
+          "fontSize": {
+           "value": 8.5,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": true,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#6b625a",
+           "model": "hex",
+           "paletteId": "muted"
+          }
+         }
+        ]
+       }
+      },
+      "header": {
+       "elements": []
+      },
+      "footer": {
+       "elements": []
+      },
+      "layout": {
+       "layoutType": "single"
+      },
+      "margins": {
+       "top": {
+        "value": 165.0,
+        "unit": "mm"
+       },
+       "bottom": {
+        "value": 20.0,
+        "unit": "mm"
+       },
+       "left": {
+        "value": 68.0,
+        "unit": "mm"
+       },
+       "right": {
+        "value": 15.0,
+        "unit": "mm"
+       }
+      }
+     },
+     {
+      "id": "preliminar",
+      "name": "Preliminar",
+      "numbered": false,
+      "span": "page",
+      "breakBefore": {
+       "enabled": true,
+       "parity": "odd"
+      },
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 52,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "text",
+          "id": "frontTitle",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 6,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{titleText}",
+          "fontFamily": "Playfair Display",
+          "fontSize": {
+           "value": 20,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": true,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "rule",
+          "id": "frontRule",
+          "direction": "horizontal",
+          "placement": {
+           "anchor": {
+            "to": "#frontTitle",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 52.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 18,
+             "unit": "mm"
+            }
+           }
+          },
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "thickness": {
+           "value": 0.6,
+           "unit": "pt"
+          }
+         },
+         {
+          "kind": "text",
+          "id": "lead",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top-left"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 30,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 85.84,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{attr.lead}",
+          "fontFamily": "Alegreya",
+          "fontSize": {
+           "value": 10.5,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "left",
+          "verticalAlign": "middle",
+          "lineHeight": 1.333,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          },
+          "hyphenate": true,
+          "dropCap": {
+           "lines": 3,
+           "fontFamily": "Playfair Display",
+           "fontWeight": 400,
+           "color": {
+            "hex": "#7f2a26",
+            "model": "hex",
+            "paletteId": "accent"
+           },
+           "gap": {
+            "value": 1.5,
+            "unit": "mm"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "id": "indice",
+      "name": "Índice",
+      "numbered": false,
+      "toc": false,
+      "span": "page",
+      "breakBefore": {
+       "enabled": true,
+       "parity": "odd"
+      },
+      "advancedDesign": {
+       "enabled": true,
+       "minHeight": {
+        "value": 32,
+        "unit": "mm"
+       },
+       "slot": {
+        "elements": [
+         {
+          "kind": "text",
+          "id": "frontTitle",
+          "placement": {
+           "anchor": {
+            "to": "container",
+            "edge": "top"
+           },
+           "offset": {
+            "x": {
+             "value": 0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 6,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 122.0,
+             "unit": "mm"
+            },
+            "height": "auto"
+           }
+          },
+          "content": "{titleText}",
+          "fontFamily": "Playfair Display",
+          "fontSize": {
+           "value": 20,
+           "unit": "pt"
+          },
+          "fontWeight": 400,
+          "italic": false,
+          "align": "center",
+          "verticalAlign": "middle",
+          "lineHeight": 1.2,
+          "overflow": "wrap",
+          "color": {
+           "hex": "#1f1a17",
+           "model": "hex",
+           "paletteId": "ink"
+          }
+         },
+         {
+          "kind": "rule",
+          "id": "frontRule",
+          "direction": "horizontal",
+          "placement": {
+           "anchor": {
+            "to": "#frontTitle",
+            "edge": "below"
+           },
+           "offset": {
+            "x": {
+             "value": 52.0,
+             "unit": "mm"
+            },
+            "y": {
+             "value": 4,
+             "unit": "mm"
+            }
+           },
+           "size": {
+            "width": {
+             "value": 18,
+             "unit": "mm"
+            }
+           }
+          },
+          "color": {
+           "hex": "#7f2a26",
+           "model": "hex",
+           "paletteId": "accent"
+          },
+          "thickness": {
+           "value": 0.6,
+           "unit": "pt"
+          }
+         }
+        ]
+       }
+      },
+      "layout": {
+       "layoutType": "single"
+      }
+     }
+    ],
     "parts": {
      "breakBefore": {
       "parity": "odd"
@@ -3170,6 +4898,12 @@
      "altText": "“Open, your worships, to Señor Baldwin and to Señor the Marquis of Mantua, who comes badly wounded.”"
     },
     {
+     "id": "c05-tail",
+     "caption": "“The peasant waited until it was a little later that the belaboured gentleman might not be seen riding in such a miserable trim.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“The peasant waited until it was a little later that the belaboured gentleman might not be seen riding in such a miserable trim.”"
+    },
+    {
      "id": "c06-books",
      "caption": "“The housekeeper burned them that night in the yard.”",
      "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
@@ -3182,6 +4916,12 @@
      "altText": "“So much did he say, so much did he persuade and promise, that the poor clown made up his mind to go with him.”"
     },
     {
+     "id": "c07-tail",
+     "caption": "“After a little while he made off, flying through the roof, and left the house full of smoke.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“After a little while he made off, flying through the roof, and left the house full of smoke.”"
+    },
+    {
      "id": "c08-plate-windmills",
      "caption": "“A slight breeze sprang up, and the great sails began to move; at Rocinante’s fullest gallop he charged.”",
      "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
@@ -3192,6 +4932,60 @@
      "caption": "“Sancho hastened to his assistance as fast as his ass could go.”",
      "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
      "altText": "“Sancho hastened to his assistance as fast as his ass could go.”"
+    },
+    {
+     "id": "c08-tail",
+     "caption": "“Helping him to rise, he got him up again on Rocinante, whose shoulder was half out.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Helping him to rise, he got him up again on Rocinante, whose shoulder was half out.”"
+    },
+    {
+     "id": "c09-ladies",
+     "caption": "“The ladies in the coach implored him to grant them the great grace of sparing their squire’s life.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“The ladies in the coach implored him to grant them the great grace of sparing their squire’s life.”"
+    },
+    {
+     "id": "c10-night",
+     "caption": "“Daylight failed them close by the huts of some goatherds, so they determined to pass the night there.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Daylight failed them close by the huts of some goatherds, so they determined to pass the night there.”"
+    },
+    {
+     "id": "c11-plate-golden-age",
+     "caption": "“Happy the age, happy the time, to which the ancients gave the name of golden.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Happy the age, happy the time, to which the ancients gave the name of golden.”"
+    },
+    {
+     "id": "c11-ear",
+     "caption": "“Gathering some leaves of rosemary, he chewed them and mixed them with a little salt, and applying them to the ear he secured them firmly with a bandage.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Gathering some leaves of rosemary, he chewed them and mixed them with a little salt, and applying them to the ear he secured them firmly with a bandage.”"
+    },
+    {
+     "id": "c12-tail",
+     "caption": "“Sancho Panza settled himself between Rocinante and his ass, and slept, not like a lover who had been discarded, but like a man who had been soundly kicked.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“Sancho Panza settled himself between Rocinante and his ass, and slept, not like a lover who had been discarded, but like a man who had been soundly kicked.”"
+    },
+    {
+     "id": "c13-tail",
+     "caption": "“The foot of that mountain is the place where he ordered them to bury him.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“The foot of that mountain is the place where he ordered them to bury him.”"
+    },
+    {
+     "id": "c14-funeral",
+     "caption": "“They closed the grave with a heavy stone until a slab was ready.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“They closed the grave with a heavy stone until a slab was ready.”"
+    },
+    {
+     "id": "c14-tail",
+     "caption": "“In death a victim to disdain. Ungrateful, cruel, coy, and fair, was she that drove him to despair.”",
+     "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
+     "altText": "“In death a victim to disdain. Ungrateful, cruel, coy, and fair, was she that drove him to despair.”"
     }
    ]
   }
@@ -3470,19 +5264,19 @@
   },
   {
    "id": "c05-tail",
-   "typeId": "ornament",
+   "typeId": "figure",
    "kind": "bitmap",
    "file": "resources/c05-tail.jpg",
    "width": 559,
    "height": 355,
    "placement": {
-    "position": "here",
+    "position": "auto",
     "span": "column",
-    "width": 0.42,
-    "align": "center"
+    "width": 1
    },
-   "caption": "",
-   "altText": "Gustave Doré"
+   "caption": "«El labrador aguardó a que fuese algo más noche, porque no viesen al molido hidalgo tan mal caballero.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«El labrador aguardó a que fuese algo más noche, porque no viesen al molido hidalgo tan mal caballero.»"
   },
   {
    "id": "c06-head",
@@ -3550,19 +5344,19 @@
   },
   {
    "id": "c07-tail",
-   "typeId": "ornament",
+   "typeId": "figure",
    "kind": "bitmap",
    "file": "resources/c07-tail.jpg",
    "width": 589,
    "height": 747,
    "placement": {
-    "position": "here",
+    "position": "auto",
     "span": "column",
-    "width": 0.42,
-    "align": "center"
+    "width": 1
    },
-   "caption": "",
-   "altText": "Gustave Doré"
+   "caption": "«A cabo de poca pieza salió volando por el tejado, y dejó la casa llena de humo.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«A cabo de poca pieza salió volando por el tejado, y dejó la casa llena de humo.»"
   },
   {
    "id": "c08-head",
@@ -3614,19 +5408,227 @@
   },
   {
    "id": "c08-tail",
-   "typeId": "ornament",
+   "typeId": "figure",
    "kind": "bitmap",
    "file": "resources/c08-tail.jpg",
    "width": 707,
    "height": 445,
    "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   },
+   "caption": "«Ayudándole a levantar, tornó a subir sobre Rocinante, que medio despaldado estaba.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Ayudándole a levantar, tornó a subir sobre Rocinante, que medio despaldado estaba.»"
+  },
+  {
+   "id": "c09-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c09-head.jpg",
+   "width": 1063,
+   "height": 731,
+   "placement": {
     "position": "here",
     "span": "column",
-    "width": 0.42,
+    "width": 0.86,
     "align": "center"
    },
    "caption": "",
    "altText": "Gustave Doré"
+  },
+  {
+   "id": "c09-ladies",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c09-ladies.jpg",
+   "width": 731,
+   "height": 473,
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   },
+   "caption": "«Las señoras del coche le pidieron con mucho encarecimiento les hiciese tan gran merced de perdonar la vida a aquel su escudero.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Las señoras del coche le pidieron con mucho encarecimiento les hiciese tan gran merced de perdonar la vida a aquel su escudero.»"
+  },
+  {
+   "id": "c10-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c10-head.jpg",
+   "width": 1059,
+   "height": 617,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c10-night",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c10-night.jpg",
+   "width": 665,
+   "height": 473,
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   },
+   "caption": "«Faltóles el sol junto a unas chozas de unos cabreros, y así, determinaron de pasarla allí.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Faltóles el sol junto a unas chozas de unos cabreros, y así, determinaron de pasarla allí.»"
+  },
+  {
+   "id": "c11-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c11-head.jpg",
+   "width": 1063,
+   "height": 753,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c11-plate-golden-age",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c11-plate-golden-age.jpg",
+   "width": 1105,
+   "height": 1413,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Dichosa edad y siglos dichosos aquéllos a quien los antiguos pusieron nombre de dorados.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Dichosa edad y siglos dichosos aquéllos a quien los antiguos pusieron nombre de dorados.»"
+  },
+  {
+   "id": "c11-ear",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c11-ear.jpg",
+   "width": 451,
+   "height": 619,
+   "placement": {
+    "position": "auto",
+    "span": "side",
+    "width": 1
+   },
+   "caption": "«Tomando algunas hojas de romero, las mascó y las mezcló con un poco de sal, y, aplicándoselas a la oreja, se la vendó muy bien.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Tomando algunas hojas de romero, las mascó y las mezcló con un poco de sal, y, aplicándoselas a la oreja, se la vendó muy bien.»"
+  },
+  {
+   "id": "c12-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c12-head.jpg",
+   "width": 1139,
+   "height": 733,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c12-tail",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c12-tail.jpg",
+   "width": 615,
+   "height": 425,
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   },
+   "caption": "«Sancho Panza se acomodó entre Rocinante y su jumento, y durmió, no como enamorado desfavorecido, sino como hombre molido a coces.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Sancho Panza se acomodó entre Rocinante y su jumento, y durmió, no como enamorado desfavorecido, sino como hombre molido a coces.»"
+  },
+  {
+   "id": "c13-head",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/c13-head.jpg",
+   "width": 1147,
+   "height": 765,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "Gustave Doré"
+  },
+  {
+   "id": "c13-tail",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c13-tail.jpg",
+   "width": 441,
+   "height": 285,
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   },
+   "caption": "«El pie de aquella montaña es el lugar donde él mandó que le enterrasen.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«El pie de aquella montaña es el lugar donde él mandó que le enterrasen.»"
+  },
+  {
+   "id": "c14-funeral",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c14-funeral.jpg",
+   "width": 1093,
+   "height": 741,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 1
+   },
+   "caption": "«Cerraron la sepultura con una gruesa peña, en tanto que se acababa una losa.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Cerraron la sepultura con una gruesa peña, en tanto que se acababa una losa.»"
+  },
+  {
+   "id": "c14-tail",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/c14-tail.jpg",
+   "width": 529,
+   "height": 503,
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   },
+   "caption": "«Murió a manos del rigor de una esquiva hermosa ingrata, con quien su imperio dilata la tiranía de su amor.»",
+   "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
+   "altText": "«Murió a manos del rigor de una esquiva hermosa ingrata, con quien su imperio dilata la tiranía de su amor.»"
   },
   {
    "id": "x-enchantment",

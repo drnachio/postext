@@ -380,10 +380,12 @@ function findOpenerHeading(
 /** Build a synthesised default design slot for a `span: 'page'` heading when
  *  the user has not configured an `advancedDesign.slot`. Renders as a single
  *  text element, anchored to fill the full-page-width container, using the
- *  heading level's resolved typography. Emits `{formattedNumber} {titleText}`
- *  when the heading carries a numberPrefix, otherwise `{titleText}`. */
+ *  heading level's resolved typography. Emits `{number} {titleText}` when the
+ *  heading carries a numberPrefix, otherwise `{titleText}`. */
 function synthesiseDefaultOpenerSlot(level: ResolvedHeadingLevelConfig, hasNumberPrefix: boolean): ResolvedDesignSlot {
-  const content = hasNumberPrefix ? '{formattedNumber} {titleText}' : '{titleText}';
+  // `{number}` is the heading placeholder for the formatted number;
+  // `{formattedNumber}` is not one, and left the title with a leading space.
+  const content = hasNumberPrefix ? '{number} {titleText}' : '{titleText}';
   const textEl: ResolvedDesignTextElement = {
     kind: 'text',
     id: 'defaultHeadingOpener',

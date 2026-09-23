@@ -51,7 +51,5 @@ Necesitamos un enfoque coherente y global que aborde todos los retos a los que n
 Para cubrir el valor real, necesitaríamos un sistema tributario mucho más ambicioso, tanto en términos de impuestos de sociedades como de impuestos sobre la renta de las personas físicas, diseñado para inducir un comportamiento más sostenible. Además, los gastos deben integrarse no solo de forma descendente hacia el lado del consumo, sino también de forma ascendente hacia el lado de la producción. Como los sistemas de consumo y de producción están conectados a escala mundial, la integración requiere una estrategia que vaya más allá de las normas y los reglamentos de los estados soberanos y que, para que sea eficaz, esté respaldada por un sistema de gobernanza con mecanismos de regulación que puedan garantizar y aplicar la igualdad de condiciones con reglas bien definidas. En la práctica, además de ambiciosos impuestos y normas comunes, se necesitarán medidas como los derechos antidumping y los impuestos fronterizos sobre las emisiones de carbono, así como una estrategia común frente a las subvenciones perjudiciales para el medio ambiente.
 
 :::paragraphs{style="firma"}
-Profesor Geert Van Calster · Jefe del Departamento de Derecho Europeo de Lovaina Universidad de Lovaina
+Profesor Geert Van Calster · Jefe del Departamento de Derecho Europeo e Internacional de la Facultad de Derecho de Lovaina Universidad de Lovaina
 :::
-
-e Internacional de la Facultad de Derecho

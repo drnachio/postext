@@ -34,11 +34,19 @@ To which he made answer, “Your first difficulty about the sonnets, epigrams, o
 
 and then refer in the margin to Horace, or whoever said it; or, if you allude to the power of death, to come in with—
 
-*Pallida mors æquo pulsat pede pauperum tabernas, Regumque turres.*
+:::paragraphs{style="verso"}
+*Pallida mors æquo pulsat pede pauperum tabernas,*
+
+*Regumque turres.*
+:::
 
 “If it be friendship and the love God bids us bear to our enemy, go at once to the Holy Scriptures, which you can do with a very small amount of research, and quote no less than the words of God himself: *Ego autem dico vobis: diligite inimicos vestros.* If you speak of evil thoughts, turn to the Gospel: *De corde exeunt cogitationes malæ.* If of the fickleness of friends, there is Cato, who will give you his distich:
 
-*Donec eris felix multos numerabis amicos, Tempora si fuerint nubila, solus eris.*
+:::paragraphs{style="verso"}
+*Donec eris felix multos numerabis amicos,*
+
+*Tempora si fuerint nubila, solus eris.*
+:::
 
 “With these and such like bits of Latin they will take you for a grammarian at all events, and that now-a-days is no small honour and profit.
 

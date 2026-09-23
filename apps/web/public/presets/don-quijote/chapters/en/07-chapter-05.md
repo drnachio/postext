@@ -6,11 +6,23 @@ This seemed to him to fit exactly the case in which he found himself, so, making
 A ballad in which the marquis finds his nephew Baldwin dying in the forest; Don Quixote recites it stretched on the ground, unable to move.
 :::
 
-Where art thou, lady mine, that thou My sorrow dost not rue? Thou canst not know it, lady mine, Or else thou art untrue.
+:::paragraphs{style="verso"}
+Where art thou, lady mine, that thou
+
+My sorrow dost not rue?
+
+Thou canst not know it, lady mine,
+
+Or else thou art untrue.
+:::
 
 And so he went on with the ballad as far as the lines:
 
-O noble Marquis of Mantua, My Uncle and liege lord!
+:::paragraphs{style="verso"}
+O noble Marquis of Mantua,
+
+My Uncle and liege lord!
+:::
 
 As chance would have it, when he had got to this line there happened to come by a peasant from his own village, a neighbour of his, who had been with a load of wheat to the mill, and he, seeing the man stretched there, came up to him and asked him who he was and what was the matter with him that he complained so dolefully.
 
@@ -34,7 +46,7 @@ The neighbouring farmer who picks him up: the first of the many sane people who 
 
 “I know who I am,” replied Don Quixote, “and I know that I may be not only those I have named, but all the Twelve Peers of France and even all the Nine Worthies, since my achievements surpass all that they have done all together and each of them on his own account.”
 
-With this talk and more of the same kind they reached the village just as night was beginning to fall, but the peasant waited until it was a little later that the belaboured gentleman might not be seen riding in such a miserable trim. When it was what seemed to him the proper time he entered the village and went to Don Quixote’s house, which he found all in confusion, and there were the curate and the village barber, who were great friends of Don Quixote, and his housekeeper was saying to them in a loud voice, “What does your worship think can have befallen my master, Señor Licentiate Pero Perez?” for so the curate was called; “it is three days now since anything has been seen of him, or the hack, or the buckler, lance, or armour. Miserable me! I am certain of it, and it is as true as that I was born to die, that these accursed books of chivalry he has, and has got into the way of reading so constantly, have upset his reason; for now I remember having often heard him saying to himself that he would turn knight-errant and go all over the world in quest of adventures. To the devil and Barabbas with such books, that have brought to ruin in this way the finest understanding there was in all La Mancha!”
+With this talk and more of the same kind they reached the village just as night was beginning to fall, but the peasant waited until it was a little later that the belaboured gentleman might not be seen riding in such a miserable trim. When it was what seemed to him the proper time he entered the village and went to Don Quixote’s house, which he found all in confusion, and there were the curate and the village barber, who were great friends of Don Quixote, and his housekeeper was saying to them in a loud voice, “What does your worship think can have befallen my master, Señor Licentiate Pero Perez?” for so the curate was called; “it is three days now since anything has been seen of him, or the hack, or the buckler, lance, or armour. Miserable me! I am certain of it, and it is as true as that I was born to die, that these accursed books of chivalry he has, and has got into the way of reading so constantly, have upset his reason; for now I remember having often heard him saying to himself that he would turn knight-errant and go all over the world in quest of adventures. To the devil and Barabbas with such books, that have brought to ruin in this way the finest understanding there was in all La Mancha!” (:ref{id="c05-tail" case="lower"})
 
 The niece said the same, and, more: “You must know, Master Nicholas”—for that was the name of the barber—“it was often my uncle’s way to stay two days and nights together poring over these unholy books of misventures, after which he would fling the book away and snatch up his sword and fall to slashing the walls; and when he was tired out he would say he had killed four giants like four towers; and the sweat that flowed from him when he was weary he said was the blood of the wounds he had received in battle; and then he would drink a great jug of cold water and become calm and quiet, saying that this water was a most precious potion which the sage Esquife, a great magician and friend of his, had brought him. But I take all the blame upon myself for never having told your worships of my uncle’s vagaries, that you might put a stop to them before things had come to this pass, and burn all these accursed books—for he has a great number—that richly deserve to be burned like heretics.”
 
@@ -53,5 +65,3 @@ They carried him to bed at once, and after searching for his wounds could find n
 “So, so!” said the curate, “are there giants in the dance? By the sign of the Cross I will burn them to-morrow before the day is over.”
 
 They put a host of questions to Don Quixote, but his only answer to all was—give him something to eat, and leave him to sleep, for that was what he needed most. They did so, and the curate questioned the peasant at great length as to how he had found Don Quixote. He told him, and the nonsense he had talked when found and on the way home, all which made the licentiate the more eager to do what he did the next day, which was to summon his friend the barber, Master Nicholas, and go with him to Don Quixote’s house.
-
-::resource{id="c05-tail"}

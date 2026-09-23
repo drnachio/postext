@@ -32,12 +32,12 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
   return {
     summary,
     async load(locale: string) {
-      const markdown = opts.markdownOverride
-        ?? (locale.toLowerCase().startsWith('es') ? DEFAULT_MARKDOWN_ES : DEFAULT_MARKDOWN_EN);
+      const isSpanish = locale.toLowerCase().startsWith('es');
+      const markdown = opts.markdownOverride ?? (isSpanish ? DEFAULT_MARKDOWN_ES : DEFAULT_MARKDOWN_EN);
       const config = opts.configOverride ?? createDefaultConfig(locale);
       const resources = await buildDefaultResources(locale);
       const chapters = [newChapter(generateId('chapter'), deriveChapterTitle(markdown, opts.name), markdown)];
-      return { summary, chapters, config, resources, blobs: [], fonts: [] };
+      return { summary, locale: isSpanish ? 'es' : 'en', chapters, config, resources, blobs: [], fonts: [] };
     },
   };
 }

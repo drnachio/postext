@@ -136,6 +136,35 @@ describe('looseness option', () => {
     const without = computeBreakpoints(sixWords(45), defaultOptions);
     expect(withZero).toEqual(without);
   });
+
+  /** Six 30px words. At lineWidth 100 two words fit comfortably (70 + 30 of
+   *  slack), three only by shrinking the two spaces to the limit — so the
+   *  natural setting is three lines and a two-line chain, feasible but
+   *  costly, is the tight target. */
+  const sixWide = (shrink: number): KPItem[] => [
+    box(30, 0), glue(10, 40, shrink, 1),
+    box(30, 2), glue(10, 40, shrink, 3),
+    box(30, 4), glue(10, 40, shrink, 5),
+    box(30, 6), glue(10, 40, shrink, 7),
+    box(30, 8), glue(10, 40, shrink, 9),
+    box(30, 10),
+    ...finalItems(),
+  ];
+
+  it('produces exactly one line fewer when the spaces can carry it', () => {
+    const natural = computeBreakpoints(sixWide(5), defaultOptions);
+    const tight = computeBreakpoints(sixWide(5), { ...defaultOptions, looseness: -1 });
+    expect(natural.length).toBe(3);
+    expect(tight.length).toBe(2);
+  });
+
+  it('falls back to the natural break count when no shorter chain is feasible', () => {
+    // Rigid glue: the shorter line would shrink its spaces past the limit,
+    // so no node of that length ever enters the set.
+    const natural = computeBreakpoints(sixWide(1), defaultOptions);
+    const tight = computeBreakpoints(sixWide(1), { ...defaultOptions, looseness: -1 });
+    expect(tight).toEqual(natural);
+  });
 });
 
 // ---------------------------------------------------------------------------

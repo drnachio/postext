@@ -1,4 +1,4 @@
-# Del donoso y grande escrutinio que el cura y el barbero hicieron en la librería de nuestro ingenioso hidalgo {lead="el cual aún todavía dormía. Pidió las llaves, a la sobrina, del aposento donde estaban los libros, autores del daño, y ella se las dio de muy buena gana."}
+# Del donoso y grande escrutinio que el cura y el barbero hicieron en la librería de nuestro ingenioso hidalgo {lead="El cual aún todavía dormía. Pidió las llaves, a la sobrina, del aposento donde estaban los libros, autores del daño, y ella se las dio de muy buena gana."}
 
 ::resource{id="c06-head"}
 

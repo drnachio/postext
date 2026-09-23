@@ -45,10 +45,16 @@ function tocBlocksFor(directive: ContentBlock, outline: readonly OutlineEntry[],
   const listedLevels = new Set(toc.levels.map((l) => l.level));
   const out: ContentBlock[] = [];
   const base = { sourceStart: directive.sourceStart, sourceEnd: directive.sourceEnd };
+  let partRows = 0;
   for (const entry of outline) {
     if (!entry.listed) continue;
     if (entry.kind === 'part') {
       if (!toc.parts.enabled) continue;
+      // Every part but the first opens a fresh page of the contents.
+      if (toc.parts.breakBefore && partRows > 0) {
+        out.push({ ...base, type: 'directive', text: '', spans: [], sourceMap: [], directiveName: 'pagebreak', directiveAttrs: {} });
+      }
+      partRows++;
       const info: TocBlockInfo = {
         kind: 'part', level: 0, number: entry.number, numbered: entry.numbered, title: entry.title,
         ...(entry.pageLabel !== undefined ? { pageLabel: entry.pageLabel } : {}),

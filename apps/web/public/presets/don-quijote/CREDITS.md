@@ -11,7 +11,8 @@ captions, this file) is released under CC BY 4.0.
   (https://www.gutenberg.org/ebooks/2000). Public domain.
 - English: *Don Quixote*, translated by John Ormsby (1885) — Project Gutenberg
   eBook #996 (https://www.gutenberg.org/ebooks/996). Public domain.
-- Prologue and chapters I–VIII of the First Part are included.
+- The prologue and chapters I–XIV — the first two of the four parts of the
+  1605 book — are included.
 
 ## Plates
 
@@ -50,6 +51,19 @@ converted to greyscale, trimmed and downscaled for the bundle.
 | `c08-plate-windmills` | [Adventure with the Windmills.jpg](https://commons.wikimedia.org/wiki/File:Adventure_with_the_Windmills.jpg) | Public domain |
 | `c08-plate-fallen` | [Cap VIII Dom Quixote caido Gustave Doré.jpg](https://commons.wikimedia.org/wiki/File:Cap_VIII_Dom_Quixote_caido_Gustave_Dor%C3%A9.jpg) | Public domain |
 | `c08-tail` | [Cap VIII Sancho Pança ajuda Dom Quixote a montar a cavalo Doré.jpg](https://commons.wikimedia.org/wiki/File:Cap_VIII_Sancho_Pan%C3%A7a_ajuda_Dom_Quixote_a_montar_a_cavalo_Dor%C3%A9.jpg) | Public domain |
+| `c09-head` | [Cap IX Dom Quixote em luta com o escudeiro Biscainho.jpg](https://commons.wikimedia.org/wiki/File:Cap_IX_Dom_Quixote_em_luta_com_o_escudeiro_Biscainho.jpg) | Public domain |
+| `c09-ladies` | [Cap IX As Damas pedem a Dom Quixote para poupar a vida do escudeiro G Doré.jpg](https://commons.wikimedia.org/wiki/File:Cap_IX_As_Damas_pedem_a_Dom_Quixote_para_poupar_a_vida_do_escudeiro_G_Dor%C3%A9.jpg) | Public domain |
+| `c10-head` | [Cap X Sancho Pança pede a Dom Quixote que lhe dê a ilha prometida.jpg](https://commons.wikimedia.org/wiki/File:Cap_X_Sancho_Pan%C3%A7a_pede_a_Dom_Quixote_que_lhe_d%C3%AA_a_ilha_prometida.jpg) | Public domain |
+| `c10-night` | [Cap X Dom Quixote e Sancho Pança pernoitam ao relento.jpg](https://commons.wikimedia.org/wiki/File:Cap_X_Dom_Quixote_e_Sancho_Pan%C3%A7a_pernoitam_ao_relento.jpg) | Public domain |
+| `c11-head` | [Cap XI A Balada do cabreiro António.jpg](https://commons.wikimedia.org/wiki/File:Cap_XI_A_Balada_do_cabreiro_Ant%C3%B3nio.jpg) | Public domain |
+| `c11-plate-golden-age` | [Cap XI Discurso de Dom Quixote aos Cabreiros.jpg](https://commons.wikimedia.org/wiki/File:Cap_XI_Discurso_de_Dom_Quixote_aos_Cabreiros.jpg) | Public domain |
+| `c11-ear` | [Cap XI Um Cabreiro trata a orelha de Dom Quixote.jpg](https://commons.wikimedia.org/wiki/File:Cap_XI_Um_Cabreiro_trata_a_orelha_de_Dom_Quixote.jpg) | Public domain |
+| `c12-head` | [Cap XII Crisóstomo enamorado da bela Marcela.jpg](https://commons.wikimedia.org/wiki/File:Cap_XII_Cris%C3%B3stomo_enamorado_da_bela_Marcela.jpg) | Public domain |
+| `c12-tail` | [Cap XII Sancho Pança a dormir entre Rocinante e o jumento.jpg](https://commons.wikimedia.org/wiki/File:Cap_XII_Sancho_Pan%C3%A7a_a_dormir_entre_Rocinante_e_o_jumento.jpg) | Public domain |
+| `c13-head` | [Cap XIII Dom Quixote dirige-se ao funeral.jpg](https://commons.wikimedia.org/wiki/File:Cap_XIII_Dom_Quixote_dirige-se_ao_funeral.jpg) | Public domain |
+| `c13-tail` | [Cap XIII O túmulo de Crisóstomo.jpg](https://commons.wikimedia.org/wiki/File:Cap_XIII_O_t%C3%BAmulo_de_Cris%C3%B3stomo.jpg) | Public domain |
+| `c14-funeral` | [Cap XIV Funeral de Crisóstomo Gustave Doré.jpg](https://commons.wikimedia.org/wiki/File:Cap_XIV_Funeral_de_Cris%C3%B3stomo_Gustave_Dor%C3%A9.jpg) | Public domain |
+| `c14-tail` | [Cap XIV O Amor e a Morte Gustave Doré.jpg](https://commons.wikimedia.org/wiki/File:Cap_XIV_O_Amor_e_a_Morte_Gustave_Dor%C3%A9.jpg) | Public domain |
 | `x-enchantment` | [The Enchantment of Don Quixote.jpg](https://commons.wikimedia.org/wiki/File:The_Enchantment_of_Don_Quixote.jpg) | Public domain |
 
 ## Fonts (SIL Open Font License 1.1)

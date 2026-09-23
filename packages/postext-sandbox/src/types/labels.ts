@@ -617,6 +617,9 @@ export interface SandboxLabels {
   presetPostextGuideName: string;
   presetPostextGuideDescription: string;
   presetLoad: string;
+  /** Locale tags of a bilingual preset: `__locale__` is the code (ES, EN). */
+  presetLocaleLoad: string;
+  presetLocaleActive: string;
   presetLoadConfirm: string;
   presetReload: string;
   presetReloadConfirm: string;
@@ -659,11 +662,13 @@ export interface SandboxLabels {
   chapterPagesUnknown: string;
   chapterWords: string;
   chapterCountTag: string;
-  /** PDF scope selector in the viewport tab bar: the active chapter on
-   *  its own, or every chapter as one continuous PDF. */
+  /** Scope selectors in the viewport tab bar: the active chapter on its
+   *  own, or every chapter as one continuous document — one for the PDF
+   *  tab, one for the canvas (both share the option labels). */
   pdfScope: string;
   pdfScopeChapter: string;
   pdfScopeBook: string;
+  canvasScope: string;
   importFileChapter: string;
   exportFileChapter: string;
   warningsChapterLabel: string;
@@ -680,13 +685,16 @@ export interface SandboxLabels {
   presetsHidden: string;
   projectCopySuffix: string;
   projectExport: string;
-  projectExportActive: string;
   projectActivate: string;
   projectSwitchConfirm: string;
   projectRename: string;
   projectNameLabel: string;
   projectDescriptionLabel: string;
   projectDuplicate: string;
+  projectThumbnail: string;
+  projectThumbnailChange: string;
+  projectThumbnailRemove: string;
+  projectThumbnailInvalid: string;
   projectDelete: string;
   projectDeleteConfirm: string;
   projectBusy: string;
@@ -762,6 +770,13 @@ export interface SandboxLabels {
   headerFooterElementImage: string;
   headerFooterAddImage: string;
   headerFooterImageResource: string;
+  headerFooterImageResourceTooltip: string;
+  /** Resource picker of an image element: empty choice, an id no resource
+   *  carries (`__id__`), the upload and "open in Resources" buttons. */
+  headerFooterImageNone: string;
+  headerFooterImageMissing: string;
+  headerFooterImageUpload: string;
+  headerFooterImageEdit: string;
   headerFooterElementBoxBackgroundColor: string;
   headerFooterElementBoxBorderColor: string;
   headerFooterElementBoxBorderWidth: string;
@@ -1428,6 +1443,8 @@ export interface SandboxLabels {
   tocParts: string;
   tocPartsEnabled: string;
   tocPartsEnabledTooltip: string;
+  tocPartsBreakBefore: string;
+  tocPartsBreakBeforeTooltip: string;
   tocPartsHeight: string;
   tocPartsHeightTooltip: string;
   tocPartsDesignInfo: string;

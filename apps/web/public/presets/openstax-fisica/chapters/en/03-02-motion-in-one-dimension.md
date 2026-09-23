@@ -119,7 +119,7 @@ $$
 
 If the final position is the same as the initial position, then $\text{Δ}d=0$ .
 
-To assign numbers and/or direction to these quantities, we need to define an axis with a positive and a negative direction. We also need to define an origin, or *O*. In :ref{id="en-2-figure-02-01-arrow"}, the axis is in a straight line with home at zero and school in the positive direction. If we left home and drove the opposite way from school, motion would have been in the negative direction. We would have assigned it a negative value. In the round-trip drive, *d*${}_{f}$ and *d*₀ were both at zero kilometers. In the one way trip to school, *d*${}_{f}$ was at 5 kilometers and *d*₀ was at zero km. So, $\Deltad$ was 5 kilometers.
+To assign numbers and/or direction to these quantities, we need to define an axis with a positive and a negative direction. We also need to define an origin, or *O*. In :ref{id="en-2-figure-02-01-arrow"}, the axis is in a straight line with home at zero and school in the positive direction. If we left home and drove the opposite way from school, motion would have been in the negative direction. We would have assigned it a negative value. In the round-trip drive, *d*${}_{f}$ and *d*₀ were both at zero kilometers. In the one way trip to school, *d*${}_{f}$ was at 5 kilometers and *d*₀ was at zero km. So, $\Delta d$ was 5 kilometers.
 
 :::callout{type="nota" title="Tips For Success"}
 You may place your origin wherever you would like. You have to make sure that you calculate all distances consistently from your zero and you define one direction as positive and the other as negative. Therefore, it makes sense to choose the easiest axis, direction, and zero. In the example above, we took home to be zero because it allowed us to avoid having to interpret a solution with a negative sign.
@@ -205,10 +205,10 @@ A cyclist rides 3 km west and then turns around and rides 2 km east. (a) What is
 
 There is more to **motion** than distance and displacement. Questions such as, “How long does a foot race take?” and “What was the runner’s speed?” cannot be answered without an understanding of other concepts. In this section we will look at **time**, speed, and velocity to expand our understanding of motion.
 
-A description of how fast or slow an object moves is its speed. **Speed** is the **rate** at which an object changes its location. Like distance, speed is a **scalar** because it has a magnitude but not a direction. Because speed is a rate, it depends on the time interval of motion. You can calculate the elapsed time or the change in time, $\Deltat$, of motion as the difference between the ending time and the beginning time
+A description of how fast or slow an object moves is its speed. **Speed** is the **rate** at which an object changes its location. Like distance, speed is a **scalar** because it has a magnitude but not a direction. Because speed is a rate, it depends on the time interval of motion. You can calculate the elapsed time or the change in time, $\Delta t$, of motion as the difference between the ending time and the beginning time
 
 $$
-\Deltat={t}_{\text{f}}-{t}_{\text{0}}.
+\Delta t={t}_{\text{f}}-{t}_{\text{0}}.
 $$
 
 The SI unit of time is the second (s), and the SI unit of speed is meters per second (m/s), but sometimes kilometers per hour (km/h), miles per hour (mph) or other units of speed are used.
@@ -252,7 +252,7 @@ $$
 The **vector** version of speed is velocity. **Velocity** describes the speed and direction of an object. As with speed, it is useful to describe either the average velocity over a time period or the velocity at a specific moment. **Average velocity** is displacement divided by the time over which the displacement occurs.
 
 $$
-{v}_{\text{avg}}=\frac{\text{displacement}}{\text{time}}=\frac{\Deltad}{\Deltat}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}
+{v}_{\text{avg}}=\frac{\text{displacement}}{\text{time}}=\frac{\Delta d}{\Delta t}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}
 $$
 
 Velocity, like speed, has SI units of meters per second (m/s), but because it is a vector, you must also include a direction. Furthermore, the variable *v* for velocity is bold because it is a vector, which is in contrast to the variable *v* for speed which is italicized because it is a scalar quantity.
@@ -279,7 +279,7 @@ A student has a displacement of 304 m north in 180 s. What was the student's ave
 **Strategy.** We know that the displacement is 304 m north and the time is 180 s. We can use the formula for average velocity to solve the problem.
 
 $$
-{v}_{\text{avg}}=\frac{\Deltad}{\Deltat}=\frac{304\,\text{ m}}{180\,\text{ s}}=1.7\,\text{ m/s north}
+{v}_{\text{avg}}=\frac{\Delta d}{\Delta t}=\frac{304\,\text{ m}}{180\,\text{ s}}=1.7\,\text{ m/s north}
 $$
 :::
 
@@ -289,7 +289,7 @@ Layla jogs with an average velocity of 2.4 m/s east. What is her displacement af
 **Strategy.** We know that Layla's average velocity is 2.4 m/s east, and the time interval is 46 seconds. We can rearrange the average velocity formula to solve for the displacement.
 
 $$
-\begin{array}{lll} {v}_{\text{avg}} & = & \frac{\Deltad}{\Deltat} \\ \Deltad & = & {v}_{avg}\Deltat \\ & = & (2.4\,\text{ m/s)(46 s)} \\ & = & 1.1\times {10}^{2}\text{ m east} \end{array}
+\begin{array}{lll} {v}_{\text{avg}} & = & \frac{\Delta d}{\Delta t} \\ \Delta d & = & {v}_{avg}\Delta t \\ & = & (2.4\,\text{ m/s)(46 s)} \\ & = & 1.1\times {10}^{2}\text{ m east} \end{array}
 $$
 :::
 
@@ -299,7 +299,7 @@ Phillip walks along a straight path from his house to his school. How long will 
 **Strategy.** We know that Phillip's displacement is 428 m west, and his average velocity is 1.7 m/s west. We can calculate the time required for the trip by rearranging the average velocity equation.
 
 $$
-\begin{array}{lll} {v}_{\text{avg}} & = & \frac{\Deltad}{\Deltat} \\ \Deltat & = & \frac{\Deltad}{{v}_{\text{avg}}} \\ & = & \frac{428\,\text{ m}}{1.7\,\text{ m/s}} \\ & = & 2.5\times {10}^{2}\text{ s} \end{array}
+\begin{array}{lll} {v}_{\text{avg}} & = & \frac{\Delta d}{\Delta t} \\ \Delta t & = & \frac{\Delta d}{{v}_{\text{avg}}} \\ & = & \frac{428\,\text{ m}}{1.7\,\text{ m/s}} \\ & = & 2.5\times {10}^{2}\text{ s} \end{array}
 $$
 :::
 
@@ -326,7 +326,7 @@ $$
 
 | Average speed | ${v}_{\text{avg}}=\frac{\text{distance}}{\text{time}}$ |
 | --- | --- |
-| Average velocity | ${v}_{\text{avg}}=\frac{\Deltad}{\Deltat}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}$ |
+| Average velocity | ${v}_{\text{avg}}=\frac{\Delta d}{\Delta t}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}$ |
 
 ### Problems
 
@@ -550,7 +550,7 @@ Use this figure to (a) find the displacement of the jet car over the time shown 
 **Strategy.** - (a) The displacement is given by finding the area under the line in the velocity vs. time graph.
 - (b) The acceleration is given by finding the slope of the velocity graph.
 - (c) The instantaneous velocity can just be read off of the graph.
-- (d) To find the average velocity, recall that ${v}_{\text{avg}}=\frac{\Deltad}{\Deltat}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}$
+- (d) To find the average velocity, recall that ${v}_{\text{avg}}=\frac{\Delta d}{\Delta t}=\frac{{d}_{\text{f}}-{d}_{0}}{{t}_{\text{f}}-{t}_{0}}$
 
 - (a) 
   1. Analyze the shape of the area to be calculated. In this case, the area is made up of a rectangle between 0 and 20 m/s stretching to 30 s. The area of a rectangle is length $\times$ width. Therefore, the area of this piece is 600 m.
@@ -559,7 +559,7 @@ Use this figure to (a) find the displacement of the jet car over the time shown 
 - (b) 
   1. Take two points on the velocity line. Say, *t* = 5 s and *t* = 25 s. At *t* = 5 s, the value of *v* = 40 m/s. 
  At *t* = 25 s, *v* = 140 m/s.
-  2. Find the slope. $\begin{array}{lll} a & = & \frac{\Deltav}{\Deltat} \\ & = & \frac{100\,\text{ m/s}}{20\,\text{ s}} \\ & = & 5{\text{ m/s}}^{2} \end{array}$
+  2. Find the slope. $\begin{array}{lll} a & = & \frac{\Delta v}{\Delta t} \\ & = & \frac{100\,\text{ m/s}}{20\,\text{ s}} \\ & = & 5{\text{ m/s}}^{2} \end{array}$
 - (c) The instantaneous velocity at *t* = 5 s, as we found in part (b) is just 40 m/s.
 - (d) 
   1. Find the net displacement, which we found in part (a) was 2,700 m.
@@ -610,7 +610,7 @@ Use :ref{id="en-2-figure-02-04-accurate"} to (a) find the approximate displaceme
 
 | Velocity | $v={v}_{0}+at$ |
 | --- | --- |
-| Acceleration | $a=\frac{\Deltav}{\Deltat}$ |
+| Acceleration | $a=\frac{\Delta v}{\Delta t}$ |
 
 ### Problems
 

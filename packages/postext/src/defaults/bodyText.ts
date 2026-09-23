@@ -49,6 +49,8 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   runtMinCharacters: 20,
   runtPenalty: 1000,
   avoidRuntsInLists: true,
+  tightenRunts: true,
+  maxRuntTracking: 10,
   keepColonWithList: true,
 };
 
@@ -104,6 +106,8 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     runtMinCharacters: partial.runtMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.runtMinCharacters,
     runtPenalty: partial.runtPenalty ?? DEFAULT_BODY_TEXT_CONFIG.runtPenalty,
     avoidRuntsInLists: partial.avoidRuntsInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists,
+    tightenRunts: partial.tightenRunts ?? DEFAULT_BODY_TEXT_CONFIG.tightenRunts,
+    maxRuntTracking: partial.maxRuntTracking ?? DEFAULT_BODY_TEXT_CONFIG.maxRuntTracking,
     keepColonWithList: partial.keepColonWithList ?? DEFAULT_BODY_TEXT_CONFIG.keepColonWithList,
   };
 }
@@ -244,6 +248,14 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig): BodyTextConfig
   }
   if (bodyText.avoidRuntsInLists !== undefined && bodyText.avoidRuntsInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists) {
     result.avoidRuntsInLists = bodyText.avoidRuntsInLists;
+    hasOverride = true;
+  }
+  if (bodyText.tightenRunts !== undefined && bodyText.tightenRunts !== DEFAULT_BODY_TEXT_CONFIG.tightenRunts) {
+    result.tightenRunts = bodyText.tightenRunts;
+    hasOverride = true;
+  }
+  if (bodyText.maxRuntTracking !== undefined && bodyText.maxRuntTracking !== DEFAULT_BODY_TEXT_CONFIG.maxRuntTracking) {
+    result.maxRuntTracking = bodyText.maxRuntTracking;
     hasOverride = true;
   }
   if (bodyText.keepColonWithList !== undefined && bodyText.keepColonWithList !== DEFAULT_BODY_TEXT_CONFIG.keepColonWithList) {

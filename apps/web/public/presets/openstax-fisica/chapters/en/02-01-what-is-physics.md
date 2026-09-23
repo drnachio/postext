@@ -402,7 +402,7 @@ A commemorative coin that is 2″ in diameter is advertised to be plated with 15
 The mass of the gold is given by the formula 
 
 $$
-m=\rhoV=15\times {10}^{-3}\,\text{g,}
+m=\rho V=15\times {10}^{-3}\,\text{g,}
 $$
 
 
@@ -474,7 +474,7 @@ A grocery store sells 5-lb bags of apples. You purchase four bags over the cours
 
 You determine that the expected weight of a 5 lb bag has an uncertainty of ±0.4 lb. What is the percent uncertainty of the bag’s weight?
 
-**Strategy.** First, observe that the expected value of the bag’s weight, $A$, is 5 lb. The uncertainty in this value, $\deltaA$, is 0.4 lb. We can use the following equation to determine the percent uncertainty of the weight
+**Strategy.** First, observe that the expected value of the bag’s weight, $A$, is 5 lb. The uncertainty in this value, $\delta A$, is 0.4 lb. We can use the following equation to determine the percent uncertainty of the weight
 
 $$
 \text{\% uncertainty = }\frac{\delta\text{A}}{\text{A}}\text{ × 100\%}\text{.}
@@ -524,7 +524,7 @@ It is a good idea to keep extra significant figures while calculating, and to ro
 
 #### Significant Figures in this Text
 
-In this textbook, most numbers are assumed to have three significant figures. Furthermore, consistent numbers of significant figures are used in all worked examples. You will note that an answer given to three digits is based on input good to at least three digits. If the input has fewer significant figures, the answer will also have fewer significant figures. Care is also taken that the number of significant figures is reasonable for the situation posed. In some topics, such as optics, more than three significant figures will be used. Finally, if a number is exact, such as the *2* in the formula, $c=2\pir$, it does not affect the number of significant figures in a calculation.
+In this textbook, most numbers are assumed to have three significant figures. Furthermore, consistent numbers of significant figures are used in all worked examples. You will note that an answer given to three digits is based on input good to at least three digits. If the input has fewer significant figures, the answer will also have fewer significant figures. Care is also taken that the number of significant figures is reasonable for the situation posed. In some topics, such as optics, more than three significant figures will be used. Finally, if a number is exact, such as the *2* in the formula, $c=2\pi r$, it does not affect the number of significant figures in a calculation.
 
 :::callout{type="ejemplo" title="Approximating Vast Numbers: a Trillion Dollars"}
 The U.S. federal deficit in the 2008 fiscal year was a little greater than $10 trillion. Most of us do not have any concept of how much even one trillion actually is. Suppose that you were given a trillion dollars in $100 bills. If you made 100-bill stacks, like that shown in :ref{id="en-1-figure-01-03-money"}, and used them to evenly cover a football field (between the end zones), make an approximation of how high the money pile would become. (We will use feet/inches rather than meters here because football fields are measured in yards.) One of your friends says 3 in., while another says 10 ft. What do you think?

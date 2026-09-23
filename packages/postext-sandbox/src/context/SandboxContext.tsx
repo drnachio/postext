@@ -16,7 +16,7 @@ import type { PostextConfig, VDTDocument, Resource, LayoutContinuation } from 'p
 import { stripConfigDefaults } from 'postext';
 import type { PanelId, ViewportTab, SandboxLabels } from '../types';
 import { DEFAULT_LABELS } from '../types';
-import { readViewHash } from '../storage/viewHash';
+import { EMPTY_VIEW_HASH, readViewHash, sameBook, type ViewHash, type ViewHashBook } from '../storage/viewHash';
 import { loadConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, saveProjectId, saveHiddenPresetIds } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
@@ -130,8 +130,14 @@ export interface SandboxState {
   chapters: Chapter[];
   activeChapterId: string;
   /** What the PDF viewer renders: the whole book or the active chapter.
-   *  The canvas and HTML previews always lay out the active chapter. */
+   *  Not persisted: a proof is rendered on request. */
   pdfScope: LayoutScope;
+  /** What the canvas lays out: the whole book (every chapter, laid out one
+   *  after the other and shown as one continuous document) or the active
+   *  chapter continued after the ones before it. Kept with the book (the
+   *  working copy and the project record); a preset's `view` seeds it. The
+   *  HTML preview always lays out the active chapter. */
+  canvasScope: LayoutScope;
   /** What the last layout of each chapter on its own recorded (page count
    *  and how its numbering ends), keyed by chapter id. Chapters are laid out
    *  one at a time; the layouts of the chapters before the active one give
@@ -172,6 +178,10 @@ export interface SandboxState {
    *  `docRef`. Consumers (e.g. WarningsPanel) listen to this counter to
    *  recompute derived data. */
   docVersion: number;
+  /** Incremented whenever the whole book is replaced (a preset applied, a
+   *  project opened, a bundle imported) — as opposed to edited chapter by
+   *  chapter. The fragment syncs treat such a book as a new document. */
+  bookVersion: number;
   /** Id of the preset the current document came from (`BUILTIN_PRESET_ID`
    *  until a preset is loaded). Reset actions restore this preset. */
   activePresetId: string;
@@ -223,6 +233,7 @@ export type SandboxAction =
   | { type: 'MOVE_CHAPTER'; payload: { id: string; to: number } }
   | { type: 'SET_ACTIVE_CHAPTER'; payload: string }
   | { type: 'SET_PDF_SCOPE'; payload: LayoutScope }
+  | { type: 'SET_CANVAS_SCOPE'; payload: LayoutScope }
   | { type: 'SPLIT_CHAPTER'; payload: { id: string; at: number; newId: string } }
   | { type: 'SPLIT_CHAPTER_AT_HEADINGS'; payload: { id: string; newIds: string[] } }
   | { type: 'MERGE_CHAPTER_WITH_PREVIOUS'; payload: string }
@@ -257,15 +268,21 @@ const EMPTY_SELECTION: EditorSelection = { from: 0, to: 0, head: 0 };
 /** Adopt a book slice and re-derive the active-chapter mirror. Returns
  *  `state` itself when nothing changed. */
 function withBook(state: SandboxState, book: BookContent, resetSelection = false): SandboxState {
+  const canvasScope = book.canvasScope ?? 'chapter';
   if (
     book.chapters === state.chapters &&
-    book.activeChapterId === state.activeChapterId
+    book.activeChapterId === state.activeChapterId &&
+    canvasScope === state.canvasScope
   ) return state;
   const chapterChanged = book.activeChapterId !== state.activeChapterId;
   return {
     ...state,
     chapters: book.chapters,
     activeChapterId: book.activeChapterId,
+    canvasScope,
+    // A book whose canvas is laid out whole exports whole too (see
+    // `SET_CANVAS_SCOPE`).
+    ...(canvasScope !== state.canvasScope ? { pdfScope: canvasScope } : {}),
     markdown: activeChapter(book).markdown,
     chapterLayouts: book.chapters === state.chapters ? state.chapterLayouts : pruneChapterLayouts(state.chapterLayouts, book.chapters),
     ...(resetSelection || chapterChanged ? { selection: EMPTY_SELECTION } : {}),
@@ -283,7 +300,11 @@ function pruneChapterLayouts(layouts: Record<string, ChapterLayout>, chapters: C
 }
 
 function bookOf(state: SandboxState): BookContent {
-  return { chapters: state.chapters, activeChapterId: state.activeChapterId };
+  return {
+    chapters: state.chapters,
+    activeChapterId: state.activeChapterId,
+    ...(state.canvasScope === 'book' ? { canvasScope: state.canvasScope } : {}),
+  };
 }
 
 export function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
@@ -293,8 +314,10 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       const book = replaceChapterMarkdown(bookOf(state), state.activeChapterId, action.payload);
       return { ...state, chapters: book.chapters, markdown: action.payload };
     }
-    case 'SET_BOOK':
-      return withBook(state, action.payload, true);
+    case 'SET_BOOK': {
+      const next = withBook(state, action.payload, true);
+      return next === state ? state : { ...next, bookVersion: state.bookVersion + 1 };
+    }
     case 'ADD_CHAPTER':
       return withBook(state, addChapter(bookOf(state), action.payload.chapter, action.payload.index, action.payload.activate ?? true));
     case 'REMOVE_CHAPTER': {
@@ -316,6 +339,12 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'SET_PDF_SCOPE':
       if (action.payload === state.pdfScope) return state;
       return { ...state, pdfScope: action.payload };
+    case 'SET_CANVAS_SCOPE':
+      if (action.payload === state.canvasScope) return state;
+      // The PDF follows the canvas by default — a book laid out whole on
+      // the canvas is exported whole — until the PDF scope is picked by
+      // hand, which holds until the canvas scope moves again.
+      return { ...state, canvasScope: action.payload, pdfScope: action.payload };
     case 'SPLIT_CHAPTER':
       return withBook(state, splitChapterAt(bookOf(state), action.payload.id, action.payload.at, action.payload.newId));
     case 'SPLIT_CHAPTER_AT_HEADINGS': {
@@ -552,14 +581,21 @@ interface SandboxStore {
   /** The composed book `docRef` was built from (offsets in the document are
    *  offsets into `docSourceRef.current.markdown`). */
   docSourceRef: MutableRefObject<ComposedBook | null>;
+  /** The chapters' own documents when the canvas lays out the whole book
+   *  (`docRef` then holds them stitched together), by chapter id, each
+   *  with the chapter-only book it was built from. Empty otherwise. */
+  chapterDocsRef: MutableRefObject<Map<string, ChapterDocument>>;
   /** Warnings for the current layout source, cached per state so every
    *  consumer (panel, activity bar) shares one computation. */
   getWarnings: (s: SandboxState) => Warning[];
   /** How each chapter is laid out on its own (continuation, page ranges),
    *  cached per state so every consumer shares one computation. */
   getPlan: (s: SandboxState) => BookPlan;
-  /** Load a preset by id (all parts). No-op for unknown/unavailable ids. */
-  loadPreset: (id: string) => Promise<void>;
+  /** Load a preset by id (all parts). No-op for unknown/unavailable ids.
+   *  `locale` picks the content language of a bilingual bundle; without it
+   *  the viewer locale applies. Resolves to whether the preset was
+   *  applied. */
+  loadPreset: (id: string, locale?: string) => Promise<boolean>;
   /** Re-fetch the active preset and re-apply the given parts. */
   reloadPreset: (parts: PresetApplyParts) => Promise<void>;
   projectActions: ProjectActions;
@@ -654,7 +690,11 @@ export interface SandboxPresetsValue {
   updatedAt: number | null;
   /** Presets hidden from the panel ("deleted" — restorable). */
   hiddenIds: string[];
-  load: (id: string) => Promise<void>;
+  /** The content locale the active preset was loaded in (a bilingual
+   *  bundle's second language stays active across reloads); null in
+   *  project mode or when unknown. */
+  activeLocale: string | null;
+  load: (id: string, locale?: string) => Promise<boolean>;
   reload: (parts: PresetApplyParts) => Promise<void>;
   hide: (id: string) => void;
   unhide: (id: string) => void;
@@ -673,6 +713,10 @@ export function useSandboxPresets(): SandboxPresetsValue {
   const stale = useSandboxSelector((s) => s.presetStale);
   const updatedAt = useSandboxSelector((s) => s.presetUpdatedAt);
   const hiddenIds = useSandboxSelector((s) => s.hiddenPresetIds);
+  const activeLocale = useSandboxSelector((s) =>
+    s.activeProjectId === null && s.presetApplied?.presetId === s.activePresetId
+      ? s.presetApplied.locale ?? null
+      : null);
   return {
     presets,
     activePresetId,
@@ -682,6 +726,7 @@ export function useSandboxPresets(): SandboxPresetsValue {
     stale,
     updatedAt,
     hiddenIds,
+    activeLocale,
     load: store.loadPreset,
     reload: store.reloadPreset,
     hide: (id) => store.dispatch({ type: 'HIDE_PRESET', payload: id }),
@@ -737,6 +782,13 @@ export function useSandboxActiveProjectId(): string | null {
   return useSandboxSelector((s) => s.activeProjectId);
 }
 
+/** The actions that open another book — a preset (in a locale) or a local
+ *  project — without subscribing to any state. */
+export function useSandboxBookActions(): { loadPreset: SandboxStore['loadPreset']; activateProject: ProjectActions['activate'] } {
+  const store = useStore();
+  return { loadPreset: store.loadPreset, activateProject: store.projectActions.activate };
+}
+
 /** Stable ref to the most recently built VDT document. Does not subscribe
  *  to state changes — read inside effects/handlers via `.current`. */
 export function useSandboxDocRef(): MutableRefObject<VDTDocument | null> {
@@ -759,6 +811,19 @@ export function useSandboxEditorStateRef(chapterId: string): MutableRefObject<un
 /** Stable ref to the composed book the last built document came from. */
 export function useSandboxDocSourceRef(): MutableRefObject<ComposedBook | null> {
   return useStore().docSourceRef;
+}
+
+/** One chapter's own document and the chapter-only book it was built from
+ *  (its offsets are chapter offsets). */
+export interface ChapterDocument {
+  doc: VDTDocument;
+  source: ComposedBook;
+}
+
+/** Stable ref to the per-chapter documents behind a whole-book canvas
+ *  layout (see `SandboxStore.chapterDocsRef`). */
+export function useSandboxChapterDocsRef(): MutableRefObject<Map<string, ChapterDocument>> {
+  return useStore().chapterDocsRef;
 }
 
 /** Warnings for the current document, chapter-attributed. Recomputed a
@@ -904,12 +969,19 @@ export function SandboxProvider({
   );
 
   const migration = { ids: generateChapterId, untitled: (n: number) => mergedLabels.chapterUntitled.replace('__n__', String(n)) };
+  // The permalink the page was opened with (see `viewHash.ts`), read once:
+  // the mount seeding below opens the book it names, and the syncs may
+  // rewrite the fragment before then.
+  const initialHashRef = useRef<ViewHash | null>(null);
+  if (initialHashRef.current === null) initialHashRef.current = readViewHash();
   const [state, dispatch] = useReducer(sandboxReducer, undefined, () => {
     const savedBook = loadBook(migration);
     const loadedBook = savedBook ?? singleChapterBook(defaultMd, generateChapterId(), mergedLabels.presetPostextGuideName);
     // A `#chapter=C` fragment (a reload, a shared link) names the chapter to
-    // open; the viewers restore its page (see `useChapterHashSync`).
-    const hashChapter = readViewHash().chapter;
+    // open; the viewers restore its page (see `useChapterHashSync`). The
+    // `view=` part picks the viewer tab over the one last used.
+    const initialHash = initialHashRef.current ?? EMPTY_VIEW_HASH;
+    const hashChapter = initialHash.chapter;
     const hashChapterId = hashChapter === null ? undefined : loadedBook.chapters[hashChapter]?.id;
     const book = hashChapterId ? { ...loadedBook, activeChapterId: hashChapterId } : loadedBook;
     const savedConfig = loadConfig();
@@ -921,7 +993,8 @@ export function SandboxProvider({
       markdown: activeChapter(book).markdown,
       chapters: book.chapters,
       activeChapterId: book.activeChapterId,
-      pdfScope: 'chapter' as LayoutScope,
+      pdfScope: book.canvasScope ?? 'chapter',
+      canvasScope: book.canvasScope ?? 'chapter',
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config: withDefaultResourceTypes(
@@ -933,7 +1006,7 @@ export function SandboxProvider({
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,
-      activeViewport: (savedViewport as ViewportTab) ?? ('canvas' as ViewportTab),
+      activeViewport: initialHash.view ?? (savedViewport as ViewportTab) ?? ('canvas' as ViewportTab),
       labels: mergedLabels,
       locale: locale ?? 'en',
       selection: { from: 0, to: 0, head: 0 },
@@ -943,6 +1016,7 @@ export function SandboxProvider({
       pendingResourceFocus: null,
       resourceSelection: null,
       docVersion: 0,
+      bookVersion: 0,
       activePresetId: loadPresetId() ?? BUILTIN_PRESET_ID,
       presetStatus: 'idle' as const,
       presetConfig: undefined,
@@ -984,22 +1058,31 @@ export function SandboxProvider({
   const gcSuspendedRef = useRef(0);
   const gcTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const runPreset = async (provider: PresetProvider, parts: PresetApplyParts): Promise<void> => {
+  /** Resolves to whether the preset was applied (false: superseded by a
+   *  newer load, or failed). */
+  const runPreset = async (provider: PresetProvider, parts: PresetApplyParts, locale?: string): Promise<boolean> => {
     const seq = ++presetLoadSeqRef.current;
     dispatch({ type: 'SET_PRESET_STATUS', payload: { status: 'loading' } });
     try {
       // Fingerprint first: a bundle edit that lands while `load()` is running
       // then still differs from the snapshot and gets picked up by the watch.
       const fingerprint = provider.fingerprint ? await provider.fingerprint() : null;
-      if (seq !== presetLoadSeqRef.current) return;
-      const loaded = await provider.load(stateRef.current.locale);
-      if (seq !== presetLoadSeqRef.current) return;
+      if (seq !== presetLoadSeqRef.current) return false;
+      // The content locale: the one asked for, else the one this preset is
+      // already loaded in (a reload keeps the language the user picked),
+      // else the viewer's.
+      const applied = stateRef.current.presetApplied;
+      const keep = applied?.presetId === provider.summary.id ? applied.locale : undefined;
+      const loaded = await provider.load(locale ?? keep ?? stateRef.current.locale);
+      if (seq !== presetLoadSeqRef.current) return false;
       const { chapters, config, resources } = stateRef.current;
       await applyPreset(loaded, dispatch, { parts, fingerprint, current: { chapters, config, resources } });
+      return true;
     } catch (err) {
-      if (seq !== presetLoadSeqRef.current) return;
+      if (seq !== presetLoadSeqRef.current) return false;
       const message = err instanceof Error ? err.message : String(err);
       dispatch({ type: 'SET_PRESET_STATUS', payload: { status: 'error', error: message } });
+      return false;
     }
   };
   const runPresetRef = useRef(runPreset);
@@ -1055,6 +1138,38 @@ export function SandboxProvider({
         prevResourcesRef.current = loaded;
         resourcesLoadedRef.current = true;
 
+        // A permalink names the book to open (`#preset=P&lang=L` or
+        // `#project=ID`, see `viewHash.ts`): it wins over the book last
+        // open — unless it is that book already, in the locale asked for. A
+        // book this browser does not have (another person's project, a
+        // preset no source lists) is passed over. The chapter and page it
+        // names are applied once the store is ready (`useChapterHashSync`).
+        const wanted = initialHashRef.current ?? EMPTY_VIEW_HASH;
+        const before = stateRef.current;
+        const onScreen: ViewHashBook = {
+          project: before.activeProjectId,
+          preset: before.activeProjectId === null ? before.activePresetId : null,
+          lang: before.activeProjectId === null && before.presetApplied?.presetId === before.activePresetId
+            ? before.presetApplied.locale ?? null
+            : null,
+        };
+        if (!sameBook(wanted, onScreen)) {
+          if (wanted.project !== null && projects.some((p) => p.id === wanted.project)) {
+            await projectActions.activate(wanted.project).catch(() => undefined);
+            return;
+          }
+          const provider = wanted.preset === null ? undefined : providers.find((p) => p.summary.id === wanted.preset);
+          if (provider) {
+            if (before.activeProjectId !== null) {
+              await flushWorkingSaveRef.current();
+              dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
+              saveProjectId(null);
+            }
+            await runPresetRef.current(provider, 'all', wanted.lang ?? loc);
+            return;
+          }
+        }
+
         // Project mode: the working state (localStorage + resources store) is
         // the project's live copy; the record only fills in when the store
         // was emptied. Preset-mode seeding below does not apply.
@@ -1071,8 +1186,10 @@ export function SandboxProvider({
           saveProjectId(null);
         }
 
+        // A pristine sandbox opens on the private default preset — unless
+        // the permalink asked for the book on screen by name.
         const privateDefault = findDefaultPrivatePreset(providers, loc);
-        if (pristine && onBuiltin && privateDefault) {
+        if (pristine && onBuiltin && privateDefault && wanted.preset === null && wanted.project === null) {
           await runPresetRef.current(privateDefault, 'all');
           return;
         }
@@ -1227,6 +1344,7 @@ export function SandboxProvider({
     return updateProject(s.activeProjectId, {
       chapters: s.chapters,
       activeChapterId: s.activeChapterId,
+      canvasScope: s.canvasScope,
       config: stripConfigDefaults(s.config),
       resources: s.resources,
     }).then(() => undefined, () => undefined);
@@ -1382,21 +1500,34 @@ export function SandboxProvider({
   const editorStatesRef = useRef<Map<string, unknown>>(new Map());
   const docRef = useRef<VDTDocument | null>(null);
   const docSourceRef = useRef<ComposedBook | null>(null);
+  const chapterDocsRef = useRef<Map<string, ChapterDocument>>(new Map());
   const warningsCacheRef = useRef<{ key: unknown[]; value: Warning[] } | null>(null);
   const getWarnings = (s: SandboxState): Warning[] => {
-    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion];
+    const key = [s.chapters, s.activeChapterId, s.config, s.resources, s.docVersion, s.canvasScope, s.activeViewport];
     const cached = warningsCacheRef.current;
     if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
-    const book = composeBookMemo(s.chapters, s.activeChapterId);
-    const value = computeWarnings({
+    const chapterBook = composeBookMemo(s.chapters, s.activeChapterId);
+    // Warnings are the active chapter's. With the canvas showing the whole
+    // book, the stitched document in `docRef` spans every chapter; the
+    // chapter's own document (chapter offsets, like `book`) is read
+    // instead — or none, while it has not been laid out. The HTML preview
+    // lays the whole book out as one document with book offsets: its own
+    // composition is read then, and the other chapters' warnings dropped.
+    const stitched = s.canvasScope === 'book' && s.activeViewport === 'canvas';
+    const wholeSource = s.canvasScope === 'book' && s.activeViewport === 'html' ? docSourceRef.current : null;
+    const whole = wholeSource !== null && wholeSource.scope === 'book' ? wholeSource : null;
+    const book = whole ?? chapterBook;
+    const doc = stitched ? chapterDocsRef.current.get(s.activeChapterId)?.doc ?? null : docRef.current;
+    const all = computeWarnings({
       markdown: book.markdown,
       config: s.config,
-      doc: docRef.current,
+      doc: wholeSource !== null && whole === null ? null : doc,
       resources: s.resources,
       storageUnavailable: !hasIndexedDB(),
       book,
       chapterTitles: new Map(s.chapters.map((c) => [c.id, c.title])),
     });
+    const value = whole ? all.filter((w) => w.chapterId === undefined || w.chapterId === s.activeChapterId) : all;
     warningsCacheRef.current = { key, value };
     return value;
   };
@@ -1477,11 +1608,12 @@ export function SandboxProvider({
     docRef,
     warningsRef,
     docSourceRef,
+    chapterDocsRef,
     getWarnings: (s) => getWarningsRef.current(s),
     getPlan: (s) => getPlanRef.current(s),
-    loadPreset: async (id) => {
+    loadPreset: async (id, locale) => {
       const provider = presetProvidersRef.current.find((p) => p.summary.id === id);
-      if (!provider) return;
+      if (!provider) return false;
       // Leaving a project: its last edits are written first, then the
       // working state stops mirroring anything.
       if (stateRef.current.activeProjectId !== null) {
@@ -1489,7 +1621,10 @@ export function SandboxProvider({
         dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
         saveProjectId(null);
       }
-      await runPresetRef.current(provider, 'all');
+      // A fresh load (not a reload of the active preset) of a bundle that
+      // was applied in another language earlier must not inherit it.
+      const fresh = stateRef.current.activePresetId !== id || stateRef.current.activeProjectId !== null;
+      return runPresetRef.current(provider, 'all', locale ?? (fresh ? stateRef.current.locale : undefined));
     },
     reloadPreset: async (parts) => {
       if (stateRef.current.activeProjectId !== null) {

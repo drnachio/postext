@@ -13,6 +13,8 @@ import type { VDTBlock, VDTPage } from '../vdt';
 export interface ChapterTitlePageInfo {
   blankForParity?: boolean;
   blankForForce?: boolean;
+  /** Set on a part-divider page. */
+  partInfo?: unknown;
 }
 
 export interface PlaceholderContext {

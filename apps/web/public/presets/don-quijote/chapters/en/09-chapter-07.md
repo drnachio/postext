@@ -20,7 +20,7 @@ One of the remedies which the curate and the barber immediately applied to their
 
 The housekeeper, who had been already well instructed in what she was to answer, said, “What room or what nothing is it that your worship is looking for? There are neither room nor books in this house now, for the devil himself has carried all away.”
 
-“It was not the devil,” said the niece, “but a magician who came on a cloud one night after the day your worship left this, and dismounting from a serpent that he rode he entered the room, and what he did there I know not, but after a little while he made off, flying through the roof, and left the house full of smoke; and when we went to see what he had done we saw neither book nor room: but we remember very well, the housekeeper and I, that on leaving, the old villain said in a loud voice that, for a private grudge he owed the owner of the books and the room, he had done mischief in that house that would be discovered by-and-by: he said too that his name was the Sage Muñaton.”
+“It was not the devil,” said the niece, “but a magician who came on a cloud one night after the day your worship left this, and dismounting from a serpent that he rode he entered the room, and what he did there I know not, but after a little while he made off, flying through the roof, and left the house full of smoke; and when we went to see what he had done we saw neither book nor room: but we remember very well, the housekeeper and I, that on leaving, the old villain said in a loud voice that, for a private grudge he owed the owner of the books and the room, he had done mischief in that house that would be discovered by-and-by: he said too that his name was the Sage Muñaton.” (:ref{id="c07-tail" case="lower"})
 
 “He must have said Friston,” said Don Quixote.
 
@@ -67,5 +67,3 @@ To which Don Quixote replied, “Thou must know, friend Sancho Panza, that it wa
 “Leave it to God, Sancho,” returned Don Quixote, “for he will give her what suits her best; but do not undervalue thyself so much as to come to be content with anything less than being governor of a province.”
 
 “I will not, señor,” answered Sancho, “specially as I have a man of such quality for a master in your worship, who will know how to give me all that will be suitable for me and that I can bear.”
-
-::resource{id="c07-tail"}

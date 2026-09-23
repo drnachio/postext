@@ -32,7 +32,8 @@ PRESET_ID = "don-quijote"
 OUT = os.path.join(PRESETS_ROOT, PRESET_ID)
 
 LANGS = ("es", "en")
-CHAPTERS = 8
+# The prologue and the first two of the four parts of the 1605 book.
+CHAPTERS = 14
 
 # --- units & colours ----------------------------------------------------------
 
@@ -196,32 +197,32 @@ def folio_footer() -> dict:
     }
 
 
-def chapter_opener(label: str) -> dict:
-    """Level-1 design: small-caps chapter label, italic title, a short rule
-    and the lead paragraph with a three-line drop cap, all in the main
-    column (openers always fall on a recto, where the main column is inner)."""
-    return {
-        "enabled": True,
-        "minHeight": mm(52),
-        "slot": {
-            "elements": [
-                text("chapterLabel", label, anchor=at("container", "top-left"), offset=(0, 2), width=MAIN_W, size=11, family="Alegreya SC", align="center", color="accent", letterSpacing=pt(1.2)),
-                text("chapterTitle", "{titleText}", anchor=at("#chapterLabel", "below"), offset=(0, 3), width=MAIN_W, size=15, family="Playfair Display", italic=True, align="center", line_height=1.25),
-                rule("chapterRule", anchor=at("#chapterTitle", "below"), offset=((MAIN_W - 18) / 2, 4), width=18, color="accent", thickness=0.6),
-                text(
-                    "lead",
-                    "{attr.lead}",
-                    anchor=at("#chapterRule", "below"),
-                    offset=(-(MAIN_W - 18) / 2, 5),
-                    width=MAIN_W,
-                    size=10.5,
-                    line_height=1.333,
-                    hyphenate=True,
-                    dropCap={"lines": 3, "fontFamily": "Playfair Display", "fontWeight": 400, "color": col("accent"), "gap": mm(1.5)},
-                ),
-            ]
-        },
-    }
+def chapter_opener(label: str, *, lead: bool = True) -> dict:
+    """Level-1 design: small-caps chapter label, italic title and a short
+    rule centred over the whole text width (both columns), then the lead
+    paragraph with a three-line drop cap in the main column (openers always
+    fall on a recto, where the main column is inner). A chapter that opens
+    with a poem (`lead=False`) sets no lead: the verse follows the rule."""
+    elements = [
+        text("chapterLabel", label, anchor=at("container", "top-left"), offset=(0, 2), width=TEXT_W, size=11, family="Alegreya SC", align="center", color="accent", letterSpacing=pt(1.2)),
+        text("chapterTitle", "{titleText}", anchor=at("#chapterLabel", "below"), offset=(0, 3), width=TEXT_W, size=15, family="Playfair Display", italic=True, align="center", line_height=1.25),
+        rule("chapterRule", anchor=at("#chapterTitle", "below"), offset=((TEXT_W - 18) / 2, 4), width=18, color="accent", thickness=0.6),
+    ]
+    if lead:
+        elements.append(
+            text(
+                "lead",
+                "{attr.lead}",
+                anchor=at("#chapterRule", "below"),
+                offset=(-(TEXT_W - 18) / 2, 5),
+                width=MAIN_W,
+                size=10.5,
+                line_height=1.333,
+                hyphenate=True,
+                dropCap={"lines": 3, "fontFamily": "Playfair Display", "fontWeight": 400, "color": col("accent"), "gap": mm(1.5)},
+            )
+        )
+    return {"enabled": True, "minHeight": mm(52 if lead else 34), "slot": {"elements": elements}}
 
 
 def front_opener(*, italic_title: bool = True, size: float = 20, lead: bool = False) -> dict:
@@ -412,6 +413,8 @@ def toc_config() -> dict:
         "leader": {"enabled": True, "char": ".", "gap": mm(1.2)},
         "parts": {
             "enabled": True,
+            # Each part's chapters on a page of the contents of their own.
+            "breakBefore": True,
             "height": pt(16),
             "marginTop": pt(16),
             "marginBottom": pt(6),
@@ -424,9 +427,16 @@ def toc_config() -> dict:
     }
 
 
-def heading_styles() -> list[dict]:
+def heading_styles(lang: str) -> list[dict]:
     empty = {"elements": []}
     return [
+        {
+            # A chapter opening with a poem (XIV): the level-1 opener without
+            # its lead paragraph.
+            "id": "poema",
+            "name": "Capítulo en verso" if lang == "es" else "Chapter opening in verse",
+            "advancedDesign": chapter_opener(ed.BOOK[lang]["chapter_label"], lead=False),
+        },
         {
             "id": "portada",
             "name": "Portada",
@@ -466,6 +476,10 @@ def paragraph_styles() -> list[dict]:
     return [
         {"id": "colofon", "name": "Colofón", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "color": col("muted")},
         {"id": "creditos", "name": "Créditos", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(5)},
+        # Verse: one paragraph per line, ragged right, runover lines hung.
+        {"id": "verso", "name": "Verso", "fontSize": pt(10), "lineHeight": pt(13.5), "textAlign": "left", "hyphenation": False, "firstLineIndent": mm(0), "hangingIndent": mm(4), "spaceBetween": pt(0), "marginTop": pt(6), "marginBottom": pt(6)},
+        # The title over a poem (Antonio's ballad, Grisóstomo's song).
+        {"id": "cancion", "name": "Título de canción", "fontFamily": "Alegreya SC", "fontSize": pt(9.5), "lineHeight": pt(13.5), "color": col("accent"), "textAlign": "left", "firstLineIndent": mm(0), "marginTop": pt(10), "marginBottom": pt(2)},
     ]
 
 
@@ -489,7 +503,7 @@ def shared_config() -> dict:
         },
         "bodyText": body_text("es"),
         "headings": headings("es"),
-        "headingStyles": heading_styles(),
+        "headingStyles": heading_styles("es"),
         "paragraphStyles": paragraph_styles(),
         "calloutStyles": callout_styles(),
         "parts": parts("es"),
@@ -520,6 +534,7 @@ def localized_config(lang: str) -> dict:
         "locale": "es" if lang == "es" else "en-us",
         "bodyText": body_text(lang),
         "headings": headings(lang),
+        "headingStyles": heading_styles(lang),
         "parts": parts(lang),
         "resourceTypes": resource_types(lang),
     }
@@ -562,6 +577,8 @@ def process_plates(meta: list[dict]) -> dict[str, dict]:
 
 
 SIDE_TAIL_LEAD = 1
+# Plate roles that get a number and a caption (the others are ornaments).
+NUMBERED_ROLES = ("full", "page", "side", "column")
 
 PLACEMENTS = {
     "full": {"position": "top", "span": "page", "width": 1},
@@ -569,6 +586,9 @@ PLACEMENTS = {
     "side": {"position": "auto", "span": "side", "width": 1},
     "head": {"position": "here", "span": "column", "width": 0.86, "align": "center"},
     "tail": {"position": "here", "span": "column", "width": 0.42, "align": "center"},
+    # A captioned plate at the width of the main column, floated into the
+    # first free band after its reference.
+    "column": {"position": "auto", "span": "column", "width": 1},
     "sidetail": {"position": "auto", "span": "side", "width": 1},
     "cover": {"position": "here", "span": "column", "width": 1},
 }
@@ -580,7 +600,7 @@ def resource_specs(plates: dict[str, dict]) -> tuple[list[dict], dict[str, list[
     for slug, spec in ed.PLATES.items():
         p = plates[slug]
         role = spec["role"]
-        numbered = role in ("full", "page", "side")
+        numbered = role in NUMBERED_ROLES
         entry = {
             "id": slug,
             "typeId": "figure" if numbered else "ornament",
@@ -659,7 +679,11 @@ def split_lead(paragraph: str, target: int = 260) -> tuple[str, str]:
         lead.append(s)
         length += len(s) + 1
     rest = " ".join(sentences[len(lead) :]).strip()
-    return " ".join(lead).strip(), rest
+    text = " ".join(lead).strip()
+    # A chapter whose first sentence runs on from its heading ("…de nuestro
+    # ingenioso hidalgo, el cual aún todavía dormía") opens in lower case in
+    # the source; the lead is a sentence of its own.
+    return text[:1].upper() + text[1:], rest
 
 
 def attr_value(s: str) -> str:
@@ -681,27 +705,53 @@ def gloss_block(lemma: str, body: str) -> str:
     return f':::callout{{type="nota" title="{attr_value(lemma)}"}}\n{body}\n:::'
 
 
+def md_verse_line(line: str) -> str:
+    """A verse line as one paragraph of a `verso` block. Gutenberg's italic
+    markers may open on one line and close on another (the Latin distichs
+    of the preface): a line carrying an odd marker is set in italics whole."""
+    bare = line.strip("_")
+    italic = line.startswith("_") or line.endswith("_")
+    return f"*{md_paragraph(bare)}*" if italic else md_paragraph(bare)
+
+
+def render_verse(verse: g.Verse) -> str:
+    blocks: list[str] = []
+    if verse.title:
+        blocks.append(f':::paragraphs{{style="cancion"}}\n{md_paragraph(verse.title)}\n:::\n')
+    for stanza in verse.stanzas:
+        body = "\n\n".join(md_verse_line(line) for line in stanza)
+        blocks.append(f':::paragraphs{{style="verso"}}\n{body}\n:::\n')
+    return "\n".join(blocks)
+
+
+def paragraph_text(p: g.Paragraph) -> str:
+    return p if isinstance(p, str) else p.text
+
+
 MISSING_ANCHORS: list[str] = []
 
 
-def find_anchor(paragraphs: list[str], anchor: str, where: str) -> int:
+def find_anchor(paragraphs: list[g.Paragraph], anchor: str, where: str) -> int:
     for i, p in enumerate(paragraphs):
-        if anchor in p:
+        if anchor in paragraph_text(p):
             return i
     MISSING_ANCHORS.append(f"{where}: {anchor!r}")
     return 0
 
 
 def compose_section(key: str, section: g.Section, lang: str) -> tuple[str, str]:
-    """Returns (lead, markdown body) for a prologue or chapter."""
+    """Returns (lead, markdown body) for a prologue or chapter. The lead is
+    empty for a chapter that opens with a poem (its opener sets none)."""
     original = list(section.paragraphs)
     paragraphs = list(original)
-    lead, rest = split_lead(paragraphs[0])
-    paragraphs[0] = rest
+    lead = ""
     shift = 0
-    if not rest:
-        paragraphs.pop(0)
-        shift = 1
+    if isinstance(paragraphs[0], str):
+        lead, rest = split_lead(paragraphs[0])
+        paragraphs[0] = rest
+        if not rest:
+            paragraphs.pop(0)
+            shift = 1
 
     # Anchors are searched in the untouched paragraphs (the lead may hold
     # them); a hit in a consumed first paragraph lands after the first one
@@ -715,7 +765,7 @@ def compose_section(key: str, section: g.Section, lang: str) -> tuple[str, str]:
         if not slug.startswith(key):
             continue
         role = spec["role"]
-        if role in ("full", "page", "side"):
+        if role in NUMBERED_ROLES:
             refs.setdefault(index_of(spec["anchor"][lang], f"{lang}/{key}/{slug}"), []).append(slug)
     for anchor, lemma, body in ed.GLOSSES[key][lang]:
         inserts.setdefault(index_of(anchor, f"{lang}/{key}/{lemma}"), []).append(gloss_block(lemma, body))
@@ -733,10 +783,15 @@ def compose_section(key: str, section: g.Section, lang: str) -> tuple[str, str]:
         if i == side_tail_at:
             for slug in side_tail:
                 lines.append(f'::resource{{id="{slug}"}}\n')
-        para = md_paragraph(p)
-        for slug in refs.get(i, []):
-            para += f' (:ref{{id="{slug}" case="lower"}})'
-        lines.append(para + "\n")
+        if isinstance(p, g.Verse):
+            lines.append(render_verse(p))
+            for slug in refs.get(i, []):
+                lines.append(f'::resource{{id="{slug}"}}\n')
+        else:
+            para = md_paragraph(p)
+            for slug in refs.get(i, []):
+                para += f' (:ref{{id="{slug}" case="lower"}})'
+            lines.append(para + "\n")
         for block in inserts.get(i, []):
             lines.append(block + "\n")
     for slug in tail:
@@ -744,7 +799,13 @@ def compose_section(key: str, section: g.Section, lang: str) -> tuple[str, str]:
     return lead, "\n".join(lines)
 
 
-ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX"]
+def roman(n: int) -> str:
+    out = ""
+    for value, numeral in ((50, "L"), (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")):
+        while n >= value:
+            out += numeral
+            n -= value
+    return out
 
 ES_HEADING_PREFIX = re.compile(r"^Capítulo (?:primero|[IVX]+)\.\s*")
 
@@ -790,29 +851,33 @@ def write_chapters(plates: dict[str, dict]) -> dict[str, list[dict]]:
         # Contents
         emit(2, "indice", book["contents"], f'# {book["contents"]} {{style="indice" toc="false"}}\n\n:::toc\n')
 
-        # Chapters
+        # Chapters, grouped in the parts of the 1605 book: a part page
+        # (listing its chapters) opens the chapter file of its first chapter.
         titles = [chapter_title(s, lang) for s in texts[lang][1:]]
+        part_starts = {first: (number, title) for number, title, first in book["parts"]}
+        part_ends = {first: next((f for _, _, f in book["parts"] if f > first), CHAPTERS + 1) for _, _, first in book["parts"]}
         for n in range(CHAPTERS):
             sec = texts[lang][n + 1]
             lead, body = compose_section(f"c{n + 1:02d}", sec, lang)
-            head = ""
-            if n == 0:
-                items = "\n".join(f"{i + 1}. {t}" for i, t in enumerate(titles))
-                head = (
-                    ':::numbering{format="decimal" startAt=1}\n\n'
-                    f':::part{{number="I" title="{attr_value(book["part_title"])}"}}\n{items}\n:::\n\n'
-                )
-            md = head + f'# {titles[n]} {{lead="{attr_value(lead)}"}}\n\n{body}'
+            head = ":::numbering{format=\"decimal\" startAt=1}\n\n" if n == 0 else ""
+            if n + 1 in part_starts:
+                number, title = part_starts[n + 1]
+                items = "\n".join(f"{i + 1}. {titles[i]}" for i in range(n, part_ends[n + 1] - 1))
+                head += f':::part{{number="{number}" title="{attr_value(title)}"}}\n{items}\n:::\n\n'
+            attrs = f'lead="{attr_value(lead)}"' if lead else 'style="poema"'
+            md = head + f'# {titles[n]} {{{attrs}}}\n\n{body}'
             emit(n + 3, f"capitulo-{n + 1:02d}" if lang == "es" else f"chapter-{n + 1:02d}", titles[n], md)
 
         # Credits
         paras = "\n\n".join(ed.CREDITS[lang])
-        numbered = [s for s, sp in ed.PLATES.items() if sp["role"] in ("full", "page", "side")]
+        numbered = [s for s, sp in ed.PLATES.items() if sp["role"] in NUMBERED_ROLES]
         plate_lines = "\n\n".join(
-            f"{book['plate'][0]} {ROMAN[i]}. [{plates[s]['title'].rsplit('.', 1)[0]}]({plates[s]['page']})"
+            f"{book['plate'][0]} {roman(i + 1)}. [{plates[s]['title'].rsplit('.', 1)[0]}]({plates[s]['page']})"
             for i, s in enumerate(numbered)
         )
+        # A blank page separates the story from the credits.
         credits = (
+            ':::pagebreak{parity="always-odd"}\n\n'
             f'# {book["credits"]} {{style="preliminar"}}\n\n'
             f':::paragraphs{{style="creditos"}}\n{paras}\n\n{ed.PLATE_LIST_INTRO[lang]}\n\n{plate_lines}\n:::\n'
         )
@@ -841,7 +906,8 @@ captions, this file) is released under CC BY 4.0.
   (https://www.gutenberg.org/ebooks/2000). Public domain.
 - English: *Don Quixote*, translated by John Ormsby (1885) — Project Gutenberg
   eBook #996 (https://www.gutenberg.org/ebooks/996). Public domain.
-- Prologue and chapters I–VIII of the First Part are included.
+- The prologue and chapters I–XIV — the first two of the four parts of the
+  1605 book — are included.
 
 ## Plates
 
@@ -886,6 +952,9 @@ def write_manifest(chapters: dict[str, list[dict]], resources: list[dict], wordi
     manifest = {
         "version": 2,
         **meta,
+        # A short novel reads best as one continuous document: the sandbox
+        # opens it with the canvas laying out the whole book.
+        "view": {"canvasScope": "book"},
         "chapters": chapters,
         "config": shared_config(),
         "localized": {lang: {"config": localized_config(lang), "resources": wording[lang]} for lang in LANGS},

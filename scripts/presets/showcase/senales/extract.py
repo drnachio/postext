@@ -151,6 +151,7 @@ def extract(pdf_path: str, first_page: int, last_page: int, references_from: int
     last_y = None
     last_col = None
     pending_signature: str | None = None
+    signature_col: int | None = None  # column the open signature is set in
     pending_kind = "article"
 
     def flush_para() -> None:
@@ -289,9 +290,14 @@ def extract(pdf_path: str, first_page: int, last_page: int, references_from: int
                 if pending_signature is not None:
                     current.blocks.append(Block("signature", pending_signature + " · " + ln["text"], page=current_page))
                     pending_signature = None
+                    signature_col = col
                     last_y = ln["y"]
                     continue
-                if current.blocks and current.blocks[-1].kind == "signature" and last_y is not None and ln["y"] - last_y < PARA_GAP and ln["w"] < 160:
+                # A signature runs on over as many lines as its affiliation
+                # needs: every following line of the same column at the line
+                # pitch belongs to it (a new paragraph opens after a wider gap).
+                if (current.blocks and current.blocks[-1].kind == "signature" and last_y is not None
+                        and col == signature_col and 0 < ln["y"] - last_y < PARA_GAP):
                     current.blocks[-1].text = _join([current.blocks[-1].text, ln["text"]])
                     last_y = ln["y"]
                     continue
