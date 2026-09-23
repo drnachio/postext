@@ -304,12 +304,13 @@ export function sandboxUiSvg(es: boolean): string {
 // (paths, basic shapes, groups, `use`, clip paths, solid fills and strokes,
 // opacity, text), so zooming into the PDF shows them staying crisp.
 
-const COLUMN = 300;
+// Page-span canvases, on the shared unit scale (see index.ts).
+const WIDE = PAGE_VW;
 
 /** A rosette of Bézier petals, hairline rings and microtext. */
 export function vectorRosetteSvg(es: boolean): string {
   const ariaLabel = es ? 'roseta vectorial de pétalos, anillos y microtexto' : 'vector rosette of petals, rings and microtext';
-  const cx = COLUMN / 2;
+  const cx = WIDE / 2;
   const cy = 108;
   const petals: string[] = [];
   const n = 18;
@@ -322,8 +323,8 @@ export function vectorRosetteSvg(es: boolean): string {
   }
   const rings = [22, 34, 46, 86, 90].map((r, i) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${i < 3 ? '#ffffff' : P.blueDark}" stroke-width="${i < 3 ? 0.6 : 0.3}" />`).join('');
   const micro = es ? 'Postext · vector · zoom · ' : 'Postext · vector · zoom · ';
-  const microText = Array.from({ length: 5 }, (_, i) => text(cx, 200 + i * 3.2, micro.repeat(5).trim(), { size: 2.6, color: P.muted })).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN} 222" role="img" aria-label="${ariaLabel}">
+  const microText = Array.from({ length: 5 }, (_, i) => text(cx, 200 + i * 3.2, micro.repeat(10).trim(), { size: 2.6, color: P.muted })).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDE} 222" role="img" aria-label="${ariaLabel}">
   ${petals.join('')}${rings}
   <circle cx="${cx}" cy="${cy}" r="10" fill="${NIGHT}" />
   ${microText}
@@ -337,7 +338,7 @@ export function vectorChartSvg(es: boolean): string {
   const a = [12, 18, 15, 27, 31, 29, 42, 48];
   const b = [8, 10, 14, 13, 19, 24, 22, 30];
   const x0 = 34;
-  const x1 = 286;
+  const x1 = WIDE - 14;
   const y0 = 150;
   const y1 = 22;
   const X = (i: number) => x0 + (i / (a.length - 1)) * (x1 - x0);
@@ -347,7 +348,7 @@ export function vectorChartSvg(es: boolean): string {
   const area = `${line(a)} L${X(a.length - 1).toFixed(1)},${y0} L${x0},${y0} Z`;
   const dots = a.map((v, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.6" fill="#ffffff" stroke="${P.blue}" stroke-width="1.4" />`).join('');
   const labels = months.map((m, i) => text(X(i), y0 + 14, m, { size: 8.5, color: P.muted })).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN} 186" role="img" aria-label="${ariaLabel}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDE} 186" role="img" aria-label="${ariaLabel}">
   ${grid}
   <path d="${area}" fill="${P.blueTint}" />
   <path d="${line(b)}" fill="none" stroke="${GILT}" stroke-width="1.6" stroke-dasharray="4 3" />
@@ -363,24 +364,27 @@ export function vectorChartSvg(es: boolean): string {
 /** Clip paths, reused elements and overlapping translucent shapes. */
 export function vectorClipSvg(es: boolean): string {
   const ariaLabel = es ? 'composición vectorial con recortes, elementos reutilizados y transparencias' : 'vector composition with clip paths, reused elements and transparency';
-  const stripes = Array.from({ length: 22 }, (_, i) => `<rect x="${-10 + i * 7}" y="0" width="3.5" height="150" fill="${P.blue}" />`).join('');
+  const D = 90; // disc offset
+  const O = 160; // translucent circles offset
+  const S = 250; // stars offset
+  const stripes = Array.from({ length: 22 }, (_, i) => `<rect x="${D - 10 + i * 7}" y="0" width="3.5" height="150" fill="${P.blue}" />`).join('');
   const stars = [[210, 40], [246, 64], [226, 100], [262, 118], [200, 132]]
-    .map(([x, y]) => `<use href="#star" xlink:href="#star" x="${x}" y="${y}" />`).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${COLUMN} 170" role="img" aria-label="${ariaLabel}">
+    .map(([x, y]) => `<use href="#star" xlink:href="#star" x="${x + S}" y="${y}" />`).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${WIDE} 170" role="img" aria-label="${ariaLabel}">
   <defs>
-    <clipPath id="vcDisc"><circle cx="72" cy="80" r="56" /></clipPath>
+    <clipPath id="vcDisc"><circle cx="${72 + D}" cy="80" r="56" /></clipPath>
     <path id="star" d="M0,-9 L2.6,-2.8 L9,-2.8 L3.8,1.2 L5.6,7.6 L0,3.8 L-5.6,7.6 L-3.8,1.2 L-9,-2.8 L-2.6,-2.8 Z" fill="${GILT}" />
   </defs>
   <g clip-path="url(#vcDisc)">${stripes}</g>
-  <circle cx="72" cy="80" r="56" fill="none" stroke="${P.blueDark}" stroke-width="1.2" />
+  <circle cx="${72 + D}" cy="80" r="56" fill="none" stroke="${P.blueDark}" stroke-width="1.2" />
   <g opacity="0.6">
-    <circle cx="160" cy="68" r="30" fill="${VERMILION}" />
-    <circle cx="182" cy="96" r="30" fill="${P.blue}" />
-    <circle cx="146" cy="104" r="30" fill="${GILT}" />
+    <circle cx="${160 + O}" cy="68" r="30" fill="${VERMILION}" />
+    <circle cx="${182 + O}" cy="96" r="30" fill="${P.blue}" />
+    <circle cx="${146 + O}" cy="104" r="30" fill="${GILT}" />
   </g>
   ${stars}
-  ${text(72, 158, es ? 'recorte' : 'clip path', { size: 9, color: P.muted })}
-  ${text(163, 158, es ? 'opacidad' : 'opacity', { size: 9, color: P.muted })}
-  ${text(234, 158, 'use', { size: 9, color: P.muted })}
+  ${text(72 + D, 158, es ? 'recorte' : 'clip path', { size: 9, color: P.muted })}
+  ${text(163 + O, 158, es ? 'opacidad' : 'opacity', { size: 9, color: P.muted })}
+  ${text(231 + S, 158, 'use', { size: 9, color: P.muted })}
 </svg>`;
 }

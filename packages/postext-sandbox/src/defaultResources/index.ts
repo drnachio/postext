@@ -288,9 +288,9 @@ export const SVG_FIGURES: Record<string, { generate: (es: boolean) => string; wi
   'default-balancing': { generate: balancingSvg, width: PAGE_VW, height: 200 },
   'default-book-anatomy': { generate: bookAnatomySvg, width: PAGE_VW, height: 168 },
   'default-sandbox-ui': { generate: sandboxUiSvg, width: PAGE_VW, height: 322 },
-  'default-vector-rosette': { generate: vectorRosetteSvg, width: COLUMN_VW, height: 222 },
-  'default-vector-chart': { generate: vectorChartSvg, width: COLUMN_VW, height: 186 },
-  'default-vector-clip': { generate: vectorClipSvg, width: COLUMN_VW, height: 170 },
+  'default-vector-rosette': { generate: vectorRosetteSvg, width: PAGE_VW, height: 222 },
+  'default-vector-chart': { generate: vectorChartSvg, width: PAGE_VW, height: 186 },
+  'default-vector-clip': { generate: vectorClipSvg, width: PAGE_VW, height: 170 },
 };
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -666,7 +666,7 @@ FIGURE_SPECS.push(
   {
     id: DEFAULT_RESOURCE_IDS.vectorRosette,
     fileId: 'default-vector-rosette',
-    placement: { position: 'auto', span: 'column' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'Bézier petals, hairline rings and a line of microtext: zoom into the PDF as far as you like and every edge stays sharp.',
       'Pétalos de Bézier, anillos de trazo fino y una línea de microtexto: amplía el PDF cuanto quieras y todos los bordes siguen nítidos.',
@@ -676,7 +676,7 @@ FIGURE_SPECS.push(
   {
     id: DEFAULT_RESOURCE_IDS.vectorChart,
     fileId: 'default-vector-chart',
-    placement: { position: 'auto', span: 'column' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'A chart drawn as paths and text: in the PDF its labels are real text, selectable and searchable.',
       'Un gráfico dibujado con trazados y texto: en el PDF sus etiquetas son texto real, que se puede seleccionar y buscar.',
@@ -686,7 +686,7 @@ FIGURE_SPECS.push(
   {
     id: DEFAULT_RESOURCE_IDS.vectorClip,
     fileId: 'default-vector-clip',
-    placement: { position: 'auto', span: 'column' },
+    placement: { position: 'auto', span: 'page' },
     caption: T(
       'A clipping path, three translucent circles and one star reused five times: all of it is converted to native PDF drawing operations.',
       'Un trazado de recorte, tres círculos translúcidos y una estrella reutilizada cinco veces: todo se convierte en operaciones de dibujo nativas del PDF.',
