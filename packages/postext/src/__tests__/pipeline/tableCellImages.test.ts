@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { layoutResourceBlock } from '../../pipeline/resourceLayout';
+import type { TableSliceSpec } from '../../pipeline/resourceLayout';
 import { resolveAllConfig } from '../../pipeline/config';
 import { defaultResourceTypes } from '../../defaults/resourceTypes';
 import { setCellImage } from '../../table/model';
-import type { PostextConfig, Resource, TableModel } from '../../types';
+import type { PostextConfig, Resource, TableCellVerticalAlign, TableModel } from '../../types';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -50,7 +51,7 @@ const tableResource = (model: TableModel): Resource => ({
   table: { model },
 });
 
-function layout(model: TableModel, config?: PostextConfig) {
+function layout(model: TableModel, config?: PostextConfig, slice?: TableSliceSpec) {
   const resourceTypes = defaultResourceTypes();
   const resource = tableResource(model);
   const resolved = resolveAllConfig(config);
@@ -63,6 +64,7 @@ function layout(model: TableModel, config?: PostextConfig) {
     resourceNumbering: { [resource.id]: { number: '1', typeId: 'table', heading: { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } } },
     resourceTypes,
     resources: [resource, bitmap, svg],
+    ...(slice ? { slice } : {}),
   });
 }
 
@@ -181,5 +183,94 @@ describe('table cell images', () => {
     const cleared = setCellImage(replaced, { row: 0, col: 1 }, undefined);
     expect(cleared.rows[0]![1]!.image).toBeUndefined();
     expect(setCellImage(m, { row: 5, col: 0 }, { resourceId: 'x' })).toEqual(m);
+  });
+});
+
+describe('table cell vertical alignment', () => {
+  /** A header row, then a body row whose first cell (four lines) is taller
+   *  than the second: a small image with one word under it. */
+  const tall = 'one two three four five six seven eight nine ten eleven twelve '.repeat(3);
+  const valignModel = (verticalAlign?: TableCellVerticalAlign): TableModel => ({
+    rows: [
+      [{ content: 'A', isHeader: true }, { content: 'B', isHeader: true }],
+      [{ content: tall }, { content: 'word', image: { resourceId: 'fig-vec', width: 0.2 }, ...(verticalAlign ? { verticalAlign } : {}) }],
+    ],
+    headerRowCount: 1,
+    columnWidths: [3, 1],
+  });
+  /** Distance from the cell top to the stack top, and from the stack bottom
+   *  to the cell bottom. */
+  const gaps = (c: ReturnType<typeof cellAt>) => {
+    const last = c.lines[c.lines.length - 1]!;
+    return {
+      above: c.image!.rect.y - c.rect.y,
+      below: c.rect.y + c.rect.height - (last.bbox.y + last.bbox.height),
+      textUnderImage: c.lines[0]!.bbox.y - (c.image!.rect.y + c.image!.rect.height),
+    };
+  };
+
+  it('defaults to top and moves the image + text stack as one unit for middle / bottom', () => {
+    const top = cellAt(valignModel(), 1, 1);
+    const middle = cellAt(valignModel('middle'), 1, 1);
+    const bottom = cellAt(valignModel('bottom'), 1, 1);
+    const t = gaps(top);
+    const m = gaps(middle);
+    const b = gaps(bottom);
+    // The row really is taller than the short cell's stack.
+    expect(t.below).toBeGreaterThan(t.above + 10);
+    expect(top.rect.height).toBe(middle.rect.height);
+    // Top: padding above; middle: equal gaps; bottom: padding below.
+    expect(t.above).toBeCloseTo(b.below, 5);
+    expect(m.above).toBeCloseTo(m.below, 5);
+    expect(b.above).toBeCloseTo(t.below, 5);
+    // The text stays the same distance under the image.
+    expect(m.textUnderImage).toBeCloseTo(t.textUnderImage, 5);
+    expect(b.textUnderImage).toBeCloseTo(t.textUnderImage, 5);
+    // Baselines move with their boxes.
+    expect(bottom.lines[0]!.baseline - top.lines[0]!.baseline).toBeCloseTo(bottom.lines[0]!.bbox.y - top.lines[0]!.bbox.y, 5);
+  });
+
+  it('aligns plain text in a short cell the same way', () => {
+    const text = (verticalAlign?: TableCellVerticalAlign) => cellAt({
+      rows: [[{ content: tall }, { content: 'short', ...(verticalAlign ? { verticalAlign } : {}) }]],
+      columnWidths: [3, 1],
+    }, 0, 1);
+    const top = text();
+    const middle = text('middle');
+    const bottom = text('bottom');
+    const line = (c: typeof top) => c.lines[0]!.bbox;
+    const above = line(top).y - top.rect.y;
+    const below = (c: typeof top) => c.rect.y + c.rect.height - (line(c).y + line(c).height);
+    expect(below(top)).toBeGreaterThan(above);
+    expect(line(middle).y - middle.rect.y).toBeCloseTo(below(middle), 5);
+    expect(below(bottom)).toBeCloseTo(above, 5);
+  });
+
+  it('centres a rowspan cell over every row it covers', () => {
+    const spanModel: TableModel = {
+      rows: [
+        [{ content: 'x', rowSpan: 3, verticalAlign: 'middle' }, { content: 'a' }],
+        [{ content: '', hiddenBy: { row: 0, col: 0 } }, { content: 'b' }],
+        [{ content: '', hiddenBy: { row: 0, col: 0 } }, { content: 'c' }],
+      ],
+    };
+    const c = cellAt(spanModel, 0, 0);
+    const row1 = cellAt(spanModel, 1, 1);
+    const l = c.lines[0]!.bbox;
+    // The middle row's line sits level with the centred rowspan line.
+    expect(l.y + l.height / 2).toBeCloseTo(c.rect.y + c.rect.height / 2, 5);
+    expect(l.y).toBeCloseTo(row1.lines[0]!.bbox.y, 5);
+  });
+
+  it('applies within a split-table slice', () => {
+    const rows: TableModel['rows'] = [[{ content: 'H', isHeader: true }, { content: 'H', isHeader: true }]];
+    for (let i = 0; i < 6; i++) rows.push([{ content: tall }, { content: 'b', verticalAlign: 'bottom' }]);
+    const sliced: TableModel = { rows, headerRowCount: 1, columnWidths: [3, 1] };
+    const block = layout(sliced, undefined, { startRow: 4, endRow: 7, continues: false }).block;
+    const c = block.table!.cells.find((x) => x.row === 5 && x.col === 1)!;
+    const left = block.table!.cells.find((x) => x.row === 5 && x.col === 0)!;
+    const l = c.lines[0]!.bbox;
+    const padding = left.lines[0]!.bbox.y - left.rect.y;
+    expect(c.rect.y + c.rect.height - (l.y + l.height)).toBeCloseTo(padding, 5);
   });
 });

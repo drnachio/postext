@@ -126,7 +126,7 @@ The whole panel is also a drag-and-drop target: drop files from disk and they up
 
 **Table editor.** Table resources open an interactive grid editor:
 
-- Toolbar with add/remove row and column, merge/split cells, header-row and header-column toggles, per-cell alignment, and a per-cell fill (a colour picker, palette-linkable, with a clear button) written to `TableCell.background` and shown in the grid
+- Toolbar with add/remove row and column, merge/split cells, header-row and header-column toggles, per-cell horizontal and vertical alignment (top, middle, bottom — the cell content moves as one unit inside a taller row), and a per-cell fill (a colour picker, palette-linkable, with a clear button) written to `TableCell.background` and shown in the grid
 - **Column widths** — One numeric weight per column under the grid (`2, 1, 1` gives the first column half the width; empty means equal widths), written to `table.model.columnWidths`. Adding or removing a column keeps the weights aligned; an *Equal widths* link clears them
 - **Paste-as-table** — Pasting TSV (or simple quoted CSV) fills the grid
 - **Undo/redo** — Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z

@@ -1038,6 +1038,9 @@ export interface SandboxLabels {
   tableEditorAlignLeft: string;
   tableEditorAlignCenter: string;
   tableEditorAlignRight: string;
+  tableEditorAlignTop: string;
+  tableEditorAlignMiddle: string;
+  tableEditorAlignBottom: string;
   tableEditorPasteAsTable: string;
   tableEditorCellAria: string;
   tableEditorColumnWidths: string;

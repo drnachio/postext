@@ -560,6 +560,9 @@ export function planTableSlice(metrics: TableRowMetrics, startRow: number, bodyB
   return cut > floor || best <= floor ? cut : best;
 }
 
+/** Share of a cell's spare height that goes above its content. */
+const VERTICAL_ALIGN_FACTOR: Readonly<Record<TableCellVerticalAlign, number>> = { top: 0, middle: 0.5, bottom: 1 };
+
 /** Lay out an HTML-table resource: weighted column split (see
  *  {@link computeColumnEdges}), per-cell rich-text measurement, row height =
  *  max measured cell height. Rowspans reserve their primary cell's full
@@ -609,6 +612,9 @@ function layoutTable(
     verticalAlign: TableCellVerticalAlign;
     lines: VDTLine[];
     contentHeight: number;
+    /** Height of the image + text stack, without padding — what
+     *  `verticalAlign` moves inside a taller cell. */
+    stackHeight: number;
     image: FittedCellImage | null;
     /** The cell's own fill (hex), when it has one. */
     background: string | undefined;
@@ -676,6 +682,7 @@ function layoutTable(
         verticalAlign: cell.verticalAlign ?? 'top',
         lines,
         contentHeight,
+        stackHeight,
         image,
         background,
       });
@@ -735,9 +742,13 @@ function layoutTable(
     const y0 = rowEdges[m.sliceRow] ?? 0;
     const y1 = rowEdges[Math.min(m.sliceRow + m.rowSpan, rowCount)] ?? tableHeight;
     const rect = createBoundingBox(x0, y0, x1 - x0, y1 - y0);
-    // Place lines inside the cell with padding; horizontal alignment is applied
-    // by the renderer via the cell rect + align flag.
-    const placed = shiftLines(m.lines, x0 + cellPaddingPx, y0 + cellPaddingPx);
+    // The image + text stack moves as one unit inside a cell taller than it
+    // (a tall neighbour in the row, or rows a rowspan covers): top, centred
+    // or at the bottom of the padded box.
+    const slack = Math.max(0, y1 - y0 - cellPaddingPx * 2 - m.stackHeight);
+    const top = y0 + cellPaddingPx + slack * VERTICAL_ALIGN_FACTOR[m.verticalAlign];
+    // Lines already carry their horizontal alignment (measureCellContent).
+    const placed = shiftLines(m.lines, x0 + cellPaddingPx, top);
     const image: VDTResourceTableCellImage | undefined = m.image
       ? {
           resourceId: m.image.resourceId,
@@ -745,7 +756,7 @@ function layoutTable(
           fileId: m.image.fileId,
           ...(m.image.format !== undefined ? { format: m.image.format } : {}),
           ...(m.image.altText !== undefined ? { altText: m.image.altText } : {}),
-          rect: createBoundingBox(x0 + cellPaddingPx + m.image.x, y0 + cellPaddingPx, m.image.width, m.image.height),
+          rect: createBoundingBox(x0 + cellPaddingPx + m.image.x, top, m.image.width, m.image.height),
         }
       : undefined;
     return {

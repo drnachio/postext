@@ -4,6 +4,9 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  AlignVerticalJustifyCenter,
+  AlignVerticalJustifyEnd,
+  AlignVerticalJustifyStart,
   ClipboardPaste,
   Columns,
   FileCode,
@@ -15,7 +18,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import type { ColorValue, TableCellAlign } from 'postext';
+import type { ColorValue, TableCellAlign, TableCellVerticalAlign } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext';
 import { ColorPicker } from '../../../controls/ColorPicker';
 import { Menu, MenuItem, MenuSeparator } from '../../../ui';
@@ -46,6 +49,8 @@ interface TableEditorToolbarProps {
   headerColumnActive: boolean;
   /** Current horizontal alignment of the active cell. */
   activeAlign: TableCellAlign | undefined;
+  /** Current vertical alignment of the active cell. */
+  activeVerticalAlign: TableCellVerticalAlign | undefined;
   onAddRow: () => void;
   onRemoveRow: () => void;
   onAddColumn: () => void;
@@ -55,6 +60,7 @@ interface TableEditorToolbarProps {
   onToggleHeaderRow: () => void;
   onToggleHeaderColumn: () => void;
   onSetAlign: (align: TableCellAlign) => void;
+  onSetVerticalAlign: (verticalAlign: TableCellVerticalAlign) => void;
   onPasteTsv: () => void;
   /** Bitmap / SVG resources offered for embedding in the active cell. */
   imageOptions: TableEditorImageOption[];
@@ -121,6 +127,7 @@ export function TableEditorToolbar({
   headerRowActive,
   headerColumnActive,
   activeAlign,
+  activeVerticalAlign,
   onAddRow,
   onRemoveRow,
   onAddColumn,
@@ -130,6 +137,7 @@ export function TableEditorToolbar({
   onToggleHeaderRow,
   onToggleHeaderColumn,
   onSetAlign,
+  onSetVerticalAlign,
   onPasteTsv,
   imageOptions,
   activeImageId,
@@ -213,6 +221,30 @@ export function TableEditorToolbar({
           active={activeAlign === 'right'}
         >
           <AlignRight size={iconSize} aria-hidden="true" />
+        </Btn>
+      </Group>
+      <Divider />
+      <Group>
+        <Btn
+          label={labels.tableEditorAlignTop}
+          onClick={() => onSetVerticalAlign('top')}
+          active={(activeVerticalAlign ?? 'top') === 'top'}
+        >
+          <AlignVerticalJustifyStart size={iconSize} aria-hidden="true" />
+        </Btn>
+        <Btn
+          label={labels.tableEditorAlignMiddle}
+          onClick={() => onSetVerticalAlign('middle')}
+          active={activeVerticalAlign === 'middle'}
+        >
+          <AlignVerticalJustifyCenter size={iconSize} aria-hidden="true" />
+        </Btn>
+        <Btn
+          label={labels.tableEditorAlignBottom}
+          onClick={() => onSetVerticalAlign('bottom')}
+          active={activeVerticalAlign === 'bottom'}
+        >
+          <AlignVerticalJustifyEnd size={iconSize} aria-hidden="true" />
         </Btn>
       </Group>
       <Divider />
