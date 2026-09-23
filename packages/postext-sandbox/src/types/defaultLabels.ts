@@ -1049,7 +1049,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   calloutStyleKeepTogether: 'Keep together',
   calloutStyleKeepTogetherTooltip: 'Never split the box: when it does not fit it moves whole to the next column or page. Turn off to let it break between its items or between the lines of a paragraph — the part that fits closes the column or page and the rest continues in a box without the title or icon',
   calloutStyleSplitMinLines: 'Lines kept on each side of a split',
-  calloutStyleSplitMinLinesTooltip: 'A split box keeps at least this many lines on both sides of the cut; when no cut can, the box moves whole',
+  calloutStyleSplitMinLinesTooltip: 'A split box keeps at least this many text lines (or one figure, table or formula) on both sides of the cut; when no cut can, the box moves whole',
   calloutStyleWidth: 'Width',
   calloutStyleWidthTooltip: 'Fill: the available width. Auto: shrink-wraps the title for badge-like callouts (children are ignored)',
   calloutStyleWidthFill: 'Fill',

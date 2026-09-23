@@ -473,7 +473,7 @@
     "calloutStyleKeepTogether": "Mantener unida",
     "calloutStyleKeepTogetherTooltip": "No partir nunca la caja: cuando no cabe pasa entera a la columna o página siguiente. Desactívalo para que pueda partirse entre sus elementos o entre las líneas de un párrafo: la parte que cabe cierra la columna o la página y el resto continúa en una caja sin título ni icono",
     "calloutStyleSplitMinLines": "Líneas a cada lado del corte",
-    "calloutStyleSplitMinLinesTooltip": "Una caja partida conserva al menos estas líneas a ambos lados del corte; si ningún corte lo permite, la caja pasa entera",
+    "calloutStyleSplitMinLinesTooltip": "Una caja partida conserva al menos estas líneas de texto (o una figura, tabla o fórmula) a ambos lados del corte; si ningún corte lo permite, la caja pasa entera",
     "calloutStyleWidth": "Anchura",
     "calloutStyleWidthTooltip": "Rellenar: todo el ancho disponible. Auto: se ajusta al título para recuadros tipo insignia (se ignora el contenido)",
     "calloutStyleWidthFill": "Rellenar",

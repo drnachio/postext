@@ -211,3 +211,39 @@ describe('floats yield to a keep-together box', () => {
     expect(floatsOf(split).find((x) => x.id === 'f1')!.page).toBe(0);
   }, 30000);
 });
+
+describe('splitMinLines guards text, not pictures', () => {
+  // A 200 px-tall picture stands one per page in the note (~245 px with its
+  // spacing on a ~590 px page): each cut past the paragraph leaves a lone
+  // picture on a side.
+  const pic: Resource = { ...figure('pic', 1000, 200, 'column'), caption: '', placement: { position: 'here' } };
+  const box = (...children: string[]): string => [':::callout{type="note"}', ...children, ':::'].join('\n\n');
+  const pics = (n: number): string[] => Array.from({ length: n }, () => '::resource{id="pic"}');
+  const kidsOf = (doc: VDTDocument, f: VDTBlock) => childrenOf(doc, f).map((k) => k.type);
+
+  it('a single picture may sit alone on either side of a cut: the box splits instead of overflowing', () => {
+    const doc = build(box(filler(2), ...pics(5)), SMALL_PAGE({ keepTogether: false }), [pic]);
+    expect(doc.warnings ?? []).toHaveLength(0);
+    const fs = frames(doc);
+    expect(fs.map((f) => f.pageIndex)).toEqual([0, 1, 2, 3, 4]);
+    expect(kidsOf(doc, fs[0]!)).toEqual(['paragraph', 'resource']);
+    for (const f of fs.slice(1)) expect(kidsOf(doc, f)).toEqual(['resource']);
+    for (const f of fs) {
+      const page = doc.pages[f.pageIndex]!;
+      expect(f.bbox.y + f.bbox.height).toBeLessThanOrEqual(page.contentArea.y + page.contentArea.height + 0.01);
+    }
+  }, 30000);
+
+  it('a lone trailing text line still never goes on by itself', () => {
+    // A picture, then a one-line paragraph: the only cut that fits leaves
+    // the line alone on the next page, so the box moves whole instead.
+    const md = `${filler(6)}\n\n${box(...pics(1), 'Una línea.')}`;
+    const doc = build(md, SMALL_PAGE({ keepTogether: false }), [pic]);
+    const fs = frames(doc);
+    expect(fs).toHaveLength(1);
+    expect(kidsOf(doc, fs[0]!)).toEqual(['resource', 'paragraph']);
+    // With a minimum of one line the same cut is taken.
+    const lax = build(md, SMALL_PAGE({ keepTogether: false, splitMinLines: 1 }), [pic]);
+    expect(frames(lax).map((f) => kidsOf(lax, f))).toEqual([['resource'], ['paragraph']]);
+  }, 30000);
+});

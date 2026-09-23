@@ -1871,12 +1871,14 @@ export function buildDocumentPass(
 
   /** The longest leading fragment of the box from cut `from` on whose box
    *  is at most `roomPx` tall. Cuts fall between children or between the
-   *  lines of a text child, and every fragment keeps at least the style's
-   *  `splitMinLines` lines on its side of the cut (a figure or a display
-   *  formula counts as one line). The full layout's geometry ranks the
-   *  candidates (box bottom = content bottom at the cut + the box's tail
-   *  below its last child); the deepest candidate that fits is laid out
-   *  for real and taken when it truly fits. `null` when none does. */
+   *  lines of a text child. `splitMinLines` guards text: a cut between
+   *  children leaves on each side at least that many text lines or at least
+   *  one indivisible block (a figure, table or display formula); a cut
+   *  inside a text child counts every line on its side, a block as one
+   *  line, as before. The full layout's geometry ranks the candidates (box
+   *  bottom = content bottom at the cut + the box's tail below its last
+   *  child); the deepest candidate that fits is laid out for real and
+   *  taken when it truly fits. `null` when none does. */
   const splitCalloutFragment = (
     L: CalloutLayouter,
     from: CalloutCut,
@@ -1891,33 +1893,48 @@ export function buildDocumentPass(
     const lastChild = full.children[full.children.length - 1];
     if (!lastChild) return null;
     const tail = full.totalHeight - (lastChild.bbox.y + lastChild.bbox.height);
-    const totalLines = full.children.reduce((n, c) => n + Math.max(1, c.lines.length), 0);
-    /** Candidate cuts with the head's content bottom and line count. */
-    const candidates: { cut: CalloutCut; bottom: number; headLines: number }[] = [];
+    /** Figures, tables and display formulas: never cut, not text lines. */
+    const indivisible = (c: VDTBlock): boolean => c.type === 'resource' || c.type === 'mathDisplay';
+    const lineCount = (c: VDTBlock): number => Math.max(1, c.lines.length);
+    const totalLines = full.children.reduce((n, c) => n + lineCount(c), 0);
+    const totalBlocks = full.children.filter(indivisible).length;
+    /** Candidate cuts with the head's content bottom, line count (a block
+     *  as one line) and indivisible-block count. */
+    const candidates: { cut: CalloutCut; bottom: number; headLines: number; headBlocks: number }[] = [];
     let linesBefore = 0;
+    let blocksBefore = 0;
     for (let i = 0; i < full.children.length; i++) {
       const c = full.children[i]!;
       const k = (c.contentIndex ?? L.childBase) - L.childBase;
-      const cuttable = c.type !== 'resource' && c.type !== 'mathDisplay' && c.lines.length > 1;
+      const cuttable = !indivisible(c) && c.lines.length > 1;
       // The first laid-out child of a continuation opens after `from.line`
       // lines: cuts inside it are counted from the child's own head.
       const lineBase = k === from.child ? from.line : 0;
       if (cuttable) {
         for (let l = 1; l < c.lines.length; l++) {
           const line = c.lines[l - 1]!;
-          candidates.push({ cut: { child: k, line: lineBase + l }, bottom: line.bbox.y + line.bbox.height, headLines: linesBefore + l });
+          candidates.push({ cut: { child: k, line: lineBase + l }, bottom: line.bbox.y + line.bbox.height, headLines: linesBefore + l, headBlocks: blocksBefore });
         }
       }
-      linesBefore += Math.max(1, c.lines.length);
+      linesBefore += lineCount(c);
+      if (indivisible(c)) blocksBefore++;
       if (i < full.children.length - 1) {
-        candidates.push({ cut: { child: k + 1, line: 0 }, bottom: c.bbox.y + c.bbox.height, headLines: linesBefore });
+        candidates.push({ cut: { child: k + 1, line: 0 }, bottom: c.bbox.y + c.bbox.height, headLines: linesBefore, headBlocks: blocksBefore });
       }
     }
     const min = Math.max(1, minLines);
+    /** A side of a cut holds enough: `lines` (blocks included) of which
+     *  `blocks` are indivisible. Between children, one block suffices or
+     *  the text lines alone meet the minimum; inside a text child, the
+     *  lines do. */
+    const sideHolds = (lines: number, blocks: number, betweenChildren: boolean): boolean =>
+      betweenChildren ? blocks > 0 || lines - blocks >= min : lines >= min;
     const insideGroup = (cut: CalloutCut): boolean =>
       L.groups.some(([gs, ge]) => (cut.line === 0 ? gs < cut.child && cut.child <= ge : gs < cut.child && cut.child < ge));
     const viable = candidates
-      .filter((c) => c.headLines >= min && totalLines - c.headLines >= min && !insideGroup(c.cut))
+      .filter((c) => sideHolds(c.headLines, c.headBlocks, c.cut.line === 0)
+        && sideHolds(totalLines - c.headLines, totalBlocks - c.headBlocks, c.cut.line === 0)
+        && !insideGroup(c.cut))
       .sort((a, b) => b.bottom - a.bottom);
     for (const c of viable) {
       if (c.bottom + tail > roomPx + 0.01) continue;

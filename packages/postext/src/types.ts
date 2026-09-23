@@ -1191,7 +1191,10 @@ export interface CalloutStyleConfig {
   keepTogether?: boolean;
   /** Fewest text lines a fragment of a split box may carry, on either side
    *  of the cut (`keepTogether: false`). Default 2: a box never breaks
-   *  leaving a lone line at the foot of a column or the head of the next. */
+   *  leaving a lone line at the foot of a column or the head of the next.
+   *  It guards text only: a side holding a figure, table or display formula
+   *  is acceptable whatever its line count (a cut inside a paragraph still
+   *  counts the lines on each side). */
   splitMinLines?: number;
 }
 
