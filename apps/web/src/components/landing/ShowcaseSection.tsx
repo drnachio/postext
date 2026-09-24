@@ -1,4 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import fs from "fs";
+import path from "path";
 import Image from "next/image";
 import { Kicker } from "@/components/brand/Kicker";
 import presetIndex from "../../../public/presets/index.json";
@@ -11,6 +13,19 @@ interface PresetEntry {
   description: string;
   thumbnail?: string;
   tags?: string[];
+}
+
+/** The bundle's content hash (`fingerprint.json`, rewritten by every build),
+ *  as a cache-busting version for its thumbnail URL: a re-captured cover
+ *  gets a new URL instead of a stale cached copy. */
+function bundleVersion(dir: string): string {
+  try {
+    const file = path.join(process.cwd(), "public/presets", dir, "fingerprint.json");
+    const { fingerprint } = JSON.parse(fs.readFileSync(file, "utf-8")) as { fingerprint?: string };
+    return fingerprint ? fingerprint.slice(0, 12) : "";
+  } catch {
+    return "";
+  }
 }
 
 /** Bundle descriptions are written "Spanish · English". */
@@ -74,11 +89,11 @@ export async function ShowcaseSection() {
             description={localizedDescription(p.description, locale)}
           >
             <Image
-              src={`/presets/${p.dir}/${p.thumbnail ?? "thumbnail.jpg"}`}
+              src={`/presets/${p.dir}/${p.thumbnail ?? "thumbnail.jpg"}?v=${bundleVersion(p.dir)}`}
               alt=""
               width={544}
               height={720}
-              sizes="(min-width: 1536px) 15rem, 14rem"
+              unoptimized
               className="block aspect-[210/280] h-auto w-full object-cover"
             />
           </Book>
