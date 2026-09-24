@@ -60,13 +60,14 @@ function PanelNav() {
   }, [updateIndicator]);
 
   return (
-    <nav ref={navRef} className="relative flex flex-col items-center gap-2" aria-label={labels.panelsNav}>
+    <nav ref={navRef} className="relative flex flex-col items-center gap-1.5" aria-label={labels.panelsNav}>
       {indicator && (
         <div
           aria-hidden="true"
           style={{
             position: 'absolute',
-            right: -9,
+            // Flush with the bar's right edge: the bar's horizontal padding.
+            right: '-0.25rem',
             top: indicator.top,
             height: indicator.height,
             width: 3,
@@ -97,7 +98,7 @@ function PanelNav() {
               onClick={() => dispatch({ type: 'TOGGLE_PANEL', payload: id })}
               aria-label={ariaLabel}
               aria-pressed={isActive}
-              className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
+              className="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
               style={{
                 color: isActive ? 'var(--brand)' : 'var(--slate)',
                 outlineColor: 'var(--brand-hover)',
@@ -109,7 +110,7 @@ function PanelNav() {
                 if (!isActive) e.currentTarget.style.color = 'var(--slate)';
               }}
             >
-              <Icon size={22} aria-hidden="true" />
+              <Icon size={18} aria-hidden="true" />
               {showBadge && (
                 <span
                   aria-hidden="true"
@@ -163,7 +164,7 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
   const labels = useSandboxLabels();
   return (
     <div
-      className="flex h-full w-14 flex-col items-center border-r px-2 py-3"
+      className="flex h-full w-11 flex-col items-center border-r px-1 pb-2"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
       role="toolbar"
       aria-label={labels.activityBar}
@@ -171,15 +172,16 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
     >
       {/* Home logo */}
       {homeLink ? (
-        <div className="mt-1 mb-2 flex h-10 w-10 items-center justify-center">
+        // The logo sits in the top band, level with the panel's title.
+        <div className="-mx-1 mb-2 flex h-9 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b" style={{ borderColor: 'var(--rule)' }}>
           {homeLink}
         </div>
       ) : homeUrl ? (
         <Tooltip content="Postext" side="right">
           <a
             href={homeUrl}
-            className="mt-1 mb-2 flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-            style={{ outlineColor: 'var(--brand)' }}
+            className="-mx-1 mb-2 flex h-9 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b transition-colors focus-visible:outline-1 focus-visible:-outline-offset-1"
+            style={{ outlineColor: 'var(--brand)', borderColor: 'var(--rule)' }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--surface)';
             }}
@@ -188,7 +190,7 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
             }}
           >
             <span
-              className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-[22%] text-lg font-extrabold leading-none text-white"
+              className="relative flex h-6 w-6 items-center justify-center overflow-hidden rounded-[22%] text-base font-extrabold leading-none text-white"
               style={{ backgroundColor: 'var(--brand-blue, #2b4acb)', fontFamily: 'var(--font-display, Georgia, serif)' }}
             >
               P
@@ -208,14 +210,14 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
       <div className="flex flex-col items-center gap-2">
         {/* Theme toggle slot */}
         {themeToggle && (
-          <div className="flex h-10 w-10 items-center justify-center">
+          <div className="flex h-8 w-8 items-center justify-center">
             {themeToggle}
           </div>
         )}
 
         {/* Language switcher slot */}
         {languageSwitcher && (
-          <div className="flex h-10 w-10 items-center justify-center">
+          <div className="flex h-8 w-8 items-center justify-center">
             {languageSwitcher}
           </div>
         )}

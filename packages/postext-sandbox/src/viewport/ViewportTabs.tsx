@@ -50,15 +50,16 @@ export function ViewportTabs() {
 
   return (
     <div
-      className="flex items-center justify-between"
+      className="flex h-9 shrink-0 items-stretch justify-between"
       style={{ borderBottom: '1px solid var(--rule)', backgroundColor: 'var(--background)' }}
     >
-      <div className="flex min-w-0 items-center px-2">
+      <div className="flex min-w-0 items-center px-3">
         {multiChapter && (
           <SegmentedControl<LayoutScope>
             value={activeViewport === 'pdf' ? pdfScope : canvasScope}
             onValueChange={(next) => dispatch({ type: activeViewport === 'pdf' ? 'SET_PDF_SCOPE' : 'SET_CANVAS_SCOPE', payload: next })}
             ariaLabel={activeViewport === 'pdf' ? labels.pdfScope : labels.canvasScope}
+            size="sm"
             options={[
               { value: 'chapter', label: labels.pdfScopeChapter },
               { value: 'book', label: labels.pdfScopeBook },
@@ -68,7 +69,7 @@ export function ViewportTabs() {
       </div>
       <div
         ref={containerRef}
-        className="relative flex shrink-0 items-center"
+        className="relative flex shrink-0 items-stretch"
         role="tablist"
         aria-label={labels.previewMode}
         onKeyDown={(e) => {
@@ -96,7 +97,7 @@ export function ViewportTabs() {
               tabIndex={isActive ? 0 : -1}
               onClick={() => dispatch({ type: 'SET_VIEWPORT', payload: tab })}
               className={cn(
-                'cursor-pointer px-4 py-2 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--brand-hover)',
+                'flex cursor-pointer items-center px-3 text-[0.68rem] font-medium tracking-[0.01em] transition-colors focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--brand-hover)',
                 isActive ? 'text-(--foreground)' : 'text-(--slate) hover:text-(--foreground)',
               )}
               style={{ borderLeft: '1px solid var(--rule)' }}

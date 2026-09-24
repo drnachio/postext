@@ -29,15 +29,15 @@ export function SandboxPage() {
       labels={labels}
       locale={locale}
       presetSources={PRESET_SOURCES}
-      themeToggle={<ThemeToggle />}
+      themeToggle={<ThemeToggle compact />}
       languageSwitcher={<CompactLanguageSwitcher />}
       homeLink={
         <Link
           href="/"
           aria-label="Postext"
-          className="flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-surface"
+          className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-surface"
         >
-          <LogoMark className="size-7 text-[1.75rem]" />
+          <LogoMark className="size-6 text-[1.5rem]" />
         </Link>
       }
     />
