@@ -29,7 +29,16 @@
     "lastUpdated": "Updated",
     "menu": "Menu",
     "openMenu": "Open navigation menu",
-    "closeMenu": "Close navigation menu"
+    "closeMenu": "Close navigation menu",
+    "partFoundations": "Foundations",
+    "partCraft": "The craft",
+    "partPractice": "In practice",
+    "part": "Part",
+    "chapter": "Chapter",
+    "contentsTitle": "Contents",
+    "contentsKicker": "Postext documentation",
+    "contentsLead": "Eight chapters in three parts: what Postext is and how it is built, the typographic craft it automates, and the tools you use it with.",
+    "readingTime": "Reading time"
   },
   "CodePen": {
     "run": "Run on CodePen",

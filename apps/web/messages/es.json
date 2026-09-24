@@ -29,7 +29,16 @@
     "lastUpdated": "Actualizado",
     "menu": "Menú",
     "openMenu": "Abrir menú de navegación",
-    "closeMenu": "Cerrar menú de navegación"
+    "closeMenu": "Cerrar menú de navegación",
+    "partFoundations": "Fundamentos",
+    "partCraft": "El oficio",
+    "partPractice": "La práctica",
+    "part": "Parte",
+    "chapter": "Capítulo",
+    "contentsTitle": "Índice",
+    "contentsKicker": "Documentación de Postext",
+    "contentsLead": "Ocho capítulos en tres partes: qué es Postext y cómo está construido, el oficio tipográfico que automatiza y las herramientas con las que se usa.",
+    "readingTime": "Tiempo de lectura"
   },
   "CodePen": {
     "run": "Ejecutar en CodePen",

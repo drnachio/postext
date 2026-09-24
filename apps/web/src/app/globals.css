@@ -330,23 +330,14 @@
   font-variation-settings: "SOFT" 30, "WONK" 0;
 }
 
-/* The cover ground: a baseline grid on night, fading out at the foot. */
-.hero-grid {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 21px,
-    rgba(244, 241, 234, 0.045) 21px,
-    rgba(244, 241, 234, 0.045) 22px
-  );
-  mask-image: linear-gradient(to bottom, black 55%, transparent);
-}
 .hero-title em,
 .hero-em {
   font-style: italic;
   font-weight: 600;
   color: var(--brand-gilt);
   font-variation-settings: "SOFT" 100, "WONK" 1;
+  /* italic correction before the upright word that follows */
+  padding-right: 0.06em;
 }
 
 /* The hero's model line re-justifies by animating this per-gap shift
@@ -356,18 +347,6 @@
   syntax: "<number>";
   inherits: true;
   initial-value: 0;
-}
-
-/* A baseline grid ruled in the band's own ink, for chapter bands. */
-.band-grid {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 23px,
-    currentColor 23px,
-    currentColor 24px
-  );
-  opacity: 0.07;
 }
 
 /* Book-set prose: justified Lora, hyphenated, first-line indents after the
@@ -515,6 +494,35 @@ html { font-size: 18px; }
   left: 1rem;
 }
 
+/* ── Part colours ──
+   `--part` fills bands and stripes, `--part-ink` sets text on the page
+   (theme-aware), `--part-on` sets text on a `--part` fill. */
+.part-blue {
+  --part: var(--brand-blue);
+  --part-ink: var(--accent-blue);
+  --part-on: #ffffff;
+}
+.part-gilt {
+  --part: var(--brand-gilt);
+  --part-ink: var(--gilt);
+  --part-on: var(--brand-night);
+}
+.part-vermilion {
+  --part: var(--brand-vermilion);
+  --part-ink: var(--vermilion);
+  --part-on: #ffffff;
+}
+:root,
+:root.dark,
+.on-night {
+  --table-head-bg: #2c313c;
+  --callout-bg: #1c1f26;
+}
+:root.light {
+  --table-head-bg: #15171c;
+  --callout-bg: #f7f1e3;
+}
+
 /* ── Docs MDX content ── */
 .docs-content {
   font-family: var(--font-body);
@@ -534,42 +542,54 @@ html { font-size: 18px; }
 }
 .docs-content h1 {
   font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-style: italic;
+  font-size: 1.75rem;
+  font-weight: 750;
   letter-spacing: -0.025em;
+  line-height: 1.05;
   margin-top: 0;
   margin-bottom: 1.25rem;
   color: var(--foreground);
 }
 .docs-content h2 {
   position: relative;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-family: var(--font-head);
+  font-size: 1.35rem;
   font-weight: 700;
-  font-style: italic;
-  letter-spacing: -0.025em;
-  margin-top: 2.5rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--rule);
-  color: var(--foreground);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin-top: 3rem;
+  margin-bottom: 0.85rem;
+  padding-top: 1rem;
+  color: var(--part-ink, var(--brand));
+  text-align: left;
+  hyphens: manual;
+}
+.docs-content h2::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.25rem;
+  height: 3px;
+  background: var(--part, var(--brand));
 }
 .docs-content h3 {
   position: relative;
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 600;
-  font-style: italic;
-  letter-spacing: -0.025em;
-  margin-top: 1.75rem;
+  font-family: var(--font-head);
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin-top: 2rem;
   margin-bottom: 0.5rem;
   color: var(--foreground);
+  text-align: left;
+  hyphens: manual;
 }
 @media (min-width: 768px) {
-  .docs-content h1 { font-size: 2rem; margin-bottom: 1.5rem; }
-  .docs-content h2 { font-size: 1.5rem; margin-top: 3rem; margin-bottom: 1rem; }
-  .docs-content h3 { font-size: 1.2rem; margin-top: 2rem; margin-bottom: 0.75rem; }
+  .docs-content h1 { font-size: 2.25rem; margin-bottom: 1.5rem; }
+  .docs-content h2 { font-size: 1.6rem; margin-top: 3.5rem; margin-bottom: 1rem; }
+  .docs-content h3 { font-size: 1.2rem; margin-top: 2.25rem; margin-bottom: 0.75rem; }
 }
 .docs-heading-anchor {
   display: none;
@@ -593,18 +613,22 @@ html { font-size: 18px; }
 .docs-heading:hover .docs-heading-anchor,
 .docs-heading-anchor:focus {
   opacity: 1;
-  color: var(--gilt);
+  color: var(--part-ink, var(--brand));
 }
 .docs-content p {
   margin-bottom: 1rem;
 }
 .docs-content a {
-  color: var(--gilt);
+  color: var(--part-ink, var(--brand));
+  font-weight: 500;
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, var(--part-ink, var(--brand)) 35%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
 }
 .docs-content a:hover {
-  color: var(--gilt-hover);
+  text-decoration-color: var(--part-ink, var(--brand));
 }
 .docs-content h2 a:not(.docs-heading-anchor),
 .docs-content h3 a:not(.docs-heading-anchor) {
@@ -622,9 +646,10 @@ html { font-size: 18px; }
   font-family: var(--font-mono);
   font-size: 0.78em;
   background: var(--surface);
-  padding: 0.15em 0.35em;
+  border: 1px solid var(--rule);
+  padding: 0.1em 0.35em;
   border-radius: 4px;
-  color: var(--gilt);
+  color: var(--part-ink, var(--brand));
   word-break: break-word;
 }
 @media (min-width: 768px) {
@@ -652,6 +677,7 @@ html { font-size: 18px; }
 }
 .docs-content pre code {
   background: none;
+  border: 0;
   padding: 0;
   border-radius: 0;
   color: var(--foreground);
@@ -688,18 +714,39 @@ html { font-size: 18px; }
   margin-top: 0.35rem;
   margin-bottom: 0;
 }
+/* Blockquotes read as the guide's "Try it" box: a warm panel with a
+   stripe in the part colour, set in the sans. */
 .docs-content blockquote {
-  border-left: 3px solid var(--gilt);
-  padding-left: 1rem;
-  margin-left: 0;
-  margin-bottom: 1rem;
-  color: var(--slate);
-  font-style: italic;
+  background: var(--callout-bg);
+  border-left: 4px solid var(--part, var(--brand));
+  border-radius: 0 6px 6px 0;
+  padding: 0.9rem 1.1rem 0.9rem 1.2rem;
+  margin: 1.5rem 0;
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+  line-height: 1.65;
+  text-align: left;
+  hyphens: manual;
+  color: var(--foreground);
 }
+.docs-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+.docs-content blockquote strong:first-child {
+  color: var(--part-ink, var(--brand));
+}
+/* A section break: the three part colours, short and centred. */
 .docs-content hr {
   border: none;
-  border-top: 1px solid var(--rule);
-  margin: 2.5rem 0;
+  height: 3px;
+  width: 4.5rem;
+  margin: 3rem auto;
+  background: var(--tri-stripe);
+}
+.docs-content ul > li::marker,
+.docs-content ol > li::marker {
+  color: var(--part-ink, var(--brand));
+  font-weight: 600;
 }
 .docs-content .scroll-wrapper {
   overflow-x: auto;
@@ -721,12 +768,23 @@ html { font-size: 18px; }
   text-align: left;
   font-weight: 600;
   padding: 0.6rem 0.75rem;
-  border-bottom: 2px solid var(--rule);
-  color: var(--foreground);
+  background: var(--table-head-bg);
+  color: #f4f1ea;
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+}
+.docs-content th code {
+  color: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: transparent;
+}
+.docs-content thead tr {
+  border-bottom: 3px solid var(--part, var(--brand));
 }
 .docs-content td {
+  text-align: left;
+  hyphens: manual;
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--rule);
   vertical-align: top;
@@ -765,7 +823,7 @@ html { font-size: 18px; }
   font-size: 0.78rem;
   color: var(--slate);
   text-align: center;
-  font-style: italic;
+  font-style: normal;
   line-height: 1.5;
   padding: 0 1rem;
 }
@@ -815,19 +873,21 @@ html { font-size: 18px; }
 }
 .docs-content .docs-codepen-run {
   flex-shrink: 0;
-  border: 1px solid var(--gilt);
+  border: 1px solid var(--part, var(--brand));
   border-radius: 4px;
   padding: 0.3rem 0.75rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: 0.75rem;
-  color: var(--gilt);
+  color: var(--part-ink, var(--brand));
   background: transparent;
   cursor: pointer;
   transition: color 0.15s, background-color 0.15s;
 }
 .docs-content .docs-codepen-run:hover:not(:disabled) {
-  color: var(--background);
-  background: var(--gilt);
+  color: var(--part-on, var(--brand-contrast));
+  background: var(--part, var(--brand));
+  text-decoration: none;
 }
 .docs-content .docs-codepen-run:disabled {
   opacity: 0.6;
