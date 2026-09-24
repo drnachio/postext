@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useId, useMemo, useState, type ReactNode } from 'react';
+import { forwardRef, useContext, useId, useMemo, useState, type ReactNode } from 'react';
 import { CircleHelp } from 'lucide-react';
 import { cn } from '../ui/cn';
 import { HighlightedText } from '../ui/highlight';
@@ -8,7 +8,7 @@ import { Tooltip } from '../ui/tooltip';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { useFieldMatch } from '../sidebar/search/MatchScope';
 import { normalizeText } from '../sidebar/search/normalize';
-import { FieldIdsContext, useHelpMode, type FieldIds } from './fieldContext';
+import { FieldIdsContext, ShowingDefaultsContext, useHelpMode, type FieldIds } from './fieldContext';
 import { ResetButton } from './ResetButton';
 
 export interface FieldRowProps {
@@ -47,9 +47,10 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
     () => normalizeText(`${label} ${tooltip ?? ''} ${extra}`),
     [label, tooltip, extra],
   );
-  const { visible, tokens } = useFieldMatch(haystack, isDefault === false);
-  const showReset = !isDefault && !!onReset;
-  const modified = isDefault === false;
+  const showingDefaults = useContext(ShowingDefaultsContext);
+  const modified = isDefault === false && !showingDefaults;
+  const { visible, tokens } = useFieldMatch(haystack, modified);
+  const showReset = !isDefault && !!onReset && !showingDefaults;
 
   const autoId = useId();
   const ids = useMemo<FieldIds>(() => ({

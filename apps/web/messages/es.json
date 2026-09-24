@@ -724,6 +724,7 @@
     "settingsSearchPlaceholder": "Buscar ajustes…",
     "settingsSearchClear": "Borrar búsqueda",
     "settingsSearchNoResults": "Ningún ajuste coincide con \"__query__\"",
+    "settingsSearchLoading": "Buscando en más secciones…",
     "settingsOverriddenOnly": "Cambiados",
     "settingsOverriddenOnlyEmpty": "Todavía no se ha modificado nada respecto al preset.",
     "settingsModifiedCount": "__count__ modificados",

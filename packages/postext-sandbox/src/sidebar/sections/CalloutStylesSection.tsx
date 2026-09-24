@@ -307,6 +307,9 @@ interface CalloutStyleCardProps {
   style: CalloutStyleConfig;
   resolved: ResolvedCalloutStyleConfig;
   otherIds: Set<string>;
+  /** Whether the style is stored in the config (the built-in style shown
+   *  while the config has no list is not an override). */
+  stored: boolean;
   iconResources: Resource[];
   /** Resolved document list values the optional bullet fields fall back to. */
   listDefaults: { bulletFontSize: Dimension; bulletFontWeight: number };
@@ -325,6 +328,7 @@ function CalloutStyleCard({
   style,
   resolved,
   otherIds,
+  stored,
   iconResources,
   listDefaults,
   onChange,
@@ -487,7 +491,7 @@ function CalloutStyleCard({
   ];
 
   return (
-    <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden>
+    <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden={stored}>
     <div className="mb-3 rounded border p-2" style={{ borderColor: 'var(--rule)' }}>
       <div className="mb-2 flex items-center justify-between gap-1">
         <span
@@ -1469,6 +1473,7 @@ export const CalloutStylesSection = memo(function CalloutStylesSection() {
           style={style}
           resolved={resolved[i] ?? resolveOne(style)}
           otherIds={new Set(styles.filter((s) => s.id !== style.id).map((s) => s.id))}
+          stored={raw !== undefined}
           iconResources={iconResources}
           listDefaults={{ bulletFontSize: unorderedLists.bulletFontSize, bulletFontWeight: unorderedLists.fontWeight }}
           onChange={(partial) => updateStyle(style.id, partial)}

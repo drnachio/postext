@@ -7,7 +7,6 @@ import {
   resolveBodyTextConfig,
   DEFAULT_ORDERED_LISTS_STATIC,
   dimensionsEqual,
-  colorsEqual,
 } from 'postext';
 import type {
   OrderedListsConfig,
@@ -135,7 +134,7 @@ export const OrderedListsSection = memo(function OrderedListsSection() {
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   const hasSeparatorOverrides = raw !== undefined && SEPARATOR_FIELDS.some((f) => raw[f] !== undefined);
   const isFontDefault = lists.fontFamily === bodyText.fontFamily;
-  const isColorDefault = colorsEqual(lists.color, bodyText.color);
+  const isColorDefault = raw?.color === undefined;
   const isFontWeightDefault = lists.fontWeight === D.fontWeight;
   const isItalicDefault = lists.italic === D.italic;
   const isNumberFormatDefault = lists.numberFormat === D.numberFormat;

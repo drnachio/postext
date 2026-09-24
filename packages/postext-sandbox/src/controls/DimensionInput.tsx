@@ -26,7 +26,7 @@ const DEFAULT_UNITS: DimensionUnit[] = ['cm', 'mm', 'in', 'pt'];
 export function DimensionInput({ label, value, onChange, min = 0, max, step = 0.1, tooltip, isDefault, onReset, units = DEFAULT_UNITS }: DimensionInputProps) {
   const muted = isDefault ?? false;
   return (
-    <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={units}>
+    <FieldRow label={label} tooltip={tooltip} isDefault={isDefault} onReset={onReset} extraTerms={units}>
       <DimensionControl label={label} value={value} onChange={onChange} min={min} max={max} step={step} units={units} muted={muted} />
     </FieldRow>
   );
