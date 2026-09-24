@@ -11,6 +11,14 @@ import type { CSSProperties } from "react";
 
 const VW = 1080;
 const VH = 840;
+/** One page of the spread; the spread is centred in the viewBox. */
+const PW = 462;
+const SX = (VW - 2 * PW) / 2;
+
+/** The empty margin either side of the spread, as a fraction of the
+ *  spread's width: a container that bleeds by this much on both sides
+ *  sets the spread's edges on its own. */
+export const HERO_SPREAD_BLEED = SX / (2 * PW);
 
 // Colours that depend on the ground are CSS variables (see STYLES): night
 // by default, a paper spread when the root is `.light` and the SVG is
@@ -219,9 +227,9 @@ export function HeroArt({ label, className, themed = false }: { label: string; c
   const rand = prng(1983);
   const pitch = 11;
 
-  const pw = 462;
+  const pw = PW;
   const ph = 616;
-  const sx = (VW - 2 * pw) / 2;
+  const sx = SX;
   const sy = 92;
   const margin = { top: 53, bottom: 48, inner: 44, outer: 44 };
   const colW = (pw - margin.inner - margin.outer - 20) / 2;

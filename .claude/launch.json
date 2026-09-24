@@ -9,6 +9,20 @@
       ],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "web-only",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "web",
+        "exec",
+        "next",
+        "dev",
+        "-p",
+        "3107"
+      ],
+      "port": 3107
     }
   ]
 }
