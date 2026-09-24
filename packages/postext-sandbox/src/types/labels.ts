@@ -10,13 +10,6 @@ export interface SandboxLabels {
   settingsSearchPlaceholder: string;
   settingsSearchClear: string;
   settingsSearchNoResults: string;
-  settingsCategories: string;
-  settingsCategoryAll: string;
-  settingsCategoryDocument: string;
-  settingsCategoryText: string;
-  settingsCategoryFigures: string;
-  settingsCategoryOutput: string;
-  settingsCategoryAdvanced: string;
   settingsOverriddenOnly: string;
   settingsOverriddenOnlyEmpty: string;
   settingsModifiedCount: string;
@@ -1613,4 +1606,11 @@ export interface SandboxLabels {
   bookFontsRoleOther: string;
   bookFontsSourceGoogle: string;
   bookFontsSourceCustom: string;
+  warningsEmptyDescription: string;
+  warningsGroupFonts: string;
+  warningsGroupFigures: string;
+  warningsGroupMarkup: string;
+  warningsGroupDesign: string;
+  warningsGroupTypesetting: string;
+  warningsGroupSystem: string;
 }
