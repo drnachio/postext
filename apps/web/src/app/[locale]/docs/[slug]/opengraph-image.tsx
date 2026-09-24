@@ -4,9 +4,14 @@ import {
   ogSize,
   ogContentType,
 } from "@/lib/og-image";
+import { getTranslations } from "next-intl/server";
 import { getDocSource, getDocSlugsForLocale } from "@/lib/docs";
+import { docPart } from "@/lib/docParts";
 
 export const alt = "Postext — Documentation";
+
+/** Part colours legible as small caps on night (the vermilion lifted). */
+const PART_INK = { blue: "#7f97f0", gilt: "#d8a21a", vermilion: "#e6765f" } as const;
 export const size = ogSize;
 export const contentType = ogContentType;
 
@@ -30,6 +35,16 @@ export default async function OgImage({
 
   const title = doc?.meta.title ?? "Postext";
   const description = doc?.meta.description;
+  if (!doc) return generateOgImage({ title, description });
 
-  return generateOgImage({ title, description });
+  const t = await getTranslations({ locale, namespace: "Docs" });
+  const part = docPart(doc.meta.order);
+  const name = t(`part${part.key[0]!.toUpperCase()}${part.key.slice(1)}` as "partFoundations");
+
+  return generateOgImage({
+    title,
+    description,
+    kicker: `${t("part")} ${part.number} · ${name}`,
+    accent: PART_INK[part.color],
+  });
 }

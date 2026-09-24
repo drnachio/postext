@@ -23,6 +23,16 @@ export const HERO_SPREAD_BLEED = SX / (2 * PW);
 // Colours that depend on the ground are CSS variables (see STYLES): night
 // by default, a paper spread when the root is `.light` and the SVG is
 // `themed` (the hero). The guide cover on the showcase shelf stays night.
+/** The night ground's values, for renderers without CSS (the social card). */
+export const HERO_ART_NIGHT: Record<string, string> = {
+  "--ha-night": "#0e1014",
+  "--ha-page": "#161920",
+  "--ha-edge": "#2a2f39",
+  "--ha-word": "#363d4a",
+  "--ha-soft": "#232833",
+  "--ha-gilt-soft": "#8a6a1c",
+};
+
 const C = {
   night: "var(--ha-night)",
   page: "var(--ha-page)",
@@ -193,7 +203,7 @@ function ModelLine({ x, y, width }: { x: number; y: number; width: number }) {
 }
 
 const STYLES = `
-.ha-root { --d: 0; --ha-night: #0e1014; --ha-page: #161920; --ha-edge: #2a2f39; --ha-word: #363d4a; --ha-soft: #232833; --ha-gilt-soft: #8a6a1c; }
+.ha-root { --d: 0; ${Object.entries(HERO_ART_NIGHT).map(([k, v]) => `${k}: ${v};`).join(" ")} }
 :root.light .ha-root.ha-themed { --ha-night: #15171c; --ha-page: #ffffff; --ha-edge: #e2ded4; --ha-word: #d6d2c8; --ha-soft: #f1f3f8; --ha-gilt-soft: #d8a21a; }
 :root.light .ha-root.ha-themed .ha-modelbox { fill: #ffffff; }
 @keyframes ha-fade { from { opacity: 0 } to { opacity: 1 } }

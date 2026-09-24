@@ -1,117 +1,128 @@
 import { ImageResponse } from "next/og";
+import { HeroArt, HERO_ART_NIGHT } from "@/components/landing/HeroArt";
 import { loadOgFonts } from "./og-fonts";
+import { svgMarkup } from "./og-svg";
 
-// The guide's cover, as a social card: night ground, the part colours
-// along the head, the mark, a gilt kicker, the title in Fraunces, a gilt
-// rule, the lead in Lora italic, and a page with a Postext-blue opener
-// band bleeding off the right edge.
+// The landing's hero in the dark theme, as a social card: night ground
+// with the blue and gilt glows, the mark, a kicker, the title in Fraunces
+// (an `<em>` word in gilt italic), a gilt rule, the lead in Lora italic,
+// the hero's spread with its crop marks and model line, and the part
+// colours along the foot.
 const NIGHT = "#0e1014";
-const PAGE = "#161920";
-const EDGE = "#2a2f39";
-const WORD = "#363d4a";
 const BLUE = "#2b4acb";
 const GILT = "#d8a21a";
 const VERMILION = "#c0452f";
-const CREAM = "#f4f1ea";
 const MIST = "#b9bcc4";
 
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 
-/** Word-box lines of a justified column (deterministic widths). */
-function lines(count: number, width: number, seed: number) {
-  const out: number[][] = [];
-  let s = seed;
-  const rnd = () => {
-    s = (s * 9301 + 49297) % 233280;
-    return s / 233280;
-  };
-  for (let i = 0; i < count; i++) {
-    const row: number[] = [];
-    let used = 0;
-    const target = i % 6 === 5 ? width * 0.55 : width;
-    while (used < target - 20) {
-      const w = Math.min(10 + Math.floor(rnd() * 34), target - used);
-      row.push(w);
-      used += w + 6;
-    }
-    out.push(row);
+/** The spread with its crop marks, cropped out of HeroArt's 1080×840. */
+const ART_VIEWBOX = { x: 44, y: 58, w: 992, h: 684 };
+const ART_WIDTH = 560;
+const ART_HEIGHT = Math.round((ART_WIDTH * ART_VIEWBOX.h) / ART_VIEWBOX.w);
+
+/** The hero's glows, blue from the top right and gilt from the bottom
+ *  left: an SVG, since Satori's radial gradients end in hard edges. */
+const GLOWS = `data:image/svg+xml;utf8,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><defs>` +
+    `<radialGradient id="b"><stop offset="0" stop-color="${BLUE}" stop-opacity="0.34"/><stop offset="1" stop-color="${BLUE}" stop-opacity="0"/></radialGradient>` +
+    `<radialGradient id="g"><stop offset="0" stop-color="${GILT}" stop-opacity="0.13"/><stop offset="1" stop-color="${GILT}" stop-opacity="0"/></radialGradient>` +
+    `</defs><circle cx="1080" cy="40" r="520" fill="url(#b)"/><circle cx="60" cy="660" r="440" fill="url(#g)"/></svg>`,
+)}`;
+
+let artSrc: string | undefined;
+function heroArtSrc() {
+  if (!artSrc) {
+    const { x, y, w, h } = ART_VIEWBOX;
+    const svg = svgMarkup(HeroArt({ label: "" }), HERO_ART_NIGHT).replace(/viewBox="[^"]*"/, `viewBox="${x} ${y} ${w} ${h}"`);
+    artSrc = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
-  return out;
+  return artSrc;
 }
 
-function Column({ x, y, width, count, seed }: { x: number; y: number; width: number; count: number; seed: number }) {
-  return (
-    <div style={{ position: "absolute", left: x, top: y, display: "flex", flexDirection: "column", gap: 9 }}>
-      {lines(count, width, seed).map((row, i) => (
-        <div key={i} style={{ display: "flex", gap: 6, width, justifyContent: "space-between" }}>
-          {row.map((w, j) => (
-            <div key={j} style={{ width: w, height: 6, borderRadius: 2, backgroundColor: WORD }} />
-          ))}
-        </div>
-      ))}
-    </div>
-  );
+/** Words of a title, with those inside `<em>…</em>` flagged. */
+function titleWords(title: string) {
+  return title
+    .split(/(<em>.*?<\/em>)/)
+    .flatMap((part) => {
+      const em = part.startsWith("<em>");
+      const text = em ? part.slice(4, -5) : part;
+      return text.split(/\s+/).filter(Boolean).map((word) => ({ word, em }));
+    });
 }
 
 export async function generateOgImage({
   title,
   description,
   kicker = "Programmable typesetter · postext.dev",
+  accent = GILT,
 }: {
+  /** May carry one `<em>…</em>` span, set in gilt italic like the hero's. */
   title: string;
   description?: string;
   kicker?: string;
+  /** Kicker colour: gilt, or a docs part's colour. */
+  accent?: string;
 }) {
   const fonts = await loadOgFonts();
+  const words = titleWords(title);
+  const length = words.reduce((n, w) => n + w.word.length + 1, 0);
+  const size = length <= 26 ? 66 : length <= 44 ? 58 : 48;
 
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", backgroundColor: NIGHT }}>
-        {/* The part colours along the head */}
-        <div style={{ position: "absolute", top: 0, left: 0, width: 1200, height: 10, display: "flex" }}>
-          <div style={{ flex: 1, backgroundColor: BLUE }} />
-          <div style={{ flex: 1, backgroundColor: GILT }} />
-          <div style={{ flex: 1, backgroundColor: VERMILION }} />
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+        <img src={GLOWS} width={1200} height={630} style={{ position: "absolute", left: 0, top: 0 }} />
+        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+        <img src={heroArtSrc()} width={ART_WIDTH} height={ART_HEIGHT} style={{ position: "absolute", left: 620, top: Math.round((630 - 8 - ART_HEIGHT) / 2) }} />
 
-        {/* A page bleeding off the right edge: opener band + columns */}
-        <div style={{ position: "absolute", left: 840, top: 90, width: 440, height: 600, display: "flex", backgroundColor: PAGE, border: `2px solid ${EDGE}` }}>
-          <div style={{ position: "absolute", left: 0, top: 0, width: 440, height: 170, backgroundColor: BLUE, display: "flex" }}>
-            <div style={{ position: "absolute", left: 36, top: 42, width: 50, height: 5, backgroundColor: CREAM }} />
-            <div style={{ position: "absolute", left: 36, top: 62, width: 190, height: 18, borderRadius: 3, backgroundColor: CREAM }} />
-            <div style={{ position: "absolute", left: 36, top: 88, width: 130, height: 18, borderRadius: 3, backgroundColor: CREAM }} />
-            <div style={{ position: "absolute", left: 250, top: 6, fontFamily: "Fraunces", fontSize: 150, fontWeight: 800, color: CREAM, lineHeight: 1 }}>1</div>
-          </div>
-          <div style={{ position: "absolute", left: 0, top: 170, width: 440, height: 6, backgroundColor: NIGHT }} />
-          <Column x={36} y={206} width={150} count={24} seed={7} />
-          <Column x={206} y={206} width={150} count={24} seed={31} />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", padding: "64px 80px 60px", width: 820, height: "100%" }}>
-          {/* The mark and the wordmark */}
+        <div style={{ display: "flex", flexDirection: "column", padding: "56px 0 64px 72px", width: 600, height: "100%" }}>
+          {/* The mark and the wordmark, as in the navbar */}
           <div style={{ display: "flex", alignItems: "center" }}>
-            <div style={{ width: 58, height: 58, borderRadius: 13, backgroundColor: BLUE, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-              <div style={{ fontFamily: "Fraunces", fontSize: 44, fontWeight: 800, color: "#ffffff", marginTop: -6 }}>P</div>
-              <div style={{ position: "absolute", left: 0, bottom: 0, width: 58, height: 8, backgroundColor: GILT }} />
+            <div style={{ width: 50, height: 50, borderRadius: 11, backgroundColor: BLUE, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+              <div style={{ fontFamily: "Fraunces", fontSize: 38, fontWeight: 800, color: "#ffffff", marginTop: -5 }}>P</div>
+              <div style={{ position: "absolute", left: 0, bottom: 0, width: 50, height: 7, backgroundColor: GILT }} />
             </div>
-            <div style={{ fontFamily: "Fraunces", fontSize: 44, fontWeight: 800, color: "#ffffff", marginLeft: 18, letterSpacing: -1.2 }}>Postext</div>
+            <div style={{ fontFamily: "Fraunces", fontSize: 36, fontWeight: 800, color: "#ffffff", marginLeft: 16, letterSpacing: -0.8 }}>Postext</div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
-            <div style={{ fontFamily: "Geist", fontSize: 19, fontWeight: 600, color: GILT, letterSpacing: 4, textTransform: "uppercase" }}>
+            <div style={{ fontFamily: "Geist", fontSize: 16, fontWeight: 600, color: accent, letterSpacing: 3, textTransform: "uppercase" }}>
               {kicker}
             </div>
-            <div style={{ fontFamily: "Fraunces", fontSize: title.length > 40 ? 58 : 70, fontWeight: 800, color: "#ffffff", lineHeight: 1.04, letterSpacing: -0.6, marginTop: 18, maxWidth: 720 }}>
-              {title}
+            <div style={{ display: "flex", flexWrap: "wrap", columnGap: size * 0.24, marginTop: 16, maxWidth: 540, lineHeight: 1.02 }}>
+              {words.map(({ word, em }, i) => (
+                <div
+                  key={i}
+                  style={{
+                    fontFamily: "Fraunces",
+                    fontSize: size,
+                    fontWeight: em ? 600 : 800,
+                    fontStyle: em ? "italic" : "normal",
+                    color: em ? GILT : "#ffffff",
+                    letterSpacing: em ? 0 : -size * 0.02,
+                  }}
+                >
+                  {word}
+                </div>
+              ))}
             </div>
-            <div style={{ width: 80, height: 5, backgroundColor: GILT, marginTop: 28 }} />
+            <div style={{ width: 56, height: 4, backgroundColor: GILT, marginTop: 26 }} />
             {description && (
-              <div style={{ fontFamily: "Lora", fontStyle: "italic", fontSize: 25, color: MIST, lineHeight: 1.4, marginTop: 24, maxWidth: 700 }}>
+              <div style={{ fontFamily: "Lora", fontStyle: "italic", fontSize: 23, color: MIST, lineHeight: 1.42, marginTop: 20, maxWidth: 520 }}>
                 {description}
               </div>
             )}
           </div>
+        </div>
+
+        {/* The part colours along the foot, as under the hero */}
+        <div style={{ position: "absolute", left: 0, bottom: 0, width: 1200, height: 8, display: "flex" }}>
+          <div style={{ flex: 1, backgroundColor: BLUE }} />
+          <div style={{ flex: 1, backgroundColor: GILT }} />
+          <div style={{ flex: 1, backgroundColor: VERMILION }} />
         </div>
       </div>
     ),

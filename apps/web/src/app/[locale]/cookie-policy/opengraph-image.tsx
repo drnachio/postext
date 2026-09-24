@@ -16,9 +16,11 @@ export default async function OgImage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "CookiePolicy" });
+  const footer = await getTranslations({ locale, namespace: "Footer" });
 
   return generateOgImage({
     title: t("title"),
     description: t("metaDescription"),
+    kicker: `Postext · ${footer("legal")}`,
   });
 }
