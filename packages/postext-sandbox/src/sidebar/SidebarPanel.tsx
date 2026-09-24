@@ -19,6 +19,8 @@ export function SidebarPanel({ children }: SidebarPanelProps) {
       className="h-full shrink-0 overflow-hidden"
       style={{
         width: widthValue,
+        // Settings rows need room for a label beside its control.
+        minWidth: isOpen ? 'min(320px, 45vw)' : 0,
         backgroundColor: 'var(--background)',
         transition: sidebarDragging ? 'none' : 'width 200ms ease-in-out',
       }}

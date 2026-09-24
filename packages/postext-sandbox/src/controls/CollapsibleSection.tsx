@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { ChevronRight, RotateCcw } from 'lucide-react';
 import { saveSectionState, loadSectionState } from '../storage/persistence';
 import { useSandboxLabels } from '../context/SandboxContext';
@@ -23,6 +23,10 @@ interface CollapsibleSectionProps {
    *  header that nests inside another section. */
   variant?: 'section' | 'subsection';
 }
+
+/** How deep a section sits: 0 for the sections of a settings page, 1+ for
+ *  the ones nested inside them. */
+const SectionDepthContext = createContext(0);
 
 /** Collapsible settings group. Open state is remembered per `sectionId`.
  *  While the settings search is active every section is forced open and
@@ -76,7 +80,7 @@ interface SectionFrameProps {
 function SectionFrame({
   title,
   sectionId,
-  defaultOpen,
+  defaultOpen: defaultOpenProp,
   children,
   onReset,
   hasOverrides,
@@ -89,9 +93,16 @@ function SectionFrame({
   const search = useSettingsSearch();
   const { overrideCount } = useScopeCounts();
   const visible = useScopeVisible(titleMatch, hasOverrides);
+  const depth = useContext(SectionDepthContext);
+  // The sections of a settings page start open (the page already narrows
+  // what is shown); their open state is remembered under its own key so the
+  // old all-in-one list's collapsed state does not carry over.
+  const topLevel = depth === 0 && variant === 'section';
+  const storageKey = sectionId ? (topLevel ? `page:${sectionId}` : sectionId) : undefined;
+  const defaultOpen = topLevel ? true : defaultOpenProp;
   const [open, setOpen] = useState(() => {
-    if (sectionId) {
-      const saved = loadSectionState(sectionId);
+    if (storageKey) {
+      const saved = loadSectionState(storageKey);
       if (saved !== null) return saved;
     }
     return defaultOpen;
@@ -102,7 +113,7 @@ function SectionFrame({
     if (search.active) return;
     const next = !open;
     setOpen(next);
-    if (sectionId) saveSectionState(sectionId, next);
+    if (storageKey) saveSectionState(storageKey, next);
   };
 
   const isSubsection = variant === 'subsection';
@@ -114,46 +125,45 @@ function SectionFrame({
       onOpenChange={toggle}
       style={visible ? undefined : { display: 'none' }}
       data-section-id={sectionId}
+      className={cn(topLevel && 'border-t border-(--rule)', !topLevel && !isSubsection && 'my-1.5 rounded-md border border-(--rule)')}
     >
-      <div
-        className={cn('flex w-full items-center', !isSubsection && 'border-b')}
-        style={{ borderColor: 'var(--rule)' }}
-      >
+      <div className="flex w-full items-center">
         <Collapsible.Trigger
           className={cn(
-            'flex flex-1 cursor-pointer items-center justify-between gap-2 border-0 bg-transparent px-3 py-2 text-left text-xs transition-colors',
-            'focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--brand-hover)',
-            isSubsection
-              ? 'text-(--slate) hover:text-(--foreground)'
-              : 'font-semibold uppercase tracking-wider text-(--brand) hover:text-(--foreground)',
+            'flex flex-1 cursor-pointer items-center gap-2 border-0 bg-transparent text-left transition-colors',
+            'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
+            topLevel
+              ? 'min-h-10 px-3 py-2 text-[0.8rem] font-semibold text-(--foreground) hover:bg-(--surface)'
+              : isSubsection
+                ? 'min-h-8 px-3 py-1.5 text-[0.72rem] font-medium text-(--slate) hover:text-(--foreground)'
+                : 'min-h-8 rounded-md px-2.5 py-1.5 text-xs font-medium text-(--foreground) hover:bg-(--surface)',
           )}
         >
-          <span className="min-w-0 truncate">
+          <ChevronRight
+            size={topLevel ? 14 : 12}
+            aria-hidden="true"
+            className="shrink-0 text-(--slate)"
+            style={{ transform: effectiveOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}
+          />
+          <span className="min-w-0 flex-1 [text-wrap:pretty]">
             <HighlightedText text={title} tokens={search.matcher.tokens} />
           </span>
-          <span className="flex shrink-0 items-center gap-1.5">
-            {modified && (
-              <span
-                className="inline-flex items-center gap-1 text-[10px] font-medium normal-case tracking-normal"
-                style={{ color: 'var(--brand)', fontVariantNumeric: 'tabular-nums' }}
-                title={labels.settingsModifiedCount.replace('__count__', String(overrideCount))}
-              >
-                <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--brand)' }} />
-                {overrideCount > 0 && overrideCount}
-              </span>
-            )}
-            <ChevronRight
-              size={14}
-              aria-hidden="true"
-              style={{ transform: effectiveOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}
-            />
-          </span>
+          {modified && (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 text-[0.62rem] font-medium text-(--brand) tabular-nums"
+              title={labels.settingsModifiedCount.replace('__count__', String(overrideCount))}
+            >
+              <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-(--brand)" />
+              {overrideCount > 0 && <span aria-hidden="true">{overrideCount}</span>}
+              <span className="sr-only">{labels.settingsModifiedCount.replace('__count__', String(overrideCount))}</span>
+            </span>
+          )}
         </Collapsible.Trigger>
         {hasOverrides && onReset && (
           <ConfirmPopover message={resetConfirmMessage ?? labels.resetSectionConfirm} onConfirm={onReset}>
             {({ open: openConfirm }) => (
               <IconButton
-                label={resetLabel ?? labels.resetSection}
+                label={`${resetLabel ?? labels.resetSection}: ${title}`}
                 icon={<RotateCcw size={12} />}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -166,7 +176,9 @@ function SectionFrame({
         )}
       </div>
       <Collapsible.Panel keepMounted data-postext-collapsible="" data-instant={search.active ? '' : undefined}>
-        <div className="px-3 py-2">{children}</div>
+        <SectionDepthContext value={depth + 1}>
+          <div className={cn('@container', topLevel ? 'px-3 pt-1 pb-3' : isSubsection ? 'px-3 pb-2' : 'px-2.5 pb-2')}>{children}</div>
+        </SectionDepthContext>
       </Collapsible.Panel>
     </Collapsible.Root>
   );

@@ -4,7 +4,7 @@
 
 import type { PostextConfig } from 'postext';
 import { isDefaultColorPalette } from 'postext';
-import { SETTINGS_SECTIONS, type SettingsCategoryId, type SettingsSectionEntry, type SettingsSectionId } from './registry';
+import { SETTINGS_GROUPS, SETTINGS_SECTIONS, type SettingsGroupId, type SettingsSectionEntry, type SettingsSectionId } from './registry';
 
 function hasKeys(v: unknown): boolean {
   return typeof v === 'object' && v !== null && Object.keys(v).length > 0;
@@ -59,11 +59,11 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
   }
 }
 
-/** Number of overridden sections per category. */
-export function categoryOverrideCounts(config: PostextConfig): Record<SettingsCategoryId, number> {
-  const counts: Record<SettingsCategoryId, number> = { document: 0, text: 0, figures: 0, output: 0, advanced: 0 };
+/** Number of overridden sections per group. */
+export function groupOverrideCounts(config: PostextConfig): Record<SettingsGroupId, number> {
+  const counts = Object.fromEntries(SETTINGS_GROUPS.map((g) => [g.id, 0])) as Record<SettingsGroupId, number>;
   for (const s of SETTINGS_SECTIONS) {
-    if (sectionHasOverrides(config, s.id)) counts[s.category]++;
+    if (sectionHasOverrides(config, s.id)) counts[s.group]++;
   }
   return counts;
 }
