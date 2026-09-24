@@ -45,7 +45,9 @@ import {
   NumberInput,
   SelectInput,
   ToggleSwitch,
+  ChoiceInput,
 } from '../../controls';
+import { ColumnsPicture } from '../settings/pictures';
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
@@ -229,9 +231,9 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
     { value: 'center', label: labels.partsBodyTextAlignCenter },
   ];
   const LAYOUT_TYPE_OPTIONS = [
-    { value: 'single', label: labels.layoutSingle },
-    { value: 'double', label: labels.layoutDouble },
-    { value: 'oneAndHalf', label: labels.layoutOneAndHalf },
+    { value: 'single' as const, label: labels.layoutSingle, description: labels.layoutSingleDescription, picture: <ColumnsPicture kind="single" /> },
+    { value: 'double' as const, label: labels.layoutDouble, description: labels.layoutDoubleDescription, picture: <ColumnsPicture kind="double" /> },
+    { value: 'oneAndHalf' as const, label: labels.layoutOneAndHalf, description: labels.layoutOneAndHalfDescription, picture: <ColumnsPicture kind="oneAndHalf" /> },
   ];
   const SIDE_ROLE_OPTIONS = [
     { value: 'text', label: labels.sideColumnRoleText },
@@ -576,7 +578,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
         <p className="px-2 py-1 text-xs" style={infoStyle}>
           {labels.headingStyleLayoutInfo}
         </p>
-        <SelectInput
+        <ChoiceInput
           label={labels.layoutType}
           value={resolvedLayout.layoutType}
           options={LAYOUT_TYPE_OPTIONS}
@@ -668,6 +670,14 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
             )}
           </NestedGroup>
         )}
+        <ToggleSwitch
+          label={labels.fitFiguresToPage}
+          checked={resolvedLayout.fitFiguresToPage}
+          onChange={(v) => updateLayout({ fitFiguresToPage: v })}
+          tooltip={labels.fitFiguresToPageTooltip}
+          isDefault={layout?.fitFiguresToPage === undefined}
+          onReset={() => resetLayoutField('fitFiguresToPage')}
+        />
       </CollapsibleSection>
 
       <CollapsibleSection

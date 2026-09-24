@@ -38,6 +38,7 @@ function SandboxLayout({
   const dispatch = useSandboxDispatch();
   const config = useSandboxSelector((s) => s.config);
   const activePanel = useSandboxSelector((s) => s.activePanel);
+  const sidebarPercent = useSandboxSelector((s) => s.sidebarPercent);
   const activeViewport = useSandboxSelector((s) => s.activeViewport);
   useChapterHashSync();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -164,7 +165,11 @@ function SandboxLayout({
       </SidebarPanel>
 
       {activePanel !== null && (
-        <ResizableHandle onPointerDown={handlePointerDown} />
+        <ResizableHandle
+          onPointerDown={handlePointerDown}
+          value={sidebarPercent}
+          onValueChange={(v) => dispatch({ type: 'SET_SIDEBAR_PERCENT', payload: v })}
+        />
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">

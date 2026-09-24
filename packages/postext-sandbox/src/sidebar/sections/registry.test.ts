@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LABELS } from '../../types/defaultLabels';
-import { SETTINGS_CATEGORIES, SETTINGS_SECTIONS, isSettingsCategoryFilter, sectionsInCategory } from './registry';
+import { SETTINGS_GROUPS, SETTINGS_SECTIONS, groupOfSection, isSettingsGroupId, sectionsInGroup } from './registry';
 
 describe('settings registry', () => {
   it('lists every section exactly once', () => {
@@ -8,19 +8,24 @@ describe('settings registry', () => {
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toHaveLength(24);
   });
-  it('points every section and category at an existing label', () => {
+  it('points every section and group at an existing label', () => {
     for (const s of SETTINGS_SECTIONS) expect(typeof DEFAULT_LABELS[s.labelKey]).toBe('string');
-    for (const c of SETTINGS_CATEGORIES) expect(typeof DEFAULT_LABELS[c.labelKey]).toBe('string');
+    for (const g of SETTINGS_GROUPS) {
+      expect(typeof DEFAULT_LABELS[g.labelKey]).toBe('string');
+      expect(typeof DEFAULT_LABELS[g.descriptionKey]).toBe('string');
+    }
   });
-  it('assigns every section to a known category', () => {
-    const cats = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
-    for (const s of SETTINGS_SECTIONS) expect(cats.has(s.category)).toBe(true);
-    const total = SETTINGS_CATEGORIES.reduce((n, c) => n + sectionsInCategory(c.id).length, 0);
+  it('assigns every section to a known group, and no group is empty', () => {
+    const groups = new Set(SETTINGS_GROUPS.map((g) => g.id));
+    for (const s of SETTINGS_SECTIONS) expect(groups.has(s.group)).toBe(true);
+    for (const g of SETTINGS_GROUPS) expect(sectionsInGroup(g.id).length).toBeGreaterThan(0);
+    const total = SETTINGS_GROUPS.reduce((n, g) => n + sectionsInGroup(g.id).length, 0);
     expect(total).toBe(SETTINGS_SECTIONS.length);
+    expect(groupOfSection('toc')).toBe('headings');
   });
-  it('validates category filters', () => {
-    expect(isSettingsCategoryFilter('all')).toBe(true);
-    expect(isSettingsCategoryFilter('text')).toBe(true);
-    expect(isSettingsCategoryFilter('nope')).toBe(false);
+  it('validates group ids', () => {
+    expect(isSettingsGroupId('text')).toBe(true);
+    expect(isSettingsGroupId('all')).toBe(false);
+    expect(isSettingsGroupId('nope')).toBe(false);
   });
 });

@@ -6,16 +6,12 @@ interface NestedGroupProps {
   children: ReactNode;
 }
 
+/** Fields that only apply because of the row above them (e.g. the gutter
+ *  of a two-column layout): indented under a quiet rule. A size container,
+ *  so rows inside switch to label-above-control on their own width. */
 export function NestedGroup({ children }: NestedGroupProps) {
   return (
-    <div
-      className="relative"
-      style={{
-        marginLeft: 8,
-        paddingLeft: 12,
-        borderLeft: '1px solid var(--brand)',
-      }}
-    >
+    <div className="@container relative mb-1.5 ml-1 border-l-2 border-(--rule) pl-3">
       {children}
     </div>
   );

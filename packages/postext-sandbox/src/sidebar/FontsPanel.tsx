@@ -1,5 +1,6 @@
 'use client';
 
+import { BookFonts } from './BookFonts';
 import { useCallback, useRef, useState } from 'react';
 import { ChevronRight, Pencil, Plus, RotateCcw, Trash2, Type, Upload } from 'lucide-react';
 import type { CustomFontFamily, CustomFontVariant, CustomFontStyle } from 'postext';
@@ -182,7 +183,7 @@ export function FontsPanel() {
   return (
     <div className="flex h-full flex-col">
       <PanelHeader
-        title={labels.fonts}
+        title={labels.navFonts}
         actions={
           hasCustomFonts && (
             <ConfirmPopover message={labels.resetSectionConfirm} onConfirm={() => { void resetAll(); }}>
@@ -192,7 +193,11 @@ export function FontsPanel() {
         }
       />
       <PanelBody padded>
-        <p className="mb-3 text-xs" style={{ color: 'var(--slate)' }}>
+        <BookFonts />
+        <h3 className="mb-1 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">
+          {labels.customFonts}
+        </h3>
+        <p className="mb-3 text-[0.68rem] leading-[1.4] text-(--slate)">
           {labels.customFontsTooltip}
         </p>
         {customFonts.length === 0 && (

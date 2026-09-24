@@ -6,6 +6,8 @@ import { cn } from './cn';
 export interface SegmentedOption<T extends string> {
   value: T;
   label: ReactNode;
+  /** Tooltip / accessible name when `label` is an icon. */
+  title?: string;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -13,15 +15,20 @@ interface SegmentedControlProps<T extends string> {
   onValueChange: (value: T) => void;
   options: readonly SegmentedOption<T>[];
   ariaLabel: string;
+  /** Name the group by a visible label instead of `ariaLabel`. */
+  ariaLabelledBy?: string;
+  ariaDescribedBy?: string;
   /** `sm` for a discreet control in a toolbar band. */
   size?: 'md' | 'sm';
+  /** Stretch to the container's width, options sharing it evenly. */
+  fill?: boolean;
   className?: string;
 }
 
 /** One pill split into mutually exclusive choices: an outer border with
  *  rounded ends, a vertical rule between the options, and a solid fill on
  *  the selected one. Radio semantics; arrow keys move the selection. */
-export function SegmentedControl<T extends string>({ value, onValueChange, options, ariaLabel, size = 'md', className }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({ value, onValueChange, options, ariaLabel, ariaLabelledBy, ariaDescribedBy, size = 'md', fill, className }: SegmentedControlProps<T>) {
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const idx = options.findIndex((o) => o.value === value);
     let next: number | null = null;
@@ -38,9 +45,16 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
   return (
     <div
       role="radiogroup"
-      aria-label={ariaLabel}
+      aria-label={ariaLabelledBy ? undefined : ariaLabel}
+      aria-labelledby={ariaLabelledBy}
+      aria-describedby={ariaDescribedBy}
       onKeyDown={onKeyDown}
-      className={cn('inline-flex shrink-0 items-stretch overflow-hidden rounded-full border', size === 'sm' ? 'h-[1.3rem]' : 'h-7', className)}
+      className={cn(
+        'inline-flex items-stretch overflow-hidden rounded-full border',
+        fill ? 'flex w-full' : 'shrink-0',
+        size === 'sm' ? 'h-[1.3rem]' : 'h-7',
+        className,
+      )}
       style={{ borderColor: 'var(--rule)' }}
     >
       {options.map((o, i) => {
@@ -51,15 +65,18 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
             type="button"
             role="radio"
             aria-checked={selected}
+            aria-label={o.title && typeof o.label !== 'string' ? o.title : undefined}
+            title={o.title}
             tabIndex={selected ? 0 : -1}
             onClick={() => { if (!selected) onValueChange(o.value); }}
             className={cn(
-              'cursor-pointer whitespace-nowrap transition-colors',
+              'inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap transition-colors',
+              fill && 'min-w-0 flex-1',
               size === 'sm' ? 'px-2 text-[0.62rem]' : 'px-3 text-xs',
-              'focus-visible:outline-1 focus-visible:-outline-offset-2 outline-(--brand-hover)',
+              'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
               selected
-                ? 'bg-(--surface) font-medium text-(--foreground)'
-                : 'bg-transparent text-(--slate) hover:text-(--foreground)',
+                ? 'bg-(--brand-soft,var(--surface)) font-medium text-(--foreground)'
+                : 'bg-transparent text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
             )}
             style={i > 0 ? { borderLeft: '1px solid var(--rule)' } : undefined}
           >

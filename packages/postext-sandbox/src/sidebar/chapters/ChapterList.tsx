@@ -209,7 +209,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
               openConfirmRef.current = open;
               return (
                 <Menu
-                  trigger={<IconButton ref={menuButtonRef} label={labels.chapterRename} icon={<MoreHorizontal size={13} />} tooltip={false} />}
+                  trigger={<IconButton ref={menuButtonRef} label={labels.rowMoreActions.replace('__name__', chapter.title)} icon={<MoreHorizontal size={13} />} tooltip={false} />}
                 >
                   <MenuItem icon={<Pencil size={13} />} onClick={startRename}>{labels.chapterRename}</MenuItem>
                   <MenuItem icon={<ArrowUp size={13} />} disabled={index === 0} onClick={() => dispatch({ type: 'MOVE_CHAPTER', payload: { id: chapter.id, to: index - 1 } })}>

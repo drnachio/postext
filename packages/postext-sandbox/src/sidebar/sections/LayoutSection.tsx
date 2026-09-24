@@ -5,6 +5,7 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../
 import { resolveLayoutConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
 import type { LayoutConfig, Dimension, ColorValue } from 'postext';
 import {
+  ChoiceInput,
   CollapsibleSection,
   SelectInput,
   DimensionInput,
@@ -13,6 +14,8 @@ import {
   ToggleSwitch,
   ColorPicker,
 } from '../../controls';
+import { HighlightZone } from '../settings/previewHighlight';
+import { ColumnsPicture } from '../settings/pictures';
 
 const D = DEFAULT_LAYOUT_CONFIG;
 
@@ -78,10 +81,10 @@ export const LayoutSection = memo(function LayoutSection() {
     }
   };
 
-  const LAYOUT_TYPE_OPTIONS = [
-    { value: 'single', label: labels.layoutSingle },
-    { value: 'double', label: labels.layoutDouble },
-    { value: 'oneAndHalf', label: labels.layoutOneAndHalf },
+  const LAYOUT_TYPE_OPTIONS: { value: LayoutConfig['layoutType'] & string; label: string; description: string; picture: React.ReactNode }[] = [
+    { value: 'single', label: labels.layoutSingle, description: labels.layoutSingleDescription, picture: <ColumnsPicture kind="single" /> },
+    { value: 'double', label: labels.layoutDouble, description: labels.layoutDoubleDescription, picture: <ColumnsPicture kind="double" /> },
+    { value: 'oneAndHalf', label: labels.layoutOneAndHalf, description: labels.layoutOneAndHalfDescription, picture: <ColumnsPicture kind="oneAndHalf" /> },
   ];
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
@@ -116,7 +119,7 @@ export const LayoutSection = memo(function LayoutSection() {
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
-      <SelectInput
+      <ChoiceInput
         label={labels.layoutType}
         value={layout.layoutType}
         options={LAYOUT_TYPE_OPTIONS}
@@ -139,6 +142,7 @@ export const LayoutSection = memo(function LayoutSection() {
       {(showGutter || showSideCol) && (
         <NestedGroup>
           {showGutter && (
+            <HighlightZone part="gutter">
             <DimensionInput
               label={labels.gutterWidth}
               value={layout.gutterWidth}
@@ -149,6 +153,7 @@ export const LayoutSection = memo(function LayoutSection() {
               isDefault={isGutterDefault}
               onReset={() => resetField('gutterWidth')}
             />
+            </HighlightZone>
           )}
           {showSideCol && (
             <NumberInput
@@ -227,6 +232,15 @@ export const LayoutSection = memo(function LayoutSection() {
           )}
         </NestedGroup>
       )}
+
+      <ToggleSwitch
+        label={labels.fitFiguresToPage}
+        checked={layout.fitFiguresToPage}
+        onChange={(v) => updateLayout({ fitFiguresToPage: v })}
+        tooltip={labels.fitFiguresToPageTooltip}
+        isDefault={layout.fitFiguresToPage === D.fitFiguresToPage}
+        onReset={() => resetField('fitFiguresToPage')}
+      />
     </CollapsibleSection>
   );
 });
