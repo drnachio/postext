@@ -14,7 +14,7 @@ export async function Footer() {
   return (
     <footer role="contentinfo" className="on-night dark relative bg-night text-cream">
       <div aria-hidden="true" className="tri-stripe h-1.5 w-full" />
-      <div className="mx-auto max-w-6xl px-6 pt-16 pb-10 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
+      <div className="mx-auto max-w-6xl px-6 pt-12 pb-8 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
           <div className="md:col-span-5">
             <Link href="/" aria-label={nav("home")} className="inline-block rounded-md text-white">
@@ -68,7 +68,7 @@ export async function Footer() {
           </nav>
         </div>
 
-        <div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-6 font-sans text-xs text-mist/60 md:flex-row md:items-center md:justify-between 2xl:text-sm">
+        <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 font-sans text-xs text-mist/60 md:flex-row md:items-center md:justify-between 2xl:text-sm">
           <p>{t("copyright", { year: new Date().getFullYear() })}</p>
           <p className="font-body italic">{t("colophon")}</p>
         </div>

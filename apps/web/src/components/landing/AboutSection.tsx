@@ -41,8 +41,8 @@ export async function AboutSection() {
         lead={t("lead")}
       />
 
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
-        <div className="book-prose two-col reveal text-[1.05rem] leading-[1.75] text-foreground/90 2xl:text-lg">
+      <div className="mx-auto max-w-6xl px-6 py-14 md:py-20 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
+        <div className="book-prose two-col reveal text-base leading-[1.75] text-foreground/90">
           <p>{t("paragraph1")}</p>
           <p>
             {t("paragraph2prefix")}
@@ -58,7 +58,7 @@ export async function AboutSection() {
           </p>
         </div>
 
-        <figure className="reveal mt-20 md:mt-24">
+        <figure className="reveal mt-14 md:mt-16">
           <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-12 md:gap-6">
             <div className="md:col-span-5">
               <Kicker className="mb-3 text-slate">{t("inputLabel")}</Kicker>

@@ -39,26 +39,26 @@ export async function HowItWorksSection() {
         title={t("title")}
         lead={t("lead")}
       />
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
+      <div className="mx-auto max-w-6xl px-6 py-14 md:py-20 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <ol className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-10" aria-label={t("title")}>
           {steps.map((step, i) => (
             <li key={step.number} className="reveal relative">
               <div className="flex items-baseline gap-4 border-t-[3px] border-red pt-5">
-                <span className="display text-6xl text-vermilion 2xl:text-7xl" aria-hidden="true">
+                <span className="display text-5xl text-vermilion" aria-hidden="true">
                   {i + 1}
                 </span>
                 <span className="kicker text-slate">{step.number}</span>
               </div>
-              <h3 className="mt-5 font-head text-xl font-bold tracking-[-0.01em] 2xl:text-2xl">{step.title}</h3>
-              <p className="mt-3 font-body leading-[1.75] text-foreground/75 2xl:text-lg">{step.description}</p>
+              <h3 className="mt-4 font-head text-lg font-bold tracking-[-0.01em] md:text-xl">{step.title}</h3>
+              <p className="mt-2 font-body leading-[1.7] text-foreground/75">{step.description}</p>
             </li>
           ))}
         </ol>
 
-        <div className="reveal mt-24 grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-12">
+        <div className="reveal mt-16 grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-12">
           <div className="md:col-span-4">
             <Kicker className="text-vermilion">{api("eyebrow")}</Kicker>
-            <h3 className="display mt-4 text-4xl 2xl:text-5xl" style={{ textWrap: "balance" }}>
+            <h3 className="display mt-4 text-3xl md:text-4xl" style={{ textWrap: "balance" }}>
               {api("title")}
             </h3>
             <p className="mt-5 font-body leading-[1.75] text-foreground/75 2xl:text-lg">

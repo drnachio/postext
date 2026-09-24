@@ -28,7 +28,7 @@ export default async function Home({
         <HeroSection />
         <AboutSection />
         <FiguresSection />
-        <div className="h-24 md:h-32" aria-hidden="true" />
+        <div className="h-14 md:h-20" aria-hidden="true" />
         <FeaturesSection />
         <QuoteSection />
         <ShowcaseSection />

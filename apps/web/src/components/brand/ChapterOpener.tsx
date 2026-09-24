@@ -29,24 +29,24 @@ export function ChapterOpener({
         aria-hidden="true"
         className="band-grid pointer-events-none absolute inset-0 -z-10"
       />
-      <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-16 md:pt-28 md:pb-20 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
+      <div className="relative mx-auto max-w-6xl px-6 pt-12 pb-10 md:pt-16 md:pb-12 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <span
           aria-hidden="true"
-          className="chapter-numeral display pointer-events-none absolute -top-2 right-4 select-none text-[11rem] leading-[0.8] md:right-8 md:text-[17rem] 2xl:text-[20rem]"
+          className="chapter-numeral display pointer-events-none absolute -top-2 right-4 select-none text-[8rem] leading-[0.8] md:right-8 md:text-[12rem] 2xl:text-[13rem]"
         >
           {number}
         </span>
         <Kicker className="relative max-w-[70%] opacity-95">{kicker}</Kicker>
-        <span aria-hidden="true" className="relative mt-4 block h-[3px] w-14 bg-current" />
+        <span aria-hidden="true" className="relative mt-3 block h-[3px] w-12 bg-current" />
         <h2
           id={id}
-          className="display relative mt-7 max-w-[17ch] text-[2.6rem] md:text-[4.2rem] 2xl:text-[4.8rem]"
+          className="display relative mt-5 max-w-[18ch] text-[2.1rem] md:text-[3rem] 2xl:text-[3.3rem]"
           style={{ textWrap: "balance" }}
         >
           {title}
         </h2>
         {lead && (
-          <p className="relative mt-7 max-w-2xl font-body text-lg leading-relaxed italic opacity-95 md:text-xl">
+          <p className="relative mt-5 max-w-2xl font-body text-base leading-relaxed italic opacity-95 md:text-lg">
             {lead}
           </p>
         )}
