@@ -53,7 +53,9 @@ export function NumberField({
   className,
 }: NumberFieldProps) {
   const decimals = decimalsOf(step);
-  const chars = widthCh ?? Math.max(String(value).length, 2) + 1;
+  // Fixed width (fits "9999,99"): a box that grows with its value would
+  // move the − / + buttons under the pointer between clicks.
+  const chars = widthCh ?? 5;
   return (
     <NumberFieldPrimitive.Root
       id={id}
@@ -87,7 +89,7 @@ export function NumberField({
             'min-w-0 bg-transparent px-1 text-center text-xs tabular-nums outline-none',
             muted ? 'text-(--slate)' : 'text-(--foreground)',
           )}
-          style={{ width: `${chars + 1}ch` }}
+          style={{ width: `${chars}ch` }}
         />
         {steppers && (
           <NumberFieldPrimitive.Increment className={STEPPER} aria-label={incrementLabel} tabIndex={-1}>

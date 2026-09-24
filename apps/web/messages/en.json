@@ -1800,7 +1800,17 @@
     "navDesign": "Design",
     "navDesignHint": "Page, typography, headings, figures, boxes and export settings",
     "navWarnings": "Checks",
-    "navWarningsHint": "Typesetting problems found in the layout: widows, loose lines, overflowing figures…"
+    "navWarningsHint": "Typesetting problems found in the layout: widows, loose lines, overflowing figures…",
+    "bodyTightenRunts": "Tighten to pull a runt back",
+    "bodyTightenRuntsTooltip": "When the penalty alone can't avoid a very short last line, set the paragraph one line shorter by tightening its word spacing (never below the minimum) and, if needed, a little letter spacing. Needs optimal line breaking.",
+    "bodyMaxRuntTracking": "Most letter-spacing tightening",
+    "bodyMaxRuntTrackingTooltip": "How much letter spacing the fix may remove, in thousandths of an em (as in InDesign: 10 = 0.01 em per letter). 0 leaves the fix to word spacing alone.",
+    "calloutStyleBodyItalicColor": "Italic colour",
+    "calloutStyleBodyItalicColorTooltip": "Colour of the italic runs inside the box. Inherits the body text italic colour.",
+    "partsPage": "Part title page",
+    "partsPageTooltip": "On: each :::part opens its own title page. Off: no page is opened; the part's number, title and colours simply apply from the next content.",
+    "headerFooterElementTextAlign": "Text alignment",
+    "headerFooterElementTextAlignTooltip": "How the text sits inside its own box: flush left, centred or flush right. Only visible when the box is wider than the text (fixed or full width)."
   },
   "Accessibility": {
     "skipToContent": "Skip to main content"

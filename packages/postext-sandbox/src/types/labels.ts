@@ -1583,4 +1583,14 @@ export interface SandboxLabels {
   navDesignHint: string;
   navWarnings: string;
   navWarningsHint: string;
+  bodyTightenRunts: string;
+  bodyTightenRuntsTooltip: string;
+  bodyMaxRuntTracking: string;
+  bodyMaxRuntTrackingTooltip: string;
+  calloutStyleBodyItalicColor: string;
+  calloutStyleBodyItalicColorTooltip: string;
+  partsPage: string;
+  partsPageTooltip: string;
+  headerFooterElementTextAlign: string;
+  headerFooterElementTextAlignTooltip: string;
 }

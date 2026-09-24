@@ -149,6 +149,16 @@ export const PartsSection = memo(function PartsSection() {
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
+      <ToggleSwitch
+        label={labels.partsPage}
+        checked={raw?.page !== false}
+        onChange={(v) => setGroup('page', v ? undefined : false)}
+        tooltip={labels.partsPageTooltip}
+        isDefault={raw?.page === undefined}
+        onReset={() => setGroup('page', undefined)}
+      />
+      {raw?.page !== false && (
+        <>
       <SelectInput
         label={labels.partsBreakBeforeParity}
         value={parts.breakBefore.parity}
@@ -339,6 +349,8 @@ export const PartsSection = memo(function PartsSection() {
           labels={labels}
         />
       </CollapsibleSection>
+        </>
+      )}
     </CollapsibleSection>
   );
 });

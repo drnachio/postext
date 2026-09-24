@@ -1,5 +1,7 @@
 'use client';
 
+import { DEFAULT_BODY_TEXT_CONFIG } from 'postext';
+
 import type { BodyTextConfig, ResolvedBodyTextConfig } from 'postext';
 import { NestedGroup, NumberInput, ToggleSwitch } from '../../../controls';
 import type { useSandboxLabels } from '../../../context/SandboxContext';
@@ -165,6 +167,30 @@ export function RuntsSubsection({
         isDefault={isAvoidRuntsInListsDefault}
         onReset={() => resetField('avoidRuntsInLists')}
       />
+      <ToggleSwitch
+        label={labels.bodyTightenRunts}
+        checked={bodyText.tightenRunts}
+        onChange={(checked) => updateBodyText({ tightenRunts: checked })}
+        tooltip={labels.bodyTightenRuntsTooltip}
+        isDefault={bodyText.tightenRunts === DEFAULT_BODY_TEXT_CONFIG.tightenRunts}
+        onReset={() => resetField('tightenRunts')}
+      />
+      {bodyText.tightenRunts && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.bodyMaxRuntTracking}
+            value={bodyText.maxRuntTracking}
+            onChange={(v) => updateBodyText({ maxRuntTracking: v })}
+            min={0}
+            max={50}
+            step={1}
+            suffix="‰"
+            tooltip={labels.bodyMaxRuntTrackingTooltip}
+            isDefault={bodyText.maxRuntTracking === DEFAULT_BODY_TEXT_CONFIG.maxRuntTracking}
+            onReset={() => resetField('maxRuntTracking')}
+          />
+        </NestedGroup>
+      )}
     </NestedGroup>
   );
 }

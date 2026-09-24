@@ -41,6 +41,8 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'warnings':
       return hasKeys(config.debug?.warnings);
     case 'page':
+      // The baseline grid is stored under `page` but belongs to Debug.
+      return Object.keys(config.page ?? {}).some((k) => k !== 'baselineGrid');
     case 'layout':
     case 'parts':
     case 'headings':

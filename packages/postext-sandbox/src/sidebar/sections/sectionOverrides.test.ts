@@ -32,6 +32,7 @@ describe('sectionHasOverrides', () => {
     expect(sectionHasOverrides(warningsOnly, 'warnings')).toBe(true);
     expect(sectionHasOverrides(warningsOnly, 'debug')).toBe(false);
     const grid: PostextConfig = { ...base, page: { baselineGrid: { enabled: true } } };
+    expect(sectionHasOverrides(grid, 'page')).toBe(false);
     expect(sectionHasOverrides(grid, 'debug')).toBe(true);
   });
 });

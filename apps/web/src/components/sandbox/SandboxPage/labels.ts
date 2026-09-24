@@ -1523,5 +1523,15 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     navDesignHint: t("navDesignHint"),
     navWarnings: t("navWarnings"),
     navWarningsHint: t("navWarningsHint"),
+    bodyTightenRunts: t("bodyTightenRunts"),
+    bodyTightenRuntsTooltip: t("bodyTightenRuntsTooltip"),
+    bodyMaxRuntTracking: t("bodyMaxRuntTracking"),
+    bodyMaxRuntTrackingTooltip: t("bodyMaxRuntTrackingTooltip"),
+    calloutStyleBodyItalicColor: t("calloutStyleBodyItalicColor"),
+    calloutStyleBodyItalicColorTooltip: t("calloutStyleBodyItalicColorTooltip"),
+    partsPage: t("partsPage"),
+    partsPageTooltip: t("partsPageTooltip"),
+    headerFooterElementTextAlign: t("headerFooterElementTextAlign"),
+    headerFooterElementTextAlignTooltip: t("headerFooterElementTextAlignTooltip"),
   };
 }

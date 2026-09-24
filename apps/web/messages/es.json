@@ -1800,7 +1800,17 @@
     "navDesign": "Diseño",
     "navDesignHint": "Ajustes de página, tipografía, títulos, figuras, recuadros y exportación",
     "navWarnings": "Revisión",
-    "navWarningsHint": "Problemas de composición encontrados: viudas, líneas abiertas, figuras que no caben…"
+    "navWarningsHint": "Problemas de composición encontrados: viudas, líneas abiertas, figuras que no caben…",
+    "bodyTightenRunts": "Apretar para recoger la línea corta",
+    "bodyTightenRuntsTooltip": "Si la penalización no basta para evitar una última línea muy corta, compone el párrafo con una línea menos apretando el espacio entre palabras (nunca por debajo del mínimo) y, si hace falta, un poco el espaciado entre letras. Requiere la partición óptima de líneas.",
+    "bodyMaxRuntTracking": "Máximo apretado de letras",
+    "bodyMaxRuntTrackingTooltip": "Cuánto espaciado entre letras puede quitar el ajuste, en milésimas de eme (como en InDesign: 10 = 0,01 eme por letra). Con 0 solo se ajusta el espacio entre palabras.",
+    "calloutStyleBodyItalicColor": "Color de la cursiva",
+    "calloutStyleBodyItalicColorTooltip": "Color de los tramos en cursiva dentro del recuadro. Hereda el color de cursiva del texto principal.",
+    "partsPage": "Portadilla de parte",
+    "partsPageTooltip": "Activado: cada :::part abre su propia portadilla. Desactivado: no se abre página; el número, el título y los colores de la parte se aplican desde el contenido siguiente.",
+    "headerFooterElementTextAlign": "Alineación del texto",
+    "headerFooterElementTextAlignTooltip": "Cómo se coloca el texto dentro de su propia caja: a la izquierda, centrado o a la derecha. Solo se nota cuando la caja es más ancha que el texto (ancho fijo o completo)."
   },
   "Accessibility": {
     "skipToContent": "Saltar al contenido principal"

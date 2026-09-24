@@ -1251,6 +1251,15 @@ function CalloutStyleCard({
           onReset={() => resetGroupField('body', 'boldColor')}
           fieldId={`${fieldId}-body-bold`}
         />
+        <ColorPicker
+          label={labels.calloutStyleBodyItalicColor}
+          value={resolved.body.italicColor ?? resolved.body.color}
+          onChange={(v) => body({ italicColor: v })}
+          tooltip={labels.calloutStyleBodyItalicColorTooltip}
+          isDefault={groupUnset('body', 'italicColor')}
+          onReset={() => resetGroupField('body', 'italicColor')}
+          fieldId={`${fieldId}-body-italic`}
+        />
         <SelectInput
           label={labels.alignmentLabel}
           value={resolved.body.textAlign}
