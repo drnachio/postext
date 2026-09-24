@@ -215,7 +215,7 @@ Look at the comparison images and fix the config or the Markdown. Aim for:
 python3 scripts/preset_kit.py pack my-book        # my-book.postext
 ```
 
-Import it at https://postext.dev/en/sandbox (Projects → Import .postext), or
+Import it at https://postext.dev/en/sandbox (Books → New → Open a .postext file…), or
 serve a presets folder to a local sandbox (`preset_kit.py index <root>` +
 `POSTEXT_PRIVATE_PRESETS_DIR`). The same file loads in the user's own
 program through the `postext` npm package (`openBundle` → `buildBundle` →

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-09-22',
+  lastUpdated: '2026-09-24',
   readingTime: '30 min',
   order: 3,
 };
@@ -1978,7 +1978,7 @@ Para la gramática del documento (`$...$`, `$$...$$`, cómo escapar un dólar li
 
 ## Tipos de recurso
 
-Un **tipo de recurso** es una categoría definible por el usuario — *Figura*, *Tabla*, *Diagrama*, *Listado*… — que determina cómo se numeran, cómo se rotula su pie y cómo se referencian los recursos de esa clase. La lista vive en `config.resourceTypes`; el sandbox la edita mediante una sección específica del panel de configuración.
+Un **tipo de recurso** es una categoría definible por el usuario — *Figura*, *Tabla*, *Diagrama*, *Listado*… — que determina cómo se numeran, cómo se rotula su pie y cómo se referencian los recursos de esa clase. La lista vive en `config.resourceTypes`; el Sandbox la edita en **Diseño → Figuras y tablas → Numeración y colocación**.
 
 Cuando `config.resourceTypes` no está definido, Postext incluye dos valores por defecto integrados: **Figura** y **Tabla**, ambos numerados como `{h1}.{n}` (reiniciando en cada encabezado de nivel 1) con contadores decimales.
 
@@ -3511,7 +3511,7 @@ El binario de cada variante **no** se empotra en la propia configuración. La co
 
 ### Gestionar fuentes personalizadas en el sandbox
 
-Abre el panel **Fonts** desde la barra de actividad izquierda (entre Resources y Configuration). Para cada familia:
+Abre el panel **Fuentes** desde la barra de actividad izquierda (entre Figuras y Diseño). Su lista **Tipos de letra de este libro** muestra cada familia que usa el diseño, con su función y si viene de Google Fonts o de un archivo propio. En **Tus archivos de fuente**, para cada familia:
 
 1. **Añadir familia** — crea una familia vacía; renómbrala en línea.
 2. **Subir variante(s)** — elige un peso (100–900) y un estilo (normal / italic), y selecciona uno *o varios* archivos `.woff2`, `.woff`, `.ttf` u `.otf`. Cada archivo se convierte en su propia variante asociada a la combinación (peso, estilo) seleccionada; el nombre del archivo queda guardado y se muestra en la fila para diferenciar variantes. Puedes retocar el peso o el estilo de una variante desde sus desplegables en cualquier momento.
@@ -3531,13 +3531,13 @@ Bajo el capó:
 
 ### Avisos de fuentes faltantes
 
-El panel de avisos reconoce tres modos nuevos de fallo específicos de las fuentes personalizadas (todos gobernados por el mismo toggle `debug.warnings.missingFont` que ya controla el aviso genérico "no cargada"):
+El panel **Revisión** del Sandbox muestra en su grupo *Fuentes* tres modos de fallo específicos de las fuentes personalizadas (todos gobernados por el mismo toggle `debug.warnings.missingFont` que ya controla el aviso genérico "no cargada"):
 
 - **Familia desconocida** — un `fontFamily` referencia un nombre que no es ni una Google Font conocida ni una familia personalizada actualmente declarada. También salta al instante cuando eliminas una familia personalizada que algún `fontFamily` todavía referencia, sin esperar a que el DOM lo note.
 - **Variante faltante** — la familia existe pero al menos una de las ranuras estándar (400 / 700, normal / italic) no tiene archivo subido. El aviso enumera las combinaciones concretas que faltan.
 - **Variante duplicada** — dos o más archivos comparten la misma ranura (peso, estilo) dentro de una misma familia. Solo uno se usa al renderizar; el aviso te recuerda que retoques las entradas sobrantes.
 
-Al pulsar cualquiera de los avisos se abre el panel **Fonts** para que subas la variante necesaria, vuelvas a añadir la familia o desambigües los duplicados.
+Al pulsar cualquiera de los avisos se abre el panel **Fuentes** para que subas la variante necesaria, vuelvas a añadir la familia o desambigües los duplicados.
 
 ## Paleta de colores
 
@@ -3620,7 +3620,7 @@ const flat = applyPaletteToConfig(config);
 
 ### Editar la paleta
 
-Para eliminar una entrada conviene usar `unlinkPaletteRefs` (exportado desde `postext-sandbox`) de modo que cualquier `ColorValue` que todavía apunte al id eliminado se reescriba con el `hex` / `model` de respaldo. La sección "Paleta de colores" del sandbox lo hace automáticamente.
+Para eliminar una entrada conviene usar `unlinkPaletteRefs` (exportado desde `postext-sandbox`) de modo que cualquier `ColorValue` que todavía apunte al id eliminado se reescriba con el `hex` / `model` de respaldo. La sección *Paleta* del Sandbox (**Diseño → Colores**) lo hace automáticamente.
 
 
 ## Visor HTML
@@ -3786,7 +3786,7 @@ Consulta [Generación de PDF](#generación-de-pdf) más abajo para la receta com
 
 ## Depuración
 
-La propiedad `debug` agrupa dos tipos de ayudas de autoría: superposiciones visuales que mantienen sincronizados el texto fuente y la composición renderizada, y un conjunto de avisos que muestran en el panel de avisos del editor los problemas tipográficos o estructurales del documento. Ninguno de los dos afecta a la salida exportada.
+La propiedad `debug` agrupa dos tipos de ayudas de autoría: superposiciones visuales que mantienen sincronizados el texto fuente y la composición renderizada, y un conjunto de avisos que muestran en el panel Revisión del Sandbox los problemas tipográficos o estructurales del documento. Ninguno de los dos afecta a la salida exportada.
 
 <table>
   <thead>
@@ -3901,7 +3901,7 @@ debug: {
 
 ### Avisos
 
-`debug.warnings` controla qué problemas de autoría aparecen en el panel de avisos del editor. Cada clave es un interruptor booleano independiente; pon una en `false` para silenciar ese aviso concreto sin desactivar los demás.
+`debug.warnings` controla qué problemas de autoría aparecen en el panel **Revisión** del Sandbox (se edita en **Diseño → Avanzado → Avisos**). Cada clave es un interruptor booleano independiente; pon una en `false` para silenciar ese aviso concreto sin desactivar los demás.
 
 ```ts
 interface WarningsToggleConfig {
@@ -4857,8 +4857,8 @@ El pen compone un libro de dos capítulos con una figura SVG y lista los archivo
 
 Como el Sandbox, el skill para agentes y el paquete `postext` leen y escriben el mismo archivo, un `.postext` es una forma cómoda de pasar un libro de una herramienta a otra:
 
-- **Partir de un paquete.** Porta una publicación existente con el [skill para agentes](/es/docs/skill), o diseña un libro en el [Sandbox](/es/sandbox) y expórtalo (**Exportar** en su fila del panel de Proyectos). Carga el archivo desde tu programa con `openBundle` para renderizarlo en canvas, HTML o PDF. Conserva el archivo como fuente del libro: edita en código los capítulos, la configuración o los recursos y vuelve a escribirlo con `createBundle`, o simplemente vuelve a cargarlo cada vez que cambie.
-- **Depurar y ajustar en el Sandbox.** Cuando algo de lo que produce tu programa necesita retoques (una figura que cae en la página equivocada, un estilo de encabezado, el equilibrio de columnas), exporta lo que compone tu programa con `createBundle`. Importa ese archivo en el Sandbox (*Proyectos → Nuevo → Importar .postext…*), corrige el markdown, la configuración o los recursos con la vista previa en vivo, el panel de avisos y la vista PDF, y vuelve a exportarlo. Después tu programa carga el archivo corregido con `openBundle`. O copia lo que cambió de vuelta a tu código: la `config` del manifiesto solo guarda los valores distintos de los de por defecto, así que se lee como una diferencia corta.
+- **Partir de un paquete.** Porta una publicación existente con el [skill para agentes](/es/docs/skill), o diseña un libro en el [Sandbox](/es/sandbox) y expórtalo (**Descargar (.postext)** en el menú ⋯ de su fila del panel Libros). Carga el archivo desde tu programa con `openBundle` para renderizarlo en canvas, HTML o PDF. Conserva el archivo como fuente del libro: edita en código los capítulos, la configuración o los recursos y vuelve a escribirlo con `createBundle`, o simplemente vuelve a cargarlo cada vez que cambie.
+- **Depurar y ajustar en el Sandbox.** Cuando algo de lo que produce tu programa necesita retoques (una figura que cae en la página equivocada, un estilo de encabezado, el equilibrio de columnas), exporta lo que compone tu programa con `createBundle`. Importa ese archivo en el Sandbox (*Libros → Nuevo → Abrir un archivo .postext…*), corrige el texto, el diseño o las figuras con la vista previa en vivo, el panel Revisión y la vista PDF, y vuelve a exportarlo. Después tu programa carga el archivo corregido con `openBundle`. O copia lo que cambió de vuelta a tu código: la `config` del manifiesto solo guarda los valores distintos de los de por defecto, así que se lee como una diferencia corta.
 
 ### API de bajo nivel
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-09-22',
+  lastUpdated: '2026-09-24',
   readingTime: '30 min',
   order: 3,
 };
@@ -1978,7 +1978,7 @@ For the document-side grammar (`$...$`, `$$...$$`, escaping a literal dollar), s
 
 ## Resource types
 
-A **resource type** is a user-definable category — *Figure*, *Table*, *Diagram*, *Listing*… — that drives how the resources of that kind are numbered, captioned, and referenced. The list lives on `config.resourceTypes`; the sandbox edits it through a dedicated section of the configuration panel.
+A **resource type** is a user-definable category — *Figure*, *Table*, *Diagram*, *Listing*… — that drives how the resources of that kind are numbered, captioned, and referenced. The list lives on `config.resourceTypes`; the Sandbox edits it in **Design → Figures & tables → Numbering & placement**.
 
 When `config.resourceTypes` is unset, Postext ships two built-in defaults: **Figure** and **Table**, both numbered `{h1}.{n}` (resetting on every level-1 heading) with decimal counters.
 
@@ -3511,7 +3511,7 @@ Each variant's binary is **not** embedded in the config itself. The config only 
 
 ### Managing custom fonts in the sandbox
 
-Open the **Fonts** panel from the left activity bar (between Resources and Configuration). For each family:
+Open the **Fonts** panel from the left activity bar (between Figures and Design). Its **Typefaces in this book** list shows every family the design uses, with its role and whether it comes from Google Fonts or from your file. Under **Your font files**, for each family:
 
 1. **Add font family** — creates an empty family; rename it inline.
 2. **Upload variant(s)** — pick a weight (100–900) and style (normal / italic), then choose one *or many* `.woff2`, `.woff`, `.ttf`, or `.otf` files. Each file becomes its own variant bound to the currently-selected (weight, style); the uploaded filename is remembered and shown in the row so you can tell variants apart. Re-tune a variant's weight or style from its dropdowns at any time.
@@ -3531,7 +3531,7 @@ Under the hood:
 
 ### Missing-font warnings
 
-The warnings panel recognises three new failure modes specific to custom fonts (all enabled by the same `debug.warnings.missingFont` toggle that already guards the generic "not loaded" warning):
+The Sandbox's **Checks** panel lists three failure modes specific to custom fonts under its *Fonts* group (all enabled by the same `debug.warnings.missingFont` toggle that already guards the generic "not loaded" warning):
 
 - **Unknown font family** — a `fontFamily` references a name that is neither a known Google Font nor a currently-declared custom family. This also fires immediately when you delete a custom family that some `fontFamily` field still references, instead of waiting for the DOM to notice.
 - **Missing font variant** — the family exists but at least one of the standard weight/style slots (400 / 700, normal / italic) has no uploaded file. The warning lists the specific combinations that are missing.
@@ -3620,7 +3620,7 @@ const flat = applyPaletteToConfig(config);
 
 ### Editing the palette
 
-Removing a palette entry should go through `unlinkPaletteRefs` (exported from `postext-sandbox`) so that any `ColorValue` still pointing at the removed id gets rewritten with the plain `hex` / `model` fallback. The sandbox's "Color Palette" section does this automatically.
+Removing a palette entry should go through `unlinkPaletteRefs` (exported from `postext-sandbox`) so that any `ColorValue` still pointing at the removed id gets rewritten with the plain `hex` / `model` fallback. The Sandbox's *Palette* section (**Design → Colours**) does this automatically.
 
 
 ## HTML Viewer
@@ -3786,7 +3786,7 @@ See [Generating PDFs](#generating-pdfs) below for the end-to-end export recipe.
 
 ## Debug
 
-The `debug` property groups two kinds of authoring aids: visual overlays that keep the source text and the rendered layout in sync, and a set of warnings that surface typographic or structural problems in the editor's warnings panel. Neither affects exported output.
+The `debug` property groups two kinds of authoring aids: visual overlays that keep the source text and the rendered layout in sync, and a set of warnings that surface typographic or structural problems in the Sandbox's Checks panel. Neither affects exported output.
 
 <table>
   <thead>
@@ -3901,7 +3901,7 @@ debug: {
 
 ### Warnings
 
-`debug.warnings` controls which authoring issues appear in the editor's warnings panel. Each key is an independent boolean toggle; set one to `false` to silence that specific warning without disabling the others.
+`debug.warnings` controls which authoring issues appear in the Sandbox's **Checks** panel (edited in **Design → Advanced → Warnings**). Each key is an independent boolean toggle; set one to `false` to silence that specific warning without disabling the others.
 
 ```ts
 interface WarningsToggleConfig {
@@ -4855,8 +4855,8 @@ The pen builds a two-chapter book with an SVG figure and lists the files `create
 
 Because the Sandbox, the agent skill and the `postext` package all read and write the same file, a `.postext` file is a convenient way to hand a book from one tool to another:
 
-- **Start from a bundle.** Port an existing publication with the [agent skill](/en/docs/skill), or design a book in the [Sandbox](/en/sandbox) and export it (**Export** on its row in the Projects panel). Load the file from your program with `openBundle` to render it to canvas, HTML or PDF. Keep the file as the book's source: edit the chapters, the configuration or the resources in code and write it back with `createBundle`, or simply reload it whenever it changes.
-- **Debug and fine-tune in the Sandbox.** When something in your program's output needs work (a figure that lands on the wrong page, a heading style, the column balance), export what your program lays out with `createBundle`. Import that file in the Sandbox (*Projects → New → Import .postext…*), fix the markdown, configuration or resources with the live preview, the warnings panel and the PDF view, then export it again. Your program then loads the corrected file with `openBundle`. Or copy what changed back into your code: the manifest's `config` holds only the values that differ from the defaults, so it reads as a short diff.
+- **Start from a bundle.** Port an existing publication with the [agent skill](/en/docs/skill), or design a book in the [Sandbox](/en/sandbox) and export it (**Download (.postext)** in its row's ⋯ menu in the Books panel). Load the file from your program with `openBundle` to render it to canvas, HTML or PDF. Keep the file as the book's source: edit the chapters, the configuration or the resources in code and write it back with `createBundle`, or simply reload it whenever it changes.
+- **Debug and fine-tune in the Sandbox.** When something in your program's output needs work (a figure that lands on the wrong page, a heading style, the column balance), export what your program lays out with `createBundle`. Import that file in the Sandbox (*Books → New → Open a .postext file…*), fix the text, design or figures with the live preview, the Checks panel and the PDF view, then export it again. Your program then loads the corrected file with `openBundle`. Or copy what changed back into your code: the manifest's `config` holds only the values that differ from the defaults, so it reads as a short diff.
 
 ### Low-level API
 
