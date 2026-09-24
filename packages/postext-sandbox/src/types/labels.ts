@@ -1593,4 +1593,12 @@ export interface SandboxLabels {
   partsPageTooltip: string;
   headerFooterElementTextAlign: string;
   headerFooterElementTextAlignTooltip: string;
+  bodyTypeSample: string;
+  bodyTypeSampleCaption: string;
+  bodyGroupTypeface: string;
+  bodyGroupParagraph: string;
+  bodyGroupColor: string;
+  bodyGroupLanguage: string;
+  bodyGroupLineControl: string;
+  bodyGroupReferences: string;
 }

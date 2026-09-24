@@ -342,8 +342,13 @@ function GroupPage({ id, headingRef, onOpen }: {
 
   const jumpTo = (sectionId: string) => {
     const el = pageRef.current?.querySelector<HTMLElement>(`[data-section-id="${sectionId}"]`);
-    if (!el) return;
-    el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    const scroller = pageRef.current?.parentElement;
+    if (!el || !scroller) return;
+    // Scroll only the panel body: scrollIntoView would also shift the
+    // overflow-hidden frames around the sidebar.
+    const top = scroller.scrollTop + el.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    scroller.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
     el.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
   };
 

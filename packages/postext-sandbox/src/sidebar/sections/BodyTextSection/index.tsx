@@ -6,6 +6,7 @@ import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CO
 import type { BodyTextConfig, HyphenationConfig, HyphenationLocale } from 'postext';
 import {
   CollapsibleSection,
+  FieldGroup,
   ColorPicker,
   DimensionInput,
   FontPicker,
@@ -15,6 +16,8 @@ import {
 } from '../../../controls';
 import { LOCALE_TO_HYPHENATION, LOCALE_OPTIONS, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
 import { JustificationSubsection } from './JustificationSubsection';
+import { TypeSample } from '../../settings/TypeSample';
+import { AlignPicture } from '../../settings/pictures';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
@@ -122,8 +125,8 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isKeepColonWithListDefault = bodyText.keepColonWithList === D.keepColonWithList;
 
   const ALIGN_OPTIONS = [
-    { value: 'left', label: labels.bodyTextAlignLeft },
-    { value: 'justify', label: labels.bodyTextAlignJustify },
+    { value: 'left', label: labels.bodyTextAlignLeft, icon: <AlignPicture align="left" /> },
+    { value: 'justify', label: labels.bodyTextAlignJustify, icon: <AlignPicture align="justify" /> },
   ];
 
   return (
@@ -135,288 +138,278 @@ export const BodyTextSection = memo(function BodyTextSection() {
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
-      <SelectInput
-        label={labels.documentLocale}
-        value={effectiveDocumentLocale}
-        options={LOCALE_OPTIONS}
-        onChange={(v) => updateDocumentLocale(v as HyphenationLocale)}
-        tooltip={labels.documentLocaleTooltip}
-        isDefault={documentLocale === undefined}
-        onReset={() => updateDocumentLocale(undefined)}
-      />
-      <FontPicker
-        label={labels.bodyFont}
-        value={bodyText.fontFamily}
-        onChange={(font) => updateBodyText({ fontFamily: font })}
-        tooltip={labels.bodyFontTooltip}
-        isDefault={isFontDefault}
-        onReset={() => resetField('fontFamily')}
-        searchPlaceholder={labels.bodyFontSearch}
-        noResultsLabel={labels.bodyFontNoResults}
-      />
-
-      <DimensionInput
-        label={labels.bodyFontSize}
-        value={bodyText.fontSize}
-        onChange={(dim) => updateBodyText({ fontSize: dim })}
-        min={1}
-        step={0.5}
-        tooltip={labels.bodyFontSizeTooltip}
-        isDefault={isSizeDefault}
-        onReset={() => resetField('fontSize')}
-        units={TEXT_SIZE_UNITS}
-      />
-
-      <DimensionInput
-        label={labels.bodyLineHeight}
-        value={bodyText.lineHeight}
-        onChange={(dim) => updateBodyText({ lineHeight: dim })}
-        min={0.5}
-        max={5}
-        step={0.1}
-        tooltip={labels.bodyLineHeightTooltip}
-        isDefault={isLineHeightDefault}
-        onReset={() => resetField('lineHeight')}
-        units={LINE_HEIGHT_UNITS}
-      />
-
-      <ToggleSwitch
-        label={labels.bodyParagraphSpacing}
-        checked={bodyText.paragraphSpacing}
-        onChange={(checked) => updateBodyText({ paragraphSpacing: checked })}
-        tooltip={labels.bodyParagraphSpacingTooltip}
-        isDefault={isParagraphSpacingDefault}
-        onReset={() => resetField('paragraphSpacing')}
-      />
-
-      <ColorPicker
-        label={labels.bodyColor}
-        value={bodyText.color}
-        onChange={(color) => updateBodyText({ color })}
-        tooltip={labels.bodyColorTooltip}
-        isDefault={isColorDefault}
-        onReset={() => resetField('color')}
-        fieldId="bodyText-color"
-      />
-
-      <ColorPicker
-        label={labels.bodyBoldColor}
-        value={DEFAULT_BOLD_COLOR}
-        onChange={(color) => updateBodyText({ boldColor: color })}
-        tooltip={labels.bodyBoldColorTooltip}
-        isDefault={isBoldColorDefault}
-        onReset={() => resetField('boldColor')}
-        fieldId="bodyText-boldColor"
-      />
-
-      <ColorPicker
-        label={labels.bodyItalicColor}
-        value={DEFAULT_ITALIC_COLOR}
-        onChange={(color) => updateBodyText({ italicColor: color })}
-        tooltip={labels.bodyItalicColorTooltip}
-        isDefault={isItalicColorDefault}
-        onReset={() => resetField('italicColor')}
-        fieldId="bodyText-italicColor"
-      />
-
-      <ColorPicker
-        label={labels.bodyReferenceColor}
-        value={DEFAULT_REFERENCE_COLOR}
-        onChange={(color) => updateBodyText({ referenceColor: color })}
-        tooltip={labels.bodyReferenceColorTooltip}
-        isDefault={isReferenceColorDefault}
-        onReset={() => resetField('referenceColor')}
-        fieldId="bodyText-referenceColor"
-      />
-
-      <ToggleSwitch
-        label={labels.bodyReferenceBold}
-        checked={bodyText.referenceBold}
-        onChange={(checked) => updateBodyText({ referenceBold: checked })}
-        tooltip={labels.bodyReferenceBoldTooltip}
-        isDefault={isReferenceBoldDefault}
-        onReset={() => resetField('referenceBold')}
-      />
-
-      <ToggleSwitch
-        label={labels.bodyReferenceItalic}
-        checked={bodyText.referenceItalic}
-        onChange={(checked) => updateBodyText({ referenceItalic: checked })}
-        tooltip={labels.bodyReferenceItalicTooltip}
-        isDefault={isReferenceItalicDefault}
-        onReset={() => resetField('referenceItalic')}
-      />
-
-      <NumberInput
-        label={labels.bodyFontWeight}
-        value={bodyText.fontWeight}
-        onChange={(w) => updateBodyText({ fontWeight: w })}
-        min={100}
-        max={900}
-        step={10}
-        tooltip={labels.bodyFontWeightTooltip}
-        isDefault={isFontWeightDefault}
-        onReset={() => resetField('fontWeight')}
-      />
-
-      <NumberInput
-        label={labels.bodyBoldFontWeight}
-        value={bodyText.boldFontWeight}
-        onChange={(w) => updateBodyText({ boldFontWeight: w })}
-        min={100}
-        max={900}
-        step={10}
-        tooltip={labels.bodyBoldFontWeightTooltip}
-        isDefault={isBoldFontWeightDefault}
-        onReset={() => resetField('boldFontWeight')}
-      />
-
-      <DimensionInput
-        label={labels.bodyFirstLineIndent}
-        value={bodyText.firstLineIndent}
-        onChange={(dim) => updateBodyText({ firstLineIndent: dim })}
-        min={0}
-        step={0.25}
-        tooltip={labels.bodyFirstLineIndentTooltip}
-        isDefault={isFirstLineIndentDefault}
-        onReset={() => resetField('firstLineIndent')}
-        units={INDENT_UNITS}
-      />
-
-      <ToggleSwitch
-        label={labels.bodyHangingIndent}
-        checked={bodyText.hangingIndent}
-        onChange={(checked) => updateBodyText({ hangingIndent: checked })}
-        tooltip={labels.bodyHangingIndentTooltip}
-        isDefault={isHangingIndentDefault}
-        onReset={() => resetField('hangingIndent')}
-      />
-
-      <ToggleSwitch
-        label={labels.bodyIndentAfterHeading}
-        checked={bodyText.indentAfterHeading}
-        onChange={(checked) => updateBodyText({ indentAfterHeading: checked })}
-        tooltip={labels.bodyIndentAfterHeadingTooltip}
-        isDefault={isIndentAfterHeadingDefault}
-        onReset={() => resetField('indentAfterHeading')}
-      />
-
-      <SelectInput
-        label={labels.bodyTextAlign}
-        value={bodyText.textAlign}
-        options={ALIGN_OPTIONS}
-        onChange={handleTextAlignChange}
-        tooltip={labels.bodyTextAlignTooltip}
-        isDefault={isTextAlignDefault}
-        onReset={() => {
-          if (!raw) return;
-          const next = { ...raw };
-          delete next.textAlign;
-          delete next.hyphenation;
-          dispatch({ type: 'UPDATE_CONFIG', payload: { bodyText: Object.keys(next).length > 0 ? next : undefined } });
-        }}
-      />
-
-      {bodyText.textAlign === 'justify' && (
-        <JustificationSubsection
-          bodyText={bodyText}
-          raw={raw}
-          effectiveHyphenationLocale={effectiveHyphenationLocale}
-          isHyphenationEnabledDefault={isHyphenationEnabledDefault}
-          isHyphenationLocaleDefault={isHyphenationLocaleDefault}
-          isMaxWordSpacingDefault={isMaxWordSpacingDefault}
-          isMinWordSpacingDefault={isMinWordSpacingDefault}
-          isOptimalLineBreakingDefault={isOptimalLineBreakingDefault}
-          updateBodyText={updateBodyText}
-          updateHyphenation={updateHyphenation}
-          resetField={resetField}
-          labels={labels}
+      <TypeSample body={bodyText} lang={effectiveDocumentLocale} />
+      <FieldGroup title={labels.bodyGroupTypeface}>
+        <FontPicker
+          label={labels.bodyFont}
+          value={bodyText.fontFamily}
+          onChange={(font) => updateBodyText({ fontFamily: font })}
+          tooltip={labels.bodyFontTooltip}
+          isDefault={isFontDefault}
+          onReset={() => resetField('fontFamily')}
+          searchPlaceholder={labels.bodyFontSearch}
+          noResultsLabel={labels.bodyFontNoResults}
         />
-      )}
-
-      <ToggleSwitch
-        label={labels.bodyAvoidOrphans}
-        checked={bodyText.avoidOrphans}
-        onChange={(checked) => updateBodyText({ avoidOrphans: checked })}
-        tooltip={labels.bodyAvoidOrphansTooltip}
-        isDefault={isAvoidOrphansDefault}
-        onReset={() => resetField('avoidOrphans')}
-      />
-
-      {bodyText.avoidOrphans && (
-        <OrphansSubsection
-          bodyText={bodyText}
-          isOrphanMinLinesDefault={isOrphanMinLinesDefault}
-          isOrphanPenaltyDefault={isOrphanPenaltyDefault}
-          isAvoidOrphansInListsDefault={isAvoidOrphansInListsDefault}
-          updateBodyText={updateBodyText}
-          resetField={resetField}
-          labels={labels}
+        <DimensionInput
+          label={labels.bodyFontSize}
+          value={bodyText.fontSize}
+          onChange={(dim) => updateBodyText({ fontSize: dim })}
+          min={1}
+          step={0.5}
+          tooltip={labels.bodyFontSizeTooltip}
+          isDefault={isSizeDefault}
+          onReset={() => resetField('fontSize')}
+          units={TEXT_SIZE_UNITS}
         />
-      )}
-
-      <ToggleSwitch
-        label={labels.bodyAvoidWidows}
-        checked={bodyText.avoidWidows}
-        onChange={(checked) => updateBodyText({ avoidWidows: checked })}
-        tooltip={labels.bodyAvoidWidowsTooltip}
-        isDefault={isAvoidWidowsDefault}
-        onReset={() => resetField('avoidWidows')}
-      />
-
-      {bodyText.avoidWidows && (
-        <WidowsSubsection
-          bodyText={bodyText}
-          isWidowMinLinesDefault={isWidowMinLinesDefault}
-          isWidowPenaltyDefault={isWidowPenaltyDefault}
-          isAvoidWidowsInListsDefault={isAvoidWidowsInListsDefault}
-          updateBodyText={updateBodyText}
-          resetField={resetField}
-          labels={labels}
+        <DimensionInput
+          label={labels.bodyLineHeight}
+          value={bodyText.lineHeight}
+          onChange={(dim) => updateBodyText({ lineHeight: dim })}
+          min={0.5}
+          max={5}
+          step={0.1}
+          tooltip={labels.bodyLineHeightTooltip}
+          isDefault={isLineHeightDefault}
+          onReset={() => resetField('lineHeight')}
+          units={LINE_HEIGHT_UNITS}
         />
-      )}
-
-      <NumberInput
-        label={labels.bodySlackWeight}
-        value={bodyText.slackWeight}
-        onChange={(v) => updateBodyText({ slackWeight: v })}
-        min={0}
-        max={1000}
-        step={1}
-        tooltip={labels.bodySlackWeightTooltip}
-        isDefault={isSlackWeightDefault}
-        onReset={() => resetField('slackWeight')}
-      />
-
-      <ToggleSwitch
-        label={labels.bodyAvoidRunts}
-        checked={bodyText.avoidRunts}
-        onChange={(checked) => updateBodyText({ avoidRunts: checked })}
-        tooltip={labels.bodyAvoidRuntsTooltip}
-        isDefault={isAvoidRuntsDefault}
-        onReset={() => resetField('avoidRunts')}
-      />
-
-      {bodyText.avoidRunts && (
-        <RuntsSubsection
-          bodyText={bodyText}
-          isRuntMinCharactersDefault={isRuntMinCharactersDefault}
-          isRuntPenaltyDefault={isRuntPenaltyDefault}
-          isAvoidRuntsInListsDefault={isAvoidRuntsInListsDefault}
-          updateBodyText={updateBodyText}
-          resetField={resetField}
-          labels={labels}
+        <NumberInput
+          label={labels.bodyFontWeight}
+          value={bodyText.fontWeight}
+          onChange={(w) => updateBodyText({ fontWeight: w })}
+          min={100}
+          max={900}
+          step={10}
+          tooltip={labels.bodyFontWeightTooltip}
+          isDefault={isFontWeightDefault}
+          onReset={() => resetField('fontWeight')}
         />
-      )}
-
-      <ToggleSwitch
-        label={labels.bodyKeepColonWithList}
-        checked={bodyText.keepColonWithList}
-        onChange={(checked) => updateBodyText({ keepColonWithList: checked })}
-        tooltip={labels.bodyKeepColonWithListTooltip}
-        isDefault={isKeepColonWithListDefault}
-        onReset={() => resetField('keepColonWithList')}
-      />
+        <NumberInput
+          label={labels.bodyBoldFontWeight}
+          value={bodyText.boldFontWeight}
+          onChange={(w) => updateBodyText({ boldFontWeight: w })}
+          min={100}
+          max={900}
+          step={10}
+          tooltip={labels.bodyBoldFontWeightTooltip}
+          isDefault={isBoldFontWeightDefault}
+          onReset={() => resetField('boldFontWeight')}
+        />
+      </FieldGroup>
+      <FieldGroup title={labels.bodyGroupParagraph}>
+        <SelectInput
+          label={labels.bodyTextAlign}
+          value={bodyText.textAlign}
+          options={ALIGN_OPTIONS}
+          variant="segmented"
+          onChange={handleTextAlignChange}
+          tooltip={labels.bodyTextAlignTooltip}
+          isDefault={isTextAlignDefault}
+          onReset={() => {
+            if (!raw) return;
+            const next = { ...raw };
+            delete next.textAlign;
+            delete next.hyphenation;
+            dispatch({ type: 'UPDATE_CONFIG', payload: { bodyText: Object.keys(next).length > 0 ? next : undefined } });
+          }}
+        />
+        {bodyText.textAlign === 'justify' && (
+          <JustificationSubsection
+            bodyText={bodyText}
+            raw={raw}
+            effectiveHyphenationLocale={effectiveHyphenationLocale}
+            isHyphenationEnabledDefault={isHyphenationEnabledDefault}
+            isHyphenationLocaleDefault={isHyphenationLocaleDefault}
+            isMaxWordSpacingDefault={isMaxWordSpacingDefault}
+            isMinWordSpacingDefault={isMinWordSpacingDefault}
+            isOptimalLineBreakingDefault={isOptimalLineBreakingDefault}
+            updateBodyText={updateBodyText}
+            updateHyphenation={updateHyphenation}
+            resetField={resetField}
+            labels={labels}
+          />
+        )}
+        <DimensionInput
+          label={labels.bodyFirstLineIndent}
+          value={bodyText.firstLineIndent}
+          onChange={(dim) => updateBodyText({ firstLineIndent: dim })}
+          min={0}
+          step={0.25}
+          tooltip={labels.bodyFirstLineIndentTooltip}
+          isDefault={isFirstLineIndentDefault}
+          onReset={() => resetField('firstLineIndent')}
+          units={INDENT_UNITS}
+        />
+        <ToggleSwitch
+          label={labels.bodyIndentAfterHeading}
+          checked={bodyText.indentAfterHeading}
+          onChange={(checked) => updateBodyText({ indentAfterHeading: checked })}
+          tooltip={labels.bodyIndentAfterHeadingTooltip}
+          isDefault={isIndentAfterHeadingDefault}
+          onReset={() => resetField('indentAfterHeading')}
+        />
+        <ToggleSwitch
+          label={labels.bodyHangingIndent}
+          checked={bodyText.hangingIndent}
+          onChange={(checked) => updateBodyText({ hangingIndent: checked })}
+          tooltip={labels.bodyHangingIndentTooltip}
+          isDefault={isHangingIndentDefault}
+          onReset={() => resetField('hangingIndent')}
+        />
+        <ToggleSwitch
+          label={labels.bodyParagraphSpacing}
+          checked={bodyText.paragraphSpacing}
+          onChange={(checked) => updateBodyText({ paragraphSpacing: checked })}
+          tooltip={labels.bodyParagraphSpacingTooltip}
+          isDefault={isParagraphSpacingDefault}
+          onReset={() => resetField('paragraphSpacing')}
+        />
+      </FieldGroup>
+      <FieldGroup title={labels.bodyGroupColor}>
+        <ColorPicker
+          label={labels.bodyColor}
+          value={bodyText.color}
+          onChange={(color) => updateBodyText({ color })}
+          tooltip={labels.bodyColorTooltip}
+          isDefault={isColorDefault}
+          onReset={() => resetField('color')}
+          fieldId="bodyText-color"
+        />
+        <ColorPicker
+          label={labels.bodyBoldColor}
+          value={DEFAULT_BOLD_COLOR}
+          onChange={(color) => updateBodyText({ boldColor: color })}
+          tooltip={labels.bodyBoldColorTooltip}
+          isDefault={isBoldColorDefault}
+          onReset={() => resetField('boldColor')}
+          fieldId="bodyText-boldColor"
+        />
+        <ColorPicker
+          label={labels.bodyItalicColor}
+          value={DEFAULT_ITALIC_COLOR}
+          onChange={(color) => updateBodyText({ italicColor: color })}
+          tooltip={labels.bodyItalicColorTooltip}
+          isDefault={isItalicColorDefault}
+          onReset={() => resetField('italicColor')}
+          fieldId="bodyText-italicColor"
+        />
+      </FieldGroup>
+      <FieldGroup title={labels.bodyGroupLanguage}>
+        <SelectInput
+          label={labels.documentLocale}
+          value={effectiveDocumentLocale}
+          options={LOCALE_OPTIONS}
+          onChange={(v) => updateDocumentLocale(v as HyphenationLocale)}
+          tooltip={labels.documentLocaleTooltip}
+          isDefault={documentLocale === undefined}
+          onReset={() => updateDocumentLocale(undefined)}
+        />
+      </FieldGroup>
+      <CollapsibleSection title={labels.bodyGroupLineControl} sectionId="bodyText-lineControl" variant="subsection">
+        <ToggleSwitch
+          label={labels.bodyAvoidOrphans}
+          checked={bodyText.avoidOrphans}
+          onChange={(checked) => updateBodyText({ avoidOrphans: checked })}
+          tooltip={labels.bodyAvoidOrphansTooltip}
+          isDefault={isAvoidOrphansDefault}
+          onReset={() => resetField('avoidOrphans')}
+        />
+        {bodyText.avoidOrphans && (
+          <OrphansSubsection
+            bodyText={bodyText}
+            isOrphanMinLinesDefault={isOrphanMinLinesDefault}
+            isOrphanPenaltyDefault={isOrphanPenaltyDefault}
+            isAvoidOrphansInListsDefault={isAvoidOrphansInListsDefault}
+            updateBodyText={updateBodyText}
+            resetField={resetField}
+            labels={labels}
+          />
+        )}
+        <ToggleSwitch
+          label={labels.bodyAvoidWidows}
+          checked={bodyText.avoidWidows}
+          onChange={(checked) => updateBodyText({ avoidWidows: checked })}
+          tooltip={labels.bodyAvoidWidowsTooltip}
+          isDefault={isAvoidWidowsDefault}
+          onReset={() => resetField('avoidWidows')}
+        />
+        {bodyText.avoidWidows && (
+          <WidowsSubsection
+            bodyText={bodyText}
+            isWidowMinLinesDefault={isWidowMinLinesDefault}
+            isWidowPenaltyDefault={isWidowPenaltyDefault}
+            isAvoidWidowsInListsDefault={isAvoidWidowsInListsDefault}
+            updateBodyText={updateBodyText}
+            resetField={resetField}
+            labels={labels}
+          />
+        )}
+        <ToggleSwitch
+          label={labels.bodyAvoidRunts}
+          checked={bodyText.avoidRunts}
+          onChange={(checked) => updateBodyText({ avoidRunts: checked })}
+          tooltip={labels.bodyAvoidRuntsTooltip}
+          isDefault={isAvoidRuntsDefault}
+          onReset={() => resetField('avoidRunts')}
+        />
+        {bodyText.avoidRunts && (
+          <RuntsSubsection
+            bodyText={bodyText}
+            isRuntMinCharactersDefault={isRuntMinCharactersDefault}
+            isRuntPenaltyDefault={isRuntPenaltyDefault}
+            isAvoidRuntsInListsDefault={isAvoidRuntsInListsDefault}
+            updateBodyText={updateBodyText}
+            resetField={resetField}
+            labels={labels}
+          />
+        )}
+        <NumberInput
+          label={labels.bodySlackWeight}
+          value={bodyText.slackWeight}
+          onChange={(v) => updateBodyText({ slackWeight: v })}
+          min={0}
+          max={1000}
+          step={1}
+          tooltip={labels.bodySlackWeightTooltip}
+          isDefault={isSlackWeightDefault}
+          onReset={() => resetField('slackWeight')}
+        />
+        <ToggleSwitch
+          label={labels.bodyKeepColonWithList}
+          checked={bodyText.keepColonWithList}
+          onChange={(checked) => updateBodyText({ keepColonWithList: checked })}
+          tooltip={labels.bodyKeepColonWithListTooltip}
+          isDefault={isKeepColonWithListDefault}
+          onReset={() => resetField('keepColonWithList')}
+        />
+      </CollapsibleSection>
+      <CollapsibleSection title={labels.bodyGroupReferences} sectionId="bodyText-references" variant="subsection">
+        <ColorPicker
+          label={labels.bodyReferenceColor}
+          value={DEFAULT_REFERENCE_COLOR}
+          onChange={(color) => updateBodyText({ referenceColor: color })}
+          tooltip={labels.bodyReferenceColorTooltip}
+          isDefault={isReferenceColorDefault}
+          onReset={() => resetField('referenceColor')}
+          fieldId="bodyText-referenceColor"
+        />
+        <ToggleSwitch
+          label={labels.bodyReferenceBold}
+          checked={bodyText.referenceBold}
+          onChange={(checked) => updateBodyText({ referenceBold: checked })}
+          tooltip={labels.bodyReferenceBoldTooltip}
+          isDefault={isReferenceBoldDefault}
+          onReset={() => resetField('referenceBold')}
+        />
+        <ToggleSwitch
+          label={labels.bodyReferenceItalic}
+          checked={bodyText.referenceItalic}
+          onChange={(checked) => updateBodyText({ referenceItalic: checked })}
+          tooltip={labels.bodyReferenceItalicTooltip}
+          isDefault={isReferenceItalicDefault}
+          onReset={() => resetField('referenceItalic')}
+        />
+      </CollapsibleSection>
     </CollapsibleSection>
   );
 });

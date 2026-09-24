@@ -1533,5 +1533,13 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     partsPageTooltip: t("partsPageTooltip"),
     headerFooterElementTextAlign: t("headerFooterElementTextAlign"),
     headerFooterElementTextAlignTooltip: t("headerFooterElementTextAlignTooltip"),
+    bodyTypeSample: t("bodyTypeSample"),
+    bodyTypeSampleCaption: t("bodyTypeSampleCaption"),
+    bodyGroupTypeface: t("bodyGroupTypeface"),
+    bodyGroupParagraph: t("bodyGroupParagraph"),
+    bodyGroupColor: t("bodyGroupColor"),
+    bodyGroupLanguage: t("bodyGroupLanguage"),
+    bodyGroupLineControl: t("bodyGroupLineControl"),
+    bodyGroupReferences: t("bodyGroupReferences"),
   };
 }
