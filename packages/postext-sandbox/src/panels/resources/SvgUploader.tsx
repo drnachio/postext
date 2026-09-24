@@ -78,7 +78,7 @@ export function SvgUploader({ onUploaded, compact = false }: SvgUploaderProps) {
         aria-label={compact ? labels.uploadSvgReplace : labels.resourceUploadSvg}
         className="flex flex-col items-center justify-center gap-1.5 rounded border border-dashed text-xs"
         style={{
-          borderColor: dragOver ? 'var(--gilt)' : 'var(--rule)',
+          borderColor: dragOver ? 'var(--brand)' : 'var(--rule)',
           backgroundColor: dragOver ? 'var(--surface)' : 'transparent',
           color: 'var(--slate)',
           padding: compact ? '8px' : '16px',

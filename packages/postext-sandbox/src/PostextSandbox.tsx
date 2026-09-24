@@ -142,7 +142,7 @@ function SandboxLayout({
             width: 24,
             height: 24,
             border: '2px solid var(--rule)',
-            borderTopColor: 'var(--gilt)',
+            borderTopColor: 'var(--brand)',
             borderRadius: '50%',
             animation: 'postext-spin 0.8s linear infinite',
           }}

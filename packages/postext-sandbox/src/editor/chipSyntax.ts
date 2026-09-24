@@ -73,11 +73,11 @@ export const chipHighlight = ViewPlugin.fromClass(
 export const chipTheme = Prec.highest(
   EditorView.baseTheme({
     '.cm-chip-delim': {
-      color: 'var(--gilt)',
+      color: 'var(--brand)',
       fontWeight: 'bold',
     },
     '.cm-chip-text': {
-      backgroundColor: 'rgba(88, 134, 191, 0.14)',
+      backgroundColor: 'rgba(43, 74, 203, 0.16)',
       borderRadius: '3px',
     },
     '.cm-chip-attr': {

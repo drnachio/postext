@@ -48,7 +48,7 @@ export function ChapterSwitcher() {
             title={active?.title}
             className={cn(
               'flex h-7 min-w-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-left',
-              'hover:bg-(--surface) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+              'hover:bg-(--surface) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
             )}
           >
             {!single && (

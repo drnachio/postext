@@ -227,7 +227,7 @@ const refPickerTheme = EditorView.theme({
     color: 'var(--slate)',
   },
   '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker > ul > li[aria-selected] .cm-refOption-icon': {
-    color: 'var(--gilt)',
+    color: 'var(--brand)',
   },
   '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker .cm-completionLabel': {
     fontFamily: 'var(--font-mono, monospace)',
@@ -237,7 +237,7 @@ const refPickerTheme = EditorView.theme({
   '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker .cm-completionDetail': {
     fontStyle: 'normal',
     marginLeft: '0',
-    color: 'var(--gilt)',
+    color: 'var(--brand)',
     fontSize: '11px',
     flexShrink: '0',
   },

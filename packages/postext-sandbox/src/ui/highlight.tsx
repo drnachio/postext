@@ -19,7 +19,7 @@ export function HighlightedText({ text, tokens }: HighlightedTextProps) {
     parts.push(
       <mark
         key={i}
-        style={{ backgroundColor: 'color-mix(in srgb, var(--gilt) 30%, transparent)', color: 'inherit', borderRadius: 2 }}
+        style={{ backgroundColor: 'color-mix(in srgb, var(--brand) 30%, transparent)', color: 'inherit', borderRadius: 2 }}
       >
         {text.slice(start, end)}
       </mark>,

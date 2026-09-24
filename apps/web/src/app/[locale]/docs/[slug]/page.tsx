@@ -13,6 +13,14 @@ import { MdxContent } from "@/components/docs/MdxContent";
 import { DocsToc } from "@/components/docs/DocsToc";
 import { DocsMobileNav } from "@/components/docs/DocsMobileNav";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
+import { docPart, partClass } from "@/lib/docParts";
+import { DocOpener } from "@/components/docs/DocOpener";
+
+const PART_LABEL_KEY = {
+  foundations: "partFoundations",
+  craft: "partCraft",
+  practice: "partPractice",
+} as const;
 
 export async function generateStaticParams() {
   const params: { locale: string; slug: string }[] = [];
@@ -70,6 +78,8 @@ export default async function DocPage({
 
   const t = await getTranslations("Docs");
   const tIndex = await getTranslations("DocsIndex");
+  const part = docPart(doc.meta.order);
+  const chapter = docs.filter((d) => d.locales[locale]).findIndex((d) => d.slug === slug) + 1;
 
   const url = localizedUrl(locale, `/docs/${slug}`);
   const jsonLd = [
@@ -118,60 +128,59 @@ export default async function DocPage({
       />
       <main
         id="main-content"
-        className="min-w-0 flex-1 px-4 py-6 lg:px-8 2xl:px-12"
+        className={`min-w-0 flex-1 px-4 py-6 lg:px-8 2xl:px-12 ${partClass(part.color)}`}
       >
         <div className="relative mb-6 lg:hidden">
           <DocsMobileNav docs={docs} toc={toc} />
         </div>
 
-        {/* Title row: title left, metadata right on large screens */}
-        <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-baseline lg:justify-between">
-          <h1
-            id={toc[0]?.level === 1 ? toc[0].id : undefined}
-            className="docs-heading font-display text-[1.5rem] font-bold italic tracking-tight text-foreground md:text-[2rem]"
-            style={{ scrollMarginTop: "var(--docs-nav-h, 5rem)" }}
-          >
-            {doc.meta.title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-slate lg:shrink-0">
-            {doc.meta.lastUpdated && (
-              <span className="whitespace-nowrap">
-                {t("lastUpdated")}: {doc.meta.lastUpdated}
-              </span>
-            )}
-            {doc.meta.readingTime && (
-              <>
-                <span className="text-rule">|</span>
-                <span className="whitespace-nowrap">{doc.meta.readingTime}</span>
-              </>
-            )}
-            {availableLocales.length > 1 && (
-              <>
-                <span className="text-rule">|</span>
-                <span className="flex gap-1">
-                  {availableLocales.map((l) => (
-                    <a
-                      key={l}
-                      href={`/${l}/docs/${slug}`}
-                      className={`rounded px-1.5 py-0.5 font-mono text-xs uppercase transition-colors ${
-                        l === locale
-                          ? "bg-surface text-foreground font-semibold"
-                          : "text-slate hover:text-foreground"
-                      }`}
-                    >
-                      {l}
-                    </a>
-                  ))}
-                </span>
-              </>
-            )}
-          </div>
+        <DocOpener
+          id={toc[0]?.level === 1 ? toc[0].id : undefined}
+          number={chapter}
+          kicker={`${t("chapter")} ${chapter} · ${t("part")} ${part.number} · ${t(PART_LABEL_KEY[part.key])}`}
+          title={doc.meta.title}
+          lead={doc.meta.description}
+          color={part.color}
+        />
+
+        <div className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-rule pb-4 font-sans text-xs text-slate 2xl:text-sm">
+          {doc.meta.lastUpdated && (
+            <span className="whitespace-nowrap">
+              {t("lastUpdated")} {doc.meta.lastUpdated}
+            </span>
+          )}
+          {doc.meta.readingTime && (
+            <>
+              <span aria-hidden="true" className="size-1 rounded-full bg-rule-strong" />
+              <span className="whitespace-nowrap">{doc.meta.readingTime}</span>
+            </>
+          )}
+          {availableLocales.length > 1 && (
+            <span className="ml-auto flex gap-1">
+              {availableLocales.map((l) => (
+                <a
+                  key={l}
+                  href={`/${l}/docs/${slug}`}
+                  aria-current={l === locale ? "true" : undefined}
+                  className={`rounded px-1.5 py-0.5 font-sans text-[0.68rem] font-semibold tracking-[0.12em] uppercase transition-colors ${
+                    l === locale
+                      ? "bg-(--part) text-(--part-on)"
+                      : "text-slate hover:text-foreground"
+                  }`}
+                >
+                  {l}
+                </a>
+              ))}
+            </span>
+          )}
         </div>
 
         <MdxContent source={doc.source} skipTitle />
       </main>
 
-      <DocsToc items={toc} />
+      <div className={`contents ${partClass(part.color)}`}>
+        <DocsToc items={toc} />
+      </div>
     </>
   );
 }

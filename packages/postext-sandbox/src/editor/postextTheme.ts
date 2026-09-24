@@ -13,17 +13,17 @@ const darkTheme = EditorView.theme(
       fontFamily: 'var(--font-mono, monospace)',
       fontSize: '13px',
       lineHeight: '1.6',
-      caretColor: 'var(--gilt)',
+      caretColor: 'var(--brand)',
       padding: '8px 0',
     },
     '.cm-cursor, .cm-dropCursor': {
-      borderLeftColor: 'var(--gilt)',
+      borderLeftColor: 'var(--brand)',
     },
     '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
-      backgroundColor: 'rgba(224, 168, 22, 0.15)',
+      backgroundColor: 'rgba(216, 162, 26, 0.2)',
     },
     '.cm-activeLine': {
-      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+      backgroundColor: 'rgba(244, 241, 234, 0.035)',
     },
     '.cm-gutters': {
       backgroundColor: 'var(--background)',
@@ -47,16 +47,16 @@ const darkTheme = EditorView.theme(
 );
 
 const darkHighlight = HighlightStyle.define([
-  { tag: tags.heading, color: 'var(--gilt)', fontWeight: 'bold' },
+  { tag: tags.heading, color: 'var(--brand)', fontWeight: 'bold' },
   { tag: tags.emphasis, color: 'var(--foreground)', fontStyle: 'italic' },
   { tag: tags.strong, color: 'var(--foreground)', fontWeight: 'bold' },
   { tag: tags.link, color: 'var(--accent-blue)', textDecoration: 'underline' },
   { tag: tags.url, color: 'var(--accent-blue)' },
-  { tag: tags.monospace, color: 'var(--gilt)' },
+  { tag: tags.monospace, color: 'var(--brand)' },
   { tag: tags.quote, color: 'var(--slate)', fontStyle: 'italic' },
   { tag: tags.meta, color: 'var(--slate)' },
   { tag: tags.comment, color: 'var(--slate)', fontStyle: 'italic' },
-  { tag: tags.processingInstruction, color: 'var(--gilt)' },
+  { tag: tags.processingInstruction, color: 'var(--brand)' },
 ]);
 
 const lightTheme = EditorView.theme(
@@ -70,14 +70,14 @@ const lightTheme = EditorView.theme(
       fontFamily: 'var(--font-mono, monospace)',
       fontSize: '13px',
       lineHeight: '1.6',
-      caretColor: 'var(--gilt)',
+      caretColor: 'var(--brand)',
       padding: '8px 0',
     },
     '.cm-cursor, .cm-dropCursor': {
-      borderLeftColor: 'var(--gilt)',
+      borderLeftColor: 'var(--brand)',
     },
     '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
-      backgroundColor: 'rgba(138, 99, 16, 0.15)',
+      backgroundColor: 'rgba(43, 74, 203, 0.14)',
     },
     '.cm-activeLine': {
       backgroundColor: 'rgba(0, 0, 0, 0.03)',
@@ -104,16 +104,16 @@ const lightTheme = EditorView.theme(
 );
 
 const lightHighlight = HighlightStyle.define([
-  { tag: tags.heading, color: 'var(--gilt)', fontWeight: 'bold' },
+  { tag: tags.heading, color: 'var(--brand)', fontWeight: 'bold' },
   { tag: tags.emphasis, color: 'var(--foreground)', fontStyle: 'italic' },
   { tag: tags.strong, color: 'var(--foreground)', fontWeight: 'bold' },
   { tag: tags.link, color: 'var(--accent-blue)', textDecoration: 'underline' },
   { tag: tags.url, color: 'var(--accent-blue)' },
-  { tag: tags.monospace, color: 'var(--gilt)' },
+  { tag: tags.monospace, color: 'var(--brand)' },
   { tag: tags.quote, color: 'var(--slate)', fontStyle: 'italic' },
   { tag: tags.meta, color: 'var(--slate)' },
   { tag: tags.comment, color: 'var(--slate)', fontStyle: 'italic' },
-  { tag: tags.processingInstruction, color: 'var(--gilt)' },
+  { tag: tags.processingInstruction, color: 'var(--brand)' },
 ]);
 
 export function getEditorTheme(isDark: boolean) {

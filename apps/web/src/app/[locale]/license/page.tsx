@@ -33,29 +33,31 @@ export default async function LicensePage({
     <>
       <Navbar />
       <main id="main-content" role="main" className="flex-1">
-        <div className="mx-auto max-w-5xl px-6 py-16 2xl:max-w-6xl 2xl:px-8 2xl:py-20 4xl:max-w-7xl 4xl:px-12 4xl:py-24">
-          <h1 className="font-display text-3xl font-bold text-foreground 2xl:text-4xl 4xl:text-5xl">
+        <div className="mx-auto max-w-5xl px-6 py-12 md:py-16 2xl:max-w-6xl 2xl:px-8 4xl:max-w-7xl 4xl:px-12">
+          <div aria-hidden="true" className="tri-stripe mb-10 h-1.5 w-full" />
+          <h1 className="display text-[2.4rem] text-foreground md:text-[3.2rem]">
             {t("title")}
           </h1>
-          <p className="mt-2 text-sm text-slate 2xl:text-base">
+          <span aria-hidden="true" className="mt-5 block h-[3px] w-12 bg-brand" />
+          <p className="kicker mt-5 text-slate">
             {t("copyright")}
           </p>
 
-          <div className="mt-10 space-y-6 text-sm leading-relaxed text-slate 2xl:text-base 4xl:text-lg lg:columns-2 lg:gap-12 2xl:gap-16 text-justify [hyphens:auto]">
+          <div className="mt-10 space-y-6 font-body text-[0.95rem] leading-[1.75] text-foreground/80 lg:columns-2 lg:gap-12 2xl:gap-16 text-justify [hyphens:auto]">
             <p className="break-inside-avoid">{t("grant")}</p>
             <p className="break-inside-avoid">{t("condition")}</p>
             <p className="break-inside-avoid">{t("disclaimer")}</p>
           </div>
 
           <div className="mt-10 border-t border-rule pt-6">
-            <p className="text-sm text-slate 2xl:text-base 4xl:text-lg">
+            <p className="font-sans text-sm text-slate 2xl:text-base">
               {t.rich("sourceText", {
                 repoLink: (chunks) => (
                   <a
                     href="https://github.com/drnachio/postext"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-foreground"
+                    className="font-medium text-brand underline decoration-brand/30 underline-offset-4 hover:decoration-brand"
                   >
                     {chunks}
                   </a>

@@ -86,7 +86,7 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
               width: 24,
               height: 24,
               border: '2px solid var(--rule)',
-              borderTopColor: 'var(--gilt)',
+              borderTopColor: 'var(--brand)',
               borderRadius: '50%',
               animation: 'postext-spin 0.8s linear infinite',
             }}
@@ -132,7 +132,7 @@ function GenerationBar({ progress, renderProgress, phase }: { progress: BuildPro
         className="h-full rounded-full"
         style={{
           width: `${fraction * 100}%`,
-          backgroundColor: 'var(--gilt)',
+          backgroundColor: 'var(--brand)',
           transition: 'width 120ms linear',
           animation: pulse ? 'postext-pulse 1s ease-in-out infinite' : undefined,
         }}

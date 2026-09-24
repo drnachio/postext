@@ -21,7 +21,7 @@ const VARIANT: Record<ButtonVariant, string> = {
   ghost:
     'border border-transparent bg-transparent text-(--slate) enabled:hover:text-(--foreground) enabled:hover:bg-(--surface)',
   primary:
-    'border border-(--gilt) bg-transparent text-(--gilt) enabled:hover:bg-(--surface)',
+    'border border-(--brand) bg-transparent text-(--brand) enabled:hover:bg-(--surface)',
 };
 
 // Pixel units on purpose: the host page scales its root font size with the
@@ -45,7 +45,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       className={cn(
         'inline-flex shrink-0 cursor-pointer items-center justify-center rounded font-medium whitespace-nowrap transition-colors',
-        'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+        'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
         'disabled:cursor-default disabled:opacity-40',
         VARIANT[variant],
         SIZE[size],

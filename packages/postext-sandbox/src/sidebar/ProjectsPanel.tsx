@@ -39,7 +39,7 @@ function MaybeConfirm({
  *  row on top (no border of its own), the chapter list below it. */
 function ActiveCard({ row, children }: { row: ReactNode; children?: ReactNode }) {
   return (
-    <div className="overflow-hidden rounded border" style={{ borderColor: 'var(--gilt)' }}>
+    <div className="overflow-hidden rounded border" style={{ borderColor: 'var(--brand)' }}>
       {row}
       {children}
     </div>
@@ -178,7 +178,7 @@ export function ProjectsPanel() {
           </p>
         )}
         {!busy && updatedAt !== null && (
-          <p className="mb-2 text-xs" style={{ color: 'var(--gilt)' }} role="status" aria-live="polite">
+          <p className="mb-2 text-xs" style={{ color: 'var(--brand)' }} role="status" aria-live="polite">
             {labels.presetUpdatedFromDisk}
           </p>
         )}
@@ -248,7 +248,7 @@ export function ProjectsPanel() {
         {hiddenPresets.length > 0 && (
           <Collapsible.Root open={hiddenOpen} onOpenChange={setHiddenOpen} className="mt-1">
             <Collapsible.Trigger
-              className="flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1 py-1 text-[11px] text-(--slate) hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)"
+              className="flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1 py-1 text-[11px] text-(--slate) hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)"
             >
               <ChevronRight size={12} aria-hidden="true" style={{ transform: hiddenOpen ? 'rotate(90deg)' : undefined, transition: 'transform 200ms ease' }} />
               {labels.presetsHidden.replace('__count__', String(hiddenPresets.length))}
@@ -383,13 +383,13 @@ function ProjectRow({
     >
       {coverImage}
       {isActive && (
-        <span className="absolute inset-0 flex items-center justify-center" style={{ color: 'var(--gilt)', background: 'color-mix(in srgb, var(--background) 60%, transparent)' }}>
+        <span className="absolute inset-0 flex items-center justify-center" style={{ color: 'var(--brand)', background: 'color-mix(in srgb, var(--background) 60%, transparent)' }}>
           <Check size={13} aria-hidden="true" />
         </span>
       )}
     </span>
   ) : (
-    <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--gilt)' }}>
+    <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--brand)' }}>
       {isActive && <Check size={13} aria-hidden="true" />}
     </span>
   );
@@ -406,7 +406,7 @@ function ProjectRow({
         title={labels.projectThumbnailChange}
         onMouseDown={keepFocus}
         onClick={() => coverInputRef.current?.click()}
-        className="flex h-12 w-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm border bg-transparent p-0 text-(--slate) hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)"
+        className="flex h-12 w-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm border bg-transparent p-0 text-(--slate) hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)"
         style={{ borderColor: 'var(--rule)' }}
       >
         {coverImage ?? <ImagePlus size={14} aria-hidden="true" />}
@@ -590,13 +590,13 @@ function PresetRow({
     >
       <img src={preset.thumbnailUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
       {isActive && (
-        <span className="absolute inset-0 flex items-center justify-center" style={{ color: 'var(--gilt)', background: 'color-mix(in srgb, var(--background) 60%, transparent)' }}>
+        <span className="absolute inset-0 flex items-center justify-center" style={{ color: 'var(--brand)', background: 'color-mix(in srgb, var(--background) 60%, transparent)' }}>
           <Check size={13} aria-hidden="true" />
         </span>
       )}
     </span>
   ) : (
-    <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--gilt)' }}>
+    <span className="flex h-4 w-4 items-center justify-center" style={{ color: 'var(--brand)' }}>
       {isActive && <Check size={13} aria-hidden="true" />}
     </span>
   );

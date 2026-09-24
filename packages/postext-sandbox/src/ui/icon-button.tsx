@@ -39,10 +39,10 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       aria-pressed={active}
       className={cn(
         'inline-flex shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 transition-colors',
-        'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+        'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
         'disabled:cursor-default disabled:opacity-40',
         'text-(--slate) enabled:hover:text-(--foreground) enabled:hover:bg-(--surface)',
-        active && 'text-(--gilt) bg-(--surface) enabled:hover:text-(--gilt)',
+        active && 'text-(--brand) bg-(--surface) enabled:hover:text-(--brand)',
         destructive && 'text-(--destructive) enabled:hover:text-(--destructive)',
         SIZE[size],
         className,

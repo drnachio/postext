@@ -249,11 +249,11 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
           className="pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center gap-2 text-xs"
           style={{
             backgroundColor: 'color-mix(in srgb, var(--background) 85%, transparent)',
-            border: '2px dashed var(--gilt)',
+            border: '2px dashed var(--brand)',
             color: 'var(--foreground)',
           }}
         >
-          <UploadCloud size={28} aria-hidden="true" style={{ color: 'var(--gilt)' }} />
+          <UploadCloud size={28} aria-hidden="true" style={{ color: 'var(--brand)' }} />
           <span>{labels.resourcesDropToUpload}</span>
         </div>
       )}

@@ -81,7 +81,7 @@ export function PdfMasterUploader({ fileId, onAttached, onRemoved }: PdfMasterUp
           aria-label={fileId ? labels.uploadPdfMasterReplace : labels.uploadPdfMasterDrop}
           className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded border border-dashed text-xs"
           style={{
-            borderColor: dragOver ? 'var(--gilt)' : 'var(--rule)',
+            borderColor: dragOver ? 'var(--brand)' : 'var(--rule)',
             backgroundColor: dragOver ? 'var(--surface)' : 'transparent',
             color: 'var(--slate)',
             padding: '8px',

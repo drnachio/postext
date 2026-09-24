@@ -167,8 +167,8 @@ function SliderBody({ value, onChange, min, max, step, label }: Omit<NumberPopov
           touchAction: 'none',
         }}
       >
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${ratio * 100}%`, borderRadius: 7, backgroundColor: 'var(--gilt)', opacity: 0.4 }} />
-        <div style={{ position: 'absolute', left: `${ratio * 100}%`, top: '50%', width: 14, height: 14, borderRadius: '50%', border: '2px solid var(--gilt)', backgroundColor: 'var(--surface)', boxShadow: '0 0 2px rgba(0,0,0,0.4)', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${ratio * 100}%`, borderRadius: 7, backgroundColor: 'var(--brand)', opacity: 0.4 }} />
+        <div style={{ position: 'absolute', left: `${ratio * 100}%`, top: '50%', width: 14, height: 14, borderRadius: '50%', border: '2px solid var(--brand)', backgroundColor: 'var(--surface)', boxShadow: '0 0 2px rgba(0,0,0,0.4)', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }} />
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>

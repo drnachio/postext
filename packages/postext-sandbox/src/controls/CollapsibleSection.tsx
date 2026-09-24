@@ -122,10 +122,10 @@ function SectionFrame({
         <Collapsible.Trigger
           className={cn(
             'flex flex-1 cursor-pointer items-center justify-between gap-2 border-0 bg-transparent px-3 py-2 text-left text-xs transition-colors',
-            'focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--gilt-hover)',
+            'focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--brand-hover)',
             isSubsection
               ? 'text-(--slate) hover:text-(--foreground)'
-              : 'font-semibold uppercase tracking-wider text-(--gilt) hover:text-(--foreground)',
+              : 'font-semibold uppercase tracking-wider text-(--brand) hover:text-(--foreground)',
           )}
         >
           <span className="min-w-0 truncate">
@@ -135,10 +135,10 @@ function SectionFrame({
             {modified && (
               <span
                 className="inline-flex items-center gap-1 text-[10px] font-medium normal-case tracking-normal"
-                style={{ color: 'var(--gilt)', fontVariantNumeric: 'tabular-nums' }}
+                style={{ color: 'var(--brand)', fontVariantNumeric: 'tabular-nums' }}
                 title={labels.settingsModifiedCount.replace('__count__', String(overrideCount))}
               >
-                <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--gilt)' }} />
+                <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--brand)' }} />
                 {overrideCount > 0 && overrideCount}
               </span>
             )}

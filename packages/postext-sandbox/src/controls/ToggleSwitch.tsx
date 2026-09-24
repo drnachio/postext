@@ -22,7 +22,7 @@ export function ToggleSwitch({ label, checked, onChange, tooltip, isDefault, onR
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className="focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)"
+        className="focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)"
         style={{
           position: 'relative',
           height: 20,
@@ -31,7 +31,7 @@ export function ToggleSwitch({ label, checked, onChange, tooltip, isDefault, onR
           borderRadius: 9999,
           border: '1px solid var(--rule)',
           cursor: 'pointer',
-          backgroundColor: checked ? 'var(--gilt)' : 'var(--surface)',
+          backgroundColor: checked ? 'var(--brand)' : 'var(--surface)',
           transition: 'background-color 200ms ease',
           opacity: muted ? 0.7 : 1,
         }}

@@ -20,7 +20,8 @@
     "github": "GitHub",
     "githubAriaLabel": "Postext en GitHub (abre en nueva pestaña)",
     "openMenu": "Abrir menú de navegación",
-    "closeMenu": "Cerrar menú de navegación"
+    "closeMenu": "Cerrar menú de navegación",
+    "tryIt": "Abrir el Sandbox"
   },
   "Docs": {
     "sidebarTitle": "Documentación",
@@ -28,7 +29,16 @@
     "lastUpdated": "Actualizado",
     "menu": "Menú",
     "openMenu": "Abrir menú de navegación",
-    "closeMenu": "Cerrar menú de navegación"
+    "closeMenu": "Cerrar menú de navegación",
+    "partFoundations": "Fundamentos",
+    "partCraft": "El oficio",
+    "partPractice": "La práctica",
+    "part": "Parte",
+    "chapter": "Capítulo",
+    "contentsTitle": "Índice",
+    "contentsKicker": "Documentación de Postext",
+    "contentsLead": "Ocho capítulos en tres partes: qué es Postext y cómo está construido, el oficio tipográfico que automatiza y las herramientas con las que se usa.",
+    "readingTime": "Tiempo de lectura"
   },
   "CodePen": {
     "run": "Ejecutar en CodePen",
@@ -51,60 +61,118 @@
     "hintOpen": "abrir"
   },
   "Hero": {
-    "title": "El Tipógrafo Programable para la Web",
-    "subtitle": "Postext parte de markdown semántico y aplica reglas de maquetación con siglos de historia — justificación Knuth-Plass, prevención de huérfanas, colocación de figuras — para generar páginas con calidad editorial renderizadas a HTML, canvas o PDF listo para imprenta.",
+    "kicker": "Motor de maquetación de código abierto",
+    "title": "El <em>tipógrafo</em> programable para la web",
+    "subtitle": "Postext parte de markdown semántico y aplica reglas editoriales con siglos de historia — justificación Knuth-Plass, columnas equilibradas, flotantes que saben cuál es su sitio — para producir páginas de calidad editorial en HTML, canvas o PDF listo para imprenta.",
     "getStarted": "Empezar",
-    "viewOnGitHub": "Ver en GitHub"
+    "openSandbox": "Abrir el Sandbox",
+    "viewOnGitHub": "Ver en GitHub",
+    "artAlt": "Un pliego abierto dibujado como lo ve el motor: líneas justificadas de cajas de palabra sobre una rejilla de línea base, una banda de capítulo, una figura flotante y una línea abierta en cajas, gomas y una penalización",
+    "colophon": "Cada página se calcula en tu navegador"
+  },
+  "Landing": {
+    "chapter": "Capítulo",
+    "figure": "Figura",
+    "part": "Parte"
   },
   "About": {
-    "eyebrow": "Qué Es Postext",
-    "titleLine1": "Maquetación Editorial,",
-    "titleLine2": "Computada para la Web",
-    "paragraph1": "CSS ofrece maquetación responsiva — flexbox, grid, columnas. Pero no sabe balancear columnas, evitar huérfanas, ajustar texto alrededor de figuras ni colocar notas al pie en la base de una columna. Son decisiones editoriales depuradas durante siglos de tipografía impresa.",
+    "eyebrow": "Por qué Postext",
+    "titleLine1": "Maquetación editorial,",
+    "titleLine2": "calculada para la web",
+    "lead": "La tipografía impresa pasó cinco siglos aprendiendo a componer una página; los navegadores aprendieron a maquetar una interfaz. Postext lleva lo primero a lo segundo.",
+    "paragraph1": "CSS ofrece maquetación responsiva — flexbox, grid, columnas. Pero no sabe equilibrar columnas, mantener un título con su párrafo, evitar viudas y huérfanas ni llevar una figura a la cabeza de la columna siguiente. Son decisiones editoriales, depuradas durante siglos de imprenta.",
     "paragraph2prefix": "Postext cubre ese vacío. Pásale markdown semántico y un objeto de configuración. Mide texto entre 300 y 600 veces más rápido que el DOM gracias a ",
     "pretextLink": "@chenglou/pretext",
-    "paragraph2suffix": ", calcula la geometría completa de cada página — cada línea, flotante y pie de figura — y la renderiza mediante los backends de HTML, canvas o PDF listo para imprenta.",
-    "inputLabel": "Entrada",
-    "outputLabel": "Salida",
+    "paragraph2suffix": ", calcula la geometría completa de cada página — cada línea, flotante y pie — y la renderiza mediante los backends de HTML, canvas o PDF listo para imprenta.",
+    "inputLabel": "Entra markdown",
+    "outputLabel": "Salen páginas",
     "inputAriaLabel": "Ejemplo de entrada markdown",
-    "outputAriaLabel": "Representación visual de salida tipográfica con columnas balanceadas, colocación de figuras y notas al pie"
+    "outputAriaLabel": "Una página compuesta: una banda de capítulo, columnas justificadas y equilibradas, una figura flotante con su pie y un titulillo",
+    "caption": "El mismo markdown, antes y después del motor: una apertura de capítulo, dos columnas equilibradas y una figura llevada a la cabeza de una columna."
+  },
+  "PageMock": {
+    "kicker": "Capítulo 1 · Fundamentos",
+    "title": "Por qué Postext",
+    "lead": "La tipografía impresa pasó cinco siglos aprendiendo a componer una página; los navegadores aprendieron a disponer una interfaz. Postext lleva lo primero a lo segundo: un motor que convierte Markdown en páginas compuestas con criterio editorial.",
+    "body1": "Postext es un motor de maquetación de código abierto que lleva a la web el oficio de la tipografía impresa profesional. Recibe contenido semántico escrito en Markdown enriquecido y un objeto de configuración, y calcula una maquetación completamente resuelta en la que cada línea, cada título, cada figura y cada tabla tiene una posición precisa, medida en unidades tipográficas reales. Después la dibujan tres renderizadores —una vista previa viva en canvas, HTML posicionado y un PDF listo para imprenta— que leen la misma geometría, de modo que lo que ves en pantalla es exactamente lo que va a imprenta.",
+    "body2": "Este libro es su propia demostración. La cubierta, el índice que se numera solo, las portadillas en tres colores, la banda que abre cada capítulo, las cabeceras de estas páginas y cada figura que flota hasta su sitio las ha maquetado Postext, en tu navegador, hace un momento. Nada se ha colocado a mano: el Markdown solo dice qué es cada cosa, y la configuración decide cómo se ve.",
+    "body3": "El libro se organiza en tres partes. Fundamentos, la parte en la que estás, explica el problema que resuelve Postext y cómo está construido el motor: qué entra, qué sale y qué ocurre entre medias. El oficio trata de tipografía: cómo se compone una línea, cómo se enmarca una página, adónde van las figuras y las tablas y cómo un conjunto de capítulos se convierte en un libro. La práctica se ocupa de las herramientas: el formato del documento, el Sandbox, los tres formatos de salida y el proyecto que los rodea.",
+    "body4": "Cada capítulo se abre con una breve introducción sobre su banda, y la mayoría cierran sus secciones con un recuadro titulado Pruébalo en el Sandbox: un pequeño experimento que puedes hacer sobre este mismo libro, ahora mismo, para ver la función en acción. Nada de lo que propone puede estropear nada —el botón de restablecer de la fila de la guía, en el panel Proyectos, la devuelve a su estado original—, así que cambia lo que quieras. Los capítulos pueden leerse en cualquier orden; cuando uno depende de otro, lo dice.",
+    "body5": "El CSS moderno es una herramienta extraordinaria para construir interfaces. Flexbox, Grid, las consultas de contenedor y el posicionamiento por anclas dan un control fino sobre cómo se disponen los componentes en una ventana. Pero CSS se diseñó para la maquetación de aplicaciones, y la lectura extensa necesita maquetación editorial. Son problemas distintos:",
+    "body6": "La diferencia no es de grado, sino de naturaleza. Una interfaz se adapta a la ventana que la contiene y el lector la recorre a su ritmo; una página, en cambio, tiene un tamaño fijo, un principio y un final, y todo lo que contiene debe resolverse dentro de esos límites: qué cabe en esta columna y qué pasa a la siguiente, dónde va cada figura, cómo termina cada línea y cada párrafo. Esas decisiones son las que definen la calidad de un libro, y ninguna de ellas puede tomarse mirando un solo elemento aislado.",
+    "tryTitle": "Pruébalo en el Sandbox",
+    "tryText": "Abre el panel Markdown y elige este capítulo en el selector de capítulos de su cabecera. Cambia una palabra de este párrafo o borra una frase: la página vuelve a componerse, las columnas se reequilibran y los folios de los capítulos siguientes se actualizan.",
+    "figureLabel": "Fig. 1.1",
+    "figureCaption": "Una figura llevada a la cabeza de la columna tras su primera mención."
+  },
+  "Figures": {
+    "title": "En cifras",
+    "measureValue": "300–600×",
+    "measureLabel": "más rápido que el DOM al medir texto: un libro entero se recompone mientras escribes",
+    "renderersValue": "3",
+    "renderersLabel": "renderizadores para una sola maquetación: HTML, canvas y PDF listo para imprenta",
+    "pdfValue": "PDF/UA",
+    "pdfLabel": "PDF etiquetado y accesible, con marcadores y color CMYK",
+    "serverValue": "0",
+    "serverLabel": "servidores: el motor funciona íntegramente en el navegador, con licencia MIT"
   },
   "Features": {
     "eyebrow": "Capacidades",
-    "title": "Lo que los Tipógrafos Siempre Han Sabido",
+    "title": "Lo que los tipógrafos siempre supieron",
     "justificationTitle": "Justificación Knuth-Plass",
     "justificationDescription": "El mismo algoritmo óptimo de partición de líneas que usa TeX, con separación silábica por patrones de TeX y control de huérfanas — bloques de texto homogéneos sin ríos de blanco, más allá de lo que CSS puede expresar.",
-    "resourcesTitle": "Recursos y Referencias Cruzadas",
+    "resourcesTitle": "Recursos y referencias cruzadas",
     "resourcesDescription": "Figuras, diagramas SVG y tablas que flotan al inicio o al final de columnas y páginas — como los flotantes en imprenta — con numeración tipada y referencias :ref que siempre se mantienen sincronizadas.",
-    "tablesTitle": "Estilo de Tablas y Pies de Figura",
-    "tablesDescription": "Tablas compuestas con tipografía independiente para cuerpo y cabecera, y pies de figura que siguen tu configuración — numerados, con estilo propio y colocados junto al recurso que describen.",
-    "singleInkTitle": "Diagramas a una Tinta",
+    "tablesTitle": "Tablas y pies",
+    "tablesDescription": "Tablas con tipografía independiente para cuerpo y cabecera, divididas entre páginas con la cabecera repetida, y pies que siguen tu configuración — numerados y colocados junto al recurso que describen.",
+    "singleInkTitle": "Diagramas a una tinta",
     "singleInkDescription": "Recolorea los diagramas SVG a matices de una sola tinta según su luminancia, para que cada ilustración encaje con tu diseño — listos para impresión con tinta directa.",
     "mathTitle": "Matemáticas en LaTeX",
     "mathDescription": "Ecuaciones en línea y en bloque escritas en LaTeX, medidas y compuestas por el motor para que se asienten en la retícula base junto al texto.",
-    "outputTitle": "Web y PDF Listo para Imprenta",
-    "outputDescription": "Un motor de maquetación, tres renderizadores. Las mismas páginas calculadas se renderizan a HTML, canvas o PDF listo para imprenta — con marcadores y color CMYK."
+    "outputTitle": "Web y PDF para imprenta",
+    "outputDescription": "Un motor de maquetación, tres renderizadores. Las mismas páginas calculadas se renderizan a HTML, canvas o PDF listo para imprenta — con marcadores y color CMYK.",
+    "lead": "Seis cosas que una página necesita y que CSS nunca se diseñó para decidir — calculadas por el motor, igual cada vez."
+  },
+  "Quote": {
+    "text": "Cada página de la guía de Postext — cubierta, índice, portadillas y todo lo demás — la compone Postext, en tu navegador, mientras la lees.",
+    "attribution": "Colofón de la guía incluida"
+  },
+  "Showcase": {
+    "eyebrow": "Escaparate",
+    "title": "Libros de verdad, compuestos en tu navegador",
+    "lead": "Un libro de texto, una revista, una edición literaria, un catálogo de exposición. Ábrelos en el Sandbox, cambia una regla y mira cómo se recompone cada página.",
+    "open": "Abrir en el Sandbox",
+    "guideName": "Guía de Postext",
+    "guideDescription": "La guía incluida: 12 capítulos, tres partes y cubierta",
+    "all": "Ver todos los presets"
   },
   "ApiPreview": {
     "eyebrow": "API",
-    "title": "Una Función, Control Total",
-    "description": "Llama a <code>buildDocument</code> con tu contenido y un objeto de configuración. Recibes la geometría completa de las páginas, lista para renderizar con <code>renderToHtml</code> — o con los backends de canvas y PDF."
+    "title": "Una función, control total",
+    "description": "Llama a <code>buildDocument</code> con tu contenido y un objeto de configuración. Recibes la geometría completa de las páginas: dibuja cualquier página como imagen con <code>renderPage</code> o compón el libro entero como PDF listo para imprenta con <code>renderToPdf</code>.",
+    "commentImages": "// Cada página, como imagen…",
+    "commentPdf": "// …o el libro entero, como PDF listo para imprenta",
+    "commentFonts": "// fontProvider: bytes TTF por familia y peso (ver la documentación)"
   },
   "HowItWorks": {
-    "eyebrow": "Flujo de Trabajo",
-    "title": "Maquetación Editorial en Tres Pasos",
-    "step1Title": "Escribe Markdown Semántico",
-    "step1Description": "Escribe tu contenido en markdown enriquecido con referencias a recursos y marcadores de notas al pie. Sin pensar en maquetación — solo contenido.",
-    "step2Title": "Configura las Reglas de Maquetación",
-    "step2Description": "Define columnas, reglas tipográficas, estrategias de colocación de recursos y ajustes por sección en un objeto PostextConfig.",
-    "step3Title": "Renderiza a HTML, Canvas o PDF",
+    "eyebrow": "Flujo de trabajo",
+    "title": "Maquetación editorial en tres pasos",
+    "lead": "El contenido en markdown, el diseño en un objeto de configuración y las páginas en una sola llamada.",
+    "step1Title": "Escribe markdown semántico",
+    "step1Description": "Escribe tu contenido en markdown enriquecido: títulos, listas, tablas, fórmulas, recuadros y referencias :ref a tus figuras. Sin pensar en maquetación — solo contenido.",
+    "step2Title": "Configura las reglas de maquetación",
+    "step2Description": "Define el tamaño de página, las columnas, la tipografía, el diseño de los títulos, los titulillos y la colocación de flotantes en un objeto PostextConfig — o diséñalo visualmente en el Sandbox.",
+    "step3Title": "Renderiza a HTML, canvas o PDF",
     "step3Description": "Llama a buildDocument y obtén la geometría completa de la maquetación — y renderízala con el backend de HTML, canvas o PDF listo para imprenta."
   },
   "Install": {
     "eyebrow": "Instalación",
-    "title": "Empieza en Menos de un Minuto",
+    "title": "Empieza en menos de un minuto",
     "commentInstall": "# Instala con tu gestor de paquetes",
-    "commentQuickStart": "// Inicio rápido"
+    "commentQuickStart": "// Inicio rápido",
+    "lead": "Un paquete, sin servidor y sin dependencias nativas. Añade postext-pdf cuando necesites imprimir.",
+    "commentCanvas": "// La primera página, dibujada en un canvas",
+    "commentPdf": "// El documento entero, como PDF"
   },
   "CodeBlock": {
     "copy": "Copiar",
@@ -121,7 +189,11 @@
     "mitLicense": "Licencia MIT",
     "privacyPolicy": "Política de Privacidad",
     "cookiePolicy": "Política de Cookies",
-    "copyright": "© {year} Colaboradores de Postext"
+    "copyright": "© {year} Colaboradores de Postext",
+    "colophon": "Compuesto en Fraunces, Lora, Geist y Bricolage Grotesque — las tipografías de la guía de Postext.",
+    "docs": "Documentación",
+    "sandbox": "Sandbox",
+    "product": "Postext"
   },
   "Theme": {
     "toggleLight": "Cambiar a modo claro",

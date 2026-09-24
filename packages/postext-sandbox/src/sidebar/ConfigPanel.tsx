@@ -182,9 +182,9 @@ export function ConfigPanel() {
             onClick={() => setOverriddenOnly((v) => !v)}
             className={cn(
               'ml-auto inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-[11px] whitespace-nowrap transition-colors',
-              'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+              'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
               overriddenOnly
-                ? 'border-(--gilt) bg-(--surface) text-(--gilt)'
+                ? 'border-(--brand) bg-(--surface) text-(--brand)'
                 : 'border-transparent text-(--slate) hover:text-(--foreground)',
             )}
           >
@@ -224,7 +224,7 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
   const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div
-      className="flex h-7 items-center gap-1.5 rounded border px-2 focus-within:border-(--gilt)"
+      className="flex h-7 items-center gap-1.5 rounded border px-2 focus-within:border-(--brand)"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)' }}
     >
       <Search size={13} aria-hidden="true" style={{ color: 'var(--slate)', flexShrink: 0 }} />
