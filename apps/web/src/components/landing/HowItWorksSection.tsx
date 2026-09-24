@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
+import { penDefineData } from "@/lib/codepen";
 import { CodeBlock } from "./CodeBlock";
 
 const codeRaw = `import { buildDocument, renderPage } from "postext";
@@ -12,6 +13,7 @@ const doc = buildDocument(
     page: { sizePreset: "21x28" },
     layout: { layoutType: "double" },
     bodyText: {
+      fontSize: { value: 12, unit: "pt" },
       textAlign: "justify",
       hyphenation: { enabled: true, locale: "en-us" },
     },
@@ -75,7 +77,11 @@ export async function HowItWorksSection() {
             </p>
           </div>
           <div className="md:col-span-8">
-            <CodeBlock code={codeRaw} title="book.ts">
+            <CodeBlock
+              code={codeRaw}
+              title="book.ts"
+              codepen={penDefineData("home-book", { title: `Postext · ${api("title")}` })}
+            >
               <span className="syntax-keyword">import</span> {"{ buildDocument, renderPage }"}{" "}
               <span className="syntax-keyword">from</span> <span className="syntax-string">{'"postext"'}</span>;{"\n"}
               <span className="syntax-keyword">import</span> {"{ renderToPdf }"}{" "}
@@ -87,6 +93,7 @@ export async function HowItWorksSection() {
               {"    "}page: {"{"} sizePreset: <span className="syntax-string">{'"21x28"'}</span> {"}"},{"\n"}
               {"    "}layout: {"{"} layoutType: <span className="syntax-string">{'"double"'}</span> {"}"},{"\n"}
               {"    "}bodyText: {"{"}{"\n"}
+              {"      "}fontSize: {"{"} value: <span className="syntax-value">12</span>, unit: <span className="syntax-string">{'"pt"'}</span> {"}"},{"\n"}
               {"      "}textAlign: <span className="syntax-string">{'"justify"'}</span>,{"\n"}
               {"      "}hyphenation: {"{"} enabled: <span className="syntax-value">true</span>, locale: <span className="syntax-string">{'"en-us"'}</span> {"}"},{"\n"}
               {"    "}{"}"},{"\n"}

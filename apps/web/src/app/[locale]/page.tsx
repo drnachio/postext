@@ -7,10 +7,11 @@ import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { QuoteSection } from "@/components/landing/QuoteSection";
 import { ShowcaseSection } from "@/components/landing/ShowcaseSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
+import { BundleSection } from "@/components/landing/BundleSection";
 import { InstallSection } from "@/components/landing/InstallSection";
 import { Footer } from "@/components/landing/Footer";
 
-/** The landing reads like the guide: a cover, three chapters on their part
+/** The landing reads like the guide: a cover, four chapters on their part
  *  colours (blue, gilt, vermilion) with a figures box, a pull quote and a
  *  shelf of books set by Postext between them, and a back cover. */
 export default async function Home({
@@ -33,6 +34,7 @@ export default async function Home({
         <QuoteSection />
         <ShowcaseSection />
         <HowItWorksSection />
+        <BundleSection />
         <InstallSection />
       </main>
       <Footer />

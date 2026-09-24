@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Kicker } from "@/components/brand/Kicker";
 import { CropMarks } from "@/components/brand/CropMarks";
+import { penDefineData } from "@/lib/codepen";
 import { CodeBlock } from "./CodeBlock";
 import { InstallChip } from "./InstallChip";
 
@@ -48,6 +49,7 @@ export async function InstallSection() {
           <div className="md:col-span-6 md:pt-4">
             <CodeBlock
               title="quick-start.ts"
+              codepen={penDefineData("home-quick-start", { title: `Postext · ${t("title")}`, description: t("lead") })}
               className="bg-elevated shadow-[0_24px_48px_-28px_rgba(14,16,20,0.35)]"
               code={`import { buildDocument, renderPage } from "postext";\nimport { renderToPdf } from "postext-pdf";\n\nconst doc = buildDocument({\n  markdown: "# Hello World\\n\\nYour content here.",\n});\n\ndocument.body.append(renderPage(doc.pages[0], doc));\n\nconst pdf = await renderToPdf(doc, { fontProvider });`}
             >
