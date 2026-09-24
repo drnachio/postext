@@ -2,7 +2,6 @@
 
 [![npm version](https://img.shields.io/npm/v/postext)](https://www.npmjs.com/package/postext)
 [![CI](https://img.shields.io/github/actions/workflow/status/drnachio/postext/ci.yml?branch=develop&label=tests)](https://github.com/drnachio/postext/actions)
-[![skills.sh](https://skills.sh/b/drnachio/postext)](https://skills.sh/drnachio/postext)
 
 **A programmable typesetter for the web.**
 
