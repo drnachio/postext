@@ -20,7 +20,8 @@
     "github": "GitHub",
     "githubAriaLabel": "Postext on GitHub (opens in new tab)",
     "openMenu": "Open navigation menu",
-    "closeMenu": "Close navigation menu"
+    "closeMenu": "Close navigation menu",
+    "tryIt": "Open the Sandbox"
   },
   "Docs": {
     "sidebarTitle": "Documentation",
@@ -51,60 +52,113 @@
     "hintOpen": "open"
   },
   "Hero": {
-    "title": "The Programmable Typesetter for the Web",
-    "subtitle": "Postext takes semantic markdown and applies centuries-old editorial layout rules — Knuth-Plass justification, orphan prevention, figure placement — producing publication-grade pages rendered to HTML, canvas, or print-ready PDF.",
-    "getStarted": "Get Started",
-    "viewOnGitHub": "View on GitHub"
+    "kicker": "Open-source layout engine",
+    "title": "The programmable <em>typesetter</em> for the web",
+    "subtitle": "Postext takes semantic markdown and applies centuries-old editorial rules — Knuth-Plass justification, balanced columns, floats that know their place — to produce publication-grade pages in HTML, canvas or print-ready PDF.",
+    "getStarted": "Get started",
+    "openSandbox": "Open the Sandbox",
+    "viewOnGitHub": "View on GitHub",
+    "artAlt": "An open spread drawn the way the engine sees it: justified lines of word boxes on a baseline grid, a chapter band, a floated figure, and one line opened into boxes, glue and a penalty",
+    "colophon": "Every page is computed in your browser"
+  },
+  "Landing": {
+    "chapter": "Chapter",
+    "figure": "Figure",
+    "part": "Part"
   },
   "About": {
-    "eyebrow": "What Is Postext",
-    "titleLine1": "Editorial Layout,",
-    "titleLine2": "Computed for the Web",
-    "paragraph1": "CSS gives you responsive layout — flexbox, grid, columns. But it cannot balance columns, prevent orphans, flow text around figures, or place footnotes at the bottom of a column. These are editorial decisions that have been refined over centuries of print typesetting.",
+    "eyebrow": "Why Postext",
+    "titleLine1": "Editorial layout,",
+    "titleLine2": "computed for the web",
+    "lead": "Print typography spent five centuries learning how to set a page; browsers learned how to lay out an interface. Postext brings the first to the second.",
+    "paragraph1": "CSS gives you responsive layout — flexbox, grid, columns. But it cannot balance columns, keep a heading with its paragraph, prevent widows and orphans, or float a figure to the head of the next column. These are editorial decisions, refined over centuries of print.",
     "paragraph2prefix": "Postext bridges that gap. Feed it semantic markdown and a configuration object. It measures text 300–600× faster than the DOM using ",
     "pretextLink": "@chenglou/pretext",
-    "paragraph2suffix": ", then computes the complete page geometry — every line, float, and caption — and renders it through HTML, canvas, or print-ready PDF backends.",
-    "inputLabel": "Input",
-    "outputLabel": "Output",
+    "paragraph2suffix": ", then computes the complete page geometry — every line, float and caption — and renders it through HTML, canvas or print-ready PDF backends.",
+    "inputLabel": "Markdown in",
+    "outputLabel": "Pages out",
     "inputAriaLabel": "Example markdown input",
-    "outputAriaLabel": "Visual representation of typeset output with balanced columns, figure placement, and footnotes"
+    "outputAriaLabel": "A typeset page: a chapter band, balanced justified columns, a floated figure with its caption and a running head",
+    "caption": "The same markdown, before and after the engine: a chapter opener, two balanced columns and a figure floated to the head of a column."
+  },
+  "PageMock": {
+    "kicker": "Chapter 1 · Foundations",
+    "title": "Why Postext",
+    "lead": "Print typography spent five centuries learning how to set a page; browsers learned how to lay out an interface. Postext brings the first to the second: a layout engine that turns Markdown into pages set to editorial standards.",
+    "body1": "Postext is an open-source layout engine that brings the craft of professional print typography to the web. It takes semantic content written in enriched Markdown and a configuration object, and computes a fully resolved layout in which every line, heading, figure and table has a precise position, measured in real typographic units. That layout is then drawn by three renderers — a live canvas preview, positioned HTML and a print-ready PDF — which all read the same geometry, so what you see on screen is exactly what goes to press.",
+    "body2": "This book is its own demonstration. Its cover, the contents page that numbers itself, the part dividers in three colours, the band that opens each chapter, the running heads at the top of these pages and every figure that floats into place were all laid out by Postext, in your browser, a moment ago. Nothing here was placed by hand: the Markdown only says what things are, and the configuration decides how they look.",
+    "body3": "The book is organised in three parts. Foundations, the part you are in, explains the problem Postext solves and how the engine is built: what goes in, what comes out and what happens in between. The craft is about typography: how a line is set, how a page is framed, where figures and tables go and how a set of chapters becomes a book. In practice turns to the tools: the document format, the Sandbox, the three output formats and the project around them.",
+    "body4": "Each chapter opens with a short introduction on its band, and most of them close their sections with a box headed Try it in the Sandbox: a small experiment you can run on this very book, right now, to see the feature at work. Nothing in them can break anything — the reset button on the guide's row in the Projects panel restores it as it shipped — so change freely. The chapters can be read in any order; when one depends on another, it says so.",
+    "body5": "Modern CSS is a remarkable tool for building user interfaces. Flexbox, Grid, container queries and anchor positioning give developers fine control over how components are arranged in a viewport. But CSS was designed for application layout, and long-form reading needs editorial layout. The two are different problems:",
+    "body6": "The difference is one of kind, not degree. An interface adapts to the window that holds it, and the reader moves through it at will; a page, by contrast, has a fixed size, a beginning and an end, and everything it holds must be resolved within those limits: what fits in this column and what moves to the next, where each figure goes, how each line and each paragraph ends. Those decisions are what make the quality of a book, and none of them can be taken by looking at a single element in isolation.",
+    "tryTitle": "Try it in the Sandbox",
+    "tryText": "Open the Markdown panel and pick this chapter in the chapter switcher at its head. Change a word in this paragraph, or delete a sentence: the page sets itself again, the columns rebalance and the page numbers of the following chapters follow.",
+    "figureLabel": "Fig. 1.1",
+    "figureCaption": "A figure floated to the head of the column after its first mention."
+  },
+  "Figures": {
+    "title": "In figures",
+    "measureValue": "300–600×",
+    "measureLabel": "faster text measurement than the DOM, so a whole book reflows as you type",
+    "renderersValue": "3",
+    "renderersLabel": "renderers from one layout: HTML, canvas and print-ready PDF",
+    "pdfValue": "PDF/UA",
+    "pdfLabel": "tagged, accessible PDF output with bookmarks and CMYK colour",
+    "serverValue": "0",
+    "serverLabel": "servers: the engine runs entirely in the browser, MIT-licensed"
   },
   "Features": {
     "eyebrow": "Capabilities",
-    "title": "What Print Typesetters Knew All Along",
-    "justificationTitle": "Knuth-Plass Justification",
+    "title": "What print typesetters knew all along",
+    "justificationTitle": "Knuth-Plass justification",
     "justificationDescription": "The same optimal line-breaking algorithm TeX uses, with TeX-pattern hyphenation and orphan control — evenly set text blocks with no rivers of whitespace, beyond anything CSS can express.",
-    "resourcesTitle": "Resources & Cross-References",
-    "resourcesDescription": "Figures, SVG diagrams, and tables float to the top or bottom of columns and pages — the way print floats work — with typed numbering and :ref cross-references that always stay in sync.",
-    "tablesTitle": "Table & Caption Styling",
-    "tablesDescription": "Tables typeset with independent body and header typography, and captions that follow your configuration — numbered, styled, and placed alongside the resource they describe.",
-    "singleInkTitle": "Single-Ink Diagrams",
+    "resourcesTitle": "Resources & cross-references",
+    "resourcesDescription": "Figures, SVG diagrams and tables float to the top or bottom of columns and pages — the way print floats work — with typed numbering and :ref cross-references that always stay in sync.",
+    "tablesTitle": "Tables & captions",
+    "tablesDescription": "Tables set with independent body and header typography, split across pages with repeated headers, and captions that follow your configuration — numbered and placed alongside the resource they describe.",
+    "singleInkTitle": "Single-ink diagrams",
     "singleInkDescription": "Recolor SVG diagrams to tints of one ink by luminance, so every illustration matches your design — ready for spot-colour printing.",
-    "mathTitle": "LaTeX Math",
+    "mathTitle": "LaTeX math",
     "mathDescription": "Inline and display equations written in LaTeX, measured and typeset by the engine so they sit on the baseline grid alongside the text.",
-    "outputTitle": "Web & Print-Ready PDF",
-    "outputDescription": "One layout engine, three renderers. The same computed pages render to HTML, canvas, or print-ready PDF — with bookmarks and CMYK colour."
+    "outputTitle": "Web & print-ready PDF",
+    "outputDescription": "One layout engine, three renderers. The same computed pages render to HTML, canvas, or print-ready PDF — with bookmarks and CMYK colour.",
+    "lead": "Six things a page needs that CSS was never designed to decide — computed by the engine, the same way every time."
+  },
+  "Quote": {
+    "text": "Every page of the Postext guide — cover, contents, part dividers and all — is set by Postext, in your browser, as you read it.",
+    "attribution": "Colophon of the built-in guide"
+  },
+  "Showcase": {
+    "eyebrow": "Showcase",
+    "title": "Real books, set in your browser",
+    "lead": "A textbook, a magazine, a literary edition, an exhibition catalogue. Open any of them in the Sandbox, change a rule and watch every page reflow.",
+    "open": "Open in the Sandbox",
+    "guideName": "The Postext guide",
+    "guideDescription": "The built-in guide: 12 chapters, three parts, a cover",
+    "all": "Browse every preset"
   },
   "ApiPreview": {
     "eyebrow": "API",
-    "title": "One Function, Full Control",
+    "title": "One function, full control",
     "description": "Call <code>buildDocument</code> with your content and a configuration object. Get back the complete page geometry, ready to render with <code>renderToHtml</code> — or the canvas and PDF backends."
   },
   "HowItWorks": {
     "eyebrow": "Workflow",
-    "title": "Three Steps to Publication-Grade Layout",
-    "step1Title": "Write Semantic Markdown",
-    "step1Description": "Author your content in enriched markdown with resource references and footnote markers. No layout concerns — just content.",
-    "step2Title": "Configure Layout Rules",
-    "step2Description": "Define columns, typography rules, resource placement strategies, and section overrides in a PostextConfig object.",
-    "step3Title": "Render to HTML, Canvas, or PDF",
-    "step3Description": "Call buildDocument and receive the complete layout geometry — then render it with the HTML, canvas, or print-ready PDF backend."
+    "title": "Three steps to publication-grade layout",
+    "lead": "Content in markdown, design in a configuration object, pages from one function call.",
+    "step1Title": "Write semantic markdown",
+    "step1Description": "Author your content in enriched markdown: headings, lists, tables, math, callouts and :ref cross-references to your figures. No layout concerns — just content.",
+    "step2Title": "Configure the layout rules",
+    "step2Description": "Define page size, columns, typography, heading designs, running heads and float placement in a PostextConfig object — or design it visually in the Sandbox.",
+    "step3Title": "Render to HTML, canvas or PDF",
+    "step3Description": "Call buildDocument and receive the complete layout geometry — then render it with the HTML, canvas or print-ready PDF backend."
   },
   "Install": {
     "eyebrow": "Installation",
-    "title": "Start in Under a Minute",
+    "title": "Start in under a minute",
     "commentInstall": "# Install with your package manager",
-    "commentQuickStart": "// Quick start"
+    "commentQuickStart": "// Quick start",
+    "lead": "One package, no server, no native dependencies. Add postext-pdf when you need print."
   },
   "CodeBlock": {
     "copy": "Copy",
@@ -121,7 +175,11 @@
     "mitLicense": "MIT License",
     "privacyPolicy": "Privacy Policy",
     "cookiePolicy": "Cookie Policy",
-    "copyright": "© {year} Postext Contributors"
+    "copyright": "© {year} Postext Contributors",
+    "colophon": "Set in Fraunces, Lora, Geist and Bricolage Grotesque — the typefaces of the Postext guide.",
+    "docs": "Documentation",
+    "sandbox": "Sandbox",
+    "product": "Postext"
   },
   "Theme": {
     "toggleLight": "Switch to light mode",

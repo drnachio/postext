@@ -1,43 +1,71 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import { Kicker } from "@/components/brand/Kicker";
+import { CropMarks } from "@/components/brand/CropMarks";
 import { CodeBlock } from "./CodeBlock";
+import { InstallChip } from "./InstallChip";
 
+/** The back cover: night again, the install line set large between crop
+ *  marks, and the quick start. */
 export async function InstallSection() {
   const t = await getTranslations("Install");
+  const hero = await getTranslations("Hero");
 
   return (
-    <section id="install" aria-labelledby="install-heading" className="mx-auto w-full max-w-5xl px-6 py-24 2xl:max-w-6xl 2xl:px-8 2xl:py-32 4xl:max-w-7xl 4xl:px-12 4xl:py-40">
-      <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
-        {t("eyebrow")}
-      </p>
-      <h2
-        id="install-heading"
-        className="mt-4 font-display text-3xl font-bold italic tracking-tight 2xl:text-4xl 4xl:text-5xl"
-        style={{ textWrap: "balance" }}
-      >
-        {t("title")}
-      </h2>
-
-      <div className="mt-10 max-w-2xl space-y-6 2xl:mt-12 2xl:max-w-3xl 2xl:space-y-8 4xl:mt-16 4xl:max-w-4xl 4xl:space-y-10">
-        <CodeBlock code="pnpm add postext">
-          <span className="syntax-comment">{t("commentInstall")}</span>
-          {"\n"}
-          <span className="text-foreground">pnpm add postext</span>
-        </CodeBlock>
-
-        <CodeBlock code={`import { buildDocument, renderToHtml } from "postext";\n\nconst doc = buildDocument({\n  markdown: "# Hello World\\n\\nYour content here.",\n});\n\nconst html = renderToHtml(doc);`}>
-          <span className="syntax-comment">{t("commentQuickStart")}</span>
-          {"\n"}
-          <span className="syntax-keyword">import</span>{" "}
-          {"{ buildDocument, renderToHtml }"}{" "}
-          <span className="syntax-keyword">from</span>{" "}
-          <span className="syntax-string">{'"postext"'}</span>;{"\n"}
-          {"\n"}
-          <span className="syntax-keyword">const</span> doc = buildDocument({"{"}{"\n"}
-          {"  "}markdown: <span className="syntax-string">{'"# Hello World\\n\\nYour content here."'}</span>,{"\n"}
-          {"}"});{"\n"}
-          {"\n"}
-          <span className="syntax-keyword">const</span> html = renderToHtml(doc);
-        </CodeBlock>
+    <section id="install" aria-labelledby="install-heading" className="on-night dark relative isolate overflow-hidden bg-night py-24 text-cream md:py-32">
+      <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0 -z-10" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -right-20 -z-10 size-[36rem] rounded-full bg-red/15 blur-[150px]" />
+      <div className="mx-auto max-w-6xl px-6 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
+        <div className="relative grid grid-cols-1 gap-12 p-2 md:grid-cols-12 md:p-10">
+          <CropMarks className="hidden md:block" />
+          <div className="md:col-span-6">
+            <Kicker className="text-gold">{t("eyebrow")}</Kicker>
+            <span aria-hidden="true" className="mt-4 block h-[3px] w-14 bg-gold" />
+            <h2 id="install-heading" className="display mt-7 text-[2.8rem] text-white md:text-[4.2rem]" style={{ textWrap: "balance" }}>
+              {t("title")}
+            </h2>
+            <p className="mt-6 font-body text-lg leading-relaxed text-cream/75 italic">{t("lead")}</p>
+            <div className="mt-8 flex flex-col items-start gap-3">
+              <InstallChip />
+              <InstallChip command="pnpm add postext-pdf" />
+            </div>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link
+                href="/docs"
+                className="rounded-md bg-gold px-5 py-3 font-sans text-sm font-semibold text-night transition-colors hover:bg-[#e8b73a]"
+              >
+                {hero("getStarted")} →
+              </Link>
+              <a
+                href="https://github.com/drnachio/postext"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md border border-white/20 px-5 py-3 font-sans text-sm font-semibold text-white transition-colors hover:border-white/50 hover:bg-white/5"
+              >
+                {hero("viewOnGitHub")}
+              </a>
+            </div>
+          </div>
+          <div className="md:col-span-6 md:pt-4">
+            <CodeBlock
+              title="quick-start.ts"
+              code={`import { buildDocument, renderToHtml } from "postext";\n\nconst doc = buildDocument({\n  markdown: "# Hello World\\n\\nYour content here.",\n});\n\nconst html = renderToHtml(doc);`}
+            >
+              <span className="syntax-comment">{t("commentQuickStart")}</span>
+              {"\n"}
+              <span className="syntax-keyword">import</span>{" "}
+              {"{ buildDocument, renderToHtml }"}{" "}
+              <span className="syntax-keyword">from</span>{" "}
+              <span className="syntax-string">{'"postext"'}</span>;{"\n"}
+              {"\n"}
+              <span className="syntax-keyword">const</span> doc = buildDocument({"{"}{"\n"}
+              {"  "}markdown: <span className="syntax-string">{'"# Hello World\\n\\nYour content here."'}</span>,{"\n"}
+              {"}"});{"\n"}
+              {"\n"}
+              <span className="syntax-keyword">const</span> html = renderToHtml(doc);
+            </CodeBlock>
+          </div>
+        </div>
       </div>
     </section>
   );

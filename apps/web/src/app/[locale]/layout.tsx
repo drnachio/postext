@@ -3,7 +3,7 @@ import {
   Fraunces,
   Lora,
   JetBrains_Mono,
-  Cormorant_Garamond,
+  Bricolage_Grotesque,
   Geist,
 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
@@ -28,10 +28,10 @@ const fraunces = Fraunces({
   axes: ["SOFT", "WONK", "opsz"],
 });
 
-const cormorantGaramond = Cormorant_Garamond({
-  variable: "--font-cormorant",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
-  weight: ["700"],
+  axes: ["opsz", "wdth"],
 });
 
 const lora = Lora({
@@ -151,7 +151,7 @@ export default async function LocaleLayout({
         "dark h-full antialiased",
         geist.variable,
         fraunces.variable,
-        cormorantGaramond.variable,
+        bricolage.variable,
         lora.variable,
         jetbrainsMono.variable
       )}
