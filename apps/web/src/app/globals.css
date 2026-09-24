@@ -339,6 +339,12 @@
   /* italic correction before the upright word that follows */
   padding-right: 0.06em;
 }
+/* On paper the bright gilt is too light for text; the guide's deep gilt
+   keeps 3:1 at display sizes. */
+:root.light .hero-title em,
+:root.light .hero-em {
+  color: var(--brand-gilt-deep);
+}
 
 /* The hero's model line re-justifies by animating this per-gap shift
    (see HeroArt). Registered here: a "<number>" inside an inline <style>

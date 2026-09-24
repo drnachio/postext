@@ -12,18 +12,18 @@ export async function InstallSection() {
   const hero = await getTranslations("Hero");
 
   return (
-    <section id="install" aria-labelledby="install-heading" className="on-night dark relative isolate overflow-hidden bg-night py-16 text-cream md:py-20">
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -right-20 -z-10 size-[36rem] rounded-full bg-red/15 blur-[150px]" />
+    <section id="install" aria-labelledby="install-heading" className="relative isolate overflow-hidden bg-surface py-16 text-foreground md:py-20 dark:bg-night">
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -right-20 -z-10 size-[36rem] rounded-full bg-red/10 blur-[150px] dark:bg-red/15" />
       <div className="mx-auto max-w-6xl px-6 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <div className="relative grid grid-cols-1 gap-12 p-2 md:grid-cols-12 md:p-10">
           <CropMarks className="hidden md:block" />
           <div className="md:col-span-6">
-            <Kicker className="text-gold">{t("eyebrow")}</Kicker>
-            <span aria-hidden="true" className="mt-3 block h-[3px] w-12 bg-gold" />
-            <h2 id="install-heading" className="display mt-5 text-[2.2rem] text-white md:text-[3.2rem]" style={{ textWrap: "balance" }}>
+            <Kicker className="text-brand">{t("eyebrow")}</Kicker>
+            <span aria-hidden="true" className="mt-3 block h-[3px] w-12 bg-brand" />
+            <h2 id="install-heading" className="display mt-5 text-[2.2rem] text-foreground md:text-[3.2rem] dark:text-white" style={{ textWrap: "balance" }}>
               {t("title")}
             </h2>
-            <p className="mt-5 font-body text-base leading-relaxed md:text-lg text-cream/75 italic">{t("lead")}</p>
+            <p className="mt-5 font-body text-base leading-relaxed md:text-lg text-foreground/70 italic">{t("lead")}</p>
             <div className="mt-6 flex flex-col items-start gap-3">
               <InstallChip />
               <InstallChip command="pnpm add postext-pdf" />
@@ -31,7 +31,7 @@ export async function InstallSection() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/docs"
-                className="rounded-md bg-gold px-5 py-2.5 font-sans text-sm font-semibold text-night transition-colors hover:bg-[#e8b73a]"
+                className="rounded-md bg-brand px-5 py-2.5 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover"
               >
                 {hero("getStarted")} →
               </Link>
@@ -39,7 +39,7 @@ export async function InstallSection() {
                 href="https://github.com/drnachio/postext"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-md border border-white/20 px-5 py-2.5 font-sans text-sm font-semibold text-white transition-colors hover:border-white/50 hover:bg-white/5"
+                className="rounded-md border border-rule-strong px-5 py-2.5 font-sans text-sm font-semibold text-foreground transition-colors hover:border-foreground/50 hover:bg-foreground/5"
               >
                 {hero("viewOnGitHub")}
               </a>
@@ -48,6 +48,7 @@ export async function InstallSection() {
           <div className="md:col-span-6 md:pt-4">
             <CodeBlock
               title="quick-start.ts"
+              className="bg-elevated shadow-[0_24px_48px_-28px_rgba(14,16,20,0.35)]"
               code={`import { buildDocument, renderToHtml } from "postext";\n\nconst doc = buildDocument({\n  markdown: "# Hello World\\n\\nYour content here.",\n});\n\nconst html = renderToHtml(doc);`}
             >
               <span className="syntax-comment">{t("commentQuickStart")}</span>

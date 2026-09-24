@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** `pnpm add postext` as a copyable chip, on night. */
+/** `pnpm add postext` as a copyable chip. */
 export function InstallChip({ className, command = "pnpm add postext" }: { className?: string; command?: string }) {
   const t = useTranslations("CodeBlock");
   const [copied, setCopied] = useState(false);
@@ -20,13 +20,13 @@ export function InstallChip({ className, command = "pnpm add postext" }: { class
       onClick={copy}
       aria-label={copied ? t("copiedAriaLabel") : t("copyAriaLabel")}
       className={cn(
-        "group inline-flex items-center gap-3 rounded-md border border-white/10 bg-white/[0.04] px-4 py-2.5 font-mono text-[0.8rem] text-cream/90 transition-colors hover:border-gold/60",
+        "group inline-flex items-center gap-3 rounded-md border border-rule bg-elevated px-4 py-2.5 font-mono text-[0.8rem] text-foreground/90 transition-colors hover:border-brand/60",
         className,
       )}
     >
-      <span className="text-gold">$</span>
+      <span className="text-brand">$</span>
       <span>{command}</span>
-      <span className="ml-2 text-mist/60 transition-colors group-hover:text-gold">
+      <span className="ml-2 text-slate transition-colors group-hover:text-brand">
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
       </span>
     </button>

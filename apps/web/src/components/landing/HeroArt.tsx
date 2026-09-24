@@ -12,16 +12,19 @@ import type { CSSProperties } from "react";
 const VW = 1080;
 const VH = 840;
 
+// Colours that depend on the ground are CSS variables (see STYLES): night
+// by default, a paper spread when the root is `.light` and the SVG is
+// `themed` (the hero). The guide cover on the showcase shelf stays night.
 const C = {
-  night: "#0e1014",
-  page: "#161920",
-  pageEdge: "#2a2f39",
-  word: "#363d4a",
-  wordSoft: "#232833",
+  night: "var(--ha-night)",
+  page: "var(--ha-page)",
+  pageEdge: "var(--ha-edge)",
+  word: "var(--ha-word)",
+  wordSoft: "var(--ha-soft)",
   blue: "#2b4acb",
   blueSoft: "#3d5bd6",
   gilt: "#d8a21a",
-  giltSoft: "#8a6a1c",
+  giltSoft: "var(--ha-gilt-soft)",
   white: "#f4f1ea",
   vermilion: "#c0452f",
 };
@@ -182,7 +185,9 @@ function ModelLine({ x, y, width }: { x: number; y: number; width: number }) {
 }
 
 const STYLES = `
-.ha-root { --d: 0; }
+.ha-root { --d: 0; --ha-night: #0e1014; --ha-page: #161920; --ha-edge: #2a2f39; --ha-word: #363d4a; --ha-soft: #232833; --ha-gilt-soft: #8a6a1c; }
+:root.light .ha-root.ha-themed { --ha-night: #15171c; --ha-page: #ffffff; --ha-edge: #e2ded4; --ha-word: #d6d2c8; --ha-soft: #f1f3f8; --ha-gilt-soft: #d8a21a; }
+:root.light .ha-root.ha-themed .ha-modelbox { fill: #ffffff; }
 @keyframes ha-fade { from { opacity: 0 } to { opacity: 1 } }
 @keyframes ha-drop { from { transform: scaleY(0) } to { transform: scaleY(1) } }
 @keyframes ha-grow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
@@ -210,7 +215,7 @@ const STYLES = `
 }
 `;
 
-export function HeroArt({ label, className }: { label: string; className?: string }) {
+export function HeroArt({ label, className, themed = false }: { label: string; className?: string; themed?: boolean }) {
   const rand = prng(1983);
   const pitch = 11;
 
@@ -259,7 +264,7 @@ export function HeroArt({ label, className }: { label: string; className?: strin
       viewBox={`0 0 ${VW} ${VH}`}
       role="img"
       aria-label={label}
-      className={`ha-root ${className ?? ""}`}
+      className={`ha-root ${themed ? "ha-themed" : ""} ${className ?? ""}`}
       preserveAspectRatio="xMidYMid meet"
     >
       <style>{STYLES}</style>
@@ -319,7 +324,7 @@ export function HeroArt({ label, className }: { label: string; className?: strin
 
       {/* The model line, lifted out across the gutter. */}
       <g className="ha-model">
-        <rect x={mx - 26} y={my - 66} width={mw + 52} height={136} rx={8} fill={C.night} stroke={C.gilt} strokeWidth={2.4} />
+        <rect className="ha-modelbox" x={mx - 26} y={my - 66} width={mw + 52} height={136} rx={8} fill={C.night} stroke={C.gilt} strokeWidth={2.4} />
         <g className="ha-modelinner">
           <ModelLine x={mx} y={my} width={mw} />
         </g>
