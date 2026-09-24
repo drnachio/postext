@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns"}
-KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "toc"}
+KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc"}
 FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
 ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s]+)))?")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
@@ -236,8 +236,15 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                         rep.warn(where, ":::columns only works inside a :::callout (ignored here)")
                 stack.append((fname, i + 1))
             elif fname in KNOWN_DIRECTIVES:
-                if any(s[0] == "callout" for s in stack):
+                if fname != "space" and any(s[0] == "callout" for s in stack):
                     rep.warn(where, f":::{fname} inside a callout is ignored")
+                if fname == "space" and "lines" in attrs:
+                    try:
+                        ok = 0 < float(attrs["lines"]) <= 20
+                    except ValueError:
+                        ok = False
+                    if not ok:
+                        rep.warn(where, f"space lines {attrs['lines']!r} is not a number in (0, 20]; one line is used")
                 if fname == "pagebreak" and "parity" in attrs and attrs["parity"] not in ("odd", "even", "always-odd", "always-even"):
                     rep.warn(where, f"pagebreak parity {attrs['parity']!r} means no parity")
                 if fname == "numbering" and "format" in attrs and attrs["format"] not in ("decimal", "lower-roman", "upper-roman", "lower-alpha", "upper-alpha"):

@@ -90,8 +90,8 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isLineHeightDefault = dimensionsEqual(bodyText.lineHeight, D.lineHeight);
   const isParagraphSpacingDefault = bodyText.paragraphSpacing === D.paragraphSpacing;
   const isColorDefault = colorsEqual(bodyText.color, D.color);
-  const isBoldColorDefault = bodyText.boldColor === undefined;
-  const isItalicColorDefault = bodyText.italicColor === undefined;
+  const isBoldColorDefault = raw?.boldColor === undefined;
+  const isItalicColorDefault = raw?.italicColor === undefined;
   const DEFAULT_BOLD_COLOR = bodyText.boldColor ?? bodyText.color;
   const DEFAULT_ITALIC_COLOR = bodyText.italicColor ?? bodyText.color;
   const DEFAULT_REFERENCE_COLOR = bodyText.referenceColor;

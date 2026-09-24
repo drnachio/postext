@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { version } from "postext/package.json";
 import { Link } from "@/i18n/navigation";
 import { Kicker } from "@/components/brand/Kicker";
-import { HeroArt } from "./HeroArt";
+import { HeroArt, HERO_SPREAD_BLEED } from "./HeroArt";
 import { InstallChip } from "./InstallChip";
 
 /** The cover: night in the dark theme, like the guide's; a paper spread
@@ -60,7 +60,9 @@ export async function HeroSection() {
           <InstallChip className="mt-5" />
         </div>
 
-        <div className="relative lg:col-span-6 lg:-mr-12 xl:-mr-20">
+        {/* The column bleeds by the art's own margin so the spread's edges
+            sit on the grid, flush with the navbar's button. */}
+        <div className="relative lg:col-span-6" style={{ marginInline: `${-HERO_SPREAD_BLEED * 100}%` }}>
           <HeroArt themed label={t("artAlt")} className="h-auto w-full drop-shadow-[0_24px_40px_rgba(14,16,20,0.18)] dark:drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)]" />
           <p className="kicker mt-2 text-center text-slate">{t("colophon")}</p>
         </div>

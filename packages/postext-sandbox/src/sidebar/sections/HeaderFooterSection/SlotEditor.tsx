@@ -15,6 +15,7 @@ import type {
 } from 'postext';
 import { Button, IconButton as UiIconButton } from '../../../ui';
 import { SearchScope } from '../../search/SearchScope';
+import { ShowingDefaultsContext } from '../../../controls/fieldContext';
 import { TextElementEditor } from './TextElementEditor';
 import { RuleElementEditor } from './RuleElementEditor';
 import { BoxElementEditor } from './BoxElementEditor';
@@ -125,6 +126,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
           {labels.headerFooterNoElements}
         </p>
       )}
+      <ShowingDefaultsContext value={raw === undefined}>
       {currentRaw.map((rawEl, idx) => {
         const resolvedEl = resolvedElements[idx];
         const siblings = currentRaw
@@ -140,7 +142,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
               ? labels.headerFooterElementImage
               : labels.headerFooterElementBox;
         return (
-          <SearchScope key={`${slotKey}-${rawEl.id}-${idx}`} title={`${elementTitle} ${idx + 1}`} overridden>
+          <SearchScope key={`${slotKey}-${rawEl.id}-${idx}`} title={`${elementTitle} ${idx + 1}`} overridden={raw !== undefined}>
           <div
             className="mb-2 rounded border"
             style={{ borderColor: 'var(--rule)' }}
@@ -204,6 +206,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
           </SearchScope>
         );
       })}
+      </ShowingDefaultsContext>
 
       <div className="mt-2 flex gap-2">
         <AddButton label={labels.headerFooterAddText} onClick={addText} />

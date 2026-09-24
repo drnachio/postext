@@ -207,3 +207,19 @@ describe('chapter attribution', () => {
     }
   });
 });
+
+describe(':::space warnings', () => {
+  it('accepts the directive with or without a valid lines value', () => {
+    const md = 'A\n\n:::space\n\nB\n\n:::space{lines=2}\n\nC\n\n:::space{lines=0.5}\n\nD';
+    expect(kinds(md)).not.toContain('unknownDirective');
+    expect(kinds(md)).not.toContain('spaceInvalidLines');
+  });
+
+  it('flags a lines value that is not a number in (0, 20]', () => {
+    for (const bad of ['0', '-1', 'two', '21']) {
+      const hits = find(`A\n\n:::space{lines=${bad}}\n\nB`, 'spaceInvalidLines');
+      expect(hits).toHaveLength(1);
+      expect(hits[0]!.payload.value).toBe(bad);
+    }
+  });
+});

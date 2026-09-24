@@ -27,6 +27,8 @@ export {
   parseMarkdownWithIssues,
   KNOWN_DIRECTIVES,
   KNOWN_CONTAINERS,
+  spaceDirectiveLines,
+  MAX_SPACE_LINES,
 } from './blockParser';
 export { computeSourceMap } from './sourceMapping';
 export { parseInlineSnippetSpans, mapInlineSnippet } from './inlineSnippet';

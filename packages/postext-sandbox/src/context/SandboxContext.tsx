@@ -626,7 +626,9 @@ export interface SandboxContextValue {
   docRef: MutableRefObject<VDTDocument | null>;
 }
 
-const SandboxStoreContext = createContext<SandboxStore | null>(null);
+/** @internal Exported for tests that render sandbox consumers against a
+ *  fixed state without the provider (see `sectionSearchIndex.test.ts`). */
+export const SandboxStoreContext = createContext<SandboxStore | null>(null);
 
 function useStore(): SandboxStore {
   const store = useContext(SandboxStoreContext);

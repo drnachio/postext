@@ -7,7 +7,6 @@ import {
   resolveBodyTextConfig,
   DEFAULT_UNORDERED_LISTS_STATIC,
   dimensionsEqual,
-  colorsEqual,
 } from 'postext';
 import type {
   UnorderedListsConfig,
@@ -129,7 +128,7 @@ export const UnorderedListsSection = memo(function UnorderedListsSection() {
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   const isFontDefault = lists.fontFamily === bodyText.fontFamily;
-  const isColorDefault = colorsEqual(lists.color, bodyText.color);
+  const isColorDefault = raw?.color === undefined;
   const isFontWeightDefault = lists.fontWeight === D.fontWeight;
   const isItalicDefault = lists.italic === D.italic;
   const isBulletCharDefault = lists.bulletChar === D.bulletChar;

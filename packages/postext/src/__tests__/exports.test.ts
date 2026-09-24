@@ -216,6 +216,8 @@ describe("package exports", () => {
       "CHIP_PLACEHOLDER",
       "KNOWN_DIRECTIVES",
       "KNOWN_CONTAINERS",
+      "spaceDirectiveLines",
+      "MAX_SPACE_LINES",
       "computeSourceMap",
       "parseInlineSnippetSpans",
       "mapInlineSnippet",

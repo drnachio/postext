@@ -1,9 +1,16 @@
 'use client';
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
+import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, ChevronRight, CircleHelp, Download, RotateCcw, Search, SlidersHorizontal, Upload, X } from 'lucide-react';
 import { isDefaultColorPalette, stripConfigDefaults } from 'postext';
-import { useSandboxDispatch, useSandboxLabels, useSandboxPresets, useSandboxProjects, useSandboxSelector } from '../context/SandboxContext';
+import {
+  useSandboxDispatch,
+  useSandboxLabels,
+  useSandboxPresets,
+  useSandboxProjects,
+  useSandboxResources,
+  useSandboxSelector,
+} from '../context/SandboxContext';
 import {
   exportConfigToJson,
   importConfigFromJson,
@@ -17,6 +24,7 @@ import { HelpModeContext } from '../controls/fieldContext';
 import { SettingsSearchContext, useSettingsSearch, type SettingsSearchState } from './search/SearchContext';
 import { MatchScopeProvider, useScopeCounts } from './search/MatchScope';
 import { compileMatcher } from './search/normalize';
+import { buildSectionSearchIndex, planSettingsSearch, type SearchPlanGroup } from './search/sectionIndex';
 import {
   SETTINGS_GROUPS,
   isSettingsGroupId,
@@ -29,70 +37,20 @@ import { GROUP_ICONS } from './settings/groupIcons';
 import { DesignSummary } from './settings/DesignSummary';
 import { PageGroupPreview } from './settings/PageGroupPreview';
 import { PreviewHighlightProvider } from './settings/previewHighlight';
-import { ColorPaletteSection } from './sections/ColorPaletteSection';
-import { PageSection } from './sections/PageSection';
-import { LayoutSection } from './sections/LayoutSection';
-import { HeaderFooterSection } from './sections/HeaderFooterSection';
-import { BodyTextSection } from './sections/BodyTextSection';
-import { HeadingsSection } from './sections/HeadingsSection';
-import { HeadingStylesSection } from './sections/HeadingStylesSection';
-import { TocSection } from './sections/TocSection';
-import { PartsSection } from './sections/PartsSection';
-import { UnorderedListsSection } from './sections/UnorderedListsSection';
-import { OrderedListsSection } from './sections/OrderedListsSection';
-import { MathSection } from './sections/MathSection';
-import { TableStyleSection } from './sections/TableStyleSection';
-import { TableStylesSection } from './sections/TableStylesSection';
-import { CaptionStyleSection } from './sections/CaptionStyleSection';
-import { ParagraphStylesSection } from './sections/ParagraphStylesSection';
-import { CalloutStylesSection } from './sections/CalloutStylesSection';
-import { ChipStylesSection } from './sections/ChipStylesSection';
-import { DiagramStyleSection } from './sections/DiagramStyleSection';
-import { ResourceTypesSection } from './sections/ResourceTypesSection';
-import { HtmlViewerSection } from './sections/HtmlViewerSection';
-import { PdfGenerationSection } from './sections/PdfGenerationSection';
-import { DebugSection } from './sections/DebugSection';
-import { WarningsConfigSection } from './sections/WarningsConfigSection';
-
-/** Section id → component. Kept here (not in the registry) so the registry
- *  stays a pure, testable data module. */
-const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
-  'page': PageSection,
-  'layout': LayoutSection,
-  'color-palette': ColorPaletteSection,
-  'headerFooter': HeaderFooterSection,
-  'parts': PartsSection,
-  'bodyText': BodyTextSection,
-  'headings': HeadingsSection,
-  'headingStyles': HeadingStylesSection,
-  'toc': TocSection,
-  'paragraphStyles': ParagraphStylesSection,
-  'unordered-lists': UnorderedListsSection,
-  'ordered-lists': OrderedListsSection,
-  'math': MathSection,
-  'resource-types': ResourceTypesSection,
-  'captionStyle': CaptionStyleSection,
-  'tableStyle': TableStyleSection,
-  'tableStyles': TableStylesSection,
-  'diagramStyle': DiagramStyleSection,
-  'calloutStyles': CalloutStylesSection,
-  'chipStyles': ChipStylesSection,
-  'htmlViewer': HtmlViewerSection,
-  'pdfGeneration': PdfGenerationSection,
-  'debug': DebugSection,
-  'warnings': WarningsConfigSection,
-};
+import { SECTION_COMPONENTS } from './sections/components';
 
 /** The Design panel. Three views share one header and search box:
  *  - overview: a summary of the book and the list of setting groups;
  *  - a group page: only that group's sections are mounted;
- *  - search results (a query or "Changed only"): every section is mounted
- *    and filtered in place, under its group's name. */
+ *  - search results (a query or "Changed only"): the sections that can hold
+ *    a hit (see `search/sectionIndex.ts`) mount one after the other, best
+ *    group first, and filter their rows in place under the group's name. */
 export function ConfigPanel() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
   const presetConfig = useSandboxSelector((s) => s.presetConfig);
+  const resources = useSandboxResources();
   const { reload } = useSandboxPresets();
   const { hasResetBaseline } = useSandboxProjects();
   const importRef = useRef<HTMLInputElement>(null);
@@ -168,6 +126,18 @@ export function ConfigPanel() {
   };
 
   const view: 'search' | 'group' | 'home' = search.active ? 'search' : group ? 'group' : 'home';
+
+  // Built only while searching: labels resolved in the viewer's language
+  // plus the words the book itself puts in the rows.
+  const searching = view === 'search';
+  const searchIndex = useMemo(
+    () => (searching ? buildSectionSearchIndex(labels, config, resources) : null),
+    [searching, labels, config, resources],
+  );
+  const plan = useMemo(
+    () => (searchIndex ? planSettingsSearch(searchIndex, matcher.tokens, overriddenOnly, config) : []),
+    [searchIndex, matcher, overriddenOnly, config],
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -253,19 +223,7 @@ export function ConfigPanel() {
               {view === 'group' && group && (
                 <GroupPage id={group} headingRef={groupHeadingRef} onOpen={openGroup} />
               )}
-              {view === 'search' && (
-                <>
-                  {SETTINGS_GROUPS.map((g) => (
-                    <SearchGroup key={g.id} id={g.id} title={String(labels[g.labelKey])}>
-                      {sectionsInGroup(g.id).map((s) => {
-                        const Section = SECTION_COMPONENTS[s.id];
-                        return <Section key={s.id} />;
-                      })}
-                    </SearchGroup>
-                  ))}
-                  <NoResults query={deferredQuery} />
-                </>
-              )}
+              {view === 'search' && <SearchResults plan={plan} query={deferredQuery} />}
             </PanelBody>
           </MatchScopeProvider>
         </SettingsSearchContext>
@@ -446,6 +404,59 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
             inputRef.current?.focus();
           }}
         />
+      )}
+    </div>
+  );
+}
+
+/** The search results. Mounting a section is the expensive part (a large
+ *  book's heading styles alone render thousands of rows), so the first
+ *  section of the plan mounts with the query and the rest follow one per
+ *  transition: the best hits show at once, typing is never blocked, and
+ *  sections already mounted stay mounted while the query changes. */
+function SearchResults({ plan, query }: { plan: SearchPlanGroup[]; query: string }) {
+  const labels = useSandboxLabels();
+  const order = plan.flatMap((g) => g.sections);
+  const orderKey = order.join(' ');
+  const [mounted, setMounted] = useState<ReadonlySet<SettingsSectionId>>(() => new Set());
+  const shown = new Set(order.filter((id, i) => i === 0 || mounted.has(id)));
+  const next = order.find((id) => !shown.has(id));
+
+  useEffect(() => {
+    if (next === undefined) return;
+    const inPlan = new Set(orderKey.split(' '));
+    startTransition(() => {
+      setMounted((prev) => {
+        const kept = new Set([...prev].filter((id) => inPlan.has(id)));
+        if (order[0] !== undefined) kept.add(order[0]);
+        kept.add(next);
+        return kept;
+      });
+    });
+    // `order` is captured through `orderKey`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [next, orderKey]);
+
+  const pending = next !== undefined;
+  return (
+    <div aria-busy={pending}>
+      {plan.map((g) => {
+        const sections = g.sections.filter((id) => shown.has(id));
+        if (sections.length === 0) return null;
+        const entry = SETTINGS_GROUPS.find((x) => x.id === g.id)!;
+        return (
+          <SearchGroup key={g.id} id={g.id} title={String(labels[entry.labelKey])}>
+            {sections.map((id) => {
+              const Section = SECTION_COMPONENTS[id];
+              return <Section key={id} />;
+            })}
+          </SearchGroup>
+        );
+      })}
+      {pending ? (
+        <p role="status" className="px-3 py-3 text-[0.68rem] text-(--slate)">{labels.settingsSearchLoading}</p>
+      ) : (
+        <NoResults query={query} />
       )}
     </div>
   );

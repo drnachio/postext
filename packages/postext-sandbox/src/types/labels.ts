@@ -10,6 +10,7 @@ export interface SandboxLabels {
   settingsSearchPlaceholder: string;
   settingsSearchClear: string;
   settingsSearchNoResults: string;
+  settingsSearchLoading: string;
   settingsOverriddenOnly: string;
   settingsOverriddenOnlyEmpty: string;
   settingsModifiedCount: string;
@@ -150,6 +151,8 @@ export interface SandboxLabels {
   warningsNumberingInvalidStartAtDetail: string;
   warningsPagebreakInvalidParityTitle: string;
   warningsPagebreakInvalidParityDetail: string;
+  warningsSpaceInvalidLinesTitle: string;
+  warningsSpaceInvalidLinesDetail: string;
   warningsParityCascadeTitle: string;
   warningsParityCascadeDetail: string;
   warningsAlphaPdfOverflowTitle: string;
@@ -588,6 +591,8 @@ export interface SandboxLabels {
   redo: string;
   pagebreakDirective: string;
   pagebreakDirectiveTooltip: string;
+  spaceDirective: string;
+  spaceDirectiveTooltip: string;
   chipInline: string;
   numberingDirective: string;
   numberingDirectiveTooltip: string;

@@ -12,6 +12,7 @@ import type {
 import {
   KNOWN_CONTAINERS,
   KNOWN_DIRECTIVES,
+  spaceDirectiveLines,
   parseMarkdownWithIssues,
   resolveDebugConfig,
   resolveHeaderFooterConfig,
@@ -230,6 +231,16 @@ function collectDirectiveWarnings(
         out.push({
           id: `pagebreak-parity-${idx++}-${b.sourceStart}`,
           payload: { kind: 'pagebreakInvalidParity', value: attrs.parity },
+          sourceStart: b.sourceStart,
+          sourceEnd: b.sourceEnd,
+          line: lineNumberForOffset(markdown, b.sourceStart),
+        });
+      }
+    } else if (b.directiveName === 'space') {
+      if (spaceDirectiveLines(attrs) === undefined) {
+        out.push({
+          id: `space-lines-${idx++}-${b.sourceStart}`,
+          payload: { kind: 'spaceInvalidLines', value: attrs.lines ?? '' },
           sourceStart: b.sourceStart,
           sourceEnd: b.sourceEnd,
           line: lineNumberForOffset(markdown, b.sourceStart),

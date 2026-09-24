@@ -19,3 +19,19 @@ export function parseDirectiveAttrs(raw: string): DirectiveAttrs {
   }
   return out;
 }
+
+/** Upper bound on `:::space{lines=N}` — a typo like `lines=100` must not
+ *  swallow page after page. */
+export const MAX_SPACE_LINES = 20;
+
+/** The body lines a `:::space` directive asks for: its `lines` attribute
+ *  (default 1). `undefined` when the value is not a positive number up to
+ *  {@link MAX_SPACE_LINES} — the engine then falls back to one line and the
+ *  sandbox flags it. */
+export function spaceDirectiveLines(attrs: DirectiveAttrs | undefined): number | undefined {
+  const raw = attrs?.lines;
+  if (raw === undefined) return 1;
+  const n = Number(raw.trim());
+  if (raw.trim() === '' || !Number.isFinite(n) || n <= 0 || n > MAX_SPACE_LINES) return undefined;
+  return n;
+}

@@ -54,7 +54,7 @@ only drops the print master). It does **not** check `kind`, `typeId` against
 
 ### Chapters
 
-- Order = array order. The `title` is only for the UI (Projects panel, TOC in
+- Order = array order. The `title` is only for the UI (Books panel, TOC in
   the sandbox); it is never injected into the text. Take it from the chapter's H1.
 - The sandbox joins chapters with a blank line; **nothing forces a page break
   between chapters**: a chapter opens a page through its H1's
@@ -186,14 +186,14 @@ embeds them with `::resource{id="…"}` (placement `here`).
 
 - **Import**: zip the folder (`preset_kit.py pack my-book`, or
   `cd my-book && zip -r ../my-book.postext . -x '.*'`) and use Sandbox →
-  Projects → *Import .postext…* at https://postext.dev/en/sandbox. The import
+  Books → New → *Open a .postext file…* at https://postext.dev/en/sandbox. The import
   takes the chapters and wording of the sandbox UI language.
 - **Serve a folder of presets** (self-hosted/dev sandbox): put bundles under a
   root with an `index.json` (`preset_kit.py index <root>`):
   `{"version": 1, "presets": [{"id": "my-book", "dir": "my-book", "name": "My Book", "locale": "es"}]}`.
   In a Postext checkout set `POSTEXT_PRIVATE_PRESETS_DIR=/abs/root` in
-  `apps/web/.env.local` and restart `pnpm dev`; the presets appear in the
-  Projects panel (dev only). Allowed file extensions: json md svg png jpg jpeg
+  `apps/web/.env.local` and restart `pnpm dev`; the presets appear under
+  *Sample books* in the Books panel (dev only). Allowed file extensions: json md svg png jpg jpeg
   webp gif pdf otf ttf woff2.
 - **Permalink**: `/<ui-locale>/sandbox#preset=<id>&lang=<content locale>&view=canvas|html|pdf&chapter=<1-based>&page=<printed page number>`.
 

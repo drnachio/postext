@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-09-22',
+  lastUpdated: '2026-09-24',
   readingTime: '10 min',
   order: 5,
 };
@@ -158,6 +158,10 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td>End the current column here: the next block opens in the next column of the same page (or on a new page when the directive lands in the last column). A no-op in an empty column, so it never produces a blank column or page. The column it ends keeps its bottom gap — column balancing does not stretch it.</td>
     </tr>
     <tr>
+      <td><code>:::space</code></td>
+      <td>Leave one blank body line here — the explicit way to add a little air between two blocks. <code>:::space&#123;lines=2&#125;</code> leaves two (fractions such as <code>0.5</code> work too). It adds to the margin between the blocks and is dropped at the top of a column or page. See <a href="#space">below</a>.</td>
+    </tr>
+    <tr>
       <td><code>:::toc</code></td>
       <td>Print the table of contents here: one entry per heading of the listed levels (title, number, page number, optionally the chapter authors) and one row per part divider, typeset per the <code>toc</code> configuration. The entries follow the document — rename, move or renumber a chapter and the contents follow.</td>
     </tr>
@@ -166,7 +170,7 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak`, `numbering`, `columnbreak` and `toc` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
+Only `pagebreak`, `numbering`, `columnbreak`, `space` and `toc` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
 
 ### Containers
 
@@ -320,6 +324,31 @@ Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a r
 
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
 
+### `:::space`
+
+`:::space` leaves vertical space between two blocks: to separate a closing line from the text above it, to push an epigraph or a signature down a little, or to open a *space break* between two runs of text. Extra blank lines in the Markdown do not do this — as in any Markdown, a run of blank lines is just one paragraph separator, which keeps a document from changing layout when an editor or formatter adds or trims whitespace.
+
+```md
+The last paragraph of the scene.
+
+:::space
+
+A new scene begins one line lower.
+
+:::space{lines=2}
+
+Two lines lower still.
+```
+
+- **`lines`** — how much space, in body lines (the baseline grid). Default `1`. Whole numbers keep every line of text on the grid, so the columns still line up across the page; a fraction (`lines=0.5`) is honoured exactly, at the cost of that alignment until the next block that snaps to the grid. A value that is not a number greater than 0 and at most 20 falls back to one line, and the sandbox flags it (**Invalid space size**).
+- **It adds up.** The space is added to the margin that already separates the two blocks — a heading's top margin, a list's bottom margin — instead of collapsing into it. Two `:::space` lines in a row add two lines.
+- **It is dropped at a break**, like LaTeX's `\vspace`: at the top of a column or page it vanishes, so a page never opens with a hole; and when it does not fit at the foot of a column it simply ends that column, without carrying the rest over.
+- **The paragraph after it is set flush.** When `bodyText.indentAfterHeading` is off, a paragraph right after `:::space` loses its first-line indent, as it does after a heading — the usual convention for text resuming after a blank line.
+- **Inside a callout** (or a `:::columns` group) it separates the box's children the same way, measured in the box's own body lines, and is dropped at the top of the box.
+- **Keep-with-next** counts it: a heading followed by `:::space` moves on when the space and the first lines of its text do not fit under it.
+
+For a fixed break rather than space, use `:::columnbreak` or `:::pagebreak`.
+
 
 ### `:::toc`
 
@@ -438,7 +467,7 @@ Math support is a first-class part of the document format. Postext parses `$…$
 
 - **Inline:** `$…$`. Recognised inside any text block (paragraph, heading, blockquote, list item). Contributes a single atomic, non-breaking box to the line; Knuth-Plass treats it like a word that must not be split. If the formula's natural height would break the line box, it is scaled down uniformly so the baseline grid is preserved — very tall expressions belong in display mode.
 - **Display:** `$$…$$`. Either on its own line (`$$\int_0^1 x^2\,dx$$`) or fenced across multiple lines with `$$` markers on their own lines. Rendered centred on the column and snapped to the baseline grid with configurable top and bottom margins (`math.marginTop`, `math.marginBottom`) — exactly the same correction mechanism headings use, so the paragraph after the formula lands back on the grid.
-- **Escaping:** `\$` is a literal dollar sign. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the warnings panel with a click-to-focus source anchor.
+- **Escaping:** `\$` is a literal dollar sign. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the Sandbox's Checks panel with a click-to-focus source anchor.
 - **Errors:** TeX source that MathJax rejects (undefined macros, syntax errors) surfaces as an `invalidMath` warning. The formula is replaced by a small red placeholder so the layout geometry stays valid.
 - **Configuration:** the `math` section of the config exposes `enabled`, `fontSizeScale` (relative to the body font size), `color` (inherits the body colour when unset), and the display margins.
 
@@ -453,7 +482,7 @@ $$
 
 ## Resources
 
-Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
+Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the Sandbox's [Figures panel](/en/docs/sandbox#figures-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
 
 Both forms below are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
 
@@ -483,7 +512,7 @@ The keeper's quarters occupy the eastern wing.
 
 For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`. An inline resource keeps a line of space above it (the float gap), like a float would, unless the block before asks for more.
 
-The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
+The `id` must match a resource defined in the Figures panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
 
 Table resources draw their own grid, styled through [Configuration › Table style](/en/docs/configuration#table-style): body and header cells have fully independent typography, the header background defaults to `#f0f0f0`, borders to `0.75pt`, and `cellPadding` to `0.375em` — any field left unset inherits from the body text. Column widths are part of the table itself: `TableModel.columnWidths` holds one relative weight per column (`[2, 1, 1]` gives the first column half the width); when unset, columns split the width equally. A table can also be set in a named variant: `table.styleId` picks one of the document's `tableStyles` (see [Configuration › Named table styles](/en/docs/configuration#named-table-styles)), whose unset fields inherit `tableStyle`; an unknown or missing id keeps `tableStyle`.
 
@@ -625,6 +654,7 @@ This list will shrink over time. Until then, anything not explicitly listed in t
 A few conventions make the difference between a document that parses cleanly and one that surprises you:
 
 - **Leave a blank line between blocks.** Two paragraphs separated by a blank line are two paragraphs. Two paragraphs on consecutive lines become one — every line collapses into the preceding paragraph.
+- **Extra blank lines add no space.** Three blank lines separate two blocks exactly like one. When you want more room between them, write a [`:::space`](#space) line.
 - **Nest lists with exactly two spaces per level.** One space is parsed as a level-1 item. Three or four spaces round down to level 2 (the engine uses `floor(leading / 2) + 1`, clamped to depth 5). Tab indentation is not recognised — convert tabs to spaces.
 - **Do not indent the first list item.** Level-1 items start at column 0. Leading whitespace on a bullet implicitly raises the depth.
 - **Task markers must be in square brackets with a single space.** `[ ]`, `[x]`, `[X]` — no variations. `[*]` or `[-]` are not task markers; they render as literal text.

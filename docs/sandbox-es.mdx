@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Entorno interactivo para experimentar con el motor de maquetación de Postext',
   lang: 'es',
-  lastUpdated: '2026-09-22',
-  readingTime: '12 min',
+  lastUpdated: '2026-09-24',
+  readingTime: '15 min',
   order: 7,
 };
 
@@ -14,83 +14,105 @@ export const metadata = {
 
 **Un entorno interactivo para el motor de maquetación de Postext.**
 
-El Sandbox ofrece una interfaz estilo VS Code donde puedes escribir markdown, gestionar recursos y fuentes, ajustar la configuración de maquetación y ver los resultados renderizados en tiempo real a través de tres modos de salida sincronizados — **canvas**, **HTML** y **PDF**. Está pensado para la experimentación: afina los ajustes de tipografía, cambia el número de columnas, prueba estrategias de colocación de recursos y observa cómo responde el motor.
+El Sandbox te ofrece una interfaz de editor donde escribes el texto, gestionas las figuras y las fuentes, ajustas el diseño y ves el resultado en tiempo real en tres modos de salida sincronizados: **canvas**, **HTML** y **PDF**. Está pensado para experimentar: puedes cambiar la tipografía o el número de columnas, probar distintas colocaciones de las figuras y observar cómo responde el motor. Los paneles usan palabras del oficio editorial (libros, figuras, recuadros, cabeceras) en lugar de términos del motor, de modo que quien viene del mundo del libro se orienta sin conocer el esquema de configuración. Todos los controles se pueden manejar con el teclado y con lectores de pantalla.
 
 ## Disposición de la interfaz
 
-El Sandbox sigue un paradigma IDE familiar con tres áreas principales: una **barra de actividad** estrecha para cambiar de panel, una **barra lateral** redimensionable con el panel activo, y un **viewport** a la derecha con las tres pestañas de salida.
+El Sandbox tiene tres áreas principales: una **barra de actividad** estrecha para cambiar de panel, una **barra lateral** redimensionable con el panel activo y un **viewport** a la derecha con las tres pestañas de salida. Las cabeceras de los paneles, la barra de pestañas del viewport y la celda del logo, arriba de la barra de actividad, comparten la misma altura, así que la franja superior se lee como una sola línea a lo ancho de la ventana.
 
-<Illustration name="SandboxLayout" data='{"title": "Interfaz del Sandbox", "desc": "Barra de actividad de 56 px a la izquierda, barra lateral redimensionable en el centro y viewport a la derecha con pestañas Canvas, HTML y PDF.", "caption": "Tres áreas: barra de actividad, barra lateral redimensionable y viewport con pestañas.", "activityBar": "Actividad", "activityIcons": ["📚", "MD", "📁", "T", "⚙", "⚠"], "sidebarTitle": "Barra lateral", "sidebarSubtitle": "panel activo", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "arrastra para redimensionar"}' />
+<Illustration name="SandboxLayout" data='{"title": "Interfaz del Sandbox", "desc": "Barra de actividad a la izquierda con seis paneles rotulados, barra lateral redimensionable en el centro y viewport a la derecha con las pestañas Canvas, HTML y PDF.", "caption": "Tres áreas: barra de actividad, barra lateral redimensionable y viewport con pestañas de salida.", "activityBar": "Actividad", "activityIcons": ["📚", "¶", "▣", "T", "⚙", "⚠"], "activityLabels": ["Libros", "Texto", "Figuras", "Fuentes", "Diseño", "Revisión"], "sidebarTitle": "Barra lateral", "sidebarSubtitle": "panel activo", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "arrastra para redimensionar"}' />
 
 ### Barra de actividad
 
-Una tira estrecha en el borde izquierdo contiene botones con iconos para navegar entre paneles. La sección superior aloja seis interruptores de panel, de arriba abajo:
+Una tira estrecha en el borde izquierdo tiene un botón por panel. Cada botón muestra un icono con una etiqueta de una palabra debajo, y una indicación más larga como tooltip (la misma indicación es la descripción accesible del botón). De arriba abajo:
 
-- **Proyectos** (icono `Files`) — Abre el panel de proyectos: los capítulos del libro, los proyectos locales y los paquetes predefinidos de solo lectura
-- **Editor de markdown** (icono `FileCode`) — Abre el panel de edición de markdown
-- **Recursos** (icono `FolderOpen`) — Abre el panel de gestión de recursos
-- **Fuentes** (icono `Type`) — Abre el panel de gestión de fuentes personalizadas
-- **Configuración** (icono `Settings2`) — Abre el panel de configuración de la maquetación
-- **Avisos** (icono `AlertTriangle`) — Abre el panel de diagnósticos; el icono muestra una insignia con el recuento de avisos actuales, limitada a `99+`
+- **Libros** (icono `Files`): tus libros y los libros de ejemplo, más los capítulos del libro abierto
+- **Texto** (icono `FileCode`): escribe y corrige el texto del capítulo actual
+- **Figuras** (icono `FolderOpen`): imágenes, diagramas y tablas que usa el libro
+- **Fuentes** (icono `Type`): los tipos de letra que usa el libro y tus propios archivos de fuente
+- **Diseño** (icono `Settings2`): ajustes de página, tipografía, títulos, figuras, recuadros y exportación
+- **Revisión** (icono `AlertTriangle`): problemas de composición encontrados en la maquetación. El icono lleva una insignia con el recuento de avisos actuales, limitada a `99+`.
 
-Pulsar el icono del panel activo colapsa la barra lateral. Pulsar un icono distinto cambia a ese panel.
+Pulsar el botón del panel activo colapsa la barra lateral, y pulsar otro botón cambia a ese panel. La barra es una sola parada de tabulación: las flechas (↑ / ↓, con vuelta al principio), **Inicio** y **Fin** mueven el foco entre los botones, e Intro o Espacio abren el panel enfocado.
 
-La barra también aloja huecos que inyecta la aplicación anfitriona: un **enlace con el logo de inicio** opcional en la parte superior (mediante las props `homeUrl` o `homeLink`), más un **conmutador de tema** y un **selector de idioma** en la parte inferior. Los botones de Exportar e Importar que antes vivían aquí han desaparecido — los proyectos completos se intercambian como archivos `.postext` desde el panel de Proyectos, y las cabeceras de los paneles de Markdown y Configuración exportan su propia parte (consulta [Exportar e importar](#exportar-e-importar)).
+La aplicación anfitriona puede añadir sus propios elementos a la barra: un **enlace con el logo de inicio** opcional en la celda superior (mediante las props `homeUrl` o `homeLink`), y un **conmutador de tema** y un **selector de idioma** en la parte inferior. Los libros completos se intercambian como archivos `.postext` desde el panel Libros, y las cabeceras de los paneles Texto y Diseño exportan su propia parte (consulta [Exportar e importar](#exportar-e-importar)).
 
 ### Paneles laterales
 
-La barra lateral es redimensionable: arrastra el separador entre la barra lateral y el viewport para ajustar su anchura (el viewport siempre conserva al menos 200 px para sí). La barra lateral se colapsa por completo cuando no hay ningún panel activo, y su anchura se recuerda entre sesiones.
+La barra lateral es redimensionable. Arrastra el separador entre la barra lateral y el viewport, o enfócalo con Tab y usa el teclado: ← / → cambian el ancho un 2 % (un 10 % con Mayús), e **Inicio** / **Fin** saltan al ancho mínimo y al máximo. El separador anuncia su valor actual a los lectores de pantalla, y el viewport siempre conserva al menos 200 px. La barra lateral se colapsa por completo cuando no hay ningún panel activo, y su anchura se recuerda entre sesiones.
 
-#### Editor de markdown
+Las filas de ajustes ponen la etiqueta junto al control, o encima cuando la barra lateral es estrecha. Para ello se usan container queries, así que siguen el ancho de la barra lateral y no el de la ventana.
 
-Un editor basado en CodeMirror 6 con:
+#### Panel de texto
 
-- **Resaltado de sintaxis** — Encabezados, énfasis, enlaces, bloques de código y citas quedan visualmente diferenciados, con resaltado dedicado para las regiones de **frontmatter YAML**, de **matemáticas LaTeX** y para los **chips en línea** (`:chip[…]`: los corchetes y atributos marcados y el texto del chip tintado)
-- **Completado de chips** — Al escribir `:c` al principio de una palabra se ofrece `:chip[…]` (el cursor queda entre los corchetes); dentro de `{style="…"}` se ofrecen los ids de los estilos de chip configurados
+Un editor CodeMirror 6 para el Markdown del capítulo. Los lectores de pantalla lo anuncian como *Texto del capítulo*. Ofrece:
+
+- **Resaltado de sintaxis**: títulos, énfasis, enlaces, bloques de código y citas se distinguen a simple vista, con resaltado propio para el **frontmatter YAML**, las regiones de **matemáticas LaTeX** y los **chips en línea** (`:chip[…]`: los corchetes y los atributos quedan marcados y el texto del chip, tintado)
+- **Completado de chips**: al escribir `:c` al principio de una palabra se ofrece `:chip[…]` (el cursor queda entre los corchetes). Dentro de `{style="…"}` se ofrecen los ids de los estilos de chip configurados.
 - **Números de línea** y resaltado de la línea activa
-- **Ajuste de línea** para párrafos largos
-- **Barra de herramientas** — Comienza con **Deshacer / Rehacer**, seguidos de negrita, cursiva, niveles de encabezado 1–3, enlace, código en línea, **chip** (envuelve la selección en `:chip[…]`), cita, listas ordenadas y no ordenadas, más dos insertadores de directivas:
+- **Ajuste de línea** para los párrafos largos
+- **Barra de herramientas**: empieza con **Deshacer / Rehacer**, seguidos de negrita, cursiva, títulos de nivel 1–3, enlace, código en línea, **chip** (envuelve la selección en `:chip[…]`), cita, listas numeradas y con viñetas, más tres insertadores de directivas:
   - `:::pagebreak`
-  - `:::numbering{format="decimal" startAt=1}` — se inserta con atributos de ejemplo listos para ajustar
+  - `:::space`: una línea de espacio vertical (`:::space{lines=N}` para más)
+  - `:::numbering{format="decimal" startAt=1}`: se inserta con atributos de ejemplo que puedes ajustar
 
-Las aplicaciones anfitrionas pueden ampliar la barra de herramientas con sus propias `extraActions`. El editor también comunica su cursor y su selección a las vistas previas, habilitando la sincronización clic-a-cursor: hacer clic en el texto de la salida renderizada mueve el cursor a la posición correspondiente del markdown, y las vistas previas pueden resaltar la selección actual.
+Las aplicaciones anfitrionas pueden añadir sus propios botones a la barra con `extraActions`. El editor también comunica su cursor y su selección a las vistas previas, lo que permite la sincronización clic-a-cursor: al hacer clic en el texto de la salida, el cursor salta a la posición correspondiente del Markdown, y las vistas previas pueden resaltar la selección actual.
 
-La cabecera del panel es un **selector de capítulos**: flechas anterior/siguiente, la posición y el título del capítulo, y un menú que lista todos los capítulos del libro con su rango de páginas en cuanto se conoce su paginación (consulta [Libros y capítulos](#libros-y-capítulos)). Cada capítulo tiene su propia instancia del editor, así que el historial de deshacer y la posición del cursor se conservan por capítulo. La cabecera ofrece además tres acciones:
+La cabecera del panel es un **selector de capítulos**: flechas anterior/siguiente, la posición y el título del capítulo, y un menú con todos los capítulos del libro y su rango de páginas en cuanto se conoce su paginación (consulta [Libros y capítulos](#libros-y-capítulos)). Cada capítulo tiene su propia instancia del editor, así que el historial de deshacer y la posición del cursor se conservan por capítulo. La cabecera ofrece además tres acciones:
 
-- **Restablecer** (popover de confirmación) — Recarga la **parte de documento** del preset activo: todos los capítulos y todo el conjunto de recursos se reemplazan por los del preset (para el preset integrado, el documento de ejemplo del idioma y sus recursos de ejemplo); la configuración no se toca, salvo las fuentes personalizadas del preset. Consulta [Panel de proyectos](#panel-de-proyectos).
-- **Exportar** — Descarga el capítulo activo como un archivo `.md` (`<proyecto>-<nn>-<capítulo>.md` en un libro con varios capítulos; si no, con el nombre del proyecto activo o `document.md`)
-- **Importar** — Sustituye el capítulo activo por el contenido de un archivo `.md`
+- **Restablecer** (pide confirmación): recarga la **parte de documento** del libro de ejemplo abierto. Todos los capítulos y todo el conjunto de figuras se sustituyen por los del ejemplo (en el ejemplo integrado, el documento de muestra del idioma y sus recursos de ejemplo). El diseño no se toca, salvo las fuentes propias del ejemplo. Consulta [Panel de libros](#panel-de-libros).
+- **Exportar**: descarga el capítulo activo como archivo `.md`, con el nombre `<libro>-<nn>-<capítulo>.md` en un libro de varios capítulos y, si no, con el del libro abierto o `document.md`
+- **Importar**: sustituye el capítulo activo por el contenido de un archivo `.md`
 
-#### Panel de proyectos
+#### Panel de libros
 
-El primer panel de la barra de actividad. Tiene dos grupos:
+El primer panel de la barra de actividad. En el código y en el almacenamiento un libro se sigue llamando *proyecto* (*project*), y un libro de ejemplo, *preset*. El panel tiene dos grupos:
 
-- **Proyectos** — Documentos locales y editables guardados en el navegador (IndexedDB). La fila **activa** se expande en una tarjeta que también lista los **capítulos** del libro (consulta [Libros y capítulos](#libros-y-capítulos)): una fila por capítulo con su rango de páginas y su número de palabras, el capítulo activo marcado, un botón **Añadir capítulo** y un menú por fila con **Renombrar**, **Subir / Bajar**, **Dividir por títulos de nivel 1**, **Fusionar con el capítulo anterior** y **Eliminar** (el último capítulo nunca puede eliminarse).
-Mientras un proyecto está activo, el documento de trabajo *es* ese proyecto: cada edición del markdown, la configuración, los recursos y las fuentes se guarda en él automáticamente (con el mismo retardo de 1 segundo que `localStorage`), de modo que cambiar de proyecto y volver restaura todo. Los proyectos se crean desde el menú **Nuevo** de la cabecera — **A partir del documento actual** (copia el libro activo, sus recursos y sus fuentes en un proyecto nuevo), **Proyecto en blanco**, **Importar .postext…** — o duplicando cualquier fila; mientras no haya ninguno, el grupo muestra un estado vacío con el mismo atajo. Cada fila de proyecto ofrece **Renombrar** (nombre y descripción en línea; Intro en cualquiera de los dos confirma ambos y Escape cancela; la fila activa también se renombra con doble clic), **Duplicar**, **Exportar** y **Eliminar** (popover de confirmación). Un proyecto lleva además una **portada**, en el mismo lugar donde un preset de escaparate muestra su miniatura: duplicar un preset (o un proyecto) la hereda, y mientras se renombra la fila la portada es el control que la cambia — pulsa sobre ella para elegir un PNG, JPEG, WebP, GIF o SVG, o usa la X de al lado para quitar la que haya. La portada es del proyecto, no de sus recursos, y viaja con él al exportar e importar. Abrir un proyecto nunca pide confirmación salvo que esté activo un preset con cambios sin guardar. Eliminar el proyecto activo vuelve al preset integrado.
-- **Presets** — Puntos de partida de solo lectura, listados debajo de los proyectos. **Duplicar como proyecto** convierte cualquier preset en un proyecto local con sus propias copias de los archivos del paquete, de modo que editar después el paquete en disco nunca afecta al proyecto; **Exportar** descarga el preset como archivo `.postext`; **Ocultar** lo retira de la lista (el preset integrado no puede ocultarse). Los presets ocultos se recogen bajo un desplegable *Presets ocultos* al final del grupo, cada uno con una acción **Mostrar**; la elección se recuerda en `localStorage`.
+- **Mis libros**: libros locales y editables guardados en el navegador (IndexedDB). La fila del libro **abierto** se despliega en una tarjeta que también lista sus **capítulos** (consulta [Libros y capítulos](#libros-y-capítulos)). Cada fila de capítulo muestra su rango de páginas y su número de palabras, y el capítulo activo aparece marcado. La tarjeta tiene un botón **Añadir capítulo**, y el menú ⋯ de cada capítulo ofrece **Renombrar**, **Subir / Bajar**, **Dividir por títulos de nivel 1**, **Fusionar con el capítulo anterior** y **Eliminar** (el último capítulo nunca puede eliminarse).
 
-Un archivo `.postext` importado desde el menú **Nuevo** se convierte en un proyecto nuevo y activo; exportar es una acción de cada fila (la del proyecto activo exporta lo que hay en pantalla). Un archivo `.postext` es un directorio de paquete de preset comprimido en zip (consulta [Exportar e importar](#exportar-e-importar)).
+  Mientras tienes abierto un libro propio, el documento de trabajo *es* ese libro. Cada cambio en el texto, el diseño, las figuras y las fuentes se guarda en él automáticamente (con el mismo retardo de 1 segundo que `localStorage`), así que puedes cambiar de libro y volver sin perder nada. Los libros se crean desde el menú **Nuevo** de la cabecera:
+    - **Copia del libro abierto** copia el libro abierto, sus figuras y sus fuentes en un libro nuevo.
+    - **Libro en blanco** empieza uno vacío.
+    - **Abrir un archivo .postext…** importa un archivo.
 
-Los botones Restablecer de los paneles de Markdown y Configuración restauran el preset del que se duplicó un proyecto; un proyecto en blanco o importado no tiene referencia, así que se ocultan mientras está activo.
+  También puedes duplicar cualquier fila. Mientras no tengas libros propios, el grupo muestra un estado vacío con el mismo atajo. Cada fila tiene un único menú **⋯** rotulado (*Más acciones de «…»*) con **Cambiar nombre…**, **Duplicar**, **Descargar (.postext)** y **Eliminar…**. Eliminar pide confirmación justo al lado del botón ⋯.
 
-##### Presets
+  Cambiar nombre abre en línea los campos de nombre y descripción. Intro en cualquiera de los dos confirma ambos, y Escape cancela. La fila abierta también se renombra con doble clic.
 
-Un **paquete predefinido** (preset) es un punto de partida completo que se carga como una unidad: un documento markdown, un `PostextConfig`, los recursos (con sus contenidos de mapa de bits/SVG y sus modelos de tabla) y los archivos de fuentes personalizadas a los que se refiere la configuración. El panel lista todos los presets que el sandbox puede alcanzar y marca el activo:
+  Un libro lleva además una **portada**, que aparece donde un libro de ejemplo muestra su miniatura. Al hacer una copia de un libro de ejemplo (o de otro libro), la copia hereda su portada. Mientras se renombra una fila, la portada es el control que la cambia: pulsa sobre ella para elegir un PNG, JPEG, WebP, GIF o SVG, o usa la X de al lado para quitar la actual. La portada es del libro, no de sus figuras, y viaja con él al exportar e importar.
 
-- **Preset integrado** — *Guía de Postext*, el documento de ejemplo por defecto que acompaña al paquete, siempre disponible y siempre el primero de la lista. Es un preset **público**.
-- **Presets remotos** — Paquetes servidos por HTTP desde las URL base pasadas en la prop `presetSources` (consulta [Props](#props)). Cada fuente es pública o **privada**; los presets privados llevan la etiqueta *Privado* en la lista y están pensados para material que no debe salir de una máquina — el sitio web público solo anuncia una fuente privada en desarrollo local, donde la aplicación Next.js sirve la carpeta indicada por `POSTEXT_PRIVATE_PRESETS_DIR` a través de `/api/private-presets`. En producción nunca se lista.
-- **`default: true`** — Un preset privado marcado como predeterminado se carga automáticamente la primera vez que se abre un sandbox *intacto* (con el documento integrado sin editar); si hay varios marcados, gana el que tenga un `locale` coincidente con el idioma de la interfaz. Los presets públicos nunca se cargan automáticamente.
+  Abrir un libro nunca pide confirmación, salvo que esté abierto un libro de ejemplo con cambios sin guardar. Si eliminas el libro abierto, se vuelve al ejemplo integrado.
 
-Cada fila muestra el nombre del preset, una descripción opcional, su etiqueta de idioma y sus etiquetas *Privado* / *Por defecto*. Pulsar una fila (popover de confirmación) carga el preset **completo** — documento, recursos, configuración y fuentes — tras escribir los archivos de fuente y los blobs de recursos en IndexedDB, de modo que los viewports nunca ven un documento a medio aplicar. La fila activa lleva un botón de texto **Recargar** y la cabecera del panel el icono equivalente; ambos recargan el preset activo por completo. Cargar un preset *distinto* siempre pide confirmación; recargar el activo solo la pide cuando el documento tiene cambios locales (con un documento intacto la recarga es idempotente).
+- **Libros de ejemplo**: puntos de partida de solo lectura, listados debajo de tus libros. El menú ⋯ de cada fila ofrece:
+    - **Hacer una copia propia** convierte el ejemplo en un libro tuyo con sus propias copias de los archivos del paquete, de modo que editar después el paquete en disco nunca le afecta.
+    - **Descargar (.postext)** guarda el ejemplo como archivo `.postext`.
+    - **Ocultar de la lista** retira el ejemplo de la lista (el integrado no puede ocultarse).
+    - **Restaurar el original…** vuelve a cargar por completo el ejemplo abierto. Solo aparece en la fila abierta.
 
-**Presets en vivo.** Los presets remotos se siguen automáticamente: cada vez que se aplica un preset, el sandbox registra la *huella* (fingerprint) del paquete junto con los hashes del markdown, la configuración y el conjunto de recursos que aplicó. Mientras la página está visible consulta la huella cada 3 segundos (e inmediatamente cuando la pestaña vuelve a ser visible o la ventana recupera el foco). Cuando la huella cambia:
+  Los ejemplos ocultos se recogen en un desplegable *Libros de ejemplo ocultos* al final del grupo, cada uno con **Mostrar en la lista**. La elección se recuerda en `localStorage`.
 
-- Si el documento está **intacto** — markdown, configuración y recursos siguen produciendo los hashes que aplicó el preset — el preset se vuelve a aplicar por completo y en el panel aparece brevemente el aviso *Preset actualizado desde disco*.
-- Si hay **cambios locales**, se conservan: una franja persistente en la parte superior del panel (*El preset ha cambiado en disco. Tus cambios locales se conservan.*) ofrece un botón **Recargar**, y el icono de Proyectos de la barra de actividad muestra un punto hasta que el preset se recarga. Los paquetes solo se siguen mientras hay un preset activo; un proyecto duplicado a partir de uno conserva su propia copia.
+Un archivo `.postext` abierto desde el menú **Nuevo** se convierte en un libro nuevo y abierto. Exportar es una acción de cada fila: la del libro abierto exporta lo que hay en pantalla. Un archivo `.postext` es un directorio de paquete de preset comprimido en zip (consulta [Exportar e importar](#exportar-e-importar)).
 
-La misma comprobación se ejecuta al cargar, de modo que editar un paquete y abrir después el sandbox recoge la nueva versión si el documento estaba intacto. La huella procede de `<directorio-del-preset>/fingerprint.json`, un archivo virtual que la ruta de desarrollo responde con un hash del directorio basado solo en metadatos (consulta el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset)); las fuentes que no lo sirven simplemente no se siguen.
+Los botones Restablecer de los paneles Texto y Diseño restauran el ejemplo del que se copió un libro. Un libro en blanco o importado no tiene original, así que esos botones se ocultan mientras está abierto.
 
-El preset activo determina además qué restauran los botones **Restablecer** de los otros paneles:
+##### Libros de ejemplo (presets)
+
+Un **paquete de preset** es un punto de partida completo que se carga como una unidad: el Markdown de los capítulos, un `PostextConfig`, los recursos (con sus contenidos de mapa de bits/SVG y sus modelos de tabla) y los archivos de fuentes personalizadas a los que se refiere la configuración. El panel lista todos los presets que el Sandbox puede alcanzar y marca el abierto:
+
+- **Preset integrado**: la *Guía de Postext*, el libro de ejemplo por defecto que acompaña al paquete. Siempre está disponible, siempre es el primero de la lista y es **público**.
+- **Presets remotos**: paquetes servidos por HTTP desde las URL base pasadas en la prop `presetSources` (consulta [Props](#props)). Cada fuente es pública o **privada**. Los presets privados llevan la etiqueta *Privado* en la lista y están pensados para material que no debe salir de una máquina. El sitio web público solo lista una fuente privada en desarrollo local, donde la aplicación Next.js sirve la carpeta indicada por `POSTEXT_PRIVATE_PRESETS_DIR` a través de `/api/private-presets`. En producción nunca se lista. La fuente pública del sitio web, `/presets`, sirve sus libros de ejemplo bilingües: *Bioquímica*, *Cielo profundo*, *Don Quijote*, *Física universitaria (OpenStax)*, *Pintura española* y *Señales 2020*, cada uno con su licencia y sus créditos.
+- **`default: true`**: un preset privado marcado como predeterminado se carga automáticamente la primera vez que se abre un Sandbox *intacto* (con el documento integrado sin tocar). Si hay varios marcados, gana aquel cuyo `locale` coincide con el idioma de la interfaz. Los presets públicos nunca se cargan automáticamente.
+
+Cada fila muestra el nombre del preset, una descripción opcional, su etiqueta de idioma y sus etiquetas *Privado* / *Por defecto*. Pulsar una fila carga el preset **completo**: texto, figuras, diseño y fuentes. El Sandbox escribe primero los archivos de fuente y los datos de las figuras en IndexedDB, de modo que los viewports nunca ven un documento a medio aplicar. Abrir un libro de ejemplo *distinto* siempre pide confirmación. **Restaurar el original…** en la fila abierta solo la pide cuando el libro tiene cambios locales (restaurar un libro intacto no cambia nada).
+
+**Presets en vivo.** Los presets remotos se siguen automáticamente. Cada vez que se aplica un preset, el Sandbox registra la *huella* (fingerprint) del paquete junto con los hashes del Markdown, la configuración y el conjunto de recursos que aplicó. Mientras la página está visible, consulta la huella cada 3 segundos, y de inmediato cuando la pestaña vuelve a ser visible o la ventana recupera el foco. Cuando la huella cambia:
+
+- Si el libro está **intacto** (Markdown, configuración y recursos siguen dando los hashes que aplicó el preset), el preset se vuelve a aplicar por completo y en el panel aparece un breve aviso.
+- Si hay **cambios locales**, se conservan. Una franja en la parte superior del panel (*Este libro de ejemplo se ha actualizado. Tus cambios se conservan.*) ofrece un botón **Recargar**, y el botón Libros de la barra de actividad muestra un punto hasta que el preset se recarga. Los paquetes solo se siguen mientras hay un libro de ejemplo abierto. Un libro copiado de uno conserva su propia copia.
+
+La misma comprobación se ejecuta al cargar, así que si editas un paquete y después abres el Sandbox, recoge la nueva versión siempre que el libro estuviera intacto. La huella procede de `<directorio-del-preset>/fingerprint.json`. En la ruta de desarrollo es un archivo virtual que responde con un hash del directorio basado solo en metadatos (consulta el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset)). Las fuentes que no lo sirven no se siguen.
+
+El libro de ejemplo abierto determina además qué restauran los botones **Restablecer** de los otros paneles:
 
 <table>
   <thead>
@@ -101,104 +123,237 @@ El preset activo determina además qué restauran los botones **Restablecer** de
   </thead>
   <tbody>
     <tr>
-      <td>Editor de markdown</td>
-      <td>El markdown del preset y su conjunto de recursos (la parte de documento)</td>
+      <td>Texto</td>
+      <td>El texto del ejemplo y su conjunto de figuras (la parte de documento)</td>
     </tr>
     <tr>
-      <td>Configuración</td>
-      <td>La configuración del preset, fuentes personalizadas incluidas</td>
+      <td>Diseño</td>
+      <td>El diseño del ejemplo, fuentes incluidas</td>
     </tr>
     <tr>
-      <td>Proyectos (Recargar)</td>
-      <td>Todo: documento, recursos, configuración y fuentes</td>
+      <td>Libros (Restaurar el original…)</td>
+      <td>Todo: texto, figuras, diseño y fuentes</td>
     </tr>
   </tbody>
 </table>
 
-Un preset que estuvo activo en una sesión anterior pero que ya no lista ninguna fuente (normalmente un preset privado en una compilación que no lo sirve) sigue apareciendo, atenuado como *No disponible en esta compilación*, para que el sandbox conserve el contenido cargado en lugar de cambiarlo silenciosamente por el integrado. El id del preset activo se conserva bajo la clave `postext-sandbox-preset` (consulta [Persistencia](#persistencia)); el formato del paquete se describe en el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset).
+Un preset que estuvo abierto en una sesión anterior pero que ya no lista ninguna fuente (normalmente un preset privado en una compilación que no lo sirve) sigue apareciendo, atenuado como *No disponible en esta compilación*. El Sandbox conserva el contenido cargado en lugar de cambiarlo sin avisar por el ejemplo integrado. El id del preset abierto se guarda bajo la clave `postext-sandbox-preset` (consulta [Persistencia](#persistencia)). El formato del paquete se describe en el apéndice [Formato de paquete de preset](#formato-de-paquete-de-preset).
 
-#### Panel de recursos
+#### Panel de figuras
 
-Gestiona los recursos del documento — imágenes de mapa de bits, figuras SVG y tablas — referenciados desde el markdown mediante bloques `::resource{id="…"}` y referencias en línea `:ref{id="…"}`. Para la sintaxis de referencia y el modelo de flotado, consulta [Formato de documento → Recursos](/es/docs/document-format#recursos).
+Gestiona los recursos del libro: imágenes de mapa de bits, figuras SVG y tablas. El texto se refiere a ellos con bloques `::resource{id="…"}` y referencias en línea `:ref{id="…"}`. Para la sintaxis de referencia y el modelo de flotado, consulta [Formato de documento → Recursos](/es/docs/document-format#recursos).
 
-**Vista de lista.** Los recursos se agrupan por el nombre de su tipo de recurso; los recursos cuyo `typeId` ya no coincide con ningún tipo configurado caen en un grupo *Sin tipo* para que sigan siendo accesibles. Cada elemento muestra una miniatura de 36 px — una vista previa real para mapas de bits y SVG, un glifo para tablas — junto a su leyenda y su id. Un desplegable **Nuevo** ofrece tres puntos de entrada:
+**Vista de lista.** La cabecera muestra el número de recursos. Los recursos se agrupan por el nombre de su tipo de recurso, y cada grupo es una lista con su recuento. Los recursos cuyo `typeId` ya no coincide con ningún tipo configurado caen en un grupo *Sin tipo* para que sigas pudiendo llegar a ellos. Cada elemento muestra una miniatura de 36 px junto a su leyenda y su id: una vista previa real para mapas de bits y SVG, y un glifo para las tablas. Cuando el libro tiene más de seis recursos, un campo de **búsqueda** (*Buscar figuras y tablas…*) filtra la lista por leyenda e id, sin distinguir acentos. Cuando el libro aún no tiene recursos, un estado vacío explica cómo añadirlos y colocarlos en el texto con `:ref{#id}`. Un desplegable **Nuevo** ofrece tres formas de añadir uno:
 
-- **Subir imagen** — PNG, JPEG, WebP o GIF
+- **Subir imagen**: PNG, JPEG, WebP o GIF
 - **Subir SVG**
-- **Nueva tabla** — comienza como una cuadrícula de 2×2 con una fila de cabecera
+- **Nueva tabla**: empieza como una cuadrícula de 2×2 con una fila de cabecera
 
-Todo el panel es además una zona de arrastrar y soltar: suelta archivos desde el disco y se suben en lote, con ids generados como slugs a partir de sus nombres de archivo. Los archivos no soportados se omiten, y una nota breve indica cuántos se añadieron y cuántos se omitieron.
+También puedes arrastrar archivos desde el disco y soltarlos sobre el panel. Se suben en lote, con ids generados como slugs a partir de sus nombres de archivo. Los archivos no admitidos se omiten, y una nota breve indica cuántos se añadieron y cuántos se omitieron.
 
-**Vista de detalle.** Seleccionar un recurso abre su editor:
+**Vista de detalle.** Al seleccionar un recurso se abre su editor:
 
-- **ID** — Editable y validado como slug; los ids duplicados se señalan y nunca se confirman, y un id vacío recibe una sugerencia derivada de la leyenda. Renombrar conserva el contenido binario almacenado.
-- **Tipo** — Selección entre los tipos de recurso configurados
-- **Leyenda** — Admite Markdown en línea (negrita, cursiva, código y `:ref`)
-- **Nota** — Una línea de fuente, crédito u observación opcional compuesta en un cuerpo menor bajo el recurso (mismo formato en línea que la leyenda); se estiliza con el grupo *Nota* de la sección de configuración *Leyendas*
-- **Texto alternativo** — Descripción de accesibilidad para la salida HTML
-- **Estilo de tabla** — En las tablas, el estilo con nombre con el que se compone la tabla (`table.styleId`): *Estilo de tabla del documento* (por defecto) o uno de los *Estilos de tabla* declarados en los ajustes; un id que ningún estilo declara aparece como inexistente y se compone con el estilo de tabla del documento
-- **Colocación** — Posición (`auto` — el primer hueco libre, el valor por defecto — `top` / `bottom` / `here`) más extensión (`column` / `page` / `side`, deshabilitada cuando la posición es `here`), coincidiendo con los valores por defecto del motor: `auto` + `column`; una orientación: vertical, o girado un cuarto de vuelta (cabecera a la izquierda o a la derecha) — un recurso girado ocupa una página propia, pegado al lomo, así que el selector de extensión queda deshabilitado; una fracción de anchura con una alineación para los flotantes más estrechos que su columna; y un interruptor de **leyenda junto a la figura** para la columna lateral de una disposición de columna y media
-- **Contenido** — Cargadores de reemplazo para el archivo de mapa de bits o SVG
-- **Código fuente del SVG** — En las figuras SVG, un editor de código bajo el cargador en el que solo admiten ediciones los nodos de texto (el contenido de los elementos `<text>` / `<tspan>`, resaltados en el editor); escribir en cualquier otro sitio se rechaza, y los caracteres `<`, `>` y `&` tecleados dentro de un nodo de texto se escapan para que el archivo siga bien formado. Cada cambio se guarda tras una breve pausa como un archivo almacenado **nuevo** y la figura se vuelve a renderizar (también con el recoloreado a una sola tinta); el editor avisa cuando el SVG no tiene nodos de texto
-- **Vista previa** — Una maqueta en vivo de cómo se verá el recurso, con `#` como marcador del número (los números reales dependen de dónde caiga el recurso en el documento)
-- **Eliminar** — Protegido por un popover de confirmación que advierte cuántas referencias `::resource` / `:ref` del markdown quedarían colgando
+- **ID**: editable y validado como slug. Los ids duplicados se señalan y nunca se confirman, y un id vacío recibe una sugerencia derivada de la leyenda. Renombrar conserva el archivo de imagen o SVG almacenado.
+- **Tipo**: uno de los tipos de recurso configurados
+- **Leyenda**: admite Markdown en línea (negrita, cursiva, código y `:ref`)
+- **Nota**: una línea opcional de fuente, crédito u observación, compuesta en un cuerpo menor bajo el recurso (con el mismo formato en línea que la leyenda). Se estiliza con el grupo *Nota* de los ajustes de *Pies de figura*.
+- **Texto alternativo**: descripción de accesibilidad para la salida HTML
+- **Estilo de tabla**: en las tablas, el estilo con nombre con el que se compone la tabla (`table.styleId`). Puede ser *Estilo de tabla del documento* (por defecto) o uno de los *Estilos de tabla* declarados en los ajustes. Un id que ningún estilo declara aparece como inexistente y se compone con el estilo de tabla del documento.
+- **Ubicación**:
+  - **Posición**: `auto` (el primer hueco libre, el valor por defecto), `top`, `bottom` o `here`.
+  - **Extensión**: `column`, `page` o `side`. Queda deshabilitada cuando la posición es `here`. Los valores por defecto coinciden con los del motor, `auto` + `column`.
+  - **Orientación**: vertical, o girado un cuarto de vuelta (cabecera a la izquierda o a la derecha). Un recurso girado ocupa una página propia, pegado al lomo, así que el selector de extensión queda deshabilitado.
+  - **Anchura**: una fracción de anchura con una alineación, para los flotantes más estrechos que su columna.
+  - **Pie junto a la figura**: un interruptor para la columna lateral de una disposición de columna y media.
+- **Contenido**: cargadores que sustituyen el archivo de mapa de bits o SVG
+- **Código fuente del SVG**: en las figuras SVG, un editor de código bajo el cargador. Solo admiten cambios los nodos de texto: el contenido de los elementos `<text>` / `<tspan>`, tintado en el editor. Escribir en cualquier otro sitio se rechaza, y los caracteres `<`, `>` y `&` tecleados dentro de un nodo de texto se escapan para que el archivo siga bien formado. Cada cambio se guarda tras una breve pausa como un archivo almacenado **nuevo**, y la figura se vuelve a renderizar (recoloreado a una sola tinta incluido). El editor avisa cuando el SVG no tiene nodos de texto.
+- **Vista previa**: una maqueta en vivo de cómo se verá el recurso, con `#` en lugar del número (los números reales dependen de dónde caiga el recurso en el documento)
+- **Eliminar**: pide confirmación antes y advierte de cuántas referencias `::resource` / `:ref` del texto quedarían apuntando a nada
 
 **Editor de tablas.** Los recursos de tabla abren un editor de cuadrícula interactivo:
 
-- Barra de herramientas con añadir/quitar fila y columna, combinar/dividir celdas, interruptores de fila y columna de cabecera, alineación horizontal y vertical por celda (arriba, centro, abajo: el contenido de la celda se mueve como una unidad dentro de una fila más alta) y un relleno por celda (un selector de color, vinculable a la paleta, con un botón para quitarlo) que se guarda en `TableCell.background` y se muestra en la cuadrícula
-- **Anchos de columna** — Un peso numérico por columna bajo la cuadrícula (`2, 1, 1` da a la primera columna la mitad del ancho; vacío significa anchos iguales), escrito en `table.model.columnWidths`. Añadir o quitar una columna mantiene los pesos alineados; un enlace *Anchos iguales* los borra
-- **Pegar como tabla** — Pegar TSV (o CSV simple con comillas) rellena la cuadrícula
-- **Deshacer/rehacer** — Cmd/Ctrl+Z y Mayús+Cmd/Ctrl+Z
-- **Navegación con teclado** — Tab / Mayús-Tab (con salto de fila) y las teclas de flecha mueven entre celdas
-- **Edición desde la vista previa** — Hacer clic en una celda de tabla, una leyenda, una nota o un fragmento de texto de una figura SVG en cualquiera de las dos pestañas de vista previa abre el panel de Recursos en ese recurso y enfoca el campo correspondiente con el cursor en el glifo pulsado; arrastrar selecciona un rango dentro de la misma celda o campo, y el doble clic selecciona la palabra. Mientras el campo tiene el foco, su selección se refleja en la página como un resaltado (un cursor fino cuando está contraída), tanto en la pestaña Canvas como en la HTML
+- **Barra de herramientas**:
+  - Añade o quita filas y columnas, y combina o divide celdas.
+  - Activa una fila o una columna de cabecera.
+  - Fija la alineación horizontal y vertical de cada celda (arriba, centro o abajo). El contenido de la celda se mueve como una unidad dentro de una fila más alta.
+  - Fija el relleno de cada celda: un selector de color, vinculable a la paleta, con un botón para quitarlo. El relleno se guarda en `TableCell.background` y se muestra en la cuadrícula.
+- **Anchos de columna**: un peso numérico por columna bajo la cuadrícula (`2, 1, 1` da a la primera columna la mitad del ancho; vacío significa anchos iguales), que se escribe en `table.model.columnWidths`. Añadir o quitar una columna mantiene los pesos alineados, y un enlace *Anchos iguales* los borra.
+- **Pegar como tabla**: pegar TSV (o CSV simple con comillas) rellena la cuadrícula
+- **Deshacer/rehacer**: Cmd/Ctrl+Z y Mayús+Cmd/Ctrl+Z
+- **Navegación con teclado**: Tab / Mayús-Tab (con salto de fila) y las flechas mueven entre celdas
+- **Edición desde la vista previa**: haz clic en una celda de tabla, una leyenda, una nota o un fragmento de texto de una figura SVG en cualquiera de las dos pestañas de vista previa. El panel Figuras se abre en ese recurso y enfoca el campo correspondiente, con el cursor en el glifo pulsado. Arrastrar selecciona un rango dentro de la misma celda o campo, y el doble clic selecciona la palabra. Mientras el campo tiene el foco, su selección se refleja en la página como un resaltado (un cursor fino cuando está contraída), tanto en la pestaña Canvas como en la HTML.
 
-Todas las ediciones pasan por funciones puras de modelo exportadas por el núcleo de postext — `addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment`, `parseTSV` — de modo que el mismo modelo de tabla se comporta idénticamente dentro y fuera del sandbox.
+Todas las ediciones pasan por funciones puras de modelo exportadas por el núcleo de postext (`addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment` y `parseTSV`), de modo que el mismo modelo de tabla se comporta igual dentro y fuera del Sandbox.
 
 #### Panel de fuentes
 
-Gestiona familias tipográficas personalizadas junto al catálogo integrado de Google Fonts:
+Muestra los tipos de letra que usa el libro y gestiona tus propios archivos de fuente junto al catálogo integrado de Google Fonts:
 
-- **Añadir, renombrar y eliminar familias**
-- **Subir archivos de variante** por peso (100–900) y estilo (normal / cursiva). Los formatos aceptados son WOFF2, WOFF, TTF y OTF, detectados por la extensión del archivo; los archivos se almacenan en el IndexedDB del navegador.
-- Las familias personalizadas aparecen en todos los selectores de fuente bajo un grupo **Personalizadas**, junto a los resultados de Google Fonts, y una familia personalizada **tiene prioridad** sobre una Google Font con el mismo nombre.
-- Los archivos de fuente huérfanos — subidas que ya no referencia ninguna familia — se eliminan de IndexedDB automáticamente.
+- **Tipos de letra de este libro** lista todas las familias que usa el diseño. Cada nombre de familia aparece compuesto en su propio tipo de letra, con su función (*Texto base*, *Títulos* u *Otros elementos*) y su origen (*Google Fonts* o *Archivo propio*). Los tipos de letra en sí se cambian en **Diseño → Tipografía** y **Títulos e índice**.
+- **Tus archivos de fuente** es donde añades, renombras y eliminas familias personalizadas.
+  - **Sube archivos de variante** por peso (100–900) y estilo (normal / cursiva). Los formatos aceptados son WOFF2, WOFF, TTF y OTF, detectados por la extensión del archivo. Los archivos se guardan en el IndexedDB del navegador.
+  - Las familias personalizadas aparecen en todos los selectores de fuente bajo un grupo **Personalizadas**, junto a los resultados de Google Fonts. Una familia personalizada **tiene prioridad** sobre una Google Font con el mismo nombre.
+  - Los archivos de fuente huérfanos (subidas que ya no usa ninguna familia) se eliminan de IndexedDB automáticamente.
 
-#### Panel de configuración
+#### Panel de diseño
 
-Un editor basado en formulario para `PostextConfig` con más de quinientos campos, así que empieza con una barra para encontrarlos:
+Un editor de formulario para `PostextConfig`, con más de quinientos campos.
 
-- **Buscar** — Filtra todos los campos de todas las secciones por su etiqueta, su ayuda y los nombres de sus opciones (sin distinguir acentos y por prefijo de palabra: *marg* encuentra *Margen superior* y *Top Margin*, *h3* abre *Encabezados › H3*). Las secciones con coincidencias se abren solas, las filas y secciones sin coincidencias se ocultan y los aciertos se resaltan; al borrar la búsqueda cada sección recupera su estado abierto/cerrado. Escape borra la búsqueda y después quita el foco.
-- **Categorías** — Fichas que muestran un grupo de secciones cada vez: **Todo**, **Documento** (Página, Maquetación, Paleta de color, Encabezado y pie, Partes), **Texto** (Texto de cuerpo, Encabezados, Estilos de encabezado, Índice de contenidos, Estilos de párrafo, Estilos de chip, listas, Matemáticas), **Figuras y tablas** (Tipos de recurso, Pies, Tablas, Estilos de tabla, Diagramas, Estilos de llamada), **Salida** (Visor HTML, Generación de PDF) y **Avanzado** (Depuración, Avisos). Un punto dorado marca las categorías con ajustes modificados; la elección se recuerda. Una búsqueda de texto abarca todas las categorías.
-- **Solo modificados** — Muestra únicamente los campos cuyo valor difiere del predeterminado.
+**Resumen.** Al abrir el panel Diseño se muestra un resumen:
 
-Las cabeceras de sección muestran un punto dorado con el número de campos modificados que contienen. Las secciones, por categoría:
+- Una tarjeta **Este libro** con un dibujo en vivo de la página. El dibujo respeta las proporciones reales y muestra los márgenes, las columnas y los colores de la página y la tinta, como doble página cuando los márgenes son simétricos. Al lado aparecen el formato, la disposición de columnas, el tipo de letra y el cuerpo del texto base, y la paleta.
+- La lista de los once **grupos de ajustes**. Cada grupo tiene una descripción de una frase y el número de secciones que has cambiado en él.
 
-- **Documento** — *Paleta de color* (colores con nombre reutilizados por todos los selectores de color), *Página* (tamaño, márgenes — con un interruptor de **márgenes simétricos** que convierte izquierdo/derecho en interior/exterior para páginas enfrentadas — DPI, líneas de corte, rejilla de línea base, numeración de páginas), *Maquetación* (una columna, doble o columna y media, medianil, columna lateral), *Encabezado y pie* (elementos de texto, línea, caja e imagen por bloque — texto con alineación vertical, interlineado, espaciado entre letras, caja del texto, ancho y alto ajustados, rellenos o fijos, y un ancho máximo; líneas horizontales o verticales — con marcadores tomados de la lista permitida del motor — número de página, total de páginas, título, subtítulo, autor, fecha de publicación, título y número de capítulo, título y número de parte, y `{attr.key}` para un atributo del capítulo — paridad, un filtro de **páginas** — todas, cuerpo, aperturas de capítulo, separadores de parte o páginas en blanco — desbordamiento y posicionamiento por anclaje al contenedor, a un elemento hermano o al marco de **página** / **sangre** para bandas de borde a borde, más un grupo **Letra capital** — líneas, fuente, peso, tamaño, color, separación — y una sangría de párrafo; el resto de ranuras de diseño ofrecen los mismos controles de texto)
-- **Texto** — *Texto de cuerpo* (el **idioma del documento**, fuente, tamaño, interlineado, alineación, separación silábica), *Encabezados* (valores generales más ajustes por nivel H1–H6, caja del texto, salto previo con paridad, extensión, un interruptor **Ajustar a la rejilla** (`headings.snapToGrid`, activado por defecto: el flujo vuelve a la rejilla base bajo un encabezado), un editor avanzado de ranura de diseño por nivel con altura mínima de apertura, y las palancas de equilibrado de columnas con el tope de cada una), *Estilos de encabezado* (`headingStyles`: estilos con nombre aplicados con `{style="…"}` en la línea de un encabezado — añade, elimina y renombra ids, decide si el encabezado se numera y aparece en el índice, sobrescribe la tipografía, el salto y la extensión del encabezado, y da a la sección sus propios titulillos — partiendo de los del documento si quieres — márgenes, disposición de columnas — con el papel y el lado de la columna lateral, como en la sección Maquetación — estilo del cuerpo y colores de paleta), *Estilos de chip* (`chipStyles`: estilos con nombre para el `:chip[texto]{style="…"}` en línea; mientras la configuración no tiene ninguno se muestra el estilo `chip` integrado. Añade, elimina y renombra ids y fija el **Texto** —fuente, cuerpo, color, negrita, cursiva, cada uno heredado del texto que lo rodea hasta fijarlo— y la **Caja** —relleno, grosor y color del contorno, radio de las esquinas, relleno horizontal y vertical y la separación mínima con las palabras vecinas—), *Índice de contenidos* (`toc`: los niveles de encabezado que lista un `:::toc` con la tipografía de cada entrada, las entradas sin numerar, los números de página, la línea de puntos, la línea de subtítulo tomada de un atributo del encabezado y las filas de parte con su propia ranura de diseño), *Partes* (`parts`: la paridad de la página en la que se abre un `:::part`, un salto opcional tras la parte con su propia paridad, los márgenes de la página de parte — que heredan los de página, con las mismas etiquetas interior/exterior en modo simétrico — una ranura de **diseño de apertura** dispuesta sobre la caja de corte de la página cuyo selector de marcadores añade el juego de títulos: título actual y su número en forma decimal, romana o alfabética; y un **estilo del cuerpo** para los bloques dentro de la parte que hereda el texto de cuerpo y los colores de las listas), *Listas no ordenadas*, *Listas ordenadas* (por nivel, la fuente, el peso, la cursiva, el color y la separación del separador junto a su numeración), *Matemáticas*
-- **Figuras y tablas** — *Tablas* (`tableStyle`: tipografía de cuerpo y cabecera, rellenos, bordes con un patrón de **filetes** — cuadrícula completa, solo horizontales, marco exterior o ninguno — un **radio de las esquinas** para el marco exterior y relleno de celda), *Estilos de tabla* (`tableStyles`: estilos de tabla con nombre — añade, elimina y renombra ids (al renombrar, las tablas que usan el id lo siguen), y define cualquiera de los campos de *Tablas*; cada control muestra el valor heredado de *Tablas* hasta que se define), *Leyendas* (`captionStyle`: tipografía, tamaño, alineación, **posición** encima o debajo del recurso, una **barra de fondo** opcional con su color y relleno, estilo independiente para etiqueta y descripción, y un grupo **Nota** con tamaño, color, cursiva, alineación y separación de la nota del recurso), *Estilos de párrafo* (`paragraphStyles`: estilos con nombre para los contenedores `:::paragraphs{style="…"}` — añade, elimina y renombra ids, y define fuente, tamaño, interlineado, color, alineación, separación silábica, sangría de primera línea y francesa, espacio entre párrafos y márgenes; los campos sin definir heredan el texto de cuerpo), *Estilos de recuadro* (`calloutStyles`: estilos con nombre para `:::callout{type="…"}` — añade, duplica, elimina y renombra ids, y define el título por defecto, extensión, colocación, anchura, fondo, borde, radio de esquina, relleno, una **franja** lateral, un **icono** que puede ser un glifo de texto o un SVG/bitmap elegido del panel de recursos — en línea o como distintivo de esquina, con el lado de la esquina y un ancho para iconos no cuadrados — un grupo **Pestaña de etiqueta** (`calloutStyles[].label`: fuente, tamaño, peso, color, relleno, esquina, altura, relleno interior, desplazamiento, retranqueo, un recurso de icono junto a la pestaña y un filete en el borde superior), la tipografía del título con espaciado entre letras y sangría, sustituciones de cuerpo y listas que heredan el texto del documento — incluidos el color de la negrita del cuerpo y el tamaño y el peso de la viñeta — una separación de columnas para los grupos `:::columns` dentro del recuadro, un interruptor **Ajustar a la rejilla** (`calloutStyles[].snapToGrid`, activado por defecto; desactivado conserva el margen inferior exacto para cajas apiladas), y los controles de columna de marcador, anclaje fijo, mantener unido / líneas mínimas al partir y barrera de flotantes), *Diagramas* (`diagramStyle`: un interruptor de **tinta única** que recolorea los diagramas SVG a tintes de una sola tinta para impresión monocolor, más un selector del color de tinta que por defecto usa el color principal de la paleta), *Tipos de recurso* (nombres por tipo, etiquetas cortas, plantillas de numeración con marcadores `{n}` y `{h1}`…`{h6}`, formato y reinicio del contador, prefijo de leyenda, una vista previa en vivo estilo «Fig. 1.7», un grupo **Colocación** con la posición, la extensión — columna, página o la columna lateral — y el giro por defecto del tipo, a los que se suman una fracción de anchura, una alineación para los flotantes más estrechos y un interruptor de leyenda junto a la figura, y una **sustitución del estilo de leyenda** colapsable que reemplaza solo los campos de leyenda que definas para ese tipo — posición, barra, colores, tipografía — y hereda el resto)
-- **Salida** — *Visor HTML*, *Generación de PDF*
-- **Avanzado** — *Depuración*, *Avisos* (umbrales para el panel de diagnósticos)
+**Una página por grupo.** Al abrir un grupo, sus secciones se muestran como una página propia. Solo se construye ese grupo, lo que mantiene el panel ágil incluso en libros grandes.
 
-El panel sigue un **modelo de sustituciones** coherente: cada sección recuerda su estado abierto/cerrado entre sesiones; la cabecera de una sección muestra un botón de restablecer (con confirmación) solo mientras contiene ajustes personalizados; y cada control muestra un pequeño restablecedor por campo que aparece cuando su valor difiere del valor por defecto. Solo se guarda o exporta el subárbol personalizado — los valores por defecto se eliminan, así que un sandbox intacto almacena una configuración vacía.
+- Una ruta de navegación (**Diseño › grupo**) lleva de vuelta al resumen.
+- Unas fichas bajo el título de la página saltan a cada sección de la página.
+- Un enlace **Siguiente** al final abre el grupo siguiente.
+- El foco pasa al título de la página al abrir un grupo, y vuelve a la fila del grupo al regresar.
+- El grupo abierto se recuerda entre sesiones.
 
-Los controles son contextuales: el ancho del medianil solo aparece en maquetaciones multicolumna, los ajustes de separación silábica solo aparecen cuando el texto está justificado, y el porcentaje de columna lateral solo se muestra en la maquetación de columna y media. Los cambios surten efecto inmediatamente en la vista previa del viewport. Para una referencia completa de todas las opciones de configuración y sus valores por defecto, consulta la página de [Configuración](/es/docs/configuration).
+Los grupos, en orden de navegación:
 
-La cabecera del panel ofrece **Restablecer** (popover de confirmación; solo visible cuando la configuración difiere de la del preset activo — restaura la configuración de ese preset, fuentes personalizadas incluidas), **Exportar** e **Importar** — consulta [Exportar e importar](#exportar-e-importar).
+- **Página y columnas**
+  - *Página*: los campos se agrupan en **Tamaño**, **Márgenes**, **Papel**, **Numeración** y **Preparación para imprenta**.
+    - **Tamaño**: los formatos predefinidos dicen para qué sirven: *Libro de bolsillo* 11 × 17, *Novela, narrativa* 12 × 19, *Ensayo, manual* 17 × 24 y *Libro de texto, revista* 21 × 28, o *Personalizado*.
+    - **Márgenes**: cada margen está ligado al dibujo de la página. Al señalar o enfocar un campo de margen, ese margen se tiñe en el dibujo. Un interruptor de **márgenes simétricos** convierte izquierdo/derecho en interior/exterior para páginas enfrentadas.
+    - **Papel**: el color de fondo de la página.
+    - **Numeración**: el formato del número de página y el número por el que empiezan las páginas.
+    - **Preparación para imprenta**: DPI y líneas de corte.
+  - *Columnas*: la disposición se elige entre tarjetas ilustradas: *Una columna* (novela, ensayo), *Dos columnas* (libros de texto, revistas, obras de consulta) o *Columna y media* (una columna principal y otra estrecha al lado para notas y figuras pequeñas). La sección incluye también el medianil, la columna lateral y **Reducir las figuras que no caben** (`layout.fitFiguresToPage`).
+- **Colores**
+  - *Paleta*: colores con nombre que reutilizan todos los selectores de color. Cambiar una entrada actualiza todas las referencias a ella.
+- **Tipografía**
+  - *Texto base*: empieza con una **muestra tipográfica** a tamaño real compuesta con el tipo de letra, el cuerpo, el interlineado y el color actuales. Sus saltos de línea son los del navegador; la página usa los de Postext. Los campos se agrupan en:
+    - **Letra**: fuente, cuerpo, interlineado y los pesos normal y negrita.
+    - **Párrafos**: alineación (con la separación silábica y los límites de justificación cuando el texto está justificado), sangrías y espacio entre párrafos.
+    - **Color**: los colores del texto, la negrita y la cursiva.
+    - **Idioma**: el idioma del documento.
+    - **Viudas, huérfanas y líneas cortas** (plegable): incluye **Apretar para recoger la línea corta** (`bodyText.tightenRunts`) y **Máximo apretado de letras** (`bodyText.maxRuntTracking`).
+    - **Referencias cruzadas** (plegable).
+  - *Estilos de párrafo* (`paragraphStyles`): estilos con nombre para los contenedores `:::paragraphs{style="…"}`. Puedes añadir, eliminar y renombrar ids, y después fijar la fuente, el cuerpo, el interlineado, el color, la alineación, la separación silábica, las sangrías de primera línea y francesa, el espacio entre párrafos y los márgenes. Los campos sin fijar heredan el texto base.
+  - *Etiquetas en línea* (`chipStyles`): estilos con nombre para el `:chip[texto]{style="…"}` en línea. Mientras la configuración no tiene ninguno se muestra el estilo integrado `chip`. Puedes añadir, eliminar y renombrar ids, y después fijar:
+    - **Texto**: fuente, cuerpo, color, negrita y cursiva. Cada uno hereda el texto que lo rodea hasta que lo fijas.
+    - **Caja**: relleno, grosor y color del contorno, radio de las esquinas, relleno horizontal y vertical, y la separación mínima con las palabras vecinas.
+  - *Fórmulas* (`math`).
+- **Títulos e índice**
+  - *Títulos*: valores generales más ajustes por nivel H1–H6. Incluyen:
+    - la caja del texto, el salto previo con paridad y la extensión;
+    - un interruptor **Volver a la retícula tras los títulos** (`headings.snapToGrid`, activado por defecto: el texto vuelve a la retícula base bajo un título);
+    - un editor avanzado de ranura de diseño por nivel, con altura mínima de apertura;
+    - las palancas de equilibrado de columnas, con el tope de cada una.
+  - *Estilos de título* (`headingStyles`): estilos con nombre que se aplican con `{style="…"}` en la línea de un título. Puedes añadir, eliminar y renombrar ids, y para cada estilo:
+    - decidir si el título se numera y aparece en el índice;
+    - sustituir la tipografía, el salto y la extensión del título;
+    - dar a la sección sus propias cabeceras, partiendo si quieres de las del documento;
+    - fijar sus márgenes y su disposición de columnas (con el papel y el lado de la columna lateral, como en *Columnas*, y su propio *Reducir las figuras que no caben*);
+    - fijar el estilo del cuerpo, las sustituciones de listas y los colores de la paleta.
+  - *Índice* (`toc`): los niveles de título que lista un `:::toc`, con la tipografía de cada entrada. Cubre también las entradas sin numerar, los números de página, la línea de puntos, la línea de subtítulo tomada de un atributo del título y las filas de parte con su propia ranura de diseño.
+- **Listas**
+  - *Listas con viñetas*.
+  - *Listas numeradas*: por nivel, la fuente, el peso, la cursiva, el color y la separación del separador junto a su numeración.
+- **Figuras y tablas**
+  - *Numeración y colocación* (`resourceTypes`): para cada tipo de recurso:
+    - nombres y etiquetas cortas;
+    - plantillas de numeración con marcadores `{n}` y `{h1}`…`{h6}`, el formato y el nivel de reinicio del contador, y el prefijo del pie, con una vista previa en vivo estilo «Fig. 1.7»;
+    - un grupo **Colocación**: la posición, la extensión (columna, página o la columna lateral) y el giro por defecto del tipo, una fracción de anchura, una alineación para los flotantes más estrechos y un interruptor de pie junto a la figura;
+    - una **sustitución del estilo del pie** plegable que reemplaza solo los campos del pie que fijes para ese tipo (posición, barra, colores, tipografía) y hereda el resto.
+  - *Pies de figura* (`captionStyle`): tipografía, cuerpo, alineación y **posición** encima o debajo del recurso. Hay una **barra de fondo** opcional con su color y su relleno, y la etiqueta y la descripción se estilizan por separado. Un grupo **Nota** fija el cuerpo, el color, la inclinación, la alineación y la separación de la nota del recurso.
+  - *Tablas* (`tableStyle`):
+    - tipografía y rellenos del cuerpo y de la cabecera;
+    - bordes, con un patrón de **filetes**: cuadrícula completa, solo horizontales, marco exterior o ninguno;
+    - un **radio de las esquinas** para el marco exterior;
+    - relleno de celda.
+  - *Estilos de tabla* (`tableStyles`): estilos de tabla con nombre. Puedes añadir, eliminar y renombrar ids (al renombrar, las tablas que usan el id lo siguen), y después fijar cualquiera de los campos de *Tablas*. Cada control muestra el valor heredado de *Tablas* hasta que lo fijas.
+  - *Diagramas* (`diagramStyle`): un interruptor de **tinta única** que recolorea los diagramas SVG en tintes de una sola tinta para imprimir a un color, más un selector del color de la tinta que por defecto usa el color principal de la paleta.
+- **Recuadros**
+  - *Estilos de recuadro* (`calloutStyles`): estilos con nombre para `:::callout{type="…"}`. Puedes añadir, duplicar, eliminar y renombrar ids, y después fijar:
+    - el título por defecto, la extensión, la colocación y la anchura;
+    - el fondo, el borde, el radio de las esquinas y el relleno, y una **franja** lateral;
+    - un **icono**: un glifo de texto o un SVG/mapa de bits elegido del panel Figuras. Puede ir en línea o como distintivo de esquina, con el lado de la esquina y una anchura para iconos no cuadrados.
+    - un grupo **Pestaña de etiqueta** (`calloutStyles[].label`): fuente, cuerpo, peso, color, relleno, esquina, altura, relleno interior, desplazamiento y retranqueo, un recurso de icono junto a la pestaña y un filete a lo largo del borde superior;
+    - la tipografía del título, con espaciado entre letras y sangría;
+    - sustituciones del cuerpo y de las listas que heredan el texto del documento. Incluyen los colores de la negrita y de la **cursiva** del cuerpo, y el tamaño y el peso de la viñeta.
+    - una separación de columnas para los grupos `:::columns` dentro del recuadro;
+    - un interruptor **Ajustar a la rejilla** (`calloutStyles[].snapToGrid`, activado por defecto; desactivado conserva el margen inferior exacto para recuadros apilados);
+    - la columna de marcador, un anclaje fijo, mantener unido y líneas mínimas al partir, y los controles de barrera de flotantes.
+- **Cabeceras y pies**
+  - *Cabeceras y pies de página*: elementos de texto, filete, caja e imagen por ranura.
+    - **Elementos de texto**: alineación vertical, **alineación del texto** dentro de su propia caja (`align`: a la izquierda, centrado o a la derecha, visible cuando la caja es más ancha que el texto), interlineado, espaciado entre letras, caja del texto, un ancho y un alto ajustados, rellenos o fijos, y un ancho máximo.
+    - **Filetes**: horizontales o verticales.
+    - **Marcadores**, tomados de la lista permitida del motor: número de página, total de páginas, título, subtítulo, autor, fecha de publicación, título y número de capítulo, título y número de parte, y `{attr.key}` para un atributo del capítulo.
+    - **Dónde aparece una ranura**: la paridad y un filtro de **páginas**: todas, cuerpo, aperturas de capítulo, separadores de parte o páginas en blanco.
+    - **Colocación**: el desbordamiento y un anclaje al contenedor, a un elemento hermano o al marco de **página** / **sangre** para bandas de borde a borde.
+    - Un grupo **Letra capitular** (líneas, fuente, peso, cuerpo, color y separación) y una sangría de párrafo.
+    - Las demás ranuras de diseño ofrecen los mismos controles de texto.
+- **Partes**
+  - *Partes* (`parts`):
+    - **Portadilla de parte** (`parts.page`): si la desactivas no se abre ninguna página, y el número, el título y los colores de la parte se aplican sin más a partir del contenido siguiente. También oculta los ajustes de abajo.
+    - la paridad de la página en la que se abre un `:::part`, y un salto opcional tras la parte con su propia paridad;
+    - los márgenes de la portadilla. Heredan los de la página, con las mismas etiquetas interior/exterior en modo simétrico.
+    - una ranura de **diseño de apertura** dispuesta sobre la caja de corte de la página. Su selector de marcadores añade el juego de títulos: el título actual y su número en forma decimal, romana o alfabética.
+    - un **estilo del cuerpo** para los bloques dentro de la parte. Hereda el texto base y los colores de las listas, e incluye las sustituciones de listas (formato de numeración y desplazamientos, márgenes, sangría francesa y los campos de las listas de tareas).
+- **Exportación**
+  - *PDF*.
+  - *Lector web (HTML)*: los ajustes de `htmlViewer`.
+- **Avanzado**
+  - *Ayudas en pantalla* (`debug`): la **rejilla base** (`page.baselineGrid`), que vive aquí y no en *Página*, y el resto de superposiciones para revisar la maquetación.
+  - *Avisos*: qué problemas señala el panel Revisión, y sus umbrales.
 
-#### Panel de avisos
+**Encontrar un ajuste.** La barra bajo la cabecera funciona en todos los grupos:
 
-Diagnósticos en vivo recalculados a partir del markdown, la configuración, los recursos y la última composición — el mismo recuento que muestra la insignia de la barra de actividad. Tipos representativos:
+- **Buscar ajustes…** filtra todos los campos de todas las secciones por su etiqueta, su texto de ayuda y los nombres de sus opciones. No distingue acentos y busca por principio de palabra: *marg* encuentra *Margen superior* y *Top margin*, y *h3* abre *Títulos › H3*. Los resultados se agrupan por grupo de ajustes. Las secciones con coincidencias se abren solas, las filas y secciones sin coincidencias se ocultan y los aciertos se resaltan. Escape borra la búsqueda y después sale del campo.
+- **Cambiados** muestra solo los campos cuyo valor difiere del predeterminado.
 
-- **Fuentes** — Familia tipográfica ausente; variantes de peso/estilo ausentes o duplicadas en una familia personalizada
-- **Tipografía** — Líneas flojas (espaciado entre palabras estirado más allá del umbral configurado); saltos en la jerarquía de encabezados (p. ej. H1 → H3); encabezados consecutivos sin texto de cuerpo entre ellos
-- **Matemáticas** — Fórmulas `$…$` / `$$…$$` inválidas o sin cerrar
-- **Directivas y contenedores** — Nombres de directiva desconocidos (se acepta cualquier nombre que conozca el parser — `pagebreak`, `numbering`, `callout`, `paragraphs`, `part`); atributos de numeración o paridad inválidos; una valla de contenedor `:::` sin cerrar al final del documento (el clic enfoca su línea de apertura); un `:::paragraphs{style="…"}` cuyo id de estilo no está configurado; un `:::callout{type="…"}` cuyo tipo no figura entre los estilos de recuadro configurados; un `:chip[…]{style="…"}` cuyo estilo no está configurado
-- **Chips** — *Los chips tocan la línea siguiente*: un estilo de chip cuya caja es más alta que el interlineado (el exceso en puntos), de modo que los chips de líneas seguidas se tocan
-- **Encabezados y pies** — Nombres de marcador fuera de la lista permitida del motor (se aceptan `{attr.…}` y los marcadores de parte); marcadores cuyos metadatos del documento faltan
-- **Diseño** — Anclajes cíclicos o colgantes entre elementos de diseño; elementos de texto cuyo desbordamiento por recorte siempre trunca
-- **Recursos** — Id de recurso desconocido en un `::resource` / `:ref`; ids de recurso duplicados; referencias colgantes a tipos de recurso; mapas de bits renderizados bastante más grandes que su tamaño en píxeles; almacenamiento no disponible (falta IndexedDB)
+**Texto de ayuda.** Cada campo tiene una explicación breve. Los lectores de pantalla la oyen como descripción del campo, y en pantalla queda oculta hasta que la abres con el botón **?** de la fila (*¿Qué es «…»?*). El interruptor **Mostrar todas las explicaciones** de la cabecera las abre todas a la vez, y la elección se recuerda.
 
-Cada entrada muestra un icono, un título, un detalle de una línea y — cuando procede — el capítulo y la línea de origen (*Cap. 2 · Línea 12* en un libro con varios capítulos); hacer clic en una entrada con ubicación de origen cambia a ese capítulo y enfoca el editor en ese punto. Un tipo propio de los libros, *Metadatos ignorados*, señala un capítulo distinto del primero que empieza con un bloque de metadatos (solo los metadatos del primer capítulo son los del libro).
+**Valores cambiados.** El panel sigue un **modelo de sustituciones** coherente:
+
+- Las cabeceras de sección llevan una insignia con el número de campos cambiados que contienen, contando también los grupos anidados.
+- La cabecera de una sección muestra un botón de restablecer (que pide confirmación) solo mientras contiene cambios.
+- Un campo cambiado tiene un punto junto a su etiqueta (que se lee como *modificado*) y un pequeño botón de restablecer propio.
+- Solo se guarda o exporta el subárbol cambiado. Los valores por defecto se eliminan, así que un Sandbox intacto almacena una configuración vacía.
+- Restablecer *Página* no toca la rejilla base, ya que la rejilla se edita en *Avanzado*.
+
+**Los controles:**
+
+- Las elecciones son desplegables cuyas opciones pueden llevar una descripción de una línea, o botones segmentados cuando hay pocas.
+- Los ajustes de sí/no son interruptores.
+- Los números tienen botones − / +. Las flechas cambian el valor paso a paso, diez veces más con Mayús y una décima parte con Alt.
+- Las longitudes tienen un selector de unidad que convierte el valor al cambiar de unidad (cm, mm, in, pt, px, em, rem).
+- Un color es un único botón que muestra la muestra y el valor.
+- El selector de fuentes se puede recorrer con las flechas.
+
+Los controles dependen del contexto. El ancho del medianil solo aparece en disposiciones de varias columnas, los ajustes de separación silábica solo aparecen cuando el texto está justificado, y el porcentaje de la columna lateral solo aparece en la disposición de columna y media. Los cambios se ven de inmediato en la vista previa del viewport. Para una referencia completa de todas las opciones de configuración y sus valores por defecto, consulta la página de [Configuración](/es/docs/configuration).
+
+La cabecera del panel ofrece además **Restablecer** (pide confirmación; solo aparece cuando el diseño difiere del del libro de ejemplo abierto, y restaura el diseño de ese ejemplo, fuentes incluidas), **Exportar** e **Importar**. Consulta [Exportar e importar](#exportar-e-importar).
+
+#### Panel de revisión
+
+Diagnósticos en vivo, recalculados a partir del texto, el diseño, las figuras y la última composición. El recuento coincide con la insignia del botón de la barra de actividad. Los avisos se agrupan por tipo, en orden de prioridad: primero lo que rompe la salida, luego el marcado y al final la composición fina, que suele traer muchos avisos pequeños. Cada grupo se puede plegar y muestra su recuento:
+
+- **Fuentes**: una familia tipográfica que falta, o variantes de peso/estilo que faltan o están duplicadas en una familia personalizada
+- **Figuras y tablas**: un id de recurso desconocido en un `::resource` / `:ref`, ids de recurso duplicados, referencias a un tipo de recurso que no existe y mapas de bits renderizados bastante más grandes que su tamaño en píxeles
+- **Texto y marcado**:
+  - saltos en la jerarquía de títulos (por ejemplo H1 → H3), y títulos consecutivos sin texto entre ellos;
+  - fórmulas `$…$` / `$$…$$` inválidas o sin cerrar;
+  - nombres de directiva desconocidos (se acepta cualquier nombre que conozca el parser: `pagebreak`, `columnbreak`, `space`, `numbering`, `toc`, `callout`, `paragraphs`, `part` y `columns`), atributos de numeración o paridad inválidos y un `:::space{lines=N}` fuera de 0–20 líneas;
+  - una valla de contenedor `:::` sin cerrar al final del documento (al hacer clic se enfoca su línea de apertura);
+  - un `:::paragraphs{style="…"}`, `:::callout{type="…"}` o `:chip[…]{style="…"}` cuyo estilo no está configurado;
+  - *Metadatos ignorados*: un capítulo distinto del primero que empieza con un bloque de metadatos (solo los metadatos del primer capítulo son los del libro).
+- **Diseño**:
+  - nombres de marcador de cabeceras y pies fuera de la lista permitida del motor (se aceptan `{attr.…}` y los marcadores de parte), y marcadores cuyos metadatos del documento faltan;
+  - anclajes cíclicos entre elementos de diseño, o anclajes a un elemento que no existe;
+  - elementos de texto cuyo desbordamiento por recorte siempre trunca.
+- **Composición**:
+  - líneas abiertas (espaciado entre palabras estirado más allá del umbral configurado);
+  - recuadros que desbordan su columna;
+  - *Los chips tocan la línea siguiente*: un estilo de chip cuya caja es más alta que el interlineado (el exceso se indica en puntos), de modo que los chips de líneas seguidas se tocan;
+  - cascadas de paridad.
+- **Navegador**: almacenamiento no disponible (falta IndexedDB)
+
+Cada entrada muestra un icono, un título, un detalle de una línea y, cuando procede, el capítulo y la línea de origen (*Cap. 2 · Línea 12* en un libro de varios capítulos). Al hacer clic en una entrada con ubicación de origen se cambia a ese capítulo y se enfoca el editor en ese punto. Cuando no hay nada que señalar, el panel muestra **Todo en orden**. Qué comprobaciones se ejecutan se decide en **Diseño → Avanzado → Avisos**.
 
 ### Viewport principal
 
@@ -229,7 +384,7 @@ Una barra de herramientas en la parte superior del viewport ofrece:
 - **Controles de escala de fuente** — Reduce o aumenta el texto del cuerpo conservando cada medida relativa de la configuración.
 - **Modos de columna** — Columna única (una sola columna alta y desplazable verticalmente) o multi-columna (el número de columnas cuyo ancho más se acerca a la medida configurada, con scroll-snap horizontal entre páginas). Un documento a dos columnas conserva sus páginas de dos columnas, pero el visor puede mostrar un número impar de columnas — tres en lugar de dos estiradas o cuatro apretadas — cuando ese es el ajuste más cercano; la última pertenece entonces a la página siguiente, visible a medias.
 
-La geometría de las columnas está controlada por la sección **Visor HTML** del panel de configuración: `maxCharsPerLine` define la medida objetivo en caracteres de la fuente del cuerpo, `columnGap` el espacio horizontal entre columnas en modo multi y `optimalLineBreaking` alterna el algoritmo Knuth–Plass dentro del visor. Consulta la [referencia de configuración del Visor HTML](/es/docs/configuration#visor-html) y el [ejemplo de integración completo](/es/docs/configuration#integrar-el-visor-html) — el mismo patrón que usa internamente el sandbox.
+La geometría de las columnas está controlada por la sección **Lector web (HTML)** del panel Diseño: `maxCharsPerLine` define la medida objetivo en caracteres de la fuente del cuerpo, `columnGap` el espacio horizontal entre columnas en modo multi y `optimalLineBreaking` alterna el algoritmo Knuth–Plass dentro del visor. Consulta la [referencia de configuración del Visor HTML](/es/docs/configuration#visor-html) y el [ejemplo de integración completo](/es/docs/configuration#integrar-el-visor-html) — el mismo patrón que usa internamente el sandbox.
 
 #### Pestaña PDF
 
@@ -246,12 +401,12 @@ Internamente el sandbox usa un helper `createPdfFontProvider()` que descarga los
 
 ## Libros y capítulos
 
-Un proyecto del sandbox es un **libro**, igual que un archivo de libro de InDesign agrupa un documento por capítulo: la configuración, las fuentes personalizadas y el conjunto de recursos son comunes a todo el libro, y cada **capítulo** es su propio documento markdown. Las obras largas — un manual de quinientas páginas — se editan capítulo a capítulo, mientras que la numeración, las referencias cruzadas y la exportación siguen viendo un solo documento.
+Todo lo que abres en el Sandbox es un **libro**, igual que un archivo de libro de InDesign agrupa un documento por capítulo: la configuración, las fuentes personalizadas y el conjunto de recursos son comunes a todo el libro, y cada **capítulo** es su propio documento markdown. Las obras largas — un manual de quinientas páginas — se editan capítulo a capítulo, mientras que la numeración, las referencias cruzadas y la exportación siguen viendo un solo documento.
 
-- **La estructura** vive dentro de la tarjeta del proyecto (o preset) activo en el panel de proyectos y en el selector de capítulos del panel de markdown: añadir, renombrar (doble clic en una fila), reordenar, dividir un capítulo en uno por título de nivel 1, fusionar un capítulo con el anterior, eliminar. Cada capítulo conserva su propio historial de deshacer y su cursor.
+- **La estructura** vive dentro de la tarjeta del libro abierto en el panel Libros y en el selector de capítulos del panel Texto: añadir, renombrar (doble clic en una fila), reordenar, dividir un capítulo en uno por título de nivel 1, fusionar un capítulo con el anterior, eliminar. Cada capítulo conserva su propio historial de deshacer y su cursor.
 - **Capítulo a capítulo.** Por defecto las vistas previas maquetan el **capítulo activo**, continuando a los capítulos anteriores: su primer número de página sigue a la última página del capítulo previo, los títulos de nivel 1 siguen contando (el capítulo 4 se numera 4 y sus figuras 4.1, 4.2, …), los folios explicativos `{chapterNumber}` y `{chapterTitle}` acompañan, se respeta la paridad recto/verso (un inicio de capítulo añade una página en blanco exactamente igual que en mitad del libro) y una `:ref` a una figura mencionada por primera vez en el capítulo 1 conserva ese número. El número de páginas de los capítulos anteriores procede de la maquetación que mostró cada uno por última vez; los capítulos nunca visitados (o editados desde entonces) se maquetan en segundo plano, uno tras otro, y la lista de capítulos muestra *páginas pendientes* hasta que llegan. Los rangos de páginas son exactos para los capítulos que abren en página nueva (lo habitual); un capítulo cuyo texto habría continuado en la página anterior se coloca al principio de su propia página.
 - **Libro completo.** El canvas, la vista HTML y la pestaña PDF pueden mostrar el libro entero como un documento continuo: elige **Libro completo** en el selector a la izquierda de la barra de pestañas (libros con más de un capítulo). El canvas maqueta entonces todos los capítulos en orden, cada uno a continuación de las páginas en que acabaron los anteriores, y muestra los documentos cosidos uno tras otro: una edición vuelve a maquetar solo su capítulo, y los siguientes únicamente si su primera página se movió; la lista de capítulos, las partes `chapter=` y `page=` del permalink y la sincronización con el editor siguen al capítulo de cada página. La elección se guarda con el libro (una novela corta se lee como un solo documento; un libro de texto, capítulo a capítulo), y un preset puede abrirse así mediante `view.canvasScope` en su manifiesto. La vista HTML comparte la elección del canvas y maqueta el libro entero como un solo documento desde su primera página, con las filas del índice y el fragmento siguiendo al capítulo de cada página; la pestaña PDF conserva su propio selector.
-- **Metadatos.** Los metadatos (frontmatter) del primer capítulo son los del libro (título, autor, …). Un bloque de metadatos al principio de cualquier otro capítulo se ignora, y el panel de avisos lo indica.
+- **Metadatos.** Los metadatos (frontmatter) del primer capítulo son los del libro (título, autor, …). Un bloque de metadatos al principio de cualquier otro capítulo se ignora, y el panel Revisión lo indica.
 - **Aperturas de capítulo.** No se fuerza ningún salto de página entre capítulos: un capítulo cuyo primer bloque es un título de nivel 1 abre página nueva gracias al propio ajuste *salto previo* del título, exactamente igual que un capítulo que empieza a mitad de documento.
 - **Sincronización.** Hacer clic en un párrafo de cualquier capítulo en la vista Canvas o HTML cambia el editor a ese capítulo y coloca el cursor; el cursor del editor se resalta en las vistas previas allí donde el capítulo quede dentro del libro. Los avisos llevan su capítulo.
 - **Los documentos existentes** se abren como un libro de un solo capítulo; nada cambia hasta que se añade un segundo capítulo.
@@ -261,23 +416,23 @@ Un proyecto del sandbox es un **libro**, igual que un archivo de libro de InDesi
 El Sandbox guarda automáticamente tu trabajo en el navegador:
 
 - **Libro y configuración** — Los capítulos, el capítulo activo y el alcance del canvas se guardan automáticamente en `localStorage` bajo `postext-sandbox-book` (un documento único guardado por una versión anterior se lee de `postext-sandbox-markdown` como libro de un capítulo y se migra en el primer guardado); la configuración se guarda tras 1 segundo de inactividad con los valores por defecto eliminados para que solo se almacenen tus ajustes personalizados
-- **Estado de la interfaz** — El panel y la pestaña de viewport activos, el ancho de la barra lateral, el estado abierto/cerrado de las secciones de configuración y su filtro de categoría, los presets ocultos, los modos de zoom/ajuste/vista del canvas, la escala de fuente y el modo de columnas del HTML, y el estado de anclaje de las barras de herramientas se guardan en `localStorage`
-- **Proyecto activo** — El id del proyecto local activo se guarda en `localStorage` bajo `postext-sandbox-project`; los proyectos en sí (capítulos, configuración y registros de recursos; registros `version: 2`, migrando al leer los registros de documento único de versiones anteriores) viven en el almacén `projects` de la base de datos IndexedDB del sandbox, y sus contenidos binarios comparten los almacenes de blobs y fuentes con el documento de trabajo. Los contenidos se recolectan cuando ni el documento de trabajo ni ningún proyecto los referencian
-- **Preset activo** — El id del último preset cargado se guarda en `localStorage` bajo `postext-sandbox-preset`, de modo que los botones Restablecer de los paneles siguen restaurando ese preset entre sesiones (un preset que ya no se sirve aparece como no disponible). Lo que ese preset aplicó — la huella del paquete más los hashes del markdown, la configuración y el conjunto de recursos — se guarda bajo `postext-sandbox-preset-applied`, que es como la siguiente visita distingue un documento intacto de uno editado
-- **Recursos y fuentes** — Los registros de recursos, sus blobs binarios (mapas de bits y SVG) y los archivos de fuentes personalizadas persisten en **IndexedDB**; cuando IndexedDB no está disponible (p. ej. algunos modos de navegación privada), aparece un aviso de *almacenamiento no disponible* en el panel de avisos
+- **Estado de la interfaz** — El panel y la pestaña de viewport activos, el ancho de la barra lateral, el grupo abierto del panel Diseño (`postext-sandbox-settings-group`), su interruptor *Mostrar todas las explicaciones* (`postext-sandbox-settings-help`) y el estado abierto/cerrado de las secciones, los libros de ejemplo ocultos, los modos de zoom/ajuste/vista del canvas, la escala de fuente y el modo de columnas del HTML, y el estado de anclaje de las barras de herramientas se guardan en `localStorage`
+- **Libro abierto** — El id del libro propio abierto (un *proyecto*) se guarda en `localStorage` bajo `postext-sandbox-project`; los proyectos en sí (capítulos, configuración y registros de recursos; registros `version: 2`, migrando al leer los registros de documento único de versiones anteriores) viven en el almacén `projects` de la base de datos IndexedDB del sandbox, y sus contenidos binarios comparten los almacenes de blobs y fuentes con el documento de trabajo. Los contenidos se recolectan cuando ni el documento de trabajo ni ningún proyecto los referencian
+- **Libro de ejemplo abierto** — El id del último preset cargado se guarda en `localStorage` bajo `postext-sandbox-preset`, de modo que los botones Restablecer de los paneles siguen restaurando ese preset entre sesiones (un preset que ya no se sirve aparece como no disponible). Lo que ese preset aplicó — la huella del paquete más los hashes del markdown, la configuración y el conjunto de recursos — se guarda bajo `postext-sandbox-preset-applied`, que es como la siguiente visita distingue un documento intacto de uno editado
+- **Recursos y fuentes** — Los registros de recursos, sus blobs binarios (mapas de bits y SVG) y los archivos de fuentes personalizadas persisten en **IndexedDB**; cuando IndexedDB no está disponible (p. ej. algunos modos de navegación privada), aparece un aviso de *almacenamiento no disponible* en el panel Revisión (en *Navegador*)
 - **Permalink** — El fragmento de la URL nombra lo que hay en pantalla, de modo que una recarga, un marcador o un enlace pasado a otra persona aterriza en la misma página del mismo libro en el mismo visor: `#preset=bioquimica-feduchi&lang=es&view=canvas&chapter=1&page=7` abre el preset de Bioquímica en español en la pestaña Canvas, en el capítulo 1, página 7 (el número impreso en la página). Un proyecto local se nombra como `project=ID` — su id de almacenamiento, así que solo el navegador que guarda el proyecto puede seguir ese enlace. El sandbox mantiene el fragmento al día al cambiar de libro, pestaña o capítulo y al desplazarte. Una parte omitida significa lo que haya (sin página: la primera del capítulo; sin libro: el último abierto), y un libro que el navegador no puede abrir se pasa por alto. Pegar un enlace en la barra de direcciones de un sandbox abierto lo abre en el sitio. El idioma de la interfaz sigue en la ruta (`/en/sandbox`, `/es/sandbox`); `lang` es el idioma del contenido de un paquete bilingüe
 
 El almacenamiento se **comparte entre los idiomas de la interfaz**. Un documento por defecto intacto cambia al markdown por defecto del idioma actual y vuelve a sembrar los recursos de ejemplo cuando cambia el idioma — así, abrir el sandbox en español muestra ejemplos en español. Cualquier edición del usuario desactiva este comportamiento. Todas las vistas previas derivan además la configuración regional de separación silábica del idioma de la interfaz cuando no se ha establecido ninguna.
 
 ### Exportar e importar
 
-Un libro completo viaja como **archivo `.postext`**: un zip con exactamente la estructura de un directorio de paquete de preset — `preset.json`, `chapters/*.md`, `resources/*` y `fonts/*` (consulta [Formato de paquete de preset](#formato-de-paquete-de-preset)). El archivo lleva además la **paginación** del libro como `layouts.json` — el número de páginas y la numeración de cada capítulo, marcados con la versión del motor, la configuración y los recursos con los que se calculó —, de modo que un libro importado se abre paginado y solo se vuelve a componer lo que esas marcas ya no avalan. El documento activo exporta la paginación que tiene en memoria; un proyecto o un preset exportado desde su fila lleva la registrada la última vez que fue el documento de trabajo. La portada se escribe como el `thumbnail` del manifiesto, así que sobrevive al viaje de ida y vuelta. El menú **Nuevo** del **panel de proyectos** importa un archivo como proyecto nuevo; cada fila de proyecto y de preset tiene su propio Exportar, y la del proyecto activo exporta el documento de trabajo. La importación acepta los archivos en la raíz del zip o bajo una única carpeta de primer nivel (como al comprimir la propia carpeta; las entradas `__MACOSX` y los archivos ocultos se ignoran). Las fuentes se escriben como archivos separados, nunca dentro de `config.customFonts`; las caras `.woff` se omiten con un aviso en ambos sentidos, igual que los recursos cuyos bytes faltan. Descomprime un archivo exportado en `<raíz-de-presets>/<dir>/` y añade una entrada en `index.json` para servirlo como preset. Los archivos escritos por versiones anteriores (un manifiesto versión 1 con un único `document.md`) se importan como libro de un capítulo.
+Un libro completo viaja como **archivo `.postext`**: un zip con exactamente la estructura de un directorio de paquete de preset — `preset.json`, `chapters/*.md`, `resources/*` y `fonts/*` (consulta [Formato de paquete de preset](#formato-de-paquete-de-preset)). El archivo lleva además la **paginación** del libro como `layouts.json` — el número de páginas y la numeración de cada capítulo, marcados con la versión del motor, la configuración y los recursos con los que se calculó —, de modo que un libro importado se abre paginado y solo se vuelve a componer lo que esas marcas ya no avalan. El documento activo exporta la paginación que tiene en memoria; un proyecto o un preset exportado desde su fila lleva la registrada la última vez que fue el documento de trabajo. La portada se escribe como el `thumbnail` del manifiesto, así que sobrevive al viaje de ida y vuelta. El menú **Nuevo** del **panel Libros** (**Abrir un archivo .postext…**) importa un archivo como libro nuevo; el menú ⋯ de cada fila tiene su propio **Descargar (.postext)**, y el del libro abierto exporta el documento de trabajo. La importación acepta los archivos en la raíz del zip o bajo una única carpeta de primer nivel (como al comprimir la propia carpeta; las entradas `__MACOSX` y los archivos ocultos se ignoran). Las fuentes se escriben como archivos separados, nunca dentro de `config.customFonts`; las caras `.woff` se omiten con un aviso en ambos sentidos, igual que los recursos cuyos bytes faltan. Descomprime un archivo exportado en `<raíz-de-presets>/<dir>/` y añade una entrada en `index.json` para servirlo como preset. Los archivos escritos por versiones anteriores (un manifiesto versión 1 con un único `document.md`) se importan como libro de un capítulo.
 
 El paquete `postext` lee y escribe estos mismos archivos (`openBundle`, `createBundle`, `buildBundle`; consulta [Paquetes](/es/docs/configuration#paquetes-archivos-postext)). Un libro exportado aquí se abre en tu propio programa, y un libro que escribe tu programa se abre aquí. Eso convierte al Sandbox en el lugar donde revisar y ajustar lo que compone un programa: expórtalo desde el programa, impórtalo aquí, corrígelo con la vista previa en vivo, vuelve a exportarlo y cárgalo de nuevo en el programa. El [skill para agentes](/es/docs/skill) también entrega sus adaptaciones como archivos `.postext`.
 
-El markdown y la configuración también se exportan por separado desde las cabeceras de sus paneles.
+El texto y el diseño también se exportan por separado desde las cabeceras de los paneles Texto y Diseño.
 
-La cabecera del **panel de configuración** descarga `postext-config.json` con los valores por defecto eliminados:
+La cabecera del **panel Diseño** descarga `postext-config.json` con los valores por defecto eliminados:
 
 ```json
 {
@@ -287,7 +442,7 @@ La cabecera del **panel de configuración** descarga `postext-config.json` con l
 }
 ```
 
-La cabecera del **panel de markdown** descarga el capítulo activo como un archivo `.md` y su botón **Importar** sustituye el capítulo activo por el contenido de un archivo `.md`. El botón **Importar** de Configuración abre un selector de archivos `.json` validados contra el `type` y la `version` esperados; los archivos inválidos se ignoran silenciosamente. El envoltorio `postext-markdown.json` y el formato combinado `postext-sandbox.json` de versiones anteriores ya no existen.
+La cabecera del **panel Texto** descarga el capítulo activo como un archivo `.md` y su botón **Importar** sustituye el capítulo activo por el contenido de un archivo `.md`. El botón **Importar** del panel Diseño abre un selector de archivos `.json` validados contra el `type` y la `version` esperados; los archivos inválidos se ignoran silenciosamente. El envoltorio `postext-markdown.json` y el formato combinado `postext-sandbox.json` de versiones anteriores ya no existen.
 
 ## Uso standalone
 
@@ -391,15 +546,20 @@ function App() {
 El paquete usa clases utilitarias de Tailwind CSS que hacen referencia a variables CSS personalizadas. La aplicación anfitriona debe proporcionar estas variables:
 
 - `--background`, `--foreground` — Colores base
-- `--surface` — Color para superficies elevadas
-- `--gilt` — Color de acento (dorado)
+- `--surface` — Color para superficies elevadas; `--surface-2` — Filas bajo el puntero y opciones resaltadas (por defecto, `--background`)
 - `--slate` — Color para texto atenuado
-- `--rule` — Color de bordes/divisores
-- `--gilt-hover` — Color de acento para los anillos de foco
+- `--rule` — Color de bordes/divisores; `--rule-strong` — Filete más marcado para los controles bajo el puntero (por defecto, `--slate`)
+- `--brand` — Color de acento: la marca del panel activo, los anillos de foco, los interruptores y las opciones seleccionadas
+- `--brand-hover` — Color de acento al pasar el puntero
+- `--brand-soft` — Relleno de acento translúcido detrás de las opciones seleccionadas (por defecto, `--surface`)
+- `--brand-contrast` — Botón de un interruptor activado (por defecto, `--background`)
 - `--destructive` — Color de las acciones destructivas y los errores
 - `--accent-blue` — Color de enlace/acento
 - `--font-sans` — Familia tipográfica de la interfaz
 - `--font-mono` — Familia monoespaciada (para el editor de código)
+- `--font-display`, `--brand-blue`, `--brand-gilt` — Tipo de letra y colores opcionales de la marca del logo por defecto en la barra de actividad (por defecto, Georgia, `#2b4acb` y `#d8a21a`)
+
+El sitio web asigna a `--brand` el dorado en el tema oscuro y el azul en el claro. Las versiones anteriores leían `--gilt` y `--gilt-hover`; el sandbox ya no las usa.
 
 Los popovers, menús y tooltips se renderizan en un portal sobre `document.body`, así que define las variables en `:root` (o `body`), no solo en el elemento que envuelve el sandbox. La compilación de Tailwind de la aplicación anfitriona debe escanear el código fuente del paquete (`@source "…/postext-sandbox/src/**/*.tsx"` en Tailwind 4) para que se generen las clases utilitarias que usa.
 
@@ -499,21 +659,20 @@ Apéndice. Una fuente de presets es un directorio (servido por HTTP) cuya raíz 
 
 Notas:
 
-- El `id` de `preset.json` debe coincidir con la entrada de `index.json`; `description`, `locale` y `default` del manifiesto prevalecen sobre los valores del índice una vez cargado el preset, igual que los campos de escaparate `locales`, `license`, `credits` y `tags`. El selector muestra como etiquetas cada idioma de `locales` (o `locale`) y la licencia, los créditos bajo la descripción, y `thumbnail` — una pequeña imagen de página relativa al directorio del preset — en lugar de la columna de la marca de verificación; un proyecto duplicado del preset la conserva como portada. Los presets públicos de escaparate de `apps/web/public/presets/` usan todos los campos y llevan un `CREDITS.md` con la licencia y la procedencia de cada texto e imagen.
+- El `id` de `preset.json` debe coincidir con la entrada de `index.json`; `description`, `locale` y `default` del manifiesto prevalecen sobre los valores del índice una vez cargado el preset, igual que los campos de escaparate `locales`, `license`, `credits` y `tags`. El selector muestra como etiquetas cada idioma de `locales` (o `locale`) y la licencia, los créditos bajo la descripción, y `thumbnail` — una pequeña imagen de página relativa al directorio del preset — en lugar de la columna de la marca de verificación; un libro copiado del preset (**Hacer una copia propia**) la conserva como portada. Los presets públicos de escaparate de `apps/web/public/presets/` usan todos los campos y llevan un `CREDITS.md` con la licencia y la procedencia de cada texto e imagen.
 - `view` (opcional) indica cómo abre el sandbox el paquete: `{ "canvasScope": "book" }` maqueta el libro entero en el canvas (consulta [Libros y capítulos](#libros-y-capítulos)); si falta, el canvas muestra un capítulo cada vez. Los libros exportados lo llevan cuando está activo.
 - `localized` (opcional) contiene las variantes por idioma de un paquete bilingüe: `{ "es": { "config": { … }, "resources": [ { "id": "fig-1", "caption": "…", "note": "…", "altText": "…" } ] } }`. Las variantes del idioma del que se tomaron los capítulos se aplican sobre el `config` compartido (las claves de primer nivel se sustituyen enteras — típicamente `resourceTypes` con los prefijos de pie traducidos) y sobre `resources` (pie, nota, texto alternativo y celdas de tabla, fusionados por id); un idioma sin entrada conserva la redacción compartida.
 - `chapters` (versión 2) es una lista de `{ title, file }` en el orden del libro, o un mapa idioma → lista; `markdown` (versión 1) es un nombre de archivo o un mapa idioma → archivo. En ambos casos el sandbox elige la entrada que coincide con el idioma de la interfaz (etiqueta exacta, luego idioma base, luego el `locale` del propio preset y, por último, la primera entrada). Un `title` vacío se deriva del primer título de nivel 1 del archivo. El sandbox siempre escribe la versión 2.
 - `width` / `height` son opcionales para los recursos `svg` y `bitmap` — si faltan, se leen del archivo al cargar.
-- `pdfFile` (solo recursos `svg`) apunta a un PDF de una página con la misma figura en vectores — normalmente la exportación original de Illustrator o PDF de la que se derivó el SVG. La exportación a PDF incrusta esa página tal cual (fuentes, degradados y espacios de color intactos) en lugar del SVG; las vistas previas en canvas y HTML siguen usando el SVG. Se ignora en modo de una tinta, cuyo recoloreado solo opera sobre el código SVG, y si el archivo falta solo se pierde el original, nunca la figura. Editar el código del SVG en el detalle del recurso quita el original (se hizo para el código tal como estaba), de modo que la exportación a PDF sigue el SVG editado a partir de ahí; recarga el preset para recuperarlo. Los SVG sin original se emiten como trazados vectoriales cuando se mantienen dentro del subconjunto del backend PDF (formas básicas, trazados, grupos, `use`, recortes, rellenos y trazos sólidos, opacidad, y textos `text` / `tspan` compuestos con las fuentes que el documento puede cargar — primero las fuentes personalizadas, después las familias de Google) y se rasterizan a 600 ppp en caso contrario.
+- `pdfFile` (solo recursos `svg`) apunta a un PDF de una página con la misma figura en vectores — normalmente la exportación original de Illustrator o PDF de la que se derivó el SVG. La exportación a PDF incrusta esa página tal cual (fuentes, degradados y espacios de color intactos) en lugar del SVG; las vistas previas en canvas y HTML siguen usando el SVG. Se ignora en modo de una tinta, cuyo recoloreado solo opera sobre el código SVG, y si el archivo falta solo se pierde el original, nunca la figura. Editar el código del SVG en el detalle del recurso quita el original (se hizo para el código tal como estaba), de modo que la exportación a PDF sigue el SVG editado a partir de ahí; restaura el original (**Restaurar el original…** en el panel Libros) para recuperarlo. Los SVG sin original se emiten como trazados vectoriales cuando se mantienen dentro del subconjunto del backend PDF (formas básicas, trazados, grupos, `use`, recortes, rellenos y trazos sólidos, opacidad, y textos `text` / `tspan` compuestos con las fuentes que el documento puede cargar — primero las fuentes personalizadas, después las familias de Google) y se rasterizan a 600 ppp en caso contrario.
 - El `text` de un SVG se renderiza con las fuentes personalizadas del sandbox en todas partes: las vistas previas incrustan los `@font-face` correspondientes en el SVG antes de decodificarlo (un `<img>` no ve las fuentes de la página) y la exportación a PDF compone los textos como texto real y seleccionable con las mismas fuentes incrustadas. Escribe la familia en `font-family` exactamente como aparece en Fuentes.
 - El editor de código del SVG solo permite escribir dentro de los nodos de texto (resaltados) para que una figura no se rompa por accidente; el botón de candado de su cabecera abre todo el código — coordenadas, colores, estructura — y al volver a bloquear se vuelven a detectar los nodos de texto.
 - `table.model` es un `TableModel` de Postext: `rows` es un array de celdas por filas (`content` y, opcionalmente, `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` el número de filas de cabecera iniciales y `columnWidths` un array opcional de pesos relativos de columna. `table.styleId` nombra, opcionalmente, uno de los `tableStyles` de la configuración.
 - Los archivos de fuente se guardan en IndexedDB con ids derivados del id del preset y la ruta del archivo, y las familias se añaden a `config.customFonts` al aplicar el preset; un `index.json` ausente o mal formado no produce ningún preset en lugar de un error.
-- `<directorio-del-preset>/fingerprint.json` es opcional y, en la ruta de desarrollo, **virtual**: cuando no existe tal archivo, `GET` responde `{ "fingerprint": "<sha1 hex>", "files": <n> }` calculado a partir de los metadatos de los archivos del directorio (ruta relativa, fecha de modificación y tamaño de cada archivo hasta cuatro niveles de profundidad, omitiendo los archivos ocultos y `node_modules`), nunca a partir de su contenido, con `Cache-Control: no-store`. El sandbox lo consulta para seguir las ediciones del paquete (consulta [Panel de proyectos](#panel-de-proyectos)). Un servidor estático puede servir un `fingerprint.json` real con la misma forma, o ninguno, en cuyo caso sus presets no se siguen.
+- `<directorio-del-preset>/fingerprint.json` es opcional y, en la ruta de desarrollo, **virtual**: cuando no existe tal archivo, `GET` responde `{ "fingerprint": "<sha1 hex>", "files": <n> }` calculado a partir de los metadatos de los archivos del directorio (ruta relativa, fecha de modificación y tamaño de cada archivo hasta cuatro niveles de profundidad, omitiendo los archivos ocultos y `node_modules`), nunca a partir de su contenido, con `Cache-Control: no-store`. El sandbox lo consulta para seguir las ediciones del paquete (consulta [Panel de libros](#panel-de-libros)). Un servidor estático puede servir un `fingerprint.json` real con la misma forma, o ninguno, en cuyo caso sus presets no se siguen.
 
 ## Roadmap
 
 Las siguientes características están planificadas para versiones futuras:
 
-- **Edición colaborativa** — Compartir sesiones del sandbox mediante URL
-- **Galería pública de presets** — Paquetes públicos listos para escenarios de maquetación habituales (periódico, artículo académico, capítulo de libro) servidos desde el sitio web
+- **Edición colaborativa** — Editar un mismo libro a la vez desde varios navegadores

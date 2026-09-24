@@ -11,7 +11,7 @@ import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMa
 import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, stripInlineFormatting, titleBreakIndices } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 
-export { parseDirectiveAttrs } from './attrs';
+export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 /** `:::name` or `:::name{attrs}` on its own line. Shared by single-line
@@ -21,7 +21,7 @@ const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
-export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'toc']);
+export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc']);
 /** Trailing `{key="value" …}` attribute block on a heading line, e.g.
  *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
  *  braces) and be the last thing on the line; a lone `{}` or a blob that

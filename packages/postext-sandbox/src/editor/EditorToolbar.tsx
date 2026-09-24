@@ -14,6 +14,7 @@ import {
   Undo2,
   Redo2,
   SeparatorHorizontal,
+  UnfoldVertical,
   Hash,
   Tag,
 } from 'lucide-react';
@@ -171,6 +172,11 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
       icon: <SeparatorHorizontal size={16} aria-hidden="true" />,
       label: labels.pagebreakDirective,
       action: () => { const v = getView(); if (v) insertBlockLine(v, ':::pagebreak'); },
+    },
+    {
+      icon: <UnfoldVertical size={16} aria-hidden="true" />,
+      label: labels.spaceDirective,
+      action: () => { const v = getView(); if (v) insertBlockLine(v, ':::space'); },
     },
     {
       icon: <Hash size={16} aria-hidden="true" />,

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useId, useMemo, useState, type ReactNode } from 'react';
+import { forwardRef, useContext, useId, useMemo, useState, type ReactNode } from 'react';
 import { CircleHelp } from 'lucide-react';
 import { cn } from '../ui/cn';
 import { HighlightedText } from '../ui/highlight';
@@ -8,7 +8,7 @@ import { Tooltip } from '../ui/tooltip';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { useFieldMatch } from '../sidebar/search/MatchScope';
 import { normalizeText } from '../sidebar/search/normalize';
-import { FieldIdsContext, useHelpMode, type FieldIds } from './fieldContext';
+import { FieldIdsContext, ShowingDefaultsContext, useHelpMode, type FieldIds } from './fieldContext';
 import { ResetButton } from './ResetButton';
 
 export interface FieldRowProps {
@@ -35,7 +35,7 @@ export interface FieldRowProps {
  *  when the value was changed) and an optional help toggle on the left,
  *  reset + control on the right. The control is named by the label and
  *  described by the help text through `FieldIdsContext`. The row takes part
- *  in the settings search (hides itself when filtered out, highlights hits)
+ *  in the settings search (renders nothing when filtered out, highlights hits)
  *  and forwards its ref so popovers can anchor to the whole row. */
 export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function FieldRow(
   { label, tooltip, isDefault, onReset, stacked, hint, extraTerms, htmlFor, className, children },
@@ -47,9 +47,10 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
     () => normalizeText(`${label} ${tooltip ?? ''} ${extra}`),
     [label, tooltip, extra],
   );
-  const { visible, tokens } = useFieldMatch(haystack, isDefault === false);
-  const showReset = !isDefault && !!onReset;
-  const modified = isDefault === false;
+  const showingDefaults = useContext(ShowingDefaultsContext);
+  const modified = isDefault === false && !showingDefaults;
+  const { visible, tokens } = useFieldMatch(haystack, modified);
+  const showReset = !isDefault && !!onReset && !showingDefaults;
 
   const autoId = useId();
   const ids = useMemo<FieldIds>(() => ({
@@ -61,6 +62,11 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
   const helpMode = useHelpMode();
   const [helpToggle, setHelpToggle] = useState<boolean | null>(null);
   const helpOpen = helpToggle ?? helpMode;
+
+  // Filtered out by the settings search: the row still reports itself (the
+  // hook above) but renders nothing, so a search over thousands of rows
+  // does not build their controls just to hide them.
+  if (!visible) return null;
 
   const labelEl = (
     <label
@@ -107,7 +113,6 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
         ref={ref}
         data-field-row=""
         className={cn('mb-1.5 flex flex-col', className)}
-        style={visible ? undefined : { display: 'none' }}
       >
         {/* Side by side when the row is wide enough; label above the
             control in a narrow panel or a deeply nested group. */}

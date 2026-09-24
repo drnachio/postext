@@ -469,7 +469,7 @@ Una parte también puede cambiar el color del libro. Los colores de la configura
 
 ## Saltos de página y numeración
 
-\`:::pagebreak\` empieza una página nueva y puede pedir que sea impar o par, añadiendo una página en blanco si hace falta. \`:::numbering\` cambia la secuencia de folios desde la página siguiente; así, unos preliminares numerados en romanos dan paso a los arábigos en el capítulo uno. Las aperturas de capítulo pueden pedir su propia paridad, y las páginas en blanco se reconocen como tales, de modo que las cabeceras las dejan limpias.
+\`:::pagebreak\` empieza una página nueva y puede pedir que sea impar o par, añadiendo una página en blanco si hace falta. \`:::numbering\` cambia la secuencia de folios desde la página siguiente; así, unos preliminares numerados en romanos dan paso a los arábigos en el capítulo uno. Las aperturas de capítulo pueden pedir su propia paridad, y las páginas en blanco se reconocen como tales, de modo que las cabeceras las dejan limpias. Y donde un pasaje pide un poco más de aire encima, \`:::space\` deja una línea en blanco, o \`:::space{lines=2}\` dos; las líneas en blanco de más en el Markdown no añaden nada, como en cualquier Markdown.
 
 :::part{number="III" title="La práctica" palette="band=#c0452f"}
 7. Escribir para Postext

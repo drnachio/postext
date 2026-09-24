@@ -24,6 +24,7 @@ export type WarningKind =
   | 'numberingInvalidFormat'
   | 'numberingInvalidStartAt'
   | 'pagebreakInvalidParity'
+  | 'spaceInvalidLines'
   | 'headingBreakInvalidParity'
   | 'parityCascade'
   | 'alphaPdfOverflow'
@@ -100,6 +101,7 @@ export type WarningPayload =
   | { kind: 'numberingInvalidFormat'; value: string }
   | { kind: 'numberingInvalidStartAt'; value: string }
   | { kind: 'pagebreakInvalidParity'; value: string }
+  | { kind: 'spaceInvalidLines'; value: string }
   | { kind: 'headingBreakInvalidParity'; level: number; value: string }
   | { kind: 'parityCascade'; runLength: number }
   | { kind: 'alphaPdfOverflow' }

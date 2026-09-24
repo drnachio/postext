@@ -40,6 +40,7 @@
  */
 
 import type { ContentBlock, DirectiveAttrs } from '../parse';
+import { spaceDirectiveLines } from '../parse/attrs';
 import type {
   CalloutPlacement,
   CalloutSpan,
@@ -517,6 +518,12 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     prevWasListItem: boolean;
     first: boolean;
   }
+  /** A `:::space` between children: body lines of the box's own type,
+   *  dropped at the top of the box (or of a `:::columns` group). */
+  const addSpace = (raw: ContentBlock, st: Stack): void => {
+    if (raw.type !== 'directive' || raw.directiveName !== 'space' || st.first) return;
+    st.cursorY += (spaceDirectiveLines(raw.directiveAttrs) ?? 1) * bodyStyle.lineHeightPx;
+  };
   const isFirstRealOf = (k: number): boolean => children.slice(0, k).every((c) => c.type === 'directive' || isMarkerBlock(c));
   const isLastRealOf = (k: number): boolean => children.slice(k + 1).every((c) => c.type === 'directive' || isMarkerBlock(c));
   /** Lay out one child at `width` from `x`, appending it to `into` and
@@ -749,6 +756,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
           continue;
         }
       }
+      addSpace(raw, gst);
       if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
       if (placeChild(raw, k, colW, innerX, gst, into, unitsInto)) stack.push({ blocks: into, unit: unitsInto[0]! });
     }
@@ -869,6 +877,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         k = e;
         continue;
       }
+      addSpace(raw, st);
       if (raw.type === 'directive' || isMarkerBlock(raw)) continue;
       placeChild(raw, k, innerWidth, innerX, st, childBlocks, units);
     }

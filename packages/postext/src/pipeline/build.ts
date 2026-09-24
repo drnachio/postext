@@ -14,7 +14,7 @@ import {
   type ResolvedResourceBlock,
 } from '../vdt';
 import { anchorBox } from '../design/layout';
-import { parseMarkdownMemo } from '../parse';
+import { parseMarkdownMemo, spaceDirectiveLines } from '../parse';
 import {
   buildPageLabels,
   computeHeadingNumbers,
@@ -71,6 +71,7 @@ import {
   computePageMetrics,
   isMarkerBlock,
   nextNonMarkerBlock,
+  spaceLinesAfter,
   prevNonMarkerBlock,
   rollbackTrailingBlocks,
 } from './buildHelpers';
@@ -3006,6 +3007,18 @@ export function buildDocumentPass(
           advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
           flushPendingNumberingAtBoundary();
         }
+      } else if (name === 'space') {
+        // Explicit vertical space (`:::space{lines=N}`), in body lines. It
+        // adds to the margin between its neighbours (the pending margin
+        // still collapses with the next block's top margin) and, like
+        // LaTeX's `\vspace`, is discarded at a break: it vanishes at a
+        // column top, and one that does not fit ends the column instead of
+        // carrying over.
+        const col = currentColumn(doc, cursor);
+        if (col.blocks.length > 0) {
+          const px = (spaceDirectiveLines(attrs) ?? 1) * baselineGrid;
+          col.availableHeight = Math.max(0, col.availableHeight - px);
+        }
       } else if (name === 'numbering') {
         const change: { format?: NumeralStyle; startAt?: number } = {};
         const fmt = attrs.format as NumeralStyle | undefined;
@@ -3620,7 +3633,9 @@ export function buildDocumentPass(
           const minLinesNeeded = resolved.bodyText.avoidWidows
             ? Math.max(1, resolved.bodyText.widowMinLines)
             : 1;
-          const minSpaceAfter = minLinesNeeded * bodyStyle.lineHeightPx;
+          // A `:::space` between the heading and its text needs room too.
+          const minSpaceAfter = minLinesNeeded * bodyStyle.lineHeightPx
+            + spaceLinesAfter(contentBlocks, blockIdx) * baselineGrid;
           if (remainAfterHeading < minSpaceAfter) {
             if (curCol.blocks.length === 0) shortColumnMoves++;
             // Roll back any immediately-preceding heading blocks in this

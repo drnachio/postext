@@ -1,0 +1,168 @@
+#!/usr/bin/env node
+// Builds `src/sidebar/search/sectionSearchIndex.generated.ts`: for every
+// Design-panel section, the `SandboxLabels` keys its component tree reads
+// and where its rows show words that are not labels (colours, units, fonts,
+// resources). The settings search tests a query
+// against these (in the viewer's language) to decide which sections to
+// mount, instead of mounting all of them to let each field row test itself.
+//
+// Static and conservative: a key that is merely mentioned (a button, an
+// aria-label) only costs a false positive — the section mounts and hides.
+// A missing key would hide real results, so `sectionSearchIndex.test.ts`
+// renders every section and checks each row's words are in the index, and
+// fails when this file is stale.
+//
+//   node scripts/build-settings-search-index.mjs          # write the file
+//   node scripts/build-settings-search-index.mjs --check  # exit 1 if stale
+
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const SRC = join(ROOT, 'src');
+export const OUTPUT = join(SRC, 'sidebar/search/sectionSearchIndex.generated.ts');
+
+/** Shared infrastructure: its labels are the same for every section and are
+ *  not part of what a field row matches (reset buttons, pickers' chrome). */
+const EXCLUDED_DIRS = ['controls/', 'ui/', 'context/', 'storage/', 'types/', 'sidebar/search/', 'hooks/', 'worker/'];
+
+/** What makes a section's rows show words that are not labels (units, the
+ *  colour or font shown, resource names) — the search index adds those at
+ *  run time from the config and the resources. */
+const SOURCES = {
+  color: /<ColorPicker\b/,
+  dimension: /<Dimension(?:Input|Control)\b/,
+  font: /<FontPicker\b/,
+  resources: /\buseSandboxResources\(|\bs\.resources\b/,
+};
+
+function labelKeys() {
+  const src = readFileSync(join(SRC, 'types/labels.ts'), 'utf8');
+  return new Set([...src.matchAll(/^\s+([A-Za-z0-9_]+)\??:/gm)].map((m) => m[1]));
+}
+
+function resolveModule(fromFile, spec) {
+  const base = resolve(dirname(fromFile), spec);
+  for (const candidate of [base, `${base}.tsx`, `${base}.ts`, join(base, 'index.tsx'), join(base, 'index.ts')]) {
+    if (existsSync(candidate) && /\.(tsx?)$/.test(candidate)) return candidate;
+  }
+  return null;
+}
+
+function isExcluded(file) {
+  const rel = relative(SRC, file);
+  return EXCLUDED_DIRS.some((d) => rel.startsWith(d)) || /\.test\.tsx?$/.test(rel);
+}
+
+/** Section id → the file its component comes from, read off the imports
+ *  and the `SECTION_COMPONENTS` map of `sections/components.ts`. */
+function sectionEntries() {
+  const modulePath = join(SRC, 'sidebar/sections/components.ts');
+  const src = readFileSync(modulePath, 'utf8');
+  const imports = new Map();
+  for (const m of src.matchAll(/import \{ (\w+) \} from '(\.\/[^']+)';/g)) {
+    imports.set(m[1], resolveModule(modulePath, m[2]));
+  }
+  const map = src.match(/const SECTION_COMPONENTS[^{]*\{([\s\S]*?)\n\};/);
+  if (!map) throw new Error('SECTION_COMPONENTS not found in sections/components.ts');
+  const entries = [];
+  for (const m of map[1].matchAll(/'([\w-]+)': (\w+),/g)) {
+    const file = imports.get(m[2]);
+    if (!file) throw new Error(`No import for ${m[2]} in sections/components.ts`);
+    entries.push([m[1], file]);
+  }
+  return entries;
+}
+
+function scan(entry, keySet) {
+  const seen = new Set();
+  const keys = new Set();
+  const literals = new Set();
+  const sources = new Set();
+  const queue = [entry];
+  while (queue.length > 0) {
+    const file = queue.pop();
+    if (seen.has(file)) continue;
+    seen.add(file);
+    const src = readFileSync(file, 'utf8');
+    for (const m of src.matchAll(/\blabels\??\.([A-Za-z0-9_]+)/g)) {
+      if (keySet.has(m[1])) keys.add(m[1]);
+    }
+    // Keys named in data (`labelKey: 'foo'`, option tables) and read with
+    // `labels[key]`.
+    for (const m of src.matchAll(/['"]([A-Za-z0-9_]+)['"]/g)) {
+      if (keySet.has(m[1])) keys.add(m[1]);
+    }
+    // Words written in the source instead of a label: option names that are
+    // not translated (language names), unit suffixes.
+    for (const m of src.matchAll(/\b(?:label|suffix)\s*[:=]\s*\{?\s*(['"])([^'"\n]+)\1/g)) {
+      const text = m[2].replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+      if (/\p{L}/u.test(text)) literals.add(text);
+    }
+    for (const [kind, pattern] of Object.entries(SOURCES)) {
+      if (pattern.test(src)) sources.add(kind);
+    }
+    for (const m of src.matchAll(/(?:from|import\()\s*'(\.[^']+)'/g)) {
+      const dep = resolveModule(file, m[1]);
+      if (dep && !isExcluded(dep)) queue.push(dep);
+    }
+  }
+  return { keys: [...keys].sort(), literals: [...literals].sort(), sources: [...sources].sort() };
+}
+
+export function buildIndexSource() {
+  const keySet = labelKeys();
+  const lines = [
+    '// Generated by scripts/build-settings-search-index.mjs — do not edit.',
+    '// Run `node scripts/build-settings-search-index.mjs` after changing the',
+    '// labels a settings section uses.',
+    '',
+    "import type { SandboxLabels } from '../../types/labels';",
+    "import type { SettingsSectionId } from '../sections/registry';",
+    '',
+    "export type SearchWordSource = 'color' | 'dimension' | 'font' | 'resources';",
+    '',
+    'export interface SectionSearchKeys {',
+    '  keys: readonly (keyof SandboxLabels)[];',
+    '  sources: readonly SearchWordSource[];',
+    '  /** Untranslated words the section shows (language names, units). */',
+    '  literals: readonly string[];',
+    '}',
+    '',
+    'export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> = {',
+  ];
+  for (const [id, file] of sectionEntries()) {
+    const { keys, literals, sources } = scan(file, keySet);
+    lines.push(`  '${id}': {`);
+    lines.push(`    sources: [${sources.map((c) => `'${c}'`).join(', ')}],`);
+    lines.push(`    literals: [${literals.map((l) => JSON.stringify(l)).join(', ')}],`);
+    lines.push('    keys: [');
+    for (const k of keys) lines.push(`      '${k}',`);
+    lines.push('    ],');
+    lines.push('  },');
+  }
+  lines.push('};', '');
+  return lines.join('\n');
+}
+
+/** Whether the generated file matches the sources (used by the tests). */
+export function isIndexCurrent() {
+  return existsSync(OUTPUT) && readFileSync(OUTPUT, 'utf8') === buildIndexSource();
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const source = buildIndexSource();
+  const current = existsSync(OUTPUT) ? readFileSync(OUTPUT, 'utf8') : '';
+  if (process.argv.includes('--check')) {
+    if (current !== source) {
+      console.error(`${relative(ROOT, OUTPUT)} is stale: run node scripts/build-settings-search-index.mjs`);
+      process.exit(1);
+    }
+  } else if (current !== source) {
+    writeFileSync(OUTPUT, source);
+    console.log(`wrote ${relative(ROOT, OUTPUT)}`);
+  } else {
+    console.log(`${relative(ROOT, OUTPUT)} is up to date`);
+  }
+}

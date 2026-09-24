@@ -34,7 +34,7 @@ export default async function PrivacyPolicyPage({
     <>
       <Navbar />
       <main id="main-content" role="main" className="flex-1">
-        <div className="mx-auto max-w-5xl px-6 py-12 md:py-16 2xl:max-w-6xl 2xl:px-8 4xl:max-w-7xl 4xl:px-12">
+        <div className="mx-auto max-w-6xl px-6 py-12 md:py-16 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
           <div aria-hidden="true" className="tri-stripe mb-10 h-1.5 w-full" />
           <h1 className="display text-[2.4rem] text-foreground md:text-[3.2rem]">
             {t("title")}

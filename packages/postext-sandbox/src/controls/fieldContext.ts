@@ -22,3 +22,8 @@ export const HelpModeContext = createContext(false);
 export function useHelpMode(): boolean {
   return useContext(HelpModeContext);
 }
+
+/** The fields below display the library's defaults rather than stored
+ *  values (a header slot the config leaves unset shows its default
+ *  elements): none of them counts as changed or offers a reset. */
+export const ShowingDefaultsContext = createContext(false);

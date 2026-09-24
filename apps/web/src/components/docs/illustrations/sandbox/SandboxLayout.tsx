@@ -7,6 +7,8 @@ export interface SandboxLayoutLabels {
   caption?: string;
   activityBar: string;
   activityIcons: string[];
+  /** One-word label under each icon, as the sandbox shows them. */
+  activityLabels?: string[];
   sidebarTitle: string;
   sidebarSubtitle: string;
   viewportTitle: string;
@@ -14,7 +16,7 @@ export interface SandboxLayoutLabels {
   resizeHint: string;
 }
 
-const ICON_YS = [60, 98, 136, 174, 212];
+const ICON_YS = [34, 76, 118, 160, 202, 244];
 const ROW_YS = [86, 124, 162, 200, 238];
 const COL1_LINES = [166, 150, 162, 140, 166, 154, 160, 146, 166, 130, 158, 96];
 const COL2_LINES = [166, 152, 160, 104];
@@ -70,15 +72,15 @@ export function SandboxLayout({ labels }: { labels: SandboxLayoutLabels }) {
         <rect x={320} y={20} width={440} height={300} fill="var(--svg-teal-fill)" />
       </g>
 
-      {/* ── Activity bar ── */}
+      {/* ── Activity bar: one button per panel, icon over a one-word label ── */}
       {labels.activityIcons.map((icon, i) => (
         <g key={i}>
           <rect
-            x={34}
+            x={36}
             y={ICON_YS[i]}
-            width={28}
-            height={28}
-            rx={6}
+            width={24}
+            height={24}
+            rx={5}
             fill="var(--svg-legend-fill)"
             stroke="var(--svg-purple-stroke)"
             strokeWidth={1.5}
@@ -86,7 +88,7 @@ export function SandboxLayout({ labels }: { labels: SandboxLayoutLabels }) {
           />
           <text
             x={48}
-            y={ICON_YS[i] + 18.5}
+            y={ICON_YS[i] + 16}
             textAnchor="middle"
             fontSize={10}
             fontWeight={i === 0 ? "bold" : "normal"}
@@ -94,21 +96,26 @@ export function SandboxLayout({ labels }: { labels: SandboxLayoutLabels }) {
           >
             {icon}
           </text>
+          {labels.activityLabels?.[i] ? (
+            <text
+              x={48}
+              y={ICON_YS[i] + 33}
+              textAnchor="middle"
+              fontSize={7}
+              fontWeight={i === 0 ? "bold" : "normal"}
+              fill="var(--svg-purple-text)"
+              opacity={i === 0 ? 1 : 0.75}
+            >
+              {labels.activityLabels[i]}
+            </text>
+          ) : null}
         </g>
       ))}
-      {/* Active-panel marker next to first icon */}
-      <rect x={21} y={62} width={3} height={24} rx={1.5} fill="var(--svg-purple-stroke)" />
-      {/* Badge on the last (warnings) icon */}
-      <circle cx={62} cy={212} r={4.5} fill="var(--svg-pink-stroke)" />
-      <text
-        x={48}
-        y={275}
-        transform="rotate(-90 48 272)"
-        textAnchor="middle"
-        fontSize={9}
-        fontWeight="bold"
-        fill="var(--svg-purple-text)"
-      >
+      {/* Active-panel marker next to the first button */}
+      <rect x={21} y={ICON_YS[0]} width={3} height={24} rx={1.5} fill="var(--svg-purple-stroke)" />
+      {/* Count badge on the last (Checks) button */}
+      <circle cx={60} cy={ICON_YS[ICON_YS.length - 1] + 1} r={4.5} fill="var(--svg-pink-stroke)" />
+      <text x={48} y={308} textAnchor="middle" fontSize={8} fontWeight="bold" fill="var(--svg-purple-text)">
         {labels.activityBar}
       </text>
 
