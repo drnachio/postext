@@ -13,7 +13,7 @@ export function NestedGroup({ children }: NestedGroupProps) {
       style={{
         marginLeft: 8,
         paddingLeft: 12,
-        borderLeft: '1px solid var(--gilt)',
+        borderLeft: '1px solid var(--brand)',
       }}
     >
       {children}

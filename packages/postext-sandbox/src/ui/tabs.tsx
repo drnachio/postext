@@ -42,7 +42,7 @@ export function ChipTab({ value, children, dot, disabled }: ChipTabProps) {
       className={(state) =>
         cn(
           'inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-[11px] whitespace-nowrap transition-colors',
-          'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+          'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
           state.active
             ? 'border-(--rule) bg-(--surface) text-(--foreground)'
             : 'border-transparent text-(--slate) hover:text-(--foreground)',
@@ -51,7 +51,7 @@ export function ChipTab({ value, children, dot, disabled }: ChipTabProps) {
       }
     >
       {children}
-      {dot && <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--gilt)' }} />}
+      {dot && <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--brand)' }} />}
     </TabsPrimitive.Tab>
   );
 }

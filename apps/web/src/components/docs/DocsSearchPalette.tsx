@@ -44,7 +44,7 @@ function highlight(text: string, terms: string[]) {
   const parts = text.split(pattern);
   return parts.map((part, i) =>
     pattern.test(part) ? (
-      <mark key={i} className="bg-gilt/30 text-foreground rounded px-0.5">
+      <mark key={i} className="bg-brand/20 text-foreground rounded px-0.5">
         {part}
       </mark>
     ) : (

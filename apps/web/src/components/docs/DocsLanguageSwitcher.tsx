@@ -30,7 +30,7 @@ export function DocsLanguageSwitcher({
       type="button"
       onClick={handleSwitch}
       aria-label={t("switchTo")}
-      className="font-mono text-xs font-semibold text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue rounded-md px-2 py-1 2xl:text-sm 4xl:text-base"
+      className="font-sans text-xs font-semibold text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-md px-2 py-1 2xl:text-sm 4xl:text-base"
       style={{ touchAction: "manipulation" }}
     >
       {t("current")}

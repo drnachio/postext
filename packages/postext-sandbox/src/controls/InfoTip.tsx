@@ -12,7 +12,7 @@ export function InfoTip({ text }: InfoTipProps) {
     <Tooltip content={text} side="right">
       <span
         tabIndex={0}
-        className="inline-flex shrink-0 items-center justify-center rounded focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)"
+        className="inline-flex shrink-0 items-center justify-center rounded focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)"
         style={{ color: 'var(--slate)', cursor: 'help', width: 16, height: 16 }}
       >
         <Info size={13} aria-hidden="true" />

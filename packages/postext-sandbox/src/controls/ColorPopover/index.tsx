@@ -216,7 +216,7 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
               border: 'none',
               cursor: 'pointer',
               color: activeTab === tab.id ? 'var(--foreground)' : 'var(--slate)',
-              borderBottom: activeTab === tab.id ? '2px solid var(--gilt)' : '2px solid transparent',
+              borderBottom: activeTab === tab.id ? '2px solid var(--brand)' : '2px solid transparent',
               transition: 'color 150ms, border-color 150ms',
             }}
           >

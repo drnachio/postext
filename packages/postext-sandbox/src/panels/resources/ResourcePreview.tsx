@@ -80,7 +80,7 @@ function CaptionFoot({ resource, type }: CaptionFootProps) {
             fontWeight: token.kind === 'text' && token.bold ? 600 : undefined,
             fontStyle: token.kind === 'text' && token.italic ? 'italic' : undefined,
             fontFamily: token.kind === 'code' ? 'var(--font-mono, monospace)' : undefined,
-            color: token.kind === 'ref' ? 'var(--gilt)' : undefined,
+            color: token.kind === 'ref' ? 'var(--brand)' : undefined,
           }}
         >
           {token.text}

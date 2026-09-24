@@ -52,7 +52,7 @@ export function CompactLanguageSwitcher() {
         aria-label={t("label")}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex items-center justify-center rounded-md p-2 font-mono text-xs font-semibold transition-colors"
+        className="flex items-center justify-center rounded-md p-2 font-sans text-xs font-semibold transition-colors"
         style={{
           color: "var(--slate)",
           touchAction: "manipulation",
@@ -81,7 +81,7 @@ export function CompactLanguageSwitcher() {
                 onClick={() => handleSelect(l)}
                 className="flex w-full items-center justify-center px-3 py-1.5 font-mono text-xs transition-colors"
                 style={{
-                  color: l === locale ? "var(--gilt)" : "var(--slate)",
+                  color: l === locale ? "var(--brand)" : "var(--slate)",
                   fontWeight: l === locale ? 600 : 400,
                 }}
                 onMouseEnter={(e) => {

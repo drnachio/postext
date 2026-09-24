@@ -115,7 +115,7 @@ export function TableEditorCell({
       colSpan={cell.colSpan ?? 1}
       rowSpan={cell.rowSpan ?? 1}
       style={{
-        border: `1px solid ${active || selected ? 'var(--gilt)' : 'var(--rule)'}`,
+        border: `1px solid ${active || selected ? 'var(--brand)' : 'var(--rule)'}`,
         padding: 0,
         verticalAlign: cell.verticalAlign ?? 'top',
         // The cell's own fill shows in the grid, as on the page; a

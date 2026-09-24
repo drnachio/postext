@@ -1,70 +1,63 @@
 import { getTranslations } from "next-intl/server";
+import { ChapterOpener } from "@/components/brand/ChapterOpener";
+import {
+  JustificationGlyph,
+  MathGlyph,
+  OutputGlyph,
+  ResourcesGlyph,
+  SingleInkGlyph,
+  TablesGlyph,
+} from "./FeatureGlyphs";
 
 /** Key prefixes of the feature cards, in display order. Each entry expects a
  *  `<key>Title` and `<key>Description` pair in the `Features` namespace of
- *  both message files — adding a card only touches the message files. */
-const FEATURE_KEYS = [
-  "justification",
-  "resources",
-  "tables",
-  "singleInk",
-  "math",
-  "output",
+ *  both message files — adding a card touches the message files and the
+ *  glyph map. */
+const FEATURES = [
+  ["justification", JustificationGlyph],
+  ["resources", ResourcesGlyph],
+  ["tables", TablesGlyph],
+  ["singleInk", SingleInkGlyph],
+  ["math", MathGlyph],
+  ["output", OutputGlyph],
 ] as const;
 
 export async function FeaturesSection() {
   const t = await getTranslations("Features");
-
-  const features = FEATURE_KEYS.map((key) => ({
-    title: t(`${key}Title`),
-    description: t(`${key}Description`),
-  }));
-
-  const splitAt = Math.ceil(features.length / 2);
-  const leftColumn = features.slice(0, splitAt);
-  const rightColumn = features.slice(splitAt);
+  const tl = await getTranslations("Landing");
 
   return (
-    <section aria-labelledby="features-heading" className="mx-auto w-full max-w-5xl px-6 py-24 2xl:max-w-6xl 2xl:px-8 2xl:py-32 4xl:max-w-7xl 4xl:px-12 4xl:py-40">
-      <p className="font-mono text-xs uppercase tracking-widest text-slate 2xl:text-sm 4xl:text-base">
-        {t("eyebrow")}
-      </p>
-      <h2
+    <section aria-labelledby="features-heading">
+      <ChapterOpener
         id="features-heading"
-        className="mt-4 font-display text-3xl font-bold italic tracking-tight 2xl:text-4xl 4xl:text-5xl"
-        style={{ textWrap: "balance" }}
-      >
-        {t("title")}
-      </h2>
-
-      <div className="mt-16 grid grid-cols-1 gap-0 md:grid-cols-[1fr_1px_1fr] 2xl:mt-20 4xl:mt-24">
-        <div className="space-y-12 md:pr-12 2xl:space-y-16 2xl:pr-16 4xl:space-y-20 4xl:pr-20">
-          {leftColumn.map((feature) => (
-            <div key={feature.title}>
-              <h3 className="font-display text-lg font-semibold tracking-tight 2xl:text-xl 4xl:text-2xl">
-                {feature.title}
+        color="gilt"
+        number="2"
+        kicker={`${tl("chapter")} 2 · ${t("eyebrow")}`}
+        title={t("title")}
+        lead={t("lead")}
+      />
+      <div className="mx-auto max-w-6xl px-6 py-14 md:py-20 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
+        <ol className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map(([key, Glyph], i) => (
+            <li
+              key={key}
+              className="reveal group relative flex flex-col overflow-hidden rounded-md border-l-[4px] border-gold bg-tint/70 p-5 pl-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-24px_rgba(14,16,20,0.45)] dark:bg-surface"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <span className="font-sans text-xs font-bold tracking-[0.18em] text-gilt uppercase">2.{i + 1}</span>
+                <span className="text-gilt transition-transform duration-300 group-hover:scale-105 dark:text-gold">
+                  <Glyph />
+                </span>
+              </div>
+              <h3 className="mt-3 font-head text-lg font-bold tracking-[-0.01em] text-foreground md:text-xl">
+                {t(`${key}Title`)}
               </h3>
-              <p className="mt-2 leading-[1.8] text-slate 2xl:text-lg 4xl:text-xl">
-                {feature.description}
+              <p className="mt-2 font-body text-[0.92rem] leading-[1.65] text-foreground/75">
+                {t(`${key}Description`)}
               </p>
-            </div>
+            </li>
           ))}
-        </div>
-
-        <div className="column-rule my-0 hidden md:block" aria-hidden="true" />
-
-        <div className="mt-12 space-y-12 md:mt-0 md:pl-12 2xl:space-y-16 2xl:pl-16 4xl:space-y-20 4xl:pl-20">
-          {rightColumn.map((feature) => (
-            <div key={feature.title}>
-              <h3 className="font-display text-lg font-semibold tracking-tight 2xl:text-xl 4xl:text-2xl">
-                {feature.title}
-              </h3>
-              <p className="mt-2 leading-[1.8] text-slate 2xl:text-lg 4xl:text-xl">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
+        </ol>
       </div>
     </section>
   );

@@ -12,12 +12,14 @@ interface PanelHeaderProps {
   className?: string;
 }
 
-/** Fixed-height (40px) header shared by every sidebar panel so titles and
- *  action clusters line up when switching panels. */
+/** Fixed-height header shared by every sidebar panel so titles and action
+ *  clusters line up when switching panels. `h-9` is the Sandbox's one top
+ *  band: the viewport bar and the activity bar's logo cell use it too, so
+ *  the three line up across the window. */
 export function PanelHeader({ title, actions, count, className }: PanelHeaderProps) {
   return (
     <div
-      className={cn('flex h-10 shrink-0 items-center justify-between gap-2 border-b px-3', className)}
+      className={cn('flex h-9 shrink-0 items-center justify-between gap-2 border-b px-3', className)}
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
     >
       <h2 className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold" style={{ color: 'var(--foreground)' }}>

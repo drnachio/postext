@@ -13,13 +13,15 @@ interface SegmentedControlProps<T extends string> {
   onValueChange: (value: T) => void;
   options: readonly SegmentedOption<T>[];
   ariaLabel: string;
+  /** `sm` for a discreet control in a toolbar band. */
+  size?: 'md' | 'sm';
   className?: string;
 }
 
 /** One pill split into mutually exclusive choices: an outer border with
  *  rounded ends, a vertical rule between the options, and a solid fill on
  *  the selected one. Radio semantics; arrow keys move the selection. */
-export function SegmentedControl<T extends string>({ value, onValueChange, options, ariaLabel, className }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({ value, onValueChange, options, ariaLabel, size = 'md', className }: SegmentedControlProps<T>) {
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const idx = options.findIndex((o) => o.value === value);
     let next: number | null = null;
@@ -38,7 +40,7 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
       role="radiogroup"
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}
-      className={cn('inline-flex h-7 shrink-0 items-stretch overflow-hidden rounded-full border', className)}
+      className={cn('inline-flex shrink-0 items-stretch overflow-hidden rounded-full border', size === 'sm' ? 'h-[1.3rem]' : 'h-7', className)}
       style={{ borderColor: 'var(--rule)' }}
     >
       {options.map((o, i) => {
@@ -52,8 +54,9 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
             tabIndex={selected ? 0 : -1}
             onClick={() => { if (!selected) onValueChange(o.value); }}
             className={cn(
-              'cursor-pointer px-3 text-xs whitespace-nowrap transition-colors',
-              'focus-visible:outline-1 focus-visible:-outline-offset-2 outline-(--gilt-hover)',
+              'cursor-pointer whitespace-nowrap transition-colors',
+              size === 'sm' ? 'px-2 text-[0.62rem]' : 'px-3 text-xs',
+              'focus-visible:outline-1 focus-visible:-outline-offset-2 outline-(--brand-hover)',
               selected
                 ? 'bg-(--surface) font-medium text-(--foreground)'
                 : 'bg-transparent text-(--slate) hover:text-(--foreground)',

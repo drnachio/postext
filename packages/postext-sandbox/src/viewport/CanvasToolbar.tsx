@@ -124,9 +124,9 @@ export function ToolbarButton({
         style={{
           width: 28,
           height: 28,
-          color: accent ? 'var(--gilt)' : active ? 'var(--gilt)' : 'var(--slate)',
+          color: accent ? 'var(--brand)' : active ? 'var(--brand)' : 'var(--slate)',
           backgroundColor: active ? 'var(--surface)' : 'transparent',
-          outlineColor: 'var(--gilt-hover)',
+          outlineColor: 'var(--brand-hover)',
           opacity: disabled ? 0.18 : 1,
         }}
         onMouseEnter={(e) => {
@@ -252,7 +252,7 @@ function PageNumberInput({
           color: 'var(--foreground)',
           backgroundColor: 'var(--surface)',
           border: '1px solid var(--rule)',
-          outlineColor: 'var(--gilt-hover)',
+          outlineColor: 'var(--brand-hover)',
           opacity: pageCount === 0 ? 0.18 : 1,
         }}
       />

@@ -77,7 +77,7 @@ export const frontmatterHighlight = ViewPlugin.fromClass(
 export const frontmatterTheme = Prec.highest(
   EditorView.baseTheme({
     '.cm-line.cm-fm-line': {
-      backgroundColor: 'rgba(224, 168, 22, 0.05)',
+      backgroundColor: 'rgba(216, 162, 26, 0.06)',
     },
     '.cm-line.cm-fm-line .cm-fm-delim': {
       color: 'var(--slate)',
@@ -92,7 +92,7 @@ export const frontmatterTheme = Prec.highest(
       fontWeight: 'normal',
     },
     '.cm-line.cm-fm-line .cm-fm-value': {
-      color: 'var(--gilt)',
+      color: 'var(--brand)',
       fontWeight: 'normal',
     },
   }),

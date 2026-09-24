@@ -286,7 +286,7 @@ function WarningItem({
       onSelect={clickable ? () => onClick(warning) : undefined}
       ariaLabel={`${title}${lineTag ? ` (${lineTag})` : ''}`}
       alignTop
-      leading={<Icon size={16} aria-hidden="true" style={{ color: 'var(--gilt)', marginTop: 1 }} />}
+      leading={<Icon size={16} aria-hidden="true" style={{ color: 'var(--brand)', marginTop: 1 }} />}
       title={title}
       subtitle={detail}
       tags={lineTag ? (
