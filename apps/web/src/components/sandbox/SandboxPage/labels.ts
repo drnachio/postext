@@ -1541,5 +1541,17 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     bodyGroupLanguage: t("bodyGroupLanguage"),
     bodyGroupLineControl: t("bodyGroupLineControl"),
     bodyGroupReferences: t("bodyGroupReferences"),
+    rowMoreActions: t("rowMoreActions"),
+    projectsGroupMine: t("projectsGroupMine"),
+    resourcesEmptyDescription: t("resourcesEmptyDescription"),
+    resourcesSearchPlaceholder: t("resourcesSearchPlaceholder"),
+    resourcesSearchNoResults: t("resourcesSearchNoResults"),
+    bookFontsTitle: t("bookFontsTitle"),
+    bookFontsDescription: t("bookFontsDescription"),
+    bookFontsRoleBody: t("bookFontsRoleBody"),
+    bookFontsRoleHeadings: t("bookFontsRoleHeadings"),
+    bookFontsRoleOther: t("bookFontsRoleOther"),
+    bookFontsSourceGoogle: t("bookFontsSourceGoogle"),
+    bookFontsSourceCustom: t("bookFontsSourceCustom"),
   };
 }

@@ -1601,4 +1601,16 @@ export interface SandboxLabels {
   bodyGroupLanguage: string;
   bodyGroupLineControl: string;
   bodyGroupReferences: string;
+  rowMoreActions: string;
+  projectsGroupMine: string;
+  resourcesEmptyDescription: string;
+  resourcesSearchPlaceholder: string;
+  resourcesSearchNoResults: string;
+  bookFontsTitle: string;
+  bookFontsDescription: string;
+  bookFontsRoleBody: string;
+  bookFontsRoleHeadings: string;
+  bookFontsRoleOther: string;
+  bookFontsSourceGoogle: string;
+  bookFontsSourceCustom: string;
 }

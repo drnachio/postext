@@ -1,10 +1,12 @@
 'use client';
 
-import { FileCode, Table as TableIcon, ImageIcon, Plus, ChevronDown, FolderOpen } from 'lucide-react';
+import { FileCode, Table as TableIcon, ImageIcon, Plus, ChevronDown, FolderOpen, Search, X } from 'lucide-react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import type { Resource, ResourceKind, ResourceType } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext';
 import { useBlobObjectUrl } from './ResourcePreview';
-import { Button, EmptyState, ListRow, Menu, MenuItem, PanelBody, PanelHeader } from '../../ui';
+import { Button, EmptyState, HighlightedText, IconButton, ListRow, Menu, MenuItem, PanelBody, PanelHeader } from '../../ui';
+import { compileMatcher, normalizeText } from '../../sidebar/search/normalize';
 
 interface ThumbProps {
   resource: Resource;
@@ -86,11 +88,18 @@ interface ResourceListProps {
 export function ResourceList({ resources, types, selectedId, onSelect, onNew }: ResourceListProps) {
   const labels = useSandboxLabels();
   const typeById = new Map(types.map((t) => [t.id, t]));
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
+  const matcher = useMemo(() => compileMatcher(deferredQuery), [deferredQuery]);
+  const filtering = matcher.tokens.length > 0;
+  const shown = filtering
+    ? resources.filter((r) => matcher.test(normalizeText(`${r.caption ?? ''} ${r.id}`)))
+    : resources;
 
   // Group resources by type name. Resources whose typeId is unknown fall into
   // an "Untyped" group so they remain reachable.
   const groups = new Map<string, { name: string; items: Resource[] }>();
-  for (const r of resources) {
+  for (const r of shown) {
     const type = typeById.get(r.typeId);
     const key = type ? type.id : '__untyped__';
     const name = type ? type.name : labels.resourceUntyped;
@@ -101,37 +110,66 @@ export function ResourceList({ resources, types, selectedId, onSelect, onNew }: 
 
   return (
     <div className="flex h-full flex-col">
-      <PanelHeader title={labels.resources} count={resources.length > 0 ? resources.length : undefined} actions={<NewMenu onNew={onNew} />} />
+      <PanelHeader title={labels.navResources} count={resources.length > 0 ? resources.length : undefined} actions={<NewMenu onNew={onNew} />} />
+      {resources.length > 6 && (
+        <div className="shrink-0 border-b border-(--rule) px-3 py-2">
+          <div className="flex h-7 items-center gap-1.5 rounded-md border border-(--rule) bg-(--surface) px-2 focus-within:border-(--brand)">
+            <Search size={13} aria-hidden="true" className="shrink-0 text-(--slate)" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Escape' && query) { e.preventDefault(); setQuery(''); } }}
+              placeholder={labels.resourcesSearchPlaceholder}
+              aria-label={labels.resourcesSearchPlaceholder}
+              autoComplete="off"
+              spellCheck={false}
+              className="min-w-0 flex-1 bg-transparent text-xs text-(--foreground) outline-none placeholder:text-(--slate) [&::-webkit-search-cancel-button]:hidden"
+            />
+            {query && <IconButton size={18} label={labels.settingsSearchClear} icon={<X size={12} />} tooltip={false} onClick={() => setQuery('')} />}
+          </div>
+        </div>
+      )}
       <PanelBody padded>
         {resources.length === 0 ? (
-          <EmptyState icon={<FolderOpen size={28} />} title={labels.resourcesEmpty} />
+          <EmptyState
+            icon={<FolderOpen size={28} />}
+            title={labels.resourcesEmpty}
+            description={labels.resourcesEmptyDescription}
+            action={
+              <Button variant="outline" size="xs" icon={<ImageIcon size={12} />} onClick={() => onNew('bitmap')}>
+                {labels.resourceUploadImage}
+              </Button>
+            }
+          />
+        ) : shown.length === 0 ? (
+          <EmptyState icon={<Search size={28} />} title={labels.resourcesSearchNoResults.replace('__query__', deferredQuery)} />
         ) : (
           [...groups.values()].map((group) => (
-            <div key={group.name} className="mb-3">
-              <div
-                className="mb-1 px-1 text-xs font-medium uppercase tracking-wide"
-                style={{ color: 'var(--slate)', fontSize: 10 }}
-              >
+            <section key={group.name} className="mb-3" aria-label={group.name}>
+              <h3 className="mb-1 flex items-center gap-1.5 px-1 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">
                 {group.name}
-              </div>
-              <div className="flex flex-col gap-1">
+                <span className="font-normal tabular-nums">{group.items.length}</span>
+              </h3>
+              <ul className="m-0 flex list-none flex-col gap-1 p-0">
                 {group.items.map((r) => {
                   const selected = r.id === selectedId;
                   const label = r.caption?.trim() || r.id;
                   return (
-                    <ListRow
-                      key={r.id}
-                      selected={selected}
-                      onSelect={() => onSelect(r.id)}
-                      ariaLabel={label}
-                      leading={<Thumb resource={r} />}
-                      title={label}
-                      subtitle={r.id}
-                    />
+                    <li key={r.id}>
+                      <ListRow
+                        selected={selected}
+                        onSelect={() => onSelect(r.id)}
+                        ariaLabel={label}
+                        leading={<Thumb resource={r} />}
+                        title={<HighlightedText text={label} tokens={matcher.tokens} />}
+                        subtitle={<HighlightedText text={r.id} tokens={matcher.tokens} />}
+                      />
+                    </li>
                   );
                 })}
-              </div>
-            </div>
+              </ul>
+            </section>
           ))
         )}
       </PanelBody>
