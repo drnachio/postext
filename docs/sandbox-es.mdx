@@ -51,8 +51,9 @@ Un editor CodeMirror 6 para el Markdown del capítulo. Los lectores de pantalla 
 - **Completado de chips**: al escribir `:c` al principio de una palabra se ofrece `:chip[…]` (el cursor queda entre los corchetes). Dentro de `{style="…"}` se ofrecen los ids de los estilos de chip configurados.
 - **Números de línea** y resaltado de la línea activa
 - **Ajuste de línea** para los párrafos largos
-- **Barra de herramientas**: empieza con **Deshacer / Rehacer**, seguidos de negrita, cursiva, títulos de nivel 1–3, enlace, código en línea, **chip** (envuelve la selección en `:chip[…]`), cita, listas numeradas y con viñetas, más dos insertadores de directivas:
+- **Barra de herramientas**: empieza con **Deshacer / Rehacer**, seguidos de negrita, cursiva, títulos de nivel 1–3, enlace, código en línea, **chip** (envuelve la selección en `:chip[…]`), cita, listas numeradas y con viñetas, más tres insertadores de directivas:
   - `:::pagebreak`
+  - `:::space`: una línea de espacio vertical (`:::space{lines=N}` para más)
   - `:::numbering{format="decimal" startAt=1}`: se inserta con atributos de ejemplo que puedes ajustar
 
 Las aplicaciones anfitrionas pueden añadir sus propios botones a la barra con `extraActions`. El editor también comunica su cursor y su selección a las vistas previas, lo que permite la sincronización clic-a-cursor: al hacer clic en el texto de la salida, el cursor salta a la posición correspondiente del Markdown, y las vistas previas pueden resaltar la selección actual.
@@ -337,7 +338,7 @@ Diagnósticos en vivo, recalculados a partir del texto, el diseño, las figuras 
 - **Texto y marcado**:
   - saltos en la jerarquía de títulos (por ejemplo H1 → H3), y títulos consecutivos sin texto entre ellos;
   - fórmulas `$…$` / `$$…$$` inválidas o sin cerrar;
-  - nombres de directiva desconocidos (se acepta cualquier nombre que conozca el parser: `pagebreak`, `numbering`, `callout`, `paragraphs` y `part`) y atributos de numeración o paridad inválidos;
+  - nombres de directiva desconocidos (se acepta cualquier nombre que conozca el parser: `pagebreak`, `columnbreak`, `space`, `numbering`, `toc`, `callout`, `paragraphs`, `part` y `columns`), atributos de numeración o paridad inválidos y un `:::space{lines=N}` fuera de 0–20 líneas;
   - una valla de contenedor `:::` sin cerrar al final del documento (al hacer clic se enfoca su línea de apertura);
   - un `:::paragraphs{style="…"}`, `:::callout{type="…"}` o `:chip[…]{style="…"}` cuyo estilo no está configurado;
   - *Metadatos ignorados*: un capítulo distinto del primero que empieza con un bloque de metadatos (solo los metadatos del primer capítulo son los del libro).

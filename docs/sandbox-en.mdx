@@ -51,8 +51,9 @@ A CodeMirror 6 editor for the chapter's Markdown. Screen readers announce it as 
 - **Chip completion**: typing `:c` at the start of a word offers `:chip[…]` (the caret lands between the brackets). Inside `{style="…"}` the configured chip style ids are offered.
 - **Line numbers** and active-line highlighting
 - **Line wrapping** for long paragraphs
-- **Toolbar**: starts with **Undo / Redo**, followed by bold, italic, heading levels 1–3, link, inline code, **chip** (wraps the selection in `:chip[…]`), blockquote, ordered and unordered lists, plus two directive inserters:
+- **Toolbar**: starts with **Undo / Redo**, followed by bold, italic, heading levels 1–3, link, inline code, **chip** (wraps the selection in `:chip[…]`), blockquote, ordered and unordered lists, plus three directive inserters:
   - `:::pagebreak`
+  - `:::space`: one line of vertical space (`:::space{lines=N}` for more)
   - `:::numbering{format="decimal" startAt=1}`: inserted with example attributes you can adjust
 
 Host applications can add their own toolbar buttons through `extraActions`. The editor also reports its cursor and selection to the previews, which enables click-to-caret sync: clicking text in the rendered output moves the caret to the matching Markdown position, and the previews can highlight the current selection.
@@ -337,7 +338,7 @@ Live diagnostics, recomputed from the text, the design, the figures and the last
 - **Text & markup**:
   - heading-hierarchy skips (for example H1 → H3), and consecutive headings with no body text between them;
   - invalid or unclosed `$…$` / `$$…$$` formulas;
-  - unknown directive names (every name the parser knows is accepted: `pagebreak`, `numbering`, `callout`, `paragraphs` and `part`) and invalid numbering or parity attributes;
+  - unknown directive names (every name the parser knows is accepted: `pagebreak`, `columnbreak`, `space`, `numbering`, `toc`, `callout`, `paragraphs`, `part` and `columns`), invalid numbering or parity attributes, and a `:::space{lines=N}` outside 0–20 lines;
   - a `:::` container fence left unclosed at the end of the document (clicking it focuses its opening line);
   - a `:::paragraphs{style="…"}`, `:::callout{type="…"}` or `:chip[…]{style="…"}` whose style is not configured;
   - *Front matter ignored*: a chapter other than the first that starts with a front-matter block (only the first chapter's front matter belongs to the book).
