@@ -1,7 +1,7 @@
 // The hero artwork: the cover of the built-in Postext guide (see
 // packages/postext-sandbox/src/defaultResources/cover.ts) redrawn as React
 // SVG and set in motion. An open spread the way the engine sees it —
-// justified lines of word boxes on a baseline grid, a chapter band, a
+// justified lines of word boxes, a chapter band, a
 // floated chart, a pull quote — with one line lifted out and opened into
 // Knuth-Plass boxes, glue and a flagged penalty. The line keeps
 // re-justifying: its glue stretches and shrinks while the boxes hold.
@@ -14,7 +14,6 @@ const VH = 840;
 
 const C = {
   night: "#0e1014",
-  grid: "#171b22",
   page: "#161920",
   pageEdge: "#2a2f39",
   word: "#363d4a",
@@ -214,8 +213,6 @@ const STYLES = `
 export function HeroArt({ label, className }: { label: string; className?: string }) {
   const rand = prng(1983);
   const pitch = 11;
-  const gridYs: number[] = [];
-  for (let y = 38; y < VH; y += pitch) gridYs.push(y + 5);
 
   const pw = 462;
   const ph = 616;
@@ -267,9 +264,6 @@ export function HeroArt({ label, className }: { label: string; className?: strin
     >
       <style>{STYLES}</style>
       <g className="ha-page">
-        {gridYs.map((y) => (
-          <rect key={y} x={0} y={y} width={VW} height={0.8} fill={C.grid} />
-        ))}
         <rect x={sx} y={sy} width={2 * pw} height={ph} fill={C.page} stroke={C.pageEdge} strokeWidth={1.2} />
         <path d={`M${sx + pw},${sy} L${sx + pw},${sy + ph}`} stroke={C.pageEdge} strokeWidth={1.2} />
       </g>

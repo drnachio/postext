@@ -25,10 +25,6 @@ export function ChapterOpener({
   const c = PART_CLASSES[color];
   return (
     <header className={cn("relative isolate overflow-hidden", c.band, c.onBand, className)}>
-      <div
-        aria-hidden="true"
-        className="band-grid pointer-events-none absolute inset-0 -z-10"
-      />
       <div className="relative mx-auto max-w-6xl px-6 pt-12 pb-10 md:pt-16 md:pb-12 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <span
           aria-hidden="true"

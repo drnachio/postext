@@ -47,7 +47,6 @@ export async function ShowcaseSection() {
 
   return (
     <section aria-labelledby="showcase-heading" className="on-night dark relative isolate overflow-hidden bg-night py-16 text-cream md:py-20">
-      <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0 -z-10" />
       <div aria-hidden="true" className="pointer-events-none absolute top-1/3 left-1/2 -z-10 h-[30rem] w-[60rem] -translate-x-1/2 rounded-full bg-blue/20 blur-[160px]" />
       <div className="mx-auto max-w-6xl px-6 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <div className="grid grid-cols-1 items-end gap-6 md:grid-cols-12">

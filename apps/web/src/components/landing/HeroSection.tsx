@@ -14,7 +14,6 @@ export async function HeroSection() {
       aria-labelledby="hero-heading"
       className="on-night dark relative isolate overflow-hidden bg-night text-cream"
     >
-      <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0 -z-10" />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[42rem] rounded-full bg-blue/25 blur-[140px]"
