@@ -3,11 +3,13 @@ import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
 import { CodeBlock } from "./CodeBlock";
 
-const codeRaw = `import { buildDocument, renderToHtml } from "postext";
+const codeRaw = `import { buildDocument, renderPage } from "postext";
+import { renderToPdf } from "postext-pdf";
 
 const doc = buildDocument(
   { markdown },
   {
+    page: { sizePreset: "21x28" },
     layout: { layoutType: "double" },
     bodyText: {
       textAlign: "justify",
@@ -16,7 +18,12 @@ const doc = buildDocument(
   }
 );
 
-const html = renderToHtml(doc);`;
+// Every page as an image…
+const cover = renderPage(doc.pages[0], doc);
+cover.toBlob((png) => save(png, "cover.png"));
+
+// …or the whole book as a print-ready PDF
+const pdf = await renderToPdf(doc, { fontProvider });`;
 
 export async function HowItWorksSection() {
   const t = await getTranslations("HowItWorks");
@@ -69,14 +76,15 @@ export async function HowItWorksSection() {
           </div>
           <div className="md:col-span-8">
             <CodeBlock code={codeRaw} title="book.ts">
-              <span className="syntax-keyword">import</span>{" "}
-              {"{ buildDocument, renderToHtml }"}{" "}
-              <span className="syntax-keyword">from</span>{" "}
-              <span className="syntax-string">{'"postext"'}</span>;{"\n"}
+              <span className="syntax-keyword">import</span> {"{ buildDocument, renderPage }"}{" "}
+              <span className="syntax-keyword">from</span> <span className="syntax-string">{'"postext"'}</span>;{"\n"}
+              <span className="syntax-keyword">import</span> {"{ renderToPdf }"}{" "}
+              <span className="syntax-keyword">from</span> <span className="syntax-string">{'"postext-pdf"'}</span>;{"\n"}
               {"\n"}
               <span className="syntax-keyword">const</span> doc = buildDocument({"\n"}
               {"  "}{"{"} markdown {"}"},{"\n"}
               {"  "}{"{"}{"\n"}
+              {"    "}page: {"{"} sizePreset: <span className="syntax-string">{'"21x28"'}</span> {"}"},{"\n"}
               {"    "}layout: {"{"} layoutType: <span className="syntax-string">{'"double"'}</span> {"}"},{"\n"}
               {"    "}bodyText: {"{"}{"\n"}
               {"      "}textAlign: <span className="syntax-string">{'"justify"'}</span>,{"\n"}
@@ -85,7 +93,13 @@ export async function HowItWorksSection() {
               {"  "}{"}"}{"\n"}
               );{"\n"}
               {"\n"}
-              <span className="syntax-keyword">const</span> html = renderToHtml(doc);
+              <span className="syntax-comment">{api("commentImages")}</span>{"\n"}
+              <span className="syntax-keyword">const</span> cover = renderPage(doc.pages[<span className="syntax-value">0</span>], doc);{"\n"}
+              cover.toBlob((png) =&gt; save(png, <span className="syntax-string">{'"cover.png"'}</span>));{"\n"}
+              {"\n"}
+              <span className="syntax-comment">{api("commentPdf")}</span>{"\n"}
+              <span className="syntax-comment">{api("commentFonts")}</span>{"\n"}
+              <span className="syntax-keyword">const</span> pdf = <span className="syntax-keyword">await</span> renderToPdf(doc, {"{"} fontProvider {"}"});
             </CodeBlock>
           </div>
         </div>

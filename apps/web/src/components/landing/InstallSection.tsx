@@ -49,20 +49,24 @@ export async function InstallSection() {
             <CodeBlock
               title="quick-start.ts"
               className="bg-elevated shadow-[0_24px_48px_-28px_rgba(14,16,20,0.35)]"
-              code={`import { buildDocument, renderToHtml } from "postext";\n\nconst doc = buildDocument({\n  markdown: "# Hello World\\n\\nYour content here.",\n});\n\nconst html = renderToHtml(doc);`}
+              code={`import { buildDocument, renderPage } from "postext";\nimport { renderToPdf } from "postext-pdf";\n\nconst doc = buildDocument({\n  markdown: "# Hello World\\n\\nYour content here.",\n});\n\ndocument.body.append(renderPage(doc.pages[0], doc));\n\nconst pdf = await renderToPdf(doc, { fontProvider });`}
             >
               <span className="syntax-comment">{t("commentQuickStart")}</span>
               {"\n"}
-              <span className="syntax-keyword">import</span>{" "}
-              {"{ buildDocument, renderToHtml }"}{" "}
-              <span className="syntax-keyword">from</span>{" "}
-              <span className="syntax-string">{'"postext"'}</span>;{"\n"}
+              <span className="syntax-keyword">import</span> {"{ buildDocument, renderPage }"}{" "}
+              <span className="syntax-keyword">from</span> <span className="syntax-string">{'"postext"'}</span>;{"\n"}
+              <span className="syntax-keyword">import</span> {"{ renderToPdf }"}{" "}
+              <span className="syntax-keyword">from</span> <span className="syntax-string">{'"postext-pdf"'}</span>;{"\n"}
               {"\n"}
               <span className="syntax-keyword">const</span> doc = buildDocument({"{"}{"\n"}
               {"  "}markdown: <span className="syntax-string">{'"# Hello World\\n\\nYour content here."'}</span>,{"\n"}
               {"}"});{"\n"}
               {"\n"}
-              <span className="syntax-keyword">const</span> html = renderToHtml(doc);
+              <span className="syntax-comment">{t("commentCanvas")}</span>{"\n"}
+              document.body.append(renderPage(doc.pages[<span className="syntax-value">0</span>], doc));{"\n"}
+              {"\n"}
+              <span className="syntax-comment">{t("commentPdf")}</span>{"\n"}
+              <span className="syntax-keyword">const</span> pdf = <span className="syntax-keyword">await</span> renderToPdf(doc, {"{"} fontProvider {"}"});
             </CodeBlock>
           </div>
         </div>

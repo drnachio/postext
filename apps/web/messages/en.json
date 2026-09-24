@@ -149,7 +149,10 @@
   "ApiPreview": {
     "eyebrow": "API",
     "title": "One function, full control",
-    "description": "Call <code>buildDocument</code> with your content and a configuration object. Get back the complete page geometry, ready to render with <code>renderToHtml</code> — or the canvas and PDF backends."
+    "description": "Call <code>buildDocument</code> with your content and a configuration object. You get back the complete page geometry: draw any page as an image with <code>renderPage</code>, or set the whole book as a print-ready PDF with <code>renderToPdf</code>.",
+    "commentImages": "// Every page as an image…",
+    "commentPdf": "// …or the whole book as a print-ready PDF",
+    "commentFonts": "// fontProvider: TTF bytes per family and weight (see the docs)"
   },
   "HowItWorks": {
     "eyebrow": "Workflow",
@@ -167,7 +170,9 @@
     "title": "Start in under a minute",
     "commentInstall": "# Install with your package manager",
     "commentQuickStart": "// Quick start",
-    "lead": "One package, no server, no native dependencies. Add postext-pdf when you need print."
+    "lead": "One package, no server, no native dependencies. Add postext-pdf when you need print.",
+    "commentCanvas": "// The first page, drawn on a canvas",
+    "commentPdf": "// The whole document as a PDF"
   },
   "CodeBlock": {
     "copy": "Copy",

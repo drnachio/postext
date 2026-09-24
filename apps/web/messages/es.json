@@ -149,7 +149,10 @@
   "ApiPreview": {
     "eyebrow": "API",
     "title": "Una función, control total",
-    "description": "Llama a <code>buildDocument</code> con tu contenido y un objeto de configuración. Recibes la geometría completa de las páginas, lista para renderizar con <code>renderToHtml</code> — o con los backends de canvas y PDF."
+    "description": "Llama a <code>buildDocument</code> con tu contenido y un objeto de configuración. Recibes la geometría completa de las páginas: dibuja cualquier página como imagen con <code>renderPage</code> o compón el libro entero como PDF listo para imprenta con <code>renderToPdf</code>.",
+    "commentImages": "// Cada página, como imagen…",
+    "commentPdf": "// …o el libro entero, como PDF listo para imprenta",
+    "commentFonts": "// fontProvider: bytes TTF por familia y peso (ver la documentación)"
   },
   "HowItWorks": {
     "eyebrow": "Flujo de trabajo",
@@ -167,7 +170,9 @@
     "title": "Empieza en menos de un minuto",
     "commentInstall": "# Instala con tu gestor de paquetes",
     "commentQuickStart": "// Inicio rápido",
-    "lead": "Un paquete, sin servidor y sin dependencias nativas. Añade postext-pdf cuando necesites imprimir."
+    "lead": "Un paquete, sin servidor y sin dependencias nativas. Añade postext-pdf cuando necesites imprimir.",
+    "commentCanvas": "// La primera página, dibujada en un canvas",
+    "commentPdf": "// El documento entero, como PDF"
   },
   "CodeBlock": {
     "copy": "Copiar",
