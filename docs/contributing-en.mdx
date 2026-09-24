@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Contributing',
   description: 'How to join the Postext community and contribute to the project',
   lang: 'en',
-  lastUpdated: '2026-06-10',
+  lastUpdated: '2026-09-24',
   readingTime: '5 min',
   order: 6,
 };
@@ -82,8 +82,11 @@ especially valuable:
 
 ### Sandbox and UI
 The [sandbox](/en/docs/sandbox) has grown into a substantial React surface in its own right: a
-resources panel with an interactive table editor and image/SVG upload, a fonts panel, and
-configuration sections covering every corner of the engine. Every UI string follows a strict i18n
+figures panel with an interactive table editor and image/SVG upload, a fonts panel, and a Design
+panel whose eleven groups cover every corner of the engine. Its controls are built on Base UI
+primitives (`packages/postext-sandbox/src/ui/`) and checked with axe-core for WCAG 2.1 AA, so new
+controls should reuse them and keep every field named by its label and described by its help
+text. Every UI string follows a strict i18n
 convention, wired through labels across five files spanning the sandbox package and the web app's
 locale catalogs. If you contribute frontend or UX work, this is where it lands.
 

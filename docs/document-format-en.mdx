@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-09-22',
+  lastUpdated: '2026-09-24',
   readingTime: '10 min',
   order: 5,
 };
@@ -467,7 +467,7 @@ Math support is a first-class part of the document format. Postext parses `$…$
 
 - **Inline:** `$…$`. Recognised inside any text block (paragraph, heading, blockquote, list item). Contributes a single atomic, non-breaking box to the line; Knuth-Plass treats it like a word that must not be split. If the formula's natural height would break the line box, it is scaled down uniformly so the baseline grid is preserved — very tall expressions belong in display mode.
 - **Display:** `$$…$$`. Either on its own line (`$$\int_0^1 x^2\,dx$$`) or fenced across multiple lines with `$$` markers on their own lines. Rendered centred on the column and snapped to the baseline grid with configurable top and bottom margins (`math.marginTop`, `math.marginBottom`) — exactly the same correction mechanism headings use, so the paragraph after the formula lands back on the grid.
-- **Escaping:** `\$` is a literal dollar sign. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the warnings panel with a click-to-focus source anchor.
+- **Escaping:** `\$` is a literal dollar sign. Unmatched `$` or `$$` delimiters produce an `unclosedMath` entry in the Sandbox's Checks panel with a click-to-focus source anchor.
 - **Errors:** TeX source that MathJax rejects (undefined macros, syntax errors) surfaces as an `invalidMath` warning. The formula is replaced by a small red placeholder so the layout geometry stays valid.
 - **Configuration:** the `math` section of the config exposes `enabled`, `fontSizeScale` (relative to the body font size), `color` (inherits the body colour when unset), and the display margins.
 
@@ -482,7 +482,7 @@ $$
 
 ## Resources
 
-Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
+Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the Sandbox's [Figures panel](/en/docs/sandbox#figures-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
 
 Both forms below are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
 
@@ -512,7 +512,7 @@ The keeper's quarters occupy the eastern wing.
 
 For a floated resource the `::resource` directive is unnecessary — the `:ref` already placed it, and a redundant `::resource` for the same id is simply treated as another reference, not a second copy. A `::resource` only renders the resource inline when its resolved placement is `"here"`. An inline resource keeps a line of space above it (the float gap), like a float would, unless the block before asks for more.
 
-The `id` must match a resource defined in the Resources panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
+The `id` must match a resource defined in the Figures panel. The engine renders the resource (bitmap, SVG, or table) with its caption drawn underneath as a figure/table foot. The caption text is composed from the resource type's `captionPrefix`, the computed number, and the resource's own caption — e.g. **Figure 1.7. The original lighthouse plan.** Its typography is governed by [Configuration › Caption style](/en/docs/configuration#caption-style): label and description share one typeface and size, while the label keeps independent bold/italic/colour settings; the gap above the caption defaults to `0.75em` and the alignment to left. The caption can instead sit above the resource (`captionStyle.position: 'above'`, globally or per resource type), optionally on a coloured bar. A resource may also carry a `note` — a short source line or credit, with the same inline formatting and `:ref` marks as the caption — set in a smaller run under the resource (under the caption when the caption is below, under the body when it is above) and styled through `captionStyle.note`.
 
 Table resources draw their own grid, styled through [Configuration › Table style](/en/docs/configuration#table-style): body and header cells have fully independent typography, the header background defaults to `#f0f0f0`, borders to `0.75pt`, and `cellPadding` to `0.375em` — any field left unset inherits from the body text. Column widths are part of the table itself: `TableModel.columnWidths` holds one relative weight per column (`[2, 1, 1]` gives the first column half the width); when unset, columns split the width equally. A table can also be set in a named variant: `table.styleId` picks one of the document's `tableStyles` (see [Configuration › Named table styles](/en/docs/configuration#named-table-styles)), whose unset fields inherit `tableStyle`; an unknown or missing id keeps `tableStyle`.
 

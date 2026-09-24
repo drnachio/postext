@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-09-22',
-  readingTime: '12 min',
+  lastUpdated: '2026-09-24',
+  readingTime: '15 min',
   order: 7,
 };
 
@@ -14,83 +14,104 @@ export const metadata = {
 
 **An interactive playground for the Postext layout engine.**
 
-The Sandbox provides a VS Code-like interface where you can write markdown, manage resources and fonts, adjust layout configuration, and see the results rendered in real time through three synchronized output modes — **canvas**, **HTML** and **PDF**. It is designed for experimentation: tweak typography settings, change column counts, test resource placement strategies, and watch how the engine responds.
+The Sandbox gives you an editor-style interface where you write the text, manage figures and fonts, adjust the design, and see the result in real time in three synchronized output modes: **canvas**, **HTML** and **PDF**. It is built for experimenting. You can change the typography or the number of columns, try different figure placements, and watch how the engine responds. The panels use editorial words (books, figures, boxes, running heads) rather than engine terms, so people from publishing can find their way without knowing the configuration schema. Every control is keyboard- and screen-reader-accessible.
 
 ## Interface layout
 
-The Sandbox follows a familiar IDE paradigm with three main areas: a narrow **activity bar** for switching panels, a resizable **sidebar** hosting the active panel, and a **viewport** on the right with the three output tabs.
+The Sandbox has three main areas: a narrow **activity bar** for switching panels, a resizable **sidebar** that holds the active panel, and a **viewport** on the right with the three output tabs. The panel headers, the viewport's tab bar and the logo cell at the top of the activity bar share one height, so the top band reads as a single rule across the window.
 
-<Illustration name="SandboxLayout" data='{"title": "Sandbox interface", "desc": "56px activity bar on the left, resizable sidebar in the middle, and viewport on the right with Canvas, HTML, and PDF tabs.", "caption": "Three areas: activity bar, resizable sidebar, and viewport with output tabs.", "activityBar": "Activity", "activityIcons": ["📚", "MD", "📁", "T", "⚙", "⚠"], "sidebarTitle": "Sidebar", "sidebarSubtitle": "active panel", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "drag to resize"}' />
+<Illustration name="SandboxLayout" data='{"title": "Sandbox interface", "desc": "Activity bar on the left with six labelled panels, resizable sidebar in the middle, and viewport on the right with Canvas, HTML, and PDF tabs.", "caption": "Three areas: activity bar, resizable sidebar, and viewport with output tabs.", "activityBar": "Activity", "activityIcons": ["📚", "¶", "▣", "T", "⚙", "⚠"], "activityLabels": ["Books", "Text", "Figures", "Fonts", "Design", "Checks"], "sidebarTitle": "Sidebar", "sidebarSubtitle": "active panel", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "drag to resize"}' />
 
 ### Activity bar
 
-A narrow strip on the left edge contains icon buttons for navigating between panels. The top section holds six panel toggles, top to bottom:
+A narrow strip on the left edge has one button per panel. Each button shows an icon with a one-word label under it, and a longer hint as its tooltip (the same hint is the button's accessible description). From top to bottom:
 
-- **Projects** (`Files` icon) — Opens the projects panel: the book's chapters, local projects and the read-only preset bundles
-- **Markdown Editor** (`FileCode` icon) — Opens the markdown editing panel
-- **Resources** (`FolderOpen` icon) — Opens the resource management panel
-- **Fonts** (`Type` icon) — Opens the custom font management panel
-- **Configuration** (`Settings2` icon) — Opens the layout configuration panel
-- **Warnings** (`AlertTriangle` icon) — Opens the diagnostics panel; the icon carries a live count badge of current warnings, capped at `99+`
+- **Books** (`Files` icon): your books and the sample books, plus the chapters of the open book
+- **Text** (`FileCode` icon): write and edit the text of the current chapter
+- **Figures** (`FolderOpen` icon): images, diagrams and tables used in the book
+- **Fonts** (`Type` icon): the typefaces the book uses, and your own font files
+- **Design** (`Settings2` icon): page, typography, headings, figures, boxes and export settings
+- **Checks** (`AlertTriangle` icon): typesetting problems found in the layout. The icon carries a live count badge of current warnings, capped at `99+`.
 
-Clicking the active panel's icon collapses the sidebar. Clicking a different icon switches to that panel.
+Clicking the active panel's button collapses the sidebar, and clicking a different button switches to that panel. The bar is a single tab stop: the arrow keys (↑ / ↓, wrapping), **Home** and **End** move focus between the buttons, and Enter or Space opens the focused panel.
 
-The bar also hosts slots injected by the host application: an optional **home logo link** at the very top (via the `homeUrl` or `homeLink` props), plus a **theme toggle** and a **language switcher** at the bottom. The Export and Import buttons that used to live here are gone — whole projects are exchanged as `.postext` files from the Projects panel, and the Markdown and Configuration panel headers export their own part (see [Export and import](#export-and-import)).
+The host application can add its own items to the bar: an optional **home logo link** in the top cell (via the `homeUrl` or `homeLink` props), and a **theme toggle** and **language switcher** at the bottom. Whole books are exchanged as `.postext` files from the Books panel, and the Text and Design panel headers export their own part (see [Export and import](#export-and-import)).
 
 ### Sidebar panels
 
-The sidebar is resizable: drag the separator between the sidebar and the viewport to adjust its width (the viewport always keeps at least 200 px for itself). The sidebar collapses entirely when no panel is active, and its width is remembered between sessions.
+The sidebar is resizable. Drag the separator between the sidebar and the viewport, or focus it with Tab and use the keyboard: ← / → change the width by 2 % (10 % with Shift), and **Home** / **End** jump to the narrowest and widest sizes. The separator announces its current value to screen readers, and the viewport always keeps at least 200 px. The sidebar collapses entirely when no panel is active, and its width is remembered between sessions.
 
-#### Markdown editor
+Settings rows put their label beside the control, or above it when the sidebar is narrow. This uses container queries, so it follows the sidebar's width rather than the window's.
 
-A CodeMirror 6-based editor with:
+#### Text panel
 
-- **Syntax highlighting** — Headings, emphasis, links, code blocks, and blockquotes are visually distinct, with dedicated highlighting for **YAML frontmatter**, **LaTeX math** regions and **inline chips** (`:chip[…]` — the brackets and attributes marked, the chip text tinted)
-- **Chip completion** — Typing `:c` at the start of a word offers `:chip[…]` (the caret lands between the brackets); inside `{style="…"}` the configured chip style ids are offered
-- **Line numbers** and active line highlighting
+A CodeMirror 6 editor for the chapter's Markdown. Screen readers announce it as *Chapter text*. It has:
+
+- **Syntax highlighting**: headings, emphasis, links, code blocks and blockquotes are visually distinct, with dedicated highlighting for **YAML front matter**, **LaTeX math** regions and **inline chips** (`:chip[…]`: the brackets and attributes are marked and the chip text is tinted)
+- **Chip completion**: typing `:c` at the start of a word offers `:chip[…]` (the caret lands between the brackets). Inside `{style="…"}` the configured chip style ids are offered.
+- **Line numbers** and active-line highlighting
 - **Line wrapping** for long paragraphs
-- **Toolbar** — Starts with **Undo / Redo**, followed by bold, italic, heading levels 1–3, link, inline code, **chip** (wraps the selection in `:chip[…]`), blockquote, ordered and unordered lists, plus two directive inserters:
+- **Toolbar**: starts with **Undo / Redo**, followed by bold, italic, heading levels 1–3, link, inline code, **chip** (wraps the selection in `:chip[…]`), blockquote, ordered and unordered lists, plus two directive inserters:
   - `:::pagebreak`
-  - `:::numbering{format="decimal" startAt=1}` — inserted with example attributes ready to adjust
+  - `:::numbering{format="decimal" startAt=1}`: inserted with example attributes you can adjust
 
-Host applications can extend the toolbar with their own `extraActions`. The editor also reports its cursor and selection to the previews, enabling click-to-caret sync: clicking text in the rendered output moves the caret to the matching markdown position, and the previews can highlight the current selection.
+Host applications can add their own toolbar buttons through `extraActions`. The editor also reports its cursor and selection to the previews, which enables click-to-caret sync: clicking text in the rendered output moves the caret to the matching Markdown position, and the previews can highlight the current selection.
 
 The panel header is a **chapter switcher**: previous/next arrows, the chapter's position and title, and a menu listing every chapter of the book with its page range once its pagination is known (see [Books and chapters](#books-and-chapters)). Each chapter has its own editor instance, so undo history and caret position are kept per chapter. The header then offers three actions:
 
-- **Reset** (confirm popover) — Reloads the **document part** of the active preset: every chapter and the whole resource set are replaced with the preset's (for the built-in preset, the locale's sample document and example resources); the configuration is left alone except for the preset's custom fonts. See [Projects panel](#projects-panel).
-- **Export** — Downloads the active chapter as a plain `.md` file (`<project>-<nn>-<chapter>.md` in a multi-chapter book, otherwise named after the active project or `document.md`)
-- **Import** — Replaces the active chapter with the contents of a `.md` file
+- **Reset** (asks for confirmation): reloads the **document part** of the open sample book. Every chapter and the whole figure set are replaced with the sample's (for the built-in sample, the locale's sample document and example resources). The design is left alone except for the sample's own fonts. See [Books panel](#books-panel).
+- **Export**: downloads the active chapter as a plain `.md` file, named `<book>-<nn>-<chapter>.md` in a multi-chapter book, and otherwise after the open book or `document.md`
+- **Import**: replaces the active chapter with the contents of a `.md` file
 
-#### Projects panel
+#### Books panel
 
-The first panel in the activity bar. It has two groups:
+The first panel in the activity bar. In code and storage a book is still called a *project*, and a sample book a *preset*. The panel has two groups:
 
-- **Projects** — Local, editable documents stored in the browser (IndexedDB). The **active** row expands into a card that also lists the book's **chapters** (see [Books and chapters](#books-and-chapters)): one row per chapter with its page range and word count, the active chapter marked, an **Add chapter** button, and a per-row menu with **Rename**, **Move up / down**, **Split at level-1 headings**, **Merge into previous chapter** and **Delete** (the last chapter can never be deleted).
-While a project is active, the working document *is* that project: every edit to the markdown, configuration, resources and fonts is saved into it automatically (with the same 1-second debounce as `localStorage`), so switching projects and back restores everything. Projects are created from the header's **New** menu — **From current document** (copies the active book, its resources and fonts into a new project), **Blank project**, **Import .postext…** — or by duplicating any row; while there are none, the group shows an empty state with the same shortcut. Each project row offers **Rename** (inline name and description fields; Enter in either commits both and Escape cancels; the active row also renames on double-click), **Duplicate**, **Export** and **Delete** (confirm popover). A project also carries a **cover image**, shown where a showcase preset shows its thumbnail: duplicating a preset (or a project) adopts it, and while the row is being renamed the cover is the control that sets it — click it to choose a PNG, JPEG, WebP, GIF or SVG, or use the X beside it to drop the one there. The cover belongs to the project, not to its resources, and travels with it through export and import. Opening a project never asks for confirmation unless a preset with unsaved edits is active. Deleting the active project falls back to the built-in preset.
-- **Presets** — Read-only starting points, listed below the projects. **Duplicate as project** turns any preset into a local project that owns its own copies of the bundle's files, so later edits to the bundle on disk never touch the project; **Export** downloads the preset as a `.postext` file; **Hide** removes a preset from the list (the built-in one cannot be hidden). Hidden presets are collected under a *Hidden presets* disclosure at the bottom of the group, each with a **Show** action; the choice is remembered in `localStorage`.
+- **My books**: local, editable books stored in the browser (IndexedDB). The **open** row expands into a card that also lists the book's **chapters** (see [Books and chapters](#books-and-chapters)). Each chapter row shows its page range and word count, and the active chapter is marked. The card has an **Add chapter** button, and each chapter's ⋯ menu offers **Rename**, **Move up / down**, **Split at level-1 headings**, **Merge into previous chapter** and **Delete** (the last chapter can never be deleted).
 
-A `.postext` file imported from the **New** menu becomes a new, active project; exporting is a per-row action (the active project's row exports what is on screen). A `.postext` file is a preset bundle directory zipped (see [Export and import](#export-and-import)).
+  While a book of your own is open, the working document *is* that book. Every edit to the text, design, figures and fonts is saved into it automatically (with the same 1-second debounce as `localStorage`), so you can switch books and come back without losing anything. You create books from the header's **New** menu:
+    - **Copy of the open book** copies the open book, its figures and fonts into a new book.
+    - **Blank book** starts an empty one.
+    - **Open a .postext file…** imports a file.
 
-Reset buttons in the Markdown and Configuration panels restore the preset a project was duplicated from; a blank or imported project has no baseline, so they are hidden while it is active.
+  You can also duplicate any row. While you have no books of your own, the group shows an empty state with the same shortcut. Each row has one labelled **⋯** menu (*More actions for "…"*) with **Rename…**, **Duplicate**, **Download (.postext)** and **Delete…**. Delete asks for confirmation right next to the ⋯ button.
 
-##### Presets
+  Rename opens inline name and description fields. Enter in either field commits both, and Escape cancels. The open row also renames on double-click.
 
-A **preset bundle** is a whole starting point loaded as one unit: a markdown document, a `PostextConfig`, the resources (with their bitmap/SVG payloads and table models), and the custom font files the config refers to. The panel lists every preset the sandbox can reach and marks the active one:
+  A book also carries a **cover image**, shown where a sample book shows its thumbnail. Making a copy of a sample book (or of another book) adopts its cover. While a row is being renamed, the cover is the control that sets it: click it to choose a PNG, JPEG, WebP, GIF or SVG, or use the X beside it to remove the current one. The cover belongs to the book, not to its figures, and travels with it through export and import.
 
-- **Built-in preset** — *Postext guide*, the default sample document shipped with the package, always available and always first in the list. It is a **public** preset.
-- **Remote presets** — Bundles served over HTTP from the base URLs passed in the `presetSources` prop (see [Props](#props)). Each source is either public or **private**; private presets are tagged *Private* in the list and are meant for material that must not leave a machine — the public website only advertises a private source in local development, where the Next.js app serves the folder named by `POSTEXT_PRIVATE_PRESETS_DIR` through `/api/private-presets`. Production never lists it.
-- **`default: true`** — A private preset flagged as default is loaded automatically the first time a *pristine* sandbox (untouched built-in document) opens; when several are flagged, the one whose `locale` matches the UI locale wins. Public presets are never auto-loaded.
+  Opening a book never asks for confirmation unless a sample book with unsaved edits is open. Deleting the open book falls back to the built-in sample.
 
-Each row shows the preset's name, an optional description, its locale tag and its *Private* / *Default* tags. Clicking a row (confirm popover) loads the preset **in full** — document, resources, configuration and fonts — after writing the font files and resource blobs to IndexedDB, so the viewports never see a half-applied document. The active row carries a **Reload** icon that reloads the active preset in full. Loading a *different* preset always asks for confirmation; reloading the active one only asks when the document has local changes (an untouched document makes the reload idempotent).
+- **Sample books**: read-only starting points, listed below your books. The ⋯ menu of each row offers:
+    - **Make my own copy** turns the sample into a book of your own that holds its own copies of the bundle's files, so later edits to the bundle on disk never touch it.
+    - **Download (.postext)** saves the sample as a `.postext` file.
+    - **Hide from the list** removes the sample from the list (the built-in one cannot be hidden).
+    - **Restore the original…** reloads the open sample in full. It only appears on the open row.
 
-**Live presets.** Remote presets are followed automatically: whenever a preset is applied the sandbox records the bundle's *fingerprint* along with hashes of the markdown, configuration and resource set it applied. While the page is visible it polls the fingerprint every 3 seconds (and immediately when the tab becomes visible or the window regains focus). When the fingerprint changes:
+  Hidden samples are collected under a *Hidden sample books* disclosure at the bottom of the group, each with **Show in the list**. The choice is remembered in `localStorage`.
 
-- If the document is **untouched** — markdown, configuration and resources still hash to what the preset applied — the preset is re-applied in full and a brief *Preset updated from disk* notice appears in the panel.
-- If there are **local changes**, they are kept: a persistent banner at the top of the panel (*The preset has changed on disk. Your local changes are kept.*) offers a **Reload** button, and the Projects icon in the activity bar shows a dot until the preset is reloaded. Bundles are only followed while a preset is active; a project duplicated from one keeps its own copy.
+A `.postext` file opened from the **New** menu becomes a new, open book. Exporting is a per-row action: the open book's row exports what is on screen. A `.postext` file is a preset bundle directory zipped (see [Export and import](#export-and-import)).
 
-The same check runs on load, so editing a bundle and then opening the sandbox picks the new version up when the document was untouched. The fingerprint comes from `<preset-dir>/fingerprint.json`, a virtual file the development route answers with a metadata-only hash of the directory (see the [Preset bundle format](#preset-bundle-format) appendix); sources that do not serve it simply are not followed.
+The Reset buttons in the Text and Design panels restore the sample a book was copied from. A blank or imported book has no original, so the buttons are hidden while it is open.
 
-The active preset also defines what the other panels' **Reset** buttons restore:
+##### Sample books (presets)
+
+A **preset bundle** is a whole starting point loaded as one unit: the chapters' Markdown, a `PostextConfig`, the resources (with their bitmap/SVG payloads and table models), and the custom font files the config refers to. The panel lists every preset the Sandbox can reach and marks the open one:
+
+- **Built-in preset**: the *Postext guide*, the default sample book shipped with the package. It is always available, always first in the list, and **public**.
+- **Remote presets**: bundles served over HTTP from the base URLs passed in the `presetSources` prop (see [Props](#props)). Each source is either public or **private**. Private presets are tagged *Private* in the list and are meant for material that must not leave a machine. The public website only lists a private source in local development, where the Next.js app serves the folder named by `POSTEXT_PRIVATE_PRESETS_DIR` through `/api/private-presets`. Production never lists it. The website's public source, `/presets`, serves its bilingual sample books: *Bioquímica*, *Deep Sky*, *Don Quijote*, *Physics (OpenStax)*, *Spanish Painting* and *Signals 2020*, each with its licence and credits.
+- **`default: true`**: a private preset flagged as default is loaded automatically the first time a *pristine* Sandbox (untouched built-in document) opens. When several are flagged, the one whose `locale` matches the UI locale wins. Public presets are never loaded automatically.
+
+Each row shows the preset's name, an optional description, its locale tag and its *Private* / *Default* tags. Clicking a row loads the preset **in full**: text, figures, design and fonts. The Sandbox first writes the font files and figure data to IndexedDB, so the viewports never see a half-applied document. Opening a *different* sample book always asks for confirmation. **Restore the original…** on the open row only asks when the book has local changes (restoring an untouched book changes nothing).
+
+**Live presets.** Remote presets are followed automatically. Whenever a preset is applied, the Sandbox records the bundle's *fingerprint* along with hashes of the Markdown, configuration and resource set it applied. While the page is visible, it polls the fingerprint every 3 seconds, and immediately when the tab becomes visible or the window regains focus. When the fingerprint changes:
+
+- If the book is **untouched** (Markdown, configuration and resources still hash to what the preset applied), the preset is re-applied in full and a brief notice appears in the panel.
+- If there are **local changes**, they are kept. A banner at the top of the panel (*This sample book was updated. Your changes are kept.*) offers a **Reload** button, and the Books button in the activity bar shows a dot until the preset is reloaded. Bundles are only followed while a sample book is open. A book copied from one keeps its own copy.
+
+The same check runs on load, so if you edit a bundle and then open the Sandbox, it picks up the new version as long as the book was untouched. The fingerprint comes from `<preset-dir>/fingerprint.json`. On the development route this is a virtual file that returns a metadata-only hash of the directory (see the [Preset bundle format](#preset-bundle-format) appendix). Sources that do not serve it are not followed.
+
+The open sample book also defines what the other panels' **Reset** buttons restore:
 
 <table>
   <thead>
@@ -101,104 +122,237 @@ The active preset also defines what the other panels' **Reset** buttons restore:
   </thead>
   <tbody>
     <tr>
-      <td>Markdown editor</td>
-      <td>The preset's markdown and its resource set (the document part)</td>
+      <td>Text</td>
+      <td>The sample's text and its figure set (the document part)</td>
     </tr>
     <tr>
-      <td>Configuration</td>
-      <td>The preset's configuration, custom fonts included</td>
+      <td>Design</td>
+      <td>The sample's design, its fonts included</td>
     </tr>
     <tr>
-      <td>Projects (Reload)</td>
-      <td>Everything: document, resources, configuration and fonts</td>
+      <td>Books (Restore the original…)</td>
+      <td>Everything: text, figures, design and fonts</td>
     </tr>
   </tbody>
 </table>
 
-A preset that was active in an earlier session but is no longer listed by any source (typically a private preset in a build that does not serve it) still appears, greyed out as *Not available in this build*, so the sandbox keeps the loaded content instead of silently swapping it for the built-in one. The active preset id is persisted under the `postext-sandbox-preset` key (see [Persistence](#persistence)); the bundle format is described in the [Preset bundle format](#preset-bundle-format) appendix.
+A preset that was open in an earlier session but is no longer listed by any source (typically a private preset in a build that does not serve it) still appears, greyed out as *Not available in this build*. The Sandbox keeps the loaded content instead of silently swapping it for the built-in sample. The open preset's id is persisted under the `postext-sandbox-preset` key (see [Persistence](#persistence)). The bundle format is described in the [Preset bundle format](#preset-bundle-format) appendix.
 
-#### Resources panel
+#### Figures panel
 
-Manages the document's resources — bitmap images, SVG figures, and tables — referenced from the markdown via `::resource{id="…"}` blocks and `:ref{id="…"}` inline references. For the reference syntax and the float model, see [Document format → Resources](/en/docs/document-format#resources).
+Manages the book's resources: bitmap images, SVG figures and tables. The text refers to them with `::resource{id="…"}` blocks and `:ref{id="…"}` inline references. For the reference syntax and the float model, see [Document format → Resources](/en/docs/document-format#resources).
 
-**List view.** Resources are grouped by their resource-type name; resources whose `typeId` no longer matches a configured type fall into an *Untyped* group so they stay reachable. Each item shows a 36 px thumbnail — a real preview for bitmaps and SVGs, a glyph for tables — next to its caption and id. A **New** dropdown offers three entry points:
+**List view.** The header shows the number of resources. Resources are grouped by their resource-type name, and each group is a counted list. Resources whose `typeId` no longer matches a configured type fall into an *Untyped* group so you can still reach them. Each item shows a 36 px thumbnail next to its caption and id: a real preview for bitmaps and SVGs, and a glyph for tables. When the book has more than six resources, a **search** field (*Search figures and tables…*) filters the list by caption and id, ignoring accents. When the book has no resources yet, an empty state explains how to add them and place them in the text with `:ref{#id}`. A **New** dropdown offers three ways to add one:
 
-- **Upload image** — PNG, JPEG, WebP, or GIF
+- **Upload image**: PNG, JPEG, WebP or GIF
 - **Upload SVG**
-- **New table** — starts as a 2×2 grid with one header row
+- **New table**: starts as a 2×2 grid with one header row
 
-The whole panel is also a drag-and-drop target: drop files from disk and they upload in bulk, with ids slugified from their filenames. Unsupported files are skipped, and a short note reports how many were added and how many skipped.
+You can also drag and drop files from disk onto the panel. They upload in bulk, with ids slugified from their filenames. Unsupported files are skipped, and a short note reports how many were added and how many were skipped.
 
 **Detail view.** Selecting a resource opens its editor:
 
-- **ID** — Editable and slug-validated; duplicate ids are flagged and never committed, and an empty id gets a suggestion derived from the caption. Renaming preserves the stored binary payload.
-- **Type** — Select among the configured resource types
-- **Caption** — Supports inline Markdown (bold, italic, code, and `:ref`)
-- **Note** — An optional source line, credit, or remark set in a smaller run under the resource (same inline formatting as the caption); styled by the *Note* group of the *Captions* configuration section
-- **Alt text** — Accessibility description for the HTML output
-- **Table style** — For tables, the named style the table is set in (`table.styleId`): *Document table style* (the default) or one of the *Table Styles* declared in the settings; an id no style declares is listed as missing and renders with the document table style
-- **Placement** — Position (`auto` — the first free slot, the default — `top` / `bottom` / `here`) plus span (`column` / `page` / `side`, disabled when the position is `here`), matching the engine defaults of `auto` + `column`; an orientation: upright, or turned a quarter turn (top to the left, or to the right) — a turned resource takes a page of its own, flush to the spine, so the span select is disabled; a width fraction with an alignment for floats narrower than their column; and a **caption beside the figure** toggle for the side column of a column-and-a-half layout
-- **Payload** — Replace uploaders for the bitmap or SVG file
-- **SVG source** — For SVG figures, a source editor under the uploader where only the text nodes (the content of `<text>` / `<tspan>` elements, tinted in the editor) accept edits; typing anywhere else is rejected, and `<`, `>` and `&` typed into a text node are escaped so the file stays well-formed. Each change is saved after a short pause as a **new** stored file and the figure re-renders (single-ink recolouring included); the editor notes when the SVG has no text nodes
-- **Preview** — A live mock embed showing how the resource will look, with `#` standing in for the number (real numbers depend on where the resource lands in the document)
-- **Delete** — Guarded by a confirm popover that warns how many `::resource` / `:ref` references in the markdown would be left dangling
+- **ID**: editable and slug-validated. Duplicate ids are flagged and never committed, and an empty id gets a suggestion derived from the caption. Renaming keeps the stored image or SVG file.
+- **Type**: one of the configured resource types
+- **Caption**: supports inline Markdown (bold, italic, code and `:ref`)
+- **Note**: an optional source line, credit or remark, set in a smaller run under the resource (same inline formatting as the caption). It is styled by the *Note* group of the *Captions* settings.
+- **Alt text**: accessibility description for the HTML output
+- **Table style**: for tables, the named style the table is set in (`table.styleId`). This is either *Document table style* (the default) or one of the *Table styles* declared in the settings. An id that no style declares is listed as missing and renders with the document table style.
+- **Placement**:
+  - **Position**: `auto` (the first free slot, the default), `top`, `bottom` or `here`.
+  - **Span**: `column`, `page` or `side`. It is disabled when the position is `here`. The defaults match the engine's, `auto` + `column`.
+  - **Orientation**: upright, or turned a quarter turn (top to the left, or to the right). A turned resource takes a page of its own, flush to the spine, so the span select is disabled.
+  - **Width**: a width fraction with an alignment, for floats narrower than their column.
+  - **Caption beside the figure**: a toggle for the side column of a column-and-a-half layout.
+- **Payload**: uploaders that replace the bitmap or SVG file
+- **SVG source**: for SVG figures, a source editor under the uploader. Only the text nodes accept edits: the content of `<text>` / `<tspan>` elements, tinted in the editor. Typing anywhere else is rejected, and `<`, `>` and `&` typed into a text node are escaped so the file stays well-formed. Each change is saved after a short pause as a **new** stored file, and the figure re-renders (single-ink recolouring included). The editor notes when the SVG has no text nodes.
+- **Preview**: a live mock-up of how the resource will look, with `#` standing in for the number (real numbers depend on where the resource lands in the document)
+- **Delete**: asks for confirmation first, and warns how many `::resource` / `:ref` references in the text would be left pointing at nothing
 
 **Table editor.** Table resources open an interactive grid editor:
 
-- Toolbar with add/remove row and column, merge/split cells, header-row and header-column toggles, per-cell horizontal and vertical alignment (top, middle, bottom — the cell content moves as one unit inside a taller row), and a per-cell fill (a colour picker, palette-linkable, with a clear button) written to `TableCell.background` and shown in the grid
-- **Column widths** — One numeric weight per column under the grid (`2, 1, 1` gives the first column half the width; empty means equal widths), written to `table.model.columnWidths`. Adding or removing a column keeps the weights aligned; an *Equal widths* link clears them
-- **Paste-as-table** — Pasting TSV (or simple quoted CSV) fills the grid
-- **Undo/redo** — Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z
-- **Keyboard navigation** — Tab / Shift-Tab (with row wrap) and arrow keys move between cells
-- **Click-to-edit from the preview** — Clicking a table cell, a caption, a note, or a text fragment of an SVG figure on either preview tab opens the Resources panel on that resource and focuses the matching field with the caret on the clicked glyph; dragging selects a range inside the same cell or field, and a double-click selects the word. While the field has focus, its selection is mirrored back onto the page as a highlight (a thin caret when collapsed), on both the Canvas and HTML tabs
+- **Toolbar**:
+  - Add or remove rows and columns, and merge or split cells.
+  - Toggle a header row or a header column.
+  - Set each cell's horizontal and vertical alignment (top, middle or bottom). The cell content moves as one unit inside a taller row.
+  - Set each cell's fill: a colour picker, palette-linkable, with a clear button. The fill is written to `TableCell.background` and shown in the grid.
+- **Column widths**: one numeric weight per column under the grid (`2, 1, 1` gives the first column half the width; empty means equal widths), written to `table.model.columnWidths`. Adding or removing a column keeps the weights aligned, and an *Equal widths* link clears them.
+- **Paste as table**: pasting TSV (or simple quoted CSV) fills the grid
+- **Undo/redo**: Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z
+- **Keyboard navigation**: Tab / Shift-Tab (with row wrap) and the arrow keys move between cells
+- **Click to edit from the preview**: click a table cell, a caption, a note, or a text fragment of an SVG figure on either preview tab. The Figures panel opens on that resource and focuses the matching field, with the caret on the clicked glyph. Dragging selects a range inside the same cell or field, and a double-click selects the word. While the field has focus, its selection is mirrored back onto the page as a highlight (a thin caret when collapsed) on both the Canvas and HTML tabs.
 
-All edits go through pure model functions exported by the postext core — `addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment`, `parseTSV` — so the same table model behaves identically inside and outside the sandbox.
+All edits go through pure model functions exported by the postext core (`addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment` and `parseTSV`), so the same table model behaves identically inside and outside the Sandbox.
 
 #### Fonts panel
 
-Manages custom font families alongside the built-in Google Fonts catalogue:
+Shows the typefaces the book uses and manages your own font files alongside the built-in Google Fonts catalogue:
 
-- **Add, rename, and delete families**
-- **Upload variant files** per weight (100–900) and style (normal / italic). Accepted formats are WOFF2, WOFF, TTF, and OTF, detected by file extension; the files are stored in the browser's IndexedDB.
-- Custom families appear in every font picker under a **Custom** group alongside the Google Fonts results, and a custom family **takes precedence** over a Google Font with the same name.
-- Orphaned font files — uploads no longer referenced by any family — are pruned from IndexedDB automatically.
+- **Typefaces in this book** lists every family the design uses. Each family name is set in its own typeface, with its role (*Body text*, *Headings* or *Other elements*) and its source (*Google Fonts* or *Your file*). You change the typefaces themselves in **Design → Typography** and **Headings & contents**.
+- **Your font files** is where you add, rename and delete custom families.
+  - **Upload variant files** per weight (100–900) and style (normal / italic). Accepted formats are WOFF2, WOFF, TTF and OTF, detected by file extension. The files are stored in the browser's IndexedDB.
+  - Custom families appear in every font picker under a **Custom** group alongside the Google Fonts results. A custom family **takes precedence** over a Google Font with the same name.
+  - Orphaned font files (uploads no longer used by any family) are removed from IndexedDB automatically.
 
-#### Configuration panel
+#### Design panel
 
-A form-based editor for `PostextConfig` with more than five hundred fields, so it starts with a toolbar for finding them:
+A form-based editor for `PostextConfig`, with more than five hundred fields.
 
-- **Search** — Filters every field across every section by its label, tooltip and option names (accent-insensitive, matching word prefixes: *marg* finds *Top Margin* and *Margen superior*, *h3* opens *Headings › H3*). Matching sections open automatically, non-matching rows and sections hide, and hits are highlighted; clearing the search restores each section's remembered open/closed state. Escape clears the search, then blurs it.
-- **Categories** — Chips that show one group of sections at a time: **All**, **Document** (Page, Layout, Color palette, Header & footer, Parts), **Text** (Body text, Headings, Heading styles, Table of contents, Paragraph styles, Chip styles, lists, Math), **Figures & tables** (Resource types, Captions, Tables, Table styles, Diagrams, Callout styles), **Output** (HTML viewer, PDF generation) and **Advanced** (Debug, Warnings). A gilt dot marks categories that carry overrides; the choice is remembered. A text search spans every category.
-- **Modified only** — Shows only the fields whose value differs from the default.
+**Overview.** When the Design panel opens, it shows an overview:
 
-Section headers show a gilt dot with the number of overridden fields inside. The sections, by category:
+- A **This book** card with a live drawing of the page. The drawing uses true proportions and shows the margins, the columns and the page and ink colours, as a spread when the margins are mirrored. Beside it are the trim size, the column layout, the body typeface and size, and the palette.
+- The list of the eleven **settings groups**. Each group has a one-sentence description and the number of sections you have changed in it.
 
-- **Document** — *Color Palette* (named colors reused by every color picker), *Page* (size, margins — with a **mirrored** toggle that turns left/right into inner/outer margins for facing pages — DPI, cut lines, baseline grid, page numbering), *Layout* (single, double, or column-and-a-half, gutter, side column), *Header & Footer* (per-slot text, rule, box and image elements — text with vertical alignment, line height, letter spacing, letter case, a fitted, filled or fixed width and height, and a max width; rules horizontal or vertical — with placeholders picked from the engine allow-list — page number, total pages, title, subtitle, author, publish date, chapter title and number, part title and number, and `{attr.key}` for a chapter attribute — parity, a **pages** filter — all, body, chapter openers, part dividers or blank pages — overflow, and anchored placement to the container, to a sibling element, or to the **page** / **bleed** frame for edge-to-edge bands, plus a **Drop cap** group — lines, font, weight, size, colour, gap — and a paragraph indent; every other design slot offers the same text controls)
-- **Text** — *Body Text* (the **document language**, font, size, line height, alignment, hyphenation), *Headings* (general defaults plus per-level H1–H6 settings, letter case, break-before with parity, span, a **Snap to grid** toggle (`headings.snapToGrid`, on by default: the flow snaps back to the baseline grid under a heading), an advanced per-level design slot editor with a minimum opener height, and the column-balancing levers with their per-lever caps), *Heading styles* (`headingStyles`: named styles applied with `{style="…"}` on a heading line — add, remove and rename ids, choose whether the heading is numbered and listed in the contents, override the heading typography, break and span, give the section its own running heads — starting from the document's if you like — margins, column layout — with the side column's role and edge, as in the Layout section — body style and palette colours), *Chip Styles* (`chipStyles`: named styles for the inline `:chip[text]{style="…"}` — the built-in `chip` style is shown while the configuration has none; add, remove and rename ids, then set the **Text** — font, size, colour, bold, italic, each inheriting the surrounding text until set — and the **Box** — fill, outline width and colour, corner radius, horizontal and vertical padding, and the minimum gap to the neighbouring words), *Table of contents* (`toc`: the heading levels a `:::toc` lists with the entry typography of each, the unnumbered entries, page numbers, leader dots, the subtitle line read from a heading attribute, and the part rows with their own design slot), *Parts* (`parts`: the parity of the page a `:::part` opens on, an optional break after the part with its own parity, the margins of the part page — inheriting the page margins, with the same mirrored inner/outer labels — an **opener design** slot laid out against the page trim box whose placeholder picker adds the heading set: current title and its number in decimal, roman or alphabetic form; and a **body style** for the blocks inside the part that inherits the body text and the list colours), *Unordered Lists*, *Ordered Lists* (per level, the separator's font, weight, italic, colour and gap next to its numbering), *Math*
-- **Figures & tables** — *Tables* (`tableStyle`: body and header typography, fills, borders with a **rules** pattern — full grid, horizontal only, outer frame, or none — a **corner radius** for the outer frame, and cell padding), *Table Styles* (`tableStyles`: named table styles — add, remove, and rename ids (renaming carries along the tables that use the id), then set any of the *Tables* fields; each control shows the value inherited from *Tables* until set), *Captions* (`captionStyle`: typeface, size, alignment, **position** above or below the resource, an optional **background bar** with its colour and padding, independent label and description styling, and a **Note** group for the resource note's size, colour, slant, alignment and gap), *Paragraph Styles* (`paragraphStyles`: named styles for `:::paragraphs{style="…"}` containers — add, remove, and rename ids, then set font, size, line height, colour, alignment, hyphenation, first-line and hanging indents, space between paragraphs, and margins; unset fields inherit the body text), *Callout Styles* (`calloutStyles`: named styles for `:::callout{type="…"}` — add, duplicate, remove, and rename ids, then set the default title, span, placement, width, background, border, corner radius, padding, an edge **stripe**, an **icon** that is either a text glyph or an SVG/bitmap picked from the Resources panel — set inline or as a corner badge, with its corner side and a width for non-square artwork — a **Label tab** group (`calloutStyles[].label`: font, size, weight, colour, fill, corner, height, padding, offset, inset, an icon resource beside the tab and a rule along the top edge), title typography with letter spacing and indent, body and list overrides that inherit the document text — including the body's bold colour and the bullet's size and weight — a column gap for `:::columns` groups inside the box, a **Snap to grid** toggle (`calloutStyles[].snapToGrid`, on by default; off keeps the exact bottom margin for stacked boxes), and the marker column, fixed anchor, keep-together / split-min-lines and float-barrier controls), *Diagrams* (`diagramStyle`: a **single-ink** toggle that recolors SVG diagrams to tints of one ink for single-colour printing, plus an ink-colour picker defaulting to the palette's main colour), *Resource Types* (per-type names, short labels, numbering templates with `{n}` and `{h1}`…`{h6}` placeholders, counter format and reset level, caption prefix, a live "Fig. 1.7"-style preview, a **Placement** group with the type's default position, span — column, page or the side column — and rotation, joined by a width fraction, an alignment for narrower floats and a caption-beside-figure toggle, and a collapsible **caption style override** that replaces only the caption fields you set for that type — position, bar, colours, typeface — and inherits the rest)
-- **Output** — *HTML Viewer*, *PDF Generation*
-- **Advanced** — *Debug*, *Warnings* (thresholds for the diagnostics panel)
+**One page per group.** Opening a group shows that group's sections as their own page. Only that group is built, which keeps the panel fast even on large books.
 
-The panel follows a consistent **override model**: each section remembers its open/closed state across sessions; a section header shows a reset button (with confirm) only while it contains overrides; and every control grows a small per-field reset that appears whenever its value differs from the default. Only the overridden subtree is ever saved or exported — defaults are stripped, so a pristine sandbox stores an empty configuration.
+- A breadcrumb (**Design › group**) leads back to the overview.
+- Chips under the page heading jump to each section on the page.
+- A **Next** link at the bottom opens the following group.
+- Focus moves to the page heading when you open a group, and back to the group's row when you return.
+- The open group is remembered between sessions.
 
-Controls are context-aware: gutter width only appears for multi-column layouts, hyphenation settings only appear when text is justified, and side column percentage only shows for the column-and-a-half layout. Changes take effect immediately in the viewport preview. For a full reference of all configuration options and their defaults, see the [Configuration](/en/docs/configuration) page.
+The groups, in browsing order:
 
-The panel header offers **Reset** (confirm popover; only shown when the configuration differs from the active preset's — it restores that preset's configuration, custom fonts included), **Export**, and **Import** — see [Export and import](#export-and-import).
+- **Page & columns**
+  - *Page*: fields are grouped as **Size**, **Margins**, **Paper**, **Numbering** and **Print preparation**.
+    - **Size**: the size presets say what they are for: *Pocket book* 11 × 17, *Novel, narrative* 12 × 19, *Essay, handbook* 17 × 24 and *Textbook, magazine* 21 × 28, or *Custom*.
+    - **Margins**: each margin is tied to the page drawing. Pointing at a margin field or focusing it tints that margin on the drawing. A **mirrored** switch turns left/right into inner/outer margins for facing pages.
+    - **Paper**: the page background colour.
+    - **Numbering**: the page-number format and the number the pages start at.
+    - **Print preparation**: DPI and cut lines.
+  - *Columns*: the layout is chosen from picture cards: *One column* (novels, essays), *Two columns* (textbooks, magazines, reference works) or *Column and a half* (a main column plus a narrow side column for notes and small figures). The section also has the gutter, the side column, and **Shrink figures that don't fit** (`layout.fitFiguresToPage`).
+- **Colours**
+  - *Palette*: named colours reused by every colour picker. Changing an entry updates every reference to it.
+- **Typography**
+  - *Body text*: opens with a true-size **type specimen** set in the current typeface, size, leading and colour. Its line breaks are the browser's; the page uses Postext's. The fields are grouped as:
+    - **Typeface**: font, size, line height, and the regular and bold weights.
+    - **Paragraphs**: alignment (with hyphenation and the justification limits when the text is justified), indents and paragraph spacing.
+    - **Colour**: the text, bold and italic colours.
+    - **Language**: the document language.
+    - **Widows, orphans and short lines** (collapsible): includes **Tighten to pull a runt back** (`bodyText.tightenRunts`) and **Most letter-spacing tightening** (`bodyText.maxRuntTracking`).
+    - **Cross-references** (collapsible).
+  - *Paragraph styles* (`paragraphStyles`): named styles for `:::paragraphs{style="…"}` containers. You can add, remove and rename ids, then set the font, size, line height, colour, alignment, hyphenation, first-line and hanging indents, space between paragraphs, and margins. Unset fields inherit the body text.
+  - *Inline labels* (`chipStyles`): named styles for the inline `:chip[text]{style="…"}`. The built-in `chip` style is shown while the configuration has none. You can add, remove and rename ids, then set:
+    - **Text**: font, size, colour, bold and italic. Each inherits the surrounding text until you set it.
+    - **Box**: fill, outline width and colour, corner radius, horizontal and vertical padding, and the minimum gap to the neighbouring words.
+  - *Formulas* (`math`).
+- **Headings & contents**
+  - *Headings*: general defaults plus per-level H1–H6 settings. They include:
+    - letter case, break-before with parity, and span;
+    - a **Snap to grid** switch (`headings.snapToGrid`, on by default: the text snaps back to the baseline grid under a heading);
+    - an advanced per-level design slot editor with a minimum opener height;
+    - the column-balancing levers, with their per-lever caps.
+  - *Heading styles* (`headingStyles`): named styles applied with `{style="…"}` on a heading line. You can add, remove and rename ids, and for each style:
+    - choose whether the heading is numbered and listed in the contents;
+    - override the heading typography, break and span;
+    - give the section its own running heads, optionally starting from the document's;
+    - set its margins and column layout (with the side column's role and edge, as in *Columns*, and its own *Shrink figures that don't fit*);
+    - set the body style, list overrides and palette colours.
+  - *Contents* (`toc`): the heading levels a `:::toc` lists, with the entry typography of each. It also covers the unnumbered entries, page numbers, leader dots, the subtitle line read from a heading attribute, and the part rows with their own design slot.
+- **Lists**
+  - *Bulleted lists*.
+  - *Numbered lists*: for each level, the separator's font, weight, italic, colour and gap next to its numbering.
+- **Figures & tables**
+  - *Numbering & placement* (`resourceTypes`): for each resource type:
+    - names and short labels;
+    - numbering templates with `{n}` and `{h1}`…`{h6}` placeholders, the counter format and reset level, and the caption prefix, with a live "Fig. 1.7"-style preview;
+    - a **Placement** group: the type's default position, span (column, page or the side column) and rotation, a width fraction, an alignment for narrower floats, and a caption-beside-figure switch;
+    - a collapsible **caption style override** that replaces only the caption fields you set for that type (position, bar, colours, typeface) and inherits the rest.
+  - *Captions* (`captionStyle`): typeface, size, alignment and **position** above or below the resource. There is an optional **background bar** with its colour and padding, and the label and description are styled independently. A **Note** group sets the resource note's size, colour, slant, alignment and gap.
+  - *Tables* (`tableStyle`):
+    - body and header typography, and fills;
+    - borders, with a **rules** pattern: full grid, horizontal only, outer frame or none;
+    - a **corner radius** for the outer frame;
+    - cell padding.
+  - *Table styles* (`tableStyles`): named table styles. You can add, remove and rename ids (renaming carries along the tables that use the id), then set any of the *Tables* fields. Each control shows the value inherited from *Tables* until you set it.
+  - *Diagrams* (`diagramStyle`): a **single-ink** switch that recolours SVG diagrams to tints of one ink for single-colour printing, plus an ink-colour picker that defaults to the palette's main colour.
+- **Boxes**
+  - *Box styles* (`calloutStyles`): named styles for `:::callout{type="…"}`. You can add, duplicate, remove and rename ids, then set:
+    - the default title, span, placement and width;
+    - the background, border, corner radius and padding, and an edge **stripe**;
+    - an **icon**: either a text glyph or an SVG/bitmap picked from the Figures panel. It can be set inline or as a corner badge, with its corner side and a width for non-square artwork.
+    - a **Label tab** group (`calloutStyles[].label`): font, size, weight, colour, fill, corner, height, padding, offset and inset, an icon resource beside the tab, and a rule along the top edge;
+    - title typography, with letter spacing and indent;
+    - body and list overrides that inherit the document text. These include the body's bold and **italic colours** and the bullet's size and weight.
+    - a column gap for `:::columns` groups inside the box;
+    - a **Snap to grid** switch (`calloutStyles[].snapToGrid`, on by default; off keeps the exact bottom margin for stacked boxes);
+    - the marker column, a fixed anchor, keep-together and split-min-lines, and the float-barrier controls.
+- **Headers & footers**
+  - *Headers & footers*: per-slot text, rule, box and image elements.
+    - **Text elements**: vertical alignment, **text alignment** within their own box (`align`: flush left, centred or flush right, visible when the box is wider than the text), line height, letter spacing, letter case, a fitted, filled or fixed width and height, and a maximum width.
+    - **Rules**: horizontal or vertical.
+    - **Placeholders**, picked from the engine allow-list: page number, total pages, title, subtitle, author, publish date, chapter title and number, part title and number, and `{attr.key}` for a chapter attribute.
+    - **Where a slot appears**: parity, and a **pages** filter: all, body, chapter openers, part dividers or blank pages.
+    - **Placement**: overflow, and an anchor to the container, to a sibling element, or to the **page** / **bleed** frame for edge-to-edge bands.
+    - A **Drop cap** group (lines, font, weight, size, colour and gap) and a paragraph indent.
+    - Every other design slot offers the same text controls.
+- **Parts**
+  - *Parts* (`parts`):
+    - **Part title page** (`parts.page`): turning it off opens no page, and the part's number, title and colours simply apply from the next content. It also hides the settings below.
+    - the parity of the page a `:::part` opens on, and an optional break after the part with its own parity;
+    - the margins of the part page. They inherit the page margins, with the same mirrored inner/outer labels.
+    - an **opener design** slot laid out against the page trim box. Its placeholder picker adds the heading set: the current title, and its number in decimal, roman or alphabetic form.
+    - a **body style** for the blocks inside the part. It inherits the body text and the list colours, and it includes the list overrides (numbering format and offsets, margins, hanging indent, and the task-list fields).
+- **Export**
+  - *PDF*.
+  - *Web reader (HTML)*: the `htmlViewer` settings.
+- **Advanced**
+  - *On-screen aids* (`debug`): the **baseline grid** (`page.baselineGrid`), which lives here rather than under *Page*, and the other layout-checking overlays.
+  - *Warnings*: which problems the Checks panel reports, and their thresholds.
 
-#### Warnings panel
+**Finding a setting.** The toolbar under the header works across every group:
 
-Live diagnostics recomputed from the markdown, the configuration, the resources, and the last build — the same count that badges the activity bar icon. Representative kinds:
+- **Search settings…** filters every field in every section by its label, help text and option names. It ignores accents and matches the start of words: *marg* finds *Top margin* and *Margen superior*, and *h3* opens *Headings › H3*. Results are grouped by settings group. Matching sections open automatically, non-matching rows and sections are hidden, and hits are highlighted. Escape clears the search, then leaves the field.
+- **Changed** shows only the fields whose value differs from its default.
 
-- **Fonts** — Missing font family; missing or duplicate weight/style variants in a custom family
-- **Typography** — Loose lines (interword spacing stretched past the configured threshold); heading-hierarchy skips (e.g. H1 → H3); consecutive headings with no body text between them
-- **Math** — Invalid or unclosed `$…$` / `$$…$$` formulas
-- **Directives and containers** — Unknown directive names (every name the parser knows — `pagebreak`, `numbering`, `callout`, `paragraphs`, `part` — is accepted); invalid numbering or parity attributes; a `:::` container fence left unclosed at the end of the document (click focuses its opening line); a `:::paragraphs{style="…"}` whose style id is not configured; a `:::callout{type="…"}` whose type is not among the configured callout styles; a `:chip[…]{style="…"}` whose style is not configured
-- **Chips** — *Chips touch the next line*: a chip style whose box is taller than the line pitch (the excess in points), so chips on consecutive lines touch
-- **Headers & footers** — Placeholder names outside the engine allow-list (`{attr.…}` and the part placeholders are accepted); placeholders whose document metadata is missing
-- **Design** — Cyclic or dangling anchors between design elements; text elements whose clip overflow always truncates
-- **Resources** — Unknown resource id in a `::resource` / `:ref`; duplicate resource ids; dangling resource-type references; bitmaps rendered substantially larger than their pixel size; storage unavailable (IndexedDB missing)
+**Help text.** Every field has a short explanation. Screen readers hear it as the field's description, and it stays hidden on screen until you open it with the row's **?** button (*What is "…"?*). The header's **Show every explanation** switch opens every explanation at once, and the choice is remembered.
 
-Each entry shows an icon, a title, a one-line detail, and — where applicable — the chapter and source line (*Ch. 2 · Line 12* in a multi-chapter book); clicking an entry with a source location switches to that chapter and focuses the editor at that spot. A book-specific kind, *Front matter ignored*, flags a chapter other than the first that starts with a front-matter block (only the first chapter's front matter is the book's).
+**Changed values.** The panel follows a consistent **override model**:
+
+- Section headers carry a badge with the number of changed fields inside, counted through nested groups.
+- A section header shows a reset button (which asks for confirmation) only while it contains changes.
+- A changed field has a dot beside its label (read as *changed*) and a small reset button of its own.
+- Only the changed subtree is ever saved or exported. Defaults are stripped, so a pristine Sandbox stores an empty configuration.
+- Resetting *Page* leaves the baseline grid alone, since the grid is edited under *Advanced*.
+
+**The controls:**
+
+- Choices are dropdowns whose options can carry a one-line description, or segmented buttons when there are only a few.
+- On/off settings are switches.
+- Numbers have − / + steppers. The arrow keys step the value, ten times as much with Shift and a tenth with Alt.
+- Lengths have a unit selector that converts the value when the unit changes (cm, mm, in, pt, px, em, rem).
+- A colour is a single button showing the swatch and the value.
+- The font picker can be navigated with the arrow keys.
+
+Controls are context-aware. The gutter width only appears for multi-column layouts, hyphenation settings only appear when text is justified, and the side-column percentage only appears for the column-and-a-half layout. Changes take effect immediately in the viewport preview. For a full reference of every configuration option and its default, see the [Configuration](/en/docs/configuration) page.
+
+The panel header also offers **Reset** (asks for confirmation; only shown when the design differs from the open sample book's, and it restores that sample's design, fonts included), **Export** and **Import**. See [Export and import](#export-and-import).
+
+#### Checks panel
+
+Live diagnostics, recomputed from the text, the design, the figures and the last build. The count matches the badge on the activity bar button. Warnings are grouped by kind, in triage order: what breaks the output first, then the markup, then the fine typesetting that usually comes in many small items. Each group is collapsible and shows its count:
+
+- **Fonts**: a missing font family, or missing or duplicate weight/style variants in a custom family
+- **Figures & tables**: an unknown resource id in a `::resource` / `:ref`, duplicate resource ids, references to a resource type that does not exist, and bitmaps rendered substantially larger than their pixel size
+- **Text & markup**:
+  - heading-hierarchy skips (for example H1 → H3), and consecutive headings with no body text between them;
+  - invalid or unclosed `$…$` / `$$…$$` formulas;
+  - unknown directive names (every name the parser knows is accepted: `pagebreak`, `numbering`, `callout`, `paragraphs` and `part`) and invalid numbering or parity attributes;
+  - a `:::` container fence left unclosed at the end of the document (clicking it focuses its opening line);
+  - a `:::paragraphs{style="…"}`, `:::callout{type="…"}` or `:chip[…]{style="…"}` whose style is not configured;
+  - *Front matter ignored*: a chapter other than the first that starts with a front-matter block (only the first chapter's front matter belongs to the book).
+- **Design**:
+  - header and footer placeholder names outside the engine allow-list (`{attr.…}` and the part placeholders are accepted), and placeholders whose document metadata is missing;
+  - cyclic anchors between design elements, or anchors to an element that does not exist;
+  - text elements whose clip overflow always truncates.
+- **Typesetting**:
+  - loose lines (word spacing stretched past the configured threshold);
+  - boxes that overflow their column;
+  - *Chips touch the next line*: a chip style whose box is taller than the line pitch (the excess is given in points), so chips on consecutive lines touch;
+  - parity cascades.
+- **Browser**: storage unavailable (IndexedDB missing)
+
+Each entry shows an icon, a title, a one-line detail and, where it applies, the chapter and source line (*Ch. 2 · Line 12* in a multi-chapter book). Clicking an entry with a source location switches to that chapter and focuses the editor at that spot. When nothing is wrong, the panel shows **All clear**. Which checks run is set in **Design → Advanced → Warnings**.
 
 ### Main viewport
 
@@ -229,7 +383,7 @@ A toolbar at the top of the viewport provides:
 - **Font-scale controls** — Shrink or grow body text while preserving every relative measurement in the configuration.
 - **Column modes** — Single (one tall scrollable column) or multi (the number of columns whose width comes closest to the configured measure, with horizontal scroll-snap between pages). A double-column document keeps its two-column pages, but the viewer may show an odd number of columns — three rather than two stretched or four squeezed — when that is the nearest fit; the last one then belongs to the next page, half in view.
 
-Column geometry is driven by the **HTML Viewer** section of the configuration sidebar: `maxCharsPerLine` sets the target measure in characters of the body font, `columnGap` the horizontal gap between columns in multi mode, and `optimalLineBreaking` toggles Knuth–Plass inside the viewer. See the [HTML Viewer configuration reference](/en/docs/configuration#html-viewer) and the end-to-end [integration example](/en/docs/configuration#integrating-the-html-viewer) for the same pattern used internally by the sandbox.
+Column geometry is driven by the **Web reader (HTML)** section of the Design panel (**Design → Export**): `maxCharsPerLine` sets the target measure in characters of the body font, `columnGap` the horizontal gap between columns in multi mode, and `optimalLineBreaking` toggles Knuth–Plass inside the viewer. See the [HTML Viewer configuration reference](/en/docs/configuration#html-viewer) and the end-to-end [integration example](/en/docs/configuration#integrating-the-html-viewer) for the same pattern used internally by the sandbox.
 
 #### PDF tab
 
@@ -246,12 +400,12 @@ Under the hood the sandbox uses a `createPdfFontProvider()` helper that fetches 
 
 ## Books and chapters
 
-A sandbox project is a **book**, the way an InDesign book file groups one document per chapter: the configuration, the custom fonts and the resource set are shared by the whole book, and each **chapter** is its own markdown document. Long works — a five-hundred-page textbook — are edited one chapter at a time, while numbering, cross-references and export still see one document.
+Everything you open in the Sandbox is a **book**, the way an InDesign book file groups one document per chapter: the configuration, the custom fonts and the resource set are shared by the whole book, and each **chapter** is its own markdown document. Long works — a five-hundred-page textbook — are edited one chapter at a time, while numbering, cross-references and export still see one document.
 
-- **Structure** lives inside the active project's (or preset's) card in the Projects panel and in the Markdown panel's chapter switcher: add, rename (double-click a row), reorder, split a chapter into one per level-1 heading, merge a chapter into the previous one, delete. Every chapter keeps its own undo history and caret.
+- **Structure** lives inside the open book's card in the Books panel and in the Text panel's chapter switcher: add, rename (double-click a row), reorder, split a chapter into one per level-1 heading, merge a chapter into the previous one, delete. Every chapter keeps its own undo history and caret.
 - **One chapter at a time.** By default the previews lay out the **active chapter**, continued after the chapters before it: its first page number follows the last page of the previous chapter, level-1 headings keep counting (chapter 4 is numbered 4, its figures 4.1, 4.2, …), `{chapterNumber}` and `{chapterTitle}` running heads follow, recto/verso parity is kept (a chapter opener pads a blank page exactly as it would mid-book), and a `:ref` to a figure first mentioned in chapter 1 keeps that number. The page counts of the preceding chapters come from the layout that last showed each of them; chapters never visited (or edited since) are laid out in the background, one after the other, and the chapter list reads *pages pending* until they land. Page ranges are exact for chapters that open on a fresh page (the default); a chapter whose text would have run on from the previous page is placed at the top of its own page instead.
 - **Whole book.** The canvas, the HTML preview and the PDF tab can show the whole book as one continuous document: pick **Whole book** in the selector at the left of the tab bar (books with more than one chapter). The canvas then lays out every chapter in order, each after the pages the ones before it came to, and shows the documents stitched together — an edit re-lays out its chapter alone, and the chapters after it only when their first page moved; the chapter list, the `chapter=` and `page=` parts of the permalink and the editor sync follow the page's chapter. The choice is kept with the book (a short novel reads as one document, a textbook one chapter at a time), and a preset can open that way through the manifest's `view.canvasScope`. The HTML preview shares the canvas choice and lays the whole book out as one document from its first page, the contents rows and the fragment following each page's chapter; the PDF tab keeps its own selector.
-- **Front matter.** The first chapter's front matter is the book's front matter (title, author, …). A front-matter block at the top of any other chapter is ignored, and the Warnings panel says so.
+- **Front matter.** The first chapter's front matter is the book's front matter (title, author, …). A front-matter block at the top of any other chapter is ignored, and the Checks panel says so.
 - **Chapter openers.** No page break is forced between chapters: a chapter whose first block is a level-1 heading opens on a fresh page through the heading's own *break before* setting, exactly like a chapter that starts mid-document.
 - **Sync.** Clicking a paragraph of any chapter in the Canvas or HTML preview switches the editor to that chapter and places the caret; the editor caret is highlighted in the previews wherever the chapter sits in the book. Warnings carry their chapter.
 - **Existing documents** open as a book with one chapter; nothing changes until a second chapter is added.
@@ -261,23 +415,23 @@ A sandbox project is a **book**, the way an InDesign book file groups one docume
 The Sandbox automatically saves your work to the browser:
 
 - **Book and configuration** — The chapters, the active chapter and the canvas scope are auto-saved to `localStorage` under `postext-sandbox-book` (a single document saved by an earlier version is read from `postext-sandbox-markdown` as a one-chapter book and migrated on the first save); the configuration is saved after 1 second of inactivity with defaults stripped so only your overrides are stored
-- **UI state** — The active panel and viewport tab, sidebar width, configuration section open states and category filter, hidden presets, canvas zoom/fit/view modes, HTML font scale and column mode, and toolbar pin states are all persisted in `localStorage`
-- **Active project** — The id of the active local project is stored in `localStorage` under `postext-sandbox-project`; the projects themselves (chapters, configuration and resource records; record `version: 2`, with single-document records from earlier versions migrated when read) live in the `projects` store of the sandbox's IndexedDB database, and their binary payloads share the blob and font stores with the working document. Payloads are garbage-collected when neither the working document nor any project references them
-- **Active preset** — The id of the last loaded preset is stored in `localStorage` under `postext-sandbox-preset`, so the panels' Reset buttons keep restoring that preset across sessions (a preset that is no longer served shows as unavailable). What that preset applied — its bundle fingerprint plus hashes of the markdown, configuration and resource set — is stored under `postext-sandbox-preset-applied`, which is how the next visit tells an untouched document from an edited one
-- **Resources and fonts** — Resource records, their binary blobs (bitmaps and SVGs), and custom font files persist in **IndexedDB**; when IndexedDB is unavailable (e.g. some private-browsing modes), a *storage unavailable* warning appears in the Warnings panel
+- **UI state** — The active panel and viewport tab, sidebar width, the Design panel's open group (`postext-sandbox-settings-group`), its *Show every explanation* switch (`postext-sandbox-settings-help`) and section open states, hidden sample books, canvas zoom/fit/view modes, HTML font scale and column mode, and toolbar pin states are all persisted in `localStorage`
+- **Open book** — The id of the open book of your own (a *project*) is stored in `localStorage` under `postext-sandbox-project`; the projects themselves (chapters, configuration and resource records; record `version: 2`, with single-document records from earlier versions migrated when read) live in the `projects` store of the sandbox's IndexedDB database, and their binary payloads share the blob and font stores with the working document. Payloads are garbage-collected when neither the working document nor any project references them
+- **Open sample book** — The id of the last loaded preset is stored in `localStorage` under `postext-sandbox-preset`, so the panels' Reset buttons keep restoring that preset across sessions (a preset that is no longer served shows as unavailable). What that preset applied — its bundle fingerprint plus hashes of the markdown, configuration and resource set — is stored under `postext-sandbox-preset-applied`, which is how the next visit tells an untouched document from an edited one
+- **Resources and fonts** — Resource records, their binary blobs (bitmaps and SVGs), and custom font files persist in **IndexedDB**; when IndexedDB is unavailable (e.g. some private-browsing modes), a *storage unavailable* warning appears in the Checks panel (under *Browser*)
 - **Permalink** — The URL fragment names what is on screen, so a reload, a bookmark or a link passed to someone else lands on the same page of the same book in the same viewer: `#preset=bioquimica-feduchi&lang=es&view=canvas&chapter=1&page=7` opens the Bioquímica preset in Spanish on the Canvas tab at chapter 1, page 7 (the number printed on the page). A local project is named as `project=ID` — its storage id, so only the browser holding the project can follow such a link. The sandbox keeps the fragment current as you switch books, tabs and chapters and as you scroll. A part left out means whatever is there (no page: the chapter's first page; no book: the one last open), and a book the browser cannot open is passed over. Pasting a link into the address bar of an open sandbox opens it in place. The interface language stays in the path (`/en/sandbox`, `/es/sandbox`); `lang` is the content language of a bilingual bundle
 
 Storage is **shared across UI locales**. A pristine default document swaps to the current locale's default markdown and reseeds the example resources when the locale changes — so opening the Spanish sandbox shows Spanish examples. Any user edit opts the document out of this behavior. All previews also derive a hyphenation locale from the UI locale when none is set in the configuration.
 
 ### Export and import
 
-A whole book travels as a **`.postext` file**: a zip archive with exactly the layout of a preset bundle directory — `preset.json`, `chapters/*.md`, `resources/*` and `fonts/*` (see [Preset bundle format](#preset-bundle-format)). The archive also carries the book's **pagination** as `layouts.json` — each chapter's page count and numbering, stamped with the engine version, configuration and resources it was built with — so an imported book opens paginated and only what those stamps no longer vouch for is laid out again. The active document exports the pagination it holds; a project or preset exported from its row carries the one recorded while it was last the working book. A cover image is written as the manifest's `thumbnail`, so it survives the round trip. The **Projects panel**'s **New** menu imports a file as a new project; every project and preset row has its own Export, and the active project's exports the working document. Files written by earlier versions (a version 1 manifest with a single `document.md`) import as a one-chapter book. Import accepts the files at the archive root or under one top-level folder (as produced by zipping the folder itself; `__MACOSX` entries and dotfiles are ignored). Fonts are written as separate files, never inside `config.customFonts`; `.woff` faces are skipped with a warning both ways, as are resources whose bytes are missing. Unzip an exported file into `<presets-root>/<dir>/` and add an `index.json` entry to serve it as a preset.
+A whole book travels as a **`.postext` file**: a zip archive with exactly the layout of a preset bundle directory — `preset.json`, `chapters/*.md`, `resources/*` and `fonts/*` (see [Preset bundle format](#preset-bundle-format)). The archive also carries the book's **pagination** as `layouts.json` — each chapter's page count and numbering, stamped with the engine version, configuration and resources it was built with — so an imported book opens paginated and only what those stamps no longer vouch for is laid out again. The active document exports the pagination it holds; a project or preset exported from its row carries the one recorded while it was last the working book. A cover image is written as the manifest's `thumbnail`, so it survives the round trip. The **Books panel**'s **New** menu (**Open a .postext file…**) imports a file as a new book; every row's ⋯ menu has its own **Download (.postext)**, and the open book's exports the working document. Files written by earlier versions (a version 1 manifest with a single `document.md`) import as a one-chapter book. Import accepts the files at the archive root or under one top-level folder (as produced by zipping the folder itself; `__MACOSX` entries and dotfiles are ignored). Fonts are written as separate files, never inside `config.customFonts`; `.woff` faces are skipped with a warning both ways, as are resources whose bytes are missing. Unzip an exported file into `<presets-root>/<dir>/` and add an `index.json` entry to serve it as a preset.
 
 The same files are read and written by the `postext` package (`openBundle`, `createBundle`, `buildBundle`; see [Bundles](/en/docs/configuration#bundles-postext-files)). A book exported here opens in your own program, and a book your program writes opens here. That makes the Sandbox a place to inspect and fine-tune what a program lays out: export it from the program, import it here, fix it with the live preview, export it again and load it back in the program. The [agent skill](/en/docs/skill) delivers its ports as `.postext` files too.
 
-The markdown and configuration also export separately from their panel headers.
+The text and the design also export separately from the Text and Design panel headers.
 
-The **Configuration panel** header downloads `postext-config.json` with defaults stripped:
+The **Design panel** header downloads `postext-config.json` with defaults stripped:
 
 ```json
 {
@@ -287,7 +441,7 @@ The **Configuration panel** header downloads `postext-config.json` with defaults
 }
 ```
 
-The **Markdown panel** header downloads the active chapter as a plain `.md` file and its **Import** button replaces the active chapter with a `.md` file's contents. The Configuration **Import** button opens a file picker for `.json` files validated against the expected `type` and `version`; invalid files are silently ignored. The `postext-markdown.json` wrapper and the combined `postext-sandbox.json` format from earlier versions no longer exist.
+The **Text panel** header downloads the active chapter as a plain `.md` file and its **Import** button replaces the active chapter with a `.md` file's contents. The Design panel's **Import** button opens a file picker for `.json` files validated against the expected `type` and `version`; invalid files are silently ignored. The `postext-markdown.json` wrapper and the combined `postext-sandbox.json` format from earlier versions no longer exist.
 
 ## Standalone usage
 
@@ -391,15 +545,20 @@ function App() {
 The package uses Tailwind CSS utility classes that reference CSS custom properties. Your host application must provide these variables:
 
 - `--background`, `--foreground` — Base colors
-- `--surface` — Elevated surface color
-- `--gilt` — Accent color (gold)
+- `--surface` — Elevated surface color; `--surface-2` — Hovered rows and highlighted options (falls back to `--background`)
 - `--slate` — Muted text color
-- `--rule` — Border/divider color
-- `--gilt-hover` — Accent color for focus rings
+- `--rule` — Border/divider color; `--rule-strong` — Stronger rule for hovered controls (falls back to `--slate`)
+- `--brand` — Accent color: the active panel marker, focus rings, switches and selected choices
+- `--brand-hover` — Accent color on hover
+- `--brand-soft` — Translucent accent fill behind selected choices (falls back to `--surface`)
+- `--brand-contrast` — Knob of a checked switch (falls back to `--background`)
 - `--destructive` — Color of destructive actions and errors
 - `--accent-blue` — Link/accent color
 - `--font-sans` — UI font family
 - `--font-mono` — Monospace font family (for the code editor)
+- `--font-display`, `--brand-blue`, `--brand-gilt` — Optional face and colours of the default logo mark in the activity bar (fall back to Georgia, `#2b4acb` and `#d8a21a`)
+
+The website sets `--brand` to gilt in the dark theme and blue in the light one. Earlier versions read `--gilt` and `--gilt-hover`; the sandbox no longer uses them.
 
 Popovers, menus and tooltips render in a portal on `document.body`, so define the variables on `:root` (or `body`), not only on the element that wraps the sandbox. The host's Tailwind build must scan the package's sources (`@source "…/postext-sandbox/src/**/*.tsx"` in Tailwind 4) so the utility classes it uses are generated.
 
@@ -499,21 +658,20 @@ Appendix. A preset source is a directory (served over HTTP) whose root holds an 
 
 Notes:
 
-- `id` in `preset.json` must match the `index.json` entry; `description`, `locale` and `default` in the manifest override the index values once the preset is loaded, as do the showcase fields `locales`, `license`, `credits` and `tags`. The picker shows every locale in `locales` (or `locale`) and the licence as tags, the credits under the description, and `thumbnail` — a small page image relative to the preset directory — in place of the row's check-mark column; a project duplicated from the preset keeps it as its cover. The public showcase presets under `apps/web/public/presets/` use every field and carry a `CREDITS.md` with the licence and source of each text and image.
+- `id` in `preset.json` must match the `index.json` entry; `description`, `locale` and `default` in the manifest override the index values once the preset is loaded, as do the showcase fields `locales`, `license`, `credits` and `tags`. The picker shows every locale in `locales` (or `locale`) and the licence as tags, the credits under the description, and `thumbnail` — a small page image relative to the preset directory — in place of the row's check-mark column; a book copied from the preset (**Make my own copy**) keeps it as its cover. The public showcase presets under `apps/web/public/presets/` use every field and carry a `CREDITS.md` with the licence and source of each text and image.
 - `view` (optional) says how the sandbox opens the bundle: `{ "canvasScope": "book" }` lays the whole book out on the canvas (see [Books and chapters](#books-and-chapters)); absent, the canvas shows one chapter at a time. Exported books carry it when it is set.
 - `localized` (optional) holds per-locale overrides for a bilingual bundle: `{ "es": { "config": { … }, "resources": [ { "id": "fig-1", "caption": "…", "note": "…", "altText": "…" } ] } }`. The overrides of the locale the chapters were picked from apply on top of the shared `config` (top-level keys replaced wholesale — `resourceTypes` with translated caption prefixes, typically) and `resources` (caption, note, alt text and table cells merged by id); a locale without an entry keeps the shared wording.
 - `chapters` (version 2) is a list of `{ title, file }` in book order, or a locale → list map; `markdown` (version 1) is a file name or a locale → file map. In both cases the sandbox picks the entry matching the UI locale (exact tag, then base language, then the preset's own `locale`, then the first entry). An empty chapter `title` is derived from the file's first level-1 heading. The sandbox always writes version 2.
 - `width` / `height` are optional for `svg` and `bitmap` resources — when missing they are read from the file at load time.
-- `pdfFile` (svg resources only) points to a single-page PDF holding the same figure as vectors — typically the original Illustrator or PDF export the SVG was derived from. The PDF export embeds that page verbatim (fonts, gradients and colour spaces intact) instead of the SVG; the canvas and HTML previews keep using the SVG. It is ignored in single-ink mode, whose recolouring pass only operates on SVG markup, and a missing file only drops the master, never the figure. Editing the SVG source in the resource detail detaches the master (it was made for the source as it was), so the PDF export follows the edited SVG from then on; reload the preset to get it back. SVGs without a master are emitted as vector paths when they stay within the PDF backend's subset (basic shapes, paths, groups, `use`, clip paths, solid fills and strokes, opacity, and `text` / `tspan` runs set in the fonts the document can load — custom fonts first, then Google-hosted families) and rasterised at 600 dpi otherwise.
+- `pdfFile` (svg resources only) points to a single-page PDF holding the same figure as vectors — typically the original Illustrator or PDF export the SVG was derived from. The PDF export embeds that page verbatim (fonts, gradients and colour spaces intact) instead of the SVG; the canvas and HTML previews keep using the SVG. It is ignored in single-ink mode, whose recolouring pass only operates on SVG markup, and a missing file only drops the master, never the figure. Editing the SVG source in the resource detail detaches the master (it was made for the source as it was), so the PDF export follows the edited SVG from then on; restore the original (**Restore the original…** in the Books panel) to get it back. SVGs without a master are emitted as vector paths when they stay within the PDF backend's subset (basic shapes, paths, groups, `use`, clip paths, solid fills and strokes, opacity, and `text` / `tspan` runs set in the fonts the document can load — custom fonts first, then Google-hosted families) and rasterised at 600 dpi otherwise.
 - SVG `text` renders in the sandbox's custom fonts everywhere: the previews inline the matching `@font-face` data into the SVG before decoding it (an `<img>` cannot see the page's fonts), and the PDF export sets the runs as real, selectable text in the same embedded faces. Name the family in `font-family` exactly as it appears under Fonts.
 - The SVG source editor only lets you type inside text nodes (tinted) so a figure cannot be broken by accident; the lock button in its header opens the whole source — coordinates, colours, structure — and locking again rescans the text nodes.
 - `table.model` is a Postext `TableModel`: `rows` is a row-major array of cells (`content`, optional `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` the number of leading header rows, and `columnWidths` an optional array of relative column weights. `table.styleId` optionally names one of the config's `tableStyles`.
 - Font files are stored in IndexedDB under ids derived from the preset id and file path, and the families are appended to `config.customFonts` when the preset is applied; a missing or malformed `index.json` yields no presets rather than an error.
-- `<preset-dir>/fingerprint.json` is optional and, on the development route, **virtual**: when no such file exists, `GET` answers `{ "fingerprint": "<sha1 hex>", "files": <n> }` computed from the directory's file metadata (relative path, modification time and size of every file up to four levels deep, dotfiles and `node_modules` skipped), never from file contents, with `Cache-Control: no-store`. The sandbox polls it to follow edits to the bundle (see [Projects panel](#projects-panel)). A static host can serve a real `fingerprint.json` with the same shape, or none at all, in which case its presets are not followed.
+- `<preset-dir>/fingerprint.json` is optional and, on the development route, **virtual**: when no such file exists, `GET` answers `{ "fingerprint": "<sha1 hex>", "files": <n> }` computed from the directory's file metadata (relative path, modification time and size of every file up to four levels deep, dotfiles and `node_modules` skipped), never from file contents, with `Cache-Control: no-store`. The sandbox polls it to follow edits to the bundle (see [Books panel](#books-panel)). A static host can serve a real `fingerprint.json` with the same shape, or none at all, in which case its presets are not followed.
 
 ## Roadmap
 
 The following features are planned for future versions:
 
-- **Collaborative editing** — Share sandbox sessions via URL
-- **Public preset gallery** — Ready-made public bundles for common layout scenarios (newspaper, academic paper, book chapter) served from the website
+- **Collaborative editing** — Edit one book together from several browsers

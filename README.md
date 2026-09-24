@@ -178,7 +178,7 @@ Everything below ships today in `postext` and `postext-pdf` 1.2.
 
 ### Sandbox
 
-- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a visual configuration editor, a resources panel, live Canvas / HTML / PDF previews with source ↔ preview sync, a warnings panel, and permalinks to any page.
+- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a figures panel, live Canvas / HTML / PDF previews with source ↔ preview sync, a Checks panel, and permalinks to any page.
 - Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
 - The same `.postext` files are created and opened from code with the `postext` package (`createBundle`, `openBundle`, `buildBundle`), so a book moves between the Sandbox, the agent skill and your own program.
 - Bilingual showcase bundles — a magazine, a literary edition, an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual — plus a built-in guide to Postext, itself set as a book.

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Contribuir',
   description: 'Cómo unirse a la comunidad Postext y contribuir al proyecto',
   lang: 'es',
-  lastUpdated: '2026-06-10',
+  lastUpdated: '2026-09-24',
   readingTime: '5 min',
   order: 6,
 };
@@ -85,8 +85,11 @@ contribuciones son especialmente valiosas:
 
 ### Sandbox e interfaz
 El [sandbox](/es/docs/sandbox) se ha convertido en una superficie React considerable por derecho
-propio: un panel de recursos con un editor interactivo de tablas y subida de imágenes y SVG, un
-panel de fuentes y secciones de configuración que cubren cada rincón del motor. Cada cadena de la
+propio: un panel de figuras con un editor interactivo de tablas y subida de imágenes y SVG, un
+panel de fuentes y un panel de Diseño cuyos once grupos cubren cada rincón del motor. Sus
+controles se construyen sobre primitivas de Base UI (`packages/postext-sandbox/src/ui/`) y se
+revisan con axe-core frente a WCAG 2.1 AA, así que los controles nuevos deben reutilizarlas y
+mantener cada campo nombrado por su etiqueta y descrito por su texto de ayuda. Cada cadena de la
 interfaz sigue una convención estricta de i18n, conectada mediante etiquetas en cinco archivos
 repartidos entre el paquete del sandbox y los catálogos de idiomas de la aplicación web. Si
 contribuyes desde el frontend o la UX, este es tu terreno.
