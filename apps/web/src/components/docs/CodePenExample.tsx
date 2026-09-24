@@ -1,16 +1,7 @@
-import fs from "fs";
-import path from "path";
 import { getTranslations } from "next-intl/server";
 import { compileDocsMdx } from "@/lib/mdx";
+import { readPenSources } from "@/lib/codepen";
 import { CodePenEmbed } from "./CodePenEmbed";
-
-/** Example sources live next to the docs, one folder per pen:
- *  `docs/examples/<name>/{index.html,style.css,script.js,pen.json}`.
- *  `pen.json` carries the prefill options shared by every locale
- *  (external stylesheets, scripts, tags). */
-const EXAMPLES_DIR = path.join(process.cwd(), "../../docs/examples");
-
-type Panel = { lang: "html" | "css" | "js"; file: string; code: string };
 
 interface CodePenExampleProps {
   /** Folder name under `docs/examples`. */
@@ -22,12 +13,6 @@ interface CodePenExampleProps {
   height?: number;
   /** CodePen tabs to open, e.g. `"js,result"`. */
   defaultTab?: string;
-}
-
-function readOptional(dir: string, file: string): string {
-  const p = path.join(dir, file);
-  if (!fs.existsSync(p)) return "";
-  return fs.readFileSync(p, "utf-8").trimEnd();
 }
 
 function escapeHtml(s: string): string {
@@ -50,19 +35,8 @@ export async function CodePenExample({
   height = 560,
   defaultTab = "js,result",
 }: CodePenExampleProps) {
-  if (!/^[a-z0-9-]+$/.test(name)) throw new Error(`CodePenExample: invalid name "${name}"`);
-  const dir = path.join(EXAMPLES_DIR, name);
   const t = await getTranslations("CodePen");
-
-  const panels: Panel[] = [
-    { lang: "html", file: "index.html", code: readOptional(dir, "index.html") },
-    { lang: "css", file: "style.css", code: readOptional(dir, "style.css") },
-    { lang: "js", file: "script.js", code: readOptional(dir, "script.js") },
-  ].filter((p) => p.code.length > 0) as Panel[];
-  if (panels.length === 0) throw new Error(`CodePenExample: no sources under docs/examples/${name}`);
-
-  const penJson = readOptional(dir, "pen.json");
-  const shared = penJson ? (JSON.parse(penJson) as Record<string, unknown>) : {};
+  const { panels, shared } = readPenSources(name);
   // `js_module` lets the JS panel use `import` statements (ES modules).
   const prefill = { title, description, js_module: true, ...shared };
 

@@ -1,0 +1,24 @@
+body {
+  margin: 16px;
+  font-family: system-ui, sans-serif;
+  background: #e8e8e8;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+#pages {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: 12px;
+}
+#pages img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}

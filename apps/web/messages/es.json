@@ -165,6 +165,34 @@
     "step3Title": "Renderiza a HTML, canvas o PDF",
     "step3Description": "Llama a buildDocument y obtén la geometría completa de la maquetación — y renderízala con el backend de HTML, canvas o PDF listo para imprenta."
   },
+  "Bundle": {
+    "eyebrow": "Formato abierto",
+    "title": "Un fichero, el libro entero",
+    "lead": "Un fichero .postext lleva todo lo que un documento necesita para volver a componerse en cualquier máquina: un formato abierto y editable que cualquiera puede adoptar.",
+    "paragraph1": "La mayoría de los formatos editoriales dispersan un proyecto. Una compilación de LaTeX depende de las fuentes y paquetes instalados en una máquina, y los ficheros nativos de los grandes editores de maquetación enlazan imágenes y tipografías que quedan fuera de ellos. Al mover el proyecto, algo se pierde. Nosotros mismos chocamos con esos límites en LaTeX.",
+    "paragraph2": "Un .postext es un archivo ZIP corriente que cualquiera puede abrir, leer y editar: un manifiesto JSON, un fichero Markdown por capítulo y los propios ficheros de fuentes e imágenes. El Sandbox lo exporta, el skill de agente postext-port lo escribe y <code>postext/bundle</code> lo abre en cualquier programa para componer de nuevo las mismas páginas. El formato está documentado y tiene licencia MIT, listo para que cualquier herramienta lo lea y lo escriba.",
+    "figureTitle": "Dentro de {file}",
+    "configTitle": "Configuración",
+    "configText": "Página, retícula, tipografías, estilos de títulos y párrafos, colores y titulillos, en JSON legible.",
+    "chaptersTitle": "Capítulos",
+    "chaptersText": "Un fichero Markdown por capítulo: aquí, {chapters} capítulos en {languages} idiomas.",
+    "fontsTitle": "Tipografías",
+    "fontsText": "Los propios ficheros de fuentes, no solo sus nombres: {count} ficheros de {families}.",
+    "resourcesTitle": "Recursos",
+    "resourcesText": "Pies, numeración, colocación y contenido de las {count} figuras y tablas a las que remite el texto.",
+    "imagesTitle": "Imágenes",
+    "imagesText": "Las propias ilustraciones, SVG o mapa de bits, con la versión de cada idioma: {count} ficheros.",
+    "caption": "El .postext de la guía, {kb} KB: todo lo que el libro necesita y nada que tenga que ir a buscar.",
+    "demoEyebrow": "Pruébalo",
+    "demoTitle": "Abre la guía, obtén sus páginas",
+    "demoDescription": "El primer ejemplo del Sandbox, la guía de Postext, es un único fichero .postext. Ábrelo en el navegador y convierte cada página en una imagen: sus tipografías, figuras y tablas salen del propio fichero.",
+    "download": "Descargar la guía",
+    "commentFile": "// La guía del Sandbox: configuración, capítulos, fuentes e imágenes",
+    "commentFonts": "// sus propias tipografías",
+    "commentImages": "// sus propias figuras",
+    "commentPages": "// Cada página de cada capítulo, como imagen",
+    "penTitle": "Postext · abrir un .postext y dibujar sus páginas"
+  },
   "Install": {
     "eyebrow": "Instalación",
     "title": "Empieza en menos de un minuto",
@@ -179,7 +207,9 @@
     "copied": "Copiado",
     "copyAriaLabel": "Copiar código al portapapeles",
     "copiedAriaLabel": "Código copiado al portapapeles",
-    "codeAriaLabel": "Ejemplo de código"
+    "codeAriaLabel": "Ejemplo de código",
+    "openInCodePen": "CodePen",
+    "openInCodePenAriaLabel": "Abrir este ejemplo como pen editable en CodePen (nueva ventana)"
   },
   "Footer": {
     "tagline": "El tipógrafo programable para la web.",
