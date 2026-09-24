@@ -88,7 +88,7 @@ export function ChapterList({ title }: { title: ReactNode }) {
             <div
               aria-hidden="true"
               className="pointer-events-none absolute right-1 left-1 h-0.5 rounded"
-              style={{ top: indicatorTop - 2, backgroundColor: 'var(--gilt)' }}
+              style={{ top: indicatorTop - 2, backgroundColor: 'var(--brand)' }}
             />
           )}
         </ul>
@@ -180,7 +180,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
             title={labels.chapterDragHandle}
             className={cn(
               'flex h-full w-4 shrink-0 cursor-grab touch-none items-center justify-center rounded border-0 bg-transparent p-0',
-              'hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+              'hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
               dragging && 'cursor-grabbing',
             )}
             style={{ color: 'var(--slate)' }}
@@ -196,7 +196,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, dragging, 
           // An unnumbered chapter (the front matter) shows a dash.
           <span
             className="flex shrink-0 items-center justify-end self-stretch leading-none"
-            style={{ width: 34, color: isActive ? 'var(--gilt)' : 'var(--slate)', fontSize: 26, fontWeight: 300, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}
+            style={{ width: 34, color: isActive ? 'var(--brand)' : 'var(--slate)', fontSize: 26, fontWeight: 300, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}
           >
             {numberText}
           </span>

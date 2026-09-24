@@ -71,7 +71,7 @@ function PanelNav() {
             height: indicator.height,
             width: 3,
             borderRadius: 0,
-            backgroundColor: 'var(--gilt)',
+            backgroundColor: 'var(--brand)',
             transition: hasAnimated.current ? 'top 200ms ease-in-out, height 200ms ease-in-out, opacity 150ms ease-in-out' : 'none',
           }}
         />
@@ -99,8 +99,8 @@ function PanelNav() {
               aria-pressed={isActive}
               className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
               style={{
-                color: isActive ? 'var(--gilt)' : 'var(--slate)',
-                outlineColor: 'var(--gilt-hover)',
+                color: isActive ? 'var(--brand)' : 'var(--slate)',
+                outlineColor: 'var(--brand-hover)',
               }}
               onMouseEnter={(e) => {
                 if (!isActive) e.currentTarget.style.color = 'var(--foreground)';
@@ -121,7 +121,7 @@ function PanelNav() {
                     height: 16,
                     padding: '0 4px',
                     borderRadius: 8,
-                    backgroundColor: 'var(--gilt)',
+                    backgroundColor: 'var(--brand)',
                     color: 'var(--background)',
                     fontSize: 10,
                     fontWeight: 700,
@@ -145,7 +145,7 @@ function PanelNav() {
                     width: 8,
                     height: 8,
                     borderRadius: 4,
-                    backgroundColor: 'var(--gilt)',
+                    backgroundColor: 'var(--brand)',
                     boxShadow: '0 0 0 2px var(--background)',
                     pointerEvents: 'none',
                   }}
@@ -179,7 +179,7 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
           <a
             href={homeUrl}
             className="mt-1 mb-2 flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-            style={{ color: 'var(--gilt)', outlineColor: 'var(--accent-blue)' }}
+            style={{ outlineColor: 'var(--brand)' }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--surface)';
             }}
@@ -187,7 +187,13 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <span className="text-2xl font-black leading-none" style={{ fontFamily: 'var(--font-logo, var(--font-cormorant, "Cormorant Garamond", Georgia, serif))' }}>P</span>
+            <span
+              className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-[22%] text-lg font-extrabold leading-none text-white"
+              style={{ backgroundColor: 'var(--brand-blue, #2b4acb)', fontFamily: 'var(--font-display, Georgia, serif)' }}
+            >
+              P
+              <span className="absolute inset-x-0 bottom-0 h-[13%]" style={{ backgroundColor: 'var(--brand-gilt, #d8a21a)' }} />
+            </span>
           </a>
         </Tooltip>
       ) : null}

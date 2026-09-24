@@ -34,7 +34,7 @@ export function ResizableHandle({ onPointerDown }: ResizableHandleProps) {
         flexShrink: 0,
         cursor: 'col-resize',
         height: '100%',
-        backgroundColor: active ? 'var(--gilt)' : 'var(--rule)',
+        backgroundColor: active ? 'var(--brand)' : 'var(--rule)',
         transition: 'background-color 150ms',
       }}
     >

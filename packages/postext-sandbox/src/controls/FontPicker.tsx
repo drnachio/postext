@@ -114,7 +114,7 @@ function FontListItem({
         : 'w-full px-3 py-1.5 text-left text-sm transition-colors hover:bg-(--background)'}
       style={{
         fontFamily: `"${font}", sans-serif`,
-        backgroundColor: selected ? 'var(--gilt)' : undefined,
+        backgroundColor: selected ? 'var(--brand)' : undefined,
         color: selected ? 'var(--background)' : 'var(--foreground)',
       }}
     >
@@ -230,7 +230,7 @@ export function FontPicker({
             onChange={(e) => setSearch(e.target.value)}
             placeholder={searchPlaceholder ?? labels.fontPickerSearch}
             aria-label={searchPlaceholder ?? labels.fontPickerSearch}
-            className="w-full rounded border px-2 py-1 text-xs focus:border-(--gilt)"
+            className="w-full rounded border px-2 py-1 text-xs focus:border-(--brand)"
             style={{
               borderColor: 'var(--rule)',
               backgroundColor: 'var(--surface)',

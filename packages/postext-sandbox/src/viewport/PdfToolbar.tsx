@@ -65,7 +65,7 @@ export const PdfToolbar = memo(function PdfToolbar({
             position: 'absolute',
             right: 'calc(100% + 6px)',
             top: 6,
-            color: 'var(--gilt)',
+            color: 'var(--brand)',
             display: 'inline-flex',
             animation: 'postext-dirty-bounce 1s ease-in-out infinite',
             pointerEvents: 'none',

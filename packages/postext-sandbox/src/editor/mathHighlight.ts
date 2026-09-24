@@ -77,10 +77,10 @@ export const mathTheme = Prec.highest(
       color: 'var(--accent-blue)',
     },
     '.cm-math-display': {
-      backgroundColor: 'rgba(88, 134, 191, 0.06)',
+      backgroundColor: 'rgba(43, 74, 203, 0.07)',
     },
     '.cm-math-delim': {
-      color: 'var(--gilt)',
+      color: 'var(--brand)',
       fontWeight: 'bold',
     },
   }),

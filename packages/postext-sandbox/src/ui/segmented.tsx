@@ -53,7 +53,7 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
             onClick={() => { if (!selected) onValueChange(o.value); }}
             className={cn(
               'cursor-pointer px-3 text-xs whitespace-nowrap transition-colors',
-              'focus-visible:outline-1 focus-visible:-outline-offset-2 outline-(--gilt-hover)',
+              'focus-visible:outline-1 focus-visible:-outline-offset-2 outline-(--brand-hover)',
               selected
                 ? 'bg-(--surface) font-medium text-(--foreground)'
                 : 'bg-transparent text-(--slate) hover:text-(--foreground)',

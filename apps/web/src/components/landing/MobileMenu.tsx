@@ -41,7 +41,7 @@ export function MobileMenu() {
         onClick={() => setOpen(!open)}
         aria-label={open ? t("closeMenu") : t("openMenu")}
         aria-expanded={open}
-        className="flex items-center justify-center rounded-md p-2 text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue"
+        className="flex items-center justify-center rounded-md p-2 text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         style={{ touchAction: "manipulation" }}
       >
         {open ? <X className="size-5" /> : <Menu className="size-5" />}

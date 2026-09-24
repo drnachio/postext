@@ -96,7 +96,7 @@ export function ViewportTabs() {
               tabIndex={isActive ? 0 : -1}
               onClick={() => dispatch({ type: 'SET_VIEWPORT', payload: tab })}
               className={cn(
-                'cursor-pointer px-4 py-2 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--gilt-hover)',
+                'cursor-pointer px-4 py-2 text-xs font-medium transition-colors focus-visible:outline-1 focus-visible:-outline-offset-1 outline-(--brand-hover)',
                 isActive ? 'text-(--foreground)' : 'text-(--slate) hover:text-(--foreground)',
               )}
               style={{ borderLeft: '1px solid var(--rule)' }}
@@ -114,7 +114,7 @@ export function ViewportTabs() {
             left: indicator.left,
             width: indicator.width,
             height: 2,
-            backgroundColor: 'var(--gilt)',
+            backgroundColor: 'var(--brand)',
             transition: 'left 200ms ease, width 200ms ease',
           }}
         />

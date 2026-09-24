@@ -149,7 +149,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
               className="flex items-center justify-between border-b px-2 py-1"
               style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)' }}
             >
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--gilt)' }}>
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand)' }}>
                 {elementTitle}
                 {' '}#{idx + 1}
               </span>

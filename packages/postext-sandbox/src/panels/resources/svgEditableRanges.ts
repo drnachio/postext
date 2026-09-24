@@ -127,7 +127,7 @@ const editableDecorations = EditorView.decorations.compute([editableRangesField,
 
 const editableTheme = EditorView.baseTheme({
   '.cm-svg-editable': {
-    backgroundColor: 'rgba(224, 168, 22, 0.18)',
+    backgroundColor: 'rgba(216, 162, 26, 0.2)',
     borderRadius: '2px',
   },
 });

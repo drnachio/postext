@@ -36,8 +36,9 @@ export function CookieBanner() {
       ref={bannerRef}
       role="dialog"
       aria-label={t("ariaLabel")}
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-rule bg-surface/95 p-4 backdrop-blur-sm sm:p-6"
+      className="fixed inset-x-0 bottom-0 z-50 bg-surface/95 p-4 font-sans shadow-[0_-12px_40px_-20px_rgba(0,0,0,0.5)] backdrop-blur-md sm:p-6"
     >
+      <div aria-hidden="true" className="tri-stripe absolute inset-x-0 top-0 h-[3px]" />
       <div className="mx-auto max-w-5xl">
         {!showCustomize ? (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -76,7 +77,7 @@ export function CookieBanner() {
               </button>
               <button
                 onClick={acceptAll}
-                className="cursor-pointer rounded bg-gilt px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-gilt-hover 2xl:text-base"
+                className="cursor-pointer rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
               >
                 {t("acceptAll")}
               </button>
@@ -142,7 +143,7 @@ export function CookieBanner() {
               </button>
               <button
                 onClick={savePreferences}
-                className="cursor-pointer rounded bg-gilt px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-gilt-hover 2xl:text-base"
+                className="cursor-pointer rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
               >
                 {t("savePreferences")}
               </button>
@@ -170,7 +171,7 @@ function Toggle({
       disabled={disabled}
       onClick={onChange}
       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ${
-        checked ? "bg-gilt" : "bg-rule"
+        checked ? "bg-brand" : "bg-rule-strong"
       } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
     >
       <span

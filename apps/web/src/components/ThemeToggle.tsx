@@ -17,7 +17,7 @@ export function ThemeToggle() {
       role="switch"
       aria-checked={isLight}
       aria-label={isLight ? t("toggleDark") : t("toggleLight")}
-      className="flex items-center justify-center rounded-md p-2 text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue"
+      className="flex items-center justify-center rounded-md p-2 text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
       style={{ touchAction: "manipulation" }}
     >
       {isLight ? (

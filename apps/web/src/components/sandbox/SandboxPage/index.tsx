@@ -5,6 +5,7 @@ import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } from "postex
 import { useTranslations, useLocale } from "next-intl";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CompactLanguageSwitcher } from "@/components/sandbox/CompactLanguageSwitcher";
+import { LogoMark } from "@/components/brand/Logo";
 import { buildSandboxLabels } from "./labels";
 
 // Private preset bundles are served by /api/private-presets only in local dev
@@ -33,24 +34,10 @@ export function SandboxPage() {
       homeLink={
         <Link
           href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2"
-          style={{ color: "var(--gilt)", outlineColor: "var(--accent-blue)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--surface)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          aria-label="Postext"
+          className="flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-surface"
         >
-          <span
-            className="text-2xl font-black leading-none"
-            style={{
-              fontFamily:
-                'var(--font-logo, var(--font-cormorant, "Cormorant Garamond", Georgia, serif))',
-            }}
-          >
-            P
-          </span>
+          <LogoMark className="size-7 text-[1.75rem]" />
         </Link>
       }
     />

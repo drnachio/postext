@@ -41,7 +41,7 @@ export function Tooltip({ content, side = 'top', children }: TooltipProps) {
             data-postext-popup=""
             style={{
               ...POPUP_SURFACE,
-              border: '1px solid color-mix(in srgb, var(--gilt) 50%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--brand) 50%, transparent)',
               borderRadius: 6,
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
               padding: '4px 8px',

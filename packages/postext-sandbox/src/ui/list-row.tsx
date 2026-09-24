@@ -64,7 +64,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
       data-selected={selected || undefined}
       className={cn(
         'group relative flex items-center gap-1 rounded border px-2 py-1.5 transition-colors',
-        selected ? 'border-(--gilt) bg-(--surface)' : 'border-transparent',
+        selected ? 'border-(--brand) bg-(--surface)' : 'border-transparent',
         interactive && !disabled && !selected && 'hover:bg-(--surface)',
         disabled && 'opacity-50',
         className,
@@ -81,7 +81,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
           aria-current={selected || undefined}
           className={cn(
             'absolute inset-0 z-0 cursor-pointer rounded border-0 bg-transparent p-0',
-            'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+            'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
             'disabled:cursor-default',
           )}
         />
@@ -112,8 +112,8 @@ export function RowTag({
   pressed?: boolean;
 }) {
   const style = {
-    borderColor: accent ? 'var(--gilt)' : 'var(--rule)',
-    color: accent ? 'var(--gilt)' : 'var(--slate)',
+    borderColor: accent ? 'var(--brand)' : 'var(--rule)',
+    color: accent ? 'var(--brand)' : 'var(--slate)',
   };
   if (!onClick) {
     return (
@@ -132,8 +132,8 @@ export function RowTag({
       className={cn(
         ROW_TAG_CLASS,
         'pointer-events-auto m-0 cursor-pointer bg-transparent font-[inherit]',
-        'hover:border-(--gilt-hover) hover:text-(--foreground)',
-        'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--gilt-hover)',
+        'hover:border-(--brand-hover) hover:text-(--foreground)',
+        'focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
       )}
       style={style}
     >

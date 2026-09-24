@@ -181,7 +181,7 @@ function tokenStyle(token: PreviewToken): CSSProperties {
       return { fontStyle: 'italic', color: 'var(--foreground)' };
     case 'ref':
       return {
-        color: 'var(--gilt)',
+        color: 'var(--brand)',
         textDecoration: 'underline',
         textUnderlineOffset: 2,
       };
