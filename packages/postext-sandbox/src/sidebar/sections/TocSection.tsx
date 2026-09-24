@@ -24,6 +24,7 @@ import {
 } from '../../controls';
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { SearchScope } from '../search/SearchScope';
+import { ShowingDefaultsContext } from '../../controls/fieldContext';
 import { SlotEditor } from './HeaderFooterSection/SlotEditor';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
@@ -318,6 +319,8 @@ export const TocSection = memo(function TocSection() {
         <p className="px-2 py-1 text-xs" style={infoStyle}>
           {labels.tocLevelsInfo}
         </p>
+        {/* The built-in levels stand in while none are stored. */}
+        <ShowingDefaultsContext value={levelsAreDefault}>
         {rawLevels.map((level, index) => {
           const resolvedLevel = resolved.levels[index] ?? firstLevel;
           return (
@@ -354,6 +357,7 @@ export const TocSection = memo(function TocSection() {
             </SearchScope>
           );
         })}
+        </ShowingDefaultsContext>
         <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addLevel} className="mt-1">
           {labels.tocLevelAdd}
         </Button>

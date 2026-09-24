@@ -10,6 +10,7 @@ export interface SandboxLabels {
   settingsSearchPlaceholder: string;
   settingsSearchClear: string;
   settingsSearchNoResults: string;
+  settingsSearchLoading: string;
   settingsOverriddenOnly: string;
   settingsOverriddenOnlyEmpty: string;
   settingsModifiedCount: string;

@@ -11,6 +11,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   settingsSearchPlaceholder: 'Search settings…',
   settingsSearchClear: 'Clear search',
   settingsSearchNoResults: 'No settings match "__query__"',
+  settingsSearchLoading: 'Looking in more sections…',
   settingsOverriddenOnly: 'Changed',
   settingsOverriddenOnlyEmpty: 'Nothing has been modified from the preset yet.',
   settingsModifiedCount: '__count__ modified',

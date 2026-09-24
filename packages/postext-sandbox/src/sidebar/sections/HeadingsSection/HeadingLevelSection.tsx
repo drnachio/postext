@@ -79,8 +79,8 @@ export function HeadingLevelSection({
     if (partial.minHeight === undefined && 'minHeight' in partial) delete next.minHeight;
     onUpdate(level, { advancedDesign: next });
   };
-  const isBreakBeforeEnabledDefault = resolved.breakBefore.enabled === false;
-  const isBreakBeforeParityDefault = resolved.breakBefore.parity === 'any';
+  const isBreakBeforeEnabledDefault = raw?.breakBefore?.enabled === undefined;
+  const isBreakBeforeParityDefault = raw?.breakBefore?.parity === undefined;
   const hasOverrides = raw !== undefined && Object.keys(raw).filter((k) => k !== 'level').length > 0;
 
   return (

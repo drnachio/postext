@@ -15,6 +15,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     settingsSearchPlaceholder: t("settingsSearchPlaceholder"),
     settingsSearchClear: t("settingsSearchClear"),
     settingsSearchNoResults: t("settingsSearchNoResults"),
+    settingsSearchLoading: t("settingsSearchLoading"),
     settingsOverriddenOnly: t("settingsOverriddenOnly"),
     settingsOverriddenOnlyEmpty: t("settingsOverriddenOnlyEmpty"),
     settingsModifiedCount: t("settingsModifiedCount"),
