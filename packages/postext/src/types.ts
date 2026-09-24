@@ -562,8 +562,8 @@ export interface BodyTextConfig {
   hyphenation?: HyphenationConfig;
   firstLineIndent?: Dimension;
   hangingIndent?: boolean;
-  /** When `false`, the first paragraph immediately following a heading is
-   *  rendered without first-line indent. A common typographic convention in
+  /** When `false`, the first paragraph immediately following a heading (or
+   *  a `:::space` line) is rendered without first-line indent. A common typographic convention in
    *  scientific publications and many book styles ("indent run-in" style).
    *  Default `true` — every paragraph receives the indent. */
   indentAfterHeading?: boolean;

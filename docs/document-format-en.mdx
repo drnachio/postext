@@ -158,6 +158,10 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td>End the current column here: the next block opens in the next column of the same page (or on a new page when the directive lands in the last column). A no-op in an empty column, so it never produces a blank column or page. The column it ends keeps its bottom gap — column balancing does not stretch it.</td>
     </tr>
     <tr>
+      <td><code>:::space</code></td>
+      <td>Leave one blank body line here — the explicit way to add a little air between two blocks. <code>:::space&#123;lines=2&#125;</code> leaves two (fractions such as <code>0.5</code> work too). It adds to the margin between the blocks and is dropped at the top of a column or page. See <a href="#space">below</a>.</td>
+    </tr>
+    <tr>
       <td><code>:::toc</code></td>
       <td>Print the table of contents here: one entry per heading of the listed levels (title, number, page number, optionally the chapter authors) and one row per part divider, typeset per the <code>toc</code> configuration. The entries follow the document — rename, move or renumber a chapter and the contents follow.</td>
     </tr>
@@ -166,7 +170,7 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak`, `numbering`, `columnbreak` and `toc` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
+Only `pagebreak`, `numbering`, `columnbreak`, `space` and `toc` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox.
 
 ### Containers
 
@@ -319,6 +323,31 @@ title: "A Book With Front Matter"
 Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a right-hand page labelled `1`.
 
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
+
+### `:::space`
+
+`:::space` leaves vertical space between two blocks: to separate a closing line from the text above it, to push an epigraph or a signature down a little, or to open a *space break* between two runs of text. Extra blank lines in the Markdown do not do this — as in any Markdown, a run of blank lines is just one paragraph separator, which keeps a document from changing layout when an editor or formatter adds or trims whitespace.
+
+```md
+The last paragraph of the scene.
+
+:::space
+
+A new scene begins one line lower.
+
+:::space{lines=2}
+
+Two lines lower still.
+```
+
+- **`lines`** — how much space, in body lines (the baseline grid). Default `1`. Whole numbers keep every line of text on the grid, so the columns still line up across the page; a fraction (`lines=0.5`) is honoured exactly, at the cost of that alignment until the next block that snaps to the grid. A value that is not a number greater than 0 and at most 20 falls back to one line, and the sandbox flags it (**Invalid space size**).
+- **It adds up.** The space is added to the margin that already separates the two blocks — a heading's top margin, a list's bottom margin — instead of collapsing into it. Two `:::space` lines in a row add two lines.
+- **It is dropped at a break**, like LaTeX's `\vspace`: at the top of a column or page it vanishes, so a page never opens with a hole; and when it does not fit at the foot of a column it simply ends that column, without carrying the rest over.
+- **The paragraph after it is set flush.** When `bodyText.indentAfterHeading` is off, a paragraph right after `:::space` loses its first-line indent, as it does after a heading — the usual convention for text resuming after a blank line.
+- **Inside a callout** (or a `:::columns` group) it separates the box's children the same way, measured in the box's own body lines, and is dropped at the top of the box.
+- **Keep-with-next** counts it: a heading followed by `:::space` moves on when the space and the first lines of its text do not fit under it.
+
+For a fixed break rather than space, use `:::columnbreak` or `:::pagebreak`.
 
 
 ### `:::toc`
@@ -625,6 +654,7 @@ This list will shrink over time. Until then, anything not explicitly listed in t
 A few conventions make the difference between a document that parses cleanly and one that surprises you:
 
 - **Leave a blank line between blocks.** Two paragraphs separated by a blank line are two paragraphs. Two paragraphs on consecutive lines become one — every line collapses into the preceding paragraph.
+- **Extra blank lines add no space.** Three blank lines separate two blocks exactly like one. When you want more room between them, write a [`:::space`](#space) line.
 - **Nest lists with exactly two spaces per level.** One space is parsed as a level-1 item. Three or four spaces round down to level 2 (the engine uses `floor(leading / 2) + 1`, clamped to depth 5). Tab indentation is not recognised — convert tabs to spaces.
 - **Do not indent the first list item.** Level-1 items start at column 0. Leading whitespace on a bullet implicitly raises the depth.
 - **Task markers must be in square brackets with a single space.** `[ ]`, `[x]`, `[X]` — no variations. `[*]` or `[-]` are not task markers; they render as literal text.

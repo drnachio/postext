@@ -48,9 +48,12 @@ Postext Markdown is **not CommonMark**. These habits break a port:
 - **Inline marks do not nest** the CommonMark way: write `**a** ***b***`.
   Heading text is plain; marks in headings are stripped.
 - Only four containers exist (`:::callout`, `:::paragraphs`, `:::part`,
-  `:::columns`, the last only inside a callout) and four directives
-  (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::toc`). Anything else
-  prints literally.
+  `:::columns`, the last only inside a callout) and five directives
+  (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`).
+  Anything else prints literally.
+- **Extra blank lines add no space.** Where the source has deliberate
+  vertical space (a scene break, room above a signature), write
+  `:::space` (one body line) or `:::space{lines=N}`.
 - **No hard line breaks**: verse, addresses and code lines need one
   paragraph per line inside `:::paragraphs{style="…"}`.
 

@@ -188,12 +188,18 @@ export function measureContentBlock(
     && !style.hangingIndent
     && blockIdx > 0
   ) {
+    // A paragraph after a `:::space` opens a space break and is set flush
+    // too — the usual rule for text resuming after a blank line.
     let prevIdx = blockIdx - 1;
+    let afterSpace = false;
     while (
       prevIdx >= 0
       && (contentBlocks[prevIdx]!.type === 'directive' || isMarkerBlock(contentBlocks[prevIdx]))
-    ) prevIdx--;
-    if (prevIdx >= 0 && contentBlocks[prevIdx]!.type === 'heading') {
+    ) {
+      if (contentBlocks[prevIdx]!.directiveName === 'space') afterSpace = true;
+      prevIdx--;
+    }
+    if (afterSpace || (prevIdx >= 0 && contentBlocks[prevIdx]!.type === 'heading')) {
       effectiveFirstLineIndent = 0;
     }
   }

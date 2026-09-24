@@ -401,6 +401,7 @@ function documentFormatTableModel(es: boolean): TableModel {
         [
           [':::pagebreak', 'Nueva página; parity="odd" u "even" fuerza recto o verso'],
           [':::columnbreak', 'Termina la columna actual'],
+          [':::space', 'Una línea en blanco; lines=2 deja dos'],
           [':::numbering', 'Cambia la secuencia de folios: formato y número inicial'],
           [':::toc', 'Imprime el índice, con folios reales'],
           [':::part', 'Abre una portadilla de parte, con título, número y paleta'],
@@ -418,6 +419,7 @@ function documentFormatTableModel(es: boolean): TableModel {
         [
           [':::pagebreak', 'A new page; parity="odd" or "even" asks for a recto or verso'],
           [':::columnbreak', 'Ends the current column'],
+          [':::space', 'A blank line; lines=2 leaves two'],
           [':::numbering', 'Switches the page-number sequence: format and start'],
           [':::toc', 'Prints the table of contents, with real page numbers'],
           [':::part', 'Opens a part divider, with a title, number and palette'],

@@ -44,6 +44,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'numberingInvalidFormat':
     case 'numberingInvalidStartAt':
     case 'pagebreakInvalidParity':
+    case 'spaceInvalidLines':
     case 'headingBreakInvalidParity':
     case 'parityCascade':
     case 'alphaPdfOverflow':
@@ -115,6 +116,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
     case 'pagebreakInvalidParity':
     case 'headingBreakInvalidParity':
       return labels.warningsPagebreakInvalidParityTitle;
+    case 'spaceInvalidLines':
+      return labels.warningsSpaceInvalidLinesTitle;
     case 'parityCascade':
       return labels.warningsParityCascadeTitle;
     case 'alphaPdfOverflow':
@@ -208,6 +211,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `startAt=${payload.value} — ${labels.warningsNumberingInvalidStartAtDetail}`;
     case 'pagebreakInvalidParity':
       return `parity="${payload.value}" — ${labels.warningsPagebreakInvalidParityDetail}`;
+    case 'spaceInvalidLines':
+      return `lines="${payload.value}" — ${labels.warningsSpaceInvalidLinesDetail}`;
     case 'headingBreakInvalidParity':
       return `H${payload.level} parity="${payload.value}" — ${labels.warningsPagebreakInvalidParityDetail}`;
     case 'parityCascade':

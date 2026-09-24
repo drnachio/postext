@@ -4,6 +4,7 @@
  */
 
 import type { ContentBlock } from '../parse';
+import { spaceDirectiveLines } from '../parse/attrs';
 import { dimensionToPx } from '../units';
 import {
   createBoundingBox,
@@ -305,6 +306,20 @@ export function nextNonMarkerBlock(blocks: readonly ContentBlock[], idx: number)
     if (!isMarkerBlock(blocks[i])) return blocks[i];
   }
   return undefined;
+}
+
+/** Body lines of the `:::space` directives right after `idx` (through
+ *  container markers and other directives, up to the next content block) —
+ *  the room keep-with-next must leave between a heading and its text. */
+export function spaceLinesAfter(blocks: readonly ContentBlock[], idx: number): number {
+  let lines = 0;
+  for (let i = idx + 1; i < blocks.length; i++) {
+    const b = blocks[i]!;
+    if (isMarkerBlock(b)) continue;
+    if (b.type !== 'directive') break;
+    if (b.directiveName === 'space') lines += spaceDirectiveLines(b.directiveAttrs) ?? 1;
+  }
+  return lines;
 }
 
 /** The previous non-marker block before `idx`, or `undefined` at the start. */

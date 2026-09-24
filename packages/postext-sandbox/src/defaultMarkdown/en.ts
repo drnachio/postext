@@ -469,7 +469,7 @@ A part can also recolour the book. Colours in the configuration can be linked to
 
 ## Page breaks and numbering
 
-\`:::pagebreak\` starts a new page, and can ask for an odd or even one, adding a blank page when needed. \`:::numbering\` switches the page-number sequence from the next page on, which is how front matter numbered in roman numerals hands over to arabic page numbers at chapter one. Chapter openers can ask for a parity of their own, and blank pages are recognised as such, so the running heads leave them blank.
+\`:::pagebreak\` starts a new page, and can ask for an odd or even one, adding a blank page when needed. \`:::numbering\` switches the page-number sequence from the next page on, which is how front matter numbered in roman numerals hands over to arabic page numbers at chapter one. Chapter openers can ask for a parity of their own, and blank pages are recognised as such, so the running heads leave them blank. And where a passage wants a little more air above it, \`:::space\` leaves a blank line, or \`:::space{lines=2}\` two; extra blank lines in the Markdown add nothing, as in any Markdown.
 
 :::part{number="III" title="In practice" palette="band=#c0452f"}
 7. Writing for Postext

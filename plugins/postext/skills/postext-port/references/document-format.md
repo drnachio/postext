@@ -492,16 +492,17 @@ $$
 
 ## 12. Single-line directives `:::name{attrs}`
 
-Known directives: `pagebreak`, `numbering`, `columnbreak`, `toc`. Execution: . They must be alone on their line (same fence regex as §7).
+Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`. Execution: . They must be alone on their line (same fence regex as §7).
 
 | Directive | Attributes | Effect |
 |---|---|---|
 | `:::pagebreak` | `parity`: `odd` \| `even` \| `always-odd` \| `always-even`. Anything else (incl. `any`) means no parity; the sandbox warns `pagebreakInvalidParity`. | Next block on a new page. `odd`/`even` add a blank page if needed. `always-*` forces at least one separator blank, which belongs to the previous content. Pending floats go to the new page. Skipped while the first page is still empty. |
 | `:::columnbreak` | none | Ends the current column; continues in the next column, or on the next page from the last column. A no-op in an empty column. The column keeps its gap (balancing skips it). |
+| `:::space` | `lines`: body lines (baseline grid), default `1`; fractions allowed; > 0 and ≤ 20, else one line and the sandbox warns `spaceInvalidLines`. | Vertical space between two blocks, **added** to their margin (not collapsed into a heading's top margin); repeated lines add up. Dropped at a column/page top; one that does not fit ends the column without carrying over. A paragraph right after it loses its first-line indent when `indentAfterHeading` is off. Keep-with-next counts it. The only directive honoured inside a `:::callout`/`:::columns` (measured in the box's body lines, dropped at the box top). Extra blank lines in the Markdown never add space. |
 | `:::numbering` | `format`: `decimal` \| `lower-roman` \| `upper-roman` \| `lower-alpha` \| `upper-alpha`. `startAt`: integer ≥ 1. Both optional; invalid values are ignored, with `numberingInvalidFormat`/`numberingInvalidStartAt` warnings. | Switches the page-number format and/or restarts the counter **at the next page boundary** (or at the current page if it has no numbered content yet). Canonical form: `:::pagebreak{parity="odd"}` followed by `:::numbering{format="decimal" startAt=1}` before chapter 1. |
 | `:::toc` | none | Expands, before layout, into one entry per listed heading (levels in `toc.levels`, default level 1) and one row per part. Page labels converge over passes. In the sandbox the book outline is supplied, so chapter files work. Exclude the contents heading itself with `{toc="false"}`. |
 
-**Directives inside a `:::callout` are ignored.** An unknown `:::word` is literal text (`unknownDirective`).
+**Directives inside a `:::callout` are ignored** (except `:::space`). An unknown `:::word` is literal text (`unknownDirective`).
 
 ```md
 # Contents {style="front-matter" toc="false"}
@@ -591,6 +592,7 @@ The Markdown's only role is to provide values:
 | Code listing | No code blocks. Use `:::paragraphs{style="code"}` with a mono style, one paragraph per line. Escape `* _ ^ ~ $` inside it. |
 | Horizontal rule / ornament / asterism | No `---`. Use a centred `:::paragraphs{style="asterism"}` with `⁂` or `* * *` (escape as `\* \* \*`), or an ornament resource with `::resource`. |
 | Forced page / column break | `:::pagebreak{parity="odd"}` / `:::columnbreak`. |
+| Extra vertical space (scene break, room above a signature) | `:::space` or `:::space{lines=2}` on its own line. Extra blank lines do nothing. |
 | Front-matter roman page numbers | `:::numbering{format="lower-roman" startAt=1}` at the start, then `:::pagebreak{parity="odd"}` + `:::numbering{format="decimal" startAt=1}` before chapter 1. |
 | Table of contents | `# Contents {style="…" toc="false"}` then `:::toc`. |
 | Part divider | `:::part{number="I" title="…" palette="band=#hex"}` … `:::` at the top of the part's first chapter file. |
