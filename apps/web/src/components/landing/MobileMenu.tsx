@@ -50,12 +50,12 @@ export function MobileMenu() {
       {open && (
         <>
           <div
-            className="fixed inset-0 top-0 z-40 bg-black/20 backdrop-blur-sm"
+            className="absolute inset-x-0 top-full z-40 h-[100dvh] bg-black/30 backdrop-blur-sm"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
           <nav
-            className="fixed inset-x-0 top-[57px] z-50 border-b border-rule bg-background p-6 shadow-lg"
+            className="absolute inset-x-0 top-full z-50 border-b border-rule bg-background p-6 shadow-lg"
             aria-label="Mobile navigation"
           >
             <ul className="flex flex-col gap-4">
@@ -63,7 +63,7 @@ export function MobileMenu() {
                 <Link
                   href="/docs"
                   onClick={() => setOpen(false)}
-                  className="block font-body text-base text-slate transition-colors hover:text-foreground"
+                  className="block font-sans text-lg font-medium text-foreground transition-colors hover:text-brand"
                 >
                   {t("docs")}
                 </Link>
@@ -72,7 +72,7 @@ export function MobileMenu() {
                 <Link
                   href="/sandbox"
                   onClick={() => setOpen(false)}
-                  className="block font-body text-base text-slate transition-colors hover:text-foreground"
+                  className="block font-sans text-lg font-medium text-foreground transition-colors hover:text-brand"
                 >
                   {t("sandbox")}
                 </Link>
@@ -84,7 +84,7 @@ export function MobileMenu() {
                   rel="noopener noreferrer"
                   aria-label={t("githubAriaLabel")}
                   onClick={() => setOpen(false)}
-                  className="block font-body text-base text-slate transition-colors hover:text-foreground"
+                  className="block font-sans text-lg font-medium text-foreground transition-colors hover:text-brand"
                 >
                   {t("github")}
                 </a>

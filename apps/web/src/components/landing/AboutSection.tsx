@@ -1,9 +1,11 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
 import { PageMock } from "./PageMock";
 
-const SOURCE = `:::part{number="I" title="Foundations"
+/** The markdown the miniature page is set from, per language. */
+const SOURCE: Record<"en" | "es", string> = {
+  en: `:::part{number="I" title="Foundations"
   palette="band=#2b4acb"}
 :::
 
@@ -18,13 +20,31 @@ print typography to the web, as
 :::callout{type="try"}
 Change a word: the page sets
 itself again.
-:::`;
+:::`,
+  es: `:::part{number="I" title="Fundamentos"
+  palette="band=#2b4acb"}
+:::
+
+# Por qué Postext {lead="La tipografía
+impresa pasó cinco siglos…"}
+
+Postext es un **motor de maquetación
+de código abierto** que lleva a la web
+el oficio de la tipografía impresa,
+como muestra :ref{id="fig-flujo"}.
+
+:::callout{type="try"}
+Cambia una palabra: la página
+vuelve a componerse.
+:::`,
+};
 
 export async function AboutSection() {
   const t = await getTranslations("About");
   const tl = await getTranslations("Landing");
   const pm = await getTranslations("PageMock");
   const body = [1, 2, 3, 4, 5, 6].map((i) => pm(`body${i}`));
+  const source = SOURCE[(await getLocale()).startsWith("es") ? "es" : "en"];
 
   return (
     <section aria-labelledby="about-heading" className="relative">
@@ -66,7 +86,7 @@ export async function AboutSection() {
                 className="overflow-x-auto rounded-lg border border-rule bg-surface p-5 font-mono text-[0.78rem] leading-6 text-foreground/85 2xl:text-sm 2xl:leading-7"
                 aria-label={t("inputAriaLabel")}
               >
-                {SOURCE}
+                {source}
               </pre>
             </div>
             <div aria-hidden="true" className="hidden justify-center md:col-span-2 md:flex">
