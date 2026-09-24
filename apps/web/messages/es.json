@@ -131,6 +131,7 @@
     "mathDescription": "Ecuaciones en línea y en bloque escritas en LaTeX, medidas y compuestas por el motor para que se asienten en la retícula base junto al texto.",
     "outputTitle": "Web y PDF para imprenta",
     "outputDescription": "Un motor de maquetación, tres renderizadores. Las mismas páginas calculadas se renderizan a HTML, canvas o PDF listo para imprenta — con marcadores y color CMYK.",
+    "docsLink": "Leer en la documentación",
     "lead": "Seis cosas que una página necesita y que CSS nunca se diseñó para decidir — calculadas por el motor, igual cada vez."
   },
   "Quote": {

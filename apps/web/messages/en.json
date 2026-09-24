@@ -131,6 +131,7 @@
     "mathDescription": "Inline and display equations written in LaTeX, measured and typeset by the engine so they sit on the baseline grid alongside the text.",
     "outputTitle": "Web & print-ready PDF",
     "outputDescription": "One layout engine, three renderers. The same computed pages render to HTML, canvas, or print-ready PDF — with bookmarks and CMYK colour.",
+    "docsLink": "Read in the docs",
     "lead": "Six things a page needs that CSS was never designed to decide — computed by the engine, the same way every time."
   },
   "Quote": {
