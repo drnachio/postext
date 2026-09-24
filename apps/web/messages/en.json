@@ -165,6 +165,34 @@
     "step3Title": "Render to HTML, canvas or PDF",
     "step3Description": "Call buildDocument and receive the complete layout geometry — then render it with the HTML, canvas or print-ready PDF backend."
   },
+  "Bundle": {
+    "eyebrow": "Open format",
+    "title": "One file, the whole book",
+    "lead": "A .postext file carries everything a document needs to be set again, on any machine: an open, editable format that anyone can adopt.",
+    "paragraph1": "Most publishing formats scatter a project. A LaTeX build depends on the fonts and packages installed on one machine, and the native files of the major layout editors link to pictures and typefaces kept outside them. Move the project and something goes missing. We ran into those limits with LaTeX ourselves.",
+    "paragraph2": "A .postext is a plain ZIP archive that anyone can open, read and edit: a JSON manifest, one Markdown file per chapter, and the font files and pictures themselves. The Sandbox exports it, the postext-port agent skill writes it, and <code>postext/bundle</code> opens it in any program to set the same pages again. The format is documented and MIT-licensed, ready for any tool to read and write.",
+    "figureTitle": "Inside {file}",
+    "configTitle": "Configuration",
+    "configText": "Page, grid, typefaces, heading and paragraph styles, colours and running heads, as readable JSON.",
+    "chaptersTitle": "Chapters",
+    "chaptersText": "One Markdown file per chapter: {chapters} chapters in {languages} languages here.",
+    "fontsTitle": "Typefaces",
+    "fontsText": "The font files themselves, not just their names: {count} files of {families}.",
+    "resourcesTitle": "Resources",
+    "resourcesText": "Captions, numbering, placement and table content for the {count} figures and tables the text refers to.",
+    "imagesTitle": "Images",
+    "imagesText": "The artwork itself, SVG or bitmap, with each language's version: {count} files.",
+    "caption": "The guide's own .postext, {kb} KB: everything the book needs, and nothing it has to fetch.",
+    "demoEyebrow": "Try it",
+    "demoTitle": "Open the guide, get its pages",
+    "demoDescription": "The Sandbox's first example, the Postext guide, is one .postext file. Open it in the browser and turn every page into an image: its typefaces, figures and tables come from the file itself.",
+    "download": "Download the guide",
+    "commentFile": "// The Sandbox's guide: config, chapters, fonts and images",
+    "commentFonts": "// its own typefaces",
+    "commentImages": "// its own figures",
+    "commentPages": "// Every page of every chapter, as an image",
+    "penTitle": "Postext · open a .postext and draw its pages"
+  },
   "Install": {
     "eyebrow": "Installation",
     "title": "Start in under a minute",
@@ -179,7 +207,9 @@
     "copied": "Copied",
     "copyAriaLabel": "Copy code to clipboard",
     "copiedAriaLabel": "Code copied to clipboard",
-    "codeAriaLabel": "Code example"
+    "codeAriaLabel": "Code example",
+    "openInCodePen": "CodePen",
+    "openInCodePenAriaLabel": "Open this example as an editable pen on CodePen (new window)"
   },
   "Footer": {
     "tagline": "Programmable typesetter for the web.",

@@ -9,6 +9,7 @@ import es from "../../messages/es.json";
 import { routing } from "@/i18n/routing";
 import { getAllDocs, getDocSource, type DocMeta } from "@/lib/docs";
 import { SITE_NAME, SITE_URL, localizedUrl } from "@/lib/seo";
+import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH } from "@/lib/guideBundle";
 
 type Messages = typeof en;
 const MESSAGES: Record<string, Messages> = { en, es: es as Messages };
@@ -337,6 +338,8 @@ const doc = buildDocument(
 
 const html = renderToHtml(doc);`;
 
+const BUNDLE_PARTS = ["config", "chapters", "fonts", "resources", "images"] as const;
+
 const FEATURE_KEYS = ["justification", "resources", "tables", "singleInk", "math", "output"] as const;
 
 function stripTags(text: string): string {
@@ -347,6 +350,7 @@ export function homeMarkdown(locale: string): string {
   const m = messagesFor(locale);
   const labels = labelsFor(locale);
   const f = m.Features as Record<string, string>;
+  const b = m.Bundle as Record<string, string>;
   return [
     header({ title: m.Metadata.title, description: m.Metadata.description, locale, path: "" }),
     `## ${m.Hero.title}`,
@@ -375,6 +379,22 @@ export function homeMarkdown(locale: string): string {
     `1. **${m.HowItWorks.step1Title}.** ${m.HowItWorks.step1Description}`,
     `2. **${m.HowItWorks.step2Title}.** ${m.HowItWorks.step2Description}`,
     `3. **${m.HowItWorks.step3Title}.** ${m.HowItWorks.step3Description}`,
+    "",
+    `## ${m.Bundle.title}`,
+    "",
+    m.Bundle.lead,
+    "",
+    m.Bundle.paragraph1,
+    "",
+    stripTags(m.Bundle.paragraph2),
+    "",
+    ...BUNDLE_PARTS.map((k) => `- **${b[`${k}Title`]}**`),
+    "",
+    `### ${m.Bundle.demoTitle}`,
+    "",
+    m.Bundle.demoDescription,
+    "",
+    `- [${GUIDE_BUNDLE_FILE}](${SITE_URL}${GUIDE_BUNDLE_PATH})`,
     "",
     `## ${m.Install.title}`,
     "",
