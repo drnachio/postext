@@ -211,7 +211,7 @@ export function FontPicker({
   };
 
   return (
-    <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={isDefault} onReset={onReset} extraTerms={[value]}>
+    <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={[value]}>
       <FontTrigger
         buttonRef={buttonRef}
         value={value}

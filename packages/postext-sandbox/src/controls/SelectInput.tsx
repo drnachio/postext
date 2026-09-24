@@ -34,7 +34,7 @@ export function SelectInput({ label, value, options, onChange, tooltip, isDefaul
     <FieldRow
       label={label}
       tooltip={tooltip}
-      isDefault={isDefault}
+      isDefault={muted}
       onReset={onReset}
       stacked={stacked}
       extraTerms={options.map((o) => o.label)}

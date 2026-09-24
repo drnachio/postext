@@ -20,7 +20,7 @@ export function ChoiceInput<T extends string>({ label, value, options, onChange,
     <FieldRow
       label={label}
       tooltip={tooltip}
-      isDefault={isDefault}
+      isDefault={isDefault ?? false}
       onReset={onReset}
       stacked
       extraTerms={options.map((o) => o.label)}

@@ -31,7 +31,7 @@ export function TextInput({
 }: TextInputProps) {
   const muted = isDefault ?? false;
   return (
-    <FieldRow label={label} tooltip={tooltip} isDefault={isDefault} onReset={onReset}>
+    <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset}>
       <TextControl
         value={value}
         onChange={onChange}

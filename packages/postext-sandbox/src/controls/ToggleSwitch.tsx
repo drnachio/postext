@@ -16,7 +16,7 @@ interface ToggleSwitchProps {
 export function ToggleSwitch({ label, checked, onChange, tooltip, isDefault, onReset }: ToggleSwitchProps) {
   const muted = isDefault ?? false;
   return (
-    <FieldRow label={label} tooltip={tooltip} isDefault={isDefault} onReset={onReset}>
+    <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset}>
       <SwitchControl label={label} checked={checked} onChange={onChange} muted={muted} />
     </FieldRow>
   );

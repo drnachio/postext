@@ -111,7 +111,7 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
   if (hideLabel) return controls;
 
   return (
-    <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={isDefault} onReset={onReset} extraTerms={[displayText]}>
+    <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={[displayText]}>
       {controls}
     </FieldRow>
   );
