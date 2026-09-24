@@ -16,9 +16,11 @@ export default async function OgImage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "DocsIndex" });
+  const docs = await getTranslations({ locale, namespace: "Docs" });
 
   return generateOgImage({
     title: t("ogTitle"),
     description: t("ogDescription"),
+    kicker: docs("contentsKicker"),
   });
 }

@@ -107,7 +107,10 @@ export function buildMetadata(input: SeoInput): Metadata {
       description: ogDescription ?? description,
       locale: ogLocale(locale),
       alternateLocale: alternateOgLocales(locale),
-      images,
+      // Without an explicit image, leave the key out: Next only falls back
+      // to the route's `opengraph-image` when `images` is not an own
+      // property, even an undefined one.
+      ...(images ? { images } : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -115,7 +118,7 @@ export function buildMetadata(input: SeoInput): Metadata {
       description: ogDescription ?? description,
       site: TWITTER_HANDLE,
       creator: TWITTER_HANDLE,
-      images: ogImagePath ? [ogImagePath] : undefined,
+      ...(ogImagePath ? { images: [ogImagePath] } : {}),
     },
     robots: noindex
       ? {

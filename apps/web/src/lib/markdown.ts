@@ -9,6 +9,7 @@ import es from "../../messages/es.json";
 import { routing } from "@/i18n/routing";
 import { getAllDocs, getDocSource, type DocMeta } from "@/lib/docs";
 import { SITE_NAME, SITE_URL, localizedUrl } from "@/lib/seo";
+import { FEATURE_KEYS, featureDocPath } from "@/lib/featureDocs";
 import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH } from "@/lib/guideBundle";
 
 type Messages = typeof en;
@@ -340,8 +341,6 @@ const html = renderToHtml(doc);`;
 
 const BUNDLE_PARTS = ["config", "chapters", "fonts", "resources", "images"] as const;
 
-const FEATURE_KEYS = ["justification", "resources", "tables", "singleInk", "math", "output"] as const;
-
 function stripTags(text: string): string {
   return text.replace(/<code>(.*?)<\/code>/g, "`$1`").replace(/<[^>]+>/g, "");
 }
@@ -365,7 +364,14 @@ export function homeMarkdown(locale: string): string {
     "",
     `## ${m.Features.title}`,
     "",
-    ...FEATURE_KEYS.flatMap((k) => [`### ${f[`${k}Title`]}`, "", f[`${k}Description`]!, ""]),
+    ...FEATURE_KEYS.flatMap((k) => [
+      `### ${f[`${k}Title`]}`,
+      "",
+      f[`${k}Description`]!,
+      "",
+      `[${f.docsLink}](${localizedUrl(locale, featureDocPath(k, locale))})`,
+      "",
+    ]),
     `## ${m.ApiPreview.title}`,
     "",
     stripTags(m.ApiPreview.description),
