@@ -1,6 +1,6 @@
 {
   "name": "postext-pdf",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Browser-native PDF renderer for Postext documents. Consumes the same VDT as the canvas/HTML backends and produces a physical PDF with faithful glyph positioning, justification, crop marks, and baseline grid.",
   "type": "module",
   "license": "MIT",
