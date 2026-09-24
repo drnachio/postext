@@ -20,7 +20,8 @@ const CANVAS_FIT_MODE_KEY = 'postext-sandbox-canvas-fit-mode';
 const CANVAS_ZOOM_KEY = 'postext-sandbox-canvas-zoom';
 const HTML_FONT_SCALE_KEY = 'postext-sandbox-html-font-scale';
 const HTML_COLUMN_MODE_KEY = 'postext-sandbox-html-column-mode';
-const SETTINGS_CATEGORY_KEY = 'postext-sandbox-settings-category';
+const SETTINGS_GROUP_KEY = 'postext-sandbox-settings-group';
+const SETTINGS_HELP_MODE_KEY = 'postext-sandbox-settings-help';
 const HIDDEN_PRESETS_KEY = 'postext-sandbox-hidden-presets';
 const TOOLBAR_PINNED_PREFIX = 'postext-sandbox-toolbar-pinned-';
 
@@ -212,13 +213,38 @@ export function loadHiddenPresetIds(): string[] {
   }
 }
 
-/** Category filter chosen in the settings panel ('all' or a category id). */
-export function saveSettingsCategory(category: string): void {
-  getStorage()?.setItem(SETTINGS_CATEGORY_KEY, category);
+/** Settings group open in the Design panel (a group id, or null for the
+ *  overview). */
+export function saveSettingsGroup(group: string | null): void {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    if (group === null) storage.removeItem(SETTINGS_GROUP_KEY);
+    else storage.setItem(SETTINGS_GROUP_KEY, group);
+  } catch { /* storage full or blocked */ }
 }
 
-export function loadSettingsCategory(): string | null {
-  return getStorage()?.getItem(SETTINGS_CATEGORY_KEY) ?? null;
+export function loadSettingsGroup(): string | null {
+  try {
+    return getStorage()?.getItem(SETTINGS_GROUP_KEY) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** "Show explanations" switch of the Design panel. */
+export function saveSettingsHelpMode(on: boolean): void {
+  try {
+    getStorage()?.setItem(SETTINGS_HELP_MODE_KEY, on ? '1' : '0');
+  } catch { /* storage full or blocked */ }
+}
+
+export function loadSettingsHelpMode(): boolean {
+  try {
+    return getStorage()?.getItem(SETTINGS_HELP_MODE_KEY) === '1';
+  } catch {
+    return false;
+  }
 }
 
 export function saveColorMode(fieldId: string, mode: string): void {
@@ -319,7 +345,8 @@ export function clearStorage(): void {
   storage?.removeItem(CANVAS_ZOOM_KEY);
   storage?.removeItem(HTML_FONT_SCALE_KEY);
   storage?.removeItem(HTML_COLUMN_MODE_KEY);
-  storage?.removeItem(SETTINGS_CATEGORY_KEY);
+  storage?.removeItem(SETTINGS_GROUP_KEY);
+  storage?.removeItem(SETTINGS_HELP_MODE_KEY);
   storage?.removeItem(HIDDEN_PRESETS_KEY);
 }
 

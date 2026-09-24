@@ -1,9 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { ColorValue } from 'postext';
 import { useSandbox } from '../context/SandboxContext';
 import { FieldRow } from './FieldRow';
+import { useFieldIds } from './fieldContext';
+import { cn } from '../ui/cn';
+import { Link2 } from 'lucide-react';
 import { ColorPopover } from './ColorPopover';
 import { formatColor, hexAlpha, hexWithoutAlpha, type ColorMode } from './color-utils';
 import type { PopoverCloseReason } from '../ui';
@@ -74,49 +77,19 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
   const hex6 = hexWithoutAlpha(swatchHex);
 
   const controls = (
-    <div ref={controlsRef} className="flex shrink-0 items-center gap-1.5">
-      <button
-        type="button"
-        onClick={() => setPopoverOpen((v) => !v)}
-        className="flex items-center gap-1 rounded border px-1.5 py-1"
-        style={{
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: muted ? 'var(--slate)' : 'var(--foreground)',
-          cursor: 'pointer',
-          fontSize: 10,
-          fontFamily: isLinked ? 'var(--font-sans, sans-serif)' : 'monospace',
-          lineHeight: '14px',
-          fontStyle: isLinked ? 'italic' : 'normal',
-        }}
-      >
-        {modeLabel && (
-          <span style={{ color: 'var(--slate)', fontSize: 9, fontFamily: 'var(--font-sans, sans-serif)' }}>
-            {modeLabel}
-          </span>
-        )}
-        {displayText}
-      </button>
-      <button
-        type="button"
-        onClick={() => setPopoverOpen((v) => !v)}
-        aria-label={label || state.labels.colorPickerOpen}
-        aria-expanded={popoverOpen}
-        aria-haspopup="dialog"
-        className="shrink-0 rounded border"
-        style={{
-          width: 24,
-          height: 24,
-          background: CHECKER,
-          borderColor: 'var(--rule)',
-          cursor: 'pointer',
-          opacity: muted ? 0.6 : 1,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{ position: 'absolute', inset: 0, backgroundColor: hex6, opacity: alpha / 100 }} />
-      </button>
+    <div ref={controlsRef} className="flex shrink-0 items-center">
+      <ColorTrigger
+        open={popoverOpen}
+        onToggle={() => setPopoverOpen((v) => !v)}
+        label={label || state.labels.colorPickerOpen}
+        standalone={!!hideLabel}
+        displayText={displayText}
+        modeLabel={modeLabel}
+        isLinked={isLinked}
+        muted={muted}
+        hex6={hex6}
+        alpha={alpha}
+      />
       <ColorPopover
         open={popoverOpen}
         onOpenChange={handleOpenChange}
@@ -141,5 +114,58 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
     <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={[displayText]}>
       {controls}
     </FieldRow>
+  );
+}
+
+interface ColorTriggerProps {
+  open: boolean;
+  onToggle: () => void;
+  label: string;
+  /** No enclosing field row: name the button with `label` directly. */
+  standalone: boolean;
+  displayText: string;
+  modeLabel: string;
+  isLinked: boolean;
+  muted: boolean;
+  hex6: string;
+  alpha: number;
+}
+
+/** One button: swatch + value (the palette colour's name when linked). Its
+ *  accessible name is the row label followed by the value. */
+function ColorTrigger({ open, onToggle, label, standalone, displayText, modeLabel, isLinked, muted, hex6, alpha }: ColorTriggerProps) {
+  const ids = useFieldIds();
+  const valueId = useId();
+  const named = ids && !standalone;
+  return (
+    <button
+      type="button"
+      id={named ? ids.controlId : undefined}
+      onClick={onToggle}
+      aria-labelledby={named ? `${ids.labelId} ${valueId}` : undefined}
+      aria-label={named ? undefined : `${label}: ${displayText}`}
+      aria-describedby={named ? ids.descriptionId : undefined}
+      aria-expanded={open}
+      aria-haspopup="dialog"
+      className={cn(
+        'inline-flex h-7 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--rule) bg-(--surface) pr-2 pl-1 transition-colors',
+        'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
+        open && 'border-(--brand)',
+        muted ? 'text-(--slate)' : 'text-(--foreground)',
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className="relative h-5 w-5 shrink-0 overflow-hidden rounded border border-(--rule)"
+        style={{ background: CHECKER, opacity: muted ? 0.75 : 1 }}
+      >
+        <span className="absolute inset-0" style={{ backgroundColor: hex6, opacity: alpha / 100 }} />
+      </span>
+      {isLinked && <Link2 size={11} aria-hidden="true" className="shrink-0 text-(--brand)" />}
+      <span id={valueId} className={cn('min-w-0 truncate text-[0.66rem]', !isLinked && 'font-mono')}>
+        {modeLabel && <span className="mr-1 font-sans text-[0.55rem] text-(--slate)">{modeLabel}</span>}
+        {displayText}
+      </span>
+    </button>
   );
 }

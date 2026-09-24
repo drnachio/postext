@@ -2,6 +2,7 @@
 
 import type { useSandboxLabels } from '../../context/SandboxContext';
 import type {
+  OrderedListNumberFormat,
   OrderedListsConfig,
   ResolvedOrderedListsConfig,
   ResolvedUnorderedListsConfig,
@@ -13,10 +14,12 @@ import {
   DimensionInput,
   FontPicker,
   NumberInput,
+  SelectInput,
   TextInput,
   ToggleSwitch,
 } from '../../controls';
-import { TEXT_SIZE_UNITS, INDENT_UNITS, MARGIN_UNITS } from './OrderedListsSection/units';
+import { TEXT_SIZE_UNITS, INDENT_UNITS, MARGIN_UNITS, OFFSET_UNITS } from './OrderedListsSection/units';
+import { numberFormatOptions } from './OrderedListsSection/numberFormat';
 
 type Labels = ReturnType<typeof useSandboxLabels>;
 
@@ -59,6 +62,15 @@ export function PartsOrderedListsOverrides({
       <p className="px-2 py-1 text-xs" style={{ color: 'var(--slate)' }}>
         {labels.partsOrderedListsInfo}
       </p>
+      <SelectInput
+        label={labels.orderedListsNumberFormat}
+        value={raw?.numberFormat ?? base.numberFormat}
+        options={numberFormatOptions(labels)}
+        onChange={(v) => onUpdate({ numberFormat: v as OrderedListNumberFormat })}
+        tooltip={labels.orderedListsNumberFormatTooltip}
+        isDefault={isDefault('numberFormat')}
+        onReset={() => onReset('numberFormat')}
+      />
       <TextInput
         label={labels.orderedListsSeparator}
         value={raw?.separator ?? base.separator}
@@ -200,6 +212,47 @@ export function PartsOrderedListsOverrides({
         onReset={() => onReset('separatorGap')}
         units={INDENT_UNITS}
       />
+      <DimensionInput
+        label={labels.orderedListsNumberVerticalOffset}
+        value={raw?.numberVerticalOffset ?? base.numberVerticalOffset}
+        onChange={(dim) => onUpdate({ numberVerticalOffset: dim })}
+        min={-5}
+        step={0.05}
+        tooltip={labels.orderedListsNumberVerticalOffsetTooltip}
+        isDefault={isDefault('numberVerticalOffset')}
+        onReset={() => onReset('numberVerticalOffset')}
+        units={OFFSET_UNITS}
+      />
+      <DimensionInput
+        label={labels.orderedListsMarginTop}
+        value={raw?.marginTop ?? base.marginTop}
+        onChange={(dim) => onUpdate({ marginTop: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.orderedListsMarginTopTooltip}
+        isDefault={isDefault('marginTop')}
+        onReset={() => onReset('marginTop')}
+        units={MARGIN_UNITS}
+      />
+      <DimensionInput
+        label={labels.orderedListsMarginBottom}
+        value={raw?.marginBottom ?? base.marginBottom}
+        onChange={(dim) => onUpdate({ marginBottom: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.orderedListsMarginBottomTooltip}
+        isDefault={isDefault('marginBottom')}
+        onReset={() => onReset('marginBottom')}
+        units={MARGIN_UNITS}
+      />
+      <ToggleSwitch
+        label={labels.orderedListsHangingIndent}
+        checked={raw?.hangingIndent ?? base.hangingIndent}
+        onChange={(v) => onUpdate({ hangingIndent: v })}
+        tooltip={labels.orderedListsHangingIndentTooltip}
+        isDefault={isDefault('hangingIndent')}
+        onReset={() => onReset('hangingIndent')}
+      />
     </CollapsibleSection>
   );
 }
@@ -320,6 +373,84 @@ export function PartsUnorderedListsOverrides({
         isDefault={isDefault('itemSpacing')}
         onReset={() => onReset('itemSpacing')}
         units={MARGIN_UNITS}
+      />
+      <DimensionInput
+        label={labels.unorderedListsBulletVerticalOffset}
+        value={raw?.bulletVerticalOffset ?? base.bulletVerticalOffset}
+        onChange={(dim) => onUpdate({ bulletVerticalOffset: dim })}
+        min={-5}
+        step={0.05}
+        tooltip={labels.unorderedListsBulletVerticalOffsetTooltip}
+        isDefault={isDefault('bulletVerticalOffset')}
+        onReset={() => onReset('bulletVerticalOffset')}
+        units={OFFSET_UNITS}
+      />
+      <DimensionInput
+        label={labels.unorderedListsMarginTop}
+        value={raw?.marginTop ?? base.marginTop}
+        onChange={(dim) => onUpdate({ marginTop: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.unorderedListsMarginTopTooltip}
+        isDefault={isDefault('marginTop')}
+        onReset={() => onReset('marginTop')}
+        units={MARGIN_UNITS}
+      />
+      <DimensionInput
+        label={labels.unorderedListsMarginBottom}
+        value={raw?.marginBottom ?? base.marginBottom}
+        onChange={(dim) => onUpdate({ marginBottom: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.unorderedListsMarginBottomTooltip}
+        isDefault={isDefault('marginBottom')}
+        onReset={() => onReset('marginBottom')}
+        units={MARGIN_UNITS}
+      />
+      <ToggleSwitch
+        label={labels.unorderedListsHangingIndent}
+        checked={raw?.hangingIndent ?? base.hangingIndent}
+        onChange={(v) => onUpdate({ hangingIndent: v })}
+        tooltip={labels.unorderedListsHangingIndentTooltip}
+        isDefault={isDefault('hangingIndent')}
+        onReset={() => onReset('hangingIndent')}
+      />
+      <TextInput
+        label={labels.taskCheckboxChar}
+        value={raw?.taskCheckboxChar ?? base.taskCheckboxChar}
+        onChange={(v) => onUpdate({ taskCheckboxChar: v })}
+        placeholder={labels.taskCheckboxCharPlaceholder}
+        tooltip={labels.taskCheckboxCharTooltip}
+        isDefault={isDefault('taskCheckboxChar')}
+        onReset={() => onReset('taskCheckboxChar')}
+        widthCh={6}
+      />
+      <TextInput
+        label={labels.taskCheckedChar}
+        value={raw?.taskCheckedChar ?? base.taskCheckedChar}
+        onChange={(v) => onUpdate({ taskCheckedChar: v })}
+        placeholder={labels.taskCheckedCharPlaceholder}
+        tooltip={labels.taskCheckedCharTooltip}
+        isDefault={isDefault('taskCheckedChar')}
+        onReset={() => onReset('taskCheckedChar')}
+        widthCh={6}
+      />
+      <ToggleSwitch
+        label={labels.taskCompletedStrikethrough}
+        checked={raw?.taskCompletedStrikethrough ?? base.taskCompletedStrikethrough}
+        onChange={(v) => onUpdate({ taskCompletedStrikethrough: v })}
+        tooltip={labels.taskCompletedStrikethroughTooltip}
+        isDefault={isDefault('taskCompletedStrikethrough')}
+        onReset={() => onReset('taskCompletedStrikethrough')}
+      />
+      <ColorPicker
+          label={labels.taskCompletedColor}
+          value={raw?.taskCompletedColor ?? base.taskCompletedColor ?? base.color}
+          onChange={(color) => onUpdate({ taskCompletedColor: color })}
+          tooltip={labels.taskCompletedColorTooltip}
+          isDefault={isDefault('taskCompletedColor')}
+          onReset={() => onReset('taskCompletedColor')}
+          fieldId="parts-unordered-lists-task-completed-color"
       />
     </CollapsibleSection>
   );

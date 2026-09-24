@@ -5,7 +5,6 @@ export { DimensionInput } from './DimensionInput';
 export { SelectInput } from './SelectInput';
 export { NumberInput } from './NumberInput';
 export { TextInput } from './TextInput';
-export { InfoTip } from './InfoTip';
 export { ResetButton } from './ResetButton';
 export { NestedGroup } from './NestedGroup';
 export { FontPicker } from './FontPicker';
@@ -23,3 +22,10 @@ export {
   missingUsedVariants,
   collectFontUsage,
 } from './fontLoader';
+export { NumberControl } from './NumberControl';
+export { DimensionControl } from './DimensionInput';
+export { TextControl } from './TextInput';
+export { FieldRow } from './FieldRow';
+export { useFieldIds, HelpModeContext } from './fieldContext';
+export { ChoiceInput } from './ChoiceInput';
+export { FieldGroup } from './FieldGroup';

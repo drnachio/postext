@@ -6,6 +6,7 @@ import { resolvePageConfig, PAGE_SIZE_PRESETS, DEFAULT_PAGE_CONFIG, DEFAULT_CUT_
 import type { PageConfig, PageNumberingConfig, PageSizePreset, PageNumberFormat, Dimension } from 'postext';
 import {
   CollapsibleSection,
+  FieldGroup,
   ColorPicker,
   SelectInput,
   DimensionInput,
@@ -13,6 +14,7 @@ import {
   ToggleSwitch,
   NestedGroup,
 } from '../../controls';
+import { HighlightZone } from '../settings/previewHighlight';
 
 const PAGE_SIZE_OPTIONS = [
   { value: '11x17', label: '11 \u00d7 17 cm' },
@@ -37,10 +39,12 @@ export const PageSection = memo(function PageSection() {
     });
   };
 
+  // The baseline grid lives in `page` but is edited under Advanced → Debug:
+  // resetting the page leaves it alone.
   const resetPage = () => {
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { page: undefined },
+      payload: { page: raw?.baselineGrid ? { baselineGrid: raw.baselineGrid } : undefined },
     });
   };
 
@@ -122,7 +126,7 @@ export const PageSection = memo(function PageSection() {
   };
 
   // Check which fields differ from defaults
-  const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
+  const hasOverrides = raw !== undefined && Object.keys(raw).some((k) => k !== 'baselineGrid');
   const isBgDefault = colorsEqual(page.backgroundColor, D.backgroundColor);
   const isPresetDefault = page.sizePreset === D.sizePreset;
   const isWidthDefault = dimensionsEqual(page.width, D.width);
@@ -151,6 +155,23 @@ export const PageSection = memo(function PageSection() {
     { value: 'upper-alpha', label: labels.pageNumberingFormatUpperAlpha },
   ];
 
+  const sizeReset = () => {
+    if (!raw) return;
+    const next = { ...raw };
+    delete next.sizePreset;
+    delete next.width;
+    delete next.height;
+    dispatch({ type: 'UPDATE_CONFIG', payload: { page: Object.keys(next).length > 0 ? next : undefined } });
+  };
+
+  const PAGE_SIZE_DESCRIPTIONS: Record<string, string> = {
+    '11x17': labels.pageSize11x17,
+    '12x19': labels.pageSize12x19,
+    '17x24': labels.pageSize17x24,
+    '21x28': labels.pageSize21x28,
+    custom: labels.pageSizeCustomDescription,
+  };
+
   return (
     <CollapsibleSection
       title={labels.page}
@@ -160,219 +181,231 @@ export const PageSection = memo(function PageSection() {
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
-      <ColorPicker
-        label={labels.pageBackgroundColor}
-        value={page.backgroundColor}
-        onChange={(color) => updatePage({ backgroundColor: color })}
-        tooltip={labels.pageBackgroundColorTooltip}
-        isDefault={isBgDefault}
-        onReset={() => resetField('backgroundColor')}
-        fieldId="page-backgroundColor"
-      />
+      <FieldGroup title={labels.pageGroupSize}>
+        <SelectInput
+          label={labels.pageSize}
+          value={page.sizePreset}
+          options={PAGE_SIZE_OPTIONS.map((o) => ({
+            ...o,
+            label: o.value === 'custom' ? labels.custom : o.label,
+            description: PAGE_SIZE_DESCRIPTIONS[o.value],
+          }))}
+          onChange={handlePresetChange}
+          tooltip={labels.pageSizeTooltip}
+          isDefault={isPresetDefault}
+          onReset={sizeReset}
+        />
 
-      <SelectInput
-        label={labels.pageSize}
-        value={page.sizePreset}
-        options={PAGE_SIZE_OPTIONS.map((o) => ({
-          ...o,
-          label: o.value === 'custom' ? labels.custom : o.label,
-        }))}
-        onChange={handlePresetChange}
-        tooltip={labels.pageSizeTooltip}
-        isDefault={isPresetDefault}
-        onReset={() => {
-          if (!raw) return;
-          const next = { ...raw };
-          delete next.sizePreset;
-          delete next.width;
-          delete next.height;
-          dispatch({ type: 'UPDATE_CONFIG', payload: { page: Object.keys(next).length > 0 ? next : undefined } });
-        }}
-      />
+        {page.sizePreset === 'custom' && (
+          <NestedGroup>
+            <DimensionInput
+              label={labels.width}
+              value={page.width}
+              onChange={(dim) => updatePage({ width: dim })}
+              min={1}
+              tooltip={labels.widthTooltip}
+              isDefault={isWidthDefault}
+              onReset={() => resetField('width')}
+            />
+            <DimensionInput
+              label={labels.height}
+              value={page.height}
+              onChange={(dim) => updatePage({ height: dim })}
+              min={1}
+              tooltip={labels.heightTooltip}
+              isDefault={isHeightDefault}
+              onReset={() => resetField('height')}
+            />
+          </NestedGroup>
+        )}
+      </FieldGroup>
 
-      {page.sizePreset === 'custom' && (
-        <NestedGroup>
+      <FieldGroup title={labels.pageGroupMargins} description={labels.pageGroupMarginsDescription}>
+        <ToggleSwitch
+          label={labels.pageMarginsMirror}
+          checked={marginsMirror}
+          onChange={(v) => updatePage({ margins: { ...raw?.margins, mirror: v } })}
+          tooltip={labels.pageMarginsMirrorTooltip}
+          isDefault={isMarginsMirrorDefault}
+          onReset={() => resetMargin('mirror')}
+        />
+        <HighlightZone part="top">
           <DimensionInput
-            label={labels.width}
-            value={page.width}
-            onChange={(dim) => updatePage({ width: dim })}
-            min={1}
-            tooltip={labels.widthTooltip}
-            isDefault={isWidthDefault}
-            onReset={() => resetField('width')}
-          />
-          <DimensionInput
-            label={labels.height}
-            value={page.height}
-            onChange={(dim) => updatePage({ height: dim })}
-            min={1}
-            tooltip={labels.heightTooltip}
-            isDefault={isHeightDefault}
-            onReset={() => resetField('height')}
-          />
-        </NestedGroup>
-      )}
-
-      <DimensionInput
-        label={labels.marginTop}
-        value={page.margins.top}
-        onChange={(dim) => handleMarginChange('top', dim)}
-        min={0}
-        tooltip={labels.marginsTooltip}
-        isDefault={isMarginTopDefault}
-        onReset={() => resetMargin('top')}
-      />
-      <DimensionInput
-        label={labels.marginBottom}
-        value={page.margins.bottom}
-        onChange={(dim) => handleMarginChange('bottom', dim)}
-        min={0}
-        tooltip={labels.marginsTooltip}
-        isDefault={isMarginBottomDefault}
-        onReset={() => resetMargin('bottom')}
-      />
-      <ToggleSwitch
-        label={labels.pageMarginsMirror}
-        checked={marginsMirror}
-        onChange={(v) => updatePage({ margins: { ...raw?.margins, mirror: v } })}
-        tooltip={labels.pageMarginsMirrorTooltip}
-        isDefault={isMarginsMirrorDefault}
-        onReset={() => resetMargin('mirror')}
-      />
-      <DimensionInput
-        label={marginsMirror ? labels.pageMarginsInner : labels.marginLeft}
-        value={page.margins.left}
-        onChange={(dim) => handleMarginChange('left', dim)}
-        min={0}
-        tooltip={labels.marginsTooltip}
-        isDefault={isMarginLeftDefault}
-        onReset={() => resetMargin('left')}
-      />
-      <DimensionInput
-        label={marginsMirror ? labels.pageMarginsOuter : labels.marginRight}
-        value={page.margins.right}
-        onChange={(dim) => handleMarginChange('right', dim)}
-        min={0}
-        tooltip={labels.marginsTooltip}
-        isDefault={isMarginRightDefault}
-        onReset={() => resetMargin('right')}
-      />
-
-      <NumberInput
-        label={labels.dpi}
-        value={page.dpi}
-        onChange={(v) => updatePage({ dpi: v })}
-        min={72}
-        max={1200}
-        step={1}
-        tooltip={labels.dpiTooltip}
-        isDefault={isDpiDefault}
-        onReset={() => resetField('dpi')}
-      />
-
-      <ToggleSwitch
-        label={labels.cutLines}
-        checked={page.cutLines.enabled}
-        onChange={(v) =>
-          updatePage({ cutLines: { ...page.cutLines, enabled: v } })
-        }
-        tooltip={labels.cutLinesTooltip}
-        isDefault={isCutLinesEnabledDefault}
-        onReset={() => resetCutLinesField('enabled')}
-      />
-
-      {page.cutLines.enabled && (
-        <NestedGroup>
-          <DimensionInput
-            label={labels.cutLinesBleed}
-            value={page.cutLines.bleed}
-            onChange={(dim) =>
-              updatePage({ cutLines: { ...page.cutLines, bleed: dim } })
-            }
+            label={labels.marginTop}
+            value={page.margins.top}
+            onChange={(dim) => handleMarginChange('top', dim)}
             min={0}
-            step={0.5}
-            tooltip={labels.cutLinesBleedTooltip}
-            isDefault={isCutLinesBleedDefault}
-            onReset={() => resetCutLinesField('bleed')}
+            tooltip={labels.marginsTooltip}
+            isDefault={isMarginTopDefault}
+            onReset={() => resetMargin('top')}
           />
+        </HighlightZone>
+        <HighlightZone part="bottom">
           <DimensionInput
-            label={labels.cutLinesMarkLength}
-            value={page.cutLines.markLength}
-            onChange={(dim) =>
-              updatePage({ cutLines: { ...page.cutLines, markLength: dim } })
-            }
+            label={labels.marginBottom}
+            value={page.margins.bottom}
+            onChange={(dim) => handleMarginChange('bottom', dim)}
             min={0}
-            step={0.5}
-            tooltip={labels.cutLinesMarkLengthTooltip}
-            isDefault={isCutLinesMarkLengthDefault}
-            onReset={() => resetCutLinesField('markLength')}
+            tooltip={labels.marginsTooltip}
+            isDefault={isMarginBottomDefault}
+            onReset={() => resetMargin('bottom')}
           />
+        </HighlightZone>
+        <HighlightZone part="inner">
           <DimensionInput
-            label={labels.cutLinesMarkOffset}
-            value={page.cutLines.markOffset}
-            onChange={(dim) =>
-              updatePage({ cutLines: { ...page.cutLines, markOffset: dim } })
-            }
+            label={marginsMirror ? labels.pageMarginsInner : labels.marginLeft}
+            value={page.margins.left}
+            onChange={(dim) => handleMarginChange('left', dim)}
             min={0}
-            step={0.5}
-            tooltip={labels.cutLinesMarkOffsetTooltip}
-            isDefault={isCutLinesMarkOffsetDefault}
-            onReset={() => resetCutLinesField('markOffset')}
+            tooltip={marginsMirror ? labels.pageMarginsInnerTooltip : labels.marginsTooltip}
+            isDefault={isMarginLeftDefault}
+            onReset={() => resetMargin('left')}
           />
+        </HighlightZone>
+        <HighlightZone part="outer">
           <DimensionInput
-            label={labels.cutLinesMarkWidth}
-            value={page.cutLines.markWidth}
-            onChange={(dim) =>
-              updatePage({ cutLines: { ...page.cutLines, markWidth: dim } })
-            }
-            min={0.1}
-            step={0.05}
-            tooltip={labels.cutLinesMarkWidthTooltip}
-            isDefault={isCutLinesMarkWidthDefault}
-            onReset={() => resetCutLinesField('markWidth')}
+            label={marginsMirror ? labels.pageMarginsOuter : labels.marginRight}
+            value={page.margins.right}
+            onChange={(dim) => handleMarginChange('right', dim)}
+            min={0}
+            tooltip={marginsMirror ? labels.pageMarginsOuterTooltip : labels.marginsTooltip}
+            isDefault={isMarginRightDefault}
+            onReset={() => resetMargin('right')}
           />
-          <ColorPicker
-            label={labels.cutLinesColor}
-            value={page.cutLines.color}
-            onChange={(color) =>
-              updatePage({ cutLines: { ...page.cutLines, color } })
-            }
-            tooltip={labels.cutLinesColorTooltip}
-            isDefault={isCutLinesColorDefault}
-            onReset={() => resetCutLinesField('color')}
-            fieldId="page-cutLinesColor"
-          />
-        </NestedGroup>
-      )}
+        </HighlightZone>
+      </FieldGroup>
+
+      <FieldGroup title={labels.pageGroupPaper}>
+        <ColorPicker
+          label={labels.pageBackgroundColor}
+          value={page.backgroundColor}
+          onChange={(color) => updatePage({ backgroundColor: color })}
+          tooltip={labels.pageBackgroundColorTooltip}
+          isDefault={isBgDefault}
+          onReset={() => resetField('backgroundColor')}
+          fieldId="page-backgroundColor"
+        />
+      </FieldGroup>
 
       <CollapsibleSection
         title={labels.pageNumbering}
         sectionId="page-numbering"
         variant="subsection"
       >
-        <NestedGroup>
-          <SelectInput
-            label={labels.pageNumberingFormat}
-            value={page.pageNumbering.format}
-            options={PAGE_NUMBER_FORMAT_OPTIONS}
-            onChange={(v) => updatePageNumbering({ format: v as PageNumberFormat })}
-            tooltip={labels.pageNumberingFormatTooltip}
-            isDefault={isNumberingFormatDefault}
-            onReset={() => resetPageNumberingField('format')}
-          />
-          <NumberInput
-            label={labels.pageNumberingStartAt}
-            value={page.pageNumbering.startAt}
-            onChange={(v) => updatePageNumbering({ startAt: v })}
-            min={1}
-            step={1}
-            tooltip={labels.pageNumberingStartAtTooltip}
-            isDefault={isNumberingStartAtDefault}
-            onReset={() => resetPageNumberingField('startAt')}
-          />
-        </NestedGroup>
+        <SelectInput
+          label={labels.pageNumberingFormat}
+          value={page.pageNumbering.format}
+          options={PAGE_NUMBER_FORMAT_OPTIONS}
+          onChange={(v) => updatePageNumbering({ format: v as PageNumberFormat })}
+          tooltip={labels.pageNumberingFormatTooltip}
+          isDefault={isNumberingFormatDefault}
+          onReset={() => resetPageNumberingField('format')}
+        />
+        <NumberInput
+          label={labels.pageNumberingStartAt}
+          value={page.pageNumbering.startAt}
+          onChange={(v) => updatePageNumbering({ startAt: v })}
+          min={1}
+          max={9999}
+          step={1}
+          tooltip={labels.pageNumberingStartAtTooltip}
+          isDefault={isNumberingStartAtDefault}
+          onReset={() => resetPageNumberingField('startAt')}
+        />
       </CollapsibleSection>
 
+      <CollapsibleSection
+        title={labels.pageGroupPrint}
+        sectionId="page-print"
+        variant="subsection"
+      >
+        <NumberInput
+          label={labels.dpi}
+          value={page.dpi}
+          onChange={(v) => updatePage({ dpi: v })}
+          min={72}
+          max={1200}
+          step={1}
+          tooltip={labels.dpiTooltip}
+          isDefault={isDpiDefault}
+          onReset={() => resetField('dpi')}
+        />
+
+        <ToggleSwitch
+          label={labels.cutLines}
+          checked={page.cutLines.enabled}
+          onChange={(v) =>
+            updatePage({ cutLines: { ...page.cutLines, enabled: v } })
+          }
+          tooltip={labels.cutLinesTooltip}
+          isDefault={isCutLinesEnabledDefault}
+          onReset={() => resetCutLinesField('enabled')}
+        />
+
+        {page.cutLines.enabled && (
+          <NestedGroup>
+            <DimensionInput
+              label={labels.cutLinesBleed}
+              value={page.cutLines.bleed}
+              onChange={(dim) =>
+                updatePage({ cutLines: { ...page.cutLines, bleed: dim } })
+              }
+              min={0}
+              step={0.5}
+              tooltip={labels.cutLinesBleedTooltip}
+              isDefault={isCutLinesBleedDefault}
+              onReset={() => resetCutLinesField('bleed')}
+            />
+            <DimensionInput
+              label={labels.cutLinesMarkLength}
+              value={page.cutLines.markLength}
+              onChange={(dim) =>
+                updatePage({ cutLines: { ...page.cutLines, markLength: dim } })
+              }
+              min={0}
+              step={0.5}
+              tooltip={labels.cutLinesMarkLengthTooltip}
+              isDefault={isCutLinesMarkLengthDefault}
+              onReset={() => resetCutLinesField('markLength')}
+            />
+            <DimensionInput
+              label={labels.cutLinesMarkOffset}
+              value={page.cutLines.markOffset}
+              onChange={(dim) =>
+                updatePage({ cutLines: { ...page.cutLines, markOffset: dim } })
+              }
+              min={0}
+              step={0.5}
+              tooltip={labels.cutLinesMarkOffsetTooltip}
+              isDefault={isCutLinesMarkOffsetDefault}
+              onReset={() => resetCutLinesField('markOffset')}
+            />
+            <DimensionInput
+              label={labels.cutLinesMarkWidth}
+              value={page.cutLines.markWidth}
+              onChange={(dim) =>
+                updatePage({ cutLines: { ...page.cutLines, markWidth: dim } })
+              }
+              min={0.1}
+              step={0.05}
+              tooltip={labels.cutLinesMarkWidthTooltip}
+              isDefault={isCutLinesMarkWidthDefault}
+              onReset={() => resetCutLinesField('markWidth')}
+            />
+            <ColorPicker
+              label={labels.cutLinesColor}
+              value={page.cutLines.color}
+              onChange={(color) =>
+                updatePage({ cutLines: { ...page.cutLines, color } })
+              }
+              tooltip={labels.cutLinesColorTooltip}
+              isDefault={isCutLinesColorDefault}
+              onReset={() => resetCutLinesField('color')}
+              fieldId="page-cutLinesColor"
+            />
+          </NestedGroup>
+        )}
+      </CollapsibleSection>
     </CollapsibleSection>
   );
 });

@@ -8,6 +8,8 @@ export interface ScopeEntry {
   visible: boolean;
   /** The entry differs from its default. */
   overridden: boolean;
+  /** Changed fields inside a nested scope (a field row counts as 1). */
+  overrideCount?: number;
 }
 
 interface MatchScopeValue {
@@ -19,7 +21,7 @@ interface MatchScopeValue {
 export interface ScopeCounts {
   /** Descendants (fields or nested scopes) passing the filter. */
   matchCount: number;
-  /** Descendants marked overridden. */
+  /** Changed fields among the descendants, nested scopes included. */
   overrideCount: number;
 }
 
@@ -57,7 +59,7 @@ export function MatchScopeProvider({ id, titleMatch = false, overridden = false,
       let overrideCount = 0;
       for (const e of entriesRef.current.values()) {
         if (e.visible) matchCount++;
-        if (e.overridden) overrideCount++;
+        if (e.overridden) overrideCount += e.overrideCount ?? 1;
       }
       setCounts((prev) =>
         prev.matchCount === matchCount && prev.overrideCount === overrideCount ? prev : { matchCount, overrideCount },
@@ -76,10 +78,13 @@ export function MatchScopeProvider({ id, titleMatch = false, overridden = false,
 
   const selfVisible = forceVisible || counts.matchCount > 0;
   const selfOverridden = overridden || counts.overrideCount > 0;
+  // A scope flagged as a whole (e.g. a palette whose rows are not field
+  // rows) still counts as one change.
+  const selfOverrideCount = Math.max(counts.overrideCount, overridden ? 1 : 0);
   useLayoutEffect(() => {
     if (!parent) return;
-    parent.report(scopeId, { visible: selfVisible, overridden: selfOverridden });
-  }, [parent, scopeId, selfVisible, selfOverridden]);
+    parent.report(scopeId, { visible: selfVisible, overridden: selfOverridden, overrideCount: selfOverrideCount });
+  }, [parent, scopeId, selfVisible, selfOverridden, selfOverrideCount]);
   useLayoutEffect(() => {
     if (!parent) return;
     return () => parent.report(scopeId, null);

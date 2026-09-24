@@ -4,7 +4,7 @@ import { FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files } from 'luc
 import { useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxPresetStale, useSandboxSelector, useSandboxWarnings } from '../context/SandboxContext';
 import type { PanelId } from '../types';
-import { Tooltip } from '../ui';
+import { Tooltip, cn } from '../ui';
 
 interface ActivityBarProps {
   themeToggle?: ReactNode;
@@ -13,13 +13,19 @@ interface ActivityBarProps {
   homeLink?: ReactNode;
 }
 
-const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: 'markdownEditor' | 'projects' | 'configuration' | 'resources' | 'warnings' | 'fonts' }[] = [
-  { id: 'projects', Icon: Files, labelKey: 'projects' },
-  { id: 'markdown', Icon: FileCode, labelKey: 'markdownEditor' },
-  { id: 'resources', Icon: FolderOpen, labelKey: 'resources' },
-  { id: 'fonts', Icon: Type, labelKey: 'fonts' },
-  { id: 'config', Icon: Settings2, labelKey: 'configuration' },
-  { id: 'warnings', Icon: AlertTriangle, labelKey: 'warnings' },
+type NavLabelKey = 'navBooks' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings';
+type NavHintKey = 'navBooksHint' | 'navManuscriptHint' | 'navResourcesHint' | 'navFontsHint' | 'navDesignHint' | 'navWarningsHint';
+
+/** Workflow order: pick a book, write, add figures and fonts, design,
+ *  then check. Each entry has a one-word label (shown under the icon) and a
+ *  longer hint (tooltip + accessible description). */
+const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: NavLabelKey; hintKey: NavHintKey }[] = [
+  { id: 'projects', Icon: Files, labelKey: 'navBooks', hintKey: 'navBooksHint' },
+  { id: 'markdown', Icon: FileCode, labelKey: 'navManuscript', hintKey: 'navManuscriptHint' },
+  { id: 'resources', Icon: FolderOpen, labelKey: 'navResources', hintKey: 'navResourcesHint' },
+  { id: 'fonts', Icon: Type, labelKey: 'navFonts', hintKey: 'navFontsHint' },
+  { id: 'config', Icon: Settings2, labelKey: 'navDesign', hintKey: 'navDesignHint' },
+  { id: 'warnings', Icon: AlertTriangle, labelKey: 'navWarnings', hintKey: 'navWarningsHint' },
 ];
 
 function PanelNav() {
@@ -59,8 +65,24 @@ function PanelNav() {
     return () => ro.disconnect();
   }, [updateIndicator]);
 
+  // Roving focus: one tab stop for the whole bar, arrow keys move within.
+  const focusable = activePanel ?? PANEL_ICONS[0]!.id;
+  const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    const ids = PANEL_ICONS.map((p) => p.id);
+    const current = ids.findIndex((id) => buttonRefs.current.get(id) === document.activeElement);
+    if (current === -1) return;
+    let next: number | null = null;
+    if (e.key === 'ArrowDown') next = (current + 1) % ids.length;
+    else if (e.key === 'ArrowUp') next = (current - 1 + ids.length) % ids.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = ids.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    buttonRefs.current.get(ids[next]!)?.focus();
+  };
+
   return (
-    <nav ref={navRef} className="relative flex flex-col items-center gap-1.5" aria-label={labels.panelsNav}>
+    <nav ref={navRef} className="relative flex w-full flex-col items-stretch gap-0.5" aria-label={labels.panelsNav} onKeyDown={onKeyDown}>
       {indicator && (
         <div
           aria-hidden="true"
@@ -77,9 +99,10 @@ function PanelNav() {
           }}
         />
       )}
-      {PANEL_ICONS.map(({ id, Icon, labelKey }) => {
+      {PANEL_ICONS.map(({ id, Icon, labelKey, hintKey }) => {
         const isActive = activePanel === id;
         const label = labels[labelKey];
+        const hint = labels[hintKey];
         const showBadge = id === 'warnings' && warningCount > 0;
         const badgeText = warningCount > 99 ? '99+' : String(warningCount);
         // A dot (no count) when the active preset changed on disk and local
@@ -91,47 +114,29 @@ function PanelNav() {
             ? `${label} (${labels.presetStaleBanner})`
             : label;
         return (
-          <Tooltip key={id} content={label} side="right">
+          <Tooltip key={id} content={hint} side="right">
             <button
               ref={(el) => { if (el) buttonRefs.current.set(id, el); }}
               type="button"
               onClick={() => dispatch({ type: 'TOGGLE_PANEL', payload: id })}
               aria-label={ariaLabel}
+              aria-description={hint}
               aria-pressed={isActive}
-              className="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1"
-              style={{
-                color: isActive ? 'var(--brand)' : 'var(--slate)',
-                outlineColor: 'var(--brand-hover)',
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.color = 'var(--foreground)';
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.color = 'var(--slate)';
-              }}
+              tabIndex={id === focusable ? 0 : -1}
+              className={cn(
+                'relative flex w-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md py-1.5 transition-colors',
+                'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
+                isActive ? 'bg-(--surface) text-(--brand)' : 'text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
+              )}
             >
               <Icon size={18} aria-hidden="true" />
+              <span aria-hidden="true" className={cn('max-w-full truncate px-0.5 text-[0.55rem] leading-[1.2]', isActive && 'font-semibold text-(--foreground)')}>
+                {label}
+              </span>
               {showBadge && (
                 <span
                   aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    top: 2,
-                    right: 2,
-                    minWidth: 16,
-                    height: 16,
-                    padding: '0 4px',
-                    borderRadius: 8,
-                    backgroundColor: 'var(--brand)',
-                    color: 'var(--background)',
-                    fontSize: 10,
-                    fontWeight: 700,
-                    lineHeight: '16px',
-                    textAlign: 'center',
-                    fontVariantNumeric: 'tabular-nums',
-                    boxSizing: 'border-box',
-                    pointerEvents: 'none',
-                  }}
+                  className="pointer-events-none absolute top-0.5 right-1.5 box-border h-4 min-w-4 rounded-full bg-(--brand) px-1 text-center text-[10px] leading-4 font-bold text-(--brand-contrast,var(--background)) tabular-nums"
                 >
                   {badgeText}
                 </span>
@@ -139,17 +144,8 @@ function PanelNav() {
               {showDot && (
                 <span
                   aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    top: 6,
-                    right: 6,
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: 'var(--brand)',
-                    boxShadow: '0 0 0 2px var(--background)',
-                    pointerEvents: 'none',
-                  }}
+                  className="pointer-events-none absolute top-1.5 right-3 h-2 w-2 rounded-full bg-(--brand)"
+                  style={{ boxShadow: '0 0 0 2px var(--background)' }}
                 />
               )}
             </button>
@@ -164,7 +160,7 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
   const labels = useSandboxLabels();
   return (
     <div
-      className="flex h-full w-11 flex-col items-center border-r px-1 pb-2"
+      className="flex h-full w-[3.7rem] flex-col items-center border-r px-1 pb-2"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
       role="toolbar"
       aria-label={labels.activityBar}

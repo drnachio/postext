@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, FilePlus, Files, ImagePlus, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, FilePlus, Files, ImagePlus, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import {
   useSandboxLabels,
@@ -31,6 +31,34 @@ function MaybeConfirm({
   return (
     <ConfirmPopover message={message} onConfirm={onConfirm}>
       {({ open }) => children(() => open())}
+    </ConfirmPopover>
+  );
+}
+
+/** The "⋯" button of a book row: every action with its name, instead of a
+ *  strip of unlabelled icons. An item that needs confirming (delete,
+ *  reload over edits) asks next to the ⋯ button once the menu closes. */
+function RowActionsMenu({
+  label,
+  disabled,
+  confirmMessage,
+  onConfirm,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  confirmMessage: ReactNode;
+  onConfirm: () => void;
+  children: (askConfirm: () => void) => ReactNode;
+}) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  return (
+    <ConfirmPopover message={confirmMessage} onConfirm={onConfirm}>
+      {({ open }) => (
+        <Menu trigger={<IconButton ref={triggerRef} size={24} label={label} icon={<MoreHorizontal size={14} />} disabled={disabled} tooltip={false} />}>
+          {children(() => open(triggerRef.current))}
+        </Menu>
+      )}
     </ConfirmPopover>
   );
 }
@@ -133,7 +161,7 @@ export function ProjectsPanel() {
   return (
     <div className="flex h-full flex-col">
       <PanelHeader
-        title={labels.projects}
+        title={labels.navBooks}
         actions={
           <>
             <Menu
@@ -209,7 +237,7 @@ export function ProjectsPanel() {
           </div>
         )}
 
-        <GroupTitle>{labels.projects}</GroupTitle>
+        <GroupTitle>{labels.projectsGroupMine}</GroupTitle>
         {projects.length === 0 ? (
           <EmptyState
             icon={<Files size={28} />}
@@ -222,7 +250,7 @@ export function ProjectsPanel() {
             }
           />
         ) : (
-          <ul className="m-0 list-none p-0" aria-label={labels.projects}>
+          <ul className="m-0 list-none p-0" aria-label={labels.projectsGroupMine}>
             {projects.map((project) => (
               <ProjectRow
                 key={project.id}
@@ -454,16 +482,22 @@ function ProjectRow({
       tags={tags}
       alignTop={editing || !!project.description}
       actions={
-        <>
-          <IconButton size={18} label={labels.projectRename} icon={<Pencil size={13} />} disabled={disabled || editing} onClick={startRename} />
-          <IconButton size={18} label={labels.projectDuplicate} icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate} />
-          <IconButton size={18} label={labels.projectExport} icon={<Download size={13} />} disabled={disabled} onClick={onExport} />
-          <ConfirmPopover message={labels.projectDeleteConfirm.replace('__name__', project.name)} onConfirm={onDelete}>
-            {({ open: openConfirm }) => (
-              <IconButton size={18} label={labels.projectDelete} icon={<Trash2 size={13} />} disabled={disabled} onClick={openConfirm} />
-            )}
-          </ConfirmPopover>
-        </>
+        <RowActionsMenu
+          label={labels.rowMoreActions.replace('__name__', project.name)}
+          disabled={disabled}
+          confirmMessage={labels.projectDeleteConfirm.replace('__name__', project.name)}
+          onConfirm={onDelete}
+        >
+          {(askDelete) => (
+            <>
+              <MenuItem icon={<Pencil size={13} />} disabled={editing} onClick={startRename}>{labels.projectRename}</MenuItem>
+              <MenuItem icon={<Copy size={13} />} onClick={onDuplicate}>{labels.projectDuplicate}</MenuItem>
+              <MenuItem icon={<Download size={13} />} onClick={onExport}>{labels.projectExport}</MenuItem>
+              <MenuSeparator />
+              <MenuItem icon={<Trash2 size={13} />} destructive onClick={askDelete}>{labels.projectDelete}</MenuItem>
+            </>
+          )}
+        </RowActionsMenu>
       }
     />
   );
@@ -614,19 +648,27 @@ function PresetRow({
       tags={tags}
       alignTop={!!subtitle}
       actions={
-        <>
-          {isActive && preset.available && (
-            <MaybeConfirm confirm={!untouched} message={labels.presetReloadConfirm} onConfirm={onReload}>
-              {(openReload) => (
-                <IconButton size={18} label={labels.presetReloadActive} icon={<RotateCcw size={13} />} disabled={disabled} onClick={openReload} />
+        <RowActionsMenu
+          label={labels.rowMoreActions.replace('__name__', preset.name)}
+          disabled={disabled && !onHide && !onUnhide}
+          confirmMessage={labels.presetReloadConfirm}
+          onConfirm={onReload}
+        >
+          {(askReload) => (
+            <>
+              {isActive && preset.available && (
+                <MenuItem icon={<RotateCcw size={13} />} disabled={disabled} onClick={untouched ? onReload : askReload}>
+                  {labels.presetReloadActive}
+                </MenuItem>
               )}
-            </MaybeConfirm>
+              <MenuItem icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate}>{labels.presetDuplicate}</MenuItem>
+              <MenuItem icon={<Download size={13} />} disabled={disabled} onClick={onExport}>{labels.presetExport}</MenuItem>
+              {(onHide || onUnhide) && <MenuSeparator />}
+              {onHide && <MenuItem icon={<EyeOff size={13} />} onClick={onHide}>{labels.presetHide}</MenuItem>}
+              {onUnhide && <MenuItem icon={<Eye size={13} />} onClick={onUnhide}>{labels.presetUnhide}</MenuItem>}
+            </>
           )}
-          <IconButton size={18} label={labels.presetDuplicate} icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate} />
-          <IconButton size={18} label={labels.presetExport} icon={<Download size={13} />} disabled={disabled} onClick={onExport} />
-          {onHide && <IconButton size={18} label={labels.presetHide} icon={<EyeOff size={13} />} onClick={onHide} />}
-          {onUnhide && <IconButton size={18} label={labels.presetUnhide} icon={<Eye size={13} />} onClick={onUnhide} />}
-        </>
+        </RowActionsMenu>
       }
     />
   );

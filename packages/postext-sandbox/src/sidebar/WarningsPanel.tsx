@@ -1,9 +1,11 @@
 'use client';
 
-import { AlertTriangle, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { AlertTriangle, ChevronRight, CircleCheck, Type, FileWarning, Heading, List, FileText, Sigma, Image, Database } from 'lucide-react';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES } from 'postext';
 import { useSandbox, useSandboxWarnings } from '../context/SandboxContext';
-import { EmptyState, ListRow, PanelBody, PanelHeader } from '../ui';
+import { Collapsible, EmptyState, ListRow, PanelBody, PanelHeader, cn } from '../ui';
+import { WARNING_CATEGORY_ORDER, warningCategory, type WarningCategory } from '../warnings/categories';
 import type { Warning, WarningPayload } from '../warnings/types';
 import type { SandboxLabels } from '../types';
 
@@ -322,18 +324,61 @@ export function WarningsPanel() {
     });
   };
 
+  const groups = WARNING_CATEGORY_ORDER
+    .map((category) => ({ category, items: warnings.filter((w) => warningCategory(w.payload.kind) === category) }))
+    .filter((g) => g.items.length > 0);
+
   return (
     <div className="flex h-full flex-col">
-      <PanelHeader title={labels.warnings} count={warnings.length} />
+      <PanelHeader title={labels.navWarnings} count={warnings.length} />
       <PanelBody>
         {warnings.length === 0 ? (
-          <EmptyState icon={<FileText size={32} />} title={labels.warningsEmpty} />
+          <EmptyState icon={<CircleCheck size={32} />} title={labels.warningsEmpty} description={labels.warningsEmptyDescription} />
         ) : (
-          warnings.map((w) => (
-            <WarningItem key={w.id} warning={w} labels={labels} multiChapter={multiChapter} onClick={handleClick} />
+          groups.map(({ category, items }) => (
+            <WarningGroup key={category} title={categoryLabel(category, labels)} count={items.length}>
+              {items.map((w) => (
+                <li key={w.id}>
+                  <WarningItem warning={w} labels={labels} multiChapter={multiChapter} onClick={handleClick} />
+                </li>
+              ))}
+            </WarningGroup>
           ))
         )}
       </PanelBody>
     </div>
+  );
+}
+
+function categoryLabel(category: WarningCategory, labels: SandboxLabels): string {
+  switch (category) {
+    case 'fonts': return labels.warningsGroupFonts;
+    case 'figures': return labels.warningsGroupFigures;
+    case 'markup': return labels.warningsGroupMarkup;
+    case 'design': return labels.warningsGroupDesign;
+    case 'typesetting': return labels.warningsGroupTypesetting;
+    case 'system': return labels.warningsGroupSystem;
+  }
+}
+
+/** One collapsible group of warnings, open by default. */
+function WarningGroup({ title, count, children }: { title: string; count: number; children: ReactNode }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <Collapsible.Root open={open} onOpenChange={setOpen} className="border-b border-(--rule)">
+      <Collapsible.Trigger
+        className={cn(
+          'flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-3 py-2 text-left text-xs font-semibold text-(--foreground) transition-colors',
+          'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
+        )}
+      >
+        <ChevronRight size={13} aria-hidden="true" className="shrink-0 text-(--slate)" style={{ transform: open ? 'rotate(90deg)' : undefined, transition: 'transform 200ms ease' }} />
+        <span className="min-w-0 flex-1">{title}</span>
+        <span className="rounded-full bg-(--surface) px-1.5 text-[0.62rem] font-medium text-(--slate) tabular-nums">{count}</span>
+      </Collapsible.Trigger>
+      <Collapsible.Panel data-postext-collapsible="">
+        <ul className="m-0 list-none p-0 pb-1.5">{children}</ul>
+      </Collapsible.Panel>
+    </Collapsible.Root>
   );
 }

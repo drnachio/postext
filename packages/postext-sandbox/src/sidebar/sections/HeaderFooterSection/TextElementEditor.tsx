@@ -1,5 +1,7 @@
 'use client';
 
+import { AlignCenter, AlignLeft, AlignRight } from 'lucide-react';
+
 import { useState } from 'react';
 import { useSandboxLabels } from '../../../context/SandboxContext';
 import { DEFAULT_TEXT_ELEMENT, dimensionsEqual, colorsEqual } from 'postext';
@@ -13,6 +15,7 @@ import type {
   ColorValue,
   ElementSize,
   VAlign,
+  HAlign,
 } from 'postext';
 import {
   TextInput,
@@ -220,6 +223,24 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
           units={BOX_SIZE_UNITS}
         />
       )}
+      <SelectInput
+        label={labels.headerFooterElementTextAlign}
+        value={resolved.align}
+        variant="segmented"
+        options={[
+          { value: 'left', label: labels.headerFooterElementAlignLeft, icon: <AlignLeft size={13} /> },
+          { value: 'center', label: labels.headerFooterElementAlignCenter, icon: <AlignCenter size={13} /> },
+          { value: 'right', label: labels.headerFooterElementAlignRight, icon: <AlignRight size={13} /> },
+        ]}
+        onChange={(v) => update({ align: v as HAlign })}
+        tooltip={labels.headerFooterElementTextAlignTooltip}
+        isDefault={raw.align === undefined}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.align;
+          onChange(next);
+        }}
+      />
       <SelectInput
         label={labels.headerFooterElementVerticalAlign}
         value={resolved.verticalAlign}

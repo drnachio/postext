@@ -40,6 +40,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     isDark,
     persistedStateRef: editorStateRef,
     getRefContext: () => refContextRef.current,
+    ariaLabel: state.labels.markdownEditor,
   });
 
   // If this editor unmounts (e.g. user switches to another viewport tab),

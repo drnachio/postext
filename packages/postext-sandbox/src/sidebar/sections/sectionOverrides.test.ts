@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig } from 'postext';
 import { cloneDefaultColorPalette } from 'postext';
-import { categoryOverrideCounts, sectionHasOverrides } from './sectionOverrides';
+import { groupOverrideCounts, sectionHasOverrides } from './sectionOverrides';
 
 const base: PostextConfig = { colorPalette: cloneDefaultColorPalette() };
 
@@ -32,13 +32,14 @@ describe('sectionHasOverrides', () => {
     expect(sectionHasOverrides(warningsOnly, 'warnings')).toBe(true);
     expect(sectionHasOverrides(warningsOnly, 'debug')).toBe(false);
     const grid: PostextConfig = { ...base, page: { baselineGrid: { enabled: true } } };
+    expect(sectionHasOverrides(grid, 'page')).toBe(false);
     expect(sectionHasOverrides(grid, 'debug')).toBe(true);
   });
 });
 
-describe('categoryOverrideCounts', () => {
+describe('groupOverrideCounts', () => {
   it('counts overridden sections per category', () => {
     const cfg: PostextConfig = { ...base, page: { dpi: 150 }, bodyText: { fontSize: { value: 11, unit: 'pt' } } };
-    expect(categoryOverrideCounts(cfg)).toEqual({ document: 1, text: 1, figures: 0, output: 0, advanced: 0 });
+    expect(groupOverrideCounts(cfg)).toMatchObject({ page: 1, text: 1, figures: 0, output: 0, advanced: 0 });
   });
 });

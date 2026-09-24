@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useSyncExternalStore } from 'react';
+import { useState, useRef, useEffect, useCallback, useId, useSyncExternalStore, type RefObject } from 'react';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { Popover, type PopoverCloseReason } from '../ui';
 import { FieldRow } from './FieldRow';
+import { useFieldIds } from './fieldContext';
+import { cn } from '../ui/cn';
+import { ChevronsUpDown } from 'lucide-react';
 import { listCustomFontFamilies, loadFont, onCustomFontsChanged } from './fontLoader';
 
 interface FontPickerProps {
@@ -129,7 +132,7 @@ const LIST_HEIGHT = 320;
 function GroupHeader({ children }: { children: string }) {
   return (
     <div
-      className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide"
+      className="px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide"
       style={{ color: 'var(--slate)', backgroundColor: 'var(--background)', borderBottom: '1px solid var(--rule)' }}
     >
       {children}
@@ -162,6 +165,7 @@ export function FontPicker({
   const rowRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const openPopover = useCallback(() => {
     setSearch('');
@@ -193,25 +197,28 @@ export function FontPicker({
     setOpen(false);
   };
 
+  // Arrow keys walk the options; ArrowUp on the first one returns to search.
+  const onListKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+    const options = Array.from(listRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? []);
+    const idx = options.indexOf(document.activeElement as HTMLButtonElement);
+    e.preventDefault();
+    if (e.key === 'Home') options[0]?.focus();
+    else if (e.key === 'End') options[options.length - 1]?.focus();
+    else if (e.key === 'ArrowDown') options[Math.min(idx + 1, options.length - 1)]?.focus();
+    else if (idx <= 0) searchRef.current?.focus();
+    else options[idx - 1]?.focus();
+  };
+
   return (
     <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={[value]}>
-      <button
-        ref={buttonRef}
-        type="button"
+      <FontTrigger
+        buttonRef={buttonRef}
+        value={value}
+        open={open}
+        muted={muted}
         onClick={() => (open ? setOpen(false) : openPopover())}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        className="rounded border px-2 py-1 text-xs text-right truncate"
-        style={{
-          maxWidth: '140px',
-          borderColor: 'var(--rule)',
-          backgroundColor: 'var(--surface)',
-          color: muted ? 'var(--slate)' : 'var(--foreground)',
-          fontFamily: `"${value}", sans-serif`,
-        }}
-      >
-        {value}
-      </button>
+      />
 
       <Popover
         open={open}
@@ -228,6 +235,15 @@ export function FontPicker({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                listRef.current?.querySelector<HTMLButtonElement>('[role="option"]')?.focus();
+              } else if (e.key === 'Enter') {
+                const first = filteredCustom[0] ?? filteredGoogle[0];
+                if (first) { e.preventDefault(); pick(first); }
+              }
+            }}
             placeholder={searchPlaceholder ?? labels.fontPickerSearch}
             aria-label={searchPlaceholder ?? labels.fontPickerSearch}
             className="w-full rounded border px-2 py-1 text-xs focus:border-(--brand)"
@@ -239,7 +255,7 @@ export function FontPicker({
             }}
           />
         </div>
-        <div role="listbox" aria-label={label} style={{ height: LIST_HEIGHT, maxHeight: 'calc(var(--available-height) - 48px)', overflowY: 'auto', paddingBottom: 4 }}>
+        <div ref={listRef} role="listbox" aria-label={label} onKeyDown={onListKeyDown} style={{ height: LIST_HEIGHT, maxHeight: 'calc(var(--available-height) - 48px)', overflowY: 'auto', paddingBottom: 4 }}>
           {!hasAny && (
             <div className="px-3 py-2 text-xs" style={{ color: 'var(--slate)' }}>
               {noResultsLabel ?? labels.fontPickerNoResults}
@@ -266,5 +282,37 @@ export function FontPicker({
         </div>
       </Popover>
     </FieldRow>
+  );
+}
+
+function FontTrigger({ buttonRef, value, open, muted, onClick }: {
+  buttonRef: RefObject<HTMLButtonElement | null>;
+  value: string;
+  open: boolean;
+  muted: boolean;
+  onClick: () => void;
+}) {
+  const ids = useFieldIds();
+  const valueId = useId();
+  return (
+    <button
+      ref={buttonRef}
+      id={ids?.controlId}
+      type="button"
+      onClick={onClick}
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      aria-labelledby={ids ? `${ids.labelId} ${valueId}` : undefined}
+      aria-describedby={ids?.descriptionId}
+      className={cn(
+        'inline-flex h-7 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--rule) bg-(--surface) pr-1.5 pl-2 transition-colors',
+        'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
+        open && 'border-(--brand)',
+        muted ? 'text-(--slate)' : 'text-(--foreground)',
+      )}
+    >
+      <span id={valueId} className="min-w-0 truncate text-[0.8rem]" style={{ fontFamily: `"${value}", sans-serif` }}>{value}</span>
+      <ChevronsUpDown size={12} aria-hidden="true" className="shrink-0 text-(--slate)" />
+    </button>
   );
 }
