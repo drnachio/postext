@@ -17,6 +17,22 @@ const PRESET_SOURCES: { url: string; private?: boolean }[] = [
   ...(process.env.NODE_ENV === "production" ? [] : [{ url: "/api/private-presets", private: true }]),
 ];
 
+const RECIPE_SLUG = /^[a-z0-9-]+$/;
+
+/** Cookbook recipes open in the sandbox by link: `#recipe=<slug>&lang=es`
+ *  names the recipe's `.postext` bundle, which the capture writes next to
+ *  its pages (`public/cookbook/<slug>/<variant>/<slug>.postext`). A recipe
+ *  captured in one language only still opens from the other language's
+ *  link: the sandbox tries the variants in order. */
+const HASH_BUNDLES = {
+  recipe: (slug: string, lang: string | null) => {
+    if (!RECIPE_SLUG.test(slug)) return null;
+    const first = lang === "es" ? "es" : "en";
+    const second = first === "es" ? "en" : "es";
+    return [first, second].map((variant) => `/cookbook/${slug}/${variant}/${slug}.postext`);
+  },
+};
+
 export function SandboxPage() {
   const t = useTranslations("Sandbox");
   const locale = useLocale();
@@ -29,6 +45,7 @@ export function SandboxPage() {
       labels={labels}
       locale={locale}
       presetSources={PRESET_SOURCES}
+      hashBundles={HASH_BUNDLES}
       themeToggle={<ThemeToggle compact />}
       languageSwitcher={<CompactLanguageSwitcher />}
       homeLink={

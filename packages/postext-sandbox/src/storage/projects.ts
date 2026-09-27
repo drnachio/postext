@@ -45,18 +45,23 @@ export interface ProjectRecord extends ProjectContent {
   sourcePresetId?: string;
   /** Cover picture, when the project has one (see {@link ProjectThumbnail}). */
   thumbnail?: ProjectThumbnail;
+  /** Where an imported book came from, when a link opened it: the host's
+   *  hash key, the id and the locale (`recipe:<slug>:<lang>`, see
+   *  `hashBundles`). The same link opens this project again instead of
+   *  importing a second copy. */
+  origin?: string;
   createdAt: number;
   updatedAt: number;
 }
 
 export type ProjectSummary = Pick<
   ProjectRecord,
-  'id' | 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'thumbnail' | 'createdAt' | 'updatedAt'
+  'id' | 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'thumbnail' | 'origin' | 'createdAt' | 'updatedAt'
 > & { chapterCount: number };
 
 export function toSummary(r: ProjectRecord): ProjectSummary {
-  const { id, name, description, locale, bundleId, sourcePresetId, thumbnail, createdAt, updatedAt } = r;
-  return { id, name, description, locale, bundleId, sourcePresetId, thumbnail, createdAt, updatedAt, chapterCount: r.chapters.length };
+  const { id, name, description, locale, bundleId, sourcePresetId, thumbnail, origin, createdAt, updatedAt } = r;
+  return { id, name, description, locale, bundleId, sourcePresetId, thumbnail, ...(origin ? { origin } : {}), createdAt, updatedAt, chapterCount: r.chapters.length };
 }
 
 export function generateProjectId(): string {

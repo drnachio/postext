@@ -51,6 +51,7 @@ import { createDefaultConfig, withDefaultResourceTypes } from './defaultConfig';
 import type { SandboxAction, SandboxState } from './SandboxContext';
 import type { ChapterLayout } from '../book/types';
 import { deleteChapterLayouts, getChapterLayouts } from '../storage/layouts';
+import { getPresetDraft } from '../storage/presetDrafts';
 
 export interface ProjectActionDeps {
   dispatch: Dispatch<SandboxAction>;
@@ -59,6 +60,11 @@ export interface ProjectActionDeps {
   getBuiltin: () => PresetProvider;
   /** Apply a preset into the working state (preset mode). */
   runPreset: (provider: PresetProvider, parts: PresetApplyParts) => Promise<boolean>;
+  /** Open a preset as the book on screen: its draft when it has one. */
+  openPreset: (id: string) => Promise<boolean>;
+  /** Run a switch of the book on screen: the current one is saved first
+   *  and the viewport shows the loading state meanwhile. */
+  switchBook: <T>(fn: () => Promise<T>) => Promise<T>;
   /** Invalidate any in-flight preset load so it never lands on a project. */
   cancelPresetLoads: () => void;
   /** Write the pending working-state save now (localStorage + active project). */
@@ -79,6 +85,9 @@ export type DuplicateSource = {
   /** Presets only: the content locale to clone / export (a bilingual
    *  bundle's second language); the viewer locale otherwise. */
   locale?: string;
+  /** Presets only: copy this saved draft (the edited preset) rather than
+   *  the original. */
+  draftKey?: string;
 };
 
 export interface ProjectActions {
@@ -90,6 +99,9 @@ export interface ProjectActions {
   rename: (id: string, name: string, description?: string) => Promise<void>;
   remove: (id: string) => Promise<void>;
   importBundle: (file: File) => Promise<string>;
+  /** Import a bundle's bytes as a new project and open it. `origin` marks
+   *  a book opened from a host link (see `ProjectRecord.origin`). */
+  importBundleBytes: (bytes: ArrayBuffer | Uint8Array, fileName: string, opts?: { origin?: string }) => Promise<string>;
   exportProject: (target?: DuplicateSource) => Promise<void>;
   /** Replace a project's cover picture with `file`, or drop it with null. */
   setThumbnail: (id: string, file: File | null) => Promise<void>;
@@ -202,7 +214,7 @@ async function storedCurrentLayouts(
 
 function newRecord(
   content: ProjectContent,
-  meta: Pick<ProjectRecord, 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'thumbnail'>,
+  meta: Pick<ProjectRecord, 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'thumbnail' | 'origin'>,
   id = generateProjectId(),
 ): ProjectRecord {
   const now = Date.now();
@@ -264,21 +276,23 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
     saveConfig(wantsConfig ? config : s.config);
   };
 
-  const activateRecord = async (record: ProjectRecord): Promise<void> => {
-    deps.cancelPresetLoads();
-    await deps.flushWorkingSave();
-    applyRecord(record);
-  };
+  const activateRecord = (record: ProjectRecord): Promise<void> =>
+    deps.switchBook(async () => {
+      deps.cancelPresetLoads();
+      applyRecord(record);
+    });
 
   const activate = (id: string): Promise<void> =>
     run(async () => {
       if (deps.getState().activeProjectId === id) return;
-      const record = await getProject(id);
-      if (!record) {
-        dispatch({ type: 'REMOVE_PROJECT_SUMMARY', payload: id });
-        throw new Error('Project not found');
-      }
-      await activateRecord(record);
+      await deps.switchBook(async () => {
+        const record = await getProject(id);
+        if (!record) {
+          dispatch({ type: 'REMOVE_PROJECT_SUMMARY', payload: id });
+          throw new Error('Project not found');
+        }
+        await activateRecord(record);
+      });
     });
 
   const persistNew = async (record: ProjectRecord): Promise<string> => {
@@ -338,6 +352,22 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
     run(async () => {
       const s = deps.getState();
       const id = generateProjectId();
+      if (source.kind === 'preset' && source.draftKey) {
+        const draft = await getPresetDraft(source.draftKey);
+        const summary = s.presetSummaries.find((p) => p.id === source.id);
+        if (draft) {
+          await deps.flushWorkingSave();
+          const { content } = await cloneContentForProject({ ...draft, ...cloneBook(draft, generateChapterId) }, id);
+          return persistNew(newRecord(content, {
+            name: summary?.name ?? source.id,
+            description: summary?.description,
+            locale: draft.locale || summary?.locale,
+            bundleId: source.id,
+            sourcePresetId: source.id,
+            thumbnail: summary ? await adoptPresetThumbnail(summary, id) : undefined,
+          }, id));
+        }
+      }
       if (source.kind === 'project') {
         const record = await getProject(source.id);
         if (!record) throw new Error('Project not found');
@@ -389,16 +419,19 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       await deleteProject(id);
       if (record) await deleteChapterLayouts(record.chapters.map((c) => c.id)).catch(() => undefined);
       dispatch({ type: 'REMOVE_PROJECT_SUMMARY', payload: id });
-      if (wasActive) await deps.runPreset(deps.getBuiltin(), 'all');
+      if (wasActive) await deps.openPreset(deps.getBuiltin().summary.id);
     });
 
-  const importBundle: ProjectActions['importBundle'] = (file) =>
+  const importBundle: ProjectActions['importBundle'] = async (file) =>
+    importBundleBytes(await readFileBytes(file), file.name);
+
+  const importBundleBytes: ProjectActions['importBundleBytes'] = (bytes, fileName, opts = {}) =>
     run(async () => {
       const s = deps.getState();
       const id = generateProjectId();
-      const opened = openBundleZip(await readFileBytes(file));
+      const opened = openBundleZip(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
       const manifestId = (opened.manifest as { id?: unknown } | null)?.id;
-      const summaryId = typeof manifestId === 'string' ? manifestId : slugify(file.name) || 'project';
+      const summaryId = typeof manifestId === 'string' ? manifestId : slugify(fileName) || 'project';
       const loaded = await parseBundle(opened.manifest, opened.readFile, {
         locale: s.locale,
         summary: { id: summaryId, name: summaryId, source: 'private', available: true },
@@ -430,6 +463,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
           locale: loaded.summary.locale,
           bundleId: summaryId,
           thumbnail,
+          ...(opts.origin ? { origin: opts.origin } : {}),
         },
         id,
       ));
@@ -552,5 +586,5 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       applyRecord({ ...merged, config }, parts);
     });
 
-  return { activate, create, duplicate, rename, remove, importBundle, exportProject, setThumbnail, resetToSource };
+  return { activate, create, duplicate, rename, remove, importBundle, importBundleBytes, exportProject, setThumbnail, resetToSource };
 }

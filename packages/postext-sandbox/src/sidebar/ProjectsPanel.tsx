@@ -1,78 +1,23 @@
 'use client';
 
-import { Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, FilePlus, Files, ImagePlus, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, FilePlus, Files, ImagePlus, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import {
   useSandboxLabels,
   useSandboxPresets,
   useSandboxProjects,
+  useSandboxSelector,
   type ProjectSummary,
 } from '../context/SandboxContext';
 import { Button, Collapsible, ConfirmPopover, EmptyState, IconButton, ListRow, Menu, MenuItem, MenuSeparator, PanelBody, PanelHeader, RowTag } from '../ui';
 import { isPresetHideable, partitionPresets } from '../presets/hidden';
+import { choosePresetOpen, presetLocales, sameLanguage } from '../presets/locale';
 import { useBlobObjectUrl } from '../panels/resources/ResourcePreview';
 import type { PresetSummary } from '../presets';
-import { ChapterList } from './chapters/ChapterList';
-
-/** Wraps `children` in a confirm popover only when confirmation is wanted;
- *  otherwise the trigger fires `onConfirm` directly. */
-function MaybeConfirm({
-  confirm,
-  message,
-  onConfirm,
-  children,
-}: {
-  confirm: boolean;
-  message: ReactNode;
-  onConfirm: () => void;
-  children: (open: () => void) => ReactNode;
-}) {
-  if (!confirm) return <>{children(onConfirm)}</>;
-  return (
-    <ConfirmPopover message={message} onConfirm={onConfirm}>
-      {({ open }) => children(() => open())}
-    </ConfirmPopover>
-  );
-}
-
-/** The "⋯" button of a book row: every action with its name, instead of a
- *  strip of unlabelled icons. An item that needs confirming (delete,
- *  reload over edits) asks next to the ⋯ button once the menu closes. */
-function RowActionsMenu({
-  label,
-  disabled,
-  confirmMessage,
-  onConfirm,
-  children,
-}: {
-  label: string;
-  disabled?: boolean;
-  confirmMessage: ReactNode;
-  onConfirm: () => void;
-  children: (askConfirm: () => void) => ReactNode;
-}) {
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  return (
-    <ConfirmPopover message={confirmMessage} onConfirm={onConfirm}>
-      {({ open }) => (
-        <Menu trigger={<IconButton ref={triggerRef} size={24} label={label} icon={<MoreHorizontal size={14} />} disabled={disabled} tooltip={false} />}>
-          {children(() => open(triggerRef.current))}
-        </Menu>
-      )}
-    </ConfirmPopover>
-  );
-}
-
-/** The active row becomes a card that also holds the book's chapters: the
- *  row on top (no border of its own), the chapter list below it. */
-function ActiveCard({ row, children }: { row: ReactNode; children?: ReactNode }) {
-  return (
-    <div className="overflow-hidden rounded border" style={{ borderColor: 'var(--brand)' }}>
-      {row}
-      {children}
-    </div>
-  );
-}
+import { ResizableHandle } from '../panels/ResizableHandle';
+import { loadBooksSplit, saveBooksSplit } from '../storage/persistence';
+import { BookPane } from './BookPane';
+import { RowActionsMenu } from './RowActionsMenu';
 
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
@@ -85,9 +30,97 @@ function GroupTitle({ children, actions }: { children: ReactNode; actions?: Reac
   );
 }
 
+/** Library pane limits: its share of the panel's height (percent), and the
+ *  least either pane keeps (px) — a header and a couple of rows. */
+const SPLIT_MIN = 15;
+const SPLIT_MAX = 85;
+const SPLIT_DEFAULT = 50;
+const PANE_MIN_PX = 96;
+
+/** The Books panel: the library (your books and the sample books) on top,
+ *  the open book (its name, its actions, its chapters) below, each
+ *  scrolling on its own, with a splitter between them whose position is
+ *  remembered. */
 export function ProjectsPanel() {
   const labels = useSandboxLabels();
-  const { presets, activePresetId, status, error, untouched, stale, updatedAt, hiddenIds, activeLocale, load, reload, hide, unhide } = useSandboxPresets();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [split, setSplit] = useState<number>(() => loadBooksSplit() ?? SPLIT_DEFAULT);
+  const splitRef = useRef(split);
+  splitRef.current = split;
+
+  // Keep both panes their minimum height whatever the split says.
+  const clampSplit = (percent: number): number => {
+    const height = containerRef.current?.getBoundingClientRect().height ?? 0;
+    let lo = SPLIT_MIN;
+    let hi = SPLIT_MAX;
+    if (height > PANE_MIN_PX * 2) {
+      lo = Math.max(lo, (PANE_MIN_PX / height) * 100);
+      hi = Math.min(hi, 100 - (PANE_MIN_PX / height) * 100);
+    }
+    return Math.min(hi, Math.max(lo, percent));
+  };
+  const commit = (percent: number) => {
+    const next = clampSplit(percent);
+    setSplit(next);
+    saveBooksSplit(next);
+  };
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+    const onMove = (ev: PointerEvent) => {
+      const box = containerRef.current?.getBoundingClientRect();
+      if (!box || box.height <= 0) return;
+      setSplit(clampSplit(((ev.clientY - box.top) / box.height) * 100));
+    };
+    const onUp = () => {
+      try { target.releasePointerCapture(e.pointerId); } catch { /* released */ }
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      saveBooksSplit(splitRef.current);
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  };
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div ref={containerRef} className="flex min-h-0 flex-1 flex-col">
+        <section
+          aria-label={labels.booksLibrary}
+          className="flex min-h-0 shrink-0 flex-col overflow-hidden"
+          style={{ height: `${split}%` }}
+        >
+          <LibraryPane />
+        </section>
+        <ResizableHandle
+          orientation="horizontal"
+          label={labels.booksSplitResize}
+          value={split}
+          min={SPLIT_MIN}
+          max={SPLIT_MAX}
+          onPointerDown={onPointerDown}
+          onValueChange={commit}
+        />
+        <section aria-label={labels.bookOpenLabel} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <BookPane />
+        </section>
+      </div>
+    </div>
+  );
+}
+
+/** Your books and the sample books, with the New / Import menu and the
+ *  status of the last operation. A row click opens the book; the open one
+ *  is marked, its chapters are in the pane below. */
+function LibraryPane() {
+  const labels = useSandboxLabels();
+  const { presets, activePresetId, status, error, stale, updatedAt, hiddenIds, activeLocale, edited, drafts, load, reload, restoreOriginal, hide, unhide } = useSandboxPresets();
   const projectsValue = useSandboxProjects();
   const {
     projects,
@@ -105,6 +138,7 @@ export function ProjectsPanel() {
     exportProject,
     setThumbnail,
   } = projectsValue;
+  const viewerLocale = useSandboxSelector((s) => s.locale);
   const importRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
@@ -114,10 +148,6 @@ export function ProjectsPanel() {
   const inPresetMode = activeProjectId === null;
   const active = presets.find((p) => p.id === activePresetId);
   const canReload = !busy && (active?.available ?? false);
-  const reloadAll = () => { void reload('all'); };
-  // Leaving a preset with edits loses them; leaving a project loses nothing
-  // (its edits are saved as they happen).
-  const leavingLosesWork = inPresetMode && !untouched;
   const { visible: visiblePresets, hidden: hiddenPresets } = partitionPresets(presets, hiddenIds);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,8 +165,11 @@ export function ProjectsPanel() {
 
   const presetRow = (preset: PresetSummary, hidden: boolean) => {
     const isActive = inPresetMode && preset.id === activePresetId;
-    // The active preset is cloned / exported in the language it is shown
-    // in; any other one in the viewer's.
+    const presetDrafts = drafts.filter((d) => d.presetId === preset.id);
+    // What a click opens is what a copy copies: the active book as it is
+    // on screen, else the preset's draft that would open, else the
+    // original (in the language it is shown in, or the viewer's).
+    const choice = choosePresetOpen({ summary: preset, current: isActive ? activeLocale : null, viewer: viewerLocale, drafts: presetDrafts });
     const locale = isActive && activeLocale ? activeLocale : undefined;
     return (
       <PresetRow
@@ -144,13 +177,15 @@ export function ProjectsPanel() {
         preset={preset}
         isActive={isActive}
         activeLocale={isActive ? activeLocale : null}
+        editedLocales={presetDrafts.map((d) => d.locale)}
         disabled={busy || !preset.available}
-        confirmLoad={leavingLosesWork}
-        untouched={untouched}
         onLoad={() => { void load(preset.id); }}
         onLoadLocale={(l) => { void load(preset.id, l); }}
-        onReload={reloadAll}
-        onDuplicate={() => { void duplicate({ kind: 'preset', id: preset.id, locale }); }}
+        onRestore={() => { void restoreOriginal(preset.id); }}
+        onDuplicate={() => {
+          if (isActive && edited) void create({ from: 'current' });
+          else void duplicate({ kind: 'preset', id: preset.id, locale: choice.draft?.locale || locale, draftKey: choice.draft?.key });
+        }}
         onExport={() => { void exportProject({ kind: 'preset', id: preset.id, locale }); }}
         onHide={!hidden && isPresetHideable(preset.id) ? () => hide(preset.id) : undefined}
         onUnhide={hidden ? () => unhide(preset.id) : undefined}
@@ -159,9 +194,9 @@ export function ProjectsPanel() {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <PanelHeader
-        title={labels.navBooks}
+        title={labels.booksLibrary}
         actions={
           <>
             <Menu
@@ -194,9 +229,14 @@ export function ProjectsPanel() {
           style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)', color: 'var(--foreground)' }}
         >
           <span className="min-w-0 flex-1">{labels.presetStaleBanner}</span>
-          <Button variant="primary" size="xs" onClick={reloadAll} disabled={!canReload}>
-            {labels.presetStaleReload}
-          </Button>
+          {/* The new version replaces the edits: asked first. */}
+          <ConfirmPopover message={labels.presetStaleReloadConfirm} onConfirm={() => { void reload('all'); }}>
+            {({ open }) => (
+              <Button variant="primary" size="xs" onClick={open} disabled={!canReload}>
+                {labels.presetStaleReload}
+              </Button>
+            )}
+          </ConfirmPopover>
         </div>
       )}
       <PanelBody padded>
@@ -257,7 +297,6 @@ export function ProjectsPanel() {
                 project={project}
                 isActive={project.id === activeProjectId}
                 disabled={busy}
-                confirmSwitch={leavingLosesWork}
                 onActivate={() => { void activate(project.id); }}
                 onRename={(name, description) => { void rename(project.id, name, description); }}
                 onDuplicate={() => { void duplicate({ kind: 'project', id: project.id }); }}
@@ -297,8 +336,6 @@ interface ProjectRowProps {
   project: ProjectSummary;
   isActive: boolean;
   disabled: boolean;
-  /** Ask before opening: the active preset has unsaved edits. */
-  confirmSwitch: boolean;
   onActivate: () => void;
   onRename: (name: string, description: string) => void;
   onDuplicate: () => void;
@@ -312,7 +349,6 @@ function ProjectRow({
   project,
   isActive,
   disabled,
-  confirmSwitch,
   onActivate,
   onRename,
   onDuplicate,
@@ -467,12 +503,11 @@ function ProjectRow({
     />
   );
 
-  const row = (open?: () => void) => (
+  const row = (
     <ListRow
       selected={isActive}
       disabled={disabled}
-      className={isActive ? 'rounded-none border-0' : undefined}
-      onSelect={editing || isActive ? undefined : open}
+      onSelect={editing || isActive || disabled ? undefined : onActivate}
       onDoubleClick={isActive && !editing ? startRename : undefined}
       ariaLabel={isActive ? `${project.name} (${labels.presetActive})` : `${labels.projectActivate}: ${project.name}`}
       handle={editing ? coverEditor : undefined}
@@ -502,32 +537,12 @@ function ProjectRow({
     />
   );
 
-  if (isActive) {
-    return (
-      <li className="mb-1">
-        {coverInput}
-        <ActiveCard row={row()}>
-          <ChapterList title={labels.chapters} />
-        </ActiveCard>
-      </li>
-    );
-  }
   return (
     <li className="mb-0.5">
       {coverInput}
-      {disabled ? row() : (
-        <MaybeConfirm confirm={confirmSwitch} message={labels.projectSwitchConfirm.replace('__name__', project.name)} onConfirm={onActivate}>
-          {(open) => row(open)}
-        </MaybeConfirm>
-      )}
+      {row}
     </li>
   );
-}
-
-/** Same language, ignoring region and case (`es-ES` is `es`). */
-function sameLanguage(a: string, b: string): boolean {
-  const base = (l: string) => l.toLowerCase().split(/[-_]/)[0]!;
-  return base(a) === base(b);
 }
 
 interface PresetRowProps {
@@ -535,14 +550,14 @@ interface PresetRowProps {
   isActive: boolean;
   /** The content locale the active preset is loaded in; null otherwise. */
   activeLocale: string | null;
+  /** Locales of this preset with a saved draft (the reader's edits). */
+  editedLocales: string[];
   disabled: boolean;
-  /** Ask before loading: the active preset has unsaved edits. */
-  confirmLoad: boolean;
-  untouched: boolean;
   onLoad: () => void;
-  /** Load (or reload) the preset in one of its locales. */
+  /** Open the preset in one of its locales (its draft there, if any). */
   onLoadLocale: (locale: string) => void;
-  onReload: () => void;
+  /** Drop every draft of the preset (asked first). */
+  onRestore: () => void;
   onDuplicate: () => void;
   onExport: () => void;
   onHide?: () => void;
@@ -553,52 +568,48 @@ function PresetRow({
   preset,
   isActive,
   activeLocale,
+  editedLocales,
   disabled,
-  confirmLoad,
-  untouched,
   onLoad,
   onLoadLocale,
-  onReload,
+  onRestore,
   onDuplicate,
   onExport,
   onHide,
   onUnhide,
 }: PresetRowProps) {
   const labels = useSandboxLabels();
-  const confirmMessage = labels.presetLoadConfirm.replace('__name__', preset.name);
+  const edited = editedLocales.length > 0;
 
   // A bilingual bundle lists every locale it carries; the primary one
-  // otherwise. With more than one, each tag loads the preset in that
-  // language — the active one is marked, the others reload (asking first
-  // when there are edits to lose).
-  const locales = preset.locales && preset.locales.length > 0
-    ? preset.locales
-    : preset.locale ? [preset.locale] : [];
+  // otherwise. With more than one, each tag opens the preset in that
+  // language (the reader's edits there, if any); the active one is marked.
+  const locales = presetLocales(preset);
   const localeTag = (l: string) => {
     if (locales.length < 2) return <RowTag key={l}>{l}</RowTag>;
     const code = l.toUpperCase();
     const current = isActive && activeLocale !== null && sameLanguage(activeLocale, l);
+    const label = (current ? labels.presetLocaleActive : labels.presetLocaleLoad).replace('__locale__', code);
     if (current || disabled) {
       return (
-        <RowTag key={l} accent={current} label={(current ? labels.presetLocaleActive : labels.presetLocaleLoad).replace('__locale__', code)}>
+        <RowTag key={l} accent={current} label={label}>
           {l}
         </RowTag>
       );
     }
-    const confirm = isActive ? !untouched : confirmLoad;
     return (
-      <MaybeConfirm key={l} confirm={confirm} message={isActive ? labels.presetReloadConfirm : confirmMessage} onConfirm={() => onLoadLocale(l)}>
-        {(open) => (
-          <RowTag onClick={open} pressed={false} label={labels.presetLocaleLoad.replace('__locale__', code)}>
-            {l}
-          </RowTag>
-        )}
-      </MaybeConfirm>
+      <RowTag key={l} onClick={() => onLoadLocale(l)} pressed={false} label={label}>
+        {l}
+      </RowTag>
     );
   };
+  const editedHint = locales.length > 1 && edited
+    ? `${labels.presetEditedHint} (${editedLocales.map((l) => (l || '?').toUpperCase()).join(', ')})`
+    : labels.presetEditedHint;
   const tags = (
     <>
       {locales.map(localeTag)}
+      {edited && <RowTag label={editedHint}>{labels.presetEdited}</RowTag>}
       {preset.license && <RowTag>{preset.license}</RowTag>}
       {preset.source === 'private' && <RowTag>{labels.presetPrivate}</RowTag>}
       {preset.default && <RowTag>{labels.presetDefault}</RowTag>}
@@ -635,62 +646,42 @@ function PresetRow({
     </span>
   );
 
-  const row = (open?: () => void) => (
-    <ListRow
-      selected={isActive}
-      disabled={disabled}
-      className={isActive ? 'rounded-none border-0' : undefined}
-      onSelect={isActive ? undefined : open}
-      ariaLabel={isActive ? `${preset.name} (${labels.presetActive})` : `${labels.presetLoad}: ${preset.name}`}
-      leading={leading}
-      title={preset.name}
-      subtitle={subtitle}
-      tags={tags}
-      alignTop={!!subtitle}
-      actions={
-        <RowActionsMenu
-          label={labels.rowMoreActions.replace('__name__', preset.name)}
-          disabled={disabled && !onHide && !onUnhide}
-          confirmMessage={labels.presetReloadConfirm}
-          onConfirm={onReload}
-        >
-          {(askReload) => (
-            <>
-              {isActive && preset.available && (
-                <MenuItem icon={<RotateCcw size={13} />} disabled={disabled} onClick={untouched ? onReload : askReload}>
-                  {labels.presetReloadActive}
-                </MenuItem>
-              )}
-              <MenuItem icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate}>{labels.presetDuplicate}</MenuItem>
-              <MenuItem icon={<Download size={13} />} disabled={disabled} onClick={onExport}>{labels.presetExport}</MenuItem>
-              {(onHide || onUnhide) && <MenuSeparator />}
-              {onHide && <MenuItem icon={<EyeOff size={13} />} onClick={onHide}>{labels.presetHide}</MenuItem>}
-              {onUnhide && <MenuItem icon={<Eye size={13} />} onClick={onUnhide}>{labels.presetUnhide}</MenuItem>}
-            </>
-          )}
-        </RowActionsMenu>
-      }
-    />
-  );
-
-  if (isActive) {
-    // Preset mode: the working book belongs to this preset until a project
-    // is created from it, so its chapters show here.
-    return (
-      <li className="mb-1">
-        <ActiveCard row={row()}>
-          <ChapterList title={labels.chapters} />
-        </ActiveCard>
-      </li>
-    );
-  }
   return (
     <li className="mb-0.5">
-      {disabled ? row() : (
-        <MaybeConfirm confirm={confirmLoad} message={confirmMessage} onConfirm={onLoad}>
-          {(open) => row(open)}
-        </MaybeConfirm>
-      )}
+      <ListRow
+        selected={isActive}
+        disabled={disabled}
+        onSelect={isActive || disabled ? undefined : onLoad}
+        ariaLabel={isActive ? `${preset.name} (${labels.presetActive})` : `${labels.presetLoad}: ${preset.name}`}
+        leading={leading}
+        title={preset.name}
+        subtitle={subtitle}
+        tags={tags}
+        alignTop={!!subtitle}
+        actions={
+          <RowActionsMenu
+            label={labels.rowMoreActions.replace('__name__', preset.name)}
+            disabled={disabled && !onHide && !onUnhide}
+            confirmMessage={labels.presetRestoreConfirm.replace('__name__', preset.name)}
+            onConfirm={onRestore}
+          >
+            {(askRestore) => (
+              <>
+                <MenuItem icon={<Copy size={13} />} disabled={disabled} onClick={onDuplicate}>{labels.presetDuplicate}</MenuItem>
+                <MenuItem icon={<Download size={13} />} disabled={disabled} onClick={onExport}>{labels.presetExport}</MenuItem>
+                {edited && (
+                  <MenuItem icon={<RotateCcw size={13} />} disabled={disabled} onClick={askRestore}>
+                    {labels.presetReloadActive}
+                  </MenuItem>
+                )}
+                {(onHide || onUnhide) && <MenuSeparator />}
+                {onHide && <MenuItem icon={<EyeOff size={13} />} onClick={onHide}>{labels.presetHide}</MenuItem>}
+                {onUnhide && <MenuItem icon={<Eye size={13} />} onClick={onUnhide}>{labels.presetUnhide}</MenuItem>}
+              </>
+            )}
+          </RowActionsMenu>
+        }
+      />
     </li>
   );
 }

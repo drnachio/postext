@@ -108,6 +108,7 @@ export interface MigratedProjectRecord extends BookContent {
   bundleId?: string;
   sourcePresetId?: string;
   thumbnail?: ProjectThumbnail;
+  origin?: string;
   createdAt: number;
   updatedAt: number;
   config: PostextConfig;
@@ -152,6 +153,7 @@ export function migrateProjectRecord(raw: unknown, deps: MigrationDeps): Migrate
     ...(typeof raw.bundleId === 'string' ? { bundleId: raw.bundleId } : {}),
     ...(typeof raw.sourcePresetId === 'string' ? { sourcePresetId: raw.sourcePresetId } : {}),
     ...(isThumbnail(raw.thumbnail) ? { thumbnail: raw.thumbnail } : {}),
+    ...(typeof raw.origin === 'string' && raw.origin ? { origin: raw.origin } : {}),
     createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === 'number' ? raw.updatedAt : now,
     config: isRecord(raw.config) ? migrateConfig(raw.config as PostextConfig, raw.version, book.chapters.map((c) => c.markdown)) : {},

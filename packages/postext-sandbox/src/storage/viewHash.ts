@@ -141,3 +141,56 @@ export function sameBook(wanted: ViewHashBook, actual: ViewHashBook): boolean {
 export function pdfPageFragment(pageIndex: number | null): string {
   return pageIndex === null ? '' : `#page=${pageIndex + 1}`;
 }
+
+/** Keys of the fragment's own syntax: never a host's bundle key. */
+const RESERVED_KEYS = new Set(['preset', 'project', 'lang', 'view', 'chapter', 'page']);
+const BUNDLE_KEY_RE = /^[a-z][a-z0-9-]{0,31}$/;
+
+/** A book a host links to by a key of its own (`#recipe=ID&lang=L`, see
+ *  `PostextSandboxProps.hashBundles`). */
+export interface HashBundleRef {
+  key: string;
+  id: string;
+  lang: string | null;
+}
+
+/** The first of `keys` the fragment carries, with its id and `lang=`;
+ *  null when it names none (or a malformed id). Reserved keys and keys
+ *  that are not plain lowercase words are ignored. */
+export function parseHashBundle(hash: string, keys: readonly string[]): HashBundleRef | null {
+  for (const key of keys) {
+    if (RESERVED_KEYS.has(key) || !BUNDLE_KEY_RE.test(key)) continue;
+    const id = readId(hash, key);
+    if (id === null) continue;
+    const lang = readParam(hash, 'lang');
+    return { key, id, lang: lang !== null && LANG_RE.test(lang) ? lang.toLowerCase() : null };
+  }
+  return null;
+}
+
+/** The stable origin a project imported from a hash bundle is recorded
+ *  with: the same link finds it again. */
+export function hashBundleOrigin(ref: HashBundleRef): string {
+  return `${ref.key}:${ref.id}:${ref.lang ?? ''}`;
+}
+
+/** The book last open, as storage remembers it. */
+export interface StoredBook {
+  projectId: string | null;
+  presetId: string | null;
+  presetLocale: string | null;
+}
+
+/** Whether the page was opened on a link to a book other than the one
+ *  storage would show: then the stored book is not rendered at all, the
+ *  sandbox boots straight into the linked one. A bundle link always
+ *  qualifies (it is imported, or found among the projects, first). */
+export function hashNamesOtherBook(view: ViewHashBook, stored: StoredBook, bundle: HashBundleRef | null): boolean {
+  if (bundle) return true;
+  if (view.project !== null) return view.project !== stored.projectId;
+  if (view.preset !== null) {
+    if (stored.projectId !== null || view.preset !== stored.presetId) return true;
+    return view.lang !== null && view.lang !== stored.presetLocale;
+  }
+  return false;
+}

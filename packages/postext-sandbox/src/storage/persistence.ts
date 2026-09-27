@@ -13,6 +13,7 @@ const MARKDOWN_KEY = 'postext-sandbox-markdown';
 const BOOK_KEY = 'postext-sandbox-book';
 const VIEWPORT_KEY = 'postext-sandbox-viewport';
 const SIDEBAR_WIDTH_KEY = 'postext-sandbox-sidebar-width';
+const BOOKS_SPLIT_KEY = 'postext-sandbox-books-split';
 const PANEL_KEY = 'postext-sandbox-panel';
 const PRESET_KEY = 'postext-sandbox-preset';
 const PRESET_APPLIED_KEY = 'postext-sandbox-preset-applied';
@@ -222,6 +223,27 @@ export function loadSidebarPercent(): number | null {
   if (!raw) return null;
   const n = Number(raw);
   return Number.isFinite(n) && n >= 5 && n <= 90 ? n : null;
+}
+
+/** Share of the Books panel's height the library pane takes (percent);
+ *  the open book's chapters get the rest. */
+export function saveBooksSplit(percent: number): void {
+  try {
+    getStorage()?.setItem(BOOKS_SPLIT_KEY, String(Math.round(percent * 10) / 10));
+  } catch {
+    // A full or blocked storage only loses the preference.
+  }
+}
+
+export function loadBooksSplit(): number | null {
+  try {
+    const raw = getStorage()?.getItem(BOOKS_SPLIT_KEY);
+    if (!raw) return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 10 && n <= 90 ? n : null;
+  } catch {
+    return null;
+  }
 }
 
 export function saveSectionState(sectionId: string, open: boolean): void {

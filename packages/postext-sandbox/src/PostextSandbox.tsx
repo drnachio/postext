@@ -40,6 +40,9 @@ function SandboxLayout({
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const sidebarPercent = useSandboxSelector((s) => s.sidebarPercent);
   const activeViewport = useSandboxSelector((s) => s.activeViewport);
+  const booting = useSandboxSelector((s) => s.booting);
+  const bookLoading = useSandboxSelector((s) => s.bookLoading);
+  const loadingLabel = useSandboxSelector((s) => s.labels.bookLoading);
   useChapterHashSync();
   const containerRef = useRef<HTMLDivElement>(null);
   const [fontsReady, setFontsReady] = useState(false);
@@ -132,22 +135,17 @@ function SandboxLayout({
     }
   };
 
-  if (!fontsReady) {
+  // Until the fonts are in, and while the page opens on a link to another
+  // book than the stored one (the stored book is never shown then).
+  if (!fontsReady || booting) {
     return (
       <div
         className="flex h-full w-full items-center justify-center"
         style={{ backgroundColor: 'var(--background)', color: 'var(--slate)' }}
+        role="status"
+        aria-label={loadingLabel}
       >
-        <div
-          style={{
-            width: 24,
-            height: 24,
-            border: '2px solid var(--rule)',
-            borderTopColor: 'var(--brand)',
-            borderRadius: '50%',
-            animation: 'postext-spin 0.8s linear infinite',
-          }}
-        />
+        <Spinner />
       </div>
     );
   }
@@ -175,11 +173,40 @@ function SandboxLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         <ChapterPaginator />
         <ViewportTabs />
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
           {renderViewport()}
+          {bookLoading && (
+            // Another book is on its way: the one being left is covered
+            // rather than shown as if it were the new one.
+            <div
+              role="status"
+              aria-live="polite"
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 text-xs"
+              style={{ backgroundColor: 'var(--background)', color: 'var(--slate)' }}
+            >
+              <Spinner />
+              <span>{loadingLabel}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        width: 24,
+        height: 24,
+        border: '2px solid var(--rule)',
+        borderTopColor: 'var(--brand)',
+        borderRadius: '50%',
+        animation: 'postext-spin 0.8s linear infinite',
+      }}
+    />
   );
 }
 
@@ -190,6 +217,7 @@ export function PostextSandbox({
   labels,
   locale,
   presetSources,
+  hashBundles,
   onConfigChange,
   onMarkdownChange,
   themeToggle,
@@ -211,6 +239,7 @@ export function PostextSandbox({
         labels={labels}
         locale={locale}
         presetSources={presetSources}
+        hashBundles={hashBundles}
         onConfigChange={onConfigChange}
         onMarkdownChange={onMarkdownChange}
       >

@@ -5,7 +5,8 @@ import { invalidateResourceImage } from '../controls/resourceImages';
 import { setCustomFonts } from '../controls/fontLoader';
 import { putBlobsAt } from '../storage/blobStore';
 import { putFontFiles } from '../storage/fontStorage';
-import { savePresetApplied, savePresetId } from '../storage/persistence';
+import { saveBook, saveConfig, savePresetApplied, savePresetId } from '../storage/persistence';
+import type { BookContent } from '../book/types';
 import { hashChapters, hashConfig, hashResources, type DocumentHashSource } from './hash';
 import type { AppliedPresetSnapshot, LoadedPreset, PresetApplyParts } from './types';
 
@@ -19,6 +20,9 @@ export interface ApplyPresetOptions {
    *  leaves alone is hashed from here so the snapshot describes the state the
    *  reducer ends up with. */
   current: DocumentHashSource;
+  /** Called right before the state is swapped, inside the same batch of
+   *  dispatches (leaving project mode, say). */
+  before?: () => void;
 }
 
 /** The snapshot a given apply produces — mirrors the reducer dispatches in
@@ -82,6 +86,7 @@ export async function applyPreset(
   if (parts === 'all' || parts === 'config' || (parts === 'document' && loaded.config.customFonts !== undefined)) {
     setCustomFonts(loaded.config.customFonts);
   }
+  options.before?.();
   dispatch({ type: 'SET_PRESET', payload: { id, config: loaded.config } });
   if (parts === 'all' || parts === 'config') {
     dispatch({ type: 'SET_CONFIG', payload: loaded.config });
@@ -89,8 +94,11 @@ export async function applyPreset(
     dispatch({ type: 'UPDATE_CONFIG', payload: { customFonts: loaded.config.customFonts } });
   }
   if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: loaded.resources });
-  if (wantsMarkdown) {
-    dispatch({ type: 'SET_BOOK', payload: { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}) } });
+  const book: BookContent | null = wantsMarkdown
+    ? { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}) }
+    : null;
+  if (book) {
+    dispatch({ type: 'SET_BOOK', payload: book });
     if (loaded.layouts && parts === 'all') dispatch({ type: 'SET_CHAPTER_LAYOUTS', payload: loaded.layouts });
   }
   const snapshot = snapshotForApply(loaded, options);
@@ -101,4 +109,10 @@ export async function applyPreset(
   clearMeasurementCache();
   savePresetId(id);
   savePresetApplied(snapshot);
+  // The working copy follows at once: a snapshot saved with the book it
+  // left behind would read as that book edited.
+  if (parts === 'all') {
+    saveBook(book!);
+    saveConfig(loaded.config);
+  }
 }

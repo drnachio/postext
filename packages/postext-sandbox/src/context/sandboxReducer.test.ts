@@ -19,6 +19,9 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     config: {},
     resources: [],
     storeReady: true,
+    booting: false,
+    bookLoading: false,
+    presetDrafts: [],
     activePanel: null,
     sidebarPercent: 25,
     sidebarDragging: false,
@@ -256,5 +259,35 @@ describe('hidden presets', () => {
     expect(s.hiddenPresetIds).toEqual(['remote-a']);
     expect(sandboxReducer(s, { type: 'HIDE_PRESET', payload: BUILTIN_PRESET_ID })).toBe(s);
     expect(sandboxReducer(s, { type: 'UNHIDE_PRESET', payload: 'remote-a' }).hiddenPresetIds).toEqual([]);
+  });
+});
+
+describe('book loading and drafts', () => {
+  it('SET_STORE_READY ends the boot', () => {
+    const s = sandboxReducer(baseState({ storeReady: false, booting: true }), { type: 'SET_STORE_READY' });
+    expect(s.storeReady).toBe(true);
+    expect(s.booting).toBe(false);
+  });
+
+  it('SET_BOOK_LOADING keeps the state when nothing changes', () => {
+    const base = baseState();
+    expect(sandboxReducer(base, { type: 'SET_BOOK_LOADING', payload: false })).toBe(base);
+    expect(sandboxReducer(base, { type: 'SET_BOOK_LOADING', payload: true }).bookLoading).toBe(true);
+  });
+
+  it('upserts and removes draft summaries by key', () => {
+    const d = { key: 'a::es', presetId: 'a', locale: 'es', updatedAt: 1 };
+    let s = sandboxReducer(baseState(), { type: 'UPSERT_PRESET_DRAFT', payload: d });
+    s = sandboxReducer(s, { type: 'UPSERT_PRESET_DRAFT', payload: { ...d, updatedAt: 2 } });
+    expect(s.presetDrafts).toEqual([{ ...d, updatedAt: 2 }]);
+    const same = sandboxReducer(s, { type: 'REMOVE_PRESET_DRAFT', payload: 'b::es' });
+    expect(same).toBe(s);
+    expect(sandboxReducer(s, { type: 'REMOVE_PRESET_DRAFT', payload: 'a::es' }).presetDrafts).toEqual([]);
+  });
+
+  it('SET_PRESET replaces the baseline config only when given one', () => {
+    const base = baseState();
+    expect(sandboxReducer(base, { type: 'SET_PRESET', payload: { id: 'x' } }).presetConfig).toBe(base.presetConfig);
+    expect(sandboxReducer(base, { type: 'SET_PRESET', payload: { id: 'x', config: undefined } }).presetConfig).toBeUndefined();
   });
 });

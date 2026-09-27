@@ -705,9 +705,7 @@ export interface SandboxLabels {
   /** Locale tags of a bilingual preset: `__locale__` is the code (ES, EN). */
   presetLocaleLoad: string;
   presetLocaleActive: string;
-  presetLoadConfirm: string;
   presetReload: string;
-  presetReloadConfirm: string;
   presetActive: string;
   presetPrivate: string;
   presetDefault: string;
@@ -717,7 +715,27 @@ export interface SandboxLabels {
   presetUpdatedFromDisk: string;
   presetStaleBanner: string;
   presetStaleReload: string;
+  /** Asked before the stale banner's reload discards the edits. */
+  presetStaleReloadConfirm: string;
   presetReloadActive: string;
+  /** Tag of a preset with a saved draft (the reader's edits). */
+  presetEdited: string;
+  presetEditedHint: string;
+  /** Before a preset's draft is dropped: `__name__` is the preset. */
+  presetRestoreConfirm: string;
+  /** The Books panel's two panes: the library (projects and presets) and
+   *  the book on screen (its chapters). */
+  booksLibrary: string;
+  bookOpenLabel: string;
+  booksSplitResize: string;
+  bookKindProject: string;
+  bookKindPreset: string;
+  /** Over the viewport while another book is being opened. */
+  bookLoading: string;
+  /** A host bundle link (`#recipe=…`) that names no book the host serves. */
+  hashBundleNotFound: string;
+  /** A host bundle link that failed: `__error__` is the reason. */
+  hashBundleError: string;
 
   // Projects panel
   projects: string;
@@ -773,7 +791,6 @@ export interface SandboxLabels {
   projectCopySuffix: string;
   projectExport: string;
   projectActivate: string;
-  projectSwitchConfirm: string;
   projectRename: string;
   projectNameLabel: string;
   projectDescriptionLabel: string;

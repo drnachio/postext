@@ -116,3 +116,32 @@ describe('view hash', () => {
     expect(pdfPageFragment(2)).toBe('#page=3');
   });
 });
+
+describe('parseHashBundle / hashNamesOtherBook', () => {
+  it('reads a host key with its id and lang', async () => {
+    const { parseHashBundle, hashBundleOrigin } = await import('./viewHash');
+    const ref = parseHashBundle('#recipe=magazine-feature-opener&lang=ES&view=pdf', ['recipe']);
+    expect(ref).toEqual({ key: 'recipe', id: 'magazine-feature-opener', lang: 'es' });
+    expect(hashBundleOrigin(ref!)).toBe('recipe:magazine-feature-opener:es');
+    expect(parseHashBundle('#recipe=x', ['recipe'])).toEqual({ key: 'recipe', id: 'x', lang: null });
+    expect(parseHashBundle('#preset=x', ['recipe'])).toBeNull();
+    // Reserved and malformed keys are never host keys.
+    expect(parseHashBundle('#preset=x', ['preset'])).toBeNull();
+    expect(parseHashBundle('#Recipe=x', ['Recipe'])).toBeNull();
+    expect(parseHashBundle('#recipe=a b', ['recipe'])).toBeNull();
+  });
+
+  it('boots straight into a linked book that is not the stored one', async () => {
+    const { hashNamesOtherBook } = await import('./viewHash');
+    const stored = { projectId: null, presetId: 'guide', presetLocale: 'es' };
+    expect(hashNamesOtherBook({ preset: null, project: null, lang: null }, stored, null)).toBe(false);
+    expect(hashNamesOtherBook({ preset: 'guide', project: null, lang: 'es' }, stored, null)).toBe(false);
+    expect(hashNamesOtherBook({ preset: 'guide', project: null, lang: null }, stored, null)).toBe(false);
+    expect(hashNamesOtherBook({ preset: 'guide', project: null, lang: 'en' }, stored, null)).toBe(true);
+    expect(hashNamesOtherBook({ preset: 'emp', project: null, lang: null }, stored, null)).toBe(true);
+    expect(hashNamesOtherBook({ preset: null, project: 'p1', lang: null }, stored, null)).toBe(true);
+    expect(hashNamesOtherBook({ preset: null, project: 'p1', lang: null }, { ...stored, projectId: 'p1' }, null)).toBe(false);
+    expect(hashNamesOtherBook({ preset: 'guide', project: null, lang: null }, { ...stored, projectId: 'p1' }, null)).toBe(true);
+    expect(hashNamesOtherBook({ preset: null, project: null, lang: null }, stored, { key: 'recipe', id: 'x', lang: null })).toBe(true);
+  });
+});
